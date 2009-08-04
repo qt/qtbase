@@ -16,6 +16,7 @@ SUBDIRS=\
    qdoublespinbox \
    qfocusframe \
    qfontcombobox \
+   qframe \
    qgroupbox \
    qkeysequenceedit \
    qlabel \
