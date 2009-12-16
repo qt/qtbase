@@ -433,27 +433,32 @@ QWinSettingsPrivate::QWinSettingsPrivate(QString rPath)
 {
     deleteWriteHandleOnExit = false;
 
-    if (rPath.startsWith(QLatin1String("\\")))
-        rPath = rPath.mid(1);
+    if (rPath.startsWith(QLatin1Char('\\')))
+        rPath.remove(0, 1);
 
-    if (rPath.startsWith(QLatin1String("HKEY_CURRENT_USER\\")))
-        regList.append(RegistryKey(HKEY_CURRENT_USER, rPath.mid(18), false));
-    else if (rPath == QLatin1String("HKEY_CURRENT_USER"))
-        regList.append(RegistryKey(HKEY_CURRENT_USER, QString(), false));
-    else if (rPath.startsWith(QLatin1String("HKEY_LOCAL_MACHINE\\")))
-        regList.append(RegistryKey(HKEY_LOCAL_MACHINE, rPath.mid(19), false));
-    else if (rPath == QLatin1String("HKEY_LOCAL_MACHINE"))
-        regList.append(RegistryKey(HKEY_LOCAL_MACHINE, QString(), false));
-    else if (rPath.startsWith(QLatin1String("HKEY_CLASSES_ROOT\\")))
-        regList.append(RegistryKey(HKEY_CLASSES_ROOT, rPath.mid(18), false));
-    else if (rPath == QLatin1String("HKEY_CLASSES_ROOT"))
-        regList.append(RegistryKey(HKEY_CLASSES_ROOT, QString(), false));
-    else if (rPath.startsWith(QLatin1String("HKEY_USERS\\")))
-        regList.append(RegistryKey(HKEY_USERS, rPath.mid(11), false));
-    else if (rPath == QLatin1String("HKEY_USERS"))
-        regList.append(RegistryKey(HKEY_USERS, QString(), false));
-    else
-        regList.append(RegistryKey(HKEY_LOCAL_MACHINE, rPath, false));
+    int keyLength;
+    HKEY keyName;
+
+    if (rPath.startsWith(QLatin1String("HKEY_CURRENT_USER"))) {
+        keyLength = 17;
+        keyName = HKEY_CURRENT_USER;
+    } else if (rPath.startsWith(QLatin1String("HKEY_LOCAL_MACHINE"))) {
+        keyLength = 18;
+        keyName = HKEY_LOCAL_MACHINE;
+    } else if (rPath.startsWith(QLatin1String("HKEY_CLASSES_ROOT"))) {
+        keyLength = 17;
+        keyName = HKEY_CLASSES_ROOT;
+    } else if (rPath.startsWith(QLatin1String("HKEY_USERS"))) {
+        keyLength = 10;
+        keyName = HKEY_USERS;
+    } else {
+        return;
+    }
+
+    if (rPath.length() == keyLength)
+        regList.append(RegistryKey(keyName, QString(), false));
+    else if (rPath[keyLength] == QLatin1Char('\\'))
+        regList.append(RegistryKey(keyName, rPath.mid(keyLength+1), false));
 }
 
 bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVariant *value) const
