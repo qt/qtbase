@@ -441,6 +441,20 @@ void QTimerInfoList::timerRepair(const timeval &diff)
     }
 }
 
+static timeval roundToMillisecond(timeval val)
+{
+    // always round up
+    // worst case scenario is that the first trigger of a 1-ms timer is 0.999 ms late
+
+    int us = val.tv_usec % 1000;
+    val.tv_usec += 1000 - us;
+    if (val.tv_usec > 1000000) {
+        val.tv_usec -= 1000000;
+        ++val.tv_sec;
+    }
+    return val;
+}
+
 /*
   Returns the time to wait for the next timer, or null if no timers
   are waiting.
@@ -464,7 +478,7 @@ bool QTimerInfoList::timerWait(timeval &tm)
 
     if (currentTime < t->timeout) {
         // time to wait
-        tm = t->timeout - currentTime;
+        tm = roundToMillisecond(t->timeout - currentTime);
     } else {
         // no time to wait
         tm.tv_sec  = 0;
