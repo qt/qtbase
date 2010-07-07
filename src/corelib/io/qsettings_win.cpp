@@ -319,11 +319,11 @@ private:
 };
 
 RegistryKey::RegistryKey(HKEY parent_handle, const QString &key, bool read_only)
+    : m_parent_handle(parent_handle),
+      m_handle(0),
+      m_key(key),
+      m_read_only(read_only)
 {
-    m_parent_handle = parent_handle;
-    m_handle = 0;
-    m_read_only = read_only;
-    m_key = key;
 }
 
 QString RegistryKey::key() const
