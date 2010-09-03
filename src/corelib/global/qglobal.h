@@ -1843,6 +1843,10 @@ inline QT3_SUPPORT void qSuppressObsoleteWarnings(bool = true) {}
 inline QT3_SUPPORT void qObsolete(const char *, const char * = 0, const char * = 0) {}
 #endif
 
+#if !defined(Q_UNIMPLEMENTED)
+#  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
+#endif
+
 #if defined(QT_NO_THREAD)
 
 template <typename T>
