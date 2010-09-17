@@ -7728,6 +7728,11 @@ void qInitDrawhelperAsm()
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                      int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
     }
 
 #ifdef QT_HAVE_SSSE3

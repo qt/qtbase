@@ -491,6 +491,90 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
     }
 }
 
+extern const uint * QT_FASTCALL qt_fetch_radial_gradient_plain(uint *buffer, const Operator *op, const QSpanData *data,
+                                                           int y, int x, int length);
+class RadialFetchSse2
+{
+public:
+    static inline void fetch(uint *buffer, uint *end, const QSpanData *data, qreal det, qreal delta_det,
+                             qreal delta_delta_det, qreal b, qreal delta_b)
+    {
+        union Vect_buffer_f { __m128 v; float f[4]; };
+        union Vect_buffer_i { __m128i v; int i[4]; };
+
+        Vect_buffer_f det_vec;
+        Vect_buffer_f delta_det4_vec;
+        Vect_buffer_f b_vec;
+
+        for (int i = 0; i < 4; ++i) {
+            det_vec.f[i] = det;
+            delta_det4_vec.f[i] = 4 * delta_det;
+            b_vec.f[i] = b;
+
+            det += delta_det;
+            delta_det += delta_delta_det;
+            b += delta_b;
+        }
+
+        const __m128 v_delta_delta_det16 = _mm_set1_ps(16 * delta_delta_det);
+        const __m128 v_delta_delta_det6 = _mm_set1_ps(6 * delta_delta_det);
+        const __m128 v_delta_b4 = _mm_set1_ps(4 * delta_b);
+
+        const __m128 v_min = _mm_set1_ps(0.0f);
+        const __m128 v_max = _mm_set1_ps(GRADIENT_STOPTABLE_SIZE-1.5f);
+        const __m128 v_half = _mm_set1_ps(0.5f);
+
+        const __m128 v_table_size_minus_one = _mm_set1_ps(float(GRADIENT_STOPTABLE_SIZE-1));
+
+        const __m128i v_repeat_mask = _mm_set1_epi32(uint(0xffffff) << GRADIENT_STOPTABLE_SIZE_SHIFT);
+        const __m128i v_reflect_mask = _mm_set1_epi32(uint(0xffffff) << (GRADIENT_STOPTABLE_SIZE_SHIFT+1));
+
+        const __m128i v_reflect_limit = _mm_set1_epi32(2 * GRADIENT_STOPTABLE_SIZE - 1);
+
+#define FETCH_RADIAL_LOOP_PROLOGUE \
+        while (buffer < end) { \
+            const __m128 v_index_local = _mm_sub_ps(_mm_sqrt_ps(_mm_max_ps(v_min, det_vec.v)), b_vec.v); \
+            const __m128 v_index = _mm_add_ps(_mm_mul_ps(v_index_local, v_table_size_minus_one), v_half); \
+            Vect_buffer_i index_vec;
+#define FETCH_RADIAL_LOOP_CLAMP_REPEAT \
+            index_vec.v = _mm_andnot_si128(v_repeat_mask, _mm_cvttps_epi32(v_index));
+#define FETCH_RADIAL_LOOP_CLAMP_REFLECT \
+            const __m128i v_index_i = _mm_andnot_si128(v_reflect_mask, _mm_cvttps_epi32(v_index)); \
+            const __m128i v_index_i_inv = _mm_sub_epi32(v_reflect_limit, v_index_i); \
+            index_vec.v = _mm_min_epi16(v_index_i, v_index_i_inv);
+#define FETCH_RADIAL_LOOP_CLAMP_PAD \
+            index_vec.v = _mm_cvttps_epi32(_mm_min_ps(v_max, _mm_max_ps(v_min, v_index)));
+#define FETCH_RADIAL_LOOP_EPILOGUE \
+            det_vec.v = _mm_add_ps(_mm_add_ps(det_vec.v, delta_det4_vec.v), v_delta_delta_det6); \
+            delta_det4_vec.v = _mm_add_ps(delta_det4_vec.v, v_delta_delta_det16); \
+            b_vec.v = _mm_add_ps(b_vec.v, v_delta_b4); \
+            for (int i = 0; i < 4; ++i) \
+                *buffer++ = data->gradient.colorTable[index_vec.i[i]]; \
+        }
+
+        if (data->gradient.spread == QGradient::RepeatSpread) {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_REPEAT
+            FETCH_RADIAL_LOOP_EPILOGUE
+        } else if (data->gradient.spread == QGradient::ReflectSpread) {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_REFLECT
+            FETCH_RADIAL_LOOP_EPILOGUE
+        } else {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_PAD
+            FETCH_RADIAL_LOOP_EPILOGUE
+        }
+    }
+};
+
+const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    return qt_fetch_radial_gradient_template<RadialFetchSse2>(buffer, op, data, y, x, length);
+}
+
+
 QT_END_NAMESPACE
 
 #endif // QT_HAVE_SSE2

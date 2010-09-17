@@ -268,8 +268,10 @@ struct QGradientData
 
 #ifdef Q_WS_QWS
 #define GRADIENT_STOPTABLE_SIZE 256
+#define GRADIENT_STOPTABLE_SIZE_SHIFT 8
 #else
 #define GRADIENT_STOPTABLE_SIZE 1024
+#define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 #endif
 
     uint* colorTable; //[GRADIENT_STOPTABLE_SIZE];
@@ -389,6 +391,13 @@ template <class RadialFetchFunc>
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
                                                            int y, int x, int length)
 {
+    // avoid division by zero
+    if (qFuzzyIsNull(op->radial.a)) {
+        extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
+        qt_memfill32(buffer, data->gradient.colorTable[0], length);
+        return buffer;
+    }
+
     const uint *b = buffer;
     qreal rx = data->m21 * (y + qreal(0.5))
                + data->dx + data->m11 * (x + qreal(0.5));
