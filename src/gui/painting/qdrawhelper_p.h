@@ -349,13 +349,11 @@ static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
         if (data->spread == QGradient::RepeatSpread) {
             ipos = ipos % GRADIENT_STOPTABLE_SIZE;
             ipos = ipos < 0 ? GRADIENT_STOPTABLE_SIZE + ipos : ipos;
-
         } else if (data->spread == QGradient::ReflectSpread) {
-            const int limit = GRADIENT_STOPTABLE_SIZE * 2 - 1;
+            const int limit = GRADIENT_STOPTABLE_SIZE * 2;
             ipos = ipos % limit;
             ipos = ipos < 0 ? limit + ipos : ipos;
-            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - ipos : ipos;
-
+            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - 1 - ipos : ipos;
         } else {
             if (ipos < 0)
                 ipos = 0;
@@ -363,7 +361,6 @@ static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
                 ipos = GRADIENT_STOPTABLE_SIZE-1;
         }
     }
-
 
     Q_ASSERT(ipos >= 0);
     Q_ASSERT(ipos < GRADIENT_STOPTABLE_SIZE);
