@@ -181,7 +181,7 @@ public:
         QMacMenuBarPrivate();
         ~QMacMenuBarPrivate();
 
-        void addAction(QAction *, QMacMenuAction* =0);
+        void addAction(QAction *, QAction* =0);
         void addAction(QMacMenuAction *, QMacMenuAction* =0);
         void syncAction(QMacMenuAction *);
         inline void syncAction(QAction *a) { syncAction(findAction(a)); }
@@ -220,7 +220,7 @@ public:
 
         QWceMenuBarPrivate(QMenuBarPrivate *menubar);
         ~QWceMenuBarPrivate();
-        void addAction(QAction *, QWceMenuAction* =0);
+        void addAction(QAction *, QAction* =0);
         void addAction(QWceMenuAction *, QWceMenuAction* =0);
         void syncAction(QWceMenuAction *);
         inline void syncAction(QAction *a) { syncAction(findAction(a)); }
@@ -250,7 +250,7 @@ public:
         QMenuBarPrivate *d;
         QSymbianMenuBarPrivate(QMenuBarPrivate *menubar);
         ~QSymbianMenuBarPrivate();
-        void addAction(QAction *, QSymbianMenuAction* =0);
+        void addAction(QAction *, QAction* =0);
         void addAction(QSymbianMenuAction *, QSymbianMenuAction* =0);
         void syncAction(QSymbianMenuAction *);
         inline void syncAction(QAction *a) { syncAction(findAction(a)); }

@@ -1287,7 +1287,7 @@ void QMenuBar::actionEvent(QActionEvent *e)
         if (!nativeMenuBar)
             return;
         if(e->type() == QEvent::ActionAdded)
-            nativeMenuBar->addAction(e->action(), nativeMenuBar->findAction(e->before()));
+            nativeMenuBar->addAction(e->action(), e->before());
         else if(e->type() == QEvent::ActionRemoved)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
