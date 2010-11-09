@@ -3,7 +3,6 @@ TEMPLATE = subdirs
 TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc
 !contains(QT_CONFIG, no-gui): TOOLS_SUBDIRS += src_tools_uic
 !cross_compile {
-    contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_tools_uic3
     win32:!wince*: SRC_SUBDIRS += src_tools_idc
 }
 
@@ -16,8 +15,6 @@ src_tools_rcc.subdir = $$QT_SOURCE_TREE/src/tools/rcc
 src_tools_rcc.target = sub-rcc
 src_tools_uic.subdir = $$QT_SOURCE_TREE/src/tools/uic
 src_tools_uic.target = sub-uic
-src_tools_uic3.subdir = $$QT_SOURCE_TREE/src/tools/uic3
-src_tools_uic3.target = sub-uic3
 src_tools_idc.subdir = $$QT_SOURCE_TREE/src/tools/idc
 src_tools_idc.target = sub-idc
 
@@ -43,7 +40,7 @@ EXTRA_RELEASE_TARGETS =
         subdir = $$replace(subdir, /, $$QMAKE_DIR_SEP)
         subdir = $$replace(subdir, \\\\, $$QMAKE_DIR_SEP)
         SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
-        !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc) | isEqual(subname, src_tools_uic3)):!separate_debug_info {
+        !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc)):!separate_debug_info {
             #debug
             debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
             debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)

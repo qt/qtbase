@@ -3856,7 +3856,7 @@ void Configure::generateMakefiles()
                 }
                 // don't pass -spec - .qmake.cache has it already
                 args << "-r";
-                args << (sourcePath + "/projects.pro");
+                args << (sourcePath + "/qtbase.pro");
                 args << "-o";
                 args << buildPath;
                 if (!dictionary[ "QMAKEADDITIONALARGS" ].isEmpty())

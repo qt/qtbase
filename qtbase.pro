@@ -7,30 +7,7 @@ TEMPLATE = subdirs
 
 cross_compile: CONFIG += nostrip
 
-isEmpty(QT_BUILD_PARTS) { #defaults
-    symbian {
-       QT_BUILD_PARTS = libs tools examples demos
-    } else {
-       QT_BUILD_PARTS = libs tools examples demos docs translations
-    }
-} else { #make sure the order makes sense
-   contains(QT_BUILD_PARTS, translations) {
-       QT_BUILD_PARTS -= translations
-       QT_BUILD_PARTS = translations $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, tools) {
-       QT_BUILD_PARTS -= tools
-       QT_BUILD_PARTS = tools $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, libs) {
-       QT_BUILD_PARTS -= libs
-       QT_BUILD_PARTS = libs $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, qmake) {
-       QT_BUILD_PARTS -= qmake
-       QT_BUILD_PARTS = qmake $$QT_BUILD_PARTS
-   }
-}
+QT_BUILD_PARTS = libs qmake
 
 #process the projects
 for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
@@ -163,10 +140,3 @@ win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
     mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
 }
 INSTALLS += mkspecs
-
-false:macx { #mac install location
-    macdocs.files = $$htmldocs.files
-    macdocs.path = /Developer/Documentation/Qt
-    INSTALLS += macdocs
-}
-

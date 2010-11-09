@@ -8820,11 +8820,11 @@ EXEC=""
 
 echo "Finding project files. Please wait..."
 if [ "$CFG_NOPROCESS" != "yes" ]; then
-    "$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
-    if [ -f "${relpath}/projects.pro" ]; then
+    "$outpath/bin/qmake" -prl -r "${relpath}/qtbase.pro"
+    if [ -f "${relpath}/qtbase.pro" ]; then
         mkfile="${outpath}/Makefile"
         [ -f "$mkfile" ] && chmod +w "$mkfile"
-        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/qtbase.pro" -o "$mkfile"
     fi
 fi
 
