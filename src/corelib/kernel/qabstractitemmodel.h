@@ -162,6 +162,7 @@ class Q_CORE_EXPORT QAbstractItemModel : public QObject
 
     friend class QPersistentModelIndexData;
     friend class QAbstractItemViewPrivate;
+    friend class QIdentityProxyModel;
 public:
 
     explicit QAbstractItemModel(QObject *parent = 0);

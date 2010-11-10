@@ -84,6 +84,7 @@ SUBDIRS=\
     qheaderview \
     qicoimageformat \
     qicon \
+    qidentityproxymodel \
     qimageiohandler \
     qimagereader \
     qimagewriter \
