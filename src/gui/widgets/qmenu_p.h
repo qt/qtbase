@@ -154,6 +154,9 @@ public:
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
                       hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
+#ifdef QT3_SUPPORT
+                      ,emitHighlighted(false)
+#endif
 #ifdef Q_WS_MAC
                       ,mac_menu(0)
 #endif
@@ -162,9 +165,6 @@ public:
 #endif
 #ifdef Q_WS_S60
                       ,symbian_menu(0)
-#endif
-#ifdef QT3_SUPPORT
-                      ,emitHighlighted(false)
 #endif
     { }
     ~QMenuPrivate()
