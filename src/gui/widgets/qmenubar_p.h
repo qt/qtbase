@@ -47,7 +47,7 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// platformMenuBarementation detail.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
@@ -61,6 +61,10 @@
 #include "qguifunctions_wince.h"
 #endif
 
+#ifdef Q_WS_X11
+#include "qabstractplatformmenubar_p.h"
+#endif
+
 #ifndef QT_NO_MENUBAR
 #ifdef Q_WS_S60
 class CCoeControl;
@@ -71,21 +75,27 @@ class CEikMenuBar;
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENUBAR
+class QToolBar;
 class QMenuBarExtension;
 class QMenuBarPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMenuBar)
 public:
     QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
-                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
-                         nativeMenuBar(-1), doChildEffects(false)
+                         closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0)
+#ifndef Q_WS_X11
+                         , nativeMenuBar(-1)
+#endif
+                         , doChildEffects(false)
 #ifdef QT3_SUPPORT
                          , doAutoResize(false)
 #endif
 #ifdef Q_WS_MAC
                          , mac_menubar(0)
 #endif
-
+#ifdef Q_WS_X11
+                         , platformMenuBar(0)
+#endif
 #ifdef Q_WS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
 #endif
@@ -96,6 +106,9 @@ public:
         { }
     ~QMenuBarPrivate()
         {
+#ifdef Q_WS_X11
+            delete platformMenuBar;
+#endif
 #ifdef Q_WS_MAC
             delete mac_menubar;
 #endif
@@ -136,8 +149,9 @@ public:
     uint keyboardState : 1, altPressed : 1;
     QPointer<QWidget> keyboardFocusWidget;
 
-
+#ifndef Q_WS_X11
     int nativeMenuBar : 3;  // Only has values -1, 0, and 1
+#endif
     //firing of events
     void activateAction(QAction *, QAction::ActionEvent);
 
@@ -172,6 +186,9 @@ public:
     QBasicTimer autoReleaseTimer;
 #ifdef QT3_SUPPORT
     bool doAutoResize;
+#endif
+#ifdef Q_WS_X11
+    QAbstractPlatformMenuBar *platformMenuBar;
 #endif
 #ifdef Q_WS_MAC
     //mac menubar binding
@@ -272,6 +289,12 @@ public:
 #endif
 #ifdef QT_SOFTKEYS_ENABLED
     QAction *menuBarAction;
+#endif
+
+#ifdef Q_WS_X11
+    void updateCornerWidgetToolBar();
+    QToolBar *cornerWidgetToolBar;
+    QWidget *cornerWidgetContainer;
 #endif
 };
 #endif
