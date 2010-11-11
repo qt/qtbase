@@ -1,0 +1,16 @@
+# This file is loaded on-demand, before any .qmake.cache (sometimes *in* .qmake.cache), to loaded
+# important settings for modules, such as paths to QtBase and other modules.
+# Consequently, we have to do some stunts to figure out where to find qmodule.pri.
+
+isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
+   exists($$_QMAKE_CACHE_/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$_QMAKE_CACHE_/mkspecs/qmodule.pri
+   else:exists($$_QMAKE_CACHE_/qtbase/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$_QMAKE_CACHE_/qtbase/mkspecs/qmodule.pri
+   else:if(!isEmpty(QT_BUILD_TREE) & exists($$QT_BUILD_TREE/mkspecs/qmodule.pri)):QMAKE_QT_MODULE = $$QT_BUILD_TREE/mkspecs/qmodule.pri
+   else:exists($$[QT_INSTALL_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_INSTALL_DATA]/mkspecs/qmodule.pri
+}
+
+!exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
+   error("Cannot load qmodule.pri!")
+} else {
+   debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
+}

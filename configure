@@ -8299,10 +8299,10 @@ else
         ln -s "$outpath/src/corelib/global/qconfig.h" "$conf"
     done
 fi
+
 #-------------------------------------------------------------------------------
 # save configuration into qconfig.pri
 #-------------------------------------------------------------------------------
-
 QTCONFIG="$outpath/mkspecs/qconfig.pri"
 QTCONFIG_CONFIG="$QTCONFIG_CONFIG no_mocdepend"
 [ -f "$QTCONFIG.tmp" ] && rm -f "$QTCONFIG.tmp"
@@ -8402,23 +8402,19 @@ else
 fi
 
 #-------------------------------------------------------------------------------
-# save configuration into .qmake.cache
+# save configuration into qmodule.pri
 #-------------------------------------------------------------------------------
+QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-CACHEFILE="$outpath/.qmake.cache"
-[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
-cat >>"$CACHEFILE.tmp" <<EOF
-CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs QTDIR_build
+cat >>"$QTMODULE.tmp" <<EOF
+#paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 QT_BUILD_PARTS = $CFG_BUILD_PARTS
-QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
-QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
 QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
 QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_UIC3       = \$\$QT_BUILD_TREE/bin/uic3
 QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
 QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
@@ -8428,64 +8424,85 @@ EOF
 
 # Ensure we can link to uninistalled libraries
 if [ "$XPLATFORM_MINGW" != "yes" ] && [ "$CFG_EMBEDDED" != "nacl" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
-    echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$CACHEFILE.tmp"
+    echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_PSQL" ]; then
-    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_PSQL" ]; then
-    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_MYSQL" ]; then
-    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_MYSQL" ]; then
-    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_SQLITE" ]; then
-    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_SQLITE" ]; then
-    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_ODBC" ]; then
-    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_TDS" ]; then
-    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$QTMODULE.tmp"
 fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
-    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$CACHEFILE.tmp"
+    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$QTMODULE.tmp"
 fi
 
 #dump in the OPENSSL_LIBS info
 if [ '!' -z "$OPENSSL_LIBS" ]; then
-    echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$CACHEFILE.tmp"
+    echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$QTMODULE.tmp"
 elif [ "$CFG_OPENSSL" = "linked" ]; then
-    echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$CACHEFILE.tmp"
+    echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$QTMODULE.tmp"
 fi
 
 #dump in the SDK info
 if [ '!' -z "$CFG_SDK" ]; then
-   echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$CACHEFILE.tmp"
+   echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$QTMODULE.tmp"
 fi
 
 # mac gcc -Xarch support
 if [ "$CFG_MAC_XARCH" = "no" ]; then
-   echo "QMAKE_MAC_XARCH = no" >> "$CACHEFILE.tmp"
+   echo "QMAKE_MAC_XARCH = no" >> "$QTMODULE.tmp"
 fi
 
 #dump the qmake spec
 if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$QTMODULE.tmp"
 else
-   echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "QMAKESPEC = $XPLATFORM" >> "$QTMODULE.tmp"
 fi
 
 # cmdline args
-cat "$QMAKE_VARS_FILE" >> "$CACHEFILE.tmp"
+cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
 rm -f "$QMAKE_VARS_FILE" 2>/dev/null
+
+# replace qmodule.pri if it differs from the newly created temp file
+if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
+    rm -f "$QTMODULE.tmp"
+else
+    mv -f "$QTMODULE.tmp" "$QTMODULE"
+fi
+
+#-------------------------------------------------------------------------------
+# save configuration into .qmake.cache
+#-------------------------------------------------------------------------------
+
+CACHEFILE="$outpath/.qmake.cache"
+[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
+cat >>"$CACHEFILE.tmp" <<EOF
+include(\$\$PWD/mkspecs/qmodule.pri)
+CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs QTDIR_build
+QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
+QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
+
+EOF
 
 # incrementals
 INCREMENTAL=""

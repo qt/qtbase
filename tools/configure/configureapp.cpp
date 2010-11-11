@@ -2911,63 +2911,101 @@ void Configure::generateCachefile()
     QFile cacheFile(buildPath + "/.qmake.cache");
     if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream cacheStream(&cacheFile);
+
+        cacheStream << "include($$PWD/mkspecs/qmodule.pri)" << endl;
+
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
         cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp create_prl link_prl depend_includepath QTDIR_build" << endl;
 
+        cacheStream.flush();
+        cacheFile.close();
+    }
+
+    // Generate qmodule.pri
+    QFile configFile(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
+    if (configFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
+        QTextStream configStream(&configFile);
+
+        configStream << "#paths" << endl;
+        configStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
+        configStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
         QStringList buildParts;
         buildParts << "libs" << "tools" << "examples" << "demos" << "docs" << "translations";
         foreach (const QString &item, disabledBuildParts) {
             buildParts.removeAll(item);
         }
-        cacheStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl;
+        configStream << "QT_BUILD_PARTS  = " << buildParts.join(" ") << endl << endl;
+
+        //so that we can build without an install first (which would be impossible)
+        configStream << "#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR" << endl;
+        configStream << "QMAKE_MOC       = $$QT_BUILD_TREE" << fixSeparators("/bin/moc.exe", true) << endl;
+        configStream << "QMAKE_UIC       = $$QT_BUILD_TREE" << fixSeparators("/bin/uic.exe", true) << endl;
+        configStream << "QMAKE_RCC       = $$QT_BUILD_TREE" << fixSeparators("/bin/rcc.exe", true) << endl;
+        configStream << "QMAKE_DUMPCPP   = $$QT_BUILD_TREE" << fixSeparators("/bin/dumpcpp.exe", true) << endl;
+        configStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
+        configStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
+
 
         QString targetSpec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
         QString mkspec_path = fixSeparators(sourcePath + "/mkspecs/" + targetSpec);
         if (QFile::exists(mkspec_path))
-            cacheStream << "QMAKESPEC       = " << escapeSeparators(mkspec_path) << endl;
+            configStream << "QMAKESPEC       = " << escapeSeparators(mkspec_path) << endl;
         else
-            cacheStream << "QMAKESPEC       = " << fixSeparators(targetSpec, true) << endl;
-        cacheStream << "ARCH            = " << dictionary[ "ARCHITECTURE" ] << endl;
-        cacheStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
-        cacheStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
+            configStream << "QMAKESPEC       = " << fixSeparators(targetSpec, true) << endl;
+        configStream << "ARCH            = " << dictionary[ "ARCHITECTURE" ] << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
-            cacheStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
+            configStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
 
-        //so that we can build without an install first (which would be impossible)
-        cacheStream << "QMAKE_MOC       = $$QT_BUILD_TREE" << fixSeparators("/bin/moc.exe", true) << endl;
-        cacheStream << "QMAKE_UIC       = $$QT_BUILD_TREE" << fixSeparators("/bin/uic.exe", true) << endl;
-        cacheStream << "QMAKE_UIC3      = $$QT_BUILD_TREE" << fixSeparators("/bin/uic3.exe", true) << endl;
-        cacheStream << "QMAKE_RCC       = $$QT_BUILD_TREE" << fixSeparators("/bin/rcc.exe", true) << endl;
-        cacheStream << "QMAKE_DUMPCPP   = $$QT_BUILD_TREE" << fixSeparators("/bin/dumpcpp.exe", true) << endl;
-        cacheStream << "QMAKE_INCDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/include", true) << endl;
-        cacheStream << "QMAKE_LIBDIR_QT = $$QT_BUILD_TREE" << fixSeparators("/lib", true) << endl;
         if (dictionary["CETEST"] == "yes") {
-            cacheStream << "QT_CE_RAPI_INC  = " << fixSeparators(dictionary[ "QT_CE_RAPI_INC" ], true) << endl;
-            cacheStream << "QT_CE_RAPI_LIB  = " << fixSeparators(dictionary[ "QT_CE_RAPI_LIB" ], true) << endl;
+            configStream << "QT_CE_RAPI_INC  = " << fixSeparators(dictionary[ "QT_CE_RAPI_INC" ], true) << endl;
+            configStream << "QT_CE_RAPI_LIB  = " << fixSeparators(dictionary[ "QT_CE_RAPI_LIB" ], true) << endl;
+        }
+
+        configStream << "#Qt for Windows CE c-runtime deployment" << endl
+                     << "QT_CE_C_RUNTIME = " << fixSeparators(dictionary[ "CE_CRT" ], true) << endl;
+
+        if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
+            configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
+
+        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
+            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
+
+        if (!dictionary["QT_LIBINFIX"].isEmpty())
+            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
+
+        configStream << "#Qt for Symbian FPU settings" << endl;
+        if (!dictionary["ARM_FPU_TYPE"].isEmpty()) {
+            configStream<<"MMP_RULES += \"ARMFPU "<< dictionary["ARM_FPU_TYPE"]<< "\"";
+        }
+        if (!dictionary["QT_NAMESPACE"].isEmpty()) {
+            configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
 
         // embedded
         if (!dictionary["KBD_DRIVERS"].isEmpty())
-            cacheStream << "kbd-drivers += "<< dictionary["KBD_DRIVERS"]<<endl;
+            configStream << "kbd-drivers += "<< dictionary["KBD_DRIVERS"]<<endl;
         if (!dictionary["GFX_DRIVERS"].isEmpty())
-            cacheStream << "gfx-drivers += "<< dictionary["GFX_DRIVERS"]<<endl;
+            configStream << "gfx-drivers += "<< dictionary["GFX_DRIVERS"]<<endl;
         if (!dictionary["MOUSE_DRIVERS"].isEmpty())
-            cacheStream << "mouse-drivers += "<< dictionary["MOUSE_DRIVERS"]<<endl;
+            configStream << "mouse-drivers += "<< dictionary["MOUSE_DRIVERS"]<<endl;
         if (!dictionary["DECORATIONS"].isEmpty())
-            cacheStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
+            configStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
         if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            cacheStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
+            configStream << "QMAKE_RPATHDIR += "<<dictionary["QMAKE_RPATHDIR"];
 
-        cacheStream.flush();
-        cacheFile.close();
+        configStream.flush();
+        configFile.close();
     }
+
+    // Generate qconfig.pri
     QFile configFile(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
     if (configFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream configStream(&configFile);
+
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
         if (dictionary[ "SHARED" ] == "yes")
@@ -3026,26 +3064,6 @@ void Configure::generateCachefile()
                      << "QT_MAJOR_VERSION = " << dictionary["VERSION_MAJOR"] << endl
                      << "QT_MINOR_VERSION = " << dictionary["VERSION_MINOR"] << endl
                      << "QT_PATCH_VERSION = " << dictionary["VERSION_PATCH"] << endl;
-
-        configStream << "#Qt for Windows CE c-runtime deployment" << endl
-                     << "QT_CE_C_RUNTIME = " << fixSeparators(dictionary[ "CE_CRT" ], true) << endl;
-
-        if (dictionary["CE_SIGNATURE"] != QLatin1String("no"))
-            configStream << "DEFAULT_SIGNATURE=" << dictionary["CE_SIGNATURE"] << endl;
-
-        if (!dictionary["QMAKE_RPATHDIR"].isEmpty())
-            configStream << "QMAKE_RPATHDIR += " << dictionary["QMAKE_RPATHDIR"] << endl;
-
-        if (!dictionary["QT_LIBINFIX"].isEmpty())
-            configStream << "QT_LIBINFIX = " << dictionary["QT_LIBINFIX"] << endl;
-
-        configStream << "#Qt for Symbian FPU settings" << endl;
-        if (!dictionary["ARM_FPU_TYPE"].isEmpty()) {
-            configStream<<"MMP_RULES += \"ARMFPU "<< dictionary["ARM_FPU_TYPE"]<< "\"";
-        }
-        if (!dictionary["QT_NAMESPACE"].isEmpty()) {
-            configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
-        }
 
         configStream.flush();
         configFile.close();
