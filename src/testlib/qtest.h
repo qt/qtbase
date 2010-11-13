@@ -290,6 +290,14 @@ int main(int argc, char *argv[]) \
 
 #endif // QT_GUI_LIB
 
+#define QTEST_GUILESS_MAIN(TestObject) \
+int main(int argc, char *argv[]) \
+{ \
+    QCoreApplication app(argc, argv); \
+    TestObject tc; \
+    return QTest::qExec(&tc, argc, argv); \
+}
+
 QT_END_HEADER
 
 #endif

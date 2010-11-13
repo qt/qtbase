@@ -314,7 +314,8 @@ QT_BEGIN_NAMESPACE
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setNavigationMode()
+    \sa QTEST_APPLESS_MAIN(), QTEST_GUILESS_MAIN(), QTest::qExec(),
+    QApplication::setNavigationMode()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)
@@ -338,6 +339,21 @@ QT_BEGIN_NAMESPACE
     doesn't execute any test, for example in conditional compilations:
 
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 12
+
+    \sa QTEST_MAIN()
+*/
+
+/*! \macro QTEST_GUILESS_MAIN(TestClass)
+
+    \relates QTest
+
+    Implements a main() function that instantiates a QCoreApplication object
+    and the \a TestClass, and executes all tests in the order they were
+    defined.  Use this macro to build stand-alone executables.
+
+    Behaves like \l QTEST_MAIN(), but instantiates a QCoreApplication instead
+    of the QApplication object. Use this macro if your test case doesn't need
+    functionality offered by QApplication, but the event loop is still necessary.
 
     \sa QTEST_MAIN()
 */
