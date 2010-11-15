@@ -188,9 +188,7 @@ Configure::Configure(int& argc, char** argv)
             if (syncqt_bat.open(QFile::WriteOnly)) {
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
-                       << "set QTDIR=" << QDir::toNativeSeparators(sourcePath) << endl
-                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -outdir \"") << fixSeparators(buildPath) << "\"" << endl
-                       << "set QTDIR=" << QDir::toNativeSeparators(buildPath) << endl;
+                       << "call " << fixSeparators(sourcePath) << fixSeparators("/bin/syncqt.bat -outdir \"") << fixSeparators(buildPath) << "\" \"" << fixSeparators(sourcePath) << "\"" << endl
                 syncqt_bat.close();
             }
         }

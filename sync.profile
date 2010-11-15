@@ -1,0 +1,44 @@
+%modules = ( # path to module name map
+    "QtGui" => "$basedir/src/gui",
+    "QtOpenGL" => "$basedir/src/opengl",
+    "QtOpenVG" => "$basedir/src/openvg",
+    "QtCore" => "$basedir/src/corelib",
+    "QtXml" => "$basedir/src/xml",
+    "QtSql" => "$basedir/src/sql",
+    "QtNetwork" => "$basedir/src/network",
+    "QtSvg" => "$basedir/src/svg",
+    "QtTest" => "$basedir/src/testlib",
+    "QtDBus" => "$basedir/src/dbus",
+);
+%moduleheaders = ( # restrict the module headers to those found in relative path
+);
+%classnames = (
+    "qglobal.h" => "QtGlobal",
+    "qendian.h" => "QtEndian",
+    "qconfig.h" => "QtConfig",
+    "qplugin.h" => "QtPlugin",
+    "qalgorithms.h" => "QtAlgorithms",
+    "qcontainerfwd.h" => "QtContainerFwd",
+    "qdebug.h" => "QtDebug",
+    "qevent.h" => "QtEvents",
+    "qnamespace.h" => "Qt",
+    "qssl.h" => "QSsl",
+    "qtest.h" => "QTest",
+    "qtconcurrentmap.h" => "QtConcurrentMap",
+    "qtconcurrentfilter.h" => "QtConcurrentFilter",
+    "qtconcurrentrun.h" => "QtConcurrentRun",
+);
+%mastercontent = (
+    "core" => "#include <QtCore/QtCore>\n",
+    "gui" => "#include <QtGui/QtGui>\n",
+    "network" => "#include <QtNetwork/QtNetwork>\n",
+    "svg" => "#include <QtSvg/QtSvg>\n",
+    "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
+    "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
+    "xml" => "#include <QtXml/QtXml>\n",
+);
+@ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
+@ignore_for_include_check = ( "qatomic.h" );
+@ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
+@ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
+@ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtTest}", "$modules{QtDBus}" );
