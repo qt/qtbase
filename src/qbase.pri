@@ -1,3 +1,6 @@
+load(qt_module)
+
+isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
 
 MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
@@ -13,7 +16,7 @@ isEmpty(QT_MAJOR_VERSION) {
 
 #load up the headers info
 CONFIG += qt_install_headers
-HEADERS_PRI = $$QT_BUILD_TREE/include/$$TARGET/headers.pri
+HEADERS_PRI = $$MODULE_INCLUDES/headers.pri
 include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
 #version overriding
