@@ -35,19 +35,6 @@ plugin { #Qt plugins
 INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
 win32:INCLUDEPATH += $$QMAKE_INCDIR_QT/ActiveQt
 
-# As order does matter for static libs, we reorder the QT variable here
-TMPLIBS = declarative webkit phonon multimedia dbus testlib script scripttools svg qt3support sql xmlpatterns xml egl opengl openvg gui network core meegographicssystemhelper
-for(QTLIB, $$list($$TMPLIBS)) {
-   contains(QT, $$QTLIB): QT_ORDERED += $$QTLIB
-}
-
-QT_UNKNOWN = $$QT
-QT_UNKNOWN -= $$QT_ORDERED
-QT = $$QT_ORDERED
-for(QTLIB, $$list($$QT_UNKNOWN)) {
-   !contains(TMPLIBS, $$QTLIB):message("Warning: unknown QT: $$QTLIB")
-}
-
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
     for(QTPLUG, $$list($$lower($$unique($$QT_CURRENT_VERIFY)))) {
@@ -128,69 +115,27 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         }
     }
 }
+
+
+
 #specific module settings
 !isEmpty(QT_BUILD_TREE):QMAKE_LIBDIR = $$QT_BUILD_TREE/lib $$QMAKE_LIBDIR #as above, prepending prevents us from picking up "stale" libs
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
+
+# Topological ordering of modules based on their QT.<module>.depends variable
+QT = $$resolve_depends($$QT, "QT.")
+
 for(QTLIB, $$list($$lower($$unique(QT)))) {
-   unset(qlib_style)
-   !qt_debug:!qt_release {
-      CONFIG(debug, debug|release):qlib_style = debug
-      else:qlib_style = release
-   } else:CONFIG(qt_debug, qt_debug|qt_release) {
-      qlib_style = debug
-   } else {
-      qlib_style = release
-   }
+    isEmpty(QT.$${QTLIB}.name) {
+        message("Warning: unknown QT module: $$QTLIB")
+        next()
+    }
 
-   unset(qlib)
-   isEqual(QTLIB, gui):qlib = QtGui
-   else:isEqual(QTLIB, network):qlib = QtNetwork
-   else:isEqual(QTLIB, xml):qlib = QtXml
-   else:isEqual(QTLIB, xmlpatterns):qlib = QtXmlPatterns
-   else:isEqual(QTLIB, opengl):qlib = QtOpenGL
-   else:isEqual(QTLIB, openvg):qlib = QtOpenVG
-   else:isEqual(QTLIB, sql):qlib = QtSql
-   else:isEqual(QTLIB, core):qlib = QtCore
-   else:isEqual(QTLIB, canvas):qlib = QtCanvas
-   else:isEqual(QTLIB, qt3support):qlib = Qt3Support
-   else:isEqual(QTLIB, svg):qlib = QtSvg
-   else:isEqual(QTLIB, script):qlib = QtScript
-   else:isEqual(QTLIB, scripttools):qlib = QtScriptTools
-   else:isEqual(QTLIB, testlib):qlib = QtTest
-   else:isEqual(QTLIB, dbus):qlib = QtDBus
-   else:isEqual(QTLIB, phonon) {
-       qlib = phonon
-       INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon_compat
-
-       # The Helix backend requires this. Since we can't let a plugin set it,
-       # we bump the values for all Symbian Phonon plugins.
-       symbian:isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x040000 0x1600000
-
-   } else:isEqual(QTLIB, webkit) {
-       qlib = QtWebKit
-       aix-xlc {
-           # Flags recommended by IBM when using WebKit
-	   QMAKE_LFLAGS -= -bmaxdata:0x80000000
-	   QMAKE_LFLAGS += -bmaxdata:0xD0000000/dsa
-       }
-   } else:isEqual(QTLIB, declarative):qlib = QtDeclarative
-   else:isEqual(QTLIB, multimedia):qlib = QtMultimedia
-   else:isEqual(QTLIB, meegographicssystemhelper):qlib = QtMeeGoGraphicsSystemHelper
-   else:message("Unknown QT: $$QTLIB"):qlib =
-   !isEmpty(qlib) {
-      target_qt:isEqual(TARGET, qlib) {
-         warning($$TARGET cannot have a QT of $$QTLIB)
-      } else {
-         DEFINES *= $$upper(QT_$${QTLIB}_LIB)
-	 isEqual(QTLIB, opengl):CONFIG += opengl
-	 isEqual(QTLIB, openvg):CONFIG += openvg
-	 isEqual(QTLIB, qt3support):DEFINES *= QT3_SUPPORT
-         isEqual(QTLIB, testlib):CONFIG += console
-         isEqual(QTLIB, dbus):CONFIG += dbusadaptors dbusinterfaces
-
-     qtAddLibrary($$qlib)
-      }
-   }
+    target_qt:isEqual(TARGET, QTLIB) {
+        warning($$TARGET cannot have a QT of $$QTLIB)
+        next()
+    }
+    qtAddModule($$QTLIB)
 }
 
 qt_compat {

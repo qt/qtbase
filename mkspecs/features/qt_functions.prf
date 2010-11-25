@@ -92,6 +92,69 @@ defineTest(qtAddLibrary) {
     return(true)
 }
 
+defineTest(qtAddModule) {
+    MODULE_NAME = $$eval(QT.$${1}.name)
+    MODULE_INCLUDES = $$eval(QT.$${1}.includes)
+    MODULE_LIBS = $$eval(QT.$${1}.libs)
+
+    CONFIG += $$eval(QT.$${1}.CONFIG)
+    DEFINES += $$eval(QT.$${1}.DEFINES)
+
+    INCLUDEPATH -= $$MODULE_INCLUDES
+    INCLUDEPATH = $$MODULE_INCLUDES $$INCLUDEPATH
+
+    unset(LINKAGE)
+    mac {
+       CONFIG(qt_framework, qt_framework|qt_no_framework) { #forced
+          QMAKE_FRAMEWORKPATH *= $${QMAKE_LIBDIR_QT}
+          FRAMEWORK_INCLUDE = $$MODULE_INCLUDES.framework/Headers
+          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
+             INCLUDEPATH -= $$FRAMEWORK_INCLUDE
+             INCLUDEPATH = $$FRAMEWORK_INCLUDE $$INCLUDEPATH
+           }
+           LINKAGE = -framework $${MODULE_NAME}$${QT_LIBINFIX}
+        } else:!qt_no_framework { #detection
+           for(frmwrk_dir, $$list($$QMAKE_LIBDIR_QT $$QMAKE_LIBDIR $$(DYLD_FRAMEWORK_PATH) /Library/Frameworks)) {
+              exists($${frmwrk_dir}/$${MODULE_NAME}.framework) {
+                QMAKE_FRAMEWORKPATH *= $${frmwrk_dir}
+                FRAMEWORK_INCLUDE = $$frmwrk_dir/$${MODULE_NAME}.framework/Headers
+                !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
+                  INCLUDEPATH -= $$FRAMEWORK_INCLUDE
+                  INCLUDEPATH = $$FRAMEWORK_INCLUDE $$INCLUDEPATH
+                }
+                LINKAGE = -framework $${MODULE_NAME}
+                break()
+              }
+           }
+       }
+    }
+    isEmpty(LINKAGE) {
+       # Make sure we can link to uninstalled libraries
+       !isEqual(MODULE_LIBS, $[QT_INSTALL_LIBS]) {
+           QMAKE_LFLAGS *= -L$$MODULE_LIBS
+           unix:QMAKE_LFLAGS *= "-Wl,-rpath-link,$$MODULE_LIBS"
+       }
+       if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
+           win32:LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}d
+           mac:LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}_debug
+       }
+       isEmpty(LINKAGE):LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}
+    }
+    !isEmpty(QMAKE_LSB) {
+        QMAKE_LFLAGS *= --lsb-libpath=$$$$QMAKE_LIBDIR_QT
+        QMAKE_LFLAGS *= -L/opt/lsb/lib
+        QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+    }
+    LIBS += $$LINKAGE
+    export(CONFIG)
+    export(DEFINES)
+    export(LIBS)
+    export(INCLUDEPATH)
+    export(QMAKE_FRAMEWORKPATH)
+    export(QMAKE_LFLAGS)
+    return(true)
+}
+
 # variable, default
 defineTest(qtPrepareTool) {
     isEmpty($$1) {
