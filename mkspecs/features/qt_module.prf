@@ -1,5 +1,5 @@
 # This file is loaded on-demand, before any .qmake.cache (sometimes *in* .qmake.cache), to loaded
-# important settings for modules, such as paths to QtBase and other modules.
+# important settings for modules, such as paths to QtBase, settings etc.
 # Consequently, we have to do some stunts to figure out where to find qmodule.pri.
 
 isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
