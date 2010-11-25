@@ -14,7 +14,14 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
    for(dir, $$list($$unique($$list($$dirname(QMAKE_QT_CONFIG) \
                                    $$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))))) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/modules/qt_*.pri))):include($$mod)
+      for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
+         # For installed Qt these paths will be common for all modules
+         # For development these will vary per module, and syncqt will override the value in the
+         # qt_<module>.pri forwarding file
+         QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
+         QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
+         include($$mod)
+      }
    }
 }
 

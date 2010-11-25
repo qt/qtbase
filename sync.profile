@@ -37,6 +37,19 @@
     "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
     "xml" => "#include <QtXml/QtXml>\n",
 );
+%modulepris = (
+    "QtCore" => "$basedir/src/modules/qt_core.pri",
+    "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
+    "QtGui" => "$basedir/src/modules/qt_gui.pri",
+    "QtNetwork" => "$basedir/src/modules/qt_network.pri",
+    "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
+    "QtOpenVG" => "$basedir/src/modules/qt_openvg.pri",
+    "QtSql" => "$basedir/src/modules/qt_sql.pri",
+    "QtSvg" => "$basedir/src/modules/qt_svg.pri",
+    "QtTest" => "$basedir/src/modules/qt_testlib.pri",
+    "QtXml" => "$basedir/src/modules/qt_xml.pri",
+);
+
 @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
 @ignore_for_include_check = ( "qatomic.h" );
 @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
