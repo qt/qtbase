@@ -8,5 +8,3 @@ QT.opengl.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
 QT.opengl.depends = core gui
 QT.opengl.CONFIG = opengl
-
-QT_CONFIG += opengl

@@ -8,5 +8,3 @@ QT.openvg.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenVG
 QT.openvg.libs = $$QT_MODULE_LIB_BASE
 QT.openvg.depends = core gui
 QT.openvg.CONFIG = openvg
-
-QT_CONFIG += openvg

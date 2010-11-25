@@ -7,5 +7,3 @@ QT.sql.name = QtSql
 QT.sql.includes = $$QT_MODULE_INCLUDE_BASE/QtSql
 QT.sql.libs = $$QT_MODULE_LIB_BASE
 QT.sql.depends = core
-
-QT_CONFIG += sql

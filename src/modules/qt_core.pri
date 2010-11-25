@@ -7,5 +7,3 @@ QT.core.name = QtCore
 QT.core.includes = $$QT_MODULE_INCLUDE_BASE/QtCore
 QT.core.libs = $$QT_MODULE_LIB_BASE
 QT.core.depends =
-
-QT_CONFIG += core

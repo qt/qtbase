@@ -7,5 +7,3 @@ QT.gui.name = QtGui
 QT.gui.includes = $$QT_MODULE_INCLUDE_BASE/QtGui
 QT.gui.libs = $$QT_MODULE_LIB_BASE
 QT.gui.depends = core network
-
-QT_CONFIG += gui

@@ -7,5 +7,3 @@ QT.network.name = QtNetwork
 QT.network.includes = $$QT_MODULE_INCLUDE_BASE/QtNetwork
 QT.network.libs = $$QT_MODULE_LIB_BASE
 QT.network.depends = core
-
-QT_CONFIG += network

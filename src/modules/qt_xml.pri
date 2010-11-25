@@ -7,5 +7,3 @@ QT.xml.name = QtXml
 QT.xml.includes = $$QT_MODULE_INCLUDE_BASE/QtXml
 QT.xml.libs = $$QT_MODULE_LIB_BASE
 QT.xml.depends = core
-
-QT_CONFIG += xml
