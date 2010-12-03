@@ -1378,6 +1378,23 @@ QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList 
     return ret;
 }
 
+void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option, const QModelIndex &current) const
+{
+    const int row = current.row();
+    option->state = option->state | (viewItems.at(row).expanded ? QStyle::State_Open : QStyle::State_None)
+                                  | (viewItems.at(row).hasChildren ? QStyle::State_Children : QStyle::State_None)
+                                  | (viewItems.at(row).hasMoreSiblings ? QStyle::State_Sibling : QStyle::State_None);
+
+    option->showDecorationSelected = (selectionBehavior & QTreeView::SelectRows)
+                                     || option->showDecorationSelected;
+
+    QVector<int> logicalIndices;
+    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    calcLogicalIndices(&logicalIndices, &viewItemPosList);
+    int logicalIndex = header->logicalIndex(current.column());
+    option->viewItemPosition = viewItemPosList.at(logicalIndex);
+}
+
 
 /*!
   \since 4.2
@@ -1463,6 +1480,59 @@ static inline bool ancestorOf(QObject *widget, QObject *other)
     return false;
 }
 
+void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItemV4::ViewItemPosition> *itemPositions) const
+{
+    const int left = (spanning ? header->visualIndex(0) : leftAndRight.first);
+    const int right = (spanning ? header->visualIndex(0) : leftAndRight.second);
+    const int columnCount = header->count();
+    /* 'left' and 'right' are the left-most and right-most visible visual indices.
+       Compute the first visible logical indices before and after the left and right.
+       We will use these values to determine the QStyleOptionViewItemV4::viewItemPosition. */
+    int logicalIndexBeforeLeft = -1, logicalIndexAfterRight = -1;
+    for (int visualIndex = left - 1; visualIndex >= 0; --visualIndex) {
+        int logicalIndex = header->logicalIndex(visualIndex);
+        if (!header->isSectionHidden(logicalIndex)) {
+            logicalIndexBeforeLeft = logicalIndex;
+            break;
+        }
+    }
+
+    for (int visualIndex = left; visualIndex < columnCount; ++visualIndex) {
+        int logicalIndex = header->logicalIndex(visualIndex);
+        if (!header->isSectionHidden(logicalIndex)) {
+            if (visualIndex > right) {
+                logicalIndexAfterRight = logicalIndex;
+                break;
+            }
+            logicalIndices->append(logicalIndex);
+        }
+    }
+
+    itemPositions->resize(logicalIndices->count());
+    for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices->count(); ++currentLogicalSection) {
+        const int headerSection = logicalIndices->at(currentLogicalSection);
+        // determine the viewItemPosition depending on the position of column 0
+        int nextLogicalSection = currentLogicalSection + 1 >= logicalIndices->count()
+                                 ? logicalIndexAfterRight
+                                 : logicalIndices->at(currentLogicalSection + 1);
+        int prevLogicalSection = currentLogicalSection - 1 < 0
+                                 ? logicalIndexBeforeLeft
+                                 : logicalIndices->at(currentLogicalSection - 1);
+        QStyleOptionViewItemV4::ViewItemPosition pos;
+        if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
+            || (headerSection == 0 && nextLogicalSection == -1) || spanning)
+            pos = QStyleOptionViewItemV4::OnlyOne;
+        else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
+            pos = QStyleOptionViewItemV4::Beginning;
+        else if (nextLogicalSection == 0 || nextLogicalSection == -1)
+            pos = QStyleOptionViewItemV4::End;
+        else
+            pos = QStyleOptionViewItemV4::Middle;
+        (*itemPositions)[currentLogicalSection] = pos;
+    }
+}
+
+
 /*!
     Draws the row in the tree view that contains the model item \a index,
     using the \a painter given. The \a option control how the item is
@@ -1531,33 +1601,13 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
     int width, height = option.rect.height();
     int position;
     QModelIndex modelIndex;
-    int columnCount = header->count();
     const bool hoverRow = selectionBehavior() == QAbstractItemView::SelectRows
                   && index.parent() == hover.parent()
                   && index.row() == hover.row();
 
-    /* 'left' and 'right' are the left-most and right-most visible visual indices.
-       Compute the first visible logical indices before and after the left and right.
-       We will use these values to determine the QStyleOptionViewItemV4::viewItemPosition. */
-    int logicalIndexBeforeLeft = -1, logicalIndexAfterRight = -1;
-    for (int visualIndex = left - 1; visualIndex >= 0; --visualIndex) {
-        int logicalIndex = header->logicalIndex(visualIndex);
-        if (!header->isSectionHidden(logicalIndex)) {
-            logicalIndexBeforeLeft = logicalIndex;
-            break;
-        }
-    }
-    QVector<int> logicalIndices; // vector of currently visibly logical indices
-    for (int visualIndex = left; visualIndex < columnCount; ++visualIndex) {
-        int logicalIndex = header->logicalIndex(visualIndex);
-        if (!header->isSectionHidden(logicalIndex)) {
-            if (visualIndex > right) {
-                logicalIndexAfterRight = logicalIndex;
-                break;
-            }
-            logicalIndices.append(logicalIndex);
-        }
-    }
+    QVector<int> logicalIndices;
+    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    d->calcLogicalIndices(&logicalIndices, &viewItemPosList);
 
     for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices.count(); ++currentLogicalSection) {
         int headerSection = logicalIndices.at(currentLogicalSection);
@@ -1579,22 +1629,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             continue;
         opt.state = state;
 
-        // determine the viewItemPosition depending on the position of column 0
-        int nextLogicalSection = currentLogicalSection + 1 >= logicalIndices.count()
-                                 ? logicalIndexAfterRight
-                                 : logicalIndices.at(currentLogicalSection + 1);
-        int prevLogicalSection = currentLogicalSection - 1 < 0
-                                 ? logicalIndexBeforeLeft
-                                 : logicalIndices.at(currentLogicalSection - 1);
-        if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
-            || (headerSection == 0 && nextLogicalSection == -1) || spanning)
-            opt.viewItemPosition = QStyleOptionViewItemV4::OnlyOne;
-        else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
-            opt.viewItemPosition = QStyleOptionViewItemV4::Beginning;
-        else if (nextLogicalSection == 0 || nextLogicalSection == -1)
-            opt.viewItemPosition = QStyleOptionViewItemV4::End;
-        else
-            opt.viewItemPosition = QStyleOptionViewItemV4::Middle;
+        opt.viewItemPosition = viewItemPosList.at(currentLogicalSection);
 
         // fake activeness when row editor has focus
         if (indexWidgetHasFocus)
