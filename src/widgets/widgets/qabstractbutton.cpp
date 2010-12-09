@@ -1178,11 +1178,11 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
         }
         break;
     case Qt::Key_Up:
-    case Qt::Key_Left:
         next = false;
         // fall through
+    case Qt::Key_Left:
     case Qt::Key_Right:
-    case Qt::Key_Down:
+    case Qt::Key_Down: {
 #ifdef QT_KEYPAD_NAVIGATION
         if ((QApplication::keypadNavigationEnabled()
                 && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
@@ -1192,13 +1192,13 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
             return;
         }
 #endif
-        QWidget *pw;
+        QWidget *pw = parentWidget();
         if (d->autoExclusive
 #ifndef QT_NO_BUTTONGROUP
         || d->group
 #endif
 #ifndef QT_NO_ITEMVIEWS
-        || ((pw = parentWidget()) && qobject_cast<QAbstractItemView *>(pw->parentWidget()))
+        || (pw && qobject_cast<QAbstractItemView *>(pw->parentWidget()))
 #endif
         ) {
             // ### Using qobject_cast to check if the parent is a viewport of
@@ -1209,9 +1209,17 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
             if (hasFocus()) // nothing happend, propagate
                 e->ignore();
         } else {
+            // Prefer parent widget, use this if parent is absent
+            QWidget *w = pw ? pw : this;
+            bool reverse = (w->layoutDirection() == Qt::RightToLeft);
+            if ((e->key() == Qt::Key_Left && !reverse)
+                || (e->key() == Qt::Key_Right && reverse)) {
+                next = false;
+            }
             focusNextPrevChild(next);
         }
         break;
+    }
     case Qt::Key_Escape:
         if (d->down) {
             setDown(false);
