@@ -101,6 +101,7 @@ private slots:
     void testDifferentModels();
 
     void testValidRangesInSelectionsAfterReset();
+    void testChainedSelectionClear();
 
 private:
     QAbstractItemModel *model;
@@ -2653,6 +2654,59 @@ void tst_QItemSelectionModel::testValidRangesInSelectionsAfterReset()
     observer.setSelectionModel(&selectionModel);
 
     model.setStringList(strings);
+}
+
+class DuplicateItemSelectionModel : public QItemSelectionModel
+{
+  Q_OBJECT
+public:
+  DuplicateItemSelectionModel(QItemSelectionModel *target, QAbstractItemModel *model, QObject *parent = 0)
+    : QItemSelectionModel(model, parent), m_target(target)
+  {
+
+  }
+
+  void select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+  {
+      QItemSelectionModel::select(selection, command);
+      m_target->select(selection, command);
+  }
+
+  using QItemSelectionModel::select;
+
+private:
+  QItemSelectionModel *m_target;
+
+};
+
+void tst_QItemSelectionModel::testChainedSelectionClear()
+{
+    QStringListModel model(QStringList() << "Apples" << "Pears");
+
+    QItemSelectionModel selectionModel(&model, 0);
+    DuplicateItemSelectionModel duplicate(&selectionModel, &model, 0);
+
+    duplicate.select(model.index(0, 0), QItemSelectionModel::Select);
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 1);
+        QVERIFY(selectedIndexes.first() == model.index(0, 0));
+    }
+
+    duplicate.clearSelection();
+
+    {
+        QModelIndexList selectedIndexes = selectionModel.selection().indexes();
+        QModelIndexList duplicatedIndexes = duplicate.selection().indexes();
+
+        QVERIFY(selectedIndexes.size() == duplicatedIndexes.size());
+        QVERIFY(selectedIndexes.size() == 0);
+    }
+
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)
