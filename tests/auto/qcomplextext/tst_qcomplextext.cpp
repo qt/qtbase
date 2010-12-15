@@ -71,6 +71,10 @@ private slots:
     void bidiReorderString();
     void bidiCursor_qtbug2795();
     void bidiCursor_PDF();
+    void bidiCursorMovement_data();
+    void bidiCursorMovement();
+    void bidiCursorLogicalMovement_data();
+    void bidiCursorLogicalMovement();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -183,6 +187,89 @@ void tst_QComplexText::bidiCursor_qtbug2795()
 
     // The cursor should remain at the same position after a digit is appended
     QVERIFY(x1 == x2);
+}
+
+void tst_QComplexText::bidiCursorMovement_data()
+{
+    QTest::addColumn<QString>("logical");
+    QTest::addColumn<int>("basicDir");
+
+    const LV *data = logical_visual;
+    while ( data->name ) {
+        //next we fill it with data
+        QTest::newRow( data->name )
+            << QString::fromUtf8( data->logical )
+            << (int) data->basicDir;
+        data++;
+    }
+}
+
+void tst_QComplexText::bidiCursorMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+    bool moved;
+    int oldPos, newPos = 0;
+    qreal x, newX;
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    newX = line.cursorToX(0);
+    do {
+        oldPos = newPos;
+        x = newX;
+        newX = line.cursorToX(oldPos);
+        if (basicDir == QChar::DirL) {
+            QVERIFY(newX >= x);
+            newPos = layout.rightCursorPosition(oldPos);
+        } else
+        {
+            QVERIFY(newX <= x);
+            newPos = layout.leftCursorPosition(oldPos);
+        }
+        moved = (oldPos != newPos);
+    } while (moved);
+}
+
+void tst_QComplexText::bidiCursorLogicalMovement_data()
+{
+    bidiCursorMovement_data();
+}
+
+void tst_QComplexText::bidiCursorLogicalMovement()
+{
+    QFETCH(QString, logical);
+    QFETCH(int,  basicDir);
+
+    QTextLayout layout(logical);
+
+    QTextOption option = layout.textOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    layout.setTextOption(option);
+    bool moved;
+    int oldPos, newPos = 0;
+
+    do {
+        oldPos = newPos;
+        newPos = layout.nextCursorPosition(oldPos);
+        QVERIFY(newPos >= oldPos);
+        moved = (oldPos != newPos);
+    } while (moved);
+
+    do {
+        oldPos = newPos;
+        newPos = layout.previousCursorPosition(oldPos);
+        QVERIFY(newPos <= oldPos);
+        moved = (oldPos != newPos);
+    } while (moved);
 }
 
 void tst_QComplexText::bidiCursor_PDF()
