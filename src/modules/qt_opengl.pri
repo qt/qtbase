@@ -5,6 +5,7 @@ QT_OPENGL_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.opengl.name = QtOpenGL
 QT.opengl.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL
+QT.opengl.sources = $$QT_MODULE_BASE/src/opengl
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
 QT.opengl.depends = core gui
 QT.opengl.CONFIG = opengl

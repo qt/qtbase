@@ -5,5 +5,6 @@ QT_NETWORK_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.network.name = QtNetwork
 QT.network.includes = $$QT_MODULE_INCLUDE_BASE/QtNetwork
+QT.network.sources = $$QT_MODULE_BASE/src/network
 QT.network.libs = $$QT_MODULE_LIB_BASE
 QT.network.depends = core
