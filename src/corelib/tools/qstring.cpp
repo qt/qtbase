@@ -3558,6 +3558,10 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
                     const __m128i signedChunk = _mm_add_epi16(chunk1, signedBitOffset);
                     const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
 
+#ifdef __SSE4_1__
+                    chunk1 = _mm_blendv_epi8(chunk1, questionMark, offLimitMask);
+#else
+
                     // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
                     // the 16 bits that were correct contains zeros
                     const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
@@ -3568,6 +3572,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 
                     // merge offLimitQuestionMark and correctBytes to have the result
                     chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+#endif
                 }
 
                 __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
@@ -3576,9 +3581,13 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
                     // exactly the same operations as for the previous chunk of data
                     const __m128i signedChunk = _mm_add_epi16(chunk2, signedBitOffset);
                     const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+#ifdef __SSE4_1__
+                    chunk2 = _mm_blendv_epi8(chunk2, questionMark, offLimitMask);
+#else
                     const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
                     const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
                     chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+#endif
                 }
 
                 // pack the two vector to 16 x 8bits elements
