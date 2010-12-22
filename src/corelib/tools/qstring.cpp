@@ -3540,6 +3540,28 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
 {
     const __m128i questionMark = _mm_set1_epi16('?');
 
+# ifdef __SSE4_2__
+    // compare the unsigned shorts for the range 0x0100-0xFFFF
+    // note on the use of _mm_cmpestrm:
+    //  The MSDN documentation online (http://technet.microsoft.com/en-us/library/bb514080.aspx)
+    //  says for range search the following:
+    //    For each character c in a, determine whether b0 <= c <= b1 or b2 <= c <= b3
+    //
+    //  However, all examples on the Internet, including from Intel
+    //  (see http://software.intel.com/en-us/articles/xml-parsing-accelerator-with-intel-streaming-simd-extensions-4-intel-sse4/)
+    //  put the range to be searched first
+    //
+    //  Disassembly and instruction-level debugging with GCC and ICC show
+    //  that they are doing the right thing. Inverting the arguments in the
+    //  instruction does cause a bunch of test failures.
+
+    const int mode = _SIDD_UWORD_OPS | _SIDD_CMP_RANGES | _SIDD_UNIT_MASK;
+    const __m128i rangeMatch = _mm_cvtsi32_si128(0xffff0100);
+    const __m128i offLimitMask = _mm_cmpestrm(rangeMatch, 2, chunk, 8, mode);
+
+    // replace the non-Latin 1 characters in the chunk with question marks
+    chunk = _mm_blendv_epi8(chunk, questionMark, offLimitMask);
+# else
     // SSE has no compare instruction for unsigned comparison.
     // The variables must be shiffted + 0x8000 to be compared
     const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
@@ -3563,6 +3585,7 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
     // merge offLimitQuestionMark and correctBytes to have the result
     chunk = _mm_or_si128(correctBytes, offLimitQuestionMark);
 #  endif
+# endif
     return chunk;
 }
 #endif

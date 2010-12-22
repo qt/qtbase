@@ -3462,6 +3462,10 @@ void tst_QString::toLatin1Roundtrip_data()
 
     static const ushort unicode6[] = { 0x180, 0x1ff, 0x8001, 0x8080, 0xfffc };
     QTest::newRow("non-latin1b") << QByteArray("?????") << QString::fromUtf16(unicode6, 5) << questionmarks;
+
+    static const ushort unicode7[] = { 'H', 'e', 'l', 'l', 'o', 0x100, 0x17f, 0x180, 0x8080, 0xfffc };
+    static const ushort unicode7q[] = { 'H', 'e', 'l', 'l', 'o', '?', '?', '?', '?', '?' };
+    QTest::newRow("mixed") << QByteArray("Hello?????") << QString::fromUtf16(unicode7, 10) << QString::fromUtf16(unicode7q, 10);
 }
 
 void tst_QString::toLatin1Roundtrip()
