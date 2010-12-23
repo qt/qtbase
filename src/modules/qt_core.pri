@@ -5,6 +5,7 @@ QT_CORE_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.core.name = QtCore
 QT.core.includes = $$QT_MODULE_INCLUDE_BASE/QtCore
+QT.core.private_includes = $$QT_MODULE_INCLUDE_BASE/QtCore/private
 QT.core.sources = $$QT_MODULE_BASE/src/corelib
 QT.core.libs = $$QT_MODULE_LIB_BASE
 QT.core.depends =

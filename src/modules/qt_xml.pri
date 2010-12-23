@@ -5,6 +5,7 @@ QT_XML_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.xml.name = QtXml
 QT.xml.includes = $$QT_MODULE_INCLUDE_BASE/QtXml
+QT.xml.private_includes = $$QT_MODULE_INCLUDE_BASE/QtXml/private
 QT.xml.sources = $$QT_MODULE_BASE/src/xml
 QT.xml.libs = $$QT_MODULE_LIB_BASE
 QT.xml.depends = core
