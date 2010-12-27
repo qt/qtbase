@@ -632,7 +632,12 @@ void tst_QFileSystemModel::filters_data()
     QTest::addColumn<int>("rowCount");
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 2;
-    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotanddotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 0;
+    QTest::newRow("one dir - dot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotanddotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
     QTest::newRow("one dir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs) << QStringList() << 3;
     QTest::newRow("no dir + hidden") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::Hidden) << QStringList() << 2;
     QTest::newRow("dir+hid+files") << (QStringList() << "a" << "b" << "c") << QStringList() <<
@@ -650,7 +655,12 @@ void tst_QFileSystemModel::filters_data()
 #else
     QTest::qWait(3000); // We need to calm down a bit...
     QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 0;
-    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotanddotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 0;
+    QTest::newRow("one dir - dot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotanddotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
     QTest::newRow("one dir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs) << QStringList() << 1;
     QTest::newRow("no dir + hidden") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::Hidden) << QStringList() << 0;
     QTest::newRow("dir+hid+files") << (QStringList() << "a" << "b" << "c") << QStringList() <<
@@ -699,10 +709,23 @@ void tst_QFileSystemModel::filters()
     // Make sure that we do what QDir does
     QDir xFactor(tmp);
     QDir::Filters  filters = (QDir::Filters)dirFilters;
+    QStringList dirEntries;
+
     if (nameFilters.count() > 0)
-        QCOMPARE(xFactor.entryList(nameFilters, filters).count(), rowCount);
+        dirEntries = xFactor.entryList(nameFilters, filters);
     else
-        QVERIFY(xFactor.entryList(filters).count() == rowCount);
+        dirEntries = xFactor.entryList(filters);
+
+    QCOMPARE(dirEntries.count(), rowCount);
+
+    QStringList modelEntries;
+
+    for (int i = 0; i < rowCount; ++i)
+        modelEntries.append(model->data(model->index(i, 0, root), QFileSystemModel::FileNameRole).toString());
+
+    qSort(dirEntries);
+    qSort(modelEntries);
+    QCOMPARE(dirEntries, modelEntries);
 
 #ifdef Q_OS_LINUX
     if (files.count() >= 3 && rowCount >= 3 && rowCount != 5) {
