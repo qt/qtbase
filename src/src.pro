@@ -13,7 +13,6 @@ nacl: SRC_SUBDIRS -= src_network src_testlib
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
-contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 SRC_SUBDIRS += src_plugins
 
 # s60installs need to be at the end, because qtbase.pro does an ordered build,
@@ -38,8 +37,6 @@ src_sql.subdir = $$QT_SOURCE_TREE/src/sql
 src_sql.target = sub-sql
 src_network.subdir = $$QT_SOURCE_TREE/src/network
 src_network.target = sub-network
-src_svg.subdir = $$QT_SOURCE_TREE/src/svg
-src_svg.target = sub-svg
 src_opengl.subdir = $$QT_SOURCE_TREE/src/opengl
 src_opengl.target = sub-opengl
 src_openvg.subdir = $$QT_SOURCE_TREE/src/openvg
@@ -56,7 +53,6 @@ src_testlib.target = sub-testlib
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
    src_dbus.depends = src_corelib src_xml
-   src_svg.depends = src_corelib src_gui
    src_network.depends = src_corelib
    src_opengl.depends = src_gui
    src_openvg.depends = src_gui
@@ -64,16 +60,13 @@ src_testlib.target = sub-testlib
    src_testlib.depends = src_corelib
    src_tools_idc.depends = src_corelib             # target defined in tools.pro
    src_tools_uic3.depends = src_qt3support src_xml # target defined in tools.pro
-   src_plugins.depends = src_gui src_sql src_svg src_xml
+   src_plugins.depends = src_gui src_sql src_xml
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_s60installs.depends -= src_s60installs
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
       src_plugins.depends += src_opengl
       src_declarative.depends += src_opengl
       src_webkit.depends += src_opengl
-   }
-   contains(QT_CONFIG, svg) {
-      src_declarative.depends += src_svg
    }
 }
 

@@ -6,7 +6,6 @@
     "QtXml" => "$basedir/src/xml",
     "QtSql" => "$basedir/src/sql",
     "QtNetwork" => "$basedir/src/network",
-    "QtSvg" => "$basedir/src/svg",
     "QtTest" => "$basedir/src/testlib",
     "QtDBus" => "$basedir/src/dbus",
 );
@@ -32,7 +31,6 @@
     "core" => "#include <QtCore/QtCore>\n",
     "gui" => "#include <QtGui/QtGui>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
-    "svg" => "#include <QtSvg/QtSvg>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
     "xml" => "#include <QtXml/QtXml>\n",
@@ -45,7 +43,6 @@
     "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
     "QtOpenVG" => "$basedir/src/modules/qt_openvg.pri",
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
-    "QtSvg" => "$basedir/src/modules/qt_svg.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
 );
