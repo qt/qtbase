@@ -325,6 +325,8 @@ sub fixPaths {
     return basename($file) if($file_dir eq $dir);
 
     #guts
+    while ($file_dir =~ s,/[^/]+/\.\./,/,) {}
+    while ($dir =~ s,/[^/]+/\.\./,/,) {}
     my $match_dir = 0;
     for(my $i = 1; $i < length($file_dir); $i++) {
         my $slash = index($file_dir, "/", $i);
