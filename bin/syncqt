@@ -44,7 +44,7 @@ my $force_win = 0;
 my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_uic_class_map = 1;
+my $create_uic_class_map = 0;
 my $create_private_headers = 1;
 my $no_module_fwd = 0;
 my @modules_to_sync ;
