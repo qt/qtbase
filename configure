@@ -6958,12 +6958,13 @@ esac
 
 # enable Qt 3 support functionality
 if [ "$CFG_QT3SUPPORT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG qt3support"
+    QT_CONFIG="$QT_CONFIG gui-qt3support"
 fi
 
 # enable Phonon
 if [ "$CFG_PHONON" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG phonon"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG phonon"
     if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG phonon-backend"
     fi
@@ -7538,17 +7539,19 @@ if [ "$CFG_XMLPATTERNS" = "auto" -a "$CFG_EXCEPTIONS" != "no" ]; then
 elif [ "$CFG_EXCEPTIONS" = "no" ]; then
     CFG_XMLPATTERNS="no"
 fi
-if [ "$CFG_XMLPATTERNS" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG xmlpatterns"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
-fi
+# No longer needed after modularization
+#if [ "$CFG_XMLPATTERNS" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG xmlpatterns"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
+#fi
 
-if [ "$CFG_MULTIMEDIA" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
-else
-    QT_CONFIG="$QT_CONFIG multimedia"
-fi
+# No longer needed after modularization
+#if [ "$CFG_MULTIMEDIA" = "no" ]; then
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
+#else
+#    QT_CONFIG="$QT_CONFIG multimedia"
+#fi
 
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
@@ -7574,26 +7577,24 @@ if [ "$CFG_WEBKIT" != "no" ]; then
 fi
 
 if [ "$CFG_WEBKIT" != "no" ]; then
-    # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG webkit"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     if [ "$CFG_WEBKIT" = "debug" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
     fi
-else
-    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
 if [ "$CFG_SCRIPT" = "auto" ]; then
     CFG_SCRIPT="yes"
 fi
 
-if [ "$CFG_SCRIPT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG script"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
-fi
+# No longer needed after modularization
+#if [ "$CFG_SCRIPT" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG script"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
+#fi
 
 if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     echo "QtScriptTools was requested, but it can't be built due to QtScript being disabled."
@@ -7612,11 +7613,12 @@ elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi
 
-if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG scripttools"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-fi
+# No longer needed after modularization
+#if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG scripttools"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
+#fi
 
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
@@ -7634,7 +7636,8 @@ if [ "$CFG_DECLARATIVE" = "auto" ]; then
 fi
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG declarative"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG declarative"
     if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
     fi

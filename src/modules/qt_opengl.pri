@@ -10,3 +10,4 @@ QT.opengl.sources = $$QT_MODULE_BASE/src/opengl
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
 QT.opengl.depends = core gui
 QT.opengl.CONFIG = opengl
+QT.opengl.DEFINES = QT_OPENGL_LIB

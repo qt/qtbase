@@ -10,3 +10,4 @@ QT.testlib.sources = $$QT_MODULE_BASE/src/testlib
 QT.testlib.libs = $$QT_MODULE_LIB_BASE
 QT.testlib.depends = core
 QT.testlib.CONFIG = console
+QT.testlib.DEFINES = QT_TESTLIB_LIB

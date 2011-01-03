@@ -10,3 +10,4 @@ QT.openvg.sources = $$QT_MODULE_BASE/src/openvg
 QT.openvg.libs = $$QT_MODULE_LIB_BASE
 QT.openvg.depends = core gui
 QT.openvg.CONFIG = openvg
+QT.openvg.DEFINES = QT_OPENVG_LIB
