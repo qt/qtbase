@@ -124,6 +124,7 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
 
 # Topological ordering of modules based on their QT.<module>.depends variable
 QT = $$resolve_depends($$QT, "QT.")
+QT_DEPENDS=
 
 for(QTLIB, $$list($$lower($$unique(QT)))) {
     isEmpty(QT.$${QTLIB}.name) {
@@ -136,7 +137,12 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
         next()
     }
     qtAddModule($$QTLIB)
+    QT_DEPENDS += $$eval(QT.$${QTLIB}.depends)
 }
+
+# add include paths for all .depends, since module/application might need f.ex. template specializations etc.
+QT_DEPENDS -= $$QT
+for(QTLIB, $$list($$lower($$unique(QT_DEPENDS)))):INCLUDEPATH += $$INCLUDEPATH $$eval(QT.$${QTLIB}.includes)
 
 qt_compat {
    !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us
