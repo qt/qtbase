@@ -4,6 +4,7 @@ QT_OPENVG_MINOR_VERSION = $$QT_MINOR_VERSION
 QT_OPENVG_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.openvg.name = QtOpenVG
+QT.openvg.bins = $$QT_MODULE_BIN_BASE
 QT.openvg.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenVG
 QT.openvg.private_includes = $$QT_MODULE_INCLUDE_BASE/QtOpenVG/private
 QT.openvg.sources = $$QT_MODULE_BASE/src/openvg

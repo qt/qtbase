@@ -4,6 +4,7 @@ QT_TEST_MINOR_VERSION = $$QT_MINOR_VERSION
 QT_TEST_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.testlib.name = QtTest
+QT.testlib.bins = $$QT_MODULE_BIN_BASE
 QT.testlib.includes = $$QT_MODULE_INCLUDE_BASE/QtTest
 QT.testlib.private_includes = $$QT_MODULE_INCLUDE_BASE/QtTest/private
 QT.testlib.sources = $$QT_MODULE_BASE/src/testlib

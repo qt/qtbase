@@ -1008,6 +1008,7 @@ foreach my $lib (@modules_to_sync) {
                 my $moduleprifwd = "$qtbasedir/mkspecs/modules/$modulepriname";
                 open MODULE_PRI_FILE, ">$moduleprifwd";
                 print MODULE_PRI_FILE "QT_MODULE_BASE = $basedir\n";
+                print MODULE_PRI_FILE "QT_MODULE_BIN_BASE = $out_basedir/bin\n";
                 print MODULE_PRI_FILE "QT_MODULE_INCLUDE_BASE = $out_basedir/include\n";
                 print MODULE_PRI_FILE "QT_MODULE_LIB_BASE = $out_basedir/lib\n";
                 print MODULE_PRI_FILE "include($modulepri)\n";

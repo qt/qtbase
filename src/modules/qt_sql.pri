@@ -4,6 +4,7 @@ QT_SQL_MINOR_VERSION = $$QT_MINOR_VERSION
 QT_SQL_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.sql.name = QtSql
+QT.sql.bins = $$QT_MODULE_BIN_BASE
 QT.sql.includes = $$QT_MODULE_INCLUDE_BASE/QtSql
 QT.sql.private_includes = $$QT_MODULE_INCLUDE_BASE/QtSql/private
 QT.sql.sources = $$QT_MODULE_BASE/src/sql

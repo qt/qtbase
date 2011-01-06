@@ -157,10 +157,13 @@ defineTest(qtAddModule) {
 
 # variable, default
 defineTest(qtPrepareTool) {
-    isEmpty($$1) {
-        !isEmpty(QT_BUILD_TREE):$$1 = $$QT_BUILD_TREE/bin/$$2
-        else:$$1 = $$[QT_INSTALL_BINS]/$$2
+    MODBASE = $$[QT_INSTALL_BINS]
+    !isEmpty(QT_BUILD_TREE):MODBASE = $$QT_BUILD_TREE/bin
+    count(ARGS, 2, greaterThan) {
+        isEmpty(QT.$${3}.bins):warning("No QT.$${3}.bins, module path ignored for qtPrepareTool($$1, $$2, $$3)")
+        else:MODBASE = $$eval(QT.$${3}.bins)
     }
+    isEmpty($$1):$$1 = $$MODBASE/$$2
     $$1 ~= s,[/\\\\],$$QMAKE_DIR_SEP,
     contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
         exists($$eval($$1).bat) {

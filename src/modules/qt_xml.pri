@@ -4,6 +4,7 @@ QT_XML_MINOR_VERSION = $$QT_MINOR_VERSION
 QT_XML_PATCH_VERSION = $$QT_PATCH_VERSION
 
 QT.xml.name = QtXml
+QT.xml.bins = $$QT_MODULE_BIN_BASE
 QT.xml.includes = $$QT_MODULE_INCLUDE_BASE/QtXml
 QT.xml.private_includes = $$QT_MODULE_INCLUDE_BASE/QtXml/private
 QT.xml.sources = $$QT_MODULE_BASE/src/xml
