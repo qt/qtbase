@@ -351,7 +351,6 @@ void QMenuPrivate::updateActionRects() const
     const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
     max_column_width = qMax(min_column_width, max_column_width);
 
-
     //calculate position
     const int base_y = vmargin + fw + topmargin +
         (scroll ? scroll->scrollOffset : 0) +
@@ -1909,6 +1908,27 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
             }
         }
     }
+    const int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
+    const QSize menuSize(sizeHint());
+    QMenu *caused = qobject_cast<QMenu*>(d_func()->causedPopup.widget);
+    if (caused && caused->geometry().width() + menuSize.width() + subMenuOffset < screen.width()) {
+        QRect parentActionRect(caused->d_func()->actionRect(caused->d_func()->currentAction));
+        const QPoint actionTopLeft = caused->mapToGlobal(parentActionRect.topLeft());
+        parentActionRect.moveTopLeft(actionTopLeft);
+        if (isRightToLeft()) {
+            if ((pos.x() + menuSize.width() > parentActionRect.left() - subMenuOffset)
+                && (pos.x() < parentActionRect.right()))
+            {
+                    pos.rx() = parentActionRect.right();
+            }
+        } else {
+            if ((pos.x() < parentActionRect.right() + subMenuOffset)
+                && (pos.x() + menuSize.width() > parentActionRect.left()))
+            {
+                    pos.rx() = parentActionRect.left() - menuSize.width();
+            }
+        }
+    }
     setGeometry(QRect(pos, size));
 #ifndef QT_NO_EFFECTS
     int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
@@ -2941,28 +2961,8 @@ void QMenu::internalDelayedPopup()
     const QRect actionRect(d->actionRect(d->currentAction));
     const QSize menuSize(d->activeMenu->sizeHint());
     const QPoint rightPos(mapToGlobal(QPoint(actionRect.right() + subMenuOffset + 1, actionRect.top())));
-    const QPoint leftPos(mapToGlobal(QPoint(actionRect.left() - subMenuOffset - menuSize.width(), actionRect.top())));
 
     QPoint pos(rightPos);
-    QMenu *caused = qobject_cast<QMenu*>(d->activeMenu->d_func()->causedPopup.widget);
-
-    const QRect availGeometry(d->popupGeometry(caused));
-    if (isRightToLeft()) {
-        pos = leftPos;
-        if ((caused && caused->x() < x()) || pos.x() < availGeometry.left()) {
-            if(rightPos.x() + menuSize.width() < availGeometry.right())
-                pos = rightPos;
-            else
-                pos.rx() = availGeometry.left();
-        }
-    } else {
-        if ((caused && caused->x() > x()) || pos.x() + menuSize.width() > availGeometry.right()) {
-            if(leftPos.x() < availGeometry.left())
-                pos.rx() = availGeometry.right() - menuSize.width();
-            else
-                pos = leftPos;
-        }
-    }
 
     //calc sloppy focus buffer
     if (style()->styleHint(QStyle::SH_Menu_SloppySubMenus, 0, this)) {
