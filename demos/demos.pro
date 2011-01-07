@@ -56,10 +56,6 @@ contains(QT_BUILD_PARTS, tools):{
 wince*:SUBDIRS += demos_sqlbrowser
 }
 }
-contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer
-contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):!symbian:SUBDIRS += demos_browser
-contains(QT_CONFIG, declarative):SUBDIRS += demos_declarative
-contains(QT_CONFIG, multimedia):!static:SUBDIRS += demos_spectrum
 
 # install
 sources.files = README *.pro
@@ -89,20 +85,9 @@ demos_arthurplugin.subdir = arthurplugin
 demos_sqlbrowser.subdir = sqlbrowser
 demos_undo.subdir = undo
 demos_qtdemo.subdir = qtdemo
-demos_mediaplayer.subdir = qmediaplayer
-demos_declarative.subdir = declarative
-
-#mobile demos. Requires QtMobility sources. Not included in demo build
-demos_guitartuner.subdir = mobile/guitartuner
-demos_qcamera.subdir = mobile/qcamera
-demos_qtbubblelevel.subdir = mobile/qtbubblelevel
-demos_quickhit.subdir = mobile/quickhit
-
-demos_browser.subdir = browser
 
 demos_boxes.subdir = boxes
 demos_sub-attaq.subdir = sub-attaq
-demos_spectrum.subdir = spectrum
 
 #CONFIG += ordered
 !ordered {
