@@ -194,10 +194,13 @@ public:
     mutable QVector<QRect> actionRects;
     mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
+    void updateActionRects(const QRect &screen) const;
     QRect popupGeometry(const QWidget *widget) const;
     QRect popupGeometry(int screen = -1) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
+    QSize adjustMenuSizeForScreen(const QRect & screen);
+    int getLastVisibleAction() const;
 
     bool activationRecursionGuard;
 
@@ -295,7 +298,6 @@ public:
     bool hasMouseMoved(const QPoint &globalPos);
 
     void updateLayoutDirection();
-
 
     //menu fading/scrolling effects
     bool doChildEffects;

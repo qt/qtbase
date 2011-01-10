@@ -228,6 +228,12 @@ QList<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 void QMenuPrivate::updateActionRects() const
 {
     Q_Q(const QMenu);
+    updateActionRects(popupGeometry(q));
+}
+
+void QMenuPrivate::updateActionRects(const QRect &screen) const
+{
+    Q_Q(const QMenu);
     if (!itemsDirty)
         return;
 
@@ -237,20 +243,10 @@ void QMenuPrivate::updateActionRects() const
     actionRects.resize(actions.count());
     actionRects.fill(QRect());
 
-    //let's try to get the last visible action
-    int lastVisibleAction = actions.count() - 1;
-    for(;lastVisibleAction >= 0; --lastVisibleAction) {
-        const QAction *action = actions.at(lastVisibleAction);
-        if (action->isVisible()) {
-            //removing trailing separators
-            if (action->isSeparator() && collapsibleSeparators)
-                continue;
-            break;
-        }
-    }
+    int lastVisibleAction = getLastVisibleAction();
 
     int max_column_width = 0,
-        dh = popupGeometry(q).height(),
+        dh = screen.height(),
         y = 0;
     QStyle *style = q->style();
     QStyleOption opt;
@@ -380,6 +376,34 @@ void QMenuPrivate::updateActionRects() const
     }
     itemsDirty = 0;
 }
+
+QSize QMenuPrivate::adjustMenuSizeForScreen(const QRect &screen)
+{
+    Q_Q(QMenu);
+    QSize ret = screen.size();
+    itemsDirty = true;
+    updateActionRects(screen);
+    const int fw = q->style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
+    ret.setWidth(actionRects.at(getLastVisibleAction()).right() + fw);
+    return ret;
+}
+
+int QMenuPrivate::getLastVisibleAction() const
+{
+    //let's try to get the last visible action
+    int lastVisibleAction = actions.count() - 1;
+    for (;lastVisibleAction >= 0; --lastVisibleAction) {
+        const QAction *action = actions.at(lastVisibleAction);
+        if (action->isVisible()) {
+            //removing trailing separators
+            if (action->isSeparator() && collapsibleSeparators)
+                continue;
+            break;
+        }
+    }
+    return lastVisibleAction;
+}
+
 
 QRect QMenuPrivate::actionRect(QAction *act) const
 {
@@ -1812,9 +1836,20 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     else
 #endif
     screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
-
     const int desktopFrame = style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, this);
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+
+    // if the screens have very different geometries and the menu is too big, we have to recalculate
+    if (size.height() > screen.height() || size.width() > screen.width()) {
+        size = d->adjustMenuSizeForScreen(screen);
+        adjustToDesktop = true;
+    }
+    // Layout is not right, we might be able to save horizontal space
+    if (d->ncols >1 && size.height() < screen.height()) {
+        size = d->adjustMenuSizeForScreen(screen);
+        adjustToDesktop = true;
+    }
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (!atAction && QApplication::keypadNavigationEnabled()) {
         // Try to have one item activated
