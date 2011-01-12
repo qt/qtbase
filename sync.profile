@@ -8,6 +8,8 @@
     "QtNetwork" => "$basedir/src/network",
     "QtTest" => "$basedir/src/testlib",
     "QtDBus" => "$basedir/src/dbus",
+    "QtUiTools" => "$basedir/src/uitools",
+    "QtDesigner" => "$basedir/tools/uilib",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );
@@ -34,6 +36,8 @@
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
     "xml" => "#include <QtXml/QtXml>\n",
+    "uitools" => "#include <QtUiTools/QtUiTools>\n",
+    "designer" => "#include <QtDesigner/QtDesigner>\n",
 );
 %modulepris = (
     "QtCore" => "$basedir/src/modules/qt_core.pri",
@@ -45,6 +49,8 @@
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
+    "QtUiTools" => "$basedir/src/modules/qt_uitools.pri",
+    "QtDesigner" => "$basedir/src/modules/qt_uilib.pri",
 );
 
 @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );

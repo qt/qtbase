@@ -1,9 +1,9 @@
+MODULE     = uitools
+QPRO_PWD   = $$PWD
 TEMPLATE = lib
-TARGET = QtUiTools
-QT += xml
+TARGET = $$qtLibraryTarget(QtUiTools)
+QT = core xml
 CONFIG += qt staticlib
-DESTDIR = ../../../../lib
-DLLDESTDIR = ../../../../bin
 
 symbian {
     TARGET.UID3 = 0x2001E628
@@ -18,11 +18,11 @@ isEmpty(QT_MAJOR_VERSION) {
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
-include(../../../../src/qt_targets.pri)
+include(../qt_targets.pri)
 QMAKE_TARGET_PRODUCT = UiLoader
 QMAKE_TARGET_DESCRIPTION = QUiLoader
 
-include(../lib/uilib/uilib.pri)
+include(../../tools/uilib/uilib.pri)
 
 HEADERS += quiloader.h
 SOURCES += quiloader.cpp
