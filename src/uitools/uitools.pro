@@ -4,6 +4,7 @@ TEMPLATE = lib
 TARGET = $$qtLibraryTarget(QtUiTools)
 QT = core xml
 CONFIG += qt staticlib
+DESTDIR = $$QMAKE_LIBDIR_QT
 
 symbian {
     TARGET.UID3 = 0x2001E628
