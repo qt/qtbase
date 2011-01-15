@@ -11,6 +11,11 @@ win32 {
       }
       contains(DEFINES, QT_MAKEDLL)|contains(DEFINES, QT_DLL):QMAKE_QT_DLL = 1
    }
+   # Some files include qplatformdefs.h, which lives in the individual mkspec directory
+   # However, if QMAKESPEC_ORIGINAL is set, the module/app is outside of the QtBase
+   # directory, and using the default profile. So we add the original mkspecs directory
+   # to the include path
+   !isEmpty(QMAKESPEC_ORIGINAL):INCLUDEPATH += $$QMAKESPEC_ORIGINAL
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG
 no_keywords:DEFINES += QT_NO_KEYWORDS
