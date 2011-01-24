@@ -131,7 +131,7 @@ defineTest(qtAddModule) {
     isEmpty(LINKAGE) {
        # Make sure we can link to uninstalled libraries
        !isEqual(MODULE_LIBS, $[QT_INSTALL_LIBS]) {
-           QMAKE_LFLAGS *= -L$$MODULE_LIBS
+           QMAKE_LIBDIR *= $$MODULE_LIBS
            unix:QMAKE_LFLAGS *= "-Wl,-rpath-link,$$MODULE_LIBS"
        }
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
@@ -152,6 +152,7 @@ defineTest(qtAddModule) {
     export(INCLUDEPATH)
     export(QMAKE_FRAMEWORKPATH)
     export(QMAKE_LFLAGS)
+    export(QMAKE_LIBDIR)
     return(true)
 }
 
