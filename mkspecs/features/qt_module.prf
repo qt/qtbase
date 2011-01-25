@@ -14,3 +14,8 @@ isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
 } else {
    debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
 }
+mac {
+   !isEmpty(QMAKE_RPATHDIR){
+       CONFIG += absolute_library_soname
+   }
+}
