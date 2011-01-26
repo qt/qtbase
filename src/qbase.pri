@@ -16,7 +16,10 @@ isEmpty(QT_MAJOR_VERSION) {
 
 #load up the headers info
 CONFIG += qt_install_headers
-HEADERS_PRI = $$MODULE_INCLUDES/headers.pri
+#headers.pri is loaded from the last include path
+LAST_MODULE_INCLUDE=$$MODULE_INCLUDES
+for(include_path, MODULE_INCLUDES):LAST_MODULE_INCLUDE=$${include_path}
+HEADERS_PRI = $$LAST_MODULE_INCLUDE/headers.pri
 include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
 #version overriding
