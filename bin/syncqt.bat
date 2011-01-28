@@ -38,5 +38,7 @@
 :: $QT_END_LICENSE$
 ::
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-@rem ***** This assumes PERL is in the PATH *****
-@perl.exe -S syncqt %*
+@echo off
+rem ***** This assumes PERL is in the PATH *****
+set scriptpath=%~dp0
+perl.exe %scriptpath%syncqt %*
