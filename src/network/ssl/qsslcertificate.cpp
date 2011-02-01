@@ -669,14 +669,13 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
 static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
 {
     QMap<QString, QString> info;
-    for( int i = 0; i < q_X509_NAME_entry_count(name); ++i )  
-    {
-        X509_NAME_ENTRY *e = q_X509_NAME_get_entry( name, i );
-        const char *obj = q_OBJ_nid2sn( q_OBJ_obj2nid( q_X509_NAME_ENTRY_get_object( e ) ) );
+    for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
+        X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
+        const char *obj = q_OBJ_nid2sn(q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e)));
         unsigned char *data = 0;
-        int size = q_ASN1_STRING_to_UTF8( &data, q_X509_NAME_ENTRY_get_data( e ) );
-        info[QString::fromUtf8( obj )] = QString::fromUtf8( (char*)data, size );
-        q_CRYPTO_free( data );
+        int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
+        info[QString::fromUtf8(obj)] = QString::fromUtf8((char*)data, size);
+        q_CRYPTO_free(data);
     }
     return info;
 }
