@@ -3,10 +3,12 @@
 # Consequently, we have to do some stunts to figure out where to find qmodule.pri.
 
 isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
-   exists($$_QMAKE_CACHE_/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$_QMAKE_CACHE_/mkspecs/qmodule.pri
-   else:exists($$_QMAKE_CACHE_/qtbase/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$_QMAKE_CACHE_/qtbase/mkspecs/qmodule.pri
-   else:if(!isEmpty(QT_BUILD_TREE) & exists($$QT_BUILD_TREE/mkspecs/qmodule.pri)):QMAKE_QT_MODULE = $$QT_BUILD_TREE/mkspecs/qmodule.pri
-   else:exists($$[QT_INSTALL_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_INSTALL_DATA]/mkspecs/qmodule.pri
+   exists($$QTDIR/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$QTDIR/mkspecs/qmodule.pri
+   QMAKE_CACHE_DIR = $$dirname(_QMAKE_CACHE_)
+   !exists($$QMAKE_QT_MODULE):exists($$QMAKE_CACHE_DIR/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$QMAKE_CACHE_DIR/mkspecs/qmodule.pri
+   !exists($$QMAKE_QT_MODULE):exists($$QMAKE_CACHE_DIR/qtbase/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$QMAKE_CACHE_DIR/qtbase/mkspecs/qmodule.pri
+   !exists($$QMAKE_QT_MODULE):if(!isEmpty(QT_BUILD_TREE) & exists($$QT_BUILD_TREE/mkspecs/qmodule.pri)):QMAKE_QT_MODULE = $$QT_BUILD_TREE/mkspecs/qmodule.pri
+   !exists($$QMAKE_QT_MODULE):exists($$[QT_INSTALL_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_INSTALL_DATA]/mkspecs/qmodule.pri
 }
 
 !exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
