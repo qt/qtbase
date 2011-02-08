@@ -35,4 +35,6 @@ integrity:HEADERS += arch/qatomic_integrity.h
 
 QT_ARCH_CPP = $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH
 DEPENDPATH += $$QT_ARCH_CPP
-include($$QT_ARCH_CPP/arch.pri, "", true)
+!isEmpty(QT_ARCH) {
+	include($$QT_ARCH_CPP/arch.pri, "", true)
+}
