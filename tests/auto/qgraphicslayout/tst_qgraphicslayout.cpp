@@ -62,6 +62,7 @@ private slots:
     void compressLayoutRequest();
     void automaticReparenting();
     void verifyActivate();
+    void invalidate();
     void constructors();
     void alternativeLayoutItems();
     void ownership();
@@ -218,6 +219,7 @@ class TestLayout : public QGraphicsLinearLayout
         : QGraphicsLinearLayout(parent)
     {
         m_count = 0;
+        m_invalidateCount = 0;
     }
 
     void setGeometry(const QRectF &rect) {
@@ -226,7 +228,12 @@ class TestLayout : public QGraphicsLinearLayout
         QGraphicsLinearLayout::setGeometry(rect);
     }
 
+    void invalidate() {
+        ++m_invalidateCount;
+        QGraphicsLinearLayout::invalidate();
+    }
 
+    int m_invalidateCount;
     int m_count;
 };
 
@@ -249,6 +256,87 @@ void tst_QGraphicsLayout::verifyActivate()
     // on polish or the first time a widget is shown, the widget is resized.
     QCOMPARE(lout->m_count, 1);
 
+}
+
+void tst_QGraphicsLayout::invalidate()
+{
+    QGraphicsLayout::setInstantInvalidatePropagation(true);
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    TestGraphicsWidget *a = new TestGraphicsWidget;
+    scene.addItem(a);
+    TestLayout *alay = new TestLayout(a);
+    TestGraphicsWidget *b = new TestGraphicsWidget;
+    alay->addItem(b);
+    TestLayout *blay = new TestLayout(b);
+    TestGraphicsWidget *e = new TestGraphicsWidget;
+    blay->addItem(e);
+
+
+    TestGraphicsWidget *c = new TestGraphicsWidget;
+    alay->addItem(c);
+    TestLayout *clay = new TestLayout(c);
+    TestGraphicsWidget *f = new TestGraphicsWidget;
+    clay->addItem(f);
+
+    TestGraphicsWidget *d = new TestGraphicsWidget;
+    alay->addItem(d);
+    TestLayout *dlay = new TestLayout(d);
+    TestGraphicsWidget *g = new TestGraphicsWidget;
+    dlay->addItem(g);
+
+    view.show();
+
+    alay->m_invalidateCount = 0;
+    blay->m_invalidateCount = 0;
+    clay->m_invalidateCount = 0;
+    dlay->m_invalidateCount = 0;
+
+    QCoreApplication::sendPostedEvents();
+    QCoreApplication::processEvents();
+
+    alay->activate();
+    QCOMPARE(alay->isActivated(), true);
+    QCOMPARE(blay->isActivated(), true);
+    QCOMPARE(clay->isActivated(), true);
+    qDebug() << "alay->m_invalidateCount:" << alay->m_invalidateCount;
+    qDebug() << "blay->m_invalidateCount:" << blay->m_invalidateCount;
+    qDebug() << "clay->m_invalidateCount:" << clay->m_invalidateCount;
+    qDebug() << "dlay->m_invalidateCount:" << dlay->m_invalidateCount;
+
+    a->clearEventCount();
+    b->clearEventCount();
+    c->clearEventCount();
+
+    blay->invalidate();
+    QCOMPARE(alay->isActivated(), false);
+    QCOMPARE(blay->isActivated(), false);
+    QCOMPARE(clay->isActivated(), true);
+    QCOMPARE(a->eventCount(QEvent::LayoutRequest), 0);
+    QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+    QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+
+
+    alay->m_invalidateCount = 0;
+    blay->m_invalidateCount = 0;
+    clay->m_invalidateCount = 0;
+    dlay->m_invalidateCount = 0;
+    clay->invalidate();
+    QCOMPARE(alay->isActivated(), false);
+    QCOMPARE(blay->isActivated(), false);
+    QCOMPARE(clay->isActivated(), false);
+
+    QCoreApplication::sendPostedEvents();
+    QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+    QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+    QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+    qDebug() << "alay->m_invalidateCount:" << alay->m_invalidateCount;
+    qDebug() << "blay->m_invalidateCount:" << blay->m_invalidateCount;
+    qDebug() << "clay->m_invalidateCount:" << clay->m_invalidateCount;
+    qDebug() << "dlay->m_invalidateCount:" << dlay->m_invalidateCount;
+
+    QGraphicsLayout::setInstantInvalidatePropagation(false);
 }
 
 class Layout : public QGraphicsLayout
