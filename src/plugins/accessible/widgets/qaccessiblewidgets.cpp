@@ -1603,7 +1603,7 @@ void QAccessibleTextEdit::setAttributes(int startOffset, int endOffset, const QS
 
 #ifndef QT_NO_MAINWINDOW
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
-    : QAccessibleWidgetEx(widget, Application) { }
+    : QAccessibleWidgetEx(widget, Window) { }
 
 QVariant QAccessibleMainWindow::invokeMethodEx(QAccessible::Method /*method*/, int /*child*/, const QVariantList & /*params*/)
 {

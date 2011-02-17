@@ -245,6 +245,8 @@ private slots:
     void actionText();
     void doAction();
 
+    void applicationTest();
+    void mainWindowTest();
     void buttonTest();
     void sliderTest();
     void scrollBarTest();
@@ -1821,6 +1823,41 @@ void tst_QAccessibility::doAction()
 {
 #ifdef QTEST_ACCESSIBILITY
     QSKIP("TODO: Implement me", SkipAll);
+#else
+    QSKIP("Test needs accessibility support.", SkipAll);
+#endif
+}
+
+void tst_QAccessibility::applicationTest()
+{
+#ifdef QTEST_ACCESSIBILITY
+    QLatin1String name = QLatin1String("My Name");
+    qApp->setApplicationName(name);
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(qApp);
+    QCOMPARE(interface->text(QAccessible::Name, 0), name);
+    QCOMPARE(interface->role(0), QAccessible::Application);
+    delete interface;
+#else
+    QSKIP("Test needs accessibility support.", SkipAll);
+#endif
+}
+
+void tst_QAccessibility::mainWindowTest()
+{
+#ifdef QTEST_ACCESSIBILITY
+    QMainWindow mw;
+    mw.resize(300, 200);
+    mw.show(); // triggers layout
+
+    QLatin1String name = QLatin1String("I am the main window");
+    mw.setWindowTitle(name);
+    QTest::qWaitForWindowShown(&mw);
+
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mw);
+    QCOMPARE(interface->text(QAccessible::Name, 0), name);
+    QCOMPARE(interface->role(0), QAccessible::Window);
+    delete interface;
+
 #else
     QSKIP("Test needs accessibility support.", SkipAll);
 #endif
