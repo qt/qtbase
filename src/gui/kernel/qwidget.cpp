@@ -11206,6 +11206,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
+    QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
 }
 
 QString QWidget::accessibleName() const
@@ -11227,6 +11228,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
+    QAccessible::updateAccessibility(this, 0, QAccessible::DescriptionChanged);
 }
 
 QString QWidget::accessibleDescription() const

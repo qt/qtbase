@@ -479,6 +479,11 @@ void tst_QAccessibility::eventTest()
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
     QVERIFY_EVENT(button, 0, QAccessible::StateChanged);
 
+    button->setAccessibleName("Olaf the second");
+    QVERIFY_EVENT(button, 0, QAccessible::NameChanged);
+    button->setAccessibleDescription("This is a button labeled Olaf");
+    QVERIFY_EVENT(button, 0, QAccessible::DescriptionChanged);
+
     button->hide();
     QVERIFY_EVENT(button, 0, QAccessible::ObjectHide);
 
