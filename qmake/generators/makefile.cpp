@@ -2570,6 +2570,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 && project->values(subTarget->name + ".CONFIG").indexOf("no_default_target") != -1) {
                 continue;
             }
+            if((suffix == "install_subtargets" || suffix == "uninstall_subtargets")
+                && project->values(subTarget->name + ".CONFIG").indexOf("no_default_install") != -1) {
+                continue;
+            }
             QString targetRule = subTarget->target + "-" + suffix;
             if(flags & SubTargetOrdered)
                 targetRule += "-ordered";
