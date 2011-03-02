@@ -20,10 +20,6 @@ SUBDIRS       = \
                 multicastreceiver \
                 multicastsender
 
-    contains(QT_CONFIG, svg) {
-        SUBDIRS += bearercloud
-    }
-
     # no QProcess
     !vxworks:!qnx:SUBDIRS += network-chat
 

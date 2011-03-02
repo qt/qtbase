@@ -5,8 +5,6 @@ SUBDIRS     = draggableicons \
               fridgemagnets \
               puzzle
 
-contains(QT_CONFIG, svg): SUBDIRS += delayedencoding
-
 wince*: SUBDIRS -= dropsite
 symbian: SUBDIRS -= dropsite
 # install

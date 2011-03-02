@@ -3,8 +3,6 @@ SUBDIRS     = calendar \
               orderform \
               syntaxhighlighter
 
-contains(QT_CONFIG, svg): SUBDIRS += textobject
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS richtext.pro README

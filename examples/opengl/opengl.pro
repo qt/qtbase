@@ -19,11 +19,6 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
                 framebufferobject2 \
                 samplebuffers \
                 textures
-
-    contains(QT_CONFIG, svg) {
-        SUBDIRS += framebufferobject \
-                pbuffers2
-    }
 }
 
 # install

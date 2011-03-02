@@ -48,8 +48,6 @@ SUBDIRS += demos_boxes
 mac* && !qpa: SUBDIRS += demos_macmainwindow
 wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
 
-!contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin
-
 !cross_compile:{
 contains(QT_BUILD_PARTS, tools):{
 !wince*:SUBDIRS += demos_sqlbrowser demos_qtdemo
