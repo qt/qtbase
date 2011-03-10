@@ -718,6 +718,16 @@ die "Cannot automatically detect/use provided path to QtBase's build directory!\
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
 
+my @ignore_headers = ();
+my $class_lib_map_contents = "";
+our @ignore_for_master_contents = ();
+our @ignore_for_include_check = ();
+our @ignore_for_qt_begin_header_check = ();
+our @ignore_for_qt_begin_namespace_check = ();
+our @ignore_for_qt_module_check = ();
+my %colliding_headers = ();
+my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
+
 # load the module's sync.profile here, before we can
 loadSyncProfile(\$basedir, \$out_basedir);
 
@@ -729,15 +739,6 @@ $isunix = checkUnix; #cache checkUnix
 mkpath "$out_basedir/include", !$quiet;
 mkpath "$out_basedir/include/Qt", !$quiet;
 
-my @ignore_headers = ();
-my $class_lib_map_contents = "";
-our @ignore_for_master_contents = ();
-our @ignore_for_include_check = ();
-our @ignore_for_qt_begin_header_check = ();
-our @ignore_for_qt_begin_namespace_check = ();
-our @ignore_for_qt_module_check = ();
-my %colliding_headers = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
 
 foreach my $lib (@modules_to_sync) {
     #iteration info
