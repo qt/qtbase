@@ -227,6 +227,9 @@ QString QAccessibleButton::description(int actionIndex)
 {
     switch (actionIndex) {
     case 0:
+        if (button()->isCheckable()) {
+            return QLatin1String("Toggles the button.");
+        }
         return QLatin1String("Clicks the button.");
     default:
         return QString();
@@ -237,6 +240,13 @@ QString QAccessibleButton::name(int actionIndex)
 {
     switch (actionIndex) {
     case 0:
+        if (button()->isCheckable()) {
+            if (button()->isChecked()) {
+                return QLatin1String("Uncheck");
+            } else {
+                return QLatin1String("Check");
+            }
+        }
         return QLatin1String("Press");
     default:
         return QString();
@@ -247,6 +257,13 @@ QString QAccessibleButton::localizedName(int actionIndex)
 {
     switch (actionIndex) {
     case 0:
+        if (button()->isCheckable()) {
+            if (button()->isChecked()) {
+                return tr("Uncheck");
+            } else {
+                return tr("Check");
+            }
+        }
         return tr("Press");
     default:
         return QString();
