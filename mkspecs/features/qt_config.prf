@@ -21,6 +21,7 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
          QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
          QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
          QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
+         QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
          include($$mod)
       }
    }

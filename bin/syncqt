@@ -1011,6 +1011,7 @@ foreach my $lib (@modules_to_sync) {
                 print MODULE_PRI_FILE "QT_MODULE_BASE = $basedir\n";
                 print MODULE_PRI_FILE "QT_MODULE_BIN_BASE = $out_basedir/bin\n";
                 print MODULE_PRI_FILE "QT_MODULE_INCLUDE_BASE = $out_basedir/include\n";
+                print MODULE_PRI_FILE "QT_MODULE_IMPORT_BASE = $qtbasedir/imports\n";
                 print MODULE_PRI_FILE "QT_MODULE_LIB_BASE = $qtbasedir/lib\n";
                 print MODULE_PRI_FILE "include($modulepri)\n";
                 close MODULE_PRI_FILE;
