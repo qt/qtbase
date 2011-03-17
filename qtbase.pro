@@ -22,6 +22,12 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     }
 }
 
+module_qtbase_tests.subdir = tests
+module_qtbase_tests.target = module-qtbase-tests
+module_qtbase_tests.depends = module_qtbase_src
+module_qtbase_tests.CONFIG = no_default_target no_default_install
+SUBDIRS += module_qtbase_tests
+
 !symbian: confclean.depends += clean
 confclean.commands =
 unix:!symbian {
