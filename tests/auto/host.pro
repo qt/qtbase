@@ -1,7 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
            compiler \
-           linguist \
            maketestselftest \
            moc \
            uic \
