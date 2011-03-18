@@ -96,6 +96,14 @@ void tst_QGraphicsLayout::sizeHints()
 
 }
 
+enum FunctionType {
+    SetGeometry = 0,
+    Invalidate,
+    NumFunctionTypes
+};
+
+
+
 class TestGraphicsWidget : public QGraphicsWidget {
 public:
     TestGraphicsWidget(QGraphicsWidget *parent = 0) : QGraphicsWidget(parent)
@@ -109,9 +117,28 @@ public:
     int eventCount(QEvent::Type type) {
         return m_eventCount.value(int(type));
     }
+
     void clearEventCount() {
         m_eventCount.clear();
     }
+
+    void clearCounters() {
+        m_eventCount.clear();
+        functionCount.clear();
+    }
+
+    void setGeometry(const QRectF &rect)
+    {
+        QGraphicsWidget::setGeometry(rect);
+        ++(functionCount[SetGeometry]);
+    }
+
+    void callUpdateGeometry()
+    {
+        // updateGeometry() is protected
+        QGraphicsWidget::updateGeometry();
+    }
+    QMap<FunctionType, int> functionCount;
 private:
     QMap<int, int> m_eventCount;
 };
@@ -123,6 +150,8 @@ void tst_QGraphicsLayout::compressLayoutRequest()
     TestGraphicsWidget *tw = new TestGraphicsWidget();
     scene.addItem(tw);
     view.show();
+
+    QTest::qWaitForWindowShown(&view);
     QGraphicsLinearLayout *lout = new QGraphicsLinearLayout(tw);
     for (int i = 0; i < 4; ++i) {
         QGraphicsWidget *gw = new QGraphicsWidget(tw);
@@ -218,23 +247,27 @@ class TestLayout : public QGraphicsLinearLayout
     TestLayout(QGraphicsLayoutItem *parent = 0)
         : QGraphicsLinearLayout(parent)
     {
-        m_count = 0;
-        m_invalidateCount = 0;
+        setContentsMargins(0,0,0,0);
+        setSpacing(0);
     }
 
-    void setGeometry(const QRectF &rect) {
-
-        ++m_count;
+    void setGeometry(const QRectF &rect)
+    {
+        ++(functionCount[SetGeometry]);
         QGraphicsLinearLayout::setGeometry(rect);
     }
 
-    void invalidate() {
-        ++m_invalidateCount;
+    void invalidate()
+    {
+        ++(functionCount[Invalidate]);
         QGraphicsLinearLayout::invalidate();
     }
 
-    int m_invalidateCount;
-    int m_count;
+    void clearCounters() {
+        functionCount.clear();
+    }
+
+    QMap<FunctionType, int> functionCount;
 };
 
 void tst_QGraphicsLayout::verifyActivate()
@@ -249,14 +282,46 @@ void tst_QGraphicsLayout::verifyActivate()
     lout->addItem(w);
     window->setLayout(lout);
 
-    QCOMPARE(lout->m_count, 0);
+    QCOMPARE(lout->functionCount[SetGeometry], 0);
     window->setVisible(false);
-    QCOMPARE(lout->m_count, 0);
+    QCOMPARE(lout->functionCount[SetGeometry], 0);
     window->setVisible(true);
     // on polish or the first time a widget is shown, the widget is resized.
-    QCOMPARE(lout->m_count, 1);
+    QCOMPARE(lout->functionCount[SetGeometry], 1);
 
 }
+
+static void clearAllCounters(TestGraphicsWidget *widget)
+{
+    if (!widget)
+        return;
+    widget->clearCounters();
+    TestLayout *layout = static_cast<TestLayout *>(widget->layout());
+    if (layout) {
+        layout->clearCounters();
+        for (int i = layout->count() - 1; i >=0; --i) {
+            QGraphicsLayoutItem *item = layout->itemAt(i);
+            if (item->isLayout()) {
+                // ### Not used ATM
+                //TestLayout *lay = static_cast<TestLayout*>(static_cast<QGraphicsLayout*>(item));
+                //clearAllCounters(lay);
+            } else {
+                TestGraphicsWidget *wid = static_cast<TestGraphicsWidget *>(item);
+                clearAllCounters(wid);
+            }
+        }
+    }
+}
+
+static void activateAndReset(TestGraphicsWidget *widget)
+{
+    QApplication::sendPostedEvents();
+    QApplication::processEvents();
+    if (widget->layout())
+        widget->layout()->activate();
+    clearAllCounters(widget);
+}
+
 
 void tst_QGraphicsLayout::invalidate()
 {
@@ -265,76 +330,228 @@ void tst_QGraphicsLayout::invalidate()
     QGraphicsView view(&scene);
 
     TestGraphicsWidget *a = new TestGraphicsWidget;
+    a->setData(0, QString("a"));
     scene.addItem(a);
     TestLayout *alay = new TestLayout(a);
     TestGraphicsWidget *b = new TestGraphicsWidget;
+    b->setData(0, QString("b"));
     alay->addItem(b);
     TestLayout *blay = new TestLayout(b);
     TestGraphicsWidget *e = new TestGraphicsWidget;
+    e->setData(0, QString("e"));
     blay->addItem(e);
 
 
     TestGraphicsWidget *c = new TestGraphicsWidget;
+    c->setData(0, QString("c"));
     alay->addItem(c);
     TestLayout *clay = new TestLayout(c);
     TestGraphicsWidget *f = new TestGraphicsWidget;
+    f->setData(0, QString("f"));
     clay->addItem(f);
 
     TestGraphicsWidget *d = new TestGraphicsWidget;
+    d->setData(0, QString("d"));
     alay->addItem(d);
     TestLayout *dlay = new TestLayout(d);
     TestGraphicsWidget *g = new TestGraphicsWidget;
+    g->setData(0, QString("g"));
     dlay->addItem(g);
 
     view.show();
 
-    alay->m_invalidateCount = 0;
-    blay->m_invalidateCount = 0;
-    clay->m_invalidateCount = 0;
-    dlay->m_invalidateCount = 0;
+    {
+        clearAllCounters(a);
 
-    QCoreApplication::sendPostedEvents();
-    QCoreApplication::processEvents();
+        QCoreApplication::sendPostedEvents();
+        QCoreApplication::processEvents();
 
-    alay->activate();
-    QCOMPARE(alay->isActivated(), true);
-    QCOMPARE(blay->isActivated(), true);
-    QCOMPARE(clay->isActivated(), true);
-    qDebug() << "alay->m_invalidateCount:" << alay->m_invalidateCount;
-    qDebug() << "blay->m_invalidateCount:" << blay->m_invalidateCount;
-    qDebug() << "clay->m_invalidateCount:" << clay->m_invalidateCount;
-    qDebug() << "dlay->m_invalidateCount:" << dlay->m_invalidateCount;
+        alay->activate();
+        QCOMPARE(alay->isActivated(), true);
+        QCOMPARE(blay->isActivated(), true);
+        QCOMPARE(clay->isActivated(), true);
+        QCOMPARE(dlay->isActivated(), true);
+    }
 
-    a->clearEventCount();
-    b->clearEventCount();
-    c->clearEventCount();
+    {
+        clearAllCounters(a);
+        e->callUpdateGeometry();
+        QCOMPARE(alay->isActivated(), false);
+        QCOMPARE(blay->isActivated(), false);
+        QCOMPARE(clay->isActivated(), true);
+        QCOMPARE(dlay->isActivated(), true);
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 0);
 
-    blay->invalidate();
-    QCOMPARE(alay->isActivated(), false);
-    QCOMPARE(blay->isActivated(), false);
-    QCOMPARE(clay->isActivated(), true);
-    QCOMPARE(a->eventCount(QEvent::LayoutRequest), 0);
-    QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
-    QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        // should only invalidate ascendants of e
+        QCOMPARE(blay->functionCount[Invalidate], 1);
+        QCOMPARE(alay->functionCount[Invalidate], 1);
+        // not siblings
+        QCOMPARE(clay->functionCount[Invalidate], 0);
+        QCOMPARE(dlay->functionCount[Invalidate], 0);
+
+        QApplication::sendPostedEvents();
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 0);
+    }
 
 
-    alay->m_invalidateCount = 0;
-    blay->m_invalidateCount = 0;
-    clay->m_invalidateCount = 0;
-    dlay->m_invalidateCount = 0;
-    clay->invalidate();
-    QCOMPARE(alay->isActivated(), false);
-    QCOMPARE(blay->isActivated(), false);
-    QCOMPARE(clay->isActivated(), false);
+    {
+        activateAndReset(a);
+        f->callUpdateGeometry();
+        QCOMPARE(alay->isActivated(), false);
+        QCOMPARE(blay->isActivated(), true);
+        QCOMPARE(clay->isActivated(), false);
+        QCOMPARE(dlay->isActivated(), true);
 
-    QCoreApplication::sendPostedEvents();
-    QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
-    QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
-    QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
-    qDebug() << "alay->m_invalidateCount:" << alay->m_invalidateCount;
-    qDebug() << "blay->m_invalidateCount:" << blay->m_invalidateCount;
-    qDebug() << "clay->m_invalidateCount:" << clay->m_invalidateCount;
-    qDebug() << "dlay->m_invalidateCount:" << dlay->m_invalidateCount;
+        QCoreApplication::sendPostedEvents();
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 0);
+
+        QCOMPARE(a->functionCount[SetGeometry], 1);
+        QCOMPARE(alay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(b->functionCount[SetGeometry], 1);
+        QCOMPARE(c->functionCount[SetGeometry], 1);
+        QCOMPARE(d->functionCount[SetGeometry], 1);
+        // Since nothing really changed, blay and dlay don't need
+        // to be resized.
+        QCOMPARE(blay->functionCount[SetGeometry], 0);
+        QCOMPARE(clay->functionCount[SetGeometry], 1);
+        QCOMPARE(dlay->functionCount[SetGeometry], 0);
+
+        QCOMPARE(f->functionCount[SetGeometry], 1);
+
+        QCOMPARE(a->size(), QSizeF(150, 50));
+    }
+
+    {
+        activateAndReset(a);
+        f->setPreferredSize(QSizeF(60,50));
+        QCOMPARE(alay->isActivated(), false);
+        QCOMPARE(blay->isActivated(), true);
+        QCOMPARE(clay->isActivated(), false);
+        QCOMPARE(dlay->isActivated(), true);
+
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        QCoreApplication::sendPostedEvents();
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 0);
+
+        QCOMPARE(a->functionCount[SetGeometry], 1);
+        QCOMPARE(alay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(b->functionCount[SetGeometry], 1);
+        QCOMPARE(c->functionCount[SetGeometry], 1);
+        QCOMPARE(d->functionCount[SetGeometry], 1);
+        // f actually got wider, need to rearrange its siblings
+        QCOMPARE(blay->functionCount[SetGeometry], 1);
+        QCOMPARE(clay->functionCount[SetGeometry], 1);
+        QCOMPARE(dlay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(e->functionCount[SetGeometry], 1);
+        QCOMPARE(f->functionCount[SetGeometry], 1);
+        QCOMPARE(g->functionCount[SetGeometry], 1);
+
+        QVERIFY(e->size().width() < f->size().width());
+        QVERIFY(g->size().width() < f->size().width());
+    }
+
+    {
+        // resize f so much that it'll force a resize of the top widget
+        // this will currently generate two setGeometry() calls on the child layout
+        // of the top widget.
+        activateAndReset(a);
+        f->setPreferredSize(QSizeF());
+        f->setMinimumSize(QSizeF(200,50));
+        QCOMPARE(alay->isActivated(), false);
+        QCOMPARE(blay->isActivated(), true);
+        QCOMPARE(clay->isActivated(), false);
+        QCOMPARE(dlay->isActivated(), true);
+
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        QCoreApplication::sendPostedEvents();
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 0);
+
+        QCOMPARE(a->functionCount[SetGeometry], 1);
+
+        /* well, ideally one call to setGeometry(), but it will currently
+         * get two calls to setGeometry():
+         *   1. The first LayoutRequest will call activate() - that will call
+         *      setGeometry() on the layout. This geometry will be based on
+         *      the widget geometry which is not correct at this moment.
+         *      (it is still 150 wide)
+         *   2. Next, we check if the widget is top level, and then we call
+         *      parentWidget->resize(parentWidget->size());
+         *      This will be adjusted to be minimum 200 pixels wide.
+         *      The new size will then be propagated down to the layout
+         *
+         */
+        QCOMPARE(alay->functionCount[SetGeometry], 2);
+
+        QCOMPARE(b->functionCount[SetGeometry], 2);
+        QCOMPARE(c->functionCount[SetGeometry], 2);
+        QCOMPARE(d->functionCount[SetGeometry], 2);
+        // f actually got wider, need to rearrange its siblings
+        QCOMPARE(blay->functionCount[SetGeometry], 1);
+        QCOMPARE(clay->functionCount[SetGeometry], 1);
+        QCOMPARE(dlay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(e->functionCount[SetGeometry], 1);
+        QCOMPARE(f->functionCount[SetGeometry], 1);
+        QCOMPARE(g->functionCount[SetGeometry], 1);
+
+        QVERIFY(e->size().width() < f->size().width());
+        QVERIFY(g->size().width() < f->size().width());
+    }
+
+    {
+        f->setPreferredSize(QSizeF());
+        f->setMinimumSize(QSizeF());
+        a->adjustSize();
+        activateAndReset(a);
+        // update two different leaf widgets,
+        // eventCount and functionCount should never be >= 2
+        e->callUpdateGeometry();
+        g->callUpdateGeometry();
+        QCOMPARE(alay->isActivated(), false);
+        QCOMPARE(blay->isActivated(), false);
+        QCOMPARE(clay->isActivated(), true);
+        QCOMPARE(dlay->isActivated(), false);
+
+        QCoreApplication::sendPostedEvents();
+        QCOMPARE(a->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(b->eventCount(QEvent::LayoutRequest), 1);
+        QCOMPARE(c->eventCount(QEvent::LayoutRequest), 0);
+        QCOMPARE(d->eventCount(QEvent::LayoutRequest), 1);
+
+        QCOMPARE(a->functionCount[SetGeometry], 1);
+        QCOMPARE(alay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(b->functionCount[SetGeometry], 1);
+        QCOMPARE(c->functionCount[SetGeometry], 1);
+        QCOMPARE(d->functionCount[SetGeometry], 1);
+        // f actually got wider, need to rearrange its siblings
+        QCOMPARE(blay->functionCount[SetGeometry], 1);
+        QCOMPARE(clay->functionCount[SetGeometry], 0);
+        QCOMPARE(dlay->functionCount[SetGeometry], 1);
+
+        QCOMPARE(e->functionCount[SetGeometry], 1);
+        QCOMPARE(f->functionCount[SetGeometry], 0);
+        QCOMPARE(g->functionCount[SetGeometry], 1);
+
+    }
 
     QGraphicsLayout::setInstantInvalidatePropagation(false);
 }
