@@ -47,7 +47,7 @@
 #include <sstream>
 #include <algorithm>
 #include <qalgorithms.h>
-#include "../../../src/qt3support/tools/q3tl.h"
+#include "q3tl.h"
 #include <QStringList>
 #include <QString>
 #include <QVector>
