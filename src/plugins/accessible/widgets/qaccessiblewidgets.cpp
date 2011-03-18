@@ -401,9 +401,14 @@ int QAccessibleStackedWidget::childCount() const
 
 int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (!child || (stackedWidget()->currentWidget() != child->object()))
+    if (!child)
         return -1;
-    return 1;
+
+    QWidget* widget = qobject_cast<QWidget*>(child->object());
+    int index = stackedWidget()->indexOf(widget);
+    if (index >= 0) // one based counting of children
+        return index + 1;
+    return -1;
 }
 
 int QAccessibleStackedWidget::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
@@ -413,9 +418,9 @@ int QAccessibleStackedWidget::navigate(RelationFlag relation, int entry, QAccess
     QObject *targetObject = 0;
     switch (relation) {
     case Child:
-        if (entry != 1)
+        if (entry < 1 || entry > stackedWidget()->count())
             return -1;
-        targetObject = stackedWidget()->currentWidget();
+        targetObject = stackedWidget()->widget(entry-1);
         break;
     default:
         return QAccessibleWidgetEx::navigate(relation, entry, target);

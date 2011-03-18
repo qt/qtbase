@@ -251,6 +251,7 @@ private slots:
     void sliderTest();
     void scrollBarTest();
     void tabTest();
+    void tabWidgetTest();
     void menuTest();
     void spinBoxTest();
     void doubleSpinBoxTest();
@@ -1881,8 +1882,6 @@ public Q_SLOTS:
 void tst_QAccessibility::buttonTest()
 {
 #ifdef QTEST_ACCESSIBILITY
-    QAccessibleInterface *test = 0;
-
     QWidget window;
     window.setLayout(new QVBoxLayout);
 
@@ -1915,7 +1914,8 @@ void tst_QAccessibility::buttonTest()
     toggletool.setText("Toggle");
     toggletool.setMinimumSize(20,20);
 
-#ifdef QT3_SUPPORT
+#if 0
+    // QT3_SUPPORT
     // push button with a menu
     QPushButton menuButton("Menu", &window);
     Q3PopupMenu buttonMenu(&menuButton);
@@ -2412,6 +2412,93 @@ void tst_QAccessibility::tabTest()
 
     delete tabBar;
     delete interface;
+    QTestAccessibility::clearEvents();
+#else
+    QSKIP("Test needs accessibility support.", SkipAll);
+#endif
+}
+
+void tst_QAccessibility::tabWidgetTest()
+{
+#ifdef QTEST_ACCESSIBILITY
+    QTabWidget *tabWidget = new QTabWidget();
+    tabWidget->show();
+
+    // the interface for the tab is just a container for tabbar and stacked widget
+    QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(tabWidget);
+    QVERIFY(interface);
+    QCOMPARE(interface->childCount(), 2);
+    QCOMPARE(interface->role(0), QAccessible::Client);
+
+    // Create pages, check navigation
+    QLabel *label1 = new QLabel("Page 1", tabWidget);
+    tabWidget->addTab(label1, "Tab 1");
+    QLabel *label2 = new QLabel("Page 2", tabWidget);
+    tabWidget->addTab(label2, "Tab 2");
+
+    QCOMPARE(interface->childCount(), 2);
+
+    QAccessibleInterface* tabBarInterface = 0;
+    // there is no special logic to sort the children, so the contents will be 1, the tab bar 2
+    QCOMPARE(interface->navigate(QAccessible::Child, 2 , &tabBarInterface), 0);
+    QVERIFY(tabBarInterface);
+    QCOMPARE(tabBarInterface->childCount(), 4);
+    QCOMPARE(tabBarInterface->role(0), QAccessible::PageTabList);
+
+    QAccessibleInterface* tabButton1Interface = 0;
+    QCOMPARE(tabBarInterface->navigate(QAccessible::Child, 1 , &tabButton1Interface), 1);
+    QVERIFY(tabButton1Interface == 0);
+
+    QCOMPARE(tabBarInterface->role(1), QAccessible::PageTab);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 1), QLatin1String("Tab 1"));
+    QCOMPARE(tabBarInterface->role(2), QAccessible::PageTab);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 2), QLatin1String("Tab 2"));
+    QCOMPARE(tabBarInterface->role(3), QAccessible::PushButton);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 3), QLatin1String("Scroll Left"));
+    QCOMPARE(tabBarInterface->role(4), QAccessible::PushButton);
+    QCOMPARE(tabBarInterface->text(QAccessible::Name, 4), QLatin1String("Scroll Right"));
+
+    QAccessibleInterface* stackWidgetInterface = 0;
+    QCOMPARE(interface->navigate(QAccessible::Child, 1, &stackWidgetInterface), 0);
+    QVERIFY(stackWidgetInterface);
+    QCOMPARE(stackWidgetInterface->childCount(), 2);
+    QCOMPARE(stackWidgetInterface->role(0), QAccessible::LayeredPane);
+
+    QAccessibleInterface* stackChild1Interface = 0;
+    QCOMPARE(stackWidgetInterface->navigate(QAccessible::Child, 1, &stackChild1Interface), 0);
+    QVERIFY(stackChild1Interface);
+    QCOMPARE(stackChild1Interface->childCount(), 0);
+    QCOMPARE(stackChild1Interface->role(0), QAccessible::StaticText);
+    QCOMPARE(stackChild1Interface->text(QAccessible::Name, 0), QLatin1String("Page 1"));
+    QCOMPARE(label1, stackChild1Interface->object());
+
+    // Navigation in stack widgets should be consistent
+    QAccessibleInterface* parent = 0;
+    QCOMPARE(stackChild1Interface->navigate(QAccessible::Ancestor, 1, &parent), 0);
+    QVERIFY(parent);
+    QCOMPARE(parent->childCount(), 2);
+    QCOMPARE(parent->role(0), QAccessible::LayeredPane);
+    delete parent;
+
+    QAccessibleInterface* stackChild2Interface = 0;
+    QCOMPARE(stackWidgetInterface->navigate(QAccessible::Child, 2, &stackChild2Interface), 0);
+    QVERIFY(stackChild2Interface);
+    QCOMPARE(stackChild2Interface->childCount(), 0);
+    QCOMPARE(stackChild2Interface->role(0), QAccessible::StaticText);
+    QCOMPARE(label2, stackChild2Interface->object()); // the text will be empty since it is not visible
+
+    QCOMPARE(stackChild2Interface->navigate(QAccessible::Ancestor, 1, &parent), 0);
+    QVERIFY(parent);
+    QCOMPARE(parent->childCount(), 2);
+    QCOMPARE(parent->role(0), QAccessible::LayeredPane);
+    delete parent;
+
+    delete tabBarInterface;
+    delete stackChild1Interface;
+    delete stackChild2Interface;
+    delete stackWidgetInterface;
+    delete interface;
+    delete tabWidget;
     QTestAccessibility::clearEvents();
 #else
     QSKIP("Test needs accessibility support.", SkipAll);
