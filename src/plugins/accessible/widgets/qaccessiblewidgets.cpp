@@ -1334,7 +1334,7 @@ QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
 
     QRect r = edit->cursorRect(cursor);
     if (cursor.movePosition(QTextCursor::NextCharacter)) {
-        r.setWidth(edit->cursorRect(cursor).y() - r.y());
+        r.setWidth(edit->cursorRect(cursor).x() - r.x());
     } else {
         // we don't know the width of the character - maybe because we're at document end
         // in that case, IAccessible2 tells us to return the width of a default character
