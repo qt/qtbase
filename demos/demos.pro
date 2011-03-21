@@ -50,8 +50,7 @@ wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
 
 !cross_compile:{
 contains(QT_BUILD_PARTS, tools):{
-!wince*:SUBDIRS += demos_sqlbrowser demos_qtdemo
-wince*:SUBDIRS += demos_sqlbrowser
+SUBDIRS += demos_sqlbrowser
 }
 }
 
