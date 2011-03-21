@@ -96,6 +96,7 @@ private slots:
     void digest_data();
     void digest();
     void alternateSubjectNames_data();
+    void utf8SubjectNames();
     void alternateSubjectNames();
     void publicKey_data();
     void publicKey();
@@ -407,6 +408,27 @@ void tst_QSslCertificate::alternateSubjectNames()
     }
 }
 
+void tst_QSslCertificate::utf8SubjectNames()
+{
+    QSslCertificate cert = QSslCertificate::fromPath("certificates/cert-ss-san-utf8.pem", QSsl::Pem,
+                                                     QRegExp::FixedString).first();
+    QVERIFY(!cert.isNull());
+
+    // O is "Heavy Metal Records" with heavy use of "decorations" like accents, umlauts etc.,
+    // OU uses arabian / asian script letters near codepoint 64K.
+    // strings split where the compiler would otherwise find three-digit hex numbers
+    static const char *o = "H\xc4\x95\xc4\x82\xc6\xb2\xc3\xbf \xca\x8d\xe1\xba\xbf\xca\x88\xe1\xba"
+            "\xb7\xe1\xb8\xbb R\xc3\xa9" "c" "\xc3\xb6rd\xc5\x9d";
+    static const char *ou = "\xe3\x88\xa7" "A" "\xe3\x89\x81\xef\xbd\xab" "BC";
+
+    // the following two tests should help find "\x"-literal encoding bugs in the test itself
+    QCOMPARE(cert.subjectInfo("O").length(), QString::fromUtf8(o).length());
+    QCOMPARE (cert.subjectInfo("O").toUtf8().toHex(), QByteArray(o).toHex());
+
+    QCOMPARE(cert.subjectInfo("O"), QString::fromUtf8(o));
+    QCOMPARE(cert.subjectInfo("OU"), QString::fromUtf8(ou));
+}
+
 void tst_QSslCertificate::publicKey_data()
 {
     QTest::addColumn<QString>("certFilePath");
@@ -519,13 +541,13 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"certificates/*\" fixed der") << QString("certificates/*") << int(QRegExp::FixedString) << false << 0;
     QTest::newRow("\"certificates/*\" regexp pem") << QString("certificates/*") << int(QRegExp::RegExp) << true << 0;
     QTest::newRow("\"certificates/*\" regexp der") << QString("certificates/*") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 4;
+    QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 5;
     QTest::newRow("\"certificates/*\" wildcard der") << QString("certificates/*") << int(QRegExp::Wildcard) << false << 0;
     QTest::newRow("\"c*/c*.pem\" fixed pem") << QString("c*/c*.pem") << int(QRegExp::FixedString) << true << 0;
     QTest::newRow("\"c*/c*.pem\" fixed der") << QString("c*/c*.pem") << int(QRegExp::FixedString) << false << 0;
     QTest::newRow("\"c*/c*.pem\" regexp pem") << QString("c*/c*.pem") << int(QRegExp::RegExp) << true << 0;
     QTest::newRow("\"c*/c*.pem\" regexp der") << QString("c*/c*.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"c*/c*.pem\" wildcard pem") << QString("c*/c*.pem") << int(QRegExp::Wildcard) << true << 4;
+    QTest::newRow("\"c*/c*.pem\" wildcard pem") << QString("c*/c*.pem") << int(QRegExp::Wildcard) << true << 5;
     QTest::newRow("\"c*/c*.pem\" wildcard der") << QString("c*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
     QTest::newRow("\"d*/c*.pem\" fixed pem") << QString("d*/c*.pem") << int(QRegExp::FixedString) << true << 0;
     QTest::newRow("\"d*/c*.pem\" fixed der") << QString("d*/c*.pem") << int(QRegExp::FixedString) << false << 0;
@@ -535,7 +557,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d*/c*.pem\" wildcard der") << QString("d*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
     QTest::newRow("\"c.*/c.*.pem\" fixed pem") << QString("c.*/c.*.pem") << int(QRegExp::FixedString) << true << 0;
     QTest::newRow("\"c.*/c.*.pem\" fixed der") << QString("c.*/c.*.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << QString("c.*/c.*.pem") << int(QRegExp::RegExp) << true << 4;
+    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << QString("c.*/c.*.pem") << int(QRegExp::RegExp) << true << 5;
     QTest::newRow("\"c.*/c.*.pem\" regexp der") << QString("c.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
     QTest::newRow("\"c.*/c.*.pem\" wildcard pem") << QString("c.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"c.*/c.*.pem\" wildcard der") << QString("c.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
@@ -546,7 +568,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
 #ifdef Q_OS_LINUX
-    QTest::newRow("absolute path wildcard pem") << QString(QDir::currentPath() + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 4;
+    QTest::newRow("absolute path wildcard pem") << QString(QDir::currentPath() + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 5;
 #endif
 
     QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
@@ -769,7 +791,7 @@ void tst_QSslCertificate::nulInCN()
     QString cn = cert.subjectInfo(QSslCertificate::CommonName);
     QVERIFY(cn != "www.bank.com");
 
-    static const char realCN[] = "www.bank.com\\x00.badguy.com";
+    static const char realCN[] = "www.bank.com\0.badguy.com";
     QCOMPARE(cn, QString::fromLatin1(realCN, sizeof realCN - 1));
 }
 
