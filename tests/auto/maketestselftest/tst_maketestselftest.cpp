@@ -148,7 +148,8 @@ void tst_MakeTestSelfTest::tests_pro_files_data()
 
     foreach (const QString& subdir, subdirs) {
         if (subdir == QString::fromLatin1("tmp")
-            || subdir.startsWith("."))
+            || subdir.startsWith(".")
+            || !dir.exists(subdir + "/" + subdir + ".pro"))
         {
             continue;
         }
