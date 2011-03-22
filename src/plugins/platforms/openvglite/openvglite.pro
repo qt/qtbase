@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 QT += openvg
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+DESTDIR = $$QT.gui.plugins/graphicssystems
 
 SOURCES = main.cpp qgraphicssystem_vglite.cpp qwindowsurface_vglite.cpp
 HEADERS = qgraphicssystem_vglite.h qwindowsurface_vglite.h

@@ -11,6 +11,6 @@ SOURCES += qgenericengine.cpp \
            ../qnetworksession_impl.cpp \
            main.cpp
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
+DESTDIR = $$QT.network.plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer
 INSTALLS += target

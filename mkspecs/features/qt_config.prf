@@ -20,6 +20,7 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
          # qt_<module>.pri forwarding file
          QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
          QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
+         QT_MODULE_PLUGIN_BASE = $$[QT_INSTALL_PLUGINS]
          QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
          QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
          include($$mod)

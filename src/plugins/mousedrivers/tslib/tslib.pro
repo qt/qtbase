@@ -1,7 +1,7 @@
 TARGET	 = qtslibmousedriver
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/mousedrivers
+DESTDIR = $$QT.gui.plugins/mousedrivers
 
 HEADERS = \
 	$$QT_SOURCE_TREE/src/gui/embedded/qmousedriverplugin_qws.h \

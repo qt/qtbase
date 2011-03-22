@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 QT += opengl
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+DESTDIR = $$QT.gui.plugins/graphicssystems
 
 SOURCES = main.cpp
 

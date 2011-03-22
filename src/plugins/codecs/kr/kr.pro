@@ -2,7 +2,7 @@ TARGET	 = qkrcodecs
 include(../../qpluginbase.pri)
 
 CONFIG	+= warn_on
-QTDIR_build:DESTDIR	 = $$QT_BUILD_TREE/plugins/codecs
+DESTDIR = $$QT.core.plugins/codecs
 QT = core
 
 HEADERS		= qeuckrcodec.h \

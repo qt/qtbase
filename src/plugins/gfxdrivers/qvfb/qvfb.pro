@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 DEFINES	+= QT_QWS_QVFB QT_QWS_MOUSE_QVFB QT_QWS_KBD_QVFB
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
+DESTDIR = $$QT.gui.plugins/gfxdrivers
 
 HEADERS = \
 	$$QT_SOURCE_TREE/src/gui/embedded/qscreenvfb_qws.h \

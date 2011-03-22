@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 DEFINES	+= QT_QWS_VNC
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
+DESTDIR = $$QT.gui.plugins/gfxdrivers
 
 HEADERS = \
 	qscreenvnc_qws.h \

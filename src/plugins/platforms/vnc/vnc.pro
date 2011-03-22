@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
+DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES = main.cpp qvncintegration.cpp
 HEADERS = qvncintegration.h

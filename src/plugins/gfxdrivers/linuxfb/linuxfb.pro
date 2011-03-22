@@ -1,7 +1,7 @@
 TARGET = qscreenlinuxfb
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
+DESTDIR = $$QT.gui.plugins/gfxdrivers
 
 target.path = $$[QT_INSTALL_PLUGINS]/gfxdrivers
 INSTALLS += target

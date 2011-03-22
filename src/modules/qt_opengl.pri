@@ -9,6 +9,7 @@ QT.opengl.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL
 QT.opengl.private_includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL/private
 QT.opengl.sources = $$QT_MODULE_BASE/src/opengl
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
+QT.opengl.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.opengl.imports = $$QT_MODULE_IMPORT_BASE
 QT.opengl.depends = core gui
 QT.opengl.CONFIG = opengl

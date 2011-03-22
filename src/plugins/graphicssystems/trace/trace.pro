@@ -3,7 +3,7 @@ include(../../qpluginbase.pri)
 
 QT += network
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems
+DESTDIR = $$QT.gui.plugins/graphicssystems
 symbian:TARGET.UID3 = 0x2002130E
 
 SOURCES = main.cpp qgraphicssystem_trace.cpp
