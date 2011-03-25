@@ -1949,7 +1949,7 @@ void tst_QAccessibility::buttonTest()
 
     // currently our buttons only have click as action, press and release are missing
     QCOMPARE(actionInterface->actionCount(), 1);
-    QCOMPARE(actionInterface->name(0), QString("Click"));
+    QCOMPARE(actionInterface->name(0), QString("Press"));
     QCOMPARE(pushButton.clickCount, 0);
     actionInterface->doAction(0);
     QTest::qWait(500);
