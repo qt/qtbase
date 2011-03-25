@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
            compiler \
+           headersclean \
            maketestselftest \
            moc \
            uic \
