@@ -49,9 +49,10 @@
 #include <boost/regex.hpp>
 #endif
 
+#ifdef HAVE_JSC
 #include <QtScript>
 #include "pcre/pcre.h"
-
+#endif
 #define ZLIB_VERSION "1.2.3.4"
 
 class tst_qregexp : public QObject
@@ -82,9 +83,11 @@ private slots:
     void rangeReplace2();
     void matchReplace2();
 
+#ifdef HAVE_JSC
     void simpleFindJSC();
     void rangeReplaceJSC();
     void matchReplaceJSC();
+#endif
 
 #ifdef HAVE_BOOST
     void simpleFindBoost();
@@ -100,8 +103,10 @@ private slots:
     void horribleReplace1();
     void horribleReplace2();
     void horribleWrongReplace2();
+#ifdef HAVE_JSC
     void horribleWrongReplaceJSC();
     void horribleReplaceJSC();
+#endif
 #ifdef HAVE_BOOST
     void horribleWrongReplaceBoost();
     void horribleReplaceBoost();
@@ -454,8 +459,7 @@ void tst_qregexp::horribleReplace2()
     }
     QCOMPARE(r, QString("1.2.3"));
 }
-
-
+#ifdef HAVE_JSC
 void tst_qregexp::simpleFindJSC()
 {
     int numr;
@@ -525,7 +529,7 @@ void tst_qregexp::horribleReplaceJSC()
     }
     QCOMPARE(r.toString(), QString("1.2.3"));
 }
-
+#endif
 
 #ifdef HAVE_BOOST
 void tst_qregexp::simpleFindBoost(){

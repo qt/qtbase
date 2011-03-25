@@ -5,14 +5,17 @@ DEPENDPATH += .
 INCLUDEPATH += .
 RESOURCES+=qregexp.qrc
 QT -= gui
-QT += script
 
 CONFIG += release
 
 # Input
 SOURCES += main.cpp
 
-include( $${QT_SOURCE_TREE}/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pri )
+!isEmpty(QT.webkit.sources):exists($${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri) {
+    include( $${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri )
+    DEFINES += HAVE_JSC
+    QT += script
+}
 
 exists( /usr/include/boost/regex.hpp ){
 DEFINES+=HAVE_BOOST
