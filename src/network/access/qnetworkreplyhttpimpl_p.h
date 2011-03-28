@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKACCESSHTTPBACKEND_P_H
-#define QNETWORKACCESSHTTPBACKEND_P_H
+#ifndef QNETWORKREPLYHTTPIMPL_P_H
+#define QNETWORKREPLYHTTPIMPL_P_H
 
 //
 //  W A R N I N G
@@ -53,53 +53,83 @@
 // We mean it.
 //
 
-#include "qhttpnetworkconnection_p.h"
-#include "qnetworkaccessbackend_p.h"
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
-#include "qabstractsocket.h"
 
 #include "QtCore/qpointer.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qsharedpointer.h"
 #include "qatomic.h"
 
+#include <QtNetwork/QNetworkCacheMetaData>
+#include <private/qhttpnetworkrequest_p.h>
+#include <private/qbytedata_p.h>
+#include <private/qnetworkreply_p.h>
+#include <QtNetwork/QNetworkProxy>
+
+#ifndef QT_NO_OPENSSL
+#include <QtNetwork/QSslConfiguration>
+#endif
+
 #ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkAccessCachedHttpConnection;
+class QIODevice;
 
-class QNetworkAccessHttpBackendIODevice;
-
-class QNetworkAccessHttpBackend: public QNetworkAccessBackend
+class QNetworkReplyHttpImplPrivate;
+class QNetworkReplyHttpImpl: public QNetworkReply
 {
     Q_OBJECT
 public:
-    QNetworkAccessHttpBackend();
-    virtual ~QNetworkAccessHttpBackend();
+    QNetworkReplyHttpImpl(QNetworkAccessManager* const, const QNetworkRequest&, QNetworkAccessManager::Operation&, QIODevice* outgoingData);
+    virtual ~QNetworkReplyHttpImpl();
 
-    virtual void open();
-    virtual void closeDownstreamChannel();
+    void close();
+    void abort();
+    qint64 bytesAvailable() const;
+    bool isSequential () const;
+    qint64 size() const;
+    qint64 readData(char*, qint64);
+    void setReadBufferSize(qint64 size);
+    bool canReadLine () const;
 
-    virtual void downstreamReadyWrite();
-    virtual void setDownstreamLimited(bool b);
-
-    virtual void copyFinished(QIODevice *);
 #ifndef QT_NO_OPENSSL
-    virtual void ignoreSslErrors();
-    virtual void ignoreSslErrors(const QList<QSslError> &errors);
-
-    virtual void fetchSslConfiguration(QSslConfiguration &configuration) const;
-    virtual void setSslConfiguration(const QSslConfiguration &configuration);
+    void ignoreSslErrors();
+    Q_INVOKABLE void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
+    Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
+    Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
 #endif
-    QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
+//    Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
+//    Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
 
-    // we return true since HTTP needs to send PUT/POST data again after having authenticated
-    bool needsResetableUploadData() { return true; }
+    Q_DECLARE_PRIVATE(QNetworkReplyHttpImpl)
+    Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
+    Q_PRIVATE_SLOT(d_func(), void _q_cacheLoadReadyRead())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
+#ifndef QT_NO_BEARERMANAGEMENT
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
+#endif
+    Q_PRIVATE_SLOT(d_func(), void _q_finished())
+    Q_PRIVATE_SLOT(d_func(), void replyDownloadData(QByteArray))
+    Q_PRIVATE_SLOT(d_func(), void replyFinished())
+    Q_PRIVATE_SLOT(d_func(), void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,int,QString,bool,QSharedPointer<char>,qint64))
+    Q_PRIVATE_SLOT(d_func(), void replyDownloadProgressSlot(qint64,qint64))
+    Q_PRIVATE_SLOT(d_func(), void httpAuthenticationRequired(const QHttpNetworkRequest &, QAuthenticator *))
+    Q_PRIVATE_SLOT(d_func(), void httpError(QNetworkReply::NetworkError, const QString &))
+#ifndef QT_NO_OPENSSL
+    Q_PRIVATE_SLOT(d_func(), void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *))
+    Q_PRIVATE_SLOT(d_func(), void replySslConfigurationChanged(const QSslConfiguration&))
+#endif
+    Q_PRIVATE_SLOT(d_func(), void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth))
 
-    bool canResume() const;
-    void setResumeOffset(quint64 offset);
+    Q_PRIVATE_SLOT(d_func(), void resetUploadDataSlot(bool *r))
+    Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))
+    Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64))
+    Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
+
 
 signals:
     // To HTTP thread:
@@ -109,7 +139,140 @@ signals:
     void startHttpRequestSynchronously();
 
     void haveUploadData(QByteArray dataArray, bool dataAtEnd, qint64 dataSize);
-private slots:
+};
+
+class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
+{
+public:
+
+    static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio);
+
+    enum State {
+        Idle,               // The reply is idle.
+        Buffering,          // The reply is buffering outgoing data.
+        Working,            // The reply is uploading/downloading data.
+        Finished,           // The reply has finished.
+        Aborted,            // The reply has been aborted.
+        WaitingForSession,  // The reply is waiting for the session to open before connecting.
+        Reconnecting        // The reply will reconnect to once roaming has completed.
+    };
+
+    QNetworkReplyHttpImplPrivate();
+    ~QNetworkReplyHttpImplPrivate();
+
+    bool start();
+    void _q_startOperation();
+
+    void _q_cacheLoadReadyRead();
+
+    void _q_bufferOutgoingData();
+    void _q_bufferOutgoingDataFinished();
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    void _q_networkSessionConnected();
+    void _q_networkSessionFailed();
+#endif
+    void _q_finished();
+
+
+    // ?
+    void consume(qint64 count);
+
+    void setDownloadBuffer(QSharedPointer<char> sp, qint64 size);
+    char* getDownloadBuffer(qint64 size);
+
+    // FIXME
+    void finished();
+    void error(QNetworkReply::NetworkError code, const QString &errorString);
+    void metaDataChanged();
+    void redirectionRequested(const QUrl &target);
+
+
+    QNetworkAccessManager *manager;
+    QNetworkAccessManagerPrivate *managerPrivate;
+    QNetworkRequest request;
+    QNetworkAccessManager::Operation operation;
+
+    QNonContiguousByteDevice* createUploadByteDevice();
+    QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
+    QIODevice *outgoingData;
+    QSharedPointer<QRingBuffer> outgoingDataBuffer;
+    void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal); // dup?
+
+
+    bool migrateBackend();
+    quint64 resumeOffset;
+    bool canResume() const;
+    void setResumeOffset(quint64 offset);
+    qint64 bytesUploaded;
+    qint64 preMigrationDownloaded;
+
+    void createCache();
+    void completeCacheSave();
+    void setCachingEnabled(bool enable);
+    bool isCachingEnabled() const;
+    void initCacheSaveDevice();
+    QAbstractNetworkCache *networkCache() const;
+    QIODevice *cacheLoadDevice;
+    bool cacheEnabled; // is this for saving?
+    QIODevice *cacheSaveDevice;
+    bool loadingFromCache;
+
+
+    QUrl urlForLastAuthentication;
+#ifndef QT_NO_NETWORKPROXY
+    QNetworkProxy lastProxyAuthentication;
+    QList<QNetworkProxy> proxyList;
+#endif
+
+    int statusCode;
+    QString reasonPhrase;
+
+    State state;
+
+
+    // Used for normal downloading. For "zero copy" the downloadZerocopyBuffer is used
+    QByteDataBuffer downloadMultiBuffer;
+    QByteDataBuffer pendingDownloadData; // For signal compression
+    qint64 bytesDownloaded;
+    qint64 lastBytesDownloaded;
+
+    // only used when the "zero copy" style is used. Else downloadMultiBuffer is used.
+    // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
+    qint64 downloadBufferReadPosition;
+    qint64 downloadBufferCurrentSize;
+    qint64 downloadBufferMaximumSize;
+    QSharedPointer<char> downloadBufferPointer;
+    char* downloadZerocopyBuffer;
+
+
+    QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
+
+    // Will be increased by HTTP thread:
+    QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
+    QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
+
+    bool synchronous;
+
+#ifndef QT_NO_OPENSSL
+    QSslConfiguration sslConfiguration;
+    bool pendingIgnoreAllSslErrors;
+    QList<QSslError> pendingIgnoreSslErrorsList;
+#endif
+
+
+    void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
+    void invalidateCache();
+    bool sendCacheContents(const QNetworkCacheMetaData &metaData);
+    QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
+
+
+    void postRequest();
+
+
+    void checkForRedirect(const int statusCode);
+
+public:
     // From HTTP thread:
     void replyDownloadData(QByteArray);
     void replyFinished();
@@ -121,45 +284,19 @@ private slots:
     void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void replySslConfigurationChanged(const QSslConfiguration&);
 #endif
+#ifndef QT_NO_NETWORKPROXY
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
+#endif
 
     // From QNonContiguousByteDeviceThreadForwardImpl in HTTP thread:
     void resetUploadDataSlot(bool *r);
     void wantUploadDataSlot(qint64);
     void sentUploadDataSlot(qint64);
 
-    bool sendCacheContents(const QNetworkCacheMetaData &metaData);
 
-private:
-    QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
-    int statusCode;
-    QString reasonPhrase;
-    // Will be increased by HTTP thread:
-    QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
-    QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
-    bool loadingFromCache;
-    QByteDataBuffer pendingDownloadData;
-    bool usingZerocopyDownloadBuffer;
 
-#ifndef QT_NO_OPENSSL
-    QSslConfiguration *pendingSslConfiguration;
-    bool pendingIgnoreAllSslErrors;
-    QList<QSslError> pendingIgnoreSslErrorsList;
-#endif
 
-    quint64 resumeOffset;
-
-    void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
-    void invalidateCache();
-    void postRequest();
-    void readFromHttp();
-    void checkForRedirect(const int statusCode);
-};
-
-class QNetworkAccessHttpBackendFactory : public QNetworkAccessBackendFactory
-{
-public:
-    virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const;
+    Q_DECLARE_PUBLIC(QNetworkReplyHttpImpl)
 };
 
 QT_END_NAMESPACE

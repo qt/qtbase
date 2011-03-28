@@ -67,13 +67,12 @@
 #include "QtNetwork/qhttpmultipart.h"
 #include "qhttpmultipart_p.h"
 
+#include "qnetworkreplyhttpimpl_p.h"
+
 #include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_HTTP
-Q_GLOBAL_STATIC(QNetworkAccessHttpBackendFactory, httpBackend)
-#endif // QT_NO_HTTP
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 #ifndef QT_NO_FTP
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
@@ -85,10 +84,6 @@ Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 
 static void ensureInitialized()
 {
-#ifndef QT_NO_HTTP
-    (void) httpBackend();
-#endif // QT_NO_HTTP
-
 #ifndef QT_NO_FTP
     (void) ftpBackend();
 #endif
@@ -356,6 +351,17 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     ensureInitialized();
 
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+#ifndef QT_NO_NETWORKPROXY
+    qRegisterMetaType<QNetworkProxy>("QNetworkProxy");
+#endif
+#ifndef QT_NO_OPENSSL
+    qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
+    qRegisterMetaType<QSslConfiguration>("QSslConfiguration");
+#endif
+    qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >("QList<QPair<QByteArray,QByteArray> >");
+    qRegisterMetaType<QHttpNetworkRequest>("QHttpNetworkRequest");
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    qRegisterMetaType<QSharedPointer<char> >("QSharedPointer<char>");
 }
 
 /*!
@@ -966,6 +972,18 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                 request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
         }
     }
+
+#ifndef QT_NO_HTTP
+    // Since Qt 5 we use the new QNetworkReplyHttpImpl
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") ) {
+        QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
+#ifndef QT_NO_BEARERMANAGEMENT
+        connect(this, SIGNAL(networkSessionConnected()),
+                reply, SLOT(_q_networkSessionConnected()));
+#endif
+        return reply;
+    }
+#endif // QT_NO_HTTP
 
     // first step: create the reply
     QUrl url = request.url();
