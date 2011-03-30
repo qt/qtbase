@@ -12,7 +12,7 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
    for(dir, $$list($$unique($$list($$dirname(QMAKE_QT_CONFIG) \
-                                   $$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))))) {
+                                   $$replace($$list($$split($$list($$(QMAKEPATH)), $$DIRLIST_SEPARATOR)), $, /mkspecs))))) {
       debug(1, "Loading modules from $${dir}")
       for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
          # For installed Qt these paths will be common for all modules
