@@ -155,9 +155,6 @@ bool QAccessibleButton::doAction(int action, int child, const QVariantList &para
 QString QAccessibleButton::text(Text t, int child) const
 {
     QString str;
-    if (!widget()->isVisible())
-        return str;
-
     switch (t) {
     case Accelerator:
         {
