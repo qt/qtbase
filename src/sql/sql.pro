@@ -1,6 +1,10 @@
 TARGET	   = QtSql
 QPRO_PWD   = $$PWD
 QT         = core
+
+CONFIG += module
+MODULE_PRI = ../modules/qt_sql.pri
+
 DEFINES += QT_BUILD_SQL_LIB
 DEFINES += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x62000000

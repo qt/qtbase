@@ -2,7 +2,10 @@ TARGET = QtDBus
 QPRO_PWD = $$PWD
 QT = core \
     xml
-CONFIG += link_pkgconfig
+
+CONFIG += link_pkgconfig module
+MODULE_PRI = ../modules/qt_dbus.pri
+
 DEFINES += QT_BUILD_DBUS_LIB \
     DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS

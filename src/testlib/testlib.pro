@@ -1,6 +1,10 @@
 TARGET = QtTest
 QPRO_PWD = $$PWD
 QT = core
+
+CONFIG += module
+MODULE_PRI = ../modules/qt_testlib.pri
+
 INCLUDEPATH += .
 unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Unit \

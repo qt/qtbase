@@ -1,9 +1,12 @@
-MODULE     = uitools
 QPRO_PWD   = $$PWD
 TEMPLATE = lib
 TARGET = $$qtLibraryTarget(QtUiTools)
 QT = core xml
-CONFIG += qt staticlib
+
+CONFIG += qt staticlib   # Not adding module here, since the module pri's are only used for building
+MODULE_PRI = ../modules/qt_uitools.pri \
+             ../modules/qt_uilib.pri
+
 DESTDIR = $$QMAKE_LIBDIR_QT
 
 symbian {
