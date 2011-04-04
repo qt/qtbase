@@ -71,6 +71,7 @@ public:
     void setModel(QAbstractItemModel *model);
     void setRootIndex(const QModelIndex &index);
     void setSelectionModel(QItemSelectionModel *selectionModel);
+    void doItemsLayout();
 
     QHeaderView *horizontalHeader() const;
     QHeaderView *verticalHeader() const;
