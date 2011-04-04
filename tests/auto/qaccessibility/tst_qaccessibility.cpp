@@ -1888,10 +1888,9 @@ void tst_QAccessibility::buttonTest()
     // Standard push button
     CounterButton pushButton("Ok", &window);
 
-    // toggle push button
-    QPushButton togglepush("Toggle", &window);
-    togglepush.setToggleButton(true);
-
+    // toggle button
+    QPushButton toggleButton("Toggle", &window);
+    toggleButton.setCheckable(true);
 
     // standard checkbox
     QCheckBox checkBox("Check me!", &window);
@@ -1910,7 +1909,7 @@ void tst_QAccessibility::buttonTest()
 
     // standard toolbutton
     QToolButton toggletool(&window);
-    toggletool.setToggleButton(TRUE);
+    toggletool.setCheckable(true);
     toggletool.setText("Toggle");
     toggletool.setMinimumSize(20,20);
 
@@ -1957,17 +1956,17 @@ void tst_QAccessibility::buttonTest()
     delete interface;
 
     // test toggle button
-    interface = QAccessible::queryAccessibleInterface(&togglepush);
+    interface = QAccessible::queryAccessibleInterface(&toggleButton);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(0), QAccessible::CheckBox);
     QCOMPARE(actionInterface->description(0), QString("Toggles the button."));
     QCOMPARE(actionInterface->name(0), QString("Check"));
-    QVERIFY(!togglepush.isChecked());
+    QVERIFY(!toggleButton.isChecked());
     QVERIFY((interface->state(0) & QAccessible::Checked) == 0);
     actionInterface->doAction(0);
     QTest::qWait(500);
     QCOMPARE(actionInterface->name(0), QString("Uncheck"));
-    QVERIFY(togglepush.isChecked());
+    QVERIFY(toggleButton.isChecked());
     QVERIFY((interface->state(0) & QAccessible::Checked));
     delete interface;
 
