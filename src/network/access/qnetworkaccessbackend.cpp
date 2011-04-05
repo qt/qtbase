@@ -321,7 +321,7 @@ void QNetworkAccessBackend::proxyAuthenticationRequired(const QNetworkProxy &pro
 
 void QNetworkAccessBackend::authenticationRequired(QAuthenticator *authenticator)
 {
-    manager->authenticationRequired(this, authenticator);
+    manager->authenticationRequired(authenticator, reply->q_func(), synchronous, reply->url, &reply->urlForLastAuthentication);
 }
 
 void QNetworkAccessBackend::metaDataChanged()

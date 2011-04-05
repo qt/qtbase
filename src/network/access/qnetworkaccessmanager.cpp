@@ -1055,35 +1055,35 @@ void QNetworkAccessManagerPrivate::createCookieJar() const
     }
 }
 
-void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend *backend,
-                                                          QAuthenticator *authenticator)
+void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authenticator,
+                                                          QNetworkReply *reply,
+                                                          bool synchronous,
+                                                          QUrl &url,
+                                                          QUrl *urlForLastAuthentication)
 {
     Q_Q(QNetworkAccessManager);
-
-    // FIXME: Add support for domains (i.e., the leading path)
-    QUrl url = backend->reply->url;
 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
     // also called when last URL is empty, e.g. on first call
-    if (backend->reply->urlForLastAuthentication.isEmpty()
-            || url != backend->reply->urlForLastAuthentication) {
+    if (urlForLastAuthentication->isEmpty()
+            || url != *urlForLastAuthentication) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
             authenticator->setPassword(cred.password);
-            backend->reply->urlForLastAuthentication = url;
+            *urlForLastAuthentication = url;
             return;
         }
     }
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
-    if (backend->isSynchronous())
+    if (synchronous)
         return;
 
-    backend->reply->urlForLastAuthentication = url;
-    emit q->authenticationRequired(backend->reply->q_func(), authenticator);
+    *urlForLastAuthentication = url;
+    emit q->authenticationRequired(reply, authenticator);
     authenticationManager->cacheCredentials(url, authenticator);
 }
 
