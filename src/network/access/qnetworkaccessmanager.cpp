@@ -1088,9 +1088,10 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
 }
 
 #ifndef QT_NO_NETWORKPROXY
-void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBackend *backend,
-                                                               const QNetworkProxy &proxy,
-                                                               QAuthenticator *authenticator)
+void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QNetworkProxy &proxy,
+                                                               bool synchronous,
+                                                               QAuthenticator *authenticator,
+                                                               QNetworkProxy *lastProxyAuthentication)
 {
     Q_Q(QNetworkAccessManager);
     // ### FIXME Tracking of successful authentications
@@ -1100,7 +1101,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
     //      proxyAuthenticationRequired gets emitted again
     // possible solution: some tracking inside the authenticator
     //      or a new function proxyAuthenticationSucceeded(true|false)
-    if (proxy != backend->reply->lastProxyAuthentication) {
+    if (proxy != *lastProxyAuthentication) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
@@ -1111,10 +1112,10 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
-    if (backend->isSynchronous())
+    if (synchronous)
         return;
 
-    backend->reply->lastProxyAuthentication = proxy;
+    *lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);
     authenticationManager->cacheProxyCredentials(proxy, authenticator);
 }

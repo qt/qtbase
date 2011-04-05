@@ -315,7 +315,7 @@ void QNetworkAccessBackend::error(QNetworkReply::NetworkError code, const QStrin
 void QNetworkAccessBackend::proxyAuthenticationRequired(const QNetworkProxy &proxy,
                                                         QAuthenticator *authenticator)
 {
-    manager->proxyAuthenticationRequired(this, proxy, authenticator);
+    manager->proxyAuthenticationRequired(proxy, synchronous, authenticator, &reply->lastProxyAuthentication);
 }
 #endif
 

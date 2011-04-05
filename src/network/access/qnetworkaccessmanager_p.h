@@ -104,8 +104,10 @@ public:
                                                              const QAuthenticator *auth = 0);
 
 #ifndef QT_NO_NETWORKPROXY
-    void proxyAuthenticationRequired(QNetworkAccessBackend *backend, const QNetworkProxy &proxy,
-                                     QAuthenticator *authenticator);
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy,
+                                bool synchronous,
+                                QAuthenticator *authenticator,
+                                QNetworkProxy *lastProxyAuthentication);
     void cacheProxyCredentials(const QNetworkProxy &proxy, const QAuthenticator *auth);
     QNetworkAuthenticationCredential *fetchCachedProxyCredentials(const QNetworkProxy &proxy,
                                                              const QAuthenticator *auth = 0);
