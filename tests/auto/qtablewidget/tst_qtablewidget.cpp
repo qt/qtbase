@@ -1471,6 +1471,8 @@ void tst_QTableWidget::task219380_removeLastRow()
 
     testWidget->removeRow(19); //we remove the last row
 
+    QApplication::processEvents(); // See QTBUG-18551 and its fix
+
     //we make sure the editor is at the cell position
     QCOMPARE(testWidget->cellWidget(18, 0)->geometry(), testWidget->visualItemRect(&item));
 }
