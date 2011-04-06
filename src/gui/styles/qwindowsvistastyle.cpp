@@ -969,7 +969,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option))
         {
 
-            if (QWindowsVistaAnimation *anim = d->widgetAnimation(widget)) {
+            QWindowsVistaAnimation *anim = d->widgetAnimation(widget);
+            if (anim && (btn->state & State_Enabled)) {
                 anim->paint(painter, option);
             } else {
                 name = QLatin1String("BUTTON");
@@ -996,7 +997,6 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         !(state & (State_Sunken | State_On)) && !(state & State_MouseOver) &&
                          (state & State_Enabled) && (state & State_Active))
                         {
-                        QWindowsVistaAnimation *anim = d->widgetAnimation(widget);
                         if (!anim && widget) {
                             QImage startImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied);
                             startImage.fill(0);
@@ -1074,8 +1074,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
 
             if (const QProgressBar *progressbar = qobject_cast<const QProgressBar *>(widget)) {
-                if (((progressbar->value() > 0  && d->transitionsEnabled()) || isIndeterminate)) {
-                    if (!d->widgetAnimation(progressbar) && progressbar->value() < progressbar->maximum()) {
+                if (isIndeterminate || (progressbar->value() > 0 && (progressbar->value() < progressbar->maximum()) && d->transitionsEnabled())) {
+                    if (!d->widgetAnimation(progressbar)) {
                         QWindowsVistaAnimation *a = new QWindowsVistaAnimation;
                         a->setWidget(const_cast<QWidget*>(widget));
                         a->setStartTime(QTime::currentTime());
@@ -2502,7 +2502,6 @@ void QWindowsVistaStylePrivate::timerEvent()
             animations[i]->widget()->update();
 
         if (!animations[i]->widget() ||
-            !animations[i]->widget()->isEnabled() ||
             !animations[i]->widget()->isVisible() ||
             animations[i]->widget()->window()->isMinimized() ||
             !animations[i]->running() ||
