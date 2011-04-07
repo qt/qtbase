@@ -122,6 +122,12 @@ win32 {
 }
 INSTALLS += qmake
 
+#syncqt
+syncqt.path=$$[QT_INSTALL_BINS]
+syncqt.files=$$QT_BUILD_TREE/bin/syncqt
+win32:syncqt.files=$$QT_BUILD_TREE/bin/syncqt.bat
+INSTALLS += syncqt
+
 #mkspecs
 mkspecs.path=$$[QT_INSTALL_DATA]/mkspecs
 mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$files($$QT_SOURCE_TREE/mkspecs/*)

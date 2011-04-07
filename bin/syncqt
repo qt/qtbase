@@ -558,8 +558,11 @@ sub locateSyncProfile
 
 # check if this is an in-source build, and if so use that as the basedir too
 $basedir = locateSyncProfile($out_basedir);
-$basedir = dirname($basedir) if ($basedir);
-$quoted_basedir = "\Q$basedir";
+if ($basedir) {
+    $basedir = dirname($basedir) ;
+    $basedir =~ s=\\=/=g;
+    $quoted_basedir = "\Q$basedir";
+}
 
 # --------------------------------------------------------------------
 # "main" function
@@ -624,6 +627,7 @@ while ( @ARGV ) {
         die "Could not find a sync.profile for '$arg'\n" if (!$basedir);
         $basedir = dirname($basedir);
         $basedir =~ s=\\=/=g;
+        $quoted_basedir = "\Q$basedir";
         $var = "ignore";
     }
 
