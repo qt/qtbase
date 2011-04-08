@@ -264,7 +264,7 @@ public:
 #endif
 
 
-    void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
+    void loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
     QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
