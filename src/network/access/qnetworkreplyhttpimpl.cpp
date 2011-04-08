@@ -54,6 +54,7 @@
 #include "QtNetwork/qsslconfiguration.h"
 #include "qhttpthreaddelegate_p.h"
 #include "qthread.h"
+#include "QtCore/qcoreapplication.h"
 
 #include "qnetworkcookiejar.h"
 
