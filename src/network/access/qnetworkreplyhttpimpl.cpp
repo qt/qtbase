@@ -398,7 +398,7 @@ QNetworkReplyHttpImplPrivate::~QNetworkReplyHttpImplPrivate()
     2) If we have a cache entry for this url populate headers so the server can return 304
     3) Calculate if response_is_fresh and if so send the cache and set loadedFromCache to true
  */
-void QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest, bool &loadedFromCache)
+bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &httpRequest)
 {
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
@@ -409,24 +409,24 @@ void QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
             httpRequest.setHeaderField("Cache-Control", "no-cache");
             httpRequest.setHeaderField("Pragma", "no-cache");
         }
-        return;
+        return false;
     }
 
     // The disk cache API does not currently support partial content retrieval.
     // That is why we don't use the disk cache for any such requests.
     if (request.hasRawHeader("Range"))
-        return;
+        return false;
 
     QAbstractNetworkCache *nc = managerPrivate->networkCache;
     if (!nc)
-        return;                 // no local cache
+        return false;                 // no local cache
 
     QNetworkCacheMetaData metaData = nc->metaData(request.url());
     if (!metaData.isValid())
-        return;                 // not in cache
+        return false;                 // not in cache
 
     if (!metaData.saveToDisk())
-        return;
+        return false;
 
     QNetworkHeadersPrivate cacheHeaders;
     QNetworkHeadersPrivate::RawHeadersList::ConstIterator it;
@@ -445,7 +445,7 @@ void QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         if (it != cacheHeaders.rawHeaders.constEnd()) {
             QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
             if (cacheControl.contains("must-revalidate"))
-                return;
+                return false;
         }
     }
 
@@ -517,14 +517,12 @@ void QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
 #endif
 
     if (!response_is_fresh)
-        return;
+        return false;
 
-    loadedFromCache = true;
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "response_is_fresh" << CacheLoadControlAttribute;
 #endif
-    if (!sendCacheContents(metaData))
-        loadedFromCache = false;
+    return sendCacheContents(metaData);
 }
 
 QHttpNetworkRequest::Priority QNetworkReplyHttpImplPrivate::convert(const QNetworkRequest::Priority& prio)
@@ -615,12 +613,12 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     switch (operation) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
-        loadFromCacheIfAllowed(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::HeadOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Head);
-        loadFromCacheIfAllowed(httpRequest, loadedFromCache);
+        loadedFromCache = loadFromCacheIfAllowed(httpRequest);
         break;
 
     case QNetworkAccessManager::PostOperation:
