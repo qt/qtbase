@@ -100,8 +100,6 @@ public:
     Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
     Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
 #endif
-//    Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
-//    Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
 
     Q_DECLARE_PRIVATE(QNetworkReplyHttpImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
@@ -113,6 +111,9 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
 #endif
     Q_PRIVATE_SLOT(d_func(), void _q_finished())
+    Q_PRIVATE_SLOT(d_func(), void _q_error(QNetworkReply::NetworkError, const QString &))
+
+    // From reply
     Q_PRIVATE_SLOT(d_func(), void replyDownloadData(QByteArray))
     Q_PRIVATE_SLOT(d_func(), void replyFinished())
     Q_PRIVATE_SLOT(d_func(), void replyDownloadMetaData(QList<QPair<QByteArray,QByteArray> >,int,QString,bool,QSharedPointer<char>,qint64))
@@ -129,6 +130,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void sentUploadDataSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void emitReplyUploadProgress(qint64, qint64))
+
 
 
 signals:
@@ -184,6 +186,7 @@ public:
     // FIXME
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
+    void _q_error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
     void redirectionRequested(const QUrl &target);
 
@@ -292,9 +295,6 @@ public:
     void resetUploadDataSlot(bool *r);
     void wantUploadDataSlot(qint64);
     void sentUploadDataSlot(qint64);
-
-
-
 
     Q_DECLARE_PUBLIC(QNetworkReplyHttpImpl)
 };

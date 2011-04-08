@@ -600,10 +600,10 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     if (transparentProxy.type() == QNetworkProxy::DefaultProxy &&
         cacheProxy.type() == QNetworkProxy::DefaultProxy) {
         // unsuitable proxies
-        QMetaObject::invokeMethod(q, "error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
+        QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
                                   Q_ARG(QString, q->tr("No suitable proxy found")));
-        QMetaObject::invokeMethod(q, "finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
+        QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }
 #endif
@@ -1810,6 +1810,12 @@ void QNetworkReplyHttpImplPrivate::finished()
     emit q->finished();
     //resumeNotificationHandling();
 }
+
+void QNetworkReplyHttpImplPrivate::_q_error(QNetworkReplyImpl::NetworkError code, const QString &errorMessage)
+{
+    this->error(code, errorMessage);
+}
+
 
 void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, const QString &errorMessage)
 {
