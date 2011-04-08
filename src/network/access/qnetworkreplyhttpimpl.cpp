@@ -650,6 +650,10 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         break;                  // can't happen
     }
 
+    if (loadedFromCache) {
+        return;    // no need to send the request! :)
+    }
+
     QList<QByteArray> headers = request.rawHeaderList();
     if (resumeOffset != 0) {
         if (headers.contains("Range")) {
@@ -676,10 +680,6 @@ void QNetworkReplyHttpImplPrivate::postRequest()
 
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request.rawHeader(header));
-
-    if (loadedFromCache) {
-        return;    // no need to send the request! :)
-    }
 
     if (request.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
         httpRequest.setPipeliningAllowed(true);
