@@ -79,6 +79,8 @@ private slots:
     void insertColumns();
     void removeRows();
     void removeColumns();
+    void moveRows();
+    void moveColumns();
 
     void reset();
 
@@ -142,6 +144,10 @@ public:
     void setPersistent(const QModelIndex &from, const QModelIndex &to);
     bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
     bool removeColumns( int column, int count, const QModelIndex & parent = QModelIndex());
+    bool moveRows (const QModelIndex &sourceParent, int sourceRow, int count,
+                   const QModelIndex &destinationParent, int destinationChild);
+    bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
+                     const QModelIndex &destinationParent, int destinationChild);
     void reset();
 
     int cCount, rCount;
@@ -243,6 +249,64 @@ bool QtTestModel::removeColumns(int column, int count, const QModelIndex & paren
     cCount = table.at(0).count();
 
     QAbstractItemModel::endRemoveColumns();
+    return true;
+}
+
+bool QtTestModel::moveRows(const QModelIndex &sourceParent, int src, int cnt,
+                           const QModelIndex &destinationParent, int dst)
+{
+    if (!QAbstractItemModel::beginMoveRows(sourceParent, src, src + cnt - 1,
+                                           destinationParent, dst))
+        return false;
+
+    QVector<QString> buf;
+    if (dst < src) {
+        for (int i  = 0; i < cnt; ++i) {
+            buf.swap(table[src + i]);
+            table.remove(src + 1);
+            table.insert(dst, buf);
+        }
+    } else if (src < dst) {
+        for (int i  = 0; i < cnt; ++i) {
+            buf.swap(table[src]);
+            table.remove(src);
+            table.insert(dst + i, buf);
+        }
+    }
+
+    rCount = table.count();
+
+    QAbstractItemModel::endMoveRows();
+    return true;
+}
+
+bool QtTestModel::moveColumns(const QModelIndex &sourceParent, int src, int cnt,
+                              const QModelIndex &destinationParent, int dst)
+{
+    if (!QAbstractItemModel::beginMoveColumns(sourceParent, src, src + cnt - 1,
+                                              destinationParent, dst))
+        return false;
+
+    for (int r = 0; r < rCount; ++r) {
+        QString buf;
+        if (dst < src) {
+            for (int i  = 0; i < cnt; ++i) {
+                buf = table[r][src + i];
+                table[r].remove(src + 1);
+                table[r].insert(dst, buf);
+            }
+        } else if (src < dst) {
+            for (int i  = 0; i < cnt; ++i) {
+                buf = table[r][src];
+                table[r].remove(src);
+                table[r].insert(dst + i, buf);
+            }
+        }
+    }
+
+    cCount = table.at(0).count();
+
+    QAbstractItemModel::endMoveColumns();
     return true;
 }
 
@@ -779,6 +843,36 @@ void tst_QAbstractItemModel::insertColumns()
     QCOMPARE(model.insertColumns(6, 4), true);
     QCOMPARE(columnsAboutToBeInsertedSpy.count(), 1);
     QCOMPARE(columnsInsertedSpy.count(), 1);
+}
+
+void tst_QAbstractItemModel::moveRows()
+{
+    QtTestModel model(10, 10);
+
+    QSignalSpy rowsAboutToBeMovedSpy(&model, SIGNAL(rowsAboutToBeMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+    QSignalSpy rowsMovedSpy(&model, SIGNAL(rowsMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+
+    QVERIFY(rowsAboutToBeMovedSpy.isValid());
+    QVERIFY(rowsMovedSpy.isValid());
+
+    QCOMPARE(model.moveRows(QModelIndex(), 6, 4, QModelIndex(), 1), true);
+    QCOMPARE(rowsAboutToBeMovedSpy.count(), 1);
+    QCOMPARE(rowsMovedSpy.count(), 1);
+}
+
+void tst_QAbstractItemModel::moveColumns()
+{
+    QtTestModel model(10, 10);
+
+    QSignalSpy columnsAboutToBeMovedSpy(&model, SIGNAL(columnsAboutToBeMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+    QSignalSpy columnsMovedSpy(&model, SIGNAL(columnsMoved(const QModelIndex &, int , int, const QModelIndex &, int)));
+
+    QVERIFY(columnsAboutToBeMovedSpy.isValid());
+    QVERIFY(columnsMovedSpy.isValid());
+
+    QCOMPARE(model.moveColumns(QModelIndex(), 6, 4, QModelIndex(), 1), true);
+    QCOMPARE(columnsAboutToBeMovedSpy.count(), 1);
+    QCOMPARE(columnsMovedSpy.count(), 1);
 }
 
 void tst_QAbstractItemModel::reset()

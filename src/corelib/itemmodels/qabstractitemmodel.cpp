@@ -1959,6 +1959,48 @@ bool QAbstractItemModel::removeColumns(int, int, const QModelIndex &)
 }
 
 /*!
+    On models that support this, moves \a count rows starting with the given
+    \a sourceRow under parent \a sourceParent to row \a destinationChild under
+    \a parent \a destinationParent.
+
+    Returns true if the rows were successfully moved; otherwise returns
+    false.
+
+    The base class implementation does nothing and returns false.
+
+    If you implement your own model, you can reimplement this function if you
+    want to support moving. Alternatively, you can provide your own API for
+    altering the data.
+
+    \sa beginMoveRows(), endMoveRows()
+*/
+bool QAbstractItemModel::moveRows(const QModelIndex &, int , int , const QModelIndex &, int)
+{
+    return false;
+}
+
+/*!
+    On models that support this, moves \a count columns starting with the given
+    \a sourceColumn under parent \a sourceParent to column \a destinationChild under
+    \a parent \a destinationParent.
+
+    Returns true if the columns were successfully moved; otherwise returns
+    false.
+
+    The base class implementation does nothing and returns false.
+
+    If you implement your own model, you can reimplement this function if you
+    want to support moving. Alternatively, you can provide your own API for
+    altering the data.
+
+    \sa beginMoveColumns(), endMoveColumns()
+*/
+bool QAbstractItemModel::moveColumns(const QModelIndex &, int , int , const QModelIndex &, int)
+{
+    return false;
+}
+
+/*!
     Fetches any available data for the items with the parent specified by the
     \a parent index.
 

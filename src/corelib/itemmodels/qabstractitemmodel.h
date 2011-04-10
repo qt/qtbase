@@ -210,11 +210,19 @@ public:
     virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    virtual bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                          const QModelIndex &destinationParent, int destinationChild);
+    virtual bool moveColumns(const QModelIndex &sourceParent, int sourceColumn, int count,
+                             const QModelIndex &destinationParent, int destinationChild);
 
     inline bool insertRow(int row, const QModelIndex &parent = QModelIndex());
     inline bool insertColumn(int column, const QModelIndex &parent = QModelIndex());
     inline bool removeRow(int row, const QModelIndex &parent = QModelIndex());
     inline bool removeColumn(int column, const QModelIndex &parent = QModelIndex());
+    inline bool moveRow(const QModelIndex &sourceParent, int sourceRow,
+                        const QModelIndex &destinationParent, int destinationChild);
+    inline bool moveColumn(const QModelIndex &sourceParent, int sourceColumn,
+                           const QModelIndex &destinationParent, int destinationChild);
 
     virtual void fetchMore(const QModelIndex &parent);
     virtual bool canFetchMore(const QModelIndex &parent) const;
@@ -330,7 +338,12 @@ inline bool QAbstractItemModel::removeRow(int arow, const QModelIndex &aparent)
 { return removeRows(arow, 1, aparent); }
 inline bool QAbstractItemModel::removeColumn(int acolumn, const QModelIndex &aparent)
 { return removeColumns(acolumn, 1, aparent); }
-
+inline bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sourceRow,
+                                        const QModelIndex &destinationParent, int destinationChild)
+{ return moveRows(sourceParent, sourceRow, 1, destinationParent, destinationChild); }
+inline bool QAbstractItemModel::moveColumn(const QModelIndex &sourceParent, int sourceColumn,
+                                           const QModelIndex &destinationParent, int destinationChild)
+{ return moveRows(sourceParent, sourceColumn, 1, destinationParent, destinationChild); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, void *adata) const
 { return QModelIndex(arow, acolumn, adata, this); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, int aid) const
