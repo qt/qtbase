@@ -162,6 +162,7 @@ bool BaselineHandler::establishConnection()
 {
     if (!proto.acceptConnection(&plat)) {
         qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
+        proto.sendBlock(BaselineProtocol::Abort, proto.errorMessage().toLatin1());  // In case the client can hear us, tell it what's wrong.
         proto.socket.disconnectFromHost();
         return false;
     }

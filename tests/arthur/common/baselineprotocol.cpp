@@ -374,7 +374,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
 
     Command cmd = UnknownError;
     if (!receiveBlock(&cmd, &block)) {
-        errMsg += QLS("Failed to get response from server.");
+        errMsg.prepend(QLS("Failed to get response from server. "));
         return false;
     }
 
