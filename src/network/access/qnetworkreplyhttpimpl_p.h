@@ -96,8 +96,11 @@ public:
 
 #ifndef QT_NO_OPENSSL
     void ignoreSslErrors();
+    // ### Qt5 Add proper virtual
     Q_INVOKABLE void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
+    // ### Qt5 Add proper virtual
     Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
+    // ### Qt5 Add proper virtual
     Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
 #endif
 
