@@ -1540,8 +1540,13 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
             // ### Handle this error.
         }
 
-        d->data->controlSocket->write(sealedBuf);
+        qint64 written = d->data->controlSocket->write(sealedBuf);
+        if (written <= 0) {
+            QSOCKS5_Q_DEBUG << "native write returned" << written;
+            return written;
+        }
         d->data->controlSocket->waitForBytesWritten(0);
+        //NB: returning len rather than written for the OK case, because the "sealing" may increase the length
         return len;
 #ifndef QT_NO_UDPSOCKET
     } else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode) {
