@@ -4162,6 +4162,7 @@ public:
 
         if (serverSocket->setSocketDescriptor(socketDescriptor)) {
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
+            connect(serverSocket, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
             serverSocket->setProtocol(QSsl::AnyProtocol);
             connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), serverSocket, SLOT(ignoreSslErrors()));
             serverSocket->setLocalCertificate(SRCDIR "/certs/server.pem");
@@ -4178,6 +4179,11 @@ public slots:
         socket = (QSslSocket*) sender();
         emit newEncryptedConnection();
     }
+    void readyReadSlot() {
+        // for the incoming sockets, not the server socket
+        //qDebug() << static_cast<QSslSocket*>(sender())->bytesAvailable() << static_cast<QSslSocket*>(sender())->encryptedBytesAvailable();
+    }
+
 public:
     QSslSocket *socket;
 };
@@ -4185,8 +4191,15 @@ public:
 // very similar to ioPostToHttpUploadProgress but for SSL
 void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 {
-    QFile sourceFile(SRCDIR "/bigfile");
-    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    //QFile sourceFile(SRCDIR "/bigfile");
+    //QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    qint64 wantedSize = 2*1024*1024; // 2 MB
+    QByteArray sourceFile;
+    // And in the case of SSL, the compression can fool us and let the
+    // server send the data much faster than expected.
+    // So better provide random data that cannot be compressed.
+    for (int i = 0; i < wantedSize; ++i)
+        sourceFile += (char)qrand();
 
     // emulate a minimal https server
     SslServer server;
@@ -4195,8 +4208,10 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // create the request
     QUrl url = QUrl(QString("https://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
+
     request.setRawHeader("Content-Type", "application/octet-stream");
-    QNetworkReplyPtr reply = manager.post(request, &sourceFile);
+    QNetworkReplyPtr reply = manager.post(request, sourceFile);
+
     QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)), reply, SLOT(ignoreSslErrors()));
@@ -4215,16 +4230,8 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     QVERIFY(!spy.isEmpty());
     QList<QVariant> args = spy.last();
     QVERIFY(args.at(0).toLongLong() > 0);
-
+    // but not everything!
     QVERIFY(args.at(0).toLongLong() != sourceFile.size());
-
-    incomingSocket->setReadBufferSize(32*1024);
-    incomingSocket->read(16*1024);
-    QTestEventLoop::instance().enterLoop(2);
-    // some more progress than before
-    QVERIFY(!spy.isEmpty());
-    QList<QVariant> args2 = spy.last();
-    QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
@@ -4232,9 +4239,8 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // progress should be finished
     QVERIFY(!spy.isEmpty());
     QList<QVariant> args3 = spy.last();
-    QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
-    QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
+    QCOMPARE(args3.at(0).toLongLong(), qint64(sourceFile.size()));
 
     // after sending this, the QNAM should emit finished()
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));

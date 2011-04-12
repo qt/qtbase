@@ -1736,7 +1736,7 @@ QNonContiguousByteDevice* QNetworkReplyHttpImplPrivate::createUploadByteDevice()
         uploadByteDevice->disableReset();
 
     // We want signal emissions only for normal asynchronous uploads
-    if (synchronous)
+    if (!synchronous)
         QObject::connect(uploadByteDevice.data(), SIGNAL(readProgress(qint64,qint64)),
                          q, SLOT(emitReplyUploadProgress(qint64,qint64)));
 
