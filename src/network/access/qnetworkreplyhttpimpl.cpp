@@ -244,6 +244,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
 
 QNetworkReplyHttpImpl::~QNetworkReplyHttpImpl()
 {
+    // FIXME?
 }
 
 void QNetworkReplyHttpImpl::close()
@@ -361,26 +362,41 @@ bool QNetworkReplyHttpImpl::canReadLine () const
 QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
 // FIXME order etc
     : QNetworkReplyPrivate()
+
+    , manager(0)
+    , managerPrivate(0)
+    , synchronous(false)
+
+    , state(Idle)
+
     , statusCode(0)
+
+    , outgoingData(0)
+
+    , bytesUploaded(-1)
+
+
+    , cacheLoadDevice(0)
+    , loadingFromCache(false)
+
+    , cacheSaveDevice(0)
+    , cacheEnabled(false)
+
+
+    , resumeOffset(0)
+    , preMigrationDownloaded(-1)
+
+    , bytesDownloaded(0)
+    , lastBytesDownloaded(-1)
+    , downloadBufferReadPosition(0)
+    , downloadBufferCurrentSize(0)
+    , downloadBufferMaximumSize(0)
+    , downloadZerocopyBuffer(0)
     , pendingDownloadDataEmissions(new QAtomicInt())
     , pendingDownloadProgressEmissions(new QAtomicInt())
-    , loadingFromCache(false)
-#ifndef QT_NO_OPENSSL
-    , pendingIgnoreAllSslErrors(false)
-#endif
-    , resumeOffset(0)
-    , outgoingData(0),
-      cacheLoadDevice(0),
-      cacheEnabled(false), cacheSaveDevice(0),
-     // notificationHandlingPaused(false),
-      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
-      //httpStatusCode(0),
-      state(Idle)
-      , downloadBufferReadPosition(0)
-      , downloadBufferCurrentSize(0)
-      , downloadBufferMaximumSize(0)
-      , downloadZerocopyBuffer(0)
-    , synchronous(false)
+    #ifndef QT_NO_OPENSSL
+        , pendingIgnoreAllSslErrors(false)
+    #endif
 
 {
 }

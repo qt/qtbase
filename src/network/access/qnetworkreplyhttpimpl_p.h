@@ -194,25 +194,30 @@ public:
     void redirectionRequested(const QUrl &target);
 
 
+    // incoming from user
     QNetworkAccessManager *manager;
     QNetworkAccessManagerPrivate *managerPrivate;
     QNetworkRequest request;
-    QNetworkAccessManager::Operation operation;
+    QNetworkAccessManager::Operation operation; // FIXME already in replyprivate?
+    QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
+    bool synchronous;
 
+    State state;
+
+    // from http thread
+    int statusCode;
+    QString reasonPhrase;
+
+    // upload
     QNonContiguousByteDevice* createUploadByteDevice();
     QSharedPointer<QNonContiguousByteDevice> uploadByteDevice;
     QIODevice *outgoingData;
     QSharedPointer<QRingBuffer> outgoingDataBuffer;
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal); // dup?
-
-
-    bool migrateBackend();
-    quint64 resumeOffset;
-    bool canResume() const;
-    void setResumeOffset(quint64 offset);
     qint64 bytesUploaded;
-    qint64 preMigrationDownloaded;
 
+
+    // cache
     void createCache();
     void completeCacheSave();
     void setCachingEnabled(bool enable);
@@ -220,9 +225,10 @@ public:
     void initCacheSaveDevice();
     QAbstractNetworkCache *networkCache() const;
     QIODevice *cacheLoadDevice;
-    bool cacheEnabled; // is this for saving?
-    QIODevice *cacheSaveDevice;
     bool loadingFromCache;
+
+    QIODevice *cacheSaveDevice;
+    bool cacheEnabled; // is this for saving?
 
 
     QUrl urlForLastAuthentication;
@@ -231,11 +237,12 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
-    int statusCode;
-    QString reasonPhrase;
 
-    State state;
-
+    bool migrateBackend();
+    bool canResume() const;
+    void setResumeOffset(quint64 offset);
+    quint64 resumeOffset;
+    qint64 preMigrationDownloaded;
 
     // Used for normal downloading. For "zero copy" the downloadZerocopyBuffer is used
     QByteDataBuffer downloadMultiBuffer;
@@ -251,14 +258,10 @@ public:
     QSharedPointer<char> downloadBufferPointer;
     char* downloadZerocopyBuffer;
 
-
-    QHttpNetworkRequest httpRequest; // There is also a copy in the HTTP thread
-
     // Will be increased by HTTP thread:
     QSharedPointer<QAtomicInt> pendingDownloadDataEmissions;
     QSharedPointer<QAtomicInt> pendingDownloadProgressEmissions;
 
-    bool synchronous;
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration;
