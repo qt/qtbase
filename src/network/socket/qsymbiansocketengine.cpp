@@ -1440,6 +1440,7 @@ void QSymbianSocketEngine::startNotifications()
         qDebug() << "QSymbianSocketEngine::startNotifications" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
     if (!d->asyncSelect && (d->readNotificationsEnabled || d->writeNotificationsEnabled || d->exceptNotificationsEnabled)) {
+        Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::startNotifications(), Q_VOID);
         if (d->threadData->eventDispatcher) {
             d->asyncSelect = q_check_ptr(new QAsyncSelect(
                 static_cast<QEventDispatcherSymbian*> (d->threadData->eventDispatcher), d->nativeSocket,
@@ -1456,14 +1457,12 @@ void QSymbianSocketEngine::startNotifications()
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isReadNotificationEnabled(), false);
     return d->readNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setReadNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setReadNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
@@ -1474,14 +1473,12 @@ void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isWriteNotificationEnabled(), false);
     return d->writeNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setWriteNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setWriteNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
@@ -1492,7 +1489,6 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isExceptionNotificationEnabled(), false);
     return d->exceptNotificationsEnabled;
     return false;
 }
@@ -1500,7 +1496,6 @@ bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setExceptionNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setExceptionNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
