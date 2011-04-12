@@ -26,7 +26,11 @@ equals(GENERATE_SIS_TARGETS, true) {
 
     qtPrepareTool(QMAKE_CREATEPACKAGE, createpackage)
 
-    CREATEPACKAGE_DIR = $$OBJECTS_DIR/createpackage_tmp
+    sis_objects_dir = $$OBJECTS_DIR
+    isEmpty(sis_objects_dir):sis_objects_dir = .
+
+    CREATEPACKAGE_DIR = $$sis_objects_dir/createpackage_tmp
+
     QMAKE_CLEAN += $$CREATEPACKAGE_DIR/*
 
     symbian-abld|symbian-sbsv2 {
