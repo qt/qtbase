@@ -476,6 +476,9 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 {
     QTcpSocket *socket = newSocket();
     QCOMPARE(socket->socketDescriptor(), -1);
+#ifdef Q_OS_SYMBIAN
+    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
+#endif
     QVERIFY(!socket->setSocketDescriptor(-5, QTcpSocket::UnconnectedState));
     QCOMPARE(socket->socketDescriptor(), -1);
 
