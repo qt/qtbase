@@ -223,16 +223,13 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             --yy;
         }
         if (!(opt->state & State_Enabled) && !(opt->state & State_On)) {
-            int pnt;
-            p->setPen(opt->palette.highlightedText().color());
-            QPoint offset(1, 1);
-            for (pnt = 0; pnt < a.size(); ++pnt)
-                a[pnt].translate(offset.x(), offset.y());
+            p->save();
+            p->translate(1, 1);
+            p->setPen(opt->palette.light().color());
             p->drawLines(a);
-            for (pnt = 0; pnt < a.size(); ++pnt)
-                a[pnt].translate(offset.x(), offset.y());
+            p->restore();
         }
-        p->setPen(opt->palette.text().color());
+        p->setPen((opt->state & State_On) ? opt->palette.highlightedText().color() : opt->palette.text().color());
         p->drawLines(a);
         break; }
     case PE_Frame:
