@@ -137,6 +137,7 @@ static bool AlwaysFalse = false;
 
 Q_DECLARE_METATYPE(QNetworkRequest::CacheLoadControl)
 
+
 void tst_QAbstractNetworkCache::initTestCase()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -149,6 +150,7 @@ void tst_QAbstractNetworkCache::initTestCase()
     }
 #endif
 }
+
 
 void tst_QAbstractNetworkCache::expires_data()
 {
