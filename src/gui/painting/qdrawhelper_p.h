@@ -465,6 +465,79 @@ const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const O
     return b;
 }
 
+template <class Simd>
+class QRadialFetchSimd
+{
+public:
+    static inline void fetch(uint *buffer, uint *end, const QSpanData *data, qreal det, qreal delta_det,
+                             qreal delta_delta_det, qreal b, qreal delta_b)
+    {
+        typename Simd::Vect_buffer_f det_vec;
+        typename Simd::Vect_buffer_f delta_det4_vec;
+        typename Simd::Vect_buffer_f b_vec;
+
+        for (int i = 0; i < 4; ++i) {
+            det_vec.f[i] = det;
+            delta_det4_vec.f[i] = 4 * delta_det;
+            b_vec.f[i] = b;
+
+            det += delta_det;
+            delta_det += delta_delta_det;
+            b += delta_b;
+        }
+
+        const typename Simd::Float32x4 v_delta_delta_det16 = Simd::v_dup(16 * delta_delta_det);
+        const typename Simd::Float32x4 v_delta_delta_det6 = Simd::v_dup(6 * delta_delta_det);
+        const typename Simd::Float32x4 v_delta_b4 = Simd::v_dup(4 * delta_b);
+
+        const typename Simd::Float32x4 v_min = Simd::v_dup(0.0f);
+        const typename Simd::Float32x4 v_max = Simd::v_dup(GRADIENT_STOPTABLE_SIZE-1.5f);
+        const typename Simd::Float32x4 v_half = Simd::v_dup(0.5f);
+
+        const typename Simd::Float32x4 v_table_size_minus_one = Simd::v_dup(float(GRADIENT_STOPTABLE_SIZE-1));
+
+        const typename Simd::Int32x4 v_repeat_mask = Simd::v_dup(~(uint(0xffffff) << GRADIENT_STOPTABLE_SIZE_SHIFT));
+        const typename Simd::Int32x4 v_reflect_mask = Simd::v_dup(~(uint(0xffffff) << (GRADIENT_STOPTABLE_SIZE_SHIFT+1)));
+
+        const typename Simd::Int32x4 v_reflect_limit = Simd::v_dup(2 * GRADIENT_STOPTABLE_SIZE - 1);
+
+#define FETCH_RADIAL_LOOP_PROLOGUE \
+        while (buffer < end) { \
+            const typename Simd::Float32x4 v_index_local = Simd::v_sub(Simd::v_sqrt(Simd::v_max(v_min, det_vec.v)), b_vec.v); \
+            const typename Simd::Float32x4 v_index = Simd::v_add(Simd::v_mul(v_index_local, v_table_size_minus_one), v_half); \
+            typename Simd::Vect_buffer_i index_vec;
+#define FETCH_RADIAL_LOOP_CLAMP_REPEAT \
+            index_vec.v = Simd::v_and(v_repeat_mask, Simd::v_toInt(v_index));
+#define FETCH_RADIAL_LOOP_CLAMP_REFLECT \
+            const typename Simd::Int32x4 v_index_i = Simd::v_and(v_reflect_mask, Simd::v_toInt(v_index)); \
+            const typename Simd::Int32x4 v_index_i_inv = Simd::v_sub(v_reflect_limit, v_index_i); \
+            index_vec.v = Simd::v_min_16(v_index_i, v_index_i_inv);
+#define FETCH_RADIAL_LOOP_CLAMP_PAD \
+            index_vec.v = Simd::v_toInt(Simd::v_min(v_max, Simd::v_max(v_min, v_index)));
+#define FETCH_RADIAL_LOOP_EPILOGUE \
+            det_vec.v = Simd::v_add(Simd::v_add(det_vec.v, delta_det4_vec.v), v_delta_delta_det6); \
+            delta_det4_vec.v = Simd::v_add(delta_det4_vec.v, v_delta_delta_det16); \
+            b_vec.v = Simd::v_add(b_vec.v, v_delta_b4); \
+            for (int i = 0; i < 4; ++i) \
+                *buffer++ = data->gradient.colorTable[index_vec.i[i]]; \
+        }
+
+        if (data->gradient.spread == QGradient::RepeatSpread) {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_REPEAT
+            FETCH_RADIAL_LOOP_EPILOGUE
+        } else if (data->gradient.spread == QGradient::ReflectSpread) {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_REFLECT
+            FETCH_RADIAL_LOOP_EPILOGUE
+        } else {
+            FETCH_RADIAL_LOOP_PROLOGUE
+            FETCH_RADIAL_LOOP_CLAMP_PAD
+            FETCH_RADIAL_LOOP_EPILOGUE
+        }
+    }
+};
+
 #if defined(Q_CC_RVCT)
 #  pragma push
 #  pragma arm

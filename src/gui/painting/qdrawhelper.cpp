@@ -7828,6 +7828,11 @@ void qInitDrawhelperAsm()
         qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
         qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
         qt_memfill32 = qt_memfill32_neon;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                      int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
     }
 #endif
 

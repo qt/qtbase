@@ -77,6 +77,7 @@
 # define SRCDIR "."
 #endif
 
+Q_DECLARE_METATYPE(QGradientStops)
 Q_DECLARE_METATYPE(QLine)
 Q_DECLARE_METATYPE(QRect)
 Q_DECLARE_METATYPE(QSize)
@@ -189,6 +190,7 @@ private slots:
     void fillRect_stretchToDeviceMode();
     void monoImages();
 
+    void linearGradientSymmetry_data();
     void linearGradientSymmetry();
     void gradientInterpolation();
 
@@ -3983,8 +3985,39 @@ static QLinearGradient inverseGradient(QLinearGradient g)
     return g2;
 }
 
+void tst_QPainter::linearGradientSymmetry_data()
+{
+    QTest::addColumn<QGradientStops>("stops");
+
+    {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
+        stops << qMakePair(qreal(0.2), QColor(220, 220, 220, 0));
+        stops << qMakePair(qreal(0.6), QColor(Qt::red));
+        stops << qMakePair(qreal(0.9), QColor(220, 220, 220, 255));
+        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QTest::newRow("multiple stops") << stops;
+    }
+
+    {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.0), QColor(Qt::blue));
+        stops << qMakePair(qreal(1.0), QColor(Qt::black));
+        QTest::newRow("two stops") << stops;
+    }
+
+    {
+        QGradientStops stops;
+        stops << qMakePair(qreal(0.3), QColor(Qt::blue));
+        stops << qMakePair(qreal(0.6), QColor(Qt::black));
+        QTest::newRow("two stops 2") << stops;
+    }
+}
+
 void tst_QPainter::linearGradientSymmetry()
 {
+    QFETCH(QGradientStops, stops);
+
     QImage a(64, 8, QImage::Format_ARGB32_Premultiplied);
     QImage b(64, 8, QImage::Format_ARGB32_Premultiplied);
 
@@ -3992,11 +4025,7 @@ void tst_QPainter::linearGradientSymmetry()
     b.fill(0);
 
     QLinearGradient gradient(QRectF(b.rect()).topLeft(), QRectF(b.rect()).topRight());
-    gradient.setColorAt(0.0, Qt::blue);
-    gradient.setColorAt(0.2, QColor(220, 220, 220, 0));
-    gradient.setColorAt(0.6, Qt::red);
-    gradient.setColorAt(0.9, QColor(220, 220, 220, 255));
-    gradient.setColorAt(1.0, Qt::black);
+    gradient.setStops(stops);
 
     QPainter pa(&a);
     pa.fillRect(a.rect(), gradient);
