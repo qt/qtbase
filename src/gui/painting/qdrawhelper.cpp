@@ -1406,23 +1406,47 @@ static void QT_FASTCALL getRadialGradientValues(RadialGradientValues *v, const Q
 {
     v->dx = data->gradient.radial.center.x - data->gradient.radial.focal.x;
     v->dy = data->gradient.radial.center.y - data->gradient.radial.focal.y;
-    v->a = data->gradient.radial.radius*data->gradient.radial.radius - v->dx*v->dx - v->dy*v->dy;
+
+    v->dr = data->gradient.radial.center.radius - data->gradient.radial.focal.radius;
+    v->sqrfr = data->gradient.radial.focal.radius * data->gradient.radial.focal.radius;
+
+    v->a = v->dr * v->dr - v->dx*v->dx - v->dy*v->dy;
+    v->inv2a = 1 / (2 * v->a);
+
+    v->extended = !qFuzzyIsNull(data->gradient.radial.focal.radius) || v->a <= 0;
 }
 
 class RadialFetchPlain
 {
 public:
-    static inline void fetch(uint *buffer, uint *end, const QSpanData *data, qreal det, qreal delta_det,
-                             qreal delta_delta_det, qreal b, qreal delta_b)
+    static inline void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
+                             qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
     {
-        while (buffer < end) {
-            *buffer = qt_gradient_pixel(&data->gradient, (det > 0 ? qSqrt(det) : 0) - b);
+        if (op->radial.extended) {
+            while (buffer < end) {
+                quint32 result = 0;
+                if (det >= 0) {
+                    qreal w = qSqrt(det) - b;
+                    if (data->gradient.radial.focal.radius + op->radial.dr * w >= 0)
+                        result = qt_gradient_pixel(&data->gradient, w);
+                }
 
-            det += delta_det;
-            delta_det += delta_delta_det;
-            b += delta_b;
+                *buffer = result;
 
-            ++buffer;
+                det += delta_det;
+                delta_det += delta_delta_det;
+                b += delta_b;
+
+                ++buffer;
+            }
+        } else {
+            while (buffer < end) {
+                *buffer++ = qt_gradient_pixel(&data->gradient, qSqrt(det) - b);
+
+                det += delta_det;
+                delta_det += delta_delta_det;
+                b += delta_b;
+            }
         }
     }
 };

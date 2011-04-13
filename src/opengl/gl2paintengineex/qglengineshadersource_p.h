@@ -241,6 +241,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\n\
     uniform   mediump vec2      halfViewportSize; \n\
     uniform   highp   mat3      brushTransform; \n\
     uniform   highp   vec2      fmp; \n\
+    uniform   highp   vec3      bradius; \n\
     varying   highp   float     b; \n\
     varying   highp   vec2      A; \n\
     void setPosition(void) \n\
@@ -253,7 +254,7 @@ static const char* const qglslPositionWithRadialGradientBrushVertexShader = "\n\
         mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \n\
         gl_Position = vec4(gl_Position.xy * invertedHTexCoordsZ, 0.0, invertedHTexCoordsZ); \n\
         A = hTexCoords.xy * invertedHTexCoordsZ; \n\
-        b = 2.0 * dot(A, fmp); \n\
+        b = bradius.x + 2.0 * dot(A, fmp); \n\
     }\n";
 
 static const char* const qglslAffinePositionWithRadialGradientBrushVertexShader
@@ -263,13 +264,22 @@ static const char* const qglslRadialGradientBrushSrcFragmentShader = "\n\
     uniform           sampler2D brushTexture; \n\
     uniform   highp   float     fmp2_m_radius2; \n\
     uniform   highp   float     inverse_2_fmp2_m_radius2; \n\
+    uniform   highp   float     sqrfr; \n\
     varying   highp   float     b; \n\
     varying   highp   vec2      A; \n\
+    uniform   highp   vec3      bradius; \n\
     lowp vec4 srcPixel() \n\
     { \n\
-        highp float c = -dot(A, A); \n\
-        highp vec2 val = vec2((-b + sqrt(b*b - 4.0*fmp2_m_radius2*c)) * inverse_2_fmp2_m_radius2, 0.5); \n\
-        return texture2D(brushTexture, val); \n\
+        highp float c = sqrfr-dot(A, A); \n\
+        highp float det = b*b - 4.0*fmp2_m_radius2*c; \n\
+        lowp vec4 result = vec4(0.0); \n\
+        if (det >= 0.0) { \n\
+            highp float detSqrt = sqrt(det); \n\
+            highp float w = max((-b - detSqrt) * inverse_2_fmp2_m_radius2, (-b + detSqrt) * inverse_2_fmp2_m_radius2); \n\
+            if (bradius.y + w * bradius.z >= 0.0) \n\
+                result = texture2D(brushTexture, vec2(w, 0.5)); \n\
+        } \n\
+        return result; \n\
     }\n";
 
 

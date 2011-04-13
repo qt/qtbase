@@ -1546,8 +1546,9 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
                 QPointF center(radialGrad->center());
                 QPointF focal(radialGrad->focalPoint());
                 qreal radius = radialGrad->radius();
+                qreal focalRadius = radialGrad->focalRadius();
                 shading = CGShadingCreateRadial(colorspace, CGPointMake(focal.x(), focal.y()),
-                                                0.0, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
+                                                focalRadius, CGPointMake(center.x(), center.y()), radius, fill_func, false, true);
             }
 
             CGFunctionRelease(fill_func);

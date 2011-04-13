@@ -346,8 +346,12 @@ void PaintCommands::staticInit()
                       "gradient_setLinear 1.0 1.0 2.0 2.0");
     DECL_PAINTCOMMAND("gradient_setRadial", command_gradient_setRadial,
                       "^gradient_setRadial\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)$",
-                      "gradient_setRadial <cx> <cy> <rad> <fx> <fy>\n  - C is the center\n  - rad is the angle in degrees\n  - F is the focal point",
+                      "gradient_setRadial <cx> <cy> <rad> <fx> <fy>\n  - C is the center\n  - rad is the radius\n  - F is the focal point",
                       "gradient_setRadial 1.0 1.0 45.0 2.0 2.0");
+    DECL_PAINTCOMMAND("gradient_setRadialExtended", command_gradient_setRadialExtended,
+                      "^gradient_setRadialExtended\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)\\s?([\\w.]*)$",
+                      "gradient_setRadialExtended <cx> <cy> <rad> <fx> <fy> <frad>\n  - C is the center\n  - rad is the center radius\n  - F is the focal point\n  - frad is the focal radius",
+                      "gradient_setRadialExtended 1.0 1.0 45.0 2.0 2.0 45.0");
     DECL_PAINTCOMMAND("gradient_setLinearPen", command_gradient_setLinearPen,
                       "^gradient_setLinearPen\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)\\s+([\\w.]*)$",
                       "gradient_setLinearPen <x1> <y1> <x2> <y2>",
@@ -2400,11 +2404,37 @@ void PaintCommands::command_gradient_setRadial(QRegExp re)
     double fy = convertToDouble(caps.at(5));
 
     if (m_verboseMode)
-        printf(" -(lance) gradient_setRadial center=(%.2f, %.2f), radius=%.2f focal=(%.2f, %.2f), "
+        printf(" -(lance) gradient_setRadial center=(%.2f, %.2f), radius=%.2f, focal=(%.2f, %.2f), "
                "spread=%d\n",
                cx, cy, rad, fx, fy, m_gradientSpread);
 
     QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
+    rg.setStops(m_gradientStops);
+    rg.setSpread(m_gradientSpread);
+    rg.setCoordinateMode(m_gradientCoordinate);
+    QBrush brush(rg);
+    QTransform brush_matrix = m_painter->brush().transform();
+    brush.setTransform(brush_matrix);
+    m_painter->setBrush(brush);
+}
+
+/***************************************************************************************************/
+void PaintCommands::command_gradient_setRadialExtended(QRegExp re)
+{
+    QStringList caps = re.capturedTexts();
+    double cx = convertToDouble(caps.at(1));
+    double cy = convertToDouble(caps.at(2));
+    double rad = convertToDouble(caps.at(3));
+    double fx = convertToDouble(caps.at(4));
+    double fy = convertToDouble(caps.at(5));
+    double frad = convertToDouble(caps.at(6));
+
+    if (m_verboseMode)
+        printf(" -(lance) gradient_setRadialExtended center=(%.2f, %.2f), radius=%.2f, focal=(%.2f, %.2f), "
+               "focal radius=%.2f, spread=%d\n",
+               cx, cy, rad, fx, fy, frad, m_gradientSpread);
+
+    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy), frad);
     rg.setStops(m_gradientStops);
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);

@@ -985,6 +985,8 @@ public:
     static inline Float32x4 v_sqrt(Float32x4 x) { Float32x4 y = vrsqrteq_f32(x); y = vmulq_f32(y, vrsqrtsq_f32(x, vmulq_f32(y, y))); return vmulq_f32(x, y); }
 
     static inline Int32x4 v_toInt(Float32x4 x) { return vcvtq_s32_f32(x); }
+
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return vcge_f32(a, b); }
 };
 
 const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,

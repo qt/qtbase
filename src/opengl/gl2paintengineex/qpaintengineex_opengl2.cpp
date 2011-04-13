@@ -301,7 +301,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             const QRadialGradient *g = static_cast<const QRadialGradient *>(currentBrush.gradient());
             QPointF realCenter = g->center();
             QPointF realFocal  = g->focalPoint();
-            qreal   realRadius = g->radius();
+            qreal   realRadius = g->centerRadius() - g->focalRadius();
             translationPoint   = realFocal;
 
             QPointF fmp = realCenter - realFocal;
@@ -311,6 +311,12 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Fmp2MRadius2), fmp2_m_radius2);
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::Inverse2Fmp2MRadius2),
                                                              GLfloat(1.0 / (2.0*fmp2_m_radius2)));
+            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::SqrFr),
+                                                             GLfloat(g->focalRadius() * g->focalRadius()));
+            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BRadius),
+                                                             GLfloat(2 * (g->centerRadius() - g->focalRadius()) * g->focalRadius()),
+                                                             g->focalRadius(),
+                                                             g->centerRadius() - g->focalRadius());
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::HalfViewportSize), halfViewportSize);

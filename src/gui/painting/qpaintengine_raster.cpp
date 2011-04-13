@@ -5282,10 +5282,11 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             QPointF center = g->center();
             radialData.center.x = center.x();
             radialData.center.y = center.y();
+            radialData.center.radius = g->centerRadius();
             QPointF focal = g->focalPoint();
             radialData.focal.x = focal.x();
             radialData.focal.y = focal.y();
-            radialData.radius = g->radius();
+            radialData.focal.radius = g->focalRadius();
         }
         break;
 
