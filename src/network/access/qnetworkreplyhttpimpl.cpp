@@ -359,6 +359,38 @@ bool QNetworkReplyHttpImpl::canReadLine () const
     return d->downloadMultiBuffer.canReadLine();
 }
 
+#ifndef QT_NO_OPENSSL
+void QNetworkReplyHttpImpl::ignoreSslErrors()
+{
+    Q_D(QNetworkReplyHttpImpl);
+
+    d->pendingIgnoreAllSslErrors = true;
+}
+
+void QNetworkReplyHttpImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
+{
+    Q_D(QNetworkReplyHttpImpl);
+
+    // the pending list is set if QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+    // is called before QNetworkAccessManager::get() (or post(), etc.)
+    d->pendingIgnoreSslErrorsList = errors;
+}
+
+void QNetworkReplyHttpImpl::setSslConfigurationImplementation(const QSslConfiguration &newconfig)
+{
+    // Setting a SSL configuration on a reply is not supported. The user needs to set
+    // her/his QSslConfiguration on the QNetworkRequest.
+    Q_UNUSED(newconfig);
+}
+
+QSslConfiguration QNetworkReplyHttpImpl::sslConfigurationImplementation() const
+{
+    Q_D(const QNetworkReplyHttpImpl);
+    qDebug() << "sslConfigurationImplementation";
+    return d->sslConfiguration;
+}
+#endif
+
 QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
 // FIXME order etc
     : QNetworkReplyPrivate()
@@ -1264,38 +1296,6 @@ bool QNetworkReplyHttpImplPrivate::sendCacheContents(const QNetworkCacheMetaData
     loadingFromCache = true;
     return true;
 }
-
-#ifndef QT_NO_OPENSSL
-void QNetworkReplyHttpImpl::ignoreSslErrors()
-{
-    Q_D(QNetworkReplyHttpImpl);
-
-    d->pendingIgnoreAllSslErrors = true;
-}
-
-void QNetworkReplyHttpImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
-{
-    Q_D(QNetworkReplyHttpImpl);
-
-    // the pending list is set if QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
-    // is called before QNetworkAccessManager::get() (or post(), etc.)
-    d->pendingIgnoreSslErrorsList = errors;
-}
-
-void QNetworkReplyHttpImpl::setSslConfigurationImplementation(const QSslConfiguration &newconfig)
-{
-    // Setting a SSL configuration on a reply is not supported. The user needs to set
-    // her/his QSslConfiguration on the QNetworkRequest.
-    Q_UNUSED(newconfig);
-}
-
-QSslConfiguration QNetworkReplyHttpImpl::sslConfigurationImplementation() const
-{
-    Q_D(const QNetworkReplyHttpImpl);
-    qDebug() << "sslConfigurationImplementation";
-    return d->sslConfiguration;
-}
-#endif
 
 QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNetworkCacheMetaData &oldMetaData) const
 {
