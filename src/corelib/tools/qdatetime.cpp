@@ -2460,7 +2460,11 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DDTHH:MM:SS.
+    dates and times, taking the form YYYY-MM-DDTHH:MM:SS[Z|[+|-]HH:MM],
+    depending on the timeSpec() of the QDateTime. If the timeSpec()
+    is Qt::UTC, Z will be appended to the string; if the timeSpec() is
+    Qt::OffsetFromUTC the offset in hours and minutes from UTC will
+    be appended to the string.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
