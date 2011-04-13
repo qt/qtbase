@@ -457,11 +457,6 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
     if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
-        // PreferNetwork == send request with "If-None-Match" and "If-Modified-Since" header,
-        // which will return a 304 Not Modifed if resource has not been changed.
-        // We might read from cache later, if receiving a 304.
-        return false;
-    } else if (CacheLoadControlAttribute == QNetworkRequest::PreferCache) {
         it = cacheHeaders.findRawHeader("Cache-Control");
         if (it != cacheHeaders.rawHeaders.constEnd()) {
             QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
@@ -1443,7 +1438,7 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
         attributes.insert(QNetworkRequest::HttpStatusCodeAttribute, statusCode);
         attributes.insert(QNetworkRequest::HttpReasonPhraseAttribute, reasonPhrase);
     } else {
-        // this is the server telling us the resource has not changed, keep the attributes intact
+        // this is a redirection, keep the attributes intact
         attributes = oldMetaData.attributes();
     }
     metaData.setAttributes(attributes);
