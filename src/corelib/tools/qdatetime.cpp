@@ -2497,6 +2497,21 @@ QString QDateTime::toString(Qt::DateFormat f) const
             return QString();   // failed to convert
         buf += QLatin1Char('T');
         buf += d->time.toString(Qt::ISODate);
+        switch (d->spec) {
+        case QDateTimePrivate::UTC:
+            buf += QLatin1Char('Z');
+            break;
+        case QDateTimePrivate::OffsetFromUTC: {
+            int sign = d->utcOffset >= 0 ? 1: -1;
+            buf += QString::fromLatin1("%1%2:%3").
+                arg(sign == 1 ? QLatin1Char('+') : QLatin1Char('-')).
+                arg(d->utcOffset * sign / SECS_PER_HOUR, 2, 10, QLatin1Char('0')).
+                arg((d->utcOffset / 60) % 60, 2, 10, QLatin1Char('0'));
+            break;
+        }
+        default:
+            break;
+        }
     }
 #ifndef QT_NO_TEXTDATE
     else if (f == Qt::TextDate) {
