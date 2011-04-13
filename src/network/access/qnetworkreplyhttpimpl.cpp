@@ -250,15 +250,40 @@ QNetworkReplyHttpImpl::~QNetworkReplyHttpImpl()
 void QNetworkReplyHttpImpl::close()
 {
     Q_D(QNetworkReplyHttpImpl);
+
+    if (d->state == QNetworkReplyHttpImplPrivate::Aborted ||
+        d->state == QNetworkReplyHttpImplPrivate::Finished)
+        return;
+
+    // According to the documentation close only stops the download
+    // by closing we can ignore the download part and continue uploading.
     QNetworkReply::close();
-    // FIXME
+
+    // call finished which will emit signals
+    // FIXME shouldn't this be emitted Queued?
+    d->error(OperationCanceledError, tr("Operation canceled"));
+    d->finished();
 }
 
 void QNetworkReplyHttpImpl::abort()
 {
     Q_D(QNetworkReplyHttpImpl);
-    QNetworkReply::close();
     // FIXME
+    if (d->state == QNetworkReplyHttpImplPrivate::Finished || d->state == QNetworkReplyHttpImplPrivate::Aborted)
+        return;
+
+    QNetworkReply::close();
+
+    if (d->state != QNetworkReplyHttpImplPrivate::Finished) {
+        // call finished which will emit signals
+        // FIXME shouldn't this be emitted Queued?
+        d->error(OperationCanceledError, tr("Operation canceled"));
+        d->finished();
+    }
+
+    d->state = QNetworkReplyHttpImplPrivate::Aborted;
+
+    emit abortHttpRequest();
 }
 
 qint64 QNetworkReplyHttpImpl::bytesAvailable() const
@@ -935,6 +960,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
 
     qDebug() << "QNetworkReplyHttpImplPrivate::replyDownloadData" << d.size();
 
+    // If we're closed just ignore this data
+    if (!q->isOpen())
+        return;
+
     int pendingSignals = (int)pendingDownloadDataEmissions->fetchAndAddAcquire(-1) - 1;
 
     if (pendingSignals > 0) {
@@ -958,10 +987,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     // FIXME
     //writeDownstreamData(pendingDownloadDataCopy);
     // instead we do:
-
-    // We could be closed
-    if (!q->isOpen())
-        return;
 
     if (cacheEnabled && !cacheSaveDevice) {
         initCacheSaveDevice();
@@ -1125,6 +1150,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
 void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceived,  qint64 bytesTotal)
 {
     Q_Q(QNetworkReplyHttpImpl);
+
+    // If we're closed just ignore this data
+    if (!q->isOpen())
+        return;
 
     // we can be sure here that there is a download buffer
 
