@@ -238,11 +238,7 @@ if ($templatepkg =~ m/_installer\.pkg$/i && $onlyUnsigned) {
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
 my $stub_sis_name = $sisoutputbasename.".sis";
 
-# Store some utility variables
-my $scriptpath = dirname(__FILE__);
 my $certtext = $certificate;
-# certificates are one step up in hierarchy
-my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs/");
 
 # Check some pre-conditions and print error messages if needed.
 unless (length($templatepkg)) {
@@ -265,6 +261,16 @@ if (length($certificate)) {
     }
 } else {
     #If no certificate is given, check default options
+    my $scriptpath = dirname(__FILE__);
+    my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs");
+
+    unless (-e $certpath) {
+        my $qmakeCmd = File::Spec->catfile($scriptpath, "qmake");
+        $certpath = `$qmakeCmd -query QT_INSTALL_PREFIX`;
+        $certpath =~ s/\s+$//;
+        $certpath = File::Spec->catdir($certpath, "src/s60installs");
+    }
+
     $certtext = "RnD";
     $certificate = File::Spec->catfile($certpath, "rd.cer");
     $key = File::Spec->catfile($certpath, "rd-key.pem");
