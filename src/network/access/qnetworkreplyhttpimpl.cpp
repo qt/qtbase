@@ -320,9 +320,8 @@ qint64 QNetworkReplyHttpImpl::size() const
 qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
 {
     Q_D(QNetworkReplyHttpImpl);
-    qDebug() << "QNetworkReplyHttpImpl::readData()" << maxlen;
 
-    // FIXME cacheload device
+    // cacheload device
     if (d->cacheLoadDevice) {
         // FIXME bytesdownloaded, position etc?
 
@@ -336,9 +335,10 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
         return ret;
     }
 
-    // FIXME 0-copy buffer
+    // zerocopy buffer
     if (d->downloadZerocopyBuffer) {
-        // bla
+        // FIXME bytesdownloaded, position etc?
+
         qint64 howMuch = qMin(maxlen, (d->downloadBufferCurrentSize - d->downloadBufferReadPosition));
         memcpy(data, d->downloadZerocopyBuffer + d->downloadBufferReadPosition, howMuch);
         d->downloadBufferReadPosition += howMuch;
@@ -346,12 +346,13 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
 
     }
 
-    // FIXME normal buffer
-    if (d->downloadMultiBuffer.isEmpty())
-        return d->state == d->Finished ? -1 : 0;
-    // FIXME what about "Aborted" state?
+    // normal buffer
+    if (d->downloadMultiBuffer.isEmpty()) {
+        if (d->state == d->Finished || d->state == d->Aborted)
+            return -1;
+        return 0;
+    }
 
-    //d->backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
     if (maxlen == 1) {
         // optimization for getChar()
         *data = d->downloadMultiBuffer.getChar();
@@ -364,7 +365,8 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
 
 void QNetworkReplyHttpImpl::setReadBufferSize(qint64 size)
 {
-    return; // FIXME, unsupported right now
+    // FIXME, unsupported right now
+    return;
 }
 
 bool QNetworkReplyHttpImpl::canReadLine () const
@@ -376,6 +378,8 @@ bool QNetworkReplyHttpImpl::canReadLine () const
 
     if (d->cacheLoadDevice)
         return d->cacheLoadDevice->canReadLine() || d->downloadMultiBuffer.canReadLine();
+
+    // FIXME zerocopy buffer?
 
     return d->downloadMultiBuffer.canReadLine();
 }
@@ -407,38 +411,25 @@ void QNetworkReplyHttpImpl::setSslConfigurationImplementation(const QSslConfigur
 QSslConfiguration QNetworkReplyHttpImpl::sslConfigurationImplementation() const
 {
     Q_D(const QNetworkReplyHttpImpl);
-    qDebug() << "sslConfigurationImplementation";
     return d->sslConfiguration;
 }
 #endif
 
 QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
-// FIXME order etc
     : QNetworkReplyPrivate()
-
     , manager(0)
     , managerPrivate(0)
     , synchronous(false)
-
     , state(Idle)
-
     , statusCode(0)
-
     , outgoingData(0)
-
     , bytesUploaded(-1)
-
-
     , cacheLoadDevice(0)
     , loadingFromCache(false)
-
     , cacheSaveDevice(0)
     , cacheEnabled(false)
-
-
     , resumeOffset(0)
     , preMigrationDownloaded(-1)
-
     , bytesDownloaded(0)
     , lastBytesDownloaded(-1)
     , downloadBufferReadPosition(0)
