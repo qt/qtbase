@@ -244,7 +244,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
 
 QNetworkReplyHttpImpl::~QNetworkReplyHttpImpl()
 {
-    // FIXME?
+    // Most work is done in private destructor
 }
 
 void QNetworkReplyHttpImpl::close()
@@ -264,35 +264,31 @@ void QNetworkReplyHttpImpl::abort()
 qint64 QNetworkReplyHttpImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyHttpImpl);
-    qDebug() << "QNetworkReplyHttpImpl::bytesAvailable()";
 
-    // FIXME cache device
+    // if we load from cache device
     if (d->cacheLoadDevice) {
         return QNetworkReply::bytesAvailable() + d->cacheLoadDevice->bytesAvailable() + d->downloadMultiBuffer.byteAmount();
     }
 
-    // FIXME 0-copy buffer
+    // zerocopy buffer
     if (d->downloadZerocopyBuffer) {
         return QNetworkReply::bytesAvailable() + d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
     }
 
-    // FIXME normal buffer
-    qDebug() << "QNetworkReplyHttpImpl::bytesAvailable() ==" << QNetworkReply::bytesAvailable() + d->downloadMultiBuffer.byteAmount();
+    // normal buffer
     return QNetworkReply::bytesAvailable() + d->downloadMultiBuffer.byteAmount();
-
-    // FIXME
 }
 
 bool QNetworkReplyHttpImpl::isSequential () const
 {
-    // FIXME Maybe not for cache or 0-copy buffer
+    // FIXME In the cache of a cached load or the zero-copy buffer we could actually be non-sequential.
+    // FIXME however this requires us to implement stuff like seek() too.
     return true;
 }
 
 qint64 QNetworkReplyHttpImpl::size() const
 {
-    Q_D(const QNetworkReplyHttpImpl);
-    //return -1;
+    // FIXME At some point, this could return a proper value, e.g. if we're non-sequential.
     return QNetworkReply::size();
 }
 
