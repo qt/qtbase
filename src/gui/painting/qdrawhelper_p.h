@@ -63,6 +63,7 @@
 #endif
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
+#include <private/qmath_p.h>
 
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
@@ -177,6 +178,40 @@ void qBlendTextureCallback(int count, const QSpan *spans, void *userData);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *dest, const uint *src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
+
+struct LinearGradientValues
+{
+    qreal dx;
+    qreal dy;
+    qreal l;
+    qreal off;
+};
+
+struct RadialGradientValues
+{
+    qreal dx;
+    qreal dy;
+    qreal a;
+};
+
+struct Operator;
+typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
+typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
+typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
+
+struct Operator
+{
+    QPainter::CompositionMode mode;
+    DestFetchProc dest_fetch;
+    DestStoreProc dest_store;
+    SourceFetchProc src_fetch;
+    CompositionFunctionSolid funcSolid;
+    CompositionFunction func;
+    union {
+        LinearGradientValues linear;
+        RadialGradientValues radial;
+    };
+};
 
 void qInitDrawhelperAsm();
 
@@ -307,6 +342,122 @@ struct QSpanData
     void initTexture(const QImage *image, int alpha, QTextureData::Type = QTextureData::Plain, const QRect &sourceRect = QRect());
     void adjustSpanMethods();
 };
+
+static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
+{
+    if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {
+        if (data->spread == QGradient::RepeatSpread) {
+            ipos = ipos % GRADIENT_STOPTABLE_SIZE;
+            ipos = ipos < 0 ? GRADIENT_STOPTABLE_SIZE + ipos : ipos;
+
+        } else if (data->spread == QGradient::ReflectSpread) {
+            const int limit = GRADIENT_STOPTABLE_SIZE * 2 - 1;
+            ipos = ipos % limit;
+            ipos = ipos < 0 ? limit + ipos : ipos;
+            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - ipos : ipos;
+
+        } else {
+            if (ipos < 0)
+                ipos = 0;
+            else if (ipos >= GRADIENT_STOPTABLE_SIZE)
+                ipos = GRADIENT_STOPTABLE_SIZE-1;
+        }
+    }
+
+
+    Q_ASSERT(ipos >= 0);
+    Q_ASSERT(ipos < GRADIENT_STOPTABLE_SIZE);
+
+    return ipos;
+}
+
+static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
+{
+    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
+    return data->colorTable[qt_gradient_clamp(data, ipos)];
+}
+
+static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
+{
+    return (b * b) - (4 * a * c);
+}
+
+// function to evaluate real roots
+static inline qreal qRadialRealRoots(qreal a, qreal b, qreal detSqrt)
+{
+    return (-b + detSqrt)/(2 * a);
+}
+
+template <class RadialFetchFunc>
+const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
+                                                           int y, int x, int length)
+{
+    const uint *b = buffer;
+    qreal rx = data->m21 * (y + qreal(0.5))
+               + data->dx + data->m11 * (x + qreal(0.5));
+    qreal ry = data->m22 * (y + qreal(0.5))
+               + data->dy + data->m12 * (x + qreal(0.5));
+    bool affine = !data->m13 && !data->m23;
+
+    uint *end = buffer + length;
+    if (affine) {
+        rx -= data->gradient.radial.focal.x;
+        ry -= data->gradient.radial.focal.y;
+
+        qreal inv_a = 1 / qreal(2 * op->radial.a);
+
+        const qreal delta_rx = data->m11;
+        const qreal delta_ry = data->m12;
+
+        qreal b = 2*(rx * op->radial.dx + ry * op->radial.dy);
+        qreal delta_b = 2*(delta_rx * op->radial.dx + delta_ry * op->radial.dy);
+        const qreal b_delta_b = 2 * b * delta_b;
+        const qreal delta_b_delta_b = 2 * delta_b * delta_b;
+
+        const qreal bb = b * b;
+        const qreal delta_bb = delta_b * delta_b;
+
+        b *= inv_a;
+        delta_b *= inv_a;
+
+        const qreal rxrxryry = rx * rx + ry * ry;
+        const qreal delta_rxrxryry = delta_rx * delta_rx + delta_ry * delta_ry;
+        const qreal rx_plus_ry = 2*(rx * delta_rx + ry * delta_ry);
+        const qreal delta_rx_plus_ry = 2 * delta_rxrxryry;
+
+        inv_a *= inv_a;
+
+        qreal det = (bb + 4 * op->radial.a * rxrxryry) * inv_a;
+        qreal delta_det = (b_delta_b + delta_bb + 4 * op->radial.a * (rx_plus_ry + delta_rxrxryry)) * inv_a;
+        const qreal delta_delta_det = (delta_b_delta_b + 4 * op->radial.a * delta_rx_plus_ry) * inv_a;
+
+        RadialFetchFunc::fetch(buffer, end, data, det, delta_det, delta_delta_det, b, delta_b);
+    } else {
+        qreal rw = data->m23 * (y + qreal(0.5))
+                   + data->m33 + data->m13 * (x + qreal(0.5));
+        if (!rw)
+            rw = 1;
+        while (buffer < end) {
+            qreal gx = rx/rw - data->gradient.radial.focal.x;
+            qreal gy = ry/rw - data->gradient.radial.focal.y;
+            qreal b  = 2*(gx*op->radial.dx + gy*op->radial.dy);
+            qreal det = qRadialDeterminant(op->radial.a, b , -(gx*gx + gy*gy));
+            qreal s = qRadialRealRoots(op->radial.a, b, (det > 0 ? qSqrt(det) : 0));
+
+            *buffer = qt_gradient_pixel(&data->gradient, s);
+
+            rx += data->m11;
+            ry += data->m12;
+            rw += data->m13;
+            if (!rw) {
+                rw += data->m13;
+            }
+            ++buffer;
+        }
+    }
+
+    return b;
+}
 
 #if defined(Q_CC_RVCT)
 #  pragma push
