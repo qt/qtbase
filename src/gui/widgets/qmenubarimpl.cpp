@@ -239,7 +239,7 @@ bool QMenuBarImpl::menuBarEventFilter(QObject *, QEvent *)
 
 struct QMenuBarImplFactory : public QMenuBarImplFactoryInterface
 {
-    QAbstractMenuBarImpl* createImpl() { return new QMenuBarImpl; }
+    QAbstractMenuBarInterface* createImpl() { return new QMenuBarImpl; }
     virtual QStringList keys() const { return QStringList(); }
 };
 

@@ -43,13 +43,13 @@
 
 #ifndef QT_NO_MENUBAR
 
-#include "qabstractmenubarimpl_p.h"
+#include "qabstractmenubarinterface_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QMenuBar;
 
-class QMenuBarImpl : public QAbstractMenuBarImpl
+class QMenuBarImpl : public QAbstractMenuBarInterface
 {
 public:
     ~QMenuBarImpl();

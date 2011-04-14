@@ -4,7 +4,7 @@ HEADERS += \
         widgets/qbuttongroup.h \
         widgets/qabstractbutton.h \
         widgets/qabstractbutton_p.h \
-        widgets/qabstractmenubarimpl_p.h \
+        widgets/qabstractmenubarinterface_p.h \
         widgets/qabstractslider.h \
         widgets/qabstractslider_p.h \
         widgets/qabstractspinbox.h \
