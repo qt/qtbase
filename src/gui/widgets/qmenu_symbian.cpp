@@ -398,12 +398,12 @@ void QMenuPrivate::QSymbianMenuPrivate::rebuild(bool)
 {
 }
 
-void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QSymbianMenuAction *before)
+void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QAction *before)
 {
     QSymbianMenuAction *action = new QSymbianMenuAction;
     action->action = a;
     action->command = qt_symbian_menu_static_cmd_id++;
-    addAction(action, before);
+    addAction(action, findAction(before));
 }
 
 void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QSymbianMenuAction *action, QSymbianMenuAction *before)
