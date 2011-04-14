@@ -441,7 +441,7 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start) const
         QSize sz;
 
         //calc what I think the size is..
-        i f(action->isSeparator()) {
+        if (action->isSeparator()) {
             if (style->styleHint(QStyle::SH_DrawMenuBarSeparator, 0, q))
                 separator = i;
             continue; //we don't really position these!
