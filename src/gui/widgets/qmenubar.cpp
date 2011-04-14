@@ -55,6 +55,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
+#include <qpluginloader.h>
 
 #ifndef QT_NO_MENUBAR
 
@@ -728,7 +729,8 @@ void QMenuBarPrivate::init()
     Q_Q(QMenuBar);
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
-    impl = new QMenuBarImpl;
+
+    impl = qt_guiMenuBarImplFactory()->createImpl();
     impl->init(q);
 
     q->setBackgroundRole(QPalette::Button);

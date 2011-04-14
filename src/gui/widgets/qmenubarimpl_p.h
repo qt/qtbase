@@ -175,6 +175,8 @@ private:
 #endif
 };
 
+QMenuBarImplFactoryInterface *qt_guiMenuBarImplFactory();
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_MENUBAR
