@@ -90,20 +90,16 @@ void QMenuBarImpl::init(QMenuBar *_menuBar)
 #endif
 }
 
-bool QMenuBarImpl::allowSetVisible() const
+void QMenuBarImpl::setVisible(bool visible)
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
-    // FIXME: Port this to a setVisible() method
-    /*
     if (isNativeMenuBar()) {
         if (!visible)
-            QWidget::setVisible(false);
+            menuBar->QWidget::setVisible(false);
         return;
     }
-    */
-    return !isNativeMenuBar();
 #endif
-    return true;
+    menuBar->QWidget::setVisible(visible);
 }
 
 void QMenuBarImpl::actionEvent(QActionEvent *e)

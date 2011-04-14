@@ -56,7 +56,7 @@ public:
 
     virtual void init(QMenuBar *);
 
-    virtual bool allowSetVisible() const;
+    virtual void setVisible(bool visible);
 
     virtual void actionEvent(QActionEvent *e);
 

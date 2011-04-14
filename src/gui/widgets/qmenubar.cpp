@@ -1055,10 +1055,7 @@ void QMenuBar::paintEvent(QPaintEvent *e)
 void QMenuBar::setVisible(bool visible)
 {
     Q_D(QMenuBar);
-    if (!d->impl->allowSetVisible()) {
-        return;
-    }
-    QWidget::setVisible(visible);
+    d->impl->setVisible(visible);
 }
 
 /*!

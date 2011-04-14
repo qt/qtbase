@@ -77,8 +77,7 @@ public:
     // QMenuBarPrivate::init()
     virtual void init(QMenuBar *) = 0;
 
-    // QMenuBar::setVisible()
-    virtual bool allowSetVisible() const = 0;
+    virtual void setVisible(bool visible) = 0;
 
     virtual void actionEvent(QActionEvent *) = 0;
 
