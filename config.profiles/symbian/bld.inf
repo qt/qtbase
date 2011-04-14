@@ -38,9 +38,11 @@ loc.prf                  /epoc32/tools/qt/mkspecs/features/loc.prf
 //For UDA image
 confml/qt.confml                  CONFML_EXPORT_PATH(qt.confml,uda_content)
 implml/qt_copy.implml             CRML_EXPORT_PATH(qt_copy.implml,uda_content)
-content/apps/qt.sisx               CRML_EXPORT_PATH(../content/sis/,uda_content)
-content/apps/qt_stub.sis          /epoc32/data/z/system/install/qt_stub.sis
+content/apps/qt.sisx              CRML_EXPORT_PATH(../content/sis/,uda_content)
 #endif
+
+/* export stub sis to enable eclipsing */
+qt_stub.sis                         /epoc32/data/z/system/install/qt_stub.sis
 
 //tools
 ../../bin/createpackage.bat         /epoc32/tools/createpackage.bat
