@@ -120,10 +120,12 @@ void QMenuBarImpl::actionEvent(QActionEvent *e)
 
 void QMenuBarImpl::handleReparent(QWidget *oldParent, QWidget *newParent, QWidget *oldWindow, QWidget *newWindow)
 {
+#ifdef Q_WS_X11
     Q_UNUSED(oldParent)
     Q_UNUSED(newParent)
     Q_UNUSED(oldWindow)
     Q_UNUSED(newWindow)
+#endif
 
 #ifdef Q_WS_MAC
     if (isNativeMenuBar() && !macWidgetHasNativeMenubar(newParent)) {
