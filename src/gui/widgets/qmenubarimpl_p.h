@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef QMENUBARIMPL_P_H
 #define QMENUBARIMPL_P_H
 
@@ -91,9 +92,9 @@ private:
         void removeAction(QMacMenuAction *);
         inline void removeAction(QAction *a) { removeAction(findAction(a)); }
         inline QMacMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
+            for (int i = 0; i < actionItems.size(); i++) {
                 QMacMenuAction *act = actionItems[i];
-                if(a == act->action)
+                if (a == act->action)
                     return act;
             }
             return 0;
@@ -131,9 +132,9 @@ private:
         void rebuild();
         inline void removeAction(QAction *a) { removeAction(findAction(a)); }
         inline QWceMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
+            for (int i = 0; i < actionItems.size(); i++) {
                 QWceMenuAction *act = actionItems[i];
-                if(a == act->action)
+                if (a == act->action)
                     return act;
             }
             return 0;
@@ -161,9 +162,9 @@ private:
         void rebuild();
         inline void removeAction(QAction *a) { removeAction(findAction(a)); }
         inline QSymbianMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
+            for (int i = 0; i < actionItems.size(); i++) {
                 QSymbianMenuAction *act = actionItems[i];
-                if(a == act->action)
+                if (a == act->action)
                     return act;
             }
             return 0;

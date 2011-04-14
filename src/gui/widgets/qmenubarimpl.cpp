@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "qmenubarimpl_p.h"
 
 #ifndef QT_NO_MENUBAR
@@ -75,16 +76,15 @@ void QMenuBarImpl::init(QMenuBar *_menuBar)
 #endif
 #ifdef Q_WS_MAC
     macCreateMenuBar(menuBar->parentWidget());
-    if(adapter)
+    if (adapter)
         menuBar->hide();
 #endif
 #ifdef Q_WS_WINCE
     if (qt_wince_is_mobile()) {
         wceCreateMenuBar(menuBar->parentWidget());
-        if(adapter)
+        if (adapter)
             menuBar->hide();
-    }
-    else {
+    } else {
         QApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, true);
     }
 #endif
@@ -106,11 +106,11 @@ void QMenuBarImpl::actionEvent(QActionEvent *e)
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
     if (adapter) {
-        if(e->type() == QEvent::ActionAdded)
+        if (e->type() == QEvent::ActionAdded)
             adapter->addAction(e->action(), e->before());
-        else if(e->type() == QEvent::ActionRemoved)
+        else if (e->type() == QEvent::ActionRemoved)
             adapter->removeAction(e->action());
-        else if(e->type() == QEvent::ActionChanged)
+        else if (e->type() == QEvent::ActionChanged)
             adapter->syncAction(e->action());
     }
 #else
@@ -251,7 +251,7 @@ QMenuBarImplFactoryInterface *qt_guiMenuBarImplFactory()
         QFactoryLoader loader(QMenuBarImplFactoryInterface_iid, QLatin1String("/menubar"));
         factory = qobject_cast<QMenuBarImplFactoryInterface *>(loader.instance(QLatin1String("default")));
 #endif // QT_NO_LIBRARY
-        if(!factory) {
+        if (!factory) {
             static QMenuBarImplFactory def;
             factory = &def;
         }
