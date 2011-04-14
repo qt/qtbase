@@ -44,20 +44,20 @@
 
 #ifndef QT_NO_MENUBAR
 
-#include "qabstractmenubarinterface_p.h"
+#include "qabstractmenubarimpl_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QMenuBar;
 
-class QMenuBarImpl : public QAbstractMenuBarInterface
+class QMenuBarImpl : public QAbstractMenuBarImpl
 {
 public:
     ~QMenuBarImpl();
 
     virtual void init(QMenuBar *);
 
-    virtual void setVisible(bool visible);
+    virtual bool allowSetVisible() const;
 
     virtual void actionEvent(QActionEvent *e);
 
@@ -175,8 +175,6 @@ private:
     static int symbianCommands(int command);
 #endif
 };
-
-QMenuBarImplFactoryInterface *qt_guiMenuBarImplFactory();
 
 QT_END_NAMESPACE
 

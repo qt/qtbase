@@ -38,12 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QABSTRACTMENUBARINTERFACE_P_H
-#define QABSTRACTMENUBARINTERFACE_P_H
+#ifndef QABSTRACTMENUBARIMPL_P_H
+#define QABSTRACTMENUBARIMPL_P_H
 
-#include <qfactoryinterface.h>
 #include <qglobal.h>
-#include <qplugin.h>
 
 #ifndef QT_NO_MENUBAR
 
@@ -56,29 +54,19 @@ class QMenuBar;
 class QObject;
 class QWidget;
 
-class QAbstractMenuBarInterface;
-
-struct QMenuBarImplFactoryInterface : public QFactoryInterface
-{
-    virtual QAbstractMenuBarInterface* createImpl() = 0;
-};
-
-#define QMenuBarImplFactoryInterface_iid "com.nokia.qt.QMenuBarImplFactoryInterface"
-Q_DECLARE_INTERFACE(QMenuBarImplFactoryInterface, QMenuBarImplFactoryInterface_iid)
-
 /**
  * The platform-specific implementation of a menubar
  */
-class QAbstractMenuBarInterface
+class Q_GUI_EXPORT QAbstractMenuBarImpl
 {
 public:
-    QAbstractMenuBarInterface() {}
-    virtual ~QAbstractMenuBarInterface() {}
+    virtual ~QAbstractMenuBarImpl();
 
     // QMenuBarPrivate::init()
     virtual void init(QMenuBar *) = 0;
 
-    virtual void setVisible(bool visible) = 0;
+    // QMenuBar::setVisible()
+    virtual bool allowSetVisible() const = 0;
 
     virtual void actionEvent(QActionEvent *) = 0;
 
@@ -113,4 +101,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_MENUBAR
 
-#endif // QABSTRACTMENUBARINTERFACE_P_H
+#endif // QABSTRACTMENUBARIMPL_P_H

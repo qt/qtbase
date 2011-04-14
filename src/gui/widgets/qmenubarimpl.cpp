@@ -49,8 +49,6 @@
 #include "qmenu.h"
 #include "qmenubar.h"
 
-#include <private/qfactoryloader_p.h>
-
 QT_BEGIN_NAMESPACE
 
 QMenuBarImpl::~QMenuBarImpl()
@@ -90,16 +88,20 @@ void QMenuBarImpl::init(QMenuBar *_menuBar)
 #endif
 }
 
-void QMenuBarImpl::setVisible(bool visible)
+bool QMenuBarImpl::allowSetVisible() const
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
+    // FIXME: Port this to a setVisible() method
+    /*
     if (isNativeMenuBar()) {
         if (!visible)
-            menuBar->QWidget::setVisible(false);
+            QWidget::setVisible(false);
         return;
     }
+    */
+    return !isNativeMenuBar();
 #endif
-    menuBar->QWidget::setVisible(visible);
+    return true;
 }
 
 void QMenuBarImpl::actionEvent(QActionEvent *e)
@@ -235,28 +237,6 @@ bool QMenuBarImpl::shortcutsHandledByNativeMenuBar() const
 bool QMenuBarImpl::menuBarEventFilter(QObject *, QEvent *)
 {
     return false;
-}
-
-struct QMenuBarImplFactory : public QMenuBarImplFactoryInterface
-{
-    QAbstractMenuBarInterface* createImpl() { return new QMenuBarImpl; }
-    virtual QStringList keys() const { return QStringList(); }
-};
-
-QMenuBarImplFactoryInterface *qt_guiMenuBarImplFactory()
-{
-    static QMenuBarImplFactoryInterface *factory = 0;
-    if (!factory) {
-#ifndef QT_NO_LIBRARY
-        QFactoryLoader loader(QMenuBarImplFactoryInterface_iid, QLatin1String("/menubar"));
-        factory = qobject_cast<QMenuBarImplFactoryInterface *>(loader.instance(QLatin1String("default")));
-#endif // QT_NO_LIBRARY
-        if (!factory) {
-            static QMenuBarImplFactory def;
-            factory = &def;
-        }
-    }
-    return factory;
 }
 
 QT_END_NAMESPACE

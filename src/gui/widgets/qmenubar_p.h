@@ -61,7 +61,7 @@
 #include "qguifunctions_wince.h"
 #endif
 
-#include "qabstractmenubarinterface_p.h"
+#include "qabstractmenubarimpl_p.h"
 
 #ifndef QT_NO_MENUBAR
 #ifdef Q_WS_S60
@@ -160,7 +160,7 @@ public:
 #ifdef QT3_SUPPORT
     bool doAutoResize;
 #endif
-    QAbstractMenuBarInterface *impl;
+    QAbstractMenuBarImpl *impl;
 #ifdef QT_SOFTKEYS_ENABLED
     QAction *menuBarAction;
 #endif
