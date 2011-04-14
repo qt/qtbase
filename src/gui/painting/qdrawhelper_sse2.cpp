@@ -523,7 +523,12 @@ public:
 
     static inline Int32x4 v_toInt(Float32x4 x) { return _mm_cvttps_epi32(x); }
 
+    // pre-VS 2008 doesn't have cast intrinsics, whereas 2008 and later requires it
+#if defined(Q_CC_MSVC) && _MSC_VER < 1500
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return (__m128i)_mm_cmpgt_ps(a, b); }
+#else
     static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
+#endif
 };
 
 const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
