@@ -523,7 +523,7 @@ public:
 
     static inline Int32x4 v_toInt(Float32x4 x) { return _mm_cvttps_epi32(x); }
 
-    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return (__m128i)_mm_cmpgt_ps(a, b); }
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
 };
 
 const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
