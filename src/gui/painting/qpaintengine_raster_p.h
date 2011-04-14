@@ -196,9 +196,6 @@ public:
     void stroke(const QVectorPath &path, const QPen &pen);
     void fill(const QVectorPath &path, const QBrush &brush);
 
-    void strokePolygonCosmetic(const QPoint *pts, int pointCount, PolygonDrawMode mode);
-    void strokePolygonCosmetic(const QPointF *pt, int pointCount, PolygonDrawMode mode);
-
     void clip(const QVectorPath &path, Qt::ClipOperation op);
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
@@ -328,8 +325,6 @@ public:
     bool isUnclipped_normalized(const QRect &rect) const;
     bool isUnclipped(const QRect &rect, int penWidth) const;
     bool isUnclipped(const QRectF &rect, int penWidth) const;
-    ProcessSpans getPenFunc(const QRect &rect, const QSpanData *data) const;
-    ProcessSpans getPenFunc(const QRectF &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRect &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRectF &rect, const QSpanData *data) const;
 
