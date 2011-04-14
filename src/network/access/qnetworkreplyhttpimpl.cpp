@@ -439,7 +439,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , pendingDownloadDataEmissions(new QAtomicInt())
     , pendingDownloadProgressEmissions(new QAtomicInt())
     #ifndef QT_NO_OPENSSL
-        , pendingIgnoreAllSslErrors(false)
+    , pendingIgnoreAllSslErrors(false)
     #endif
 
 {
@@ -605,7 +605,6 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     QThread *thread = 0;
     if (synchronous) {
         // A synchronous HTTP request uses its own thread
-        qDebug() << "sync!";
         thread = new QThread();
         QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread->start();
@@ -949,8 +948,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
 {
     Q_Q(QNetworkReplyHttpImpl);
 
-    qDebug() << "QNetworkReplyHttpImplPrivate::replyDownloadData" << d.size();
-
     // If we're closed just ignore this data
     if (!q->isOpen())
         return;
@@ -975,10 +972,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
     pendingDownloadData.clear();
 
-    // FIXME
-    //writeDownstreamData(pendingDownloadDataCopy);
-    // instead we do:
-
     if (cacheEnabled && !cacheSaveDevice) {
         initCacheSaveDevice();
     }
@@ -998,22 +991,16 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     bytesDownloaded += bytesWritten;
     lastBytesDownloaded = bytesDownloaded;
 
-    //appendDownstreamDataSignalEmissions();
-    // instead:
+
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
-//    pauseNotificationHandling();
-    // important: At the point of this readyRead(), the data parameter list must be empty,
-    // else implicit sharing will trigger memcpy when the user is reading data!
+
     emit q->readyRead();
     // emit readyRead before downloadProgress incase this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
-
-//    resumeNotificationHandling();
-
 
 }
 
@@ -1042,6 +1029,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
         QUrl url = QUrl::fromEncoded(header);
         if (!url.isValid())
             url = QUrl(QLatin1String(header));
+        // FIXME?
         //redirectionRequested(url);
         q->setAttribute(QNetworkRequest::RedirectionTargetAttribute, url);
     }
@@ -1053,7 +1041,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData
          QSharedPointer<char> db,
          qint64 contentLength)
 {
-    qDebug() << "QNetworkReplyHttpImplPrivate::replyDownloadMetaData" << contentLength << sc;
     Q_Q(QNetworkReplyHttpImpl);
 
     statusCode = sc;
