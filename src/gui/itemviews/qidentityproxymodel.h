@@ -1,12 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Klarälvdalens Datakonsult AB,
-**        a KDAB Group company, info@kdab.com,
-**        author Stephen Kelly <stephen.kelly@kdab.com>
+** Copyright (C) 2011 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Stephen Kelly <stephen.kelly@kdab.com>
 ** All rights reserved.
-** Contact: Nokia Corporation (info@qt.nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
