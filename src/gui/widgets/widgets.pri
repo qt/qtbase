@@ -85,7 +85,6 @@ HEADERS += \
         widgets/qprintpreviewwidget.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
-        widgets/qabstractmenubarimpl_p.cpp \
         widgets/qabstractslider.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \

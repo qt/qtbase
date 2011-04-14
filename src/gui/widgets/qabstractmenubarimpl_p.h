@@ -69,10 +69,11 @@ Q_DECLARE_INTERFACE(QMenuBarImplFactoryInterface, QMenuBarImplFactoryInterface_i
 /**
  * The platform-specific implementation of a menubar
  */
-class Q_GUI_EXPORT QAbstractMenuBarImpl
+class QAbstractMenuBarImpl
 {
 public:
-    virtual ~QAbstractMenuBarImpl();
+    QAbstractMenuBarImpl() {}
+    virtual ~QAbstractMenuBarImpl() {}
 
     // QMenuBarPrivate::init()
     virtual void init(QMenuBar *) = 0;
