@@ -1770,8 +1770,11 @@ public:
 
     ~TestWizard()
     {
-        foreach (int id, pageIds)
-            delete page(id);
+        foreach (int id, pageIds) {
+            QWizardPage *page_to_delete = page(id);
+            removePage(id);
+            delete page_to_delete;
+	}
     }
 
     void applyOperations(const QList<Operation *> &operations)
