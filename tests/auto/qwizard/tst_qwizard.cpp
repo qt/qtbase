@@ -2551,8 +2551,8 @@ void tst_QWizard::task177022_setFixedSize()
     QWizard wiz;
     QWizardPage page1;
     QWizardPage page2;
-    wiz.addPage(&page1);
-    wiz.addPage(&page2);
+    int page1_id = wiz.addPage(&page1);
+    int page2_id = wiz.addPage(&page2);
     wiz.setFixedSize(width, height);
     if (wiz.wizardStyle() == QWizard::AeroStyle)
         QEXPECT_FAIL("", "this probably relates to non-client area hack for AeroStyle titlebar "
@@ -2579,6 +2579,8 @@ void tst_QWizard::task177022_setFixedSize()
     QCOMPARE(wiz.maximumWidth(), width);
     QCOMPARE(wiz.maximumHeight(), height);
 
+    wiz.removePage(page1_id);
+    wiz.removePage(page2_id);
 }
 
 void tst_QWizard::task248107_backButton()
