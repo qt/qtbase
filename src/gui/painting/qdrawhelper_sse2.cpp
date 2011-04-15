@@ -525,7 +525,12 @@ public:
 
     // pre-VS 2008 doesn't have cast intrinsics, whereas 2008 and later requires it
 #if defined(Q_CC_MSVC) && _MSC_VER < 1500
-    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return (__m128i)_mm_cmpgt_ps(a, b); }
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b)
+    {
+        union Convert { Int32x4 vi; Float32x4 vf; } convert;
+        convert.vf = _mm_cmpgt_ps(a, b);
+        return convert.vi;
+    }
 #else
     static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
 #endif
