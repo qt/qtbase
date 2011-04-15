@@ -504,12 +504,12 @@ void QMenuPrivate::QWceMenuPrivate::removeAction(QWceMenuAction *action)
     rebuild();
 }
 
-void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QAction *before)
+void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QAction *a, QWceMenuAction *before)
 {
     QWceMenuAction *action = new QWceMenuAction;
     action->action = a;
     action->command = qt_wce_menu_static_cmd_id++;
-    addAction(action, findAction(before));
+    addAction(action, before);
 }
 
 void QMenuBarPrivate::QWceMenuBarPrivate::addAction(QWceMenuAction *action, QWceMenuAction *before)

@@ -1639,7 +1639,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::~QMacMenuBarPrivate()
 }
 
 void
-QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QAction *before)
+QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QMacMenuAction *before)
 {
     if (a->isSeparator() || !menu)
         return;
@@ -1649,7 +1649,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QAction *before)
 #ifndef QT_MAC_USE_COCOA
     action->command = qt_mac_menu_static_cmd_id++;
 #endif
-    addAction(action, findAction(before));
+    addAction(action, before);
 }
 
 void

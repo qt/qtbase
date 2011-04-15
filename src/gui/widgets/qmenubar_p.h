@@ -61,8 +61,6 @@
 #include "qguifunctions_wince.h"
 #endif
 
-#include "qabstractmenubarimpl_p.h"
-
 #ifndef QT_NO_MENUBAR
 #ifdef Q_WS_S60
 class CCoeControl;
@@ -73,7 +71,6 @@ class CEikMenuBar;
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENUBAR
-class QToolBar;
 class QMenuBarExtension;
 class QMenuBarPrivate : public QWidgetPrivate
 {
@@ -81,19 +78,33 @@ class QMenuBarPrivate : public QWidgetPrivate
 public:
     QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
                          closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
-                         doChildEffects(false)
+                         nativeMenuBar(-1), doChildEffects(false)
 #ifdef QT3_SUPPORT
                          , doAutoResize(false)
 #endif
-                         , impl(0)
+#ifdef Q_WS_MAC
+                         , mac_menubar(0)
+#endif
+
 #ifdef Q_WS_WINCE
-                         , wceClassicMenu(false)
+                         , wce_menubar(0), wceClassicMenu(false)
+#endif
+#ifdef Q_WS_S60
+                         , symbian_menubar(0)
 #endif
 
         { }
     ~QMenuBarPrivate()
         {
-            delete impl;
+#ifdef Q_WS_MAC
+            delete mac_menubar;
+#endif
+#ifdef Q_WS_WINCE
+            delete wce_menubar;
+#endif
+#ifdef Q_WS_S60
+            delete symbian_menubar;
+#endif
         }
 
     void init();
@@ -125,6 +136,8 @@ public:
     uint keyboardState : 1, altPressed : 1;
     QPointer<QWidget> keyboardFocusWidget;
 
+
+    int nativeMenuBar : 3;  // Only has values -1, 0, and 1
     //firing of events
     void activateAction(QAction *, QAction::ActionEvent);
 
@@ -160,14 +173,106 @@ public:
 #ifdef QT3_SUPPORT
     bool doAutoResize;
 #endif
-    QAbstractMenuBarImpl *impl;
+#ifdef Q_WS_MAC
+    //mac menubar binding
+    struct QMacMenuBarPrivate {
+        QList<QMacMenuAction*> actionItems;
+        OSMenuRef menu, apple_menu;
+        QMacMenuBarPrivate();
+        ~QMacMenuBarPrivate();
+
+        void addAction(QAction *, QMacMenuAction* =0);
+        void addAction(QMacMenuAction *, QMacMenuAction* =0);
+        void syncAction(QMacMenuAction *);
+        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
+        void removeAction(QMacMenuAction *);
+        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
+        inline QMacMenuAction *findAction(QAction *a) {
+            for(int i = 0; i < actionItems.size(); i++) {
+                QMacMenuAction *act = actionItems[i];
+                if(a == act->action)
+                    return act;
+            }
+            return 0;
+        }
+    } *mac_menubar;
+    static bool macUpdateMenuBarImmediatly();
+    bool macWidgetHasNativeMenubar(QWidget *widget);
+    void macCreateMenuBar(QWidget *);
+    void macDestroyMenuBar();
+    OSMenuRef macMenu();
+#endif
+#ifdef Q_WS_WINCE
+    void wceCreateMenuBar(QWidget *);
+    void wceDestroyMenuBar();
+    struct QWceMenuBarPrivate {
+        QList<QWceMenuAction*> actionItems;
+        QList<QWceMenuAction*> actionItemsLeftButton;
+        QList<QList<QWceMenuAction*>> actionItemsClassic;
+        HMENU menuHandle;
+        HMENU leftButtonMenuHandle;
+        HWND menubarHandle;
+        HWND parentWindowHandle;
+        bool leftButtonIsMenu;
+        QPointer<QAction> leftButtonAction;
+        QMenuBarPrivate *d;
+        int leftButtonCommand;
+
+        QWceMenuBarPrivate(QMenuBarPrivate *menubar);
+        ~QWceMenuBarPrivate();
+        void addAction(QAction *, QWceMenuAction* =0);
+        void addAction(QWceMenuAction *, QWceMenuAction* =0);
+        void syncAction(QWceMenuAction *);
+        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
+        void removeAction(QWceMenuAction *);
+        void rebuild();
+        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
+        inline QWceMenuAction *findAction(QAction *a) {
+            for(int i = 0; i < actionItems.size(); i++) {
+                QWceMenuAction *act = actionItems[i];
+                if(a == act->action)
+                    return act;
+            }
+            return 0;
+        }
+    } *wce_menubar;
+    bool wceClassicMenu;
+    void wceCommands(uint command);
+    void wceRefresh();
+    bool wceEmitSignals(QList<QWceMenuAction*> actions, uint command);
+#endif
+#ifdef Q_WS_S60
+    void symbianCreateMenuBar(QWidget *);
+    void symbianDestroyMenuBar();
+    void reparentMenuBar(QWidget *oldParent, QWidget *newParent);
+    struct QSymbianMenuBarPrivate {
+        QList<QSymbianMenuAction*> actionItems;
+        QMenuBarPrivate *d;
+        QSymbianMenuBarPrivate(QMenuBarPrivate *menubar);
+        ~QSymbianMenuBarPrivate();
+        void addAction(QAction *, QSymbianMenuAction* =0);
+        void addAction(QSymbianMenuAction *, QSymbianMenuAction* =0);
+        void syncAction(QSymbianMenuAction *);
+        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
+        void removeAction(QSymbianMenuAction *);
+        void rebuild();
+        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
+        inline QSymbianMenuAction *findAction(QAction *a) {
+            for(int i = 0; i < actionItems.size(); i++) {
+                QSymbianMenuAction *act = actionItems[i];
+                if(a == act->action)
+                    return act;
+            }
+            return 0;
+        }
+        void insertNativeMenuItems(const QList<QAction*> &actions);
+
+    } *symbian_menubar;
+    static int symbianCommands(int command);
+#endif
 #ifdef QT_SOFTKEYS_ENABLED
     QAction *menuBarAction;
 #endif
-
-    void updateCornerWidgetToolBar();
-    QToolBar *cornerWidgetToolBar;
-    QWidget *cornerWidgetContainer;
 };
 #endif
 

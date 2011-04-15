@@ -4,7 +4,6 @@ HEADERS += \
         widgets/qbuttongroup.h \
         widgets/qabstractbutton.h \
         widgets/qabstractbutton_p.h \
-        widgets/qabstractmenubarimpl_p.h \
         widgets/qabstractslider.h \
         widgets/qabstractslider_p.h \
         widgets/qabstractspinbox.h \
@@ -85,7 +84,6 @@ HEADERS += \
         widgets/qprintpreviewwidget.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
-        widgets/qabstractmenubarimpl_p.cpp \
         widgets/qabstractslider.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
@@ -112,7 +110,6 @@ SOURCES += \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
-        widgets/qmenubarimpl.cpp \
         widgets/qmenudata.cpp \
         widgets/qprogressbar.cpp \
         widgets/qpushbutton.cpp \
