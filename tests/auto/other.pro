@@ -3,7 +3,7 @@
 
 TEMPLATE=subdirs
 SUBDIRS=\
-#           exceptionsafety_objects \ shouldn't enable it
+           exceptionsafety_objects \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
            qaccessibility \
