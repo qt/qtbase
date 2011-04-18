@@ -352,7 +352,14 @@ void tst_ExceptionSafety_Objects::cleanupTestCase()
 
 void tst_ExceptionSafety_Objects::objects()
 {
-    QSKIP("This test currently crashes", SkipAll);
+    QLatin1String tag = QLatin1String(QTest::currentDataTag());
+    if (tag == QLatin1String("QFile")
+        || tag == QLatin1String("QProcess")
+        || tag == QLatin1String("QSettings")
+        || tag == QLatin1String("QThread")
+        || tag == QLatin1String("QThreadPool"))
+        QSKIP("This type of object is not currently strongly exception safe", SkipSingle);
+
     QFETCH(AbstractTester *, objectCreator);
 
     doOOMTest(*objectCreator, 0);
@@ -458,7 +465,42 @@ void tst_ExceptionSafety_Objects::widgets_data()
 
 void tst_ExceptionSafety_Objects::widgets()
 {
-    QSKIP("This test currently crashes", SkipAll);
+    QLatin1String tag = QLatin1String(QTest::currentDataTag());
+    if (tag == QLatin1String("QColumnView")
+        || tag == QLatin1String("QComboBox")
+        || tag == QLatin1String("QCommandLinkButton")
+        || tag == QLatin1String("QDateEdit")
+        || tag == QLatin1String("QDateTimeEdit")
+        || tag == QLatin1String("QDesktopWidget")
+        || tag == QLatin1String("QDoubleSpinBox")
+        || tag == QLatin1String("QFontComboBox")
+        || tag == QLatin1String("QGroupBox")
+        || tag == QLatin1String("QLineEdit")
+        || tag == QLatin1String("QListView")
+        || tag == QLatin1String("QListWidget")
+        || tag == QLatin1String("QMainWindow")
+        || tag == QLatin1String("QMenu")
+        || tag == QLatin1String("QMenuBar")
+        || tag == QLatin1String("QPlainTextEdit")
+        || tag == QLatin1String("QProgressBar")
+        || tag == QLatin1String("QPushButton")
+        || tag == QLatin1String("QScrollArea")
+        || tag == QLatin1String("QSpinBox")
+        || tag == QLatin1String("QStackedWidget")
+        || tag == QLatin1String("QStatusBar")
+        || tag == QLatin1String("QTableView")
+        || tag == QLatin1String("QTableWidget")
+        || tag == QLatin1String("QTabWidget")
+        || tag == QLatin1String("QTextBrowser")
+        || tag == QLatin1String("QTextEdit")
+        || tag == QLatin1String("QTimeEdit")
+        || tag == QLatin1String("QToolBar")
+        || tag == QLatin1String("QToolBox")
+        || tag == QLatin1String("QTreeView")
+        || tag == QLatin1String("QTreeWidget")
+        || tag == QLatin1String("QWorkspace"))
+        QSKIP("This type of widget is not currently strongly exception safe", SkipSingle);
+
     QFETCH(AbstractTester *, widgetCreator);
 
     doOOMTest(*widgetCreator, 0, 00000);
