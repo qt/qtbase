@@ -60,7 +60,7 @@ QT_USE_NAMESPACE
 #include "3rdparty/memcheck.h"
 #endif
 
-class tst_ExceptionSafetyObjects: public QObject
+class tst_ExceptionSafety_Objects: public QObject
 {
     Q_OBJECT
 
@@ -156,7 +156,7 @@ struct DirCreator : public AbstractTester
     }
 };
 
-void tst_ExceptionSafetyObjects::objects_data()
+void tst_ExceptionSafety_Objects::objects_data()
 {
     QTest::addColumn<AbstractTester *>("objectCreator");
 
@@ -274,9 +274,9 @@ public:
     }
 };
 
-QtMsgHandler tst_ExceptionSafetyObjects::testMessageHandler;
+QtMsgHandler tst_ExceptionSafety_Objects::testMessageHandler;
 
-void tst_ExceptionSafetyObjects::safeMessageHandler(QtMsgType type, const char *msg)
+void tst_ExceptionSafety_Objects::safeMessageHandler(QtMsgType type, const char *msg)
 {
     // this temporarily suspends OOM testing while handling a message
     int currentIndex = mallocFailIndex;
@@ -301,7 +301,7 @@ void debugUnexpected()
     (*defaultUnexpected)();
 }
 
-void tst_ExceptionSafetyObjects::initTestCase()
+void tst_ExceptionSafety_Objects::initTestCase()
 {
     // set handlers for bad exception cases, you might want to step in and breakpoint the default handlers too
     defaultTerminate = std::set_terminate(&debugTerminate);
@@ -345,12 +345,12 @@ void tst_ExceptionSafetyObjects::initTestCase()
     QCOMPARE(malloc2Failed, 1);
 }
 
-void tst_ExceptionSafetyObjects::cleanupTestCase()
+void tst_ExceptionSafety_Objects::cleanupTestCase()
 {
     qInstallMsgHandler(testMessageHandler);
 }
 
-void tst_ExceptionSafetyObjects::objects()
+void tst_ExceptionSafety_Objects::objects()
 {
     QSKIP("This test currently crashes", SkipAll);
     QFETCH(AbstractTester *, objectCreator);
@@ -389,7 +389,7 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
         QScopedPointer<QDesktopWidget> ptr(new QDesktopWidget());
     }
 };
-void tst_ExceptionSafetyObjects::widgets_data()
+void tst_ExceptionSafety_Objects::widgets_data()
 {
 #ifdef Q_OS_SYMBIAN
     // Initialise the S60 rasteriser, which crashes if started while out of memory
@@ -456,7 +456,7 @@ void tst_ExceptionSafetyObjects::widgets_data()
     NEWROW(QTreeWidget);
 }
 
-void tst_ExceptionSafetyObjects::widgets()
+void tst_ExceptionSafety_Objects::widgets()
 {
     QSKIP("This test currently crashes", SkipAll);
     QFETCH(AbstractTester *, widgetCreator);
@@ -722,12 +722,12 @@ static void containerData()
     QTest::newRow("erase moveable") << static_cast<TestFunction>(containerEraseTest<IntegerMoveable, Container>);
 }
 
-void tst_ExceptionSafetyObjects::vector_data()
+void tst_ExceptionSafety_Objects::vector_data()
 {
     containerData<QVector>();
 }
 
-void tst_ExceptionSafetyObjects::vector()
+void tst_ExceptionSafety_Objects::vector()
 {
     QFETCH(TestFunction, testFunction);
 
@@ -738,30 +738,30 @@ void tst_ExceptionSafetyObjects::vector()
     doOOMTest(testFunction, 0);
 }
 
-void tst_ExceptionSafetyObjects::list_data()
+void tst_ExceptionSafety_Objects::list_data()
 {
     containerData<QList>();
 }
 
-void tst_ExceptionSafetyObjects::list()
+void tst_ExceptionSafety_Objects::list()
 {
     QFETCH(TestFunction, testFunction);
 
     doOOMTest(testFunction, 0);
 }
 
-void tst_ExceptionSafetyObjects::linkedList_data()
+void tst_ExceptionSafety_Objects::linkedList_data()
 {
     containerData<QLinkedList>();
 }
 
-void tst_ExceptionSafetyObjects::linkedList()
+void tst_ExceptionSafety_Objects::linkedList()
 {
     QFETCH(TestFunction, testFunction);
 
     doOOMTest(testFunction, 0);
 }
 
-QTEST_MAIN(tst_ExceptionSafetyObjects)
+QTEST_MAIN(tst_ExceptionSafety_Objects)
 #include "tst_exceptionsafety_objects.moc"
 #endif // QT_NO_EXCEPTIONS
