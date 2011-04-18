@@ -1337,7 +1337,7 @@ void tst_QPixmap::toSymbianCFbsBitmap()
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {
-#if !defined(Q_WS_WIN)
+#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
     class Thread : public QThread
     {
     public:
@@ -1370,7 +1370,7 @@ void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
     thread.wait();
 #endif
 
-#endif // !defined(Q_WS_WIN)
+#endif // !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
 }
 
 void tst_QPixmap::refUnref()
