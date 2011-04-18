@@ -164,12 +164,12 @@ void tst_ExceptionSafety_Objects::objects_data()
     NEWROW(QObject);
     NEWROW(QBuffer);
     NEWROW(QFile);
+    NEWROW(QFSFileEngine);
     NEWROW(QProcess);
     NEWROW(QSettings);
     NEWROW(QThread);
     NEWROW(QThreadPool);
     NEWROW(QTranslator);
-    NEWROW(QFSFileEngine);
 
 #define NEWROW2(T, CREATOR) QTest::newRow(#T) << static_cast<AbstractTester *>(new CREATOR)
     NEWROW2(QBitArray, BitArrayCreator);
@@ -177,7 +177,6 @@ void tst_ExceptionSafety_Objects::objects_data()
     NEWROW2(QCryptographicHash, CryptographicHashCreator);
     NEWROW2(QDataStream, DataStreamCreator);
     NEWROW2(QDir, DirCreator);
-
 }
 
 // create and destructs an object, and lets each and every allocation
@@ -363,7 +362,7 @@ void tst_ExceptionSafety_Objects::objects()
     QFETCH(AbstractTester *, objectCreator);
 
     doOOMTest(*objectCreator, 0);
-    
+
     delete objectCreator;
 }
 
@@ -400,9 +399,9 @@ void tst_ExceptionSafety_Objects::widgets_data()
 {
 #ifdef Q_OS_SYMBIAN
     // Initialise the S60 rasteriser, which crashes if started while out of memory
-    QImage image(20, 20, QImage::Format_RGB32); 
-    QPainter p(&image); 
-    p.drawText(0, 15, "foo"); 
+    QImage image(20, 20, QImage::Format_RGB32);
+    QPainter p(&image);
+    p.drawText(0, 15, "foo");
 #endif
 
     QTest::addColumn<AbstractTester *>("widgetCreator");
@@ -413,23 +412,27 @@ void tst_ExceptionSafety_Objects::widgets_data()
     NEWROW(QWidget);
 
     NEWROW(QButtonGroup);
-    NEWROW(QDesktopWidget);
     NEWROW(QCheckBox);
+    NEWROW(QColumnView);
     NEWROW(QComboBox);
     NEWROW(QCommandLinkButton);
     NEWROW(QDateEdit);
     NEWROW(QDateTimeEdit);
+    NEWROW(QDesktopWidget);
     NEWROW(QDial);
     NEWROW(QDoubleSpinBox);
     NEWROW(QFocusFrame);
     NEWROW(QFontComboBox);
     NEWROW(QFrame);
     NEWROW(QGroupBox);
-    NEWROW(QLCDNumber);
     NEWROW(QLabel);
     NEWROW(QLCDNumber);
     NEWROW(QLineEdit);
+    NEWROW(QListView);
+    NEWROW(QListWidget);
+    NEWROW(QMainWindow);
     NEWROW(QMenu);
+    NEWROW(QMenuBar);
     NEWROW(QPlainTextEdit);
     NEWROW(QProgressBar);
     NEWROW(QPushButton);
@@ -443,24 +446,18 @@ void tst_ExceptionSafety_Objects::widgets_data()
     NEWROW(QStackedWidget);
     NEWROW(QStatusBar);
     NEWROW(QTabBar);
+    NEWROW(QTableView);
+    NEWROW(QTableWidget);
     NEWROW(QTabWidget);
     NEWROW(QTextBrowser);
     NEWROW(QTextEdit);
     NEWROW(QTimeEdit);
+    NEWROW(QToolBar);
     NEWROW(QToolBox);
     NEWROW(QToolButton);
-    NEWROW(QStatusBar);
-    NEWROW(QToolBar);
-    NEWROW(QMenuBar);
-    NEWROW(QMainWindow);
-    NEWROW(QWorkspace);
-    NEWROW(QColumnView);
-    NEWROW(QListView);
-    NEWROW(QListWidget);
-    NEWROW(QTableView);
-    NEWROW(QTableWidget);
     NEWROW(QTreeView);
     NEWROW(QTreeWidget);
+    NEWROW(QWorkspace);
 }
 
 void tst_ExceptionSafety_Objects::widgets()
