@@ -549,7 +549,9 @@ struct IntegerMoveable
     };
 
 int IntegerMoveable::instanceCount = 0;
+QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(IntegerMoveable, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
 
 template <typename T, template<typename> class Container>
 void containerInsertTest(QObject*)
