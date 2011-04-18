@@ -3,7 +3,6 @@
 
 TEMPLATE=subdirs
 SUBDIRS=\
-           exceptionsafety_objects \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
            qaccessibility \
@@ -55,6 +54,8 @@ symbian {
     SUBDIRS += qsoftkeymanager \
                qs60mainapplication
 }
+
+!win32-msvc*:!wince*:SUBDIRS += exceptionsafety_objects
 
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
