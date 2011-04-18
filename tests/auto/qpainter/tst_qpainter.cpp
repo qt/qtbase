@@ -3989,7 +3989,7 @@ void tst_QPainter::linearGradientSymmetry_data()
 {
     QTest::addColumn<QGradientStops>("stops");
 
-    {
+    if (sizeof(qreal) != sizeof(float)) {
         QGradientStops stops;
         stops << qMakePair(qreal(0.0), QColor(Qt::blue));
         stops << qMakePair(qreal(0.2), QColor(220, 220, 220, 0));
@@ -4006,7 +4006,7 @@ void tst_QPainter::linearGradientSymmetry_data()
         QTest::newRow("two stops") << stops;
     }
 
-    {
+    if (sizeof(qreal) != sizeof(float)) {
         QGradientStops stops;
         stops << qMakePair(qreal(0.3), QColor(Qt::blue));
         stops << qMakePair(qreal(0.6), QColor(Qt::black));
