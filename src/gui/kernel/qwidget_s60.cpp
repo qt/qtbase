@@ -239,7 +239,16 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (w != oldSize.width() || h != oldSize.height())
         data.window_state &= ~Qt::WindowMaximized;
 
-    if (extra) {                                // any size restrictions?
+    bool checkExtra = true;
+    if (q->isWindow() && (data.window_state & Qt::WindowFullScreen)) {
+        // Do not modity window size for fullscreen windows, if requested
+        // size is already equal to clientRect.
+        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+        if (w == r.Width() && h == r.Height())
+            checkExtra = false;
+    }
+
+    if (checkExtra && extra) {  // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
         w = qMax(w,extra->minw);
