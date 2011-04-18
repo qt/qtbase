@@ -195,17 +195,10 @@ QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func
     return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
 }
 
-
-template<typename T>
-void *lazyResultType_helper(int, typename T::result_type * = 0);
-template<typename T>
-char lazyResultType_helper(double);
-
-template <typename Functor, bool foo = sizeof(lazyResultType_helper<Functor>(0)) != sizeof(void*)>
+template <typename Functor, bool foo = HasResultType<Functor>::Value>
 struct LazyResultType { typedef typename Functor::result_type Type; };
 template <typename Functor>
-struct LazyResultType<Functor, true> { typedef void Type; };
-
+struct LazyResultType<Functor, false> { typedef void Type; };
 
 template <class T>
 struct ReduceResultType;

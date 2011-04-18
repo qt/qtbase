@@ -57,6 +57,20 @@ QT_MODULE(Core)
 #  define QT_TYPENAME typename
 #endif
 
+namespace QtPrivate {
+
+template<class T>
+class HasResultType {
+    typedef char Yes;
+    typedef void *No;
+    template<typename U> static Yes test(int, const typename U::result_type * = 0);
+    template<typename U> static No test(double);
+public:
+    enum { Value = (sizeof(test<T>(0)) == sizeof(Yes)) };
+};
+
+}
+
 QT_END_NAMESPACE
 QT_END_HEADER
 

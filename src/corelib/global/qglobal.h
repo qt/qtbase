@@ -428,6 +428,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_DECLTYPE
 //#      define Q_COMPILER_VARIADIC_TEMPLATES
 //#      define Q_COMPILER_CLASS_ENUM
 //#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
@@ -524,6 +525,7 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
 #      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_DECLTYPE
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
@@ -791,6 +793,7 @@ namespace QT_NAMESPACE {}
 #    if __INTEL_COMPILER >= 1100
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
 #    elif __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
