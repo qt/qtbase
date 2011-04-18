@@ -114,6 +114,9 @@ unix:x11 {
         OBJECTIVE_SOURCES += \
                 text/qfontengine_coretext.mm \
                 text/qfontengine_mac.mm
+        contains(QT_CONFIG, harfbuzz) {
+            DEFINES += QT_ENABLE_HARFBUZZ_FOR_MAC
+        }
 }
 
 embedded {
