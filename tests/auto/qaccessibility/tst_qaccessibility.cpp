@@ -1659,10 +1659,10 @@ void tst_QAccessibility::userActionCount()
 
 void tst_QAccessibility::actionText()
 {
-    QWidget widget;
-    widget.show();
+    QWidget *widget = new QWidget;
+    widget->show();
 
-    QAccessibleInterface *test = QAccessible::queryAccessibleInterface(&widget);
+    QAccessibleInterface *test = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(test);
     QVERIFY(test->isValid());
 
@@ -1674,7 +1674,10 @@ void tst_QAccessibility::actionText()
     QCOMPARE(test->actionText(QAccessible::DefaultAction, QAccessible::Name, 0), QString("SetFocus"));
     QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, 0), QString("SetFocus"));
 
-    delete test; test = 0;
+    delete test;
+    delete widget;
+
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::doAction()
@@ -1930,18 +1933,18 @@ void tst_QAccessibility::sliderTest()
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
     QAccessibleInterface *test = 0;
-    Q3VBox vbox;
-    QLabel labelHorizontal("Horizontal", &vbox);
-    QSlider sliderHorizontal(Qt::Horizontal, &vbox);
-    labelHorizontal.setBuddy(&sliderHorizontal);
+    Q3VBox *vbox = new Q3VBox;
+    QLabel *labelHorizontal = new QLabel("Horizontal", vbox);
+    QSlider *sliderHorizontal = new QSlider(Qt::Horizontal, vbox);
+    labelHorizontal->setBuddy(sliderHorizontal);
 
-    QLabel labelVertical("Vertical", &vbox);
-    QSlider sliderVertical(Qt::Vertical, &vbox);
-    labelVertical.setBuddy(&sliderVertical);
-    vbox.show();
+    QLabel *labelVertical = new QLabel("Vertical", vbox);
+    QSlider *sliderVertical = new QSlider(Qt::Vertical, vbox);
+    labelVertical->setBuddy(sliderVertical);
+    vbox->show();
 
     // test horizontal slider
-    test = QAccessible::queryAccessibleInterface(&sliderHorizontal);
+    test = QAccessible::queryAccessibleInterface(sliderHorizontal);
     QVERIFY(test);
     QCOMPARE(test->childCount(), 3);
     QCOMPARE(test->role(0), QAccessible::Slider);
@@ -1949,13 +1952,13 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->role(2), QAccessible::Indicator);
     QCOMPARE(test->role(3), QAccessible::PushButton);
 
-    QCOMPARE(test->text(QAccessible::Name, 0), labelHorizontal.text());
+    QCOMPARE(test->text(QAccessible::Name, 0), labelHorizontal->text());
     QCOMPARE(test->text(QAccessible::Name, 1), QSlider::tr("Page left"));
     QCOMPARE(test->text(QAccessible::Name, 2), QSlider::tr("Position"));
     QCOMPARE(test->text(QAccessible::Name, 3), QSlider::tr("Page right"));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.value()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->value()));
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
-    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderHorizontal.value()));
+    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderHorizontal->value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
 // Skip action tests.
 #if 0
@@ -1969,26 +1972,26 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->actionText(QAccessible::Decrease, QAccessible::Name, 2), QSlider::tr("Decrease"));
     QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 3), QSlider::tr("Press"));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderHorizontal->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
 #endif
     delete test;
 
     // test vertical slider
-    test = QAccessible::queryAccessibleInterface(&sliderVertical);
+    test = QAccessible::queryAccessibleInterface(sliderVertical);
     QVERIFY(test);
     QCOMPARE(test->childCount(), 3);
     QCOMPARE(test->role(0), QAccessible::Slider);
@@ -1996,13 +1999,13 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->role(2), QAccessible::Indicator);
     QCOMPARE(test->role(3), QAccessible::PushButton);
 
-    QCOMPARE(test->text(QAccessible::Name, 0), labelVertical.text());
+    QCOMPARE(test->text(QAccessible::Name, 0), labelVertical->text());
     QCOMPARE(test->text(QAccessible::Name, 1), QSlider::tr("Page up"));
     QCOMPARE(test->text(QAccessible::Name, 2), QSlider::tr("Position"));
     QCOMPARE(test->text(QAccessible::Name, 3), QSlider::tr("Page down"));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.value()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->value()));
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
-    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderVertical.value()));
+    QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderVertical->value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
 // Skip action tests.
 #if 0
@@ -2016,23 +2019,28 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->actionText(QAccessible::Decrease, QAccessible::Name, 2), QSlider::tr("Decrease"));
     QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 3), QSlider::tr("Press"));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 3));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.pageStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->pageStep()));
     QVERIFY(test->doAction(QAccessible::Press, 1));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Increase, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(2*sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
-    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical.lineStep()));
+    QCOMPARE(test->text(QAccessible::Value, 0), QString::number(sliderVertical->lineStep()));
     QVERIFY(test->doAction(QAccessible::Decrease, 2));
     QCOMPARE(test->text(QAccessible::Value, 0), QString::number(0));
 #endif
     delete test;
+    delete sliderHorizontal;
+    delete sliderVertical;
+    delete labelHorizontal;
+    delete labelVertical;
+    delete vbox;
 
     // Test that when we hide() a slider, the PageLeft, Indicator, and PageRight also gets the
     // Invisible state bit set.
