@@ -98,8 +98,7 @@ struct WFHC
 
 void tst_QAtomicPointer::warningFreeHelper()
 {
-    Q_ASSERT(false);
-    // The code below is bogus, and shouldn't be run. We're looking for warnings, only.
+    qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
 
     QBasicAtomicPointer<WFHC> p = Q_BASIC_ATOMIC_INITIALIZER(0);
 
