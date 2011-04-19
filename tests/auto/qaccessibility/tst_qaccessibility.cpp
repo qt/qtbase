@@ -371,8 +371,9 @@ static QString stateNames(int state)
 QAccessible::State state(QWidget * const widget)
 {
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
-    Q_ASSERT(iface);
-    QAccessible::State state = iface->state(0);
+    if (!iface)
+        qWarning() << "Cannot get QAccessibleInterface for widget";
+    QAccessible::State state = (iface ? iface->state(0) : static_cast<QAccessible::State>(0));
     delete iface;
     return state;
 }
