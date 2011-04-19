@@ -280,7 +280,7 @@ protected:
                     eventsPtr->canceled << g->gestureType();
                     break;
                 default:
-                    Q_ASSERT(false);
+                    qWarning() << "Unknown GestureState enum value:" << static_cast<int>(g->state());
                 }
             }
         } else if (event->type() == CustomEvent::EventType) {
@@ -823,7 +823,7 @@ public:
                     emit gestureCanceled(e->type(), g);
                     break;
                 default:
-                    Q_ASSERT(false);
+                    qWarning() << "Unknown GestureState enum value:" << static_cast<int>(g->state());
                 }
             }
         } else if (event->type() == CustomEvent::EventType) {
