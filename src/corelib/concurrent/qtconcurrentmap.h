@@ -206,7 +206,7 @@ void blockingMap(Iterator begin, Iterator end, MapFunctor map)
 
 // blockingMappedReduced() for sequences
 template <typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor>
-typename QtPrivate::DisableIfSame<ResultType, Sequence>::Type blockingMappedReduced(const Sequence &sequence,
+ResultType blockingMappedReduced(const Sequence &sequence,
                                  MapFunctor map,
                                  ReduceFunctor reduce,
                                  ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
@@ -219,7 +219,7 @@ typename QtPrivate::DisableIfSame<ResultType, Sequence>::Type blockingMappedRedu
         .startBlocking();
 }
 
-template <typename Sequence, typename MapFunctor, typename ReduceFunctor>
+template <typename MapFunctor, typename ReduceFunctor, typename Sequence>
 typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedReduced(const Sequence &sequence,
                                  MapFunctor map,
                                  ReduceFunctor reduce,
@@ -266,7 +266,7 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingMappedRe
 
 // mapped() for sequences with a different putput sequence type.
 template <typename OutputSequence, typename InputSequence, typename MapFunctor>
-typename QtPrivate::DisableIfSame<OutputSequence, InputSequence>::Type blockingMapped(const InputSequence &sequence, MapFunctor map)
+OutputSequence blockingMapped(const InputSequence &sequence, MapFunctor map)
 {
     return blockingMappedReduced<OutputSequence>
         (sequence,
@@ -275,7 +275,7 @@ typename QtPrivate::DisableIfSame<OutputSequence, InputSequence>::Type blockingM
          QtConcurrent::OrderedReduce);
 }
 
-template <typename InputSequence, typename MapFunctor>
+template <typename MapFunctor, typename InputSequence>
 typename QtPrivate::MapResultType<InputSequence, MapFunctor>::ResultType blockingMapped(const InputSequence &sequence, MapFunctor map)
 {
     typedef typename QtPrivate::MapResultType<InputSequence, MapFunctor>::ResultType OutputSequence;

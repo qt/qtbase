@@ -286,18 +286,6 @@ struct MapResultType<QStringList, U(C::*)() const>
     typedef QList<U> ResultType;
 };
 
-template <typename ReturnType, typename T>
-struct DisableIfSame
-{
-    typedef ReturnType Type;
-};
-
-template <typename T>
-struct DisableIfSame<T, T>
-{
-
-};
-
 } // namespace QtPrivate.
 
 #endif //qdoc
