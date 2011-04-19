@@ -4016,6 +4016,9 @@ void tst_QPainter::linearGradientSymmetry_data()
 
 void tst_QPainter::linearGradientSymmetry()
 {
+#ifdef Q_WS_QWS
+    QSKIP("QWS has limited resolution in the gradient color table", SkipAll);
+#else
     QFETCH(QGradientStops, stops);
 
     QImage a(64, 8, QImage::Format_ARGB32_Premultiplied);
@@ -4037,6 +4040,7 @@ void tst_QPainter::linearGradientSymmetry()
 
     b = b.mirrored(true);
     QCOMPARE(a, b);
+#endif
 }
 
 void tst_QPainter::gradientInterpolation()
