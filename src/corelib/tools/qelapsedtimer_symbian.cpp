@@ -95,7 +95,7 @@ qint64 QElapsedTimer::restart()
     qint64 oldt1 = t1;
     t1 = getMicrosecondFromTick();
     t2 = 0;
-    return t1 - oldt1;
+    return (t1 - oldt1) / 1000;
 }
 
 qint64 QElapsedTimer::nsecsElapsed() const
