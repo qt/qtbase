@@ -163,6 +163,143 @@ private:
 
 } // namespace QtConcurrent.
 
+namespace QtPrivate {
+
+template <typename T>
+const T& createFunctionWrapper(const T& t)
+{
+    return t;
+}
+
+template <typename T, typename U>
+QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U))
+{
+    return QtConcurrent::FunctionWrapper1<T, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)())
+{
+    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
+}
+
+template <typename T, typename C, typename U>
+QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U))
+{
+    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const)
+{
+    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
+}
+
+template <class T>
+struct ReduceResultType;
+
+template <class U, class V>
+struct ReduceResultType<void(*)(U&,V)>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C, class U>
+struct ReduceResultType<T(C::*)(U)>
+{
+    typedef C ResultType;
+};
+
+template <class InputSequence, class MapFunctor>
+struct MapResultType
+{
+    typedef typename MapFunctor::result_type ResultType;
+};
+
+template <class InputSequence, class U, class V>
+struct MapResultType<InputSequence, U (*)(V)>
+{
+    typedef U ResultType;
+};
+
+template <class InputSequence, class T, class C>
+struct MapResultType<InputSequence, T(C::*)() const>
+{
+    typedef T ResultType;
+};
+
+#ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+
+template <template <typename> class InputSequence, typename MapFunctor, typename T>
+struct MapResultType<InputSequence<T>, MapFunctor>
+{
+    typedef InputSequence<typename MapFunctor::result_type> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class V>
+struct MapResultType<InputSequence<T>, U (*)(V)>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class C>
+struct MapResultType<InputSequence<T>, U(C::*)() const>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+template <template <typename, typename> class InputSequence, typename MapFunctor, typename T, typename T2>
+struct MapResultType<InputSequence<T, T2>, MapFunctor>
+{
+    typedef InputSequence<typename MapFunctor::result_type, T2> ResultType;
+};
+
+template <template <typename, typename> class InputSequence, class T, typename T2, class U, class V>
+struct MapResultType<InputSequence<T, T2>, U (*)(V)>
+{
+    typedef InputSequence<U, T2> ResultType;
+};
+
+template <template <typename, typename> class InputSequence, class T, typename T2, class U, class C>
+struct MapResultType<InputSequence<T, T2>, U(C::*)() const>
+{
+    typedef InputSequence<U, T2> ResultType;
+};
+
+#endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
+
+template <class MapFunctor>
+struct MapResultType<QStringList, MapFunctor>
+{
+    typedef QList<typename MapFunctor::result_type> ResultType;
+};
+
+template <class U, class V>
+struct MapResultType<QStringList, U (*)(V)>
+{
+    typedef QList<U> ResultType;
+};
+
+template <class U, class C>
+struct MapResultType<QStringList, U(C::*)() const>
+{
+    typedef QList<U> ResultType;
+};
+
+template <typename ReturnType, typename T>
+struct DisableIfSame
+{
+    typedef ReturnType Type;
+};
+
+template <typename T>
+struct DisableIfSame<T, T>
+{
+
+};
+
+} // namespace QtPrivate.
+
 #endif //qdoc
 
 QT_END_NAMESPACE
