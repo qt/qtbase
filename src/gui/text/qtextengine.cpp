@@ -2777,12 +2777,14 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
     // if width is QFIXED_MAX that means we used setNumColumns() and that implicitly makes this line left aligned.
     if (!line.justified && line.width != QFIXED_MAX) {
         int align = option.alignment();
+        if (align & Qt::AlignLeft)
+            x -= leadingSpaceWidth(line);
         if (align & Qt::AlignJustify && isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textAdvance)/2;
+            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
     }
     return x;
 }

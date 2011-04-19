@@ -1060,6 +1060,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
 
             QRectF lineRect(tl.naturalTextRect());
             lineRect.translate(position);
+            lineRect.adjust(0, 0, d->leadingSpaceWidth(sl).toReal(), 0);
 
             bool isLastLineInBlock = (line == d->lines.size()-1);
             int sl_length = sl.length + (isLastLineInBlock? 1 : 0); // the infamous newline
