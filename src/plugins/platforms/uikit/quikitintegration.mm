@@ -66,7 +66,7 @@ QUIKitIntegration::~QUIKitIntegration()
 
 QPixmapData *QUIKitIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
-        return new QRasterPixmapData(type);
+    return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QUIKitIntegration::createPlatformWindow(QWidget *widget, WId winId) const

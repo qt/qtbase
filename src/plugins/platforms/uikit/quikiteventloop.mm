@@ -69,13 +69,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     Q_UNUSED(launchOptions)
+    Q_UNUSED(application)
     foreach (QWidget *widget, qApp->topLevelWidgets()) {
-        QRect geom = widget->geometry();
-        CGRect bar = application.statusBarFrame;
-        if (geom.y() <= bar.size.height) {
-            geom.setY(bar.size.height);
-            widget->setGeometry(geom);
-        }
         QUIKitWindow *platformWindow = static_cast<QUIKitWindow *>(widget->platformWindow());
         platformWindow->ensureNativeWindow();
     }
