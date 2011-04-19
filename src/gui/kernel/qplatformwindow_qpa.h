@@ -63,6 +63,7 @@ class Q_GUI_EXPORT QPlatformWindow
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
     QPlatformWindow(QWidget *tlw);
+    QPlatformWindow(Qt::HANDLE , QWidget *tlw);
     virtual ~QPlatformWindow();
 
     QWidget *widget() const;
