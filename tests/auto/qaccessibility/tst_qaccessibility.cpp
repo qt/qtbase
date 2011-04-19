@@ -377,18 +377,6 @@ QAccessible::State state(QWidget * const widget)
     return state;
 }
 
-void printState(QWidget * const widget)
-{
-    qDebug() << "State for" << widget->metaObject()->className() << stateNames(state(widget));
-}
-
-void printState(QAccessibleInterface * const iface, const int child = 0)
-{
-    qDebug() << "State for" << iface->object()->metaObject()->className() << "child" << child
-             <<  iface->text(QAccessible::Name, child) << stateNames(iface->state(child));
-}
-
-
 class QtTestAccessibleWidget: public QWidget
 {
     Q_OBJECT
