@@ -277,7 +277,9 @@ retry:
         case 'L': row = completer->completionCount() - 1; break;
         case 'F': row = 0; break;
         default:
-            Q_ASSERT(false);
+            QFAIL(qPrintable(QString(
+                "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
+            ).arg(step[i])));
         }
         completer->setCurrentRow(row);
     }
