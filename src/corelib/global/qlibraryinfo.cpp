@@ -450,10 +450,11 @@ QLibraryInfo::location(LibraryLocation loc)
     }
 
     if (QDir::isRelativePath(ret)) {
+        QString baseDir;
         if (loc == PrefixPath) {
             // we make the prefix path absolute to the executable's directory
 #ifdef BOOTSTRAPPING
-            return QDir(QFileInfo(qmake_libraryInfoFile()).absolutePath()).absoluteFilePath(ret);
+            baseDir = QFileInfo(qmake_libraryInfoFile()).absolutePath();
 #else
             if (QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
@@ -466,15 +467,16 @@ QLibraryInfo::location(LibraryLocation loc)
                     }
                 }
 #endif
-                return QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(ret);
+                baseDir = QCoreApplication::applicationDirPath();
             } else {
-                return QDir::current().absoluteFilePath(ret);
+                baseDir = QDir::currentPath();
             }
 #endif
         } else {
             // we make any other path absolute to the prefix directory
-            return QDir(location(PrefixPath)).absoluteFilePath(ret);
+            baseDir = location(PrefixPath);
         }
+        ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
 }
