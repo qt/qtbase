@@ -453,7 +453,7 @@ QLibraryInfo::location(LibraryLocation loc)
         if (loc == PrefixPath) {
             // we make the prefix path absolute to the executable's directory
 #ifdef BOOTSTRAPPING
-            return QFileInfo(qmake_libraryInfoFile()).absolutePath();
+            return QDir(QFileInfo(qmake_libraryInfoFile()).absolutePath()).absoluteFilePath(ret);
 #else
             if (QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
