@@ -102,6 +102,16 @@ defineTest(qtAddModule) {
 
     INCLUDEPATH -= $$MODULE_INCLUDES
     INCLUDEPATH = $$MODULE_INCLUDES $$INCLUDEPATH
+    isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
+        # This adds both
+        #     <module privates include path>/
+        # and <module privates include path>/<module name>
+        # since we have code using both #include <QtCore/private/foo> and #include <private/foo>
+        # Both need to be supported with the new private includes structure
+        MODULE_INCLUDES_PRIVATES = $$eval(QT.$${1}.private_includes)
+        INCLUDEPATH -= $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME
+        INCLUDEPATH = $$MODULE_INCLUDES_PRIVATES $$MODULE_INCLUDES_PRIVATES/$$MODULE_NAME $$INCLUDEPATH
+    }
 
     unset(LINKAGE)
     mac {
@@ -140,12 +150,16 @@ defineTest(qtAddModule) {
        }
        isEmpty(LINKAGE):LINKAGE = -l$${MODULE_NAME}$${QT_LIBINFIX}
     }
-    !isEmpty(QMAKE_LSB) {
-        QMAKE_LFLAGS *= --lsb-libpath=$$$$QMAKE_LIBDIR_QT
-        QMAKE_LFLAGS *= -L/opt/lsb/lib
-        QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+    # Only link to this module if a libs directory is set, else this is just a module
+    # to give access to sources or include files, and not for linking.
+    !isEmpty(MODULE_LIBS) {
+        !isEmpty(QMAKE_LSB) {
+            QMAKE_LFLAGS *= --lsb-libpath=$$$$QMAKE_LIBDIR_QT
+            QMAKE_LFLAGS *= -L/opt/lsb/lib
+            QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+        }
+        LIBS += $$LINKAGE
     }
-    LIBS += $$LINKAGE
     export(CONFIG)
     export(DEFINES)
     export(LIBS)

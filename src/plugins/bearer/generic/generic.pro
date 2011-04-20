@@ -1,7 +1,7 @@
 TARGET = qgenericbearer
 include(../../qpluginbase.pri)
 
-QT = core network
+QT = core-private network-private
 
 HEADERS += qgenericengine.h \
            ../qnetworksession_impl.h \

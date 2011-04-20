@@ -4,4 +4,4 @@ qt:load(qt)
 
 plugin:DEFINES += QDESIGNER_EXPORT_WIDGETS
 
-qtAddLibrary(QtDesigner)
+qtAddLibrary(QtDesigner, true)

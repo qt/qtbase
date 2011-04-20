@@ -1,6 +1,6 @@
 TARGET = QtDBus
 QPRO_PWD = $$PWD
-QT = core \
+QT = core-private \
     xml
 
 CONFIG += link_pkgconfig module

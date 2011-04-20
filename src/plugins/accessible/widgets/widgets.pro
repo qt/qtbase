@@ -2,6 +2,7 @@ TARGET  = qtaccessiblewidgets
 include(../../qpluginbase.pri)
 include (../qaccessiblebase.pri)
 
+QT += core-private gui-private
 DESTDIR = $$QT.gui.plugins/accessible
 
 QTDIR_build:REQUIRES += "contains(QT_CONFIG, accessibility)"

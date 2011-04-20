@@ -131,7 +131,16 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
 QT = $$resolve_depends($$QT, "QT.")
 QT_DEPENDS=
 
+unset(using_privates)
 for(QTLIB, $$list($$lower($$unique(QT)))) {
+    # Figure out if we're wanting to use the private headers of a module
+    contains(QTLIB, .*-private) {
+        QTLIB ~= s/-private//
+        use_private = UsePrivate
+    } else {
+        use_private = NoPrivate
+    }
+
     isEmpty(QT.$${QTLIB}.name) {
         message("Warning: unknown QT module: $$QTLIB")
         next()
@@ -141,13 +150,20 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
         warning($$TARGET cannot have a QT of $$QTLIB)
         next()
     }
-    qtAddModule($$QTLIB)
+    qtAddModule($$QTLIB, $$use_private)
     QT_DEPENDS += $$eval(QT.$${QTLIB}.depends)
+    isEqual(use_private, UsePrivate):using_privates = true
 }
 
 # add include paths for all .depends, since module/application might need f.ex. template specializations etc.
 QT_DEPENDS -= $$QT
 for(QTLIB, $$list($$lower($$unique(QT_DEPENDS)))):INCLUDEPATH += $$INCLUDEPATH $$eval(QT.$${QTLIB}.includes)
+
+!isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+    message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
+    message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
+    message("This is not a bug, but a result of using Qt internals. You have been warned!")
+}
 
 qt_compat {
    !qt_compat_no_warning:QTDIR_build:warning(***USE of COMPAT inside of QTDIR!**) #just for us

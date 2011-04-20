@@ -32,7 +32,11 @@ win32:DEFINES += QT_NODLL
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
-            $$QT_BUILD_TREE/include/QtXml
+            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
+            $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore \
+            $$QT_BUILD_TREE/include/QtXml \
+            $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION \
+            $$QT_BUILD_TREE/include/QtXml/$$QT.xml.VERSION/QtXml \
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \
