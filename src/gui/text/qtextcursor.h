@@ -88,7 +88,7 @@ public:
     };
     enum MoveStyle {
         Logical,
-        Visual,
+        Visual
     };
 
     void setPosition(int pos, MoveMode mode = MoveAnchor);
