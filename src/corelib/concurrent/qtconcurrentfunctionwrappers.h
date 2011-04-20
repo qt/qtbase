@@ -195,6 +195,18 @@ QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func
     return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
 }
 
+
+template<typename T>
+void *lazyResultType_helper(int, typename T::result_type * = 0);
+template<typename T>
+char lazyResultType_helper(double);
+
+template <typename Functor, bool foo = sizeof(lazyResultType_helper<Functor>(0)) != sizeof(void*)>
+struct LazyResultType { typedef typename Functor::result_type Type; };
+template <typename Functor>
+struct LazyResultType<Functor, true> { typedef void Type; };
+
+
 template <class T>
 struct ReduceResultType;
 
@@ -213,7 +225,7 @@ struct ReduceResultType<T(C::*)(U)>
 template <class InputSequence, class MapFunctor>
 struct MapResultType
 {
-    typedef typename MapFunctor::result_type ResultType;
+    typedef typename LazyResultType<MapFunctor>::Type ResultType;
 };
 
 template <class U, class V>
@@ -233,7 +245,7 @@ struct MapResultType<void, T(C::*)() const>
 template <template <typename> class InputSequence, typename MapFunctor, typename T>
 struct MapResultType<InputSequence<T>, MapFunctor>
 {
-    typedef InputSequence<typename MapFunctor::result_type> ResultType;
+    typedef InputSequence<typename LazyResultType<MapFunctor>::Type> ResultType;
 };
 
 template <template <typename> class InputSequence, class T, class U, class V>
@@ -251,7 +263,7 @@ struct MapResultType<InputSequence<T>, U(C::*)() const>
 template <template <typename, typename> class InputSequence, typename MapFunctor, typename T, typename T2>
 struct MapResultType<InputSequence<T, T2>, MapFunctor>
 {
-    typedef InputSequence<typename MapFunctor::result_type, T2> ResultType;
+    typedef InputSequence<typename LazyResultType<MapFunctor>::Type, T2> ResultType;
 };
 
 template <template <typename, typename> class InputSequence, class T, typename T2, class U, class V>
@@ -271,7 +283,7 @@ struct MapResultType<InputSequence<T, T2>, U(C::*)() const>
 template <class MapFunctor>
 struct MapResultType<QStringList, MapFunctor>
 {
-    typedef QList<typename MapFunctor::result_type> ResultType;
+    typedef QList<typename LazyResultType<MapFunctor>::Type> ResultType;
 };
 
 template <class U, class V>
