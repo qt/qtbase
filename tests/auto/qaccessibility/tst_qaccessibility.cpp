@@ -3998,7 +3998,9 @@ void tst_QAccessibility::accelerators()
     label->setText(tr("Q &&A"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QString());
 
+#ifndef QT_NO_DEBUG
     QTest::ignoreMessage(QtWarningMsg, "QKeySequence::mnemonic: \"Q &A&B\" contains multiple occurrences of '&'");
+#endif
     label->setText(tr("Q &A&B"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + QLatin1String("A"));
 
