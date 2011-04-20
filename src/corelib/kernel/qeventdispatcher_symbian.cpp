@@ -1111,6 +1111,12 @@ bool QEventDispatcherSymbian::hasPendingEvents()
 
 void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifier )
 {
+    //check socket descriptor is usable
+    if (notifier->socket() >= FD_SETSIZE || notifier->socket() < 0) {
+        //same warning message as the unix event dispatcher for easy testing
+        qWarning("QSocketNotifier: Internal error");
+        return;
+    }
     //note - this is only for "open C" file descriptors
     //for native sockets, an active object in the symbian socket engine handles this
     QSocketActiveObject *socketAO = new QSocketActiveObject(this, notifier);
