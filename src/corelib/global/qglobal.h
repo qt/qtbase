@@ -425,15 +425,11 @@ namespace QT_NAMESPACE {}
 
 #if defined(Q_CC_MSVC) && _MSC_VER >= 1600
 #      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE
-//#      define Q_COMPILER_VARIADIC_TEMPLATES
-//#      define Q_COMPILER_CLASS_ENUM
-//#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
-//#      define Q_COMPILER_UNICODE_STRINGS
-//#      define Q_COMPILER_EXTERN_TEMPLATES
+//  MSCV has std::initilizer_list, but do not support the braces initilization
+//#      define Q_COMPILER_INITIALIZER_LISTS
 #  endif
 
 
