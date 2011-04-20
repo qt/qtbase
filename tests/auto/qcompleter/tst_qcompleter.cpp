@@ -1280,10 +1280,11 @@ public:
     {
         setEditable(true);
         setInsertPolicy(NoInsert);
-        Q_ASSERT(completer());
-        completer()->setCompletionMode(QCompleter::PopupCompletion);
-        completer()->setCompletionRole(Qt::DisplayRole);
-        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        if (completer()) {
+            completer()->setCompletionMode(QCompleter::PopupCompletion);
+            completer()->setCompletionRole(Qt::DisplayRole);
+            connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        }
     }
 private slots:
     void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
@@ -1292,6 +1293,7 @@ private slots:
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
     task246056_ComboBox *comboBox = new task246056_ComboBox;
+    QVERIFY(comboBox->completer());
     comboBox->addItem("");
     comboBox->addItem("a1");
     comboBox->addItem("a2");
