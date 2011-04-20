@@ -1109,7 +1109,7 @@ MakefileGenerator::writePrlFile()
        && project->isActiveConfig("create_prl")
        && (project->first("TEMPLATE") == "lib"
        || project->first("TEMPLATE") == "vclib")
-       && !project->isActiveConfig("plugin")) { //write prl file
+       && (!project->isActiveConfig("plugin") || project->isActiveConfig("static"))) { //write prl file
         QString local_prl = prlFileName();
         QString prl = fileFixify(local_prl);
         mkdir(fileInfo(local_prl).path());
