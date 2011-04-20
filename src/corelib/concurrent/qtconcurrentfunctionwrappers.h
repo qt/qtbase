@@ -216,14 +216,14 @@ struct MapResultType
     typedef typename MapFunctor::result_type ResultType;
 };
 
-template <class InputSequence, class U, class V>
-struct MapResultType<InputSequence, U (*)(V)>
+template <class U, class V>
+struct MapResultType<void, U (*)(V)>
 {
     typedef U ResultType;
 };
 
-template <class InputSequence, class T, class C>
-struct MapResultType<InputSequence, T(C::*)() const>
+template <class T, class C>
+struct MapResultType<void, T(C::*)() const>
 {
     typedef T ResultType;
 };
