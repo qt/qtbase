@@ -467,7 +467,7 @@ bool QProcessPrivate::createChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment, int *envc)
+static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
 {
     *envc = 0;
     if (environment.isEmpty())
@@ -489,8 +489,8 @@ static char **_q_dupEnvironment(const QHash<QByteArray, QByteArray> &environment
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
 
-    QHash<QByteArray, QByteArray>::ConstIterator it = environment.constBegin();
-    const QHash<QByteArray, QByteArray>::ConstIterator end = environment.constEnd();
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
+    const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
         QByteArray key = it.key();
         QByteArray value = it.value();

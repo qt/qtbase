@@ -278,11 +278,11 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QHash<QString, QString> &environment)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QHash<QString, QString> copy = environment;
+        QProcessEnvironmentPrivate::Hash copy = environment;
 
         // add PATH if necessary (for DLL loading)
         if (!copy.contains(QLatin1String("PATH"))) {
@@ -299,8 +299,8 @@ static QByteArray qt_create_environment(const QHash<QString, QString> &environme
         }
 
         int pos = 0;
-        QHash<QString, QString>::ConstIterator it = copy.constBegin(),
-                                              end = copy.constEnd();
+        QProcessEnvironmentPrivate::Hash::ConstIterator it = copy.constBegin(),
+                                                       end = copy.constEnd();
 
         static const wchar_t equal = L'=';
         static const wchar_t nul = L'\0';

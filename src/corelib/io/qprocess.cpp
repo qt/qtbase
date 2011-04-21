@@ -190,8 +190,8 @@ template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it) {
         QString data = nameToString(it.key());
         QString value = valueToString(it.value());
@@ -224,8 +224,8 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
 QStringList QProcessEnvironmentPrivate::keys() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it)
         result << nameToString(it.key());
     return result;
@@ -233,8 +233,8 @@ QStringList QProcessEnvironmentPrivate::keys() const
 
 void QProcessEnvironmentPrivate::insert(const Hash &h)
 {
-    QHash<Unit, Unit>::ConstIterator it = h.constBegin(),
-                                    end = h.constEnd();
+    Hash::ConstIterator it = h.constBegin(),
+                       end = h.constEnd();
     for ( ; it != end; ++it)
         hash.insert(it.key(), it.value());
 }
