@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGlyphs
-    \brief the QGlyphs class provides direct access to the internal glyphs in a font
+    \brief The QGlyphs class provides direct access to the internal glyphs in a font.
     \since 4.8
 
     \ingroup text
