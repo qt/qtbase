@@ -190,6 +190,7 @@ template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
+    result.reserve(hash.size());
     Hash::ConstIterator it = hash.constBegin(),
                        end = hash.constEnd();
     for ( ; it != end; ++it) {
@@ -224,6 +225,7 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
 QStringList QProcessEnvironmentPrivate::keys() const
 {
     QStringList result;
+    result.reserve(hash.size());
     Hash::ConstIterator it = hash.constBegin(),
                        end = hash.constEnd();
     for ( ; it != end; ++it)
