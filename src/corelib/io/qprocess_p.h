@@ -113,7 +113,35 @@ public:
         uint hash;
     };
 
-    typedef QByteArray Value;
+    class Value
+    {
+    public:
+        Value() {}
+        Value(const Value &other) { *this = other; }
+        explicit Value(const QString &value) : stringValue(value) {}
+        explicit Value(const QByteArray &value) : byteValue(value) {}
+        bool operator==(const Value &other) const
+        {
+            return byteValue.isEmpty() && other.byteValue.isEmpty()
+                    ? stringValue == other.stringValue
+                    : bytes() == other.bytes();
+        }
+        QByteArray bytes() const
+        {
+            if (byteValue.isEmpty() && !stringValue.isEmpty())
+                byteValue = stringValue.toLocal8Bit();
+            return byteValue;
+        }
+        QString string() const
+        {
+            if (stringValue.isEmpty() && !byteValue.isEmpty())
+                stringValue = QString::fromLocal8Bit(byteValue);
+            return stringValue;
+        }
+
+        mutable QByteArray byteValue;
+        mutable QString stringValue;
+    };
 
     inline Key prepareName(const QString &name) const
     {
@@ -128,8 +156,8 @@ public:
         nameMap[sname] = name;
         return sname;
     }
-    inline Value prepareValue(const QString &value) const { return value.toLocal8Bit(); }
-    inline QString valueToString(const Value &value) const { return QString::fromLocal8Bit(value); }
+    inline Value prepareValue(const QString &value) const { return Value(value); }
+    inline QString valueToString(const Value &value) const { return value.string(); }
 #endif
 
     typedef QHash<Key, Value> Hash;
@@ -146,6 +174,9 @@ public:
     void insert(const QProcessEnvironmentPrivate &other);
 };
 Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Key, Q_MOVABLE_TYPE);
+#ifdef Q_OS_UNIX
+Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Value, Q_MOVABLE_TYPE);
+#endif
 
 #ifdef Q_OS_WIN
 inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return qHash(key.toCaseFolded()); }

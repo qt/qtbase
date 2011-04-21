@@ -510,7 +510,7 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
     const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
         QByteArray key = it.key().key;
-        QByteArray value = it.value();
+        QByteArray value = it.value().bytes();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
         key.append(value);
