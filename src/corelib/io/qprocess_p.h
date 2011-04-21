@@ -85,11 +85,14 @@ class QProcessEnvironmentPrivate: public QSharedData
 {
 public:
 #ifdef Q_OS_WIN
-    typedef QString Unit;
+    typedef QString Key;
+    typedef QString Value;
 #else
-    typedef QByteArray Unit;
+    typedef QByteArray Key;
+    typedef QByteArray Value;
 #endif
-    typedef QHash<Unit, Unit> Hash;
+
+    typedef QHash<Key, Value> Hash;
     Hash hash;
 
     static QProcessEnvironment fromList(const QStringList &list);

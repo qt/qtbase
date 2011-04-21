@@ -144,22 +144,22 @@ QT_BEGIN_NAMESPACE
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
 #ifdef Q_OS_WIN
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
+static inline QProcessEnvironmentPrivate::Key prepareName(const QString &name)
 { return name.toUpper(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
+static inline QString nameToString(const QProcessEnvironmentPrivate::Key &name)
 { return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
+static inline QProcessEnvironmentPrivate::Value prepareValue(const QString &value)
 { return value; }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
+static inline QString valueToString(const QProcessEnvironmentPrivate::Value &value)
 { return value; }
 #else
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
+static inline QProcessEnvironmentPrivate::Key prepareName(const QString &name)
 { return name.toLocal8Bit(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
+static inline QString nameToString(const QProcessEnvironmentPrivate::Key &name)
 { return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
+static inline QProcessEnvironmentPrivate::Value prepareValue(const QString &value)
 { return value.toLocal8Bit(); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
+static inline QString valueToString(const QProcessEnvironmentPrivate::Value &value)
 { return QString::fromLocal8Bit(value); }
 #endif
 
