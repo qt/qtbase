@@ -206,14 +206,13 @@ static inline QByteArray generateDataBlock(int blockSize, QString text, qint64 u
 
     QByteArray filler("0123456789");
     block.append(filler.right(10 - block.size() % 10));
-    topUpWith(block, filler, blockSize - 2 * sizeof(qint64));
+    topUpWith(block, filler, blockSize - 3 * sizeof(qint64));
 
     appendRaw(block, counter);
     appendRaw(block, userBits);
     appendRaw(block, randomBits);
 
-    Q_ASSERT( block.size() >= blockSize );
-    block.resize(blockSize);
+    Q_ASSERT( block.size() == blockSize );
 
     ++counter;
     return block;
