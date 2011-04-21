@@ -143,25 +143,6 @@ QT_BEGIN_NAMESPACE
 
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
-#ifdef Q_OS_WIN
-static inline QProcessEnvironmentPrivate::Key prepareName(const QString &name)
-{ return QProcessEnvironmentPrivate::Key(name); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Key &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Value prepareValue(const QString &value)
-{ return value; }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Value &value)
-{ return value; }
-#else
-static inline QProcessEnvironmentPrivate::Key prepareName(const QString &name)
-{ return name.toLocal8Bit(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Key &name)
-{ return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Value prepareValue(const QString &value)
-{ return value.toLocal8Bit(); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Value &value)
-{ return QString::fromLocal8Bit(value); }
-#endif
 
 template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
 {
@@ -321,7 +302,7 @@ void QProcessEnvironment::clear()
 */
 bool QProcessEnvironment::contains(const QString &name) const
 {
-    return d ? d->hash.contains(prepareName(name)) : false;
+    return d ? d->hash.contains(d->prepareName(name)) : false;
 }
 
 /*!
@@ -343,7 +324,7 @@ bool QProcessEnvironment::contains(const QString &name) const
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     // d detaches from null
-    d->hash.insert(prepareName(name), prepareValue(value));
+    d->hash.insert(d->prepareName(name), d->prepareValue(value));
 }
 
 /*!
@@ -360,7 +341,7 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 void QProcessEnvironment::remove(const QString &name)
 {
     if (d)
-        d->hash.remove(prepareName(name));
+        d->hash.remove(d->prepareName(name));
 }
 
 /*!
@@ -379,11 +360,11 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     if (!d)
         return defaultValue;
 
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(prepareName(name));
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
     if (it == d->hash.constEnd())
         return defaultValue;
 
-    return valueToString(it.value());
+    return d->valueToString(it.value());
 }
 
 /*!

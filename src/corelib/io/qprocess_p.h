@@ -95,9 +95,19 @@ public:
     };
 
     typedef QString Value;
+
+    inline Key prepareName(const QString &name) const { return Key(name); }
+    inline QString nameToString(const Key &name) const { return name; }
+    inline Value prepareValue(const QString &value) const { return value; }
+    inline QString valueToString(const Value &value) const { return value; }
 #else
     typedef QByteArray Key;
     typedef QByteArray Value;
+
+    inline Key prepareName(const QString &name) const { return name.toLocal8Bit(); }
+    inline QString nameToString(const Key &name) const { return QString::fromLocal8Bit(name); }
+    inline Value prepareValue(const QString &value) const { return value.toLocal8Bit(); }
+    inline QString valueToString(const Value &value) const { return QString::fromLocal8Bit(value); }
 #endif
 
     typedef QHash<Key, Value> Hash;
