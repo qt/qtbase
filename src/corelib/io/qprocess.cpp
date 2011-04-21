@@ -2301,6 +2301,8 @@ QStringList QProcess::systemEnvironment()
 }
 
 /*!
+    \fn QProcessEnvironment QProcessEnvironment::systemEnvironment()
+
     \since 4.6
 
     \brief The systemEnvironment function returns the environment of
@@ -2316,21 +2318,6 @@ QStringList QProcess::systemEnvironment()
 
     \sa QProcess::systemEnvironment()
 */
-QProcessEnvironment QProcessEnvironment::systemEnvironment()
-{
-    QProcessEnvironment env;
-    const char *entry;
-    for (int count = 0; (entry = environ[count]); ++count) {
-        const char *equal = strchr(entry, '=');
-        if (!equal)
-            continue;
-
-        QByteArray name(entry, equal - entry);
-        QByteArray value(equal + 1);
-        env.insert(QString::fromLocal8Bit(name), QString::fromLocal8Bit(value));
-    }
-    return env;
-}
 
 /*!
     \typedef Q_PID
