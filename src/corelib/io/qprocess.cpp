@@ -146,33 +146,21 @@ QT_BEGIN_NAMESPACE
 #ifdef Q_OS_WIN
 static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
 { return name.toUpper(); }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return QString::fromLocal8Bit(name).toUpper(); }
 static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
 { return name; }
 static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
 { return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return QString::fromLocal8Bit(value); }
 static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
 { return value; }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value.toLocal8Bit(); }
 #else
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return name; }
 static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
 { return name.toLocal8Bit(); }
 static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
 { return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return value; }
 static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
 { return value.toLocal8Bit(); }
 static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
 { return QString::fromLocal8Bit(value); }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
 #endif
 
 template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
