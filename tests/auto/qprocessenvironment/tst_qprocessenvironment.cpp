@@ -43,10 +43,6 @@
 #include <QObject>
 #include <QProcessEnvironment>
 
-// Note:
-// in cross-platform tests, ALWAYS use UPPERCASE variable names
-// That's because on Windows, the variables are uppercased
-
 class tst_QProcessEnvironment: public QObject
 {
     Q_OBJECT
@@ -214,7 +210,7 @@ void tst_QProcessEnvironment::caseSensitivity()
     e.insert("foo", "bar");
 
 #ifdef Q_OS_WIN
-    // on Windows, it's uppercased
+    // Windows is case-insensitive, but case-preserving
     QVERIFY(e.contains("foo"));
     QVERIFY(e.contains("FOO"));
     QVERIFY(e.contains("FoO"));
@@ -223,8 +219,12 @@ void tst_QProcessEnvironment::caseSensitivity()
     QCOMPARE(e.value("FOO"), QString("bar"));
     QCOMPARE(e.value("FoO"), QString("bar"));
 
+    // Per Windows, this overwrites the value, but keeps the name's original capitalization
+    e.insert("Foo", "Bar");
+
     QStringList list = e.toStringList();
-    QCOMPARE(list.at(0), QString("FOO=bar"));
+    QCOMPARE(list.length(), 1);
+    QCOMPARE(list.at(0), QString("foo=Bar"));
 #else
     // otherwise, it's case sensitive
     QVERIFY(e.contains("foo"));
@@ -236,6 +236,7 @@ void tst_QProcessEnvironment::caseSensitivity()
     QCOMPARE(e.value("foo"), QString("bar"));
 
     QStringList list = e.toStringList();
+    QCOMPARE(list.length(), 2);
     QVERIFY(list.contains("foo=bar"));
     QVERIFY(list.contains("FOO=baz"));
 #endif

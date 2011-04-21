@@ -285,17 +285,19 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &
         QProcessEnvironmentPrivate::Hash copy = environment;
 
         // add PATH if necessary (for DLL loading)
-        if (!copy.contains(QLatin1String("PATH"))) {
+        QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
+        if (!copy.contains(pathKey)) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-                copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
+                copy.insert(pathKey, QString::fromLocal8Bit(path));
         }
 
         // add systemroot if needed
-        if (!copy.contains(QLatin1String("SYSTEMROOT"))) {
-            QByteArray systemRoot = qgetenv("SYSTEMROOT");
+        QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
+        if (!copy.contains(rootKey)) {
+            QByteArray systemRoot = qgetenv("SystemRoot");
             if (!systemRoot.isEmpty())
-                copy.insert(QLatin1String("SYSTEMROOT"), QString::fromLocal8Bit(systemRoot));
+                copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
         }
 
         int pos = 0;

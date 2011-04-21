@@ -145,7 +145,7 @@ QT_BEGIN_NAMESPACE
 */
 #ifdef Q_OS_WIN
 static inline QProcessEnvironmentPrivate::Key prepareName(const QString &name)
-{ return name.toUpper(); }
+{ return QProcessEnvironmentPrivate::Key(name); }
 static inline QString nameToString(const QProcessEnvironmentPrivate::Key &name)
 { return name; }
 static inline QProcessEnvironmentPrivate::Value prepareValue(const QString &value)

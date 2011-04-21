@@ -85,7 +85,15 @@ class QProcessEnvironmentPrivate: public QSharedData
 {
 public:
 #ifdef Q_OS_WIN
-    typedef QString Key;
+    class Key : public QString
+    {
+    public:
+        Key() {}
+        explicit Key(const QString &other) : QString(other) {}
+        Key(const Key &other) : QString(other) {}
+        bool operator==(const Key &other) const { return !compare(other, Qt::CaseInsensitive); }
+    };
+
     typedef QString Value;
 #else
     typedef QByteArray Key;
@@ -100,6 +108,10 @@ public:
     QStringList keys() const;
     void insert(const Hash &hash);
 };
+#ifdef Q_OS_WIN
+Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Key, Q_MOVABLE_TYPE);
+inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return qHash(key.toCaseFolded()); }
+#endif
 
 class QProcessPrivate : public QIODevicePrivate
 {
