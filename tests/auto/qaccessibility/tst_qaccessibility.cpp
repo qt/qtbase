@@ -4048,10 +4048,10 @@ void tst_QAccessibility::pushButtonTest()
     QAccessibleInterface *acc;
     QAccessibleInterface *acc2;
     int entry = accToplevel->childAt(pt.x(), pt.y());
-    int child = accToplevel->navigate(QAccessible::Child, entry, &acc);
+    accToplevel->navigate(QAccessible::Child, entry, &acc);
     if (acc) {
         entry = acc->childAt(pt.x(), pt.y());
-        child = acc->navigate(QAccessible::Child, entry, &acc2);
+        acc->navigate(QAccessible::Child, entry, &acc2);
         delete acc;
         acc = acc2;
     }
