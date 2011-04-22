@@ -76,8 +76,8 @@ QT_BEGIN_NAMESPACE
     QTextLayout::glyphs() or QTextFragment::glyphs() can be used to convert unicode encoded text
     into a list of QGlyphs objects, and QPainter::drawGlyphs() can be used to draw the glyphs.
 
-    \note Please note that QRawFont is considered local to the thread in which it is constructed,
-    which in turn means that a new QRawFont will have to be created and set on the QGlyphs if it is
+    \note Please note that QRawFont is considered local to the thread in which it is constructed.
+    This in turn means that a new QRawFont will have to be created and set on the QGlyphs if it is
     moved to a different thread. If the QGlyphs contains a reference to a QRawFont from a different
     thread than the current, it will not be possible to draw the glyphs using a QPainter, as the
     QRawFont is considered invalid and inaccessible in this case.
