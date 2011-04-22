@@ -252,17 +252,17 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
 {
     Q_UNUSED(version);
 
-    if (interface == "output") {
-        struct wl_output *output = wl_output_create(mDisplay, id);
+    if (interface == "wl_output") {
+        struct wl_output *output = wl_output_create(mDisplay, id, 1);
         wl_output_add_listener(output, &outputListener, this);
-    } else if (interface == "compositor") {
-        mCompositor = wl_compositor_create(mDisplay, id);
-    } else if (interface == "shm") {
-        mShm = wl_shm_create(mDisplay, id);
-    } else if (interface == "shell"){
-        mShell = wl_shell_create(mDisplay, id);
+    } else if (interface == "wl_compositor") {
+        mCompositor = wl_compositor_create(mDisplay, id, 1);
+    } else if (interface == "wl_shm") {
+        mShm = wl_shm_create(mDisplay, id, 1);
+    } else if (interface == "wl_shell"){
+        mShell = wl_shell_create(mDisplay, id, 1);
         wl_shell_add_listener(mShell, &shellListener, this);
-    } else if (interface == "input_device") {
+    } else if (interface == "wl_input_device") {
         QWaylandInputDevice *inputDevice =
             new QWaylandInputDevice(mDisplay, id);
         mInputDevices.append(inputDevice);
