@@ -44,6 +44,8 @@
 
 #include <QObject>
 
+#include <QtGui/qwindowformat_qpa.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -69,12 +71,15 @@ public:
     };
     Q_DECLARE_FLAGS(WindowTypes, WindowType)
 
-    QWindow(const QWindowFormat &format, WindowType type = Window, QWindow *parent = 0);
+    QWindow(WindowType type = Window, QWindow *parent = 0);
     void setVisible(bool visible);
     void create();
 
     WId winId() const;
     void setParent(const QWindow *parent);
+
+    void setWindowFormat(const QWindowFormat &format);
+    QWindowFormat windowFormat() const;
 
     QString windowTitle() const;
 
