@@ -648,6 +648,11 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         }
         control->topBlock = blockNumber;
         topLine = lineNumber;
+
+        bool vbarSignalsBlocked = vbar->blockSignals(true);
+        vbar->setValue(block.firstLineNumber() + lineNumber);
+        vbar->blockSignals(vbarSignalsBlocked);
+
         if (dx || dy)
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
         else
