@@ -260,24 +260,6 @@ struct MapResultType<InputSequence<T>, U(C::*)() const>
     typedef InputSequence<U> ResultType;
 };
 
-template <template <typename, typename> class InputSequence, typename MapFunctor, typename T, typename T2>
-struct MapResultType<InputSequence<T, T2>, MapFunctor>
-{
-    typedef InputSequence<typename LazyResultType<MapFunctor>::Type, T2> ResultType;
-};
-
-template <template <typename, typename> class InputSequence, class T, typename T2, class U, class V>
-struct MapResultType<InputSequence<T, T2>, U (*)(V)>
-{
-    typedef InputSequence<U, T2> ResultType;
-};
-
-template <template <typename, typename> class InputSequence, class T, typename T2, class U, class C>
-struct MapResultType<InputSequence<T, T2>, U(C::*)() const>
-{
-    typedef InputSequence<U, T2> ResultType;
-};
-
 #endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
 
 template <class MapFunctor>
