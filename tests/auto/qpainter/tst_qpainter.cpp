@@ -72,6 +72,7 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsproxywidget.h>
 #include <qlayout.h>
+#include <qfontdatabase.h>
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
@@ -265,6 +266,8 @@ private slots:
     void drawTextOpacity();
 
     void QTBUG17053_zeroDashPattern();
+
+    void drawTextOutsideGuiThread();
 
 private:
     void fillData();
@@ -4737,6 +4740,44 @@ void tst_QPainter::QTBUG17053_zeroDashPattern()
     p.drawLine(0, 0, image.width(), image.height());
 
     QCOMPARE(image, original);
+}
+
+class TextDrawerThread : public QThread
+{
+public:
+    void run();
+    QImage rendering;
+};
+
+void TextDrawerThread::run()
+{
+    rendering = QImage(100, 100, QImage::Format_ARGB32_Premultiplied);
+    rendering.fill(0);
+    QPainter p(&rendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+}
+
+void tst_QPainter::drawTextOutsideGuiThread()
+{
+    if (!QFontDatabase::supportsThreadedFontRendering())
+        QSKIP("No threaded font rendering", SkipAll);
+
+    QImage referenceRendering(100, 100, QImage::Format_ARGB32_Premultiplied);
+    referenceRendering.fill(0);
+    QPainter p(&referenceRendering);
+    p.fillRect(10, 10, 100, 100, Qt::blue);
+    p.setPen(Qt::green);
+    p.drawText(20, 20, "some text");
+    p.end();
+
+    TextDrawerThread t;
+    t.start();
+    t.wait();
+
+    QCOMPARE(referenceRendering, t.rendering);
 }
 
 QTEST_MAIN(tst_QPainter)
