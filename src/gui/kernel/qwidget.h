@@ -57,7 +57,7 @@
 #include <QtGui/qkeysequence.h>
 
 #ifdef Q_WS_QPA //should this go somewhere else?
-#include <QtGui/qplatformwindowformat_qpa.h>
+#include <QtGui/qwindowformat_qpa.h>
 #endif
 
 #ifdef QT_INCLUDE_COMPAT
