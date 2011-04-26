@@ -109,17 +109,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     setWinId(win->winId());
 
-    //first check children. and create them if necessary
-//    q_createNativeChildrenAndSetParent(q->platformWindow(),q);
+//    first check children. and create them if necessary
+    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
 
-//    //if we we have a parent, then set correct parent;
-//    if (!q->isWindow()) {
-//        if (QWidget *nativeParent = q->nativeParentWidget()) {
-//            if (nativeParent->platformWindow()) {
-//                platformWindow->setParent(nativeParent->platformWindow());
-//            }
-//        }
-//    }
+    //if we we have a parent, then set correct parent;
+    if (!q->isWindow()) {
+        if (QWidget *nativeParent = q->nativeParentWidget()) {
+            if (nativeParent->windowHandle()) {
+                win->setParent(nativeParent->windowHandle());
+            }
+        }
+    }
 
     QApplicationPrivate::platformIntegration()->moveToScreen(q, topData()->screenIndex);
 //    qDebug() << "create_sys" << q << q->internalWinId();
