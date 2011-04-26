@@ -48,6 +48,8 @@
 
 #include <QtCore/QDebug>
 
+#include <QtGui/qwindowcontext_qpa.h>
+
 #if defined(XCB_USE_EGL)
 #include "../eglconvenience/qeglplatformcontext.h"
 #elif defined (XCB_USE_DRI2)
@@ -162,14 +164,14 @@ void *QXcbNativeInterface::graphicsDeviceForWidget(QWidget *widget)
 void * QXcbNativeInterface::eglContextForWidget(QWidget *widget)
 {
     Q_ASSERT(widget);
-    if (!widget->platformWindow()) {
+    if (!widget->windowHandle()) {
         qDebug() << "QPlatformWindow does not exist for widget" << widget
                  << "cannot return EGLContext";
         return 0;
     }
-    QPlatformGLContext *platformContext = widget->platformWindow()->glContext();
+    QPlatformGLContext *platformContext = widget->windowHandle()->glContext()->handle();
     if (!platformContext) {
-        qDebug() << "QPlatformWindow" << widget->platformWindow() << "does not have a glContext"
+        qDebug() << "QWindow" << widget->windowHandle() << "does not have a glContext"
                  << "cannot return EGLContext";
         return 0;
     }

@@ -41,6 +41,8 @@
 
 #include "qwindowformat_qpa.h"
 
+#include "qplatformglcontext_qpa.h"
+
 #include <QtCore/QDebug>
 
 class QWindowFormatPrivate
@@ -49,9 +51,13 @@ public:
     QWindowFormatPrivate()
         : ref(1)
         , opts(QWindowFormat::DoubleBuffer | QWindowFormat::WindowSurface)
+        , redBufferSize(-1)
+        , greenBufferSize(-1)
+        , blueBufferSize(-1)
+        , alphaBufferSize(-1)
         , depthSize(-1)
         , stencilSize(-1)
-        , colorFormat(QWindowFormat::RGB888)
+        , swapBehavior(QWindowFormat::DefaultSwapBehavior)
         , numSamples(-1)
         , sharedContext(0)
     {
@@ -60,9 +66,12 @@ public:
     QWindowFormatPrivate(const QWindowFormatPrivate *other)
         : ref(1),
           opts(other->opts),
+          redBufferSize(other->redBufferSize),
+          greenBufferSize(other->greenBufferSize),
+          blueBufferSize(other->blueBufferSize),
+          alphaBufferSize(other->alphaBufferSize),
           depthSize(other->depthSize),
           stencilSize(other->stencilSize),
-          colorFormat(other->colorFormat),
           swapBehavior(other->swapBehavior),
           numSamples(other->numSamples),
           sharedContext(other->sharedContext)
@@ -70,12 +79,15 @@ public:
     }
     QAtomicInt ref;
     QWindowFormat::FormatOptions opts;
+    int redBufferSize;
+    int greenBufferSize;
+    int blueBufferSize;
+    int alphaBufferSize;
     int depthSize;
     int stencilSize;
-    QWindowFormat::ColorFormat colorFormat;
     QWindowFormat::SwapBehavior swapBehavior;
     int numSamples;
-    QPlatformGLContext *sharedContext;
+    QWindowContext *sharedContext;
 };
 
 QWindowFormat::QWindowFormat()
@@ -193,12 +205,12 @@ void QWindowFormat::setSamples(int numSamples)
 
 
 
-void QWindowFormat::setSharedContext(QPlatformGLContext *context)
+void QWindowFormat::setSharedContext(QWindowContext *context)
 {
     d->sharedContext = context;
 }
 
-QPlatformGLContext *QWindowFormat::sharedGLContext() const
+QWindowContext *QWindowFormat::sharedContext() const
 {
     return d->sharedContext;
 }
@@ -268,15 +280,19 @@ int QWindowFormat::depthBufferSize() const
    return d->depthSize;
 }
 
-void QWindowFormat::setColorFormat(ColorFormat format)
+void QWindowFormat::setSwapBehavior(SwapBehavior behavior)
 {
-    detach();
-    d->colorFormat = format;
+    d->swapBehavior = behavior;
 }
 
-QWindowFormat::ColorFormat QWindowFormat::colorFormat() const
+QWindowFormat::SwapBehavior QWindowFormat::swapBehavior() const
 {
-   return d->colorFormat;
+    return d->swapBehavior;
+}
+
+bool QWindowFormat::hasAlpha() const
+{
+    return d->alphaBufferSize > 0;
 }
 
 /*!
@@ -300,12 +316,55 @@ int QWindowFormat::stencilBufferSize() const
    return d->stencilSize;
 }
 
+int QWindowFormat::redBufferSize() const
+{
+    return d->redBufferSize;
+}
+
+int QWindowFormat::greenBufferSize() const
+{
+    return d->greenBufferSize;
+}
+
+int QWindowFormat::blueBufferSize() const
+{
+    return d->blueBufferSize;
+}
+
+int QWindowFormat::alphaBufferSize() const
+{
+    return d->alphaBufferSize;
+}
+
+void QWindowFormat::setRedBufferSize(int size)
+{
+    d->redBufferSize = size;
+}
+
+void QWindowFormat::setGreenBufferSize(int size)
+{
+    d->greenBufferSize = size;
+}
+
+void QWindowFormat::setBlueBufferSize(int size)
+{
+    d->blueBufferSize = size;
+}
+
+void QWindowFormat::setAlphaBufferSize(int size)
+{
+    d->alphaBufferSize = size;
+}
+
 bool operator==(const QWindowFormat& a, const QWindowFormat& b)
 {
     return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
         && a.d->stencilSize == b.d->stencilSize
+        && a.d->redBufferSize == b.d->redBufferSize
+        && a.d->greenBufferSize == b.d->greenBufferSize
+        && a.d->blueBufferSize == b.d->blueBufferSize
+        && a.d->alphaBufferSize == b.d->alphaBufferSize
         && a.d->depthSize == b.d->depthSize
-        && a.d->colorFormat == b.d->colorFormat
         && a.d->numSamples == b.d->numSamples
         && a.d->swapBehavior == b.d->swapBehavior
         && a.d->sharedContext == b.d->sharedContext);
@@ -332,8 +391,11 @@ QDebug operator<<(QDebug dbg, const QWindowFormat &f)
     dbg.nospace() << "QWindowFormat("
                   << "options " << d->opts
                   << ", depthBufferSize " << d->depthSize
+                  << ", redBufferSize " << d->redBufferSize
+                  << ", greenBufferSize " << d->greenBufferSize
+                  << ", blueBufferSize " << d->blueBufferSize
+                  << ", alphaBufferSize " << d->alphaBufferSize
                   << ", stencilBufferSize " << d->stencilSize
-                  << ", colorFormat " << d->colorFormat
                   << ", samples " << d->numSamples
                   << ", swapBehavior " << d->swapBehavior
                   << ", sharedContext " << d->sharedContext

@@ -43,6 +43,8 @@
 
 #include "qplatformwindow_qpa.h"
 #include "qwindowformat_qpa.h"
+#include "qplatformglcontext_qpa.h"
+#include "qwindowcontext_qpa.h"
 
 #include "qapplication_p.h"
 
@@ -53,9 +55,10 @@ QT_BEGIN_NAMESPACE
 class QWindowPrivate : public QObjectPrivate
 {
 public:
-    QWindowPrivate(QWindow::WindowTypes types)
+    QWindowPrivate()
         : QObjectPrivate()
-        , windowTypes(types)
+        , windowType(QWindow::Window)
+        , surfaceType(QWindow::RasterSurface)
         , platformWindow(0)
         , glContext(0)
         , widget(0)
@@ -68,19 +71,25 @@ public:
 
     }
 
-    QWindow::WindowTypes windowTypes;
+    QWindow::WindowType windowType;
+    QWindow::SurfaceType surfaceType;
+
     QPlatformWindow *platformWindow;
     QWindowFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
-    QGLContext *glContext;
+    QWindowContext *glContext;
     QWidget *widget;
 };
 
-QWindow::QWindow(WindowTypes types, QWindow *parent)
-    : QObject(*new QWindowPrivate(types), parent)
+QWindow::QWindow(QWindow *parent)
+    : QObject(*new QWindowPrivate(), parent)
 {
+}
 
+QWindow::~QWindow()
+{
+    destroy();
 }
 
 QWidget *QWindow::widget() const
@@ -107,17 +116,16 @@ void QWindow::setVisible(bool visible)
 void QWindow::create()
 {
     Q_D(QWindow);
-    d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this,d->requestedFormat);
+    d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
     Q_ASSERT(d->platformWindow);
 }
 
 WId QWindow::winId() const
 {
     Q_D(const QWindow);
-    if(d->platformWindow) {
-        return d->platformWindow->winId();
-    }
-    return 0;
+    if(!d->platformWindow)
+        const_cast<QWindow *>(this)->create();
+    return d->platformWindow->winId();
 }
 
 void QWindow::setParent(const QWindow *parent)
@@ -148,14 +156,31 @@ QWindowFormat QWindow::requestedWindowFormat() const
 
 QWindowFormat QWindow::actualWindowFormat() const
 {
-    Q_D(const QWindow);
-    return d->requestedFormat;
+    return glContext()->handle()->windowFormat();
 }
 
-QWindow::WindowTypes QWindow::types() const
+void QWindow::setSurfaceType(SurfaceType type)
+{
+    Q_D(QWindow);
+    d->surfaceType = type;
+}
+
+QWindow::SurfaceType QWindow::surfaceType() const
 {
     Q_D(const QWindow);
-    return d->windowTypes;
+    return d->surfaceType;
+}
+
+void QWindow::setWindowType(WindowType type)
+{
+    Q_D(QWindow);
+    d->windowType = type;
+}
+
+QWindow::WindowType QWindow::type() const
+{
+    Q_D(const QWindow);
+    return d->windowType;
 }
 
 void QWindow::setWindowTitle(const QString &title)
@@ -262,9 +287,11 @@ void QWindow::setWindowIcon(const QImage &icon) const
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
-QGLContext * QWindow::glContext() const
+QWindowContext * QWindow::glContext() const
 {
     Q_D(const QWindow);
+    if (!d->glContext)
+        const_cast<QWindowPrivate *>(d)->glContext = new QWindowContext(const_cast<QWindow *>(this));
     return d->glContext;
 }
 
@@ -281,11 +308,20 @@ QWindowFormat QWindow::format() const
 
 void QWindow::destroy()
 {
+    Q_D(QWindow);
     //JA, this will be solved later....
     //    if (QGLContext *context = extra->topextra->window->glContext()) {
     //                context->deleteQGLContext();
     Q_ASSERT(false);
+    delete d->glContext;
+    d->glContext = 0;
     //    }
+}
+
+QPlatformWindow *QWindow::handle() const
+{
+    Q_D(const QWindow);
+    return d->platformWindow;
 }
 
 void QWindow::showMinimized()

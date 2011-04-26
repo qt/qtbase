@@ -90,24 +90,24 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         return; // we only care about real toplevels
 
     QWindowSurface *surface = q->windowSurface();
-//    QPlatformWindow *platformWindow = q->platformWindow();
 
-//    if (!platformWindow) {
-//        platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(q);
-//    }
-//    Q_ASSERT(platformWindow);
+    QWindow *win = topData()->window;
 
-//    if (!surface ) {
-//        if (platformWindow && q->platformWindowFormat().hasWindowSurface()) {
-//            surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
-//        } else {
-//            q->setAttribute(Qt::WA_PaintOnScreen,true);
-//        }
-//    }
+        // translate window type
+//        window->setWindowType();
+    win->create();
+
+    if (!surface ) {
+        if (win) {
+            surface = QApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
+        } else {
+            q->setAttribute(Qt::WA_PaintOnScreen,true);
+        }
+    }
 
 //    data.window_flags = q->windowHandle()->setWindowFlags(data.window_flags);
 
-//    setWinId(q->platformWindow()->winId());
+    setWinId(win->winId());
 
     //first check children. and create them if necessary
 //    q_createNativeChildrenAndSetParent(q->platformWindow(),q);
@@ -211,7 +211,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         //qDebug() << "setParent_sys" << q << newparent << hex << f;
 //        if (QPlatformWindow *window = q->platformWindow())
 //            data.window_flags = window->setWindowFlags(data.window_flags);
-        Q_ASSERT(false);
+//        Q_ASSERT(false);
     }
     
     if (q->isWindow() || (!newparent || newparent->isVisible()) || explicitlyHidden)
@@ -705,6 +705,10 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    Q_Q(QWidget);
+    extra->topextra->screenIndex = 0;
+    extra->topextra->window = new QWindow;
+    extra->topextra->window->setWidget(q);
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

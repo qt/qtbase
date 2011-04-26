@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QWindowPrivate;
-class QGLContext;
 class QWidget;
 
 class QResizeEvent;
@@ -66,6 +65,9 @@ class QMouseEvent;
 class QWheelEvent;
 #endif
 
+class QPlatformWindow;
+class QWindowContext;
+
 class Q_GUI_EXPORT QWindow : public QObject
 {
     Q_OBJECT
@@ -75,16 +77,25 @@ class Q_GUI_EXPORT QWindow : public QObject
 
 public:
     enum WindowType {
-        Window = 0x00000001,
-        Dialog = 0x00000002,
-        Popup = 0x00000004,
-        ToolTip = 0x00000008
+        Window,
+        Dialog,
+        Popup,
+        Tool,
+        SplashScreen,
+        ToolTip,
+        Sheet,
+        Drawer
     };
-    Q_DECLARE_FLAGS(WindowTypes, WindowType)
 
-    QWindow(QWindow::WindowTypes types = Window, QWindow *parent = 0);
+    enum SurfaceType {
+        RasterSurface,
+        OpenGLSurface
+    };
 
-    // to be removed at some poitn in the future
+    QWindow(QWindow *parent = 0);
+    virtual ~QWindow();
+
+    // to be removed at some point in the future
     QWidget *widget() const;
     void setWidget(QWidget *widget);
 
@@ -98,7 +109,11 @@ public:
     QWindowFormat requestedWindowFormat() const;
     QWindowFormat actualWindowFormat() const;
 
-    WindowTypes types() const;
+    void setSurfaceType(SurfaceType type);
+    SurfaceType surfaceType() const;
+
+    void setWindowType(WindowType type);
+    WindowType type() const;
 
     QString windowTitle() const;
 
@@ -119,12 +134,14 @@ public:
 
     void setWindowIcon(const QImage &icon) const;
 
-    QGLContext *glContext() const;
+    QWindowContext *glContext() const;
 
     void setRequestFormat(const QWindowFormat &format);
     QWindowFormat format() const;
 
     void destroy();
+
+    QPlatformWindow *handle() const;
 
 public Q_SLOTS:
     inline void show() { setVisible(true); }
@@ -165,8 +182,6 @@ protected:
 private:
     Q_DISABLE_COPY(QWindow)
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWindow::WindowTypes)
 
 QT_END_NAMESPACE
 

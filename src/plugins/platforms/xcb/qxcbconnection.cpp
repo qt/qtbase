@@ -147,15 +147,16 @@ QXcbWindow *platformWindowFromId(xcb_window_t id)
 {
     QWidget *widget = QWidget::find(id);
     if (widget)
-        return static_cast<QXcbWindow *>(widget->platformWindow());
+        return static_cast<QXcbWindow *>(widget->windowHandle()->handle());
     return 0;
 }
 
-#define HANDLE_PLATFORM_WINDOW_EVENT(event_t, window, handler) \
+#define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) { \
-        QObjectPrivate *d = QObjectPrivate::get(platformWindow->widget()); \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember)) { \
+        QWindow *windowHandle = platformWindow->window(); \
+        QObjectPrivate *d = QObjectPrivate::get(windowHandle->widget()); \
         if (!d->wasDeleted) \
             platformWindow->handler(e); \
     } \
@@ -166,7 +167,7 @@ break;
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
-        m_keyboard->handler(platformWindow->widget(), e); \
+        m_keyboard->handler(platformWindow->window()->widget(), e); \
 } \
 break;
 

@@ -49,7 +49,7 @@
 #include <QtCore/qscopedpointer.h>
 
 #ifdef Q_WS_QPA
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 #endif
 
 QT_BEGIN_HEADER
@@ -283,8 +283,8 @@ public:
     static OpenGLVersionFlags openGLVersionFlags();
 
 #if defined(Q_WS_QPA)
-    static QGLFormat fromPlatformWindowFormat(const QPlatformWindowFormat &format);
-    static QPlatformWindowFormat toPlatformWindowFormat(const QGLFormat &format);
+    static QGLFormat fromWindowFormat(const QWindowFormat &format);
+    static QWindowFormat toWindowFormat(const QGLFormat &format);
 #endif
 private:
     QGLFormatPrivate *d;
@@ -393,7 +393,7 @@ public:
     static const QGLContext* currentContext();
 
 #ifdef Q_WS_QPA
-    static QGLContext *fromPlatformGLContext(QPlatformGLContext *platformContext);
+    static QGLContext *fromWindowContext(QWindowContext *platformContext);
 #endif
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
@@ -425,7 +425,7 @@ protected:
 
 private:
 #ifdef Q_WS_QPA
-    QGLContext(QPlatformGLContext *platformContext);
+    QGLContext(QWindowContext *windowContext);
 #endif
 
     QScopedPointer<QGLContextPrivate> d_ptr;

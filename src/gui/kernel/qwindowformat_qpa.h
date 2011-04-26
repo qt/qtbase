@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QWindowContext;
 class QWindowFormatPrivate;
 
 class Q_GUI_EXPORT QWindowFormat
@@ -59,15 +60,6 @@ public:
         WindowSurface           = 0x0002
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
-
-    enum ColorFormat {
-        InvalidColorFormat,
-        RGB565,
-        RGBA5658,
-        RGBA5551,
-        RGB888,
-        RGBA8888
-    };
 
     enum SwapBehavior {
         DefaultSwapBehavior,
@@ -94,20 +86,28 @@ public:
     void setStencilBufferSize(int size);
     int stencilBufferSize() const;
 
+    void setRedBufferSize(int size);
+    int redBufferSize() const;
+    void setGreenBufferSize(int size);
+    int greenBufferSize() const;
+    void setBlueBufferSize(int size);
+    int blueBufferSize() const;
+    void setAlphaBufferSize(int size);
+    int alphaBufferSize() const;
+
     void setSamples(int numSamples);
     int samples() const;
 
     void setSwapBehavior(SwapBehavior behavior);
     SwapBehavior swapBehavior() const;
 
-    void setColorFormat(ColorFormat format);
-    ColorFormat colorFormat() const;
+    bool hasAlpha() const;
 
     void setProfile(OpenGLContextProfile profile);
     OpenGLContextProfile profile() const;
 
-    void setSharedContext(QPlatformGLContext *context);
-    QPlatformGLContext *sharedGLContext() const;
+    void setSharedContext(QWindowContext *context);
+    QWindowContext *sharedContext() const;
 
     bool stereo() const;
     void setStereo(bool enable);

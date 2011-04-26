@@ -50,6 +50,8 @@
 #include <X11/Xutil.h>
 #include <GL/glx.h>
 
+#include <QtGui/QWindowContext>
+
 #include "qglxintegration.h"
 #include "qglxconvenience.h"
 
@@ -57,18 +59,17 @@
 #include <dlfcn.h>
 #endif
 
-QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QPlatformWindowFormat &format)
+QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QWindowFormat &format)
     : QPlatformGLContext()
     , m_screen(screen)
     , m_drawable((Drawable)window)
     , m_context(0)
 {
     Q_XCB_NOOP(m_screen->connection());
-    const QPlatformGLContext *sharePlatformContext;
-    sharePlatformContext = format.sharedGLContext();
+    const QWindowContext *shareContext = format.sharedContext();
     GLXContext shareGlxContext = 0;
-    if (sharePlatformContext)
-        shareGlxContext = static_cast<const QGLXContext*>(sharePlatformContext)->glxContext();
+    if (shareContext)
+        shareGlxContext = static_cast<const QGLXContext*>(shareContext->handle())->glxContext();
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
     m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, shareGlxContext, TRUE);
@@ -148,7 +149,7 @@ void* QGLXContext::getProcAddress(const QString& procName)
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
 }
 
-QPlatformWindowFormat QGLXContext::platformWindowFormat() const
+QWindowFormat QGLXContext::windowFormat() const
 {
     return m_windowFormat;
 }

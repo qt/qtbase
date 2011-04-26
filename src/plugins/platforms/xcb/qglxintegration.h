@@ -45,7 +45,7 @@
 #include "qxcbwindow.h"
 
 #include <QtGui/QPlatformGLContext>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 
 #include <QtCore/QMutex>
 
@@ -54,7 +54,7 @@
 class QGLXContext : public QPlatformGLContext
 {
 public:
-    QGLXContext(Window window, QXcbScreen *xd, const QPlatformWindowFormat &format);
+    QGLXContext(Window window, QXcbScreen *xd, const QWindowFormat &format);
     ~QGLXContext();
 
     virtual void makeCurrent();
@@ -64,13 +64,13 @@ public:
 
     GLXContext glxContext() const { return m_context; }
 
-    QPlatformWindowFormat platformWindowFormat() const;
+    QWindowFormat windowFormat() const;
 
 private:
     QXcbScreen *m_screen;
     Drawable m_drawable;
     GLXContext m_context;
-    QPlatformWindowFormat m_windowFormat;
+    QWindowFormat m_windowFormat;
 
     QGLXContext (QXcbScreen *screen, Drawable drawable, GLXContext context);
 };

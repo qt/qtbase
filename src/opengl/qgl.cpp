@@ -1707,7 +1707,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     vi = 0;
 #endif
 #if defined(Q_WS_QPA)
-    platformContext = 0;
+    windowContext = 0;
 #endif
 #if !defined(QT_NO_EGL)
     ownsEglContext = false;
@@ -3313,7 +3313,7 @@ bool QGLContext::create(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
 #ifdef Q_WS_QPA
-    if (!d->paintDevice && !d->platformContext)
+    if (!d->paintDevice && !d->windowContext)
 #else
     if (!d->paintDevice)
 #endif
@@ -3403,8 +3403,8 @@ void QGLContext::setInitialized(bool on)
 const QGLContext* QGLContext::currentContext()
 {
 #ifdef Q_WS_QPA
-    if (const QPlatformGLContext *threadContext = QPlatformGLContext::currentContext()) {
-        return QGLContext::fromPlatformGLContext(const_cast<QPlatformGLContext *>(threadContext));
+    if (const QWindowContext *threadContext = QWindowContext::currentContext()) {
+        return QGLContext::fromWindowContext(const_cast<QWindowContext *>(threadContext));
     }
     return 0;
 #else

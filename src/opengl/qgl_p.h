@@ -69,7 +69,7 @@
 #endif
 
 #if defined(Q_WS_QPA)
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QWindowContext>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -374,7 +374,7 @@ public:
 #endif
 
 #if defined(Q_WS_QPA)
-    QPlatformGLContext *platformContext;
+    QWindowContext *windowContext;
     void setupSharing();
 
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)

@@ -204,14 +204,14 @@ void QXcbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
 
     Q_XCB_NOOP(connection());
 
-    QXcbWindow *window = static_cast<QXcbWindow *>(widget->window()->platformWindow());
+    QXcbWindow *window = static_cast<QXcbWindow *>(widget->windowHandle()->handle());
 
     extern QWidgetData* qt_widget_data(QWidget *);
     QPoint widgetOffset = qt_qwidget_data(widget)->wrect.topLeft();
 
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); ++i)
-        m_image->put(window->window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
+        m_image->put(window->xcb_window(), rects.at(i).topLeft() - widgetOffset, rects.at(i).translated(offset));
 
     Q_XCB_NOOP(connection());
 

@@ -221,6 +221,7 @@ qpa {
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
+                kernel/qwindowcontext_qpa.h \
                 kernel/qdesktopwidget_qpa_p.h \
                 kernel/qplatformeventloopintegration_qpa.h \
                 kernel/qplatformcursor_qpa.h \
@@ -248,6 +249,7 @@ qpa {
                 kernel/qplatformwindow_qpa.cpp \
                 kernel/qplatformeventloopintegration_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
+                kernel/qwindowcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \

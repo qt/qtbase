@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#ifndef QWINDOWCONTEXT_H
+#define QWINDOWCONTEXT_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtCore/qnamespace.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
+QT_MODULE(Gui)
 
-class QXcbIntegration : public QPlatformIntegration
+class QWindowContextPrivate;
+class QPlatformGLContext;
+
+class Q_GUI_EXPORT QWindowContext
 {
+Q_DECLARE_PRIVATE(QWindowContext);
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    ~QWindowContext();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void (*getProcAddress(const QByteArray &procName)) ();
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWidget *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    static QWindowContext *currentContext();
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
+    QPlatformGLContext *handle() const;
 
 private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
+    QWindowContext(QWindow *window);
 
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
+    QScopedPointer<QWindowContextPrivate> d_ptr;
+
+    //hack to make it work with QGLContext::CurrentContext
+    friend class QGLContext;
+    friend class QWidgetPrivate;
+    friend class QWindow;
+    void *qGLContextHandle() const;
+    void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
+    void deleteQGLContext();
+    Q_DISABLE_COPY(QWindowContext);
 };
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QWINDOWCONTEXT_H

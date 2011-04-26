@@ -43,7 +43,7 @@
 #define QPLATFORM_GL_CONTEXT_H
 
 #include <QtCore/qnamespace.h>
-#include <QtGui/QWindowFormat>
+#include <QtGui/qwindowformat_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -51,36 +51,17 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QPlatformGLContextPrivate;
-
-class Q_OPENGL_EXPORT QPlatformGLContext
+class Q_GUI_EXPORT QPlatformGLContext
 {
-Q_DECLARE_PRIVATE(QPlatformGLContext);
-
 public:
-    explicit QPlatformGLContext();
-    virtual ~QPlatformGLContext();
+    virtual ~QPlatformGLContext() {}
 
-    virtual void makeCurrent();
-    virtual void doneCurrent();
+    virtual void makeCurrent() = 0;
+    virtual void doneCurrent() = 0;
     virtual void swapBuffers() = 0;
-    virtual void* getProcAddress(const QString& procName) = 0;
+    virtual void *getProcAddress(const QString& procName) = 0;
 
     virtual QWindowFormat windowFormat() const = 0;
-
-    const static QPlatformGLContext *currentContext();
-
-protected:
-    QScopedPointer<QPlatformGLContextPrivate> d_ptr;
-
-private:
-    //hack to make it work with QGLContext::CurrentContext
-    friend class QGLContext;
-    friend class QWidgetPrivate;
-    void *qGLContextHandle() const;
-    void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
-    void deleteQGLContext();
-    Q_DISABLE_COPY(QPlatformGLContext);
 };
 
 QT_END_NAMESPACE
@@ -88,4 +69,4 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 
-#endif // QPLATFORM_GL_INTEGRATION_P_H
+#endif // QPLATFORM_GL_CONTEXT_H

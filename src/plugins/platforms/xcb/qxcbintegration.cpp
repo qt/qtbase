@@ -87,16 +87,15 @@ QPixmapData *QXcbIntegration::createPixmapData(QPixmapData::PixelType type) cons
     return new QRasterPixmapData(type);
 }
 
-QPlatformWindow *QXcbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QXcbWindow(widget);
+    return new QXcbWindow(window);
 }
 
-QWindowSurface *QXcbIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QXcbIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QXcbWindowSurface(widget);
+    return new QXcbWindowSurface(window->widget());
 }
 
 QList<QPlatformScreen *> QXcbIntegration::screens() const

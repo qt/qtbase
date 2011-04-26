@@ -85,10 +85,11 @@ static inline bool isTransient(const QWidget *w)
             && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
 }
 
-QXcbWindow::QXcbWindow(QWidget *tlw)
-    : QPlatformWindow(tlw)
+QXcbWindow::QXcbWindow(QWindow *window)
+    : QPlatformWindow(window)
     , m_context(0)
 {
+    QWidget *tlw = window->widget();
     m_screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
 
     setConnection(m_screen->connection());
@@ -112,14 +113,14 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
     };
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
-    if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+    if (window->surfaceType() == QWindow::OpenGLSurface
         && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
     {
 #if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window->requestedWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,tlw->platformWindowFormat(),true);
+        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,window->requestedWindowFormat(),true);
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -243,7 +244,8 @@ void QXcbWindow::setVisible(bool visible)
 {
     xcb_wm_hints_t hints;
     if (visible) {
-        if (widget()->isMinimized())
+        // TODO: QWindow::isMinimized() or similar
+        if (window()->widget()->isMinimized())
             xcb_wm_hints_set_iconic(&hints);
         else
             xcb_wm_hints_set_normal(&hints);
@@ -453,7 +455,7 @@ WId QXcbWindow::winId() const
 void QXcbWindow::setParent(const QPlatformWindow *parent)
 {
     QPoint topLeft = geometry().topLeft();
-    Q_XCB_CALL(xcb_reparent_window(xcb_connection(), window(), static_cast<const QXcbWindow *>(parent)->window(), topLeft.x(), topLeft.y()));
+    Q_XCB_CALL(xcb_reparent_window(xcb_connection(), xcb_window(), static_cast<const QXcbWindow *>(parent)->xcb_window(), topLeft.x(), topLeft.y()));
 }
 
 void QXcbWindow::setWindowTitle(const QString &title)
@@ -498,10 +500,10 @@ QPlatformGLContext *QXcbWindow::glContext() const
     if (!m_context) {
 #if defined(XCB_USE_GLX)
         QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_context = new QGLXContext(m_window, m_screen, widget()->platformWindowFormat());
+        that->m_context = new QGLXContext(m_window, m_screen, window()->requestedWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromQPlatformWindowFormat(display,widget()->platformWindowFormat(),true);
+        EGLConfig config = q_configFromQPlatformWindowFormat(display,window()->requestedWindowFormat(),true);
         QVector<EGLint> eglContextAttrs;
         eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
         eglContextAttrs.append(2);
@@ -520,11 +522,11 @@ QPlatformGLContext *QXcbWindow::glContext() const
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
-    QWindowSurface *surface = widget()->windowSurface();
+    QWindowSurface *surface = window()->widget()->windowSurface();
     if (surface) {
         QRect rect(event->x, event->y, event->width, event->height);
 
-        surface->flush(widget(), rect, QPoint());
+        surface->flush(window()->widget(), rect, QPoint());
     }
 }
 
@@ -532,7 +534,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 {
     if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
-            QWindowSystemInterface::handleCloseEvent(widget());
+            QWindowSystemInterface::handleCloseEvent(window()->widget());
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             xcb_client_message_event_t reply = *event;
 
@@ -568,7 +570,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         return;
 
     QPlatformWindow::setGeometry(rect);
-    QWindowSystemInterface::handleGeometryChange(widget(), rect);
+    QWindowSystemInterface::handleGeometryChange(window()->widget(), rect);
 
 #if XCB_USE_DRI2
     if (m_context)
@@ -616,7 +618,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
                      && (modifiers & Qt::AltModifier))
                     || (event->detail == 6 || event->detail == 7));
 
-        QWindowSystemInterface::handleWheelEvent(widget(), event->time,
+        QWindowSystemInterface::handleWheelEvent(window()->widget(), event->time,
                                                  local, global, delta, hor ? Qt::Horizontal : Qt::Vertical);
         return;
     }
@@ -647,22 +649,22 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QWindowSystemInterface::handleMouseEvent(widget(), time, local, global, buttons);
+    QWindowSystemInterface::handleMouseEvent(window()->widget(), time, local, global, buttons);
 }
 
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *)
 {
-    QWindowSystemInterface::handleEnterEvent(widget());
+    QWindowSystemInterface::handleEnterEvent(window()->widget());
 }
 
 void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *)
 {
-    QWindowSystemInterface::handleLeaveEvent(widget());
+    QWindowSystemInterface::handleLeaveEvent(window()->widget());
 }
 
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
 {
-    QWindowSystemInterface::handleWindowActivated(widget());
+    QWindowSystemInterface::handleWindowActivated(window()->widget());
 }
 
 void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
