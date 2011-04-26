@@ -42,8 +42,8 @@
 #ifndef QWINDOW_QPA_H
 #define QWINDOW_QPA_H
 
-#include <QObject>
-
+#include <QtCore/QObject>
+#include <QtCore/QEvent>
 #include <QtGui/qwindowformat_qpa.h>
 
 QT_BEGIN_HEADER
@@ -54,6 +54,17 @@ QT_MODULE(Gui)
 
 class QWindowPrivate;
 class QGLContext;
+class QWidget;
+
+class QResizeEvent;
+class QShowEvent;
+class QHideEvent;
+class QKeyEvent;
+class QInputMethodEvent;
+class QMouseEvent;
+#ifndef QT_NO_WHEELEVENT
+class QWheelEvent;
+#endif
 
 class Q_GUI_EXPORT QWindow : public QObject
 {
@@ -71,7 +82,12 @@ public:
     };
     Q_DECLARE_FLAGS(WindowTypes, WindowType)
 
-    QWindow(WindowTypes types = Window, QWindow *parent = 0);
+    QWindow(QWindow::WindowTypes types = Window, QWindow *parent = 0);
+
+    // to be removed at some poitn in the future
+    QWidget *widget() const;
+    void setWidget(QWidget *widget);
+
     void setVisible(bool visible);
     void create();
 
@@ -104,6 +120,11 @@ public:
     void setWindowIcon(const QImage &icon) const;
 
     QGLContext *glContext() const;
+
+    void setRequestFormat(const QWindowFormat &format);
+    QWindowFormat format() const;
+
+    void destroy();
 
 public Q_SLOTS:
     inline void show() { setVisible(true); }

@@ -1762,8 +1762,7 @@ void QWidgetPrivate::createTLExtra()
         qDebug() << "tlextra" << ++count;
 #endif
 #if defined(Q_WS_QPA)
-        x->platformWindow = 0;
-        x->platformWindowFormat = QPlatformWindowFormat::defaultFormat();
+        x->window = 0;
         x->screenIndex = 0;
 #endif
     }

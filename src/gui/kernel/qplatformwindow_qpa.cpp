@@ -46,7 +46,7 @@
 
 class QPlatformWindowPrivate
 {
-    QWidget *tlw;
+    QWindow *window;
     QRect rect;
     Qt::WindowFlags flags;
     friend class QPlatformWindow;
@@ -56,12 +56,11 @@ class QPlatformWindowPrivate
     Constructs a platform window with the given top level widget.
 */
 
-QPlatformWindow::QPlatformWindow(QWidget *tlw)
+QPlatformWindow::QPlatformWindow(QWindow *window)
     : d_ptr(new QPlatformWindowPrivate)
 {
     Q_D(QPlatformWindow);
-    d->tlw = tlw;
-    tlw->setPlatformWindow(this);
+    d->window = window;
 }
 
 /*!
@@ -74,10 +73,10 @@ QPlatformWindow::~QPlatformWindow()
 /*!
     Returnes the widget which belongs to the QPlatformWindow
 */
-QWidget *QPlatformWindow::widget() const
+QWindow *QPlatformWindow::window() const
 {
     Q_D(const QPlatformWindow);
-    return d->tlw;
+    return d->window;
 }
 
 /*!
@@ -186,7 +185,7 @@ void QPlatformWindow::setOpacity(qreal level)
 */
 void QPlatformWindow::requestActivateWindow()
 {
-    QWindowSystemInterface::handleWindowActivated(widget());
+    QWindowSystemInterface::handleWindowActivated(window()->widget());
 }
 
 /*!

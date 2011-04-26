@@ -55,18 +55,17 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QPlatformWindowPrivate;
-class QWidget;
+class QWindow;
 class QPlatformGLContext;
 
 class Q_GUI_EXPORT QPlatformWindow
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
-    QPlatformWindow(QWidget *tlw);
-    QPlatformWindow(Qt::HANDLE , QWidget *tlw);
+    QPlatformWindow(QWindow *window);
     virtual ~QPlatformWindow();
 
-    QWidget *widget() const;
+    QWindow *window() const;
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
 

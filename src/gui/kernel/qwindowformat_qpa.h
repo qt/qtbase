@@ -66,7 +66,7 @@ public:
         RGBA5658,
         RGBA5551,
         RGB888,
-        RGBA5658,
+        RGBA8888
     };
 
     enum SwapBehavior {
@@ -109,13 +109,9 @@ public:
     void setSharedContext(QPlatformGLContext *context);
     QPlatformGLContext *sharedGLContext() const;
 
-    bool depth() const;
-    void setDepth(bool enable);
-    bool stencil() const;
-    void setStencil(bool enable);
     bool stereo() const;
     void setStereo(bool enable);
-    bool hasWindowSurface() const;
+    bool windowSurface() const;
     void setWindowSurface(bool enable);
 
     void setOption(QWindowFormat::FormatOptions opt);
@@ -141,56 +137,15 @@ Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QWindowFormat &);
 #endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowFormat::FormatOptions)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowFormat::WindowTypes)
-
-inline bool QWindowFormat::doubleBuffer() const
-{
-    return testOption(QWindowFormat::DoubleBuffer);
-}
-
-inline bool QWindowFormat::depth() const
-{
-    return testOption(QWindowFormat::DepthBuffer);
-}
-
-inline bool QWindowFormat::rgba() const
-{
-    return testOption(QWindowFormat::Rgba);
-}
-
-inline bool QWindowFormat::alpha() const
-{
-    return testOption(QWindowFormat::AlphaChannel);
-}
-
-inline bool QWindowFormat::accum() const
-{
-    return testOption(QWindowFormat::AccumBuffer);
-}
-
-inline bool QWindowFormat::stencil() const
-{
-    return testOption(QWindowFormat::StencilBuffer);
-}
 
 inline bool QWindowFormat::stereo() const
 {
     return testOption(QWindowFormat::StereoBuffers);
 }
 
-inline bool QWindowFormat::directRendering() const
+inline bool QWindowFormat::windowSurface() const
 {
-    return testOption(QWindowFormat::DirectRendering);
-}
-
-inline bool QWindowFormat::hasWindowSurface() const
-{
-    return testOption(QWindowFormat::HasWindowSurface);
-}
-
-inline bool QWindowFormat::sampleBuffers() const
-{
-    return testOption(QWindowFormat::SampleBuffers);
+    return testOption(QWindowFormat::WindowSurface);
 }
 
 QT_END_NAMESPACE

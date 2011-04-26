@@ -57,6 +57,7 @@
 #include <QtGui/qkeysequence.h>
 
 #ifdef Q_WS_QPA //should this go somewhere else?
+#include <QtGui/qwindow_qpa.h>
 #include <QtGui/qwindowformat_qpa.h>
 #endif
 
@@ -635,11 +636,8 @@ public:
     QWindowSurface *windowSurface() const;
 
 #if defined(Q_WS_QPA)
-    void setPlatformWindow(QPlatformWindow *window);
-    QPlatformWindow *platformWindow() const;
-
-    void setPlatformWindowFormat(const QPlatformWindowFormat &format);
-    QPlatformWindowFormat platformWindowFormat() const;
+    void setWindowHandle(QWindow *window);
+    QWindow *windowHandle() const;
 
     friend class QDesktopScreenWidget;
 #endif

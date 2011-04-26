@@ -50,12 +50,15 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWindowPrivate : public QObjectPrivate{
-    QWindowPrivate()
+class QWindowPrivate : public QObjectPrivate
+{
+public:
+    QWindowPrivate(QWindow::WindowTypes types)
         : QObjectPrivate()
-        , types(0)
+        , windowTypes(types)
         , platformWindow(0)
         , glContext(0)
+        , widget(0)
     {
 
     }
@@ -65,20 +68,31 @@ class QWindowPrivate : public QObjectPrivate{
 
     }
 
-private:
     QWindow::WindowTypes windowTypes;
     QPlatformWindow *platformWindow;
     QWindowFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
     QGLContext *glContext;
+    QWidget *widget;
 };
 
 QWindow::QWindow(WindowTypes types, QWindow *parent)
-    : QObject(*new QWindowPrivate(format), parent)
+    : QObject(*new QWindowPrivate(types), parent)
+{
+
+}
+
+QWidget *QWindow::widget() const
+{
+    Q_D(const QWindow);
+    return d->widget;
+}
+
+void QWindow::setWidget(QWidget *widget)
 {
     Q_D(QWindow);
-    d->windowTypes = types;
+    d->widget = widget;
 }
 
 void QWindow::setVisible(bool visible)
@@ -99,7 +113,7 @@ void QWindow::create()
 
 WId QWindow::winId() const
 {
-    Q_D(QWindow);
+    Q_D(const QWindow);
     if(d->platformWindow) {
         return d->platformWindow->winId();
     }
@@ -111,7 +125,7 @@ void QWindow::setParent(const QWindow *parent)
     Q_D(QWindow);
     //How should we support lazy init when setting parent
     if (!parent->d_func()->platformWindow) {
-        parent->create();
+        const_cast<QWindow *>(parent)->create();
     }
 
     if(!d->platformWindow) {
@@ -138,7 +152,7 @@ QWindowFormat QWindow::actualWindowFormat() const
     return d->requestedFormat;
 }
 
-WindowTypes QWindow::types() const
+QWindow::WindowTypes QWindow::types() const
 {
     Q_D(const QWindow);
     return d->windowTypes;
@@ -194,30 +208,36 @@ void QWindow::requestActivateWindow()
 Qt::WindowStates QWindow::windowState() const
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    return Qt::WindowNoState;
 }
 
 void QWindow::setWindowState(Qt::WindowStates state)
 {
+    Q_UNUSED(state);
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 QSize QWindow::minimumSize() const
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    return QSize();
 }
 
 QSize QWindow::maximumSize() const
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    return QSize();
 }
 
 void QWindow::setMinimumSize(const QSize &size) const
 {
+    Q_UNUSED(size);
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::setMaximumSize(const QSize &size) const
 {
+    Q_UNUSED(size);
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
@@ -238,49 +258,71 @@ QRect QWindow::geometry() const
 
 void QWindow::setWindowIcon(const QImage &icon) const
 {
+    Q_UNUSED(icon);
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 QGLContext * QWindow::glContext() const
 {
-    Q_D(QWindow);
+    Q_D(const QWindow);
     return d->glContext;
+}
+
+void QWindow::setRequestFormat(const QWindowFormat &format)
+{
+    Q_D(QWindow);
+    d->requestedFormat = format;
+}
+
+QWindowFormat QWindow::format() const
+{
+    return QWindowFormat();
+}
+
+void QWindow::destroy()
+{
+    //JA, this will be solved later....
+    //    if (QGLContext *context = extra->topextra->window->glContext()) {
+    //                context->deleteQGLContext();
+    Q_ASSERT(false);
+    //    }
 }
 
 void QWindow::showMinimized()
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::showMaximized()
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::showFullScreen()
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::showNormal()
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 bool QWindow::close()
 {
     //should we have close?
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    return true;
 }
 
 void QWindow::resizeEvent(QResizeEvent *)
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::showEvent(QShowEvent *)
 {
-        qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::hideEvent(QHideEvent *)
@@ -291,6 +333,7 @@ void QWindow::hideEvent(QHideEvent *)
 bool QWindow::event(QEvent *)
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    return false;
 }
 
 void QWindow::keyPressEvent(QKeyEvent *)

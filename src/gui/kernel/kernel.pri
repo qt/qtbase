@@ -220,14 +220,14 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
-                kernel/qwindowformat_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qdesktopwidget_qpa_p.h \
                 kernel/qplatformeventloopintegration_qpa.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
-                kernel/qwindow_qpa.cpp
+                kernel/qwindowformat_qpa.h \
+                kernel/qwindow_qpa.h
 
 	SOURCES += \
                 kernel/qapplication_qpa.cpp \
@@ -246,13 +246,13 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa.cpp \
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
-                kernel/qwindowformat_qpa.cpp \
                 kernel/qplatformeventloopintegration_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \
                 kernel/qsessionmanager_qpa.cpp \
+                kernel/qwindowformat_qpa.cpp \
                 kernel/qwindow_qpa.cpp
 
         contains(QT_CONFIG, glib) {

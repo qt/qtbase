@@ -43,7 +43,7 @@
 #define QPLATFORM_GL_CONTEXT_H
 
 #include <QtCore/qnamespace.h>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 
 QT_BEGIN_HEADER
 
@@ -66,7 +66,7 @@ public:
     virtual void swapBuffers() = 0;
     virtual void* getProcAddress(const QString& procName) = 0;
 
-    virtual QPlatformWindowFormat platformWindowFormat() const = 0;
+    virtual QWindowFormat windowFormat() const = 0;
 
     const static QPlatformGLContext *currentContext();
 
