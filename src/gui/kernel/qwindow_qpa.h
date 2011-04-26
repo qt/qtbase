@@ -61,7 +61,15 @@ class Q_GUI_EXPORT QWindow : public QObject
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
 
 public:
-    QWindow(const QWindowFormat &format, QWindow *parent);
+    enum WindowType {
+        Window = 0x00000001,
+        Dialog = 0x00000002,
+        Popup = 0x00000004,
+        ToolTip = 0x00000008
+    };
+    Q_DECLARE_FLAGS(WindowTypes, WindowType)
+
+    QWindow(const QWindowFormat &format, WindowType type = Window, QWindow *parent = 0);
     void setVisible(bool visible);
     void create();
 
@@ -128,6 +136,8 @@ protected:
 private:
     Q_DISABLE_COPY(QWindow)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWindow::WindowTypes)
 
 QT_END_NAMESPACE
 

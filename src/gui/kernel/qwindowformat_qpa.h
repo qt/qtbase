@@ -60,16 +60,6 @@ public:
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
-#if 0
-    enum WindowType {
-        Window = 0x00000001,
-        Dialog = 0x00000002,
-        Popup = 0x00000004,
-        ToolTip = 0x00000008
-    };
-    Q_DECLARE_FLAGS(WindowTypes, WindowType)
-#endif
-
     enum ColorFormat {
         InvalidColorFormat,
         RGB565,
