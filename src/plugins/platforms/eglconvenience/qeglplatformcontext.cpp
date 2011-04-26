@@ -66,7 +66,7 @@ QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, E
         qFatal("EGL error");
     }
 
-    m_windowFormat = qt_qPlatformWindowFormatFromConfig(display,config);
+    m_windowFormat = q_windowFormatFromConfig(display,config);
 }
 
 QEGLPlatformContext::~QEGLPlatformContext()
@@ -88,7 +88,6 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif
@@ -118,7 +117,6 @@ void QEGLPlatformContext::makeCurrent()
 }
 void QEGLPlatformContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::doneCurrent:%p\n",this);
 #endif
@@ -146,7 +144,7 @@ void* QEGLPlatformContext::getProcAddress(const QString& procName)
     return (void *)eglGetProcAddress(qPrintable(procName));
 }
 
-QPlatformWindowFormat QEGLPlatformContext::platformWindowFormat() const
+QWindowFormat QEGLPlatformContext::windowFormat() const
 {
     return m_windowFormat;
 }

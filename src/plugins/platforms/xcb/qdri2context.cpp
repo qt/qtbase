@@ -146,7 +146,6 @@ QDri2Context::~QDri2Context()
 
 void QDri2Context::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
     Q_D(QDri2Context);
 
     eglMakeCurrent(EGL_DISPLAY_FROM_XCB(d->qXcbWindow),EGL_NO_SURFACE,EGL_NO_SURFACE,d->eglContext);
@@ -156,7 +155,6 @@ void QDri2Context::makeCurrent()
 
 void QDri2Context::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
     Q_D(QDri2Context);
     eglMakeCurrent(EGL_DISPLAY_FROM_XCB(d->qXcbWindow),EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
 }

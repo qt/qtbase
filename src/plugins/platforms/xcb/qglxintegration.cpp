@@ -94,7 +94,6 @@ QGLXContext::~QGLXContext()
 void QGLXContext::makeCurrent()
 {
     Q_XCB_NOOP(m_screen->connection());
-    QPlatformGLContext::makeCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), m_drawable, m_context);
     Q_XCB_NOOP(m_screen->connection());
 }
@@ -102,7 +101,6 @@ void QGLXContext::makeCurrent()
 void QGLXContext::doneCurrent()
 {
     Q_XCB_NOOP(m_screen->connection());
-    QPlatformGLContext::doneCurrent();
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
     Q_XCB_NOOP(m_screen->connection());
 }

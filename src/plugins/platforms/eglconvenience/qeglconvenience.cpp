@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format)
+QVector<EGLint> q_createConfigAttributesFromFormat(const QWindowFormat &format)
 {
     int redSize     = format.redBufferSize();
     int greenSize   = format.greenBufferSize();
@@ -52,17 +52,6 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &
     int depthSize   = format.depthBufferSize();
     int stencilSize = format.stencilBufferSize();
     int sampleCount = format.samples();
-
-    // QPlatformWindowFormat uses a magic value of -1 to indicate "don't care", even when a buffer of that
-    // type has been requested. So we must check QPlatformWindowFormat's booleans too if size is -1:
-    if (format.alpha() && alphaSize <= 0)
-        alphaSize = 1;
-    if (format.depth() && depthSize <= 0)
-        depthSize = 1;
-    if (format.stencil() && stencilSize <= 0)
-        stencilSize = 1;
-    if (format.sampleBuffers() && sampleCount <= 0)
-        sampleCount = 1;
 
     // We want to make sure 16-bit configs are chosen over 32-bit configs as they will provide
     // the best performance. The EGL config selection algorithm is a bit stange in this regard:
@@ -82,14 +71,14 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &
     // if the application sets the red/green/blue size to 5/6/5 on the QPlatformWindowFormat,
     // they will probably get a 32-bit config, even when there's an RGB565 config available.
 
-    // Now normalize the values so -1 becomes 0
-    redSize   = redSize   > 0 ? redSize   : 0;
-    greenSize = greenSize > 0 ? greenSize : 0;
-    blueSize  = blueSize  > 0 ? blueSize  : 0;
-    alphaSize = alphaSize > 0 ? alphaSize : 0;
-    depthSize = depthSize > 0 ? depthSize : 0;
-    stencilSize = stencilSize > 0 ? stencilSize : 0;
-    sampleCount = sampleCount > 0 ? sampleCount : 0;
+//    // Now normalize the values so -1 becomes 0
+//    redSize   = redSize   > 0 ? redSize   : 0;
+//    greenSize = greenSize > 0 ? greenSize : 0;
+//    blueSize  = blueSize  > 0 ? blueSize  : 0;
+//    alphaSize = alphaSize > 0 ? alphaSize : 0;
+//    depthSize = depthSize > 0 ? depthSize : 0;
+//    stencilSize = stencilSize > 0 ? stencilSize : 0;
+//    sampleCount = sampleCount > 0 ? sampleCount : 0;
 
     QVector<EGLint> configAttributes;
 
@@ -206,7 +195,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformWindowFormat &format, bool highestPixelFormat, int surfaceType)
+EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QWindowFormat &format, bool highestPixelFormat, int surfaceType)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
@@ -214,11 +203,7 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
     configureAttributes.append(surfaceType);
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    if (format.windowApi() == QPlatformWindowFormat::OpenVG) {
-        configureAttributes.append(EGL_OPENVG_BIT);        
-    } else {
-        configureAttributes.append(EGL_OPENGL_ES2_BIT);
-    }
+    configureAttributes.append(EGL_OPENGL_ES2_BIT);
     configureAttributes.append(EGL_NONE);
 
     do {
@@ -272,9 +257,9 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
     return 0;
 }
 
-QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, const EGLConfig config)
+QWindowFormat q_windowFormatFromConfig(EGLDisplay display, const EGLConfig config)
 {
-    QPlatformWindowFormat format;
+    QWindowFormat format;
     EGLint redSize     = 0;
     EGLint greenSize   = 0;
     EGLint blueSize    = 0;
@@ -282,7 +267,6 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     EGLint depthSize   = 0;
     EGLint stencilSize = 0;
     EGLint sampleCount = 0;
-    EGLint level       = 0;
 
     eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
     eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
@@ -291,7 +275,6 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE,   &depthSize);
     eglGetConfigAttrib(display, config, EGL_STENCIL_SIZE, &stencilSize);
     eglGetConfigAttrib(display, config, EGL_SAMPLES,      &sampleCount);
-    eglGetConfigAttrib(display, config, EGL_LEVEL,        &level);
 
     format.setRedBufferSize(redSize);
     format.setGreenBufferSize(greenSize);
@@ -300,10 +283,7 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     format.setDepthBufferSize(depthSize);
     format.setStencilBufferSize(stencilSize);
     format.setSamples(sampleCount);
-    format.setDirectRendering(true); // All EGL contexts are direct-rendered
-    format.setRgba(true);            // EGL doesn't support colour index rendering
     format.setStereo(false);         // EGL doesn't support stereo buffers
-    format.setAccumBufferSize(0);    // EGL doesn't support accululation buffers
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable

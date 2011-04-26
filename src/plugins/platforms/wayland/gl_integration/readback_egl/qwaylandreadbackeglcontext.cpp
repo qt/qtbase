@@ -145,7 +145,7 @@ void * QWaylandReadbackEglContext::getProcAddress(const QString &procName)
 
 QPlatformWindowFormat QWaylandReadbackEglContext::platformWindowFormat() const
 {
-    return qt_qPlatformWindowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
+    return q_windowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }
 
 void QWaylandReadbackEglContext::geometryChanged()

@@ -55,7 +55,7 @@ QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindo
     , mEglDisplay(eglDisplay)
     , mSurface(EGL_NO_SURFACE)
     , mConfig(q_configFromQPlatformWindowFormat(mEglDisplay,format,true))
-    , mFormat(qt_qPlatformWindowFormatFromConfig(mEglDisplay,mConfig))
+    , mFormat(q_windowFormatFromConfig(mEglDisplay,mConfig))
 {
     QPlatformGLContext *sharePlatformContext = 0;
     sharePlatformContext = format.sharedGLContext();

@@ -102,7 +102,7 @@ void * QWaylandXCompositeEGLContext::getProcAddress(const QString &procName)
 
 QPlatformWindowFormat QWaylandXCompositeEGLContext::platformWindowFormat() const
 {
-    return qt_qPlatformWindowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
+    return q_windowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }
 
 void QWaylandXCompositeEGLContext::sync_function(void *data)

@@ -56,7 +56,7 @@ public:
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
-    QPlatformWindowFormat platformWindowFormat() const;
+    QWindowFormat windowFormat() const;
 
     EGLContext eglContext() const;
 private:
@@ -65,7 +65,7 @@ private:
     EGLSurface m_eglSurface;
     EGLenum m_eglApi;
 
-    QPlatformWindowFormat m_windowFormat;
+    QWindowFormat m_windowFormat;
 };
 
 #endif //QOPENKODEGLINTEGRATION_H
