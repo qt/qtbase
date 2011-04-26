@@ -71,7 +71,7 @@ public:
     };
     Q_DECLARE_FLAGS(WindowTypes, WindowType)
 
-    QWindow(WindowType type = Window, QWindow *parent = 0);
+    QWindow(WindowTypes types = Window, QWindow *parent = 0);
     void setVisible(bool visible);
     void create();
 
@@ -79,7 +79,10 @@ public:
     void setParent(const QWindow *parent);
 
     void setWindowFormat(const QWindowFormat &format);
-    QWindowFormat windowFormat() const;
+    QWindowFormat requestedWindowFormat() const;
+    QWindowFormat actualWindowFormat() const;
+
+    WindowTypes types() const;
 
     QString windowTitle() const;
 

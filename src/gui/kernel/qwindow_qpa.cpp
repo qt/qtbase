@@ -51,10 +51,10 @@
 QT_BEGIN_NAMESPACE
 
 class QWindowPrivate : public QObjectPrivate{
-    QWindowPrivate(const QWindowFormat &requestedFormat)
+    QWindowPrivate()
         : QObjectPrivate()
+        , types(0)
         , platformWindow(0)
-        , requestedFormat(requestedFormat)
         , glContext(0)
     {
 
@@ -66,6 +66,7 @@ class QWindowPrivate : public QObjectPrivate{
     }
 
 private:
+    QWindow::WindowTypes windowTypes;
     QPlatformWindow *platformWindow;
     QWindowFormat requestedFormat;
     QString windowTitle;
@@ -73,10 +74,11 @@ private:
     QGLContext *glContext;
 };
 
-QWindow::QWindow(const QWindowFormat &format, QWindow *parent)
+QWindow::QWindow(WindowTypes types, QWindow *parent)
     : QObject(*new QWindowPrivate(format), parent)
 {
-
+    Q_D(QWindow);
+    d->windowTypes = types;
 }
 
 void QWindow::setVisible(bool visible)
@@ -116,6 +118,30 @@ void QWindow::setParent(const QWindow *parent)
         create();
     }
     d->platformWindow->setParent(parent->d_func()->platformWindow);
+}
+
+void QWindow::setWindowFormat(const QWindowFormat &format)
+{
+    Q_D(QWindow);
+    d->requestedFormat = format;
+}
+
+QWindowFormat QWindow::requestedWindowFormat() const
+{
+    Q_D(const QWindow);
+    return d->requestedFormat;
+}
+
+QWindowFormat QWindow::actualWindowFormat() const
+{
+    Q_D(const QWindow);
+    return d->requestedFormat;
+}
+
+WindowTypes QWindow::types() const
+{
+    Q_D(const QWindow);
+    return d->windowTypes;
 }
 
 void QWindow::setWindowTitle(const QString &title)
