@@ -162,8 +162,10 @@ uint QCoreTextFontEngineMulti::fontIndexForFont(CTFontRef font) const
     return engines.count() - 1;
 }
 
-bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
-                  unsigned short *logClusters, const HB_CharAttributes *) const
+bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
+                                            int *nglyphs, QTextEngine::ShaperFlags flags,
+                                            unsigned short *logClusters, const HB_CharAttributes *,
+                                            QScriptItem *si) const
 {
     QCFType<CFStringRef> cfstring = CFStringCreateWithCharactersNoCopy(0,
                                                                reinterpret_cast<const UniChar *>(str),
@@ -254,7 +256,12 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             if (!runAttribs)
                 runAttribs = attributeDict;
             CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, NSFontAttributeName));
-            const uint fontIndex = (fontIndexForFont(runFont) << 24);
+            uint fontIndex = fontIndexForFont(runFont);
+            const QFontEngine *engine = engineAt(fontIndex);
+            fontIndex <<= 24;
+            si->ascent = qMax(engine->ascent(), si->ascent);
+            si->descent = qMax(engine->descent(), si->descent);
+            si->leading = qMax(engine->leading(), si->leading);
             //NSLog(@"Run Font Name = %@", CTFontCopyFamilyName(runFont));
             if (endWithPDF)
                 glyphCount--;

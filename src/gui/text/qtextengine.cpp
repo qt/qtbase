@@ -1274,6 +1274,10 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
         }
 
+        si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
+        si.descent = qMax(actualFontEngine->descent(), si.descent);
+        si.leading = qMax(actualFontEngine->leading(), si.leading);
+
         shaper_item.font = actualFontEngine->harfbuzzFont();
         shaper_item.face = actualFontEngine->harfbuzzFace();
 
