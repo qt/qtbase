@@ -42,7 +42,7 @@
 #ifndef CUSTOMWIDGET_H
 #define CUSTOMWIDGET_H
 
-#include <QtDesigner/extension.h>
+#include "extension.h"
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtGui/QIcon>

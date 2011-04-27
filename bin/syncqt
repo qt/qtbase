@@ -12,55 +12,30 @@
 use File::Basename;
 use File::Path;
 use Cwd;
+use Cwd 'abs_path';
 use Config;
 use strict;
 
-for (my $i = 0; $i < $#ARGV; $i++) {
-    if ($ARGV[$i] eq "-base-dir" && $i < $#ARGV - 1) {
-        $ENV{"QTDIR"} = $ARGV[$i + 1];
-        last;
-    }
-}
+# set output basedir to be where ever syncqt is run from
+our $out_basedir = getcwd();
+$out_basedir =~ s=\\=/=g;
+our $basedir;
+our $quoted_basedir;
 
-die "syncqt: QTDIR not defined" if ! $ENV{"QTDIR"}; # sanity check
 
-# global variables
-my $isunix = 0;
-my $basedir = $ENV{"QTDIR"};
-$basedir =~ s=\\=/=g;
-my %modules = ( # path to module name map
-        "QtGui" => "$basedir/src/gui",
-        "QtOpenGL" => "$basedir/src/opengl",
-        "QtOpenVG" => "$basedir/src/openvg",
-        "QtCore" => "$basedir/src/corelib",
-        "QtXml" => "$basedir/src/xml",
-        "QtXmlPatterns" => "$basedir/src/xmlpatterns",
-        "QtSql" => "$basedir/src/sql",
-        "QtNetwork" => "$basedir/src/network",
-        "QtSvg" => "$basedir/src/svg",
-        "QtDeclarative" => "$basedir/src/declarative",
-        "QtScript" => "$basedir/src/script",
-        "QtScriptTools" => "$basedir/src/scripttools",
-        "Qt3Support" => "$basedir/src/qt3support",
-        "ActiveQt" => "$basedir/src/activeqt",
-        "QtTest" => "$basedir/src/testlib",
-        "QtHelp" => "$basedir/tools/assistant/lib",
-        "QtDesigner" => "$basedir/tools/designer/src/lib",
-        "QtUiTools" => "$basedir/tools/designer/src/uitools",
-        "QtDBus" => "$basedir/src/dbus",
-        "QtWebKit" => "$basedir/src/3rdparty/webkit/WebCore",
-        "phonon" => "$basedir/src/phonon",
-        "QtMultimedia" => "$basedir/src/multimedia",
-        "QtMeeGoGraphicsSystemHelper" => "$basedir/tools/qmeegographicssystemhelper",
-);
-my %moduleheaders = ( # restrict the module headers to those found in relative path
-        "QtWebKit" => "../WebKit/qt/Api",
-        "phonon" => "../3rdparty/phonon/phonon",
-);
+# try to figure out where QtBase is located
+# normally the script location should be enough, if not fall back to
+# QTDIR environment variable. If that doesn't work, later ask the
+# user to use the -qtdir option explicitly.
+my $qtbasedir = dirname(dirname($0));
+$qtbasedir = $ENV{"QTDIR"} if ($qtbasedir !~ /qtbase/);
+$qtbasedir =~ s=\\=/=g if (defined $qtbasedir);
 
-#$modules{"QtCore"} .= ";$basedir/mkspecs/" . $ENV{"MKSPEC"} if defined $ENV{"MKSPEC"};
+# will be defined based on the modules sync.profile
+our (%modules, %moduleheaders, %classnames, %mastercontent, %modulepris);
 
 # global variables (modified by options)
+my $isunix = 0;
 my $module = 0;
 my $showonly = 0;
 my $quiet = 0;
@@ -69,13 +44,12 @@ my $force_win = 0;
 my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_uic_class_map = 1;
+my $create_uic_class_map = 0;
 my $create_private_headers = 1;
+my $no_module_fwd = 0;
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
-my $out_basedir = $basedir;
-$out_basedir =~ s=\\=/=g;
-my $quoted_basedir = "\Q$basedir";
+
 
 # functions ----------------------------------------------------------
 
@@ -89,14 +63,20 @@ my $quoted_basedir = "\Q$basedir";
 sub showUsage
 {
     print "$0 usage:\n";
+    print "  <module directory>    Specifies which module to sync header files for (required for shadow builds!)\n\n";
+
     print "  -copy                 Copy headers instead of include-fwd(default: " . ($copy_headers ? "yes" : "no") . ")\n";
     print "  -remove-stale         Removes stale headers              (default: " . ($remove_stale ? "yes" : "no") . ")\n";
     print "  -relative             Force relative symlinks            (default: " . ($force_relative ? "yes" : "no") . ")\n";
     print "  -windows              Force platform to Windows          (default: " . ($force_win ? "yes" : "no") . ")\n";
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
+    print "  -qtdir <PATH>         Set the path to QtBase           (detected: " . (defined $qtbasedir ? $qtbasedir : "-none-") . ")\n";
     print "  -quiet                Only report problems, not activity (default: " . ($quiet ? "yes" : "no") . ")\n";
-    print "  -separate-module <NAME>:<PROFILEDIR>:<HEADERDIR> Create headers for <NAME> with original headers in <HEADERDIR> relative to <PROFILEDIR> \n";
+    print "  -separate-module <NAME>:<PROFILEDIR>:<HEADERDIR>\n";
+    print "                        Create headers for <NAME> with original headers in <HEADERDIR> relative to <PROFILEDIR> \n";
+    print "  -private              Force copy private headers         (default: " . ($create_private_headers ? "yes" : "no") . ")\n";
+    print "  -no-module-fwd        Don't create fwd includes for module pri files\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -169,37 +149,9 @@ sub shouldMasterInclude {
 sub classNames {
     my @ret;
     my ($iheader) = @_;
-    if(basename($iheader) eq "qglobal.h") {
-        push @ret, "QtGlobal";
-    } elsif(basename($iheader) eq "qendian.h") {
-        push @ret, "QtEndian";
-    } elsif(basename($iheader) eq "qconfig.h") {
-        push @ret, "QtConfig";
-    } elsif(basename($iheader) eq "qplugin.h") {
-        push @ret, "QtPlugin";
-    } elsif(basename($iheader) eq "qalgorithms.h") {
-        push @ret, "QtAlgorithms";
-    } elsif(basename($iheader) eq "qcontainerfwd.h") {
-        push @ret, "QtContainerFwd";
-    } elsif(basename($iheader) eq "qdebug.h") {
-        push @ret, "QtDebug";
-    } elsif(basename($iheader) eq "qevent.h") {
-        push @ret, "QtEvents";
-    } elsif(basename($iheader) eq "qnamespace.h") {
-        push @ret, "Qt"
-    } elsif(basename($iheader) eq "qssl.h") {
-        push @ret, "QSsl";
-    } elsif(basename($iheader) eq "qtest.h") {
-        push @ret, "QTest"
-    } elsif(basename($iheader) eq "qtconcurrentmap.h") {
-        push @ret, "QtConcurrentMap"
-    } elsif(basename($iheader) eq "qtconcurrentfilter.h") {
-        push @ret, "QtConcurrentFilter"
-    } elsif(basename($iheader) eq "qtconcurrentrun.h") {
-        push @ret, "QtConcurrentRun"
-    } elsif(basename($iheader) eq "qaudio.h") {
-        push @ret, "QAudio"
-    }
+
+    my $classname = $classnames{basename($iheader)};
+    push @ret, $classname if ($classname);
 
     my $parsable = "";
     if(open(F, "<$iheader")) {
@@ -353,7 +305,6 @@ sub syncHeader {
 ######################################################################
 sub fixPaths {
     my ($file, $dir) = @_;
-    $dir =~ s=^$quoted_basedir/=$out_basedir/= if(!($basedir eq $out_basedir));
     $file =~ s=\\=/=g;
     $dir =~ s=\\=/=g;
 
@@ -374,6 +325,8 @@ sub fixPaths {
     return basename($file) if($file_dir eq $dir);
 
     #guts
+    while ($file_dir =~ s,/[^/]+/\.\./,/,) {}
+    while ($dir =~ s,/[^/]+/\.\./,/,) {}
     my $match_dir = 0;
     for(my $i = 1; $i < length($file_dir); $i++) {
         my $slash = index($file_dir, "/", $i);
@@ -562,6 +515,52 @@ sub findFiles {
     return @files;
 }
 
+######################################################################
+# Syntax:  loadSyncProfile()
+#
+# Purpose: Locates the sync.profile.
+# Returns: Hashmap of module name -> directory.
+######################################################################
+sub loadSyncProfile {
+    my ($srcbase, $outbase) = @_;
+    print("srcbase = $$srcbase \n");
+    print("outbase = $$outbase \n");
+
+    my $syncprofile = "$$srcbase/sync.profile";
+    my $result;
+    unless ($result = do "$syncprofile") {
+        die "syncqt couldn't parse $syncprofile: $@" if $@;
+        die "syncqt couldn't execute $syncprofile: $!" unless defined $result;
+    }
+    return $result;
+}
+
+sub locateSyncProfile
+{
+    my ($directory) = @_;
+    my $syncprofile;
+    $directory = abs_path($directory);
+    while(!defined $syncprofile) {
+        local(*D);
+        if (opendir(D, $directory)) {
+            foreach my $file (sort readdir(D)) {
+                next if ($file =~ /^\.\.?$/);
+                $syncprofile = "$directory/$file" if ($file =~ /^sync\.profile$/);
+                last if (defined $syncprofile);
+            }
+            closedir(D);
+        }
+        last if (defined $syncprofile || $directory eq "/" || $directory =~ /^?:[\/\\]$/);
+        $directory = dirname($directory);
+    }
+    return $syncprofile;
+}
+
+# check if this is an in-source build, and if so use that as the basedir too
+$basedir = locateSyncProfile($out_basedir);
+$basedir = dirname($basedir) if ($basedir);
+$quoted_basedir = "\Q$basedir";
+
 # --------------------------------------------------------------------
 # "main" function
 # --------------------------------------------------------------------
@@ -572,7 +571,7 @@ while ( @ARGV ) {
 
     #parse
     my $arg = shift @ARGV;
-    if ($arg eq "-h" || $arg eq "-help" || $arg eq "?") {
+    if ($arg eq "-h" || $arg eq "-help" || $arg eq "-?" || $arg eq "?") {
         $var = "show_help";
         $val = "yes";
     } elsif($arg eq "-copy") {
@@ -604,10 +603,28 @@ while ( @ARGV ) {
     } elsif($arg eq "-quiet") {
         $var = "quiet";
         $val = "yes";
+    } elsif($arg eq "-private") {
+        $var = "create_private_headers";
+        $val = "yes";
+    } elsif($arg eq "-qtdir") {
+        $var = "qtdir";
+        $val = shift @ARGV;
     } elsif($arg eq "-base-dir") {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
         next;
+    } elsif($arg eq "-no-module-fwd") {
+        $var = "no_module_fwd";
+        $val = "yes";
+    } elsif($arg =~/^-/) {
+        print "Unknown option: $arg\n\n" if(!$var);
+        showUsage();
+    } else {
+        $basedir = locateSyncProfile($arg);
+        die "Could not find a sync.profile for '$arg'\n" if (!$basedir);
+        $basedir = dirname($basedir);
+        $basedir =~ s=\\=/=g;
+        $var = "ignore";
     }
 
     #do something
@@ -666,7 +683,15 @@ while ( @ARGV ) {
         push @modules_to_sync, $module;
         $moduleheaders{$module} = $headerdir;
         $create_uic_class_map = 0;
-        $create_private_headers = 0;
+    } elsif ($var eq "qtdir") {
+        if($val) {
+            $qtbasedir = $val;
+            $qtbasedir =~ s=\\=/=g;
+        } else {
+            die "The -qtdir option requires an argument";
+        }
+    } elsif ($var eq "no_module_fwd") {
+        $no_module_fwd = 1;
     } elsif ($var eq "output") {
         my $outdir = $val;
         if(checkRelative($outdir)) {
@@ -680,6 +705,32 @@ while ( @ARGV ) {
         $out_basedir =~ s=\\=/=g;
     }
 }
+
+# if the $qtbasedir neither has 'qtbase' somewhere in its path, nor a
+# '.qmake.cache' file in its directory, we assume it's not a valid path
+# (remember that a yet-to-be-built qtbase doesn't have this file either,
+# thus the 'qtbase' path check!)
+die "Cannot automatically detect/use provided path to QtBase's build directory!\n" .
+    "QTDIR detected/provided: " . (defined $qtbasedir ? $qtbasedir : "-none-") . "\n" .
+    "Please -qtdir option to provide the correct path.\nsyncqt failed"
+        if (!defined $qtbasedir || (!-e "$qtbasedir/.qmake.cache" && $qtbasedir !~ /qtbase/));
+
+# if we have no $basedir we cannot be sure which sources you want, so die
+die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
+
+my @ignore_headers = ();
+my $class_lib_map_contents = "";
+our @ignore_for_master_contents = ();
+our @ignore_for_include_check = ();
+our @ignore_for_qt_begin_header_check = ();
+our @ignore_for_qt_begin_namespace_check = ();
+our @ignore_for_qt_module_check = ();
+my %colliding_headers = ();
+my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
+
+# load the module's sync.profile here, before we can
+loadSyncProfile(\$basedir, \$out_basedir);
+
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
 $isunix = checkUnix; #cache checkUnix
@@ -688,15 +739,6 @@ $isunix = checkUnix; #cache checkUnix
 mkpath "$out_basedir/include", !$quiet;
 mkpath "$out_basedir/include/Qt", !$quiet;
 
-my @ignore_headers = ();
-my $class_lib_map_contents = "";
-my @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
-my @ignore_for_include_check = ( "qatomic.h" );
-my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
-my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h", "qatomic_arm.h", "qatomic_armv7.h" );
-my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
-my %colliding_headers = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) ); # all from build dir
 
 foreach my $lib (@modules_to_sync) {
     #iteration info
@@ -720,19 +762,8 @@ foreach my $lib (@modules_to_sync) {
                 chomp $line;
                 if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
                     foreach(split(/ /, $1)) {
-                        $master_contents .= "#include <QtCore/QtCore>\n" if($_ eq "core");
-                        $master_contents .= "#include <QtGui/QtGui>\n" if($_ eq "gui");
-                        $master_contents .= "#include <QtNetwork/QtNetwork>\n" if($_ eq "network");
-                        $master_contents .= "#include <QtSvg/QtSvg>\n" if($_ eq "svg");
-                        $master_contents .= "#include <QtDeclarative/QtDeclarative>\n" if($_ eq "declarative");
-                        $master_contents .= "#include <QtScript/QtScript>\n" if($_ eq "script");
-                        $master_contents .= "#include <QtScriptTools/QtScriptTools>\n" if($_ eq "scripttools");
-                        $master_contents .= "#include <Qt3Support/Qt3Support>\n" if($_ eq "qt3support");
-                        $master_contents .= "#include <QtSql/QtSql>\n" if($_ eq "sql");
-                        $master_contents .= "#include <QtXml/QtXml>\n" if($_ eq "xml");
-                        $master_contents .= "#include <QtXmlPatterns/QtXmlPatterns>\n" if($_ eq "xmlpatterns");
-                        $master_contents .= "#include <QtOpenGL/QtOpenGL>\n" if($_ eq "opengl");
-                        $master_contents .= "#include <QtOpenVG/QtOpenVG>\n" if($_ eq "openvg");
+                        my $content = $mastercontent{$_};
+                        $master_contents .= $content if ($content);
                     }
                 }
             }
@@ -968,6 +999,27 @@ foreach my $lib (@modules_to_sync) {
             open HEADERS_PRI_FILE, ">$headers_pri_file";
             print HEADERS_PRI_FILE $headers_pri_contents;
             close HEADERS_PRI_FILE;
+        }
+
+        # create forwarding module pri in qtbase/mkspecs/modules
+        unless ($no_module_fwd) {
+            my $modulepri = $modulepris{$lib};
+            if (-e $modulepri) {
+                my $modulepriname = basename($modulepri);
+                my $moduleprifwd = "$qtbasedir/mkspecs/modules/$modulepriname";
+                open MODULE_PRI_FILE, ">$moduleprifwd";
+                print MODULE_PRI_FILE "QT_MODULE_BASE = $basedir\n";
+                print MODULE_PRI_FILE "QT_MODULE_BIN_BASE = $qtbasedir/bin\n";
+                print MODULE_PRI_FILE "QT_MODULE_INCLUDE_BASE = $out_basedir/include\n";
+                print MODULE_PRI_FILE "QT_MODULE_IMPORT_BASE = $qtbasedir/imports\n";
+                print MODULE_PRI_FILE "QT_MODULE_LIB_BASE = $qtbasedir/lib\n";
+                print MODULE_PRI_FILE "QT_MODULE_PLUGIN_BASE = $qtbasedir/plugins\n";
+                print MODULE_PRI_FILE "include($modulepri)\n";
+                close MODULE_PRI_FILE;
+                utime(time, (stat($modulepri))[9], $moduleprifwd);
+            } elsif ($modulepri) {
+                print "WARNING: Module $lib\'s pri file '$modulepri' not found.\nSkipped creating forwarding pri for $lib.\n";
+            }
         }
     }
 }

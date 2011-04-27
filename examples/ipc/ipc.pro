@@ -8,4 +8,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS ipc.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/ipc
 INSTALLS += sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

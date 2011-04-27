@@ -699,7 +699,7 @@ CFG_FONTCONFIG=auto
 CFG_QWS_FREETYPE=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
-QT_DEFAULT_BUILD_PARTS="libs tools examples demos docs translations"
+QT_DEFAULT_BUILD_PARTS="libs examples demos"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
@@ -2550,8 +2550,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     if [ -x "$relpath/bin/syncqt" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "QTDIR=\"$relpath\"; export QTDIR" >>"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" \"\$@\"" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" -outdir \"$outpath\" \"$relpath\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -6959,12 +6958,13 @@ esac
 
 # enable Qt 3 support functionality
 if [ "$CFG_QT3SUPPORT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG qt3support"
+    QT_CONFIG="$QT_CONFIG gui-qt3support"
 fi
 
 # enable Phonon
 if [ "$CFG_PHONON" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG phonon"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG phonon"
     if [ "$CFG_PHONON_BACKEND" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG phonon-backend"
     fi
@@ -7539,17 +7539,19 @@ if [ "$CFG_XMLPATTERNS" = "auto" -a "$CFG_EXCEPTIONS" != "no" ]; then
 elif [ "$CFG_EXCEPTIONS" = "no" ]; then
     CFG_XMLPATTERNS="no"
 fi
-if [ "$CFG_XMLPATTERNS" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG xmlpatterns"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
-fi
+# No longer needed after modularization
+#if [ "$CFG_XMLPATTERNS" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG xmlpatterns"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
+#fi
 
-if [ "$CFG_MULTIMEDIA" = "no" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
-else
-    QT_CONFIG="$QT_CONFIG multimedia"
-fi
+# No longer needed after modularization
+#if [ "$CFG_MULTIMEDIA" = "no" ]; then
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
+#else
+#    QT_CONFIG="$QT_CONFIG multimedia"
+#fi
 
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG audio-backend"
@@ -7575,26 +7577,24 @@ if [ "$CFG_WEBKIT" != "no" ]; then
 fi
 
 if [ "$CFG_WEBKIT" != "no" ]; then
-    # This include takes care of adding "webkit" to QT_CONFIG.
-    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG webkit"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     if [ "$CFG_WEBKIT" = "debug" ]; then
         QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
     fi
-else
-    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
 if [ "$CFG_SCRIPT" = "auto" ]; then
     CFG_SCRIPT="yes"
 fi
 
-if [ "$CFG_SCRIPT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG script"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
-fi
+# No longer needed after modularization
+#if [ "$CFG_SCRIPT" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG script"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
+#fi
 
 if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     echo "QtScriptTools was requested, but it can't be built due to QtScript being disabled."
@@ -7613,11 +7613,12 @@ elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi
 
-if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG scripttools"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-fi
+# No longer needed after modularization
+#if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
+#    QT_CONFIG="$QT_CONFIG scripttools"
+#else
+#    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
+#fi
 
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
@@ -7635,7 +7636,8 @@ if [ "$CFG_DECLARATIVE" = "auto" ]; then
 fi
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG declarative"
+    # No longer needed after modularization
+    #QT_CONFIG="$QT_CONFIG declarative"
     if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
     fi
@@ -8299,10 +8301,10 @@ else
         ln -s "$outpath/src/corelib/global/qconfig.h" "$conf"
     done
 fi
+
 #-------------------------------------------------------------------------------
 # save configuration into qconfig.pri
 #-------------------------------------------------------------------------------
-
 QTCONFIG="$outpath/mkspecs/qconfig.pri"
 QTCONFIG_CONFIG="$QTCONFIG_CONFIG no_mocdepend"
 [ -f "$QTCONFIG.tmp" ] && rm -f "$QTCONFIG.tmp"
@@ -8402,23 +8404,19 @@ else
 fi
 
 #-------------------------------------------------------------------------------
-# save configuration into .qmake.cache
+# save configuration into qmodule.pri
 #-------------------------------------------------------------------------------
+QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-CACHEFILE="$outpath/.qmake.cache"
-[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
-cat >>"$CACHEFILE.tmp" <<EOF
-CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs QTDIR_build
+cat >>"$QTMODULE.tmp" <<EOF
+#paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 QT_BUILD_PARTS = $CFG_BUILD_PARTS
-QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
-QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
 QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
 QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_UIC3       = \$\$QT_BUILD_TREE/bin/uic3
 QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
 QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
@@ -8428,64 +8426,85 @@ EOF
 
 # Ensure we can link to uninistalled libraries
 if [ "$XPLATFORM_MINGW" != "yes" ] && [ "$CFG_EMBEDDED" != "nacl" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
-    echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$CACHEFILE.tmp"
+    echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_PSQL" ]; then
-    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_PSQL" ]; then
-    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_PSQL   = $QT_LFLAGS_PSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_MYSQL" ]; then
-    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_MYSQL   = $QT_CFLAGS_MYSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_MYSQL" ]; then
-    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_MYSQL   = $QT_LFLAGS_MYSQL" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_CFLAGS_SQLITE" ]; then
-    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE" >> "$CACHEFILE.tmp"
+    echo "QT_CFLAGS_SQLITE   = $QT_CFLAGS_SQLITE" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_SQLITE" ]; then
-    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_ODBC" ]; then
-    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$QTMODULE.tmp"
 fi
 if [ -n "$QT_LFLAGS_TDS" ]; then
-    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$CACHEFILE.tmp"
+    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$QTMODULE.tmp"
 fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
-    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$CACHEFILE.tmp"
+    echo "DEFINES *= QT_EDITION=QT_EDITION_DESKTOP" >> "$QTMODULE.tmp"
 fi
 
 #dump in the OPENSSL_LIBS info
 if [ '!' -z "$OPENSSL_LIBS" ]; then
-    echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$CACHEFILE.tmp"
+    echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$QTMODULE.tmp"
 elif [ "$CFG_OPENSSL" = "linked" ]; then
-    echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$CACHEFILE.tmp"
+    echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$QTMODULE.tmp"
 fi
 
 #dump in the SDK info
 if [ '!' -z "$CFG_SDK" ]; then
-   echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$CACHEFILE.tmp"
+   echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$QTMODULE.tmp"
 fi
 
 # mac gcc -Xarch support
 if [ "$CFG_MAC_XARCH" = "no" ]; then
-   echo "QMAKE_MAC_XARCH = no" >> "$CACHEFILE.tmp"
+   echo "QMAKE_MAC_XARCH = no" >> "$QTMODULE.tmp"
 fi
 
 #dump the qmake spec
 if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$QTMODULE.tmp"
 else
-   echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+   echo "QMAKESPEC = $XPLATFORM" >> "$QTMODULE.tmp"
 fi
 
 # cmdline args
-cat "$QMAKE_VARS_FILE" >> "$CACHEFILE.tmp"
+cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
 rm -f "$QMAKE_VARS_FILE" 2>/dev/null
+
+# replace qmodule.pri if it differs from the newly created temp file
+if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
+    rm -f "$QTMODULE.tmp"
+else
+    mv -f "$QTMODULE.tmp" "$QTMODULE"
+fi
+
+#-------------------------------------------------------------------------------
+# save configuration into .qmake.cache
+#-------------------------------------------------------------------------------
+
+CACHEFILE="$outpath/.qmake.cache"
+[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
+cat >>"$CACHEFILE.tmp" <<EOF
+include(\$\$PWD/mkspecs/qmodule.pri)
+CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs QTDIR_build
+QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
+QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
+
+EOF
 
 # incrementals
 INCREMENTAL=""
@@ -8820,11 +8839,11 @@ EXEC=""
 
 echo "Finding project files. Please wait..."
 if [ "$CFG_NOPROCESS" != "yes" ]; then
-    "$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
-    if [ -f "${relpath}/projects.pro" ]; then
+    "$outpath/bin/qmake" -prl -r "${relpath}/qtbase.pro"
+    if [ -f "${relpath}/qtbase.pro" ]; then
         mkfile="${outpath}/Makefile"
         [ -f "$mkfile" ] && chmod +w "$mkfile"
-        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/qtbase.pro" -o "$mkfile"
     fi
 fi
 

@@ -40,4 +40,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

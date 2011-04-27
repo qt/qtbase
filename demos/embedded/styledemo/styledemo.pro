@@ -13,5 +13,5 @@ INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000A63F
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    CONFIG += qt_demo
 }

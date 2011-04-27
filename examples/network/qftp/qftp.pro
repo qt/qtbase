@@ -12,7 +12,7 @@ INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000A648
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    CONFIG += qt_example
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.CAPABILITY="NetworkServices ReadUserData WriteUserData"
 }

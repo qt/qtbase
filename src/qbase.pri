@@ -1,5 +1,10 @@
+load(qt_module)
+
+isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
-INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
+
+MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
+INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 !isEmpty(RCC_DIR): INCLUDEPATH += $$RCC_DIR
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
@@ -11,7 +16,10 @@ isEmpty(QT_MAJOR_VERSION) {
 
 #load up the headers info
 CONFIG += qt_install_headers
-HEADERS_PRI = $$QT_BUILD_TREE/include/$$TARGET/headers.pri
+#headers.pri is loaded from the last include path
+LAST_MODULE_INCLUDE=$$MODULE_INCLUDES
+for(include_path, MODULE_INCLUDES):LAST_MODULE_INCLUDE=$${include_path}
+HEADERS_PRI = $$LAST_MODULE_INCLUDE/headers.pri
 include($$HEADERS_PRI, "", true)|clear(HEADERS_PRI)
 
 #version overriding
@@ -161,7 +169,7 @@ win32-g++* {
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
-contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
+contains(QT_CONFIG, gui-qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
 DEFINES *= QT_USE_FAST_OPERATOR_PLUS QT_USE_FAST_CONCATENATION
 

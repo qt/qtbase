@@ -8,4 +8,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS screenshot.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/desktop/screenshot
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

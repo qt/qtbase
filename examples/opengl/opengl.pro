@@ -19,11 +19,6 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
                 framebufferobject2 \
                 samplebuffers \
                 textures
-
-    contains(QT_CONFIG, svg) {
-        SUBDIRS += framebufferobject \
-                pbuffers2
-    }
 }
 
 # install
@@ -32,4 +27,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS opengl.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

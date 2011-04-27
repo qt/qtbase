@@ -11,4 +11,4 @@ CONFIG(debug, debug|release) {
 }
 LIBS += $$QTUITOOLS_LINKAGE
 
-INCLUDEPATH = $$QMAKE_INCDIR_QT/QtUiTools $$INCLUDEPATH
+INCLUDEPATH = $$QT.uitools.includes $$INCLUDEPATH

@@ -42,7 +42,7 @@
 #ifndef ABSTRACTFORMBUILDER_H
 #define ABSTRACTFORMBUILDER_H
 
-#include <QtDesigner/uilib_global.h>
+#include "uilib_global.h"
 
 #include <QtCore/QList>
 #include <QtCore/QHash>

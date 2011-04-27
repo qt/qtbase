@@ -1,7 +1,7 @@
 TARGET = qlinuxinputplugin
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/generic
+DESTDIR = $$QT.gui.plugins/generic
 target.path = $$[QT_INSTALL_PLUGINS]/generic
 INSTALLS += target
 

@@ -9,6 +9,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS localfortuneserver.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/ipc/localfortuneserver
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 

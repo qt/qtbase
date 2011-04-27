@@ -6,7 +6,7 @@ DEFINES += QT_UIC
 INCLUDEPATH += .
 DEPENDPATH += .
 
-!contains(QT_CONFIG, qt3support):DEFINES += QT_NO_QT3_SUPPORT
+!contains(QT_CONFIG, gui-qt3support):DEFINES += QT_NO_QT3_SUPPORT
 
 include(uic.pri)
 include(cpp/cpp.pri)

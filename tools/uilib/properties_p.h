@@ -53,7 +53,7 @@
 #ifndef UILIBPROPERTIES_H
 #define UILIBPROPERTIES_H
 
-#include <QtDesigner/uilib_global.h>
+#include "uilib_global.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>

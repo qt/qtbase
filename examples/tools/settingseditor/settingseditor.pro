@@ -14,4 +14,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS settingseditor.pro inifi
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/settingseditor
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

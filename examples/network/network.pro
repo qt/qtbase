@@ -20,10 +20,6 @@ SUBDIRS       = \
                 multicastreceiver \
                 multicastsender
 
-    contains(QT_CONFIG, svg) {
-        SUBDIRS += bearercloud
-    }
-
     # no QProcess
     !vxworks:!qnx:SUBDIRS += network-chat
 
@@ -38,4 +34,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network
 INSTALLS += sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

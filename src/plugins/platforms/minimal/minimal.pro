@@ -1,7 +1,7 @@
 TARGET = qminimal
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
+DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES =   main.cpp \
             qminimalintegration.cpp \

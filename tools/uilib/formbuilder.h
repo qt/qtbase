@@ -42,8 +42,8 @@
 #ifndef FORMBUILDER_H
 #define FORMBUILDER_H
 
-#include <QtDesigner/uilib_global.h>
-#include <QtDesigner/QAbstractFormBuilder>
+#include "uilib_global.h"
+#include "abstractformbuilder.h"
 
 #include <QtCore/QStringList>
 #include <QtCore/QMap>

@@ -11,4 +11,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS grabber.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/grabber
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

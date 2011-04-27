@@ -4,7 +4,7 @@ include(../qpluginbase.pri)
 
 CONFIG  -= plugin
 
-QTDIR_build:DESTDIR	 = $$QT_BUILD_TREE/plugins/s60
+DESTDIR = $$QT.gui.plugins/s60
 
 MMP_RULES += NOEXPORTLIBRARY
 

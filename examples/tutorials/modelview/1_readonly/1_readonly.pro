@@ -14,4 +14,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS 1_readonly.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/1_readonly
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

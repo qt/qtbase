@@ -1,7 +1,7 @@
 TARGET = qwayland
 include(../../qpluginbase.pri)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
+DESTDIR = $$QT.gui.plugins/platforms
 
 DEFINES += Q_PLATFORM_WAYLAND
 DEFINES += $$QMAKE_DEFINES_WAYLAND

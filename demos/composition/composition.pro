@@ -17,7 +17,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.jpg *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/qtbase/composition
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+symbian: CONFIG += qt_demo
 
 win32-msvc* {
     QMAKE_CXXFLAGS += /Zm500

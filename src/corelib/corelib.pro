@@ -1,3 +1,4 @@
+MODULE     = core
 TARGET	   = QtCore
 QPRO_PWD   = $$PWD
 QT         =

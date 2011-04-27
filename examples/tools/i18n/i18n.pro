@@ -25,4 +25,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES translations i18n.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/i18n
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

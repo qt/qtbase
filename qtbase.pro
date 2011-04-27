@@ -7,52 +7,26 @@ TEMPLATE = subdirs
 
 cross_compile: CONFIG += nostrip
 
-isEmpty(QT_BUILD_PARTS) { #defaults
-    symbian {
-       QT_BUILD_PARTS = libs tools examples demos
-    } else {
-       QT_BUILD_PARTS = libs tools examples demos docs translations
-    }
-} else { #make sure the order makes sense
-   contains(QT_BUILD_PARTS, translations) {
-       QT_BUILD_PARTS -= translations
-       QT_BUILD_PARTS = translations $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, tools) {
-       QT_BUILD_PARTS -= tools
-       QT_BUILD_PARTS = tools $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, libs) {
-       QT_BUILD_PARTS -= libs
-       QT_BUILD_PARTS = libs $$QT_BUILD_PARTS
-   }
-   contains(QT_BUILD_PARTS, qmake) {
-       QT_BUILD_PARTS -= qmake
-       QT_BUILD_PARTS = qmake $$QT_BUILD_PARTS
-   }
-}
-
 #process the projects
 for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
-    isEqual(PROJECT, tools) {
-       SUBDIRS += tools
-    } else:isEqual(PROJECT, examples) {
+    isEqual(PROJECT, examples) {
        SUBDIRS += examples
     } else:isEqual(PROJECT, demos) {
        SUBDIRS += demos
     } else:isEqual(PROJECT, libs) {
        include(src/src.pro)
-    } else:isEqual(PROJECT, docs) {
-       contains(QT_BUILD_PARTS, tools):include(doc/doc.pri)
-    } else:isEqual(PROJECT, translations) {
-       !contains(QT_BUILD_PARTS, tools):!wince*:SUBDIRS += tools/linguist/lrelease
-       SUBDIRS += translations
     } else:isEqual(PROJECT, qmake) {
 #      SUBDIRS += qmake
     } else {
        message(Unknown PROJECT: $$PROJECT)
     }
 }
+
+module_qtbase_tests.subdir = tests
+module_qtbase_tests.target = module-qtbase-tests
+module_qtbase_tests.depends = module_qtbase_src
+module_qtbase_tests.CONFIG = no_default_target no_default_install
+SUBDIRS += module_qtbase_tests
 
 !symbian: confclean.depends += clean
 confclean.commands =
@@ -163,10 +137,3 @@ win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
     mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
 }
 INSTALLS += mkspecs
-
-false:macx { #mac install location
-    macdocs.files = $$htmldocs.files
-    macdocs.path = /Developer/Documentation/Qt
-    INSTALLS += macdocs
-}
-

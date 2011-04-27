@@ -13,4 +13,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro images layouts qss
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/stylesheet
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

@@ -4,7 +4,7 @@ CONFIG += plugin
 
 QT += opengl
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
+DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
