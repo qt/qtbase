@@ -187,9 +187,9 @@ bool BaselineHandler::establishConnection()
              << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
 
     settings->beginGroup("ClientFilters");
-    if (!settings->childKeys().isEmpty()) {
+    if (!settings->childKeys().isEmpty() && !plat.value(PI_PulseGitBranch).isEmpty()) {  // i.e. not adhoc client
         // Abort if client does not match the filters
-        foreach(QString filterKey, settings->childKeys()) {
+        foreach (QString filterKey, settings->childKeys()) {
             QString filter = settings->value(filterKey).toString();
             QString platVal = plat.value(filterKey);
             if (filter.isEmpty() || platVal.isEmpty())
