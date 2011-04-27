@@ -353,13 +353,13 @@ QWindowFormat QWindow::format() const
 void QWindow::destroy()
 {
     Q_D(QWindow);
-    //JA, this will be solved later....
-    //    if (QGLContext *context = extra->topextra->window->glContext()) {
-    //                context->deleteQGLContext();
-    Q_ASSERT(false);
+    if (d->glContext) {
+        d->glContext->deleteQGLContext();
+    }
     delete d->glContext;
     d->glContext = 0;
-    //    }
+    delete d->platformWindow;
+    d->platformWindow = 0;
 }
 
 QPlatformWindow *QWindow::handle() const
