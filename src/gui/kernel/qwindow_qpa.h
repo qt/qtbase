@@ -92,7 +92,7 @@ public:
     void create();
 
     WId winId() const;
-    void setParent(const QWindow *parent);
+    void setParent(QWindow *parent);
 
     void setWindowFormat(const QWindowFormat &format);
     QWindowFormat requestedWindowFormat() const;

@@ -83,8 +83,11 @@ public:
 };
 
 QWindow::QWindow(QWindow *parent)
-    : QObject(*new QWindowPrivate(), parent)
+    : QObject(*new QWindowPrivate())
 {
+    if (parent) {
+        setParent(parent);
+    }
 }
 
 QWindow::~QWindow()
@@ -131,9 +134,12 @@ WId QWindow::winId() const
     return d->platformWindow->winId();
 }
 
-void QWindow::setParent(const QWindow *parent)
+void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
+    if (QObject::parent() == parent) {
+        return;
+    }
     //How should we support lazy init when setting parent
     if (!parent->d_func()->platformWindow) {
         const_cast<QWindow *>(parent)->create();
@@ -143,6 +149,7 @@ void QWindow::setParent(const QWindow *parent)
         create();
     }
     d->platformWindow->setParent(parent->d_func()->platformWindow);
+    QObject::setParent(parent);
 }
 
 void QWindow::setWindowFormat(const QWindowFormat &format)
