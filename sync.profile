@@ -58,3 +58,44 @@
 @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
 @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtTest}", "$modules{QtDBus}" );
+# Modules and programs, and their dependencies.
+# Each of the module version specifiers can take one of the following values:
+#   - A specific Git revision.
+#   - "LATEST_REVISION", to always test against the latest revision.
+#   - "LATEST_RELEASE", to always test against the latest public release.
+#   - "THIS_REPOSITORY", to indicate that the module is in this repository.
+%dependencies = (
+    "QtOpenVG" => {
+        "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
+    },
+    "QtCore" => {
+    },
+    "QtOpenGL" => {
+        "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
+    },
+    "QtXml" => {
+        "QtCore" => "THIS_REPOSITORY",
+    },
+    "QtNetwork" => {
+        "QtCore" => "THIS_REPOSITORY",
+    },
+    "QtTest" => {
+        "QtCore" => "THIS_REPOSITORY",
+    },
+    "QtDBus" => {
+        "QtCore" => "THIS_REPOSITORY",
+        "QtXml" => "THIS_REPOSITORY",
+    },
+    "QtSql" => {
+        "QtCore" => "THIS_REPOSITORY",
+    },
+    "QtGui" => {
+        "QtCore" => "THIS_REPOSITORY",
+    },
+    "QtUiTools" => {
+        "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
+    },
+);
