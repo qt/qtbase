@@ -260,7 +260,8 @@ void QUnifiedTimer::restartAnimationTimer()
     } else if (!driver->isRunning() || isPauseTimerActive) {
         driver->start();
         isPauseTimerActive = false;
-    }
+    } else if (runningLeafAnimations == 0)
+        driver->stop();
 }
 
 void QUnifiedTimer::setTimingInterval(int interval)
@@ -389,18 +390,48 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
     return closestTimeToFinish;
 }
 
+
 void QUnifiedTimer::installAnimationDriver(QAnimationDriver *d)
 {
-    if (driver->isRunning()) {
-        qWarning("QUnifiedTimer: Cannot change animation driver while animations are running");
+    if (driver != &defaultDriver) {
+        qWarning("QUnifiedTimer: animation driver already installed...");
         return;
     }
 
-    if (driver && driver != &defaultDriver)
-        delete driver;
+    if (driver->isRunning()) {
+        driver->stop();
+        d->start();
+    }
 
     driver = d;
+
 }
+
+
+void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
+{
+    if (driver != d) {
+        qWarning("QUnifiedTimer: trying to uninstall a driver that is not installed...");
+        return;
+    }
+
+    driver = &defaultDriver;
+
+    if (d->isRunning()) {
+        d->stop();
+        driver->start();
+    }
+}
+
+/*!
+    Returns true if \a d is the currently installed animation driver
+    and is not the default animation driver (which can never be uninstalled).
+*/
+bool QUnifiedTimer::canUninstallAnimationDriver(QAnimationDriver *d)
+{
+    return d == driver && driver != &defaultDriver;
+}
+
 
 /*!
    \class QAnimationDriver
@@ -424,6 +455,12 @@ QAnimationDriver::QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent)
 {
 }
 
+QAnimationDriver::~QAnimationDriver()
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
+    if (timer->canUninstallAnimationDriver(this))
+        uninstall();
+}
 
 /*!
     Advances the animation based on the current time. This function should
@@ -451,6 +488,15 @@ void QAnimationDriver::install()
 {
     QUnifiedTimer *timer = QUnifiedTimer::instance(true);
     timer->installAnimationDriver(this);
+}
+
+/*!
+    Uninstalls this animation driver.
+ */
+void QAnimationDriver::uninstall()
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance(true);
+    timer->uninstallAnimationDriver(this);
 }
 
 bool QAnimationDriver::isRunning() const

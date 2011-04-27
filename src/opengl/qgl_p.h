@@ -159,7 +159,7 @@ public:
     QGLFormat::OpenGLContextProfile profile;
 };
 
-class QGLWidgetPrivate : public QWidgetPrivate
+class Q_OPENGL_EXPORT QGLWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
@@ -441,6 +441,8 @@ public:
     QHash<QGLContextResourceBase *, void *> m_resources;
     QGLTextureDestroyer *texture_destroyer;
 
+    QGLFunctions *functions;
+
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
@@ -499,7 +501,7 @@ private:
     QGLContext *m_ctx;
 };
 
-class QGLTextureDestroyer : public QObject
+class Q_OPENGL_EXPORT QGLTextureDestroyer : public QObject
 {
     Q_OBJECT
 public:

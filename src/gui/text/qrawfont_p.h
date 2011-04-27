@@ -62,7 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace { class CustomFontFileLoader; }
-class Q_AUTOTEST_EXPORT QRawFontPrivate
+class Q_GUI_EXPORT QRawFontPrivate
 {
 public:
     QRawFontPrivate()

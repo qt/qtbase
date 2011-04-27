@@ -35,6 +35,9 @@ plugin { #Qt plugins
 INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
 win32:INCLUDEPATH += $$QMAKE_INCDIR_QT/ActiveQt
 
+# As declarative now uses OpenGL in the API, force include it to avoid having to update all projects
+contains(QT, declarative): QT += opengl
+
 # As order does matter for static libs, we reorder the QT variable here
 TMPLIBS = declarative webkit phonon multimedia dbus testlib script scripttools svg qt3support sql xmlpatterns xml egl opengl openvg gui network core meegographicssystemhelper
 for(QTLIB, $$list($$TMPLIBS)) {
@@ -47,6 +50,7 @@ QT = $$QT_ORDERED
 for(QTLIB, $$list($$QT_UNKNOWN)) {
    !contains(TMPLIBS, $$QTLIB):message("Warning: unknown QT: $$QTLIB")
 }
+
 
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {

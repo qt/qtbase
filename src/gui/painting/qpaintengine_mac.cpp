@@ -100,7 +100,9 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
     int devType = p->device()->devType();
     if (pe->type() == QPaintEngine::Raster
-            && (devType == QInternal::Widget || devType == QInternal::Pixmap)) {
+            && (devType == QInternal::Widget ||
+                devType == QInternal::Pixmap ||
+                devType == QInternal::Image)) {
 
         extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
         CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pe->paintDevice());

@@ -90,7 +90,7 @@ protected:
 
 // Wraps a QGLWidget
 class QGLWidget;
-class QGLWidgetGLPaintDevice : public QGLPaintDevice
+class Q_OPENGL_EXPORT QGLWidgetGLPaintDevice : public QGLPaintDevice
 {
 public:
     QGLWidgetGLPaintDevice();

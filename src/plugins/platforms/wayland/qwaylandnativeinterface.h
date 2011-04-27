@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,58 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDWINDOW_H
-#define QWAYLANDWINDOW_H
+#ifndef QWAYLANDNATIVEINTERFACE_H
+#define QWAYLANDNATIVEINTERFACE_H
 
-#include <QtGui/QPlatformWindow>
-#include <QtCore/QWaitCondition>
+#include "qwaylandscreen.h"
 
-#include "qwaylanddisplay.h"
+#include <QtGui/QPlatformNativeInterface>
 
-class QWaylandDisplay;
-class QWaylandBuffer;
-struct wl_egl_window;
-
-class QWaylandWindow : public QPlatformWindow
+class QWaylandNativeInterface : public QPlatformNativeInterface
 {
 public:
-    enum WindowType {
-        Shm,
-        Egl
-    };
-
-    QWaylandWindow(QWidget *window);
-    ~QWaylandWindow();
-
-    virtual WindowType windowType() const = 0;
-    WId winId() const;
-    void setVisible(bool visible);
-    void setParent(const QPlatformWindow *parent);
-
-    void configure(uint32_t time, uint32_t edges,
-                   int32_t x, int32_t y, int32_t width, int32_t height);
-
-    void attach(QWaylandBuffer *buffer);
-    void damage(const QRegion &region);
-
-    void waitForFrameSync();
-
-    struct wl_surface *wl_surface() const { return mSurface; }
-
-protected:
-    struct wl_surface *mSurface;
-    virtual void newSurfaceCreated();
-    QWaylandDisplay *mDisplay;
-    QWaylandBuffer *mBuffer;
-    WId mWindowId;
-    bool mWaitingForFrameSync;
-    QWaitCondition mFrameSyncWait;
+    void *nativeResourceForWidget(const QByteArray &resourceString,
+				  QWidget *widget);
 
 private:
-    static void frameCallback(struct wl_surface *surface, void *data, uint32_t time);
-
-
+    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
 };
 
 
-#endif // QWAYLANDWINDOW_H
+#endif // QWAYLANDNATIVEINTERFACE_H

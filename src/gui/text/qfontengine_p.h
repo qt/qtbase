@@ -248,6 +248,14 @@ public:
 
     static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
 
+    enum HintStyle {
+        HintNone,
+        HintLight,
+        HintMedium,
+        HintFull
+    };
+    virtual void setDefaultHintStyle(HintStyle) { }
+
     QAtomicInt ref;
     QFontDef fontDef;
     uint cache_cost; // amount of mem used in kb by the font

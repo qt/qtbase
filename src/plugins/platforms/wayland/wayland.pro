@@ -8,6 +8,7 @@ DEFINES += $$QMAKE_DEFINES_WAYLAND
 
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
+            qwaylandnativeinterface.cpp \
             qwaylandshmsurface.cpp \
             qwaylandinputdevice.cpp \
             qwaylandcursor.cpp \
@@ -17,6 +18,7 @@ SOURCES =   main.cpp \
             qwaylandshmwindow.cpp
 
 HEADERS =   qwaylandintegration.h \
+            qwaylandnativeinterface.h \
             qwaylandcursor.h \
             qwaylanddisplay.h \
             qwaylandwindow.h \

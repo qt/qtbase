@@ -141,9 +141,12 @@ class Q_CORE_EXPORT QAnimationDriver : public QObject
 
 public:
     QAnimationDriver(QObject *parent = 0);
+    ~QAnimationDriver();
 
     void advance();
+
     void install();
+    void uninstall();
 
     bool isRunning() const;
 

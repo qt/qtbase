@@ -101,6 +101,12 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
 
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
+
     inputDevice->mSurfacePos = QPoint(surface_x, surface_y);
     inputDevice->mGlobalPos = QPoint(x, y);
     inputDevice->mTime = time;
@@ -119,6 +125,12 @@ void QWaylandInputDevice::inputHandleButton(void *data,
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window = inputDevice->mPointerFocus;
     Qt::MouseButton qt_button;
+
+    if (window == NULL) {
+	/* We destroyed the pointer focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
 
     switch (button) {
     case 272:
@@ -229,6 +241,12 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     QEvent::Type type;
     char s[2];
 
+    if (window == NULL) {
+	/* We destroyed the keyboard focus surface, but the server
+	 * didn't get the message yet. */
+	return;
+    }
+
     code = key + inputDevice->mXkb->min_key_code;
 
     level = 0;
@@ -249,9 +267,6 @@ void QWaylandInputDevice::inputHandleKey(void *data,
     }
 
     sym = translateKey(sym, s, sizeof s);
-
-    qWarning("keycode %d, sym %d, string %d, modifiers 0x%x",
-	     code, sym, s[0], (int) inputDevice->mModifiers);
 
     if (window) {
         QWindowSystemInterface::handleKeyEvent(window->widget(),
