@@ -290,6 +290,7 @@ QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetwor
 // This function has a special implementation for symbian right now in qhostinfo_symbian.cpp but not on other OS.
 QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession>)
 {
+    Q_UNUSED(networkSession);
     return QHostInfoAgent::fromName(hostName);
 }
 #endif
