@@ -172,6 +172,9 @@ protected:
 
 private:
     Q_DISABLE_COPY(QWindow)
+
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
 };
 
 QT_END_NAMESPACE

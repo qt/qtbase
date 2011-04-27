@@ -87,7 +87,7 @@ static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
             delete event;
             continue;
         }
-        QApplicationPrivate::processWindowSystemEvent(event);
+        QGuiApplicationPrivate::processWindowSystemEvent(event);
         delete event;
     }
 

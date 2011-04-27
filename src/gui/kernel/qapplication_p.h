@@ -80,6 +80,7 @@
 #include <QWindowSystemInterface>
 #include "qwindowsysteminterface_qpa_p.h"
 #include "QtGui/qplatformintegration_qpa.h"
+#include "QtGui/private/qguiapplication_qpa_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -294,7 +295,11 @@ FontHash *qt_app_fonts_hash();
 typedef QHash<QByteArray, QPalette> PaletteHash;
 PaletteHash *qt_app_palettes_hash();
 
+#ifdef Q_WS_QPA
+class Q_GUI_EXPORT QApplicationPrivate : public QGuiApplicationPrivate
+#else
 class Q_GUI_EXPORT QApplicationPrivate : public QCoreApplicationPrivate
+#endif
 {
     Q_DECLARE_PUBLIC(QApplication)
 public:
@@ -323,14 +328,6 @@ public:
     { return QScreen::instance()->graphicsSystem(); }
 #else
     { return graphics_system; }
-#endif
-
-#if defined(Q_WS_QPA)
-    static QPlatformIntegration *platformIntegration()
-    { return platform_integration; }
-
-    static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
-    { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 #endif
 
     void createEventDispatcher();
@@ -433,9 +430,6 @@ public:
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
     static bool runtime_graphics_system;
-#ifdef Q_WS_QPA
-    static QPlatformIntegration *platform_integration;
-#endif
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
@@ -491,32 +485,6 @@ public:
     static void setupAppleEvents();
 #endif
     static bool qt_mac_apply_settings();
-#endif
-
-#ifdef Q_WS_QPA
-    static void processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e);
-    static void processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e);
-    static void processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e);
-    static void processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e);
-
-    static void processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e);
-
-    static void processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e);
-
-    static void processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e);
-    static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
-
-    static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
-
-    static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
-
-//    static void reportScreenCount(int count);
-    static void reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *e);
-//    static void reportGeometryChange(int screenIndex);
-    static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
-//    static void reportAvailableGeometryChange(int screenIndex);
-    static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
-
 #endif
 
 #ifdef Q_WS_QWS

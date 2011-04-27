@@ -575,23 +575,6 @@ void QCoreApplication::flush()
     \a argc must be greater than zero and \a argv must contain at least
     one valid character string.
 */
-QCoreApplication::QCoreApplication(int &argc, char **argv)
-    : QObject(*new QCoreApplicationPrivate(argc, argv, 0x040000))
-{
-    init();
-    QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY)
-    // Refresh factoryloader, as text codecs are requested during lib path
-    // resolving process and won't be therefore properly loaded.
-    // Unknown if this is symbian specific issue.
-    QFactoryLoader::refreshAll();
-#endif
-
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-    d_func()->symbianInit();
-#endif
-}
-
 QCoreApplication::QCoreApplication(int &argc, char **argv, int _internal)
 : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
 {

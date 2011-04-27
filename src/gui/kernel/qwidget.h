@@ -737,6 +737,8 @@ private:
     friend class QWidgetBackingStore;
     friend class QApplication;
     friend class QApplicationPrivate;
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
     friend class QBaseApplication;
     friend class QPainter;
     friend class QPainterPrivate;

@@ -534,7 +534,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 {
     if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
-            QWindowSystemInterface::handleCloseEvent(window()->widget());
+            QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             xcb_client_message_event_t reply = *event;
 
@@ -570,7 +570,7 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
         return;
 
     QPlatformWindow::setGeometry(rect);
-    QWindowSystemInterface::handleGeometryChange(window()->widget(), rect);
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
 #if XCB_USE_DRI2
     if (m_context)
@@ -618,7 +618,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
                      && (modifiers & Qt::AltModifier))
                     || (event->detail == 6 || event->detail == 7));
 
-        QWindowSystemInterface::handleWheelEvent(window()->widget(), event->time,
+        QWindowSystemInterface::handleWheelEvent(window(), event->time,
                                                  local, global, delta, hor ? Qt::Horizontal : Qt::Vertical);
         return;
     }
@@ -649,22 +649,22 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QWindowSystemInterface::handleMouseEvent(window()->widget(), time, local, global, buttons);
+    QWindowSystemInterface::handleMouseEvent(window(), time, local, global, buttons);
 }
 
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *)
 {
-    QWindowSystemInterface::handleEnterEvent(window()->widget());
+    QWindowSystemInterface::handleEnterEvent(window());
 }
 
 void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *)
 {
-    QWindowSystemInterface::handleLeaveEvent(window()->widget());
+    QWindowSystemInterface::handleLeaveEvent(window());
 }
 
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
 {
-    QWindowSystemInterface::handleWindowActivated(window()->widget());
+    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)

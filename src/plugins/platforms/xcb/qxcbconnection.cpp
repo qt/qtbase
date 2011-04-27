@@ -167,7 +167,7 @@ break;
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
-        m_keyboard->handler(platformWindow->window()->widget(), e); \
+        m_keyboard->handler(platformWindow->window(), e); \
 } \
 break;
 

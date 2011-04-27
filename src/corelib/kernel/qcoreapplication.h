@@ -84,16 +84,7 @@ public:
 #endif
     };
 
-#if defined(QT_BUILD_CORE_LIB) || defined(qdoc)
-    QCoreApplication(int &argc, char **argv); // ### Qt5 remove
-#endif
-#if !defined(qdoc)
-    QCoreApplication(int &argc, char **argv, int
-#if !defined(QT_BUILD_CORE_LIB)
-        = ApplicationFlags
-#endif
-        );
-#endif
+    QCoreApplication(int &argc, char **argv, int = ApplicationFlags);
 
     ~QCoreApplication();
 
@@ -217,6 +208,8 @@ private:
     friend class QEventDispatcherUNIXPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
     friend class QETWidget;
     friend class Q3AccelManager;
     friend class QShortcutMap;

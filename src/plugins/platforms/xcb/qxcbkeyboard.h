@@ -48,21 +48,23 @@
 
 #include <QEvent>
 
+class QWindow;
+
 class QXcbKeyboard : public QXcbObject
 {
 public:
     QXcbKeyboard(QXcbConnection *connection);
     ~QXcbKeyboard();
 
-    void handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event);
-    void handleKeyReleaseEvent(QWidget *widget, const xcb_key_release_event_t *event);
+    void handleKeyPressEvent(QWindow *window, const xcb_key_press_event_t *event);
+    void handleKeyReleaseEvent(QWindow *window, const xcb_key_release_event_t *event);
 
     void handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event);
 
     Qt::KeyboardModifiers translateModifiers(int s);
 
 private:
-    void handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
     int translateKeySym(uint key) const;
     QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,

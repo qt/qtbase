@@ -58,6 +58,9 @@
 # include <QtGui/qrgb.h>
 # include <QtGui/qtransportauth_qws.h>
 #endif
+#ifdef Q_WS_QPA
+# include <QtGui/qguiapplication_qpa.h>
+#endif
 
 QT_BEGIN_HEADER
 
@@ -93,8 +96,13 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
+#ifdef Q_WS_QPA
+#define QApplicationBase QGuiApplication
+#else
+#define QApplicationBase QCoreApplication
+#endif
 
-class Q_GUI_EXPORT QApplication : public QCoreApplication
+class Q_GUI_EXPORT QApplication : public QApplicationBase
 {
     Q_OBJECT
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)

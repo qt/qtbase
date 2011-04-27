@@ -113,7 +113,6 @@ void QPlatformWindow::setVisible(bool visible)
 */
 Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    Q_D(QPlatformWindow);
     return flags;
 }
 
@@ -174,7 +173,7 @@ void QPlatformWindow::setOpacity(qreal level)
 */
 void QPlatformWindow::requestActivateWindow()
 {
-    QWindowSystemInterface::handleWindowActivated(window()->widget());
+    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 /*!

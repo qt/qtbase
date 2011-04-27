@@ -913,7 +913,7 @@ QXcbKeyboard::~QXcbKeyboard()
 
 // #define XCB_KEYBOARD_DEBUG
 
-void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time)
+void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time)
 {
     int col = state & XCB_MOD_MASK_SHIFT ? 1 : 0;
 
@@ -954,17 +954,17 @@ void QXcbKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycod
 
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
 
-    QWindowSystemInterface::handleExtendedKeyEvent(widget, time, type, qtcode, modifiers, code, 0, state, string.left(count));
+    QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers, code, 0, state, string.left(count));
 }
 
-void QXcbKeyboard::handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event)
+void QXcbKeyboard::handleKeyPressEvent(QWindow *window, const xcb_key_press_event_t *event)
 {
-    handleKeyEvent(widget, QEvent::KeyPress, event->detail, event->state, event->time);
+    handleKeyEvent(window, QEvent::KeyPress, event->detail, event->state, event->time);
 }
 
-void QXcbKeyboard::handleKeyReleaseEvent(QWidget *widget, const xcb_key_release_event_t *event)
+void QXcbKeyboard::handleKeyReleaseEvent(QWindow *window, const xcb_key_release_event_t *event)
 {
-    handleKeyEvent(widget, QEvent::KeyRelease, event->detail, event->state, event->time);
+    handleKeyEvent(window, QEvent::KeyRelease, event->detail, event->state, event->time);
 }
 
 void QXcbKeyboard::handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event)

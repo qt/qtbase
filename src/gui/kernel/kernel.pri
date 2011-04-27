@@ -228,6 +228,8 @@ qpa {
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
                 kernel/qwindowformat_qpa.h \
+                kernel/qguiapplication_qpa.h \
+                kernel/qguiapplication_qpa_p.h \
                 kernel/qwindow_qpa.h
 
 	SOURCES += \
@@ -255,6 +257,7 @@ qpa {
                 kernel/qplatformnativeinterface_qpa.cpp \
                 kernel/qsessionmanager_qpa.cpp \
                 kernel/qwindowformat_qpa.cpp \
+                kernel/qguiapplication_qpa.cpp \
                 kernel/qwindow_qpa.cpp
 
         contains(QT_CONFIG, glib) {
