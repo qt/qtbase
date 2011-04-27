@@ -296,10 +296,12 @@ typedef QHash<QByteArray, QPalette> PaletteHash;
 PaletteHash *qt_app_palettes_hash();
 
 #ifdef Q_WS_QPA
-class Q_GUI_EXPORT QApplicationPrivate : public QGuiApplicationPrivate
+#define QApplicationPrivateBase QGuiApplicationPrivate
 #else
-class Q_GUI_EXPORT QApplicationPrivate : public QCoreApplicationPrivate
+#define QApplicationPrivateBase QCoreApplicationPrivate
 #endif
+
+class Q_GUI_EXPORT QApplicationPrivate : public QApplicationPrivateBase
 {
     Q_DECLARE_PUBLIC(QApplication)
 public:

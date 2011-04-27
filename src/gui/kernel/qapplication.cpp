@@ -172,7 +172,7 @@ bool QApplicationPrivate::autoSipEnabled = true;
 #endif
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type, int flags)
-    : QGuiApplicationPrivate(argc, argv, flags)
+    : QApplicationPrivateBase(argc, argv, flags)
 {
     application_type = type;
     qt_appType = type;
@@ -728,11 +728,11 @@ void QApplicationPrivate::process_cmdline()
 */
 
 QApplication::QApplication(int &argc, char **argv)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 { Q_D(QApplication); d->construct(); }
 
 
@@ -762,11 +762,11 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 */
 
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled )
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, 0x040000))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
 { Q_D(QApplication); d->construct();}
 
 
@@ -785,11 +785,11 @@ QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _intern
     \c -qws option).
 */
 QApplication::QApplication(int &argc, char **argv, Type type)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, 0x040000))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, type, 0x040000))
 { Q_D(QApplication); d->construct(); }
 
 QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, _internal))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, type, _internal))
 { Q_D(QApplication); d->construct(); }
 
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
@@ -896,7 +896,7 @@ static char *aargv[] = { (char*)"unknown", 0 };
     This function is only available on X11.
 */
 QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, 0x040000))
+    : QApplicationBase(*new QApplicationPrivate(aargc, aargv, GuiClient, 0x040000))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -905,7 +905,7 @@ QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap)
 }
 
 QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QGuiApplication(*new QApplicationPrivate(aargc, aargv, GuiClient, _internal))
+    : QApplicationBase(*new QApplicationPrivate(aargc, aargv, GuiClient, _internal))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -930,7 +930,7 @@ QApplication::QApplication(Display* dpy, Qt::HANDLE visual, Qt::HANDLE colormap,
 */
 QApplication::QApplication(Display *dpy, int &argc, char **argv,
                            Qt::HANDLE visual, Qt::HANDLE colormap)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, 0x040000))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
@@ -940,7 +940,7 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 QApplication::QApplication(Display *dpy, int &argc, char **argv,
                            Qt::HANDLE visual, Qt::HANDLE colormap, int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
+    : QApplicationBase(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
 {
     if (! dpy)
         qWarning("QApplication: Invalid Display* argument");
