@@ -114,6 +114,9 @@ public:
     static int mousePressY;
     static int mouse_double_click_distance;
 
+#ifndef QT_NO_CLIPBOARD
+    static QClipboard *qt_clipboard;
+#endif
 private:
     void init();
 

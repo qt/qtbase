@@ -188,7 +188,7 @@ public:
 
     static QWidget *activePopupWidget();
     static QWidget *activeModalWidget();
-#ifndef QT_NO_CLIPBOARD
+#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
     static QClipboard *clipboard();
 #endif
     static QWidget *focusWidget();

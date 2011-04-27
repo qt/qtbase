@@ -79,10 +79,10 @@ public:
     static QFont font(const char *className);
     static void setFont(const QFont &, const char* className = 0);
     static QFontMetrics fontMetrics();
+#endif
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *clipboard();
-#endif
 #endif
 
     static Qt::KeyboardModifiers keyboardModifiers();

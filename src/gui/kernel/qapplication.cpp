@@ -544,7 +544,7 @@ FontHash *qt_app_fonts_hash()
 QWidgetList *QApplicationPrivate::popupWidgets = 0;        // has keyboard input focus
 
 QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
-#ifndef QT_NO_CLIPBOARD
+#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
 QClipboard              *qt_clipboard = 0;        // global clipboard object
 #endif
 QWidgetList * qt_modal_stack=0;                // stack of modal widgets
@@ -1084,7 +1084,7 @@ QApplication::~QApplication()
 {
     Q_D(QApplication);
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
     // flush clipboard contents
     if (qt_clipboard) {
         QEvent event(QEvent::Clipboard);
@@ -1099,8 +1099,10 @@ QApplication::~QApplication()
     d->toolTipWakeUp.stop();
     d->toolTipFallAsleep.stop();
 
+#if !defined(Q_WS_QPA)
     d->eventDispatcher->closingDown();
     d->eventDispatcher = 0;
+#endif
     QApplicationPrivate::is_app_closing = true;
     QApplicationPrivate::is_app_running = false;
 
@@ -1122,7 +1124,7 @@ QApplication::~QApplication()
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
     delete qt_clipboard;
     qt_clipboard = 0;
 #endif
@@ -3258,7 +3260,7 @@ QDesktopWidget *QApplication::desktop()
     return qt_desktopWidget;
 }
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
 /*!
     Returns a pointer to the application global clipboard.
 
@@ -3276,8 +3278,7 @@ QClipboard *QApplication::clipboard()
     }
     return qt_clipboard;
 }
-#endif // QT_NO_CLIPBOARD
-
+#endif // Q_WS_QPA && QT_NO_CLIPBOARD
 /*!
     Sets whether Qt should use the system's standard colors, fonts, etc., to
     \a on. By default, this is true.

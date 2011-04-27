@@ -46,6 +46,7 @@
 #include "private/qevent_p.h"
 
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtDebug>
 
 #include <QtGui/QPlatformIntegration>
@@ -53,6 +54,10 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
+
+#ifndef QT_NO_CLIPBOARD
+#include <QtGui/QClipboard>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -83,6 +88,10 @@ int QGuiApplicationPrivate::mouse_double_click_distance = 5;
 
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 
+#ifndef QT_NO_CLIPBOARD
+QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
+#endif
+
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
 {
@@ -97,6 +106,18 @@ QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
 
 QGuiApplication::~QGuiApplication()
 {
+    Q_D(QGuiApplication);
+    // flush clipboard contents
+    if (QGuiApplicationPrivate::qt_clipboard) {
+        QEvent event(QEvent::Clipboard);
+        QApplication::sendEvent(QGuiApplicationPrivate::qt_clipboard, &event);
+    }
+
+    d->eventDispatcher->closingDown();
+    d->eventDispatcher = 0;
+
+    delete QGuiApplicationPrivate::qt_clipboard;
+    QGuiApplicationPrivate::qt_clipboard = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -702,6 +723,20 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
     }
 #endif
 }
+
+#ifndef QT_NO_CLIPBOARD
+QClipboard * QGuiApplication::clipboard()
+{
+    if (QGuiApplicationPrivate::qt_clipboard == 0) {
+        if (!qApp) {
+            qWarning("QApplication: Must construct a QApplication before accessing a QClipboard");
+            return 0;
+        }
+        QGuiApplicationPrivate::qt_clipboard = new QClipboard(0);
+    }
+    return QGuiApplicationPrivate::qt_clipboard;
+}
+#endif
 
 
 QT_END_NAMESPACE
