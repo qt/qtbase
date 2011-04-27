@@ -1374,12 +1374,16 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
     } else {
         QSqlQuery q(createResult());
         if(type & QSql::Tables) {
-            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'BASE TABLE'"));
+            QString sql = QLatin1String("select table_name from information_schema.tables where table_schema = ':schema' and table_type = 'BASE TABLE'");
+            sql.replace(QLatin1String(":schema"), QLatin1String(d->mysql->db));
+            q.exec(sql);
             while(q.next())
                 tl.append(q.value(0).toString());
         }
         if(type & QSql::Views) {
-            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'VIEW'"));
+            QString sql = QLatin1String("select table_name from information_schema.tables where table_schema = ':schema' and table_type = 'VIEW'");
+            sql.replace(QLatin1String(":schema"), QLatin1String(d->mysql->db));
+            q.exec(sql);
             while(q.next())
                 tl.append(q.value(0).toString());
         }
