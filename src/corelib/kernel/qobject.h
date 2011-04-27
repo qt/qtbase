@@ -102,7 +102,8 @@ public:
     uint inEventHandler : 1; //only used if QT_JAMBI_BUILD
     uint inThreadChangeEvent : 1;
     uint hasGuards : 1; //true iff there is one or more QPointer attached to this object
-    uint unused : 22;
+    uint isWindow : 1; //for QWindow
+    uint unused : 21;
     int postedEvents;
     QMetaObject *metaObject; // assert dynamic
 };
@@ -144,6 +145,7 @@ public:
     void setObjectName(const QString &name);
 
     inline bool isWidgetType() const { return d_ptr->isWidget; }
+    inline bool isWindowType() const { return d_ptr->isWindow; }
 
     inline bool signalsBlocked() const { return d_ptr->blockSig; }
     bool blockSignals(bool b);

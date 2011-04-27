@@ -63,7 +63,7 @@ public:
         , glContext(0)
         , widget(0)
     {
-
+        isWindow = true;
     }
 
     ~QWindowPrivate()
