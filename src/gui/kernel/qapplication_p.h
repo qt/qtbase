@@ -432,7 +432,9 @@ public:
     static bool runtime_graphics_system;
 
 private:
+#ifndef Q_WS_QPA
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
+#endif
 public:
     static QFont *sys_font;
     static QFont *set_font;

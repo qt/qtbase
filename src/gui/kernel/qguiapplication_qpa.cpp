@@ -47,6 +47,7 @@
 
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
+#include <QtCore/qmutex.h>
 #include <QtDebug>
 
 #include <QtGui/QPlatformIntegration>
@@ -91,6 +92,9 @@ QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 #endif
+
+Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
+QFont *QGuiApplicationPrivate::app_font = 0;
 
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
@@ -738,5 +742,21 @@ QClipboard * QGuiApplication::clipboard()
 }
 #endif
 
+QFont QGuiApplication::font()
+{
+    QMutexLocker locker(applicationFontMutex());
+    if (!QGuiApplicationPrivate::app_font)
+        QGuiApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
+    return *QGuiApplicationPrivate::app_font;
+}
+
+void QGuiApplication::setFont(const QFont &font)
+{
+    QMutexLocker locker(applicationFontMutex());
+    if (!QGuiApplicationPrivate::app_font)
+        QGuiApplicationPrivate::app_font = new QFont(font);
+    else
+        *QGuiApplicationPrivate::app_font = font;
+}
 
 QT_END_NAMESPACE

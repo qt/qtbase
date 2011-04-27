@@ -73,13 +73,10 @@ public:
     static void changeOverrideCursor(const QCursor &);
     static void restoreOverrideCursor();
 #endif
+#endif
 
     static QFont font();
-    static QFont font(const QWidget*);
-    static QFont font(const char *className);
-    static void setFont(const QFont &, const char* className = 0);
-    static QFontMetrics fontMetrics();
-#endif
+    static void setFont(const QFont &);
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *clipboard();
