@@ -57,7 +57,7 @@ class QWindowPrivate : public QObjectPrivate
 public:
     QWindowPrivate()
         : QObjectPrivate()
-        , windowType(QWindow::Window)
+        , windowFlags(Qt::Window)
         , surfaceType(QWindow::RasterSurface)
         , platformWindow(0)
         , glContext(0)
@@ -71,7 +71,7 @@ public:
 
     }
 
-    QWindow::WindowType windowType;
+    Qt::WindowFlags windowFlags;
     QWindow::SurfaceType surfaceType;
 
     QPlatformWindow *platformWindow;
@@ -116,8 +116,10 @@ void QWindow::setVisible(bool visible)
 void QWindow::create()
 {
     Q_D(QWindow);
-    if (!d->platformWindow)
+    if (!d->platformWindow) {
         d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
+        d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
+    }
     Q_ASSERT(d->platformWindow);
 }
 
@@ -172,16 +174,19 @@ QWindow::SurfaceType QWindow::surfaceType() const
     return d->surfaceType;
 }
 
-void QWindow::setWindowType(WindowType type)
+void QWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Q_D(QWindow);
-    d->windowType = type;
+    if (d->platformWindow)
+        d->windowFlags = d->platformWindow->setWindowFlags(flags);
+    else
+        d->windowFlags = flags;
 }
 
-QWindow::WindowType QWindow::type() const
+Qt::WindowFlags QWindow::windowFlags() const
 {
     Q_D(const QWindow);
-    return d->windowType;
+    return d->windowFlags;
 }
 
 void QWindow::setWindowTitle(const QString &title)

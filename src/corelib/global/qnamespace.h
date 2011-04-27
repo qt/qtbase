@@ -292,13 +292,7 @@ public:
         WindowContextHelpButtonHint = 0x00010000,
         WindowShadeButtonHint = 0x00020000,
         WindowStaysOnTopHint = 0x00040000,
-        // reserved for Qt3Support:
-        // WMouseNoMask = 0x00080000,
-        // WDestructiveClose = 0x00100000,
-        // WStaticContents = 0x00200000,
-        // WGroupLeader = 0x00400000,
-        // WShowModal = 0x00800000,
-        // WNoMousePropagation = 0x01000000,
+
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
@@ -308,56 +302,6 @@ public:
         WindowCancelButtonHint = 0x00100000,
         WindowSoftkeysVisibleHint = 0x40000000,
         WindowSoftkeysRespondHint = 0x80000000
-
-#ifdef QT3_SUPPORT
-        ,
-        WMouseNoMask = 0x00080000,
-        WDestructiveClose = 0x00100000,
-        WStaticContents = 0x00200000,
-        WGroupLeader = 0x00400000,
-        WShowModal = 0x00800000,
-        WNoMousePropagation = 0x01000000,
-
-        WType_TopLevel = Window,
-        WType_Dialog = Dialog,
-        WType_Popup = Popup,
-        WType_Desktop = Desktop,
-        WType_Mask = WindowType_Mask,
-
-        WStyle_Customize = 0,
-        WStyle_NormalBorder = 0,
-        WStyle_DialogBorder = MSWindowsFixedSizeDialogHint,
-        WStyle_NoBorder = FramelessWindowHint,
-        WStyle_Title = WindowTitleHint,
-        WStyle_SysMenu = WindowSystemMenuHint,
-        WStyle_Minimize = WindowMinimizeButtonHint,
-        WStyle_Maximize = WindowMaximizeButtonHint,
-        WStyle_MinMax = WStyle_Minimize | WStyle_Maximize,
-        WStyle_Tool = Tool,
-        WStyle_StaysOnTop = WindowStaysOnTopHint,
-        WStyle_ContextHelp = WindowContextHelpButtonHint,
-
-        // misc flags
-        WPaintDesktop = 0,
-        WPaintClever = 0,
-
-        WX11BypassWM            = X11BypassWindowManagerHint,
-        WWinOwnDC               = MSWindowsOwnDC,
-        WMacSheet               = Sheet,
-        WMacDrawer              = Drawer,
-
-        WStyle_Splash           = SplashScreen,
-
-        WNoAutoErase           = 0,
-        WRepaintNoErase        = 0,
-        WNorthWestGravity      = WStaticContents,
-        WType_Modal            = Dialog | WShowModal,
-        WStyle_Dialog          = Dialog,
-        WStyle_NoBorderEx      = FramelessWindowHint,
-        WResizeNoErase = 0,
-        WMacNoSheet = 0
-#endif
-
     };
 
     Q_DECLARE_FLAGS(WindowFlags, WindowType)

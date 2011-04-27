@@ -408,7 +408,7 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
         Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
     }
 
-    return QPlatformWindow::setWindowFlags(flags);
+    return flags;
 }
 
 void QXcbWindow::setNetWmWindowTypes(Qt::WindowFlags flags)

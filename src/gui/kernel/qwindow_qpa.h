@@ -76,17 +76,6 @@ class Q_GUI_EXPORT QWindow : public QObject
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
 
 public:
-    enum WindowType {
-        Window,
-        Dialog,
-        Popup,
-        Tool,
-        SplashScreen,
-        ToolTip,
-        Sheet,
-        Drawer
-    };
-
     enum SurfaceType {
         RasterSurface,
         OpenGLSurface
@@ -112,8 +101,8 @@ public:
     void setSurfaceType(SurfaceType type);
     SurfaceType surfaceType() const;
 
-    void setWindowType(WindowType type);
-    WindowType type() const;
+    void setWindowFlags(Qt::WindowFlags flags);
+    Qt::WindowFlags windowFlags() const;
 
     QString windowTitle() const;
 

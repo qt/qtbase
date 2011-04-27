@@ -48,7 +48,6 @@ class QPlatformWindowPrivate
 {
     QWindow *window;
     QRect rect;
-    Qt::WindowFlags flags;
     friend class QPlatformWindow;
 };
 
@@ -115,17 +114,7 @@ void QPlatformWindow::setVisible(bool visible)
 Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Q_D(QPlatformWindow);
-    d->flags = flags;
     return flags;
-}
-
-/*!
-  Returns the effective window flags for this surface.
-*/
-Qt::WindowFlags QPlatformWindow::windowFlags() const
-{
-    Q_D(const QPlatformWindow);
-    return d->flags;
 }
 
 /*!

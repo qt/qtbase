@@ -93,9 +93,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     QWindow *win = topData()->window;
 
-        // translate window type
-//        window->setWindowType();
+    win->setWindowFlags(data.window_flags);
     win->create();
+
+    data.window_flags = win->windowFlags();
 
     if (!surface ) {
         if (win) {
@@ -104,8 +105,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             q->setAttribute(Qt::WA_PaintOnScreen,true);
         }
     }
-
-//    data.window_flags = q->windowHandle()->setWindowFlags(data.window_flags);
 
     setWinId(win->winId());
 
@@ -195,8 +194,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     }
 
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
-    
-    // Reparenting toplevel to child    
+
+    // Reparenting toplevel to child
     if (!(f&Qt::Window) && (oldFlags&Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         //qDebug() << "setParent_sys() change from toplevel";
         q->destroy();
@@ -207,13 +206,6 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Visible, false);
     q->setAttribute(Qt::WA_WState_Hidden, false);
 
-    if (f & Qt::Window) {
-        //qDebug() << "setParent_sys" << q << newparent << hex << f;
-//        if (QPlatformWindow *window = q->platformWindow())
-//            data.window_flags = window->setWindowFlags(data.window_flags);
-//        Q_ASSERT(false);
-    }
-    
     if (q->isWindow() || (!newparent || newparent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
     q->setAttribute(Qt::WA_WState_ExplicitShowHide, explicitlyHidden);
