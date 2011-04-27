@@ -21,6 +21,10 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
                 textures
 }
 
+qpa {
+    SUBDIRS += hellowindow
+}
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS opengl.pro README
