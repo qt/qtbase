@@ -695,9 +695,9 @@ inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLat
 inline int QString::length() const
 { return d->size; }
 inline const QChar QString::at(int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
 inline const QChar QString::operator[](int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
 inline const QChar QString::operator[](uint i) const
 { Q_ASSERT(i < uint(size())); return d->data[i]; }
 inline bool QString::isEmpty() const
