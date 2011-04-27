@@ -60,6 +60,7 @@ const QString PI_CreationDate(QLS("CreationDate"));
 
 QString BaselineServer::storage;
 QString BaselineServer::url;
+QString BaselineServer::settingsFile;
 
 BaselineServer::BaselineServer(QObject *parent)
     : QTcpServer(parent), lastRunIdIdx(0)
@@ -89,6 +90,15 @@ QString BaselineServer::baseUrl()
                 + QHostInfo::localDomainName().toLatin1() + '/';
     }
     return url;
+}
+
+QString BaselineServer::settingsFilePath()
+{
+    if (settingsFile.isEmpty()) {
+        QString exeName = QCoreApplication::applicationFilePath().section(QLC('/'), -1);
+        settingsFile = storagePath() + QLC('/') + exeName + QLS(".ini");
+    }
+    return settingsFile;
 }
 
 void BaselineServer::incomingConnection(int socketDescriptor)
@@ -144,6 +154,8 @@ void BaselineThread::run()
 BaselineHandler::BaselineHandler(const QString &runId, int socketDescriptor)
     : QObject(), runId(runId), connectionEstablished(false)
 {
+    settings = new QSettings(BaselineServer::settingsFilePath(), QSettings::IniFormat, this);
+
     if (socketDescriptor == -1)
         return;
 
@@ -174,17 +186,23 @@ bool BaselineHandler::establishConnection()
     qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
              << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
 
-    // Filter on branch
-    QString branch = plat.value(PI_PulseGitBranch);
-    if (branch.isEmpty()) {
-        // Not run by Pulse, i.e. ad hoc run: Ok.
+    settings->beginGroup("ClientFilters");
+    if (!settings->childKeys().isEmpty()) {
+        // Abort if client does not match the filters
+        foreach(QString filterKey, settings->childKeys()) {
+            QString filter = settings->value(filterKey).toString();
+            QString platVal = plat.value(filterKey);
+            if (filter.isEmpty() || platVal.isEmpty())
+                continue;  // tbd: add a syntax for specifying a "value-must-be-present" filter
+            if (!platVal.contains(filter)) {
+                qDebug() << runId << logtime() << "Did not pass client filter on" << filterKey << "; disconnecting.";
+                proto.sendBlock(BaselineProtocol::Abort, QByteArray("Configured to not do testing for this client or repo, ref. ") + BaselineServer::settingsFilePath().toLatin1());
+                proto.socket.disconnectFromHost();
+                return false;
+            }
+        }
     }
-    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/qt-fire-staging into master-integration"))) {
-        qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
-        proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
-        proto.socket.disconnectFromHost();
-        return false;
-    }
+    settings->endGroup();
 
     proto.sendBlock(BaselineProtocol::Ack, QByteArray());
 
