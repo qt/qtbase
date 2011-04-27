@@ -1598,6 +1598,8 @@ bool QTextEngine::isRightToLeft() const
     default:
         break;
     }
+    if (!layoutData)
+        itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
         return QApplication::keyboardInputDirection() == Qt::RightToLeft;
