@@ -214,6 +214,7 @@ void tst_QComplexText::bidiCursorMovement()
     QTextOption option = layout.textOption();
     option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
     layout.setTextOption(option);
+    layout.setCursorMoveStyle(QTextCursor::Visual);
     bool moved;
     int oldPos, newPos = 0;
     qreal x, newX;
