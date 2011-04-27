@@ -14,3 +14,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example

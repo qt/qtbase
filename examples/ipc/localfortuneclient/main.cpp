@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Client client;
+#if defined(Q_WS_S60)
+    client.showMaximized();
+#else
     client.show();
-    return client.exec();
+#endif
+    return app.exec();
 }

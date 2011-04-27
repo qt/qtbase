@@ -119,7 +119,11 @@ int main(int argc, char *argv[])
     qsrand(QTime::currentTime().elapsed());
 
     Window window;
+#if defined(Q_WS_S60)
+    window.showMaximized();
+#else
     window.show();
+#endif
 
     window.loadImage(createImage(256, 256));
 //! [main finish]

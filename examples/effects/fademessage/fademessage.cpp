@@ -56,7 +56,6 @@ FadeMessage::FadeMessage(QWidget *parent): QGraphicsView(parent)
     m_animation->setStartValue(0);
     m_animation->setEndValue(1);
 
-
     setRenderHint(QPainter::Antialiasing, true);
     setFrameStyle(QFrame::NoFrame);
 }
@@ -75,7 +74,7 @@ void FadeMessage::togglePopup()
 
 void FadeMessage::setupScene()
 {
-    QGraphicsRectItem *parent = m_scene.addRect(0, 0, 400, 600);
+    QGraphicsRectItem *parent = m_scene.addRect(0, 0, 800, 600);
     parent->setPen(Qt::NoPen);
     parent->setZValue(0);
 
@@ -85,7 +84,7 @@ void FadeMessage::setupScene()
 
     for (int i = 1; i < 5; ++i)
         for (int j = 2; j < 5; ++j) {
-            QGraphicsRectItem *item = m_scene.addRect(i * 50, j * 50, 38, 38);
+            QGraphicsRectItem *item = m_scene.addRect(i * 50, (j - 1) * 50, 38, 38);
             item->setParentItem(parent);
             item->setZValue(1);
             int hue = 12 * (i * 5 + j);
@@ -124,6 +123,10 @@ void FadeMessage::setupScene()
     press->setText(tr("Press me"));
     connect(press, SIGNAL(clicked()), SLOT(togglePopup()));
     m_scene.addWidget(press);
-    press->move(300, 500);
-}
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    press->move(200, 210);
+#else
+    press->move(300, 500);
+#endif
+}

@@ -29,7 +29,7 @@
     \example xml/rsslisting
     \title RSS-Listing Example
 
-    This example shows how to create a widget that displays news items
+    The RSS-Listing example shows how to create a widget that displays news items
     from RDF news sources.
 
     \image rsslistingexample.png

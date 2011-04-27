@@ -41,7 +41,7 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QDialog>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -49,7 +49,7 @@ class QLabel;
 class QErrorMessage;
 QT_END_NAMESPACE
 
-class Dialog : public QDialog
+class Dialog : public QWidget
 {
     Q_OBJECT
 

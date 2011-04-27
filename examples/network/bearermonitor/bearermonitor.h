@@ -43,7 +43,7 @@
 
 #include <qnetworkconfigmanager.h>
 #include <qnetworksession.h>
-#if defined (Q_OS_SYMBIAN) || defined(Q_OS_WINCE)	
+#if defined (Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(Q_WS_SIMULATOR)
 #include "ui_bearermonitor_240_320.h"
 #elif defined(MAEMO_UI)
 #include "ui_bearermonitor_maemo.h"
@@ -72,7 +72,7 @@ private slots:
 
     void onlineStateChanged(bool isOnline);
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_WS_SIMULATOR)
     void registerNetwork();
     void unregisterNetwork();
 #endif

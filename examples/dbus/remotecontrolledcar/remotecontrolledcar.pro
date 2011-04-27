@@ -8,3 +8,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus/remotecontrolledcar
 INSTALLS += sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example

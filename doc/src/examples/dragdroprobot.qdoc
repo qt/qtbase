@@ -29,7 +29,7 @@
     \example graphicsview/dragdroprobot
     \title Drag and Drop Robot Example
 
-    This GraphicsView example shows how to implement Drag and Drop in a
+    The Drag and Drop Robot example shows how to implement Drag and Drop in a
     QGraphicsItem subclass, as well as how to animate items using Qt's
     \l{Animation Framework}.
 

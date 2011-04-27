@@ -65,7 +65,11 @@ DragWidget::DragWidget(QWidget *parent)
             wordLabel->show();
             wordLabel->setAttribute(Qt::WA_DeleteOnClose);
             x += wordLabel->width() + 2;
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+            if (x >= 345) {
+#else
             if (x >= 245) {
+#endif
                 x = 5;
                 y += wordLabel->height() + 2;
             }

@@ -72,8 +72,14 @@ private slots:
 private:
     MySortFilterProxyModel *proxyModel;
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5 ) || defined(Q_WS_SIMULATOR)
+    QWidget *sourceWidget;
+    QWidget *filterWidget;
+    QWidget *proxyWidget;
+#else
     QGroupBox *sourceGroupBox;
     QGroupBox *proxyGroupBox;
+#endif
     QTreeView *sourceView;
     QTreeView *proxyView;
     QCheckBox *filterCaseSensitivityCheckBox;

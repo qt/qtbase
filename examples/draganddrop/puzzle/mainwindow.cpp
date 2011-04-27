@@ -90,14 +90,15 @@ void MainWindow::setupPuzzle()
 {
     int size = qMin(puzzleImage.width(), puzzleImage.height());
     puzzleImage = puzzleImage.copy((puzzleImage.width() - size)/2,
-        (puzzleImage.height() - size)/2, size, size).scaled(400,
-            400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        (puzzleImage.height() - size)/2, size, size).scaled(puzzleWidget->width(),
+            puzzleWidget->height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     piecesList->clear();
 
     for (int y = 0; y < 5; ++y) {
         for (int x = 0; x < 5; ++x) {
-            QPixmap pieceImage = puzzleImage.copy(x*80, y*80, 80, 80);
+            int pieceSize = puzzleWidget->pieceSize();
+            QPixmap pieceImage = puzzleImage.copy(x * pieceSize, y * pieceSize, pieceSize, pieceSize);
             piecesList->addPiece(pieceImage, QPoint(x, y));
         }
     }
@@ -137,9 +138,14 @@ void MainWindow::setupWidgets()
 {
     QFrame *frame = new QFrame;
     QHBoxLayout *frameLayout = new QHBoxLayout(frame);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
+    puzzleWidget = new PuzzleWidget(260);
+#else
+    puzzleWidget = new PuzzleWidget(400);
+#endif
 
-    piecesList = new PiecesList;
-    puzzleWidget = new PuzzleWidget;
+    piecesList = new PiecesList(puzzleWidget->pieceSize(), this);
+
 
     connect(puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(setCompleted()), Qt::QueuedConnection);

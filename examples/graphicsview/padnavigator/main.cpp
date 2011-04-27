@@ -49,8 +49,11 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(padnavigator);
 
     PadNavigator navigator(QSize(3, 3));
+#if defined(Q_OS_SYMBIAN)
+    navigator.showMaximized();
+#else
     navigator.show();
-
+#endif
     return app.exec();
 }
 //! [0]

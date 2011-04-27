@@ -24,3 +24,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example

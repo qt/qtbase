@@ -48,8 +48,12 @@ int main(int argc, char **argv)
 
     FadeMessage widget;
     widget.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Popup Message with Effect"));
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    widget.showMaximized();
+#else
     widget.setFixedSize(400, 600);
     widget.show();
+#endif
 
     return app.exec();
 }

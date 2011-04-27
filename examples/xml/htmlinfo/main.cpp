@@ -101,7 +101,8 @@ int main(int argc, char **argv)
     QStringList filter;
     filter << "*.htm";
     filter << "*.html";
-    QStringList htmlFiles = QDir::current().entryList(filter, QDir::Files);
+
+    QStringList htmlFiles = QDir(":/").entryList(filter, QDir::Files);
 
     QTextStream out(stdout);
 
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
 
     // parse each html file and write the result to file/stream
     foreach(QString file, htmlFiles)
-        parseHtmlFile(out, file);
+        parseHtmlFile(out, ":/" + file);
 
     return 0;
 }

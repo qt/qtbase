@@ -1,5 +1,6 @@
 SOURCES += semaphores.cpp
-QT = core
+QT = core gui
+
 CONFIG -= app_bundle
 CONFIG += console
 
@@ -10,3 +11,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/threads/semaphores
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example
+
+simulator: warning(This example might not fully work on Simulator platform)

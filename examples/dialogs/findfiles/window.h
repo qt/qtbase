@@ -41,7 +41,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QDir>
 
 QT_BEGIN_NAMESPACE
@@ -53,7 +53,7 @@ class QTableWidgetItem;
 QT_END_NAMESPACE
 
 //! [0]
-class Window : public QDialog
+class Window : public QWidget
 {
     Q_OBJECT
 

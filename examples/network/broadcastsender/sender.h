@@ -41,7 +41,7 @@
 #ifndef SENDER_H
 #define SENDER_H
 
-#include <QDialog>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QDialogButtonBox;
@@ -51,7 +51,7 @@ class QTimer;
 class QUdpSocket;
 QT_END_NAMESPACE
 
-class Sender : public QDialog
+class Sender : public QWidget
 {
     Q_OBJECT
 

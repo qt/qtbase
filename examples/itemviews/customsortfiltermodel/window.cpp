@@ -48,22 +48,27 @@ Window::Window()
 {
     proxyModel = new MySortFilterProxyModel(this);
     proxyModel->setDynamicSortFilter(true);
-//! [0]
+    //! [0]
 
-//! [1]
+    //! [1]
     sourceView = new QTreeView;
     sourceView->setRootIsDecorated(false);
     sourceView->setAlternatingRowColors(true);
-//! [1]
+    //! [1]
 
     QHBoxLayout *sourceLayout = new QHBoxLayout;
-//! [2]
+    //! [2]
     sourceLayout->addWidget(sourceView);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    sourceWidget = new QWidget;
+    sourceWidget->setLayout(sourceLayout);
+#else
     sourceGroupBox = new QGroupBox(tr("Original Model"));
     sourceGroupBox->setLayout(sourceLayout);
-//! [2]
+#endif
+    //! [2]
 
-//! [3]
+    //! [3]
     filterCaseSensitivityCheckBox = new QCheckBox(tr("Case sensitive filter"));
     filterCaseSensitivityCheckBox->setChecked(true);
 
@@ -97,11 +102,11 @@ Window::Window()
     connect(fromDateEdit, SIGNAL(dateChanged(QDate)),
             this, SLOT(dateFilterChanged()));
     connect(toDateEdit, SIGNAL(dateChanged(QDate)),
-//! [3] //! [4]
+            //! [3] //! [4]
             this, SLOT(dateFilterChanged()));
-//! [4]
+    //! [4]
 
-//! [5]
+    //! [5]
     proxyView = new QTreeView;
     proxyView->setRootIsDecorated(false);
     proxyView->setAlternatingRowColors(true);
@@ -109,6 +114,26 @@ Window::Window()
     proxyView->setSortingEnabled(true);
     proxyView->sortByColumn(1, Qt::AscendingOrder);
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QGridLayout *filterLayout = new QGridLayout;
+    filterLayout->addWidget(filterPatternLabel, 0, 0);
+    filterLayout->addWidget(filterPatternLineEdit, 0, 1);
+    filterLayout->addWidget(filterSyntaxComboBox, 0, 2);
+    filterLayout->addWidget(filterCaseSensitivityCheckBox, 1, 0, 1, 3);
+    filterLayout->addWidget(fromLabel, 2, 0);
+    filterLayout->addWidget(fromDateEdit, 2, 1, 1, 2);
+    filterLayout->addWidget(toLabel, 3, 0);
+    filterLayout->addWidget(toDateEdit, 3, 1, 1, 2);
+
+    filterWidget = new QWidget;
+    filterWidget->setLayout(filterLayout);
+
+    QHBoxLayout *proxyLayout = new QHBoxLayout;
+    proxyLayout->addWidget(proxyView);
+
+    proxyWidget = new QWidget;
+    proxyWidget->setLayout(proxyLayout);
+#else
     QGridLayout *proxyLayout = new QGridLayout;
     proxyLayout->addWidget(proxyView, 0, 0, 1, 3);
     proxyLayout->addWidget(filterPatternLabel, 1, 0);
@@ -122,9 +147,21 @@ Window::Window()
 
     proxyGroupBox = new QGroupBox(tr("Sorted/Filtered Model"));
     proxyGroupBox->setLayout(proxyLayout);
-//! [5]
+#endif
+    //! [5]
 
-//! [6]
+    //! [6]
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab(sourceWidget, "Original");
+    tabWidget->addTab(filterWidget, "Filters");
+    tabWidget->addTab(proxyWidget, "Sorted");
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(tabWidget);
+    setLayout(mainLayout);
+    setWindowTitle(tr("Custom Model"));
+#else
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(sourceGroupBox);
     mainLayout->addWidget(proxyGroupBox);
@@ -132,6 +169,7 @@ Window::Window()
 
     setWindowTitle(tr("Custom Sort/Filter Model"));
     resize(500, 450);
+#endif
 }
 //! [6]
 
@@ -151,7 +189,7 @@ void Window::textFilterChanged()
                     filterSyntaxComboBox->currentIndex()).toInt());
     Qt::CaseSensitivity caseSensitivity =
             filterCaseSensitivityCheckBox->isChecked() ? Qt::CaseSensitive
-                                                       : Qt::CaseInsensitive;
+                : Qt::CaseInsensitive;
 
     QRegExp regExp(filterPatternLineEdit->text(), caseSensitivity, syntax);
     proxyModel->setFilterRegExp(regExp);

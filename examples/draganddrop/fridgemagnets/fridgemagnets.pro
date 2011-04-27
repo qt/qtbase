@@ -16,4 +16,4 @@ symbian {
     CONFIG += qt_example
 }
 
-
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

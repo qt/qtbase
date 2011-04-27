@@ -41,7 +41,12 @@
 #include "window.h"
 
 Window::Window(QWidget *parent)
-    : QWidget(parent), m_iconSize(64, 64)
+    : QWidget(parent),
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
+    m_iconSize(32, 32)
+#else
+    m_iconSize(64, 64)
+#endif
 {
     m_ui.setupUi(this);
     QButtonGroup *buttonGroup = findChild<QButtonGroup *>();     // ### workaround for uic in 4.4

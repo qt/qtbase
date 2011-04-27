@@ -63,7 +63,7 @@ BearerMonitor::BearerMonitor(QWidget *parent)
     delete tabWidget->currentWidget();
     sessionGroup->hide();
 #endif
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(MAEMO_UI)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(MAEMO_UI) || defined(Q_WS_SIMULATOR)
     setWindowState(Qt::WindowMaximized);
 #endif
     updateConfigurations();
@@ -87,7 +87,7 @@ BearerMonitor::BearerMonitor(QWidget *parent)
             this, SLOT(configurationChanged(const QNetworkConfiguration)));
     connect(&manager, SIGNAL(updateCompleted()), this, SLOT(updateConfigurations()));
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
     connect(registerButton, SIGNAL(clicked()), this, SLOT(registerNetwork()));
     connect(unregisterButton, SIGNAL(clicked()), this, SLOT(unregisterNetwork()));
 #else
@@ -226,7 +226,7 @@ void BearerMonitor::updateConfigurations()
 
         if (defaultConfiguration.type() == QNetworkConfiguration::ServiceNetwork)
             updateSnapConfiguration(defaultItem, defaultConfiguration);
-    } else if (defaultConfiguration.isValid()) {
+    } else {
         configurationAdded(defaultConfiguration);
     }
 
@@ -260,7 +260,7 @@ void BearerMonitor::onlineStateChanged(bool isOnline)
         onlineState->setText(tr("Offline"));
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
 void BearerMonitor::registerNetwork()
 {
     QTreeWidgetItem *item = treeWidget->currentItem();

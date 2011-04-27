@@ -38,13 +38,18 @@
 **
 ****************************************************************************/
 
-#include <QtCore>
+#include <QtGui>
 
 #include <stdio.h>
 #include <stdlib.h>
 
 //! [0]
+#ifdef Q_WS_S60
+const int DataSize = 300;
+#else
 const int DataSize = 100000;
+#endif
+
 const int BufferSize = 8192;
 char buffer[BufferSize];
 
@@ -57,43 +62,70 @@ class Producer : public QThread
 //! [1] //! [2]
 {
 public:
-    void run();
-};
-
-void Producer::run()
-{
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-    for (int i = 0; i < DataSize; ++i) {
-        freeBytes.acquire();
-        buffer[i % BufferSize] = "ACGT"[(int)qrand() % 4];
-        usedBytes.release();
+    void run()
+    {
+        qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+        for (int i = 0; i < DataSize; ++i) {
+            freeBytes.acquire();
+            buffer[i % BufferSize] = "ACGT"[(int)qrand() % 4];
+            usedBytes.release();
+        }
     }
-}
+};
 //! [2]
 
 //! [3]
 class Consumer : public QThread
 //! [3] //! [4]
 {
+    Q_OBJECT
 public:
-    void run();
-};
-
-void Consumer::run()
-{
-    for (int i = 0; i < DataSize; ++i) {
-        usedBytes.acquire();
-        fprintf(stderr, "%c", buffer[i % BufferSize]);
-        freeBytes.release();
+    void run()
+    {
+        for (int i = 0; i < DataSize; ++i) {
+            usedBytes.acquire();
+    #ifdef Q_WS_S60
+            QString text(buffer[i % BufferSize]);
+            freeBytes.release();
+            emit stringConsumed(text);
+    #else
+            fprintf(stderr, "%c", buffer[i % BufferSize]);
+            freeBytes.release();
+    #endif
+        }
+        fprintf(stderr, "\n");
     }
-    fprintf(stderr, "\n");
-}
+
+signals:
+    void stringConsumed(const QString &text);
+
+protected:
+    bool finish;
+};
 //! [4]
 
 //! [5]
 int main(int argc, char *argv[])
 //! [5] //! [6]
 {
+#ifdef Q_WS_S60
+    // Self made console for Symbian
+    QApplication app(argc, argv);
+    QPlainTextEdit console;
+    console.setReadOnly(true);
+    console.setTextInteractionFlags(Qt::NoTextInteraction);
+    console.showMaximized();
+
+    Producer producer;
+    Consumer consumer;
+
+    QObject::connect(&consumer, SIGNAL(stringConsumed(const QString&)), &console, SLOT(insertPlainText(QString)), Qt::BlockingQueuedConnection);
+
+    producer.start();
+    consumer.start();
+
+    app.exec();
+#else
     QCoreApplication app(argc, argv);
     Producer producer;
     Consumer consumer;
@@ -102,5 +134,8 @@ int main(int argc, char *argv[])
     producer.wait();
     consumer.wait();
     return 0;
+#endif
 }
 //! [6]
+
+#include "semaphores.moc"

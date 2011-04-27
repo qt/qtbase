@@ -17,3 +17,4 @@ INSTALLS += target sources
 symbian: CONFIG += qt_example
 
 symbian:TARGET.EPOCALLOWDLLDATA = 1
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

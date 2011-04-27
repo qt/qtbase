@@ -65,6 +65,7 @@ TabDialog::TabDialog(const QString &fileName, QWidget *parent)
 
 //! [4]
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
     mainLayout->addWidget(tabWidget);
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);

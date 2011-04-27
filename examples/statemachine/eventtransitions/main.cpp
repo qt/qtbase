@@ -48,7 +48,12 @@ public:
         : QWidget(parent)
     {
         QPushButton *button = new QPushButton(this);
-        button->setGeometry(QRect(100, 100, 100, 100));
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        QVBoxLayout *layout = new QVBoxLayout;
+        layout->addWidget(button);
+        layout->setContentsMargins(80, 80, 80, 80);
+        setLayout(layout);
 //! [0]
 
 //! [1]
@@ -103,7 +108,11 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     Window window;
     window.resize(300, 300);
+#if defined(Q_OS_SYMBIAN)
+    window.showMaximized();
+#else
     window.show();
+#endif
 
     return app.exec();
 }

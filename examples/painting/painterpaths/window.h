@@ -71,9 +71,7 @@ private:
 //! [1]
 
 //! [2]
-    enum { NumRenderAreas = 9 };
-
-    RenderArea *renderAreas[NumRenderAreas];
+    QList<RenderArea*> renderAreas;
     QLabel *fillRuleLabel;
     QLabel *fillGradientLabel;
     QLabel *fillToLabel;

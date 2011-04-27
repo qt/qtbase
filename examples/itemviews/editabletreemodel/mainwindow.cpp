@@ -48,6 +48,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
+#ifdef Q_WS_MAEMO_5
+    // Alternating row colors look bad on Maemo
+    view->setAlternatingRowColors(false);
+#endif
+
     QStringList headers;
     headers << tr("Title") << tr("Description");
 

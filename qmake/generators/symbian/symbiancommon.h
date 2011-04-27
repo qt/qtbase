@@ -119,6 +119,7 @@ protected:
                                            const SymbianLocalizationList &symbianLocalizationList);
     QString generateLocFileName();
 
+
 protected:
     MakefileGenerator *generator;
 

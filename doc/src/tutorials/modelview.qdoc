@@ -104,7 +104,6 @@
     array of the data elements that the user can change. The table widget can be
     integrated into a program flow by reading and writing the data elements that
     the table widget provides. 
-
     This method is very intuitive and useful in many applications, but displaying 
     and editing a database table with a standard table widget can be problematic.
     Two copies of the data have to be coordinated: one outside the

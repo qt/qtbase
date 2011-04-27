@@ -58,6 +58,10 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     RSSListing *rsslisting = new RSSListing;
+#if defined(Q_OS_SYMBIAN)
+    rsslisting->showMaximized();
+#else
     rsslisting->show();
+#endif
     return app.exec();
 }

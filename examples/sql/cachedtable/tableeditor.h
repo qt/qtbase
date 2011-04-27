@@ -50,7 +50,7 @@ class QSqlTableModel;
 QT_END_NAMESPACE
 
 //! [0]
-class TableEditor : public QDialog
+class TableEditor : public QWidget
 {
     Q_OBJECT
 

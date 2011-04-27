@@ -12,6 +12,7 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
     }
 } else {
     SUBDIRS   = 2dpainting \
+                cube \
                 grabber \
                 hellogl \
                 overpainting \
@@ -28,3 +29,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example
