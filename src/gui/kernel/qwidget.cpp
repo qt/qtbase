@@ -10782,6 +10782,9 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {
+#if defined(Q_WS_QPA)
+        d->createTLExtra();
+#endif
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
         QInputContext *ic = 0;
