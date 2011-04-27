@@ -74,7 +74,7 @@ public:
 
     Qt::WindowFlags windowFlags;
     QWindow::SurfaceType surfaceType;
-
+    QWindow *parentWindow;
     QPlatformWindow *platformWindow;
     bool visible;
     QWindowFormat requestedFormat;
@@ -133,6 +133,15 @@ void QWindow::create()
         d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
     }
     Q_ASSERT(d->platformWindow);
+
+    QObjectList childObjects = children();
+    for (int i = 0; i < childObjects.size(); i ++) {
+        QObject *object = childObjects.at(i);
+        if(object->isWindowType()) {
+            QWindow *window = static_cast<QWindow *>(object);
+            window->setParent(this);
+        }
+    }
 }
 
 WId QWindow::winId() const
@@ -143,22 +152,35 @@ WId QWindow::winId() const
     return d->platformWindow->winId();
 }
 
+/**
+  Sets the parent Window. This will lead to the windowing system managing the clip of the window, so it will be clipped to the parent window.
+  Setting parent to be 0(NULL) means map it as a top level window. If the parent window has grabbed its window system resources, then the current window will also grab its window system resources.
+  **/
+
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
-    if (QObject::parent() == parent) {
+
+    if (d->parent == parent)
         return;
-    }
-    //How should we support lazy init when setting parent
-    if (!parent->d_func()->platformWindow) {
-        const_cast<QWindow *>(parent)->create();
+
+    QObject::setParent(parent);
+
+    if (parent) {
+        if (parent->d_func()->platformWindow) {
+            if(!d->platformWindow) {
+                create();
+            }
+            d->platformWindow->setParent(parent->d_func()->platformWindow);
+            d->parent = parent;
+        }
+    } else  {
+        d->parent = 0;
+        if (d->parentWindow) {
+            d->platformWindow->setParent(0);
+        }
     }
 
-    if(!d->platformWindow) {
-        create();
-    }
-    d->platformWindow->setParent(parent->d_func()->platformWindow);
-    QObject::setParent(parent);
 }
 
 void QWindow::setWindowFormat(const QWindowFormat &format)
