@@ -2100,7 +2100,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     bool gap = false;
 
     int tab_idx = 0;
-    bool changed = false;
     for (int i = 0; i < item_list.count(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
         if (item.skip())
@@ -2121,7 +2120,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
             tabBar->setTabToolTip(tab_idx, title);
 #endif
             tabBar->setTabData(tab_idx, id);
-            changed = true;
         } else if (qvariant_cast<quintptr>(tabBar->tabData(tab_idx)) != id) {
             if (tab_idx + 1 < tabBar->count()
                     && qvariant_cast<quintptr>(tabBar->tabData(tab_idx + 1)) == id)
@@ -2133,7 +2131,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 #endif
                 tabBar->setTabData(tab_idx, id);
             }
-            changed = true;
         }
 
         if (title != tabBar->tabText(tab_idx)) {
@@ -2141,7 +2138,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 #ifndef QT_NO_TOOLTIP
             tabBar->setTabToolTip(tab_idx, title);
 #endif
-            changed = true;
         }
 
         ++tab_idx;
@@ -2149,7 +2145,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
 
     while (tab_idx < tabBar->count()) {
         tabBar->removeTab(tab_idx);
-        changed = true;
     }
 
     tabBar->blockSignals(blocked);

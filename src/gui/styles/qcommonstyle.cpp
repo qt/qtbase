@@ -898,24 +898,6 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, in
     return QSize(0, 0);
 }
 
-static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
-{
-    qreal height = 0;
-    qreal widthUsed = 0;
-    textLayout.beginLayout();
-    while (true) {
-        QTextLine line = textLayout.createLine();
-        if (!line.isValid())
-            break;
-        line.setLineWidth(lineWidth);
-        line.setPosition(QPointF(0, height));
-        height += line.height();
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-    }
-    textLayout.endLayout();
-    return QSizeF(widthUsed, height);
-}
-
 void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewItemV4 *option, const QRect &rect) const
 {
     Q_Q(const QCommonStyle);
@@ -932,8 +914,6 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     textLayout.setTextOption(textOption);
     textLayout.setFont(option->font);
     textLayout.setText(option->text);
-
-    QSizeF textLayoutSize = viewItemTextLayout(textLayout, textRect.width());
 
     QString elidedText;
     qreal height = 0;

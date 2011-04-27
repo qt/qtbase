@@ -782,7 +782,6 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             GtkStateType state = gtkPainter.gtkState(option);
             style = gtkTreeHeader->style;
             GtkArrowType type = GTK_ARROW_UP;
-            QRect r = header->rect;
             QImage arrow;
             // This sorting indicator inversion is intentional, and follows the GNOME HIG.
             // See http://library.gnome.org/devel/hig-book/stable/controls-lists.html.en#controls-lists-sortable
@@ -1857,7 +1856,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     editArea.setRight(upRect.left());
             }
             if (spinBox->frame) {
-                GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = gtkPainter.gtkState(option);
 
                 if (!(option->state & State_Enabled))
@@ -1867,7 +1865,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 else if (state == GTK_STATE_PRELIGHT)
                     state = GTK_STATE_NORMAL;
 
-                shadow = GTK_SHADOW_IN;
                 style = gtkPainter.getStyle(gtkSpinButton);
 
 

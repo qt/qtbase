@@ -1239,7 +1239,6 @@ QWidget * QWorkspace::addWindow(QWidget *w, Qt::WindowFlags flags)
     int x = w->x();
     int y = w->y();
     bool hasPos = w->testAttribute(Qt::WA_Moved);
-    QSize s = w->size().expandedTo(qSmartMinSize(w));
     if (!hasSize && w->sizeHint().isValid())
         w->adjustSize();
 
