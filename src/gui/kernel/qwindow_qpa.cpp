@@ -116,7 +116,8 @@ void QWindow::setVisible(bool visible)
 void QWindow::create()
 {
     Q_D(QWindow);
-    d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
+    if (!d->platformWindow)
+        d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
     Q_ASSERT(d->platformWindow);
 }
 
