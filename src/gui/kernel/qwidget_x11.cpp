@@ -486,8 +486,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     bool topLevel = (flags & Qt::Window);
     bool popup = (type == Qt::Popup);
-    bool dialog = (type == Qt::Dialog
-                   || type == Qt::Sheet);
     bool desktop = (type == Qt::Desktop);
     bool tool = (type == Qt::Tool || type == Qt::SplashScreen
                  || type == Qt::ToolTip || type == Qt::Drawer);
@@ -553,7 +551,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     int sh = DisplayHeight(dpy,scr);
 
     if (desktop) {                                // desktop widget
-        dialog = popup = false;                        // force these flags off
+        popup = false;                        // force these flags off
         data.crect.setRect(0, 0, sw, sh);
     } else if (topLevel && !q->testAttribute(Qt::WA_Resized)) {
         QDesktopWidget *desktopWidget = qApp->desktop();

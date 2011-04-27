@@ -451,8 +451,8 @@ static QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> getFactor(qreal valu
 static qreal interpolate(const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> &factor,
                          qreal min, qreal minPref, qreal pref, qreal maxPref, qreal max)
 {
-    qreal lower;
-    qreal upper;
+    qreal lower = 0;
+    qreal upper = 0;
 
     switch (factor.first) {
     case QGraphicsAnchorLayoutPrivate::MinimumToMinPreferred:

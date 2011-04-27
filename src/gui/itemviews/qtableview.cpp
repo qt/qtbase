@@ -1300,7 +1300,6 @@ void QTableView::paintEvent(QPaintEvent *event)
     const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;
-    const QStyle::State state = option.state;
     const bool alternate = d->alternatingColors;
     const bool rightToLeft = isRightToLeft();
 

@@ -566,7 +566,6 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
                         = w->d_func()->gestureContext.find(type);
                 if (it != w->d_func()->gestureContext.end()) {
                     // i.e. 'w' listens to gesture 'type'
-                    Qt::GestureFlags flags = it.value();
                     if (!(it.value() & Qt::DontStartGestureOnChildren) && w != widget) {
                         // conflicting gesture!
                         (*conflicts)[widget].append(gestures[widget]);
