@@ -69,7 +69,6 @@ void HelloWindow::render()
     modelview.rotate(m_fAngle, 0.0f, 1.0f, 0.0f);
     modelview.rotate(m_fAngle, 1.0f, 0.0f, 0.0f);
     modelview.rotate(m_fAngle, 0.0f, 0.0f, 1.0f);
-    modelview.scale(m_fScale);
     modelview.translate(0.0f, -0.2f, 0.0f);
 
     program.bind();
@@ -139,7 +138,6 @@ void HelloWindow::initialize()
     colorUniform = program.uniformLocation("sourceColor");
 
     m_fAngle = 0;
-    m_fScale = 1;
     createGeometry();
     updateColor();
 }

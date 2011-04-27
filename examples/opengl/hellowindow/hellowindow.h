@@ -21,9 +21,7 @@ private:
     void initialize();
     void updateColor();
 
-    GLuint  m_uiTexture;
-    qreal   m_fAngle;
-    qreal   m_fScale;
+    qreal m_fAngle;
     bool m_showBubbles;
     void paintQtLogo();
     void createGeometry();
@@ -32,9 +30,6 @@ private:
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
     QVector<QVector3D> vertices;
     QVector<QVector3D> normals;
-    bool qtLogo;
-    int frames;
-    QTime time;
     QGLShaderProgram program;
     int vertexAttr;
     int normalAttr;
