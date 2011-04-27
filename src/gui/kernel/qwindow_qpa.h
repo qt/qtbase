@@ -89,6 +89,8 @@ public:
     void setWidget(QWidget *widget);
 
     void setVisible(bool visible);
+    bool visible() const;
+
     void create();
 
     WId winId() const;

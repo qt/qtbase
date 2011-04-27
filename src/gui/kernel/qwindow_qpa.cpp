@@ -60,6 +60,7 @@ public:
         , windowFlags(Qt::Window)
         , surfaceType(QWindow::RasterSurface)
         , platformWindow(0)
+        , visible(false)
         , glContext(0)
         , widget(0)
     {
@@ -75,6 +76,7 @@ public:
     QWindow::SurfaceType surfaceType;
 
     QPlatformWindow *platformWindow;
+    bool visible;
     QWindowFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
@@ -114,6 +116,13 @@ void QWindow::setVisible(bool visible)
         create();
     }
     d->platformWindow->setVisible(visible);
+}
+
+bool QWindow::visible() const
+{
+    Q_D(const QWindow);
+
+    return d->visible;
 }
 
 void QWindow::create()
