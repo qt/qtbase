@@ -84,12 +84,15 @@ QSize QPlatformScreen::physicalSize() const
 Q_GUI_EXPORT extern QWidgetPrivate *qt_widget_private(QWidget *widget);
 QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget)
 {
+    int screenIndex = 0;
     QWidget *window = widget->window();
     QWidgetPrivate *windowPrivate = qt_widget_private(window);
-    QTLWExtra * topData = windowPrivate->topData();
+    QTLWExtra * topData = windowPrivate->maybeTopData();
+    if (topData)
+        screenIndex = topData->screenIndex;
     QPlatformIntegration *integration =
             QApplicationPrivate::platformIntegration();
-    return integration->screens()[topData->screenIndex];
+    return integration->screens()[screenIndex];
 }
 
 /*!
