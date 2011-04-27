@@ -1,0 +1,473 @@
+EXPORTS
+	??0QSQLiteDriver@@QAE@PAUsqlite3@@PAVQObject@@@Z @ 1 NONAME ; QSQLiteDriver::QSQLiteDriver(struct sqlite3 *, class QObject *)
+	??0QSQLiteDriver@@QAE@PAVQObject@@@Z @ 2 NONAME ; QSQLiteDriver::QSQLiteDriver(class QObject *)
+	??0QSqlCachedResult@@IAE@PBVQSqlDriver@@@Z @ 3 NONAME ; QSqlCachedResult::QSqlCachedResult(class QSqlDriver const *)
+	??0QSqlDatabase@@IAE@ABVQString@@@Z @ 4 NONAME ; QSqlDatabase::QSqlDatabase(class QString const &)
+	??0QSqlDatabase@@IAE@PAVQSqlDriver@@@Z @ 5 NONAME ; QSqlDatabase::QSqlDatabase(class QSqlDriver *)
+	??0QSqlDatabase@@QAE@ABV0@@Z @ 6 NONAME ; QSqlDatabase::QSqlDatabase(class QSqlDatabase const &)
+	??0QSqlDatabase@@QAE@XZ @ 7 NONAME ; QSqlDatabase::QSqlDatabase(void)
+	??0QSqlDriver@@QAE@PAVQObject@@@Z @ 8 NONAME ; QSqlDriver::QSqlDriver(class QObject *)
+	??0QSqlDriverPlugin@@QAE@PAVQObject@@@Z @ 9 NONAME ; QSqlDriverPlugin::QSqlDriverPlugin(class QObject *)
+	??0QSqlError@@QAE@ABV0@@Z @ 10 NONAME ; QSqlError::QSqlError(class QSqlError const &)
+	??0QSqlError@@QAE@ABVQString@@0W4ErrorType@0@H@Z @ 11 NONAME ; QSqlError::QSqlError(class QString const &, class QString const &, enum QSqlError::ErrorType, int)
+	??0QSqlField@@QAE@ABV0@@Z @ 12 NONAME ; QSqlField::QSqlField(class QSqlField const &)
+	??0QSqlField@@QAE@ABVQString@@W4Type@QVariant@@@Z @ 13 NONAME ; QSqlField::QSqlField(class QString const &, enum QVariant::Type)
+	??0QSqlIndex@@QAE@ABV0@@Z @ 14 NONAME ; QSqlIndex::QSqlIndex(class QSqlIndex const &)
+	??0QSqlIndex@@QAE@ABVQString@@0@Z @ 15 NONAME ; QSqlIndex::QSqlIndex(class QString const &, class QString const &)
+	??0QSqlQuery@@QAE@ABV0@@Z @ 16 NONAME ; QSqlQuery::QSqlQuery(class QSqlQuery const &)
+	??0QSqlQuery@@QAE@ABVQString@@VQSqlDatabase@@@Z @ 17 NONAME ; QSqlQuery::QSqlQuery(class QString const &, class QSqlDatabase)
+	??0QSqlQuery@@QAE@PAVQSqlResult@@@Z @ 18 NONAME ; QSqlQuery::QSqlQuery(class QSqlResult *)
+	??0QSqlQuery@@QAE@VQSqlDatabase@@@Z @ 19 NONAME ; QSqlQuery::QSqlQuery(class QSqlDatabase)
+	??0QSqlQueryModel@@IAE@AAVQSqlQueryModelPrivate@@PAVQObject@@@Z @ 20 NONAME ; QSqlQueryModel::QSqlQueryModel(class QSqlQueryModelPrivate &, class QObject *)
+	??0QSqlQueryModel@@QAE@PAVQObject@@@Z @ 21 NONAME ; QSqlQueryModel::QSqlQueryModel(class QObject *)
+	??0QSqlRecord@@QAE@ABV0@@Z @ 22 NONAME ; QSqlRecord::QSqlRecord(class QSqlRecord const &)
+	??0QSqlRecord@@QAE@XZ @ 23 NONAME ; QSqlRecord::QSqlRecord(void)
+	??0QSqlRelation@@QAE@ABVQString@@00@Z @ 24 NONAME ; QSqlRelation::QSqlRelation(class QString const &, class QString const &, class QString const &)
+	??0QSqlRelation@@QAE@XZ @ 25 NONAME ; QSqlRelation::QSqlRelation(void)
+	??0QSqlRelationalTableModel@@QAE@PAVQObject@@VQSqlDatabase@@@Z @ 26 NONAME ; QSqlRelationalTableModel::QSqlRelationalTableModel(class QObject *, class QSqlDatabase)
+	??0QSqlResult@@IAE@PBVQSqlDriver@@@Z @ 27 NONAME ; QSqlResult::QSqlResult(class QSqlDriver const *)
+	??0QSqlTableModel@@IAE@AAVQSqlTableModelPrivate@@PAVQObject@@VQSqlDatabase@@@Z @ 28 NONAME ; QSqlTableModel::QSqlTableModel(class QSqlTableModelPrivate &, class QObject *, class QSqlDatabase)
+	??0QSqlTableModel@@QAE@PAVQObject@@VQSqlDatabase@@@Z @ 29 NONAME ; QSqlTableModel::QSqlTableModel(class QObject *, class QSqlDatabase)
+	??1QSQLiteDriver@@UAE@XZ @ 30 NONAME ; QSQLiteDriver::~QSQLiteDriver(void)
+	??1QSqlCachedResult@@UAE@XZ @ 31 NONAME ; QSqlCachedResult::~QSqlCachedResult(void)
+	??1QSqlDatabase@@QAE@XZ @ 32 NONAME ; QSqlDatabase::~QSqlDatabase(void)
+	??1QSqlDriver@@UAE@XZ @ 33 NONAME ; QSqlDriver::~QSqlDriver(void)
+	??1QSqlDriverCreatorBase@@UAE@XZ @ 34 NONAME ; QSqlDriverCreatorBase::~QSqlDriverCreatorBase(void)
+	??1QSqlDriverFactoryInterface@@UAE@XZ @ 35 NONAME ; QSqlDriverFactoryInterface::~QSqlDriverFactoryInterface(void)
+	??1QSqlDriverPlugin@@UAE@XZ @ 36 NONAME ; QSqlDriverPlugin::~QSqlDriverPlugin(void)
+	??1QSqlError@@QAE@XZ @ 37 NONAME ; QSqlError::~QSqlError(void)
+	??1QSqlField@@QAE@XZ @ 38 NONAME ; QSqlField::~QSqlField(void)
+	??1QSqlIndex@@QAE@XZ @ 39 NONAME ; QSqlIndex::~QSqlIndex(void)
+	??1QSqlQuery@@QAE@XZ @ 40 NONAME ; QSqlQuery::~QSqlQuery(void)
+	??1QSqlQueryModel@@UAE@XZ @ 41 NONAME ; QSqlQueryModel::~QSqlQueryModel(void)
+	??1QSqlRecord@@QAE@XZ @ 42 NONAME ; QSqlRecord::~QSqlRecord(void)
+	??1QSqlRelation@@QAE@XZ @ 43 NONAME ; QSqlRelation::~QSqlRelation(void)
+	??1QSqlRelationalTableModel@@UAE@XZ @ 44 NONAME ; QSqlRelationalTableModel::~QSqlRelationalTableModel(void)
+	??1QSqlResult@@UAE@XZ @ 45 NONAME ; QSqlResult::~QSqlResult(void)
+	??1QSqlTableModel@@UAE@XZ @ 46 NONAME ; QSqlTableModel::~QSqlTableModel(void)
+	??4QSqlDatabase@@QAEAAV0@ABV0@@Z @ 47 NONAME ; class QSqlDatabase & QSqlDatabase::operator=(class QSqlDatabase const &)
+	??4QSqlError@@QAEAAV0@ABV0@@Z @ 48 NONAME ; class QSqlError & QSqlError::operator=(class QSqlError const &)
+	??4QSqlField@@QAEAAV0@ABV0@@Z @ 49 NONAME ; class QSqlField & QSqlField::operator=(class QSqlField const &)
+	??4QSqlIndex@@QAEAAV0@ABV0@@Z @ 50 NONAME ; class QSqlIndex & QSqlIndex::operator=(class QSqlIndex const &)
+	??4QSqlQuery@@QAEAAV0@ABV0@@Z @ 51 NONAME ; class QSqlQuery & QSqlQuery::operator=(class QSqlQuery const &)
+	??4QSqlRecord@@QAEAAV0@ABV0@@Z @ 52 NONAME ; class QSqlRecord & QSqlRecord::operator=(class QSqlRecord const &)
+	??6@YA?AVQDebug@@V0@ABVQSqlDatabase@@@Z @ 53 NONAME ; class QDebug operator<<(class QDebug, class QSqlDatabase const &)
+	??6@YA?AVQDebug@@V0@ABVQSqlError@@@Z @ 54 NONAME ; class QDebug operator<<(class QDebug, class QSqlError const &)
+	??6@YA?AVQDebug@@V0@ABVQSqlField@@@Z @ 55 NONAME ; class QDebug operator<<(class QDebug, class QSqlField const &)
+	??6@YA?AVQDebug@@V0@ABVQSqlRecord@@@Z @ 56 NONAME ; class QDebug operator<<(class QDebug, class QSqlRecord const &)
+	??8QSqlField@@QBE_NABV0@@Z @ 57 NONAME ; bool QSqlField::operator==(class QSqlField const &) const
+	??8QSqlRecord@@QBE_NABV0@@Z @ 58 NONAME ; bool QSqlRecord::operator==(class QSqlRecord const &) const
+	??9QSqlField@@QBE_NABV0@@Z @ 59 NONAME ; bool QSqlField::operator!=(class QSqlField const &) const
+	??9QSqlRecord@@QBE_NABV0@@Z @ 60 NONAME ; bool QSqlRecord::operator!=(class QSqlRecord const &) const
+	??_EQSQLiteDriver@@UAE@I@Z @ 61 NONAME ; QSQLiteDriver::~QSQLiteDriver(unsigned int)
+	??_EQSqlCachedResult@@UAE@I@Z @ 62 NONAME ; QSqlCachedResult::~QSqlCachedResult(unsigned int)
+	??_EQSqlDriver@@UAE@I@Z @ 63 NONAME ; QSqlDriver::~QSqlDriver(unsigned int)
+	??_EQSqlDriverCreatorBase@@UAE@I@Z @ 64 NONAME ; QSqlDriverCreatorBase::~QSqlDriverCreatorBase(unsigned int)
+	??_EQSqlDriverFactoryInterface@@UAE@I@Z @ 65 NONAME ; QSqlDriverFactoryInterface::~QSqlDriverFactoryInterface(unsigned int)
+	??_EQSqlDriverPlugin@@UAE@I@Z @ 66 NONAME ; QSqlDriverPlugin::~QSqlDriverPlugin(unsigned int)
+	??_EQSqlQueryModel@@UAE@I@Z @ 67 NONAME ; QSqlQueryModel::~QSqlQueryModel(unsigned int)
+	??_EQSqlRelationalTableModel@@UAE@I@Z @ 68 NONAME ; QSqlRelationalTableModel::~QSqlRelationalTableModel(unsigned int)
+	??_EQSqlResult@@UAE@I@Z @ 69 NONAME ; QSqlResult::~QSqlResult(unsigned int)
+	??_EQSqlTableModel@@UAE@I@Z @ 70 NONAME ; QSqlTableModel::~QSqlTableModel(unsigned int)
+	?addBindValue@QSqlQuery@@QAEXABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 71 NONAME ; void QSqlQuery::addBindValue(class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?addBindValue@QSqlResult@@IAEXABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 72 NONAME ; void QSqlResult::addBindValue(class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?addDatabase@QSqlDatabase@@SA?AV1@ABVQString@@0@Z @ 73 NONAME ; class QSqlDatabase QSqlDatabase::addDatabase(class QString const &, class QString const &)
+	?addDatabase@QSqlDatabase@@SA?AV1@PAVQSqlDriver@@ABVQString@@@Z @ 74 NONAME ; class QSqlDatabase QSqlDatabase::addDatabase(class QSqlDriver *, class QString const &)
+	?append@QSqlIndex@@QAEXABVQSqlField@@@Z @ 75 NONAME ; void QSqlIndex::append(class QSqlField const &)
+	?append@QSqlIndex@@QAEXABVQSqlField@@_N@Z @ 76 NONAME ; void QSqlIndex::append(class QSqlField const &, bool)
+	?append@QSqlRecord@@QAEXABVQSqlField@@@Z @ 77 NONAME ; void QSqlRecord::append(class QSqlField const &)
+	?at@QSqlQuery@@QBEHXZ @ 78 NONAME ; int QSqlQuery::at(void) const
+	?at@QSqlResult@@IBEHXZ @ 79 NONAME ; int QSqlResult::at(void) const
+	?beforeDelete@QSqlTableModel@@IAEXH@Z @ 80 NONAME ; void QSqlTableModel::beforeDelete(int)
+	?beforeInsert@QSqlTableModel@@IAEXAAVQSqlRecord@@@Z @ 81 NONAME ; void QSqlTableModel::beforeInsert(class QSqlRecord &)
+	?beforeUpdate@QSqlTableModel@@IAEXHAAVQSqlRecord@@@Z @ 82 NONAME ; void QSqlTableModel::beforeUpdate(int, class QSqlRecord &)
+	?beginTransaction@QSQLiteDriver@@UAE_NXZ @ 83 NONAME ; bool QSQLiteDriver::beginTransaction(void)
+	?beginTransaction@QSqlDriver@@UAE_NXZ @ 84 NONAME ; bool QSqlDriver::beginTransaction(void)
+	?bindValue@QSqlQuery@@QAEXABVQString@@ABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 85 NONAME ; void QSqlQuery::bindValue(class QString const &, class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?bindValue@QSqlQuery@@QAEXHABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 86 NONAME ; void QSqlQuery::bindValue(int, class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?bindValue@QSqlResult@@MAEXABVQString@@ABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 87 NONAME ; void QSqlResult::bindValue(class QString const &, class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?bindValue@QSqlResult@@MAEXHABVQVariant@@V?$QFlags@W4ParamTypeFlag@QSql@@@@@Z @ 88 NONAME ; void QSqlResult::bindValue(int, class QVariant const &, class QFlags<enum QSql::ParamTypeFlag>)
+	?bindValueType@QSqlResult@@IBE?AV?$QFlags@W4ParamTypeFlag@QSql@@@@ABVQString@@@Z @ 89 NONAME ; class QFlags<enum QSql::ParamTypeFlag> QSqlResult::bindValueType(class QString const &) const
+	?bindValueType@QSqlResult@@IBE?AV?$QFlags@W4ParamTypeFlag@QSql@@@@H@Z @ 90 NONAME ; class QFlags<enum QSql::ParamTypeFlag> QSqlResult::bindValueType(int) const
+	?bindingSyntax@QSqlResult@@IBE?AW4BindingSyntax@1@XZ @ 91 NONAME ; enum QSqlResult::BindingSyntax QSqlResult::bindingSyntax(void) const
+	?boundValue@QSqlQuery@@QBE?AVQVariant@@ABVQString@@@Z @ 92 NONAME ; class QVariant QSqlQuery::boundValue(class QString const &) const
+	?boundValue@QSqlQuery@@QBE?AVQVariant@@H@Z @ 93 NONAME ; class QVariant QSqlQuery::boundValue(int) const
+	?boundValue@QSqlResult@@IBE?AVQVariant@@ABVQString@@@Z @ 94 NONAME ; class QVariant QSqlResult::boundValue(class QString const &) const
+	?boundValue@QSqlResult@@IBE?AVQVariant@@H@Z @ 95 NONAME ; class QVariant QSqlResult::boundValue(int) const
+	?boundValueCount@QSqlResult@@IBEHXZ @ 96 NONAME ; int QSqlResult::boundValueCount(void) const
+	?boundValueName@QSqlResult@@IBE?AVQString@@H@Z @ 97 NONAME ; class QString QSqlResult::boundValueName(int) const
+	?boundValues@QSqlQuery@@QBE?AV?$QMap@VQString@@VQVariant@@@@XZ @ 98 NONAME ; class QMap<class QString, class QVariant> QSqlQuery::boundValues(void) const
+	?boundValues@QSqlResult@@IBEAAV?$QVector@VQVariant@@@@XZ @ 99 NONAME ; class QVector<class QVariant> & QSqlResult::boundValues(void) const
+	?cache@QSqlCachedResult@@IAEAAV?$QVector@VQVariant@@@@XZ @ 100 NONAME ; class QVector<class QVariant> & QSqlCachedResult::cache(void)
+	?cacheNext@QSqlCachedResult@@AAE_NXZ @ 101 NONAME ; bool QSqlCachedResult::cacheNext(void)
+	?canFetchMore@QSqlQueryModel@@UBE_NABVQModelIndex@@@Z @ 102 NONAME ; bool QSqlQueryModel::canFetchMore(class QModelIndex const &) const
+	?cleanup@QSqlCachedResult@@IAEXXZ @ 103 NONAME ; void QSqlCachedResult::cleanup(void)
+	?clear@QSqlField@@QAEXXZ @ 104 NONAME ; void QSqlField::clear(void)
+	?clear@QSqlQuery@@QAEXXZ @ 105 NONAME ; void QSqlQuery::clear(void)
+	?clear@QSqlQueryModel@@UAEXXZ @ 106 NONAME ; void QSqlQueryModel::clear(void)
+	?clear@QSqlRecord@@QAEXXZ @ 107 NONAME ; void QSqlRecord::clear(void)
+	?clear@QSqlRelationalTableModel@@UAEXXZ @ 108 NONAME ; void QSqlRelationalTableModel::clear(void)
+	?clear@QSqlResult@@IAEXXZ @ 109 NONAME ; void QSqlResult::clear(void)
+	?clear@QSqlTableModel@@UAEXXZ @ 110 NONAME ; void QSqlTableModel::clear(void)
+	?clearValues@QSqlCachedResult@@IAEXXZ @ 111 NONAME ; void QSqlCachedResult::clearValues(void)
+	?clearValues@QSqlRecord@@QAEXXZ @ 112 NONAME ; void QSqlRecord::clearValues(void)
+	?cloneDatabase@QSqlDatabase@@SA?AV1@ABV1@ABVQString@@@Z @ 113 NONAME ; class QSqlDatabase QSqlDatabase::cloneDatabase(class QSqlDatabase const &, class QString const &)
+	?close@QSQLiteDriver@@UAEXXZ @ 114 NONAME ; void QSQLiteDriver::close(void)
+	?close@QSqlDatabase@@QAEXXZ @ 115 NONAME ; void QSqlDatabase::close(void)
+	?colCount@QSqlCachedResult@@IBEHXZ @ 116 NONAME ; int QSqlCachedResult::colCount(void) const
+	?columnCount@QSqlQueryModel@@UBEHABVQModelIndex@@@Z @ 117 NONAME ; int QSqlQueryModel::columnCount(class QModelIndex const &) const
+	?commit@QSqlDatabase@@QAE_NXZ @ 118 NONAME ; bool QSqlDatabase::commit(void)
+	?commitTransaction@QSQLiteDriver@@UAE_NXZ @ 119 NONAME ; bool QSQLiteDriver::commitTransaction(void)
+	?commitTransaction@QSqlDriver@@UAE_NXZ @ 120 NONAME ; bool QSqlDriver::commitTransaction(void)
+	?connectOptions@QSqlDatabase@@QBE?AVQString@@XZ @ 121 NONAME ; class QString QSqlDatabase::connectOptions(void) const
+	?connectionName@QSqlDatabase@@QBE?AVQString@@XZ @ 122 NONAME ; class QString QSqlDatabase::connectionName(void) const
+	?connectionNames@QSqlDatabase@@SA?AVQStringList@@XZ @ 123 NONAME ; class QStringList QSqlDatabase::connectionNames(void)
+	?contains@QSqlDatabase@@SA_NABVQString@@@Z @ 124 NONAME ; bool QSqlDatabase::contains(class QString const &)
+	?contains@QSqlRecord@@QBE_NABVQString@@@Z @ 125 NONAME ; bool QSqlRecord::contains(class QString const &) const
+	?count@QSqlRecord@@QBEHXZ @ 126 NONAME ; int QSqlRecord::count(void) const
+	?createField@QSqlIndex@@ABE?AVQString@@HABV2@_N@Z @ 127 NONAME ; class QString QSqlIndex::createField(int, class QString const &, bool) const
+	?createResult@QSQLiteDriver@@UBEPAVQSqlResult@@XZ @ 128 NONAME ; class QSqlResult * QSQLiteDriver::createResult(void) const
+	?cursorName@QSqlIndex@@QBE?AVQString@@XZ @ 129 NONAME ; class QString QSqlIndex::cursorName(void) const
+	?d_func@QSqlDriver@@AAEPAVQSqlDriverPrivate@@XZ @ 130 NONAME ; class QSqlDriverPrivate * QSqlDriver::d_func(void)
+	?d_func@QSqlDriver@@ABEPBVQSqlDriverPrivate@@XZ @ 131 NONAME ; class QSqlDriverPrivate const * QSqlDriver::d_func(void) const
+	?d_func@QSqlQueryModel@@AAEPAVQSqlQueryModelPrivate@@XZ @ 132 NONAME ; class QSqlQueryModelPrivate * QSqlQueryModel::d_func(void)
+	?d_func@QSqlQueryModel@@ABEPBVQSqlQueryModelPrivate@@XZ @ 133 NONAME ; class QSqlQueryModelPrivate const * QSqlQueryModel::d_func(void) const
+	?d_func@QSqlRelationalTableModel@@AAEPAVQSqlRelationalTableModelPrivate@@XZ @ 134 NONAME ; class QSqlRelationalTableModelPrivate * QSqlRelationalTableModel::d_func(void)
+	?d_func@QSqlRelationalTableModel@@ABEPBVQSqlRelationalTableModelPrivate@@XZ @ 135 NONAME ; class QSqlRelationalTableModelPrivate const * QSqlRelationalTableModel::d_func(void) const
+	?d_func@QSqlTableModel@@AAEPAVQSqlTableModelPrivate@@XZ @ 136 NONAME ; class QSqlTableModelPrivate * QSqlTableModel::d_func(void)
+	?d_func@QSqlTableModel@@ABEPBVQSqlTableModelPrivate@@XZ @ 137 NONAME ; class QSqlTableModelPrivate const * QSqlTableModel::d_func(void) const
+	?data@QSqlCachedResult@@MAE?AVQVariant@@H@Z @ 138 NONAME ; class QVariant QSqlCachedResult::data(int)
+	?data@QSqlQueryModel@@UBE?AVQVariant@@ABVQModelIndex@@H@Z @ 139 NONAME ; class QVariant QSqlQueryModel::data(class QModelIndex const &, int) const
+	?data@QSqlRelationalTableModel@@UBE?AVQVariant@@ABVQModelIndex@@H@Z @ 140 NONAME ; class QVariant QSqlRelationalTableModel::data(class QModelIndex const &, int) const
+	?data@QSqlTableModel@@UBE?AVQVariant@@ABVQModelIndex@@H@Z @ 141 NONAME ; class QVariant QSqlTableModel::data(class QModelIndex const &, int) const
+	?database@QSqlDatabase@@SA?AV1@ABVQString@@_N@Z @ 142 NONAME ; class QSqlDatabase QSqlDatabase::database(class QString const &, bool)
+	?database@QSqlTableModel@@QBE?AVQSqlDatabase@@XZ @ 143 NONAME ; class QSqlDatabase QSqlTableModel::database(void) const
+	?databaseName@QSqlDatabase@@QBE?AVQString@@XZ @ 144 NONAME ; class QString QSqlDatabase::databaseName(void) const
+	?databaseText@QSqlError@@QBE?AVQString@@XZ @ 145 NONAME ; class QString QSqlError::databaseText(void) const
+	?defaultValue@QSqlField@@QBE?AVQVariant@@XZ @ 146 NONAME ; class QVariant QSqlField::defaultValue(void) const
+	?deleteRowFromTable@QSqlTableModel@@MAE_NH@Z @ 147 NONAME ; bool QSqlTableModel::deleteRowFromTable(int)
+	?detach@QSqlField@@AAEXXZ @ 148 NONAME ; void QSqlField::detach(void)
+	?detach@QSqlRecord@@AAEXXZ @ 149 NONAME ; void QSqlRecord::detach(void)
+	?detachFromResultSet@QSqlResult@@IAEXXZ @ 150 NONAME ; void QSqlResult::detachFromResultSet(void)
+	?displayColumn@QSqlRelation@@QBE?AVQString@@XZ @ 151 NONAME ; class QString QSqlRelation::displayColumn(void) const
+	?driver@QSqlDatabase@@QBEPAVQSqlDriver@@XZ @ 152 NONAME ; class QSqlDriver * QSqlDatabase::driver(void) const
+	?driver@QSqlQuery@@QBEPBVQSqlDriver@@XZ @ 153 NONAME ; class QSqlDriver const * QSqlQuery::driver(void) const
+	?driver@QSqlResult@@IBEPBVQSqlDriver@@XZ @ 154 NONAME ; class QSqlDriver const * QSqlResult::driver(void) const
+	?driverName@QSqlDatabase@@QBE?AVQString@@XZ @ 155 NONAME ; class QString QSqlDatabase::driverName(void) const
+	?driverText@QSqlError@@QBE?AVQString@@XZ @ 156 NONAME ; class QString QSqlError::driverText(void) const
+	?drivers@QSqlDatabase@@SA?AVQStringList@@XZ @ 157 NONAME ; class QStringList QSqlDatabase::drivers(void)
+	?editStrategy@QSqlTableModel@@QBE?AW4EditStrategy@1@XZ @ 158 NONAME ; enum QSqlTableModel::EditStrategy QSqlTableModel::editStrategy(void) const
+	?escapeIdentifier@QSQLiteDriver@@UBE?AVQString@@ABV2@W4IdentifierType@QSqlDriver@@@Z @ 159 NONAME ; class QString QSQLiteDriver::escapeIdentifier(class QString const &, enum QSqlDriver::IdentifierType) const
+	?escapeIdentifier@QSqlDriver@@UBE?AVQString@@ABV2@W4IdentifierType@1@@Z @ 160 NONAME ; class QString QSqlDriver::escapeIdentifier(class QString const &, enum QSqlDriver::IdentifierType) const
+	?exec@QSqlDatabase@@QBE?AVQSqlQuery@@ABVQString@@@Z @ 161 NONAME ; class QSqlQuery QSqlDatabase::exec(class QString const &) const
+	?exec@QSqlQuery@@QAE_NABVQString@@@Z @ 162 NONAME ; bool QSqlQuery::exec(class QString const &)
+	?exec@QSqlQuery@@QAE_NXZ @ 163 NONAME ; bool QSqlQuery::exec(void)
+	?exec@QSqlResult@@MAE_NXZ @ 164 NONAME ; bool QSqlResult::exec(void)
+	?execBatch@QSqlQuery@@QAE_NW4BatchExecutionMode@1@@Z @ 165 NONAME ; bool QSqlQuery::execBatch(enum QSqlQuery::BatchExecutionMode)
+	?execBatch@QSqlResult@@IAE_N_N@Z @ 166 NONAME ; bool QSqlResult::execBatch(bool)
+	?executedQuery@QSqlQuery@@QBE?AVQString@@XZ @ 167 NONAME ; class QString QSqlQuery::executedQuery(void) const
+	?executedQuery@QSqlResult@@IBE?AVQString@@XZ @ 168 NONAME ; class QString QSqlResult::executedQuery(void) const
+	?fetch@QSqlCachedResult@@MAE_NH@Z @ 169 NONAME ; bool QSqlCachedResult::fetch(int)
+	?fetchFirst@QSqlCachedResult@@MAE_NXZ @ 170 NONAME ; bool QSqlCachedResult::fetchFirst(void)
+	?fetchLast@QSqlCachedResult@@MAE_NXZ @ 171 NONAME ; bool QSqlCachedResult::fetchLast(void)
+	?fetchMore@QSqlQueryModel@@UAEXABVQModelIndex@@@Z @ 172 NONAME ; void QSqlQueryModel::fetchMore(class QModelIndex const &)
+	?fetchNext@QSqlCachedResult@@MAE_NXZ @ 173 NONAME ; bool QSqlCachedResult::fetchNext(void)
+	?fetchNext@QSqlResult@@MAE_NXZ @ 174 NONAME ; bool QSqlResult::fetchNext(void)
+	?fetchPrevious@QSqlCachedResult@@MAE_NXZ @ 175 NONAME ; bool QSqlCachedResult::fetchPrevious(void)
+	?fetchPrevious@QSqlResult@@MAE_NXZ @ 176 NONAME ; bool QSqlResult::fetchPrevious(void)
+	?field@QSqlRecord@@QBE?AVQSqlField@@ABVQString@@@Z @ 177 NONAME ; class QSqlField QSqlRecord::field(class QString const &) const
+	?field@QSqlRecord@@QBE?AVQSqlField@@H@Z @ 178 NONAME ; class QSqlField QSqlRecord::field(int) const
+	?fieldIndex@QSqlTableModel@@QBEHABVQString@@@Z @ 179 NONAME ; int QSqlTableModel::fieldIndex(class QString const &) const
+	?fieldName@QSqlRecord@@QBE?AVQString@@H@Z @ 180 NONAME ; class QString QSqlRecord::fieldName(int) const
+	?filter@QSqlTableModel@@QBE?AVQString@@XZ @ 181 NONAME ; class QString QSqlTableModel::filter(void) const
+	?finish@QSqlQuery@@QAEXXZ @ 182 NONAME ; void QSqlQuery::finish(void)
+	?first@QSqlQuery@@QAE_NXZ @ 183 NONAME ; bool QSqlQuery::first(void)
+	?flags@QSqlTableModel@@UBE?AV?$QFlags@W4ItemFlag@Qt@@@@ABVQModelIndex@@@Z @ 184 NONAME ; class QFlags<enum Qt::ItemFlag> QSqlTableModel::flags(class QModelIndex const &) const
+	?formatValue@QSqlDriver@@UBE?AVQString@@ABVQSqlField@@_N@Z @ 185 NONAME ; class QString QSqlDriver::formatValue(class QSqlField const &, bool) const
+	?getStaticMetaObject@QSQLiteDriver@@SAABUQMetaObject@@XZ @ 186 NONAME ; struct QMetaObject const & QSQLiteDriver::getStaticMetaObject(void)
+	?getStaticMetaObject@QSqlDriver@@SAABUQMetaObject@@XZ @ 187 NONAME ; struct QMetaObject const & QSqlDriver::getStaticMetaObject(void)
+	?getStaticMetaObject@QSqlDriverPlugin@@SAABUQMetaObject@@XZ @ 188 NONAME ; struct QMetaObject const & QSqlDriverPlugin::getStaticMetaObject(void)
+	?getStaticMetaObject@QSqlQueryModel@@SAABUQMetaObject@@XZ @ 189 NONAME ; struct QMetaObject const & QSqlQueryModel::getStaticMetaObject(void)
+	?getStaticMetaObject@QSqlRelationalTableModel@@SAABUQMetaObject@@XZ @ 190 NONAME ; struct QMetaObject const & QSqlRelationalTableModel::getStaticMetaObject(void)
+	?getStaticMetaObject@QSqlTableModel@@SAABUQMetaObject@@XZ @ 191 NONAME ; struct QMetaObject const & QSqlTableModel::getStaticMetaObject(void)
+	?handle@QSQLiteDriver@@UBE?AVQVariant@@XZ @ 192 NONAME ; class QVariant QSQLiteDriver::handle(void) const
+	?handle@QSqlDriver@@UBE?AVQVariant@@XZ @ 193 NONAME ; class QVariant QSqlDriver::handle(void) const
+	?handle@QSqlResult@@UBE?AVQVariant@@XZ @ 194 NONAME ; class QVariant QSqlResult::handle(void) const
+	?hasFeature@QSQLiteDriver@@UBE_NW4DriverFeature@QSqlDriver@@@Z @ 195 NONAME ; bool QSQLiteDriver::hasFeature(enum QSqlDriver::DriverFeature) const
+	?hasOutValues@QSqlResult@@IBE_NXZ @ 196 NONAME ; bool QSqlResult::hasOutValues(void) const
+	?headerData@QSqlQueryModel@@UBE?AVQVariant@@HW4Orientation@Qt@@H@Z @ 197 NONAME ; class QVariant QSqlQueryModel::headerData(int, enum Qt::Orientation, int) const
+	?headerData@QSqlTableModel@@UBE?AVQVariant@@HW4Orientation@Qt@@H@Z @ 198 NONAME ; class QVariant QSqlTableModel::headerData(int, enum Qt::Orientation, int) const
+	?hostName@QSqlDatabase@@QBE?AVQString@@XZ @ 199 NONAME ; class QString QSqlDatabase::hostName(void) const
+	?indexColumn@QSqlRelation@@QBE?AVQString@@XZ @ 200 NONAME ; class QString QSqlRelation::indexColumn(void) const
+	?indexInQuery@QSqlQueryModel@@IBE?AVQModelIndex@@ABV2@@Z @ 201 NONAME ; class QModelIndex QSqlQueryModel::indexInQuery(class QModelIndex const &) const
+	?indexInQuery@QSqlTableModel@@IBE?AVQModelIndex@@ABV2@@Z @ 202 NONAME ; class QModelIndex QSqlTableModel::indexInQuery(class QModelIndex const &) const
+	?indexOf@QSqlRecord@@QBEHABVQString@@@Z @ 203 NONAME ; int QSqlRecord::indexOf(class QString const &) const
+	?init@QSqlCachedResult@@IAEXH@Z @ 204 NONAME ; void QSqlCachedResult::init(int)
+	?insert@QSqlRecord@@QAEXHABVQSqlField@@@Z @ 205 NONAME ; void QSqlRecord::insert(int, class QSqlField const &)
+	?insertColumns@QSqlQueryModel@@UAE_NHHABVQModelIndex@@@Z @ 206 NONAME ; bool QSqlQueryModel::insertColumns(int, int, class QModelIndex const &)
+	?insertRecord@QSqlTableModel@@QAE_NHABVQSqlRecord@@@Z @ 207 NONAME ; bool QSqlTableModel::insertRecord(int, class QSqlRecord const &)
+	?insertRowIntoTable@QSqlRelationalTableModel@@MAE_NABVQSqlRecord@@@Z @ 208 NONAME ; bool QSqlRelationalTableModel::insertRowIntoTable(class QSqlRecord const &)
+	?insertRowIntoTable@QSqlTableModel@@MAE_NABVQSqlRecord@@@Z @ 209 NONAME ; bool QSqlTableModel::insertRowIntoTable(class QSqlRecord const &)
+	?insertRows@QSqlTableModel@@UAE_NHHABVQModelIndex@@@Z @ 210 NONAME ; bool QSqlTableModel::insertRows(int, int, class QModelIndex const &)
+	?isActive@QSqlQuery@@QBE_NXZ @ 211 NONAME ; bool QSqlQuery::isActive(void) const
+	?isActive@QSqlResult@@IBE_NXZ @ 212 NONAME ; bool QSqlResult::isActive(void) const
+	?isAutoValue@QSqlField@@QBE_NXZ @ 213 NONAME ; bool QSqlField::isAutoValue(void) const
+	?isDescending@QSqlIndex@@QBE_NH@Z @ 214 NONAME ; bool QSqlIndex::isDescending(int) const
+	?isDirty@QSqlTableModel@@QBE_NABVQModelIndex@@@Z @ 215 NONAME ; bool QSqlTableModel::isDirty(class QModelIndex const &) const
+	?isDriverAvailable@QSqlDatabase@@SA_NABVQString@@@Z @ 216 NONAME ; bool QSqlDatabase::isDriverAvailable(class QString const &)
+	?isEmpty@QSqlRecord@@QBE_NXZ @ 217 NONAME ; bool QSqlRecord::isEmpty(void) const
+	?isForwardOnly@QSqlQuery@@QBE_NXZ @ 218 NONAME ; bool QSqlQuery::isForwardOnly(void) const
+	?isForwardOnly@QSqlResult@@IBE_NXZ @ 219 NONAME ; bool QSqlResult::isForwardOnly(void) const
+	?isGenerated@QSqlField@@QBE_NXZ @ 220 NONAME ; bool QSqlField::isGenerated(void) const
+	?isGenerated@QSqlRecord@@QBE_NABVQString@@@Z @ 221 NONAME ; bool QSqlRecord::isGenerated(class QString const &) const
+	?isGenerated@QSqlRecord@@QBE_NH@Z @ 222 NONAME ; bool QSqlRecord::isGenerated(int) const
+	?isIdentifierEscaped@QSqlDriver@@QBE_NABVQString@@W4IdentifierType@1@@Z @ 223 NONAME ; bool QSqlDriver::isIdentifierEscaped(class QString const &, enum QSqlDriver::IdentifierType) const
+	?isIdentifierEscapedImplementation@QSqlDriver@@IBE_NABVQString@@W4IdentifierType@1@@Z @ 224 NONAME ; bool QSqlDriver::isIdentifierEscapedImplementation(class QString const &, enum QSqlDriver::IdentifierType) const
+	?isNull@QSqlCachedResult@@MAE_NH@Z @ 225 NONAME ; bool QSqlCachedResult::isNull(int)
+	?isNull@QSqlField@@QBE_NXZ @ 226 NONAME ; bool QSqlField::isNull(void) const
+	?isNull@QSqlQuery@@QBE_NH@Z @ 227 NONAME ; bool QSqlQuery::isNull(int) const
+	?isNull@QSqlRecord@@QBE_NABVQString@@@Z @ 228 NONAME ; bool QSqlRecord::isNull(class QString const &) const
+	?isNull@QSqlRecord@@QBE_NH@Z @ 229 NONAME ; bool QSqlRecord::isNull(int) const
+	?isOpen@QSqlDatabase@@QBE_NXZ @ 230 NONAME ; bool QSqlDatabase::isOpen(void) const
+	?isOpen@QSqlDriver@@UBE_NXZ @ 231 NONAME ; bool QSqlDriver::isOpen(void) const
+	?isOpenError@QSqlDatabase@@QBE_NXZ @ 232 NONAME ; bool QSqlDatabase::isOpenError(void) const
+	?isOpenError@QSqlDriver@@QBE_NXZ @ 233 NONAME ; bool QSqlDriver::isOpenError(void) const
+	?isReadOnly@QSqlField@@QBE_NXZ @ 234 NONAME ; bool QSqlField::isReadOnly(void) const
+	?isSelect@QSqlQuery@@QBE_NXZ @ 235 NONAME ; bool QSqlQuery::isSelect(void) const
+	?isSelect@QSqlResult@@IBE_NXZ @ 236 NONAME ; bool QSqlResult::isSelect(void) const
+	?isValid@QSqlDatabase@@QBE_NXZ @ 237 NONAME ; bool QSqlDatabase::isValid(void) const
+	?isValid@QSqlError@@QBE_NXZ @ 238 NONAME ; bool QSqlError::isValid(void) const
+	?isValid@QSqlField@@QBE_NXZ @ 239 NONAME ; bool QSqlField::isValid(void) const
+	?isValid@QSqlQuery@@QBE_NXZ @ 240 NONAME ; bool QSqlQuery::isValid(void) const
+	?isValid@QSqlRelation@@QBE_NXZ @ 241 NONAME ; bool QSqlRelation::isValid(void) const
+	?isValid@QSqlResult@@IBE_NXZ @ 242 NONAME ; bool QSqlResult::isValid(void) const
+	?last@QSqlQuery@@QAE_NXZ @ 243 NONAME ; bool QSqlQuery::last(void)
+	?lastError@QSqlDatabase@@QBE?AVQSqlError@@XZ @ 244 NONAME ; class QSqlError QSqlDatabase::lastError(void) const
+	?lastError@QSqlDriver@@QBE?AVQSqlError@@XZ @ 245 NONAME ; class QSqlError QSqlDriver::lastError(void) const
+	?lastError@QSqlQuery@@QBE?AVQSqlError@@XZ @ 246 NONAME ; class QSqlError QSqlQuery::lastError(void) const
+	?lastError@QSqlQueryModel@@QBE?AVQSqlError@@XZ @ 247 NONAME ; class QSqlError QSqlQueryModel::lastError(void) const
+	?lastError@QSqlResult@@IBE?AVQSqlError@@XZ @ 248 NONAME ; class QSqlError QSqlResult::lastError(void) const
+	?lastInsertId@QSqlQuery@@QBE?AVQVariant@@XZ @ 249 NONAME ; class QVariant QSqlQuery::lastInsertId(void) const
+	?lastInsertId@QSqlResult@@MBE?AVQVariant@@XZ @ 250 NONAME ; class QVariant QSqlResult::lastInsertId(void) const
+	?lastQuery@QSqlQuery@@QBE?AVQString@@XZ @ 251 NONAME ; class QString QSqlQuery::lastQuery(void) const
+	?lastQuery@QSqlResult@@IBE?AVQString@@XZ @ 252 NONAME ; class QString QSqlResult::lastQuery(void) const
+	?length@QSqlField@@QBEHXZ @ 253 NONAME ; int QSqlField::length(void) const
+	?metaObject@QSQLiteDriver@@UBEPBUQMetaObject@@XZ @ 254 NONAME ; struct QMetaObject const * QSQLiteDriver::metaObject(void) const
+	?metaObject@QSqlDriver@@UBEPBUQMetaObject@@XZ @ 255 NONAME ; struct QMetaObject const * QSqlDriver::metaObject(void) const
+	?metaObject@QSqlDriverPlugin@@UBEPBUQMetaObject@@XZ @ 256 NONAME ; struct QMetaObject const * QSqlDriverPlugin::metaObject(void) const
+	?metaObject@QSqlQueryModel@@UBEPBUQMetaObject@@XZ @ 257 NONAME ; struct QMetaObject const * QSqlQueryModel::metaObject(void) const
+	?metaObject@QSqlRelationalTableModel@@UBEPBUQMetaObject@@XZ @ 258 NONAME ; struct QMetaObject const * QSqlRelationalTableModel::metaObject(void) const
+	?metaObject@QSqlTableModel@@UBEPBUQMetaObject@@XZ @ 259 NONAME ; struct QMetaObject const * QSqlTableModel::metaObject(void) const
+	?name@QSqlField@@QBE?AVQString@@XZ @ 260 NONAME ; class QString QSqlField::name(void) const
+	?name@QSqlIndex@@QBE?AVQString@@XZ @ 261 NONAME ; class QString QSqlIndex::name(void) const
+	?next@QSqlQuery@@QAE_NXZ @ 262 NONAME ; bool QSqlQuery::next(void)
+	?nextResult@QSqlQuery@@QAE_NXZ @ 263 NONAME ; bool QSqlQuery::nextResult(void)
+	?nextResult@QSqlResult@@IAE_NXZ @ 264 NONAME ; bool QSqlResult::nextResult(void)
+	?notification@QSqlDriver@@IAEXABVQString@@@Z @ 265 NONAME ; void QSqlDriver::notification(class QString const &)
+	?numRowsAffected@QSqlQuery@@QBEHXZ @ 266 NONAME ; int QSqlQuery::numRowsAffected(void) const
+	?number@QSqlError@@QBEHXZ @ 267 NONAME ; int QSqlError::number(void) const
+	?numericalPrecisionPolicy@QSqlDatabase@@QBE?AW4NumericalPrecisionPolicy@QSql@@XZ @ 268 NONAME ; enum QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy(void) const
+	?numericalPrecisionPolicy@QSqlDriver@@QBE?AW4NumericalPrecisionPolicy@QSql@@XZ @ 269 NONAME ; enum QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy(void) const
+	?numericalPrecisionPolicy@QSqlQuery@@QBE?AW4NumericalPrecisionPolicy@QSql@@XZ @ 270 NONAME ; enum QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy(void) const
+	?numericalPrecisionPolicy@QSqlResult@@IBE?AW4NumericalPrecisionPolicy@QSql@@XZ @ 271 NONAME ; enum QSql::NumericalPrecisionPolicy QSqlResult::numericalPrecisionPolicy(void) const
+	?open@QSQLiteDriver@@UAE_NABVQString@@000H0@Z @ 272 NONAME ; bool QSQLiteDriver::open(class QString const &, class QString const &, class QString const &, class QString const &, int, class QString const &)
+	?open@QSqlDatabase@@QAE_NABVQString@@0@Z @ 273 NONAME ; bool QSqlDatabase::open(class QString const &, class QString const &)
+	?open@QSqlDatabase@@QAE_NXZ @ 274 NONAME ; bool QSqlDatabase::open(void)
+	?orderByClause@QSqlRelationalTableModel@@MBE?AVQString@@XZ @ 275 NONAME ; class QString QSqlRelationalTableModel::orderByClause(void) const
+	?orderByClause@QSqlTableModel@@MBE?AVQString@@XZ @ 276 NONAME ; class QString QSqlTableModel::orderByClause(void) const
+	?password@QSqlDatabase@@QBE?AVQString@@XZ @ 277 NONAME ; class QString QSqlDatabase::password(void) const
+	?port@QSqlDatabase@@QBEHXZ @ 278 NONAME ; int QSqlDatabase::port(void) const
+	?precision@QSqlField@@QBEHXZ @ 279 NONAME ; int QSqlField::precision(void) const
+	?prepare@QSqlQuery@@QAE_NABVQString@@@Z @ 280 NONAME ; bool QSqlQuery::prepare(class QString const &)
+	?prepare@QSqlResult@@MAE_NABVQString@@@Z @ 281 NONAME ; bool QSqlResult::prepare(class QString const &)
+	?previous@QSqlQuery@@QAE_NXZ @ 282 NONAME ; bool QSqlQuery::previous(void)
+	?primaryIndex@QSQLiteDriver@@UBE?AVQSqlIndex@@ABVQString@@@Z @ 283 NONAME ; class QSqlIndex QSQLiteDriver::primaryIndex(class QString const &) const
+	?primaryIndex@QSqlDatabase@@QBE?AVQSqlIndex@@ABVQString@@@Z @ 284 NONAME ; class QSqlIndex QSqlDatabase::primaryIndex(class QString const &) const
+	?primaryIndex@QSqlDriver@@UBE?AVQSqlIndex@@ABVQString@@@Z @ 285 NONAME ; class QSqlIndex QSqlDriver::primaryIndex(class QString const &) const
+	?primaryKey@QSqlTableModel@@QBE?AVQSqlIndex@@XZ @ 286 NONAME ; class QSqlIndex QSqlTableModel::primaryKey(void) const
+	?primeInsert@QSqlTableModel@@IAEXHAAVQSqlRecord@@@Z @ 287 NONAME ; void QSqlTableModel::primeInsert(int, class QSqlRecord &)
+	?qt_metacall@QSQLiteDriver@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 288 NONAME ; int QSQLiteDriver::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QSqlDriver@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 289 NONAME ; int QSqlDriver::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QSqlDriverPlugin@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 290 NONAME ; int QSqlDriverPlugin::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QSqlQueryModel@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 291 NONAME ; int QSqlQueryModel::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QSqlRelationalTableModel@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 292 NONAME ; int QSqlRelationalTableModel::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QSqlTableModel@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 293 NONAME ; int QSqlTableModel::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QSQLiteDriver@@UAEPAXPBD@Z @ 294 NONAME ; void * QSQLiteDriver::qt_metacast(char const *)
+	?qt_metacast@QSqlDriver@@UAEPAXPBD@Z @ 295 NONAME ; void * QSqlDriver::qt_metacast(char const *)
+	?qt_metacast@QSqlDriverPlugin@@UAEPAXPBD@Z @ 296 NONAME ; void * QSqlDriverPlugin::qt_metacast(char const *)
+	?qt_metacast@QSqlQueryModel@@UAEPAXPBD@Z @ 297 NONAME ; void * QSqlQueryModel::qt_metacast(char const *)
+	?qt_metacast@QSqlRelationalTableModel@@UAEPAXPBD@Z @ 298 NONAME ; void * QSqlRelationalTableModel::qt_metacast(char const *)
+	?qt_metacast@QSqlTableModel@@UAEPAXPBD@Z @ 299 NONAME ; void * QSqlTableModel::qt_metacast(char const *)
+	?query@QSqlQueryModel@@QBE?AVQSqlQuery@@XZ @ 300 NONAME ; class QSqlQuery QSqlQueryModel::query(void) const
+	?queryChange@QSqlQueryModel@@MAEXXZ @ 301 NONAME ; void QSqlQueryModel::queryChange(void)
+	?record@QSQLiteDriver@@UBE?AVQSqlRecord@@ABVQString@@@Z @ 302 NONAME ; class QSqlRecord QSQLiteDriver::record(class QString const &) const
+	?record@QSqlDatabase@@QBE?AVQSqlRecord@@ABVQString@@@Z @ 303 NONAME ; class QSqlRecord QSqlDatabase::record(class QString const &) const
+	?record@QSqlDriver@@UBE?AVQSqlRecord@@ABVQString@@@Z @ 304 NONAME ; class QSqlRecord QSqlDriver::record(class QString const &) const
+	?record@QSqlQuery@@QBE?AVQSqlRecord@@XZ @ 305 NONAME ; class QSqlRecord QSqlQuery::record(void) const
+	?record@QSqlQueryModel@@QBE?AVQSqlRecord@@H@Z @ 306 NONAME ; class QSqlRecord QSqlQueryModel::record(int) const
+	?record@QSqlQueryModel@@QBE?AVQSqlRecord@@XZ @ 307 NONAME ; class QSqlRecord QSqlQueryModel::record(void) const
+	?record@QSqlResult@@MBE?AVQSqlRecord@@XZ @ 308 NONAME ; class QSqlRecord QSqlResult::record(void) const
+	?registerSqlDriver@QSqlDatabase@@SAXABVQString@@PAVQSqlDriverCreatorBase@@@Z @ 309 NONAME ; void QSqlDatabase::registerSqlDriver(class QString const &, class QSqlDriverCreatorBase *)
+	?relation@QSqlRelationalTableModel@@QBE?AVQSqlRelation@@H@Z @ 310 NONAME ; class QSqlRelation QSqlRelationalTableModel::relation(int) const
+	?relationModel@QSqlRelationalTableModel@@UBEPAVQSqlTableModel@@H@Z @ 311 NONAME ; class QSqlTableModel * QSqlRelationalTableModel::relationModel(int) const
+	?remove@QSqlRecord@@QAEXH@Z @ 312 NONAME ; void QSqlRecord::remove(int)
+	?removeColumns@QSqlQueryModel@@UAE_NHHABVQModelIndex@@@Z @ 313 NONAME ; bool QSqlQueryModel::removeColumns(int, int, class QModelIndex const &)
+	?removeColumns@QSqlRelationalTableModel@@UAE_NHHABVQModelIndex@@@Z @ 314 NONAME ; bool QSqlRelationalTableModel::removeColumns(int, int, class QModelIndex const &)
+	?removeColumns@QSqlTableModel@@UAE_NHHABVQModelIndex@@@Z @ 315 NONAME ; bool QSqlTableModel::removeColumns(int, int, class QModelIndex const &)
+	?removeDatabase@QSqlDatabase@@SAXABVQString@@@Z @ 316 NONAME ; void QSqlDatabase::removeDatabase(class QString const &)
+	?removeRows@QSqlTableModel@@UAE_NHHABVQModelIndex@@@Z @ 317 NONAME ; bool QSqlTableModel::removeRows(int, int, class QModelIndex const &)
+	?replace@QSqlRecord@@QAEXHABVQSqlField@@@Z @ 318 NONAME ; void QSqlRecord::replace(int, class QSqlField const &)
+	?requiredStatus@QSqlField@@QBE?AW4RequiredStatus@1@XZ @ 319 NONAME ; enum QSqlField::RequiredStatus QSqlField::requiredStatus(void) const
+	?resetBindCount@QSqlResult@@AAEXXZ @ 320 NONAME ; void QSqlResult::resetBindCount(void)
+	?result@QSqlQuery@@QBEPBVQSqlResult@@XZ @ 321 NONAME ; class QSqlResult const * QSqlQuery::result(void) const
+	?revert@QSqlTableModel@@UAEXXZ @ 322 NONAME ; void QSqlTableModel::revert(void)
+	?revertAll@QSqlTableModel@@QAEXXZ @ 323 NONAME ; void QSqlTableModel::revertAll(void)
+	?revertRow@QSqlRelationalTableModel@@UAEXH@Z @ 324 NONAME ; void QSqlRelationalTableModel::revertRow(int)
+	?revertRow@QSqlTableModel@@UAEXH@Z @ 325 NONAME ; void QSqlTableModel::revertRow(int)
+	?rollback@QSqlDatabase@@QAE_NXZ @ 326 NONAME ; bool QSqlDatabase::rollback(void)
+	?rollbackTransaction@QSQLiteDriver@@UAE_NXZ @ 327 NONAME ; bool QSQLiteDriver::rollbackTransaction(void)
+	?rollbackTransaction@QSqlDriver@@UAE_NXZ @ 328 NONAME ; bool QSqlDriver::rollbackTransaction(void)
+	?rowCount@QSqlQueryModel@@UBEHABVQModelIndex@@@Z @ 329 NONAME ; int QSqlQueryModel::rowCount(class QModelIndex const &) const
+	?rowCount@QSqlTableModel@@UBEHABVQModelIndex@@@Z @ 330 NONAME ; int QSqlTableModel::rowCount(class QModelIndex const &) const
+	?savePrepare@QSqlResult@@MAE_NABVQString@@@Z @ 331 NONAME ; bool QSqlResult::savePrepare(class QString const &)
+	?seek@QSqlQuery@@QAE_NH_N@Z @ 332 NONAME ; bool QSqlQuery::seek(int, bool)
+	?select@QSqlRelationalTableModel@@UAE_NXZ @ 333 NONAME ; bool QSqlRelationalTableModel::select(void)
+	?select@QSqlTableModel@@UAE_NXZ @ 334 NONAME ; bool QSqlTableModel::select(void)
+	?selectStatement@QSqlRelationalTableModel@@MBE?AVQString@@XZ @ 335 NONAME ; class QString QSqlRelationalTableModel::selectStatement(void) const
+	?selectStatement@QSqlTableModel@@MBE?AVQString@@XZ @ 336 NONAME ; class QString QSqlTableModel::selectStatement(void) const
+	?setActive@QSqlResult@@MAEX_N@Z @ 337 NONAME ; void QSqlResult::setActive(bool)
+	?setAt@QSqlResult@@MAEXH@Z @ 338 NONAME ; void QSqlResult::setAt(int)
+	?setAutoValue@QSqlField@@QAEX_N@Z @ 339 NONAME ; void QSqlField::setAutoValue(bool)
+	?setConnectOptions@QSqlDatabase@@QAEXABVQString@@@Z @ 340 NONAME ; void QSqlDatabase::setConnectOptions(class QString const &)
+	?setCursorName@QSqlIndex@@QAEXABVQString@@@Z @ 341 NONAME ; void QSqlIndex::setCursorName(class QString const &)
+	?setData@QSqlRelationalTableModel@@UAE_NABVQModelIndex@@ABVQVariant@@H@Z @ 342 NONAME ; bool QSqlRelationalTableModel::setData(class QModelIndex const &, class QVariant const &, int)
+	?setData@QSqlTableModel@@UAE_NABVQModelIndex@@ABVQVariant@@H@Z @ 343 NONAME ; bool QSqlTableModel::setData(class QModelIndex const &, class QVariant const &, int)
+	?setDatabaseName@QSqlDatabase@@QAEXABVQString@@@Z @ 344 NONAME ; void QSqlDatabase::setDatabaseName(class QString const &)
+	?setDatabaseText@QSqlError@@QAEXABVQString@@@Z @ 345 NONAME ; void QSqlError::setDatabaseText(class QString const &)
+	?setDefaultValue@QSqlField@@QAEXABVQVariant@@@Z @ 346 NONAME ; void QSqlField::setDefaultValue(class QVariant const &)
+	?setDescending@QSqlIndex@@QAEXH_N@Z @ 347 NONAME ; void QSqlIndex::setDescending(int, bool)
+	?setDriverText@QSqlError@@QAEXABVQString@@@Z @ 348 NONAME ; void QSqlError::setDriverText(class QString const &)
+	?setEditStrategy@QSqlTableModel@@UAEXW4EditStrategy@1@@Z @ 349 NONAME ; void QSqlTableModel::setEditStrategy(enum QSqlTableModel::EditStrategy)
+	?setFilter@QSqlTableModel@@UAEXABVQString@@@Z @ 350 NONAME ; void QSqlTableModel::setFilter(class QString const &)
+	?setForwardOnly@QSqlQuery@@QAEX_N@Z @ 351 NONAME ; void QSqlQuery::setForwardOnly(bool)
+	?setForwardOnly@QSqlResult@@MAEX_N@Z @ 352 NONAME ; void QSqlResult::setForwardOnly(bool)
+	?setGenerated@QSqlField@@QAEX_N@Z @ 353 NONAME ; void QSqlField::setGenerated(bool)
+	?setGenerated@QSqlRecord@@QAEXABVQString@@_N@Z @ 354 NONAME ; void QSqlRecord::setGenerated(class QString const &, bool)
+	?setGenerated@QSqlRecord@@QAEXH_N@Z @ 355 NONAME ; void QSqlRecord::setGenerated(int, bool)
+	?setHeaderData@QSqlQueryModel@@UAE_NHW4Orientation@Qt@@ABVQVariant@@H@Z @ 356 NONAME ; bool QSqlQueryModel::setHeaderData(int, enum Qt::Orientation, class QVariant const &, int)
+	?setHostName@QSqlDatabase@@QAEXABVQString@@@Z @ 357 NONAME ; void QSqlDatabase::setHostName(class QString const &)
+	?setLastError@QSqlDriver@@MAEXABVQSqlError@@@Z @ 358 NONAME ; void QSqlDriver::setLastError(class QSqlError const &)
+	?setLastError@QSqlQueryModel@@IAEXABVQSqlError@@@Z @ 359 NONAME ; void QSqlQueryModel::setLastError(class QSqlError const &)
+	?setLastError@QSqlResult@@MAEXABVQSqlError@@@Z @ 360 NONAME ; void QSqlResult::setLastError(class QSqlError const &)
+	?setLength@QSqlField@@QAEXH@Z @ 361 NONAME ; void QSqlField::setLength(int)
+	?setName@QSqlField@@QAEXABVQString@@@Z @ 362 NONAME ; void QSqlField::setName(class QString const &)
+	?setName@QSqlIndex@@QAEXABVQString@@@Z @ 363 NONAME ; void QSqlIndex::setName(class QString const &)
+	?setNull@QSqlRecord@@QAEXABVQString@@@Z @ 364 NONAME ; void QSqlRecord::setNull(class QString const &)
+	?setNull@QSqlRecord@@QAEXH@Z @ 365 NONAME ; void QSqlRecord::setNull(int)
+	?setNumber@QSqlError@@QAEXH@Z @ 366 NONAME ; void QSqlError::setNumber(int)
+	?setNumericalPrecisionPolicy@QSqlDatabase@@QAEXW4NumericalPrecisionPolicy@QSql@@@Z @ 367 NONAME ; void QSqlDatabase::setNumericalPrecisionPolicy(enum QSql::NumericalPrecisionPolicy)
+	?setNumericalPrecisionPolicy@QSqlDriver@@QAEXW4NumericalPrecisionPolicy@QSql@@@Z @ 368 NONAME ; void QSqlDriver::setNumericalPrecisionPolicy(enum QSql::NumericalPrecisionPolicy)
+	?setNumericalPrecisionPolicy@QSqlQuery@@QAEXW4NumericalPrecisionPolicy@QSql@@@Z @ 369 NONAME ; void QSqlQuery::setNumericalPrecisionPolicy(enum QSql::NumericalPrecisionPolicy)
+	?setNumericalPrecisionPolicy@QSqlResult@@IAEXW4NumericalPrecisionPolicy@QSql@@@Z @ 370 NONAME ; void QSqlResult::setNumericalPrecisionPolicy(enum QSql::NumericalPrecisionPolicy)
+	?setOpen@QSqlDriver@@MAEX_N@Z @ 371 NONAME ; void QSqlDriver::setOpen(bool)
+	?setOpenError@QSqlDriver@@MAEX_N@Z @ 372 NONAME ; void QSqlDriver::setOpenError(bool)
+	?setPassword@QSqlDatabase@@QAEXABVQString@@@Z @ 373 NONAME ; void QSqlDatabase::setPassword(class QString const &)
+	?setPort@QSqlDatabase@@QAEXH@Z @ 374 NONAME ; void QSqlDatabase::setPort(int)
+	?setPrecision@QSqlField@@QAEXH@Z @ 375 NONAME ; void QSqlField::setPrecision(int)
+	?setPrimaryKey@QSqlTableModel@@IAEXABVQSqlIndex@@@Z @ 376 NONAME ; void QSqlTableModel::setPrimaryKey(class QSqlIndex const &)
+	?setQuery@QSqlQueryModel@@QAEXABVQSqlQuery@@@Z @ 377 NONAME ; void QSqlQueryModel::setQuery(class QSqlQuery const &)
+	?setQuery@QSqlQueryModel@@QAEXABVQString@@ABVQSqlDatabase@@@Z @ 378 NONAME ; void QSqlQueryModel::setQuery(class QString const &, class QSqlDatabase const &)
+	?setQuery@QSqlResult@@MAEXABVQString@@@Z @ 379 NONAME ; void QSqlResult::setQuery(class QString const &)
+	?setQuery@QSqlTableModel@@IAEXABVQSqlQuery@@@Z @ 380 NONAME ; void QSqlTableModel::setQuery(class QSqlQuery const &)
+	?setReadOnly@QSqlField@@QAEX_N@Z @ 381 NONAME ; void QSqlField::setReadOnly(bool)
+	?setRecord@QSqlTableModel@@QAE_NHABVQSqlRecord@@@Z @ 382 NONAME ; bool QSqlTableModel::setRecord(int, class QSqlRecord const &)
+	?setRelation@QSqlRelationalTableModel@@UAEXHABVQSqlRelation@@@Z @ 383 NONAME ; void QSqlRelationalTableModel::setRelation(int, class QSqlRelation const &)
+	?setRequired@QSqlField@@QAEX_N@Z @ 384 NONAME ; void QSqlField::setRequired(bool)
+	?setRequiredStatus@QSqlField@@QAEXW4RequiredStatus@1@@Z @ 385 NONAME ; void QSqlField::setRequiredStatus(enum QSqlField::RequiredStatus)
+	?setSelect@QSqlResult@@MAEX_N@Z @ 386 NONAME ; void QSqlResult::setSelect(bool)
+	?setSort@QSqlTableModel@@UAEXHW4SortOrder@Qt@@@Z @ 387 NONAME ; void QSqlTableModel::setSort(int, enum Qt::SortOrder)
+	?setSqlType@QSqlField@@QAEXH@Z @ 388 NONAME ; void QSqlField::setSqlType(int)
+	?setTable@QSqlRelationalTableModel@@UAEXABVQString@@@Z @ 389 NONAME ; void QSqlRelationalTableModel::setTable(class QString const &)
+	?setTable@QSqlTableModel@@UAEXABVQString@@@Z @ 390 NONAME ; void QSqlTableModel::setTable(class QString const &)
+	?setType@QSqlError@@QAEXW4ErrorType@1@@Z @ 391 NONAME ; void QSqlError::setType(enum QSqlError::ErrorType)
+	?setType@QSqlField@@QAEXW4Type@QVariant@@@Z @ 392 NONAME ; void QSqlField::setType(enum QVariant::Type)
+	?setUserName@QSqlDatabase@@QAEXABVQString@@@Z @ 393 NONAME ; void QSqlDatabase::setUserName(class QString const &)
+	?setValue@QSqlField@@QAEXABVQVariant@@@Z @ 394 NONAME ; void QSqlField::setValue(class QVariant const &)
+	?setValue@QSqlRecord@@QAEXABVQString@@ABVQVariant@@@Z @ 395 NONAME ; void QSqlRecord::setValue(class QString const &, class QVariant const &)
+	?setValue@QSqlRecord@@QAEXHABVQVariant@@@Z @ 396 NONAME ; void QSqlRecord::setValue(int, class QVariant const &)
+	?size@QSqlQuery@@QBEHXZ @ 397 NONAME ; int QSqlQuery::size(void) const
+	?sort@QSqlTableModel@@UAEXHW4SortOrder@Qt@@@Z @ 398 NONAME ; void QSqlTableModel::sort(int, enum Qt::SortOrder)
+	?sqlStatement@QSqlDriver@@UBE?AVQString@@W4StatementType@1@ABV2@ABVQSqlRecord@@_N@Z @ 399 NONAME ; class QString QSqlDriver::sqlStatement(enum QSqlDriver::StatementType, class QString const &, class QSqlRecord const &, bool) const
+	?stripDelimiters@QSqlDriver@@QBE?AVQString@@ABV2@W4IdentifierType@1@@Z @ 400 NONAME ; class QString QSqlDriver::stripDelimiters(class QString const &, enum QSqlDriver::IdentifierType) const
+	?stripDelimitersImplementation@QSqlDriver@@IBE?AVQString@@ABV2@W4IdentifierType@1@@Z @ 401 NONAME ; class QString QSqlDriver::stripDelimitersImplementation(class QString const &, enum QSqlDriver::IdentifierType) const
+	?submit@QSqlTableModel@@UAE_NXZ @ 402 NONAME ; bool QSqlTableModel::submit(void)
+	?submitAll@QSqlTableModel@@QAE_NXZ @ 403 NONAME ; bool QSqlTableModel::submitAll(void)
+	?subscribeToNotification@QSqlDriver@@QAE_NABVQString@@@Z @ 404 NONAME ; bool QSqlDriver::subscribeToNotification(class QString const &)
+	?subscribeToNotificationImplementation@QSqlDriver@@IAE_NABVQString@@@Z @ 405 NONAME ; bool QSqlDriver::subscribeToNotificationImplementation(class QString const &)
+	?subscribedToNotifications@QSqlDriver@@QBE?AVQStringList@@XZ @ 406 NONAME ; class QStringList QSqlDriver::subscribedToNotifications(void) const
+	?subscribedToNotificationsImplementation@QSqlDriver@@IBE?AVQStringList@@XZ @ 407 NONAME ; class QStringList QSqlDriver::subscribedToNotificationsImplementation(void) const
+	?tableName@QSqlRelation@@QBE?AVQString@@XZ @ 408 NONAME ; class QString QSqlRelation::tableName(void) const
+	?tableName@QSqlTableModel@@QBE?AVQString@@XZ @ 409 NONAME ; class QString QSqlTableModel::tableName(void) const
+	?tables@QSQLiteDriver@@UBE?AVQStringList@@W4TableType@QSql@@@Z @ 410 NONAME ; class QStringList QSQLiteDriver::tables(enum QSql::TableType) const
+	?tables@QSqlDatabase@@QBE?AVQStringList@@W4TableType@QSql@@@Z @ 411 NONAME ; class QStringList QSqlDatabase::tables(enum QSql::TableType) const
+	?tables@QSqlDriver@@UBE?AVQStringList@@W4TableType@QSql@@@Z @ 412 NONAME ; class QStringList QSqlDriver::tables(enum QSql::TableType) const
+	?text@QSqlError@@QBE?AVQString@@XZ @ 413 NONAME ; class QString QSqlError::text(void) const
+	?tr@QSQLiteDriver@@SA?AVQString@@PBD0@Z @ 414 NONAME ; class QString QSQLiteDriver::tr(char const *, char const *)
+	?tr@QSQLiteDriver@@SA?AVQString@@PBD0H@Z @ 415 NONAME ; class QString QSQLiteDriver::tr(char const *, char const *, int)
+	?tr@QSqlDriver@@SA?AVQString@@PBD0@Z @ 416 NONAME ; class QString QSqlDriver::tr(char const *, char const *)
+	?tr@QSqlDriver@@SA?AVQString@@PBD0H@Z @ 417 NONAME ; class QString QSqlDriver::tr(char const *, char const *, int)
+	?tr@QSqlDriverPlugin@@SA?AVQString@@PBD0@Z @ 418 NONAME ; class QString QSqlDriverPlugin::tr(char const *, char const *)
+	?tr@QSqlDriverPlugin@@SA?AVQString@@PBD0H@Z @ 419 NONAME ; class QString QSqlDriverPlugin::tr(char const *, char const *, int)
+	?tr@QSqlQueryModel@@SA?AVQString@@PBD0@Z @ 420 NONAME ; class QString QSqlQueryModel::tr(char const *, char const *)
+	?tr@QSqlQueryModel@@SA?AVQString@@PBD0H@Z @ 421 NONAME ; class QString QSqlQueryModel::tr(char const *, char const *, int)
+	?tr@QSqlRelationalTableModel@@SA?AVQString@@PBD0@Z @ 422 NONAME ; class QString QSqlRelationalTableModel::tr(char const *, char const *)
+	?tr@QSqlRelationalTableModel@@SA?AVQString@@PBD0H@Z @ 423 NONAME ; class QString QSqlRelationalTableModel::tr(char const *, char const *, int)
+	?tr@QSqlTableModel@@SA?AVQString@@PBD0@Z @ 424 NONAME ; class QString QSqlTableModel::tr(char const *, char const *)
+	?tr@QSqlTableModel@@SA?AVQString@@PBD0H@Z @ 425 NONAME ; class QString QSqlTableModel::tr(char const *, char const *, int)
+	?trUtf8@QSQLiteDriver@@SA?AVQString@@PBD0@Z @ 426 NONAME ; class QString QSQLiteDriver::trUtf8(char const *, char const *)
+	?trUtf8@QSQLiteDriver@@SA?AVQString@@PBD0H@Z @ 427 NONAME ; class QString QSQLiteDriver::trUtf8(char const *, char const *, int)
+	?trUtf8@QSqlDriver@@SA?AVQString@@PBD0@Z @ 428 NONAME ; class QString QSqlDriver::trUtf8(char const *, char const *)
+	?trUtf8@QSqlDriver@@SA?AVQString@@PBD0H@Z @ 429 NONAME ; class QString QSqlDriver::trUtf8(char const *, char const *, int)
+	?trUtf8@QSqlDriverPlugin@@SA?AVQString@@PBD0@Z @ 430 NONAME ; class QString QSqlDriverPlugin::trUtf8(char const *, char const *)
+	?trUtf8@QSqlDriverPlugin@@SA?AVQString@@PBD0H@Z @ 431 NONAME ; class QString QSqlDriverPlugin::trUtf8(char const *, char const *, int)
+	?trUtf8@QSqlQueryModel@@SA?AVQString@@PBD0@Z @ 432 NONAME ; class QString QSqlQueryModel::trUtf8(char const *, char const *)
+	?trUtf8@QSqlQueryModel@@SA?AVQString@@PBD0H@Z @ 433 NONAME ; class QString QSqlQueryModel::trUtf8(char const *, char const *, int)
+	?trUtf8@QSqlRelationalTableModel@@SA?AVQString@@PBD0@Z @ 434 NONAME ; class QString QSqlRelationalTableModel::trUtf8(char const *, char const *)
+	?trUtf8@QSqlRelationalTableModel@@SA?AVQString@@PBD0H@Z @ 435 NONAME ; class QString QSqlRelationalTableModel::trUtf8(char const *, char const *, int)
+	?trUtf8@QSqlTableModel@@SA?AVQString@@PBD0@Z @ 436 NONAME ; class QString QSqlTableModel::trUtf8(char const *, char const *)
+	?trUtf8@QSqlTableModel@@SA?AVQString@@PBD0H@Z @ 437 NONAME ; class QString QSqlTableModel::trUtf8(char const *, char const *, int)
+	?transaction@QSqlDatabase@@QAE_NXZ @ 438 NONAME ; bool QSqlDatabase::transaction(void)
+	?type@QSqlError@@QBE?AW4ErrorType@1@XZ @ 439 NONAME ; enum QSqlError::ErrorType QSqlError::type(void) const
+	?type@QSqlField@@QBE?AW4Type@QVariant@@XZ @ 440 NONAME ; enum QVariant::Type QSqlField::type(void) const
+	?typeID@QSqlField@@QBEHXZ @ 441 NONAME ; int QSqlField::typeID(void) const
+	?unsubscribeFromNotification@QSqlDriver@@QAE_NABVQString@@@Z @ 442 NONAME ; bool QSqlDriver::unsubscribeFromNotification(class QString const &)
+	?unsubscribeFromNotificationImplementation@QSqlDriver@@IAE_NABVQString@@@Z @ 443 NONAME ; bool QSqlDriver::unsubscribeFromNotificationImplementation(class QString const &)
+	?updateRowInTable@QSqlRelationalTableModel@@MAE_NHABVQSqlRecord@@@Z @ 444 NONAME ; bool QSqlRelationalTableModel::updateRowInTable(int, class QSqlRecord const &)
+	?updateRowInTable@QSqlTableModel@@MAE_NHABVQSqlRecord@@@Z @ 445 NONAME ; bool QSqlTableModel::updateRowInTable(int, class QSqlRecord const &)
+	?userName@QSqlDatabase@@QBE?AVQString@@XZ @ 446 NONAME ; class QString QSqlDatabase::userName(void) const
+	?value@QSqlField@@QBE?AVQVariant@@XZ @ 447 NONAME ; class QVariant QSqlField::value(void) const
+	?value@QSqlQuery@@QBE?AVQVariant@@H@Z @ 448 NONAME ; class QVariant QSqlQuery::value(int) const
+	?value@QSqlRecord@@QBE?AVQVariant@@ABVQString@@@Z @ 449 NONAME ; class QVariant QSqlRecord::value(class QString const &) const
+	?value@QSqlRecord@@QBE?AVQVariant@@H@Z @ 450 NONAME ; class QVariant QSqlRecord::value(int) const
+	?virtual_hook@QSqlCachedResult@@MAEXHPAX@Z @ 451 NONAME ; void QSqlCachedResult::virtual_hook(int, void *)
+	?virtual_hook@QSqlResult@@MAEXHPAX@Z @ 452 NONAME ; void QSqlResult::virtual_hook(int, void *)
+	?staticMetaObject@QSqlRelationalTableModel@@2UQMetaObject@@B @ 453 NONAME ; struct QMetaObject const QSqlRelationalTableModel::staticMetaObject
+	?defaultConnection@QSqlDatabase@@2PBDB @ 454 NONAME ; char const * const QSqlDatabase::defaultConnection
+	?staticMetaObject@QSqlDriverPlugin@@2UQMetaObject@@B @ 455 NONAME ; struct QMetaObject const QSqlDriverPlugin::staticMetaObject
+	?staticMetaObject@QSqlTableModel@@2UQMetaObject@@B @ 456 NONAME ; struct QMetaObject const QSqlTableModel::staticMetaObject
+	?staticMetaObject@QSqlDriver@@2UQMetaObject@@B @ 457 NONAME ; struct QMetaObject const QSqlDriver::staticMetaObject
+	?staticMetaObject@QSqlQueryModel@@2UQMetaObject@@B @ 458 NONAME ; struct QMetaObject const QSqlQueryModel::staticMetaObject
+	?staticMetaObject@QSQLiteDriver@@2UQMetaObject@@B @ 459 NONAME ; struct QMetaObject const QSQLiteDriver::staticMetaObject
+	?qt_static_metacall@QSqlQueryModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 460 NONAME ; void QSqlQueryModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSQLiteDriver@@0UQMetaObjectExtraData@@B @ 461 NONAME ; struct QMetaObjectExtraData const QSQLiteDriver::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlTableModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 462 NONAME ; void QSqlTableModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlTableModel@@0UQMetaObjectExtraData@@B @ 463 NONAME ; struct QMetaObjectExtraData const QSqlTableModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlDriver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 464 NONAME ; void QSqlDriver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlDriverPlugin@@0UQMetaObjectExtraData@@B @ 465 NONAME ; struct QMetaObjectExtraData const QSqlDriverPlugin::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QSqlDriver@@0UQMetaObjectExtraData@@B @ 466 NONAME ; struct QMetaObjectExtraData const QSqlDriver::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QSqlQueryModel@@0UQMetaObjectExtraData@@B @ 467 NONAME ; struct QMetaObjectExtraData const QSqlQueryModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSQLiteDriver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 468 NONAME ; void QSQLiteDriver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@QSqlRelationalTableModel@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 469 NONAME ; void QSqlRelationalTableModel::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QSqlRelationalTableModel@@0UQMetaObjectExtraData@@B @ 470 NONAME ; struct QMetaObjectExtraData const QSqlRelationalTableModel::staticMetaObjectExtraData
+	?qt_static_metacall@QSqlDriverPlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 471 NONAME ; void QSqlDriverPlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+

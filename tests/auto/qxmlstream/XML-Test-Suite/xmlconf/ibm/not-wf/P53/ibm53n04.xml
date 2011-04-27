@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Missing white space between Name and AttType in AttDef *-->
+<!ATTLIST a attr1(abc|def) "abc" >
+]>
+<root>Any content</root>

@@ -1,0 +1,6 @@
+<!DOCTYPE book [
+<!ELEMENT book ANY>
+]>
+<!-- IllegalChar #x11
+ in p02:  -->
+<book/>

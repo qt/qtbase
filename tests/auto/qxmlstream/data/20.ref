@@ -1,0 +1,21 @@
+StartDocument( )
+DTD( text="<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">" dtdName="html" dtdPublicId="-//W3C//DTD XHTML 1.1//EN" dtdSystemId="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" )
+StartElement( name="form" qualifiedName="form"
+    Attribute( name="method" qualifiedName="method" value="get" )
+
+    Attribute( name="action" qualifiedName="action" value="#" )
+ )
+Characters( whitespace text=" " )
+StartElement( name="input" qualifiedName="input"
+    Attribute( name="type" qualifiedName="type" value="submit" )
+
+    Attribute( name="value" qualifiedName="value" value="&nbsp;<&rarr;&rArr;>&nbsp;" )
+
+    Attribute( name="id" qualifiedName="id" value="input" )
+ )
+EndElement( name="input" qualifiedName="input" )
+Characters( text="Test" )
+EntityReference( name="nbsp" )
+Characters( text="Test" )
+EndElement( name="form" qualifiedName="form" )
+EndDocument( )

@@ -1,0 +1,1 @@
+/* let's see if  comments actually work *//*foo*/ "it /*should be preserved \"in strings*/ though"

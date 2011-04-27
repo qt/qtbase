@@ -1,0 +1,4 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   comment(ch=" a comment ")
+   fatalError(exception={columnNumber=1, lineNumber=2, publicId="", systemId="", message="error occurred while parsing element"})

@@ -1,0 +1,4 @@
+StartDocument( )
+DTD( text="<!DOCTYPE test>" dtdName="test" )
+Invalid( name="germanÃ¼umlaut" qualifiedName="germanÃ¼umlaut" )
+ERROR: Invalid XML name.

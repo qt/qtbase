@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="3" failures="5" tests="8" name="tst_StrCmp">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="compareCharStars"/>
+  <testcase result="fail" name="compareByteArray">
+    <!-- message="Next test should fail" type="info" -->
+    <!-- message="Next test should fail" type="info" -->
+    <!-- message="Next test should fail" type="info" -->
+    <failure message="Compared values are not the same
+   Actual (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
+   Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ..." result="fail"/>
+  </testcase>
+  <testcase result="fail" name="failByteArray">
+    <failure message="Compared values are not the same
+   Actual (QByteArray(&quot;abc&quot;)): 61 62 63
+   Expected (QByteArray(&quot;cba&quot;)): 63 62 61" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="failByteArrayNull">
+    <failure message="Compared values are not the same
+   Actual (QByteArray(&quot;foo&quot;)): 66 6F 6F
+   Expected (QByteArray()): " result="fail"/>
+  </testcase>
+  <testcase result="fail" name="failByteArrayEmpty">
+    <failure message="Compared values are not the same
+   Actual (QByteArray(&quot;&quot;)): 
+   Expected (QByteArray(&quot;foo&quot;)): 66 6F 6F" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="failByteArraySingleChars">
+    <failure message="Compared values are not the same
+   Actual (QByteArray(&quot;6&quot;)): 36
+   Expected (QByteArray(&quot;7&quot;)): 37" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Next test should fail]]>
+<![CDATA[Next test should fail]]>
+<![CDATA[Next test should fail]]>
+  </system-err>
+</testsuite>

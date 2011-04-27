@@ -1,0 +1,13 @@
+<?xml  version="1.0"?>
+<!-- syntax test for Production 59-->
+<!DOCTYPE test
+ [
+ <!ELEMENT test ANY>
+ <!ELEMENT one EMPTY>
+ <!ELEMENT enum (#PCDATA)>
+ <!ATTLIST one attr (enum #IMPLIED>
+ ]>
+ <test>
+This is a Negative test
+Missing the closing brackets
+</test>

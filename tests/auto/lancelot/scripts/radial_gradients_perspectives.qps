@@ -1,0 +1,62 @@
+# Version: 1
+
+
+setRenderHint Antialiasing
+
+setPen #00ff00
+
+translate 10 10
+# standard draw
+begin_block gradient
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setRadial 110 100 230 230 240
+drawRect 0 0 300 300
+end_block gradient
+
+# Rotation w/o smooth xform
+save
+translate 350 0
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 50 0 200 300 300 300 0
+  repeat_block gradient
+restore
+restore
+
+translate 0 320
+
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 0 100 300 200 300 300 0
+  repeat_block gradient
+restore
+
+save
+translate 350 0
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 0 0 300 300 250 300 50
+  repeat_block gradient
+restore
+restore
+
+
+resetMatrix
+setPen black
+translate 125 20
+drawText 0 0 "No transform"
+translate 350 0
+drawText 0 0 "Left Tilted"
+resetMatrix
+translate 125 350
+drawText 0 0 "Bottom Tilted"
+translate 350 0
+drawText 0 0 "Right Tilted"
+translate 120 0

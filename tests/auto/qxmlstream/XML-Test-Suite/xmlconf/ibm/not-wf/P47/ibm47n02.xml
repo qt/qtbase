@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Missing choice|seq in children *-->
+<!ELEMENT aElement * >
+]>
+<root>Any content</root>

@@ -1,0 +1,8 @@
+<!--dtd for production 64-->
+<!ELEMENT doc EMPTY>
+<![IGNORE[
+Everything is ignored within an ignored section, except the
+sub-section delimiters '<![' and ']]>'.  These must be balanced
+<!ok
+]]>
+<!--positive test. Pattern 1-->

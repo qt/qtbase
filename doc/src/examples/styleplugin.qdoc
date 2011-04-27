@@ -1,0 +1,133 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example tools/styleplugin
+    \title Style Plugin Example
+
+    This example shows how to create a plugin that extends Qt with a new 
+    GUI look and feel. 
+
+    \image stylepluginexample.png
+
+    On some platforms, the native style will prevent the button
+    from having a red background. In this case, try to run the example
+    in another style (e.g., plastique).
+
+    A plugin in Qt is a class stored in a shared library that can be
+    loaded by a QPluginLoader at run-time. When you create plugins in
+    Qt, they either extend a Qt application or Qt itself. Writing a
+    plugin that extends Qt itself is achieved by inheriting one of the
+    plugin \l{Plugin Classes}{base classes}, reimplementing functions
+    from that class, and adding a macro. In this example we extend Qt
+    by adding a new GUI look and feel (i.e., making a new QStyle
+    available). A high-level introduction to plugins is given in the
+    plugin \l{How to Create Qt Plugins}{overview document}. 
+
+    Plugins that provide new styles inherit the QStylePlugin base
+    class. Style plugins are loaded by Qt and made available through
+    QStyleFactory; we will look at this later. We have implemented \c
+    SimpleStylePlugin, which provides \c SimpleStyle. The new style
+    inherits QWindowsStyle and contributes to widget styling by
+    drawing button backgrounds in red - not a major contribution, but
+    it still makes a new style. We test the plugin with \c
+    StyleWindow, in which we display a QPushButton.
+
+    The \c SimpleStyle and \c StyleWindow classes do not contain any
+    plugin specific functionality and their implementations are
+    trivial; we will therefore leap past them and head on to the \c
+    SimpleStylePlugin and the \c main() function. After we have looked
+    at that, we examine the plugin's profile.
+
+
+    \section1 SimpleStylePlugin Class Definition
+
+    \c SimpleStylePlugin inherits QStylePlugin and is the plugin
+    class. 
+
+    \snippet examples/tools/styleplugin/plugin/simplestyleplugin.h 0
+
+    \c keys() returns a list of style names that this plugin can
+    create, while \c create() takes such a string and returns the
+    QStyle corresponding to the key. Both functions are pure virtual
+    functions reimplemented from QStylePlugin. When an application
+    requests an instance of the \c SimpleStyle style, which this
+    plugin creates, Qt will create it with this plugin.
+
+
+    \section1 SimpleStylePlugin Class Implementation
+
+    Here is the implementation of \c keys():
+
+    \snippet examples/tools/styleplugin/plugin/simplestyleplugin.cpp 0
+
+    Since this plugin only supports one style, we return a QStringList
+    with the class name of that style.
+
+    Here is the \c create() function:
+
+    \snippet examples/tools/styleplugin/plugin/simplestyleplugin.cpp 1
+
+    Note that the key for style plugins are case insensitive.
+    The case sensitivity varies from plugin to plugin, so you need to
+    check this when implementing new plugins.
+
+    \section1 The \c main() function
+
+    \snippet examples/tools/styleplugin/stylewindow/main.cpp 0
+
+    Qt loads the available style plugins when the QApplication object
+    is initialized. The QStyleFactory class knows about all styles and
+    produces them with \l{QStyleFactory::}{create()} (it is a
+    wrapper around all the style plugins).
+
+    \section1 The Simple Style Plugin Profile
+
+    The \c SimpleStylePlugin lives in its own directory and have
+    its own profile:
+
+    \snippet examples/tools/styleplugin/plugin/plugin.pro 0
+
+    In the plugin profile we need to set the lib template as we are
+    building a shared library instead of an executable. We must also
+    set the config to plugin. We set the library to be stored in the
+    styles folder under stylewindow because this is a path in which Qt
+    will search for style plugins.
+
+    \section1 Related articles and examples
+
+    In addition to the plugin \l{How to Create Qt Plugins}{overview
+    document}, we have other examples and articles that concern
+    plugins.
+
+    In the \l{Echo Plugin Example}{echo plugin example} we show how to
+    implement plugins that extends Qt applications rather than Qt
+    itself, which is the case with the style plugin of this example.
+    The \l{Plug & Paint Example}{plug & paint} example shows how to
+    implement a static plugin as well as being a more involved example
+    on plugins that extend applications.
+*/

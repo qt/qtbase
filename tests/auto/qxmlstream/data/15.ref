@@ -1,0 +1,67 @@
+StartDocument( )
+StartElement( name="root" qualifiedName="root" )
+Characters( whitespace text="
+
+    " )
+StartElement( name="element1" qualifiedName="element1" )
+Characters( CDATA text="ABC" )
+Characters( whitespace text=" " )
+EndElement( name="element1" qualifiedName="element1" )
+Characters( whitespace text="
+    " )
+StartElement( name="element2" qualifiedName="element2" )
+Characters( whitespace text=" " )
+Characters( CDATA text="ABC" )
+EndElement( name="element2" qualifiedName="element2" )
+Characters( whitespace text="
+    " )
+StartElement( name="element3" qualifiedName="element3" )
+Characters( whitespace text=" " )
+Characters( CDATA text="ABC" )
+Characters( whitespace text=" " )
+EndElement( name="element3" qualifiedName="element3" )
+Characters( whitespace text="
+
+    " )
+StartElement( name="element1" qualifiedName="element1" )
+Characters( CDATA text="   " )
+Characters( whitespace text=" " )
+EndElement( name="element1" qualifiedName="element1" )
+Characters( whitespace text="
+    " )
+StartElement( name="element2" qualifiedName="element2" )
+Characters( whitespace text=" " )
+Characters( CDATA text="   " )
+EndElement( name="element2" qualifiedName="element2" )
+Characters( whitespace text="
+    " )
+StartElement( name="element3" qualifiedName="element3" )
+Characters( whitespace text=" " )
+Characters( CDATA text="   " )
+Characters( whitespace text=" " )
+EndElement( name="element3" qualifiedName="element3" )
+Characters( whitespace text="
+
+    " )
+StartElement( name="element4" qualifiedName="element4" )
+Characters( text="abc" )
+Characters( CDATA text="def" )
+Characters( text="ghi" )
+EndElement( name="element4" qualifiedName="element4" )
+Characters( whitespace text="
+    " )
+StartElement( name="element5" qualifiedName="element5" )
+Characters( text="abc" )
+Characters( CDATA text="def" )
+EndElement( name="element5" qualifiedName="element5" )
+Characters( whitespace text="
+    " )
+StartElement( name="element6" qualifiedName="element6" )
+Characters( CDATA text="def" )
+Characters( text="ghi" )
+EndElement( name="element6" qualifiedName="element6" )
+Characters( whitespace text="
+
+" )
+EndElement( name="root" qualifiedName="root" )
+EndDocument( )

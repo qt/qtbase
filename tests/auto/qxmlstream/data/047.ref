@@ -1,0 +1,5 @@
+StartDocument( documentVersion="1.0" documentEncoding="UTF-8" )
+StartElement( name="foo" qualifiedName="foo" )
+Characters( text="<bar]>" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

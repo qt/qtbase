@@ -1,0 +1,155 @@
+<HTML>
+<TITLE>XML Canonical Forms</TITLE>
+<BODY>
+<H1>XML Canonical Forms</H1>
+<P><FONT COLOR=RED><b><em>DRAFT 1</em></b></FONT>
+<P> As with many sorts of structured information, there are many
+categories of information that may be deemed "important" for
+some task.  Canonical forms are standard ways to represent
+such classes of information.  For testing XML, and potentially
+for other purposes, three <em>XML Canonical Forms</em> have
+been defined as of this writing:  <UL>
+
+    <LI> <a href=#cxml1>First XML Canonical Form</a>, defined by
+    James Clark, is also called <em>Canonical XML</em>.
+
+    <LI> <a href=#cxml2>Second XML Canonical Form</a>, defined
+    by Sun, supports testing a larger subset of the XML 1.0
+    processor requirements by exposing notation declarations.
+
+    <LI> <a href=#cxml3>Third XML Canonical Form</a>, defined
+    by Sun, extends the second form to reflect information
+    which validating XML 1.0 processors are required to report.
+
+    </UL>
+
+<P> For a document already in a given canonical form, recanonicalizing
+to that same form will change nothing.  Canonicalizing second or
+third forms to the first canonical form discards all declarations.
+Canonicalizing second or third forms to the other form has no effect.
+
+<P> <em>The author is pleased to acknowledge help from
+James Clark in defining the additional canonical forms.</em>
+
+
+<A NAME=cxml1> 
+<H2>First XML Canonical Form</H2>
+</A>
+
+<P> <em>This description has been extracted from the version at
+<a href=http://www.jclark.com/xml/canonxml.html>
+http://www.jclark.com/xml/canonxml.html</a>.</em>
+
+<P>
+Every well-formed XML document has a unique structurally equivalent
+canonical XML document.  Two structurally equivalent XML
+documents have a byte-for-byte identical canonical XML document.
+Canonicalizing an XML document requires only information that an XML
+processor is required to make available to an application.
+<P>
+A canonical XML document conforms to the following grammar:
+<PRE>
+CanonXML    ::= Pi* element Pi*
+element     ::= Stag (Datachar | Pi | element)* Etag
+Stag        ::= '&lt;'  Name Atts '&gt;'
+Etag        ::= '&lt;/' Name '&gt;'
+Pi          ::= '&lt;?' Name ' ' (((Char - S) Char*)? - (Char* '?&gt;' Char*)) '?&gt;'
+Atts        ::= (' ' Name '=' '"' Datachar* '"')*
+Datachar    ::= '&amp;amp;' | '&amp;lt;' | '&amp;gt;' | '&amp;quot;'
+                 | '&amp;#9;'| '&amp;#10;'| '&amp;#13;'
+                 | (Char - ('&amp;' | '&lt;' | '&gt;' | '"' | #x9 | #xA | #xD))
+Name        ::= (see XML spec)
+Char        ::= (see XML spec)
+S           ::= (see XML spec)
+</PRE>
+<P>
+Attributes are in lexicographical order (in Unicode bit order).
+<P>
+A canonical XML document is encoded in UTF-8.
+<P>
+Ignorable white space is considered significant and is treated equivalently
+to data.
+
+
+<A NAME=cxml2> 
+<H2>Second XML Canonical Form</H2>
+</A>
+<P><FONT COLOR=RED><b><em>Modified to ensure that literals are surrounded by single quotes.</em></b></FONT>
+<P> This canonical form is identical to the first form, with
+one significant addition.  All XML processors are required to
+report the name and external identifiers of notations that
+are declared and referred to in an XML document (section 4.7);
+those reports are reflected in declarations in this form,
+presented in lexicographic order.
+
+<P> Note that all public identifiers must be normalized before being
+presented to applications (section 4.2.2).
+
+<P> System identifiers are normalized on output to be relative
+to the input document, if that is possible, with the shortest
+such relative URI.  All other URIs must be absolute.  Any
+hash mark and fragment ID, if erroneously present on input, are
+removed.  Any non-ASCII characters in the URI must be escaped
+as specified in the XML specification (section 4.2.2).
+
+<PRE>
+CanonXML2    ::= DTD2? CanonXML
+DTD2         ::= '&lt;!DOCTYPE ' name ' [' #xA Notations? ']>' #xA
+Notations    ::= ( '&lt;!NOTATION ' Name '
+			(('PUBLIC ' PubidLiteral ' ' SystemLiteral)
+			|('PUBLIC ' PubidLiteral)
+			|('SYSTEM ' SystemLiteral))
+			'>' #xA )*
+PubidLiteral ::= "'" PubidChar* "'"
+SystemLiteral ::= "'" [^']* "'"
+
+</PRE>
+
+<P> The requirement of this canonical form differs slightly from that
+of the XML specification itself in that all declared notations
+must be listed, not just those which were referred to.
+<em>Should that change?  SAX supports it easily.</em>
+
+
+<A NAME=cxml3> 
+<H2>Third XML Canonical Form</H2>
+</A>
+<P> This canonical form is identical to the second form, with
+two significant exceptions reflecting requirements placed on
+validating XML processors:<UL>
+
+    <LI> They are required to report "white space appearing in
+    element content" (section 2.10).  Ignorable whitespace is
+    not represented in this canonical form.
+
+    <LI> They must report the external identifiers and notation name
+    for unparsed entities appearing as attribute values (section 4.4.6).
+    Such entities are declared in this canonical form, in lexicographic
+    order.
+
+    </UL>
+
+<P> This builds on the grammar productions included above.
+
+<PRE>
+CanonXML3    ::= DTD3? CanonXML
+DTD3         ::= '&lt;!DOCTYPE ' name ' [' #xA Notations? Unparsed? ']>' #xA
+Unparsed    ::= ( '&lt;!ENTITY ' Name '
+			(('PUBLIC ' PubidLiteral ' ' SystemLiteral)
+			|('SYSTEM ' SystemLiteral))
+			'NDATA ' Name
+			'>' #xA )*
+</PRE>
+
+<P> The requirement of this canonical form differs slightly from that
+of the XML specification itself in that all declared unparsed entities
+must be listed, not just those which were referred to.
+<em>Should that change?  SAX supports it easily.</em>
+
+<P>
+<ADDRESS>
+<A HREF="mailto:xml-feedback@java.sun.com">xml-feedback@java.sun.com</A>
+</ADDRESS>
+
+</BODY>
+</HTML>

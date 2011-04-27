@@ -1,0 +1,8 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* ENTITY in lower case  *-->
+<!entity aaa "aString">
+]>
+<root>&aaa;</root>

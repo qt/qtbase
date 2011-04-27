@@ -1,0 +1,10 @@
+r<?xml version="1.0"?>
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* Wrong keyword : Public in PublicID *-->
+<!NOTATION JPGformat Public "-//JPG//DTD//JPGFormat">
+<!ENTITY aImage SYSTEM "image.jpg" NDATA JPGformat>
+]>
+<root/>

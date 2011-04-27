@@ -1,0 +1,283 @@
+<!--
+
+ (C) Copyright IBM Corp. 2000  All rights reserved.
+
+ US Government Users Restricted Rights Use, duplication or
+ disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+
+ The program is provided "as is" without any warranty express or
+ implied, including the warranty of non-infringement and the implied
+ warranties of merchantibility and fitness for a particular purpose.
+ IBM will not be liable for any damages suffered by you as a result
+ of using the Program. In no event will IBM be liable for any
+ special, indirect or consequential damages or lost profits even if
+ IBM has been advised of the possibility of their occurrence. IBM
+ will not be liable for any third party claims against you.
+
+-->
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - invalid tests">
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 28">
+  <TEST URI="invalid/P28/ibm28i01.xml" TYPE="invalid" ID="ibm-invalid-P28-ibm28i01.xml" ENTITIES="none" SECTIONS="2.8" OUTPUT="invalid/P28/out/ibm28i01.xml">
+    The test violates VC:Root Element Type in P28. The Name in the document type
+    declaration does not match the element type of the root element.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 32">
+  <TEST URI="invalid/P32/ibm32i01.xml" TYPE="invalid" ID="ibm-invalid-P32-ibm32i01.xml" ENTITIES="parameter" SECTIONS="2.9" OUTPUT="invalid/P32/out/ibm32i01.xml">
+    This test violates VC: Standalone Document Declaration in P32.
+    The standalone document declaration has the value yes, BUT there is an
+    external markup declaration of attributes with default values, and the 
+    associated element appears in the document with specified values for those
+    attributes.
+    </TEST>
+  
+  <TEST URI="invalid/P32/ibm32i03.xml" TYPE="invalid" ID="ibm-invalid-P32-ibm32i03.xml" ENTITIES="parameter" SECTIONS="2.9" OUTPUT="invalid/P32/out/ibm32i03.xml">
+    This test violates VC: Standalone Document Declaration in P32.
+    The standalone document declaration has the value yes, BUT there is an 
+    external markup declaration of attributes with values that will change 
+    if normalized.
+  </TEST>
+  <TEST URI="invalid/P32/ibm32i04.xml" TYPE="invalid" ID="ibm-invalid-P32-ibm32i04.xml" ENTITIES="parameter" SECTIONS="2.9" OUTPUT="invalid/P32/out/ibm32i04.xml">
+    This test violates VC: Standalone Document Declaration in P32.
+    The standalone document declaration has the value yes, BUT there is an 
+    external markup declaration of element with element content, and white
+    space occurs directly within the mixed content.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 39">
+  <TEST URI="invalid/P39/ibm39i01.xml" TYPE="invalid" ID="ibm-invalid-P39-ibm39i01.xml" ENTITIES="none" SECTIONS="3" OUTPUT="invalid/P39/out/ibm39i01.xml">
+    This test violates VC: Element Valid in P39. Element a is declared empty 
+    in DTD, but has content in the document.
+  </TEST>
+  <TEST URI="invalid/P39/ibm39i02.xml" TYPE="invalid" ID="ibm-invalid-P39-ibm39i02.xml" ENTITIES="none" SECTIONS="3" OUTPUT="invalid/P39/out/ibm39i02.xml">
+    This test violates VC: Element Valid in P39. root is declared only having 
+    element children in DTD, but have text content in the document.
+  </TEST>
+  <TEST URI="invalid/P39/ibm39i03.xml" TYPE="invalid" ID="ibm-invalid-P39-ibm39i03.xml" ENTITIES="none" SECTIONS="3" OUTPUT="invalid/P39/out/ibm39i03.xml">
+    This test violates VC: Element Valid in P39. Illegal elements are inserted 
+    in b's content of Mixed type.
+  </TEST>
+  <TEST URI="invalid/P39/ibm39i04.xml" TYPE="invalid" ID="ibm-invalid-P39-ibm39i04.xml" ENTITIES="none" SECTIONS="3" OUTPUT="invalid/P39/out/ibm39i04.xml">
+    This test violates VC: Element Valid in P39. Element c has undeclared 
+    element as its content of ANY type
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 41">
+  <TEST URI="invalid/P41/ibm41i01.xml" TYPE="invalid" ID="ibm-invalid-P41-ibm41i01.xml" ENTITIES="none" SECTIONS="3.1" OUTPUT="invalid/P41/out/ibm41i01.xml">
+    This test violates VC: Attribute Value Type in P41. attr1 for Element b is
+    not declared.
+  </TEST>
+  <TEST URI="invalid/P41/ibm41i02.xml" TYPE="invalid" ID="ibm-invalid-P41-ibm41i02.xml" ENTITIES="none" SECTIONS="3.1" OUTPUT="invalid/P41/out/ibm41i02.xml">
+    This test violates VC: Attribute Value Type in P41. attr3 for Element b is 
+    given a value that does not match the declaration in the DTD.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 45">
+  <TEST URI="invalid/P45/ibm45i01.xml" TYPE="invalid" ID="ibm-invalid-P45-ibm45i01.xml" ENTITIES="none" SECTIONS="3.2" OUTPUT="invalid/P45/out/ibm45i01.xml">
+    This test violates VC: Unique Element Type Declaration. Element not_unique 
+    has been declared 3 time in the DTD.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 49">
+  <TEST URI="invalid/P49/ibm49i01.xml" TYPE="invalid" ID="ibm-invalid-P49-ibm49i01.xml" ENTITIES="parameter" SECTIONS="3.2.1" OUTPUT="invalid/P49/out/ibm49i01.xml">
+    Violates VC:Proper Group/PE Nesting in P49. Open and close parenthesis for a
+    choice content model  are in different PE replace Texts.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 50">
+  <TEST URI="invalid/P50/ibm50i01.xml" TYPE="invalid" ID="ibm-invalid-P50-ibm50i01.xml" ENTITIES="parameter" SECTIONS="3.2.1" OUTPUT="invalid/P50/out/ibm50i01.xml">
+    Violates VC:Proper Group/PE Nesting in P50. Open and close parenthesis for a
+    seq content model  are in different PE replace Texts.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 51">
+  <TEST URI="invalid/P51/ibm51i01.xml" TYPE="invalid" ID="ibm-invalid-P51-ibm51i01.xml" ENTITIES="parameter" SECTIONS="3.2.2" OUTPUT="invalid/P51/out/ibm51i01.xml">
+    Violates VC:Proper Group/PE Nesting in P51. Open and close parenthesis for a
+    Mixed content model are in different PE replace Texts.
+  </TEST>
+  <TEST URI="invalid/P51/ibm51i03.xml" TYPE="invalid" ID="ibm-invalid-P51-ibm51i03.xml" ENTITIES="none" SECTIONS="3.2.2" OUTPUT="invalid/P51/out/ibm51i03.xml">
+    Violates VC:No Duplicate Types in P51. Element a appears twice in the Mixed
+    content model of Element e.
+  </TEST>
+</TESTCASES>
+
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 56">
+  <TEST URI="invalid/P56/ibm56i01.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i01.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i01.xml">
+    Tests invalid TokenizedType which is against P56 VC: ID. The value of the ID 
+    attribute "UniqueName" is "@999" which does not meet the Name production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i02.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i02.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i02.xml">
+    Tests invalid TokenizedType which is against P56 VC: ID. The two ID attributes 
+    "attr" and "UniqueName" have the same value "Ac999" for the element "b" and 
+    the element "tokenizer".
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i03.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i03.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i03.xml">
+    Tests invalid TokenizedType which is against P56 VC: ID Attribute Default. The 
+    "#FIXED" occurs in the DefaultDecl for the ID attribute "UniqueName".
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i05.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i05.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i05.xml">
+    Tests invalid TokenizedType which is against P56 VC: ID Attribute Default. The 
+    constant string "BOGUS" occurs in the DefaultDecl for the ID attribute 
+    "UniqueName".
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i06.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i06.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i06.xml">
+    Tests invalid TokenizedType which is against P56 VC: One ID per Element Type. The
+    element "a" has two ID attributes "first" and "second".
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i07.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i07.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i07.xml">
+    Tests invalid TokenizedType which is against P56 VC: IDREF. The value of the 
+    IDREF attribute "reference" is "@456" which does not meet the Name production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i08.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i08.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i08.xml">
+    Tests invalid TokenizedType which is against P56 VC: IDREF. The value of the IDREF
+    attribute "reference" is "BC456" which does not match the value assigned to any 
+    ID attributes.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i09.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i09.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i09.xml">
+    Tests invalid TokenizedType which is against P56 VC: IDREFS. The value of the 
+    IDREFS attribute "reference" is "AC456 #567" which does not meet the Names 
+    production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i10.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i10.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i10.xml">
+    Tests invalid TokenizedType which is against P56 VC: IDREFS. The value of the 
+    IDREFS attribute "reference" is "EF456 DE355" which does not match the values 
+    assigned to two ID attributes.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i11.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i11.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i11.xml">
+    Tests invalid TokenizedType which is against P56 VC: Entity Name. The value of 
+    the ENTITY attribute "sun" is "ima ge" which does not meet the Name production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i12.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i12.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i12.xml">
+    Tests invalid TokenizedType which is against P56 VC: Entity Name. The value of 
+    the ENTITY attribute "sun" is "notimage" which does not match the name of any 
+    unparsed entity declared.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i13.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i13.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i13.xml">
+    Tests invalid TokenizedType which is against P56 VC: Entity Name. The value of 
+    the ENTITY attribute "sun" is "parsedentity" which matches the name of a parsed 
+    entity instead of an unparsed entity declared.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i14.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i14.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i14.xml">
+    Tests invalid TokenizedType which is against P56 VC: Entity Name. The value of 
+    the ENTITIES attribute "sun" is "#image1 @image" which does not meet the Names 
+    production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i15.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i15.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i15.xml">
+    Tests invalid TokenizedType which is against P56 VC: ENTITIES. The value of the 
+    ENTITIES attribute "sun" is "image3 image4" which does not match the names of 
+    two unparsed entities declared.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i16.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i16.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i16.xml">
+    Tests invalid TokenizedType which is against P56 VC: ENTITIES. The value of the 
+    ENTITIES attribute "sun" is "parsedentity1 parsedentity2" which matches the names
+    of two parsed entities instead of two unparsed entities declared.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i17.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i17.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i17.xml">
+    Tests invalid TokenizedType which is against P56 VC: Name Token. The value of the
+    NMTOKEN attribute "thistoken" is "x : image" which does not meet the Nmtoken 
+    production.
+  </TEST>
+  <TEST URI="invalid/P56/ibm56i18.xml" TYPE="invalid" ID="ibm-invalid-P56-ibm56i18.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P56/out/ibm56i18.xml">
+    Tests invalid TokenizedType which is against P56 VC: Name Token. The value of the
+    NMTOKENS attribute "thistoken" is "@lang y: #country" which does not meet the 
+    Nmtokens production.
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 58">
+  <TEST URI="invalid/P58/ibm58i01.xml" TYPE="invalid" ID="ibm-invalid-P58-ibm58i01.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P58/out/ibm58i01.xml">
+    Tests invalid NotationType which is against P58 VC: Notation Attributes. The 
+    attribute "content-encoding" with value "raw" is not a value from the list 
+    "(base64|uuencode)".
+  </TEST>
+  <TEST URI="invalid/P58/ibm58i02.xml" TYPE="invalid" ID="ibm-invalid-P58-ibm58i02.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P58/out/ibm58i02.xml">
+    Tests invalid NotationType which is against P58 VC: Notation Attributes. The 
+    attribute "content-encoding" with value "raw" is a value from the list 
+    "(base64|uuencode|raw|ascii)", but "raw" is not a declared notation. 
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 59">
+  <TEST URI="invalid/P59/ibm59i01.xml" TYPE="invalid" ID="ibm-invalid-P59-ibm59i01.xml" ENTITIES="none" SECTIONS="3.3.1" OUTPUT="invalid/P59/out/ibm59i01.xml">
+    Tests invalid Enumeration which is against P59 VC: Enumeration. The value of the 
+    attribute is "ONE" which matches neither "one" nor "two" as declared in the 
+    Enumeration in the AttDef in the AttlistDecl.  
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 60">
+  <TEST URI="invalid/P60/ibm60i01.xml" TYPE="invalid" ID="ibm-invalid-P60-ibm60i01.xml" ENTITIES="none" SECTIONS="3.3.2" OUTPUT="invalid/P60/out/ibm60i01.xml">
+    Tests invalid DefaultDecl which is against P60 VC: Required Attribute. The 
+    attribute "chapter" for the element "two" is declared as #REQUIRED in the 
+    DefaultDecl in the AttlistDecl, but the value of this attribute is not given.
+  </TEST>
+  <TEST URI="invalid/P60/ibm60i02.xml" TYPE="invalid" ID="ibm-invalid-P60-ibm60i02.xml" ENTITIES="none" SECTIONS="3.3.2" OUTPUT="invalid/P60/out/ibm60i02.xml">
+    Tests invalid DefaultDecl which is against P60 VC: Fixed Attribute Default.. The 
+    attribute "chapter" for the element "one" is declared as #FIXED with the given
+    value "Introduction" in the DefaultDecl in the AttlistDecl, but the value of a
+    instance of this attribute is assigned to "JavaBeans".
+  </TEST>
+  <TEST URI="invalid/P60/ibm60i03.xml" TYPE="invalid" ID="ibm-invalid-P60-ibm60i03.xml" ENTITIES="none" SECTIONS="3.3.2" OUTPUT="invalid/P60/out/ibm60i03.xml">
+    Tests invalid DefaultDecl which is against P60 VC: Attribute Default Legal. The
+    declared default value "c" is not legal for the type (a|b) in the AttDef in
+    the AttlistDecl.
+  </TEST>
+  <TEST URI="invalid/P60/ibm60i04.xml" TYPE="invalid" ID="ibm-invalid-P60-ibm60i04.xml" ENTITIES="none" SECTIONS="3.3.2" OUTPUT="invalid/P60/out/ibm60i04.xml">
+    Tests invalid DefaultDecl which is against P60 VC: Attribute Default Legal. The
+    declared default value "@#$" is not legal for the type NMTOKEN the AttDef in
+    the AttlistDecl.
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 68">
+  <TEST URI="invalid/P68/ibm68i01.xml" TYPE="error" ID="ibm-invalid-P68-ibm68i01.xml" ENTITIES="parameter" SECTIONS="4.1" OUTPUT="invalid/P68/out/ibm68i01.xml">
+    Tests invalid EntityRef which is against P68 VC: Entity Declared. The GE with 
+    the name "ge2" is referred in the file ibm68i01.dtd", but not declared. 
+  </TEST>
+  <TEST URI="invalid/P68/ibm68i02.xml" TYPE="error" ID="ibm-invalid-P68-ibm68i02.xml" ENTITIES="parameter" SECTIONS="4.1" OUTPUT="invalid/P68/out/ibm68i02.xml">
+    Tests invalid EntityRef which is against P68 VC: Entity Declared. The GE with 
+    the name "ge1" is referred before declared in the file ibm68i01.dtd". 
+  </TEST>
+  <TEST URI="invalid/P68/ibm68i03.xml" TYPE="error" ID="ibm-invalid-P68-ibm68i03.xml" ENTITIES="both" SECTIONS="4.1" OUTPUT="invalid/P68/out/ibm68i03.xml">
+    Tests invalid EntityRef which is against P68 VC: Entity Declared. The GE with 
+    the name "ge2" is referred in the file ibm68i03.ent", but not declared. 
+  </TEST>
+  <TEST URI="invalid/P68/ibm68i04.xml" TYPE="error" ID="ibm-invalid-P68-ibm68i04.xml" ENTITIES="both" SECTIONS="4.1" OUTPUT="invalid/P68/out/ibm68i04.xml">
+    Tests invalid EntityRef which is against P68 VC: Entity Declared. The GE with 
+    the name "ge1" is referred before declared in the file ibm68i04.ent". 
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 69">
+  <TEST URI="invalid/P69/ibm69i01.xml" TYPE="error" ID="ibm-invalid-P69-ibm69i01.xml" ENTITIES="parameter" SECTIONS="4.1" OUTPUT="invalid/P69/out/ibm69i01.xml">
+    Tests invalid PEReference which is against P69 VC: Entity Declared. The Name 
+    "pe2" in the PEReference in the file ibm69i01.dtd does not match the Name of
+    any declared PE. 
+  </TEST>
+  <TEST URI="invalid/P69/ibm69i02.xml" TYPE="error" ID="ibm-invalid-P69-ibm69i02.xml" ENTITIES="parameter" SECTIONS="4.1" OUTPUT="invalid/P69/out/ibm69i02.xml">
+    Tests invalid PEReference which is against P69 VC: Entity Declared. The PE with 
+    the name "pe1" is referred before declared in the file ibm69i02.dtd
+  </TEST>
+  <TEST URI="invalid/P69/ibm69i03.xml" TYPE="error" ID="ibm-invalid-P69-ibm69i03.xml" ENTITIES="both" SECTIONS="4.1" OUTPUT="invalid/P69/out/ibm69i03.xml">
+    Tests invalid PEReference which is against P69 VC: Entity Declared. The Name 
+    "pe3" in the PEReference in the file ibm69i03.ent does not match the Name of
+    any declared PE. 
+  </TEST>
+  <TEST URI="invalid/P69/ibm69i04.xml" TYPE="error" ID="ibm-invalid-P69-ibm69i04.xml" ENTITIES="both" SECTIONS="4.1" OUTPUT="invalid/P69/out/ibm69i04.xml">
+    Tests invalid PEReference which is against P69 VC: Entity Declared. The PE with 
+    the name "pe2" is referred before declared in the file ibm69i04.ent.
+  </TEST>
+</TESTCASES>
+<TESTCASES PROFILE="IBM XML Conformance Test Suite - Production 76">
+  <TEST URI="invalid/P76/ibm76i01.xml" TYPE="invalid" ID="ibm-invalid-P76-ibm76i01.xml" ENTITIES="none" SECTIONS="4.2.2" OUTPUT="invalid/P76/out/ibm76i01.xml">
+    Tests invalid NDataDecl which is against P76 VC: Notation declared. The Name
+    "JPGformat" in the NDataDecl in the EntityDecl for "ge2" does not match the  
+    Name of any declared notation. 
+  </TEST>
+</TESTCASES>
+
+</TESTCASES>

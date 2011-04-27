@@ -1,0 +1,7 @@
+StartDocument( )
+Comment( text=" When including the namespaces spec, the colon is disallowed in processing
+     instructions. W3C's XML test suite appears as of this writing to not have
+     a test for this. " )
+StartElement( name="documentElement" qualifiedName="documentElement" )
+Invalid( )
+ERROR: Expected ' ' or '?', but got ':'.

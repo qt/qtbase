@@ -1,0 +1,94 @@
+# Version: 1
+
+translate 10 10
+
+setPen 0xffff0000 0 solidline squarecap
+translate 50 50
+begin_block draw_lines
+    save
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+      rotate 10
+      drawLine 10 0 50 0
+    restore
+end_block
+
+setPen 0xffff0000 0 dotline squarecap
+translate 100 0
+repeat_block draw_lines
+setPen 0xffff0000 0 dashdotline squarecap
+translate 100 0
+repeat_block draw_lines
+setPen 0xffff0000 0 dashdotdotline squarecap
+translate 100 0
+repeat_block draw_lines
+setPen 0xffff0000 0 dashline squarecap
+translate 100 0
+repeat_block draw_lines

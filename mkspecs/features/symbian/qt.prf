@@ -1,0 +1,13 @@
+contains(DEFINES, QT_MAKEDLL)|contains(DEFINES, QT_DLL) {
+    CONFIG *= epocallowdlldata
+}
+
+CONFIG += qtmain
+
+load(qt)
+
+# Workaround for the fact that Gnupoc and Symbian chose different approaches to
+# the letter casing of headers.
+contains(CONFIG, is_using_gnupoc) {
+    INCLUDEPATH += $${PWD}/../../common/symbian/header-wrappers
+}

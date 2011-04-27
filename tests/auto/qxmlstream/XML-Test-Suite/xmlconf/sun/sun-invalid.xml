@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @(#)invalid.xml	1.9 99/01/07
+    Copyright 1998 by Sun Microsystems, Inc.
+    All Rights Reserved.
+-->
+<TEST URI="invalid/dtd01.xml" ID="inv-dtd01" SECTIONS="3.2.2" TYPE="invalid">
+    Tests the No Duplicate Types VC</TEST>
+
+<TEST URI="invalid/dtd02.xml" ID="inv-dtd02" SECTIONS="4.2.2" TYPE="invalid">
+    Tests the "Notation Declared" VC by using an undeclared
+    notation name.</TEST>
+
+<TEST URI="invalid/dtd03.xml" ID="inv-dtd03" SECTIONS="3" TYPE="invalid">
+    Tests the "Element Valid" VC (clause 2)
+    by omitting a required element.  </TEST>
+
+<TEST URI="invalid/el01.xml" ID="el01" SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 4)
+    by including an undeclared child element.  </TEST>
+
+<TEST URI="invalid/el02.xml" ID="el02" SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 1)
+    by including elements in an EMPTY content model.  </TEST>
+
+<TEST URI="invalid/el03.xml" ID="el03" SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 3) by including a child element
+    not permitted by a mixed content model.  </TEST>
+
+<TEST URI="invalid/el04.xml" ID="el04" SECTIONS="3.2" TYPE="invalid">
+    Tests the Unique Element Type Declaration VC. </TEST>
+
+<TEST URI="invalid/el05.xml" ID="el05" SECTIONS="3.2.2" TYPE="invalid">
+    Tests the No Duplicate Types VC. </TEST>
+
+<TEST URI="invalid/el06.xml" ID="el06" SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 1),
+    using one of the predefined internal entities
+    inside an EMPTY content model.</TEST>
+
+<TEST URI="invalid/id01.xml" ID="id01" ENTITIES="parameter" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the ID (is a Name) VC</TEST>
+
+<TEST URI="invalid/id02.xml" ID="id02" ENTITIES="parameter" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the ID (appears once) VC</TEST>
+
+<TEST URI="invalid/id03.xml" ID="id03" ENTITIES="parameter" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the One ID per Element Type VC</TEST>
+
+<TEST URI="invalid/id04.xml" ID="id04" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the ID Attribute Default VC</TEST>
+
+<TEST URI="invalid/id05.xml" ID="id05" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the ID Attribute Default VC</TEST>
+
+<TEST URI="invalid/id06.xml" ID="id06" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the IDREF (is a Name) VC</TEST>
+
+<TEST URI="invalid/id07.xml" ID="id07" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the IDREFS (is a Names) VC</TEST>
+
+<TEST URI="invalid/id08.xml" ID="id08" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the IDREF (matches an ID) VC</TEST>
+
+<TEST URI="invalid/id09.xml" ID="id09" SECTIONS="3.3.1" TYPE="invalid">
+    Tests the IDREF (IDREFS matches an ID) VC</TEST>
+
+<TEST URI="invalid/not-sa01.xml" ID="inv-not-sa01" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    optional whitespace causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa02.xml" ID="inv-not-sa02" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    attributes needing normalization cause a validity error.</TEST>
+
+<TEST URI="invalid/not-sa04.xml" ID="inv-not-sa04" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    attributes needing defaulting cause a validity error.</TEST>
+
+<TEST URI="invalid/not-sa05.xml" ID="inv-not-sa05" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    a token attribute that needs normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa06.xml" ID="inv-not-sa06" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    a NOTATION attribute that needs normalization
+    causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa07.xml" ID="inv-not-sa07" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an NMTOKEN attribute needing normalization
+    causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa08.xml" ID="inv-not-sa08" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an NMTOKENS attribute needing normalization
+    causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa09.xml" ID="inv-not-sa09" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an ID attribute needing normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa10.xml" ID="inv-not-sa10" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an IDREF attribute needing normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa11.xml" ID="inv-not-sa11" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an IDREFS attribute needing normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa12.xml" ID="inv-not-sa12" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an ENTITY attribute needing normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa13.xml" ID="inv-not-sa13" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="invalid">
+    Tests the Standalone Document Declaration VC, ensuring that
+    an ENTITIES attribute needing normalization causes a validity error.</TEST>
+
+<TEST URI="invalid/not-sa14.xml" ID="inv-not-sa14" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    CDATA sections containing only whitespace do not match the nonterminal S, and cannot 
+    appear in these positions.</TEST>
+
+<TEST URI="invalid/optional01.xml" ID="optional01" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing no children where
+    one is required.</TEST>
+
+<TEST URI="invalid/optional02.xml" ID="optional02" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    two children where one is required.</TEST>
+
+<TEST URI="invalid/optional03.xml" ID="optional03" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where two are required.</TEST>
+
+<TEST URI="invalid/optional04.xml" ID="optional04" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where two are required.</TEST>
+
+<TEST URI="invalid/optional05.xml" ID="optional05" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or two are
+    required (one construction of that model).</TEST>
+
+<TEST URI="invalid/optional06.xml" ID="optional06" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or two are
+    required (a second construction of that model).</TEST>
+
+<TEST URI="invalid/optional07.xml" ID="optional07" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or two are
+    required (a third construction of that model).</TEST>
+
+<TEST URI="invalid/optional08.xml" ID="optional08" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or two are
+    required (a fourth construction of that model).</TEST>
+
+<TEST URI="invalid/optional09.xml" ID="optional09" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or two are
+    required (a fifth construction of that model).</TEST>
+
+<TEST URI="invalid/optional10.xml" ID="optional10" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where one or two are
+    required (a basic construction of that model).</TEST>
+
+<TEST URI="invalid/optional11.xml" ID="optional11" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where one or two are
+    required (a second construction of that model).</TEST>
+
+<TEST URI="invalid/optional12.xml" ID="optional12" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where one or two are
+    required (a third construction of that model).</TEST>
+
+<TEST URI="invalid/optional13.xml" ID="optional13" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where one or two are
+    required (a fourth construction of that model).</TEST>
+
+<TEST URI="invalid/optional14.xml" ID="optional14" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    three children where one or two are
+    required (a fifth construction of that model).</TEST>
+
+<TEST URI="invalid/optional20.xml" ID="optional20" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or more are
+    required (a sixth construction of that model).</TEST>
+
+<TEST URI="invalid/optional21.xml" ID="optional21" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or more are
+    required (a seventh construction of that model).</TEST>
+
+<TEST URI="invalid/optional22.xml" ID="optional22" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or more are
+    required (an eigth construction of that model).</TEST>
+
+<TEST URI="invalid/optional23.xml" ID="optional23" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or more are
+    required (a ninth construction of that model).</TEST>
+
+<TEST URI="invalid/optional24.xml" ID="optional24" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    no children where one or more are
+    required (a tenth construction of that model).</TEST>
+
+<TEST URI="invalid/optional25.xml" ID="optional25" ENTITIES="parameter"
+	SECTIONS="3" TYPE="invalid">
+    Tests the Element Valid VC (clause 2) for one
+    instance of "children" content model, providing
+    text content where one or more elements are
+    required.</TEST>
+
+<TEST URI="invalid/required00.xml" ID="inv-required00"
+	SECTIONS="3.3.2" TYPE="invalid">
+    Tests the Required Attribute VC.</TEST>
+
+<TEST URI="invalid/required01.xml" ID="inv-required01"
+	SECTIONS="3.1 2.10" TYPE="invalid">
+    Tests the Attribute Value Type (declared)
+    VC for the xml:space attribute</TEST>
+
+<TEST URI="invalid/required02.xml" ID="inv-required02"
+	SECTIONS="3.1 2.12" TYPE="invalid">
+    Tests the Attribute Value Type (declared)
+    VC for the xml:lang attribute</TEST>
+
+<TEST URI="invalid/root.xml" ID="root" ENTITIES="parameter" SECTIONS="2.8" TYPE="invalid">
+    Tests the Root Element Type VC</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr01.xml" ID="attr01" SECTIONS="3.3.1">
+    Tests the "Entity Name" VC for the ENTITY attribute type.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr02.xml" ID="attr02" SECTIONS="3.3.1">
+    Tests the "Entity Name" VC for the ENTITIES attribute type.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr03.xml" ID="attr03" SECTIONS="3.3.1">
+    Tests the "Notation Attributes" VC for the
+    NOTATION attribute type, first clause:  value must be one
+    of the ones that's declared.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr04.xml" ID="attr04" SECTIONS="3.3.1">
+    Tests the "Notation Attributes" VC for the
+    NOTATION attribute type, second clause:  the names in the
+    declaration must all be declared.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr05.xml" ID="attr05" SECTIONS="3.3.1">
+    Tests the "Name Token" VC for the NMTOKEN attribute type.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr06.xml" ID="attr06" SECTIONS="3.3.1">
+    Tests the "Name Token" VC for the NMTOKENS attribute type.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr07.xml" ID="attr07" SECTIONS="3.3.1">
+    Tests the "Enumeration" VC by providing
+    a value which wasn't one of the choices.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr08.xml" ID="attr08" SECTIONS="3.3.2">
+    Tests the "Fixed Attribute Default" VC by
+    providing the wrong value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr09.xml" ID="attr09" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal IDREF value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr10.xml" ID="attr10" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal IDREFS value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr11.xml" ID="attr11" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal ENTITY value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr12.xml" ID="attr12" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal ENTITIES value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr13.xml" ID="attr13" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal NMTOKEN value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr14.xml" ID="attr14" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal NMTOKENS value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr15.xml" ID="attr15" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal NOTATIONS value.</TEST>
+
+<TEST TYPE="invalid" URI="invalid/attr16.xml" ID="attr16" SECTIONS="3.3.2">
+    Tests the "Attribute Default Legal" VC by
+    providing an illegal enumeration value.</TEST>
+
+<TEST URI="invalid/utf16b.xml" ID="utf16b" SECTIONS="4.3.3 2.8" TYPE="invalid">
+    Tests reading an invalid "big endian" UTF-16 document</TEST>
+
+<TEST URI="invalid/utf16l.xml" ID="utf16l" SECTIONS="4.3.3 2.8" TYPE="invalid">
+    Tests reading an invalid "little endian" UTF-16 document</TEST>
+
+<TEST URI="invalid/empty.xml" ID="empty" TYPE="invalid" SECTIONS="2.4 2.7 [18] 3">
+    CDATA section containing only white space does not match the nonterminal S, and cannot 
+    appear in these positions. </TEST>

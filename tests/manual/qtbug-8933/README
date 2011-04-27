@@ -1,0 +1,7 @@
+The purpose of this test is to check if the full screen mode in OSX is working properly or not.
+This test creates a widget and 5 seconds later enters full screen mode. If you hover over the area
+where the menubar should be you will get no menubar. After 5 more seconds (i.e. 10 seconds since
+start) a menubar is created. At that point, if you hover over the menubar area you will get the
+menubar. 5 seconds later the menubar is destroyed and if you hover over there will be no menubar.
+After 5 more seconds the widget goes back to normal mode and the test is finished.
+

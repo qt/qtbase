@@ -1,0 +1,17 @@
+<?xml version="1.1" encoding="UTF-8" ?>
+<!DOCTYPE root [
+<!ELEMENT root ANY>
+]>
+<!-- This test case covers control characters x1 to x1F and x7F to x9F 
+	 which should only appear as character references. -->
+<root>
+&#x01;&#x02;&#x03;&#x04;&#x05;&#x06;&#x07;&#x08;&#x09;&#x0A;&#x0B;&#x0C;&#x0D;&#x0E;&#x0F;
+&#x10;&#x11;&#x12;&#x13;&#x14;&#x15;&#x16;&#x17;&#x18;&#x19;
+&#x1A;&#x1B;&#x1C;&#x1D;&#x1E;&#x1F;
+&#x70;&#x77;&#x72;&#x73;&#x74;&#x75;&#x76;&#x77;&#x78;&#x79;
+&#x7F;
+&#x80;&#x88;&#x82;&#x83;&#x84;&#x85;&#x86;&#x87;&#x88;&#x89;
+&#x8A;&#x8B;&#x8C;&#x8D;&#x8E;&#x8F;
+&#x90;&#x99;&#x92;&#x93;&#x94;&#x95;&#x96;&#x97;&#x98;&#x99;
+&#x9A;&#x9B;&#x9C;&#x9D;&#x9E;&#x9F;
+</root>

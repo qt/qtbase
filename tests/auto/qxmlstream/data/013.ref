@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Bad QName syntax: multiple colons " )
+StartElement( name="foo" qualifiedName="foo" )
+Characters( whitespace text="
+" )
+Invalid( name="bar" qualifiedName="bar" )
+ERROR: Expected '=', but got ':'.

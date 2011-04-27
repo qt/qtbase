@@ -1,0 +1,15 @@
+<?xml  version="1.0"?>
+<!-- Syntax test for Production 58-->
+<!DOCTYPE test
+ [
+ <!ELEMENT test ANY>
+ <!ELEMENT one EMPTY>
+ <!ELEMENT two EMPTY>
+ <!NOTATION this SYSTEM "alpha">
+ <!NOTATION that SYSTEM "beta">
+ <!ATTLIST three attr NOTATION (this,that) #IMPLIED>
+ ]>
+<test>
+Negative Test.
+This test tests the presence of a correct seperator. There is a wrong seperator(,)
+</test>

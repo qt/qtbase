@@ -1,0 +1,13 @@
+usr/include/qt4         usr/share/qt4/include
+usr/bin/lrelease        usr/share/qt4/bin/lrelease
+usr/bin/lupdate         usr/share/qt4/bin/lupdate
+usr/bin/moc             usr/share/qt4/bin/moc
+usr/bin/qmake           usr/share/qt4/bin/qmake
+usr/bin/uic             usr/share/qt4/bin/uic
+usr/bin/lrelease        usr/bin/lrelease-qt4   
+usr/bin/lupdate         usr/bin/lupdate-qt4   
+usr/bin/moc             usr/bin/moc-qt4      
+usr/bin/qmake           usr/bin/qmake-qt4   
+usr/bin/uic             usr/bin/uic-qt4       
+usr/bin/rcc             usr/share/qt4/bin/rcc
+usr/lib/qt4/plugins     usr/share/qt4/plugins

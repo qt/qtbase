@@ -1,0 +1,8 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 63-->
+<![IGNORE[
+<!ELEMENT animal EMPTY>
+<!ELEMENT tiger EMPTY>
+
+<!--Negative test with pattern5 of P63-->
+<!--Missing closing sequence -->

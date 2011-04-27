@@ -1,0 +1,156 @@
+
+path_moveTo convexPath 25 0
+path_lineTo convexPath 50 50
+path_lineTo convexPath 25 25
+path_lineTo convexPath 0  50
+path_closeSubpath convexPath
+
+pixmap_load border.png pixmap
+
+setRenderHint LineAntialiasing false
+translate 10 10
+
+begin_block drawing
+    setPen black 1
+    setBrush 7f7fff
+    drawPath convexPath
+
+    setFont "monospace" 8
+    setPen black
+    drawText 0 68 "QwErTy@"
+
+
+    setPen black 1
+    setBrush 7f7fff
+    drawRect 0 80 10 5
+
+    setPen black 1
+    setBrush noBrush
+    drawRect 20 80 10 5
+
+    setPen noPen
+    setBrush 7f7fff
+    drawRect 40 80 10 5
+
+
+    setPen black 2
+    setBrush 7f7fff
+    drawRect 0 90 10 5
+
+    setPen black 2
+    setBrush noBrush
+    drawRect 20 90 10 5
+
+    setPen noPen
+    setBrush 7f7fff
+    drawRect 40 90 10 5
+
+
+    setPen black 3
+    setBrush 7f7fff
+    drawRect 0 100 10 5
+
+    setPen black 3
+    setBrush noBrush
+    drawRect 20 100 10 5
+
+    setPen noPen
+    setBrush 7f7fff
+    drawRect 40 100 10 5
+
+
+    setPen black 1
+    setBrush noBrush
+    drawLine 10 110 20 120
+    drawLine 30 120 40 110
+
+    setPen black 2
+    setBrush noBrush
+    drawLine 10 120 20 130
+    drawLine 30 130 40 120
+
+    setPen black 3
+    setBrush noBrush
+    drawLine 10 130 20 140
+    drawLine 30 140 40 130
+
+    drawPixmap pixmap 0 150
+
+    setRenderHint SmoothPixmapTransform false
+    drawPixmap pixmap 20 150 15 15   0 0 10 10
+
+end_block
+
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+drawText 15 185 "0.0"
+
+resetMatrix
+translate 70.2 10.2
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+translate -0.2 -0.2
+drawText 15 185 "0.2"
+
+
+resetMatrix
+translate 130.4 10.4
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+translate -0.4 -0.4
+drawText 15 185 "0.4"
+
+
+resetMatrix
+translate 190.5 10.5
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+translate -0.5 -0.5
+drawText 15 185 "0.5"
+
+
+resetMatrix
+translate 250.6 10.6
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+translate -0.6 -0.6
+drawText 15 185 "0.6"
+
+
+resetMatrix
+translate 310.8 10.8
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+translate -0.8 -0.8
+drawText 15 185 "0.8"
+
+
+resetMatrix
+translate 371 11
+setRenderHint LineAntialiasing false
+repeat_block drawing
+translate 0 180
+setRenderHint LineAntialiasing true
+repeat_block drawing
+drawText 15 185 "1.0"
+
+
+resetMatrix
+drawText 430 95 "Aliased"
+drawText 430 275 "Anti-Aliased"

@@ -1,0 +1,85 @@
+<ui version="4.0" >
+ <class>CertificateInfo</class>
+ <widget class="QDialog" name="CertificateInfo" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>397</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Display Certificate Information</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Certification Path</string>
+     </property>
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QListWidget" name="certificationPathView" />
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2" >
+     <property name="title" >
+      <string>Certificate Information</string>
+     </property>
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QListWidget" name="certificateInfoView" />
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" >
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox" >
+       <property name="standardButtons" >
+        <set>QDialogButtonBox::Close</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>clicked(QAbstractButton*)</signal>
+   <receiver>CertificateInfo</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>343</x>
+     <y>374</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>352</x>
+     <y>422</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

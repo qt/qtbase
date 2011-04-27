@@ -1,0 +1,3 @@
+this dummy directory is needed for the QApplication::libraryPaths() autotest
+that calls QDir(applicationDirPath + "/tmp/..").canonicalPath(). canonicalPath()
+stat()'s the given directory, so if the tmp directory doesn't exist it fails...

@@ -1,0 +1,7 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root EMPTY>
+<!ATTLIST root att CDATA #IMPLIED>
+
+]>
+<root att="wrong replacement charater: &#x001f;" />

@@ -1,0 +1,36 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace inequality test: different capitalization " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns:a CDATA #IMPLIED
+              xmlns:b CDATA #IMPLIED
+              xmlns:c CDATA #IMPLIED>
+<!ELEMENT bar ANY>
+<!ATTLIST bar a:attr CDATA #IMPLIED
+              b:attr CDATA #IMPLIED
+              c:attr CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/wine" )
+
+    NamespaceDeclaration( prefix="b" namespaceUri="http://Example.org/wine" )
+
+    NamespaceDeclaration( prefix="c" namespaceUri="http://example.org/Wine" )
+ )
+Characters( whitespace text="
+
+" )
+StartElement( name="bar" qualifiedName="bar"
+    Attribute( name="attr" namespaceUri="http://example.org/wine" qualifiedName="a:attr" prefix="a" value="1" )
+
+    Attribute( name="attr" namespaceUri="http://Example.org/wine" qualifiedName="b:attr" prefix="b" value="2" )
+
+    Attribute( name="attr" namespaceUri="http://example.org/Wine" qualifiedName="c:attr" prefix="c" value="3" )
+ )
+EndElement( name="bar" qualifiedName="bar" )
+Characters( whitespace text="
+
+" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

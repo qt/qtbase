@@ -1,0 +1,322 @@
+<ui version="4.0" >
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>567</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="iconSize" >
+   <size>
+    <width>32</width>
+    <height>32</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="centralwidget" >
+   <layout class="QVBoxLayout" >
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <property name="spacing" >
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="documentTabs" >
+      <property name="currentIndex" >
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Tab 1</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>567</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
+     <string>File</string>
+    </property>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionClose" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
+   </widget>
+   <widget class="QMenu" name="menuShape" >
+    <property name="title" >
+     <string>Edit</string>
+    </property>
+    <widget class="QMenu" name="menuMacros" >
+     <property name="title" >
+      <string>Macros</string>
+     </property>
+     <addaction name="actionAddRobot" />
+     <addaction name="actionAddSnowman" />
+    </widget>
+    <addaction name="separator" />
+    <addaction name="actionAddCircle" />
+    <addaction name="actionAddRectangle" />
+    <addaction name="actionAddTriangle" />
+    <addaction name="actionRemoveShape" />
+    <addaction name="separator" />
+    <addaction name="actionRed" />
+    <addaction name="actionGreen" />
+    <addaction name="actionBlue" />
+    <addaction name="separator" />
+    <addaction name="menuMacros" />
+   </widget>
+   <widget class="QMenu" name="menuHelp" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout" />
+    <addaction name="actionAboutQt" />
+   </widget>
+   <addaction name="menuFile" />
+   <addaction name="menuShape" />
+   <addaction name="menuHelp" />
+  </widget>
+  <widget class="QStatusBar" name="statusbar" />
+  <widget class="QToolBar" name="toolBar" >
+   <property name="windowTitle" >
+    <string>File actions</string>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <attribute name="toolBarArea" >
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak" >
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNew" />
+   <addaction name="actionOpen" />
+   <addaction name="actionSave" />
+   <addaction name="actionClose" />
+   <addaction name="separator" />
+  </widget>
+  <widget class="QToolBar" name="shapeToolBar" >
+   <property name="windowTitle" >
+    <string>Shape actions</string>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Vertical</enum>
+   </property>
+   <attribute name="toolBarArea" >
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak" >
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionAddRectangle" />
+   <addaction name="actionAddCircle" />
+   <addaction name="actionAddTriangle" />
+   <addaction name="actionRemoveShape" />
+   <addaction name="separator" />
+   <addaction name="actionRed" />
+   <addaction name="actionGreen" />
+   <addaction name="actionBlue" />
+  </widget>
+  <widget class="QDockWidget" name="dockWidget" >
+   <property name="windowTitle" >
+    <string>Undo Stack</string>
+   </property>
+   <attribute name="dockWidgetArea" >
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents" >
+    <layout class="QVBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>4</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label" >
+         <property name="text" >
+          <string>Undo limit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="undoLimit" />
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QUndoView" name="undoView" >
+       <property name="alternatingRowColors" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionOpen" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/fileopen.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Open</string>
+   </property>
+  </action>
+  <action name="actionClose" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/fileclose.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Close</string>
+   </property>
+  </action>
+  <action name="actionNew" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/filenew.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;New</string>
+   </property>
+  </action>
+  <action name="actionSave" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/filesave.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="actionExit" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/exit.png</iconset>
+   </property>
+   <property name="text" >
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="actionRed" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/red.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Red</string>
+   </property>
+  </action>
+  <action name="actionGreen" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/green.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Green</string>
+   </property>
+  </action>
+  <action name="actionBlue" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/blue.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Blue</string>
+   </property>
+  </action>
+  <action name="actionAddRectangle" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/rectangle.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Add Rectangle</string>
+   </property>
+  </action>
+  <action name="actionAddCircle" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/circle.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Add Circle</string>
+   </property>
+  </action>
+  <action name="actionRemoveShape" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/remove.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Remove Shape</string>
+   </property>
+  </action>
+  <action name="actionAddRobot" >
+   <property name="text" >
+    <string>Add robot</string>
+   </property>
+  </action>
+  <action name="actionAddSnowman" >
+   <property name="text" >
+    <string>Add snowan</string>
+   </property>
+  </action>
+  <action name="actionAddTriangle" >
+   <property name="icon" >
+    <iconset resource="undo.qrc" >:/icons/triangle.png</iconset>
+   </property>
+   <property name="text" >
+    <string>addTriangle</string>
+   </property>
+  </action>
+  <action name="actionAbout" >
+   <property name="text" >
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionAboutQt" >
+   <property name="text" >
+    <string>About Qt</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QUndoView</class>
+   <extends>QListView</extends>
+   <header>qundoview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="undo.qrc" />
+ </resources>
+ <connections/>
+</ui>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!--* wrong keyword in NdataDecl: ndata *-->
+<!ENTITY aImage SYSTEM "image.jpg" ndata JPGformat>
+]>
+<root/>

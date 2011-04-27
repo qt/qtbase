@@ -1,0 +1,25 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="waitForOneThousand">
+<Incident type="pass" file="" line="0">
+<BenchmarkResult metric="walltime" tag="" value="1004" iterations="1" />
+</Incident>
+</TestFunction>
+<TestFunction name="waitForFourThousand">
+<Incident type="pass" file="" line="0">
+<BenchmarkResult metric="walltime" tag="" value="4007" iterations="1" />
+</Incident>
+</TestFunction>
+<TestFunction name="qbenchmark_once">
+<Incident type="pass" file="" line="0">
+<BenchmarkResult metric="walltime" tag="" value="0" iterations="1" />
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

@@ -1,0 +1,3 @@
+********* Start testing of tst_Crashes *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Crashes::initTestCase()

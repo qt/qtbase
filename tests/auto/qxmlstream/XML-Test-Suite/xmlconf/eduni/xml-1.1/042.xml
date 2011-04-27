@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Contains a character reference to a C0 control character (form-feed),
+     legal in XML 1.1 but not 1.0 -->
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+]>
+<foo>&#x0c;</foo>

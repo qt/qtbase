@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+  <!--* PEs are properly nested *-->
+  <!ELEMENT a (#PCDATA)* >
+  <!ELEMENT b (#PCDATA) >
+  <!ELEMENT c ( #PCDATA)*>
+
+  <!ENTITY % mixed0 "(#PCDATA|c)*" >
+  <!ENTITY % mixed1 "%mixed0;">
+  <!ELEMENT d %mixed1; >
+  
+  <!ENTITY % mixed1.5 "c| b" > 
+  <!ELEMENT e (#PCDATA| %mixed1.5; |a)* >
+
+  <!ELEMENT f (#PCDATA| c)* >
+  <!ELEMENT g ( #PCDATA) >
+  <!ELEMENT h (#PCDATA )>
+
+  <!ENTITY % mixed2 "( #PCDATA )">
+  <!ELEMENT i %mixed2; >
+

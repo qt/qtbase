@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" tests="1" name="tst_SkipGlobal">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase name="initTestCase">
+    <!-- message="Skippy Skippy" type="skip" -->
+  </testcase>
+  <system-err>
+<![CDATA[Skippy Skippy]]>
+  </system-err>
+</testsuite>

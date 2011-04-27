@@ -1,0 +1,19 @@
+StartDocument( )
+DTD( text="<!DOCTYPE doc
+[
+<!NOTATION not1 PUBLIC "0123456789-()+,.'/:=?;!*#@$_%">
+<!NOTATION not2 PUBLIC "'">
+<!NOTATION not3 PUBLIC "asd">
+<!NOTATION not4 PUBLIC 'asd'>
+]>" dtdName="doc"
+    NotationDeclaration( name="not1" publicId="0123456789-()+,.'/:=?;!*#@$_%" )
+
+    NotationDeclaration( name="not2" publicId="'" )
+
+    NotationDeclaration( name="not3" publicId="asd" )
+
+    NotationDeclaration( name="not4" publicId="asd" )
+ )
+StartElement( name="doc" qualifiedName="doc" )
+EndElement( name="doc" qualifiedName="doc" )
+EndDocument( )

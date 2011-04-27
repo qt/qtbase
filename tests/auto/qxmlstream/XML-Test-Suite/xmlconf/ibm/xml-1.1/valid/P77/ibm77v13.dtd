@@ -1,0 +1,4 @@
+<![INCLUDE [
+<!ELEMENT ønode EMPTY>
+<!ELEMENT root ANY>
+]]>

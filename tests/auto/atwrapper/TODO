@@ -1,0 +1,17 @@
+* Get rid of "Keep baseline" on test failure page (Lars)                    !! DONE !!
+* Make to autotest (Simon)                                                  !! DONE !!
+* Add visual diff (Everyone ;))                                             !! DONE !!
+* Add flicker (Simon/Jesper)                                                !! DONE !!
+* Add third image -- base-baseline (Lars)                                   !! DONE !!
+* Add "view baselines" gallery, including the "base base line" (Lars)       !! DONE !!
+* Add PS printer driver engine test thingy (Eskil)                          !! DONE !!
+* Add platform by platform comparison perl script. (Morton)
+* Fix the QDateTime.fromString() weirdness on win32 in xmldata.cpp (Jesper)
+* Have one result per page view (Lars)                                      !! DONE !!
+* Have "platform - hostname" on test overview (Lars)                        !! DONE !!
+* Have the links on the overview page only show failures for that host.(All)!! DONE !! 
+* "onion skin" diff. (Jesper)
+* Promote all to baseline
+* Switch all to flicker/onion/whatever
+* Add javascript confirmation for "make baseline"
+* Make "single view" more stable

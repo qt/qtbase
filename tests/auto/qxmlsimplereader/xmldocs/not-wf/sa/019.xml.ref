@@ -1,0 +1,4 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+      fatalError(exception={columnNumber=8, lineNumber=1, publicId="", systemId="", message="error occurred while parsing element"})

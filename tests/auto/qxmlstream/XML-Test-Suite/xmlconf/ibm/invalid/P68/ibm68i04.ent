@@ -1,0 +1,4 @@
+<!ELEMENT a EMPTY>
+<!ATTLIST a attr1 CDATA "&ge1;">
+<!ENTITY ge1 "abcdef">
+<!--* GE reference in attr default before declaration *-->

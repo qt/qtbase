@@ -1,0 +1,4597 @@
+<html>
+<body>
+<center>
+<h1>XML Test Matrix </h1>
+</center>
+<table cellspacing="1" cellpadding="2" border="2" cols="5" width="100%" align="center">
+<colgroup>
+<col width="10%">
+<col width="10%">
+<col width="40%">
+<col width="10%">
+<col width="30%">
+</colgroup>
+<tr>
+<th>Section</th><th>Type</th><th>Purpose</th><th>Level</th><th>XML Test(s)</th>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A document consisting of prolog followed by element then misc. items is 
+		a well-formed document
+	</td><td>one</td><td>
+<br>ibm-valid-P01-ibm01v013 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		 A well formed document must have one or more elements
+ 	</td><td>one</td><td>
+<br>ibm-not-wf-P01-ibm01n01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		 An XML document  must contain exactly one top level element
+	</td><td>one</td><td>
+<br>o-p01fail3 </br>
+<br>not-wf-sa-040 </br>
+<br>not-wf-sa-041 </br>
+<br>not-wf-sa-044 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A document with no prolog is a well-formed document
+	</td><td>one</td><td>
+<br>o-p01pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A document consisting of an element followed by a prolog is not a well-formed 
+		element
+	</td><td>one</td><td>
+<br>ibm-not-wf-P01-ibm01n02 </br>
+<br>not-wf-sa-151 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document a comment can not occur before the prolog
+	</td><td>one</td><td>
+<br>o-p01fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A document that contains a root element followed by misc. items is
+		a well-formed document
+	</td><td>one</td><td>
+<br>o-p01pass3 </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		in a well formed document the root element must not be followed by
+		text or PCDATA 
+	</td><td>one</td><td>
+<br>not-wf-sa-036 </br>
+<br>not-wf-sa-043 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		in a well formed document the root element must not be followed by
+		CDATA
+	</td><td>one</td><td>
+<br>not-wf-sa-048 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		in a well formed document the root element must not be followed by
+		character references
+	</td><td>one</td><td>
+<br>not-wf-sa-037 </br>
+<br>not-wf-sa-043 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A well formed document does not include the top level element as part of 
+		the content of another element
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document,  elements  that contains data must have both 
+		start and end tags.  
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document, empty elements using only a single tag must 
+		end with /&gt;  
+	</td><td>one</td><td>
+<br>o-p01fail4 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document the root element must completely 
+		contain all other elements 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P01-ibm01n03 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document only one top level element (root element)
+       	 	is allowed 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P01-ibm01n03 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document the  XML declaration, if present, must be
+		the first line in the document. 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document elements containing other elements must not overlap 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		A root element with no data is a well-formed document 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P02-ibm02n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document parameter entity reference are not allow inside 
+		a markup declaration 
+	</td><td>one</td><td>
+<br>not-wf-sa-160 </br>
+<br>not-wf-sa-161 </br>
+<br>not-wf-sa-162 </br>
+<br>valid -sa-094 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document a CDATA section must occur as part of a element content
+	</td><td>one</td><td>
+<br>not-wf-sa-051 </br>
+<br>not-wf-sa-105 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In well-formed document an attribute name may not appear more than one in 
+		the same element
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Well_Formed</td><td>
+		In a well-formed document attribute values do not contain External Entity 
+		References
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Characters</td><td>
+		Non-printing ASCII control characters are illegal XML characters  
+	</td><td>one</td><td>
+<br>not-wf-sa-030 </br>
+<br>not-wf-sa-031 </br>
+<br>not-wf-sa-032 </br>
+<br>not-wf-sa-033 </br>
+<br>not-wf-sa-034 </br>
+<br>not-wf-sa-142 </br>
+<br>not-wf-sa-143 </br>
+<br>not-wf-sa-146 </br>
+<br>o-p02fail1 </br>
+<br>o-p02fail10 </br>
+<br>o-p02fail11 </br>
+<br>o-p02fail12 </br>
+<br>o-p02fail13 </br>
+<br>o-p02fail14 </br>
+<br>o-p02fail15 </br>
+<br>o-p02fail16 </br>
+<br>o-p02fail17 </br>
+<br>o-p02fail18 </br>
+<br>o-p02fail19 </br>
+<br>o-p02fail2 </br>
+<br>o-p02fail20 </br>
+<br>o-p02fail21 </br>
+<br>o-p02fail22 </br>
+<br>o-p02fail23 </br>
+<br>o-p02fail24 </br>
+<br>o-p02fail25 </br>
+<br>o-p02fail26 </br>
+<br>o-p02fail27 </br>
+<br>o-p02fail28 </br>
+<br>o-p02fail29 </br>
+<br>o-p02fail3 </br>
+<br>o-p02fail30 </br>
+<br>o-p02fail31 </br>
+<br>o-p02fail4 </br>
+<br>o-p02fail5 </br>
+<br>o-p02fail6 </br>
+<br>o-p02fail7 </br>
+<br>o-p02fail8 </br>
+<br>o-p02fail9 </br>
+<br>ibm-valid-P02-ibm02v02 </br>
+<br>ibm-valid-P02-ibm02v01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Characters</td><td>
+		Surrogate blocks are illegal XML characters  
+	</td><td>one</td><td>
+<br>not-wf-sa-145 </br>
+<br>not-wf-sa-168 </br>
+<br>not-wf-sa-169 </br>
+<br>ibm-valid-P02-ibm02v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Characters</td><td>
+		The Characters #x10000-#x10ffff, are outside the normal ascii range, 
+		but they are considered legal XML characters  
+	</td><td>one</td><td>
+<br>valid-sa-049 </br>
+<br>valid-sa-050 </br>
+<br>ibm-valid-P02-ibm02v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Characters</td><td>
+		Characters outside the normal ascii that are not in the range of 
+		#x10000-#x10ffff are ilegal XML characters
+	</td><td>one</td><td>
+<br>not-wf-sa-170 </br>
+<br>valid-sa-051 </br>
+<br>ibm-valid-P02-ibm02v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Characters</td><td>
+		Non-characters, #xFFFE and #xFFFF, are illegal XML characters  	
+	</td><td>one</td><td>
+<br>not-wf-sa-144 </br>
+<br>not-wf-sa-166 </br>
+<br>not-wf-sa-167 </br>
+<br>not-wf-sa-171 </br>
+<br>not-wf-sa-172 </br>
+<br>not-wf-sa-173 </br>
+<br>not-wf-sa-174 </br>
+<br>not-wf-sa-175 </br>
+<br>not-wf-sa-177 </br>
+<br>ibm-valid-P02-ibm02v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		"#x20", "#x9", "#xA" and "#xD" are legal whitespaces in an XML document  
+	</td><td>one</td><td>
+<br>ibm-valid-P03-ibm03v01 </br>
+<br>o-p03pass1 </br>
+<br>o-p03fail1 </br>
+<br>o-p03fail10 </br>
+<br>o-p03fail11 </br>
+<br>o-p03fail12 </br>
+<br>o-p03fail13 </br>
+<br>o-p03fail14 </br>
+<br>o-p03fail15 </br>
+<br>o-p03fail16 </br>
+<br>o-p03fail17 </br>
+<br>o-p03fail8 </br>
+<br>o-p03fail19 </br>
+<br>o-p03fail20 </br>
+<br>o-p03fail21 </br>
+<br>o-p03fail22 </br>
+<br>o-p03fail23 </br>
+<br>o-p03fail24 </br>
+<br>o-p03fail25 </br>
+<br>o-p03fail26 </br>
+<br>o-p03fail27 </br>
+<br>o-p03fail28 </br>
+<br>o-p03fail29 </br>
+<br>o-p03fail3 </br>
+<br>o-p03fail4 </br>
+<br>o-p03fail5 </br>
+<br>o-p03fail7 </br>
+<br>o-p03fail8 </br>
+<br>o-p03fail9 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		Names beginning with the string "xml" are not allowed as an XML name  
+	</td><td>one</td><td>
+<br>sandratest03n01  </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		Colons ":" are legal XML names that should be used only for namespaces  
+	</td><td>one</td><td>
+<br>o-p05pass1 </br>
+<br>valid-sa-012 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A name consisting of only a letter, "_" or ":" is a legal XML name   
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		Names must begin with a letter, "_" or ":"  and followed by zero or more
+		nama characters to be consider a legal XML name  
+	</td><td>one</td><td>
+<br>ibm-not-wf-P05-ibm05n01 </br>
+<br>ibm-not-wf-P05-ibm05n02 </br>
+<br>ibm-not-wf-P05-ibm05n03 </br>
+<br>not-wf-sa-002 </br>
+<br>not-wf-sa-140 </br>
+<br>not-wf-sa-008 </br>
+<br>not-wf-sa-023 </br>
+<br>not-wf-sa-024 </br>
+<br>o-p05fail1 </br>
+<br>o-p05fail2 </br>
+<br>o-p05fail3 </br>
+<br>o-p05fail4 </br>
+<br>o-p05fail5 </br>
+<br>o-p04pass1 </br>
+<br>not-wf-element02 </br>
+<br>not-wf-element03 </br>
+<br>valid-sa-063 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		Characters that are not letters, periods, hyphen, underscore, colons, 
+		combining character and extenders are illegal name characters  
+	</td><td>one</td><td>
+<br>ibm-not-wf-P04-ibm04n03 </br>
+<br>ibm-not-wf-P04-ibm04n04 </br>
+<br>ibm-not-wf-P04-ibm04n05 </br>
+<br>ibm-not-wf-P04-ibm04n06 </br>
+<br>ibm-not-wf-P04-ibm04n07 </br>
+<br>ibm-not-wf-P04-ibm04n08 </br>
+<br>ibm-not-wf-P04-ibm04n09 </br>
+<br>o-p04pass1 </br>
+<br>o-p04fail1 </br>
+<br>o-p04fail2 </br>
+<br>o-p04fail3 </br>
+<br>not-wf-sa-141 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		When more than one XML name is used it must be separated only by a space (#x20) 
+	</td><td>one-errata</td><td>
+<br>o-p06pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A name token is any sequence of one or more name characters
+	</td><td>one</td><td>
+<br>o-p07pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A name token has no restriction on what the first character is as long 
+		as it is a valid name character
+	</td><td>one</td><td>
+<br>o-p08pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A group of name tokens must be one or more XML name tokens separated by
+		a space ("#x20)
+	</td><td>one</td><td>
+<br>o-p08fail1 </br>
+<br>o-p08fail2 </br>
+<br>o-p08pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An entity value must contain any characters enclosed in 
+		double quotes except for %, double quotes and &amp; unless is  used as part of 
+		a character reference, general reference or parameter entity reference
+	</td><td>one</td><td>
+<br>not-wf-sa-113 </br>
+<br>not-wf-sa-114 </br>
+<br>not-wf-sa-159 </br>
+<br>o-p09fail1 </br>
+<br>o-p09fail2 </br>
+<br>o-p09fail3 </br>
+<br>o-p09pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An entity value must contain any characters enclosed in 
+		single quotes except for %, single quotes and &amp; unless is  used as part of 
+		a character reference, general reference or parameter entity reference
+	</td><td>one</td><td>
+<br>not-wf-sa-077 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An entity value must be enclosed in matching quotes, either single quotes or
+		double quotes
+	</td><td>one</td><td>
+<br>o-p09fail5 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An attribute value must contain any characters enclosed in 
+		double quotes except for &lt;, double quotes and &amp; unless is  used as part of 
+		a character reference or general reference
+	</td><td>one</td><td>
+<br>ibm-valid-p10-ibm10v03 </br>
+<br>ibm-valid-p10-ibm10v05 </br>
+<br>ibm-valid-p10-ibm10v07 </br>
+<br>o-p10pass1 </br>
+<br>not-wf-sa-012 </br>
+<br>not-wf-sa-014 </br>
+<br>not-wf-sa-020 </br>
+<br>not-wf-sa-021 </br>
+<br>not-wf-sa-090 </br>
+<br>o-p10fail1 </br>
+<br>o-p10fail2 </br>
+<br>valid-sa-109 </br>
+<br>valid-sa-013 </br>
+<br>valid-sa-014 </br>
+<br>valid-sa-015 </br>
+<br>valid-not-sa-023 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An attribute value must be enclosed in matching quotes, either single quotes or
+		double quotes
+	</td><td>one</td><td>
+<br>not-wf-sa-013 </br>
+<br>not-wf-sa-088 </br>
+<br>o-p10fail3 </br>
+<br>not-wf-sa-178 </br>
+<br>o-p41fail1 </br>
+<br>valid-sa-006 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		An attribute value must contain any characters enclosed in 
+		single quotes except for &lt;, single quotes and &amp; unless is  used as part
+		of a character reference or general reference
+	</td><td>one</td><td>
+<br>ibm-valid-p10-ibm10v04 </br>
+<br>ibm-valid-p10-ibm10v06 </br>
+<br>ibm-valid-p10-ibm10v08 </br>
+<br>o-p10pass1 </br>
+<br>not-wf-sa-012 </br>
+<br>not-wf-sa-014 </br>
+<br>not-wf-sa-020 </br>
+<br>not-wf-sa-021 </br>
+<br>not-wf-sa-090 </br>
+<br>o-p10fail1 </br>
+<br>o-p10fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A system literal must be any string of text that does not contain 
+		the double quote mark enclosed in double quotes
+	</td><td>one</td><td>
+<br>ibm-valid-p11-ibm11v01 </br>
+<br>ibm-valid-p11-ibm11v04 </br>
+<br>o-p11fail2 </br>
+<br>o-p11pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A system literal must be any string of text that does not contain 
+		the single quote mark enclosed in single quotes
+	</td><td>one</td><td>
+<br>ibm-valid-p11-ibm11v02 </br>
+<br>ibm-valid-p11-ibm11v03 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A system literal must be enclosed in matching single or double quotes
+	</td><td>one</td><td>
+<br>o-p11fail1 </br>
+<br>o-p11pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A  public ID literal enclosed in single quotes is a legal if it contains 
+		zero or more public Id literal excluding the single quotes
+	</td><td>one</td><td>
+<br>ibm-not-wf-P12-ibm12n02 </br>
+<br>ibm-not-wf-P12-ibm12n03 </br>
+<br>ibm-valid-p12-ibm12v02.xml </br>
+<br>ibm-valid-p12-ibm12v04.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A  public ID literal with zero or more public Id characters enclosed in 
+		double quotes is a legal public Id literal
+	</td><td>one</td><td>
+<br>ibm-not-wf-P12-ibm12n01 </br>
+<br>ibm-valid-p12-ibm12v01.xml </br>
+<br>ibm-valid-p12-ibm12v03.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>	 
+		The ASCII space, carriage return, linefeed, the letter a through z 
+		and A through Z, the digits 0 through 9, and the puntuation characters
+		-'(),./:=?;!*#@$_% are permisible piblic ID characters
+	</td><td>one</td><td>
+<br>ibm-not-wf-P13-ibm13n01 </br>
+<br>ibm-not-wf-P13-ibm13n02 </br>
+<br>ibm-valid-p13-ibm13v01.xml </br>
+<br>not-wf-pubid01 </br>
+<br>not-wf-pubid02 </br>
+<br>not-wf-pubid03 </br>
+<br>not-wf-pubid04 </br>
+<br>o-p12pass1 </br>
+<br>o-p12fail7 </br>
+<br>not-wf-sa-085 </br>
+<br>not-wf-sa-086 </br>
+<br>not-wf-sa-087 </br>
+<br>o-p12fail1 </br>
+<br>o-p12fail2 </br>
+<br>o-p12fail3 </br>
+<br>o-p12fail4 </br>
+<br>o-p12fail5 </br>
+<br>o-p12fail6 </br>
+<br>valid-sa-100 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Common Syntactic Constructs</td><td>
+		A  public ID literal with no public Id characters enclosed in quotes is 
+		a legal public Id literal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The CDATA-section-close delimeter is not a permisible character data
+	</td><td>one</td><td>
+<br>not-wf-sa-025 </br>
+<br>not-wf-sa-026 </br>
+<br>not-wf-sa-029 </br>
+<br>o-p14fail3 </br>
+<br>ibm-no-wf-p14-1ib14n01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		Character data must consits of any number of characters except for &lt;,
+		&amp;, and the CDATA-section-close delimeter
+	</td><td>one</td><td>
+<br>o-p14pass1 </br>
+<br>valid-sa-048 </br>
+<br>ibm-valid-p14-ibm14v03 </br>
+<br>sun-invalid-empty </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		&amp; and &lt; are not legal character data
+	</td><td>one</td><td>
+<br>ibm-no-wf-p14-1ib14n02 </br>
+<br>ibm-no-wf-p14-1ib14n03 </br>
+<br>o-p14fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		If &amp; is used as part of character data it must be escaped using &amp;
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		If &lt; is used as part of character data it must be escaped using &lt;
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &lt; is allowed within a comment
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &lt; is allowed within a processing instruction
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &lt; is allowed within a CDATA section
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &lt; is allowed when used as a markup delimenter
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &amp; is allowed within a comment
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &amp; is allowed within a processing instruction
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &amp; is allowed within a CDATA section
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		The literal form of &amp; is allowed when used as a markup delimenter
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Character Data and Markup</td><td>
+		Character data may contain as few as zero characters
+	</td><td>one</td><td>
+<br>ibm-valid-p14-ibm14v01 </br>
+<br>ibm-valid-p14-ibm14v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		A comment must consits of any string of text enclosed between "&lt;--" and
+		and "--&gt;" except a hyphen following the delimiter that marks the
+		begining of a comment or except a hyphen prior the delimiter
+		that marks the end of a comment
+	</td><td>one</td><td>
+<br>0-p43pass1 </br>
+<br>0-p15pass1 </br>
+<br>ibm-not-wf-P15-ibm15n02.xml </br>
+<br>ibm-not-wf-P15-ibm15n03.xml </br>
+<br>ibm-not-wf-P15-ibm15n04.xml </br>
+<br>valid-sa-021 </br>
+<br>valid-sa-022 </br>
+<br>valid-sa-119 </br>
+<br>ibm-not-wf-P15-ibm15n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Hyphens are not allowed immediately after the delimeter that marks the 
+		begining of a comment 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P15-ibm15n01.xml </br>
+<br>0-p15fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		For compatibility, the string "--" (double-hyphen) must not occur within comments
+	</td><td>one</td><td>
+<br>0-p15fail2 </br>
+<br>0-p15fail3 </br>
+<br>not-wf-sa-006 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Hyphens are not allowed prior to the delimeter that marks the end 
+		of a comment 
+	</td><td>one</td><td>
+<br>sun-not-wf-sgml03 </br>
+<br>0-p15fail1 </br>
+<br>0-p15fail2 </br>
+<br>not-wf-sa-070 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Non-printing ASCII control characters are illegal characters in a comment 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P02-ibm02n01.xml </br>
+<br>ibm-not-wf-P02-ibm02n02.xml </br>
+<br>ibm-not-wf-P02-ibm02n03.xml </br>
+<br>ibm-not-wf-P02-ibm02n04.xml </br>
+<br>ibm-not-wf-P02-ibm02n05.xml </br>
+<br>ibm-not-wf-P02-ibm02n06.xml </br>
+<br>ibm-not-wf-P02-ibm02n07.xml </br>
+<br>ibm-not-wf-P02-ibm02n08.xml </br>
+<br>ibm-not-wf-P02-ibm02n09.xml </br>
+<br>ibm-not-wf-P02-ibm02n10.xml </br>
+<br>ibm-not-wf-P02-ibm02n11.xml </br>
+<br>ibm-not-wf-P02-ibm02n12.xml </br>
+<br>ibm-not-wf-P02-ibm02n13.xml </br>
+<br>ibm-not-wf-P02-ibm02n14.xml </br>
+<br>ibm-not-wf-P02-ibm02n15.xml </br>
+<br>ibm-not-wf-P02-ibm02n16.xml </br>
+<br>ibm-not-wf-P02-ibm02n17.xml </br>
+<br>ibm-not-wf-P02-ibm02n18.xml </br>
+<br>ibm-not-wf-P02-ibm02n19.xml </br>
+<br>ibm-not-wf-P02-ibm02n20.xml </br>
+<br>ibm-not-wf-P02-ibm02n21.xml </br>
+<br>ibm-not-wf-P02-ibm02n22.xml </br>
+<br>ibm-not-wf-P02-ibm02n23.xml </br>
+<br>ibm-not-wf-P02-ibm02n24.xml </br>
+<br>ibm-not-wf-P02-ibm02n25.xml </br>
+<br>ibm-not-wf-P02-ibm02n26.xml </br>
+<br>ibm-not-wf-P02-ibm02n27.xml </br>
+<br>ibm-not-wf-P02-ibm02n28.xml </br>
+<br>ibm-not-wf-P02-ibm02n29.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Surrogate blocks are illegal characters in a comment
+	</td><td>one</td><td>
+<br>ibm-not-wf-P02-ibm02n30.xml </br>
+<br>ibm-not-wf-P02-ibm02n31.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Non-characters, #xFFFE and #xFFFF, are illegal characters in a comment
+	</td><td>one</td><td>
+<br>ibm-not-wf-P02-ibm02n32.xml </br>
+<br>ibm-not-wf-P02-ibm02n33.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		A comment is allowed anywhere in the document outside the markup
+	</td><td>one</td><td>
+<br>ibm-not-wf-P02-ibm02n30.xml </br>
+<br>valid-sa-038 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		In a DTD comments must appear outside a declaration
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Comments</td><td>
+		Parameter entity references are not recognized within comments
+	</td><td>one</td><td>
+<br>sun-valid-dtd01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		A processing instruction must consits of the literal "&lt;?" followed by the
+		name of the processing instruction target, optionally followed by whitespace
+		followed by any number of characters using "?&gt;" to close the processing 
+		instruction
+	</td><td>one</td><td>
+<br>o-p43pass1 </br>
+<br>ibm-not-wf-P16-ibm16n02.xml </br>
+<br>valid-sa-036 </br>
+<br>valid-sa-039 </br>
+<br>valid-sa-055 </br>
+<br>valid-sa-098 </br>
+<br>valid-sa-016 </br>
+<br>valid-sa-017 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		A processing instruction must begin with "&lt;?"
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		A processing instruction must end with "?&gt;" 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P16-ibm16n03.xml </br>
+<br>ibm-not-wf-P16-ibm16n04.xml </br>
+<br>no-wf-sa-004 </br>
+<br>no-wf-sa-005 </br>
+<br>no-wf-sa-028 </br>
+<br>ibm-valid-p16-ibm16v03 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		The "?&gt;" delimeter is not allow within a processing instruction 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P16-ibm16n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		The processing instruction target name must follow the first "?&gt;"
+	</td><td>one</td><td>
+<br>no-wf-sa-003 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		In a processing instruction the  processing instruction target name must 
+		follow the first "?&gt;" and must be followed by a white space
+	</td><td>one</td><td>
+<br>o-p16fail2 </br>
+<br>ibm-not-wf-P16-ibm16n02.xml </br>
+<br>sun-not-wf-pi </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		A whitespace is allowed before the end of a processing instruction
+	</td><td>one</td><td>
+<br>o-p16pass1 </br>
+<br>o-p16pass2 </br>
+<br>o-p16pass3 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		If a processing instruction includes additional instructions they must follow 
+		the target name using a white space as a separator
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		A processing instruction with only a processing instruction target name
+		is a valid processing instruction
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		 In a processing instruction a white space is not allow after the first &lt;?
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		The target name in a processing instruction must accept any legal xml name
+	</td><td>one</td><td>
+<br>ibm-not-wf-P16-ibm16n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		The string xml is not allow, in any combination of case, as a target name 
+		in a processing instruction
+	</td><td>one</td><td>
+<br>ibm-not-wf-P17-ibm17n01.xml </br>
+<br>ibm-not-wf-P17-ibm17n02.xml </br>
+<br>ibm-not-wf-P17-ibm17n03.xml </br>
+<br>ibm-not-wf-P17-ibm17n04.xml </br>
+<br>o-p16fail1 </br>
+<br>not-wf-sa-157 </br>
+<br>not-wf-sa-002 </br>
+<br>not-wf-ext-sa-003 </br>
+<br>ibm-valid-p17-ibm17v01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Processing Instructions</td><td>
+		Paramenter entity references are not recognized within processing instructions
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		A CDATA section (CDSect) must be composed of a CDStart, CData, and CDEnd 
+		in that order
+	</td><td>one</td><td>
+<br>o-p43pass1 </br>
+<br>not-wf-sa-128 </br>
+<br>ibm-not-wf-P18-ibm18n01.xml </br>
+<br>ibm-not-wf-P18-ibm18n02.xml </br>
+<br>valid-sa-018 </br>
+<br>ibm-not-wf-P20-ibm20n02.xml </br>
+<br>ibm-not-wf-P20-ibm20n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		The start of a CDATA section is always the literal string &lt;![CDATA[ in 
+		that specific order 
+	</td><td>one</td><td>
+<br>o-p18fail1 </br>
+<br>o-p18fail2 </br>
+<br>not-wf-sa-018 </br>
+<br>not-wf-sa-108 </br>
+<br>not-wf-sa-112 </br>
+<br>ibm-not-wf-P18-ibm18n01.xml </br>
+<br>ibm-not-wf-P19-ibm19n01.xml </br>
+<br>ibm-not-wf-P19-ibm19n02.xml </br>
+<br>ibm-not-wf-P19-ibm19n03.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		A CDATA section always end with the string "]]&gt;"
+	</td><td>one</td><td>
+<br>no-wf-sa-017 </br>
+<br>ibm-not-wf-P18-ibm18n02.xml </br>
+<br>ibm-not-wf-P20-ibm20n01.xml </br>
+<br>ibm-not-wf-P21-ibm21n01.xml </br>
+<br>ibm-not-wf-P21-ibm21n02.xml </br>
+<br>ibm-not-wf-P21-ibm21n03.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		In a CDATA section a left angle brackets "&lt;" can occur in their literal form
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		In a CDATA section ampersands can occur in their literal form
+	</td><td>one</td><td>
+<br>valid-sa-019 </br>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		 Nesting in CDATA sections is not allowed
+	</td><td>one</td><td>
+<br>o-p18fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		A CDATA section allows any characters except the "]]&gt;"
+	</td><td>one</td><td>
+<br>sun-invalid-empty </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>CDATA</td><td>
+		The character data in the CDATA section is not markup data
+	</td><td>one</td><td>
+<br>valid-sa-020 </br>
+<br>valid-sa-114 </br>
+<br>valid-not-sa-031 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog must consist of an optional XMLDecl followed by zero or more 
+		miscellaneous items, followed by an optional document type declaration 
+		and zero or more miscellaneous items 
+	</td><td>one</td><td>
+<br>o-p22fail2 </br>
+<br>ibm-not-wf-P22-ibm22n01.xml </br>
+<br>ibm-not-wf-P22-ibm23n02.xml </br>
+<br>ibm-not-wf-P22-ibm23n03.xml </br>
+<br>ibm-valid-P22-ibm22n01.xml </br>
+<br>ibm-valid-P22-ibm22n05.xml </br>
+<br>ibm-valid-P22-ibm22n06.xml </br>
+<br>ibm-valid-P22-ibm22n07.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		If a prolog contains an XML declaration it must be at the very beginning of the
+		document
+	</td><td>one</td><td>
+<br>sun-not-wf-sgml02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog can be empty
+	</td><td>one</td><td>
+<br>o-p22pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XMLDecl followed by miscellaneous items is considered a legal prolog
+	</td><td>one</td><td>
+<br>o-p22pass1 </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A white space must not occur before the XMLDecl in a legal prolog
+	</td><td>one</td><td>
+<br>o-p01fail1 </br>
+<br>not-wf-sa-147 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A comment must not occur before the XMLDecl in a legal prolog
+	</td><td>one</td><td>
+<br>not-wf-sa-148 </br>
+<br>o-p22fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of miscellaneous items followed by a document type 
+		declaration is a legal prolog
+	</td><td>one</td><td>
+<br>o-p22pass4 </br>
+<br>o-p22pass5 </br>
+<br>ibm-valid-P22-ibm22n03.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consiting of a document type delaration  followed by misc. items 
+		is a legal prolog
+	</td><td>one</td><td>
+<br>o-p22pass4 </br>
+<br>o-p22pass5 </br>
+<br>ibm-valid-P22-ibm22n04.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of only an XML declaration is a valid prolog
+	</td><td>one</td><td>
+<br>o-p22pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of only misc. items is a valid prolog
+	</td><td>one</td><td>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of more than one XML declaration is considered illegal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog with no XML declaration is considered legal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog with no misc. items is considered legal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of more than one document type declaration is considered 
+		illegal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A prolog consisting of only one document type declaration is considered legal
+	</td><td>one</td><td>
+<br>ibm-valid-P22-ibm22n02.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A legal XML declaration must consists of the literal string "&lt;?xml followed by 
+		the mandatory version information string, followed by an optional encoding 
+		declaration, followed by an optional standalone document declaration, followed
+		by an optional whitespace and followed by the literal string "?&gt;" 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P23-ibm23n02.xml </br>
+<br>ibm-not-wf-P23-ibm23n03.xml </br>
+<br>not-wf-sa-099 </br>
+<br>o-p23pass1 </br>
+<br>o-p23pass2 </br>
+<br>o-p23pass3 </br>
+<br>o-p23pass4 </br>
+<br>o-p23fail5 </br>
+<br>ibm-valid-P23-ibm23n03.xml </br>
+<br>ibm-valid-P23-ibm23n04.xml </br>
+<br>ibm-valid-P23-ibm23n05.xml </br>
+<br>ibm-valid-P23-ibm23n06.xml </br>
+<br>valid-sa-033 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In an XML declaration the literal string "&lt;?xml must be in lower-case
+	</td><td>one</td><td>
+<br>o-p23fail1 </br>
+<br>not-wf-sa-154 </br>
+<br>not-wf-sa-155 </br>
+<br>not-wf-sa-156 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In an XML declaration the version information must preceed the encoding
+		declaration
+	</td><td>one</td><td>
+<br>not-wf-sa-095 </br>
+<br>o-p23fail3 </br>
+<br>o-p23pass2 </br>
+<br>ibm-valid-P23-ibm23n02.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XML declaration must contain the literal string "&lt;?xml followed 
+		by one mandatory version information string
+	</td><td>one</td><td>
+<br>not-wf-sa-152 </br>
+<br>ibm-not-wf-P23-ibm23n01.xml </br>
+<br>not-wf-sa-098 </br>
+<br>o-p23fail2 </br>
+<br>ibm-valid-P23-ibm23n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XML declaration with only the literal string "&lt;?xml followed by the 
+		mandatory version information string is considered legal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XML declaration must begin with the string "&lt;?xml" and end with "?&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-P23-ibm23n04.xml </br>
+<br>ibm-not-wf-P23-ibm23n05.xml </br>
+<br>ibm-not-wf-P23-ibm23n06.xml </br>
+<br>o-p23fail4 </br>
+<br>o-p23fail5 </br>
+<br>o-p23pass3 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A white space is allowed as a separator before the end string "?&gt;"
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		No more than two white spaces are allowed as a separator before the end 
+		string "?&gt;"
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		More than one encoding declaration are allowed in an XML declaration
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In an XML declaration the standalone document declaration must be positioned
+		last
+	</td><td>one</td><td>
+<br>o-p23fail4 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		More than one standalone document declaration is not allowed in an XML 
+		declaration
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An encoding declaration is not  mandatory in an XML declaration
+    	</td><td>one</td><td>
+<br>o-p23pass3 </br>
+<br>ibm-valid-P23-ibm23n03.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A standalone document declaration is not  mandatory in an XML declaration
+	</td><td>one</td><td>
+<br>o-p23pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A whitespace "S" is not  mandatory after an XML declaration
+	</td><td>one</td><td>
+<br>o-p23pass6 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The version information must begin with a white space followed by the literal 
+		string "version", followed by one equal sign, and followed by a version number
+		enclosed in single or double quotes
+	</td><td>one</td><td>
+<br>ibm-not-wf-P24-ibm24n01.xml </br>
+<br>ibm-not-wf-P24-ibm24n03.xml </br>
+<br>ibm-not-wf-P24-ibm24n04.xml </br>
+<br>ibm-not-wf-P24-ibm24n05.xml </br>
+<br>ibm-not-wf-P24-ibm24n06.xml </br>
+<br>ibm-not-wf-P24-ibm24n07.xml </br>
+<br>ibm-valid-P26-ibm26n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A comment is not allowed in the version information
+	</td><td>one</td><td>
+<br>o-p25fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In the version information, the string "version" must be lowercase 
+	</td><td>one</td><td>
+<br>not-wf-sa-094 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The version number in the version information string must be enclosed with matching
+		single or double quotes
+	</td><td>one</td><td>
+<br>ibm-not-wf-P24-ibm24n08.xml </br>
+<br>ibm-not-wf-P24-ibm24n09.xml </br>
+<br>o-p24pass1 </br>
+<br>o-p24pass2 </br>
+<br>not-wf-sa-097 </br>
+<br>o-p24fail1 </br>
+<br>o-p24fail2 </br>
+<br>ibm-valid-P24-ibm24n01.xml </br>
+<br>ibm-valid-P24-ibm24n02.xml </br>
+<br>valid-sa-028 </br>
+<br>valid-sa-029 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The string "Eq" in the version information must consist of the equal sign "=" with
+		optional whitespaces on either side 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P25-ibm25n02.xml </br>
+<br>ibm-not-wf-P25-ibm25n01.xml </br>
+<br>o-p24pass4 </br>
+<br>o-p25pass1 </br>
+<br>o-p25pass2 </br>
+<br>ibm-valid-P25-ibm25n01.xml </br>
+<br>ibm-valid-P25-ibm25n02.xml </br>
+<br>ibm-valid-P25-ibm25n03.xml </br>
+<br>ibm-valid-P25-ibm25n04.xml </br>
+<br>valid-sa-030 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In the version information string only a white space is allowed before the 
+		literal string "version" 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P24-ibm24n02.xml </br>
+<br>o-p24pass3 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A version number must consists of one or more letters a through z, 
+		A through Z, digits 0-9, underscore, the period, and the hyphen 
+	</td><td>one</td><td>
+<br>ibm-not-wf-P26-ibm26n01.xml </br>
+<br>not-wf-sa-102 </br>
+<br>o-p26fail1 </br>
+<br>o-p26fail2 </br>
+<br>o-p26pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		White spaces are not allowed as part of a version number
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A miscelaneus item must consits of comments, processing instructions and whitespace
+	</td><td>one</td><td>
+<br>ibm-not-wf-P27-ibm27n01.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A comment is a legal miscellaneous item	
+	</td><td>one</td><td>
+<br>o-p27pass1 </br>
+<br>ibm-valid-P27-ibm27n01.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A processing instruction is a legal  miscellaneous item	
+	</td><td>one</td><td>
+<br>o-p27pass2 </br>
+<br>ibm-valid-P27-ibm27n02.xml </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A white space is legal miscellaneous item	
+	</td><td>one</td><td>
+<br>o-p27pass3 </br>
+<br>ibm-valid-P27-ibm27n03.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Micellaneous items must consits of comments, whitespaces and processing instructions	
+	</td><td>one</td><td>
+<br>o-p27pass4 </br>
+<br>o-p01pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		References are not allowed as part of a miscellaneous item
+	</td><td>one</td><td>
+<br>o-p27fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XML document is valid if it has an associated document type 
+		declaration and if  the document complies with the constraints
+		expressed in it	
+	</td><td>one</td><td>
+<br>o-p16fail3 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The document type declaration must appear before the first element in the document	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Multiple document type declarations are not allowed in an XML document 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The document type declaration must begin with a literal string "&lt;DOCTYPE" 
+		and must end with &gt;	
+	</td><td>one</td><td>
+<br>ibm-not-wf-P28-ibm28n05 </br>
+<br>ibm-not-wf-P28-ibm28n08 </br>
+<br>ibm-valid-P28-ibm28n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A document type declaration must consits of the string "&lt;DOCTYPE" 
+		followed by white space, followed by an XML name, optionally
+		followed by a white space and an external id, optionally followed by
+		more whitespace, optionally followed by an internal subset enclosed in "[]"
+		and followed by optional whitespace, followed by a closing  angle bracket	
+	</td><td>one-errata</td><td>
+<br>ibm-not-wf-P28-ibm28n01 </br>
+<br>ibm-not-wf-P28-ibm28n02 </br>
+<br>ibm-not-wf-P28-ibm28n03 </br>
+<br>ibm-not-wf-P28-ibm28n06 </br>
+<br>ibm-not-wf-P28-ibm28n07 </br>
+<br>not-wf-sa-055 </br>
+<br>ibm-valid-P28-ibm28n01.xml </br>
+<br>ibm-valid-P28-ibm28n02.xml </br>
+<br>o-p28pass4 </br>
+<br>not-wf-sa-056 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		CDATA are not allowed within document type declaration	
+	</td><td>one</td><td>
+<br>not-wf-sa-107 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Elements are not allowed within document type declaration	
+	</td><td>one</td><td>
+<br>o-p28fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An XML declaration is not allowed within document type declaration	
+	</td><td>one</td><td>
+<br>not-wf-sa-149 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A general entity reference must not occurred in a document type declaration	
+	</td><td>one</td><td>
+<br>ibm-not-wf-P28-ibm28n04.xml </br>
+<br>ibm-not-wf-P31-ibm31n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In a document type declaration, if a white space is used prior to the end 
+		"&gt; delimeter, only one is allow	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The XML name in the document type declaration must match the element type of 
+		the root element
+	</td><td>one</td><td>
+<br>ibm-not-wf-P28-ibm28n04.xml </br>
+<br>sun-invalid-root </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Only one external id is allowed in document type declaration	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Only one white space must be used to separate the external id from the XML name
+		in a document type declaration	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In a document type declaration the external subset must consits of an optional 
+		text declaration, followed by an external subset declaration 	
+	</td><td>one</td><td>
+<br>o-p30pass1 </br>
+<br>o-p30pass2 </br>
+<br>ibm-not-wf-P30-ibm30n02.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An external subset declaration must consits of zero or more markup declaration, 
+		conditional section, paramenter entity references, and whitespace in any other
+	</td><td>one</td><td>
+<br>o-p31fail1 </br>
+<br>o-p31pass2 </br>
+<br>ibm-not-wf-P31-ibm31n01.xml </br>
+<br>valid-not-sa-024 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		An external subset can be empty
+	</td><td>one</td><td>
+<br>o-p31pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Conditional sections are not allowed in an internal DTD subset 
+	</td><td>one</td><td>
+<br>not-wf-sa-063 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A document type declaration can consists of an internal subset, an external 
+		subset or both	
+	</td><td>one-errata</td><td>
+<br>ibm-valid-P28-ibm28n01.xml </br>
+<br>ibm-valid-P30-ibm30n01.xml </br>
+<br>valid-not-sa-007 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A document type declaration can consists of only an internal subset
+	</td><td>one-errata</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In a markup declaration,parameter-entity replacement text must be 
+		properly nested
+	</td><td>one-errata</td><td>
+<br>invalid-001 </br>
+<br>invalid-003 </br>
+<br>invalid-004 </br>
+<br>invalid-005 </br>
+<br>invalid-006 </br>
+<br>ibm-not-wf-P29-ibm29n01.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Markup declaration can consist of only paramenter entity references 
+	</td><td>one-errata</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		A document type declaration does not have to point to an external subset
+		nor an internal subset to be considered well-formed	
+	</td><td>one-errata</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Paramenter entity references are only recognized within DTD's (internal, 
+		external and external paramenter entities)
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Paramenter entity references are not recognized in a comment portion of a DTD
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Paramenter entity references are not recognized in a literal portion of a DTD
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Paramenter entity references are not recognized in a processing portion of an
+		external DTD subset
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		Paramenter entity references are not recognized as a content of ignored conditional
+		section of an external subset declaration
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The internal DTD subset allows any number of markup declarations or 
+		parameter entity references outside of markup declarations
+	</td><td>one-errata</td><td>
+<br>ibm-valid-P29-ibm29n02.xml </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In an internal DTD subset parameter entity references are not permitted
+		within markup declaration
+	</td><td>one-errata</td><td>
+<br>ibm-not-wf-p29-ibm29n02 </br>
+<br>ibm-not-wf-p29-ibm29n03 </br>
+<br>ibm-not-wf-p29-ibm29n04 </br>
+<br>ibm-not-wf-p29-ibm29n05 </br>
+<br>ibm-not-wf-p29-ibm29n06 </br>
+<br>ibm-not-wf-p29-ibm29n07 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		In an external DTD subset and external parameter entity, 
+		parameter entity references are allowed  within markup declaration
+	</td><td>one</td><td>
+<br>???? </br>
+<br>valid-not-sa-024 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		If both the external and internal subset are used, the internal subset
+		takes precedence
+	</td><td>one</td><td>
+<br>o-p28pass5 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Prolog and Document Type Declaration</td><td>
+		The markup declaration in a document type declaration must consists of 
+		either an element declaration an attribute list declaration,
+		an entity declaration, a notation declaration, a process instruction, or
+		a comment in any order
+	</td><td>one</td><td>
+<br>ibm-not-wf-p29-ibm29n01 </br>
+<br>ibm-valid-P29-ibm29n01.xml </br>
+<br>o-p29fail1 </br>
+<br>o-p29pass1 </br>
+<br>sun-invalid-pe01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		The standalone document declaration  must consits of a whitespace followed by 
+		the literal "standalone" followed by an equals sign, followed by one of 
+		the two values "yes" or "no" enclosed in a single or double quotes
+	</td><td>one</td><td>
+<br>o-p32pass1 </br>
+<br>o-p32pass2 </br>
+<br>not-wf-sa-096 </br>
+<br>not-wf-sa-100 </br>
+<br>o-p32fail1 </br>
+<br>o-p32fail2 </br>
+<br>o-p32fail3 </br>
+<br>o-p32fail4 </br>
+<br>ibm-not-wf-p32-ibm32n01 </br>
+<br>ibm-not-wf-p32-ibm32n02 </br>
+<br>ibm-not-wf-p32-ibm32n03 </br>
+<br>ibm-not-wf-p32-ibm32n08 </br>
+<br>valid-sa-032 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		In the standalone document declaration the values "yes" or "no" must be
+		lower case
+	</td><td>one</td><td>
+<br>o-p32fail5 </br>
+<br>ibm-not-wf-p32-ibm32n04 </br>
+<br>ibm-not-wf-p32-ibm32n05 </br>
+<br>ibm-not-wf-p32-ibm32n06 </br>
+<br>ibm-not-wf-p32-ibm32n07 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		In an XML document if there are no external markup declarations, the standalone
+		document declaration has no meaning
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		A standalone document declaration with a value of "no" indicates that
+		there are or may be external markup declarations
+	</td><td>one</td><td>
+<br>ibm-valid-p32-ibm32v02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		If there are external markup declarations but there is no standalone
+		document declaration, the value "no" is assumed.	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		The standalone document declaration must have the value "no" if any
+		external declaration contains declarations of attributes with default
+		value that are utilized by elements which these attributes apply
+	</td><td>one</td><td>
+<br>ibm-valid-P32-ibm32v01.xml </br>
+<br>inv-not-sa04 </br>
+<br>valid-not-sa04 </br>
+<br>valid-sa04 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		The standalone document declaration must have the value "no" if any
+		external declaration contains declarations of an entity, other than
+		the predefined entity references, and references to this entity appear
+		in the document
+	</td><td>one</td><td>
+<br>ibm-valid-P32-ibm32in02.xml </br>
+<br>inv-not-sa03 </br>
+<br>valid-not-sa03 </br>
+<br>valid-sa03 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		The standalone document declaration must have the value "no" if any
+		external declaration contains declarations of attributes with values
+		that will change if normalized
+	</td><td>one</td><td>
+<br>ibm-valid-P32-ibm32in03.xml </br>
+<br>inv-not-sa02 </br>
+<br>valid-not-sa02 </br>
+<br>inv-not-sa05 </br>
+<br>inv-not-sa06 </br>
+<br>inv-not-sa07 </br>
+<br>inv-not-sa08 </br>
+<br>inv-not-sa09 </br>
+<br>inv-not-sa10 </br>
+<br>inv-not-sa11 </br>
+<br>inv-not-sa12 </br>
+<br>inv-not-sa13 </br>
+<br>valid-sa02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Standalone Document Declaration</td><td>
+		The standalone document declaration must have the value "no" if any
+		external declaration contains element types with element content,
+		and white space occurs directly within any instance of those types
+	</td><td>one</td><td>
+<br>ibm-valid-P32-ibm32in04.xml </br>
+<br>inv-not-sa01 </br>
+<br>valid-not-sa01 </br>
+<br>valid-sa01 </br>
+<br>valid-sa05 </br>
+<br>invalid-not-sa14 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>White Space Handling</td><td>
+		White space can be used to set apart markup for greater readability	
+	</td><td>one</td><td>
+<br>valid-sa-084 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>White Space Handling</td><td>
+		Extra white space is not intended for inclusion in the delivered version
+		of an XML document	
+	</td><td>one</td><td>
+<br>valid-sa-093 </br>
+<br>valid-sa-092 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>White Space Handling</td><td>
+		The "xml:space" attribute must be declared if used in an XML document	
+	</td><td>one</td><td>
+<br>invalid-requiered01 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>White Space Handling</td><td>
+		The "xml:space" attribute applies to the element for which it was declared
+		and all its children until overriden with another instance of the xml:space 
+		attribute	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>White Space Handling</td><td>
+		The "xml:space" attribute must be given as an enumerated type whose value
+		are one or both of "default" and "preserve"	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>End of Line Handling</td><td>
+		A carriage return "#xD" not followed by a line feed "#xA" 
+		in an external parsed entity (including the document entity) 
+		must be normalized to a single newline
+	</td><td>one</td><td>
+<br>valid-ext-sa-002 </br>
+<br>valid-ext-sa-004 </br>
+<br>valid-ext-sa-009 </br>
+<br>valid-ext-sa-011 </br>
+<br>valid-sa-116 </br>
+<br>valid-sa-068 </br>
+<br>valid-sa-054 </br>
+<br>valid-sa-047 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>End of Line Handling</td><td>
+		A combination of carriage return and line feed in an external parsed entity 
+		(including the document entity) must be normalized to a single new line
+	</td><td>one</td><td>
+<br>valid-ext-sa-001 </br>
+<br>valid-sa-108 </br>
+<br>valid-ext-sa-006 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Language Identification</td><td>
+		The "xml"lang" attribute must be declared if used in an XML document	                                                           	
+	</td><td>one</td><td>
+<br>ibm-valid-p33-ibm33n01 </br>
+<br>ibm-valid-p34-ibm34n01 </br>
+<br>valid-v-lang01 </br>
+<br>invalid-required02 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Language Identification</td><td>
+		The declared "xml:lang" attribute applies to the element and all its
+		children until one of its childrens declares a different language	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Language Identification</td><td>
+		The "xml:lang" attribute values must be language identifiers as defined
+		by "IETF RFC 1766"
+	</td><td>one</td><td>
+<br>ibm-valid-p35-ibm35n01 </br>
+<br>ibm-valid-p36-ibm36n01 </br>
+<br>ibm-valid-p37-ibm37n01 </br>
+<br>ibm-valid-p38-ibm38n01 </br>
+<br>valid-v-lang01 </br>
+<br>valid-v-lang02 </br>
+<br>valid-v-lang03 </br>
+<br>valid-v-lang04 </br>
+<br>valid-v-lang05 </br>
+<br>valid-v-lang06 </br>
+</td>
+</tr>
+<tr>
+<td>Documents</td><td>Language Identification</td><td>
+		The "xml:lang" attribute must be given as an enumerated list, CDATA or NMTOKEN 
+	</td><td>one</td><td>
+<br>ibm-valid-p33-ibm33n01 </br>
+<br>ibm-valid-p34-ibm34n01 </br>
+<br>valid-v-lang01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element</td><td>
+		An element must consist of an empty element or a start tag followed by content,
+		followed by an end tag	                                                           	
+	</td><td>one</td><td>
+<br>ibm-valid-p39-ibm39i01 </br>
+<br>o-p40pass1 </br>
+<br>o-p39pass1 </br>
+<br>sun-not-wf-sgml01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element</td><td>
+		XML documents contain one or more elements                                                          	
+	</td><td>one</td><td>
+<br>o-p39fail3 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element</td><td>
+		The name in an element's end-tag must match the element type in the start-tag                                                        	
+	</td><td>one</td><td>
+<br>not-wf-sa-039 </br>
+<br>ibm-not-wf-p39-ibm39i01 </br>
+<br>ibm-not-wf-p39-ibm39i02 </br>
+<br>ibm-not-wf-p39-ibm39i03 </br>
+<br>ibm-not-wf-p39-ibm39i04 </br>
+<br>ibm-not-wf-p39-ibm39i05 </br>
+<br>ibm-not-wf-p39-ibm39i06 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element</td><td>
+		An element is valid if it match the element declaration and the element name in the DTD                                                        	
+	</td><td>one-errata</td><td>
+<br>ibm-valid-p39-ibm39i01 </br>
+<br>ibm-invalid-p39-ibm39i01 </br>
+<br>ibm-invalid-p39-ibm39i02 </br>
+<br>ibm-invalid-p39-ibm39i03 </br>
+<br>ibm-invalid-p39-ibm39i04 </br>
+<br>optional15 </br>
+<br>optional16 </br>
+<br>optional17 </br>
+<br>optional18 </br>
+<br>optional19 </br>
+<br>optional20 </br>
+<br>optional21 </br>
+<br>optional22 </br>
+<br>optional23 </br>
+<br>optional24 </br>
+<br>optional25 </br>
+<br>element </br>
+<br>invalid-dtd03 </br>
+<br>invalid-el01 </br>
+<br>invalid-el02 </br>
+<br>invalid-el03 </br>
+<br>invalid-optional07 </br>
+<br>invalid-optional08 </br>
+<br>invalid-optional09 </br>
+<br>invalid-optional10 </br>
+<br>invalid-optional11 </br>
+<br>invalid-optional12 </br>
+<br>invalid-optional13 </br>
+<br>invalid-optional14 </br>
+<br>invalid-el06 </br>
+<br>invalid-optional01 </br>
+<br>invalid-optional02 </br>
+<br>invalid-optional03 </br>
+<br>invalid-optional04 </br>
+<br>invalid-optional05 </br>
+<br>invalid-optional06 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		A start tag begins with a "&lt;" followed by and XML name, followed by any number of
+		attributes separated by whitespace, followed by an optional whitespace
+		followed by a closing "&gt;"                                                       	
+	</td><td>one</td><td>
+<br>o-p40pass2 </br>
+<br>o-p40pass3 </br>
+<br>o-p40pass4 </br>
+<br>not-wf-sa-046 </br>
+<br>not-wf-sa-049 </br>
+<br>attlist10 </br>
+<br>o-p40fail1 </br>
+<br>o-p40fail4 </br>
+<br>ibm-not-wf-p40-ibm40n01 </br>
+<br>ibm-not-wf-p40-ibm40n02 </br>
+<br>ibm-not-wf-p40-ibm40n03 </br>
+<br>ibm-not-wf-p40-ibm40n04 </br>
+<br>valid-sa-005 </br>
+<br>valid-sa-010 </br>
+<br>valid-sa-011 </br>
+<br>o-p41pass1 </br>
+<br>o-p41pass2 </br>
+<br>ibm-valid-p40-ibm40n01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		In the start tag attributes/value pairs must be separated by whitespace                                                      	
+	</td><td>one</td><td>
+<br>not-wf-sa-186 </br>
+<br>attlist11 </br>
+<br>o-p44fail4 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Entity references are not allowed as content of the start-tag                                                      	
+	</td><td>one</td><td>
+<br>not-wf-sa-111 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		White space is allowed after the tag name in a start tag                                                        	
+	</td><td>one</td><td>
+<br>valid-sa-002 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		A nmtoken is not allowed as part of the start tag                                                       	
+	</td><td>one</td><td>
+<br>o-p40fail2 </br>
+<br>o-p40fail3 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An attribute name may not appear more than once in the same element                                                        	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p40-ibm40n05 </br>
+<br>o-p44fail5 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An attribute must consist of a name follow by and equal sign followed by and attribute value                                                        	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p41-ibm41n01 </br>
+<br>ibm-not-wf-p41-ibm41n02 </br>
+<br>ibm-not-wf-p41-ibm41n03 </br>
+<br>ibm-not-wf-p41-ibm41n04 </br>
+<br>ibm-not-wf-p41-ibm41n05 </br>
+<br>ibm-not-wf-p41-ibm41n06 </br>
+<br>ibm-not-wf-p41-ibm41n07 </br>
+<br>ibm-not-wf-p41-ibm41n08 </br>
+<br>ibm-not-wf-p41-ibm41n09 </br>
+<br>valid-sa-015 </br>
+<br>valid-sa-016 </br>
+<br>o-p41fail2 </br>
+<br>o-p41fail3 </br>
+<br>valid-sa-004 </br>
+<br>not-wf-sa-011 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An attribute name must be a well-formed XML name                                               	
+	</td><td>one</td><td>
+<br>not-wf-sa-001 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An attribute is valid if the attribute name is declared in the attribute declaration and the 
+		attribute value match the declared type                                                       	
+	</td><td>one</td><td>
+<br>ibm-invalid-p41-ibm41i01 </br>
+<br>ibm-invalid-p41-ibm41i02 </br>
+<br>ibm-valid-p41-ibm41n01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Attribute values are not allow to contain direct or indirect entity references to external 
+		entities                                                       	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p41-ibm41n10 </br>
+<br>ibm-not-wf-p41-ibm41n11 </br>
+<br>ibm-not-wf-p41-ibm41n12 </br>
+<br>not-wf-sa-081 </br>
+<br>not-wf-sa-082 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		The replacement text of any entity referred to directly or indirectly in an attribute 
+		value must not contain a "&lt;"                                               	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p41-ibm41n13 </br>
+<br>ibm-not-wf-p41-ibm41n14 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An end tag begins with the literal string "&lt;/" followed by an XML name, optionally
+		followed by whitespace, followed by the "&gt;" character                                             	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p42-ibm42n01 </br>
+<br>ibm-not-wf-p42-ibm42n02 </br>
+<br>ibm-not-wf-p42-ibm42n03 </br>
+<br>ibm-not-wf-p42-ibm42n04 </br>
+<br>ibm-not-wf-p42-ibm42n05 </br>
+<br>o-p42pass1 </br>
+<br>o-p42pass2 </br>
+<br>o-p42fail1 </br>
+<br>o-p42fail2 </br>
+<br>o-p42fail3 </br>
+<br>valid-sa-003 </br>
+<br>not-wf-sa-042 </br>
+<br>ibm-valid-p42-ibm42n01 </br>
+<br>element00 </br>
+<br>element01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An end tag must contain the name of the corresponding start tag                                          	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p42-ibm42n01 </br>
+<br>not-wf-sa-019 </br>
+<br>not-wf-sa-053 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		The end of every element that begins with a start-tag must be marked
+		by an end-tag                                   	
+	</td><td>one</td><td>
+<br>not-wf-sa-0176 </br>
+<br>o-p39fail1 </br>
+<br>o-p39fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		The content of an element must consists of any number of elements, character data,
+		references, CDATA sections, processing instructions and comments in any order.                                          	
+	</td><td>one</td><td>
+<br>valid-sa-009 </br>
+<br>valid-sa-048 </br>
+<br>valid-sa-008 </br>
+<br>valid-sa-021 </br>
+<br>valid-sa-022 </br>
+<br>valid-sa-016 </br>
+<br>valid-sa-017 </br>
+<br>valid-sa-018 </br>
+<br>valid-sa-019 </br>
+<br>valid-sa-020 </br>
+<br>not-wf-sa-035 </br>
+<br>ibm-not-wf-p43-ibm43n01 </br>
+<br>ibm-valid-p43-ibm43n01 </br>
+<br>o-p39pass2 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		General entity references are valid element content                                         	
+	</td><td>one</td><td>
+<br>valid-sa-023 </br>
+<br>valid-sa-024 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Paramenter entity references are not valid element content                                         	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Character references are valid element content                                         	
+	</td><td>one</td><td>
+<br>valid-sa-007 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		DTD declarations are not allowed as part of the element content                                         	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p43-ibm43n01 </br>
+<br>ibm-not-wf-p43-ibm43n02 </br>
+<br>ibm-not-wf-p43-ibm43n04 </br>
+<br>ibm-not-wf-p43-ibm43n05 </br>
+<br>o-p43fail1 </br>
+<br>o-p43fail2 </br>
+<br>not-wf-element04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Conditional sections are not allowed as part of the element content                                         	
+	</td><td>one</td><td>
+<br>o-p43fail3 </br>
+<br>o-p43fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An XML declaration are not allowed as part of the element content                                         	
+	</td><td>one</td><td>
+<br>not-wf-sa-150 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An element with no content is a permissible element                                         	
+	</td><td>one</td><td>
+<br>o-p40pass2 </br>
+<br>valid-ext-sa-003 </br>
+<br>o-p39pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An empty element tag begins with a "&lt;" followed by and XML name, followed 
+		by any number of attributes separated by whitespace, followed by an optional 
+		whitespace, followed by the literal "/&gt;"                                           	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p44-ibm44n01 </br>
+<br>ibm-not-wf-p44-ibm44n02 </br>
+<br>ibm-not-wf-p44-ibm44n03 </br>
+<br>o-p28pass1 </br>
+<br>o-p44pass1 </br>
+<br>o-p44pass2 </br>
+<br>o-p44pass3 </br>
+<br>o-p44pass4 </br>
+<br>o-p44pass5 </br>
+<br>o-p44fail1 </br>
+<br>o-p44fail2 </br>
+<br>valid-sa-034 </br>
+<br>valid-sa-035 </br>
+<br>ibm-valid-p44-ibm44n01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		Comments are not allowed in an Empty element tag                                       	
+	</td><td>one</td><td>
+<br>o-p44fail3 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		In an empty element a white space is not allowed within the literal "/&gt;"                                       	
+	</td><td>one</td><td>
+<br>not-wf-sa-047 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An empty element tag can be used to for any element which has no content                                           	
+	</td><td>one</td><td>
+<br>o-p39pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An empty element tag must be used for elements which are declared empty                                           	
+	</td><td>one</td><td>
+<br>valid-sa-044 </br>
+<br>o-p28pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Start-Tags, End-Tags, and Empty-Element Tags</td><td>
+		An attribute name may not appear more than once in the same empty element                                        	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p44-ibm44n04 </br>
+<br>not-wf-sa-038 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		An element type declaration must consist of the string "&lt;!ELEMENT" followed by 
+		by whitespace, followed by an XML name, followed by a whitespace, followed by  a 
+		content specification, optionally followed by whitespace, followed by the "&gt;"
+		character
+	</td><td>one</td><td>
+<br>ibm-not-wf-p45-ibm45n05 </br>
+<br>ibm-not-wf-p45-ibm45n06 </br>
+<br>ibm-not-wf-p45-ibm45n07 </br>
+<br>ibm-not-wf-p45-ibm45n08 </br>
+<br>ibm-not-wf-p45-ibm45n09 </br>
+<br>ibm-not-wf-p45-ibm45v01 </br>
+<br>not-wf-sa-129 </br>
+<br>not-wf-sa-130 </br>
+<br>not-wf-sa-131 </br>
+<br>not-wf-sa-136 </br>
+<br>not-wf-sa-137 </br>
+<br>o-p45fail1 </br>
+<br>o-p45pass1 </br>
+<br>o-p47pass1 </br>
+<br>o-p48pass1 </br>
+<br>o-p49pass1 </br>
+<br>o-p50pass1 </br>
+<br>o-p46pass1 </br>
+<br>no-wf-sgml05 </br>
+<br>no-wf-sgml07 </br>
+<br>no-wf-sgml08 </br>
+<br>no-wf-sgml09 </br>
+<br>no-wf-sgml10 </br>
+<br>ibm-not-wf-p45-ibm45n04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		An element type may not be declared more than once
+	</td><td>one</td><td>
+<br>ibm-not-wf-p45-ibm45n01 </br>
+<br>ibm-not-wf-p45-ibm45n03 </br>
+<br>invalid-el04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		Comments are not allow in element type declaration 
+	</td><td>one</td><td>
+<br>not-wf-sa-057 </br>
+<br>o-p45fail4 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		Only one content specification is allowed in an element type declaration 
+	</td><td>one</td><td>
+<br>o-p45fail3 </br>
+<br>not-wf-sa-057 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		An element type declaration with no XML name is an illegal element type declaration
+	</td><td>one</td><td>
+<br>o-p45fail3 </br>
+<br>ibm-not-wf-p45-ibm45n01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		An element type declaration with no content specification is an illegal element type 
+		declaration
+	</td><td>one</td><td>
+<br>ibm-not-wf-p45-ibm45n04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In an element type declaration the string "&lt;!ELEMENT" and the XML name  must be 
+		separated by space
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In an element type declaration the XML name and the content specification must be 
+		separated by space
+	</td><td>one</td><td>
+<br>ibm-not-wf-p45-ibm45n02 </br>
+<br>o-p45fail2 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In an element type declaration a content specification must consist of either the 
+		literals EMPTY or ANY, a mix content or a list of children
+	</td><td>one</td><td>
+<br>ibm-not-wf-p46-ibm46n01 </br>
+<br>ibm-not-wf-p46-ibm46n02 </br>
+<br>ibm-not-wf-p46-ibm46n03 </br>
+<br>ibm-not-wf-p46-ibm46n04 </br>
+<br>ibm-not-wf-p46-ibm46n05 </br>
+<br>ibm-valid-p45-ibm45n01 </br>
+<br>sgml11 </br>
+<br>sgml12 </br>
+<br>o-p46fail1 </br>
+<br>o-p46fail6 </br>
+<br>valid-sa-025 </br>
+<br>valid-sa-026 </br>
+<br>valid-sa-027 </br>
+<br>o-p47pass1 </br>
+<br>o-p48pass1 </br>
+<br>o-p49pass1 </br>
+<br>o-p50pass1 </br>
+<br>o-p46pass1 </br>
+<br>valid-sa-059 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If an element is declared as "EMPTY" in the element type declaration, the element
+		must not have any contents and must always appear as an empty element in the 
+		document
+	</td><td>one</td><td>
+<br>not-wf-sa-059 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		The content specification in an element type declaration must not be empty
+	</td><td>one</td><td>
+<br>not-wf-sa-139 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		A mixed content declaration must consists of the literal "#PCDATA" separated 
+		by optional whitespaces or the literal "#PCDATA" optionally followed by an element
+		name separated only by the symbol "|" enclosed in parenthesis and ending with a"*"
+	</td><td>one</td><td>
+<br>not-wf-sa-125 </br>
+<br>not-wf-sa-126 </br>
+<br>not-wf-sa-127 </br>
+<br>o-p51fail1 </br>
+<br>o-p51fail2 </br>
+<br>o-p51fail4 </br>
+<br>o-p51fail5 </br>
+<br>o-p51fail6 </br>
+<br>ibm-not-wf-p51-ibm51n01 </br>
+<br>ibm-not-wf-p51-ibm51n02 </br>
+<br>ibm-not-wf-p51-ibm51n03 </br>
+<br>ibm-not-wf-p51-ibm51n04 </br>
+<br>ibm-not-wf-p51-ibm51n05 </br>
+<br>ibm-not-wf-p51-ibm51n06 </br>
+<br>ibm-not-wf-p51-ibm51n07 </br>
+<br>valid-sa-001 </br>
+<br>o-p51pass1 </br>
+<br>ibm-valid-p51-ibm51i01 </br>
+<br>o-p46pass1 </br>
+<br>valid-dtd00 </br>
+<br>o-p46fail2 </br>
+<br>o-p46fail3 </br>
+<br>o-p46fail5 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		The choices and sequences content particles are not allowed in a mixed content declaration
+	</td><td>one</td><td>
+<br>not-wf-sa-183 </br>
+<br>o-p51fail7 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		When paramenter entity reference are part of the mixed content declaration the 
+		replacement text must be properly nested with parenthesized groups
+	</td><td>one</td><td>
+<br>ibm-valid-p51-ibm51v02 </br>
+<br>ibm-invalid-p51-ibm51i01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In a mixed content declaration element names must not be parenthesized
+	</td><td>one</td><td>
+<br>not-wf-sa-124 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In a mixed content declaration the literal "#PCDATA" must always appear before any other
+		content model
+	</td><td>one</td><td>
+<br>not-wf-sa-184 </br>
+<br>o-p51ail3 </br>
+<br>ibm-not-wf-p51-ibm51n02 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		The same name must not appear more than once in a single mixed-content declaration
+	</td><td>one</td><td>
+<br>invalid-dtd01 </br>
+<br>invalid-el05 </br>
+<br>ibm-invalid-p51-ibm51i03 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		In the content specification portion of an element type declaration, a children must consists of 
+		either a choice or a sequence optionally followed by one of the characters ?,*,or +
+	</td><td>one</td><td>
+<br>o-p47fail2 </br>
+<br>o-p47fail3 </br>
+<br>o-p47fail4 </br>
+<br>ibm-not-wf-p47-ibm47n01 </br>
+<br>ibm-not-wf-p47-ibm47n02 </br>
+<br>ibm-not-wf-p47-ibm47n03 </br>
+<br>ibm-not-wf-p47-ibm47n04 </br>
+<br>ibm-not-wf-p47-ibm47n05 </br>
+<br>ibm-not-wf-p47-ibm47n06 </br>
+<br>valid-sa-057 </br>
+<br>valid-sa-081 </br>
+<br>valid-ext-sa-005 </br>
+<br>ibm-valid-p47-ibm47n01 </br>
+<br>o-p46fail4 </br>
+<br>o-p47pass1 </br>
+<br>o-p48pass1 </br>
+<br>o-p49pass1 </br>
+<br>o-p50pass1 </br>
+<br>o-p46pass1 </br>
+<br>not-wf-dtd01 </br>
+<br>sun-valid-optional </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If the children is composed of choices, then the choices must contain one 
+		or more content particles enclosed in matchig parenthesis and separated from 
+		each other by vertical bars and optional whitespace
+	</td><td>one</td><td>
+<br>ibm-not-wf-p49-ibm49n01 </br>
+<br>ibm-not-wf-p49-ibm49n02 </br>
+<br>ibm-not-wf-p49-ibm49n03 </br>
+<br>ibm-not-wf-p49-ibm49n04 </br>
+<br>ibm-not-wf-p49-ibm49n05 </br>
+<br>ibm-not-wf-p49-ibm49n06 </br>
+<br>valid-sa-112 </br>
+<br>o-p49fail1 </br>
+<br>ibm-valid-p47-ibm47n01 </br>
+<br>o-p49fail1 </br>
+<br>not-wf-sgml13 </br>
+<br>not-wf-sa-123 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If the children is composed of a sequence, then the sequence must contain 
+	 	one or more content particles enclosed in matching parenthesis and separated 
+		from each other by commas and optional whitespace
+	</td><td>one</td><td>
+<br>not-wf-sa-122 </br>
+<br>not-wf-sa-135 </br>
+<br>o-p47fail1 </br>
+<br>ibm-not-wf-p50-ibm50n01 </br>
+<br>ibm-not-wf-p50-ibm50n02 </br>
+<br>ibm-not-wf-p50-ibm50n03 </br>
+<br>ibm-not-wf-p50-ibm50n04 </br>
+<br>ibm-not-wf-p50-ibm50n05 </br>
+<br>ibm-not-wf-p50-ibm50n06 </br>
+<br>ibm-not-wf-p50-ibm50n07 </br>
+<br>ibm-valid-p47-ibm47n01 </br>
+<br>o-p50fail1 </br>
+<br>not-wf-sgml13 </br>
+<br>not-wf-dtd00 </br>
+<br>not-wf-sa-123 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		The content particles in the  content specifications of an element 
+		type declaration must consists of and XML name, choice or sequence 
+		optionally followed by one of the characteres ?,*, or +
+	</td><td>one</td><td>
+<br>ibm-not-wf-p48-ibm48n01 </br>
+<br>ibm-not-wf-p48-ibm48n02 </br>
+<br>ibm-not-wf-p48-ibm48n03 </br>
+<br>ibm-not-wf-p48-ibm48n04 </br>
+<br>ibm-not-wf-p48-ibm48n05 </br>
+<br>ibm-not-wf-p48-ibm48n06 </br>
+<br>ibm-not-wf-p48-ibm48n07 </br>
+<br>ibm-valid-p47-ibm47n01 </br>
+<br>not-wf-sa-138 </br>
+<br>content01 </br>
+<br>content02 </br>
+<br>content03 </br>
+<br>o-p48fail1 </br>
+<br>o-p48fail2 </br>
+<br>valid-sa-112 </br>
+<br>not-wf-sa-133 </br>
+<br>not-wf-sa-134 </br>
+<br>valid-ext-sa-005 </br>
+<br>o-p46fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		The content particles in the  content specifications of an element 
+		type declaration can contain a conbination of names, choices and sequences
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If an element is declared in the element type declaration, it must followed 
+		the choices order established in the content particle portion of the declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If an element is declared in the element type declaration, it must followed 
+		the sequence order established in the content particle portion of the declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If an element is declared in the element type declaration, it must followed 
+		the sequence order established in the content particle portion of the declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If the content particles in the  content specifications does not include 
+	 	the optional characters ?,*,+ the content particle or the element must 
+		appear exactly once
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Element Type Declaration</td><td>
+		If a content particle in the content specification uses a paramenter 
+		entity reference the replacement text must be properly nested with 
+		parenthesized groups
+	</td><td>one</td><td>
+<br>invalid-002 </br>
+<br>ibm-invalid-p50-ibm50i01 </br>
+<br>ibm-valid-p49-ibm49n01 </br>
+<br>ibm-invalid-p51-ibm51i01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute list declaration must consists of the literal "&lt;!ATTLIST" followed by
+		a whitespace, followed by an XML name, followed by zero or more attribute definitions,
+		optionally followed by a whitespace, followed by "&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p52-ibm52n01 </br>
+<br>ibm-not-wf-p52-ibm52n02 </br>
+<br>ibm-not-wf-p52-ibm52n03 </br>
+<br>ibm-not-wf-p52-ibm52n04 </br>
+<br>ibm-not-wf-p52-ibm52n05 </br>
+<br>ibm-not-wf-p52-ibm52n06 </br>
+<br>o-52fail1 </br>
+<br>o-52fail2 </br>
+<br>o-52oass1 </br>
+<br>valid-sa-040 </br>
+<br>valid-sa-077 </br>
+<br>valid-sa-078 </br>
+<br>valid-sa-071 </br>
+<br>valid-sa-072 </br>
+<br>valid-sa-073 </br>
+<br>valid-sa-074 </br>
+<br>valid-sa-075 </br>
+<br>valid-sa-079 </br>
+<br>valid-sa-080 </br>
+<br>sun-not-wf-sgml04 </br>
+<br>sun-not-wf-sgml06 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		 Only one literal "&lt;!ATTLIST" is allowed in an attribute list declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Only one XML name is allowed in an attribute list declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The name in the attribute list declaration must be the type of an element
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attributes are allowed to be declared for element type not itself
+		declared
+	</td><td>one</td><td>
+<br>valid-sa-113 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The attribute definition of the attribute list declaration must consist of whitespace
+		followed by an XML name, followed by whitespace, followed by attribute type, followed by
+		whitespace, followed by a default declaration
+	</td><td>one</td><td>
+<br>ibm-not-wf-p53-ibm53n01 </br>
+<br>ibm-not-wf-p53-ibm53n02 </br>
+<br>ibm-not-wf-p53-ibm53n03 </br>
+<br>ibm-not-wf-p53-ibm53n04 </br>
+<br>ibm-not-wf-p53-ibm53n05 </br>
+<br>ibm-not-wf-p53-ibm53n06 </br>
+<br>ibm-not-wf-p53-ibm53n07 </br>
+<br>ibm-not-wf-p53-ibm53n08 </br>
+<br>ibm-valid-p52-ibm52v01 </br>
+<br>not-wf-sa-064 </br>
+<br>not-wf-sa-065 </br>
+<br>not-wf-sa-066 </br>
+<br>not-wf-sa-067 </br>
+<br>o-p53fail1 </br>
+<br>o-p53fail2 </br>
+<br>o-p53fail3 </br>
+<br>o-p53fail4 </br>
+<br>o-p53fail5 </br>
+<br>o-p53pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		In the attribute definition, the XML name must be the name of the attribute been declared
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one XML name is allowed in the attribute definition
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one attribute type is allowed in the attribute definition
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one default declaration is allowed in the attribute definition
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		When more than one attribute definition is provided for the same attribute of a given element
+		type, the first declaration is binding and later declarations are ignored
+	</td><td>one</td><td>
+<br>valid-sa-097????? </br>
+<br>valid-sa-045 </br>
+<br>valid-not-sa-006 </br>
+<br>valid-not-sa-010 </br>
+<br>valid-not-sa-026 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		When more than one attribute declaration is provided for a given element type, the content of
+		those provided are merged
+	</td><td>one</td><td>
+<br>valid-sa-046 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute type must consits either of a string type, a tokenized type, or an enumerated type
+	</td><td>one</td><td>
+<br>o-p54fail1 </br>
+<br>ibm-invalid-p54-ibm54i01 </br>
+<br>ibm-invalid-p54-ibm54i02 </br>
+<br>o-p54pass1 </br>
+<br>ibm-valid-p54-ibm54i01 </br>
+<br>ibm-valid-p54-ibm54v03 </br>
+<br>valid-sa-040 </br>
+<br>valid-sa-077 </br>
+<br>valid-sa-078 </br>
+<br>valid-sa-079 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one string type is allowed in the attribute type
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one tokenized type is allowed in the attribute type
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		No more than one enumerated type is allowed in the attribute type
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The string type in the attribute type must consist of the literal "CDATA"
+	</td><td>one</td><td>
+<br>ibm-invalid-p55-ibm55i01 </br>
+<br>ibm-invalid-p55-ibm55i02 </br>
+<br>ibm-invalid-p55-ibm55i03 </br>
+<br>o-p55fail1 </br>
+<br>o-p55pass1 </br>
+<br>valid-sa-041 </br>
+<br>valid-sa-042 </br>
+<br>valid-sa-056 </br>
+<br>ibm-valid-p54-ibm54i01 </br>
+<br>ibm-valid-p54-ibm54v02 </br>
+<br>ibm-valid-p55-ibm55v01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The tokenized type must consists of any one of the following literals; "ID",
+		"IDREF", "IDREFS", "ENTITY", "ENTITIES", "NMTOKEN", and "NMTOKENS" 
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i01 </br>
+<br>ibm-invalid-p56-ibm56i02 </br>
+<br>ibm-invalid-p56-ibm56i03 </br>
+<br>ibm-invalid-p56-ibm56i04 </br>
+<br>ibm-invalid-p56-ibm56i05 </br>
+<br>ibm-invalid-p56-ibm56i06 </br>
+<br>ibm-invalid-p56-ibm56i07 </br>
+<br>not-wf-sa-060 </br>
+<br>attlist01 </br>
+<br>attlist02 </br>
+<br>attlist03 </br>
+<br>attlist04 </br>
+<br>attlist05 </br>
+<br>attlist06 </br>
+<br>attlist07 </br>
+<br>attlist08 </br>
+<br>attlist09 </br>
+<br>o-p56fail1 </br>
+<br>o-p56fail2 </br>
+<br>o-p56fail3 </br>
+<br>o-p56fail4 </br>
+<br>o-p56fail5 </br>
+<br>o-p56pass1 </br>
+<br>ibm-valid-p54-ibm54i01 </br>
+<br>ibm-valid-p54-ibm54v02 </br>
+<br>ibm-valid-p56-ibm56v01 </br>
+<br>ibm-valid-p56-ibm56v02 </br>
+<br>ibm-valid-p56-ibm56v03 </br>
+<br>valid-sa-071 </br>
+<br>valid-sa-072 </br>
+<br>valid-sa-073 </br>
+<br>valid-sa-074 </br>
+<br>valid-sa-075 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of ID type must be valid XML names
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i01 </br>
+<br>ibm-valid-p56-ibm56v02 </br>
+<br>ibm-valid-p56-ibm56v03 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		A name used as the value of an ID type attribute cannot be used more than once 
+		in the same document 
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i02 </br>
+<br>ibm-valid-p56-ibm56v04 </br>
+<br>ibm-valid-p56-ibm56v05 </br>
+<br>sun-invalid-id02 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An element is not allowed to use more than one attribute type ID
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i06 </br>
+<br>sun-invalid-id03 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		All attributes of ID type must have a declared default of #IMPLIED or #REQUIRED
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i03 </br>
+<br>ibm-invalid-p56-ibm56i05 </br>
+<br>ibm-valid-p56-ibm56v02 </br>
+<br>ibm-valid-p56-ibm56v03 </br>
+<br>attr09 </br>
+<br>attr10 </br>
+<br>attr11 </br>
+<br>attr12 </br>
+<br>attr13 </br>
+<br>attr14 </br>
+<br>attr15 </br>
+<br>attr16 </br>
+<br>sun-invalid-id04 </br>
+<br>sun-invalid-id05 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		A default declaration of #FIXED is not permissible for attributes of ID type
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		 Attribute values of IDREF type must be valid XML names
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i07 </br>
+<br>ibm-invalid-p56-ibm56i09 </br>
+<br>sun-invalid-id06 </br>
+<br>sun-invalid-id07 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Each name in an attribute value declared as IDREF type must match the value 
+		of an ID atrribute on some element in the document
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i08 </br>
+<br>ibm-valid-p56-ibm56v06 </br>
+<br>ibm-valid-p56-ibm56v07 </br>
+<br>sun-invalid-id08 </br>
+<br>sun-invalid-id09 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of type IDREFS must be a whitespace-separated list of ID
+		attribute values from elements in the document
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of ENTITY type must be valid XML name
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i14 </br>
+<br>sun-invalid-attr01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of ENTITIES type must be valid XML names
+	</td><td>one</td><td>
+<br>sun-invalid-attr02 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of ENTITIES type must be a whitespace-separated list of 
+		ENTITY attribute values
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of ENTITIES type must match the name of an unparsed entity 
+		declared in the DTD
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i11 </br>
+<br>ibm-invalid-p56-ibm56i12 </br>
+<br>ibm-invalid-p56-ibm56i13 </br>
+<br>ibm-invalid-p56-ibm56i14 </br>
+<br>ibm-invalid-p56-ibm56i15 </br>
+<br>ibm-invalid-p56-ibm56i16 </br>
+<br>ibm-valid-p54-ibm54i01 </br>
+<br>ibm-valid-p56-ibm56v08 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of NMTOKEN type must match the Nmtoken production
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i17 </br>
+<br>ibm-valid-p56-ibm56v09 </br>
+<br>sun-invalid-attr05 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of NMTOKENS type must match the Nmtokens production
+	</td><td>one</td><td>
+<br>ibm-valid-p56-ibm56v10 </br>
+<br>sun-invalid-attr06 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of NMTOKENS type must be a whitespace-separated list of name
+		tokens
+	</td><td>one</td><td>
+<br>ibm-invalid-p56-ibm56i18 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The enumarated type must consits of either a notation type or an enumeration
+	</td><td>one</td><td>
+<br>o-p57pass1 </br>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute type with an enumarated type must consits of either a notation type 
+		or an enumeration
+	</td><td>one</td><td>
+<br>ibm-invalid-p57-ibm57i01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		A notation type must consists of the literal "NOTATION" followed by a whitespace,
+		followed by an optional whitespace, followed by one or more XML names, separated 
+		by vertical bars and optional whitespaces, and enclosed in parentheses
+	</td><td>one</td><td>
+<br>ibm-invalid-p58-ibm58i01 </br>
+<br>ibm-invalid-p58-ibm58i02 </br>
+<br>ibm-invalid-p58-ibm58i03 </br>
+<br>ibm-invalid-p58-ibm58i04 </br>
+<br>ibm-invalid-p58-ibm58i05 </br>
+<br>ibm-invalid-p58-ibm58i06 </br>
+<br>ibm-invalid-p58-ibm58i07 </br>
+<br>ibm-invalid-p58-ibm58i08 </br>
+<br>not-wf-sa-068 </br>
+<br>not-wf-sa-158 </br>
+<br>o-p58fail1 </br>
+<br>o-p58fail2 </br>
+<br>o-p58fail4 </br>
+<br>o-p58fail5 </br>
+<br>o-p58fail6 </br>
+<br>o-p58fail7 </br>
+<br>o-p58fail8 </br>
+<br>o-p58pass1 </br>
+<br>valid-sa-090 </br>
+<br>ibm-valid-p54-ibm54v01 </br>
+<br>ibm-valid-p58-ibm58v01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Nntokens are not valid in a notation type
+	</td><td>one</td><td>
+<br>o-p58fail3 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute value of a notation type must match one of the notation names
+		included in the ATTLIST declaration
+	</td><td>one</td><td>
+<br>ibm-invalid-p58-ibm58i01 </br>
+<br>ibm-valid-p58-ibm58v02 </br>
+<br>sun-invalid-attr3 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		All notation names in the notation type must be declared
+	</td><td>one</td><td>
+<br>ibm-invalid-p58-ibm58i02 </br>
+<br>valid-sa-076 </br>
+<br>valid-sa-090 </br>
+<br>valid-sa-091 </br>
+<br>sun-invalid-attr04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An element type is not allowed to have more than one NOTATION attribute specified
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute of type NOTATION must not be declared on an element declared "EMPTY"
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The notation names in a single Notation Type, as well as the NmTokens in a single
+		Enumeration attribute declaration, must all be distinct
+	</td><td>one-errata</td><td>
+<br>o-e2 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		If the enumerated type is an enumeration, it must constists of one or more XML name
+		tokens separated by vertical bars and optional whitespaces and enclosed in parentheses
+	</td><td>one</td><td>
+<br>not-wf-sa-058 </br>
+<br>ibm-invalid-p59-ibm59i01 </br>
+<br>ibm-invalid-p59-ibm59i02 </br>
+<br>ibm-invalid-p59-ibm59i03 </br>
+<br>ibm-invalid-p59-ibm59i04 </br>
+<br>ibm-invalid-p59-ibm59i05 </br>
+<br>ibm-invalid-p59-ibm59i06 </br>
+<br>o-p57fail1 </br>
+<br>attlist3 </br>
+<br>o-p59fail1 </br>
+<br>o-p59fail2 </br>
+<br>o-p59fail3 </br>
+<br>o-p59pass1 </br>
+<br>ibm-valid-p54-ibm54v01 </br>
+<br>ibm-valid-p57-ibm57v01 </br>
+<br>ibm-valid-p59-ibm59v01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		Attribute values of enumeration type must match one of the "Nmtoken" tokens in the 
+		declaration
+	</td><td>one</td><td>
+<br>ibm-invalid-p59-ibm59i01 </br>
+<br>sun-invalid-attr07 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		XML allows Nmtoken reuse in an enumerated attribute type 
+	</td><td>one</td><td>
+<br>valid-sgml01 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The default declaration of an attribute definition must consits of either the literal "#REQUIRED",
+		"#IMPLIED", or optianally "#FIXED" followed by whitespace or an attribute value 
+	</td><td>one</td><td>
+<br>ibm-valid-p60-ibm60v01 </br>
+<br>o-p60fail2 </br>
+<br>o-p60fail5 </br>
+<br>ibm-not-wf-p60-ibn60v01 </br>
+<br>ibm-not-wf-p60-ibn60v02 </br>
+<br>ibm-not-wf-p60-ibn60v03 </br>
+<br>ibm-not-wf-p60-ibn60v04 </br>
+<br>ibm-not-wf-p60-ibn60v05 </br>
+<br>ibm-not-wf-p60-ibn60v06 </br>
+<br>ibm-not-wf-p60-ibm60n08 </br>
+<br>o-p60pass1 </br>
+<br>valid-sa-077 </br>
+<br>valid-sa-078 </br>
+<br>valid-sa-071 </br>
+<br>valid-sa-072 </br>
+<br>valid-sa-073 </br>
+<br>valid-sa-074 </br>
+<br>valid-sa-075 </br>
+<br>valid-sa-079 </br>
+<br>valid-sa-080 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		If an attribute of an element is declared with a default of "#REQUIRED", then a validity 
+		error will result for any instance the element does not provide a value for that attribute
+	</td><td>one</td><td>
+<br>ibm-invalid-p60-ibm60v01 </br>
+<br>ibm-valid-p60-ibm60v02 </br>
+<br>sun-invalid-required00 </br>
+<br>sun-valid-required00 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		If an attribute has a default value declared  with the #FIXED keyword, instances of that attribute
+		must match the default value
+	</td><td>one</td><td>
+<br>ibm-invalid-p60-ibm60i02 </br>
+<br>ibm-valid-p60-ibm60v03 </br>
+<br>valid-sa-079 </br>
+<br>sun-invalid-attr08 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		It is ilegal to omit the attribute value when the default declaration of an attribute 
+		was defined as "#FIXED"
+	</td><td>one</td><td>
+<br>o-p60fail4 </br>
+<br>ibm-not-wf-p60-ibn60v04 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		In a default declaration only attributes declared as #FIXED are allowed to include
+		attribute values in the declaration 
+	</td><td>one</td><td>
+<br>o-p60fail3 </br>
+<br>valid-sa-079 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		It is legal to omit an attribute that was declared with a default value	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		When a default declaration of an attribute is defined as "#IMPLIED" a 
+		default value must not be assumed
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		For an attribute default to be legal it most meet the syntactic constraints of the declared 
+		attribute type
+	</td><td>one</td><td>
+<br>ibm-invalid-p60-ibm60v03 </br>
+<br>ibm-invalid-p60-ibm60v04 </br>
+<br>ibm-valid-p60-ibm60v04 </br>
+<br>valid-sa-102 </br>
+<br>valid-sa-103 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The "&lt;" is not allowed as part of an attribute value in a default declaration
+		of an attribute list declaration
+	</td><td>one</td><td>
+<br>ibm-not-wf-p60-ibm60n07 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		An attribute declaration with no default declaration is an ilegal 
+		attribute declaration
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		In attribute declaration if  the declaration is neither #REQUIRED nor #IMPLIED, then 
+		the AttValue value contains the declared default value
+	</td><td>one</td><td>
+<br>o-p60fail1 </br>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Attribute-list Declarations</td><td>
+		The XML processor must normilize the attribute value by applying the attribute value
+		normalization algorithm, or by using other methods rendering the same results
+	</td><td>one</td><td>
+<br>valid-ext-sa-113 </br>
+<br>valid-sa-111 </br>
+<br>valid-sa-105 </br>
+<br>valid-sa-106 </br>
+<br>valid-sa-107 </br>
+<br>valid-sa-110 </br>
+<br>valid-sa-102 </br>
+<br>valid-sa-103 </br>
+<br>valid-sa-058 </br>
+<br>valid-sa-095 </br>
+<br>valid-sa-096 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		A conditional section must consists of either an include section or an 
+		ignore section 
+	</td><td>one</td><td>
+<br>ibm-not-wf-p61-ibm61n01 </br>
+<br>ibm-valid-p61-ibm61v01 </br>
+<br>ibm-valid-p61-ibm61v02 </br>
+<br>o-61pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		Conditional sections are only used in external subset DTD's
+	</td><td>one</td><td>
+<br>valid-not-sa-028 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		In a conditional section, an include section must begin with the characters 
+		"&lt;![" followed by the literal string "INCLUDE" separated by optional 
+		whitespaces, followed by an external subset declaration enclosed in brackets "[]", 
+		followed by the characters "]&gt;"
+	</td><td>one</td><td>
+<br>o-61fail1 </br>
+<br>ibm-not-wf-p62-ibm62n02 </br>
+<br>ibm-not-wf-p62-ibm62n03 </br>
+<br>ibm-not-wf-p62-ibm62n04 </br>
+<br>ibm-not-wf-p62-ibm62n05 </br>
+<br>ibm-not-wf-p62-ibm62n06 </br>
+<br>ibm-not-wf-p62-ibm62n07 </br>
+<br>ibm-not-wf-p62-ibm62n08 </br>
+<br>not-wf-not-sa-001 </br>
+<br>not-wf-not-sa-003 </br>
+<br>not-wf-not-sa-004 </br>
+<br>not-wf-not-sa-006 </br>
+<br>o-62fail1 </br>
+<br>o-62fail2 </br>
+<br>valid-not-sa-013 </br>
+<br>valid-not-sa-014 </br>
+<br>valid-not-sa-016 </br>
+<br>ibm-valid-p62-ibm62v01 </br>
+<br>ibm-valid-p62-ibm62v02 </br>
+<br>ibm-valid-p62-ibm62v03 </br>
+<br>ibm-valid-p62-ibm62v04 </br>
+<br>ibm-valid-p62-ibm62v05 </br>
+<br>valid-not-sa-028 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		In a conditional section, an ignore section must begin with the characters 
+		"&lt;![" followed by the literal string "IGNORE" separated by optional 
+		whitespaces, followed by an ignore section contents enclosed in brackets "[]", 
+		followed by the characters "]&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p63-ibm63n01 </br>
+<br>ibm-not-wf-p63-ibm63n02 </br>
+<br>ibm-not-wf-p63-ibm63n03 </br>
+<br>ibm-not-wf-p63-ibm63n04 </br>
+<br>ibm-not-wf-p63-ibm63n05 </br>
+<br>ibm-not-wf-p63-ibm63n06 </br>
+<br>ibm-not-wf-p63-ibm63n07 </br>
+<br>o-63fail1 </br>
+<br>o-63fail2 </br>
+<br>o-63pass1 </br>
+<br>ibm-valid-p63-ibm63v01 </br>
+<br>ibm-valid-p63-ibm63v02 </br>
+<br>ibm-valid-p63-ibm63v03 </br>
+<br>ibm-valid-p63-ibm63v04 </br>
+<br>ibm-valid-p63-ibm63v05 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		An ignore section content must consists of an ignore block, optionally
+		followed by an ignore section content enclosed in "!&lt;[" and "]]&gt;" 
+		and ignore block
+	</td><td>one</td><td>
+<br>???? </br>
+<br>ibm-not-wf-p64-ibm64n01 </br>
+<br>ibm-not-wf-p64-ibm64n02 </br>
+<br>ibm-not-wf-p64-ibm64n03 </br>
+<br>o-64fail1 </br>
+<br>o-64fail2 </br>
+<br>ibm-valid-p64-ibm64v01 </br>
+<br>ibm-valid-p64-ibm64v02 </br>
+<br>ibm-valid-p64-ibm64v03 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		An ignore block must contain any run of text that contains neither the 
+		"&lt; or "]]&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p65-ibm65n01 </br>
+<br>ibm-not-wf-p65-ibm65n02 </br>
+<br>ibm-valid-p65-ibm65v01 </br>
+<br>ibm-valid-p65-ibm65v02 </br>
+<br>sun-not-wf-cond01 </br>
+<br>sun-not-wf-cond02 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		If INCLUDE is the keyword used as part of a conditional section then the 
+		content of the conditional section are part of the DTD
+	</td><td>one</td><td>
+<br>valid-not-sa-028 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		If IGNORE is the keyword used as part of a conditional section then the 
+		content of the conditional section are not logically part of the DTD
+	</td><td>one</td><td>
+<br>valid-not-sa-029 </br>
+<br>valid-not-sa-030 </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		When an INCLUDE is inside an IGNORE, the include and its declarations are
+		ignored
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		When an IGNORE is inside an INCLUDE, the declarations inside the IGNORE
+		are ignored
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		In a conditional section the ignore section ignore everything except the
+		section delimiters
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Logical Structures</td><td>Conditional Sections</td><td>
+		In a conditional section, when the keyword is a parameter entity reference,
+		the paramenter entity reference must be replaced by its content before the
+		processor decides whether to include or ignore the conditional section
+	</td><td>one</td><td>
+<br>valid-not-sa-015 </br>
+<br>valid-not-sa-022 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A paramenter entity and a general entity with the same name are two distint
+		entities
+	</td><td>one</td><td>
+<br>valid-sa-085 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		Entity reference myst be in content of element
+	</td><td>one</td><td>
+<br>not-wf-sa-110 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A character reference must consits of the literal "&amp;#" followed by one or more
+		of the ASCII digits 0 through 9 or the literal "&amp;#x" followed by one or more
+		of the hexadecimal digits 0 through F and the digits representing 10 through
+		16 both ending with the character ";"
+	</td><td>one</td><td>
+<br>not-wf-sa-009 </br>
+<br>not-wf-sa-022 </br>
+<br>not-wf-sa-052 </br>
+<br>not-wf-sa-093 </br>
+<br>o-66pass1 </br>
+<br>ibm-not-wf-p66-ibm66n02 </br>
+<br>ibm-not-wf-p66-ibm66n03 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document the characters refered by a character reference must
+		be legal characters
+	</td><td>one</td><td>
+<br>o-66fail2 </br>
+<br>o-66fail5 </br>
+<br>ibm-not-wf-p66-ibm66n01 </br>
+<br>ibm-not-wf-p66-ibm66n04 </br>
+<br>ibm-not-wf-p66-ibm66n05 </br>
+<br>ibm-not-wf-p66-ibm66n06 </br>
+<br>ibm-not-wf-p66-ibm66n07 </br>
+<br>ibm-not-wf-p66-ibm66n08 </br>
+<br>ibm-not-wf-p66-ibm66n09 </br>
+<br>ibm-not-wf-p66-ibm66n10 </br>
+<br>ibm-not-wf-p66-ibm66n11 </br>
+<br>ibm-not-wf-p66-ibm66n12 </br>
+<br>ibm-not-wf-p66-ibm66n13 </br>
+<br>ibm-not-wf-p66-ibm66n14 </br>
+<br>ibm-not-wf-p66-ibm66n15 </br>
+<br>valid-sa-064 </br>
+<br>valid-sa-066 </br>
+<br>ibm-valid-p66-ibm66v01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A character reference using "&amp;#x" provides a hexadecimal representation of 
+		the characte's code
+	</td><td>one</td><td>
+<br>o-66fail4 </br>
+<br>valid-sa-062 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A character reference using "&amp;#" provides a decimal representation of 
+		the characte's code
+	</td><td>one</td><td>
+<br>o-66fail3 </br>
+<br>valid-sa-060 </br>
+<br>valid-sa-061 </br>
+<br>valid-sa-067 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A reference must consists of an Entity Reference or a Character Reference
+	</td><td>one</td><td>
+<br>ibm-valid-p67-ibm67v01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A general entity reference must consits of an XML name with "&amp;" and ";" as starting and
+		ending delimiters, repectivately
+	</td><td>one</td><td>
+<br>ibm-not-wf-p68-ibm68n01 </br>
+<br>ibm-not-wf-p68-ibm68n02 </br>
+<br>ibm-not-wf-p68-ibm68n03 </br>
+<br>not-wf-sa-007 </br>
+<br>not-wf-sa-010 </br>
+<br>not-wf-sa-121 </br>
+<br>o-p68fail1 </br>
+<br>o-p68fail2 </br>
+<br>o-p68fail3 </br>
+<br>o-p68pass1 </br>
+<br>valid-ext-sa-014 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		A parameter entity reference must consits of an XML name with "%" and ";" as 
+		starting and ending delimiters, repectivately
+	</td><td>one</td><td>
+<br>o-28pass5 </br>
+<br>ibm-not-wf-p69-ibm69n01 </br>
+<br>ibm-not-wf-p69-ibm69n02 </br>
+<br>ibm-not-wf-p69-ibm69n03 </br>
+<br>ibm-not-wf-p69-ibm69n04 </br>
+<br>o-p69pass1 </br>
+<br>o-p69fail1 </br>
+<br>o-p69fail2 </br>
+<br>o-p69fail3 </br>
+<br>sun-not-wf-dtd02 </br>
+<br>sun-not-wf-dtd03 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed standalone document a general entity must be declared before it can be 
+		reference
+	</td><td>one</td><td>
+<br>o-28pass3 </br>
+<br>not-wf-not-sa-005 </br>
+<br>inv-dtd06 </br>
+<br>ibm-invalid-p68-ibm68i01 </br>
+<br>ibm-invalid-p68-ibm68i02 </br>
+<br>ibm-invalid-p68-ibm68i03 </br>
+<br>ibm-invalid-p68-ibm68i04 </br>
+<br>ibm-not-wf-p68-ibm68n04 </br>
+<br>ibm-not-wf-p68-ibm68n05 </br>
+<br>ibm-not-wf-p68-ibm68n06 </br>
+<br>ibm-not-wf-p68-ibm68n07 </br>
+<br>valid-sa-072 </br>
+<br>valid-sa-073 </br>
+<br>valid-sa-076 </br>
+<br>valid-sa-078 </br>
+<br>not-wf-sa-180 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document the predefined entities do not need to be declared
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		Valid documents should declare predefined entities to maintain interoperability
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a valid non-standalone document the name of an entity must match the name given 
+		in the entity declaration
+	</td><td>one</td><td>
+<br>valid-not-sa-023 </br>
+<br>ibm-invalid-p69-ibm69i03 </br>
+<br>ibm-invalid-p69-ibm69i01 </br>
+<br>ibm-invalid-p69-ibm69i02 </br>
+<br>ibm-invalid-p69-ibm69i04 </br>
+<br>ibm-invalid-p69-ibm69i05 </br>
+<br>valid-not-sa-003 </br>
+<br>valid-not-sa-004 </br>
+<br>valid-not-sa-005 </br>
+<br>ibm-valid-p68-ibm68v01 </br>
+<br>ibm-valid-p68-ibm68v02 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a valid XML document the declaration of a parameter entity must precede any
+		reference to it
+	</td><td>one</td><td>
+<br>ibm-invalid-p69-ibm69i01 </br>
+<br>ibm-invalid-p69-ibm69i02 </br>
+<br>ibm-invalid-p69-ibm69i04 </br>
+<br>ibm-invalid-p69-ibm69i05 </br>
+<br>ibm-not-wf-p69-ibm69n05 </br>
+<br>valid-not-sa-003 </br>
+<br>valid-not-sa-004 </br>
+<br>valid-not-sa-005 </br>
+<br>ibm-valid-p69-ibm69v01 </br>
+<br>ibm-valid-p69-ibm69v02 </br>
+<br>valid-not-sa-027 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a valid XML document the declaration of a general entity must precede any
+		reference to that general entity
+	</td><td>one</td><td>
+<br>not-wf-sa-185 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document entity references may only contain the names of parsed
+		entities
+	</td><td>one</td><td>
+<br>ibm-not-wf-p68-ibm68n08 </br>
+<br>not-wf-sa-084 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document unparsed entities are refered only in attribute values 
+		declared to be of type ENTITY or ENTITIES	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p68-ibm68n08 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document a parsed entity cannot refer to itself, either
+		directly or indirectly
+	</td><td>one</td><td>
+<br>ibm-not-wf-p68-ibm68n09 </br>
+<br>ibm-not-wf-p68-ibm68n10 </br>
+<br>ibm-not-wf-p69-ibm69n06 </br>
+<br>ibm-not-wf-p69-ibm69n07 </br>
+<br>not-wf-sa-071 </br>
+<br>not-wf-sa-075 </br>
+<br>not-wf-sa-079 </br>
+<br>not-wf-sa-080 </br>
+<br>not-wf-ext-sa-001 </br>
+<br>not-wf-sa-118 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Character and Entity References</td><td>
+		In a well-formed document parameter-entity reference may only appear in a DTD
+	</td><td>one</td><td>
+<br>not-wf-sa-163 </br>
+<br>not-wf-sa-164 </br>
+<br>valid-not-sa-003 </br>
+<br>valid-not-sa-004 </br>
+<br>valid-not-sa-005 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		An Entity Declaration must consists of a general entity declaration or a paramenter
+		entity declaration	
+	</td><td>one</td><td>
+<br>o-p70fail1 </br>
+<br>o-p70pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		A general entity declaration must consists of the literal "&lt;ENTITY followed by a
+		followed by an XML name, separated with whitespaces, followed by an entity type
+		definition, optionally followed by a whitespace and followed by the character "&gt;" 	
+	</td><td>one</td><td>
+<br>ibm-not-wf-p71-ibm71n01 </br>
+<br>ibm-not-wf-p71-ibm71n02 </br>
+<br>ibm-not-wf-p71-ibm71n03 </br>
+<br>ibm-not-wf-p71-ibm71n04 </br>
+<br>ibm-not-wf-p71-ibm71n05 </br>
+<br>ibm-not-wf-p71-ibm71n06 </br>
+<br>ibm-not-wf-p71-ibm71n07 </br>
+<br>ibm-not-wf-p71-ibm71n08 </br>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>o-p71fail1 </br>
+<br>o-p71fail2 </br>
+<br>o-p71fail3 </br>
+<br>o-p71fail4 </br>
+<br>o-p71pass1 </br>
+<br>not-wf-sa-062 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td> 
+		A paramenter entity declaration must consists of the literal "&lt;ENTITY followed by
+		the character "%" and an XML name and a parameter entity definition separated by whitespaces,
+		optionally followed by a whitespace, followed by the character "&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p72-ibm72n01 </br>
+<br>ibm-not-wf-p72-ibm72n02 </br>
+<br>ibm-not-wf-p72-ibm72n03 </br>
+<br>ibm-not-wf-p72-ibm72n04 </br>
+<br>ibm-not-wf-p72-ibm72n05 </br>
+<br>ibm-not-wf-p72-ibm72n06 </br>
+<br>ibm-not-wf-p72-ibm72n07 </br>
+<br>ibm-not-wf-p72-ibm72n08 </br>
+<br>ibm-not-wf-p72-ibm72n09 </br>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>not-wf-sa-165 </br>
+<br>o-p72fail1 </br>
+<br>o-p72fail2 </br>
+<br>o-p72fail3 </br>
+<br>o-p72fail4 </br>
+<br>valid-sa-082 </br>
+<br>o-p72pass1 </br>
+<br>valid-not-sa-017 </br>
+<br>valid-not-sa-021 </br>
+<br>valid-not-sa-011 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		An entity definition must consists of an entity value or an external id followed by
+		a optional ndata declaration
+	</td><td>one</td><td>
+<br>ibm-not-wf-p73-ibm73n01 </br>
+<br>ibm-not-wf-p73-ibm73n03 </br>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>valid-not-sa-018 </br>
+<br>o-p73fail1 </br>
+<br>o-p73fail2 </br>
+<br>o-p73fail3 </br>
+<br>o-p73fail4 </br>
+<br>o-p73fail5 </br>
+<br>o-p73pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		A parameter entity definition must consist of an entity value or an external id
+	</td><td>one</td><td>
+<br>ibm-not-wf-p74-ibm74n01 </br>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>o-p74pass1 </br>
+<br>o-p74fail2 </br>
+<br>o-p74fail3 </br>
+<br>not-wf-notsa-008 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		In a parameter entity declaration NdataDecl are not allowed
+	</td><td>one</td><td>
+<br>not-wf-sa-089 </br>
+<br>not-wf-sa-091 </br>
+<br>o-p74fail1 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		If an entity is declared more than once, the binding declaration is the 
+		first one encountered
+	</td><td>one</td><td>
+<br>valid-sa-086 </br>
+<br>valid-not-sa-025 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		In a parsed entity, the name identifies the entity in the entity reference
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		In an unparsed entity, the value of an ENTITY or ENTITIES attribute identifies 
+		the entity
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		An internal entity must be a parsed entity
+	</td><td>one</td><td>
+<br>valid-sa-070 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		An external id must consists of the literal "SYSTEM" followed by a whitespace,
+		followed by a system literal or the listeral "PUBLIC" followed by a public id
+		literal and a system literal separated by whitespaces
+	</td><td>one</td><td>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>not-wf-sa-054 </br>
+<br>not-wf-sa-061 </br>
+<br>valid-not-sa-008 </br>
+<br>valid-not-sa-009 </br>
+<br>valid-not-sa-001 </br>
+<br>valid-not-sa-002 </br>
+<br>valid-ext-sa-008 </br>
+<br>valid-ext-sa-007 </br>
+<br>dtd04 </br>
+<br>dtd05 </br>
+<br>o-p75fail1 </br>
+<br>o-p75fail2 </br>
+<br>o-p75fail3 </br>
+<br>o-p75fail4 </br>
+<br>o-p75fail5 </br>
+<br>o-p75fail6 </br>
+<br>valid-not-sa-018 </br>
+<br>valid-not-sa-011 </br>
+<br>ibm-not-wf-p75-ibm75n01 </br>
+<br>ibm-not-wf-p75-ibm75n02 </br>
+<br>ibm-not-wf-p75-ibm75n03 </br>
+<br>ibm-not-wf-p75-ibm75n04 </br>
+<br>ibm-not-wf-p75-ibm75n05 </br>
+<br>ibm-not-wf-p75-ibm75n06 </br>
+<br>ibm-not-wf-p75-ibm75n07 </br>
+<br>ibm-not-wf-p75-ibm75n08 </br>
+<br>ibm-not-wf-p75-ibm75n09 </br>
+<br>ibm-not-wf-p75-ibm75n10 </br>
+<br>ibm-not-wf-p75-ibm75n11 </br>
+<br>ibm-not-wf-p75-ibm75n12 </br>
+<br>ibm-not-wf-p75-ibm75n13 </br>
+<br>not-wf-pubid05 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		An ndata declaration must consists of a whitespace followed by the literal "NDATA",
+		followed by an XML name separated by a whitespace
+	</td><td>one</td><td>
+<br>ibm-valid-p70-ibm70v01 </br>
+<br>ibm-not-wf-p76-ibm76n02 </br>
+<br>ibm-not-wf-p76-ibm76n03 </br>
+<br>ibm-not-wf-p76-ibm76n04 </br>
+<br>ibm-not-wf-p76-ibm76n05 </br>
+<br>ibm-not-wf-p76-ibm76n06 </br>
+<br>ibm-not-wf-p76-ibm76n07 </br>
+<br>ibm-not-wf-p76-ibm76n01 </br>
+<br>ibm-not-wf-p76-ibm76n02 </br>
+<br>not-wf-sa-069 </br>
+<br>o-p76fail1 </br>
+<br>o-p76fail2 </br>
+<br>o-p76fail3 </br>
+<br>o-p76fail4 </br>
+<br>o-p76pass1 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		When a Ndata declaration is used in a general entity declaration the entity is an 
+		unparsed entity
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		When an entity value is used in a general entity declaration the entity is a 
+		parsed entity
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Entity Declarations</td><td>
+		In a valid document the name in a Ndata declaration must match the declared name of 
+		a notation 
+	</td><td>one</td><td>
+<br>ibm-invalid-p76-ibm76i01 </br>
+<br>not-wf-sa-083 </br>
+<br>sun-invalid-dtd02 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		A text declaration must consists of an optional version information, followed by an
+		encoding declaration, optionally followed by a whitespace enclosed in the delimeters
+		"&lt;?xml" and "?gt;"
+	</td><td>one</td><td>
+<br>o-p30fail1 </br>
+<br>encoding07 </br>
+<br>ibm-not-wf-p77-ibm77n01 </br>
+<br>ibm-not-wf-p77-ibm77n02 </br>
+<br>ibm-not-wf-p77-ibm77n03 </br>
+<br>ibm-not-wf-p77-ibm77n04 </br>
+<br>valid-not-sa-012 </br>
+<br>not-wf-ext-sa-002 </br>
+<br>sun-not-wf-dtd07 </br>
+<br>sun-not-wf-decl01 </br>
+<br>sun-valid-ext01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		parsed entities which are stored in an encoding other than UTF-8 or UTF-16 must begin 
+		with a text declaration 
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		A text declaration must appear at the beginnig of an external parsed entity
+	</td><td>one</td><td>
+<br>ibm-not-wf-p30-ibm30n01 </br>
+<br>ibm-not-wf-p78-ibm78n01 </br>
+<br>ibm-not-wf-p78-ibm78n02 </br>
+<br>ibm-not-wf-p79-ibm79n01 </br>
+<br>ibm-not-wf-p79-ibm79n02 </br>
+<br>valid-not-sa-012 </br>
+<br>not-wf-sa-153 </br>
+<br>not-wf-sa-007 </br>
+<br>sun-valid-ext01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		A text declaration must be provided literally, not by reference to a parsed entity	
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		An internal general parsed entity is well-formed if it replacement text is a legal
+		content
+	</td><td>one</td><td>
+<br>not-wf-sa-074 </br>
+<br>not-wf-sa-103 </br>
+<br>not-wf-sa-104 </br>
+<br>not-wf-sa-116 </br>
+<br>not-wf-sa-117 </br>
+<br>not-wf-sa-119 </br>
+<br>not-wf-sa-181 </br>
+<br>not-wf-sa-182 </br>
+<br>not-wf-sa-153 </br>
+<br>valid-sa-053 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		The document entity is well-formed if it matches the production labeled document
+	</td><td>one</td><td>
+<br>not-wf-sa-109 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		An external general parsed entity is well-formed if it contains an optional text 
+		declaration and a content
+	</td><td>one</td><td>
+<br>ibm-valid-p79-ibm79v01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		An encoding declaration must consists of a whitespace followed by the literal
+		"encoding", followed by equal, followed by an encoding name enclosed in double
+		quotes or enclosed in single quotes
+	</td><td>one</td><td>
+<br>valid-ext-sa-008 </br>
+<br>ibm-valid-p78-ibm78v01 </br>
+<br>ibm-not-wf-p80-ibm80n01 </br>
+<br>ibm-not-wf-p80-ibm80n02 </br>
+<br>ibm-not-wf-p80-ibm80n03 </br>
+<br>ibm-not-wf-p80-ibm80n04 </br>
+<br>ibm-not-wf-p80-ibm80n05 </br>
+<br>ibm-not-wf-p80-ibm80n06 </br>
+<br>valid-sa-031 </br>
+<br>not-wf-sa-101 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		An encoding name begins with one of the ASCII letters A through Z or a through
+		z, followed by any number of ASCII letters, digits, period, underscore or a hyphen
+	</td><td>one</td><td>
+<br>ibm-not-wf-p81-ibm81n01 </br>
+<br>ibm-not-wf-p81-ibm81n02 </br>
+<br>ibm-not-wf-p81-ibm81n03 </br>
+<br>ibm-not-wf-p81-ibm81n04 </br>
+<br>ibm-not-wf-p81-ibm81n05 </br>
+<br>ibm-not-wf-p81-ibm81n06 </br>
+<br>ibm-not-wf-p81-ibm81n07 </br>
+<br>ibm-not-wf-p81-ibm81n08 </br>
+<br>ibm-not-wf-p81-ibm81n09 </br>
+<br>encoding01 </br>
+<br>encoding02 </br>
+<br>encoding03 </br>
+<br>encoding04 </br>
+<br>encoding05 </br>
+<br>encoding06 </br>
+<br>valid-sa-099 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		All XML processors must be able to read entities in both UTF-8 and UTF-16 encodings
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Parsed Entities</td><td>
+		All XML processors must report a fatal error when it encounters an entity with
+		an encoding that is unable to process
+	</td><td>one</td><td>
+<br>pr-xml-euc-jp </br>
+<br>pr-xml-iso-2022-jp </br>
+<br>pr-xml-shift_jis </br>
+<br>weekly-euc-jp </br>
+<br>weekly-iso-2022-jp </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Notation Declarations</td><td>
+		A notation declaration must consists of the listeral "&lt;NOTATION" followed by an 
+		XML name and an external id or public id separated by whitespaces, optionally followed
+		by a whitespace, followed by "&gt;"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p82-ibm82n01 </br>
+<br>ibm-not-wf-p82-ibm82n02 </br>
+<br>ibm-not-wf-p82-ibm82n03 </br>
+<br>ibm-not-wf-p82-ibm82n04 </br>
+<br>ibm-not-wf-p82-ibm82n05 </br>
+<br>ibm-not-wf-p82-ibm82n06 </br>
+<br>ibm-not-wf-p82-ibm82n07 </br>
+<br>ibm-not-wf-p82-ibm20n08 </br>
+<br>valid-sa-069 </br>
+<br>notation01 </br>
+<br>ibm-valid-p82-ibm82v01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Notation Declarations</td><td>
+		A public id  must consists of the literal "PUBLIC", followed by a whitespace, followed by
+		a public literal
+	</td><td>one</td><td>
+<br>ibm-not-wf-p83-ibm83n01 </br>
+<br>ibm-not-wf-p83-ibm83n02 </br>
+<br>ibm-not-wf-p83-ibm83n03 </br>
+<br>ibm-not-wf-p83-ibm83n04 </br>
+<br>ibm-not-wf-p83-ibm83n05 </br>
+<br>ibm-not-wf-p83-ibm83n06 </br>
+<br>ibm-valid-p83-ibm83v01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Notation Declarations</td><td>
+		In a valid document only one notation declaration can declare a given name
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		When an XML processor recognizes a reference to a parsed entity, in order to 
+		validate the document, the processor must include its replacement text
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		If there is an external entity, and the processor is not attempting to validate
+		the XML document but does not include the entity's replacement text, it must 
+		inform the application that it recognized, but did not read, the entity
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		When a paramenter entity reference is recognized in the DTD and included, its
+		replacement text is expanded with spaces in either side
+	</td><td>one</td><td>
+<br>valid-not-sa-020 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		When an entity reference appears in an attribute value the single or double quotes
+		character in the replacement text is always treated as a normal data character
+		and will not terminate the literal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		When a parameter entity reference appears in a literal entity value the single or double 
+		quotes character in the replacement text is always treated as a normal data character
+		and will not terminate the literal
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		The appearance of a reference to an unparsed entity is forbidden and constitute fatal errors
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		The appearance of any character or general-entity reference in the DTD except within
+		an entity value or attribute value is forbidden and constitute fatal errors
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>XML Processor Treatment of Entities and References</td><td>
+		A reference to an external entity in an attribute value is forbidden, and constitute
+		fatal errors
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Construction of Internal Replacement Text</td><td>
+		In an internal entity declaration the literal entity value may contain character,
+		paramenter entity, and general entity references
+	</td><td>one</td><td>
+<br>valid-sa-101 </br>
+<br>valid-sa-117 </br>
+<br>valid-sa-118 </br>
+<br>sun-valid-pe00 </br>
+<br>sun-valid-pe01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Construction of Internal Replacement Text</td><td>
+		In an internal entity declaration a parameter entity reference must be expanded
+	</td><td>one</td><td>
+<br>sun-valid-pe00 </br>
+<br>sun-valid-pe01 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Construction of Internal Replacement Text</td><td>
+		In an internal entity declaration, a character reference must be expanded
+	</td><td>one</td><td>
+<br>sun-valid-pe00 </br>
+<br>sun-valid-pe01 </br>
+<br>not-wf-sa-092 </br>
+<br>not-wf-sa-115 </br>
+<br>not-wf-sa-120 </br>
+<br>valid-sa-065 </br>
+<br>valid-sa-087 </br>
+<br>valid-sa-088 </br>
+</td>
+</tr>
+<tr>
+<td>Physical Structures</td><td>Construction of Internal Replacement Text</td><td>
+		In an internal entity declaration a general entity reference must be left unexpanded
+	</td><td>one</td><td>
+<br>sun-valid-pe00 </br>
+<br>sun-valid-pe01 </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+		A letter must consists of a base character or an Ideographic
+	</td><td>one</td><td>
+<br>???? </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+		A base character must consists of the Unicode characters that are alphabetic but
+		not punctuation marks or digits
+	</td><td>one</td><td>
+<br>ibm-not-wf-p85-ibm85n01 </br>
+<br>ibm-not-wf-p85-ibm85n02 </br>
+<br>ibm-not-wf-p85-ibm85n03 </br>
+<br>ibm-not-wf-p85-ibm85n04 </br>
+<br>ibm-not-wf-p85-ibm85n05 </br>
+<br>ibm-not-wf-p85-ibm85n06 </br>
+<br>ibm-not-wf-p85-ibm85n07 </br>
+<br>ibm-not-wf-p85-ibm85n08 </br>
+<br>ibm-not-wf-p85-ibm85n09 </br>
+<br>ibm-not-wf-p85-ibm85n10 </br>
+<br>ibm-not-wf-p85-ibm85n100 </br>
+<br>ibm-not-wf-p85-ibm85n101 </br>
+<br>ibm-not-wf-p85-ibm85n102 </br>
+<br>ibm-not-wf-p85-ibm85n103 </br>
+<br>ibm-not-wf-p85-ibm85n104 </br>
+<br>ibm-not-wf-p85-ibm85n105 </br>
+<br>ibm-not-wf-p85-ibm85n106 </br>
+<br>ibm-not-wf-p85-ibm85n107 </br>
+<br>ibm-not-wf-p85-ibm85n108 </br>
+<br>ibm-not-wf-p85-ibm85n109 </br>
+<br>ibm-not-wf-p85-ibm85n11 </br>
+<br>ibm-not-wf-p85-ibm85n110 </br>
+<br>ibm-not-wf-p85-ibm85n111 </br>
+<br>ibm-not-wf-p85-ibm85n112 </br>
+<br>ibm-not-wf-p85-ibm85n113 </br>
+<br>ibm-not-wf-p85-ibm85n114 </br>
+<br>ibm-not-wf-p85-ibm85n115 </br>
+<br>ibm-not-wf-p85-ibm85n116 </br>
+<br>ibm-not-wf-p85-ibm85n117 </br>
+<br>ibm-not-wf-p85-ibm85n118 </br>
+<br>ibm-not-wf-p85-ibm85n119 </br>
+<br>ibm-not-wf-p85-ibm85n12 </br>
+<br>ibm-not-wf-p85-ibm85n120 </br>
+<br>ibm-not-wf-p85-ibm85n121 </br>
+<br>ibm-not-wf-p85-ibm85n122 </br>
+<br>ibm-not-wf-p85-ibm85n123 </br>
+<br>ibm-not-wf-p85-ibm85n124 </br>
+<br>ibm-not-wf-p85-ibm85n125 </br>
+<br>ibm-not-wf-p85-ibm85n126 </br>
+<br>ibm-not-wf-p85-ibm85n127 </br>
+<br>ibm-not-wf-p85-ibm85n128 </br>
+<br>ibm-not-wf-p85-ibm85n129 </br>
+<br>ibm-not-wf-p85-ibm85n13 </br>
+<br>ibm-not-wf-p85-ibm85n130 </br>
+<br>ibm-not-wf-p85-ibm85n131 </br>
+<br>ibm-not-wf-p85-ibm85n132 </br>
+<br>ibm-not-wf-p85-ibm85n133 </br>
+<br>ibm-not-wf-p85-ibm85n134 </br>
+<br>ibm-not-wf-p85-ibm85n135 </br>
+<br>ibm-not-wf-p85-ibm85n136 </br>
+<br>ibm-not-wf-p85-ibm85n137 </br>
+<br>ibm-not-wf-p85-ibm85n138 </br>
+<br>ibm-not-wf-p85-ibm85n139 </br>
+<br>ibm-not-wf-p85-ibm85n14 </br>
+<br>ibm-not-wf-p85-ibm85n140 </br>
+<br>ibm-not-wf-p85-ibm85n141 </br>
+<br>ibm-not-wf-p85-ibm85n142 </br>
+<br>ibm-not-wf-p85-ibm85n143 </br>
+<br>ibm-not-wf-p85-ibm85n144 </br>
+<br>ibm-not-wf-p85-ibm85n145 </br>
+<br>ibm-not-wf-p85-ibm85n146 </br>
+<br>ibm-not-wf-p85-ibm85n147 </br>
+<br>ibm-not-wf-p85-ibm85n148 </br>
+<br>ibm-not-wf-p85-ibm85n149 </br>
+<br>ibm-not-wf-p85-ibm85n15 </br>
+<br>ibm-not-wf-p85-ibm85n150 </br>
+<br>ibm-not-wf-p85-ibm85n151 </br>
+<br>ibm-not-wf-p85-ibm85n152 </br>
+<br>ibm-not-wf-p85-ibm85n153 </br>
+<br>ibm-not-wf-p85-ibm85n154 </br>
+<br>ibm-not-wf-p85-ibm85n155 </br>
+<br>ibm-not-wf-p85-ibm85n156 </br>
+<br>ibm-not-wf-p85-ibm85n157 </br>
+<br>ibm-not-wf-p85-ibm85n158 </br>
+<br>ibm-not-wf-p85-ibm85n159 </br>
+<br>ibm-not-wf-p85-ibm85n16 </br>
+<br>ibm-not-wf-p85-ibm85n160 </br>
+<br>ibm-not-wf-p85-ibm85n161 </br>
+<br>ibm-not-wf-p85-ibm85n162 </br>
+<br>ibm-not-wf-p85-ibm85n163 </br>
+<br>ibm-not-wf-p85-ibm85n164 </br>
+<br>ibm-not-wf-p85-ibm85n165 </br>
+<br>ibm-not-wf-p85-ibm85n166 </br>
+<br>ibm-not-wf-p85-ibm85n167 </br>
+<br>ibm-not-wf-p85-ibm85n168 </br>
+<br>ibm-not-wf-p85-ibm85n169 </br>
+<br>ibm-not-wf-p85-ibm85n17 </br>
+<br>ibm-not-wf-p85-ibm85n170 </br>
+<br>ibm-not-wf-p85-ibm85n171 </br>
+<br>ibm-not-wf-p85-ibm85n172 </br>
+<br>ibm-not-wf-p85-ibm85n173 </br>
+<br>ibm-not-wf-p85-ibm85n174 </br>
+<br>ibm-not-wf-p85-ibm85n175 </br>
+<br>ibm-not-wf-p85-ibm85n176 </br>
+<br>ibm-not-wf-p85-ibm85n177 </br>
+<br>ibm-not-wf-p85-ibm85n178 </br>
+<br>ibm-not-wf-p85-ibm85n179 </br>
+<br>ibm-not-wf-p85-ibm85n18 </br>
+<br>ibm-not-wf-p85-ibm85n180 </br>
+<br>ibm-not-wf-p85-ibm85n181 </br>
+<br>ibm-not-wf-p85-ibm85n182 </br>
+<br>ibm-not-wf-p85-ibm85n183 </br>
+<br>ibm-not-wf-p85-ibm85n184 </br>
+<br>ibm-not-wf-p85-ibm85n185 </br>
+<br>ibm-not-wf-p85-ibm85n186 </br>
+<br>ibm-not-wf-p85-ibm85n187 </br>
+<br>ibm-not-wf-p85-ibm85n188 </br>
+<br>ibm-not-wf-p85-ibm85n189 </br>
+<br>ibm-not-wf-p85-ibm85n19 </br>
+<br>ibm-not-wf-p85-ibm85n190 </br>
+<br>ibm-not-wf-p85-ibm85n191 </br>
+<br>ibm-not-wf-p85-ibm85n192 </br>
+<br>ibm-not-wf-p85-ibm85n193 </br>
+<br>ibm-not-wf-p85-ibm85n194 </br>
+<br>ibm-not-wf-p85-ibm85n195 </br>
+<br>ibm-not-wf-p85-ibm85n196 </br>
+<br>ibm-not-wf-p85-ibm85n197 </br>
+<br>ibm-not-wf-p85-ibm85n198 </br>
+<br>ibm-not-wf-p85-ibm85n199 </br>
+<br>ibm-not-wf-p85-ibm85n20 </br>
+<br>ibm-not-wf-p85-ibm85n21 </br>
+<br>ibm-not-wf-p85-ibm85n22 </br>
+<br>ibm-not-wf-p85-ibm85n23 </br>
+<br>ibm-not-wf-p85-ibm85n24 </br>
+<br>ibm-not-wf-p85-ibm85n25 </br>
+<br>ibm-not-wf-p85-ibm85n26 </br>
+<br>ibm-not-wf-p85-ibm85n27 </br>
+<br>ibm-not-wf-p85-ibm85n28 </br>
+<br>ibm-not-wf-p85-ibm85n29 </br>
+<br>ibm-not-wf-p85-ibm85n30 </br>
+<br>ibm-not-wf-p85-ibm85n31 </br>
+<br>ibm-not-wf-p85-ibm85n32 </br>
+<br>ibm-not-wf-p85-ibm85n33 </br>
+<br>ibm-not-wf-p85-ibm85n34 </br>
+<br>ibm-not-wf-p85-ibm85n35 </br>
+<br>ibm-not-wf-p85-ibm85n36 </br>
+<br>ibm-not-wf-p85-ibm85n37 </br>
+<br>ibm-not-wf-p85-ibm85n38 </br>
+<br>ibm-not-wf-p85-ibm85n39 </br>
+<br>ibm-not-wf-p85-ibm85n40 </br>
+<br>ibm-not-wf-p85-ibm85n41 </br>
+<br>ibm-not-wf-p85-ibm85n42 </br>
+<br>ibm-not-wf-p85-ibm85n43 </br>
+<br>ibm-not-wf-p85-ibm85n44 </br>
+<br>ibm-not-wf-p85-ibm85n45 </br>
+<br>ibm-not-wf-p85-ibm85n46 </br>
+<br>ibm-not-wf-p85-ibm85n47 </br>
+<br>ibm-not-wf-p85-ibm85n48 </br>
+<br>ibm-not-wf-p85-ibm85n49 </br>
+<br>ibm-not-wf-p85-ibm85n50 </br>
+<br>ibm-not-wf-p85-ibm85n51 </br>
+<br>ibm-not-wf-p85-ibm85n52 </br>
+<br>ibm-not-wf-p85-ibm85n53 </br>
+<br>ibm-not-wf-p85-ibm85n54 </br>
+<br>ibm-not-wf-p85-ibm85n55 </br>
+<br>ibm-not-wf-p85-ibm85n56 </br>
+<br>ibm-not-wf-p85-ibm85n57 </br>
+<br>ibm-not-wf-p85-ibm85n58 </br>
+<br>ibm-not-wf-p85-ibm85n59 </br>
+<br>ibm-not-wf-p85-ibm85n60 </br>
+<br>ibm-not-wf-p85-ibm85n61 </br>
+<br>ibm-not-wf-p85-ibm85n62 </br>
+<br>ibm-not-wf-p85-ibm85n63 </br>
+<br>ibm-not-wf-p85-ibm85n64 </br>
+<br>ibm-not-wf-p85-ibm85n65 </br>
+<br>ibm-not-wf-p85-ibm85n66 </br>
+<br>ibm-not-wf-p85-ibm85n67 </br>
+<br>ibm-not-wf-p85-ibm85n68 </br>
+<br>ibm-not-wf-p85-ibm85n69 </br>
+<br>ibm-not-wf-p85-ibm85n70 </br>
+<br>ibm-not-wf-p85-ibm85n71 </br>
+<br>ibm-not-wf-p85-ibm85n72 </br>
+<br>ibm-not-wf-p85-ibm85n73 </br>
+<br>ibm-not-wf-p85-ibm85n74 </br>
+<br>ibm-not-wf-p85-ibm85n75 </br>
+<br>ibm-not-wf-p85-ibm85n76 </br>
+<br>ibm-not-wf-p85-ibm85n77 </br>
+<br>ibm-not-wf-p85-ibm85n78 </br>
+<br>ibm-not-wf-p85-ibm85n79 </br>
+<br>ibm-not-wf-p85-ibm85n80 </br>
+<br>ibm-not-wf-p85-ibm85n81 </br>
+<br>ibm-not-wf-p85-ibm85n82 </br>
+<br>ibm-not-wf-p85-ibm85n83 </br>
+<br>ibm-not-wf-p85-ibm85n84 </br>
+<br>ibm-not-wf-p85-ibm85n85 </br>
+<br>ibm-not-wf-p85-ibm85n86 </br>
+<br>ibm-not-wf-p85-ibm85n87 </br>
+<br>ibm-not-wf-p85-ibm85n88 </br>
+<br>ibm-not-wf-p85-ibm85n89 </br>
+<br>ibm-not-wf-p85-ibm85n90 </br>
+<br>ibm-not-wf-p85-ibm85n91 </br>
+<br>ibm-not-wf-p85-ibm85n92 </br>
+<br>ibm-not-wf-p85-ibm85n93 </br>
+<br>ibm-not-wf-p85-ibm85n94 </br>
+<br>ibm-not-wf-p85-ibm85n95 </br>
+<br>ibm-not-wf-p85-ibm85n96 </br>
+<br>ibm-not-wf-p85-ibm85n97 </br>
+<br>ibm-not-wf-p85-ibm85n98 </br>
+<br>ibm-not-wf-p85-ibm85n99 </br>
+<br>ibm-valid-p85-ibm85n01 </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+	 	An ideographic character must consits of Unicode's Chinese-Japanese-Korean unified
+		ideographs "#x4E00-#x9FA5", the ideographic number zero "#3007" or the Hangzhou
+		style numerals "#x3021-#x3029"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p86-ibm86n01 </br>
+<br>ibm-not-wf-p86-ibm86n02 </br>
+<br>ibm-not-wf-p86-ibm86n03 </br>
+<br>ibm-not-wf-p86-ibm86n04 </br>
+<br>ibm-valid-p86-ibm86n01 </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+		Combining characters must consits of characters combined with other characters
+		to form the appearance of a single character
+	</td><td>one</td><td>
+<br>ibm-not-wf-p87-ibm87n01 </br>
+<br>ibm-not-wf-p87-ibm87n02 </br>
+<br>ibm-not-wf-p87-ibm87n03 </br>
+<br>ibm-not-wf-p87-ibm87n04 </br>
+<br>ibm-not-wf-p87-ibm87n05 </br>
+<br>ibm-not-wf-p87-ibm87n06 </br>
+<br>ibm-not-wf-p87-ibm87n07 </br>
+<br>ibm-not-wf-p87-ibm87n08 </br>
+<br>ibm-not-wf-p87-ibm87n09 </br>
+<br>ibm-not-wf-p87-ibm87n10 </br>
+<br>ibm-not-wf-p87-ibm87n11 </br>
+<br>ibm-not-wf-p87-ibm87n12 </br>
+<br>ibm-not-wf-p87-ibm87n13 </br>
+<br>ibm-not-wf-p87-ibm87n14 </br>
+<br>ibm-not-wf-p87-ibm87n15 </br>
+<br>ibm-not-wf-p87-ibm87n16 </br>
+<br>ibm-not-wf-p87-ibm87n17 </br>
+<br>ibm-not-wf-p87-ibm87n18 </br>
+<br>ibm-not-wf-p87-ibm87n19 </br>
+<br>ibm-not-wf-p87-ibm87n20 </br>
+<br>ibm-not-wf-p87-ibm87n21 </br>
+<br>ibm-not-wf-p87-ibm87n22 </br>
+<br>ibm-not-wf-p87-ibm87n23 </br>
+<br>ibm-not-wf-p87-ibm87n24 </br>
+<br>ibm-not-wf-p87-ibm87n25 </br>
+<br>ibm-not-wf-p87-ibm87n26 </br>
+<br>ibm-not-wf-p87-ibm87n27 </br>
+<br>ibm-not-wf-p87-ibm87n28 </br>
+<br>ibm-not-wf-p87-ibm87n29 </br>
+<br>ibm-not-wf-p87-ibm87n30 </br>
+<br>ibm-not-wf-p87-ibm87n31 </br>
+<br>ibm-not-wf-p87-ibm87n32 </br>
+<br>ibm-not-wf-p87-ibm87n33 </br>
+<br>ibm-not-wf-p87-ibm87n34 </br>
+<br>ibm-not-wf-p87-ibm87n35 </br>
+<br>ibm-not-wf-p87-ibm87n36 </br>
+<br>ibm-not-wf-p87-ibm87n37 </br>
+<br>ibm-not-wf-p87-ibm87n38 </br>
+<br>ibm-not-wf-p87-ibm87n39 </br>
+<br>ibm-not-wf-p87-ibm87n40 </br>
+<br>ibm-not-wf-p87-ibm87n41 </br>
+<br>ibm-not-wf-p87-ibm87n42 </br>
+<br>ibm-not-wf-p87-ibm87n43 </br>
+<br>ibm-not-wf-p87-ibm87n44 </br>
+<br>ibm-not-wf-p87-ibm87n45 </br>
+<br>ibm-not-wf-p87-ibm87n46 </br>
+<br>ibm-not-wf-p87-ibm87n47 </br>
+<br>ibm-not-wf-p87-ibm87n48 </br>
+<br>ibm-not-wf-p87-ibm87n49 </br>
+<br>ibm-not-wf-p87-ibm87n50 </br>
+<br>ibm-not-wf-p87-ibm87n51 </br>
+<br>ibm-not-wf-p87-ibm87n52 </br>
+<br>ibm-not-wf-p87-ibm87n53 </br>
+<br>ibm-not-wf-p87-ibm87n54 </br>
+<br>ibm-not-wf-p87-ibm87n55 </br>
+<br>ibm-not-wf-p87-ibm87n56 </br>
+<br>ibm-not-wf-p87-ibm87n57 </br>
+<br>ibm-not-wf-p87-ibm87n58 </br>
+<br>ibm-not-wf-p87-ibm87n59 </br>
+<br>ibm-not-wf-p87-ibm87n60 </br>
+<br>ibm-not-wf-p87-ibm87n61 </br>
+<br>ibm-not-wf-p87-ibm87n62 </br>
+<br>ibm-not-wf-p87-ibm87n63 </br>
+<br>ibm-not-wf-p87-ibm87n64 </br>
+<br>ibm-not-wf-p87-ibm87n65 </br>
+<br>ibm-not-wf-p87-ibm87n66 </br>
+<br>ibm-not-wf-p87-ibm87n67 </br>
+<br>ibm-not-wf-p87-ibm87n68 </br>
+<br>ibm-not-wf-p87-ibm87n69 </br>
+<br>ibm-not-wf-p87-ibm87n70 </br>
+<br>ibm-not-wf-p87-ibm87n71 </br>
+<br>ibm-not-wf-p87-ibm87n72 </br>
+<br>ibm-not-wf-p87-ibm87n73 </br>
+<br>ibm-not-wf-p87-ibm87n74 </br>
+<br>ibm-not-wf-p87-ibm87n75 </br>
+<br>ibm-not-wf-p87-ibm87n76 </br>
+<br>ibm-not-wf-p87-ibm87n77 </br>
+<br>ibm-not-wf-p87-ibm87n78 </br>
+<br>ibm-not-wf-p87-ibm87n79 </br>
+<br>ibm-not-wf-p87-ibm87n80 </br>
+<br>ibm-not-wf-p87-ibm87n81 </br>
+<br>ibm-not-wf-p87-ibm87n82 </br>
+<br>ibm-not-wf-p87-ibm87n83 </br>
+<br>ibm-not-wf-p87-ibm87n84 </br>
+<br>ibm-not-wf-p87-ibm87n85 </br>
+<br>ibm-valid-p87-ibm87n01 </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+		A digit must consits of the European numerals "0,1,2,3,4,5,6,7,8, and 9", the Arabic-indic
+		digits, the Eastern Arabic Indic digits and others
+	</td><td>one</td><td>
+<br>ibm-not-wf-p88-ibm88n01 </br>
+<br>ibm-not-wf-p88-ibm88n02 </br>
+<br>ibm-not-wf-p88-ibm88n03 </br>
+<br>ibm-not-wf-p88-ibm88n04 </br>
+<br>ibm-not-wf-p88-ibm88n05 </br>
+<br>ibm-not-wf-p88-ibm88n06 </br>
+<br>ibm-not-wf-p88-ibm88n08 </br>
+<br>ibm-not-wf-p88-ibm88n09 </br>
+<br>ibm-not-wf-p88-ibm88n10 </br>
+<br>ibm-not-wf-p88-ibm88n11 </br>
+<br>ibm-not-wf-p88-ibm88n12 </br>
+<br>ibm-not-wf-p88-ibm88n13 </br>
+<br>ibm-not-wf-p88-ibm88n14 </br>
+<br>ibm-not-wf-p88-ibm88n15 </br>
+<br>ibm-not-wf-p88-ibm88n16 </br>
+<br>ibm-valid-p88-ibm88n01 </br>
+</td>
+</tr>
+<tr>
+<td>Character Classes</td><td>Characters</td><td>
+		An extender must consits the following characters; the middle dot "#x00B7", the modifier
+		letter triangular colon "#x02D0", the modifier letter half-triangular colon "#x02D1", 
+		the Greek middle dot "#x0387", the Arabic tatweel "#x0640", the Thai maiyamok"#x0E46", 
+		the Lao ko la "#x0EC6", the ideographic iteration mark, five Japanese Kana repeat marks "#x3005", 
+		the Japanese Hiragana iteration mark and voice iteration mark "#x3031-#x3035",
+		and the Japanese Katakana and Hiragana sound mark "#x309D-#x309E" and prolonged sound mark 
+		"#x30FC-#x30FE"
+	</td><td>one</td><td>
+<br>ibm-not-wf-p89-ibm89n01 </br>
+<br>ibm-not-wf-p89-ibm89n02 </br>
+<br>ibm-not-wf-p89-ibm89n03 </br>
+<br>ibm-not-wf-p89-ibm89n04 </br>
+<br>ibm-not-wf-p89-ibm89n05 </br>
+<br>ibm-not-wf-p89-ibm89n06 </br>
+<br>ibm-not-wf-p89-ibm89n08 </br>
+<br>ibm-not-wf-p89-ibm89n09 </br>
+<br>ibm-not-wf-p89-ibm89n10 </br>
+<br>ibm-not-wf-p89-ibm89n11 </br>
+<br>ibm-not-wf-p89-ibm89n12 </br>
+<br>ibm-valid-p89-ibm89n01 </br>
+</td>
+</tr>
+</table>
+</body>
+</html>

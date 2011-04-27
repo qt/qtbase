@@ -1,0 +1,8 @@
+<!DOCTYPE footype [
+ <!ATTLIST foo xmlns CDATA #FIXED "http://qt.nokia.com">
+ <!ATTLIST pre:bar xmlns:pre CDATA #FIXED "http://qt.nokia.com">
+]>
+<body>
+<foo/>
+<pre:bar/>
+</body>

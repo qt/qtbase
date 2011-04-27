@@ -1,0 +1,4 @@
+testdata/toString_01/doc05.xml           -crlf
+testdata/toString_01/doc_euc-jp.xml      -crlf
+testdata/toString_01/doc_iso-2022-jp.xml -crlf
+testdata/toString_01/doc_utf-8.xml       -crlf

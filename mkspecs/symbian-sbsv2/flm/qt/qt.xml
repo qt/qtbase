@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+# /****************************************************************************
+# **
+# ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+# ** Contact: Nokia Corporation (qt-info@nokia.com)
+# **
+# ** This file is part of symbian-sbsv2 mkspec.
+# **
+# ****************************************************************************/
+-->
+
+<build xmlns="http://symbian.com/xml/build"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://symbian.com/xml/build http://symbian.com/xml/build/2_0.xsd">
+
+	<!-- Extension interfaces : replacements for Template Extension Makefiles -->
+    
+    <interface name="qt.qmake_extra_pre_targetdep.export" extends="Symbian.UserFLM"
+                flm="qmake_extra_pre_targetdep.flm">
+        <param name='PREDEP_TARGET' />
+        <param name='DEPS' default = '' />
+        <param name='COMMAND' default = '' />
+	</interface>
+    
+    <interface name="qt.qmake_emulator_deployment" extends="Symbian.UserFLM"
+                flm="qmake_emulator_deployment.flm">
+        <param name='DEPLOY_SOURCE' />
+        <param name='DEPLOY_TARGET' />
+    </interface>
+
+    <interface name="qt.qmake_post_link" extends="Symbian.UserFLM"
+                flm="qmake_post_link.flm">
+        <param name='POST_LINK_CMD' />
+        <param name='LINK_TARGET' />
+    </interface>
+
+    <interface name="qt.qmake_store_build" extends="Symbian.UserFLM"
+                flm="qmake_store_build.flm">
+    </interface>    
+
+    <interface name="qt.qmake_clean" extends="Symbian.UserFLM"
+                flm="qmake_clean.flm">
+        <param name='CLEAN_FILES' />
+    </interface>
+</build>

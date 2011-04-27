@@ -1,0 +1,284 @@
+EXPORTS
+	??0QAbstractMessageHandler@@QAE@PAVQObject@@@Z @ 1 NONAME ; QAbstractMessageHandler::QAbstractMessageHandler(class QObject *)
+	??0QAbstractUriResolver@@QAE@PAVQObject@@@Z @ 2 NONAME ; QAbstractUriResolver::QAbstractUriResolver(class QObject *)
+	??0QAbstractXmlNodeModel@@IAE@PAVQAbstractXmlNodeModelPrivate@@@Z @ 3 NONAME ; QAbstractXmlNodeModel::QAbstractXmlNodeModel(class QAbstractXmlNodeModelPrivate *)
+	??0QAbstractXmlNodeModel@@QAE@XZ @ 4 NONAME ; QAbstractXmlNodeModel::QAbstractXmlNodeModel(void)
+	??0QAbstractXmlReceiver@@IAE@PAVQAbstractXmlReceiverPrivate@@@Z @ 5 NONAME ; QAbstractXmlReceiver::QAbstractXmlReceiver(class QAbstractXmlReceiverPrivate *)
+	??0QAbstractXmlReceiver@@QAE@XZ @ 6 NONAME ; QAbstractXmlReceiver::QAbstractXmlReceiver(void)
+	??0QSimpleXmlNodeModel@@QAE@ABVQXmlNamePool@@@Z @ 7 NONAME ; QSimpleXmlNodeModel::QSimpleXmlNodeModel(class QXmlNamePool const &)
+	??0QSourceLocation@@QAE@ABV0@@Z @ 8 NONAME ; QSourceLocation::QSourceLocation(class QSourceLocation const &)
+	??0QSourceLocation@@QAE@ABVQUrl@@HH@Z @ 9 NONAME ; QSourceLocation::QSourceLocation(class QUrl const &, int, int)
+	??0QSourceLocation@@QAE@XZ @ 10 NONAME ; QSourceLocation::QSourceLocation(void)
+	??0QXmlFormatter@@QAE@ABVQXmlQuery@@PAVQIODevice@@@Z @ 11 NONAME ; QXmlFormatter::QXmlFormatter(class QXmlQuery const &, class QIODevice *)
+	??0QXmlItem@@AAE@ABVItem@QPatternist@@@Z @ 12 NONAME ; QXmlItem::QXmlItem(class QPatternist::Item const &)
+	??0QXmlItem@@QAE@ABV0@@Z @ 13 NONAME ; QXmlItem::QXmlItem(class QXmlItem const &)
+	??0QXmlItem@@QAE@ABVQVariant@@@Z @ 14 NONAME ; QXmlItem::QXmlItem(class QVariant const &)
+	??0QXmlItem@@QAE@ABVQXmlNodeModelIndex@@@Z @ 15 NONAME ; QXmlItem::QXmlItem(class QXmlNodeModelIndex const &)
+	??0QXmlItem@@QAE@XZ @ 16 NONAME ; QXmlItem::QXmlItem(void)
+	??0QXmlName@@AAE@H@Z @ 17 NONAME ; QXmlName::QXmlName(int)
+	??0QXmlName@@QAE@AAVQXmlNamePool@@ABVQString@@11@Z @ 18 NONAME ; QXmlName::QXmlName(class QXmlNamePool &, class QString const &, class QString const &, class QString const &)
+	??0QXmlName@@QAE@ABV0@@Z @ 19 NONAME ; QXmlName::QXmlName(class QXmlName const &)
+	??0QXmlName@@QAE@FFF@Z @ 20 NONAME ; QXmlName::QXmlName(short, short, short)
+	??0QXmlName@@QAE@XZ @ 21 NONAME ; QXmlName::QXmlName(void)
+	??0QXmlNamePool@@AAE@PAVNamePool@QPatternist@@@Z @ 22 NONAME ; QXmlNamePool::QXmlNamePool(class QPatternist::NamePool *)
+	??0QXmlNamePool@@QAE@ABV0@@Z @ 23 NONAME ; QXmlNamePool::QXmlNamePool(class QXmlNamePool const &)
+	??0QXmlNamePool@@QAE@XZ @ 24 NONAME ; QXmlNamePool::QXmlNamePool(void)
+	??0QXmlNodeModelIndex@@AAE@ABVNodeIndexStorage@QPatternist@@@Z @ 25 NONAME ; QXmlNodeModelIndex::QXmlNodeModelIndex(class QPatternist::NodeIndexStorage const &)
+	??0QXmlNodeModelIndex@@QAE@ABV0@@Z @ 26 NONAME ; QXmlNodeModelIndex::QXmlNodeModelIndex(class QXmlNodeModelIndex const &)
+	??0QXmlNodeModelIndex@@QAE@XZ @ 27 NONAME ; QXmlNodeModelIndex::QXmlNodeModelIndex(void)
+	??0QXmlQuery@@QAE@ABV0@@Z @ 28 NONAME ; QXmlQuery::QXmlQuery(class QXmlQuery const &)
+	??0QXmlQuery@@QAE@ABVQXmlNamePool@@@Z @ 29 NONAME ; QXmlQuery::QXmlQuery(class QXmlNamePool const &)
+	??0QXmlQuery@@QAE@W4QueryLanguage@0@ABVQXmlNamePool@@@Z @ 30 NONAME ; QXmlQuery::QXmlQuery(enum QXmlQuery::QueryLanguage, class QXmlNamePool const &)
+	??0QXmlQuery@@QAE@XZ @ 31 NONAME ; QXmlQuery::QXmlQuery(void)
+	??0QXmlResultItems@@QAE@XZ @ 32 NONAME ; QXmlResultItems::QXmlResultItems(void)
+	??0QXmlSchema@@QAE@ABV0@@Z @ 33 NONAME ; QXmlSchema::QXmlSchema(class QXmlSchema const &)
+	??0QXmlSchema@@QAE@XZ @ 34 NONAME ; QXmlSchema::QXmlSchema(void)
+	??0QXmlSchemaValidator@@QAE@ABVQXmlSchema@@@Z @ 35 NONAME ; QXmlSchemaValidator::QXmlSchemaValidator(class QXmlSchema const &)
+	??0QXmlSchemaValidator@@QAE@XZ @ 36 NONAME ; QXmlSchemaValidator::QXmlSchemaValidator(void)
+	??0QXmlSerializer@@IAE@PAVQAbstractXmlReceiverPrivate@@@Z @ 37 NONAME ; QXmlSerializer::QXmlSerializer(class QAbstractXmlReceiverPrivate *)
+	??0QXmlSerializer@@QAE@ABVQXmlQuery@@PAVQIODevice@@@Z @ 38 NONAME ; QXmlSerializer::QXmlSerializer(class QXmlQuery const &, class QIODevice *)
+	??1QAbstractMessageHandler@@UAE@XZ @ 39 NONAME ; QAbstractMessageHandler::~QAbstractMessageHandler(void)
+	??1QAbstractUriResolver@@UAE@XZ @ 40 NONAME ; QAbstractUriResolver::~QAbstractUriResolver(void)
+	??1QAbstractXmlNodeModel@@UAE@XZ @ 41 NONAME ; QAbstractXmlNodeModel::~QAbstractXmlNodeModel(void)
+	??1QAbstractXmlReceiver@@UAE@XZ @ 42 NONAME ; QAbstractXmlReceiver::~QAbstractXmlReceiver(void)
+	??1QSimpleXmlNodeModel@@UAE@XZ @ 43 NONAME ; QSimpleXmlNodeModel::~QSimpleXmlNodeModel(void)
+	??1QSourceLocation@@QAE@XZ @ 44 NONAME ; QSourceLocation::~QSourceLocation(void)
+	??1QXmlFormatter@@UAE@XZ @ 45 NONAME ; QXmlFormatter::~QXmlFormatter(void)
+	??1QXmlItem@@QAE@XZ @ 46 NONAME ; QXmlItem::~QXmlItem(void)
+	??1QXmlNamePool@@QAE@XZ @ 47 NONAME ; QXmlNamePool::~QXmlNamePool(void)
+	??1QXmlQuery@@QAE@XZ @ 48 NONAME ; QXmlQuery::~QXmlQuery(void)
+	??1QXmlResultItems@@UAE@XZ @ 49 NONAME ; QXmlResultItems::~QXmlResultItems(void)
+	??1QXmlSchema@@QAE@XZ @ 50 NONAME ; QXmlSchema::~QXmlSchema(void)
+	??1QXmlSchemaValidator@@QAE@XZ @ 51 NONAME ; QXmlSchemaValidator::~QXmlSchemaValidator(void)
+	??1QXmlSerializer@@UAE@XZ @ 52 NONAME ; QXmlSerializer::~QXmlSerializer(void)
+	??4QSourceLocation@@QAEAAV0@ABV0@@Z @ 53 NONAME ; class QSourceLocation & QSourceLocation::operator=(class QSourceLocation const &)
+	??4QXmlItem@@QAEAAV0@ABV0@@Z @ 54 NONAME ; class QXmlItem & QXmlItem::operator=(class QXmlItem const &)
+	??4QXmlName@@QAEAAV0@ABV0@@Z @ 55 NONAME ; class QXmlName & QXmlName::operator=(class QXmlName const &)
+	??4QXmlNamePool@@QAEAAV0@ABV0@@Z @ 56 NONAME ; class QXmlNamePool & QXmlNamePool::operator=(class QXmlNamePool const &)
+	??4QXmlQuery@@QAEAAV0@ABV0@@Z @ 57 NONAME ; class QXmlQuery & QXmlQuery::operator=(class QXmlQuery const &)
+	??4QXmlSchema@@QAEAAV0@ABV0@@Z @ 58 NONAME ; class QXmlSchema & QXmlSchema::operator=(class QXmlSchema const &)
+	??6@YA?AVQDebug@@V0@ABVQSourceLocation@@@Z @ 59 NONAME ; class QDebug operator<<(class QDebug, class QSourceLocation const &)
+	??8QSourceLocation@@QBE_NABV0@@Z @ 60 NONAME ; bool QSourceLocation::operator==(class QSourceLocation const &) const
+	??8QXmlName@@QBE_NABV0@@Z @ 61 NONAME ; bool QXmlName::operator==(class QXmlName const &) const
+	??8QXmlNodeModelIndex@@QBE_NABV0@@Z @ 62 NONAME ; bool QXmlNodeModelIndex::operator==(class QXmlNodeModelIndex const &) const
+	??9QSourceLocation@@QBE_NABV0@@Z @ 63 NONAME ; bool QSourceLocation::operator!=(class QSourceLocation const &) const
+	??9QXmlName@@QBE_NABV0@@Z @ 64 NONAME ; bool QXmlName::operator!=(class QXmlName const &) const
+	??9QXmlNodeModelIndex@@QBE_NABV0@@Z @ 65 NONAME ; bool QXmlNodeModelIndex::operator!=(class QXmlNodeModelIndex const &) const
+	??_EQAbstractMessageHandler@@UAE@I@Z @ 66 NONAME ; QAbstractMessageHandler::~QAbstractMessageHandler(unsigned int)
+	??_EQAbstractUriResolver@@UAE@I@Z @ 67 NONAME ; QAbstractUriResolver::~QAbstractUriResolver(unsigned int)
+	??_EQAbstractXmlNodeModel@@UAE@I@Z @ 68 NONAME ; QAbstractXmlNodeModel::~QAbstractXmlNodeModel(unsigned int)
+	??_EQAbstractXmlReceiver@@UAE@I@Z @ 69 NONAME ; QAbstractXmlReceiver::~QAbstractXmlReceiver(unsigned int)
+	??_EQSimpleXmlNodeModel@@UAE@I@Z @ 70 NONAME ; QSimpleXmlNodeModel::~QSimpleXmlNodeModel(unsigned int)
+	??_EQXmlFormatter@@UAE@I@Z @ 71 NONAME ; QXmlFormatter::~QXmlFormatter(unsigned int)
+	??_EQXmlResultItems@@UAE@I@Z @ 72 NONAME ; QXmlResultItems::~QXmlResultItems(unsigned int)
+	??_EQXmlSerializer@@UAE@I@Z @ 73 NONAME ; QXmlSerializer::~QXmlSerializer(unsigned int)
+	?additionalData@QXmlNodeModelIndex@@QBE_JXZ @ 74 NONAME ; long long QXmlNodeModelIndex::additionalData(void) const
+	?atDocumentRoot@QXmlSerializer@@ABE_NXZ @ 75 NONAME ; bool QXmlSerializer::atDocumentRoot(void) const
+	?atomicValue@QXmlFormatter@@UAEXABVQVariant@@@Z @ 76 NONAME ; void QXmlFormatter::atomicValue(class QVariant const &)
+	?atomicValue@QXmlSerializer@@UAEXABVQVariant@@@Z @ 77 NONAME ; void QXmlSerializer::atomicValue(class QVariant const &)
+	?attribute@QXmlFormatter@@UAEXABVQXmlName@@ABVQStringRef@@@Z @ 78 NONAME ; void QXmlFormatter::attribute(class QXmlName const &, class QStringRef const &)
+	?attribute@QXmlSerializer@@UAEXABVQXmlName@@ABVQStringRef@@@Z @ 79 NONAME ; void QXmlSerializer::attribute(class QXmlName const &, class QStringRef const &)
+	?baseUri@QSimpleXmlNodeModel@@UBE?AVQUrl@@ABVQXmlNodeModelIndex@@@Z @ 80 NONAME ; class QUrl QSimpleXmlNodeModel::baseUri(class QXmlNodeModelIndex const &) const
+	?baseUri@QXmlNodeModelIndex@@QBE?AVQUrl@@XZ @ 81 NONAME ; class QUrl QXmlNodeModelIndex::baseUri(void) const
+	?bindVariable@QXmlQuery@@QAEXABVQString@@ABV1@@Z @ 82 NONAME ; void QXmlQuery::bindVariable(class QString const &, class QXmlQuery const &)
+	?bindVariable@QXmlQuery@@QAEXABVQString@@ABVQXmlItem@@@Z @ 83 NONAME ; void QXmlQuery::bindVariable(class QString const &, class QXmlItem const &)
+	?bindVariable@QXmlQuery@@QAEXABVQString@@PAVQIODevice@@@Z @ 84 NONAME ; void QXmlQuery::bindVariable(class QString const &, class QIODevice *)
+	?bindVariable@QXmlQuery@@QAEXABVQXmlName@@ABV1@@Z @ 85 NONAME ; void QXmlQuery::bindVariable(class QXmlName const &, class QXmlQuery const &)
+	?bindVariable@QXmlQuery@@QAEXABVQXmlName@@ABVQXmlItem@@@Z @ 86 NONAME ; void QXmlQuery::bindVariable(class QXmlName const &, class QXmlItem const &)
+	?bindVariable@QXmlQuery@@QAEXABVQXmlName@@PAVQIODevice@@@Z @ 87 NONAME ; void QXmlQuery::bindVariable(class QXmlName const &, class QIODevice *)
+	?characters@QXmlFormatter@@UAEXABVQStringRef@@@Z @ 88 NONAME ; void QXmlFormatter::characters(class QStringRef const &)
+	?characters@QXmlSerializer@@UAEXABVQStringRef@@@Z @ 89 NONAME ; void QXmlSerializer::characters(class QStringRef const &)
+	?code@QXmlName@@QBE_JXZ @ 90 NONAME ; long long QXmlName::code(void) const
+	?codec@QXmlSerializer@@QBEPBVQTextCodec@@XZ @ 91 NONAME ; class QTextCodec const * QXmlSerializer::codec(void) const
+	?column@QSourceLocation@@QBE_JXZ @ 92 NONAME ; long long QSourceLocation::column(void) const
+	?comment@QXmlFormatter@@UAEXABVQString@@@Z @ 93 NONAME ; void QXmlFormatter::comment(class QString const &)
+	?comment@QXmlSerializer@@UAEXABVQString@@@Z @ 94 NONAME ; void QXmlSerializer::comment(class QString const &)
+	?compareOrder@QXmlNodeModelIndex@@QBE?AW4DocumentOrder@1@ABV1@@Z @ 95 NONAME ; enum QXmlNodeModelIndex::DocumentOrder QXmlNodeModelIndex::compareOrder(class QXmlNodeModelIndex const &) const
+	?copyNodeTo@QAbstractXmlNodeModel@@UBEXABVQXmlNodeModelIndex@@PAVQAbstractXmlReceiver@@ABV?$QFlags@W4NodeCopySetting@QAbstractXmlNodeModel@@@@@Z @ 96 NONAME ; void QAbstractXmlNodeModel::copyNodeTo(class QXmlNodeModelIndex const &, class QAbstractXmlReceiver *, class QFlags<enum QAbstractXmlNodeModel::NodeCopySetting> const &) const
+	?create@QXmlNodeModelIndex@@CA?AV1@_JPBVQAbstractXmlNodeModel@@0@Z @ 97 NONAME ; class QXmlNodeModelIndex QXmlNodeModelIndex::create(long long, class QAbstractXmlNodeModel const *, long long)
+	?create@QXmlNodeModelIndex@@CA?AV1@_JPBVQAbstractXmlNodeModel@@@Z @ 98 NONAME ; class QXmlNodeModelIndex QXmlNodeModelIndex::create(long long, class QAbstractXmlNodeModel const *)
+	?createIndex@QAbstractXmlNodeModel@@IBE?AVQXmlNodeModelIndex@@PAX_J@Z @ 99 NONAME ; class QXmlNodeModelIndex QAbstractXmlNodeModel::createIndex(void *, long long) const
+	?createIndex@QAbstractXmlNodeModel@@IBE?AVQXmlNodeModelIndex@@_J0@Z @ 100 NONAME ; class QXmlNodeModelIndex QAbstractXmlNodeModel::createIndex(long long, long long) const
+	?createIndex@QAbstractXmlNodeModel@@IBE?AVQXmlNodeModelIndex@@_J@Z @ 101 NONAME ; class QXmlNodeModelIndex QAbstractXmlNodeModel::createIndex(long long) const
+	?current@QXmlResultItems@@QBE?AVQXmlItem@@XZ @ 102 NONAME ; class QXmlItem QXmlResultItems::current(void) const
+	?d_func@QAbstractMessageHandler@@AAEPAVQAbstractMessageHandlerPrivate@@XZ @ 103 NONAME ; class QAbstractMessageHandlerPrivate * QAbstractMessageHandler::d_func(void)
+	?d_func@QAbstractMessageHandler@@ABEPBVQAbstractMessageHandlerPrivate@@XZ @ 104 NONAME ; class QAbstractMessageHandlerPrivate const * QAbstractMessageHandler::d_func(void) const
+	?d_func@QAbstractUriResolver@@AAEPAVQAbstractUriResolverPrivate@@XZ @ 105 NONAME ; class QAbstractUriResolverPrivate * QAbstractUriResolver::d_func(void)
+	?d_func@QAbstractUriResolver@@ABEPBVQAbstractUriResolverPrivate@@XZ @ 106 NONAME ; class QAbstractUriResolverPrivate const * QAbstractUriResolver::d_func(void) const
+	?d_func@QSimpleXmlNodeModel@@AAEPAVQSimpleXmlNodeModelPrivate@@XZ @ 107 NONAME ; class QSimpleXmlNodeModelPrivate * QSimpleXmlNodeModel::d_func(void)
+	?d_func@QSimpleXmlNodeModel@@ABEPBVQSimpleXmlNodeModelPrivate@@XZ @ 108 NONAME ; class QSimpleXmlNodeModelPrivate const * QSimpleXmlNodeModel::d_func(void) const
+	?d_func@QXmlFormatter@@AAEPAVQXmlFormatterPrivate@@XZ @ 109 NONAME ; class QXmlFormatterPrivate * QXmlFormatter::d_func(void)
+	?d_func@QXmlFormatter@@ABEPBVQXmlFormatterPrivate@@XZ @ 110 NONAME ; class QXmlFormatterPrivate const * QXmlFormatter::d_func(void) const
+	?d_func@QXmlResultItems@@AAEPAVQXmlResultItemsPrivate@@XZ @ 111 NONAME ; class QXmlResultItemsPrivate * QXmlResultItems::d_func(void)
+	?d_func@QXmlResultItems@@ABEPBVQXmlResultItemsPrivate@@XZ @ 112 NONAME ; class QXmlResultItemsPrivate const * QXmlResultItems::d_func(void) const
+	?d_func@QXmlSerializer@@AAEPAVQXmlSerializerPrivate@@XZ @ 113 NONAME ; class QXmlSerializerPrivate * QXmlSerializer::d_func(void)
+	?d_func@QXmlSerializer@@ABEPBVQXmlSerializerPrivate@@XZ @ 114 NONAME ; class QXmlSerializerPrivate const * QXmlSerializer::d_func(void) const
+	?data@QXmlNodeModelIndex@@QBE_JXZ @ 115 NONAME ; long long QXmlNodeModelIndex::data(void) const
+	?documentUri@QXmlNodeModelIndex@@QBE?AVQUrl@@XZ @ 116 NONAME ; class QUrl QXmlNodeModelIndex::documentUri(void) const
+	?documentUri@QXmlSchema@@QBE?AVQUrl@@XZ @ 117 NONAME ; class QUrl QXmlSchema::documentUri(void) const
+	?elementById@QSimpleXmlNodeModel@@UBE?AVQXmlNodeModelIndex@@ABVQXmlName@@@Z @ 118 NONAME ; class QXmlNodeModelIndex QSimpleXmlNodeModel::elementById(class QXmlName const &) const
+	?endDocument@QXmlFormatter@@UAEXXZ @ 119 NONAME ; void QXmlFormatter::endDocument(void)
+	?endDocument@QXmlSerializer@@UAEXXZ @ 120 NONAME ; void QXmlSerializer::endDocument(void)
+	?endElement@QXmlFormatter@@UAEXXZ @ 121 NONAME ; void QXmlFormatter::endElement(void)
+	?endElement@QXmlSerializer@@UAEXXZ @ 122 NONAME ; void QXmlSerializer::endElement(void)
+	?endOfSequence@QXmlFormatter@@UAEXXZ @ 123 NONAME ; void QXmlFormatter::endOfSequence(void)
+	?endOfSequence@QXmlSerializer@@UAEXXZ @ 124 NONAME ; void QXmlSerializer::endOfSequence(void)
+	?evaluateTo@QXmlQuery@@QBEXPAVQXmlResultItems@@@Z @ 125 NONAME ; void QXmlQuery::evaluateTo(class QXmlResultItems *) const
+	?evaluateTo@QXmlQuery@@QBE_NPAVQAbstractXmlReceiver@@@Z @ 126 NONAME ; bool QXmlQuery::evaluateTo(class QAbstractXmlReceiver *) const
+	?evaluateTo@QXmlQuery@@QBE_NPAVQIODevice@@@Z @ 127 NONAME ; bool QXmlQuery::evaluateTo(class QIODevice *) const
+	?evaluateTo@QXmlQuery@@QBE_NPAVQString@@@Z @ 128 NONAME ; bool QXmlQuery::evaluateTo(class QString *) const
+	?evaluateTo@QXmlQuery@@QBE_NPAVQStringList@@@Z @ 129 NONAME ; bool QXmlQuery::evaluateTo(class QStringList *) const
+	?fromClarkName@QXmlName@@SA?AV1@ABVQString@@ABVQXmlNamePool@@@Z @ 130 NONAME ; class QXmlName QXmlName::fromClarkName(class QString const &, class QXmlNamePool const &)
+	?getStaticMetaObject@QAbstractMessageHandler@@SAABUQMetaObject@@XZ @ 131 NONAME ; struct QMetaObject const & QAbstractMessageHandler::getStaticMetaObject(void)
+	?getStaticMetaObject@QAbstractUriResolver@@SAABUQMetaObject@@XZ @ 132 NONAME ; struct QMetaObject const & QAbstractUriResolver::getStaticMetaObject(void)
+	?hasError@QXmlResultItems@@QBE_NXZ @ 133 NONAME ; bool QXmlResultItems::hasError(void) const
+	?hasNamespace@QXmlName@@QBE_NXZ @ 134 NONAME ; bool QXmlName::hasNamespace(void) const
+	?hasPrefix@QXmlName@@QBE_NXZ @ 135 NONAME ; bool QXmlName::hasPrefix(void) const
+	?indentationDepth@QXmlFormatter@@QBEHXZ @ 136 NONAME ; int QXmlFormatter::indentationDepth(void) const
+	?initialTemplateName@QXmlQuery@@QBE?AVQXmlName@@XZ @ 137 NONAME ; class QXmlName QXmlQuery::initialTemplateName(void) const
+	?internalIsAtomicValue@QXmlItem@@ABE_NXZ @ 138 NONAME ; bool QXmlItem::internalIsAtomicValue(void) const
+	?internalPointer@QXmlNodeModelIndex@@QBEPAXXZ @ 139 NONAME ; void * QXmlNodeModelIndex::internalPointer(void) const
+	?is@QXmlNodeModelIndex@@QBE_NABV1@@Z @ 140 NONAME ; bool QXmlNodeModelIndex::is(class QXmlNodeModelIndex const &) const
+	?isAtomicValue@QXmlItem@@QBE_NXZ @ 141 NONAME ; bool QXmlItem::isAtomicValue(void) const
+	?isBindingInScope@QXmlSerializer@@ABE_NVQXmlName@@@Z @ 142 NONAME ; bool QXmlSerializer::isBindingInScope(class QXmlName) const
+	?isDeepEqual@QAbstractXmlNodeModel@@UBE_NABVQXmlNodeModelIndex@@0@Z @ 143 NONAME ; bool QAbstractXmlNodeModel::isDeepEqual(class QXmlNodeModelIndex const &, class QXmlNodeModelIndex const &) const
+	?isDeepEqual@QXmlNodeModelIndex@@QBE_NABV1@@Z @ 144 NONAME ; bool QXmlNodeModelIndex::isDeepEqual(class QXmlNodeModelIndex const &) const
+	?isIgnorableInDeepEqual@QAbstractXmlNodeModel@@CA_NABVQXmlNodeModelIndex@@@Z @ 145 NONAME ; bool QAbstractXmlNodeModel::isIgnorableInDeepEqual(class QXmlNodeModelIndex const &)
+	?isLexicallyEqual@QXmlName@@QBE_NABV1@@Z @ 146 NONAME ; bool QXmlName::isLexicallyEqual(class QXmlName const &) const
+	?isNCName@QXmlName@@SA_NABVQString@@@Z @ 147 NONAME ; bool QXmlName::isNCName(class QString const &)
+	?isNode@QXmlItem@@QBE_NXZ @ 148 NONAME ; bool QXmlItem::isNode(void) const
+	?isNull@QSourceLocation@@QBE_NXZ @ 149 NONAME ; bool QSourceLocation::isNull(void) const
+	?isNull@QXmlItem@@QBE_NXZ @ 150 NONAME ; bool QXmlItem::isNull(void) const
+	?isNull@QXmlName@@QBE_NXZ @ 151 NONAME ; bool QXmlName::isNull(void) const
+	?isNull@QXmlNodeModelIndex@@QBE_NXZ @ 152 NONAME ; bool QXmlNodeModelIndex::isNull(void) const
+	?isValid@QXmlQuery@@QBE_NXZ @ 153 NONAME ; bool QXmlQuery::isValid(void) const
+	?isValid@QXmlSchema@@QBE_NXZ @ 154 NONAME ; bool QXmlSchema::isValid(void) const
+	?item@QAbstractXmlReceiver@@UAEXABVItem@QPatternist@@@Z @ 155 NONAME ; void QAbstractXmlReceiver::item(class QPatternist::Item const &)
+	?item@QXmlFormatter@@UAEXABVItem@QPatternist@@@Z @ 156 NONAME ; void QXmlFormatter::item(class QPatternist::Item const &)
+	?item@QXmlSerializer@@UAEXABVItem@QPatternist@@@Z @ 157 NONAME ; void QXmlSerializer::item(class QPatternist::Item const &)
+	?iterate@QAbstractXmlNodeModel@@UBE?AV?$QExplicitlySharedDataPointer@V?$QAbstractXmlForwardIterator@VQXmlNodeModelIndex@@@@@@ABVQXmlNodeModelIndex@@W4Axis@3@@Z @ 158 NONAME ; class QExplicitlySharedDataPointer<class QAbstractXmlForwardIterator<class QXmlNodeModelIndex> > QAbstractXmlNodeModel::iterate(class QXmlNodeModelIndex const &, enum QXmlNodeModelIndex::Axis) const
+	?iterate@QXmlNodeModelIndex@@QBE?AV?$QExplicitlySharedDataPointer@V?$QAbstractXmlForwardIterator@VQXmlNodeModelIndex@@@@@@W4Axis@1@@Z @ 159 NONAME ; class QExplicitlySharedDataPointer<class QAbstractXmlForwardIterator<class QXmlNodeModelIndex> > QXmlNodeModelIndex::iterate(enum QXmlNodeModelIndex::Axis) const
+	?kind@QXmlNodeModelIndex@@QBE?AW4NodeKind@1@XZ @ 160 NONAME ; enum QXmlNodeModelIndex::NodeKind QXmlNodeModelIndex::kind(void) const
+	?line@QSourceLocation@@QBE_JXZ @ 161 NONAME ; long long QSourceLocation::line(void) const
+	?load@QXmlSchema@@QAE_NABVQByteArray@@ABVQUrl@@@Z @ 162 NONAME ; bool QXmlSchema::load(class QByteArray const &, class QUrl const &)
+	?load@QXmlSchema@@QAE_NABVQUrl@@@Z @ 163 NONAME ; bool QXmlSchema::load(class QUrl const &)
+	?load@QXmlSchema@@QAE_NPAVQIODevice@@ABVQUrl@@@Z @ 164 NONAME ; bool QXmlSchema::load(class QIODevice *, class QUrl const &)
+	?localName@QXmlName@@QBE?AVQString@@ABVQXmlNamePool@@@Z @ 165 NONAME ; class QString QXmlName::localName(class QXmlNamePool const &) const
+	?localName@QXmlName@@QBEFXZ @ 166 NONAME ; short QXmlName::localName(void) const
+	?mapToSequence@QAbstractXmlNodeModel@@ABE?AV?$QExplicitlySharedDataPointer@V?$QAbstractXmlForwardIterator@VQXmlNodeModelIndex@@@@@@ABVQXmlNodeModelIndex@@ABV?$QExplicitlySharedDataPointer@VDynamicContext@QPatternist@@@@@Z @ 167 NONAME ; class QExplicitlySharedDataPointer<class QAbstractXmlForwardIterator<class QXmlNodeModelIndex> > QAbstractXmlNodeModel::mapToSequence(class QXmlNodeModelIndex const &, class QExplicitlySharedDataPointer<class QPatternist::DynamicContext> const &) const
+	?message@QAbstractMessageHandler@@QAEXW4QtMsgType@@ABVQString@@ABVQUrl@@ABVQSourceLocation@@@Z @ 168 NONAME ; void QAbstractMessageHandler::message(enum QtMsgType, class QString const &, class QUrl const &, class QSourceLocation const &)
+	?messageHandler@QXmlQuery@@QBEPAVQAbstractMessageHandler@@XZ @ 169 NONAME ; class QAbstractMessageHandler * QXmlQuery::messageHandler(void) const
+	?messageHandler@QXmlSchema@@QBEPAVQAbstractMessageHandler@@XZ @ 170 NONAME ; class QAbstractMessageHandler * QXmlSchema::messageHandler(void) const
+	?messageHandler@QXmlSchemaValidator@@QBEPAVQAbstractMessageHandler@@XZ @ 171 NONAME ; class QAbstractMessageHandler * QXmlSchemaValidator::messageHandler(void) const
+	?metaObject@QAbstractMessageHandler@@UBEPBUQMetaObject@@XZ @ 172 NONAME ; struct QMetaObject const * QAbstractMessageHandler::metaObject(void) const
+	?metaObject@QAbstractUriResolver@@UBEPBUQMetaObject@@XZ @ 173 NONAME ; struct QMetaObject const * QAbstractUriResolver::metaObject(void) const
+	?model@QXmlNodeModelIndex@@QBEPBVQAbstractXmlNodeModel@@XZ @ 174 NONAME ; class QAbstractXmlNodeModel const * QXmlNodeModelIndex::model(void) const
+	?name@QXmlNodeModelIndex@@QBE?AVQXmlName@@XZ @ 175 NONAME ; class QXmlName QXmlNodeModelIndex::name(void) const
+	?namePool@QSimpleXmlNodeModel@@QBEAAVQXmlNamePool@@XZ @ 176 NONAME ; class QXmlNamePool & QSimpleXmlNodeModel::namePool(void) const
+	?namePool@QXmlQuery@@QBE?AVQXmlNamePool@@XZ @ 177 NONAME ; class QXmlNamePool QXmlQuery::namePool(void) const
+	?namePool@QXmlSchema@@QBE?AVQXmlNamePool@@XZ @ 178 NONAME ; class QXmlNamePool QXmlSchema::namePool(void) const
+	?namePool@QXmlSchemaValidator@@QBE?AVQXmlNamePool@@XZ @ 179 NONAME ; class QXmlNamePool QXmlSchemaValidator::namePool(void) const
+	?namespaceBinding@QXmlSerializer@@UAEXABVQXmlName@@@Z @ 180 NONAME ; void QXmlSerializer::namespaceBinding(class QXmlName const &)
+	?namespaceBindings@QSimpleXmlNodeModel@@UBE?AV?$QVector@VQXmlName@@@@ABVQXmlNodeModelIndex@@@Z @ 181 NONAME ; class QVector<class QXmlName> QSimpleXmlNodeModel::namespaceBindings(class QXmlNodeModelIndex const &) const
+	?namespaceBindings@QXmlNodeModelIndex@@QBE?AV?$QVector@VQXmlName@@@@XZ @ 182 NONAME ; class QVector<class QXmlName> QXmlNodeModelIndex::namespaceBindings(void) const
+	?namespaceForPrefix@QAbstractXmlNodeModel@@UBEFABVQXmlNodeModelIndex@@F@Z @ 183 NONAME ; short QAbstractXmlNodeModel::namespaceForPrefix(class QXmlNodeModelIndex const &, short) const
+	?namespaceForPrefix@QXmlNodeModelIndex@@QBEFF@Z @ 184 NONAME ; short QXmlNodeModelIndex::namespaceForPrefix(short) const
+	?namespaceURI@QXmlName@@QBEFXZ @ 185 NONAME ; short QXmlName::namespaceURI(void) const
+	?namespaceUri@QXmlName@@QBE?AVQString@@ABVQXmlNamePool@@@Z @ 186 NONAME ; class QString QXmlName::namespaceUri(class QXmlNamePool const &) const
+	?networkAccessManager@QXmlQuery@@QBEPAVQNetworkAccessManager@@XZ @ 187 NONAME ; class QNetworkAccessManager * QXmlQuery::networkAccessManager(void) const
+	?networkAccessManager@QXmlSchema@@QBEPAVQNetworkAccessManager@@XZ @ 188 NONAME ; class QNetworkAccessManager * QXmlSchema::networkAccessManager(void) const
+	?networkAccessManager@QXmlSchemaValidator@@QBEPAVQNetworkAccessManager@@XZ @ 189 NONAME ; class QNetworkAccessManager * QXmlSchemaValidator::networkAccessManager(void) const
+	?next@QXmlResultItems@@QAE?AVQXmlItem@@XZ @ 190 NONAME ; class QXmlItem QXmlResultItems::next(void)
+	?nodesByIdref@QSimpleXmlNodeModel@@UBE?AV?$QVector@VQXmlNodeModelIndex@@@@ABVQXmlName@@@Z @ 191 NONAME ; class QVector<class QXmlNodeModelIndex> QSimpleXmlNodeModel::nodesByIdref(class QXmlName const &) const
+	?outputDevice@QXmlSerializer@@QBEPAVQIODevice@@XZ @ 192 NONAME ; class QIODevice * QXmlSerializer::outputDevice(void) const
+	?prefix@QXmlName@@QBE?AVQString@@ABVQXmlNamePool@@@Z @ 193 NONAME ; class QString QXmlName::prefix(class QXmlNamePool const &) const
+	?prefix@QXmlName@@QBEFXZ @ 194 NONAME ; short QXmlName::prefix(void) const
+	?processingInstruction@QXmlFormatter@@UAEXABVQXmlName@@ABVQString@@@Z @ 195 NONAME ; void QXmlFormatter::processingInstruction(class QXmlName const &, class QString const &)
+	?processingInstruction@QXmlSerializer@@UAEXABVQXmlName@@ABVQString@@@Z @ 196 NONAME ; void QXmlSerializer::processingInstruction(class QXmlName const &, class QString const &)
+	?qHash@@YAIABVQSourceLocation@@@Z @ 197 NONAME ; unsigned int qHash(class QSourceLocation const &)
+	?qHash@@YAIABVQXmlName@@@Z @ 198 NONAME ; unsigned int qHash(class QXmlName const &)
+	?qHash@@YAIABVQXmlNodeModelIndex@@@Z @ 199 NONAME ; unsigned int qHash(class QXmlNodeModelIndex const &)
+	?qt_metacall@QAbstractMessageHandler@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 200 NONAME ; int QAbstractMessageHandler::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QAbstractUriResolver@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 201 NONAME ; int QAbstractUriResolver::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QAbstractMessageHandler@@UAEPAXPBD@Z @ 202 NONAME ; void * QAbstractMessageHandler::qt_metacast(char const *)
+	?qt_metacast@QAbstractUriResolver@@UAEPAXPBD@Z @ 203 NONAME ; void * QAbstractUriResolver::qt_metacast(char const *)
+	?queryLanguage@QXmlQuery@@QBE?AW4QueryLanguage@1@XZ @ 204 NONAME ; enum QXmlQuery::QueryLanguage QXmlQuery::queryLanguage(void) const
+	?reset@QXmlNodeModelIndex@@QAEXXZ @ 205 NONAME ; void QXmlNodeModelIndex::reset(void)
+	?root@QXmlNodeModelIndex@@QBE?AV1@XZ @ 206 NONAME ; class QXmlNodeModelIndex QXmlNodeModelIndex::root(void) const
+	?schema@QXmlSchemaValidator@@QBE?AVQXmlSchema@@XZ @ 207 NONAME ; class QXmlSchema QXmlSchemaValidator::schema(void) const
+	?sendAsNode@QAbstractXmlReceiver@@IAEXABVItem@QPatternist@@@Z @ 208 NONAME ; void QAbstractXmlReceiver::sendAsNode(class QPatternist::Item const &)
+	?sendNamespaces@QAbstractXmlNodeModel@@UBEXABVQXmlNodeModelIndex@@PAVQAbstractXmlReceiver@@@Z @ 209 NONAME ; void QAbstractXmlNodeModel::sendNamespaces(class QXmlNodeModelIndex const &, class QAbstractXmlReceiver *) const
+	?sendNamespaces@QXmlNodeModelIndex@@QBEXPAVQAbstractXmlReceiver@@@Z @ 210 NONAME ; void QXmlNodeModelIndex::sendNamespaces(class QAbstractXmlReceiver *) const
+	?sequencedTypedValue@QAbstractXmlNodeModel@@UBE?AV?$QExplicitlySharedDataPointer@V?$QAbstractXmlForwardIterator@VItem@QPatternist@@@@@@ABVQXmlNodeModelIndex@@@Z @ 211 NONAME ; class QExplicitlySharedDataPointer<class QAbstractXmlForwardIterator<class QPatternist::Item> > QAbstractXmlNodeModel::sequencedTypedValue(class QXmlNodeModelIndex const &) const
+	?sequencedTypedValue@QXmlNodeModelIndex@@QBE?AV?$QExplicitlySharedDataPointer@V?$QAbstractXmlForwardIterator@VItem@QPatternist@@@@@@XZ @ 212 NONAME ; class QExplicitlySharedDataPointer<class QAbstractXmlForwardIterator<class QPatternist::Item> > QXmlNodeModelIndex::sequencedTypedValue(void) const
+	?setCodec@QXmlSerializer@@QAEXPBVQTextCodec@@@Z @ 213 NONAME ; void QXmlSerializer::setCodec(class QTextCodec const *)
+	?setColumn@QSourceLocation@@QAEX_J@Z @ 214 NONAME ; void QSourceLocation::setColumn(long long)
+	?setFocus@QXmlQuery@@QAEXABVQXmlItem@@@Z @ 215 NONAME ; void QXmlQuery::setFocus(class QXmlItem const &)
+	?setFocus@QXmlQuery@@QAE_NABVQString@@@Z @ 216 NONAME ; bool QXmlQuery::setFocus(class QString const &)
+	?setFocus@QXmlQuery@@QAE_NABVQUrl@@@Z @ 217 NONAME ; bool QXmlQuery::setFocus(class QUrl const &)
+	?setFocus@QXmlQuery@@QAE_NPAVQIODevice@@@Z @ 218 NONAME ; bool QXmlQuery::setFocus(class QIODevice *)
+	?setIndentationDepth@QXmlFormatter@@QAEXH@Z @ 219 NONAME ; void QXmlFormatter::setIndentationDepth(int)
+	?setInitialTemplateName@QXmlQuery@@QAEXABVQString@@@Z @ 220 NONAME ; void QXmlQuery::setInitialTemplateName(class QString const &)
+	?setInitialTemplateName@QXmlQuery@@QAEXABVQXmlName@@@Z @ 221 NONAME ; void QXmlQuery::setInitialTemplateName(class QXmlName const &)
+	?setLine@QSourceLocation@@QAEX_J@Z @ 222 NONAME ; void QSourceLocation::setLine(long long)
+	?setLocalName@QXmlName@@QAEXF@Z @ 223 NONAME ; void QXmlName::setLocalName(short)
+	?setMessageHandler@QXmlQuery@@QAEXPAVQAbstractMessageHandler@@@Z @ 224 NONAME ; void QXmlQuery::setMessageHandler(class QAbstractMessageHandler *)
+	?setMessageHandler@QXmlSchema@@QAEXPAVQAbstractMessageHandler@@@Z @ 225 NONAME ; void QXmlSchema::setMessageHandler(class QAbstractMessageHandler *)
+	?setMessageHandler@QXmlSchemaValidator@@QAEXPAVQAbstractMessageHandler@@@Z @ 226 NONAME ; void QXmlSchemaValidator::setMessageHandler(class QAbstractMessageHandler *)
+	?setNamespaceURI@QXmlName@@QAEXF@Z @ 227 NONAME ; void QXmlName::setNamespaceURI(short)
+	?setNetworkAccessManager@QXmlQuery@@QAEXPAVQNetworkAccessManager@@@Z @ 228 NONAME ; void QXmlQuery::setNetworkAccessManager(class QNetworkAccessManager *)
+	?setNetworkAccessManager@QXmlSchema@@QAEXPAVQNetworkAccessManager@@@Z @ 229 NONAME ; void QXmlSchema::setNetworkAccessManager(class QNetworkAccessManager *)
+	?setNetworkAccessManager@QXmlSchemaValidator@@QAEXPAVQNetworkAccessManager@@@Z @ 230 NONAME ; void QXmlSchemaValidator::setNetworkAccessManager(class QNetworkAccessManager *)
+	?setPrefix@QXmlName@@QAEXF@Z @ 231 NONAME ; void QXmlName::setPrefix(short)
+	?setQuery@QXmlQuery@@QAEXABVQString@@ABVQUrl@@@Z @ 232 NONAME ; void QXmlQuery::setQuery(class QString const &, class QUrl const &)
+	?setQuery@QXmlQuery@@QAEXABVQUrl@@0@Z @ 233 NONAME ; void QXmlQuery::setQuery(class QUrl const &, class QUrl const &)
+	?setQuery@QXmlQuery@@QAEXPAVQIODevice@@ABVQUrl@@@Z @ 234 NONAME ; void QXmlQuery::setQuery(class QIODevice *, class QUrl const &)
+	?setSchema@QXmlSchemaValidator@@QAEXABVQXmlSchema@@@Z @ 235 NONAME ; void QXmlSchemaValidator::setSchema(class QXmlSchema const &)
+	?setUri@QSourceLocation@@QAEXABVQUrl@@@Z @ 236 NONAME ; void QSourceLocation::setUri(class QUrl const &)
+	?setUriResolver@QXmlQuery@@QAEXPBVQAbstractUriResolver@@@Z @ 237 NONAME ; void QXmlQuery::setUriResolver(class QAbstractUriResolver const *)
+	?setUriResolver@QXmlSchema@@QAEXPBVQAbstractUriResolver@@@Z @ 238 NONAME ; void QXmlSchema::setUriResolver(class QAbstractUriResolver const *)
+	?setUriResolver@QXmlSchemaValidator@@QAEXPBVQAbstractUriResolver@@@Z @ 239 NONAME ; void QXmlSchemaValidator::setUriResolver(class QAbstractUriResolver const *)
+	?sourceLocation@QAbstractXmlNodeModel@@QBE?AVQSourceLocation@@ABVQXmlNodeModelIndex@@@Z @ 240 NONAME ; class QSourceLocation QAbstractXmlNodeModel::sourceLocation(class QXmlNodeModelIndex const &) const
+	?startContent@QXmlSerializer@@AAEXXZ @ 241 NONAME ; void QXmlSerializer::startContent(void)
+	?startDocument@QXmlFormatter@@UAEXXZ @ 242 NONAME ; void QXmlFormatter::startDocument(void)
+	?startDocument@QXmlSerializer@@UAEXXZ @ 243 NONAME ; void QXmlSerializer::startDocument(void)
+	?startElement@QXmlFormatter@@UAEXABVQXmlName@@@Z @ 244 NONAME ; void QXmlFormatter::startElement(class QXmlName const &)
+	?startElement@QXmlSerializer@@UAEXABVQXmlName@@@Z @ 245 NONAME ; void QXmlSerializer::startElement(class QXmlName const &)
+	?startFormattingContent@QXmlFormatter@@AAEXXZ @ 246 NONAME ; void QXmlFormatter::startFormattingContent(void)
+	?startOfSequence@QXmlFormatter@@UAEXXZ @ 247 NONAME ; void QXmlFormatter::startOfSequence(void)
+	?startOfSequence@QXmlSerializer@@UAEXXZ @ 248 NONAME ; void QXmlSerializer::startOfSequence(void)
+	?stringValue@QSimpleXmlNodeModel@@UBE?AVQString@@ABVQXmlNodeModelIndex@@@Z @ 249 NONAME ; class QString QSimpleXmlNodeModel::stringValue(class QXmlNodeModelIndex const &) const
+	?stringValue@QXmlNodeModelIndex@@QBE?AVQString@@XZ @ 250 NONAME ; class QString QXmlNodeModelIndex::stringValue(void) const
+	?toAtomicValue@QXmlItem@@QBE?AVQVariant@@XZ @ 251 NONAME ; class QVariant QXmlItem::toAtomicValue(void) const
+	?toClarkName@QXmlName@@QBE?AVQString@@ABVQXmlNamePool@@@Z @ 252 NONAME ; class QString QXmlName::toClarkName(class QXmlNamePool const &) const
+	?toNodeModelIndex@QXmlItem@@QBE?AVQXmlNodeModelIndex@@XZ @ 253 NONAME ; class QXmlNodeModelIndex QXmlItem::toNodeModelIndex(void) const
+	?tr@QAbstractMessageHandler@@SA?AVQString@@PBD0@Z @ 254 NONAME ; class QString QAbstractMessageHandler::tr(char const *, char const *)
+	?tr@QAbstractMessageHandler@@SA?AVQString@@PBD0H@Z @ 255 NONAME ; class QString QAbstractMessageHandler::tr(char const *, char const *, int)
+	?tr@QAbstractUriResolver@@SA?AVQString@@PBD0@Z @ 256 NONAME ; class QString QAbstractUriResolver::tr(char const *, char const *)
+	?tr@QAbstractUriResolver@@SA?AVQString@@PBD0H@Z @ 257 NONAME ; class QString QAbstractUriResolver::tr(char const *, char const *, int)
+	?trUtf8@QAbstractMessageHandler@@SA?AVQString@@PBD0@Z @ 258 NONAME ; class QString QAbstractMessageHandler::trUtf8(char const *, char const *)
+	?trUtf8@QAbstractMessageHandler@@SA?AVQString@@PBD0H@Z @ 259 NONAME ; class QString QAbstractMessageHandler::trUtf8(char const *, char const *, int)
+	?trUtf8@QAbstractUriResolver@@SA?AVQString@@PBD0@Z @ 260 NONAME ; class QString QAbstractUriResolver::trUtf8(char const *, char const *)
+	?trUtf8@QAbstractUriResolver@@SA?AVQString@@PBD0H@Z @ 261 NONAME ; class QString QAbstractUriResolver::trUtf8(char const *, char const *, int)
+	?type@QAbstractXmlNodeModel@@UBE?AV?$QExplicitlySharedDataPointer@VItemType@QPatternist@@@@ABVQXmlNodeModelIndex@@@Z @ 262 NONAME ; class QExplicitlySharedDataPointer<class QPatternist::ItemType> QAbstractXmlNodeModel::type(class QXmlNodeModelIndex const &) const
+	?type@QXmlNodeModelIndex@@QBE?AV?$QExplicitlySharedDataPointer@VItemType@QPatternist@@@@XZ @ 263 NONAME ; class QExplicitlySharedDataPointer<class QPatternist::ItemType> QXmlNodeModelIndex::type(void) const
+	?uri@QSourceLocation@@QBE?AVQUrl@@XZ @ 264 NONAME ; class QUrl QSourceLocation::uri(void) const
+	?uriResolver@QXmlQuery@@QBEPBVQAbstractUriResolver@@XZ @ 265 NONAME ; class QAbstractUriResolver const * QXmlQuery::uriResolver(void) const
+	?uriResolver@QXmlSchema@@QBEPBVQAbstractUriResolver@@XZ @ 266 NONAME ; class QAbstractUriResolver const * QXmlSchema::uriResolver(void) const
+	?uriResolver@QXmlSchemaValidator@@QBEPBVQAbstractUriResolver@@XZ @ 267 NONAME ; class QAbstractUriResolver const * QXmlSchemaValidator::uriResolver(void) const
+	?validate@QXmlSchemaValidator@@QBE_NABVQByteArray@@ABVQUrl@@@Z @ 268 NONAME ; bool QXmlSchemaValidator::validate(class QByteArray const &, class QUrl const &) const
+	?validate@QXmlSchemaValidator@@QBE_NABVQUrl@@@Z @ 269 NONAME ; bool QXmlSchemaValidator::validate(class QUrl const &) const
+	?validate@QXmlSchemaValidator@@QBE_NPAVQIODevice@@ABVQUrl@@@Z @ 270 NONAME ; bool QXmlSchemaValidator::validate(class QIODevice *, class QUrl const &) const
+	?whitespaceOnly@QAbstractXmlReceiver@@UAEXABVQStringRef@@@Z @ 271 NONAME ; void QAbstractXmlReceiver::whitespaceOnly(class QStringRef const &)
+	?write@QXmlSerializer@@AAEXABVQString@@@Z @ 272 NONAME ; void QXmlSerializer::write(class QString const &)
+	?write@QXmlSerializer@@AAEXABVQXmlName@@@Z @ 273 NONAME ; void QXmlSerializer::write(class QXmlName const &)
+	?write@QXmlSerializer@@AAEXPBD@Z @ 274 NONAME ; void QXmlSerializer::write(char const *)
+	?writeEscaped@QXmlSerializer@@AAEXABVQString@@@Z @ 275 NONAME ; void QXmlSerializer::writeEscaped(class QString const &)
+	?writeEscapedAttribute@QXmlSerializer@@AAEXABVQString@@@Z @ 276 NONAME ; void QXmlSerializer::writeEscapedAttribute(class QString const &)
+	?staticMetaObject@QAbstractMessageHandler@@2UQMetaObject@@B @ 277 NONAME ; struct QMetaObject const QAbstractMessageHandler::staticMetaObject
+	?staticMetaObject@QAbstractUriResolver@@2UQMetaObject@@B @ 278 NONAME ; struct QMetaObject const QAbstractUriResolver::staticMetaObject
+	?qt_static_metacall@QAbstractUriResolver@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 279 NONAME ; void QAbstractUriResolver::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@QAbstractUriResolver@@0UQMetaObjectExtraData@@B @ 280 NONAME ; struct QMetaObjectExtraData const QAbstractUriResolver::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@QAbstractMessageHandler@@0UQMetaObjectExtraData@@B @ 281 NONAME ; struct QMetaObjectExtraData const QAbstractMessageHandler::staticMetaObjectExtraData
+	?qt_static_metacall@QAbstractMessageHandler@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 282 NONAME ; void QAbstractMessageHandler::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+

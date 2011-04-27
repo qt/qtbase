@@ -1,0 +1,32 @@
+#! /usr/bin/make -f
+
+# Sanitize build environment when running inside Scratchbox 1
+ifneq (,$(wildcard /targets))
+   ifeq (,$(SBOX_DONT_SANITIZE))
+     export PATH:=/bin:/usr/bin
+     export MAKE:=make
+     ifeq (,$(FAKEROOTKEY))
+       export SBOX_REDIRECT_TO_DIRS:=/scratchbox/compilers/bin
+     else
+       export SBOX_REDIRECT_TO_DIRS:=
+     endif
+     ifneq (,$(shell debian/fixup-scratchbox))
+        $(error Error)
+     endif
+  endif
+endif
+
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure
+
+override_dh_auto_build:
+	dh_auto_build
+	cd gconf && doxygen
+
+override_dh_strip:
+	dh_strip -plibgq-gconf0 --dbg-package=libgq-gconf0-dbg
+	dh_strip
+
+%:
+	dh $@

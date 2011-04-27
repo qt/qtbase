@@ -1,0 +1,15 @@
+HEADERS     = treeitem.h \
+              treemodel.h
+RESOURCES   = simpletreemodel.qrc
+SOURCES     = treeitem.cpp \
+              treemodel.cpp \
+              main.cpp
+CONFIG  += qt
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/simpletreemodel
+sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.txt
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/simpletreemodel
+INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

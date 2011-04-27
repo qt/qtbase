@@ -1,0 +1,137 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+body {
+    background              : #aaaaaa;
+    font-family             : sans-serif;
+    font-weight             : bold;
+}
+
+p {
+    font-weight             : normal;
+}
+
+a {
+    text-wrap               : suppress;
+    -webkit-text-wrap       : suppress;
+}
+
+article {
+    background              : #ffffff;
+    position                : absolute;
+    top                     : 1em;
+    left                    : 1em;
+    right                   : 1em;
+    padding                 : 1em;
+    border-radius           : 1em;
+    margin-bottom           : 2em;
+}
+
+ol {
+    padding-left            : 1em;
+}
+
+ol.links {
+    margin-bottom           : 1em;
+    border                  : #aaaaaa thin solid;
+    list-style              : none;
+    padding-top             : 0.5em;
+    padding-bottom          : 0.5em;
+    padding-left            : 0em;
+    border-radius           : 1.0em;
+}
+
+ol.links > li {
+    min-height              : 2em;
+    border-bottom           : #aaaaaa thin solid;
+    padding-left            : 0.5em;
+    padding-right           : 0.5em;
+    padding-top             : 0.5em;
+}
+
+ol.links > li:last-of-type {
+    border                  : none;
+}
+
+p a[href]:after {
+    -webkit-transform           : scale(0.6);
+    -webkit-transform-origin    : bottom;
+    padding-left                : 0.25em;
+    padding-right               : 0.0em;
+    display                     : inline-block;
+}
+
+a[href] {
+    text-decoration             : none;
+}
+
+ol.links > li > a {
+    display                     : block;
+}
+
+ol.links a:after {
+    -webkit-transform           : scale(0.8);
+    -webkit-transform-origin    : top;
+}
+
+a[href^="http://"]:after, a[href^="https://"]:after {
+    content                     : url(../img/icon_link-external.png);
+}
+
+a[href^="mailto:"]:after { content : url(../img/icon_link-email.png); }
+
+a[href^="sms:"]:after { content : url(../img/icon_link-sms.png); }
+
+a[href^="tel:"]:after { content : url(../img/icon_link-tel.png); }
+
+a[href$=".doc"]:after { content : url(../img/icon_link-doc.png); }
+
+a[href$=".ppt"]:after { content : url(../img/icon_link-ppt.png); }
+
+a[href$=".rss"]:after,
+a[href$=".xml"]:after { content : url(../img/icon_link-rss.png); }
+
+a[href$=".pdf"]:after { content : url(../img/icon_link-pdf.png); }
+
+a[href$=".xls"]:after { content : url(../img/icon_link-xls.png); }
+
+ol.links a:after {
+    float                       : right;
+}

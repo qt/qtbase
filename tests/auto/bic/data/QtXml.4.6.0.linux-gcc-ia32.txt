@@ -1,0 +1,3064 @@
+Class QSysInfo
+   size=1 align=1
+   base size=0 base align=1
+QSysInfo (0xb6ea7a8c) 0 empty
+
+Class QBool
+   size=1 align=1
+   base size=1 base align=1
+QBool (0xb6ea7c30) 0
+
+Class qIsNull(double)::U
+   size=8 align=4
+   base size=8 base align=4
+qIsNull(double)::U (0xb6e2b30c) 0
+
+Class qIsNull(float)::U
+   size=4 align=4
+   base size=4 base align=4
+qIsNull(float)::U (0xb6e2b3c0) 0
+
+Class QFlag
+   size=4 align=4
+   base size=4 base align=4
+QFlag (0xb6e2bbf4) 0
+
+Class QIncompatibleFlag
+   size=4 align=4
+   base size=4 base align=4
+QIncompatibleFlag (0xb6e2bd20) 0
+
+Class QLatin1Char
+   size=1 align=1
+   base size=1 base align=1
+QLatin1Char (0xb6e2bf78) 0
+
+Class QChar
+   size=2 align=2
+   base size=2 base align=2
+QChar (0xb64e4168) 0
+
+Class QBasicAtomicInt
+   size=4 align=4
+   base size=4 base align=4
+QBasicAtomicInt (0xb65158ac) 0
+
+Class QAtomicInt
+   size=4 align=4
+   base size=4 base align=4
+QAtomicInt (0xb6533b40) 0
+  QBasicAtomicInt (0xb6515fb4) 0
+
+Class QInternal
+   size=1 align=1
+   base size=0 base align=1
+QInternal (0xb64433c0) 0 empty
+
+Class __locale_struct
+   size=116 align=4
+   base size=116 base align=4
+__locale_struct (0xb64433fc) 0
+
+Class QByteArray::Data
+   size=20 align=4
+   base size=20 base align=4
+QByteArray::Data (0xb6443870) 0
+
+Class QByteArray
+   size=4 align=4
+   base size=4 base align=4
+QByteArray (0xb6443834) 0
+
+Class QByteRef
+   size=8 align=4
+   base size=8 base align=4
+QByteRef (0xb62f2780) 0
+
+Class QString::Null
+   size=1 align=1
+   base size=0 base align=1
+QString::Null (0xb630ff3c) 0 empty
+
+Class QString::Data
+   size=20 align=4
+   base size=20 base align=4
+QString::Data (0xb630ff78) 0
+
+Class QString
+   size=4 align=4
+   base size=4 base align=4
+QString (0xb630ff00) 0
+
+Class QLatin1String
+   size=4 align=4
+   base size=4 base align=4
+QLatin1String (0xb61eebf4) 0
+
+Class QCharRef
+   size=8 align=4
+   base size=8 base align=4
+QCharRef (0xb62538e8) 0
+
+Class QConstString
+   size=4 align=4
+   base size=4 base align=4
+QConstString (0xb60d7880) 0
+  QString (0xb611003c) 0
+
+Class QStringRef
+   size=12 align=4
+   base size=12 base align=4
+QStringRef (0xb6110384) 0
+
+Class QGenericArgument
+   size=8 align=4
+   base size=8 base align=4
+QGenericArgument (0xb615b2d0) 0
+
+Class QGenericReturnArgument
+   size=8 align=4
+   base size=8 base align=4
+QGenericReturnArgument (0xb6168140) 0
+  QGenericArgument (0xb615b4ec) 0
+
+Class QMetaObject
+   size=16 align=4
+   base size=16 base align=4
+QMetaObject (0xb615b654) 0
+
+Class QMetaObjectExtraData
+   size=8 align=4
+   base size=8 base align=4
+QMetaObjectExtraData (0xb615b780) 0
+
+Vtable for std::exception
+std::exception::_ZTVSt9exception: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt9exception)
+8     std::exception::~exception
+12    std::exception::~exception
+16    std::exception::what
+
+Class std::exception
+   size=4 align=4
+   base size=4 base align=4
+std::exception (0xb615bac8) 0 nearly-empty
+    vptr=((& std::exception::_ZTVSt9exception) + 8u)
+
+Vtable for std::bad_exception
+std::bad_exception::_ZTVSt13bad_exception: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt13bad_exception)
+8     std::bad_exception::~bad_exception
+12    std::bad_exception::~bad_exception
+16    std::bad_exception::what
+
+Class std::bad_exception
+   size=4 align=4
+   base size=4 base align=4
+std::bad_exception (0xb61a0dc0) 0 nearly-empty
+    vptr=((& std::bad_exception::_ZTVSt13bad_exception) + 8u)
+  std::exception (0xb615bbb8) 0 nearly-empty
+      primary-for std::bad_exception (0xb61a0dc0)
+
+Vtable for std::bad_alloc
+std::bad_alloc::_ZTVSt9bad_alloc: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTISt9bad_alloc)
+8     std::bad_alloc::~bad_alloc
+12    std::bad_alloc::~bad_alloc
+16    std::bad_alloc::what
+
+Class std::bad_alloc
+   size=4 align=4
+   base size=4 base align=4
+std::bad_alloc (0xb61a0f40) 0 nearly-empty
+    vptr=((& std::bad_alloc::_ZTVSt9bad_alloc) + 8u)
+  std::exception (0xb615be10) 0 nearly-empty
+      primary-for std::bad_alloc (0xb61a0f40)
+
+Class std::nothrow_t
+   size=1 align=1
+   base size=0 base align=1
+std::nothrow_t (0xb61ba078) 0 empty
+
+Class QListData::Data
+   size=24 align=4
+   base size=24 base align=4
+QListData::Data (0xb61ba168) 0
+
+Class QListData
+   size=4 align=4
+   base size=4 base align=4
+QListData (0xb61ba12c) 0
+
+Class QScopedPointerPodDeleter
+   size=1 align=1
+   base size=0 base align=1
+QScopedPointerPodDeleter (0xb61ba99c) 0 empty
+
+Vtable for QObjectData
+QObjectData::_ZTV11QObjectData: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QObjectData)
+8     __cxa_pure_virtual
+12    __cxa_pure_virtual
+
+Class QObjectData
+   size=28 align=4
+   base size=28 base align=4
+QObjectData (0xb61baa50) 0
+    vptr=((& QObjectData::_ZTV11QObjectData) + 8u)
+
+Vtable for QObject
+QObject::_ZTV7QObject: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QObject)
+8     QObject::metaObject
+12    QObject::qt_metacast
+16    QObject::qt_metacall
+20    QObject::~QObject
+24    QObject::~QObject
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QObject
+   size=8 align=4
+   base size=8 base align=4
+QObject (0xb61bab04) 0
+    vptr=((& QObject::_ZTV7QObject) + 8u)
+
+Vtable for QObjectUserData
+QObjectUserData::_ZTV15QObjectUserData: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QObjectUserData)
+8     QObjectUserData::~QObjectUserData
+12    QObjectUserData::~QObjectUserData
+
+Class QObjectUserData
+   size=4 align=4
+   base size=4 base align=4
+QObjectUserData (0xb60ac384) 0 nearly-empty
+    vptr=((& QObjectUserData::_ZTV15QObjectUserData) + 8u)
+
+Vtable for QIODevice
+QIODevice::_ZTV9QIODevice: 30u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QIODevice)
+8     QIODevice::metaObject
+12    QIODevice::qt_metacast
+16    QIODevice::qt_metacall
+20    QIODevice::~QIODevice
+24    QIODevice::~QIODevice
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QIODevice::isSequential
+60    QIODevice::open
+64    QIODevice::close
+68    QIODevice::pos
+72    QIODevice::size
+76    QIODevice::seek
+80    QIODevice::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QIODevice::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   __cxa_pure_virtual
+112   QIODevice::readLineData
+116   __cxa_pure_virtual
+
+Class QIODevice
+   size=8 align=4
+   base size=8 base align=4
+QIODevice (0xb60ad600) 0
+    vptr=((& QIODevice::_ZTV9QIODevice) + 8u)
+  QObject (0xb60ac4b0) 0
+      primary-for QIODevice (0xb60ad600)
+
+Class _IO_marker
+   size=12 align=4
+   base size=12 base align=4
+_IO_marker (0xb5ee0348) 0
+
+Class _IO_FILE
+   size=148 align=4
+   base size=148 base align=4
+_IO_FILE (0xb5ee0384) 0
+
+Vtable for QFile
+QFile::_ZTV5QFile: 31u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI5QFile)
+8     QFile::metaObject
+12    QFile::qt_metacast
+16    QFile::qt_metacall
+20    QFile::~QFile
+24    QFile::~QFile
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QFile::isSequential
+60    QFile::open
+64    QFile::close
+68    QFile::pos
+72    QFile::size
+76    QFile::seek
+80    QFile::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QIODevice::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   QFile::readData
+112   QFile::readLineData
+116   QFile::writeData
+120   QFile::fileEngine
+
+Class QFile
+   size=8 align=4
+   base size=8 base align=4
+QFile (0xb5eee280) 0
+    vptr=((& QFile::_ZTV5QFile) + 8u)
+  QIODevice (0xb5eee2c0) 0
+      primary-for QFile (0xb5eee280)
+    QObject (0xb5ee03fc) 0
+        primary-for QIODevice (0xb5eee2c0)
+
+Class QFileInfo
+   size=4 align=4
+   base size=4 base align=4
+QFileInfo (0xb5ee0870) 0
+
+Vtable for QDataStream
+QDataStream::_ZTV11QDataStream: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QDataStream)
+8     QDataStream::~QDataStream
+12    QDataStream::~QDataStream
+
+Class QDataStream
+   size=28 align=4
+   base size=28 base align=4
+QDataStream (0xb5ee0ec4) 0
+    vptr=((& QDataStream::_ZTV11QDataStream) + 8u)
+
+Class QRegExp
+   size=4 align=4
+   base size=4 base align=4
+QRegExp (0xb5fa05dc) 0
+
+Class QStringMatcher::Data
+   size=264 align=4
+   base size=264 base align=4
+QStringMatcher::Data (0xb5ddf000) 0
+
+Class QStringMatcher
+   size=1036 align=4
+   base size=1036 base align=4
+QStringMatcher (0xb5fa0fb4) 0
+
+Class QStringList
+   size=4 align=4
+   base size=4 base align=4
+QStringList (0xb5fba980) 0
+  QList<QString> (0xb5ddf12c) 0
+
+Class QDir
+   size=4 align=4
+   base size=4 base align=4
+QDir (0xb5e25690) 0
+
+Class QAbstractFileEngine::ExtensionOption
+   size=1 align=1
+   base size=0 base align=1
+QAbstractFileEngine::ExtensionOption (0xb5e25e10) 0 empty
+
+Class QAbstractFileEngine::ExtensionReturn
+   size=1 align=1
+   base size=0 base align=1
+QAbstractFileEngine::ExtensionReturn (0xb5e25e4c) 0 empty
+
+Class QAbstractFileEngine::MapExtensionOption
+   size=20 align=4
+   base size=20 base align=4
+QAbstractFileEngine::MapExtensionOption (0xb5e70280) 0
+  QAbstractFileEngine::ExtensionOption (0xb5e25e88) 0 empty
+
+Class QAbstractFileEngine::MapExtensionReturn
+   size=4 align=4
+   base size=4 base align=4
+QAbstractFileEngine::MapExtensionReturn (0xb5e70300) 0
+  QAbstractFileEngine::ExtensionReturn (0xb5e25ec4) 0 empty
+
+Class QAbstractFileEngine::UnMapExtensionOption
+   size=4 align=4
+   base size=4 base align=4
+QAbstractFileEngine::UnMapExtensionOption (0xb5e70380) 0
+  QAbstractFileEngine::ExtensionOption (0xb5e25f00) 0 empty
+
+Vtable for QAbstractFileEngine
+QAbstractFileEngine::_ZTV19QAbstractFileEngine: 36u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI19QAbstractFileEngine)
+8     QAbstractFileEngine::~QAbstractFileEngine
+12    QAbstractFileEngine::~QAbstractFileEngine
+16    QAbstractFileEngine::open
+20    QAbstractFileEngine::close
+24    QAbstractFileEngine::flush
+28    QAbstractFileEngine::size
+32    QAbstractFileEngine::pos
+36    QAbstractFileEngine::seek
+40    QAbstractFileEngine::isSequential
+44    QAbstractFileEngine::remove
+48    QAbstractFileEngine::copy
+52    QAbstractFileEngine::rename
+56    QAbstractFileEngine::link
+60    QAbstractFileEngine::mkdir
+64    QAbstractFileEngine::rmdir
+68    QAbstractFileEngine::setSize
+72    QAbstractFileEngine::caseSensitive
+76    QAbstractFileEngine::isRelativePath
+80    QAbstractFileEngine::entryList
+84    QAbstractFileEngine::fileFlags
+88    QAbstractFileEngine::setPermissions
+92    QAbstractFileEngine::fileName
+96    QAbstractFileEngine::ownerId
+100   QAbstractFileEngine::owner
+104   QAbstractFileEngine::fileTime
+108   QAbstractFileEngine::setFileName
+112   QAbstractFileEngine::handle
+116   QAbstractFileEngine::beginEntryList
+120   QAbstractFileEngine::endEntryList
+124   QAbstractFileEngine::read
+128   QAbstractFileEngine::readLine
+132   QAbstractFileEngine::write
+136   QAbstractFileEngine::extension
+140   QAbstractFileEngine::supportsExtension
+
+Class QAbstractFileEngine
+   size=8 align=4
+   base size=8 base align=4
+QAbstractFileEngine (0xb5e25dd4) 0
+    vptr=((& QAbstractFileEngine::_ZTV19QAbstractFileEngine) + 8u)
+
+Vtable for QAbstractFileEngineHandler
+QAbstractFileEngineHandler::_ZTV26QAbstractFileEngineHandler: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI26QAbstractFileEngineHandler)
+8     QAbstractFileEngineHandler::~QAbstractFileEngineHandler
+12    QAbstractFileEngineHandler::~QAbstractFileEngineHandler
+16    __cxa_pure_virtual
+
+Class QAbstractFileEngineHandler
+   size=4 align=4
+   base size=4 base align=4
+QAbstractFileEngineHandler (0xb5ea3168) 0 nearly-empty
+    vptr=((& QAbstractFileEngineHandler::_ZTV26QAbstractFileEngineHandler) + 8u)
+
+Vtable for QAbstractFileEngineIterator
+QAbstractFileEngineIterator::_ZTV27QAbstractFileEngineIterator: 9u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QAbstractFileEngineIterator)
+8     QAbstractFileEngineIterator::~QAbstractFileEngineIterator
+12    QAbstractFileEngineIterator::~QAbstractFileEngineIterator
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    QAbstractFileEngineIterator::currentFileInfo
+32    QAbstractFileEngineIterator::entryInfo
+
+Class QAbstractFileEngineIterator
+   size=8 align=4
+   base size=8 base align=4
+QAbstractFileEngineIterator (0xb5ea31a4) 0
+    vptr=((& QAbstractFileEngineIterator::_ZTV27QAbstractFileEngineIterator) + 8u)
+
+Vtable for QBuffer
+QBuffer::_ZTV7QBuffer: 30u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QBuffer)
+8     QBuffer::metaObject
+12    QBuffer::qt_metacast
+16    QBuffer::qt_metacall
+20    QBuffer::~QBuffer
+24    QBuffer::~QBuffer
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QBuffer::connectNotify
+52    QBuffer::disconnectNotify
+56    QIODevice::isSequential
+60    QBuffer::open
+64    QBuffer::close
+68    QBuffer::pos
+72    QBuffer::size
+76    QBuffer::seek
+80    QBuffer::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QBuffer::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   QBuffer::readData
+112   QIODevice::readLineData
+116   QBuffer::writeData
+
+Class QBuffer
+   size=8 align=4
+   base size=8 base align=4
+QBuffer (0xb5e706c0) 0
+    vptr=((& QBuffer::_ZTV7QBuffer) + 8u)
+  QIODevice (0xb5e70700) 0
+      primary-for QBuffer (0xb5e706c0)
+    QObject (0xb5ea321c) 0
+        primary-for QIODevice (0xb5e70700)
+
+Class QHashData::Node
+   size=8 align=4
+   base size=8 base align=4
+QHashData::Node (0xb5ea38e8) 0
+
+Class QHashData
+   size=32 align=4
+   base size=32 base align=4
+QHashData (0xb5ea38ac) 0
+
+Class QHashDummyValue
+   size=1 align=1
+   base size=0 base align=1
+QHashDummyValue (0xb5ceb000) 0 empty
+
+Class QMapData::Node
+   size=8 align=4
+   base size=8 base align=4
+QMapData::Node (0xb5ceb744) 0
+
+Class QMapData
+   size=72 align=4
+   base size=72 base align=4
+QMapData (0xb5ceb708) 0
+
+Vtable for QSystemLocale
+QSystemLocale::_ZTV13QSystemLocale: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QSystemLocale)
+8     QSystemLocale::~QSystemLocale
+12    QSystemLocale::~QSystemLocale
+16    QSystemLocale::query
+20    QSystemLocale::fallbackLocale
+
+Class QSystemLocale
+   size=4 align=4
+   base size=4 base align=4
+QSystemLocale (0xb5ceba50) 0 nearly-empty
+    vptr=((& QSystemLocale::_ZTV13QSystemLocale) + 8u)
+
+Class QLocale::Data
+   size=4 align=2
+   base size=4 base align=2
+QLocale::Data (0xb5cebac8) 0
+
+Class QLocale
+   size=4 align=4
+   base size=4 base align=4
+QLocale (0xb5ceba8c) 0
+
+Class QTextCodec::ConverterState
+   size=28 align=4
+   base size=28 base align=4
+QTextCodec::ConverterState (0xb5c6e12c) 0
+
+Vtable for QTextCodec
+QTextCodec::_ZTV10QTextCodec: 9u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI10QTextCodec)
+8     __cxa_pure_virtual
+12    QTextCodec::aliases
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    QTextCodec::~QTextCodec
+32    QTextCodec::~QTextCodec
+
+Class QTextCodec
+   size=4 align=4
+   base size=4 base align=4
+QTextCodec (0xb5c6e0f0) 0 nearly-empty
+    vptr=((& QTextCodec::_ZTV10QTextCodec) + 8u)
+
+Class QTextEncoder
+   size=32 align=4
+   base size=32 base align=4
+QTextEncoder (0xb5c6ee10) 0
+
+Class QTextDecoder
+   size=32 align=4
+   base size=32 base align=4
+QTextDecoder (0xb5cbc078) 0
+
+Vtable for QTextStream
+QTextStream::_ZTV11QTextStream: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QTextStream)
+8     QTextStream::~QTextStream
+12    QTextStream::~QTextStream
+
+Class QTextStream
+   size=8 align=4
+   base size=8 base align=4
+QTextStream (0xb5cbc2d0) 0
+    vptr=((& QTextStream::_ZTV11QTextStream) + 8u)
+
+Class QTextStreamManipulator
+   size=24 align=4
+   base size=22 base align=4
+QTextStreamManipulator (0xb5cbc960) 0
+
+Vtable for QTextIStream
+QTextIStream::_ZTV12QTextIStream: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QTextIStream)
+8     QTextIStream::~QTextIStream
+12    QTextIStream::~QTextIStream
+
+Class QTextIStream
+   size=8 align=4
+   base size=8 base align=4
+QTextIStream (0xb5b0a400) 0
+    vptr=((& QTextIStream::_ZTV12QTextIStream) + 8u)
+  QTextStream (0xb5b07b40) 0
+      primary-for QTextIStream (0xb5b0a400)
+
+Vtable for QTextOStream
+QTextOStream::_ZTV12QTextOStream: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QTextOStream)
+8     QTextOStream::~QTextOStream
+12    QTextOStream::~QTextOStream
+
+Class QTextOStream
+   size=8 align=4
+   base size=8 base align=4
+QTextOStream (0xb5b0a6c0) 0
+    vptr=((& QTextOStream::_ZTV12QTextOStream) + 8u)
+  QTextStream (0xb5b1e1e0) 0
+      primary-for QTextOStream (0xb5b0a6c0)
+
+Class wait
+   size=4 align=4
+   base size=4 base align=4
+wait (0xb5b1e870) 0
+
+Class timespec
+   size=8 align=4
+   base size=8 base align=4
+timespec (0xb5b1ea14) 0
+
+Class timeval
+   size=8 align=4
+   base size=8 base align=4
+timeval (0xb5b1ea50) 0
+
+Class __pthread_internal_slist
+   size=4 align=4
+   base size=4 base align=4
+__pthread_internal_slist (0xb5b1eb04) 0
+
+Class random_data
+   size=28 align=4
+   base size=28 base align=4
+random_data (0xb5b1ee10) 0
+
+Class drand48_data
+   size=24 align=4
+   base size=24 base align=4
+drand48_data (0xb5b1ee4c) 0
+
+Class QVectorData
+   size=16 align=4
+   base size=16 base align=4
+QVectorData (0xb5b1ee88) 0
+
+Class QContiguousCacheData
+   size=24 align=4
+   base size=24 base align=4
+QContiguousCacheData (0xb59cc1a4) 0
+
+Class QDebug::Stream
+   size=24 align=4
+   base size=22 base align=4
+QDebug::Stream (0xb59cc384) 0
+
+Class QDebug
+   size=4 align=4
+   base size=4 base align=4
+QDebug (0xb59cc348) 0
+
+Class QNoDebug
+   size=1 align=1
+   base size=0 base align=1
+QNoDebug (0xb5a97fb4) 0 empty
+
+Vtable for QDirIterator
+QDirIterator::_ZTV12QDirIterator: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QDirIterator)
+8     QDirIterator::~QDirIterator
+12    QDirIterator::~QDirIterator
+
+Class QDirIterator
+   size=8 align=4
+   base size=8 base align=4
+QDirIterator (0xb5ac3258) 0
+    vptr=((& QDirIterator::_ZTV12QDirIterator) + 8u)
+
+Vtable for QFileSystemWatcher
+QFileSystemWatcher::_ZTV18QFileSystemWatcher: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QFileSystemWatcher)
+8     QFileSystemWatcher::metaObject
+12    QFileSystemWatcher::qt_metacast
+16    QFileSystemWatcher::qt_metacall
+20    QFileSystemWatcher::~QFileSystemWatcher
+24    QFileSystemWatcher::~QFileSystemWatcher
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QFileSystemWatcher
+   size=8 align=4
+   base size=8 base align=4
+QFileSystemWatcher (0xb5ac4bc0) 0
+    vptr=((& QFileSystemWatcher::_ZTV18QFileSystemWatcher) + 8u)
+  QObject (0xb5ac33c0) 0
+      primary-for QFileSystemWatcher (0xb5ac4bc0)
+
+Vtable for QFSFileEngine
+QFSFileEngine::_ZTV13QFSFileEngine: 36u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QFSFileEngine)
+8     QFSFileEngine::~QFSFileEngine
+12    QFSFileEngine::~QFSFileEngine
+16    QFSFileEngine::open
+20    QFSFileEngine::close
+24    QFSFileEngine::flush
+28    QFSFileEngine::size
+32    QFSFileEngine::pos
+36    QFSFileEngine::seek
+40    QFSFileEngine::isSequential
+44    QFSFileEngine::remove
+48    QFSFileEngine::copy
+52    QFSFileEngine::rename
+56    QFSFileEngine::link
+60    QFSFileEngine::mkdir
+64    QFSFileEngine::rmdir
+68    QFSFileEngine::setSize
+72    QFSFileEngine::caseSensitive
+76    QFSFileEngine::isRelativePath
+80    QFSFileEngine::entryList
+84    QFSFileEngine::fileFlags
+88    QFSFileEngine::setPermissions
+92    QFSFileEngine::fileName
+96    QFSFileEngine::ownerId
+100   QFSFileEngine::owner
+104   QFSFileEngine::fileTime
+108   QFSFileEngine::setFileName
+112   QFSFileEngine::handle
+116   QFSFileEngine::beginEntryList
+120   QFSFileEngine::endEntryList
+124   QFSFileEngine::read
+128   QFSFileEngine::readLine
+132   QFSFileEngine::write
+136   QFSFileEngine::extension
+140   QFSFileEngine::supportsExtension
+
+Class QFSFileEngine
+   size=8 align=4
+   base size=8 base align=4
+QFSFileEngine (0xb5ac4e80) 0
+    vptr=((& QFSFileEngine::_ZTV13QFSFileEngine) + 8u)
+  QAbstractFileEngine (0xb5ac35dc) 0
+      primary-for QFSFileEngine (0xb5ac4e80)
+
+Class QSharedData
+   size=4 align=4
+   base size=4 base align=4
+QSharedData (0xb5ac3708) 0
+
+Class QProcessEnvironment
+   size=4 align=4
+   base size=4 base align=4
+QProcessEnvironment (0xb5ac3924) 0
+
+Vtable for QProcess
+QProcess::_ZTV8QProcess: 31u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI8QProcess)
+8     QProcess::metaObject
+12    QProcess::qt_metacast
+16    QProcess::qt_metacall
+20    QProcess::~QProcess
+24    QProcess::~QProcess
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QProcess::isSequential
+60    QIODevice::open
+64    QProcess::close
+68    QIODevice::pos
+72    QIODevice::size
+76    QIODevice::seek
+80    QProcess::atEnd
+84    QIODevice::reset
+88    QProcess::bytesAvailable
+92    QProcess::bytesToWrite
+96    QProcess::canReadLine
+100   QProcess::waitForReadyRead
+104   QProcess::waitForBytesWritten
+108   QProcess::readData
+112   QIODevice::readLineData
+116   QProcess::writeData
+120   QProcess::setupChildProcess
+
+Class QProcess
+   size=8 align=4
+   base size=8 base align=4
+QProcess (0xb5919f00) 0
+    vptr=((& QProcess::_ZTV8QProcess) + 8u)
+  QIODevice (0xb5919f40) 0
+      primary-for QProcess (0xb5919f00)
+    QObject (0xb5ac39d8) 0
+        primary-for QIODevice (0xb5919f40)
+
+Class QResource
+   size=4 align=4
+   base size=4 base align=4
+QResource (0xb5ac3bf4) 0
+
+Class QMetaType
+   size=1 align=1
+   base size=0 base align=1
+QMetaType (0xb5ac3d98) 0 empty
+
+Class QVariant::PrivateShared
+   size=8 align=4
+   base size=8 base align=4
+QVariant::PrivateShared (0xb599aa50) 0
+
+Class QVariant::Private::Data
+   size=8 align=4
+   base size=8 base align=4
+QVariant::Private::Data (0xb599aac8) 0
+
+Class QVariant::Private
+   size=12 align=4
+   base size=12 base align=4
+QVariant::Private (0xb599aa8c) 0
+
+Class QVariant::Handler
+   size=36 align=4
+   base size=36 base align=4
+QVariant::Handler (0xb599ab40) 0
+
+Class QVariant
+   size=12 align=4
+   base size=12 base align=4
+QVariant (0xb599aa14) 0
+
+Class QVariantComparisonHelper
+   size=4 align=4
+   base size=4 base align=4
+QVariantComparisonHelper (0xb58373fc) 0
+
+Vtable for QSettings
+QSettings::_ZTV9QSettings: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QSettings)
+8     QSettings::metaObject
+12    QSettings::qt_metacast
+16    QSettings::qt_metacall
+20    QSettings::~QSettings
+24    QSettings::~QSettings
+28    QSettings::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QSettings
+   size=8 align=4
+   base size=8 base align=4
+QSettings (0xb5842a00) 0
+    vptr=((& QSettings::_ZTV9QSettings) + 8u)
+  QObject (0xb5837a14) 0
+      primary-for QSettings (0xb5842a00)
+
+Vtable for QTemporaryFile
+QTemporaryFile::_ZTV14QTemporaryFile: 31u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI14QTemporaryFile)
+8     QTemporaryFile::metaObject
+12    QTemporaryFile::qt_metacast
+16    QTemporaryFile::qt_metacall
+20    QTemporaryFile::~QTemporaryFile
+24    QTemporaryFile::~QTemporaryFile
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QFile::isSequential
+60    QTemporaryFile::open
+64    QFile::close
+68    QFile::pos
+72    QFile::size
+76    QFile::seek
+80    QFile::atEnd
+84    QIODevice::reset
+88    QIODevice::bytesAvailable
+92    QIODevice::bytesToWrite
+96    QIODevice::canReadLine
+100   QIODevice::waitForReadyRead
+104   QIODevice::waitForBytesWritten
+108   QFile::readData
+112   QFile::readLineData
+116   QFile::writeData
+120   QTemporaryFile::fileEngine
+
+Class QTemporaryFile
+   size=8 align=4
+   base size=8 base align=4
+QTemporaryFile (0xb5886600) 0
+    vptr=((& QTemporaryFile::_ZTV14QTemporaryFile) + 8u)
+  QFile (0xb5886640) 0
+      primary-for QTemporaryFile (0xb5886600)
+    QIODevice (0xb5886680) 0
+        primary-for QFile (0xb5886640)
+      QObject (0xb588e528) 0
+          primary-for QIODevice (0xb5886680)
+
+Class QUrl
+   size=4 align=4
+   base size=4 base align=4
+QUrl (0xb588e834) 0
+
+Class QXmlStreamStringRef
+   size=12 align=4
+   base size=12 base align=4
+QXmlStreamStringRef (0xb588ed20) 0
+
+Class QXmlStreamAttribute
+   size=56 align=4
+   base size=53 base align=4
+QXmlStreamAttribute (0xb56f79d8) 0
+
+Class QXmlStreamAttributes
+   size=4 align=4
+   base size=4 base align=4
+QXmlStreamAttributes (0xb56dcc40) 0
+  QVector<QXmlStreamAttribute> (0xb5717438) 0
+
+Class QXmlStreamNamespaceDeclaration
+   size=28 align=4
+   base size=28 base align=4
+QXmlStreamNamespaceDeclaration (0xb5717528) 0
+
+Class QXmlStreamNotationDeclaration
+   size=40 align=4
+   base size=40 base align=4
+QXmlStreamNotationDeclaration (0xb571799c) 0
+
+Class QXmlStreamEntityDeclaration
+   size=64 align=4
+   base size=64 base align=4
+QXmlStreamEntityDeclaration (0xb5717f78) 0
+
+Vtable for QXmlStreamEntityResolver
+QXmlStreamEntityResolver::_ZTV24QXmlStreamEntityResolver: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI24QXmlStreamEntityResolver)
+8     QXmlStreamEntityResolver::~QXmlStreamEntityResolver
+12    QXmlStreamEntityResolver::~QXmlStreamEntityResolver
+16    QXmlStreamEntityResolver::resolveEntity
+20    QXmlStreamEntityResolver::resolveUndeclaredEntity
+
+Class QXmlStreamEntityResolver
+   size=4 align=4
+   base size=4 base align=4
+QXmlStreamEntityResolver (0xb5751834) 0 nearly-empty
+    vptr=((& QXmlStreamEntityResolver::_ZTV24QXmlStreamEntityResolver) + 8u)
+
+Class QXmlStreamReader
+   size=4 align=4
+   base size=4 base align=4
+QXmlStreamReader (0xb5751870) 0
+
+Class QXmlStreamWriter
+   size=4 align=4
+   base size=4 base align=4
+QXmlStreamWriter (0xb57519d8) 0
+
+Vtable for QAbstractState
+QAbstractState::_ZTV14QAbstractState: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI14QAbstractState)
+8     QAbstractState::metaObject
+12    QAbstractState::qt_metacast
+16    QAbstractState::qt_metacall
+20    QAbstractState::~QAbstractState
+24    QAbstractState::~QAbstractState
+28    QAbstractState::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+
+Class QAbstractState
+   size=8 align=4
+   base size=8 base align=4
+QAbstractState (0xb5740c00) 0
+    vptr=((& QAbstractState::_ZTV14QAbstractState) + 8u)
+  QObject (0xb5751b40) 0
+      primary-for QAbstractState (0xb5740c00)
+
+Vtable for QAbstractTransition
+QAbstractTransition::_ZTV19QAbstractTransition: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI19QAbstractTransition)
+8     QAbstractTransition::metaObject
+12    QAbstractTransition::qt_metacast
+16    QAbstractTransition::qt_metacall
+20    QAbstractTransition::~QAbstractTransition
+24    QAbstractTransition::~QAbstractTransition
+28    QAbstractTransition::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+
+Class QAbstractTransition
+   size=8 align=4
+   base size=8 base align=4
+QAbstractTransition (0xb5740ec0) 0
+    vptr=((& QAbstractTransition::_ZTV19QAbstractTransition) + 8u)
+  QObject (0xb5751d5c) 0
+      primary-for QAbstractTransition (0xb5740ec0)
+
+Vtable for QEvent
+QEvent::_ZTV6QEvent: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI6QEvent)
+8     QEvent::~QEvent
+12    QEvent::~QEvent
+
+Class QEvent
+   size=12 align=4
+   base size=12 base align=4
+QEvent (0xb5751f78) 0
+    vptr=((& QEvent::_ZTV6QEvent) + 8u)
+
+Vtable for QTimerEvent
+QTimerEvent::_ZTV11QTimerEvent: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QTimerEvent)
+8     QTimerEvent::~QTimerEvent
+12    QTimerEvent::~QTimerEvent
+
+Class QTimerEvent
+   size=16 align=4
+   base size=16 base align=4
+QTimerEvent (0xb57a9440) 0
+    vptr=((& QTimerEvent::_ZTV11QTimerEvent) + 8u)
+  QEvent (0xb55bd168) 0
+      primary-for QTimerEvent (0xb57a9440)
+
+Vtable for QChildEvent
+QChildEvent::_ZTV11QChildEvent: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QChildEvent)
+8     QChildEvent::~QChildEvent
+12    QChildEvent::~QChildEvent
+
+Class QChildEvent
+   size=16 align=4
+   base size=16 base align=4
+QChildEvent (0xb57a9500) 0
+    vptr=((& QChildEvent::_ZTV11QChildEvent) + 8u)
+  QEvent (0xb55bd1e0) 0
+      primary-for QChildEvent (0xb57a9500)
+
+Vtable for QCustomEvent
+QCustomEvent::_ZTV12QCustomEvent: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI12QCustomEvent)
+8     QCustomEvent::~QCustomEvent
+12    QCustomEvent::~QCustomEvent
+
+Class QCustomEvent
+   size=12 align=4
+   base size=12 base align=4
+QCustomEvent (0xb57a97c0) 0
+    vptr=((& QCustomEvent::_ZTV12QCustomEvent) + 8u)
+  QEvent (0xb55bd348) 0
+      primary-for QCustomEvent (0xb57a97c0)
+
+Vtable for QDynamicPropertyChangeEvent
+QDynamicPropertyChangeEvent::_ZTV27QDynamicPropertyChangeEvent: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI27QDynamicPropertyChangeEvent)
+8     QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent
+12    QDynamicPropertyChangeEvent::~QDynamicPropertyChangeEvent
+
+Class QDynamicPropertyChangeEvent
+   size=16 align=4
+   base size=16 base align=4
+QDynamicPropertyChangeEvent (0xb57a98c0) 0
+    vptr=((& QDynamicPropertyChangeEvent::_ZTV27QDynamicPropertyChangeEvent) + 8u)
+  QEvent (0xb55bd438) 0
+      primary-for QDynamicPropertyChangeEvent (0xb57a98c0)
+
+Vtable for QEventTransition
+QEventTransition::_ZTV16QEventTransition: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI16QEventTransition)
+8     QEventTransition::metaObject
+12    QEventTransition::qt_metacast
+16    QEventTransition::qt_metacall
+20    QEventTransition::~QEventTransition
+24    QEventTransition::~QEventTransition
+28    QEventTransition::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QEventTransition::eventTest
+60    QEventTransition::onTransition
+
+Class QEventTransition
+   size=8 align=4
+   base size=8 base align=4
+QEventTransition (0xb57a9980) 0
+    vptr=((& QEventTransition::_ZTV16QEventTransition) + 8u)
+  QAbstractTransition (0xb57a99c0) 0
+      primary-for QEventTransition (0xb57a9980)
+    QObject (0xb55bd4ec) 0
+        primary-for QAbstractTransition (0xb57a99c0)
+
+Vtable for QFinalState
+QFinalState::_ZTV11QFinalState: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QFinalState)
+8     QFinalState::metaObject
+12    QFinalState::qt_metacast
+16    QFinalState::qt_metacall
+20    QFinalState::~QFinalState
+24    QFinalState::~QFinalState
+28    QFinalState::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QFinalState::onEntry
+60    QFinalState::onExit
+
+Class QFinalState
+   size=8 align=4
+   base size=8 base align=4
+QFinalState (0xb57a9c80) 0
+    vptr=((& QFinalState::_ZTV11QFinalState) + 8u)
+  QAbstractState (0xb57a9cc0) 0
+      primary-for QFinalState (0xb57a9c80)
+    QObject (0xb55bd708) 0
+        primary-for QAbstractState (0xb57a9cc0)
+
+Vtable for QHistoryState
+QHistoryState::_ZTV13QHistoryState: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QHistoryState)
+8     QHistoryState::metaObject
+12    QHistoryState::qt_metacast
+16    QHistoryState::qt_metacall
+20    QHistoryState::~QHistoryState
+24    QHistoryState::~QHistoryState
+28    QHistoryState::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QHistoryState::onEntry
+60    QHistoryState::onExit
+
+Class QHistoryState
+   size=8 align=4
+   base size=8 base align=4
+QHistoryState (0xb57a9f80) 0
+    vptr=((& QHistoryState::_ZTV13QHistoryState) + 8u)
+  QAbstractState (0xb57a9fc0) 0
+      primary-for QHistoryState (0xb57a9f80)
+    QObject (0xb55bd924) 0
+        primary-for QAbstractState (0xb57a9fc0)
+
+Vtable for QSignalTransition
+QSignalTransition::_ZTV17QSignalTransition: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI17QSignalTransition)
+8     QSignalTransition::metaObject
+12    QSignalTransition::qt_metacast
+16    QSignalTransition::qt_metacall
+20    QSignalTransition::~QSignalTransition
+24    QSignalTransition::~QSignalTransition
+28    QSignalTransition::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QSignalTransition::eventTest
+60    QSignalTransition::onTransition
+
+Class QSignalTransition
+   size=8 align=4
+   base size=8 base align=4
+QSignalTransition (0xb55e5280) 0
+    vptr=((& QSignalTransition::_ZTV17QSignalTransition) + 8u)
+  QAbstractTransition (0xb55e52c0) 0
+      primary-for QSignalTransition (0xb55e5280)
+    QObject (0xb55bdb40) 0
+        primary-for QAbstractTransition (0xb55e52c0)
+
+Vtable for QState
+QState::_ZTV6QState: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI6QState)
+8     QState::metaObject
+12    QState::qt_metacast
+16    QState::qt_metacall
+20    QState::~QState
+24    QState::~QState
+28    QState::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QState::onEntry
+60    QState::onExit
+
+Class QState
+   size=8 align=4
+   base size=8 base align=4
+QState (0xb55e5580) 0
+    vptr=((& QState::_ZTV6QState) + 8u)
+  QAbstractState (0xb55e55c0) 0
+      primary-for QState (0xb55e5580)
+    QObject (0xb55bdd5c) 0
+        primary-for QAbstractState (0xb55e55c0)
+
+Vtable for QStateMachine::SignalEvent
+QStateMachine::SignalEvent::_ZTVN13QStateMachine11SignalEventE: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN13QStateMachine11SignalEventE)
+8     QStateMachine::SignalEvent::~SignalEvent
+12    QStateMachine::SignalEvent::~SignalEvent
+
+Class QStateMachine::SignalEvent
+   size=24 align=4
+   base size=24 base align=4
+QStateMachine::SignalEvent (0xb55e59c0) 0
+    vptr=((& QStateMachine::SignalEvent::_ZTVN13QStateMachine11SignalEventE) + 8u)
+  QEvent (0xb55bdfb4) 0
+      primary-for QStateMachine::SignalEvent (0xb55e59c0)
+
+Vtable for QStateMachine::WrappedEvent
+QStateMachine::WrappedEvent::_ZTVN13QStateMachine12WrappedEventE: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN13QStateMachine12WrappedEventE)
+8     QStateMachine::WrappedEvent::~WrappedEvent
+12    QStateMachine::WrappedEvent::~WrappedEvent
+
+Class QStateMachine::WrappedEvent
+   size=20 align=4
+   base size=20 base align=4
+QStateMachine::WrappedEvent (0xb55e5a40) 0
+    vptr=((& QStateMachine::WrappedEvent::_ZTVN13QStateMachine12WrappedEventE) + 8u)
+  QEvent (0xb5616000) 0
+      primary-for QStateMachine::WrappedEvent (0xb55e5a40)
+
+Vtable for QStateMachine
+QStateMachine::_ZTV13QStateMachine: 20u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QStateMachine)
+8     QStateMachine::metaObject
+12    QStateMachine::qt_metacast
+16    QStateMachine::qt_metacall
+20    QStateMachine::~QStateMachine
+24    QStateMachine::~QStateMachine
+28    QStateMachine::event
+32    QStateMachine::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QStateMachine::onEntry
+60    QStateMachine::onExit
+64    QStateMachine::beginSelectTransitions
+68    QStateMachine::endSelectTransitions
+72    QStateMachine::beginMicrostep
+76    QStateMachine::endMicrostep
+
+Class QStateMachine
+   size=8 align=4
+   base size=8 base align=4
+QStateMachine (0xb55e5880) 0
+    vptr=((& QStateMachine::_ZTV13QStateMachine) + 8u)
+  QState (0xb55e58c0) 0
+      primary-for QStateMachine (0xb55e5880)
+    QAbstractState (0xb55e5900) 0
+        primary-for QState (0xb55e58c0)
+      QObject (0xb55bdf78) 0
+          primary-for QAbstractState (0xb55e5900)
+
+Class QBitArray
+   size=4 align=4
+   base size=4 base align=4
+QBitArray (0xb5616384) 0
+
+Class QBitRef
+   size=8 align=4
+   base size=8 base align=4
+QBitRef (0xb5651834) 0
+
+Class QByteArrayMatcher::Data
+   size=264 align=4
+   base size=264 base align=4
+QByteArrayMatcher::Data (0xb5651e4c) 0
+
+Class QByteArrayMatcher
+   size=1032 align=4
+   base size=1032 base align=4
+QByteArrayMatcher (0xb5651e10) 0
+
+Class QCryptographicHash
+   size=4 align=4
+   base size=4 base align=4
+QCryptographicHash (0xb566d12c) 0
+
+Vtable for QtSharedPointer::ExternalRefCountData
+QtSharedPointer::ExternalRefCountData::_ZTVN15QtSharedPointer20ExternalRefCountDataE: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN15QtSharedPointer20ExternalRefCountDataE)
+8     QtSharedPointer::ExternalRefCountData::~ExternalRefCountData
+12    QtSharedPointer::ExternalRefCountData::~ExternalRefCountData
+16    QtSharedPointer::ExternalRefCountData::destroy
+
+Class QtSharedPointer::ExternalRefCountData
+   size=12 align=4
+   base size=12 base align=4
+QtSharedPointer::ExternalRefCountData (0xb566d2d0) 0
+    vptr=((& QtSharedPointer::ExternalRefCountData::_ZTVN15QtSharedPointer20ExternalRefCountDataE) + 8u)
+
+Vtable for QtSharedPointer::ExternalRefCountWithDestroyFn
+QtSharedPointer::ExternalRefCountWithDestroyFn::_ZTVN15QtSharedPointer29ExternalRefCountWithDestroyFnE: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN15QtSharedPointer29ExternalRefCountWithDestroyFnE)
+8     QtSharedPointer::ExternalRefCountWithDestroyFn::~ExternalRefCountWithDestroyFn
+12    QtSharedPointer::ExternalRefCountWithDestroyFn::~ExternalRefCountWithDestroyFn
+16    QtSharedPointer::ExternalRefCountWithDestroyFn::destroy
+
+Class QtSharedPointer::ExternalRefCountWithDestroyFn
+   size=16 align=4
+   base size=16 base align=4
+QtSharedPointer::ExternalRefCountWithDestroyFn (0xb5699800) 0
+    vptr=((& QtSharedPointer::ExternalRefCountWithDestroyFn::_ZTVN15QtSharedPointer29ExternalRefCountWithDestroyFnE) + 8u)
+  QtSharedPointer::ExternalRefCountData (0xb566dac8) 0
+      primary-for QtSharedPointer::ExternalRefCountWithDestroyFn (0xb5699800)
+
+Class QDate
+   size=4 align=4
+   base size=4 base align=4
+QDate (0xb54f7000) 0
+
+Class QTime
+   size=4 align=4
+   base size=4 base align=4
+QTime (0xb54f7618) 0
+
+Class QDateTime
+   size=4 align=4
+   base size=4 base align=4
+QDateTime (0xb54f7b7c) 0
+
+Class QEasingCurve
+   size=4 align=4
+   base size=4 base align=4
+QEasingCurve (0xb54f7e4c) 0
+
+Class QPoint
+   size=8 align=4
+   base size=8 base align=4
+QPoint (0xb54f7ec4) 0
+
+Class QPointF
+   size=16 align=4
+   base size=16 base align=4
+QPointF (0xb555e474) 0
+
+Class QLine
+   size=16 align=4
+   base size=16 base align=4
+QLine (0xb5577b7c) 0
+
+Class QLineF
+   size=32 align=4
+   base size=32 base align=4
+QLineF (0xb558f8ac) 0
+
+Class QLinkedListData
+   size=20 align=4
+   base size=20 base align=4
+QLinkedListData (0xb53b499c) 0
+
+Class QMargins
+   size=16 align=4
+   base size=16 base align=4
+QMargins (0xb53b4bb8) 0
+
+Class QSize
+   size=8 align=4
+   base size=8 base align=4
+QSize (0xb543ed20) 0
+
+Class QSizeF
+   size=16 align=4
+   base size=16 base align=4
+QSizeF (0xb54647bc) 0
+
+Class QRect
+   size=16 align=4
+   base size=16 base align=4
+QRect (0xb54933c0) 0
+
+Class QRectF
+   size=32 align=4
+   base size=32 base align=4
+QRectF (0xb52f3000) 0
+
+Class QLatin1Literal
+   size=8 align=4
+   base size=8 base align=4
+QLatin1Literal (0xb533fd98) 0
+
+Class QAbstractConcatenable
+   size=1 align=1
+   base size=0 base align=1
+QAbstractConcatenable (0xb533fe4c) 0 empty
+
+Class QTextBoundaryFinder
+   size=28 align=4
+   base size=28 base align=4
+QTextBoundaryFinder (0xb53730f0) 0
+
+Vtable for QTimeLine
+QTimeLine::_ZTV9QTimeLine: 15u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QTimeLine)
+8     QTimeLine::metaObject
+12    QTimeLine::qt_metacast
+16    QTimeLine::qt_metacall
+20    QTimeLine::~QTimeLine
+24    QTimeLine::~QTimeLine
+28    QObject::event
+32    QObject::eventFilter
+36    QTimeLine::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QTimeLine::valueForTime
+
+Class QTimeLine
+   size=8 align=4
+   base size=8 base align=4
+QTimeLine (0xb5364f00) 0
+    vptr=((& QTimeLine::_ZTV9QTimeLine) + 8u)
+  QObject (0xb53731a4) 0
+      primary-for QTimeLine (0xb5364f00)
+
+Vtable for QRunnable
+QRunnable::_ZTV9QRunnable: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QRunnable)
+8     __cxa_pure_virtual
+12    QRunnable::~QRunnable
+16    QRunnable::~QRunnable
+
+Class QRunnable
+   size=8 align=4
+   base size=8 base align=4
+QRunnable (0xb5373438) 0
+    vptr=((& QRunnable::_ZTV9QRunnable) + 8u)
+
+Class QMutex
+   size=4 align=4
+   base size=4 base align=4
+QMutex (0xb53738ac) 0
+
+Class QMutexLocker
+   size=4 align=4
+   base size=4 base align=4
+QMutexLocker (0xb5373f3c) 0
+
+Vtable for QtConcurrent::Exception
+QtConcurrent::Exception::_ZTVN12QtConcurrent9ExceptionE: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN12QtConcurrent9ExceptionE)
+8     QtConcurrent::Exception::~Exception
+12    QtConcurrent::Exception::~Exception
+16    std::exception::what
+20    QtConcurrent::Exception::raise
+24    QtConcurrent::Exception::clone
+
+Class QtConcurrent::Exception
+   size=4 align=4
+   base size=4 base align=4
+QtConcurrent::Exception (0xb51c3080) 0 nearly-empty
+    vptr=((& QtConcurrent::Exception::_ZTVN12QtConcurrent9ExceptionE) + 8u)
+  std::exception (0xb51bc438) 0 nearly-empty
+      primary-for QtConcurrent::Exception (0xb51c3080)
+
+Vtable for QtConcurrent::UnhandledException
+QtConcurrent::UnhandledException::_ZTVN12QtConcurrent18UnhandledExceptionE: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN12QtConcurrent18UnhandledExceptionE)
+8     QtConcurrent::UnhandledException::~UnhandledException
+12    QtConcurrent::UnhandledException::~UnhandledException
+16    std::exception::what
+20    QtConcurrent::UnhandledException::raise
+24    QtConcurrent::UnhandledException::clone
+
+Class QtConcurrent::UnhandledException
+   size=4 align=4
+   base size=4 base align=4
+QtConcurrent::UnhandledException (0xb51c3180) 0 nearly-empty
+    vptr=((& QtConcurrent::UnhandledException::_ZTVN12QtConcurrent18UnhandledExceptionE) + 8u)
+  QtConcurrent::Exception (0xb51c31c0) 0 nearly-empty
+      primary-for QtConcurrent::UnhandledException (0xb51c3180)
+    std::exception (0xb51bc474) 0 nearly-empty
+        primary-for QtConcurrent::Exception (0xb51c31c0)
+
+Class QtConcurrent::internal::ExceptionHolder
+   size=4 align=4
+   base size=4 base align=4
+QtConcurrent::internal::ExceptionHolder (0xb51bc4b0) 0
+
+Class QtConcurrent::internal::ExceptionStore
+   size=4 align=4
+   base size=4 base align=4
+QtConcurrent::internal::ExceptionStore (0xb51bc4ec) 0
+
+Class QtConcurrent::ResultItem
+   size=8 align=4
+   base size=8 base align=4
+QtConcurrent::ResultItem (0xb51bc528) 0
+
+Class QtConcurrent::ResultIteratorBase
+   size=8 align=4
+   base size=8 base align=4
+QtConcurrent::ResultIteratorBase (0xb51bcb04) 0
+
+Vtable for QtConcurrent::ResultStoreBase
+QtConcurrent::ResultStoreBase::_ZTVN12QtConcurrent15ResultStoreBaseE: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN12QtConcurrent15ResultStoreBaseE)
+8     QtConcurrent::ResultStoreBase::~ResultStoreBase
+12    QtConcurrent::ResultStoreBase::~ResultStoreBase
+
+Class QtConcurrent::ResultStoreBase
+   size=28 align=4
+   base size=28 base align=4
+QtConcurrent::ResultStoreBase (0xb51bcc30) 0
+    vptr=((& QtConcurrent::ResultStoreBase::_ZTVN12QtConcurrent15ResultStoreBaseE) + 8u)
+
+Vtable for QFutureInterfaceBase
+QFutureInterfaceBase::_ZTV20QFutureInterfaceBase: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI20QFutureInterfaceBase)
+8     QFutureInterfaceBase::~QFutureInterfaceBase
+12    QFutureInterfaceBase::~QFutureInterfaceBase
+
+Class QFutureInterfaceBase
+   size=8 align=4
+   base size=8 base align=4
+QFutureInterfaceBase (0xb51f4078) 0
+    vptr=((& QFutureInterfaceBase::_ZTV20QFutureInterfaceBase) + 8u)
+
+Vtable for QFutureWatcherBase
+QFutureWatcherBase::_ZTV18QFutureWatcherBase: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QFutureWatcherBase)
+8     QFutureWatcherBase::metaObject
+12    QFutureWatcherBase::qt_metacast
+16    QFutureWatcherBase::qt_metacall
+20    QFutureWatcherBase::~QFutureWatcherBase
+24    QFutureWatcherBase::~QFutureWatcherBase
+28    QFutureWatcherBase::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QFutureWatcherBase::connectNotify
+52    QFutureWatcherBase::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+
+Class QFutureWatcherBase
+   size=8 align=4
+   base size=8 base align=4
+QFutureWatcherBase (0xb5257fc0) 0
+    vptr=((& QFutureWatcherBase::_ZTV18QFutureWatcherBase) + 8u)
+  QObject (0xb525ca50) 0
+      primary-for QFutureWatcherBase (0xb5257fc0)
+
+Vtable for QThread
+QThread::_ZTV7QThread: 15u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI7QThread)
+8     QThread::metaObject
+12    QThread::qt_metacast
+16    QThread::qt_metacall
+20    QThread::~QThread
+24    QThread::~QThread
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QThread::run
+
+Class QThread
+   size=8 align=4
+   base size=8 base align=4
+QThread (0xb529e180) 0
+    vptr=((& QThread::_ZTV7QThread) + 8u)
+  QObject (0xb5290a50) 0
+      primary-for QThread (0xb529e180)
+
+Vtable for QThreadPool
+QThreadPool::_ZTV11QThreadPool: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QThreadPool)
+8     QThreadPool::metaObject
+12    QThreadPool::qt_metacast
+16    QThreadPool::qt_metacall
+20    QThreadPool::~QThreadPool
+24    QThreadPool::~QThreadPool
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QThreadPool
+   size=8 align=4
+   base size=8 base align=4
+QThreadPool (0xb529e4c0) 0
+    vptr=((& QThreadPool::_ZTV11QThreadPool) + 8u)
+  QObject (0xb5290ce4) 0
+      primary-for QThreadPool (0xb529e4c0)
+
+Class QWaitCondition
+   size=4 align=4
+   base size=4 base align=4
+QWaitCondition (0xb5290f00) 0
+
+Class QSemaphore
+   size=4 align=4
+   base size=4 base align=4
+QSemaphore (0xb5290f3c) 0
+
+Class QtConcurrent::ThreadEngineBarrier
+   size=12 align=4
+   base size=12 base align=4
+QtConcurrent::ThreadEngineBarrier (0xb5290f78) 0
+
+Vtable for QtConcurrent::ThreadEngineBase
+QtConcurrent::ThreadEngineBase::_ZTVN12QtConcurrent16ThreadEngineBaseE: 11u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTIN12QtConcurrent16ThreadEngineBaseE)
+8     QtConcurrent::ThreadEngineBase::run
+12    QtConcurrent::ThreadEngineBase::~ThreadEngineBase
+16    QtConcurrent::ThreadEngineBase::~ThreadEngineBase
+20    QtConcurrent::ThreadEngineBase::start
+24    QtConcurrent::ThreadEngineBase::finish
+28    QtConcurrent::ThreadEngineBase::threadFunction
+32    QtConcurrent::ThreadEngineBase::shouldStartThread
+36    QtConcurrent::ThreadEngineBase::shouldThrottleThread
+40    __cxa_pure_virtual
+
+Class QtConcurrent::ThreadEngineBase
+   size=32 align=4
+   base size=32 base align=4
+QtConcurrent::ThreadEngineBase (0xb529e840) 0
+    vptr=((& QtConcurrent::ThreadEngineBase::_ZTVN12QtConcurrent16ThreadEngineBaseE) + 8u)
+  QRunnable (0xb5290fb4) 0
+      primary-for QtConcurrent::ThreadEngineBase (0xb529e840)
+
+VTT for QtConcurrent::ThreadEngine<void>
+QtConcurrent::ThreadEngine<void>::_ZTTN12QtConcurrent12ThreadEngineIvEE: 2u entries
+0     ((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 12u)
+4     ((& QtConcurrent::ThreadEngine<void>::_ZTVN12QtConcurrent12ThreadEngineIvEE) + 68u)
+
+Class QtConcurrent::BlockSizeManager
+   size=72 align=4
+   base size=72 base align=4
+QtConcurrent::BlockSizeManager (0xb50e15a0) 0
+
+Vtable for QFactoryInterface
+QFactoryInterface::_ZTV17QFactoryInterface: 5u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI17QFactoryInterface)
+8     QFactoryInterface::~QFactoryInterface
+12    QFactoryInterface::~QFactoryInterface
+16    __cxa_pure_virtual
+
+Class QFactoryInterface
+   size=4 align=4
+   base size=4 base align=4
+QFactoryInterface (0xb4ef8e88) 0 nearly-empty
+    vptr=((& QFactoryInterface::_ZTV17QFactoryInterface) + 8u)
+
+Vtable for QTextCodecFactoryInterface
+QTextCodecFactoryInterface::_ZTV26QTextCodecFactoryInterface: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI26QTextCodecFactoryInterface)
+8     QTextCodecFactoryInterface::~QTextCodecFactoryInterface
+12    QTextCodecFactoryInterface::~QTextCodecFactoryInterface
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+
+Class QTextCodecFactoryInterface
+   size=4 align=4
+   base size=4 base align=4
+QTextCodecFactoryInterface (0xb4f7ac40) 0 nearly-empty
+    vptr=((& QTextCodecFactoryInterface::_ZTV26QTextCodecFactoryInterface) + 8u)
+  QFactoryInterface (0xb4f84438) 0 nearly-empty
+      primary-for QTextCodecFactoryInterface (0xb4f7ac40)
+
+Vtable for QTextCodecPlugin
+QTextCodecPlugin::_ZTV16QTextCodecPlugin: 27u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI16QTextCodecPlugin)
+8     QTextCodecPlugin::metaObject
+12    QTextCodecPlugin::qt_metacast
+16    QTextCodecPlugin::qt_metacall
+20    QTextCodecPlugin::~QTextCodecPlugin
+24    QTextCodecPlugin::~QTextCodecPlugin
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    QTextCodecPlugin::keys
+80    QTextCodecPlugin::create
+84    (int (*)(...))-0x000000008
+88    (int (*)(...))(& _ZTI16QTextCodecPlugin)
+92    QTextCodecPlugin::_ZThn8_N16QTextCodecPluginD1Ev
+96    QTextCodecPlugin::_ZThn8_N16QTextCodecPluginD0Ev
+100   QTextCodecPlugin::_ZThn8_NK16QTextCodecPlugin4keysEv
+104   QTextCodecPlugin::_ZThn8_N16QTextCodecPlugin6createERK7QString
+
+Class QTextCodecPlugin
+   size=12 align=4
+   base size=12 base align=4
+QTextCodecPlugin (0xb4f8b910) 0
+    vptr=((& QTextCodecPlugin::_ZTV16QTextCodecPlugin) + 8u)
+  QObject (0xb4f84744) 0
+      primary-for QTextCodecPlugin (0xb4f8b910)
+  QTextCodecFactoryInterface (0xb4f7af00) 8 nearly-empty
+      vptr=((& QTextCodecPlugin::_ZTV16QTextCodecPlugin) + 92u)
+    QFactoryInterface (0xb4f84780) 8 nearly-empty
+        primary-for QTextCodecFactoryInterface (0xb4f7af00)
+
+Class QLibraryInfo
+   size=1 align=1
+   base size=0 base align=1
+QLibraryInfo (0xb4fa3bf4) 0 empty
+
+Vtable for QEventLoop
+QEventLoop::_ZTV10QEventLoop: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI10QEventLoop)
+8     QEventLoop::metaObject
+12    QEventLoop::qt_metacast
+16    QEventLoop::qt_metacall
+20    QEventLoop::~QEventLoop
+24    QEventLoop::~QEventLoop
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QEventLoop
+   size=8 align=4
+   base size=8 base align=4
+QEventLoop (0xb4dadac0) 0
+    vptr=((& QEventLoop::_ZTV10QEventLoop) + 8u)
+  QObject (0xb4fa3c6c) 0
+      primary-for QEventLoop (0xb4dadac0)
+
+Vtable for QAbstractEventDispatcher
+QAbstractEventDispatcher::_ZTV24QAbstractEventDispatcher: 27u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI24QAbstractEventDispatcher)
+8     QAbstractEventDispatcher::metaObject
+12    QAbstractEventDispatcher::qt_metacast
+16    QAbstractEventDispatcher::qt_metacall
+20    QAbstractEventDispatcher::~QAbstractEventDispatcher
+24    QAbstractEventDispatcher::~QAbstractEventDispatcher
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+84    __cxa_pure_virtual
+88    __cxa_pure_virtual
+92    __cxa_pure_virtual
+96    __cxa_pure_virtual
+100   QAbstractEventDispatcher::startingUp
+104   QAbstractEventDispatcher::closingDown
+
+Class QAbstractEventDispatcher
+   size=8 align=4
+   base size=8 base align=4
+QAbstractEventDispatcher (0xb4dadec0) 0
+    vptr=((& QAbstractEventDispatcher::_ZTV24QAbstractEventDispatcher) + 8u)
+  QObject (0xb4fa3f78) 0
+      primary-for QAbstractEventDispatcher (0xb4dadec0)
+
+Class QModelIndex
+   size=16 align=4
+   base size=16 base align=4
+QModelIndex (0xb4de71a4) 0
+
+Class QPersistentModelIndex
+   size=4 align=4
+   base size=4 base align=4
+QPersistentModelIndex (0xb4df8654) 0
+
+Vtable for QAbstractItemModel
+QAbstractItemModel::_ZTV18QAbstractItemModel: 42u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QAbstractItemModel)
+8     QAbstractItemModel::metaObject
+12    QAbstractItemModel::qt_metacast
+16    QAbstractItemModel::qt_metacall
+20    QAbstractItemModel::~QAbstractItemModel
+24    QAbstractItemModel::~QAbstractItemModel
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    QAbstractItemModel::hasChildren
+76    __cxa_pure_virtual
+80    QAbstractItemModel::setData
+84    QAbstractItemModel::headerData
+88    QAbstractItemModel::setHeaderData
+92    QAbstractItemModel::itemData
+96    QAbstractItemModel::setItemData
+100   QAbstractItemModel::mimeTypes
+104   QAbstractItemModel::mimeData
+108   QAbstractItemModel::dropMimeData
+112   QAbstractItemModel::supportedDropActions
+116   QAbstractItemModel::insertRows
+120   QAbstractItemModel::insertColumns
+124   QAbstractItemModel::removeRows
+128   QAbstractItemModel::removeColumns
+132   QAbstractItemModel::fetchMore
+136   QAbstractItemModel::canFetchMore
+140   QAbstractItemModel::flags
+144   QAbstractItemModel::sort
+148   QAbstractItemModel::buddy
+152   QAbstractItemModel::match
+156   QAbstractItemModel::span
+160   QAbstractItemModel::submit
+164   QAbstractItemModel::revert
+
+Class QAbstractItemModel
+   size=8 align=4
+   base size=8 base align=4
+QAbstractItemModel (0xb4de4b00) 0
+    vptr=((& QAbstractItemModel::_ZTV18QAbstractItemModel) + 8u)
+  QObject (0xb4df87bc) 0
+      primary-for QAbstractItemModel (0xb4de4b00)
+
+Vtable for QAbstractTableModel
+QAbstractTableModel::_ZTV19QAbstractTableModel: 42u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI19QAbstractTableModel)
+8     QAbstractTableModel::metaObject
+12    QAbstractTableModel::qt_metacast
+16    QAbstractTableModel::qt_metacall
+20    QAbstractTableModel::~QAbstractTableModel
+24    QAbstractTableModel::~QAbstractTableModel
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QAbstractTableModel::index
+60    QAbstractTableModel::parent
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    QAbstractTableModel::hasChildren
+76    __cxa_pure_virtual
+80    QAbstractItemModel::setData
+84    QAbstractItemModel::headerData
+88    QAbstractItemModel::setHeaderData
+92    QAbstractItemModel::itemData
+96    QAbstractItemModel::setItemData
+100   QAbstractItemModel::mimeTypes
+104   QAbstractItemModel::mimeData
+108   QAbstractTableModel::dropMimeData
+112   QAbstractItemModel::supportedDropActions
+116   QAbstractItemModel::insertRows
+120   QAbstractItemModel::insertColumns
+124   QAbstractItemModel::removeRows
+128   QAbstractItemModel::removeColumns
+132   QAbstractItemModel::fetchMore
+136   QAbstractItemModel::canFetchMore
+140   QAbstractItemModel::flags
+144   QAbstractItemModel::sort
+148   QAbstractItemModel::buddy
+152   QAbstractItemModel::match
+156   QAbstractItemModel::span
+160   QAbstractItemModel::submit
+164   QAbstractItemModel::revert
+
+Class QAbstractTableModel
+   size=8 align=4
+   base size=8 base align=4
+QAbstractTableModel (0xb4e36140) 0
+    vptr=((& QAbstractTableModel::_ZTV19QAbstractTableModel) + 8u)
+  QAbstractItemModel (0xb4e36180) 0
+      primary-for QAbstractTableModel (0xb4e36140)
+    QObject (0xb4e3812c) 0
+        primary-for QAbstractItemModel (0xb4e36180)
+
+Vtable for QAbstractListModel
+QAbstractListModel::_ZTV18QAbstractListModel: 42u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QAbstractListModel)
+8     QAbstractListModel::metaObject
+12    QAbstractListModel::qt_metacast
+16    QAbstractListModel::qt_metacall
+20    QAbstractListModel::~QAbstractListModel
+24    QAbstractListModel::~QAbstractListModel
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QAbstractListModel::index
+60    QAbstractListModel::parent
+64    __cxa_pure_virtual
+68    QAbstractListModel::columnCount
+72    QAbstractListModel::hasChildren
+76    __cxa_pure_virtual
+80    QAbstractItemModel::setData
+84    QAbstractItemModel::headerData
+88    QAbstractItemModel::setHeaderData
+92    QAbstractItemModel::itemData
+96    QAbstractItemModel::setItemData
+100   QAbstractItemModel::mimeTypes
+104   QAbstractItemModel::mimeData
+108   QAbstractListModel::dropMimeData
+112   QAbstractItemModel::supportedDropActions
+116   QAbstractItemModel::insertRows
+120   QAbstractItemModel::insertColumns
+124   QAbstractItemModel::removeRows
+128   QAbstractItemModel::removeColumns
+132   QAbstractItemModel::fetchMore
+136   QAbstractItemModel::canFetchMore
+140   QAbstractItemModel::flags
+144   QAbstractItemModel::sort
+148   QAbstractItemModel::buddy
+152   QAbstractItemModel::match
+156   QAbstractItemModel::span
+160   QAbstractItemModel::submit
+164   QAbstractItemModel::revert
+
+Class QAbstractListModel
+   size=8 align=4
+   base size=8 base align=4
+QAbstractListModel (0xb4e363c0) 0
+    vptr=((& QAbstractListModel::_ZTV18QAbstractListModel) + 8u)
+  QAbstractItemModel (0xb4e36400) 0
+      primary-for QAbstractListModel (0xb4e363c0)
+    QObject (0xb4e38258) 0
+        primary-for QAbstractItemModel (0xb4e36400)
+
+Class QBasicTimer
+   size=4 align=4
+   base size=4 base align=4
+QBasicTimer (0xb4e5e12c) 0
+
+Vtable for QCoreApplication
+QCoreApplication::_ZTV16QCoreApplication: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI16QCoreApplication)
+8     QCoreApplication::metaObject
+12    QCoreApplication::qt_metacast
+16    QCoreApplication::qt_metacall
+20    QCoreApplication::~QCoreApplication
+24    QCoreApplication::~QCoreApplication
+28    QCoreApplication::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QCoreApplication::notify
+60    QCoreApplication::compressEvent
+
+Class QCoreApplication
+   size=8 align=4
+   base size=8 base align=4
+QCoreApplication (0xb4e36ec0) 0
+    vptr=((& QCoreApplication::_ZTV16QCoreApplication) + 8u)
+  QObject (0xb4e5e3c0) 0
+      primary-for QCoreApplication (0xb4e36ec0)
+
+Class __exception
+   size=32 align=4
+   base size=32 base align=4
+__exception (0xb4e5e960) 0
+
+Class QMetaMethod
+   size=8 align=4
+   base size=8 base align=4
+QMetaMethod (0xb4cb6690) 0
+
+Class QMetaEnum
+   size=8 align=4
+   base size=8 base align=4
+QMetaEnum (0xb4cb699c) 0
+
+Class QMetaProperty
+   size=20 align=4
+   base size=20 base align=4
+QMetaProperty (0xb4cb6bf4) 0
+
+Class QMetaClassInfo
+   size=8 align=4
+   base size=8 base align=4
+QMetaClassInfo (0xb4cb6ca8) 0
+
+Vtable for QMimeData
+QMimeData::_ZTV9QMimeData: 17u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI9QMimeData)
+8     QMimeData::metaObject
+12    QMimeData::qt_metacast
+16    QMimeData::qt_metacall
+20    QMimeData::~QMimeData
+24    QMimeData::~QMimeData
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QMimeData::hasFormat
+60    QMimeData::formats
+64    QMimeData::retrieveData
+
+Class QMimeData
+   size=8 align=4
+   base size=8 base align=4
+QMimeData (0xb4cbed00) 0
+    vptr=((& QMimeData::_ZTV9QMimeData) + 8u)
+  QObject (0xb4cb6f00) 0
+      primary-for QMimeData (0xb4cbed00)
+
+Vtable for QObjectCleanupHandler
+QObjectCleanupHandler::_ZTV21QObjectCleanupHandler: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI21QObjectCleanupHandler)
+8     QObjectCleanupHandler::metaObject
+12    QObjectCleanupHandler::qt_metacast
+16    QObjectCleanupHandler::qt_metacall
+20    QObjectCleanupHandler::~QObjectCleanupHandler
+24    QObjectCleanupHandler::~QObjectCleanupHandler
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QObjectCleanupHandler
+   size=12 align=4
+   base size=12 base align=4
+QObjectCleanupHandler (0xb4cbefc0) 0
+    vptr=((& QObjectCleanupHandler::_ZTV21QObjectCleanupHandler) + 8u)
+  QObject (0xb4cf012c) 0
+      primary-for QObjectCleanupHandler (0xb4cbefc0)
+
+Vtable for QSharedMemory
+QSharedMemory::_ZTV13QSharedMemory: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QSharedMemory)
+8     QSharedMemory::metaObject
+12    QSharedMemory::qt_metacast
+16    QSharedMemory::qt_metacall
+20    QSharedMemory::~QSharedMemory
+24    QSharedMemory::~QSharedMemory
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QSharedMemory
+   size=8 align=4
+   base size=8 base align=4
+QSharedMemory (0xb4cf2200) 0
+    vptr=((& QSharedMemory::_ZTV13QSharedMemory) + 8u)
+  QObject (0xb4cf0258) 0
+      primary-for QSharedMemory (0xb4cf2200)
+
+Vtable for QSignalMapper
+QSignalMapper::_ZTV13QSignalMapper: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QSignalMapper)
+8     QSignalMapper::metaObject
+12    QSignalMapper::qt_metacast
+16    QSignalMapper::qt_metacall
+20    QSignalMapper::~QSignalMapper
+24    QSignalMapper::~QSignalMapper
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QSignalMapper
+   size=8 align=4
+   base size=8 base align=4
+QSignalMapper (0xb4cf24c0) 0
+    vptr=((& QSignalMapper::_ZTV13QSignalMapper) + 8u)
+  QObject (0xb4cf0474) 0
+      primary-for QSignalMapper (0xb4cf24c0)
+
+Vtable for QSocketNotifier
+QSocketNotifier::_ZTV15QSocketNotifier: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QSocketNotifier)
+8     QSocketNotifier::metaObject
+12    QSocketNotifier::qt_metacast
+16    QSocketNotifier::qt_metacall
+20    QSocketNotifier::~QSocketNotifier
+24    QSocketNotifier::~QSocketNotifier
+28    QSocketNotifier::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QSocketNotifier
+   size=20 align=4
+   base size=17 base align=4
+QSocketNotifier (0xb4cf2780) 0
+    vptr=((& QSocketNotifier::_ZTV15QSocketNotifier) + 8u)
+  QObject (0xb4cf0690) 0
+      primary-for QSocketNotifier (0xb4cf2780)
+
+Class QSystemSemaphore
+   size=4 align=4
+   base size=4 base align=4
+QSystemSemaphore (0xb4cf0960) 0
+
+Vtable for QTimer
+QTimer::_ZTV6QTimer: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI6QTimer)
+8     QTimer::metaObject
+12    QTimer::qt_metacast
+16    QTimer::qt_metacall
+20    QTimer::~QTimer
+24    QTimer::~QTimer
+28    QObject::event
+32    QObject::eventFilter
+36    QTimer::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QTimer
+   size=24 align=4
+   base size=21 base align=4
+QTimer (0xb4cf2b40) 0
+    vptr=((& QTimer::_ZTV6QTimer) + 8u)
+  QObject (0xb4cf0a14) 0
+      primary-for QTimer (0xb4cf2b40)
+
+Vtable for QTranslator
+QTranslator::_ZTV11QTranslator: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QTranslator)
+8     QTranslator::metaObject
+12    QTranslator::qt_metacast
+16    QTranslator::qt_metacall
+20    QTranslator::~QTranslator
+24    QTranslator::~QTranslator
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QTranslator::translate
+60    QTranslator::isEmpty
+
+Class QTranslator
+   size=8 align=4
+   base size=8 base align=4
+QTranslator (0xb4d42080) 0
+    vptr=((& QTranslator::_ZTV11QTranslator) + 8u)
+  QObject (0xb4cf0ca8) 0
+      primary-for QTranslator (0xb4d42080)
+
+Vtable for QLibrary
+QLibrary::_ZTV8QLibrary: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI8QLibrary)
+8     QLibrary::metaObject
+12    QLibrary::qt_metacast
+16    QLibrary::qt_metacall
+20    QLibrary::~QLibrary
+24    QLibrary::~QLibrary
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QLibrary
+   size=16 align=4
+   base size=13 base align=4
+QLibrary (0xb4d423c0) 0
+    vptr=((& QLibrary::_ZTV8QLibrary) + 8u)
+  QObject (0xb4cf0f78) 0
+      primary-for QLibrary (0xb4d423c0)
+
+Vtable for QPluginLoader
+QPluginLoader::_ZTV13QPluginLoader: 14u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI13QPluginLoader)
+8     QPluginLoader::metaObject
+12    QPluginLoader::qt_metacast
+16    QPluginLoader::qt_metacall
+20    QPluginLoader::~QPluginLoader
+24    QPluginLoader::~QPluginLoader
+28    QObject::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+
+Class QPluginLoader
+   size=16 align=4
+   base size=13 base align=4
+QPluginLoader (0xb4d427c0) 0
+    vptr=((& QPluginLoader::_ZTV13QPluginLoader) + 8u)
+  QObject (0xb4d5d1e0) 0
+      primary-for QPluginLoader (0xb4d427c0)
+
+Class QUuid
+   size=16 align=4
+   base size=16 base align=4
+QUuid (0xb4d5d30c) 0
+
+Class QReadWriteLock
+   size=4 align=4
+   base size=4 base align=4
+QReadWriteLock (0xb4d9230c) 0
+
+Class QReadLocker
+   size=4 align=4
+   base size=4 base align=4
+QReadLocker (0xb4d92348) 0
+
+Class QWriteLocker
+   size=4 align=4
+   base size=4 base align=4
+QWriteLocker (0xb4d92834) 0
+
+Class QThreadStorageData
+   size=4 align=4
+   base size=4 base align=4
+QThreadStorageData (0xb4d92d20) 0
+
+Vtable for QAbstractAnimation
+QAbstractAnimation::_ZTV18QAbstractAnimation: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QAbstractAnimation)
+8     QAbstractAnimation::metaObject
+12    QAbstractAnimation::qt_metacast
+16    QAbstractAnimation::qt_metacall
+20    QAbstractAnimation::~QAbstractAnimation
+24    QAbstractAnimation::~QAbstractAnimation
+28    QAbstractAnimation::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    QAbstractAnimation::updateState
+68    QAbstractAnimation::updateDirection
+
+Class QAbstractAnimation
+   size=8 align=4
+   base size=8 base align=4
+QAbstractAnimation (0xb4bb46c0) 0
+    vptr=((& QAbstractAnimation::_ZTV18QAbstractAnimation) + 8u)
+  QObject (0xb4d92d98) 0
+      primary-for QAbstractAnimation (0xb4bb46c0)
+
+Vtable for QAnimationGroup
+QAnimationGroup::_ZTV15QAnimationGroup: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QAnimationGroup)
+8     QAnimationGroup::metaObject
+12    QAnimationGroup::qt_metacast
+16    QAnimationGroup::qt_metacall
+20    QAnimationGroup::~QAnimationGroup
+24    QAnimationGroup::~QAnimationGroup
+28    QAnimationGroup::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    QAbstractAnimation::updateState
+68    QAbstractAnimation::updateDirection
+
+Class QAnimationGroup
+   size=8 align=4
+   base size=8 base align=4
+QAnimationGroup (0xb4bb4980) 0
+    vptr=((& QAnimationGroup::_ZTV15QAnimationGroup) + 8u)
+  QAbstractAnimation (0xb4bb49c0) 0
+      primary-for QAnimationGroup (0xb4bb4980)
+    QObject (0xb4bd0000) 0
+        primary-for QAbstractAnimation (0xb4bb49c0)
+
+Vtable for QParallelAnimationGroup
+QParallelAnimationGroup::_ZTV23QParallelAnimationGroup: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI23QParallelAnimationGroup)
+8     QParallelAnimationGroup::metaObject
+12    QParallelAnimationGroup::qt_metacast
+16    QParallelAnimationGroup::qt_metacall
+20    QParallelAnimationGroup::~QParallelAnimationGroup
+24    QParallelAnimationGroup::~QParallelAnimationGroup
+28    QParallelAnimationGroup::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QParallelAnimationGroup::duration
+60    QParallelAnimationGroup::updateCurrentTime
+64    QParallelAnimationGroup::updateState
+68    QParallelAnimationGroup::updateDirection
+
+Class QParallelAnimationGroup
+   size=8 align=4
+   base size=8 base align=4
+QParallelAnimationGroup (0xb4bb4c80) 0
+    vptr=((& QParallelAnimationGroup::_ZTV23QParallelAnimationGroup) + 8u)
+  QAnimationGroup (0xb4bb4cc0) 0
+      primary-for QParallelAnimationGroup (0xb4bb4c80)
+    QAbstractAnimation (0xb4bb4d00) 0
+        primary-for QAnimationGroup (0xb4bb4cc0)
+      QObject (0xb4bd021c) 0
+          primary-for QAbstractAnimation (0xb4bb4d00)
+
+Vtable for QPauseAnimation
+QPauseAnimation::_ZTV15QPauseAnimation: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QPauseAnimation)
+8     QPauseAnimation::metaObject
+12    QPauseAnimation::qt_metacast
+16    QPauseAnimation::qt_metacall
+20    QPauseAnimation::~QPauseAnimation
+24    QPauseAnimation::~QPauseAnimation
+28    QPauseAnimation::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QPauseAnimation::duration
+60    QPauseAnimation::updateCurrentTime
+64    QAbstractAnimation::updateState
+68    QAbstractAnimation::updateDirection
+
+Class QPauseAnimation
+   size=8 align=4
+   base size=8 base align=4
+QPauseAnimation (0xb4bb4fc0) 0
+    vptr=((& QPauseAnimation::_ZTV15QPauseAnimation) + 8u)
+  QAbstractAnimation (0xb4bea000) 0
+      primary-for QPauseAnimation (0xb4bb4fc0)
+    QObject (0xb4bd0438) 0
+        primary-for QAbstractAnimation (0xb4bea000)
+
+Vtable for QVariantAnimation
+QVariantAnimation::_ZTV17QVariantAnimation: 20u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI17QVariantAnimation)
+8     QVariantAnimation::metaObject
+12    QVariantAnimation::qt_metacast
+16    QVariantAnimation::qt_metacall
+20    QVariantAnimation::~QVariantAnimation
+24    QVariantAnimation::~QVariantAnimation
+28    QVariantAnimation::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QVariantAnimation::duration
+60    QVariantAnimation::updateCurrentTime
+64    QVariantAnimation::updateState
+68    QAbstractAnimation::updateDirection
+72    __cxa_pure_virtual
+76    QVariantAnimation::interpolated
+
+Class QVariantAnimation
+   size=8 align=4
+   base size=8 base align=4
+QVariantAnimation (0xb4bea2c0) 0
+    vptr=((& QVariantAnimation::_ZTV17QVariantAnimation) + 8u)
+  QAbstractAnimation (0xb4bea300) 0
+      primary-for QVariantAnimation (0xb4bea2c0)
+    QObject (0xb4bd0654) 0
+        primary-for QAbstractAnimation (0xb4bea300)
+
+Vtable for QPropertyAnimation
+QPropertyAnimation::_ZTV18QPropertyAnimation: 20u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QPropertyAnimation)
+8     QPropertyAnimation::metaObject
+12    QPropertyAnimation::qt_metacast
+16    QPropertyAnimation::qt_metacall
+20    QPropertyAnimation::~QPropertyAnimation
+24    QPropertyAnimation::~QPropertyAnimation
+28    QPropertyAnimation::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QVariantAnimation::duration
+60    QVariantAnimation::updateCurrentTime
+64    QPropertyAnimation::updateState
+68    QAbstractAnimation::updateDirection
+72    QPropertyAnimation::updateCurrentValue
+76    QVariantAnimation::interpolated
+
+Class QPropertyAnimation
+   size=8 align=4
+   base size=8 base align=4
+QPropertyAnimation (0xb4bea700) 0
+    vptr=((& QPropertyAnimation::_ZTV18QPropertyAnimation) + 8u)
+  QVariantAnimation (0xb4bea740) 0
+      primary-for QPropertyAnimation (0xb4bea700)
+    QAbstractAnimation (0xb4bea780) 0
+        primary-for QVariantAnimation (0xb4bea740)
+      QObject (0xb4bd0870) 0
+          primary-for QAbstractAnimation (0xb4bea780)
+
+Vtable for QSequentialAnimationGroup
+QSequentialAnimationGroup::_ZTV25QSequentialAnimationGroup: 18u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI25QSequentialAnimationGroup)
+8     QSequentialAnimationGroup::metaObject
+12    QSequentialAnimationGroup::qt_metacast
+16    QSequentialAnimationGroup::qt_metacall
+20    QSequentialAnimationGroup::~QSequentialAnimationGroup
+24    QSequentialAnimationGroup::~QSequentialAnimationGroup
+28    QSequentialAnimationGroup::event
+32    QObject::eventFilter
+36    QObject::timerEvent
+40    QObject::childEvent
+44    QObject::customEvent
+48    QObject::connectNotify
+52    QObject::disconnectNotify
+56    QSequentialAnimationGroup::duration
+60    QSequentialAnimationGroup::updateCurrentTime
+64    QSequentialAnimationGroup::updateState
+68    QSequentialAnimationGroup::updateDirection
+
+Class QSequentialAnimationGroup
+   size=8 align=4
+   base size=8 base align=4
+QSequentialAnimationGroup (0xb4beaa40) 0
+    vptr=((& QSequentialAnimationGroup::_ZTV25QSequentialAnimationGroup) + 8u)
+  QAnimationGroup (0xb4beaa80) 0
+      primary-for QSequentialAnimationGroup (0xb4beaa40)
+    QAbstractAnimation (0xb4beaac0) 0
+        primary-for QAnimationGroup (0xb4beaa80)
+      QObject (0xb4bd0a8c) 0
+          primary-for QAbstractAnimation (0xb4beaac0)
+
+Class QDomImplementation
+   size=4 align=4
+   base size=4 base align=4
+QDomImplementation (0xb4bd0ca8) 0
+
+Class QDomNode
+   size=4 align=4
+   base size=4 base align=4
+QDomNode (0xb4bd0ce4) 0
+
+Class QDomNodeList
+   size=4 align=4
+   base size=4 base align=4
+QDomNodeList (0xb4bd0d20) 0
+
+Class QDomDocumentType
+   size=4 align=4
+   base size=4 base align=4
+QDomDocumentType (0xb4beaf80) 0
+  QDomNode (0xb4bd0e10) 0
+
+Class QDomDocument
+   size=4 align=4
+   base size=4 base align=4
+QDomDocument (0xb4c42040) 0
+  QDomNode (0xb4bd0e88) 0
+
+Class QDomNamedNodeMap
+   size=4 align=4
+   base size=4 base align=4
+QDomNamedNodeMap (0xb4bd0f00) 0
+
+Class QDomDocumentFragment
+   size=4 align=4
+   base size=4 base align=4
+QDomDocumentFragment (0xb4c42240) 0
+  QDomNode (0xb4bd0fb4) 0
+
+Class QDomCharacterData
+   size=4 align=4
+   base size=4 base align=4
+QDomCharacterData (0xb4c42300) 0
+  QDomNode (0xb4c5303c) 0
+
+Class QDomAttr
+   size=4 align=4
+   base size=4 base align=4
+QDomAttr (0xb4c42380) 0
+  QDomNode (0xb4c53078) 0
+
+Class QDomElement
+   size=4 align=4
+   base size=4 base align=4
+QDomElement (0xb4c42440) 0
+  QDomNode (0xb4c530f0) 0
+
+Class QDomText
+   size=4 align=4
+   base size=4 base align=4
+QDomText (0xb4c42600) 0
+  QDomCharacterData (0xb4c42640) 0
+    QDomNode (0xb4c53258) 0
+
+Class QDomComment
+   size=4 align=4
+   base size=4 base align=4
+QDomComment (0xb4c42700) 0
+  QDomCharacterData (0xb4c42740) 0
+    QDomNode (0xb4c532d0) 0
+
+Class QDomCDATASection
+   size=4 align=4
+   base size=4 base align=4
+QDomCDATASection (0xb4c42800) 0
+  QDomText (0xb4c42840) 0
+    QDomCharacterData (0xb4c42880) 0
+      QDomNode (0xb4c53348) 0
+
+Class QDomNotation
+   size=4 align=4
+   base size=4 base align=4
+QDomNotation (0xb4c42940) 0
+  QDomNode (0xb4c533c0) 0
+
+Class QDomEntity
+   size=4 align=4
+   base size=4 base align=4
+QDomEntity (0xb4c42a00) 0
+  QDomNode (0xb4c53438) 0
+
+Class QDomEntityReference
+   size=4 align=4
+   base size=4 base align=4
+QDomEntityReference (0xb4c42ac0) 0
+  QDomNode (0xb4c534b0) 0
+
+Class QDomProcessingInstruction
+   size=4 align=4
+   base size=4 base align=4
+QDomProcessingInstruction (0xb4c42b80) 0
+  QDomNode (0xb4c53528) 0
+
+Class QXmlNamespaceSupport
+   size=4 align=4
+   base size=4 base align=4
+QXmlNamespaceSupport (0xb4c535a0) 0
+
+Class QXmlAttributes::Attribute
+   size=16 align=4
+   base size=16 base align=4
+QXmlAttributes::Attribute (0xb4c53618) 0
+
+Vtable for QXmlAttributes
+QXmlAttributes::_ZTV14QXmlAttributes: 4u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI14QXmlAttributes)
+8     QXmlAttributes::~QXmlAttributes
+12    QXmlAttributes::~QXmlAttributes
+
+Class QXmlAttributes
+   size=12 align=4
+   base size=12 base align=4
+QXmlAttributes (0xb4c535dc) 0
+    vptr=((& QXmlAttributes::_ZTV14QXmlAttributes) + 8u)
+
+Vtable for QXmlInputSource
+QXmlInputSource::_ZTV15QXmlInputSource: 11u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QXmlInputSource)
+8     QXmlInputSource::~QXmlInputSource
+12    QXmlInputSource::~QXmlInputSource
+16    QXmlInputSource::setData
+20    QXmlInputSource::setData
+24    QXmlInputSource::fetchData
+28    QXmlInputSource::data
+32    QXmlInputSource::next
+36    QXmlInputSource::reset
+40    QXmlInputSource::fromRawData
+
+Class QXmlInputSource
+   size=8 align=4
+   base size=8 base align=4
+QXmlInputSource (0xb4c53bb8) 0
+    vptr=((& QXmlInputSource::_ZTV15QXmlInputSource) + 8u)
+
+Class QXmlParseException
+   size=4 align=4
+   base size=4 base align=4
+QXmlParseException (0xb4c53bf4) 0
+
+Vtable for QXmlReader
+QXmlReader::_ZTV10QXmlReader: 24u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI10QXmlReader)
+8     QXmlReader::~QXmlReader
+12    QXmlReader::~QXmlReader
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+64    __cxa_pure_virtual
+68    __cxa_pure_virtual
+72    __cxa_pure_virtual
+76    __cxa_pure_virtual
+80    __cxa_pure_virtual
+84    __cxa_pure_virtual
+88    __cxa_pure_virtual
+92    __cxa_pure_virtual
+
+Class QXmlReader
+   size=4 align=4
+   base size=4 base align=4
+QXmlReader (0xb4c53c6c) 0 nearly-empty
+    vptr=((& QXmlReader::_ZTV10QXmlReader) + 8u)
+
+Vtable for QXmlSimpleReader
+QXmlSimpleReader::_ZTV16QXmlSimpleReader: 26u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI16QXmlSimpleReader)
+8     QXmlSimpleReader::~QXmlSimpleReader
+12    QXmlSimpleReader::~QXmlSimpleReader
+16    QXmlSimpleReader::feature
+20    QXmlSimpleReader::setFeature
+24    QXmlSimpleReader::hasFeature
+28    QXmlSimpleReader::property
+32    QXmlSimpleReader::setProperty
+36    QXmlSimpleReader::hasProperty
+40    QXmlSimpleReader::setEntityResolver
+44    QXmlSimpleReader::entityResolver
+48    QXmlSimpleReader::setDTDHandler
+52    QXmlSimpleReader::DTDHandler
+56    QXmlSimpleReader::setContentHandler
+60    QXmlSimpleReader::contentHandler
+64    QXmlSimpleReader::setErrorHandler
+68    QXmlSimpleReader::errorHandler
+72    QXmlSimpleReader::setLexicalHandler
+76    QXmlSimpleReader::lexicalHandler
+80    QXmlSimpleReader::setDeclHandler
+84    QXmlSimpleReader::declHandler
+88    QXmlSimpleReader::parse
+92    QXmlSimpleReader::parse
+96    QXmlSimpleReader::parse
+100   QXmlSimpleReader::parseContinue
+
+Class QXmlSimpleReader
+   size=8 align=4
+   base size=8 base align=4
+QXmlSimpleReader (0xb4c9b300) 0
+    vptr=((& QXmlSimpleReader::_ZTV16QXmlSimpleReader) + 8u)
+  QXmlReader (0xb4c53e88) 0 nearly-empty
+      primary-for QXmlSimpleReader (0xb4c9b300)
+
+Vtable for QXmlLocator
+QXmlLocator::_ZTV11QXmlLocator: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI11QXmlLocator)
+8     QXmlLocator::~QXmlLocator
+12    QXmlLocator::~QXmlLocator
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+
+Class QXmlLocator
+   size=4 align=4
+   base size=4 base align=4
+QXmlLocator (0xb4a9b000) 0 nearly-empty
+    vptr=((& QXmlLocator::_ZTV11QXmlLocator) + 8u)
+
+Vtable for QXmlContentHandler
+QXmlContentHandler::_ZTV18QXmlContentHandler: 16u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QXmlContentHandler)
+8     QXmlContentHandler::~QXmlContentHandler
+12    QXmlContentHandler::~QXmlContentHandler
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+48    __cxa_pure_virtual
+52    __cxa_pure_virtual
+56    __cxa_pure_virtual
+60    __cxa_pure_virtual
+
+Class QXmlContentHandler
+   size=4 align=4
+   base size=4 base align=4
+QXmlContentHandler (0xb4a9b03c) 0 nearly-empty
+    vptr=((& QXmlContentHandler::_ZTV18QXmlContentHandler) + 8u)
+
+Vtable for QXmlErrorHandler
+QXmlErrorHandler::_ZTV16QXmlErrorHandler: 8u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI16QXmlErrorHandler)
+8     QXmlErrorHandler::~QXmlErrorHandler
+12    QXmlErrorHandler::~QXmlErrorHandler
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+
+Class QXmlErrorHandler
+   size=4 align=4
+   base size=4 base align=4
+QXmlErrorHandler (0xb4a9b258) 0 nearly-empty
+    vptr=((& QXmlErrorHandler::_ZTV16QXmlErrorHandler) + 8u)
+
+Vtable for QXmlDTDHandler
+QXmlDTDHandler::_ZTV14QXmlDTDHandler: 7u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI14QXmlDTDHandler)
+8     QXmlDTDHandler::~QXmlDTDHandler
+12    QXmlDTDHandler::~QXmlDTDHandler
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+
+Class QXmlDTDHandler
+   size=4 align=4
+   base size=4 base align=4
+QXmlDTDHandler (0xb4a9b474) 0 nearly-empty
+    vptr=((& QXmlDTDHandler::_ZTV14QXmlDTDHandler) + 8u)
+
+Vtable for QXmlEntityResolver
+QXmlEntityResolver::_ZTV18QXmlEntityResolver: 6u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QXmlEntityResolver)
+8     QXmlEntityResolver::~QXmlEntityResolver
+12    QXmlEntityResolver::~QXmlEntityResolver
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+
+Class QXmlEntityResolver
+   size=4 align=4
+   base size=4 base align=4
+QXmlEntityResolver (0xb4a9b690) 0 nearly-empty
+    vptr=((& QXmlEntityResolver::_ZTV18QXmlEntityResolver) + 8u)
+
+Vtable for QXmlLexicalHandler
+QXmlLexicalHandler::_ZTV18QXmlLexicalHandler: 12u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QXmlLexicalHandler)
+8     QXmlLexicalHandler::~QXmlLexicalHandler
+12    QXmlLexicalHandler::~QXmlLexicalHandler
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+32    __cxa_pure_virtual
+36    __cxa_pure_virtual
+40    __cxa_pure_virtual
+44    __cxa_pure_virtual
+
+Class QXmlLexicalHandler
+   size=4 align=4
+   base size=4 base align=4
+QXmlLexicalHandler (0xb4a9b8ac) 0 nearly-empty
+    vptr=((& QXmlLexicalHandler::_ZTV18QXmlLexicalHandler) + 8u)
+
+Vtable for QXmlDeclHandler
+QXmlDeclHandler::_ZTV15QXmlDeclHandler: 8u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI15QXmlDeclHandler)
+8     QXmlDeclHandler::~QXmlDeclHandler
+12    QXmlDeclHandler::~QXmlDeclHandler
+16    __cxa_pure_virtual
+20    __cxa_pure_virtual
+24    __cxa_pure_virtual
+28    __cxa_pure_virtual
+
+Class QXmlDeclHandler
+   size=4 align=4
+   base size=4 base align=4
+QXmlDeclHandler (0xb4a9bac8) 0 nearly-empty
+    vptr=((& QXmlDeclHandler::_ZTV15QXmlDeclHandler) + 8u)
+
+Vtable for QXmlDefaultHandler
+QXmlDefaultHandler::_ZTV18QXmlDefaultHandler: 73u entries
+0     (int (*)(...))0
+4     (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+8     QXmlDefaultHandler::~QXmlDefaultHandler
+12    QXmlDefaultHandler::~QXmlDefaultHandler
+16    QXmlDefaultHandler::setDocumentLocator
+20    QXmlDefaultHandler::startDocument
+24    QXmlDefaultHandler::endDocument
+28    QXmlDefaultHandler::startPrefixMapping
+32    QXmlDefaultHandler::endPrefixMapping
+36    QXmlDefaultHandler::startElement
+40    QXmlDefaultHandler::endElement
+44    QXmlDefaultHandler::characters
+48    QXmlDefaultHandler::ignorableWhitespace
+52    QXmlDefaultHandler::processingInstruction
+56    QXmlDefaultHandler::skippedEntity
+60    QXmlDefaultHandler::errorString
+64    QXmlDefaultHandler::warning
+68    QXmlDefaultHandler::error
+72    QXmlDefaultHandler::fatalError
+76    QXmlDefaultHandler::notationDecl
+80    QXmlDefaultHandler::unparsedEntityDecl
+84    QXmlDefaultHandler::resolveEntity
+88    QXmlDefaultHandler::startDTD
+92    QXmlDefaultHandler::endDTD
+96    QXmlDefaultHandler::startEntity
+100   QXmlDefaultHandler::endEntity
+104   QXmlDefaultHandler::startCDATA
+108   QXmlDefaultHandler::endCDATA
+112   QXmlDefaultHandler::comment
+116   QXmlDefaultHandler::attributeDecl
+120   QXmlDefaultHandler::internalEntityDecl
+124   QXmlDefaultHandler::externalEntityDecl
+128   (int (*)(...))-0x000000004
+132   (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+136   QXmlDefaultHandler::_ZThn4_N18QXmlDefaultHandlerD1Ev
+140   QXmlDefaultHandler::_ZThn4_N18QXmlDefaultHandlerD0Ev
+144   QXmlDefaultHandler::_ZThn4_N18QXmlDefaultHandler7warningERK18QXmlParseException
+148   QXmlDefaultHandler::_ZThn4_N18QXmlDefaultHandler5errorERK18QXmlParseException
+152   QXmlDefaultHandler::_ZThn4_N18QXmlDefaultHandler10fatalErrorERK18QXmlParseException
+156   QXmlDefaultHandler::_ZThn4_NK18QXmlDefaultHandler11errorStringEv
+160   (int (*)(...))-0x000000008
+164   (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+168   QXmlDefaultHandler::_ZThn8_N18QXmlDefaultHandlerD1Ev
+172   QXmlDefaultHandler::_ZThn8_N18QXmlDefaultHandlerD0Ev
+176   QXmlDefaultHandler::_ZThn8_N18QXmlDefaultHandler12notationDeclERK7QStringS2_S2_
+180   QXmlDefaultHandler::_ZThn8_N18QXmlDefaultHandler18unparsedEntityDeclERK7QStringS2_S2_S2_
+184   QXmlDefaultHandler::_ZThn8_NK18QXmlDefaultHandler11errorStringEv
+188   (int (*)(...))-0x00000000c
+192   (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+196   QXmlDefaultHandler::_ZThn12_N18QXmlDefaultHandlerD1Ev
+200   QXmlDefaultHandler::_ZThn12_N18QXmlDefaultHandlerD0Ev
+204   QXmlDefaultHandler::_ZThn12_N18QXmlDefaultHandler13resolveEntityERK7QStringS2_RP15QXmlInputSource
+208   QXmlDefaultHandler::_ZThn12_NK18QXmlDefaultHandler11errorStringEv
+212   (int (*)(...))-0x000000010
+216   (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+220   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandlerD1Ev
+224   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandlerD0Ev
+228   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler8startDTDERK7QStringS2_S2_
+232   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler6endDTDEv
+236   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler11startEntityERK7QString
+240   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler9endEntityERK7QString
+244   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler10startCDATAEv
+248   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler8endCDATAEv
+252   QXmlDefaultHandler::_ZThn16_N18QXmlDefaultHandler7commentERK7QString
+256   QXmlDefaultHandler::_ZThn16_NK18QXmlDefaultHandler11errorStringEv
+260   (int (*)(...))-0x000000014
+264   (int (*)(...))(& _ZTI18QXmlDefaultHandler)
+268   QXmlDefaultHandler::_ZThn20_N18QXmlDefaultHandlerD1Ev
+272   QXmlDefaultHandler::_ZThn20_N18QXmlDefaultHandlerD0Ev
+276   QXmlDefaultHandler::_ZThn20_N18QXmlDefaultHandler13attributeDeclERK7QStringS2_S2_S2_S2_
+280   QXmlDefaultHandler::_ZThn20_N18QXmlDefaultHandler18internalEntityDeclERK7QStringS2_
+284   QXmlDefaultHandler::_ZThn20_N18QXmlDefaultHandler18externalEntityDeclERK7QStringS2_S2_
+288   QXmlDefaultHandler::_ZThn20_NK18QXmlDefaultHandler11errorStringEv
+
+Class QXmlDefaultHandler
+   size=28 align=4
+   base size=28 base align=4
+QXmlDefaultHandler (0xb4c97bd0) 0
+    vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 8u)
+  QXmlContentHandler (0xb4a9bce4) 0 nearly-empty
+      primary-for QXmlDefaultHandler (0xb4c97bd0)
+  QXmlErrorHandler (0xb4a9bd20) 4 nearly-empty
+      vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 136u)
+  QXmlDTDHandler (0xb4a9bd5c) 8 nearly-empty
+      vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 168u)
+  QXmlEntityResolver (0xb4a9bd98) 12 nearly-empty
+      vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 196u)
+  QXmlLexicalHandler (0xb4a9bdd4) 16 nearly-empty
+      vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 220u)
+  QXmlDeclHandler (0xb4a9be10) 20 nearly-empty
+      vptr=((& QXmlDefaultHandler::_ZTV18QXmlDefaultHandler) + 268u)
+

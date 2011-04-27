@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ENTITY % paaa "<!ATTLIST root att CDATA #IMPLIED>">
+<!--* incorrect PE reference *-->
+%;
+<!ENTITY aaa "aString">
+]>
+<root/>

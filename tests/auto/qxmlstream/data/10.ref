@@ -1,0 +1,6 @@
+StartDocument( )
+StartElement( name="error" qualifiedName="error" )
+Characters( text="broken xml declaration" )
+EndElement( name="error" qualifiedName="error" )
+Invalid( processingInstructionTarget="xml" processingInstructionData="version="1.0"" )
+ERROR: XML declaration not at start of document.

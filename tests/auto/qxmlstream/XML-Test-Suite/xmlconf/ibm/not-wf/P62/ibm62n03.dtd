@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<?[INCLUDE[
+<!ELEMENT tiger EMPTY>
+<!ELEMENT animal ANY>
+]]>
+
+<!--Negative test with pattern3 of P62-->
+<!--An Wrong character is used to proir to [INCLUDE-->

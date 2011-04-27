@@ -1,0 +1,8 @@
+********* Start testing of tst_Crashes *********
+Config: Using QTest library 4.8.0, Qt 4.8.0
+PASS   : tst_Crashes::initTestCase()
+QFATAL : tst_Crashes::crash() Received signal 11
+FAIL!  : tst_Crashes::crash() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 1 passed, 1 failed, 0 skipped
+********* Finished testing of tst_Crashes *********

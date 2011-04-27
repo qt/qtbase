@@ -1,0 +1,12 @@
+<!DOCTYPE root [
+    <!ELEMENT root EMPTY>
+
+    <!-- SGML-ism:  illegal attribute default -->
+
+    <!ATTLIST root
+	language	CDATA	#CURRENT
+	>
+
+]>
+
+<root/>

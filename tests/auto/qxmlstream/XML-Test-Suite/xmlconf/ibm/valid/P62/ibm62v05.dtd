@@ -1,0 +1,7 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<![INCLUDE[
+]]>
+
+<!--Positive test with pattern5 of P62-->
+<!--Missing external subset declaration which is o.k.-->

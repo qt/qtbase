@@ -1,0 +1,7 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      internatlEntityDecl(name="e", value="<?xml encoding='UTF-8'?>")
+   endDTD()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+      fatalError(exception={columnNumber=8, lineNumber=5, publicId="", systemId="", message="invalid name for processing instruction"})

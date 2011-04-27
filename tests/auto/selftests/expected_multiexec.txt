@@ -1,0 +1,35 @@
+********* Start testing of tst_Nothing *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Nothing::initTestCase()
+PASS   : tst_Nothing::nothing()
+PASS   : tst_Nothing::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Nothing *********
+********* Start testing of tst_Nothing *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Nothing::initTestCase()
+PASS   : tst_Nothing::nothing()
+PASS   : tst_Nothing::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Nothing *********
+********* Start testing of tst_Nothing *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Nothing::initTestCase()
+PASS   : tst_Nothing::nothing()
+PASS   : tst_Nothing::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Nothing *********
+********* Start testing of tst_Nothing *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Nothing::initTestCase()
+PASS   : tst_Nothing::nothing()
+PASS   : tst_Nothing::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Nothing *********
+********* Start testing of tst_Nothing *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Nothing::initTestCase()
+PASS   : tst_Nothing::nothing()
+PASS   : tst_Nothing::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Nothing *********

@@ -1,0 +1,6 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      internatlEntityDecl(name="e", value="foo='bar'")
+   endDTD()
+   fatalError(exception={columnNumber=6, lineNumber=4, publicId="", systemId="", message="error occurred while parsing element"})

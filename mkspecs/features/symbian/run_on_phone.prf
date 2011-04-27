@@ -1,0 +1,40 @@
+# make sure we have a sis file and then call 'runonphone' to execute it on the phone
+
+GENERATE_RUN_TARGETS = false
+
+contains(TEMPLATE, app): GENERATE_RUN_TARGETS = true
+else:!equals(DEPLOYMENT, default_deployment) {
+    for(dep_item, $$list($$DEPLOYMENT)) {
+        ### Qt 5: remove .sources, inconsistent with INSTALLS
+        dep_item_sources = $$eval($${dep_item}.files) $$eval($${dep_item}.sources)
+        !isEmpty(dep_item_sources): GENERATE_RUN_TARGETS = true
+    }
+}
+
+equals(GENERATE_RUN_TARGETS, true) {
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+    sis_file = $${baseTarget}.sis
+    symbian-abld|symbian-sbsv2 {
+        sis_destdir =
+    } else {
+        sis_destdir = $$DESTDIR
+        isEmpty(sis_destdir):sis_destdir = .
+        !equals(TARGET, "$$baseTarget"):sis_destdir = $$sis_destdir/$$dirname(TARGET)
+        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
+        contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
+    }
+
+    contains(SYMBIAN_PLATFORMS, "WINSCW"):contains(TEMPLATE, "app") {
+        run_target.target = run
+        run_target.commands = call "$${EPOCROOT}epoc32/release/winscw/udeb/$${baseTarget}.exe" $(QT_RUN_OPTIONS)
+
+        QMAKE_EXTRA_TARGETS += run_target
+    }
+
+    runonphone_target.target = runonphone
+    runonphone_target.depends = sis
+    runonphone_target.commands = runonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis "$${sis_destdir}$${sis_file}"
+    contains(TEMPLATE, "app"):runonphone_target.commands += "$${baseTarget}.exe" $(QT_RUN_OPTIONS)
+
+    QMAKE_EXTRA_TARGETS += runonphone_target
+}

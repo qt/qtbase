@@ -1,0 +1,2 @@
+<!ELEMENT animal EMPTY>
+<!ATTLIST animal class CDATA #FIXED "&#41;">

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="8-UTF"?>
+<!--* Illegal initial Charater in above EncName *-->
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+]>
+<root/>

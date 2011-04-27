@@ -1,0 +1,18 @@
+# /****************************************************************************
+# **
+# ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+# ** Contact: Nokia Corporation (qt-info@nokia.com)
+# **
+# ** This file is part of symbian-sbsv2 mkspec.
+# **
+# ****************************************************************************/
+
+
+SINGLETON:=$(call sanitise,QMAKE_CLEAN_SINGLETON_$(EXTENSION_ROOT))
+
+ifeq ($($(SINGLETON)),)
+# Prevent duplicate targets from being created
+$(SINGLETON):=1
+$(eval $(call GenerateStandardCleanTarget,$(wildcard $(patsubst "%",%,$(CLEAN_FILES)))))
+endif
+

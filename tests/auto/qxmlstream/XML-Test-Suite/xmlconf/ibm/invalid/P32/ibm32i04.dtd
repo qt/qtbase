@@ -1,0 +1,4 @@
+<!ELEMENT animal (a,b,c)>
+<!ELEMENT a ANY>
+<!ELEMENT b EMPTY>
+<!ELEMENT c EMPTY>

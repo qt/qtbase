@@ -1,0 +1,5 @@
+<!DOCTYPE IllegalNameChar[ [
+   <!ELEMENT IllegalNameChar[ EMPTY>
+]>
+<IllegalNameChar[/>
+

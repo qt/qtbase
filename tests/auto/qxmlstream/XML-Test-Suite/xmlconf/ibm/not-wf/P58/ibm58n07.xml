@@ -1,0 +1,14 @@
+<?xml  version="1.0"?>
+<!-- Syntax test for Production 58-->
+<!DOCTYPE test
+ [
+ <!ELEMENT test ANY>
+ <!ELEMENT one EMPTY>
+ <!ELEMENT two EMPTY>
+ <!NOTATION this SYSTEM "alpha">
+ <!ATTLIST three attr NOTATION(this) #IMPLIED>
+ ]>
+<test>
+Negative Test.
+Missing space after NOTATION
+</test>

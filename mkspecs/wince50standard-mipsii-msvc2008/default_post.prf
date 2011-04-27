@@ -1,0 +1,1 @@
+include(../wince50standard-mipsii-msvc2005/default_post.prf)

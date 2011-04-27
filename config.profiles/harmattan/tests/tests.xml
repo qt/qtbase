@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<testdefinition version="1.0">
+  <suite domain="Application framework" level="Component" name="qt4-acceptance-tests" type="Functional">
+    <description />
+    <set feature="qt" level="Component" name="acceptance_tst_qhash" type="Functional">
+      <description>qt4-acceptance-tests:tst_qhash</description>
+      <case level="Component" name="tst_qhash-insert1" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:insert1</description>
+        <step>/usr/tests/qt4/tst_qhash insert1</step>
+      </case>
+      <case level="Component" name="tst_qhash-erase" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:erase</description>
+        <step>/usr/tests/qt4/tst_qhash erase</step>
+      </case>
+      <case level="Component" name="tst_qhash-key" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:key</description>
+        <step>/usr/tests/qt4/tst_qhash key</step>
+      </case>
+      <case level="Component" name="tst_qhash-count" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:count</description>
+        <step>/usr/tests/qt4/tst_qhash count</step>
+      </case>
+      <case level="Component" name="tst_qhash-clear" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:clear</description>
+        <step>/usr/tests/qt4/tst_qhash clear</step>
+      </case>
+      <case level="Component" name="tst_qhash-empty" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:empty</description>
+        <step>/usr/tests/qt4/tst_qhash empty</step>
+      </case>
+      <case level="Component" name="tst_qhash-find" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:find</description>
+        <step>/usr/tests/qt4/tst_qhash find</step>
+      </case>
+      <case level="Component" name="tst_qhash-constFind" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:constFind</description>
+        <step>/usr/tests/qt4/tst_qhash constFind</step>
+      </case>
+      <case level="Component" name="tst_qhash-contains" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:contains</description>
+        <step>/usr/tests/qt4/tst_qhash contains</step>
+      </case>
+      <case level="Component" name="tst_qhash-take" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:take</description>
+        <step>/usr/tests/qt4/tst_qhash take</step>
+      </case>
+      <case level="Component" name="tst_qhash-operator_eq" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:operator_eq</description>
+        <step>/usr/tests/qt4/tst_qhash operator_eq</step>
+      </case>
+      <case level="Component" name="tst_qhash-rehash_isnt_quadratic" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:rehash_isnt_quadratic</description>
+        <step>/usr/tests/qt4/tst_qhash rehash_isnt_quadratic</step>
+      </case>
+      <case level="Component" name="tst_qhash-dont_need_default_constructor" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:dont_need_default_constructor</description>
+        <step>/usr/tests/qt4/tst_qhash dont_need_default_constructor</step>
+      </case>
+      <case level="Component" name="tst_qhash-qhash" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:qhash</description>
+        <step>/usr/tests/qt4/tst_qhash qhash</step>
+      </case>
+      <case level="Component" name="tst_qhash-qmultihash_specific" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:qmultihash_specific</description>
+        <step>/usr/tests/qt4/tst_qhash qmultihash_specific</step>
+      </case>
+      <case level="Component" name="tst_qhash-compare" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:compare</description>
+        <step>/usr/tests/qt4/tst_qhash compare</step>
+      </case>
+      <case level="Component" name="tst_qhash-compare2" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:compare2</description>
+        <step>/usr/tests/qt4/tst_qhash compare2</step>
+      </case>
+      <case level="Component" name="tst_qhash-iterators" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:iterators</description>
+        <step>/usr/tests/qt4/tst_qhash iterators</step>
+      </case>
+      <case level="Component" name="tst_qhash-keys_values_uniqueKeys" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:keys_values_uniqueKeys</description>
+        <step>/usr/tests/qt4/tst_qhash keys_values_uniqueKeys</step>
+      </case>
+      <case level="Component" name="tst_qhash-noNeedlessRehashes" type="Functional">
+        <description>qt4-acceptance-tests:tst_qhash:noNeedlessRehashes</description>
+        <step>/usr/tests/qt4/tst_qhash noNeedlessRehashes</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set feature="qt" level="Component" name="acceptance_tst_qdbusconnection" type="Functional">
+      <description>qt4-acceptance-tests:tst_qdbusconnection</description>
+      <case level="Component" name="tst_qdbusconnection-noConnection" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:noConnection</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection noConnection</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-connectToBus" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:connectToBus</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection connectToBus</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-connect" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:connect</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection connect</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-send" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:send</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection send</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-sendAsync" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:sendAsync</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection sendAsync</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-sendSignal" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:sendSignal</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection sendSignal</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-registerObject" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:registerObject</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection registerObject</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-registerObject2" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:registerObject2</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection registerObject2</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-registerQObjectChildren" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:registerQObjectChildren</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection registerQObjectChildren</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-callSelf" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:callSelf</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection callSelf</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-callSelfByAnotherName" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:callSelfByAnotherName</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection callSelfByAnotherName</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-multipleInterfacesInQObject" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:multipleInterfacesInQObject</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection multipleInterfacesInQObject</step>
+      </case>
+      <case level="Component" name="tst_qdbusconnection-slotsWithLessParameters" type="Functional">
+        <description>qt4-acceptance-tests:tst_qdbusconnection:slotsWithLessParameters</description>
+        <step>/usr/tests/qt4/tst_qdbusconnection slotsWithLessParameters</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set feature="qt" level="Component" name="acceptance_tst_qaction" type="Functional">
+      <description>qt4-acceptance-tests:tst_qaction</description>
+      <case level="Component" name="tst_qaction-getSetCheck" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:getSetCheck</description>
+        <step>/usr/tests/qt4/tst_qaction getSetCheck</step>
+      </case>
+      <case level="Component" name="tst_qaction-setText" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:setText</description>
+        <step>/usr/tests/qt4/tst_qaction setText</step>
+      </case>
+      <case level="Component" name="tst_qaction-setIconText" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:setIconText</description>
+        <step>/usr/tests/qt4/tst_qaction setIconText</step>
+      </case>
+      <case level="Component" name="tst_qaction-actionEvent" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:actionEvent</description>
+        <step>/usr/tests/qt4/tst_qaction actionEvent</step>
+      </case>
+      <case level="Component" name="tst_qaction-setStandardKeys" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:setStandardKeys</description>
+        <step>/usr/tests/qt4/tst_qaction setStandardKeys</step>
+      </case>
+      <case level="Component" name="tst_qaction-alternateShortcuts" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:alternateShortcuts</description>
+        <step>/usr/tests/qt4/tst_qaction alternateShortcuts</step>
+      </case>
+      <case level="Component" name="tst_qaction-enabledVisibleInteraction" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:enabledVisibleInteraction</description>
+        <step>/usr/tests/qt4/tst_qaction enabledVisibleInteraction</step>
+      </case>
+      <case level="Component" name="tst_qaction-task200823_tooltip" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:task200823_tooltip</description>
+        <step>/usr/tests/qt4/tst_qaction task200823_tooltip</step>
+      </case>
+      <case level="Component" name="tst_qaction-task229128TriggeredSignalWithoutActiongroup" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:task229128TriggeredSignalWithoutActiongroup</description>
+        <step>/usr/tests/qt4/tst_qaction task229128TriggeredSignalWithoutActiongroup</step>
+      </case>
+      <case level="Component" name="tst_qaction-task229128TriggeredSignalWhenInActiongroup" type="Functional">
+        <description>qt4-acceptance-tests:tst_qaction:task229128TriggeredSignalWhenInActiongroup</description>
+        <step>/usr/tests/qt4/tst_qaction task229128TriggeredSignalWhenInActiongroup</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set feature="qt" level="Component" name="acceptance_tst_qlist" type="Functional">
+      <description>qt4-acceptance-tests:tst_qlist</description>
+      <case level="Component" name="tst_qlist-length" type="Functional">
+        <description>qt4-acceptance-tests:tst_qlist:length</description>
+        <step>/usr/tests/qt4/tst_qlist length</step>
+      </case>
+      <case level="Component" name="tst_qlist-lengthSignature" type="Functional">
+        <description>qt4-acceptance-tests:tst_qlist:lengthSignature</description>
+        <step>/usr/tests/qt4/tst_qlist lengthSignature</step>
+      </case>
+      <case level="Component" name="tst_qlist-append" type="Functional">
+        <description>qt4-acceptance-tests:tst_qlist:append</description>
+        <step>/usr/tests/qt4/tst_qlist append</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set feature="qt" level="Component" name="acceptance_tst_qgraphicslayout" type="Functional">
+      <description>qt4-acceptance-tests:tst_qgraphicslayout</description>
+      <case level="Component" name="tst_qgraphicslayout-sizeHints" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:sizeHints</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout sizeHints</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-compressLayoutRequest" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:compressLayoutRequest</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout compressLayoutRequest</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-automaticReparenting" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:automaticReparenting</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout automaticReparenting</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-verifyActivate" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:verifyActivate</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout verifyActivate</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-constructors" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:constructors</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout constructors</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-alternativeLayoutItems" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:alternativeLayoutItems</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout alternativeLayoutItems</step>
+      </case>
+      <case level="Component" name="tst_qgraphicslayout-ownership" type="Functional">
+        <description>qt4-acceptance-tests:tst_qgraphicslayout:ownership</description>
+        <step>/usr/tests/qt4/tst_qgraphicslayout ownership</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set feature="qt" level="Component" name="acceptance_tst_qmap" type="Functional">
+      <description>qt4-acceptance-tests:tst_qmap</description>
+      <case level="Component" name="tst_qmap-count" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:count</description>
+        <step>/usr/tests/qt4/tst_qmap count</step>
+      </case>
+      <case level="Component" name="tst_qmap-clear" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:clear</description>
+        <step>/usr/tests/qt4/tst_qmap clear</step>
+      </case>
+      <case level="Component" name="tst_qmap-beginEnd" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:beginEnd</description>
+        <step>/usr/tests/qt4/tst_qmap beginEnd</step>
+      </case>
+      <case level="Component" name="tst_qmap-key" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:key</description>
+        <step>/usr/tests/qt4/tst_qmap key</step>
+      </case>
+      <case level="Component" name="tst_qmap-operator_eq" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:operator_eq</description>
+        <step>/usr/tests/qt4/tst_qmap operator_eq</step>
+      </case>
+      <case level="Component" name="tst_qmap-empty" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:empty</description>
+        <step>/usr/tests/qt4/tst_qmap empty</step>
+      </case>
+      <case level="Component" name="tst_qmap-contains" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:contains</description>
+        <step>/usr/tests/qt4/tst_qmap contains</step>
+      </case>
+      <case level="Component" name="tst_qmap-find" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:find</description>
+        <step>/usr/tests/qt4/tst_qmap find</step>
+      </case>
+      <case level="Component" name="tst_qmap-constFind" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:constFind</description>
+        <step>/usr/tests/qt4/tst_qmap constFind</step>
+      </case>
+      <case level="Component" name="tst_qmap-lowerUpperBound" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:lowerUpperBound</description>
+        <step>/usr/tests/qt4/tst_qmap lowerUpperBound</step>
+      </case>
+      <case level="Component" name="tst_qmap-mergeCompare" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:mergeCompare</description>
+        <step>/usr/tests/qt4/tst_qmap mergeCompare</step>
+      </case>
+      <case level="Component" name="tst_qmap-take" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:take</description>
+        <step>/usr/tests/qt4/tst_qmap take</step>
+      </case>
+      <case level="Component" name="tst_qmap-iterators" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:iterators</description>
+        <step>/usr/tests/qt4/tst_qmap iterators</step>
+      </case>
+      <case level="Component" name="tst_qmap-keys_values_uniqueKeys" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:keys_values_uniqueKeys</description>
+        <step>/usr/tests/qt4/tst_qmap keys_values_uniqueKeys</step>
+      </case>
+      <case level="Component" name="tst_qmap-qmultimap_specific" type="Functional">
+        <description>qt4-acceptance-tests:tst_qmap:qmultimap_specific</description>
+        <step>/usr/tests/qt4/tst_qmap qmultimap_specific</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+  </suite>
+</testdefinition>

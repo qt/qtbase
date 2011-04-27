@@ -1,0 +1,8 @@
+
+This graphics system uses ShivaVG (http://sourceforge.net/projects/shivavg)
+to perform OpenVG rendering on X11 systems.  The graphics system name for
+the "-graphicssystem" command-line option is "ShivaVG".
+
+ShivaVG support is experimental, mostly to demonstrate how to integrate
+non-EGL OpenVG engines into the system.  It will probably not produce
+good output.

@@ -1,0 +1,6 @@
+<!DOCTYPE doc
+[
+<!ELEMENT doc EMPTY>
+<!ATTLIST doc att CDATA #FIXED"value">
+]>
+<doc/>

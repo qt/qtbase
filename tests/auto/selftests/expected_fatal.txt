@@ -1,0 +1,6 @@
+********* Start testing of tst_Fatal *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+PASS   : tst_Fatal::initTestCase()
+QFATAL : tst_Fatal::testFunction() A fatal error occured! Ouuiieee!! The world is coming to an end and I will die! Buhu!
+Totals: 1 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Fatal *********

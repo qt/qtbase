@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<![INCLUDE[
+<!ENTITY % rootElement "<!ELEMENT animal ANY>">
+]]>
+%rootElement;
+
+<!-- Following is a makupdecl -->
+<!ENTITY % make_tiger_element "<!ELEMENT tiger EMPTY>">
+%make_tiger_element;
+
+<![IGNORE[
+<!ELEMENT animal EMPTY>
+]]>
+
+

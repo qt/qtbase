@@ -1,0 +1,11 @@
+<?xml  version="1.0"?>
+<!-- test invalid syntax for Production 55-->
+<!DOCTYPE AttrType
+[
+<!ELEMENT AttrType (#PCDATA)>
+<!ELEMENT a EMPTY>
+<!ATTLIST a att CData #IMPLIED> 
+]>
+<AttrType>
+ Giving a wrong key word of the StringType.
+</AttrType>

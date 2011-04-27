@@ -1,0 +1,72 @@
+# Version: 1
+
+begin_block draw
+setPen red
+drawPolygon [1.1 1 3.3 30.6 23.1 39.2 38.9 6.5]
+setPen black
+drawLine 1.1 1 3.3 30.6
+drawLine 3.3 30.6 23.1 39.2
+drawLine 23.1 39.2 38.9 6.5
+drawLine 38.9 6.5 1.1 1
+end_block draw
+drawText 0 60 "0.0 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.1 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.2 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.3 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.4 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.5 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.6 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.7 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.8 aligned"
+translate 0.1 80.1
+repeat_block draw
+drawText 0 60 "0.9 aligned"
+
+resetMatrix
+translate 100 0
+setPen black
+drawText 0 20 "Line and text, 0.0 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.1 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.2 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.3 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.4 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.5 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.6 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.7 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.8 aligned"
+drawLine 0 21 160 21
+translate 0 40.1
+drawText 0 20 "Line and text, 0.9 aligned"
+drawLine 0 21 160 21

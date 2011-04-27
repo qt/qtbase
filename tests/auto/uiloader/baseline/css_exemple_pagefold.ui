@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>426</width>
+    <height>413</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Style Sheet</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Customize any plain widget that is a child of a QMainWindow. */
+QMainWindow &gt; .QWidget {
+    background-color: gainsboro;
+    background-image: url(images/pagefold.png);
+    background-position: top right;
+    background-repeat: no-repeat
+}
+
+/* Provide a padding for the layout inside the frame. The frame
+   exists only to provide a padding for the top-right image, so we
+   explicitly disable the border. */
+#mainFrame {
+    padding-right: 30px;
+    border-style: none;
+    border-image: none; /* since we set a border-image below */
+}
+
+/* mainFrame won't have this border-image since we have
+   explicitly set it to 'none' using a more specific selector. */
+QFrame, QLineEdit, QComboBox[editable=&quot;true&quot;], QSpinBox {
+    border-image: url(images/frame.png) 4;
+    border-width: 3;
+}
+
+QLabel {
+    border: none;
+    border-image: none;
+    padding: 0;
+    background: none;
+}
+
+/* Make text in message boxes selectable. */
+QMessageBox {
+    /* LinksAccessibleByMouse | TextSelectableByMouse */
+    messagebox-text-interaction-flags: 5;
+}
+   
+/* Set the selection colors for all widgets. */
+QWidget {
+    selection-color: black;
+    selection-background-color: Silver;
+    color: black;
+}
+
+/* Make the entire row selected in item views. */
+QAbstractItemView {
+    show-decoration-selected: 1;
+}
+
+/* Nice WindowsXP-style password character for password line edits. */
+QLineEdit[echoMode=&quot;2&quot;] {
+    lineedit-password-character: 9679;
+}
+
+/* Customize tooltips. */
+QToolTip {
+    background-color: rgb(200,200,255);
+    border-color: darkslategray;
+    border-width: 1px;
+    border-style: solid;
+    padding: 3px;
+    font: bold;
+    border-radius: 3px;
+    opacity: 200;
+}
+
+/* Customize radio buttons. */
+
+QRadioButton {
+    spacing: 5px;
+}
+
+QRadioButton::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+QRadioButton::indicator::unchecked {
+    image: url(images/radiobutton_unchecked.png);
+}
+
+QRadioButton::indicator:unchecked:hover {
+    image: url(images/radiobutton_unchecked_hover.png);
+}
+
+QRadioButton::indicator:unchecked:pressed {
+    image: url(images/radiobutton_unchecked_pressed.png);
+}
+
+QRadioButton::indicator::checked {
+    image: url(images/radiobutton_checked.png);
+}
+
+QRadioButton::indicator:checked:hover {
+    image: url(images/radiobutton_checked_hover.png);
+}
+
+QRadioButton::indicator:checked:pressed {
+    image: url(images/radiobutton_checked_pressed.png);
+}
+
+/* Customize arrows. */
+
+*::down-arrow, *::menu-indicator {
+    image: url(images/down_arrow.png);
+    width: 7px;
+    height: 7px;
+}
+
+*::down-arrow:disabled, *::down-arrow:off {
+   image: url(images/down_arrow_disabled.png);
+}
+
+*::up-arrow {
+    image: url(images/up_arrow.png);
+    width: 7px;
+    height: 7px;
+}
+
+*::up-arrow:disabled, *::up-arrow:off {
+   image: url(images/up_arrow_disabled.png);
+}
+
+/* Customize push buttons and comboboxes. Our read-only combobox
+   is very similar to a push button, so they share the same border image. */
+
+QPushButton {
+    min-width: 4em;
+}
+
+QPushButton, QComboBox[editable=&quot;false&quot;],
+QComboBox[editable=&quot;true&quot;]::drop-down {
+    border-image: url(images/pushbutton.png) 5;
+    border-width: 5;
+}
+
+QPushButton:hover, QComboBox[editable=&quot;false&quot;]:hover,
+QComboBox[editable=&quot;true&quot;]::drop-down:hover, QMenuBar::item:hover {
+    border-image: url(images/pushbutton_hover.png) 5;
+    border-width: 5;
+}
+
+QPushButton:pressed, QComboBox[editable=&quot;false&quot;]:on,
+QComboBox[editable=&quot;true&quot;]::drop-down:on, QMenuBar::item:on {
+    border-image: url(images/pushbutton_pressed.png) 5;
+    border-width: 5;
+}
+
+/* Customize read-only comboboxes. */
+
+QComboBox[editable=&quot;false&quot;] {
+    padding-left: 3px;
+    padding-right: 20px; /* space for the arrow */
+}
+
+QComboBox[editable=&quot;false&quot;]::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 15px;
+    border-left-style: solid;
+    border-left-color: darkgray;
+    border-left-width: 1px;
+}
+
+QComboBox[editable=&quot;false&quot;]::down-arrow {
+    subcontrol-origin: content;
+    subcontrol-position: center;
+    position: relative;
+    left: 1px; /* 1 pixel dropdown border */
+}
+
+/* The combobox arrow is on when the popup is open. */
+QComboBox[editable=&quot;false&quot;]::down-arrow:on {
+    position: relative;
+    top: 1px;
+    left: 2px;
+}
+
+/* Customize editable comboboxes. */
+
+QComboBox[editable=&quot;true&quot;] {
+    padding-right: 16px;
+}
+
+QComboBox[editable=&quot;true&quot;]::drop-down {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 13px;
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    right: 2px;
+}
+
+QComboBox[editable=&quot;true&quot;]::drop-down,
+QComboBox[editable=&quot;true&quot;]::drop-down:hover,
+QComboBox[editable=&quot;true&quot;]::drop-down:on {
+    border-width: 0px;  
+    border-left-width: 3px; /* we need only left and center part */
+}
+
+/* Shift the arrow when it's open. */
+QComboBox[editable=&quot;true&quot;]::down-arrow:on {
+    position: relative;
+    top: 1px;
+    left: 1px;
+}
+
+/* Customize check boxes. */
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+QCheckBox::indicator:unchecked {
+    image: url(images/checkbox_unchecked.png);
+}
+
+QCheckBox::indicator:unchecked:hover {
+    image: url(images/checkbox_unchecked_hover.png);
+}
+
+QCheckBox::indicator:unchecked:pressed {
+    image: url(images/checkbox_unchecked_pressed.png);
+}
+
+QCheckBox::indicator:checked {
+    image: url(images/checkbox_checked.png);
+}
+
+QCheckBox::indicator:checked:hover {
+    image: url(images/checkbox_checked_hover.png);
+}
+
+QCheckBox::indicator:checked:pressed {
+    image: url(images/checkbox_checked_pressed.png);
+}
+
+/* Customize the size grip. */
+QSizeGrip {
+    image: url(images/sizegrip.png);
+    width: 16px;
+    height: 16px;
+}
+
+/* Customize the menu bar. */
+QMenuBar {
+    border-image: none;
+    border-style: none;
+    border-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: darkslategray;
+    padding: 2px;
+}
+
+/* Customize spin boxes. */
+
+QSpinBox { 
+    padding-right: 15px;
+}
+
+QSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+
+    width: 16px; /* 16 + 2*1px border-width = 15px padding + 3px parent border */
+    border-image: url(images/spinup.png) 1;
+    border-width: 1px;
+}
+
+QSpinBox::up-button:hover {
+    border-image: url(images/spinup_hover.png) 1;
+}
+
+QSpinBox::up-button:pressed {
+    border-image: url(images/spinup_pressed.png) 1;
+}
+
+QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+
+    width: 16px;
+    border-image: url(images/spindown.png) 1;
+    border-width: 1px;
+    border-top-width: 0;
+}
+
+QSpinBox::down-button:hover {
+    border-image: url(images/spindown_hover.png) 1;
+}
+
+QSpinBox::down-button:pressed {
+    border-image: url(images/spindown_pressed.png) 1;
+}
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout">
+    <property name="spacing">
+     <number>6</number>
+    </property>
+    <property name="margin">
+     <number>9</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="mainFrame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <layout class="QGridLayout">
+       <property name="margin">
+        <number>9</number>
+       </property>
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <item row="6" column="0" colspan="5">
+        <widget class="QCheckBox" name="agreeCheckBox">
+         <property name="toolTip">
+          <string>Please read the LICENSE file before checking</string>
+         </property>
+         <property name="text">
+          <string>I &amp;accept the terms and &amp;conditions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Profession:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+         </property>
+         <property name="buddy">
+          <cstring>professionList</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="nameLabel">
+         <property name="text">
+          <string>&amp;Name:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="buddy">
+          <cstring>nameCombo</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QRadioButton" name="maleRadioButton">
+         <property name="toolTip">
+          <string>Check this if you are male</string>
+         </property>
+         <property name="text">
+          <string>&amp;Male</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="passwordLabel">
+         <property name="text">
+          <string>&amp;Password:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="buddy">
+          <cstring>passwordEdit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="4">
+        <widget class="QComboBox" name="countryCombo">
+         <property name="toolTip">
+          <string>Specify country of origin</string>
+         </property>
+         <property name="statusTip">
+          <string>Specify country of origin</string>
+         </property>
+         <property name="currentIndex">
+          <number>6</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Egypt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>France</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Germany</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>India</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Italy</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Norway</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Pakistan</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="ageLabel">
+         <property name="text">
+          <string>&amp;Age:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="buddy">
+          <cstring>ageSpinBox</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="countryLabel">
+         <property name="text">
+          <string>Country:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="buddy">
+          <cstring>countryCombo</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="genderLabel">
+         <property name="text">
+          <string>Gender:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="4">
+        <widget class="QLineEdit" name="passwordEdit">
+         <property name="toolTip">
+          <string>Specify your password</string>
+         </property>
+         <property name="statusTip">
+          <string>Specify your password</string>
+         </property>
+         <property name="text">
+          <string>Password</string>
+         </property>
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" colspan="2">
+        <widget class="QRadioButton" name="femaleRadioButton">
+         <property name="styleSheet">
+          <string>Check this if you are female</string>
+         </property>
+         <property name="text">
+          <string>&amp;Female</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QSpinBox" name="ageSpinBox">
+         <property name="toolTip">
+          <string>Specify your age</string>
+         </property>
+         <property name="statusTip">
+          <string>Specify your age</string>
+         </property>
+         <property name="minimum">
+          <number>12</number>
+         </property>
+         <property name="value">
+          <number>22</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="4">
+        <widget class="QComboBox" name="nameCombo">
+         <property name="toolTip">
+          <string>Specify your name</string>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="3" colspan="2">
+        <spacer>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>61</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="7" column="3" colspan="2">
+        <widget class="QDialogButtonBox" name="buttonBox">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="standardButtons">
+          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="4">
+        <widget class="QListWidget" name="professionList">
+         <property name="toolTip">
+          <string>Select your profession</string>
+         </property>
+         <property name="statusTip">
+          <string>Specify your name here</string>
+         </property>
+         <property name="whatsThis">
+          <string>Specify your name here</string>
+         </property>
+         <property name="currentRow">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Developer</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Student</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Fisherman</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>426</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="editStyleAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="aboutAction"/>
+    <addaction name="aboutQtAction"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="exitAction">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+  </action>
+  <action name="aboutQtAction">
+   <property name="text">
+    <string>About Qt</string>
+   </property>
+  </action>
+  <action name="editStyleAction">
+   <property name="text">
+    <string>Edit &amp;Style...</string>
+   </property>
+  </action>
+  <action name="aboutAction">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_ExpectFail">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="expectAndContinue">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[begin]]></Description>
+</Message>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/expectfail/tst_expectfail.cpp" line="60">
+    <Description><![CDATA[This should xfail]]></Description>
+</Incident>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[after]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="expectAndAbort">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[begin]]></Description>
+</Message>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/expectfail/tst_expectfail.cpp" line="68">
+    <Description><![CDATA[This should xfail]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="xfailWithQString">
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/expectfail/tst_expectfail.cpp" line="75">
+    <Description><![CDATA[A string]]></Description>
+</Incident>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/expectfail/tst_expectfail.cpp" line="80">
+    <Description><![CDATA[Bug 5 (The message)]]></Description>
+</Incident>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

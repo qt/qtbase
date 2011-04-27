@@ -1,0 +1,164 @@
+<ui version="4.0" >
+ <class>TetrixWindow</class>
+ <widget class="QWidget" name="TetrixWindow" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>537</width>
+    <height>475</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Tetrix</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <layout class="QGridLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item row="4" column="0" >
+      <widget class="QPushButton" name="startButton" >
+       <property name="focusPolicy" >
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text" >
+        <string>&amp;Start</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" >
+      <widget class="QLCDNumber" name="linesLcd" >
+       <property name="segmentStyle" >
+        <enum>QLCDNumber::Filled</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" >
+      <widget class="QLabel" name="linesRemovedLabel" >
+       <property name="text" >
+        <string>LINES REMOVED</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2" >
+      <widget class="QPushButton" name="pauseButton" >
+       <property name="focusPolicy" >
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text" >
+        <string>&amp;Pause</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2" >
+      <widget class="QLCDNumber" name="scoreLcd" >
+       <property name="segmentStyle" >
+        <enum>QLCDNumber::Filled</enum>
+       </property>
+      </widget>
+     </item>
+     <item rowspan="6" row="0" column="1" >
+      <widget class="TetrixBoard" name="board" >
+       <property name="focusPolicy" >
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="frameShape" >
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow" >
+        <enum>QFrame::Sunken</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="levelLabel" >
+       <property name="text" >
+        <string>LEVEL</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" >
+      <widget class="QLabel" name="nextLabel" >
+       <property name="text" >
+        <string>NEXT</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" >
+      <widget class="QLCDNumber" name="levelLcd" >
+       <property name="segmentStyle" >
+        <enum>QLCDNumber::Filled</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" >
+      <widget class="QLabel" name="scoreLabel" >
+       <property name="text" >
+        <string>SCORE</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignBottom|Qt::AlignHCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="nextPieceLabel" >
+       <property name="frameShape" >
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="frameShadow" >
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="text" >
+        <string/>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" >
+      <widget class="QPushButton" name="quitButton" >
+       <property name="focusPolicy" >
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text" >
+        <string>&amp;Quit</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TetrixBoard</class>
+   <extends>QFrame</extends>
+   <header>tetrixboard.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,2 @@
+libqt4-dbus: package-name-doesnt-match-sonames libQtDBus4
+libqt4-dbus: unknown-control-file digsigsums

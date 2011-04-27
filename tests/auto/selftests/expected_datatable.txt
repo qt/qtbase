@@ -1,0 +1,35 @@
+********* Start testing of tst_DataTable *********
+Config: Using QTest library 4.4.0, Qt 4.4.0
+PASS   : tst_DataTable::initTestCase()
+PASS   : tst_DataTable::singleTestFunction1()
+PASS   : tst_DataTable::singleTestFunction2()
+PASS   : tst_DataTable::fiveTablePasses()
+FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 1) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 2) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 3) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 4) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::fiveTableFailures(fiveTableFailures_data 5) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::startsWithFailure(startsWithFailure_data 1) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::endsWithFailure(endsWithFailure 5) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::failureInMiddle(failureInMiddle_data 3) 'test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(58)]
+FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 1) '!test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(140)]
+FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 2) '!test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(140)]
+FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 3) '!test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(140)]
+FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 4) '!test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(140)]
+FAIL!  : tst_DataTable::fiveIsolatedFailures(fiveIsolatedFailures_data 5) '!test' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datatable/tst_datatable.cpp(140)]
+PASS   : tst_DataTable::cleanupTestCase()
+Totals: 5 passed, 13 failed, 0 skipped
+********* Finished testing of tst_DataTable *********

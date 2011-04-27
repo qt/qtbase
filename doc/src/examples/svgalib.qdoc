@@ -1,0 +1,345 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example qws/svgalib
+    \title Accelerated Graphics Driver Example
+
+    The Accelerated Graphics Driver example shows how you can write
+    your own accelerated graphics driver and \l {add your graphics
+    driver to Qt for Embedded Linux}.  In \l{Qt for Embedded Linux},
+    painting is a pure software implementation and is normally performed
+    in two steps:
+    The clients render each window onto a corresponding surface
+    (stored in memory) using a paint engine, and then the server uses
+    the graphics driver to compose the surface images and copy them to
+    the screen. (See the \l{Qt for Embedded Linux Architecture} documentation
+    for details.)
+
+    The rendering can be accelerated in two ways: Either by
+    accelerating the copying of pixels to the screen, or by
+    accelerating the explicit painting operations. The first is done
+    in the graphics driver implementation, the latter is performed by
+    the paint engine implementation. Typically, both the pixel copying
+    and the painting operations are accelerated using the following
+    approach:
+
+    \list 1
+        \o \l {Step 1: Creating a Custom Graphics Driver}
+        {Creating a Custom Graphics Driver}
+
+        \o \l {Step 2: Implementing a Custom Raster Paint Engine}
+        {Implementing a Custom Paint Engine}
+
+        \o \l {Step 3: Making the Widgets Aware of the Custom Paint
+        Engine}{Making the Widgets Aware of the Custom Paint Engine}
+
+    \endlist
+
+    After compiling the example code, install the graphics driver
+    plugin with the command \c {make install}. To start an application
+    using the graphics driver, you can either set the environment
+    variable \l QWS_DISPLAY and then run the application, or you can
+    just run the application using the \c -display switch:
+
+    \snippet doc/src/snippets/code/doc_src_examples_svgalib.qdoc 0
+
+    \table
+    \header \o SVGAlib
+    \row \o
+
+    Instead of interfacing the graphics hardware directly, this
+    example relies on \l {http://www.svgalib.org}{SVGAlib} being
+    installed on your system.  \l {http://www.svgalib.org}{SVGAlib} is
+    a small graphics library which provides acceleration for many
+    common graphics cards used on desktop computers. It should work on
+    most workstations and has a small and simple API.
+
+    \endtable
+
+    \section1 Step 1: Creating a Custom Graphics Driver
+
+    The custom graphics driver is created by deriving from the QScreen
+    class. QScreen is the base class for implementing screen/graphics
+    drivers in Qt for Embedded Linux.
+
+    \snippet examples/qws/svgalib/svgalibscreen.h 0
+    \codeline
+    \snippet examples/qws/svgalib/svgalibscreen.h 1
+
+    The \l {QScreen::}{connect()}, \l {QScreen::}{disconnect()}, \l
+    {QScreen::}{initDevice()} and \l {QScreen::}{shutdownDevice()}
+    functions are declared as pure virtual functions in QScreen and
+    must be implemented. They are used to configure the hardware, or
+    query its configuration: \l {QScreen::}{connect()} and \l
+    {QScreen::}{disconnect()} are called by both the server and client
+    processes, while the \l {QScreen::}{initDevice()} and \l
+    {QScreen::}{shutdownDevice()} functions are only called by the
+    server process.
+
+    QScreen's \l {QScreen::}{setMode()} and \l {QScreen::}{blank()}
+    functions are also pure virtual, but our driver's implementations
+    are trivial. The last two functions (\l {QScreen::}{blit()} and \l
+    {QScreen::}{solidFill()}) are the ones involved in putting pixels
+    on the screen, i.e., we reimplement these functions to perform the
+    pixel copying acceleration.
+
+    Finally, the \c context variable is a pointer to a \l
+    {http://www.svgalib.org}{SVGAlib} specific type. Note that the
+    details of using the \l {http://www.svgalib.org}{SVGAlib} library
+    is beyond the scope of this example.
+
+    \section2 SvgalibScreen Class Implementation
+
+    The \l {QScreen::}{connect()} function is the first function that
+    is called after the constructor returns. It queries \l
+    {http://www.svgalib.org}{SVGAlib} about the graphics mode and
+    initializes the variables.
+
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 0
+
+    It is important that the \l {QScreen::}{connect()} function
+    initializes the \c data, \c lstep, \c w, \c h, \c dw, \c dh, \c d,
+    \c physWidth and \c physHeight variables (inherited from QScreen)
+    to ensure that the driver is in a state consistent with the driver
+    configuration.
+
+    In this particular example we do not have any information of the
+    real physical size of the screen, so we set these values with the
+    assumption of a screen with 72 DPI.
+
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 1
+
+    When the \l {QScreen::}{connect()} function returns, the server
+    process calls the \l {QScreen::}{initDevice()} function which is
+    expected to do the necessary hardware initialization, leaving the
+    hardware in a state consistent with the driver configuration.
+
+    Note that we have chosen to use the software cursor. If you want
+    to use a hardware cursor, you should create a subclass of
+    QScreenCursor, create an instance of it, and make the global
+    variable \c qt_screencursor point to this instance.
+
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 2
+    \codeline
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 3
+
+    Before exiting, the server process will call the \l
+    {QScreen::}{shutdownDevice()} function to do the necessary
+    hardware cleanup. Again, it is important that the function leaves
+    the hardware in a state consistent with the driver
+    configuration. When \l {QScreen::}{shutdownDevice()} returns, the
+    \l {QScreen::}{disconnect()} function is called. Our
+    implementation of the latter function is trivial.
+
+    Note that, provided that the \c QScreen::data variable points to a
+    valid linear framebuffer, the graphics driver is fully functional
+    as a simple screen driver at this point. The rest of this example
+    will show where to take advantage of the accelerated capabilities
+    available on the hardware.
+
+    Whenever an area on the screen needs to be updated, the server will
+    call the \l {QScreen::}{exposeRegion()} function that paints the 
+    given region on screen. The default implementation will do the 
+    necessary composing of the top-level windows and call \l 
+    {QScreen::}{solidFill()} and \l {QScreen::}{blit()} whenever it is 
+    required. We do not want to change this behavior in the driver so
+    we do not reimplement \l {QScreen::}{exposeRegion()}. 
+
+    To control how the pixels are put onto the screen we need to
+    reimplement the \l {QScreen::}{solidFill()} and \l 
+    {QScreen::}{blit()} functions.
+
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 4
+    \codeline
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 5
+
+    \section1 Step 2: Implementing a Custom Raster Paint Engine
+
+    \l{Qt for Embedded Linux} uses QRasterPaintEngine (a raster-based
+    implementation of QPaintEngine) to implement the painting
+    operations.
+
+    Acceleration of the painting operations is done by deriving from
+    QRasterPaintEngine class. This is a powerful mechanism for
+    accelerating graphic primitives while getting software fallbacks
+    for all the primitives you do not accelerate.
+
+    \snippet examples/qws/svgalib/svgalibpaintengine.h 0
+
+    In this example, we will only accelerate one of the \l
+    {QRasterPaintEngine::}{drawRects()} functions, i.e., only
+    non-rotated, aliased and opaque rectangles will be rendered using
+    accelerated painting. All other primitives are rendered using the
+    base class's unaccelerated implementation.
+
+    The paint engine's state is stored in the private member
+    variables, and we reimplement the \l
+    {QPaintEngine::}{updateState()} function to ensure that our
+    custom paint engine's state is updated properly whenever it is
+    required. The private \c setClip() and \c updateClip() functions
+    are only helper function used to simplify the \l
+    {QPaintEngine::}{updateState()} implementation.
+
+    We also reimplement QRasterPaintEngine's \l
+    {QRasterPaintEngine::}{begin()} and \l
+    {QRasterPaintEngine::}{end()} functions to initialize the paint
+    engine and to do the cleanup when we are done rendering,
+    respectively.
+
+    \table
+    \header \o Private Header Files
+    \row
+    \o
+
+    Note the \c include statement used by this class. The files
+    prefixed with \c private/ are private headers file within
+    \l{Qt for Embedded Linux}. Private header files are not part of
+    the standard installation and are only present while
+    compiling Qt. To be able to compile using
+    private header files you need to use a \c qmake binary within a
+    compiled \l{Qt for Embedded Linux} package.
+
+    \warning Private header files may change without notice between
+    releases.
+
+    \endtable
+
+    The \l {QRasterPaintEngine::}{begin()} function initializes the
+    internal state of the paint engine. Note that it also calls the
+    base class implementation to initialize the parts inherited from
+    QRasterPaintEngine:
+
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 0
+    \codeline
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 1
+
+    The implementation of the \l {QRasterPaintEngine::}{end()}
+    function removes the clipping constraints that might have been set
+    in \l {http://www.svgalib.org}{SVGAlib}, before calling the
+    corresponding base class implementation.
+
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 2
+
+    The \l {QPaintEngine::}{updateState()} function updates our
+    custom paint engine's state. The QPaintEngineState class provides
+    information about the active paint engine's current state.
+
+    Note that we only accept and save the current matrix if it doesn't
+    do any shearing. The pen is accepted if it is opaque and only one
+    pixel wide. The rest of the engine's properties are updated
+    following the same pattern. Again it is important that the
+    QPaintEngine::updateState() function is called to update the
+    parts inherited from the base class.
+
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 3
+    \codeline
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 4
+
+    The \c setClip() helper function is called from our custom
+    implementation of \l {QPaintEngine::}{updateState()}, and
+    enables clipping to the given region. An empty region means that
+    clipping is disabled.
+
+    Our custom update function also makes use of the \c updateClip()
+    helper function that checks if the clip is "simple", i.e., that it
+    can be represented by only one rectangle, and updates the clip
+    region in \l {http://www.svgalib.org}{SVGAlib}.
+
+    \snippet examples/qws/svgalib/svgalibpaintengine.cpp 5
+
+    Finally, we accelerated that drawing of non-rotated, aliased and
+    opaque rectangles in our reimplementation of the \l
+    {QRasterPaintEngine::}{drawRects()} function. The
+    QRasterPaintEngine fallback is used whenever the rectangle is not
+    simple enough.
+
+    \section1 Step 3: Making the Widgets Aware of the Custom Paint Engine
+
+    To activate the custom paint engine, we also need to implement a
+    corresponding paint device and window surface and make some minor
+    adjustments of the graphics driver.
+
+    \list
+        \o \l {Implementing a Custom Paint Device}
+        \o \l {Implementing a Custom Window Surface}
+        \o \l {Adjusting the Graphics Driver}
+    \endlist
+
+    \section2 Implementing a Custom Paint Device
+
+    The custom paint device can be derived from the
+    QCustomRasterPaintDevice class. Reimplement its \l
+    {QCustomRasterPaintDevice::}{paintEngine()} and \l
+    {QCustomRasterPaintDevice::}{memory()} functions to activate the
+    accelerated paint engine:
+
+    \snippet examples/qws/svgalib/svgalibpaintdevice.h 0
+
+    The \l {QCustomRasterPaintDevice::}{paintEngine()} function should
+    return an instance of the \c SvgalibPaintEngine class. The \l
+    {QCustomRasterPaintDevice::}{memory()} function should return a
+    pointer to the buffer which should be used when drawing the
+    widget.
+
+    Our example driver is rendering directly to the screen without any
+    buffering, i.e., our custom pain device's \l
+    {QCustomRasterPaintDevice::}{memory()} function returns a pointer
+    to the framebuffer. For this reason, we must also reimplement the
+    \l {QPaintDevice::}{metric()} function to reflect the metrics of
+    framebuffer.
+
+    \section2 Implementing a Custom Window Surface
+
+    The custom window surface can be derived from the QWSWindowSurface
+    class. QWSWindowSurface manages the memory used when drawing a
+    window.
+
+    \snippet examples/qws/svgalib/svgalibsurface.h 0
+
+    We can implement most of the pure virtual functions inherited from
+    QWSWindowSurface as trivial inline functions, except the scroll()
+    function that actually makes use of some hardware acceleration:
+
+    \snippet examples/qws/svgalib/svgalibsurface.cpp 0
+
+    \section2 Adjusting the Graphics Driver
+
+    Finally, we enable the graphics driver to recognize an instance of
+    our custom window surface:
+
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 7
+    \codeline
+    \snippet examples/qws/svgalib/svgalibscreen.cpp 8
+
+    The \l {QScreen::}{createSurface()} functions are factory
+    functions that determines what kind of surface a top-level window
+    is using. In our example we only use the custom surface if the
+    given window has the Qt::WA_PaintOnScreen attribute or the
+    QT_ONSCREEN_PAINT environment variable is set.
+*/
+

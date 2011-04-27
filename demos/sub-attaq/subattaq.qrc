@@ -1,0 +1,39 @@
+<RCC>
+    <qresource prefix="/" >
+        <file alias="all" >pics/scalable/sub-attaq.svg</file>
+        <file alias="submarine" >pics/scalable/submarine.svg</file>
+        <file alias="boat" >pics/scalable/boat.svg</file>
+        <file alias="torpedo" >pics/scalable/torpedo.svg</file>
+        <file alias="logo-s" >pics/welcome/logo-s.png</file>
+        <file alias="logo-u" >pics/welcome/logo-u.png</file>
+        <file alias="logo-b" >pics/welcome/logo-b.png</file>
+        <file alias="logo-dash" >pics/welcome/logo-dash.png</file>
+        <file alias="logo-a" >pics/welcome/logo-a.png</file>
+        <file alias="logo-t" >pics/welcome/logo-t.png</file>
+        <file alias="logo-t2" >pics/welcome/logo-t2.png</file>
+        <file alias="logo-a2" >pics/welcome/logo-a2.png</file>
+        <file alias="logo-q" >pics/welcome/logo-q.png</file>
+        <file alias="logo-excl" >pics/welcome/logo-excl.png</file>
+        <file alias="big/background" >pics/big/background.png</file>
+        <file alias="big/boat" >pics/big/boat.png</file>
+        <file alias="big/bomb" >pics/big/bomb.png</file>
+        <file alias="big/submarine" >pics/big/submarine.png</file>
+        <file alias="big/surface" >pics/big/surface.png</file>
+        <file alias="big/torpedo" >pics/big/torpedo.png</file>
+        <file alias="small/background" >pics/small/background.png</file>
+        <file alias="small/boat" >pics/small/boat.png</file>
+        <file alias="small/bomb" >pics/small/bomb.png</file>
+        <file alias="small/submarine" >pics/small/submarine.png</file>
+        <file alias="small/surface" >pics/small/surface.png</file>
+        <file alias="small/torpedo" >pics/small/torpedo.png</file>
+        <file alias="big/explosion/boat/step1" >pics/big/explosion/boat/step1.png</file>
+        <file alias="big/explosion/boat/step2" >pics/big/explosion/boat/step2.png</file>
+        <file alias="big/explosion/boat/step3" >pics/big/explosion/boat/step3.png</file>
+        <file alias="big/explosion/boat/step4" >pics/big/explosion/boat/step4.png</file>
+        <file alias="big/explosion/submarine/step1" >pics/big/explosion/submarine/step1.png</file>
+        <file alias="big/explosion/submarine/step2" >pics/big/explosion/submarine/step2.png</file>
+        <file alias="big/explosion/submarine/step3" >pics/big/explosion/submarine/step3.png</file>
+        <file alias="big/explosion/submarine/step4" >pics/big/explosion/submarine/step4.png</file>
+        <file>data.xml</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/logo.png</file>
+    <file>images/watermark.png</file>
+</qresource>
+</RCC>

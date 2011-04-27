@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="1" tests="2" name="tst_FetchBogus">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="fetchBogus">
+    <!-- tag="foo" message="QFETCH: Requested testdata &apos;bubu&apos; not available, check your _data function." type="qfatal" -->
+    <failure tag="foo" message="Received a fatal error." result="fail"/>
+  </testcase>
+  <system-err>
+<![CDATA[QFETCH: Requested testdata 'bubu' not available, check your _data function.]]>
+  </system-err>
+</testsuite>

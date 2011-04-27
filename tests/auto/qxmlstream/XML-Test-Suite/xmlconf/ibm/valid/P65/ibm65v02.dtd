@@ -1,0 +1,10 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!--dtd for production 65-->
+<![IGNORE[
+this is some stringwithout brackets
+<![
+<!ELEMENT animal EMPTY>
+]]>
+this is another string without brackets
+]]>
+<!--Positive test. Pattern2-->

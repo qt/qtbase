@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="8" failures="5" tests="5" name="tst_BadXml">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="badDataTag">
+    <!-- tag="end cdata ]]&gt; text ]]&gt; more text" message="a message" type="qdebug" -->
+    <failure tag="end cdata ]]&gt; text ]]&gt; more text" message="a failure" result="fail"/>
+    <!-- tag="quotes &quot; text&quot; more text" message="a message" type="qdebug" -->
+    <failure tag="quotes &quot; text&quot; more text" message="a failure" result="fail"/>
+    <!-- tag="xml close &gt; open &lt; tags &lt; text" message="a message" type="qdebug" -->
+    <failure tag="xml close &gt; open &lt; tags &lt; text" message="a failure" result="fail"/>
+    <!-- tag="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" message="a message" type="qdebug" -->
+    <failure tag="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" message="a failure" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="badMessage">
+    <!-- tag="string 0" message="end cdata ]]&gt; text ]]&gt; more text" type="qdebug" -->
+    <!-- tag="string 1" message="quotes &quot; text&quot; more text" type="qdebug" -->
+    <!-- tag="string 2" message="xml close &gt; open &lt; tags &lt; text" type="qdebug" -->
+    <!-- tag="string 3" message="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" type="qdebug" -->
+  </testcase>
+  <testcase result="fail" name="failWithNoFile">
+    <failure message="failure message" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[a message]]>
+<![CDATA[a message]]>
+<![CDATA[a message]]>
+<![CDATA[a message]]>
+<![CDATA[end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]>
+<![CDATA[quotes " text" more text]]>
+<![CDATA[xml close > open < tags < text]]>
+<![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]>
+  </system-err>
+</testsuite>

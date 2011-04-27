@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>entrylist/file</file>
+   <file>entrylist/directory/dummy</file>
+</qresource>
+</RCC>

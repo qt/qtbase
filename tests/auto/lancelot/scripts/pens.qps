@@ -1,0 +1,133 @@
+# Version: 1
+# CheckVsReference: 1% (0 0 800 800)
+
+
+translate 10 10
+
+begin_block penstyles
+setPen black 0 solidline flatcap
+drawLine 0 0 100 0
+setPen black 0 dashline flatcap
+drawLine 100 0 100 40
+setPen black 0 dotline flatcap
+drawLine 100 40 200 0
+setPen black 0 dashdotline flatcap
+drawLine 200 0 300 0
+setPen black 0 dashdotdotline flatcap
+drawLine 300 0 400 40
+
+translate 0 50
+setPen blue 2 solidline flatcap
+drawLine 0 0 100 0
+setPen blue 2 dashline flatcap
+drawLine 100 0 100 40
+setPen blue 2 dotline flatcap
+drawLine 100 40 200 0
+setPen blue 2 dashdotline flatcap
+drawLine 200 0 300 0
+setPen blue 2 dashdotdotline flatcap
+drawLine 300 0 400 40
+
+translate 0 50
+setPen red 5 solidline flatcap
+drawLine 0 0 100 0
+setPen red 5 dashline flatcap
+drawLine 100 0 100 40
+setPen red 5 dotline flatcap
+drawLine 100 40 200 0
+setPen red 5 dashdotline flatcap
+drawLine 200 0 300 0
+setPen red 5 dashdotdotline flatcap
+drawLine 300 0 400 40
+end_block
+
+translate 0 50
+scale 1 2
+repeat_block penstyles
+
+
+# Test cap styles
+resetMatrix
+translate 420 10
+setPen green 5 dashdotline flatcap
+drawLine 0 0 200 0
+setPen green 5 dashdotline roundcap
+drawLine 0 20 200 20
+setPen green 5 dashdotline squarecap
+drawLine 0 40 200 40
+
+
+# Test join styles
+resetMatrix
+translate 420 80
+setBrush nobrush
+begin_block joinstyles
+setPen orange 10 solidline flatcap miterjoin
+drawPolyline [ 0 0  80 0  80 80  0 80 ]
+
+translate 0 100
+setPen aquamarine 10 solidline squarecap beveljoin
+drawPolyline [ 0 0  80 0  80 80  0 80 ]
+
+translate 0 100
+setPen purple 10 solidline roundcap roundjoin
+drawPolyline [ 0 0  80 0  80 80  0 80 ]
+end_block
+
+translate 130 -200
+scale 2 1
+rotate 1
+repeat_block joinstyles
+
+# transparent lines
+resetMatrix
+translate 10 400
+setPen #7f000000
+drawLine 0 0 50 0
+setPen #7f000000 1 SolidLine
+drawLine 0 10 50 10
+setPen #7f000000 5 SolidLine
+drawLine 0 20 50 20
+setPen #7f000000 10  SolidLine
+drawLine 0 30 50 30
+setPen #7f000000
+drawLine 0 0 0 50
+setPen #7f000000 1 SolidLine
+drawLine 10 0 10 50
+setPen #7f000000 5 SolidLine
+drawLine 20 0 20 50
+setPen #7f000000 10 SolidLine
+drawLine 30 0 30 50
+
+# pen styles
+resetMatrix
+translate 0 500
+setPen black 0 DashLine
+drawLine 20 20 100 20
+translate 0 10
+setPen black 0 DotLine
+drawLine 20 20 100 20
+translate 0 10
+setPen black 0 DashDotLine
+drawLine 20 20 100 20
+translate 0 10
+setPen black 0 DashDotDotLine
+drawLine 20 20 100 20
+
+# scaling ellipse
+resetMatrix
+setPen black 0.008 DashLine
+translate 250 550
+rotate 30
+scale 250 250
+drawEllipse -0.4 -0.4 0.8 0.8
+
+# scaling path
+path_addEllipse star -0.3 -0.3 0.6 0.6
+
+resetMatrix
+setPen black 0.008 DashLine
+translate 250 550
+rotate 30
+scale 250 250
+drawPath star

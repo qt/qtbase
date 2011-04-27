@@ -1,0 +1,5 @@
+<!DOCTYPE doc
+[
+<!ENTITY % pe "<!--decl1-->" SYSTEM "nop.ent">
+]>
+<doc/>

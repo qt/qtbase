@@ -1,0 +1,87 @@
+load(data_caging_paths)
+
+contains(CONFIG, no_icon) {
+    # If no_icon keyword exist, the S60 UI app is just made hidden. This because S60 app FW
+    # requires the registration resource file to exist always
+    contains(QT, gui):contains(CONFIG, qt) {
+        symbian:RSS_RULES += "hidden = KAppIsHidden;"
+        CONFIG -= no_icon
+    }
+}
+
+
+!contains(CONFIG, no_icon) {
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+    contains(baseTarget, "^.*\\..*$") {
+        CONFIG += no_icon
+        ICON =
+        warning("Symbian resources do not support '.' character in TARGET, skipping resource generation.")
+    } else {
+        symbian-abld|symbian-sbsv2 {
+            resourceZDir = $$EPOCROOT$$HW_ZDIR$$APP_RESOURCE_DIR
+            regZDir = $$EPOCROOT$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR
+        } else {
+            contains(DESTDIR, "/.*") {
+                resourceZDir = $$DESTDIR
+            } else:isEmpty(DESTDIR) {
+                resourceZDir = $$OUT_PWD
+            } else {
+                resourceZDir = $$OUT_PWD/$$DESTDIR
+            }
+            regZDir = $$resourceZDir
+        }
+
+        default_resource_deployment.files += $$resourceZDir/$${baseTarget}.rsc
+        default_resource_deployment.path = $$APP_RESOURCE_DIR
+        default_reg_deployment.files += $$regZDir/$${baseTarget}_reg.rsc
+        default_reg_deployment.path = $$REG_RESOURCE_IMPORT_DIR
+
+        !isEmpty(ICON) {
+            !count(ICON, 1) {
+                ICON = $$first(ICON)
+                warning("Only first icon specified in ICON variable is used: $$ICON")
+            }
+
+            # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
+            !symbian-sbsv2 {
+                # Absolute path required for shadow builds.
+                # However, in older Symbian environments abld toolchain can't handle even moderately long
+                # paths, so don't force absolute there.
+                !symbian-abld:!contains(ICON, "^(/|\\\\|.:).*"):ICON = $$_PRO_FILE_PWD_/$$ICON
+
+                #Makefile: requires paths with backslash
+                ICON_backslashed = $$ICON
+
+                symbian-abld {
+                    # ${ZDIR} is defined in Makefile
+                    mifIconZDir = ${ZDIR}$$APP_RESOURCE_DIR
+                } else {
+                    mifIconZDir = $$resourceZDir
+                }
+
+                # Extra compiler rules for mifconv
+                mifconv.target = $$mifIconZDir/$${baseTarget}.mif
+                contains(QMAKE_HOST.os, "Windows") {
+                    ICON_backslashed = $$replace(ICON_backslashed, /, \\)
+                    mifconv.target = $$replace(mifconv.target, /, \\)
+                }
+                # Based on: http://www.forum.nokia.com/document/Cpp_Developers_Library
+                # svg-t icons should always use /c32 depth
+                mifconv.commands = mifconv $$mifconv.target /c32 $$ICON_backslashed
+
+                mifconv.depends = $$ICON
+                PRE_TARGETDEPS += $$mifconv.target
+                QMAKE_EXTRA_TARGETS += mifconv
+                QMAKE_CLEAN += $$mifconv.target
+            }
+            # Rules to use generated MIF file from symbian resources
+            RSS_RULES.number_of_icons = $$size(ICON_backslashed)
+
+            RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif                
+
+            default_resource_deployment.files += $$resourceZDir/$${baseTarget}.mif
+        }
+    }
+}
+
+

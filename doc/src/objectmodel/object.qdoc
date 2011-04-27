@@ -1,0 +1,124 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page object.html
+    \title Object Model
+    \ingroup qt-basic-concepts
+    \brief A description of the powerful features made possible by Qt's dynamic object model.
+
+    The standard C++ object model provides very efficient runtime
+    support for the object paradigm. But its static nature is
+    inflexibile in certain problem domains. Graphical user interface
+    programming is a domain that requires both runtime efficiency and
+    a high level of flexibility. Qt provides this, by combining the
+    speed of C++ with the flexibility of the Qt Object Model.
+
+    Qt adds these features to C++:
+
+    \list
+    \o a very powerful mechanism for seamless object
+       communication called \l{signals and slots}
+    \o queryable and designable \l{Qt's Property System}{object
+       properties}
+    \o powerful \l{The Event System}{events and event filters}
+    \o contextual \l{i18n}{string translation for internationalization}
+    \o sophisticated interval driven \l timers that make it possible
+       to elegantly integrate many tasks in an event-driven GUI
+    \o hierarchical and queryable \l{Object Trees & Ownership}{object
+       trees} that organize object ownership in a natural way
+    \o guarded pointers (QPointer) that are automatically
+       set to 0 when the referenced object is destroyed, unlike normal C++
+       pointers which become dangling pointers when their objects are destroyed
+    \o a \l{metaobjects.html#qobjectcast}{dynamic cast} that works across
+       library boundaries.
+    \endlist
+
+    Many of these Qt features are implemented with standard C++
+    techniques, based on inheritance from QObject. Others, like the
+    object communication mechanism and the dynamic property system,
+    require the \l{Meta-Object System} provided
+    by Qt's own \l{moc}{Meta-Object Compiler (moc)}.
+
+    The meta-object system is a C++ extension that makes the language
+    better suited to true component GUI programming. Although
+    templates can be used to extend C++, the meta-object system
+    provides benefits using standard C++ that cannot be achieved with
+    templates; see \l{Why Doesn't Qt Use Templates for Signals and
+    Slots?}
+
+    \section1 Important Classes
+
+    These classes form the basis of the Qt Object Model.
+    
+    \annotatedlist objectmodel
+
+    \target Identity vs Value
+    \section1 Qt Objects: Identity vs Value
+
+    Some of the added features listed above for the Qt Object Model,
+    require that we think of Qt Objects as identities, not values.
+    Values are copied or assigned; identities are cloned. Cloning
+    means to create a new identity, not an exact copy of the old
+    one. For example, twins have different identities. They may look
+    identical, but they have different names, different locations, and
+    may have completely different social networks.
+
+    Then cloning an identity is a more complex operation than copying
+    or assigning a value. We can see what this means in the Qt Object
+    Model.
+
+    \bold{A Qt Object...}
+
+    \list
+
+    \o might have a unique \l{QObject::objectName()}.  If we copy a Qt
+    Object, what name should we give the copy?
+
+    \o has a location in an \l{Object Trees & Ownership}
+    {object hierarchy}. If we copy a Qt Object, where should the copy
+    be located?
+
+    \o can be connected to other Qt Objects to emit signals to them or
+    to receive signals emitted by them. If we copy a Qt Object, how
+    should we transfer these connections to the copy?
+
+    \o can have \l{Qt's Property System} {new properties} added to it
+    at runtime that are not declared in the C++ class. If we copy a Qt
+    Object, should the copy include the properties that were added to
+    the original?
+    
+    \endlist
+
+    For these reasons, Qt Objects should be treated as identities, not
+    as values. Identities are cloned, not copied or assigned, and
+    cloning an identity is a more complex operation than copying or
+    assigning a value. Therefore, QObject and all subclasses of
+    QObject (direct or indirect) have their \l{No copy constructor}
+    {copy constructor and assignment operator} disabled.
+
+  */

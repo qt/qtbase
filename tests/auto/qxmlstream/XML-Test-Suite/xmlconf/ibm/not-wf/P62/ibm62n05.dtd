@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<![INCLUDE
+<!ELEMENT tiger EMPTY>
+<!ELEMENT animal ANY>
+]]>
+
+<!--Negative test with pattern5 of P62-->
+<!--Missing the required field '[' after INCLUDE-->

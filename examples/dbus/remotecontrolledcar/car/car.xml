@@ -1,0 +1,11 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+	"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/com/trollech/examples/car">
+	<interface name="com.trolltech.Examples.CarInterface">
+		<method name="accelerate"/>
+		<method name="decelerate"/>
+		<method name="turnLeft"/>
+		<method name="turnRight"/>
+		<signal name="crashed"/>
+	</interface>
+</node>

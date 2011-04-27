@@ -1,0 +1,6 @@
+usr/lib/libQtCore.so.*
+usr/lib/qt4/plugins/codecs/lib*.so
+usr/share/qt4/translations/qt_??.qm
+usr/share/qt4/translations/qt_??_??.qm
+usr/share/qt4/translations/qvfb_*.qm
+

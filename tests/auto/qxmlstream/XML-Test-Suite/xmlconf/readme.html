@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>NIST XML Conformance Testing</TITLE>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<META content="XML Conformance" name=keyword>
+<META content=NIST,OASIS,XML,Conformance name=keywords><LINK 
+href="files/committee.css" 
+rel=Stylesheet type=text/css>
+<META content="MSHTML 5.00.2014.210" name=GENERATOR></HEAD>
+<BODY bgColor=#ffffff>
+<p>
+<center>
+<table border="4" width="90%">
+<tr >
+<td>
+<table>
+<tr >
+<td width="40%"><img src="files/a_oasis-logo.gif" width="350" height="125"/></td>
+<td width="30%"/>
+<td width="40%" align="right"><img src="files/top3.jpe" width="400" height="125"/></td>
+</tr>
+</table>
+<center>
+<table>
+<tr>
+<td ><b><font size="+2">A Joint Development Effort</font></b></td>
+</tr>
+</table>
+</center>
+</td>
+</tr>
+</table>
+</center>
+<p/>
+<h4>OASIS XML Conformance Subcommittee<br/>XML 1.0 Test Suite, Second Edition<br/>Working Draft<br/>15 March 2001</h4>
+<dl>
+<dt><b>This version:</b></dt>
+<dd><ul>
+<li><a href="xmlconf-20010315.htm">
+xmlconf-20010315.htm</a>
+(<a href="xmlconf-20010315.xml">XML</a>)
+</li>
+</ul>
+</dd>
+<p/>
+<dt><b>Current Version:</b></dt>
+<dd>
+<ul>
+<li><a href="xmlconf.xml">
+xmlconf.xml</a></li>
+</ul>
+</dd>
+<p/>
+<dt><b>Previous Version:</b></dt>
+<dd>
+<ul>
+<li><a href="http://www.oasis-open.org/committees/xml-conformance/suite-v1/xmlconf-19990712.xml">
+http://www.oasis-open.org/committees/xml-conformance/suite-v1/xmlconf-19990712.xml</a></li>
+</ul>
+</dd>
+<p/>
+<dt><b>OASIS XML Conformance Technical Committee:</b></dt> 	
+<dd><ul><li><a href="http://www.oasis-open.org/committees/xml-conformance/">http://www.oasis-open.org/committees/xml-conformance/</a>
+</li></ul></dd>
+<p></p>
+<dt><b>Comments:</b></dt> 	
+<dd><ul><li>Mary Brady, NIST <a href="mailto:mbrady@nist.gov">&lt;mbrady@nist.gov&gt;</a>
+</li></ul></dd>
+<p/>
+</dl>
+<hr>
+<p>
+The XML Conformance Test Suite, v1.0, Second Edition contains over 2000 test
+files and an associated test report. The test report
+contains background information on conformance testing
+for XML as well as test descriptions for each of the
+test files included in this release.  This test suite
+provides a set of metrics for determining 
+conformance to the <a href="http://www.w3.org/TR/REC-xml">W3C XML 
+1.0 (Second Edition) Recommendation</a>.  
+The XML Conformance Test Suite is intended to complement 
+the W3C XML 1.0 (Second Edition) Recommendation.  All interpretations of this 
+Recommendation are subject to confirmation by the 
+<a href="http://www.w3.org/XML/Activity.html">W3C XML 
+Coordination Group</a>. 
+<p>
+This second edition includes 1000 additional tests contributed by IBM.  In 
+addition, several tests have been either updated or further documented to 
+be in accordance with the XML 1.0 (Second Edition) Recommendation.  Many 
+thanks to Arnaud Le Hors and Richard Tobin, of the W3C XML Core WG, for their insightful 
+comments regarding interpretations of the specification. See 
+<a href="http://www.oasis-open.org/committees/xml-conformance/suite-v1se/changes.html">
+http://www.oasis-open.org/committees/xml-conformance/suite-v1se/changes.html</a> for additional details.
+<p>
+This release contains the following files/directories:
+<p>
+<center>
+<table border=2 width=80% cellpadding=5>
+<tr BGCOLOR=#0000FF>
+<th width=30%><font color=yellow size=+1>Filename</font>
+<th width=70%><font color=yellow size=+1>Description</font>
+</tr>
+<tr>
+<td>xmlconf.xml</td>
+<td>Primary xml file - includes xml description files
+from contributors. 
+</tr>
+<tr>
+<td>xmlconformance.msxsl
+<td>Microsoft XSL stylesheet to dynamically render XML Conformance 
+report within IE5 5.00.2014.2016 or later. 
+</tr>
+<tr>
+<td>xmlconf.htm
+<td>HTML version of the XML Conformance report.  Generated using
+LOTUS Xalan and applying conformance.xsl.
+</tr>
+<tr>
+<td>xmlconformance.xsl
+<td>W3C XSL (19990421) stylesheet to produce the HTML rendition of the
+XML Conformance report.
+</tr>
+<tr>
+<td>testcases.dtd
+<td>DTD used by all test description files.
+</tr>
+<tr>
+<td>changes.html
+<td>Details regarding changes in this release.
+</tr>
+<tr>
+<td>japanese/japanese.xml
+<td>Fuji Xerox, contributed by Makota Murata, xml test description file.
+</tr>
+<tr>
+<td>japanese/*
+<td>Fuji Xerox character set tests.
+</tr>
+<tr>
+<td>oasis/oasis.xml
+<td>OASIS xml test description file.  These tests were supplied primarily
+by Matt Timmermans and modified/documented by NIST.
+</tr>
+<tr>
+<td>oasis/*
+<td>OASIS xml test files - binary tests for productions 1-76.
+</tr>
+<tr>
+<td>xmltest/xmltest.xml
+<td>James Clark's xml test description file.  These tests were supplied by
+James Clark and documented by Dave Brownell, SUN, and NIST.
+</tr>
+<tr>
+<td>xmltest/*
+<td>James Clark's test files - strong where parsers are likely to fail.
+</tr>
+<tr>
+<td>sun/valid/sun-valid.xml
+<br>sun/invalid/sun-invalid.xml
+<br>sun/not-wf/sun-not-wf.xml
+<br>sun/error/sun-error.xml
+</td>
+<td>SUN Microsystems xml test description files.  Contributions include 
+valid, invalid, not-wf, and error tests.
+</tr>
+<tr>
+<td>
+sun/valid/*
+<br>sun/invalid/*
+<br>sun/not-wf/*
+<br>sun/error/*
+</td>
+<td>SUN Microsystems xml test files.  Developed to complement James
+Clark's tests.</td>
+</tr>
+<tr>
+<td>ibm/ibm_oasis_valid.xml
+<br>ibm/ibm_oasis_not-wf.xml
+<br>ibm/ibm_oasis_invalid.xml
+</td>
+<td>IBM xml test description files.  Contributions include 
+valid, invalid, and not-wf tests.
+</tr>
+<tr>
+<td>
+ibm/valid/*
+<br>ibm/invalid/*
+<br>ibm/not-wf/*
+</td>
+<td>IBM xml test files.  Developed to complement v1.0 tests.</td>
+</tr>
+</table>
+</center>
+<p>
+Please forward all comments/suggestions/bugs to <a href="mailto:mbrady@nist.gov">&lt;mbrady@nist.gov&gt;</a>
+<br>
+<hr noShade>
+<div class=bottom><a href="http://www.itl.nist.gov">NIST / Information Technology Lab</a><br> 
+<a href="http://www.oasis-open.org/">OASIS Home</a> / <a href="http://www.oasis-open.org/committees/">OASIS Committee Pages</a> 
+</div>
+</body>
+</html>

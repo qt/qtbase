@@ -1,0 +1,56 @@
+StartDocument( )
+DTD( text="<!DOCTYPE html:html [
+<!ENTITY ent1 'foo'>
+<!ENTITY ent2 'foo<br/>'>
+<!ELEMENT html:html (html:head, html:body)>
+<!ATTLIST html:html xmlns:html CDATA #IMPLIED>
+<!ELEMENT html:head (html:title,script*)>
+<!ATTLIST html:head xmlns CDATA #IMPLIED>
+<!ELEMENT script (#PCDATA)>
+<!ATTLIST script 
+     src CDATA #IMPLIED
+     type CDATA #IMPLIED
+     charset CDATA #IMPLIED>
+<!ELEMENT html:title (#PCDATA)>
+<!ELEMENT html:body (html:p)>
+<!ELEMENT html:p (#PCDATA|html:br)*>
+<!ATTLIST html:p class CDATA #IMPLIED>
+<!ELEMENT html:br EMPTY>
+]>" dtdName="html"
+    EntityDeclaration( name="ent1" value="foo" )
+
+    EntityDeclaration( name="ent2" value="foo<br/>" )
+ )
+StartElement( name="html" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:html" prefix="html"
+    NamespaceDeclaration( prefix="html" namespaceUri="http://www.w3.org/1999/xhtml" )
+ )
+Characters( whitespace text="
+" )
+StartElement( name="head" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:head" prefix="html"
+    NamespaceDeclaration( namespaceUri="http://www.w3.org/1999/xhtml" )
+ )
+Characters( whitespace text="
+" )
+StartElement( name="title" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:title" prefix="html" )
+Characters( text="test file" )
+EndElement( name="title" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:title" )
+Characters( whitespace text="
+" )
+EndElement( name="head" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:head" )
+Characters( whitespace text="
+" )
+StartElement( name="body" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:body" prefix="html" )
+Characters( whitespace text=" 
+" )
+StartElement( name="p" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:p" prefix="html"
+    Attribute( name="class" qualifiedName="class" value="visible:false" )
+ )
+Characters( text="bar" )
+EndElement( name="p" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:p" )
+Characters( whitespace text="
+" )
+EndElement( name="body" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:body" )
+Characters( whitespace text="
+" )
+EndElement( name="html" namespaceUri="http://www.w3.org/1999/xhtml" qualifiedName="html:html" )
+EndDocument( )

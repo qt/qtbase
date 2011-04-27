@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE student SYSTEM "student".dtd"[
+	<!ELEMENT student (#PCDATA)> 
+]>
+
+<!-- testing invalid system literal  -->
+<student>My Name is SnowMan. </student>
+
+
+
+
+
+
+
+
+
+
+ 

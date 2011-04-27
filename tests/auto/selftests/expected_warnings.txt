@@ -1,0 +1,24 @@
+********* Start testing of tst_Warnings *********
+Config: Using QTest library 4.1.0, Qt 4.1.0
+PASS   : tst_Warnings::initTestCase()
+testWarnings 1: next line prints "Warning"
+QWARN  : tst_Warnings::testWarnings() Warning
+testWarnings 2: next line prints nothing
+testWarnings 3: next line prints "Warning"
+QWARN  : tst_Warnings::testWarnings() Warning
+testWarnings 4: over
+testWarnings 5: next line prints "Debug"
+QDEBUG : tst_Warnings::testWarnings() Debug
+testWarnings 6: next line prints nothing
+testWarnings 7: next line prints "Debug"
+QDEBUG : tst_Warnings::testWarnings() Debug
+testWarnings 8: next comes "Baba" twice
+QDEBUG : tst_Warnings::testWarnings() Baba
+QDEBUG : tst_Warnings::testWarnings() Baba
+PASS   : tst_Warnings::testWarnings()
+INFO   : tst_Warnings::testMissingWarnings() Did not receive message: "Warning0"
+INFO   : tst_Warnings::testMissingWarnings() Did not receive message: "Warning1"
+FAIL!  : tst_Warnings::testMissingWarnings() Not all expected messages were received
+PASS   : tst_Warnings::cleanupTestCase()
+Totals: 3 passed, 1 failed, 0 skipped
+********* Finished testing of tst_Warnings *********

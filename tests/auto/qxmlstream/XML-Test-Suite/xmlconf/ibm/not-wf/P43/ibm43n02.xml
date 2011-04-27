@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY % paaa "a string">
+]>
+<root>
+<!ELEMENT ele1 ANY>
+</root>
+<!--* ElementDecl in content -->

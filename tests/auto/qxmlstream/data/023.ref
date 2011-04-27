@@ -1,0 +1,9 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Illegal use of 1.1-style prefix unbinding in 1.0 document " )
+StartElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="a:foo" prefix="a"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/namespace" )
+ )
+Characters( whitespace text="
+ " )
+Invalid( name="foo" qualifiedName="a:foo" prefix="a" )
+ERROR: Illegal namespace declaration.

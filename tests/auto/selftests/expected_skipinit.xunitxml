@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" tests="2" name="tst_SkipInit">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase name="initTestCase">
+    <!-- message="Skip inside initTestCase. This should skip all tests in the class." type="skip" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]>
+  </system-err>
+</testsuite>

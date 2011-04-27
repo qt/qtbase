@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="1" tests="2" name="tst_Crashes">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="crash">
+    <!-- message="Received signal 11" type="qfatal" -->
+    <failure message="Received a fatal error." result="fail"/>
+  </testcase>
+  <system-err>
+<![CDATA[Received signal 11]]>
+  </system-err>
+</testsuite>

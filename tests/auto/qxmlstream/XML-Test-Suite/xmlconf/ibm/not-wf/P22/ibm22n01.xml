@@ -1,0 +1,6 @@
+<!DOCTYPE doc [
+<!ELEMENT doc EMPTY>
+]>
+<?xml version="1.0" encoding="ASCII" ?>
+<doc/>
+<!-- Wrong ordering between DTD and XMLDecl -->

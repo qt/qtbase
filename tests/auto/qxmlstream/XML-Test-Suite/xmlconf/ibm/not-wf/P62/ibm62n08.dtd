@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!ELEMENT animal ANY>
+<!ELEMENT tiger ANY>
+<!-- DTD for Production 62-->
+<![INCLUDE[
+]>
+
+<!--Negtive test with pattern8 of P62-->
+<!--Missing one "]" in closing sequence.-->

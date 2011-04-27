@@ -1,0 +1,10 @@
+<!DOCTYPE root [
+    <!ELEMENT root EMPTY>
+
+    <!-- illegal public ID characters -->
+
+    <!ENTITY e PUBLIC "<illegal>" "ignored">
+]>
+
+<root/>
+

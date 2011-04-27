@@ -1,0 +1,500 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtGui>
+
+#include "simplelistview.h"
+#include "scrollbar.h"
+#include "simplelistview.h"
+#include "scrollbar.h"
+#include "listitem.h"
+#if (QT_VERSION >= 0x040600)
+#include "listitemcache.h"
+#endif
+#include "theme.h"
+
+class SimpleListViewPrivate
+{
+    Q_DECLARE_PUBLIC(SimpleListView)
+
+public:
+
+    SimpleListViewPrivate(SimpleListView *button) 
+        : m_content(0)
+        , m_layout(0)
+        , m_twoColumns(false)
+        , q_ptr(button)
+#if (QT_VERSION >= 0x040600)
+        , m_listItemCaching(false)
+#endif
+    {
+        Q_Q(SimpleListView);
+
+        m_layout = new QGraphicsGridLayout();
+        m_layout->setContentsMargins(0, 0, 0, 0);
+        m_layout->setSpacing(0);
+        m_layout->setColumnSpacing(0,0);
+        m_layout->setColumnSpacing(1,0);
+        m_layout->setRowSpacing(0,0);
+        m_layout->setRowSpacing(1,0);
+        m_content = new QGraphicsWidget;
+        m_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        m_content->setParentItem(q->viewport());
+        m_content->setLayout(m_layout);
+
+        q->horizontalScrollBar()->setSliderSize(0.0);
+
+        QObject::connect(Theme::p(), SIGNAL(themeChanged()), q, SLOT(themeChange()));
+    }
+
+    ~SimpleListViewPrivate()
+    {
+        if (!m_content->parentItem() && !m_content->parent())
+            delete m_content;
+    }
+
+    void resizeContents(QSizeF s)
+    {
+        Q_UNUSED(s);
+        Q_Q(SimpleListView);
+
+        if (!m_content)
+            return;
+
+#if (QT_VERSION >= 0x040600)
+        const bool caching = q->listItemCaching();
+        q->setListItemCaching(false);
+#endif
+        m_content->resize(q->viewport()->size().width(),
+                        m_layout->preferredHeight());
+        const bool clip = 
+            m_content->size().width() > q->viewport()->size().width()
+                || m_content->size().height() > q->viewport()->size().height();
+
+        q->viewport()->setFlag(
+                QGraphicsItem::ItemClipsChildrenToShape, clip);
+
+#if (QT_VERSION >= 0x040600)
+        q->setListItemCaching(caching);
+#endif
+    }
+
+    void resizeScrollBars()
+    {
+        Q_Q(SimpleListView);
+
+        if (!m_content)
+            return;
+
+        m_content->resize(m_content->size().width(),
+                          m_layout->preferredHeight());
+
+        QRectF contentRect = m_content->boundingRect();
+        QRectF listRect = q->boundingRect();
+
+        // List do not have horizontal scroll bar visible.
+        q->horizontalScrollBar()->setSliderSize(0.0);
+
+        if (contentRect.height()-q->boundingRect().height() > 0) {
+            q->verticalScrollBar()->setSliderSize(contentRect.height()-q->boundingRect().height());
+            if (q->verticalScrollBarPolicy() != Qt::ScrollBarAlwaysOff &&
+                !q->verticalScrollBar()->isVisible()) {
+                q->verticalScrollBar()->show();
+            }
+        }
+        else if (q->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded ||
+                 q->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
+            q->verticalScrollBar()->setSliderSize(0.0);
+            q->verticalScrollBar()->hide();
+        }
+        else {
+            q->verticalScrollBar()->setSliderSize(0.0);
+        }
+
+        qreal pos = 0.0;
+        if ((m_content->boundingRect().height() - q->boundingRect().height()) != 0) {
+            qreal min = qMin(-contentRect.top(), m_content->pos().y());
+            qreal diff = contentRect.height() - listRect.height();
+            pos = qAbs(contentRect.top() + min) / diff;
+        }
+
+        q->verticalScrollBar()->setSliderPosition(pos);
+    }
+
+    void updateListContents()
+    {
+#if (QT_VERSION >= 0x040600)
+        Q_Q(SimpleListView);
+
+        const bool caching = q->listItemCaching();
+        q->setListItemCaching(false);
+#endif
+        const QString defaultIcon = Theme::p()->pixmapPath()+"contact_default_icon.svg";
+        const int itemCount = m_layout->count();
+    
+        for (int i=0; i<itemCount; ++i) {
+            ListItem* item = static_cast<ListItem*>(m_layout->itemAt(i));
+
+            // Update default icons
+            const QString filename = item->icon(ListItem::LeftIcon)->fileName();
+            if (filename.contains("contact_default_icon")) {
+                item->icon(ListItem::LeftIcon)->setFileName(defaultIcon);
+            }
+
+            // Update status icons
+            QString statusIcon = item->icon(ListItem::RightIcon)->fileName();
+            const int index = statusIcon.indexOf("contact_status");
+            if (index != -1) {
+                statusIcon.remove(0, index);
+                item->icon(ListItem::RightIcon)->setFileName(Theme::p()->pixmapPath()+statusIcon);
+            }
+
+            // Update fonts
+            item->setFont(Theme::p()->font(Theme::ContactName), ListItem::FirstPos);
+            item->setFont(Theme::p()->font(Theme::ContactNumber), ListItem::SecondPos);
+            item->setFont(Theme::p()->font(Theme::ContactEmail), ListItem::ThirdPos);
+
+            // Update list dividers
+            if (i%2) {
+                item->setBackgroundBrush(Theme::p()->listItemBackgroundBrushOdd());
+                item->setBackgroundOpacity(Theme::p()->listItemBackgroundOpacityOdd());
+            }
+            else {
+                item->setBackgroundBrush(Theme::p()->listItemBackgroundBrushEven());
+                item->setBackgroundOpacity(Theme::p()->listItemBackgroundOpacityEven());
+            }
+
+            // Update borders
+            item->setBorderPen(Theme::p()->listItemBorderPen());
+            item->setRounding(Theme::p()->listItemRounding());
+
+            // Update icons
+            item->icon(ListItem::LeftIcon)->setRotation(Theme::p()->iconRotation(ListItem::LeftIcon));
+            item->icon(ListItem::RightIcon)->setRotation(Theme::p()->iconRotation(ListItem::RightIcon));
+#if (QT_VERSION >= 0x040600)
+            item->icon(ListItem::LeftIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::LeftIcon));
+            item->icon(ListItem::RightIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::RightIcon));
+#endif
+            item->icon(ListItem::LeftIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::LeftIcon));
+            item->icon(ListItem::RightIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::RightIcon));
+        }
+#if (QT_VERSION >= 0x040600)
+        q->setListItemCaching(caching);
+#endif
+    }
+
+    void updateListItemBackgrounds(int index)
+    {
+#if (QT_VERSION >= 0x040600)
+        Q_Q(SimpleListView);
+
+        const bool caching = q->listItemCaching();
+        q->setListItemCaching(false);
+#endif
+        const int itemCount = m_layout->count();
+
+        for (int i=index; i<itemCount; ++i) {
+            ListItem* item = static_cast<ListItem*>(m_layout->itemAt(i));
+            if (i%2) {
+                item->setBackgroundBrush(Theme::p()->listItemBackgroundBrushOdd());
+                item->setBackgroundOpacity(Theme::p()->listItemBackgroundOpacityOdd());
+            }
+            else {
+                item->setBackgroundBrush(Theme::p()->listItemBackgroundBrushEven());
+                item->setBackgroundOpacity(Theme::p()->listItemBackgroundOpacityEven());
+            }
+        }
+
+#if (QT_VERSION >= 0x040600)
+        q->setListItemCaching(caching);
+#endif
+    }
+
+    void setTwoColumns(const bool twoColumns)
+    {
+        if(twoColumns == m_twoColumns)
+            return;
+
+        Q_Q(SimpleListView);
+        m_twoColumns = twoColumns;
+
+#if (QT_VERSION >= 0x040600)
+        bool cache = q->listItemCaching();
+        q->setListItemCaching(false);
+#endif
+        QList<QGraphicsLayoutItem *> moveditems;
+        if(twoColumns) {
+            int half = m_layout->count()/2;
+            for (int i = m_layout->count()-1; i>=half; --i) {
+                QGraphicsLayoutItem *item = m_layout->itemAt(i);
+                m_layout->removeAt(i);
+                moveditems.append(item);
+            }            
+            for ( int i = 0; i < moveditems.count(); ++i)
+                m_layout->addItem(moveditems.at(i), i, 1);
+
+            m_layout->setColumnSpacing(0,0);
+            m_layout->setColumnSpacing(1,0);
+            m_layout->setRowSpacing(0,0);
+            m_layout->setRowSpacing(1,0);
+        }
+        else {
+            int count = m_layout->count()/2;
+            for (int i = m_layout->count()-1;  i>=0; --i) {
+                if (i >= count)
+                    moveditems.append(m_layout->itemAt(i));
+                else
+                    moveditems.insert(moveditems.begin(), m_layout->itemAt(i));
+                m_layout->removeAt(i);                
+            }
+            for (int i = 0; i<moveditems.count(); ++i) {
+                m_layout->addItem(moveditems.at(i), m_layout->count(), 0);
+            }
+        }
+
+        resizeContents(q->size());
+        resizeScrollBars();
+
+#if (QT_VERSION >= 0x040600)
+        q->setListItemCaching(cache);
+#endif
+    }
+
+    bool twoColumns()
+    {
+        return m_twoColumns;
+    }
+
+    QGraphicsWidget *m_content;
+    QGraphicsGridLayout *m_layout;
+    bool m_twoColumns;
+    SimpleListView *q_ptr;
+#if (QT_VERSION >= 0x040600)
+    bool m_listItemCaching;
+#endif
+};
+
+SimpleListView::SimpleListView(QGraphicsWidget *parent) 
+    : AbstractScrollArea(parent)
+    , d_ptr(new SimpleListViewPrivate(this))
+{ 
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setContentsMargins(0, 0, 0, 0);
+    verticalScrollBar()->hide();
+    horizontalScrollBar()->hide();
+}
+
+SimpleListView::~SimpleListView() 
+{
+    Q_D(SimpleListView);
+
+    if (d->m_content) {
+        d->m_content->setParentItem(0);
+    }
+
+    delete d_ptr;
+}
+
+void SimpleListView::addItem(QGraphicsWidget *item)
+{
+    Q_D(SimpleListView);
+
+    Q_ASSERT(item);
+
+    insertItem(d->m_layout->count(), item);
+}
+
+void SimpleListView::insertItem(int index, QGraphicsWidget *item)
+{
+    Q_D(SimpleListView);
+
+    // Grid layout doe not have insert item method.
+    // We need to first remove all items, add new item and
+    // append old items to layout.
+    QList<QGraphicsLayoutItem *> moveditems;
+
+    for (int i = d->m_layout->count()-1; i >= index; --i) {
+        moveditems.append(d->m_layout->itemAt(i));
+        d->m_layout->removeAt(i);
+    }
+    moveditems.append(item);
+
+    for (int i = moveditems.count()-1; i>=0; --i) {
+        d->m_layout->addItem(moveditems.at(i), d->m_layout->count(), 0);
+    }
+
+#if (QT_VERSION >= 0x040600)
+    ListItemCache *cache = new ListItemCache;
+    item->setGraphicsEffect(cache);
+    cache->setEnabled(listItemCaching());
+#endif
+
+    d->resizeScrollBars();
+    d->updateListItemBackgrounds(index);
+}
+
+QGraphicsWidget *SimpleListView::takeItem(int index)
+{
+    Q_D(SimpleListView);
+
+    QGraphicsWidget *item = 0;
+
+    if (index >= 0 && d->m_layout->count() > index) {
+        QList<QGraphicsLayoutItem *> moveditems;
+        for (int i = d->m_layout->count()-1; i >=0; --i)  {
+            if (index != i)
+                moveditems.insert(moveditems.begin(), d->m_layout->itemAt(i));
+            else {
+                item = static_cast<QGraphicsWidget*>(d->m_layout->itemAt(index));
+                item->setGraphicsEffect(0);
+            }
+
+            d->m_layout->removeAt(i);
+        }
+
+        for (int i = 0; i < moveditems.count(); ++i)
+            d->m_layout->addItem(moveditems.at(i), d->m_layout->count(), 0);
+    }
+    d->resizeScrollBars();
+    return item;
+}
+
+QGraphicsWidget *SimpleListView::itemAt(int row)
+{
+    Q_D(SimpleListView);
+
+    QGraphicsWidget *item = 0;
+
+    if (row >= 0 && d->m_layout->count() > row) {
+        item = static_cast<QGraphicsWidget*>(d->m_layout->itemAt(row));
+    }
+
+    return item;
+}
+
+int SimpleListView::itemCount()
+{
+    Q_D(SimpleListView);
+    return d->m_layout->count();
+}
+
+#if (QT_VERSION >= 0x040600)
+bool SimpleListView::listItemCaching() const
+{
+    Q_D(const SimpleListView);
+    return d->m_listItemCaching;
+}
+
+void SimpleListView::setListItemCaching(bool enabled)
+{
+    Q_D(SimpleListView);
+    
+    if (d->m_listItemCaching == enabled)
+        return;
+
+    d->m_listItemCaching = enabled;
+
+    for (int i = 0; i < d->m_layout->count(); ++i) {
+        ListItem *item = static_cast<ListItem*>(d->m_layout->itemAt(i));
+        ListItemCache *cache = static_cast<ListItemCache *>(
+            item->graphicsEffect());
+        cache->setEnabled(enabled);
+    }
+}
+#endif
+
+void SimpleListView::scrollContentsBy(qreal dx, qreal dy)
+{
+    Q_D(SimpleListView);
+    Q_UNUSED(dx)
+    QRectF contentRect = d->m_content->boundingRect();
+    QRectF viewportRect = viewport()->boundingRect();
+    QPointF contentPos = d->m_content->pos();
+
+    qreal newy = contentPos.y() - dy;
+    qreal miny = qMin(qreal(0.0), -(contentRect.height() - viewportRect.height()));
+
+    if (newy < miny)
+        newy = miny;
+    else if (newy > 0) 
+        newy = 0.0;
+
+    d->m_content->setPos(contentPos.x(), newy);
+}
+
+void SimpleListView::resizeEvent(QGraphicsSceneResizeEvent *event) 
+{
+    Q_D(SimpleListView);
+
+    AbstractScrollArea::resizeEvent(event);
+    d->resizeContents(event->newSize());
+    d->resizeScrollBars();
+}
+
+QSizeF SimpleListView::sizeHint(Qt::SizeHint which, const QSizeF & constraint) const
+{ 
+    Q_D(const SimpleListView);
+
+    if (which == Qt::PreferredSize)
+        return d->m_content->size();
+
+    return AbstractScrollArea::sizeHint(which, constraint);
+}
+
+void SimpleListView::themeChange()
+{
+    Q_D(SimpleListView);
+
+    d->updateListContents();
+    d->resizeScrollBars();
+}
+
+void SimpleListView::setTwoColumns(const bool twoColumns)
+{
+    Q_D(SimpleListView);
+    d->setTwoColumns(twoColumns);
+}
+
+bool SimpleListView::twoColumns()
+{
+    Q_D(SimpleListView);
+    return d->twoColumns();
+}

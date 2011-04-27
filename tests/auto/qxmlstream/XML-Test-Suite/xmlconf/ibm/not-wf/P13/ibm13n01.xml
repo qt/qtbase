@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE student [
+	<!ENTITY info PUBLIC "This is a {test} " "student.dtd">
+]>
+
+<!-- testing invalid pubid char with {  -->
+<student>My Name is &info;. </student>
+
+
+
+
+ 

@@ -1,0 +1,249 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example draganddrop/dropsite
+    \title Drop Site Example
+
+    The example shows how to distinguish the various MIME formats available
+    in a drag and drop operation.
+
+    \image dropsite-example.png Screenshot of the Drop Site example
+
+    The Drop Site example accepts drops from other applications, and displays
+    the MIME formats provided by the drag object.
+
+    There are two classes, \c DropArea and \c DropSiteWindow, and a \c main()
+    function in this example. A \c DropArea object is instantiated in
+    \c DropSiteWindow; a \c DropSiteWindow object is then invoked in the
+    \c main() function.
+
+    \section1 DropArea Class Definition
+
+    The \c DropArea class is a subclass of QLabel with a public slot,
+    \c clear(), and a \c changed() signal.
+
+    \snippet draganddrop/dropsite/droparea.h DropArea header part1
+
+    In addition, \c DropArea also contains a private instance of QLabel and
+    reimplementations of four \l{QWidget} event handlers:
+
+    \list 1
+        \o \l{QWidget::dragEnterEvent()}{dragEnterEvent()}
+        \o \l{QWidget::dragMoveEvent()}{dragMoveEvent()}
+        \o \l{QWidget::dragLeaveEvent()}{dragLeaveEvent()}
+        \o \l{QWidget::dropEvent()}{dropEvent()}
+    \endlist
+
+    These event handlers are further explained in the implementation of the
+    \c DropArea class.
+
+    \snippet draganddrop/dropsite/droparea.h DropArea header part2
+
+    \section1 DropArea Class Implementation
+
+    In the \c DropArea constructor, we set the \l{QWidget::setMinimumSize()}
+    {minimum size} to 200x200 pixels, the \l{QFrame::setFrameStyle()}
+    {frame style} to both QFrame::Sunken and QFrame::StyledPanel, and we align
+    its contents to the center.
+
+    \snippet draganddrop/dropsite/droparea.cpp DropArea constructor
+
+    Also, we enable drop events in \c DropArea by setting the
+    \l{QWidget::acceptDrops()}{acceptDrops} property to \c true. Then,
+    we enable the \l{QWidget::autoFillBackground()}{autoFillBackground}
+    property and invoke the \c clear() function.
+
+    The \l{QWidget::dragEnterEvent()}{dragEnterEvent()} event handler is
+    called when a drag is in progress and the mouse enters the \c DropArea
+    object. For the \c DropSite example, when the mouse enters \c DropArea,
+    we set its text to "<drop content>" and highlight its background.
+
+    \snippet draganddrop/dropsite/droparea.cpp dragEnterEvent() function
+
+    Then, we invoke \l{QDropEvent::acceptProposedAction()}
+    {acceptProposedAction()} on \a event, setting the drop action to the one
+    proposed. Lastly, we emit the \c changed() signal, with the data that was
+    dropped and its MIME type information as a parameter.
+
+    For \l{QWidget::dragMoveEvent()}{dragMoveEvent()}, we just accept the
+    proposed QDragMoveEvent object, \a event, with
+    \l{QDropEvent::acceptProposedAction()}{acceptProposedAction()}.
+
+    \snippet draganddrop/dropsite/droparea.cpp dragMoveEvent() function
+
+    The \c DropArea class's implementation of \l{QWidget::dropEvent()}
+    {dropEvent()} extracts the \a{event}'s mime data and displays it
+    accordingly.
+
+    \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part1
+
+    The \c mimeData object can contain one of the following objects: an image,
+    HTML text, plain text, or a list of URLs.
+
+    \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part2
+
+    \list
+        \o If \c mimeData contains an image, we display it in \c DropArea with
+           \l{QLabel::setPixmap()}{setPixmap()}.
+        \o If \c mimeData contains HTML, we display it with
+           \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
+           as Qt::RichText.
+        \o If \c mimeData contains plain text, we display it with
+           \l{QLabel::setText()}{setText()} and set \c{DropArea}'s text format
+           as Qt::PlainText. In the event that \c mimeData contains URLs, we
+           iterate through the list of URLs to display them on individual
+           lines.
+        \o If \c mimeData contains other types of objects, we set
+           \c{DropArea}'s text, with \l{QLabel::setText()}{setText()} to
+           "Cannot display data" to inform the user.
+    \endlist
+
+    We then set \c{DropArea}'s \l{QWidget::backgroundRole()}{backgroundRole} to
+    QPalette::Dark and we accept \c{event}'s proposed action.
+
+    \snippet draganddrop/dropsite/droparea.cpp dropEvent() function part3
+
+    The \l{QWidget::dragLeaveEvent()}{dragLeaveEvent()} event handler is
+    called when a drag is in progress and the mouse leaves the widget.
+
+    \snippet draganddrop/dropsite/droparea.cpp dragLeaveEvent() function
+
+    For \c{DropArea}'s implementation, we clear invoke \c clear() and then
+    accept the proposed event.
+
+    The \c clear() function sets the text in \c DropArea to "<drop content>"
+    and sets the \l{QWidget::backgroundRole()}{backgroundRole} to
+    QPalette::Dark. Lastly, it emits the \c changed() signal.
+
+    \snippet draganddrop/dropsite/droparea.cpp clear() function
+
+    \section1 DropSiteWindow Class Definition
+
+    The \c DropSiteWindow class contains a constructor and a public slot,
+    \c updateFormatsTable().
+
+    \snippet draganddrop/dropsite/dropsitewindow.h DropSiteWindow header
+
+    The class also contains a private instance of \c DropArea, \c dropArea,
+    QLabel, \c abstractLabel, QTableWidget, \c formatsTable, QDialogButtonBox,
+    \c buttonBox, and two QPushButton objects, \c clearButton and
+    \c quitButton.
+
+    \section1 DropSiteWindow Class Implementation
+
+    In the constructor of \c DropSiteWindow, we instantiate \c abstractLabel
+    and set its \l{QLabel::setWordWrap()}{wordWrap} property to \c true. We
+    also call the \l{QLabel::adjustSize()}{adjustSize()} function to adjust
+    \c{abstractLabel}'s size according to its contents.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part1
+
+    Then we instantiate \c dropArea and connect its \c changed() signal to
+    \c{DropSiteWindow}'s \c updateFormatsTable() slot.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part2
+
+    We now set up the QTableWidget object, \c formatsTable. Its
+    horizontal header is set using a QStringList object, \c labels. The number
+    of columms are set to two and the table is not editable. Also, the
+    \c{formatTable}'s horizontal header is formatted to ensure that its second
+    column stretches to occupy additional space available.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part3
+
+    Two QPushButton objects, \c clearButton and \c quitButton, are instantiated
+    and added to \c buttonBox - a QDialogButtonBox object. We use
+    QDialogButtonBox here to ensure that the push buttons are presented in a
+    layout that conforms to the platform's style.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part4
+
+    The \l{QPushButton::clicked()}{clicked()} signals for \c quitButton and
+    \c clearButton are connected to \l{QWidget::close()}{close()} and
+    \c clear(), respectively.
+
+    For the layout, we use a QVBoxLayout, \c mainLayout, to arrange our widgets
+    vertically. We also set the window title to "Drop Site" and the minimum
+    size to 350x500 pixels.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part5
+
+    We move on to the \c updateFormatsTable() function. This function updates
+    the \c formatsTable, displaying the MIME formats of the object dropped onto
+    the \c DropArea object. First, we set \l{QTableWidget}'s
+    \l{QTableWidget::setRowCount()}{rowCount} property to 0. Then, we validate
+    to ensure that the QMimeData object passed in is a valid object.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp updateFormatsTable() part1
+
+    Once we are sure that \c mimeData is valid, we iterate through its
+    supported formats using the \l{The foreach Keyword}{foreach keyword}.
+    This keyword has the following format:
+
+    \snippet doc/src/snippets/code/doc_src_examples_dropsite.qdoc 0
+
+    In our example, \c format is the \a variable and the \a container is a
+    QStringList, obtained from \c mimeData->formats().
+
+    \note The \l{QMimeData::formats()}{formats()} function returns a
+    QStringList object, containing all the formats supported by the
+    \c mimeData.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp updateFormatsTable() part2
+
+    Within each iteration, we create a QTableWidgetItem, \c formatItem and we
+    set its \l{QTableWidgetItem::setFlags()}{flags} to Qt::ItemIsEnabled, and
+    its \l{QTableWidgetItem::setTextAlignment()}{text alignment} to Qt::AlignTop
+    and Qt::AlignLeft.
+
+    A QString object, \c text, is customized to display data according to the
+    contents of \c format. We invoke {QString}'s \l{QString::simplified()}
+    {simplified()} function on \c text, to obtain a string that has no
+    additional space before, after or in between words.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp updateFormatsTable() part3
+
+    If \c format contains a list of URLs, we iterate through them, using spaces
+    to separate them. On the other hand, if \c format contains an image, we
+    display the data by converting the text to hexadecimal.
+
+    \snippet draganddrop/dropsite/dropsitewindow.cpp updateFormatsTable() part4
+
+    Once \c text has been customized to contain the appropriate data, we insert
+    both \c format and \c text into \c formatsTable with
+    \l{QTableWidget::setItem()}{setItem()}. Lastly, we invoke
+    \l{QTableView::resizeColumnToContents()}{resizeColumnToContents()} on
+    \c{formatsTable}'s first column.
+
+    \section1 The main() Function
+
+    Within the \c main() function, we instantiate \c DropSiteWindow and invoke
+    its \l{QWidget::show()}{show()} function.
+
+    \snippet draganddrop/dropsite/main.cpp main() function
+*/

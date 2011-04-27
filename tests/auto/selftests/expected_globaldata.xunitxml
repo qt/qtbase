@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="3" failures="0" tests="6" name="tst_Subtest">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testGlobal"/>
+  <testcase name="skip">
+    <!-- tag="1" message="skipping" type="skip" -->
+  </testcase>
+  <testcase name="skipLocal">
+    <!-- tag="1:local 1" message="skipping" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="skipSingle">
+    <!-- tag="2:local 1" message="skipping" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[skipping]]>
+<![CDATA[skipping]]>
+<![CDATA[skipping]]>
+  </system-err>
+</testsuite>

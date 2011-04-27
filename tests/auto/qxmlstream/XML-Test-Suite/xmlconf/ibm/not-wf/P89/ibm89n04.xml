@@ -1,0 +1,5 @@
+<!DOCTYPE animal [
+<!ELEMENT animal ANY>
+<?_Ͼ an illegal extender #x3fe in PITarget ?>
+]>
+<animal/>

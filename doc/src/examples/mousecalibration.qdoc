@@ -1,0 +1,193 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example qws/mousecalibration
+    \title Mouse Calibration Example
+
+    The Mouse Calibration example demonstrates how to write a simple
+    program using the mechanisms provided by the QWSMouseHandler class
+    to calibrate the mouse handler in \l{Qt for Embedded Linux}. 
+
+    Calibration is the process of mapping between physical
+    (i.e. device) coordinates and logical coordinates.
+
+    The example consists of two classes in addition to the main program:
+
+    \list
+        \o \c Calibration is a dialog widget that retrieves the device coordinates.
+        \o \c ScribbleWidget is a minimal drawing program used to let the user
+            test the new mouse settings.
+    \endlist
+
+    First we will review the main program, then we will take a look at
+    the \c Calibration class. The \c ScribbleWidget class is only a
+    help tool in this context, and will not be covered here.
+
+    \section1 The Main Program
+
+    The program starts by presenting a message box informing the user
+    of what is going to happen:
+
+    \snippet examples/qws/mousecalibration/main.cpp 0
+
+    The QMessageBox class provides a modal dialog with a range of
+    different messages, roughly arranged along two axes: severity and
+    complexity. The message box has a different icon for each of the
+    severity levels, but the icon must be specified explicitly. In our
+    case we use the default QMessageBox::NoIcon value. In addition we
+    use the default complexity, i.e. a message box showing the given
+    text and an \gui OK button.
+
+    At this stage in the program, the mouse could be completely
+    uncalibrated, making the user unable to press the \gui OK button. For
+    that reason we use the static QTimer::singleShot() function to
+    make the message box disappear after 10 seconds. The QTimer class
+    provides repetitive and single-shot timers: The single shot
+    function calls the given slot after the specified interval.
+
+    \snippet examples/qws/mousecalibration/main.cpp 1
+
+    Next, we create an instance of the \c Calibration class which is a
+    dialog widget retrieving the required sample coordinates: The
+    dialog sequentially presents five marks for the user to press,
+    storing the device coordinates for the mouse press events.
+
+    \snippet examples/qws/mousecalibration/main.cpp 2
+
+    When the calibration dialog returns, we let the user test the new
+    mouse settings by drawing onto a \c ScribbleWidget object. Since
+    the mouse still can be uncalibrated, we continue to use the
+    QMessageBox and QTimer classes to inform the user about the
+    program's progress.
+
+    An improved calibration tool would let the user choose between
+    accepting the new calibration, reverting to the old one, and
+    restarting the calibration.
+
+    \section1 Calibration Class Definition
+
+    The \c Calibration class inherits from QDialog and is responsible
+    for retrieving the device coordinates from the user.
+
+    \snippet examples/qws/mousecalibration/calibration.h 0
+
+    We reimplement QDialog's \l {QDialog::exec()}{exec()} and \l
+    {QDialog::accept()}{accept()} slots, and QWidget's \l
+    {QWidget::paintEvent()}{paintEvent()} and \l
+    {QWidget::mouseReleaseEvent()}{mouseReleaseEvent()} functions.
+
+    In addition, we declare a couple of private variables, \c data and
+    \c pressCount, holding the \c Calibration object's number of mouse
+    press events and current calibration data. The \c pressCount
+    variable is a convenience variable, while the \c data is a
+    QWSPointerCalibrationData object (storing the physical and logical
+    coordinates) that is passed to the mouse handler. The
+    QWSPointerCalibrationData class is simply a container for
+    calibration data.
+
+    \section1 Calibration Class Implementation
+
+    In the constructor we first ensure that the \c Calibration dialog
+    fills up the entire screen, has focus and will receive mouse
+    events (the latter by making the dialog modal):
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 0
+
+    Then we initialize the \l{QWSPointerCalibrationData::}{screenPoints}
+    array:
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 1
+
+    In order to specify the calibration, the 
+    \l{QWSPointerCalibrationData::screenPoints}{screenPoints} array must
+    contain the screen coordinates for the logical positions
+    represented by the QWSPointerCalibrationData::Location enum
+    (e.g. QWSPointerCalibrationData::TopLeft).  Since non-linearity is
+    expected to increase on the edge of the screen, all points are
+    kept 10 percent within the screen. The \c qt_screen pointer is a
+    reference to the screen device. There can only be one screen
+    device per application.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 2
+
+    Finally, we initialize the variable which keeps track of the number of
+    mouse press events we have received.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 3
+
+    The destructor is trivial.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 4
+
+    The reimplementation of the QDialog::exec() slot is called from
+    the main program.
+
+    First we clear the current calibration making the following mouse
+    event delivered in raw device coordinates. Then we call the
+    QWidget::grabMouse() function to make sure no mouse events are
+    lost, and the QWidget::activateWindow() function to make the
+    top-level widget containing this dialog, the active window. When
+    the call to the QDialog::exec() base function returns, we call
+    QWidget::releaseMouse() to release the mouse grab before the
+    function returns.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 5
+
+    The QWidget::paintEvent() function is reimplemented to receive the
+    widget's paint events. A paint event is a request to repaint all
+    or parts of the widget. It can happen as a result of
+    QWidget::repaint() or QWidget::update(), or because the widget was
+    obscured and has now been uncovered, or for many other reasons.
+    In our reimplementation of the function we simply draw a cross at
+    the next point the user should press.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 6
+
+    We then reimplement the QWidget::mouseReleaseEvent() function to
+    receive the widget's move events, using the QMouseEvent object
+    passed as parameter to find the coordinates the user pressed, and
+    update the QWSPointerCalibrationData::devPoints array.
+
+    In order to complete the mapping between logical and physical
+    coordinates, the \l
+    {QWSPointerCalibrationData::devPoints}{devPoints} array must
+    contain the raw device coordinates for the logical positions
+    represented by the QWSPointerCalibrationData::Location enum
+    (e.g. QWSPointerCalibrationData::TopLeft)
+
+    We continue by drawing the next cross, or close the dialog by
+    calling the QDialog::accept() slot if we have collected all the
+    required coordinate samples.
+
+    \snippet examples/qws/mousecalibration/calibration.cpp 7
+
+    Our reimplementation of the QDialog::accept() slot simply activate
+    the new calibration data using the QWSMouseHandler::calibrate()
+    function. We also use the Q_ASSERT() macro to ensure that the number
+    of required samples are present.
+*/

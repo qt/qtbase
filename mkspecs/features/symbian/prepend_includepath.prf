@@ -1,0 +1,14 @@
+# Allow .pro files to specify include path(s) to be prepended to the list.
+#
+# This allows the project to override the default ordering, whereby paths
+# relative to $$QMAKE_INCDIR_QT always come first.  This ordering can cause
+# problems when both the epoc32/include tree and a Qt include directory
+# contain a header of the same name - in this case, the Qt header is always
+# included by virtue of its path appearing first in the SYSTEMINCLUDE
+# directives in the generated MMP file.
+#
+# To work around this situation, the following line can be added to the .pro
+# file:
+#	PREPEND_INCLUDEPATH = /epoc32/include
+#
+INCLUDEPATH = $$PREPEND_INCLUDEPATH $$INCLUDEPATH

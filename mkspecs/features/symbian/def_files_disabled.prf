@@ -1,0 +1,13 @@
+# With DEF files disabled, binary compatibility is broken every time you build
+
+CONFIG -= def_files
+
+# See def_files.prf for reasoning on the slight nastiness of this
+!contains(MMP_RULES, defBlock) {
+    # See def_files.prf for reasoning for excluding target types and configs below
+    !contains(TEMPLATE, app):!contains(CONFIG, plugin):!contains(CONFIG, staticlib): {
+        # with EXPORTUNFROZEN enabled, new exports are included in the dll and dso/lib without
+        # needing to run abld/sbs freeze
+        MMP_RULES *= EXPORTUNFROZEN
+    }
+}

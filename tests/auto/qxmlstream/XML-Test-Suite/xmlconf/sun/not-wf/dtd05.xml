@@ -1,0 +1,7 @@
+<!DOCTYPE root [
+    <!ELEMENT root EMPTY>
+    <!-- SYSTEM id must be quoted -->
+    <!ENTITY foo SYSTEM elvis.ent>
+]>
+
+<root/>

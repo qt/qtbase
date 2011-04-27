@@ -1,0 +1,4 @@
+usr/lib/libQtHelp.so.*
+usr/lib/libQtCLucene.so.*
+usr/share/qt4/translations/qt_help_de.qm
+usr/share/qt4/translations/qt_help_pl.qm

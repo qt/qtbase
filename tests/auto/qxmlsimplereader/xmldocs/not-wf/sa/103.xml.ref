@@ -1,0 +1,8 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      internatlEntityDecl(name="e", value="<foo>")
+   endDTD()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+      startElement(namespaceURI="", localName="foo", qName="foo", atts=[])
+         fatalError(exception={columnNumber=14, lineNumber=4, publicId="", systemId="", message="tag mismatch"})

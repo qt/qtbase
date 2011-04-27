@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="13" tests="10" name="tst_DataTable">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="singleTestFunction1"/>
+  <testcase result="pass" name="singleTestFunction2"/>
+  <testcase result="pass" name="fiveTablePasses"/>
+  <testcase result="fail" name="fiveTableFailures">
+    <failure tag="fiveTableFailures_data 1" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveTableFailures_data 2" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveTableFailures_data 3" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveTableFailures_data 4" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveTableFailures_data 5" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="startsWithFailure">
+    <failure tag="startsWithFailure_data 1" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="endsWithFailure">
+    <failure tag="endsWithFailure 5" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="failureInMiddle">
+    <failure tag="failureInMiddle_data 3" message="&apos;test&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="fiveIsolatedFailures">
+    <failure tag="fiveIsolatedFailures_data 1" message="&apos;!test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveIsolatedFailures_data 2" message="&apos;!test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveIsolatedFailures_data 3" message="&apos;!test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveIsolatedFailures_data 4" message="&apos;!test&apos; returned FALSE. ()" result="fail"/>
+    <failure tag="fiveIsolatedFailures_data 5" message="&apos;!test&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

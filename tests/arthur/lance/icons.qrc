@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons" >
+        <file>enum.png</file>
+        <file>tools.png</file>
+    </qresource>
+</RCC>

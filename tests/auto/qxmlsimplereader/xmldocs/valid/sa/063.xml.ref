@@ -1,0 +1,7 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="เจมส์", publicId="", systemId="")
+   endDTD()
+   startElement(namespaceURI="", localName="เจมส์", qName="เจมส์", atts=[])
+   endElement(namespaceURI="", localName="เจมส์", qName="เจมส์")
+endDocument()

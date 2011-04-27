@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>320</width>
+    <height>116</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#spinbox1::up-button{
+    subcontrol-origin: border;
+    subcontrol-position: top left; 
+  }
+#spinbox1::down-button {
+    subcontrol-origin: border;
+     subcontrol-position: bottom left; 
+  }
+
+
+#spinbox2::up-button{
+    subcontrol-origin: border;
+    subcontrol-position: center left; 
+    left: 0px;
+    height: 100%;
+    top: 0px;
+  }
+#spinbox2::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: center right; 
+    right: 0px;
+    height: 100%;
+    top: 0px;
+  }
+
+
+
+#spinbox3::up-button{
+    subcontrol-origin: border;
+     subcontrol-position: top left; 
+  }
+
+
+#spinbox4 { padding: 20px 1px; }
+#spinbox4::up-button{
+    subcontrol-origin: border;
+    subcontrol-position: top center; 
+   width:100%;
+   height:  20px;
+  }
+#spinbox4::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom center; 
+   width:100%;
+   height:  20px;
+  }
+
+</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QSpinBox" name="spinbox1"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="QSpinBox" name="spinbox2"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QSpinBox" name="spinbox3"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QSpinBox" name="spinbox4"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,26 @@
+translate 10 50
+setFont "sansserif" 10
+drawText 0 0 "Default hinting:"
+setFont "times" 12 normal normal default
+drawText 0 20 "The quick brown fox jumps over the lazy dog"
+
+translate 0 50
+setFont "sansserif" 10
+drawText 0 0 "No hinting:"
+setFont "times" 12 normal normal none
+drawText 0 20 "The quick brown fox jumps over the lazy dog"
+
+translate 0 50
+setFont "sansserif" 10
+drawText 0 0 "Vertical hinting:"
+setFont "times" 12 normal normal vertical
+drawText 0 20 "The quick brown fox jumps over the lazy dog"
+
+translate 0 50
+setFont "sansserif" 10
+drawText 0 0 "Full hinting:"
+setFont "times" 12 normal normal full
+drawText 0 20 "The quick brown fox jumps over the lazy dog"
+
+
+# Note: there is also the textlayout_draw command which might be interesting here.

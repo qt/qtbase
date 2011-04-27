@@ -1,0 +1,9 @@
+load(qt_config)
+
+!contains(QMAKE_HOST.os, "Windows") {
+    # Test for the existence of lower cased headers, a sign of using Gnupoc.
+    # Note that the qmake "exists" test won't do because it is case insensitive.
+    system("test -f $${EPOCROOT}epoc32/include/akndoc.h") {
+        CONFIG += is_using_gnupoc
+    }
+}

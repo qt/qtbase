@@ -1,0 +1,184 @@
+#  Version: 1#Version: 1
+# CheckVsReference: 5%
+
+
+# CheckVsReference: 5%
+
+setBrush #ff7f7fff
+setPen black 1 solidline
+translate 20 20
+begin_block testblock
+save
+drawRect  0  0 10 10
+drawRect 20  0 20 10
+drawRect  0 20 10 20
+drawRect 20 20 20 20
+translate 50 0
+setPen NoPen
+drawRect  0  0 10 10
+drawRect 20  0 20 10
+drawRect  0 20 10 20
+drawRect 20 20 20 20
+restore
+save
+translate 0 50
+drawEllipse  0  0 10 10
+drawEllipse 20  0 20 10
+drawEllipse  0 20 10 20
+drawEllipse 20 20 20 20
+translate 50 0
+setPen NoPen
+drawEllipse  0  0 10 10
+drawEllipse 20  0 20 10
+drawEllipse  0 20 10 20
+drawEllipse 20 20 20 20
+restore
+save
+translate 0 100
+drawPolygon [ 0 0   30 0   30 30   10 30   10 10   40 10   40 40   0 40 ]
+save
+translate 0 50
+drawPolygon [ 0 0   30 0   30 30   10 30   10 10   40 10   40 40   0 40 ] Winding
+translate 0 45
+drawPolyline [ 0 0 50 0 25 25 ]
+restore
+setPen NoPen
+translate 50 0
+drawPolygon [ 0 0   30 0   30 30   10 30   10 10   40 10   40 40   0 40 ]
+save
+translate 0 50
+drawPolygon [ 0 0   30 0   30 30   10 30   10 10   40 10   40 40   0 40 ] Winding
+restore
+save
+translate -20 100
+drawPie 0 0 50 50 0 1500
+restore
+restore
+end_block
+setPen black 1 SolidLine FlatCap
+translate 200 0
+scale 2 1
+rotate 10
+repeat_block testblock
+resetMatrix
+translate 0 250
+setBrush 7f7f7fff
+translate 20 20
+repeat_block testblock
+setPen black 1 SolidLine FlatCap
+translate 200 0
+scale 2 1
+rotate 10
+repeat_block testblock
+resetMatrix
+save
+setRenderHint LineAntialiasing
+setBrush 7f7fff
+translate 20 500
+repeat_block testblock
+translate 200 0
+scale 2 1
+rotate 10
+repeat_block testblock
+restore
+setRenderHint LineAntialiasing false
+translate 420 20
+begin_block lines
+drawLine 0 0 100   0
+drawLine 0 0 100  10
+drawLine 0 0 100  20
+drawLine 0 0 100  30
+drawLine 0 0 100  40
+drawLine 0 0 100  50
+drawLine 0 0 100  60
+drawLine 0 0 100  70
+drawLine 0 0 100  80
+drawLine 0 0 100  90
+drawLine 0 0 100 100
+drawLine 0 0  90 100
+drawLine 0 0  80 100
+drawLine 0 0  70 100
+drawLine 0 0  60 100
+drawLine 0 0  50 100
+drawLine 0 0  40 100
+drawLine 0 0  30 100
+drawLine 0 0  20 100
+drawLine 0 0  10 100
+drawLine 0 0   0 100
+end_block
+setRenderHint LineAntialiasing
+translate 0 120
+repeat_block lines
+translate 0 120
+scale 5 2
+repeat_block lines
+resetMatrix
+translate 420 500
+begin_block roundedrects
+save
+drawRoundedRect 0 0 50 30 5 5
+translate 60 0
+drawRoundedRect 0 0 50 30 7.5 7.5
+translate 60 0
+drawRoundedRect 0 0 50 30 10 10
+translate 60 0
+drawRoundedRect 0 0 50 30 12.5 12.5
+translate 60 0
+drawRoundedRect 0 0 50 30 15 15
+restore
+save
+translate 0 40
+drawRoundedRect 0 0 50 30 20 20 RelativeSize
+translate 60 0
+drawRoundedRect 0 0 50 30 40 40 RelativeSize
+translate 60 0
+drawRoundedRect 0 0 50 30 60 60 RelativeSize
+translate 60 0
+drawRoundedRect 0 0 50 30 80 80 RelativeSize
+translate 60 0
+drawRoundedRect 0 0 50 30 100 100 RelativeSize
+restore
+end_block
+translate 0.5 80.5
+repeat_block roundedrects
+translate -0.5 79.5
+setRenderHint Antialiasing off
+repeat_block roundedrects
+resetMatrix
+setRenderHint Antialiasing off
+setPen black 1
+begin_block drawShapes
+translate 550.5 25
+rotate 45
+setBrush nobrush
+drawEllipse -10 -10 20 20
+drawLine 10 0 50 0
+drawRect 50 -7 14 14
+resetMatrix
+end_block
+setPen black 2
+translate 25 0
+repeat_block drawShapes
+setPen black 3
+translate 50 0
+repeat_block drawShapes
+setPen black 4
+translate 75 0
+repeat_block drawShapes
+resetMatrix
+setRenderHint Antialiasing off
+setPen nopen
+translate 550 100
+setBrush #7f7f7fff
+drawRect -0.5 -0.5 21 21
+setBrush red
+drawEllipse 0 0 20 20
+setBrush nobrush
+setPen black
+drawEllipse 0 0 20 20
+translate 25 0
+setPen nopen
+setBrush #7f7f7fff
+drawRect 0 0 20 20
+setBrush red
+drawEllipse 0 0 20 20

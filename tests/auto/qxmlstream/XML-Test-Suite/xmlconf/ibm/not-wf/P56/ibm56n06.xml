@@ -1,0 +1,11 @@
+<?xml  version="1.0"?>
+<!-- test for Production 56-->
+<!DOCTYPE root
+[
+<!ELEMENT root ANY>
+<!ELEMENT a EMPTY>
+<!ATTLIST a attr NMtokens #REQUIRED>
+]>
+<root>
+Invalid TokenizedType NMtokens(case sensitive)
+</root>

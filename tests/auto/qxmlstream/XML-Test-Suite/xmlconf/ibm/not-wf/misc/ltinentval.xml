@@ -1,0 +1,11 @@
+<!DOCTYPE student [
+	<!ELEMENT student (#PCDATA)>
+	<!ENTITY gewithlt "abcd&#x26;&#x23;x3c;"> 
+        <!ATTLIST student att1 CDATA #REQUIRED>
+]>
+<--* this is to test "<" can not be included in an entity 
+     that is referenced in AttValue, even indirectly *-->
+     
+
+<?MyInstruct This is a test ?>
+<student att1="&gewithlt;">My Name is SnowMan. </student>

@@ -1,0 +1,6 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+      comment(ch=" a form feed () is not allowed in a comment ")
+   endElement(namespaceURI="", localName="doc", qName="doc")
+endDocument()

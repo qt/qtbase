@@ -1,0 +1,4 @@
+<!-- When including the namespaces spec, the colon is disallowed in processing
+     instructions. W3C's XML test suite appears as of this writing to not have
+     a test for this. -->
+<documentElement><?target:withColon data?></documentElement>

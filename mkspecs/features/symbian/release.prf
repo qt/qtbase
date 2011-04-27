@@ -1,0 +1,1 @@
+QMAKE_LIBDIR        += $${EPOCROOT}epoc32/release/armv5/urel

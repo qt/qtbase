@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Simple legal case: prefixed element " )
+StartElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="a:foo" prefix="a"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/namespace" )
+ )
+EndElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="a:foo" )
+EndDocument( )

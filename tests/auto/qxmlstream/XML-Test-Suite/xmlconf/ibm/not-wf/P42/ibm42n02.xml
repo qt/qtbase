@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root ANY>
+<!ATTLIST root attr1 CDATA #IMPLIED>
+]>
+<root attr1="any">Wrong begining sequence in ETag <\root>

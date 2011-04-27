@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_Cmptest">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="compare_boolfuncs">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="compare_pointerfuncs">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="compare_tostring">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/cmptest/tst_cmptest.cpp" line="122">
+    <DataTag><![CDATA[int, string]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual (actual): QVariant(int,123)
+   Expected (expected): QVariant(QString,hi)]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/cmptest/tst_cmptest.cpp" line="122">
+    <DataTag><![CDATA[null hash, invalid]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual (actual): QVariant(QVariantHash)
+   Expected (expected): QVariant()]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/cmptest/tst_cmptest.cpp" line="122">
+    <DataTag><![CDATA[string, null user type]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual (actual): QVariant(QString,A simple string)
+   Expected (expected): QVariant(PhonyClass)]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/cmptest/tst_cmptest.cpp" line="122">
+    <DataTag><![CDATA[both non-null user type]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual (actual): QVariant(PhonyClass,<value not representable as string>)
+   Expected (expected): QVariant(PhonyClass,<value not representable as string>)]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

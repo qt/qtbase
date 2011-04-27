@@ -1,0 +1,540 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example tools/plugandpaint
+    \title Plug & Paint Example
+
+    The Plug & Paint example demonstrates how to write Qt
+    applications that can be extended through plugins.
+
+    \image plugandpaint.png Screenshot of the Plug & Paint example
+
+    A plugin is a dynamic library that can be loaded at run-time to
+    extend an application. Qt makes it possible to create custom
+    plugins and to load them using QPluginLoader. To ensure that
+    plugins don't get lost, it is also possible to link them
+    statically to the executable. The Plug & Paint example uses
+    plugins to support custom brushes, shapes, and image filters. A
+    single plugin can provide multiple brushes, shapes, and/or
+    filters.
+
+    If you want to learn how to make your own application extensible
+    through plugins, we recommend that you start by reading this
+    overview, which explains how to make an application use plugins.
+    Afterward, you can read the
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools} and
+    \l{tools/plugandpaintplugins/extrafilters}{Extra Filters}
+    overviews, which show how to implement static and dynamic
+    plugins, respectively.
+
+    Plug & Paint consists of the following classes:
+
+    \list
+    \o \c MainWindow is a QMainWindow subclass that provides the menu
+       system and that contains a \c PaintArea as the central widget.
+    \o \c PaintArea is a QWidget that allows the user to draw using a
+       brush and to insert shapes.
+    \o \c PluginDialog is a dialog that shows information about the
+       plugins detected by the application.
+    \o \c BrushInterface, \c ShapeInterface, and \c FilterInterface are
+       abstract base classes that can be implemented by plugins to
+       provide custom brushes, shapes, and image filters.
+    \endlist
+
+    \section1 The Plugin Interfaces
+
+    We will start by reviewing the interfaces defined in \c
+    interfaces.h. These interfaces are used by the Plug & Paint
+    application to access extra functionality. They are implemented
+    in the plugins.
+
+
+    \snippet examples/tools/plugandpaint/interfaces.h 0
+
+    The \c BrushInterface class declares four pure virtual functions.
+    The first pure virtual function, \c brushes(), returns a list of
+    strings that identify the brushes provided by the plugin. By
+    returning a QStringList instead of a QString, we make it possible
+    for a single plugin to provide multiple brushes. The other
+    functions have a \c brush parameter to identify which brush
+    (among those returned by \c brushes()) is used.
+
+    \c mousePress(), \c mouseMove(), and \c mouseRelease() take a
+    QPainter and one or two \l{QPoint}s, and return a QRect
+    identifying which portion of the image was altered by the brush.
+
+    The class also has a virtual destructor. Interface classes
+    usually don't need such a destructor (because it would make
+    little sense to \c delete the object that implements the
+    interface through a pointer to the interface), but some compilers
+    emit a warning for classes that declare virtual functions but no
+    virtual destructor. We provide the destructor to keep these
+    compilers happy.
+
+    \snippet examples/tools/plugandpaint/interfaces.h 1
+
+    The \c ShapeInterface class declares a \c shapes() function that
+    works the same as \c{BrushInterface}'s \c brushes() function, and
+    a \c generateShape() function that has a \c shape parameter.
+    Shapes are represented by a QPainterPath, a data type that can
+    represent arbitrary 2D shapes or combinations of shapes. The \c
+    parent parameter can be used by the plugin to pop up a dialog
+    asking the user to specify more information.
+
+    \snippet examples/tools/plugandpaint/interfaces.h 2
+
+    The \c FilterInterface class declares a \c filters() function
+    that returns a list of filter names, and a \c filterImage()
+    function that applies a filter to an image.
+
+    \snippet examples/tools/plugandpaint/interfaces.h 4
+
+    To make it possible to query at run-time whether a plugin
+    implements a given interface, we must use the \c
+    Q_DECLARE_INTERFACE() macro. The first argument is the name of
+    the interface. The second argument is a string identifying the
+    interface in a unique way. By convention, we use a "Java package
+    name" syntax to identify interfaces. If we later change the
+    interfaces, we must use a different string to identify the new
+    interface; otherwise, the application might crash. It is therefore
+    a good idea to include a version number in the string, as we did
+    above.
+
+    The \l{tools/plugandpaintplugins/basictools}{Basic Tools} plugin
+    and the \l{tools/plugandpaintplugins/extrafilters}{Extra Filters}
+    plugin shows how to derive from \c BrushInterface, \c
+    ShapeInterface, and \c FilterInterface.
+
+    A note on naming: It might have been tempting to give the \c
+    brushes(), \c shapes(), and \c filters() functions a more generic
+    name, such as \c keys() or \c features(). However, that would
+    have made multiple inheritance impractical. When creating
+    interfaces, we should always try to give unique names to the pure
+    virtual functions.
+
+    \section1 The MainWindow Class
+
+    The \c MainWindow class is a standard QMainWindow subclass, as
+    found in many of the other examples (e.g.,
+    \l{mainwindows/application}{Application}). Here, we'll
+    concentrate on the parts of the code that are related to plugins.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 4
+
+    The \c loadPlugins() function is called from the \c MainWindow
+    constructor to detect plugins and update the \gui{Brush},
+    \gui{Shapes}, and \gui{Filters} menus. We start by handling static
+    plugins (available through QPluginLoader::staticInstances())
+
+    To the application that uses the plugin, a Qt plugin is simply a
+    QObject. That QObject implements plugin interfaces using multiple
+    inheritance.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 5
+
+    The next step is to load dynamic plugins. We initialize the \c
+    pluginsDir member variable to refer to the \c plugins
+    subdirectory of the Plug & Paint example. On Unix, this is just a
+    matter of initializing the QDir variable with
+    QApplication::applicationDirPath(), the path of the executable
+    file, and to do a \l{QDir::cd()}{cd()}. On Windows and Mac OS X,
+    this file is usually located in a subdirectory, so we need to
+    take this into account.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 6
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 7
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 8
+
+    We use QDir::entryList() to get a list of all files in that
+    directory. Then we iterate over the result using \l foreach and
+    try to load the plugin using QPluginLoader.
+
+    The QObject provided by the plugin is accessible through
+    QPluginLoader::instance(). If the dynamic library isn't a Qt
+    plugin, or if it was compiled against an incompatible version of
+    the Qt library, QPluginLoader::instance() returns a null pointer.
+
+    If QPluginLoader::instance() is non-null, we add it to the menus.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 9
+
+    At the end, we enable or disable the \gui{Brush}, \gui{Shapes},
+    and \gui{Filters} menus based on whether they contain any items.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 10
+
+    For each plugin (static or dynamic), we check which interfaces it
+    implements using \l qobject_cast(). First, we try to cast the
+    plugin instance to a \c BrushInterface; if it works, we call the
+    private function \c addToMenu() with the list of brushes returned
+    by \c brushes(). Then we do the same with the \c ShapeInterface
+    and the \c FilterInterface.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 3
+
+    The \c aboutPlugins() slot is called on startup and can be
+    invoked at any time through the \gui{About Plugins} action. It
+    pops up a \c PluginDialog, providing information about the loaded
+    plugins.
+
+    \image plugandpaint-plugindialog.png Screenshot of the Plugin dialog
+
+
+    The \c addToMenu() function is called from \c loadPlugin() to
+    create \l{QAction}s for custom brushes, shapes, or filters and
+    add them to the relevant menu. The QAction is created with the
+    plugin from which it comes from as the parent; this makes it
+    convenient to get access to the plugin later.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 0
+
+    The \c changeBrush() slot is invoked when the user chooses one of
+    the brushes from the \gui{Brush} menu. We start by finding out
+    which action invoked the slot using QObject::sender(). Then we
+    get the \c BrushInterface out of the plugin (which we
+    conveniently passed as the QAction's parent) and we call \c
+    PaintArea::setBrush() with the \c BrushInterface and the string
+    identifying the brush. Next time the user draws on the paint
+    area, \c PaintArea will use this brush.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 1
+
+    The \c insertShape() is invoked when the use chooses one of the
+    shapes from the \gui{Shapes} menu. We retrieve the QAction that
+    invoked the slot, then the \c ShapeInterface associated with that
+    QAction, and finally we call \c ShapeInterface::generateShape()
+    to obtain a QPainterPath.
+
+    \snippet examples/tools/plugandpaint/mainwindow.cpp 2
+
+    The \c applyFilter() slot is similar: We retrieve the QAction
+    that invoked the slot, then the \c FilterInterface associated to
+    that QAction, and finally we call \c
+    FilterInterface::filterImage() to apply the filter onto the
+    current image.
+
+    \section1 The PaintArea Class
+
+    The \c PaintArea class contains some code that deals with \c
+    BrushInterface, so we'll review it briefly.
+
+    \snippet examples/tools/plugandpaint/paintarea.cpp 0
+
+    In \c setBrush(), we simply store the \c BrushInterface and the
+    brush that are given to us by \c MainWindow.
+
+    \snippet examples/tools/plugandpaint/paintarea.cpp 1
+
+    In the \l{QWidget::mouseMoveEvent()}{mouse move event handler},
+    we call the \c BrushInterface::mouseMove() function on the
+    current \c BrushInterface, with the current brush. The mouse
+    press and mouse release handlers are very similar.
+
+    \section1 The PluginDialog Class
+
+    The \c PluginDialog class provides information about the loaded
+    plugins to the user. Its constructor takes a path to the plugins
+    and a list of plugin file names. It calls \c findPlugins()
+    to fill the QTreeWdiget with information about the plugins:
+
+    \snippet examples/tools/plugandpaint/plugindialog.cpp 0
+
+    The \c findPlugins() is very similar to \c
+    MainWindow::loadPlugins(). It uses QPluginLoader to access the
+    static and dynamic plugins. Its helper function \c
+    populateTreeWidget() uses \l qobject_cast() to find out which
+    interfaces are implemented by the plugins:
+
+    \snippet examples/tools/plugandpaint/plugindialog.cpp 1
+
+    \section1 Importing Static Plugins
+
+    The \l{tools/plugandpaintplugins/basictools}{Basic Tools} plugin
+    is built as a static plugin, to ensure that it is always
+    available to the application. This requires using the
+    Q_IMPORT_PLUGIN() macro somewhere in the application (in a \c
+    .cpp file) and specifying the plugin in the \c .pro file.
+
+    For Plug & Paint, we have chosen to put Q_IMPORT_PLUGIN() in \c
+    main.cpp:
+
+    \snippet examples/tools/plugandpaint/main.cpp 0
+
+    The argument to Q_IMPORT_PLUGIN() is the plugin's name, as
+    specified with Q_EXPORT_PLUGIN2() in the \l{Exporting the
+    Plugin}{plugin}.
+
+    In the \c .pro file, we need to specify the static library.
+    Here's the project file for building Plug & Paint:
+
+    \snippet examples/tools/plugandpaint/plugandpaint.pro 0
+
+    The \c LIBS line variable specifies the library \c pnp_basictools
+    located in the \c ../plugandpaintplugins/basictools directory.
+    (Although the \c LIBS syntax has a distinct Unix flavor, \c qmake
+    supports it on all platforms.)
+
+    The \c CONFIG() code at the end is necessary for this example
+    because the example is part of the Qt distribution and Qt can be
+    configured to be built simultaneously in debug and in release
+    modes. You don't need to for your own plugin applications.
+
+    This completes our review of the Plug & Paint application. At
+    this point, you might want to take a look at the
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools} example
+    plugin.
+*/
+
+/*!
+    \example tools/plugandpaintplugins/basictools
+    \title Plug & Paint Basic Tools Example
+
+    The Basic Tools example is a static plugin for the
+    \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
+    of basic brushes, shapes, and filters. Through the Basic Tools
+    example, we will review the four steps involved in writing a Qt
+    plugin:
+
+    \list 1
+    \o Declare a plugin class.
+    \o Implement the interfaces provided by the plugin.
+    \o Export the plugin using the Q_EXPORT_PLUGIN2() macro.
+    \o Build the plugin using an adequate \c .pro file.
+    \endlist
+
+    \section1 Declaration of the Plugin Class
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.h 0
+
+    We start by including \c interfaces.h, which defines the plugin
+    interfaces for the \l{tools/plugandpaint}{Plug & Paint}
+    application. For the \c #include to work, we need to add an \c
+    INCLUDEPATH entry to the \c .pro file with the path to Qt's \c
+    examples/tools directory.
+
+    The \c BasicToolsPlugin class is a QObject subclass that
+    implements the \c BrushInterface, the \c ShapeInterface, and the
+    \c FilterInterface. This is done through multiple inheritance.
+    The \c Q_INTERFACES() macro is necessary to tell \l{moc}, Qt's
+    meta-object compiler, that the base classes are plugin
+    interfaces. Without the \c Q_INTERFACES() macro, we couldn't use
+    \l qobject_cast() in the \l{tools/plugandpaint}{Plug & Paint}
+    application to detect interfaces.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.h 2
+
+    In the \c public section of the class, we declare all the
+    functions from the three interfaces.
+
+    \section1 Implementation of the Brush Interface
+
+    Let's now review the implementation of the \c BasicToolsPlugin
+    member functions inherited from \c BrushInterface.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 0
+
+    The \c brushes() function returns a list of brushes provided by
+    this plugin. We provide three brushes: \gui{Pencil}, \gui{Air
+    Brush}, and \gui{Random Letters}.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 1
+
+    On a mouse press event, we just call \c mouseMove() to draw the
+    spot where the event occurred.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 2
+
+    In \c mouseMove(), we start by saving the state of the QPainter
+    and we compute a few variables that we'll need later.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 3
+
+    Then comes the brush-dependent part of the code:
+
+    \list
+    \o If the brush is \gui{Pencil}, we just call
+       QPainter::drawLine() with the current QPen.
+
+    \o If the brush is \gui{Air Brush}, we start by setting the
+       painter's QBrush to Qt::Dense6Pattern to obtain a dotted
+       pattern. Then we draw a circle filled with that QBrush several
+       times, resulting in a thick line.
+
+    \o If the brush is \gui{Random Letters}, we draw a random letter
+       at the new cursor position. Most of the code is for setting
+       the font to be bold and larger than the default font and for
+       computing an appropriate bounding rect.
+    \endlist
+
+    At the end, we restore the painter state to what it was upon
+    entering the function and we return the bounding rectangle.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 4
+
+    When the user releases the mouse, we do nothing and return an
+    empty QRect.
+
+    \section1 Implementation of the Shape Interface
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 5
+
+    The plugin provides three shapes: \gui{Circle}, \gui{Star}, and
+    \gui{Text...}. The three dots after \gui{Text} are there because
+    the shape pops up a dialog asking for more information. We know
+    that the shape names will end up in a menu, so we include the
+    three dots in the shape name.
+
+    A cleaner but more complicated design would have been to
+    distinguish between the internal shape name and the name used in
+    the user interface.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 6
+
+    The \c generateShape() creates a QPainterPath for the specified
+    shape. If the shape is \gui{Text}, we pop up a QInputDialog to
+    let the user enter some text.
+
+    \section1 Implementation of the Filter Interface
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 7
+
+    The plugin provides three filters: \gui{Invert Pixels}, \gui{Swap
+    RGB}, and \gui{Grayscale}.
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 8
+
+    The \c filterImage() function takes a filter name and a QImage as
+    parameters and returns an altered QImage. The first thing we do
+    is to convert the image to a 32-bit RGB format, to ensure that
+    the algorithms will work as expected. For example,
+    QImage::invertPixels(), which is used to implement the
+    \gui{Invert Pixels} filter, gives counterintuitive results for
+    8-bit images, because they invert the indices into the color
+    table instead of inverting the color table's entries.
+
+    \section1 Exporting the Plugin
+
+    Whereas applications have a \c main() function as their entry
+    point, plugins need to contain exactly one occurrence of the
+    Q_EXPORT_PLUGIN2() macro to specify which class provides the
+    plugin:
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 9
+
+    This line may appear in any \c .cpp file that is part of the
+    plugin's source code.
+
+    \section1 The .pro File
+
+    Here's the project file for building the Basic Tools plugin:
+
+    \snippet examples/tools/plugandpaintplugins/basictools/basictools.pro 0
+
+    The \c .pro file differs from typical \c .pro files in many
+    respects. First, it starts with a \c TEMPLATE entry specifying \c
+    lib. (The default template is \c app.) It also adds \c plugin to
+    the \c CONFIG variable. This is necessary on some platforms to
+    avoid generating symbolic links with version numbers in the file
+    name, which is appropriate for most dynamic libraries but not for
+    plugins.
+
+    To make the plugin a static plugin, all that is required is to
+    specify \c static in addition to \c plugin. The
+    \l{tools/plugandpaintplugins/extrafilters}{Extra Filters} plugin,
+    which is compiled as a dynamic plugin, doesn't specify \c static
+    in its \c .pro file.
+
+    The \c INCLUDEPATH variable sets the search paths for global
+    headers (i.e., header files included using \c{#include <...>}).
+    We add Qt's \c examples/tools directory (strictly speaking,
+    \c{examples/tools/plugandpaintplugins/basictools/../..}) to the
+    list, so that we can include \c <plugandpaint/interfaces.h>.
+
+    The \c TARGET variable specifies which name we want to give the
+    target library. We use \c pnp_ as the prefix to show that the
+    plugin is designed to work with Plug & Paint. On Unix, \c lib is
+    also prepended to that name. On all platforms, a
+    platform-specific suffix is appended (e.g., \c .dll on Windows,
+    \c .a on Linux).
+
+    The \c CONFIG() code at the end is necessary for this example
+    because the example is part of the Qt distribution and Qt can be
+    configured to be built simultaneously in debug and in release
+    modes. You don't need to for your own plugins.
+*/
+
+/*!
+    \example tools/plugandpaintplugins/extrafilters
+    \title Plug & Paint Extra Filters Example
+
+    The Extra Filters example is a plugin for the
+    \l{tools/plugandpaint}{Plug & Paint} example. It provides a set
+    of filters in addition to those provided by the
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools} plugin.
+
+    Since the approach is identical to
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools}, we won't
+    review the code here. The only part of interest is the
+    \c .pro file, since Extra Filters is a dynamic plugin
+    (\l{tools/plugandpaintplugins/basictools}{Basic Tools} is
+    linked statically into the Plug & Paint executable).
+
+    Here's the project file for building the Extra Filters plugin:
+
+    \snippet examples/tools/plugandpaintplugins/extrafilters/extrafilters.pro 0
+
+    The \c .pro file differs from typical \c .pro files in many
+    respects. First, it starts with a \c TEMPLATE entry specifying \c
+    lib. (The default template is \c app.) It also adds \c plugin to
+    the \c CONFIG variable. This is necessary on some platforms to
+    avoid generating symbolic links with version numbers in the file
+    name, which is appropriate for most dynamic libraries but not for
+    plugins.
+
+    The \c INCLUDEPATH variable sets the search paths for global
+    headers (i.e., header files included using \c{#include <...>}).
+    We add Qt's \c examples/tools directory (strictly speaking,
+    \c{examples/tools/plugandpaintplugins/basictools/../..}) to the
+    list, so that we can include \c <plugandpaint/interfaces.h>.
+
+    The \c TARGET variable specifies which name we want to give the
+    target library. We use \c pnp_ as the prefix to show that the
+    plugin is designed to work with Plug & Paint. On Unix, \c lib is
+    also prepended to that name. On all platforms, a
+    platform-specific suffix is appended (e.g., \c .dll on Windows,
+    \c .so on Linux).
+
+    The \c DESTDIR variable specifies where we want to install the
+    plugin. We put it in Plug & Paint's \c plugins subdirectory,
+    since that's where the application looks for dynamic plugins.
+
+    The \c CONFIG() code at the end is necessary for this example
+    because the example is part of the Qt distribution and Qt can be
+    configured to be built simultaneously in debug and in release
+    modes. You don't need to for your own plugins.
+*/

@@ -1,0 +1,3 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   fatalError(exception={columnNumber=31, lineNumber=1, publicId="", systemId="", message="encoding declaration or standalone declaration expected while reading the XML declaration"})

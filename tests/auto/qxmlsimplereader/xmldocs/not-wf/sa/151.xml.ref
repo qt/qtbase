@@ -1,0 +1,6 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+      characters(ch="\r\n")
+   endElement(namespaceURI="", localName="doc", qName="doc")
+   fatalError(exception={columnNumber=6, lineNumber=3, publicId="", systemId="", message="invalid name for processing instruction"})

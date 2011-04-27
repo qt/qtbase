@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root ANY>
+<!ATTLIST root attr1 CDATA #IMPLIED>
+<!ATTLIST root attr2 CDATA #IMPLIED>
+<!ENTITY withlt "have <lessthan> inside">
+<!ENTITY aIndirect "&withlt;">
+]>
+<root attr1="&aIndirect;">indirect reference to an entity with &lt; as part of its replacement text in Attribute</root>

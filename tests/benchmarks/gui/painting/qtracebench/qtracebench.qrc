@@ -1,0 +1,10 @@
+<RCC>
+    <qresource>
+        <file>traces/basicdrawing.trace</file>
+        <file>traces/webkit.trace</file>
+        <file>traces/textedit.trace</file>
+        <file>traces/creator.trace</file>
+        <file>traces/qmlphoneconcept.trace</file>
+        <file>traces/qmlsamegame.trace</file>
+    </qresource>
+</RCC>

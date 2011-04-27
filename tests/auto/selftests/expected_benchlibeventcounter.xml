@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_BenchlibEventCounter">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="events">
+<BenchmarkResult metric="Events" tag="0" value="0" iterations="1" />
+<BenchmarkResult metric="Events" tag="1" value="1" iterations="1" />
+<BenchmarkResult metric="Events" tag="10" value="10" iterations="1" />
+<BenchmarkResult metric="Events" tag="100" value="100" iterations="1" />
+<BenchmarkResult metric="Events" tag="500" value="500" iterations="1" />
+<BenchmarkResult metric="Events" tag="5000" value="5000" iterations="1" />
+<BenchmarkResult metric="Events" tag="100000" value="100000" iterations="1" />
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

@@ -1,0 +1,7 @@
+<!DOCTYPE root [
+    <!-- SGML-ism:  exception spec -->
+    <!ELEMENT section (header,(para|section))* +(annotation|todo)>
+]>
+
+<root/>
+

@@ -1,0 +1,14 @@
+<!DOCTYPE student [
+	<!ELEMENT student (#PCDATA)>
+	<!ENTITY gewithlt "abcd&#x3c;"> 
+        <!ATTLIST student att1 CDATA #REQUIRED>
+]>
+<--* this is to test "<" can not be included in the 
+     replacement text of an entity that is referenced 
+     in AttValue. Anyway, this file should be rejected
+     because the internal GE "gewithlt" is not even 
+     well-formed by definition. *-->
+     
+
+<?MyInstruct This is a test ?>
+<student att1="&gewithlt;">My Name is SnowMan. </student>

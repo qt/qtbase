@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>ledoff.png</file>
+        <file>ledon.png</file>
+    </qresource>
+</RCC>

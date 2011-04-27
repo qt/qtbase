@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.0"
+   width="744.09448"
+   height="1052.3622"
+   id="svg2721">
+  <defs
+     id="defs2723">
+    <linearGradient
+       id="linearGradient3746">
+      <stop
+         id="stop3748"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop3750"
+         style="stop-color:#0074b7;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <radialGradient
+       cx="82.966125"
+       cy="-178.42453"
+       r="526.79456"
+       fx="82.966125"
+       fy="-178.42453"
+       id="radialGradient3880"
+       xlink:href="#linearGradient3746"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.4952094,0.3367191,-0.1040669,0.5264617,-235.04839,425.12197)" />
+  </defs>
+  <g
+     id="layer1">
+    <rect
+       width="1053.5891"
+       height="291.32797"
+       x="-178.22313"
+       y="300.98392"
+       id="rect3638"
+       style="opacity:1;fill:url(#radialGradient3880);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.1880002;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  </g>
+</svg>

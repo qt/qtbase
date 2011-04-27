@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<testdefinition version="1.0">
+  <suite domain="Application framework" level="Component" name="##Add your name here##" type="Functional">
+    <description />

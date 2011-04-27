@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+SPECDIR=/usr/share/qt4/mkspecs
+
+rm -f ${SPECDIR}/default
+ln -s ${SPECDIR}/#PLATFORM_ARG# ${SPECDIR}/default
+
+PREFIX=native
+if [ -f /targets/links/scratchbox.config ]; then
+    PREFIX=host
+fi
+
+BINARIES="qmake moc rcc uic"
+
+for bin in $BINARIES; do
+    ln -sf "/usr/bin/${PREFIX}-${bin}" "/usr/bin/${bin}"
+done
+
+#DEBHELPER#

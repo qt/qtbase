@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY aaa "aString">
+<!--* mess up Entity Declaration *-->
+<root/>
+<!ENTITY % paaa "aString">
+]>
+<root/>

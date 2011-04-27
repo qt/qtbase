@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/designer.png</file>
+    <file>images/wine.jpeg</file>
+    <file>images/wine-big.jpeg</file>
+    <file>random.data</file>
+</qresource>
+</RCC>
+

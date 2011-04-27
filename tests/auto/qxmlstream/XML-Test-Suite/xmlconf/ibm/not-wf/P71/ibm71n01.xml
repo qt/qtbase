@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* missing space  *-->
+<!ENTITYaaa "aString">
+
+]>
+<root>&aaa;</root>
+

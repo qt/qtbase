@@ -1,0 +1,148 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/* main layout */
+body {
+    background          : #aaaaaa;
+    font-family         : sans-serif;
+    font-weight         : bold;
+}
+
+h1 {
+    min-height          : 1.5em;
+    background          : #ffffff;
+    margin-left         : 1em;
+    margin-right        : 1em;
+    text-align          : center;
+    font-size           : 18px;
+    padding-top         : 0.25em;
+    padding-bottom      : 0.25em;
+    border-radius       : 0.5em;
+}
+
+.panel {
+    position            : absolute;
+    top                 : 0em;
+    bottom              : 0em;
+    left                : 0em;
+    right               : 0em;
+}
+
+article {
+    background          : #ffffff;
+    padding             : 1em;
+    border-radius       : 1em;
+    margin              : 1em;
+}
+
+.panel > ul {
+    padding             : 0em;
+    list-style-type     : none;
+}
+.panel > ul > li {
+    background          : #fff;
+    margin              : 0.5em 1.0em 0.5em 1.0em;
+    padding             : 0.5em;
+    display             : block;
+    border-radius       : 0.5em;
+}
+.panel > ul > li > a {
+    width               : 100%;
+    display             : block;
+    text-decoration     : none;
+    text-align          : justify;
+    color               : #000000;
+}
+.panel > a {
+    background          : #fff;
+    margin              : 0 1.0em 1.0em 0em;
+    padding             : 0.5em;
+}
+/* navigational hints */
+
+a.go_out {
+    background          : transparent;
+    position            : absolute;
+    top                 : 0.5em;
+    left                : 1.2em;
+    content             : url(../img/icon_drill-up_x32.png);
+    padding             : 0.25em;
+    border-radius       : 1em;
+    display             : block;
+}
+
+.panel > ul > li > a:after {
+    text-align          : right;
+    float               : right;
+    font-size           : 1em;
+    font-weight         : bold;
+}
+.panel > ul > li > a:after {
+    -webkit-transform   : translate(0, -0.5em);
+    content             : url(../img/icon_drill-down_x32.png);
+}
+
+/* animations */
+#in:target {
+    -webkit-animation   : slide_in 0.25s;
+}
+#out:target + .panel {
+    -webkit-animation   : slide_out 0.25s;
+}
+@-webkit-keyframes slide_in {
+    from {
+        left            : 80%;
+        right           : -80%;
+    }
+    to {
+        left            : 0em;
+        right           : 0em;
+    }
+}
+@-webkit-keyframes slide_out {
+    from {
+        left            : -80%;
+        right           : 80%;
+    }
+    to {
+        left            : 0em;
+        right           : 0em;
+    }
+}

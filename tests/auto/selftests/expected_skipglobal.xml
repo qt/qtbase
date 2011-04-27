@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_SkipGlobal">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skipglobal/tst_skipglobal.cpp" line="72">
+    <Description><![CDATA[Skippy Skippy]]></Description>
+</Message>
+</TestFunction>
+</TestCase>

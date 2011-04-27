@@ -1,0 +1,52 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="testFunc1">
+<Incident type="pass" file="" line="0">
+<Message type="warn" file="" line="0">
+    <Description><![CDATA[just a QWARN() !]]></Description>
+</Message>
+</Incident>
+</TestFunction>
+<TestFunction name="testFunc2">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="74">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[a qDebug() call with comment-ending stuff -->]]></Description>
+</Message>
+    <Description><![CDATA[Compared values are not the same
+   Actual (2): 2
+   Expected (3): 3]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="testFunc3">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="79">
+    <Description><![CDATA[skipping this function!]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="testFunc4">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="84">
+    <Description><![CDATA[a forced failure!]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="testFunc5">
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="98">
+    <Description><![CDATA[this failure is expected]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="testFunc6">
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="104">
+    <Description><![CDATA[this failure is also expected]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="testFunc7">
+<Incident type="xpass" file="/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp" line="110">
+    <Description><![CDATA['true' returned FALSE. ()]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

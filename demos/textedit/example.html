@@ -1,0 +1,79 @@
+<html><head><meta name="qrichtext" content="1" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>QTextEdit Demonstration</title><style type="text/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=" font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;">
+<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:20pt; font-weight:600;">QTextEdit</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:11pt;">The QTextEdit widget is an advanced editor that supports formatted rich text. It can be used to display HTML and other rich document formats. Internally, QTextEdit uses the QTextDocument class to describe both the high-level structure of each document and the low-level formatting of paragraphs.</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;">If you are viewing this document in the <span style=" font-style:italic;">textedit</span> demo, you can edit this document to explore Qt's rich text editing features. We have included some comments in each of the following sections to encourage you to experiment.  </p>
+<p style=" margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:18pt; font-weight:600;"><span style=" font-size:16pt;">Font and Paragraph Styles</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:11pt;">QTextEdit supports </span><span style=" font-size:11pt; font-weight:600;">bold</span><span style=" font-size:11pt;">, </span><span style=" font-size:11pt; font-style:italic;">italic</span><span style=" font-size:11pt;">, and </span><span style=" font-size:11pt; text-decoration: underline;">underlined</span><span style=" font-size:11pt;"> font styles, and can display </span><span style=" font-size:11pt; font-weight:600; color:#00007f;">multicolored</span><span style=" font-size:11pt;"> </span><span style=" font-size:11pt; font-weight:600; color:#aa0000;">text</span><span style=" font-size:11pt;">. Font families such as </span><span style=" font-family:'Times'; font-size:11pt; font-weight:600;">Times New Roman</span><span style=" font-size:11pt;"> and </span><span style=" font-family:'Courier'; font-size:11pt; font-weight:600;">Courier</span><span style=" font-size:11pt;"> can also be used directly. </span><span style=" font-size:11pt; font-style:italic;">If you place the cursor in a region of styled text, the controls in the tool bars will change to reflect the current style.</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;">Paragraphs can be formatted so that the text is left-aligned, right-aligned, centered, or fully justified.</p>
+<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-style:italic;">Try changing the alignment of some text and resize the editor to see how the text layout changes.</span> </p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:16pt; font-weight:600;">Lists</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:16pt; font-weight:600;"><span style=" font-size:11pt; font-weight:400;">Different kinds of lists can be included in rich text documents. Standard bullet lists can be nested, using different symbols for each level of the list: </span></p>
+<ul style="-qt-list-indent: 1;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Disc symbols are typically used for top-level list items. </li></ul>
+<ul type=circle style="-qt-list-indent: 2;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Circle symbols can be used to distinguish between items in lower-level lists.</li></ul>
+<ul type=square style="-qt-list-indent: 3;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Square symbols provide a reasonable alternative to discs and circles. </li></ul>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;">Ordered lists can be created that can be used for tables of contents. Different characters can be used to enumerate items, and we can use both Roman and Arabic numerals in the same list structure: </p>
+<ol style="-qt-list-indent: 1;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Introduction</li>
+<li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Qt Tools </li></ol>
+<ol type=a style="-qt-list-indent: 2;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Qt Assistant</li>
+<li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Qt Designer</li>
+<ol type=A style="-qt-list-indent: 3;"><li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Form Editor</li>
+<li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Component Architecture</li></ol>
+<li style=" font-size:11pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Qt Linguist</li></ol>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"></p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;">The list will automatically be renumbered if you add or remove items. <span style=" font-style:italic;">Try adding new sections to the above list or removing existing item to see the numbers change.</span> </p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"></p>
+<p style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-size:16pt; font-weight:600;">Images</span></p>
+<p style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:16pt; font-weight:600;"><span style=" font-size:11pt; font-weight:400;">Inline images are treated like ordinary ranges of characters in the text editor, so they flow with the surrounding text. Images can also be selected in the same way as text, making it easy to cut, copy, and paste them. </span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><img src=":/images/logo32.png" /><span style=" font-style:italic;"> Try to select this image by clicking and dragging over it with the mouse, or use the text cursor to select it by holding down Shift and using the arrow keys. You can then cut or copy it, and paste it into different parts of this document.</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-size:16pt; font-weight:600;">Tables</span></p>
+<p align="justify" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:16pt; font-weight:600;"><span style=" font-size:11pt; font-weight:400;">QTextEdit can arrange and format tables, supporting features such as row and column spans, text formatting within cells, and size constraints for columns. </span></p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"></p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"></p>
+<table border="1" align="center" width="90%" cellspacing="0" cellpadding="4">
+<tr>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"> </p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">Development Tools </span></p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">Programming Techniques </span></p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">Graphical User Interfaces </span></p></td></tr>
+<tr>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">9:00 - 11:00 </span></p></td>
+<td colspan="3">
+<p align="center" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Introduction to <span style=" font-style:italic;">Qt </span></p></td></tr>
+<tr>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">11:00 - 13:00 </span></p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Using <span style=" font-style:italic;">qmake</span> </p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Object-oriented Programming </p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Layouts in <span style=" font-style:italic;">Qt</span> </p></td></tr>
+<tr>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">13:00 - 15:00 </span></p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-style:italic;">Qt Designer</span> Tutorial </p></td>
+<td rowspan="2">
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Extreme Programming </p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Writing Custom Styles </p></td></tr>
+<tr>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">15:00 - 17:00 </span></p></td>
+<td>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-style:italic;">Qt Linguist</span> and Internationalization </p></td>
+<td></td></tr></table>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt; font-style:italic;">Try adding text to the cells in the table and experiment with the alignment of the paragraphs.</p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-size:16pt; font-weight:600;">Hyperlinks</span></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:11pt;">QTextEdit is designed to support hyperlinks between documents, and this feature is used extensively in </span><span style=" font-size:11pt; font-style:italic;">Qt Assistant</span><span style=" font-size:11pt;">. Hyperlinks are automatically created when an HTML file is imported into an editor. Since the rich text framework supports hyperlinks natively, they can also be created programatically.</span></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-size:16pt; font-weight:600;">Undo and Redo</span></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;">Full support for undo and redo operations is built into QTextEdit and the underlying rich text framework. Operations on a document can be packaged together to make editing a more comfortable experience for the user.</p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:11pt;"><span style=" font-style:italic;">Try making changes to this document and press Ctrl+Z to undo them. You can always recover  the original contents of the document.</span> </p></body></html>

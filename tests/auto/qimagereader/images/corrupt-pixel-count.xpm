@@ -1,0 +1,11 @@
+/* XPM */
+static const char *marble_xpm[] = {
+/* width height num_colors chars_per_pixel */
+"2 2 2 -2",
+/* colors */
+"a c #adadad",
+"b c #dedede",
+/* pixels */
+"ab",
+"ba"
+};

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE foo SYSTEM "foo.dtd" [
+    <!ENTITY a1 "&a2;">
+    <!ENTITY a2 "&a3;">
+    <!ENTITY def "foo">
+]>
+<foo>
+    <a>abc&a1;gh</a>
+    <b>&a1;gh</b>
+    <c>abc&a1;</c>
+    <d>&a1;</d>
+    <e>&a1;&def;&a1;&def;</e>
+    <e>a&a1;b&def;c&a1;d&def;e</e>
+</foo>

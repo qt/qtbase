@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/5days.jpg</file>
+    <file>images/title.jpg</file>
+    <file>images/place.jpg</file>
+    <file>images/tabbar.jpg</file>
+    <file>images/details.jpg</file>
+    <file>images/weather-few-clouds.png</file>
+</qresource>
+</RCC>

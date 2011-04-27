@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+PREFIX=native
+if [ -f /targets/links/scratchbox.config ]; then
+    PREFIX=host
+fi
+
+BINARIES="lrelease"
+
+for bin in $BINARIES; do
+    ln -sf "/usr/bin/${PREFIX}-${bin}" "/usr/bin/${bin}"
+done
+
+#DEBHELPER#

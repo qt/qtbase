@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @(#)valid.xml	1.6 99/01/21
+    Copyright 1998 by Sun Microsystems, Inc.
+    All Rights Reserved.
+-->
+<TEST URI="valid/pe01.xml" ID="pe01" ENTITIES="parameter" SECTIONS="2.8" TYPE="valid">
+    Parameter entities references are NOT RECOGNIZED in default attribute
+    values.</TEST>
+
+<TEST URI="valid/dtd00.xml" ID="dtd00" SECTIONS="3.2.2 [51]" TYPE="valid"
+	OUTPUT="valid/out/dtd00.xml">
+    Tests parsing of alternative forms of text-only mixed
+	content declaration.</TEST>
+
+<TEST URI="valid/dtd01.xml" ID="dtd01" TYPE="valid" SECTIONS="2.5 [15]"
+	OUTPUT="valid/out/dtd01.xml">
+    Comments don't get parameter entity expansion</TEST>
+
+<TEST URI="valid/element.xml" ID="element" TYPE="valid" SECTIONS="3"
+	OUTPUT="valid/out/element.xml">
+    Tests clauses 1, 3, and 4 of the Element Valid
+	validity constraint.</TEST>
+
+<TEST URI="valid/ext01.xml" ID="ext01" ENTITIES="general"
+	OUTPUT="valid/out/ext01.xml"
+	SECTIONS="4.3.1 4.3.2 [77] [78]" TYPE="valid">
+    Tests use of external parsed entities with and without content.</TEST>
+
+<TEST URI="valid/ext02.xml" ID="ext02" ENTITIES="general" SECTIONS="4.3.2 [78]" TYPE="valid"
+	OUTPUT="valid/out/ext02.xml">
+    Tests use of external parsed entities with different
+	encodings than the base document.</TEST>
+
+<TEST URI="valid/not-sa01.xml" ENTITIES="parameter" ID="not-sa01" TYPE="valid" SECTIONS="2.9"
+	OUTPUT="valid/out/not-sa01.xml">
+    A non-standalone document is valid if declared as such.</TEST>
+
+<TEST URI="valid/not-sa02.xml" ENTITIES="parameter" ID="not-sa02" TYPE="valid" SECTIONS="2.9"
+	OUTPUT="valid/out/not-sa02.xml">
+    A non-standalone document is valid if declared as such.</TEST>
+
+<TEST URI="valid/not-sa03.xml" ENTITIES="parameter" ID="not-sa03" TYPE="valid" SECTIONS="2.9"
+	OUTPUT="valid/out/not-sa03.xml">
+    A non-standalone document is valid if declared as such.</TEST>
+
+<TEST URI="valid/not-sa04.xml" ENTITIES="parameter" ID="not-sa04" TYPE="valid" SECTIONS="2.9"
+	OUTPUT="valid/out/not-sa04.xml">
+    A non-standalone document is valid if declared as such. </TEST>
+
+<TEST URI="valid/notation01.xml" ENTITIES="parameter" ID="notation01" TYPE="valid"
+	OUTPUT="valid/out/notation01.xml"
+	SECTIONS="4.7 [82]">
+    NOTATION declarations don't need SYSTEM IDs; and
+    externally declared notations may be used to declare
+    unparsed entities in the internal DTD subset.
+    The notation must be reported to the application.
+    </TEST>
+
+<TEST URI="valid/optional.xml" ENTITIES="parameter" ID="optional" TYPE="valid"
+	OUTPUT="valid/out/optional.xml"
+	SECTIONS="3 3.2.1 [47]">
+    Tests declarations of "children" content models, and
+	the validity constraints associated with them.</TEST>
+
+<TEST URI="valid/required00.xml" ID="required00" TYPE="valid"
+	OUTPUT="valid/out/required00.xml"
+	SECTIONS="3.3.2 [60]">
+    Tests the #REQUIRED attribute declaration syntax, and
+	the associated validity constraint. </TEST>
+
+<TEST URI="valid/sa01.xml" ID="sa01" TYPE="valid" SECTIONS="2.9 [32]"
+	OUTPUT="valid/out/sa01.xml">
+    A document may be marked 'standalone' if any optional 
+	whitespace is defined within the internal DTD subset.</TEST>
+
+<TEST URI="valid/sa02.xml" ID="sa02" TYPE="valid" SECTIONS="2.9 [32]"
+	OUTPUT="valid/out/sa02.xml">
+    A document may be marked 'standalone' if any
+	attributes that need normalization are
+	defined within the internal DTD subset.</TEST>
+
+<TEST URI="valid/sa03.xml" ENTITIES="parameter" ID="sa03" TYPE="valid" SECTIONS="2.9 [32]"
+	OUTPUT="valid/out/sa03.xml">
+    A document may be marked 'standalone' if any
+    the defined entities need expanding are internal,
+    and no attributes need defaulting or normalization.
+    On output, requires notations to be correctly reported.
+    </TEST>
+
+<TEST URI="valid/sa04.xml" ID="sa04" ENTITIES="parameter" TYPE="valid" SECTIONS="2.9 [32]"
+	OUTPUT="valid/out/sa04.xml">
+    Like sa03 but relies on attribute
+    defaulting defined in the internal subset.
+    On output, requires notations to be correctly reported.
+    </TEST>
+
+<TEST URI="valid/sa05.xml" ID="sa05" ENTITIES="parameter" TYPE="valid" SECTIONS="2.9 [32]"
+	OUTPUT="valid/out/sa05.xml">
+    Like sa01 but this document is standalone
+    since it has no optional whitespace.
+    On output, requires notations to be correctly reported.
+    </TEST>
+
+<TEST URI="valid/sgml01.xml" ID="v-sgml01" SECTIONS="3.3.1 [59]" TYPE="valid"
+	OUTPUT="valid/out/sgml01.xml">
+    XML permits token reuse, while SGML does not.</TEST>
+
+<TEST URI="valid/v-lang01.xml"
+	OUTPUT="valid/out/v-lang01.xml"
+	ID="v-lang01" SECTIONS="2.12 [35]" TYPE="valid">
+    Tests a lowercase ISO language code.</TEST>
+
+<TEST URI="valid/v-lang02.xml" ID="v-lang02" SECTIONS="2.12 [35]" TYPE="valid"
+	OUTPUT="valid/out/v-lang02.xml">
+    Tests a ISO language code with a subcode.</TEST>
+
+<TEST URI="valid/v-lang03.xml" ID="v-lang03" SECTIONS="2.12 [36]" TYPE="valid"
+	OUTPUT="valid/out/v-lang03.xml">
+    Tests a IANA language code with a subcode.</TEST>
+
+<TEST URI="valid/v-lang04.xml" ID="v-lang04" SECTIONS="2.12 [37]" TYPE="valid"
+	OUTPUT="valid/out/v-lang04.xml">
+    Tests a user language code with a subcode.</TEST>
+
+<TEST URI="valid/v-lang05.xml" ID="v-lang05" SECTIONS="2.12 [35]" TYPE="valid"
+	OUTPUT="valid/out/v-lang05.xml">
+    Tests an uppercase ISO language code.</TEST>
+
+<TEST URI="valid/v-lang06.xml" ID="v-lang06" SECTIONS="2.12 [37]" TYPE="valid"
+	OUTPUT="valid/out/v-lang06.xml">
+    Tests a user language code.</TEST>
+
+<TEST URI="valid/pe00.xml" ENTITIES="parameter" ID="v-pe00" SECTIONS="4.5" TYPE="valid"
+	OUTPUT="valid/out/pe00.xml">
+    Tests construction of internal entity replacement text, using
+    an example in the XML specification.  </TEST>
+
+<TEST URI="valid/pe03.xml" ID="v-pe03" SECTIONS="4.5" TYPE="valid"
+	OUTPUT="valid/out/pe03.xml">
+    Tests construction of internal entity replacement text, using
+    an example in the XML specification.  </TEST>
+
+<TEST URI="valid/pe02.xml" ENTITIES="parameter" ID="v-pe02" SECTIONS="4.5" TYPE="valid"
+	OUTPUT="valid/out/pe02.xml">
+    Tests construction of internal entity replacement text, using
+    a complex example in the XML specification.  </TEST>

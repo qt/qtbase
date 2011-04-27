@@ -1,0 +1,47 @@
+# Version: 1
+# CheckVsReference: 5%
+
+path_addRect path1 10 10 50 50
+path_addRect path2 30 30 50 50
+# enable/disable a clip path
+setPen nopen
+setBrush red
+setClipPath path1
+setClipPath path2 UniteClip
+drawRect 0 0 100 100
+setClipping false
+setBrush #630000ff
+drawRect 0 0 100 100
+setClipping true
+setBrush #6300ff00
+drawRect 0 0 100 100
+# enable/disable noclip
+translate 150 0
+setClipPath path1 NoClip
+setClipping false
+setBrush #630000ff
+drawRect 0 0 100 100
+setClipping true
+setBrush #6300ff00
+drawRect 25 25 50 50
+# enable/disable full clipping
+translate 150 0
+path_addRect path3 0 0 10 10
+path_addRect path4 20 20 10 10
+setClipPath path3
+setClipPath path4 IntersectClip
+setClipping false
+setBrush #630000ff
+drawRect 0 0 100 100
+setClipping true
+setBrush #6300ff00
+drawRect 25 25 50 50
+# disable clipping followed by setClipRect
+translate 150 0
+setClipRect 0 0 50 50 ReplaceClip
+setClipping false
+setBrush #630000ff
+drawRect 0 0 100 100
+setClipRect 25 25 75 75 IntersectClip
+setBrush #6300ff00
+drawRect 25 25 50 50

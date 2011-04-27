@@ -1,0 +1,2 @@
+<!ELEMENT doc EMPTY>
+<!ENTITY % ent1 "asdf%">

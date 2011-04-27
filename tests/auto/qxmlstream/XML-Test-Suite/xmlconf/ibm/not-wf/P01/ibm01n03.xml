@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE doc [
+   <!ELEMENT doc ANY>
+   <!ELEMENT title ANY>
+]>
+<doc>Wrong combination!</doc>
+<?PI after document element?>
+<title>Wrong combination!</title>
+<?PI after title element?>

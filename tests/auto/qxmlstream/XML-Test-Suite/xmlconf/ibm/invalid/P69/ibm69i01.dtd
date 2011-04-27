@@ -1,0 +1,6 @@
+<!ENTITY ge1 "abcdef">
+<!ELEMENT a EMPTY>
+<!ATTLIST a attr1 CDATA "&ge1;">
+<!ENTITY % pe1 "<!ATTLIST a attr2 CDATA #IMPLIED>">
+%pe2;
+<!--* PE reference therebefore doesn't match declaration *-->

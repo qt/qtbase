@@ -1,0 +1,2 @@
+libqt4-script: package-name-doesnt-match-sonames libQtScript4 libQtScriptTools4
+libqt4-script: unknown-control-file digsigsums

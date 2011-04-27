@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res/affine">
+   <file>xform.cpp</file>
+   <file>xform.html</file>
+   <file>bg1.jpg</file>
+</qresource>
+</RCC>

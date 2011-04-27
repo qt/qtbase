@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Wrong begining sequence in elementdecl *-->
+<ELEMENT aElement (#PCDATA)>
+]>
+<root>Any content</root>

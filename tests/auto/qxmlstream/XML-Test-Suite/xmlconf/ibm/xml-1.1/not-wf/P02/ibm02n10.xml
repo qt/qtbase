@@ -1,0 +1,7 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!DOCTYPE root [ 
+	<!ELEMENT root ANY>
+	<!ENTITY ent "BAD">
+]>
+<root></root>
+<!-- Entity Replacement text contains an embeded control character x12 -->

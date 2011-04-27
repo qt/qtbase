@@ -1,0 +1,6 @@
+<![INCLUDE[<![INCLUDE[
+<![IGNORE[ ignored ]]>
+<!ELEMENT doc EMPTY>
+]]>]]>
+<![IGNORE[ ignored ]]>
+<![IGNORE[ <!ELEMENT doc ignored ]]>

@@ -1,0 +1,3 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   fatalError(exception={columnNumber=6, lineNumber=2, publicId="", systemId="", message="invalid name for processing instruction"})

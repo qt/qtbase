@@ -1,0 +1,10 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!--dtd for production 65-->
+<![IGNORE[
+
+<![
+<!ELEMENT animal EMPTY>
+]]>
+
+]]>
+<!--Positive test. Pattern1(Empty string)-->

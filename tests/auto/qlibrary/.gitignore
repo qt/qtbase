@@ -1,0 +1,10 @@
+tst_qlibrary
+mylib.dl2
+mylib.dll
+mylib.exp
+mylib.lib
+mylib2.dll
+mylib2.exp
+mylib2.lib
+mylib_noextension
+system.trolltech.test.mylib.dll

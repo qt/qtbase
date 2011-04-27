@@ -1,0 +1,144 @@
+Qt 4.8 introduces many new features and improvements as well as bugfixes
+over the 4.7.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+  http://qt.nokia.com/doc/4.8
+
+The Qt version 4.8 series is binary compatible with the 4.7.x series.
+Applications compiled for 4.7 will continue to run with 4.8.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt.nokia.com/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+General Improvements
+--------------------
+
+- 
+
+Third party components
+----------------------
+
+ - Updated libpng to version x.y.z
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+ - Removed support for QT_NO_THREAD define for QHostInfo.
+ - Optimized plugin loading on ELF platforms.
+   Print failure reason at runtime with QT_DEBUG_PLUGINS=1 in environment.
+
+QtGui
+-----
+
+ - QTabBar: reduced minimumSizeHint if ElideMode is set.
+ - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
+
+ QtOpenGL
+ --------
+ - Removed dependency of OpenGL Utility Library (GLU)
+ - Added QGLFunctions, which provides cross-platform access to the
+   OpenGL/ES 2.0 API.
+ - Including <QtOpenGL> will not work in combination with GLEW, as
+   QGLFunctions will undefine GLEW's defines.
+
+
+****************************************************************************
+*                          Database Drivers                                *
+****************************************************************************
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+
+
+Qt for Windows
+--------------
+
+
+Qt for Mac OS X
+---------------
+
+
+Qt for Embedded Linux
+---------------------
+
+
+Qt for Windows CE
+-----------------
+
+
+****************************************************************************
+*                      Compiler Specific Changes                           *
+****************************************************************************
+
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Build System
+
+- Assistant
+
+
+- Designer
+
+
+- Linguist
+  - Linguist GUI
+
+  - lupdate
+
+  - lrelease
+
+
+- rcc
+
+
+- moc
+
+
+- uic
+
+
+- uic3
+
+
+- qmake
+
+
+- configure
+
+
+- qtconfig
+
+
+- qt3to4
+
+
+****************************************************************************
+*                          Plugins                                         *
+****************************************************************************
+
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+

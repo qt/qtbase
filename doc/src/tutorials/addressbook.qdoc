@@ -1,0 +1,981 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page tutorials-addressbook.html
+
+    \title Address Book Tutorial
+    \brief An introduction to GUI programming, showing how to put together a
+    simple yet fully-functioning application.
+
+    This tutorial is an introduction to GUI programming with the Qt
+    cross-platform framework.
+
+    \image addressbook-tutorial-screenshot.png
+
+    \omit
+    It doesn't cover everything; the emphasis is on teaching the programming
+    philosophy of GUI programming, and Qt's features are introduced as needed.
+    Some commonly used features are never used in this tutorial.
+    \endomit
+
+    In this tutorial, you will learn about some of the basic
+    components of Qt, including:
+
+    \list
+    \o Widgets and layout managers
+    \o Container classes
+    \o Signals and slots
+    \o Input and output devices
+    \endlist
+
+    If you are new to Qt, we recommend reading \l{How to Learn Qt} first.
+
+    Tutorial contents:
+
+    \list 1
+    \o \l{tutorials/addressbook/part1}{Designing the User Interface}
+    \o \l{tutorials/addressbook/part2}{Adding Addresses}
+    \o \l{tutorials/addressbook/part3}{Navigating between Entries}
+    \o \l{tutorials/addressbook/part4}{Editing and Removing Addresses}
+    \o \l{tutorials/addressbook/part5}{Adding a Find Function}
+    \o \l{tutorials/addressbook/part6}{Loading and Saving}
+    \o \l{tutorials/addressbook/part7}{Additional Features}
+    \endlist
+
+    The tutorial source code is located in \c{examples/tutorials/addressbook}.
+
+    Although this little application does not look much like a
+    fully-fledged modern GUI application, it uses many of the basic
+    elements that are used in more complex applications. After you
+    have worked through this tutorial, we recommend reading the
+    \l{mainwindows/application}{Application} example, which presents a
+    small GUI application, with menus, toolbars, a status bar, and so
+    on.  
+*/
+
+/*!
+    \page tutorials-addressbook-part1.html
+
+    \example tutorials/addressbook/part1
+    \title Part 1 - Designing the User Interface
+
+    This first part covers the design of the basic graphical user
+    interface (GUI) for our address book application.
+
+    The first step in creating a GUI program is to design the user
+    interface.  Here the our goal is to set up the labels and input
+    fields to implement a basic address book. The figure below is a
+    screenshot of the expected output.
+
+    \image addressbook-tutorial-part1-screenshot.png
+
+    We require two QLabel objects, \c nameLabel and \c addressLabel, as well
+    as two input fields, a QLineEdit object, \c nameLine, and a QTextEdit
+    object, \c addressText, to enable the user to enter a contact's name and
+    address. The widgets used and their positions are shown in the figure
+    below.
+
+    \image addressbook-tutorial-part1-labeled-screenshot.png
+
+    There are three files used to implement this address book:
+
+    \list
+        \o \c{addressbook.h} - the definition file for the \c AddressBook
+            class,
+        \o \c{addressbook.cpp} - the implementation file for the
+            \c AddressBook class, and
+        \o \c{main.cpp} - the file containing a \c main() function, with
+            an instance of \c AddressBook.
+    \endlist
+
+    \section1 Qt Programming - Subclassing
+
+    When writing Qt programs, we usually subclass Qt objects to add
+    functionality. This is one of the essential concepts behind creating
+    custom widgets or collections of standard widgets. Subclassing to
+    extend or change the behavior of a widget has the following advantages:
+
+    \list
+    \o We can write implementations of virtual or pure virtual functions to
+    obtain exactly what we need, falling back on the base class's implementation
+    when necessary.
+    \o It allows us to encapsulate parts of the user interface within a class,
+    so that the other parts of the application don't need to know about the
+    individual widgets in the user interface.
+    \o The subclass can be used to create multiple custom widgets in the same
+    application or library, and the code for the subclass can be reused in other
+    projects.
+    \endlist
+
+    Since Qt does not provide a specific address book widget, we subclass a
+    standard Qt widget class and add features to it. The \c AddressBook class
+    we create in this tutorial can be reused in situations where a basic address
+    book widget is needed.
+
+    \section1 Defining the AddressBook Class
+
+    The \l{tutorials/addressbook/part1/addressbook.h}{\c addressbook.h} file is
+    used to define the \c AddressBook class.
+
+    We start by defining \c AddressBook as a QWidget subclass and declaring
+    a constructor. We also use the Q_OBJECT macro to indicate that the class
+    uses internationalization and Qt's signals and slots features, even
+    if we do not use all of these features at this stage.
+
+    \snippet tutorials/addressbook/part1/addressbook.h class definition
+
+    The class holds declarations of \c nameLine and \c addressText,
+    the private instances of QLineEdit and QTextEdit mentioned
+    earlier.  The data stored in \c nameLine and \c addressText will
+    be needed for many of the address book functions.
+
+    We don't include declarations of the QLabel objects we will use
+    because we will not need to reference them once they have been
+    created.  The way Qt tracks the ownership of objects is explained
+    in the next section.
+
+    The Q_OBJECT macro itself implements some of the more advanced features of Qt.
+    For now, it is useful to think of the Q_OBJECT macro as a shortcut which allows
+    us to use the \l{QObject::}{tr()} and \l{QObject::}{connect()} functions.
+
+    We have now completed the \c addressbook.h file and we move on to
+    implement the corresponding \c addressbook.cpp file.
+
+    \section1 Implementing the AddressBook Class
+
+    The constructor of \c AddressBook accepts a QWidget parameter, \a parent.
+    By convention, we pass this parameter to the base class's constructor.
+    This concept of ownership, where a parent can have one or more children,
+    is useful for grouping widgets in Qt. For example, if you delete a parent,
+    all of its children will be deleted as well.
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp constructor and input fields
+
+    In this constructor, the QLabel objects \c nameLabel and \c
+    addressLabel are instantiated, as well as \c nameLine and \c
+    addressText. The \l{QObject::tr()}{tr()} function returns a
+    translated version of the string, if there is one
+    available. Otherwise it returns the string itself. This function
+    marks its QString parameter as one that should be translated into
+    other languages. It should be used wherever a translatable string
+    appears.
+
+    When programming with Qt, it is useful to know how layouts work.
+    Qt provides three main layout classes: QHBoxLayout, QVBoxLayout
+    and QGridLayout to handle the positioning of widgets.
+
+    \image addressbook-tutorial-part1-labeled-layout.png
+
+    We use a QGridLayout to position our labels and input fields in a
+    structured manner. QGridLayout divides the available space into a grid and
+    places widgets in the cells we specify with row and column numbers. The
+    diagram above shows the layout cells and the position of our widgets, and
+    we specify this arrangement using the following code:
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp layout
+
+    Notice that \c addressLabel is positioned using Qt::AlignTop as an
+    additional argument. This is to make sure it is not vertically centered in
+    cell (1,0). For a basic overview on Qt Layouts, refer to the 
+    \l{Layout Management} documentation.
+
+    In order to install the layout object onto the widget, we have to invoke
+    the widget's \l{QWidget::setLayout()}{setLayout()} function:
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp setting the layout
+
+    Lastly, we set the widget's title to "Simple Address Book".
+
+    \section1 Running the Application
+
+    A separate file, \c main.cpp, is used for the \c main() function. Within
+    this function, we instantiate a QApplication object, \c app. QApplication
+    is responsible for various application-wide resources, such as the default
+    font and cursor, and for running an event loop. Hence, there is always one
+    QApplication object in every GUI application using Qt.
+
+    \snippet tutorials/addressbook/part1/main.cpp main function
+
+    We construct a new \c AddressBook widget on the stack and invoke
+    its \l{QWidget::show()}{show()} function to display it.
+    However, the widget will not be shown until the application's event loop
+    is started. We start the event loop by calling the application's
+    \l{QApplication::}{exec()} function; the result returned by this function
+    is used as the return value from the \c main() function. At this point,
+    it becomes apparent why we instanciated \c AddressBook on the stack: It
+    will now go out of scope. Therefore, \c AddressBook and all its child widgets
+    will be deleted, thus preventing memory leaks.
+*/
+
+/*!
+    \page tutorials-addressbook-part2.html
+
+    \example tutorials/addressbook/part2
+    \title Part 2 - Adding Addresses
+
+    The next step in creating the address book is to implement some
+    user interactions.
+
+    \image addressbook-tutorial-part2-add-contact.png
+
+    We will provide a push button that the user can click to add a new contact.
+    Also, some form of data structure is needed to store these contacts in an
+    organized way.
+
+    \section1 Defining the AddressBook Class
+
+    Now that we have the labels and input fields set up, we add push buttons to
+    complete the process of adding a contact. This means that our
+    \c addressbook.h file now has three QPushButton objects declared and three
+    corresponding public slots.
+
+    \snippet tutorials/addressbook/part2/addressbook.h slots
+
+    A slot is a function that responds to a particular signal. We will discuss
+    this concept in further detail when implementing the \c AddressBook class.
+    However, for an overview of Qt's signals and slots concept, you can refer
+    to the \l{Signals and Slots} document.
+
+    Three QPushButton objects (\c addButton, \c submitButton, and
+    \c cancelButton) are now included in our private variable declarations,
+    along with \c nameLine and \c addressText.
+
+    \snippet tutorials/addressbook/part2/addressbook.h pushbutton declaration
+
+    We need a container to store our address book contacts, so that we can
+    traverse and display them. A QMap object, \c contacts, is used for this
+    purpose as it holds a key-value pair: the contact's name as the \e key,
+    and the contact's address as the \e{value}.
+
+    \snippet tutorials/addressbook/part2/addressbook.h remaining private variables
+
+    We also declare two private QString objects, \c oldName and \c oldAddress.
+    These objects are needed to hold the name and address of the contact that
+    was last displayed, before the user clicked \gui Add. So, when the user clicks
+    \gui Cancel, we can revert to displaying the details of the last contact.
+
+    \section1 Implementing the AddressBook Class
+
+    Within the constructor of \c AddressBook, we set the \c nameLine and
+    \c addressText to read-only, so that we can only display but not edit
+    existing contact details.
+
+    \dots
+    \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 1
+    \dots
+    \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 2
+
+    Then, we instantiate our push buttons: \c addButton, \c submitButton, and
+    \c cancelButton.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp pushbutton declaration
+
+    The \c addButton is displayed by invoking the \l{QPushButton::show()}
+    {show()} function, while the \c submitButton and \c cancelButton are
+    hidden by invoking \l{QPushButton::hide()}{hide()}. These two push
+    buttons will only be displayed when the user clicks \gui Add and this is
+    handled by the \c addContact() function discussed below.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
+
+    We connect the push buttons' \l{QPushButton::clicked()}{clicked()} signal
+    to their respective slots. The figure below illustrates this.
+
+    \image addressbook-tutorial-part2-signals-and-slots.png
+
+    Next, we arrange our push buttons neatly to the right of our address book
+    widget, using a QVBoxLayout to line them up vertically.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp vertical layout
+
+    The \l{QBoxLayout::addStretch()}{addStretch()} function is used to ensure
+    the push buttons are not evenly spaced, but arranged closer to the top of
+    the widget. The figure below shows the difference between using
+    \l{QBoxLayout::addStretch()}{addStretch()} and not using it.
+
+    \image addressbook-tutorial-part2-stretch-effects.png
+
+    We then add \c buttonLayout1 to \c mainLayout, using
+    \l{QGridLayout::addLayout()}{addLayout()}. This gives us nested layouts
+    as \c buttonLayout1 is now a child of \c mainLayout.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp grid layout
+
+    Our layout coordinates now look like this:
+
+    \image addressbook-tutorial-part2-labeled-layout.png
+
+    In the \c addContact() function, we store the last displayed contact
+    details in \c oldName and \c oldAddress. Then we clear these input
+    fields and turn off the read-only mode. The focus is set on \c nameLine
+    and we display \c submitButton and \c cancelButton.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp addContact
+
+    The \c submitContact() function can be divided into three parts:
+
+    \list 1
+    \o We extract the contact's details from \c nameLine and \c addressText
+    and store them in QString objects. We also validate to make sure that the
+    user did not click \gui Submit with empty input fields; otherwise, a
+    QMessageBox is displayed to remind the user for a name and address.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
+
+    \o We then proceed to check if the contact already exists. If it does not
+    exist, we add the contact to \c contacts and we display a QMessageBox to
+    inform the user that the contact has been added.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part2
+
+    If the contact already exists, again, we display a QMessageBox to inform
+    the user about this, preventing the user from adding duplicate contacts.
+    Our \c contacts object is based on key-value pairs of name and address,
+    hence, we want to ensure that \e key is unique.
+
+    \o Once we have handled both cases mentioned above, we restore the push
+    buttons to their normal state with the following code:
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part3
+
+    \endlist
+
+    The screenshot below shows the QMessageBox object we use to display
+    information messages to the user.
+
+    \image addressbook-tutorial-part2-add-successful.png
+
+    The \c cancel() function restores the last displayed contact details and
+    enables \c addButton, as well as hides \c submitButton and
+    \c cancelButton.
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp cancel
+
+    The general idea behind adding a contact is to give the user the
+    flexibility to click \gui Submit or \gui Cancel at any time. The flowchart below
+    further explains this concept:
+
+    \image addressbook-tutorial-part2-add-flowchart.png
+*/
+
+/*!
+    \page tutorials-addressbook-part3.html
+
+    \example tutorials/addressbook/part3
+    \title Part 3 - Navigating between Entries
+
+    The address book is now about half complete. We should add the
+    capability to navigate among the contacts, but first we must
+    decide what sort of a data structure we need for containing these
+    contacts.
+
+    In the previous section, we used a QMap of key-value pairs with
+    the contact's name as the \e key, and the contact's address as the
+    \e value. This works well for our case. However, in order to
+    navigate and display each entry, a little bit of enhancement is
+    needed.
+
+    We enhance the QMap by making it replicate a data structure similar to a
+    circularly-linked list, where all elements are connected, including the
+    first element and the last element. The figure below illustrates this data
+    structure.
+
+    \image addressbook-tutorial-part3-linkedlist.png
+
+    \section1 Defining the AddressBook Class
+
+    To add navigation functions to the address book, we must add two
+    more slots to the \c AddressBook class: \c next() and \c
+    previous() to the \c addressbook.h file:
+
+    \snippet tutorials/addressbook/part3/addressbook.h navigation functions
+
+    We also require another two QPushButton objects, so we declare \c nextButton
+    and \c previousButton as private variables:
+
+    \snippet tutorials/addressbook/part3/addressbook.h navigation pushbuttons
+
+    \section1 Implementing the AddressBook Class
+
+    In the \c AddressBook constructor in \c addressbook.cpp, we instantiate
+    \c nextButton and \c previousButton and disable them by default. This is
+    because navigation is only enabled when there is more than one contact
+    in the address book.
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp navigation pushbuttons
+
+    We then connect these push buttons to their respective slots:
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
+
+    The image below is the expected graphical user interface. 
+
+    \image addressbook-tutorial-part3-screenshot.png
+
+    We follow basic conventions for \c next() and \c previous() functions by
+    placing the \c nextButton on the right and the \c previousButton on the
+    left. In order to achieve this intuitive layout, we use QHBoxLayout to
+    place the widgets side-by-side:
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp navigation layout
+
+    The QHBoxLayout object, \c buttonLayout2, is then added to \c mainLayout.
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp adding navigation layout
+
+    The figure below shows the coordinates of the widgets in \c mainLayout.
+    \image addressbook-tutorial-part3-labeled-layout.png
+
+    Within our \c addContact() function, we have to disable these buttons so
+    that the user does not attempt to navigate while adding a contact.
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp disabling navigation
+
+    Also, in our \c submitContact() function, we enable the navigation
+    buttons, \c nextButton and \c previousButton, depending on the size
+    of \c contacts. As mentioned earlier, navigation is only enabled when
+    there is more than one contact in the address book. The following lines
+    of code demonstrates how to do this:
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp enabling navigation
+
+    We also include these lines of code in the \c cancel() function.
+
+    Recall that we intend to emulate a circularly-linked list with our QMap
+    object, \c contacts. So, in the \c next() function, we obtain an iterator
+    for \c contacts and then:
+
+    \list
+        \o If the iterator is not at the end of \c contacts, we increment it
+        by one.
+        \o If the iterator is at the end of \c contacts, we move it to the
+        beginning of \c contacts. This gives us the illusion that our QMap is
+        working like a circularly-linked list.
+    \endlist
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp next() function
+
+    Once we have iterated to the correct object in \c contacts, we display
+    its contents on \c nameLine and \c addressText.
+
+    Similarly, for the \c previous() function, we obtain an iterator for
+    \c contacts and then:
+
+    \list
+        \o If the iterator is at the end of \c contacts, we clear the
+        display and return.
+        \o If the iterator is at the beginning of \c contacts, we move it to
+        the end.
+        \o We then decrement the iterator by one.
+    \endlist
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp previous() function
+
+    Again, we display the contents of the current object in \c contacts.
+
+*/
+
+/*!
+    \page tutorials-addressbook-part4.html
+
+    \example tutorials/addressbook/part4
+    \title Part 4 - Editing and Removing Addresses
+
+    Now we look at ways to modify the contents of contacts stored in
+    the address book.
+
+    \image addressbook-tutorial-screenshot.png
+
+    We now have an address book that not only holds contacts in an
+    organized manner, but also allows navigation. It would be
+    convenient to include edit and remove functions so that a
+    contact's details can be changed when needed. However, this
+    requires a little improvement, in the form of enums. We defined
+    two modes: \c{AddingMode} and \c{NavigationMode}, but they were
+    not defined as enum values. Instead, we enabled and disabled the
+    corresponding buttons manually, resulting in multiple lines of
+    repeated code.
+
+    Here we define the \c Mode enum with three different values:
+
+    \list
+        \o \c{NavigationMode},
+        \o \c{AddingMode}, and
+        \o \c{EditingMode}.
+    \endlist
+
+    \section1 Defining the AddressBook Class
+
+    The \c addressbook.h file is updated to contain the \c Mode enum:
+
+    \snippet tutorials/addressbook/part4/addressbook.h Mode enum
+
+    We also add two new slots, \c editContact() and \c removeContact(), to
+    our current list of public slots.
+
+    \snippet tutorials/addressbook/part4/addressbook.h edit and remove slots
+
+    In order to switch between modes, we introduce the \c updateInterface() function
+    to control the enabling and disabling of all QPushButton objects. We also
+    add two new push buttons, \c editButton and \c removeButton, for the edit
+    and remove functions mentioned earlier.
+
+    \snippet tutorials/addressbook/part4/addressbook.h updateInterface() declaration
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.h buttons declaration
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.h mode declaration
+
+    Lastly, we declare \c currentMode to keep track of the enum's current mode.
+
+    \section1 Implementing the AddressBook Class
+
+    We now implement the mode-changing features of the address
+    book. The \c editButton and \c removeButton are instantiated and
+    disabled by default. The address book starts with zero contacts
+    in memory.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp edit and remove buttons
+
+    These buttons are then connected to their respective slots, \c editContact()
+    and \c removeContact(), and we add them to \c buttonLayout1.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp connecting edit and remove
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.cpp adding edit and remove to the layout
+
+    The \c editContact() function stores the contact's old details in
+    \c oldName and \c oldAddress, before switching the mode to \c EditingMode.
+    In this mode, the \c submitButton and \c cancelButton are both enabled,
+    hence, the user can change the contact's details and click either button.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp editContact() function
+
+    The \c submitContact() function has been divided in two with an \c{if-else}
+    statement. We check \c currentMode to see if it's in \c AddingMode. If it is,
+    we proceed with our adding process.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function beginning
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function part1
+
+    Otherwise, we check to see if \c currentMode is in \c EditingMode. If it
+    is, we compare \c oldName with \c name. If the name has changed, we remove
+    the old contact from \c contacts and insert the newly updated contact.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function part2
+
+    If only the address has changed (i.e., \c oldAddress is not the same as \c address),
+    we update the contact's address. Lastly, we set \c currentMode to
+    \c NavigationMode. This is an important step as it re-enables all the
+    disabled push buttons.
+
+    To remove a contact from the address book, we implement the
+    \c removeContact() function. This function checks to see if the contact
+    exists in \c contacts.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp removeContact() function
+
+    If it does, we display a QMessageBox, to confirm the removal with the
+    user. Once the user has confirmed, we call \c previous() to ensure that the
+    user interface shows another contact, and we remove the contact using \l{QMap}'s
+    \l{QMap::remove()}{remove()} function. As a courtesy, we display a QMessageBox
+    to inform the user. Both the message boxes used in this function are shown below:
+
+    \image addressbook-tutorial-part4-remove.png
+
+    \section2 Updating the User Interface
+
+    We mentioned the \c updateInterface() function earlier as a means to
+    enable and disable the push buttons depending on the current mode.
+    The function updates the current mode according to the \c mode argument
+    passed to it, assigning it to \c currentMode before checking its value.
+
+    Each of the push buttons is then enabled or disabled, depending on the
+    current mode. The code for \c AddingMode and \c EditingMode is shown below:
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
+
+    For \c NavigationMode, however, we include conditions within the parameters
+    of the QPushButton::setEnabled() function. This is to ensure that
+    \c editButton and \c removeButton are enabled when there is at least one
+    contact in the address book; \c nextButton and \c previousButton are only
+    enabled when there is more than one contact in the address book.
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
+
+    By setting the mode and updating the user interface in the same
+    function, we avoid the possibility of the user interface getting
+    out of sync with the internal state of the application.
+  */
+
+/*!
+    \page tutorials-addressbook-part5.html
+
+    \example tutorials/addressbook/part5
+    \title Part 5 - Adding a Find Function
+
+    Here we look at ways to locate contacts and addresses in the
+    address book.
+
+    \image addressbook-tutorial-part5-screenshot.png
+
+    As we add contacts to our address book, it becomes tedious to
+    navigate the list with the \e Next and \e Previous buttons. A \e
+    Find function would be more efficient.  The screenshot above shows
+    the \e Find button and its position on the panel of buttons.
+
+    When the user clicks on the \e Find button, it is useful to
+    display a dialog that prompts for a contact's name. Qt provides
+    QDialog, which we subclass here to implement a \c FindDialog
+    class.
+
+    \section1 Defining the FindDialog Class
+
+    \image addressbook-tutorial-part5-finddialog.png
+
+    In order to subclass QDialog, we first include the header for QDialog in
+    the \c finddialog.h file. Also, we use forward declaration to declare
+    QLineEdit and QPushButton since we will be using those widgets in our
+    dialog class.
+
+    As in our \c AddressBook class, the \c FindDialog class includes
+    the Q_OBJECT macro and its constructor is defined to accept a parent
+    QWidget, even though the dialog will be opened as a separate window.
+
+    \snippet tutorials/addressbook/part5/finddialog.h FindDialog header
+
+    We define a public function, \c getFindText(), to be used by classes that
+    instantiate \c FindDialog. This function allows these classes to obtain the
+    search string entered by the user. A public slot, \c findClicked(), is also
+    defined to handle the search string when the user clicks the \gui Find
+    button.
+
+    Lastly, we define the private variables, \c findButton, \c lineEdit
+    and \c findText, corresponding to the \gui Find button, the line edit
+    into which the user types the search string, and an internal string
+    used to store the search string for later use.
+
+    \section1 Implementing the FindDialog Class
+
+    Within the constructor of \c FindDialog, we set up the private variables,
+    \c lineEdit, \c findButton and \c findText. We use a QHBoxLayout to
+    position the widgets.
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp constructor
+
+    We set the layout and window title, as well as connect the signals to their
+    respective slots. Notice that \c{findButton}'s \l{QPushButton::clicked()}
+    {clicked()} signal is connected to to \c findClicked() and
+    \l{QDialog::accept()}{accept()}. The \l{QDialog::accept()}{accept()} slot
+    provided by QDialog hides the dialog and sets the result code to
+    \l{QDialog::}{Accepted}. We use this function to help \c{AddressBook}'s
+    \c findContact() function know when the \c FindDialog object has been
+    closed. We will explain this logic in further detail when discussing the
+    \c findContact() function.
+
+    \image addressbook-tutorial-part5-signals-and-slots.png
+
+    In \c findClicked(), we validate \c lineEdit to ensure that the user
+    did not click the \gui Find button without entering a contact's name. Then, we set
+    \c findText to the search string, extracted from \c lineEdit. After that,
+    we clear the contents of \c lineEdit and hide the dialog.
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp findClicked() function
+
+    The \c findText variable has a public getter function, \c getFindText(),
+    associated with it. Since we only ever set \c findText directly in both the
+    constructor and in the \c findClicked() function, we do not create a
+    setter function to accompany \c getFindText().
+    Because \c getFindText() is public, classes instantiating and using
+    \c FindDialog can always access the search string that the user has
+    entered and accepted.
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp getFindText() function
+
+    \section1 Defining the AddressBook Class
+
+    To ensure we can use \c FindDialog from within our \c AddressBook class, we
+    include \c finddialog.h in the \c addressbook.h file.
+
+    \snippet tutorials/addressbook/part5/addressbook.h include finddialog's header
+
+    So far, all our address book features have a QPushButton and a
+    corresponding slot. Similarly, for the \gui Find feature we have
+    \c findButton and \c findContact().
+
+    The \c findButton is declared as a private variable and the
+    \c findContact() function is declared as a public slot.
+
+    \snippet tutorials/addressbook/part5/addressbook.h findContact() declaration
+    \dots
+    \snippet tutorials/addressbook/part5/addressbook.h findButton declaration
+
+    Lastly, we declare the private variable, \c dialog, which we will use to
+    refer to an instance of \c FindDialog.
+
+    \snippet tutorials/addressbook/part5/addressbook.h FindDialog declaration
+
+    Once we have instantiated a dialog, we will want to use it more than once;
+    using a private variable allows us to refer to it from more than one place
+    in the class.
+
+    \section1 Implementing the AddressBook Class
+
+    Within the \c AddressBook class's constructor, we instantiate our private
+    objects, \c findButton and \c findDialog:
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp instantiating findButton
+    \dots
+    \snippet tutorials/addressbook/part5/addressbook.cpp instantiating FindDialog
+
+    Next, we connect the \c{findButton}'s
+    \l{QPushButton::clicked()}{clicked()} signal to \c findContact().
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp signals and slots for find
+
+    Now all that is left is the code for our \c findContact() function:
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp findContact() function
+
+    We start out by displaying the \c FindDialog instance, \c dialog. This is
+    when the user enters a contact name to look up. Once the user clicks
+    the dialog's \c findButton, the dialog is hidden and the result code is
+    set to QDialog::Accepted. This ensures that
+    our \c if statement is always true.
+
+    We then proceed to extract the search string, which in this case is
+    \c contactName, using \c{FindDialog}'s \c getFindText() function. If the
+    contact exists in our address book, we display it immediately. Otherwise,
+    we display the QMessageBox shown below to indicate that their search
+    failed.
+
+    \image addressbook-tutorial-part5-notfound.png
+*/
+
+/*!
+    \page tutorials-addressbook-part6.html
+
+    \example tutorials/addressbook/part6
+    \title Part 6 - Loading and Saving
+
+    This part covers the Qt file handling features we use to write
+    loading and saving routines for the address book.
+
+    \image addressbook-tutorial-part6-screenshot.png
+
+    Although browsing and searching the contact list are useful
+    features, our address book is not complete until we can save
+    existing contacts and load them again at a later time.
+
+    Qt provides a number of classes for \l{Input/Output and Networking}
+    {input and output}, but we have chosen to use two which are simple to use
+    in combination: QFile and QDataStream.
+
+    A QFile object represents a file on disk that can be read from and written
+    to. QFile is a subclass of the more general QIODevice class which
+    represents many different kinds of devices.
+
+    A QDataStream object is used to serialize binary data so that it can be
+    stored in a QIODevice and retrieved again later. Reading from a QIODevice
+    and writing to it is as simple as opening the stream - with the respective
+    device as a parameter - and reading from or writing to it.
+
+
+    \section1 Defining the AddressBook Class
+
+    We declare two public slots, \c saveToFile() and \c loadFromFile(), as well
+    as two QPushButton objects, \c loadButton and \c saveButton.
+
+    \snippet tutorials/addressbook/part6/addressbook.h save and load functions declaration
+    \dots
+    \snippet tutorials/addressbook/part6/addressbook.h save and load buttons declaration
+
+    \section1 Implementing the AddressBook Class
+
+    In our constructor, we instantiate \c loadButton and \c saveButton.
+    Ideally, it would be more user-friendly to set the push buttons' labels
+    to "Load contacts from a file" and "Save contacts to a file". However, due
+    to the size of our other push buttons, we set the labels to \gui{Load...}
+    and \gui{Save...}. Fortunately, Qt provides a simple way to set tooltips with
+    \l{QWidget::setToolTip()}{setToolTip()} and we use it in the following way
+    for our push buttons:
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 1
+    \dots
+    \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 2
+
+    Although it is not shown here, just like the other features we implemented,
+    we add the push buttons to the layout panel on the right, \c buttonLayout1,
+    and we connect the push buttons' \l{QPushButton::clicked()}{clicked()}
+    signals to their respective slots.
+
+    For the saving feature, we first obtain \c fileName using
+    QFileDialog::getSaveFileName(). This is a convenience function provided
+    by QFileDialog, which pops up a modal file dialog and allows the user to
+    enter a file name or select any existing \c{.abk} file. The \c{.abk} file
+    is our Address Book extension that we create when we save contacts.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part1
+
+    The file dialog that pops up is displayed in the screenshot below:
+
+    \image addressbook-tutorial-part6-save.png
+
+    If \c fileName is not empty, we create a QFile object, \c file, with
+    \c fileName. QFile works with QDataStream as QFile is a QIODevice.
+
+    Next, we attempt to open the file in \l{QIODevice::}{WriteOnly} mode.
+    If this is unsuccessful, we display a QMessageBox to inform the user.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part2
+
+    Otherwise, we instantiate a QDataStream object, \c out, to write the open
+    file. QDataStream requires that the same version of the stream is used
+    for reading and writing. We ensure that this is the case by setting the
+    version used to the \l{QDataStream::Qt_4_5}{version introduced with Qt 4.5}
+    before serializing the data to \c file.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part3
+
+    For the loading feature, we also obtain \c fileName using
+    QFileDialog::getOpenFileName(). This function, the counterpart to
+    QFileDialog::getSaveFileName(), also pops up the modal file dialog and
+    allows the user to enter a file name or select any existing \c{.abk} file
+    to load it into the address book.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part1
+
+    On Windows, for example, this function pops up a native file dialog, as
+    shown in the following screenshot.
+
+    \image addressbook-tutorial-part6-load.png
+
+    If \c fileName is not empty, again, we use a QFile object, \c file, and
+    attempt to open it in \l{QIODevice::}{ReadOnly} mode. Similar to our
+    implementation of \c saveToFile(), if this attempt is unsuccessful, we
+    display a QMessageBox to inform the user.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part2
+
+    Otherwise, we instantiate a QDataStream object, \c in, set its version as
+    above and read the serialized data into the \c contacts data structure.
+    The \c contacts object is emptied before data is read into it to simplify
+    the file reading process. A more advanced method would be to read the
+    contacts into a temporary QMap object, and copy over non-duplicate contacts
+    into \c contacts.
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part3
+
+    To display the contacts that have been read from the file, we must first
+    validate the data obtained to ensure that the file we read from actually
+    contains address book contacts. If it does, we display the first contact;
+    otherwise, we display a QMessageBox to inform the user about the problem.
+    Lastly, we update the interface to enable and disable the push buttons
+    accordingly.
+*/
+
+/*!
+    \page tutorials-addressbook-part7.html
+
+    \example tutorials/addressbook/part7
+    \title Part 7 - Additional Features
+
+    This part covers some additional features that make the address
+    book more convenient for the frequent user.
+
+    \image addressbook-tutorial-part7-screenshot.png
+
+    Although our address book is useful in isolation, it would be
+    better if we could exchange contact data with other applications.
+    The vCard format is a popular file format that can be used for
+    this purpose.  Here we extend our address book client to allow
+    contacts to be exported to vCard \c{.vcf} files.
+
+    \section1 Defining the AddressBook Class
+
+    We add a QPushButton object, \c exportButton, and a corresponding public
+    slot, \c exportAsVCard() to our \c AddressBook class in the
+    \c addressbook.h file.
+
+    \snippet tutorials/addressbook/part7/addressbook.h exportAsVCard() declaration
+    \dots
+    \snippet tutorials/addressbook/part7/addressbook.h exportButton declaration
+
+    \section1 Implementing the AddressBook Class
+
+    Within the \c AddressBook constructor, we connect \c{exportButton}'s
+    \l{QPushButton::clicked()}{clicked()} signal to \c exportAsVCard().
+    We also add this button to our \c buttonLayout1, the layout responsible
+    for our panel of buttons on the right.
+
+    In our \c exportAsVCard() function, we start by extracting the contact's
+    name into \c name. We declare \c firstName, \c lastName and \c nameList.
+    Next, we look for the index of the first white space in \c name. If there
+    is a white space, we split the contact's name into \c firstName and
+    \c lastName. Then, we replace the space with an underscore ("_").
+    Alternately, if there is no white space, we assume that the contact only
+    has a first name.
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part1
+
+    As with the \c saveToFile() function, we open a file dialog to let the user
+    choose a location for the file. Using the file name chosen, we create an
+    instance of QFile to write to.
+
+    We attempt to open the file in \l{QIODevice::}{WriteOnly} mode. If this
+    process fails, we display a QMessageBox to inform the user about the
+    problem and return. Otherwise, we pass the file as a parameter to a
+    QTextStream object, \c out. Like QDataStream, the QTextStream class
+    provides functionality to read and write plain text to files. As a result,
+    the \c{.vcf} file generated can be opened for editing in a text editor.
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part2
+
+    We then write out a vCard file with the \c{BEGIN:VCARD} tag, followed by
+    the \c{VERSION:2.1} tag. The contact's name is written with the \c{N:}
+    tag. For the \c{FN:} tag, which fills in the "File as" property of a vCard,
+    we have to check whether the contact has a last name or not. If the contact
+    does, we use the details in \c nameList to fill it. Otherwise, we write
+    \c firstName only.
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part3
+
+    We proceed to write the contact's address. The semicolons in the address
+    are escaped with "\\", the newlines are replaced with semicolons, and the
+    commas are replaced with spaces. Lastly, we write the \c{ADR;HOME:;}
+    tag, followed by \c address and then the \c{END:VCARD} tag.
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part4
+
+    In the end, a QMessageBox is displayed to inform the user that the vCard
+    has been successfully exported.
+
+    \e{vCard is a trademark of the \l{http://www.imc.org}
+    {Internet Mail Consortium}}.
+*/

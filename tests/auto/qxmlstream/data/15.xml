@@ -1,0 +1,15 @@
+<root>
+
+    <element1><![CDATA[ABC]]> </element1>
+    <element2> <![CDATA[ABC]]></element2>
+    <element3> <![CDATA[ABC]]> </element3>
+
+    <element1><![CDATA[   ]]> </element1>
+    <element2> <![CDATA[   ]]></element2>
+    <element3> <![CDATA[   ]]> </element3>
+
+    <element4>abc<![CDATA[def]]>ghi</element4>
+    <element5>abc<![CDATA[def]]></element5>
+    <element6><![CDATA[def]]>ghi</element6>
+
+</root>

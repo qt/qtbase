@@ -1,0 +1,8 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="010.ent")
+      attributeDecl(eName="doc", aName="a1", type="", valueDefault="", value="")
+   endDTD()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+   endElement(namespaceURI="", localName="doc", qName="doc")
+endDocument()

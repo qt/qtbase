@@ -1,0 +1,147 @@
+setPen NoPen
+setBrush black
+
+translate 10 10 
+
+begin_block testblock
+drawRect 0   0 10 10
+drawRect 20  0 11 11
+drawRect 40  0 12 12
+drawRect 60  0 13 13
+drawRect 80  0 14 14
+drawRect 100 0 15 15
+drawRect 120 0 16 16
+drawRect 140 0 17 17
+drawRect 160 0 18 18
+drawRect 180 0 19 19
+qt3_drawRect 200   0 10 10
+qt3_drawRect 220  0 11 11
+qt3_drawRect 240  0 12 12
+qt3_drawRect 260  0 13 13
+qt3_drawRect 280  0 14 14
+qt3_drawRect 300 0 15 15
+qt3_drawRect 320 0 16 16
+qt3_drawRect 340 0 17 17
+qt3_drawRect 360 0 18 18
+qt3_drawRect 380 0 19 19
+
+drawEllipse 0   20 10 10
+drawEllipse 20  20 11 11
+drawEllipse 40  20 12 12
+drawEllipse 60  20 13 13
+drawEllipse 80  20 14 14
+drawEllipse 100 20 15 15
+drawEllipse 120 20 16 16
+drawEllipse 140 20 17 17
+drawEllipse 160 20 18 18
+drawEllipse 180 20 19 19
+qt3_drawEllipse 200   20 10 10
+qt3_drawEllipse 220  20 11 11
+qt3_drawEllipse 240  20 12 12
+qt3_drawEllipse 260  20 13 13
+qt3_drawEllipse 280  20 14 14
+qt3_drawEllipse 300 20 15 15
+qt3_drawEllipse 320 20 16 16
+qt3_drawEllipse 340 20 17 17
+qt3_drawEllipse 360 20 18 18
+qt3_drawEllipse 380 20 19 19
+
+drawRoundRect 0   40 10 10
+drawRoundRect 20  40 11 11
+drawRoundRect 40  40 12 12
+drawRoundRect 60  40 13 13
+drawRoundRect 80  40 14 14
+drawRoundRect 100 40 15 15
+drawRoundRect 120 40 16 16
+drawRoundRect 140 40 17 17
+drawRoundRect 160 40 18 18
+drawRoundRect 180 40 19 19
+qt3_drawRoundRect 200   40 10 10
+qt3_drawRoundRect 220  40 11 11
+qt3_drawRoundRect 240  40 12 12
+qt3_drawRoundRect 260  40 13 13
+qt3_drawRoundRect 280  40 14 14
+qt3_drawRoundRect 300 40 15 15
+qt3_drawRoundRect 320 40 16 16
+qt3_drawRoundRect 340 40 17 17
+qt3_drawRoundRect 360 40 18 18
+qt3_drawRoundRect 380 40 19 19
+
+drawPie   0   60 10 10 0 4320
+drawPie  20   60 11 11 0 4320
+drawPie  40   60 12 12 0 4320
+drawPie  60   60 13 13 0 4320
+drawPie  80   60 14 14 0 4320
+drawPie 100   60 15 15 0 4320
+drawPie 120   60 16 16 0 4320
+drawPie 140   60 17 17 0 4320
+drawPie 160   60 18 18 0 4320
+drawPie 180   60 19 19 0 4320
+qt3_drawPie 200   60 10 10 0 4320
+qt3_drawPie 220   60 11 11 0 4320
+qt3_drawPie 240   60 12 12 0 4320
+qt3_drawPie 260   60 13 13 0 4320
+qt3_drawPie 280   60 14 14 0 4320
+qt3_drawPie 300   60 15 15 0 4320
+qt3_drawPie 320   60 16 16 0 4320
+qt3_drawPie 340   60 17 17 0 4320
+qt3_drawPie 360   60 18 18 0 4320
+qt3_drawPie 380   60 19 19 0 4320
+
+drawArc   0   80 10 10 0 4320
+drawArc  20   80 11 11 0 4320
+drawArc  40   80 12 12 0 4320
+drawArc  60   80 13 13 0 4320
+drawArc  80   80 14 14 0 4320
+drawArc 100   80 15 15 0 4320
+drawArc 120   80 16 16 0 4320
+drawArc 140   80 17 17 0 4320
+drawArc 160   80 18 18 0 4320
+drawArc 180   80 19 19 0 4320
+qt3_drawArc 200   80 10 10 0 4320
+qt3_drawArc 220   80 11 11 0 4320
+qt3_drawArc 240   80 12 12 0 4320
+qt3_drawArc 260   80 13 13 0 4320
+qt3_drawArc 280   80 14 14 0 4320
+qt3_drawArc 300   80 15 15 0 4320
+qt3_drawArc 320   80 16 16 0 4320
+qt3_drawArc 340   80 17 17 0 4320
+qt3_drawArc 360   80 18 18 0 4320
+qt3_drawArc 380   80 19 19 0 4320
+
+drawChord   0  100 10 10 0 4320
+drawChord  20  100 11 11 0 4320
+drawChord  40  100 12 12 0 4320
+drawChord  60  100 13 13 0 4320
+drawChord  80  100 14 14 0 4320
+drawChord 100  100 15 15 0 4320
+drawChord 120  100 16 16 0 4320
+drawChord 140  100 17 17 0 4320
+drawChord 160  100 18 18 0 4320
+drawChord 180  100 19 19 0 4320
+qt3_drawChord 200  100 10 10 0 4320
+qt3_drawChord 220  100 11 11 0 4320
+qt3_drawChord 240  100 12 12 0 4320
+qt3_drawChord 260  100 13 13 0 4320
+qt3_drawChord 280  100 14 14 0 4320
+qt3_drawChord 300  100 15 15 0 4320
+qt3_drawChord 320  100 16 16 0 4320
+qt3_drawChord 340  100 17 17 0 4320
+qt3_drawChord 360  100 18 18 0 4320
+qt3_drawChord 380  100 19 19 0 4320
+
+end_block
+
+setPen red 
+translate 0 150
+repeat_block testblock 
+
+setRenderHint LineAntialiasing
+
+setPen nopen
+translate 0 150
+repeat_block testblock
+
+setPen red
+translate 0 150
+repeat_block testblock

@@ -1,0 +1,9 @@
+********* Start testing of tst_Assert *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+PASS   : tst_Assert::initTestCase()
+PASS   : tst_Assert::testNumber1()
+QFATAL : tst_Assert::testNumber2() ASSERT: "false" in file /home/fenglich/dev/qt-4.3/tests/auto/selftests/assert/tst_assert.cpp, line 29
+FAIL!  : tst_Assert::testNumber2() Received a fatal error.
+   Loc: [Unknown file(0)]
+Totals: 2 passed, 1 failed, 0 skipped
+********* Finished testing of tst_Assert *********

@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>icons/background.png</file>
+        <file>icons/blue.png</file>
+        <file>icons/circle.png</file>
+        <file>icons/exit.png</file>
+        <file>icons/fileclose.png</file>
+        <file>icons/filenew.png</file>
+        <file>icons/fileopen.png</file>
+        <file>icons/filesave.png</file>
+        <file>icons/green.png</file>
+        <file>icons/ok.png</file>
+        <file>icons/rectangle.png</file>
+        <file>icons/red.png</file>
+        <file>icons/redo.png</file>
+        <file>icons/remove.png</file>
+        <file>icons/triangle.png</file>
+        <file>icons/undo.png</file>
+    </qresource>
+</RCC>

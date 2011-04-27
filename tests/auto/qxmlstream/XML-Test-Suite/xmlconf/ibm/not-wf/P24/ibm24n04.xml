@@ -1,0 +1,6 @@
+<?xml '1.0'=version ?>
+<!DOCTYPE doc [
+   <!ELEMENT doc EMPTY>
+]>
+<doc/>
+<!-- Wrong ordering VersionNum Eq 'version' -->

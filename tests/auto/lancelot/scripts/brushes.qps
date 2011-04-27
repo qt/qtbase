@@ -1,0 +1,79 @@
+# Version: 1
+# CheckVsReference: 5%
+
+# Fill the background
+drawRect 0 0 width height
+
+setRenderHint Antialiasing
+setRenderHint SmoothPixmapTransform
+
+translate 10 10
+# Draw all the pattern types as 40x40 rects using green, transparent background
+begin_block drawrects
+setBrush green Dense1Pattern
+drawRect 0 0 40 40
+setBrush green Dense2Pattern
+drawRect 40 0 40 40
+setBrush green Dense3Pattern
+drawRect 80 0 40 40
+setBrush green Dense4Pattern
+drawRect 120 0 40 40
+setBrush green Dense5Pattern
+drawRect 160 0 40 40
+setBrush green Dense6Pattern
+drawRect 200 0 40 40
+setBrush green Dense7Pattern
+drawRect 240 0 40 40
+setBrush green HorPattern
+drawRect 280 0 40 40
+setBrush green VerPattern
+drawRect 320 0 40 40
+setBrush green CrossPattern
+drawRect 360 0 40 40
+setBrush green BDiagPattern
+drawRect 400 0 40 40
+setBrush green FDiagPattern
+drawRect 440 0 40 40
+setBrush green DiagCrossPattern
+drawRect 480 0 40 40
+setBrush green SolidPattern
+drawRect 520 0 40 40
+setBrush green NoBrush
+drawRect 560 0 40 40
+gradient_setLinear 0 0 0 40
+drawRect 600 0 40 40
+setBrush face.png
+drawRect 640 0 80 40
+end_block
+
+# Switch to opaque mode
+setBackground #7fff7f
+setBackgroundMode OpaqueMode
+translate 0 50
+
+# Draw all the pattern types as 40x40 rects using green, opaque background
+repeat_block drawrects
+
+translate 50 50
+rotate 10
+
+
+setBackgroundMode TransparentMode
+repeat_block drawrects
+setBackgroundMode OpaqueMode
+translate 0 40
+repeat_block drawrects
+
+
+setBrush dot.png
+setPen nopen
+resetMatrix
+drawRect 0 200 50 50
+drawRect 50 200 50 50
+
+setPen red
+setBrushOrigin 0 250
+drawRect 0 250 50 50
+setBrushOrigin 50 250
+drawRect 50 250 50 50
+

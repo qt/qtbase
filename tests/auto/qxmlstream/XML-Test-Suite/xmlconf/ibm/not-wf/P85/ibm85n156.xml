@@ -1,0 +1,6 @@
+<!DOCTYPE animal [
+<!ELEMENT animal ANY>
+<?ᅚ an illegal char #x115a
+ in PITarget ?>
+]>
+<animal/>

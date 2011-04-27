@@ -1,0 +1,251 @@
+# Version: 1
+# CheckVsReference: 5%
+
+
+translate 0 50
+
+surface_begin 0 0 100 100
+
+begin_block predraw
+setRenderHint Antialiasing
+setPen nopen
+setBrush 0x7f000000
+drawEllipse 10 10 80 80
+end_block
+
+setCompositionMode SourceOver
+
+begin_block postdraw
+
+
+setBrush 0x1fff0000
+drawRect 0 0 50 50
+
+setBrush 0xdf00ff00
+drawRect 50 50 50 50
+
+setBrush 0x7f0000ff
+drawEllipse 30 30 40 40
+
+# a black rectangle around
+setCompositionMode SourceOver
+setPen black
+setBrush nobrush
+drawRect 0.5 0.5 99 99
+
+end_block
+surface_end
+
+
+# Destination over
+surface_begin 100 0 100 100
+repeat_block predraw
+setCompositionMode DestinationOver
+repeat_block postdraw
+surface_end
+
+
+# Clear
+surface_begin 200 0 100 100
+repeat_block predraw
+setCompositionMode Clear
+repeat_block postdraw
+surface_end
+
+
+# Source
+surface_begin 300 0 100 100
+repeat_block predraw
+setCompositionMode Source
+repeat_block postdraw
+surface_end
+
+
+# Destination
+surface_begin 400 0 100 100
+repeat_block predraw
+setCompositionMode Destination
+repeat_block postdraw
+surface_end
+
+
+# Source In
+surface_begin 500 0 100 100
+repeat_block predraw
+setCompositionMode SourceIn
+repeat_block postdraw
+surface_end
+
+translate 0 50
+
+# Destination In
+surface_begin 0 100 100 100
+repeat_block predraw
+setCompositionMode DestinationIn
+repeat_block postdraw
+surface_end
+
+
+# Source Out
+surface_begin 100 100 100 100
+repeat_block predraw
+setCompositionMode SourceOut
+repeat_block postdraw
+surface_end
+
+
+# Destination Out
+surface_begin 200 100 100 100
+repeat_block predraw
+setCompositionMode DestinationOut
+repeat_block postdraw
+surface_end
+
+
+# SourceAtop
+surface_begin 300 100 100 100
+repeat_block predraw
+setCompositionMode SourceAtop
+repeat_block postdraw
+surface_end
+
+
+# DestinationAtop
+surface_begin 400 100 100 100
+repeat_block predraw
+setCompositionMode DestinationAtop
+repeat_block postdraw
+surface_end
+
+
+# Xor
+surface_begin 500 100 100 100
+repeat_block predraw
+setCompositionMode Xor
+repeat_block postdraw
+surface_end
+
+translate 0 50
+
+# Plus
+surface_begin 0 200 100 100
+repeat_block predraw
+setCompositionMode Plus
+repeat_block postdraw
+surface_end
+
+
+# Multiply
+surface_begin 100 200 100 100
+repeat_block predraw
+setCompositionMode Multiply
+repeat_block postdraw
+surface_end
+
+
+# Screen
+surface_begin 200 200 100 100
+repeat_block predraw
+setCompositionMode Screen
+repeat_block postdraw
+surface_end
+
+
+# Overlay
+surface_begin 300 200 100 100
+repeat_block predraw
+setCompositionMode Overlay
+repeat_block postdraw
+surface_end
+
+
+# Darken
+surface_begin 400 200 100 100
+repeat_block predraw
+setCompositionMode Darken
+repeat_block postdraw
+surface_end
+
+
+# Lighten
+surface_begin 500 200 100 100
+repeat_block predraw
+setCompositionMode Lighten
+repeat_block postdraw
+surface_end
+
+translate 0 50
+
+# ColorDodge
+surface_begin 0 300 100 100
+repeat_block predraw
+setCompositionMode ColorDodge
+repeat_block postdraw
+surface_end
+
+
+# Multiply
+surface_begin 100 300 100 100
+repeat_block predraw
+setCompositionMode ColorBurn
+repeat_block postdraw
+surface_end
+
+
+# Screen
+surface_begin 200 300 100 100
+repeat_block predraw
+setCompositionMode HardLight
+repeat_block postdraw
+surface_end
+
+
+# Overlay
+surface_begin 300 300 100 100
+repeat_block predraw
+setCompositionMode SoftLight
+repeat_block postdraw
+surface_end
+
+
+# Darken
+surface_begin 400 300 100 100
+repeat_block predraw
+setCompositionMode Difference
+repeat_block postdraw
+surface_end
+
+
+# Lighten
+surface_begin 500 300 100 100
+repeat_block predraw
+setCompositionMode Exclusion
+repeat_block postdraw
+surface_end
+
+resetMatrix
+
+drawText 0 50 "SourceOver"
+drawText 100 50 "DestinationOver"
+drawText 200 50 "Clear"
+drawText 300 50 "Source"
+drawText 400 50 "Destination"
+drawText 500 50 "SourceIn"
+drawText 0 200 "DestinationIn"
+drawText 100 200 "SourceOut"
+drawText 200 200 "DestinationOut"
+drawText 300 200 "SourceAtop"
+drawText 400 200 "DestinationAtop"
+drawText 500 200 "Xor"
+drawText 0 350 "Plus"
+drawText 100 350 "Multiply"
+drawText 200 350 "Screen"
+drawText 300 350 "Overlay"
+drawText 400 350 "Darken"
+drawText 500 350 "Lighten"
+drawText 0 500 "ColorDodge"
+drawText 100 500 "ColorBurn"
+drawText 200 500 "HardLight"
+drawText 300 500 "SoftLight"
+drawText 400 500 "Difference"
+drawText 500 500 "Exclusion"

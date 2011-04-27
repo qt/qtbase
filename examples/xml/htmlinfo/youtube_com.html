@@ -1,0 +1,1585 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+
+
+	<html lang="en">
+
+<!-- machid: 519 -->
+<head>
+	
+	<title>YouTube - Broadcast Yourself.</title>
+
+	<link rel="stylesheet" href="http://s.ytimg.com/yt/css/base_all-vfl42327.css" type="text/css">
+
+	<link rel="search" type="application/opensearchdescription+xml" href="/opensearch?locale=en_US" title="YouTube Video Search">
+	<link rel="icon" href="http://s.ytimg.com/yt/favicon-vfl1123.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="http://s.ytimg.com/yt/favicon-vfl1123.ico" type="image/x-icon">
+	
+
+	<meta name="description" content="Share your videos with friends and family">
+	<meta name="keywords" content="video,sharing,camera phone,video phone,free">
+
+	<link rel="alternate" type="application/rss+xml" title="YouTube - [RSS]" href="/rssls">
+
+	<link rel="alternate" media="handheld" href="http://m.youtube.com/index?desktop_uri=%2F&">
+
+	<script type="text/javascript">
+			window.google={kHL:"en"};
+	</script>
+
+	<script type="text/javascript" src="http://s.ytimg.com/yt/js/base_all_with_bidi-vfl42302.js"></script>
+
+	<script type="text/javascript">
+
+			function _hbLink (a,b) { return false; }
+			function urchinTracker (a,b) { }
+
+		
+	var gXSRF_token = '';
+	var gXSRF_field_name = '';
+	var gXSRF_ql_pair = '';
+
+		gXSRF_token = 'fZg-xPKpfj11aUrz_5__moOGiAp8MTIxMjg1OTQ4OA==';
+		gXSRF_field_name = 'session_token';
+		onLoadFunctionList.push(populate_session_token);
+
+		gXSRF_ql_pair = 'session_token=kVjpl8qnfp7RPuqnTrIu6Q8BT5d8MA==';
+
+
+		var gQuickListTooltipText = 'Add Video to QuickList';
+		var gPartnerVideoText = 'Partner Video';
+		var gGoogleSuggest = true;
+		var gPixelGif = 'http://s.ytimg.com/yt/img/pixel-vfl73.gif';
+		
+		var gInQuickListText = 'in <a href="/watch_queue?all">QuickList</a>';
+		var gIsResultsPage = false;
+	</script>
+
+
+
+<script type="text/javascript">
+
+function swapVideoList(linkObj)
+{
+	var linkId = linkObj.id;
+	var queryData = '';
+	var newDivId = '';
+	var headlineObj = document.getElementById('hpVideoListHead');
+	var moreLinkObj = document.getElementById('homepage-featured-more-top');
+	var bottomMoreLinkObj = document.getElementById('homepage-featured-more-bottom');
+
+	if (linkId == 'hpMostViewedLink') {
+		queryData = 'videoListType=mostViewed';
+		newDivId = 'hpMostViewed';
+		headlineObj.innerHTML = "Most Viewed Videos";
+		moreLinkObj.innerHTML = "<a href=\"/browse?s=mp\">See More Most Viewed Videos</a>";
+		bottomMoreLinkObj.innerHTML = "<a href=\"/browse?s=mp\">See More Most Viewed Videos</a>";
+	}
+	else if (linkId == 'hpMostDiscussedLink') {
+		queryData = 'videoListType=mostDiscussed';
+		newDivId = 'hpMostDiscussed';
+		headlineObj.innerHTML = "Most Discussed Videos";
+		moreLinkObj.innerHTML = "<a href=\"/browse?s=md\">See More Most Discussed Videos</a>";
+		bottomMoreLinkObj.innerHTML = "<a href=\"/browse?s=md\">See More Most Discussed Videos</a>";
+	}
+	else if (linkId == 'hpTopFavoritesLink') {
+		queryData = 'videoListType=topFavorites';
+		newDivId = 'hpTopFavorites';
+		headlineObj.innerHTML = "Top Favorites";
+		moreLinkObj.innerHTML = "<a href=\"/browse?s=mf\">See More Top Favorites</a>";
+		bottomMoreLinkObj.innerHTML = "<a href=\"/browse?s=mf\">See More Top Favorites</a>";
+	}
+	else if (linkId == 'hpFeaturedLink') {
+		newDivId = 'hpFeatured';
+		headlineObj.innerHTML = "Featured Videos";
+		moreLinkObj.innerHTML = "<a href=\"/browse?s=rf\">See More Featured Videos</a>";
+		bottomMoreLinkObj.innerHTML = "<a href=\"/browse?s=rf\">See More Featured Videos</a>";
+	} 
+	self.containerDiv = 'homepage-video-list'
+	self.fillDiv = fillDiv
+	self.linkId = linkId
+	self.newDivId = newDivId
+	addClass(_gel(newDivId + 'Link'), 'hilite');
+	if (newDivId != 'hpMostViewed') {
+		removeClass(_gel('hpMostViewedLink'), 'hilite');
+	}
+	if (newDivId != 'hpMostDiscussed') {
+		removeClass(_gel('hpMostDiscussedLink'), 'hilite');
+	}
+	if (newDivId != 'hpTopFavorites') {
+		removeClass(_gel('hpTopFavoritesLink'), 'hilite');
+	}
+	if (newDivId != 'hpFeatured') {
+		removeClass(_gel('hpFeaturedLink'), 'hilite');
+	}
+	if (document.getElementById(newDivId))
+	{
+		document.getElementById(newDivId).style.display = 'block';
+		if (newDivId != 'hpMostViewed' && document.getElementById('hpMostViewed')) document.getElementById('hpMostViewed').style.display = 'none';
+		if (newDivId != 'hpMostDiscussed' && document.getElementById('hpMostDiscussed')) document.getElementById('hpMostDiscussed').style.display = 'none';
+		if (newDivId != 'hpTopFavorites' && document.getElementById('hpTopFavorites')) document.getElementById('hpTopFavorites').style.display = 'none';
+		if (newDivId != 'hpFeatured' && document.getElementById('hpFeatured')) document.getElementById('hpFeatured').style.display = 'none';
+	}
+	else if (queryData != '') {
+		postUrlXMLResponse('/ajax_video_list',queryData,self.fillDiv);
+	}
+}
+function fillDiv(req)
+{
+	if (document.getElementById('hpMostViewed')) document.getElementById('hpMostViewed').style.display = 'none';
+	if (document.getElementById('hpMostDiscussed')) document.getElementById('hpMostDiscussed').style.display = 'none';
+	if (document.getElementById('hpTopFavorites')) document.getElementById('hpTopFavorites').style.display = 'none';
+	if (document.getElementById('hpFeatured')) document.getElementById('hpFeatured').style.display = 'none';
+	var newContent = getNodeValue(req.responseXML, "html_content");
+	var newdiv = document.createElement('div');
+	newdiv.setAttribute("id",self.newDivId);
+	newdiv.innerHTML = newContent;
+	var container = document.getElementById(self.containerDiv);
+	container.appendChild(newdiv);
+	addQLIcons(container);
+}
+
+function hide_active_sharing() {
+	hideDiv("active_sharing_div");
+}
+</script>
+
+</head>
+
+
+<body onload="performOnLoadFunctions();" class="en_US is-english">
+
+<div id="baseDiv" class="date-20080606">
+	
+		<div id="masthead">
+		<a href="/" class="logo"><img src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" width="132" height="63" border="0" alt=""/></a>
+		<div class="user-info">
+				
+	<div id="loginBoxZ">
+		<div class="contentBox">
+			<div>
+				<div id="loginBoxZ-signup">
+					<a href="/signup">Sign Up</a>
+				| <a href="http://help.youtube.com/support/youtube/bin/topic.py?topic=10546&amp;hl=en_US">Help</a>
+				</div>
+				<div id="loginBoxZ-login">
+					 Login 
+				</div>
+				<div class="clear"></div>
+			</div>
+
+			<form method="post" name="loginForm" id="loginFormZ" action="/signup">
+				<input type="hidden" name="next" value="/" id="loginNextZ"/>
+				<input type="hidden" name="current_form" value="loginForm" />
+				<input type="hidden" name="action_login" value="1">
+				<div id="loginBoxZ-container">
+					<div id="loginBoxZ-labels" class="floatL">
+						<label for="loginUserZ" class="nowrap">Username:</label>
+						<label for="loginPassZ" class="nowrap">Password:</label>
+					</div>
+					<div class="floatL">
+						<input id="loginUserZ" class="loginBoxZ-input" type="text" size="16" name="username" value=""><br/>
+						<input id="loginPassZ" class="loginBoxZ-input" type="password" size="16" name="password"><br/>
+						<input type="submit" class="smallText" value="Login">
+					</div>
+					<div class="clearL"></div>
+				</div>
+			</form>
+			<div id="loginBoxZ-forgot">
+				<a href="/forgot_username?next=/">Forgot Username</a>
+			| <wbr><nobr><a href="/forgot?next=/">Forgot Password</a></nobr>
+			</div>
+			<div id="loginBoxZ-gaia">
+				<a href="https://www.google.com/accounts/ServiceLogin?service=youtube&amp;hl=en_US&amp;continue=http%3A//www.youtube.com/signup%3Fhl%3Den_US&amp;passive=true">Login with your Google account</a>&nbsp;
+				<a href="#" onClick="window.open('/t/help_gaia','login_help','width=580,height=480,resizable=yes,scrollbars=yes,status=0').focus();" rel="nofollow"><img src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" border="0" class="alignMid gaiaHelpBtn" alt=""></a>
+			</div>
+		</div>
+	</div>
+
+					<div id="localePickerBox">
+	<div id="flagDiv">
+			<script type="text/javascript">
+				var gLocales = [
+				['ru_RU','&#x420;&#x43E;&#x441;&#x441;&#x438;&#x44F;']									,				['zh_TW','&#x53F0;&#x7063;']									,				['ja_JP','&#x65E5;&#x672C;']									,				['zh_HK','&#x9999;&#x6E2F;']									,				['ko_KR','&#xD55C;&#xAD6D;']									,				['en_AU','Australia']									,				['pt_BR','Brasil']									,				['en_CA','Canada']									,				['de_DE','Deutschland']									,				['es_ES','Espa&#xF1;a']									,				['fr_FR','France']									,				['en_US','Global']									,				['en_IN','India']									,				['en_IE','Ireland']									,				['it_IT','Italia']									,				['es_MX','M&#xE9;xico']									,				['nl_NL','Nederland']									,				['en_NZ','New Zealand']									,				['pl_PL','Polska']									,				['en_GB','United Kingdom']				
+				];
+			</script>
+			<div id="flagDivInner">
+			</div>
+
+		<div class="alignR smallText"><a href="#" onclick="closeLocalePicker(); return false;">Close</a></div>
+	</div>
+	</div>
+
+					
+
+
+
+
+	<div id="util-links" class="normal-utility-links">
+
+		<span class="util-item first"><b><a  href="/signup" onclick="_hbLink('SignUp','UtilityLinks');">Sign Up</a></b></span>
+		<span class="util-item"><a  href="/watch_queue?all">QuickList</a> (<span id="quicklist-utility">0</span>)</span>
+		<span class="util-item"><a  href="http://help.youtube.com/support/youtube/bin/static.py?page=start.cs&amp;hl=en_US">Help</a></span>
+		<span class="util-item"><a  href="#" class="loginBoxZ eLink" onclick="return openLoginBox(event);">Log In</a></span>
+		<span class="util-item"><a href="#" class="localePickerLink eLink" onclick="loadFlagImgs();toggleDisplay('localePickerBox');return false;">Site:</a></span>
+		<span class="util-item first">&nbsp;<a href="#" class="localePickerLink" onclick="loadFlagImgs();toggleDisplay('localePickerBox');return false;"><img src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" class="currentFlag  globalFlag" alt="Site:"></a></span>
+	</div>
+
+	<form name="logoutForm" method="post" target="_top" action="/index">
+		<input type="hidden" name="action_logout" value="1">
+	</form>
+
+
+		</div>
+		<div class="nav">
+			<div class="nav-item first selected" id="nav-item-home">
+				<span class="leftcap"></span>
+				<a class="content" href="/">Home</a>
+				<span class="rightcap"></span>
+			</div>
+			<div class="nav-item" id="nav-item-videos">
+				<div class="nav-tab">
+					<span class="leftcap"></span>
+					<a class="content" href="/browse?s=mp">Videos</a>
+					<span class="rightcap"></span>
+				</div>
+			</div>
+			<div class="nav-item" id="nav-item-channels">
+				<div class="nav-tab">
+					<span class="leftcap"></span>
+					<a class="content" href="/members">Channels</a>
+					<span class="rightcap"></span>
+				</div>
+			</div>
+			<div class="nav-item" id="nav-item-community">
+				<div class="nav-tab">
+					<span class="leftcap"></span>
+					<a class="content" href="/community">Community</a>
+					<span class="rightcap"></span>
+				</div>
+			</div>
+		</div>
+		
+		<form autocomplete="off" action="/results" method="get" name="searchForm" onsubmit="return submitRegularSearchRequest()">
+
+		<div class="bar">
+			<span class="leftcap"></span>
+			<div class="search-bar">
+				<a href="/my_videos_upload" id="upload-button" class="action-button">
+					<span class="action-button-leftcap"></span>
+					<span class="action-button-text">Upload</span>
+					<span class="action-button-rightcap"></span>
+				</a>
+				<div id="search-form">
+					<input id="search-term" name="search_query" type="text" tabindex="1" onkeyup="goog.i18n.bidi.setDirAttribute(event,this)"  value="" maxlength="128" />
+					<select class="search-type" name="search_type">
+						<option value="">Videos</option>
+						<option value="search_users" >Channels</option>
+					</select>
+					<input id="search-button" type="submit" value="Search" />
+				</div>
+				<div class="search-settings-link">
+				<a href="#" class="eLink" onClick="return toggleAdvSearch('', '', '', '', '', '')">
+					advanced
+				</a></div>
+			</div>
+			<span class="rightcap"></span>
+		</div>
+
+		</form>
+
+		<div id="search-advanced-form" class="hid">
+			<div class="search-setting-inner alignC">Loading...</div>
+		</div>
+
+		<div class="clear"></div>
+	</div> 
+	<div id="search-settings-clr" class="hid"></div> 
+
+	
+	
+	
+	
+
+<div id="homepage-main-content"> 
+		<div>
+	<div id="active_sharing_div" name="active_sharing_div" style="display:block"></div>
+	<script type="text/javascript">
+		// <![CDATA[
+		var fo = new SWFObject("active_sharing.swf", "active_sharing", "550", "115", 7, "#FFFFFF");
+		var showstr = "Videos being watched right now...";
+		fo.addParam('wmode', 'opaque');
+		fo.addVariable("t", showstr);
+		fo.write("active_sharing_div");
+		// ]]>
+	</script>
+</div>
+
+			<div class="homepage-content-block" style="margin-left:18px; border:0px #CCC solid;">
+		<div class="homepage-block-heading homepage-block-heading-gray">Promoted Videos</div>
+		<div>
+			<div class="homepage-sponsored-video marB0">
+				<div class="videoIconWrapperOuter">
+					<div class="videoIconWrapperInner">
+					<div class="vstill"><a href="/cthru?key=YSqt3w6VDhuNgxUzVZsryt0JX30ll7tCIrBT--_pvAtRC3KmvsBYFaUNR1qT0d0BnBJYjHz_G7LIr21ufG7W6gJL7zPdHNbcmuIxaafL1yry8cdcqeEOTitWLXkpm2q2QnTAlp4chC1jus7JLVCnCdacl0xUeDk4Vk8e6q9htmGbDZPN9QMnHsrX2RZnvDMx-3Im14C3GKi4jI8ee-jnOQ==" name="&lid=DV+-+BasiaBulatInTheNight+-+beggars&lpos=hp-s0"><img src="http://i.ytimg.com/vi/CebHAvPHyyU/default.jpg" class="vimg120"></a></div>
+					</div>
+					</div>
+
+				<div class="vtitle smallText">
+					<a href="/cthru?key=YSqt3w6VDhuNgxUzVZsryt0JX30ll7tCIrBT--_pvAtRC3KmvsBYFaUNR1qT0d0BnBJYjHz_G7LIr21ufG7W6gJL7zPdHNbcmuIxaafL1yry8cdcqeEOTitWLXkpm2q2QnTAlp4chC1jus7JLVCnCdacl0xUeDk4Vk8e6q9htmGbDZPN9QMnHsrX2RZnvDMx-3Im14C3GKi4jI8ee-jnOQ==" name="&lid=DV+-+BasiaBulatInTheNight+-+beggars&lpos=hp-s0">Basia Bulat - In Th...</a>
+				</div>
+				<div class="vfacets" style="margin-bottom: 0px;">
+				<a href="/user/beggars" class="dg">beggars</a>
+				</div>
+			</div>
+			<div class="homepage-sponsored-video marB0">
+				<div class="videoIconWrapperOuter">
+					<div class="videoIconWrapperInner">
+					<div class="vstill"><a href="/cthru?key=FIUXMxdvOKhDw2_wpR7bE9L-XUsHMZBHRpS_s21B0Kq0RTWlGXSqQ8bjw6tBQOUczUtO8b6_mktukdd5ChseYAl10dE5JQrlpiOQE6HNMOAsszaA0M9qhzFnOkWPrkFGMDW5vvaAOkIwas6ksi4e_R8wkiIhlNYPDiqi2f4LpVzB2jpe0LobjIEF9czWjFx9ymrPg8wx2x6w00jF-BzRfQ==" name="&lid=DV+-+Perfection+-+corporalcadet&lpos=hp-s1"><img src="http://i.ytimg.com/vi/Np4bhsmr3iE/default.jpg" class="vimg120"></a></div>
+					</div>
+					</div>
+
+				<div class="vtitle smallText">
+					<a href="/cthru?key=FIUXMxdvOKhDw2_wpR7bE9L-XUsHMZBHRpS_s21B0Kq0RTWlGXSqQ8bjw6tBQOUczUtO8b6_mktukdd5ChseYAl10dE5JQrlpiOQE6HNMOAsszaA0M9qhzFnOkWPrkFGMDW5vvaAOkIwas6ksi4e_R8wkiIhlNYPDiqi2f4LpVzB2jpe0LobjIEF9czWjFx9ymrPg8wx2x6w00jF-BzRfQ==" name="&lid=DV+-+Perfection+-+corporalcadet&lpos=hp-s1">Perfection</a>
+				</div>
+				<div class="vfacets" style="margin-bottom: 0px;">
+				<a href="/user/corporalcadet" class="dg">corporalcadet</a>
+				</div>
+			</div>
+			<div class="homepage-sponsored-video marB0">
+				<div class="videoIconWrapperOuter">
+					<div class="videoIconWrapperInner">
+					<div class="vstill"><a href="/cthru?key=1W2J508g9g7Bjsvodsvq3GHZo25JkqX7Js5JSHnyP1yZYB96KDh2LTC2pCKjeHc7LEiTUU4uhuwsrTzZfns_IR2dsA7leCUYMtvgq3noBHy-G0jTHmgiQtFUVTDU3jT2EkS39J6Ur2qxtHwAmybMcU83hK1guqpPdryKOfcbHovo-Kbwglzbbl28LrK1iNdz5E6NZ5CZCVZrYxldbWyjEA==" name="&lid=DV+-+WhatmatterstoyoumeVFS+-+Jr0canest&lpos=hp-s2"><img src="http://i.ytimg.com/vi/KExoP97KUnY/default.jpg" class="vimg120"></a></div>
+					</div>
+					</div>
+
+				<div class="vtitle smallText">
+					<a href="/cthru?key=1W2J508g9g7Bjsvodsvq3GHZo25JkqX7Js5JSHnyP1yZYB96KDh2LTC2pCKjeHc7LEiTUU4uhuwsrTzZfns_IR2dsA7leCUYMtvgq3noBHy-G0jTHmgiQtFUVTDU3jT2EkS39J6Ur2qxtHwAmybMcU83hK1guqpPdryKOfcbHovo-Kbwglzbbl28LrK1iNdz5E6NZ5CZCVZrYxldbWyjEA==" name="&lid=DV+-+WhatmatterstoyoumeVFS+-+Jr0canest&lpos=hp-s2">What matters to you...</a>
+				</div>
+				<div class="vfacets" style="margin-bottom: 0px;">
+				<a href="/user/Jr0canest" class="dg">Jr0canest</a>
+				</div>
+			</div>
+			<div class="homepage-sponsored-video marB0">
+				<div class="videoIconWrapperOuter">
+					<div class="videoIconWrapperInner">
+					<div class="vstill"><a href="/cthru?key=idL1slcMKbuzX2MFZaS-nifq5PWrCKLUZMXEPqCthRVET6PQSkxlmKQVMNmQvlYpQlFISkRprfO113rH-ER0ytYh0zSMWI4XbaO74zcrIZiSpB3oISku9zIGUwS5WI03Y0ZiHbGAC9GIYziEcRcgzcEYuizlUwNvTWDgNSvrCJHcyPYokMUjLjcwqD2wEEAe7jfIfcJRNl3sW7ODuiN_MA==" name="&lid=DV+-+LIfeisaMasquerade+-+bananaruthy&lpos=hp-s3"><img src="http://i.ytimg.com/vi/l9gjk5hHiGM/default.jpg" class="vimg120"></a></div>
+					</div>
+					</div>
+
+				<div class="vtitle smallText">
+					<a href="/cthru?key=idL1slcMKbuzX2MFZaS-nifq5PWrCKLUZMXEPqCthRVET6PQSkxlmKQVMNmQvlYpQlFISkRprfO113rH-ER0ytYh0zSMWI4XbaO74zcrIZiSpB3oISku9zIGUwS5WI03Y0ZiHbGAC9GIYziEcRcgzcEYuizlUwNvTWDgNSvrCJHcyPYokMUjLjcwqD2wEEAe7jfIfcJRNl3sW7ODuiN_MA==" name="&lid=DV+-+LIfeisaMasquerade+-+bananaruthy&lpos=hp-s3">LIfe is a Masquerade.</a>
+				</div>
+				<div class="vfacets" style="margin-bottom: 0px;">
+				<a href="/user/bananaruthy" class="dg">bananaruthy</a>
+				</div>
+			</div>
+		<div class="clearL" style="height: 1px;"></div>
+		</div>
+	</div>
+
+
+	<div id="homepage-featured-heading">
+			<div id="homepage-featured-more-top"><a id="hpVideoListMoreLink" href="/browse?s=rf">See More Featured Videos</a></div>
+		<h1 id="hpVideoListHead">Featured Videos</h1>
+	</div>
+
+	<div id="homepage-featured-tabs">
+		<a href="#" id="hpTopFavoritesLink" name="&lid=hpTopFavoritesTab&lpos=hpTabs" onclick="swapVideoList(this); return false;">Top Favorites</a>
+		<a href="#" id="hpMostDiscussedLink" name="&lid=hpMostDiscussedTab&lpos=hpTabs" onclick="swapVideoList(this); return false;">Most Discussed</a>
+		<a href="#" id="hpMostViewedLink" name="&lid=hpMostViewedTab&lpos=hpTabs" onclick="swapVideoList(this); return false;">Most Viewed</a>
+		<a href="#" id="hpFeaturedLink" name="&lid=hpFeaturedTab&lpos=hpTabs" onclick="swapVideoList(this); return false;" class="first hilite">Featured</a>
+		<div class="clear"></div>
+	</div>
+
+
+
+	<div id="homepage-video-list" class="browseListView">
+		<div id="hpFeatured">
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=uu-NTSZ27b0"><img src="http://i.ytimg.com/vi/uu-NTSZ27b0/default.jpg" class="vimg120" title="Caribbean PVC Marimba Children's Orchestra" qliconalt="uu-NTSZ27b0"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=uu-NTSZ27b0" title="Caribbean PVC Marimba Children's Orchestra" onclick="_hbLink('CaribbeanPVCMarimbaChildrensOrchestra','VidVert');">Caribbean PVC Marimba Children's...</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=uu-NTSZ27b0" title="Caribbean PVC Marimba Children's Orchestra" onclick="_hbLink('CaribbeanPVCMarimbaChildrensOrchestra','VidVert');">Caribbean PVC Marimba Children's Orchestra</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescuuNTSZ27b0">
+	Michael Greiner who is a neighbor and good friend of mine asked me to upload several Marim
+	</span>
+
+			<span  id="RemainvidDescuuNTSZ27b0" style="display: none">Michael Greiner who is a neighbor and good friend of mine asked me to upload several Marimba videos for him (that's him on the left in the middle row).  He currently teaches the music program at Aveson Charter School http://aveson.org/ and constructs musical instruments in classes with students' participation.<br/><br/>Michael Greiner created this set of plastic pipe marimbas.  On this clip are three generations of prototypes designed to be low cost for use by childrens' programming. The top one bass version costs around $200 in materials.   The mallets are home made using foam flip-flops mounted to sticks. Filmed at Norma Coombs primary school in Altadena CA in 2007.<br/><br/>*** Edited to Add ****<br/>Wow, it looks like this video's hit YouTube's front page.  Thank you for all the wonderfully kind and supportive comments!</span>
+			<span id="MorevidDescuuNTSZ27b0" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescuuNTSZ27b0'); hideDiv('MorevidDescuuNTSZ27b0'); hideDiv('BeginvidDescuuNTSZ27b0'); showDiv('LessvidDescuuNTSZ27b0'); return false;">more</a>)</span>
+			<span id="LessvidDescuuNTSZ27b0" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescuuNTSZ27b0'); hideDiv('LessvidDescuuNTSZ27b0'); showDiv('BeginvidDescuuNTSZ27b0'); showDiv('MorevidDescuuNTSZ27b0'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/PlayHanghang">PlayHanghang</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 3,853<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-5.0" alt="4.84814814815" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">01:46</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=24">Entertainment</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=CFJRn7akXeQ"><img src="http://i.ytimg.com/vi/CFJRn7akXeQ/default.jpg" class="vimg120" title="&quot;Sharp Teeth&quot; Excerpt #1" qliconalt="CFJRn7akXeQ"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=CFJRn7akXeQ" title="&quot;Sharp Teeth&quot; Excerpt #1" onclick="_hbLink('SharpTeethExcerpt1','VidVert');">&quot;Sharp Teeth&quot; Excerpt #1</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=CFJRn7akXeQ" title="&quot;Sharp Teeth&quot; Excerpt #1" onclick="_hbLink('SharpTeethExcerpt1','VidVert');">&quot;Sharp Teeth&quot; Excerpt #1</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescCFJRn7akXeQ">
+	Check out the book "Sharp Teeth" on Amazon:<br/>http://www.amazon.com/Sharp-Teeth-Toby-Barlow
+	</span>
+
+			<span  id="RemainvidDescCFJRn7akXeQ" style="display: none">Check out the book "Sharp Teeth" on Amazon:<br/>http://www.amazon.com/Sharp-Teeth-Toby-Barlow/dp/0061430226/ ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1212767529&sr=8-1<br/><br/>Animation directed by Limbert Fabian. Produced by Matt Thunell.  For more information go to sharpteeththebook.com</span>
+			<span id="MorevidDescCFJRn7akXeQ" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescCFJRn7akXeQ'); hideDiv('MorevidDescCFJRn7akXeQ'); hideDiv('BeginvidDescCFJRn7akXeQ'); showDiv('LessvidDescCFJRn7akXeQ'); return false;">more</a>)</span>
+			<span id="LessvidDescCFJRn7akXeQ" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescCFJRn7akXeQ'); hideDiv('LessvidDescCFJRn7akXeQ'); showDiv('BeginvidDescCFJRn7akXeQ'); showDiv('MorevidDescCFJRn7akXeQ'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/tobybarlowny">tobybarlowny</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 67,438<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.39928057554" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">01:33</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=1">Film & Animation</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=sNROaXA6OSI"><img src="http://i.ytimg.com/vi/sNROaXA6OSI/default.jpg" class="vimg120" title="Touring to Alaska on Vegetable Oil!" qliconalt="sNROaXA6OSI"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=sNROaXA6OSI" title="Touring to Alaska on Vegetable Oil!" onclick="_hbLink('TouringtoAlaskaonVegetableOil','VidVert');">Touring to Alaska on Vegetable Oil!</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=sNROaXA6OSI" title="Touring to Alaska on Vegetable Oil!" onclick="_hbLink('TouringtoAlaskaonVegetableOil','VidVert');">Touring to Alaska on Vegetable Oil!</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescsNROaXA6OSI">
+	This video is for Mrs. Aderman's 1st Period Environmental Science Class.<br/><br/>We are Mose Gi
+	</span>
+
+			<span  id="RemainvidDescsNROaXA6OSI" style="display: none">This video is for Mrs. Aderman's 1st Period Environmental Science Class.<br/><br/>We are Mose Giganticus and The Emotron and this year we are touring to Alaska on Vegetable Oil.</span>
+			<span id="MorevidDescsNROaXA6OSI" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescsNROaXA6OSI'); hideDiv('MorevidDescsNROaXA6OSI'); hideDiv('BeginvidDescsNROaXA6OSI'); showDiv('LessvidDescsNROaXA6OSI'); return false;">more</a>)</span>
+			<span id="LessvidDescsNROaXA6OSI" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescsNROaXA6OSI'); hideDiv('LessvidDescsNROaXA6OSI'); showDiv('BeginvidDescsNROaXA6OSI'); showDiv('MorevidDescsNROaXA6OSI'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/kylemotron">kylemotron</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 122,748<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.44329896907" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">04:02</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=27">Education</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=6iC3b5JnSIE"><img src="http://i.ytimg.com/vi/6iC3b5JnSIE/default.jpg" class="vimg120" title="JCJC" qliconalt="6iC3b5JnSIE"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=6iC3b5JnSIE" title="JCJC" onclick="_hbLink('JCJC','VidVert');">JCJC</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=6iC3b5JnSIE" title="JCJC" onclick="_hbLink('JCJC','VidVert');">JCJC</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDesc6iC3b5JnSIE">
+	His name is Okotanpe. <br/>His mail addless is fuseloopa@hotmail.com <br/><br/>The name of this son
+	</span>
+
+			<span  id="RemainvidDesc6iC3b5JnSIE" style="display: none">His name is Okotanpe. <br/>His mail addless is fuseloopa@hotmail.com <br/><br/>The name of this song is 300ml(milk).<br/>An artist name is Rei harakami. <br/>Check it out!</span>
+			<span id="MorevidDesc6iC3b5JnSIE" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDesc6iC3b5JnSIE'); hideDiv('MorevidDesc6iC3b5JnSIE'); hideDiv('BeginvidDesc6iC3b5JnSIE'); showDiv('LessvidDesc6iC3b5JnSIE'); return false;">more</a>)</span>
+			<span id="LessvidDesc6iC3b5JnSIE" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDesc6iC3b5JnSIE'); hideDiv('LessvidDesc6iC3b5JnSIE'); showDiv('BeginvidDesc6iC3b5JnSIE'); showDiv('MorevidDesc6iC3b5JnSIE'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/YoneyaYu">YoneyaYu</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 532,447<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-5.0" alt="4.83995523223" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">05:26</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=24">Entertainment</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=L9Wu1V1JAHw"><img src="http://i.ytimg.com/vi/L9Wu1V1JAHw/default.jpg" class="vimg120" title="Certainty In Freedom ~ A Song for Burma (Original Song)" qliconalt="L9Wu1V1JAHw" partner="true" alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=L9Wu1V1JAHw" title="Certainty In Freedom ~ A Song for Burma (Original Song)" onclick="_hbLink('CertaintyInFreedomASongforBurmaOriginalSong','VidVert');">Certainty In Freedom ~ A Song fo...</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=L9Wu1V1JAHw" title="Certainty In Freedom ~ A Song for Burma (Original Song)" onclick="_hbLink('CertaintyInFreedomASongforBurmaOriginalSong','VidVert');">Certainty In Freedom ~ A Song for Burma (Original Song)</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescL9Wu1V1JAHw">
+	I'm not a particularly political person, by which I mean I'd sooner just not get involved 
+	</span>
+
+			<span  id="RemainvidDescL9Wu1V1JAHw" style="display: none">I'm not a particularly political person, by which I mean I'd sooner just not get involved in conflict, but I realise that, at times, things happen outside your control which will you to say something or do something.<br/><br/>I got a comment on my last song from 'gersing' asking me if I'd sing a song for the monks and people of Burma. At first I misunderstood the comment but then it clicked and I felt compelled to offer something.. anything. <br/><br/>I know this song is going to change nothing; and I'm cautious calling it a protest song as I don't understand the situation fully (and I wouldn't want to upset anyone), but this is a tune I wrote in response to being repressed (I'm whatever guise) and how beautiful 'freedom' really is. I don't think anyone will ever understand that term fully but by singing and writing and thinking and speaking we can come somewhere close I'm sure. <br/><br/>As a disclaimer, I'd say that, personally, the chords and melody are arbitrary; merely the carrier of the sentiment...<br/><br/>Changing the subject ever so slightly I just wanted to say a big thank you to everyone that's shown support; it's overwhelming. An apology to anyone I've not yet responded to.. I've never been very good at juggling my time but I will be in touch.<br/><br/>Thanks again...<br/><br/>_________________<br/>Certainty In Freedom<br/><br/>If I had the will to talk<br/>I wonder if you'd give a thought <br/>To what I had to say - help make it go away<br/><br/>Cos there's certainty in freedom<br/>And in that we must believe in<br/>Cos I saw on the news today<br/><br/>If I saw you in the street now<br/>Would I look the other way?<br/>I hope I'm strong enough to say - help make it go away<br/><br/>When all you see is hatred<br/>Spirits crushed and souls deflated<br/>Easy to leave it for another day<br/><br/>Peace is pushing for love<br/>Love is leading the way<br/>You should follow its path<br/>Darkness leads you astray<br/>Peace is pushing for love<br/>Love is leading the way<br/><br/>So this, my only voice to speak<br/>My message strong, my tone is weak<br/>I find it hard to say - help make it go away<br/><br/>And if I come across obtuse<br/>I urge you now to cut the noose<br/>Don't leave it for another day<br/><br/>Peace is pushing for love<br/>Love is leading the way<br/>You should follow its path<br/>Darkness leads you astray<br/>Peace is pushing for love<br/>Love is leading the way<br/><br/>If I had the will to talk<br/>I wonder if you'd give a thought <br/>To what I had to say - help make it go away<br/><br/>Cos there's certainty in freedom<br/>And in that we must believe in<br/>Cos I saw on the news today<br/><br/>Peace is pushing for love<br/>Love is leading the way<br/>You should follow its path<br/>Darkness leads you astray<br/>Peace is pushing for love<br/>Love is leading the way<br/><br/>_____________________<br/>Peace<br/><br/>Available on the 'Unequal Measures', available through http://www.krisrowley.com<br/>© Kris Rowley 2007</span>
+			<span id="MorevidDescL9Wu1V1JAHw" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescL9Wu1V1JAHw'); hideDiv('MorevidDescL9Wu1V1JAHw'); hideDiv('BeginvidDescL9Wu1V1JAHw'); showDiv('LessvidDescL9Wu1V1JAHw'); return false;">more</a>)</span>
+			<span id="LessvidDescL9Wu1V1JAHw" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescL9Wu1V1JAHw'); hideDiv('LessvidDescL9Wu1V1JAHw'); showDiv('BeginvidDescL9Wu1V1JAHw'); showDiv('MorevidDescL9Wu1V1JAHw'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/zzzzzzzzap">zzzzzzzzap</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 136,222<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.65044814341" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">03:55</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=10">Music</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=gQNY7Sti8FY"><img src="http://s4.ytimg.com/vi/gQNY7Sti8FY/default.jpg" class="vimg120" title="the world is at your fingertips" qliconalt="gQNY7Sti8FY" partner="true" alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=gQNY7Sti8FY" title="the world is at your fingertips" onclick="_hbLink('theworldisatyourfingertips','VidVert');">the world is at your fingertips</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=gQNY7Sti8FY" title="the world is at your fingertips" onclick="_hbLink('theworldisatyourfingertips','VidVert');">the world is at your fingertips</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescgQNY7Sti8FY">
+	for the taking.
+	</span>
+
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/SupaDupaFlyGirl">SupaDupaFlyGirl</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 509,825<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.0" alt="3.91057134971" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">05:15</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=28">Science & Technology</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=rGUt7ropzNA"><img src="http://i.ytimg.com/vi/rGUt7ropzNA/default.jpg" class="vimg120" title="Aimee Mann Freeway Video Contest" qliconalt="rGUt7ropzNA"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=rGUt7ropzNA" title="Aimee Mann Freeway Video Contest" onclick="_hbLink('AimeeMannFreewayVideoContest','VidVert');">Aimee Mann Freeway Video Contest</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=rGUt7ropzNA" title="Aimee Mann Freeway Video Contest" onclick="_hbLink('AimeeMannFreewayVideoContest','VidVert');">Aimee Mann Freeway Video Contest</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescrGUt7ropzNA">
+	Want a chance to sing with Aimee Mann live? Go to http://www.youtube.com/group/aimeemannco
+	</span>
+
+			<span  id="RemainvidDescrGUt7ropzNA" style="display: none">Want a chance to sing with Aimee Mann live? Go to http://www.youtube.com/group/aimeemanncontest and upload a video of yourself singing Aimee Mann's new song "Freeway."<br/><br/>Aimee Mann and SuperEgo Records will pick their favorite entry to be featured on YouTube and www.aimeemann.com. The winner will have an opportunity to sing live with Aimee at one of her upcoming shows. Ten runners-up will receive an autographed copy of Aimee's new CD, @#%&*! Smilers.<br/><br/>Entrants can get the lyrics, the instrumental version of "Freeway" and contest details at: http://www.aimeemann.com/freewaycontest/<br/>Submissions must be received by July 7th 2008</span>
+			<span id="MorevidDescrGUt7ropzNA" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescrGUt7ropzNA'); hideDiv('MorevidDescrGUt7ropzNA'); hideDiv('BeginvidDescrGUt7ropzNA'); showDiv('LessvidDescrGUt7ropzNA'); return false;">more</a>)</span>
+			<span id="LessvidDescrGUt7ropzNA" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescrGUt7ropzNA'); hideDiv('LessvidDescrGUt7ropzNA'); showDiv('BeginvidDescrGUt7ropzNA'); showDiv('MorevidDescrGUt7ropzNA'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/aimeemann">aimeemann</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 283,776<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.0" alt="3.79036827195" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">02:22</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=10">Music</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=tbEei0I3kMQ"><img src="http://i.ytimg.com/vi/tbEei0I3kMQ/default.jpg" class="vimg120" title="Interactive card trick" qliconalt="tbEei0I3kMQ"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=tbEei0I3kMQ" title="Interactive card trick" onclick="_hbLink('Interactivecardtrick','VidVert');">Interactive card trick</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=tbEei0I3kMQ" title="Interactive card trick" onclick="_hbLink('Interactivecardtrick','VidVert');">Interactive card trick</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDesctbEei0I3kMQ">
+	This is the first interactive video on YouTube!<br/>Have fun and enjoy the show<br/>you can see 
+	</span>
+
+			<span  id="RemainvidDesctbEei0I3kMQ" style="display: none">This is the first interactive video on YouTube!<br/>Have fun and enjoy the show<br/>you can see our magician site:<br/>orenshalom.co.il</span>
+			<span id="MorevidDesctbEei0I3kMQ" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDesctbEei0I3kMQ'); hideDiv('MorevidDesctbEei0I3kMQ'); hideDiv('BeginvidDesctbEei0I3kMQ'); showDiv('LessvidDesctbEei0I3kMQ'); return false;">more</a>)</span>
+			<span id="LessvidDesctbEei0I3kMQ" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDesctbEei0I3kMQ'); hideDiv('LessvidDesctbEei0I3kMQ'); showDiv('BeginvidDesctbEei0I3kMQ'); showDiv('MorevidDesctbEei0I3kMQ'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/werneroi">werneroi</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 3,155,063<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-3.5" alt="3.41263230956" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">01:10</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=22">People & Blogs</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=irDEzQovftM"><img src="http://i.ytimg.com/vi/irDEzQovftM/default.jpg" class="vimg120" title="Biggest drawing in the world" qliconalt="irDEzQovftM"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=irDEzQovftM" title="Biggest drawing in the world" onclick="_hbLink('Biggestdrawingintheworld','VidVert');">Biggest drawing in the world</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=irDEzQovftM" title="Biggest drawing in the world" onclick="_hbLink('Biggestdrawingintheworld','VidVert');">Biggest drawing in the world</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescirDEzQovftM">
+	making the biggest drawing in the world
+	</span>
+
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/erikbjgn">erikbjgn</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 971,773<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.54770783066" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">04:04</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=1">Film & Animation</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=iAKJKBCyPUY"><img src="http://i.ytimg.com/vi/iAKJKBCyPUY/default.jpg" class="vimg120" title="Checkmate" qliconalt="iAKJKBCyPUY"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=iAKJKBCyPUY" title="Checkmate" onclick="_hbLink('Checkmate','VidVert');">Checkmate</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=iAKJKBCyPUY" title="Checkmate" onclick="_hbLink('Checkmate','VidVert');">Checkmate</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDesciAKJKBCyPUY">
+	The Internets Celebrities Dallas Penn and Rafi Kam go in for an investigative report on Ch
+	</span>
+
+			<span  id="RemainvidDesciAKJKBCyPUY" style="display: none">The Internets Celebrities Dallas Penn and Rafi Kam go in for an investigative report on Check-Cashing. Themes explored include usury, economic instability, commercial banks and their profit line, and the cycle of poverty. <br/><br/>Oh yeah, it's a comedy.<br/><br/>The video is shot on location in Bushwick and Carroll Gardens in Brooklyn, New York. Also stars special guest Internets Celebrity Ben Popken of Consumerist.com.<br/><br/>Directed by Casimir Nozkowski<br/>Shot by Ian Savage, Josh Weisbrot<br/>Music by El Keter; instrumental from song "The Bottom Line" off Sankofa's album The Tortoise Hustle. Used with full permission.<br/><br/>http://www.internetscelebrities.com</span>
+			<span id="MorevidDesciAKJKBCyPUY" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDesciAKJKBCyPUY'); hideDiv('MorevidDesciAKJKBCyPUY'); hideDiv('BeginvidDesciAKJKBCyPUY'); showDiv('LessvidDesciAKJKBCyPUY'); return false;">more</a>)</span>
+			<span id="LessvidDesciAKJKBCyPUY" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDesciAKJKBCyPUY'); hideDiv('LessvidDesciAKJKBCyPUY'); showDiv('BeginvidDesciAKJKBCyPUY'); showDiv('MorevidDesciAKJKBCyPUY'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/InternetsCelebrities">InternetsCel...</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 412,830<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.52936962751" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">09:45</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=25">News & Politics</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=yLCl0xIg5-0"><img src="http://i.ytimg.com/vi/yLCl0xIg5-0/default.jpg" class="vimg120" title="Stories from the Front lines, Part 1" qliconalt="yLCl0xIg5-0"  alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=yLCl0xIg5-0" title="Stories from the Front lines, Part 1" onclick="_hbLink('StoriesfromtheFrontlinesPart1','VidVert');">Stories from the Front lines, Pa...</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=yLCl0xIg5-0" title="Stories from the Front lines, Part 1" onclick="_hbLink('StoriesfromtheFrontlinesPart1','VidVert');">Stories from the Front lines, Part 1</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescyLCl0xIg50">
+	Stories from the men and women of the miltary, stationed in the Al Anbar Province. Right f
+	</span>
+
+			<span  id="RemainvidDescyLCl0xIg50" style="display: none">Stories from the men and women of the miltary, stationed in the Al Anbar Province. Right from the mouths of the troops themselves. Part 1 of 4</span>
+			<span id="MorevidDescyLCl0xIg50" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescyLCl0xIg50'); hideDiv('MorevidDescyLCl0xIg50'); hideDiv('BeginvidDescyLCl0xIg50'); showDiv('LessvidDescyLCl0xIg50'); return false;">more</a>)</span>
+			<span id="LessvidDescyLCl0xIg50" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescyLCl0xIg50'); hideDiv('LessvidDescyLCl0xIg50'); showDiv('BeginvidDescyLCl0xIg50'); showDiv('MorevidDescyLCl0xIg50'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/3rdID8487">3rdID8487</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 367,189<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.0" alt="4.2188365651" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">10:35</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=25">News & Politics</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+
+				
+
+
+	<div class="vlentry" >
+
+		<div class="vlcontainer"><div class="v120WideEntry"><div class="v120WrapperOuter"><div class="v120WrapperInner"><a href="/watch?v=rFItE14EeSU"><img src="http://i.ytimg.com/vi/rFItE14EeSU/default.jpg" class="vimg120" title="Amazing video of multiple tornadoes in Northwest Kansas" qliconalt="rFItE14EeSU" partner="true" alt="video"></a></div></div>			</div>
+
+			<div class="vldescbox">
+				<div  class="vltitle">
+					<div class="vlshortTitle">
+						<a href="/watch?v=rFItE14EeSU" title="Amazing video of multiple tornadoes in Northwest Kansas" onclick="_hbLink('AmazingvideoofmultipletornadoesinNorthwestKansas','VidVert');">Amazing video of multiple tornad...</a>
+					</div>
+					<div class="vllongTitle">
+						<a href="/watch?v=rFItE14EeSU" title="Amazing video of multiple tornadoes in Northwest Kansas" onclick="_hbLink('AmazingvideoofmultipletornadoesinNorthwestKansas','VidVert');">Amazing video of multiple tornadoes in Northwest Kansas</a>
+					</div>
+				</div>
+
+				<div  class="vldesc">
+										
+		
+	<span  id="BeginvidDescrFItE14EeSU">
+	Video from TornadoVideos.net Live Stream Unit 3 of several tornadoes from close range.. In
+	</span>
+
+			<span  id="RemainvidDescrFItE14EeSU" style="display: none">Video from TornadoVideos.net Live Stream Unit 3 of several tornadoes from close range.. Including one beautiful but strong rope and a large wedge tornado from within 1/2 mile.  Check out TornadoVdeos.net for live streaming   video, breaking weather news, and more extreme tornado footage.</span>
+			<span id="MorevidDescrFItE14EeSU" class="smallText">(<a href="#" class="eLink" onclick="showDiv('RemainvidDescrFItE14EeSU'); hideDiv('MorevidDescrFItE14EeSU'); hideDiv('BeginvidDescrFItE14EeSU'); showDiv('LessvidDescrFItE14EeSU'); return false;">more</a>)</span>
+			<span id="LessvidDescrFItE14EeSU" style="display: none" class="smallText">(<a href="#" class="eLink" onclick="hideDiv('RemainvidDescrFItE14EeSU'); hideDiv('LessvidDescrFItE14EeSU'); showDiv('BeginvidDescrFItE14EeSU'); showDiv('MorevidDescrFItE14EeSU'); return false;">less</a>)</span>
+
+
+
+				</div>
+			</div>
+
+			<div class="vlclearaltl"></div>
+
+
+		</div>
+
+		<div class="vlfacets">
+			<div class="vladded">
+			</div>
+				<div><span class="grayText vlfromlbl">From:</span><span class="vlfrom"><a href="/user/TornadoVideosdotnet">TornadoVideo...</a></span></div>
+				<div class="clearL"></div>
+			<span class="grayText">Views:</span> 797,370<br/>
+
+			<div class="video-thumb-duration-rating">
+								
+
+	<div>
+
+	<img class="ratingVS ratingVS-4.5" alt="4.28912552436" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+
+
+
+	</div>
+
+
+
+				<div class="runtime">07:10</div>
+			</div>
+
+				<div class="clear"></div>
+				<div class="vlcategory">
+					<span class="smgrayText">More in</span> <a href="/results?search_query=None&search_category=25">News & Politics</a>
+				</div>
+		</div>
+
+		<div class="vlclearaltl"></div>
+
+
+		
+	</div> <!-- end vEntry -->
+
+
+		</div>
+	</div> <!-- end Video List -->
+	<div id="homepage-featured-more-bottom">
+		<div class="floatR"><a href="/browse?s=rf">See More Featured Videos</a></div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+
+<div id="homepage-side-content" style="white-space: normal;">
+	<div>
+	
+
+
+
+	<!-- Begin ad tag -->
+
+			<input type="hidden" id="pvaHl" value="en"/>
+	<input type="hidden" id="pvaTag" value="http://n4061ad.doubleclick.net/adj/com.ythome/_default;sz=399x299;kl=N;kga=-1;kgg=-1;tile=1;dcopt=ist;"/>
+	<input type="hidden" id="burl" value="http://www.youtube.com/pva/"/>
+	<input type="hidden" id="canv" value="False"/>
+	<div id="myAd_banner" style="visibility:hidden;height:35px;"></div>
+	<div id="myAd_pva">
+
+
+		
+	
+	<script type="text/javascript">
+		ord=Math.random()*10000000000000000 + 3;
+		if (false) {
+			ord = 1234567890;
+		}
+		document.write('<script language="JavaScript" src="http://n4061ad.doubleclick.net/adj/com.ythome/_default;sz=399x299;kl=N;kga=-1;kgg=-1;tile=1;dcopt=ist;ord=' + ord + '?" type="text/javascript"><\/script>');
+	</script>
+	<noscript><a
+		href="http://n4061ad.doubleclick.net/jump/_default;sz=399x299;ord=123456789?" target="_blank"><img
+		src="http://n4061ad.doubleclick.net/ad/_default;sz=399x299;ord=123456789?" width="399" height="299" border="0" alt=""></a>
+	</noscript>
+
+			</div>
+
+
+	<!-- End ad tag -->
+
+	</div>
+
+		<div class="homepage-content-block">
+			<div class="contentBox">
+				<div>
+					<div class="floatR"><span class="smallText"><b><a href="/signup">Sign Up</a> | <a href="http://help.youtube.com/support/youtube/bin/topic.py?topic=10546&amp;hl=en_US">Help</a></b></div>
+					<div class="floatL">
+						<span class="headerTitle homepage-block-heading-gray"> Login </span>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+				<form method="post" name="loginForm" id="loginForm" action="signup">
+				<input type="hidden" name="action_login" value="1">
+				<table width="270">
+					<tr>
+						<td align="right"><label for="homeUsername"><span class="smallText"><b>Username:</b></span></label></td>
+						<td align="left"><input id="homeUsername" tabindex="101" class="smallText" type="text" size="16" name="username" value=""></td>
+					</tr>
+					<tr>
+						<td align="right"><label for="homePassword"><span class="smallText"><b>Password:</b></span></label></td>
+						<td align="left"><input id="homePassword" tabindex="102" class="smallText" type="password" size="16" name="password">
+					</tr>
+					<tr>
+						<td></td>
+						<td align="left">
+							<span><input type="submit" class="smallText" value="Login"></span>	
+						</td>
+					</tr>
+				</table>
+				</form>
+				<div class="padT10 smallText">
+					<p align="center" class="marT0 marB0"><a href="/forgot_username?next=/">Forgot Username</a> | <a href="/forgot?next=/">Forgot Password</a></p>
+				</div>
+				<div class="homepage-border-dotted"></div>
+				<div class="alignC"><span class="smallText"><b><a href="
+https://www.google.com/accounts/ServiceLogin?service=youtube&hl=en_US&continue=http%3A//www.youtube.com/signup%3Fhl%3Den_US&passive=true">Login with your Google account</a>&nbsp; <a href="#" onClick="window.open('/t/help_gaia','login_help','width=580,height=480,resizable=yes,scrollbars=yes,status=0').focus();" rel="nofollow"><img src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" border="0" class="alignMid gaiaHelpBtn" alt=""></a></b></span></div>
+			</div>
+		</div> <!-- end homepage-content-block -->
+
+
+	<div class="homepage-content-block padT10">
+		
+
+
+
+	<!-- Begin ad tag -->
+
+
+	
+	<script type="text/javascript">
+		ord=Math.random()*10000000000000000 + 6;
+		if (false) {
+			ord = 1234567890;
+		}
+		document.write('<script language="JavaScript" src="http://n4061ad.doubleclick.net/adj/com.ythome/promo1;sz=300x50;kl=N;kga=-1;kgg=-1;tile=2;ord=' + ord + '?" type="text/javascript"><\/script>');
+	</script>
+	<noscript><a
+		href="http://n4061ad.doubleclick.net/jump/promo1;sz=300x50;ord=123456789?" target="_blank"><img
+		src="http://n4061ad.doubleclick.net/ad/promo1;sz=300x50;ord=123456789?" width="300" height="50" border="0" alt=""></a>
+	</noscript>
+
+
+	<!-- End ad tag -->
+
+	</div>
+
+	<div class="homepage-content-block padT10">
+		
+
+
+
+	<!-- Begin ad tag -->
+
+
+	
+	<script type="text/javascript">
+		ord=Math.random()*10000000000000000 + 6;
+		if (false) {
+			ord = 1234567890;
+		}
+		document.write('<script language="JavaScript" src="http://n4061ad.doubleclick.net/adj/com.ythome/promo3;sz=300x50;kl=N;kga=-1;kgg=-1;tile=4;ord=' + ord + '?" type="text/javascript"><\/script>');
+	</script>
+	<noscript><a
+		href="http://n4061ad.doubleclick.net/jump/promo3;sz=300x50;ord=123456789?" target="_blank"><img
+		src="http://n4061ad.doubleclick.net/ad/promo3;sz=300x50;ord=123456789?" width="300" height="50" border="0" alt=""></a>
+	</noscript>
+
+
+	<!-- End ad tag -->
+
+	</div>
+
+	<div class="homepage-side-block padT10">
+	<div class="homepage-yellow-block">
+		<div class="homepage-block-heading" style="color:#CC6600">What's New</div>
+
+		<div class="homepage-whatsnew-entry">
+			<div class="homepage-whatsnew-image"><a href="/t/annotations_about"><img src="http://s.ytimg.com/yt/img/whats_new/annotation-vfl42087.gif" border="0" width="30" height="37"/></a></div>
+			<div class="homepage-whatsnew-desc">
+				<b><a href="/t/annotations_about">Video Annotations</a></b><br/>Add interactive commentary and links to your videos
+			</div>
+		</div><div class="clear"></div>
+
+		<div class="homepage-whatsnew-entry">
+			<div class="homepage-whatsnew-image"><a href="/address_book"><img src="http://s.ytimg.com/yt/img/whats_new/addybook-vfl39351.gif" border="0" width="30" height="37"/></a></div>
+			<div class="homepage-whatsnew-desc">
+				<b><a href="/address_book">New Address Book</a></b><br/>Organizing your YouTube friends and contacts just got a lot simpler
+			</div>
+		</div><div class="clear"></div>
+
+		<div class="homepage-whatsnew-entry">
+			<div class="homepage-whatsnew-image"><a href="/inbox"><img src="http://s.ytimg.com/yt/img/whats_new/inbox-vfl39351.gif" border="0" width="30" height="37"/></a></div>
+			<div class="homepage-whatsnew-desc">
+				<b><a href="/inbox">Updated Inbox</a></b><br/>Manage your messages and invites with ease
+			</div>
+		</div><div class="clear"></div>
+
+		
+		<div class="homepage-whatsnew-entry">
+			<div class="homepage-whatsnew-image"><a href="/mobile"><img src="http://s.ytimg.com/yt/img/whats_new/pic_home_mobile_30x37-vfl37458.gif" border="0" width="30" height="37"/></a></div>
+			<div class="homepage-whatsnew-desc">
+				<b><a href="/mobile">YouTube Mobile</a></b><br/> Watch and upload YouTube videos on your mobile device.
+			</div>
+		</div><div class="clear"></div>
+
+				<div class="bottomBorderDotted"></div>
+				<b><a href="/blog" style="color:#CC6600">Hear Ye, Hear Ye: Calling all Reporters</a></b><br>
+				Today we announce the launch of a new type of YouTube account: the Reporter.  Reporter channels are just like the other YouTube channel types, but are specifically intended for citizens and profess...
+			<div class="alignR padT5">
+				<a href="/blog" style="color:#CC6600">Read more in our Blog</a>
+			</div>
+		<div style="font-size: 1px; height: 1px;"><br/></div>
+	</div><img class="homepage-yellow-block-bot" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" />
+</div> 
+
+
+		<div class="homepage-side-block">
+		
+
+
+
+	<!-- Begin ad tag -->
+
+
+	
+	<script type="text/javascript">
+		ord=Math.random()*10000000000000000 + 6;
+		if (false) {
+			ord = 1234567890;
+		}
+		document.write('<script language="JavaScript" src="http://n4061ad.doubleclick.net/adj/com.ythome/promo2;sz=300x50;kl=N;kga=-1;kgg=-1;tile=3;ord=' + ord + '?" type="text/javascript"><\/script>');
+	</script>
+	<noscript><a
+		href="http://n4061ad.doubleclick.net/jump/promo2;sz=300x50;ord=123456789?" target="_blank"><img
+		src="http://n4061ad.doubleclick.net/ad/promo2;sz=300x50;ord=123456789?" width="300" height="50" border="0" alt=""></a>
+	</noscript>
+
+
+	<!-- End ad tag -->
+
+		</div>
+
+
+</div> <!-- end homepage-side-content -->
+
+<div class="clear"></div>
+
+
+
+		<div class="clear"></div>
+	<div id="footer">
+		<div class="search">
+			<div class="promo">
+				<a href="/youchoose" onclick="_hbLink('FooterPromo','Footer');"><img id="debates_footer_img" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" alt="footer-promo" /></a>
+				<a href="/youchoose" onclick="_hbLink('FooterPromo','Footer');">Face The Candidates</a>
+			</div>
+			<form autocomplete="off" name="footer-search-form" method="get" action="/results" style="width: 73.5%;">
+					<a href="http://www.google.com/webmasters/igoogle/youtube.html"><img id="igoogle_footer_img" src="http://s.ytimg.com/yt/img/pixel-vfl73.gif" alt=""/> <em id="igoogle_footer_text">Add to iGoogle</em></a>
+				<input  type="text" name="search_query" maxlength="128" class="query" onkeyup="goog.i18n.bidi.setDirAttribute(event,this)" value="" id="footer-search-term">
+				<select class="search-type" name="search_type">
+					<option value="">Videos</option>
+					<option value="search_users" >Channels</option>
+				</select>
+				<input type="submit" name="search" value="Search" class="submit-button">
+			</form>
+		</div>
+		<div class="links">
+			<table cellpadding="0" cellspacing="0">
+				<tr>
+					<th colspan="2">Your Account</th>
+					<th class="separator" colspan="2">Help &amp; Info</th>
+					<th class="separator" colspan="2">YouTube</th>
+				</tr>
+				<tr>
+					<td><a href="/my_videos">Videos</a></td>
+					<td><a href="/inbox">Inbox</a></td>
+					<td class="separator"><a href="http://help.youtube.com/support/youtube/bin/static.py?page=start.cs&amp;hl=en_US">Help Resources</a></td>
+					<td><a href="/t/safety">Safety Tips</a></td>
+					<td class="separator"><a href="/t/about">Company Info</a></td>
+					<td><a href="/press_room">Press</a></td>
+				</tr>
+				<tr>
+					<td><a href="/my_favorites">Favorites</a></td>
+					<td><a href="/subscription_center">Subscriptions</a></td>
+					<td class="separator"><a href="/t/video_toolbox">Video Toolbox</a></td>
+					<td><a href="/t/dmca_policy">Copyright Notices</a></td>
+					<td class="separator"><a href="/testtube">TestTube</a></td>
+					<td><a href="/t/contact_us">Contact</a></td>
+				</tr>
+				<tr>
+					<td><a href="/my_playlists">Playlists</a></td>
+					<td><a href="/my_account">more...</a></td>
+					<td class="separator"><a href="/dev">Developer APIs</a></td>
+					<td><a href="/t/community_guidelines">Community Guidelines</a></td>
+					<td class="separator"><a href="/t/terms">Terms of Use</a></td>
+					<td>
+						<a href="/blog">Blog</a>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">&nbsp;</td>
+						<td class="separator"><a href="/advertise">Advertising</a></td>
+						<td><a href="/youtubeonyoursite">YouTube On Your Site</a></td>
+					<td class="separator"><a href="/t/privacy">Privacy Policy</a></td>
+					<td>
+						<a href="http://www.google.com/jobs/youtube">Jobs</a><br/>
+					</td>
+				</tr>
+
+
+
+							</table>
+		</div>
+	</div>
+	<div id="copyright">
+		&copy; 2008 YouTube, LLC
+	</div>
+
+
+</div> <!-- end baseDiv -->
+
+</body>
+<script type="text/javascript">
+	window.setTimeout('window.google.ac.install(document.searchForm,document.searchForm.search_query,"yt",true,"close",true,"Suggestions")',100);
+</script>
+
+
+
+</html>

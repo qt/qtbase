@@ -1,0 +1,1342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KeypadNavigation</class>
+ <widget class="QMainWindow" name="KeypadNavigation">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>264</width>
+    <height>378</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>KeypadNavigation</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QStackedWidget" name="m_stackWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="m_pageVerticalSimple">
+       <layout class="QVBoxLayout" name="verticalLayout_11">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>248</width>
+             <height>501</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>'TabOrder' navigation mode friendly, vertical, 1-dimensional layout with basic widgets. The tab order goes from top to bottom.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Foo</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineEdit"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Bar</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSlider" name="horizontalSlider">
+                <property name="maximum">
+                 <number>10</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Foo</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="lineEdit_4">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Bar</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QSlider" name="horizontalSlider_2">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="maximum">
+                 <number>10</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Foo</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDateEdit" name="dateEdit"/>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Bar</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QComboBox" name="comboBox">
+                <item>
+                 <property name="text">
+                  <string>Item 1</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 2</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 3</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 4</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 5</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 6</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 7</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 9</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Item 10</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QPlainTextEdit" name="plainTextEdit">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>80</height>
+               </size>
+              </property>
+              <property name="plainText">
+               <string>Edit some text</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QPushButton" name="pushButton">
+                <property name="text">
+                 <string>Foo QPushButton</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox">
+                <property name="title">
+                 <string>Foo</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                 <item>
+                  <widget class="QRadioButton" name="radioButton">
+                   <property name="text">
+                    <string>Bar 1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_2">
+                   <property name="text">
+                    <string>Bar 2</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_2">
+                <property name="title">
+                 <string>Foo</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <item>
+                  <widget class="QCheckBox" name="checkBox">
+                   <property name="text">
+                    <string>CheckBox</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="checkBox_2">
+                   <property name="text">
+                    <string>CheckBox</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_pageVerticalComplex">
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>Tab 1</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="margin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QScrollArea" name="scrollArea_2">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_2">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>242</width>
+                 <height>472</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <property name="margin">
+                 <number>9</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_8">
+                  <property name="text">
+                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Challenes both navigation modes: Vertical, 1-dimensional layout with &lt;span style=&quot; font-weight:600;&quot;&gt;complex&lt;/span&gt; widgets. The tab order goes from top to bottom.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="listWidget">
+                  <property name="minimumSize">
+                   <size>
+                    <width>1</width>
+                    <height>1</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Item 1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Item 2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Item 3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Item 4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Item 5</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTreeWidget" name="treeWidget">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <column>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>B</string>
+                   </property>
+                  </column>
+                  <item>
+                   <property name="text">
+                    <string>A</string>
+                   </property>
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>1</string>
+                    </property>
+                    <property name="text">
+                     <string>Bar</string>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>a</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>b</string>
+                     </property>
+                     <property name="text">
+                      <string>Bar</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>c</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>2</string>
+                    </property>
+                    <property name="text">
+                     <string>Bar</string>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>a</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>b</string>
+                     </property>
+                     <property name="text">
+                      <string>Bar</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>c</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>3</string>
+                    </property>
+                    <property name="text">
+                     <string>Bar</string>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>a</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>b</string>
+                     </property>
+                     <property name="text">
+                      <string>Bar</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>c</string>
+                     </property>
+                     <property name="text">
+                      <string>Foo</string>
+                     </property>
+                    </item>
+                   </item>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>B</string>
+                   </property>
+                   <property name="text">
+                    <string>Bar</string>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>1</string>
+                    </property>
+                    <property name="text">
+                     <string>Foo</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>2</string>
+                    </property>
+                    <property name="text">
+                     <string>Bar</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>3</string>
+                    </property>
+                    <property name="text">
+                     <string>Foo</string>
+                    </property>
+                   </item>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="tableWidget">
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <row>
+                   <property name="text">
+                    <string>1</string>
+                   </property>
+                  </row>
+                  <row>
+                   <property name="text">
+                    <string>2</string>
+                   </property>
+                  </row>
+                  <row>
+                   <property name="text">
+                    <string>3</string>
+                   </property>
+                  </row>
+                  <column>
+                   <property name="text">
+                    <string>A</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>B</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>C</string>
+                   </property>
+                  </column>
+                  <item row="0" column="0">
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                  </item>
+                  <item row="0" column="1">
+                   <property name="text">
+                    <string>Bar</string>
+                   </property>
+                  </item>
+                  <item row="0" column="2">
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                  </item>
+                  <item row="1" column="0">
+                   <property name="text">
+                    <string>Bar</string>
+                   </property>
+                  </item>
+                  <item row="1" column="1">
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                  </item>
+                  <item row="1" column="2">
+                   <property name="text">
+                    <string>Bar</string>
+                   </property>
+                  </item>
+                  <item row="2" column="0">
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                  </item>
+                  <item row="2" column="1">
+                   <property name="text">
+                    <string>Bar</string>
+                   </property>
+                  </item>
+                  <item row="2" column="2">
+                   <property name="text">
+                    <string>Foo</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCalendarWidget" name="calendarWidget">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>80</height>
+                   </size>
+                  </property>
+                  <property name="horizontalHeaderFormat">
+                   <enum>QCalendarWidget::SingleLetterDayNames</enum>
+                  </property>
+                  <property name="verticalHeaderFormat">
+                   <enum>QCalendarWidget::NoVerticalHeader</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="title">
+            <string>Tab 2</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QPlainTextEdit" name="plainTextEdit_2">
+              <property name="plainText">
+               <string>Congratulations! You changed the Tab :)
+
+As a reward you can try out the QDial, below.</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDial" name="dial"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_pageTwoDimensional">
+       <layout class="QVBoxLayout" name="verticalLayout_12">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="scrollArea_3">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_3">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>264</width>
+             <height>357</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0" colspan="3">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>2-dimensional layout. Better usable with 'Directional' navigation mode.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="3">
+             <widget class="QLineEdit" name="lineEdit_13"/>
+            </item>
+            <item row="1" column="3">
+             <widget class="QToolButton" name="toolButton_31">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QToolButton" name="toolButton_30">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLineEdit" name="lineEdit_2"/>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="lineEdit_3"/>
+            </item>
+            <item row="4" column="2">
+             <widget class="QLineEdit" name="lineEdit_5"/>
+            </item>
+            <item row="4" column="3">
+             <widget class="QToolButton" name="toolButton_32">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLineEdit" name="lineEdit_6"/>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Foo</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QLineEdit" name="lineEdit_8"/>
+            </item>
+            <item row="8" column="0" colspan="4">
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="1" column="1">
+               <widget class="QPushButton" name="pushButton_23">
+                <property name="text">
+                 <string>D</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="pushButton_7">
+                <property name="text">
+                 <string>A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="pushButton_9">
+                <property name="text">
+                 <string>B</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="pushButton_20">
+                <property name="text">
+                 <string>E</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="pushButton_24">
+                <property name="text">
+                 <string>C</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QPushButton" name="pushButton_29">
+                <property name="text">
+                 <string>F</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="pushButton_28">
+                <property name="text">
+                 <string>G</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0" colspan="3">
+             <widget class="QLineEdit" name="lineEdit_14"/>
+            </item>
+            <item row="7" column="0" colspan="4">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLineEdit" name="lineEdit_7"/>
+            </item>
+            <item row="6" column="1">
+             <widget class="QLineEdit" name="lineEdit_9"/>
+            </item>
+            <item row="6" column="2">
+             <widget class="QLineEdit" name="lineEdit_10"/>
+            </item>
+            <item row="6" column="3">
+             <widget class="QToolButton" name="toolButton_35">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_pageSliderMagic">
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="scrollArea_4">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_4">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>264</width>
+             <height>357</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0" colspan="2">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>If possible, the slider value changes on left/right. However, navigating horizontally and changing tabs has higher priority.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QSlider" name="horizontalSlider_4">
+              <property name="maximum">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QSlider" name="horizontalSlider_3">
+              <property name="maximum">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QTabWidget" name="tabWidget_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <widget class="QWidget" name="tab_3">
+               <attribute name="title">
+                <string>Tab 1</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_2">
+                <item row="1" column="1">
+                 <widget class="QToolButton" name="toolButton_3">
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QSlider" name="horizontalSlider_6">
+                  <property name="maximum">
+                   <number>10</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QSlider" name="horizontalSlider_7">
+                  <property name="maximum">
+                   <number>10</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_4">
+               <attribute name="title">
+                <string>Tab 2</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout">
+                <item row="0" column="0">
+                 <widget class="QSlider" name="horizontalSlider_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLCDNumber" name="lcdNumber"/>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QToolButton" name="toolButton_2">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_pageChaos">
+       <layout class="QGridLayout" name="gridLayout_6">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="1" column="0">
+         <widget class="QToolButton" name="toolButton_12">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QToolButton" name="toolButton_10">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QToolButton" name="toolButton_9">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QToolButton" name="toolButton_14">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="3">
+         <widget class="QToolButton" name="toolButton_16">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QToolButton" name="toolButton_11">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QToolButton" name="toolButton_6">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="4">
+         <widget class="QToolButton" name="toolButton_15">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QToolButton" name="toolButton_19">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QToolButton" name="toolButton_7">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QToolButton" name="toolButton_13">
+          <property name="text">
+           <string>o</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="m_pageDialogs">
+       <layout class="QVBoxLayout" name="verticalLayout_13">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="scrollArea_5">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_5">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>264</width>
+             <height>356</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <widget class="QPushButton" name="m_buttonGetOpenFileName">
+              <property name="text">
+               <string>getOpenFileName()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetSaveFileName">
+              <property name="text">
+               <string>getSaveFileName()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetExistingDirectory">
+              <property name="text">
+               <string>getExistingDirectory()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetColor">
+              <property name="text">
+               <string>getColor()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetFont">
+              <property name="text">
+               <string>getFont()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonQuestion">
+              <property name="text">
+               <string>question()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonAboutQt">
+              <property name="text">
+               <string>aboutQt()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="m_buttonGetItem">
+              <property name="text">
+               <string>getItem()</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>103</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>264</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuUi_layout">
+    <property name="title">
+     <string>Ui-layout</string>
+    </property>
+    <addaction name="m_actionLayoutVerticalSimple"/>
+    <addaction name="m_actionLayoutVerticalComplex"/>
+    <addaction name="m_actionLayoutTwoDimensional"/>
+    <addaction name="m_actionLayoutSliderMagic"/>
+    <addaction name="m_actionLayoutChaos"/>
+    <addaction name="m_actionLayoutDialogs"/>
+   </widget>
+   <widget class="QMenu" name="m_menuNavigation_mode">
+    <property name="title">
+     <string>Navigation mode</string>
+    </property>
+    <addaction name="m_actionModeNone"/>
+    <addaction name="m_actionModeKeypadTabOrder"/>
+    <addaction name="m_actionModeKeypadDirectional"/>
+    <addaction name="m_actionModeCursorAuto"/>
+    <addaction name="m_actionModeCursorForceVisible"/>
+   </widget>
+   <addaction name="menuUi_layout"/>
+   <addaction name="m_menuNavigation_mode"/>
+  </widget>
+  <action name="m_actionLayoutVerticalSimple">
+   <property name="text">
+    <string>Vertical Simple</string>
+   </property>
+  </action>
+  <action name="m_actionLayoutVerticalComplex">
+   <property name="text">
+    <string>Vertical Complex</string>
+   </property>
+  </action>
+  <action name="m_actionLayoutTwoDimensional">
+   <property name="text">
+    <string>Two-dimentional</string>
+   </property>
+  </action>
+  <action name="m_actionLayoutSliderMagic">
+   <property name="text">
+    <string>Slider magic</string>
+   </property>
+  </action>
+  <action name="m_actionLayoutChaos">
+   <property name="text">
+    <string>Chaos!</string>
+   </property>
+  </action>
+  <action name="m_actionModeNone">
+   <property name="text">
+    <string>None</string>
+   </property>
+  </action>
+  <action name="m_actionModeKeypadTabOrder">
+   <property name="text">
+    <string>KeypadTabOrder</string>
+   </property>
+  </action>
+  <action name="m_actionModeKeypadDirectional">
+   <property name="text">
+    <string>KeypadDirectional</string>
+   </property>
+  </action>
+  <action name="m_actionModeCursorAuto">
+   <property name="text">
+    <string>CursorAuto</string>
+   </property>
+  </action>
+  <action name="m_actionModeCursorForceVisible">
+   <property name="text">
+    <string>CursorForceVisible</string>
+   </property>
+  </action>
+  <action name="m_actionLayoutDialogs">
+   <property name="text">
+    <string>Dialogs</string>
+   </property>
+   <property name="toolTip">
+    <string>m_actionLayoutDialogs</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>m_buttonGetOpenFileName</tabstop>
+  <tabstop>m_buttonGetSaveFileName</tabstop>
+  <tabstop>m_buttonGetExistingDirectory</tabstop>
+  <tabstop>m_buttonGetColor</tabstop>
+  <tabstop>m_buttonGetFont</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>plainTextEdit</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>radioButton</tabstop>
+  <tabstop>radioButton_2</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>checkBox_2</tabstop>
+  <tabstop>listWidget</tabstop>
+  <tabstop>treeWidget</tabstop>
+  <tabstop>tableWidget</tabstop>
+  <tabstop>calendarWidget</tabstop>
+  <tabstop>plainTextEdit_2</tabstop>
+  <tabstop>dial</tabstop>
+  <tabstop>horizontalSlider_7</tabstop>
+  <tabstop>toolButton_3</tabstop>
+  <tabstop>horizontalSlider_6</tabstop>
+  <tabstop>horizontalSlider_5</tabstop>
+  <tabstop>lineEdit_13</tabstop>
+  <tabstop>toolButton_31</tabstop>
+  <tabstop>lineEdit_14</tabstop>
+  <tabstop>toolButton_30</tabstop>
+  <tabstop>lineEdit_2</tabstop>
+  <tabstop>lineEdit_3</tabstop>
+  <tabstop>lineEdit_5</tabstop>
+  <tabstop>toolButton_32</tabstop>
+  <tabstop>lineEdit_6</tabstop>
+  <tabstop>lineEdit_8</tabstop>
+  <tabstop>lineEdit_7</tabstop>
+  <tabstop>lineEdit_9</tabstop>
+  <tabstop>lineEdit_10</tabstop>
+  <tabstop>toolButton_35</tabstop>
+  <tabstop>pushButton_7</tabstop>
+  <tabstop>pushButton_9</tabstop>
+  <tabstop>pushButton_24</tabstop>
+  <tabstop>pushButton_23</tabstop>
+  <tabstop>pushButton_20</tabstop>
+  <tabstop>pushButton_29</tabstop>
+  <tabstop>pushButton_28</tabstop>
+  <tabstop>toolButton_12</tabstop>
+  <tabstop>toolButton_11</tabstop>
+  <tabstop>toolButton_10</tabstop>
+  <tabstop>toolButton_6</tabstop>
+  <tabstop>toolButton_19</tabstop>
+  <tabstop>toolButton_9</tabstop>
+  <tabstop>toolButton_15</tabstop>
+  <tabstop>toolButton_14</tabstop>
+  <tabstop>toolButton_16</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>scrollArea_2</tabstop>
+  <tabstop>horizontalSlider_4</tabstop>
+  <tabstop>horizontalSlider_3</tabstop>
+  <tabstop>tabWidget_2</tabstop>
+  <tabstop>toolButton_2</tabstop>
+  <tabstop>toolButton_7</tabstop>
+  <tabstop>toolButton_13</tabstop>
+  <tabstop>lineEdit_4</tabstop>
+  <tabstop>lineEdit</tabstop>
+  <tabstop>horizontalSlider</tabstop>
+  <tabstop>horizontalSlider_2</tabstop>
+  <tabstop>dateEdit</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>horizontalSlider_5</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>201</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>245</x>
+     <y>324</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

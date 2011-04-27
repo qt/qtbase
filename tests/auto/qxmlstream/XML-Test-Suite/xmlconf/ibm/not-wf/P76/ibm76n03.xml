@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!--* missing space in NdataDecl *-->
+<!ENTITY aImage SYSTEM "image.jpg"NDATA JPGformat>
+]>
+<root/>

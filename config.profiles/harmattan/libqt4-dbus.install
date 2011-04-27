@@ -1,0 +1,3 @@
+usr/lib/libQtDBus.so.*
+usr/bin/qdbus
+

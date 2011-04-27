@@ -1,0 +1,27 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace inequality test: equal after attribute value normalization " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns:a CDATA #IMPLIED
+              xmlns:b NMTOKEN #IMPLIED
+              xmlns:c CDATA #IMPLIED>
+<!ELEMENT bar ANY>
+<!ATTLIST bar a:attr CDATA #IMPLIED
+              b:attr CDATA #IMPLIED
+              c:attr CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="a" namespaceUri="urn:xyzzy" )
+
+    NamespaceDeclaration( prefix="b" namespaceUri="urn:xyzzy" )
+ )
+Characters( whitespace text="
+
+" )
+Invalid( name="bar" qualifiedName="bar"
+    Attribute( name="attr" namespaceUri="urn:xyzzy" qualifiedName="a:attr" prefix="a" value="1" )
+
+    Attribute( name="attr" namespaceUri="urn:xyzzy" qualifiedName="b:attr" prefix="b" value="2" )
+ )
+ERROR: Attribute redefined.

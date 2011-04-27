@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="4" failures="0" tests="5" name="tst_Skip">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase name="test">
+    <!-- message="skipping all" type="skip" -->
+  </testcase>
+  <testcase name="emptytest">
+    <!-- message="skipping all" type="skip" -->
+  </testcase>
+  <testcase result="pass" name="singleSkip">
+    <!-- tag="local 1" message="skipping one" type="skip" -->
+    <!-- tag="local 2" message="this line should only be reached once (true)" type="qdebug" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[skipping all]]>
+<![CDATA[skipping all]]>
+<![CDATA[skipping one]]>
+<![CDATA[this line should only be reached once (true)]]>
+  </system-err>
+</testsuite>

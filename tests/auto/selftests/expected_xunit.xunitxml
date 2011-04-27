@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="5" failures="3" tests="9" name="tst_Xunit">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testFunc1">
+    <!-- message="just a QWARN() !" type="warn" -->
+  </testcase>
+  <testcase result="fail" name="testFunc2">
+    <!-- message="a qDebug() call with comment&#x002D;ending stuff &#x002D;&#x002D;&gt;" type="qdebug" -->
+    <failure message="Compared values are not the same
+   Actual (2): 2
+   Expected (3): 3" result="fail"/>
+  </testcase>
+  <testcase name="testFunc3">
+    <!-- message="skipping this function!" type="skip" -->
+  </testcase>
+  <testcase result="fail" name="testFunc4">
+    <failure message="a forced failure!" result="fail"/>
+  </testcase>
+  <testcase result="xfail" name="testFunc5">
+    <!-- message="this failure is expected" type="info" -->
+  </testcase>
+  <testcase result="xfail" name="testFunc6">
+    <!-- message="this failure is also expected" type="info" -->
+  </testcase>
+  <testcase result="xpass" name="testFunc7">
+    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[just a QWARN() !]]>
+<![CDATA[a qDebug() call with comment-ending stuff -->]]>
+<![CDATA[skipping this function!]]>
+<![CDATA[this failure is expected]]>
+<![CDATA[this failure is also expected]]>
+  </system-err>
+</testsuite>

@@ -1,0 +1,6 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 63-->
+<![ignore[
+]]>
+<!--Negative test with pattern1 of P63-->
+<!--Case sensitive. ignore is used instead of IGNORE -->

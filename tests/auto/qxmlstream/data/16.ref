@@ -1,0 +1,6 @@
+StartDocument( documentVersion="1.0" documentEncoding="ISO8859-1" )
+DTD( text="
+<!DOCTYPE test >" dtdName="test" )
+StartElement( name="germanüumlaut" qualifiedName="germanüumlaut" )
+EndElement( name="germanüumlaut" qualifiedName="germanüumlaut" )
+EndDocument( )

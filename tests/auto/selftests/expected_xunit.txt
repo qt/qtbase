@@ -1,0 +1,25 @@
+********* Start testing of tst_Xunit *********
+Config: Using QTest library 4.6.4, Qt 4.6.4
+PASS   : tst_Xunit::initTestCase()
+WARNING: tst_Xunit::testFunc1() just a QWARN() !
+PASS   : tst_Xunit::testFunc1()
+QDEBUG : tst_Xunit::testFunc2() a qDebug() call with comment-ending stuff -->
+FAIL!  : tst_Xunit::testFunc2() Compared values are not the same
+   Actual (2): 2
+   Expected (3): 3
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(74)]
+SKIP   : tst_Xunit::testFunc3() skipping this function!
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(79)]
+FAIL!  : tst_Xunit::testFunc4() a forced failure!
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(84)]
+XFAIL  : tst_Xunit::testFunc5() this failure is expected
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(98)]
+PASS   : tst_Xunit::testFunc5()
+XFAIL  : tst_Xunit::testFunc6() this failure is also expected
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(104)]
+PASS   : tst_Xunit::testFunc6()
+XPASS  : tst_Xunit::testFunc7() 'true' returned FALSE. ()
+   Loc: [/local/user_builds/qt/4.6/tests/auto/selftests/xunit/tst_xunit.cpp(110)]
+PASS   : tst_Xunit::cleanupTestCase()
+Totals: 5 passed, 3 failed, 1 skipped
+********* Finished testing of tst_Xunit *********

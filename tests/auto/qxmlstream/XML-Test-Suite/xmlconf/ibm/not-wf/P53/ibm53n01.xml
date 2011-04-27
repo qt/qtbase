@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Missing DefaultDecl in AttDef *-->
+<!ATTLIST a attr1 CDATA >
+]>
+<root>Any content</root>
+
+

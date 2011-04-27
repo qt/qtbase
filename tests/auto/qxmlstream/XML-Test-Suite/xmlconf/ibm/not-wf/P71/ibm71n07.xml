@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* missing closing bracket  *-->
+<!ENTITY aaa "aString"
+
+]>
+<root>&aaa;</root>

@@ -1,0 +1,26 @@
+/* XPM */
+static const char *marble_xpm[] = {
+/* width height num_colors chars_per_pixel */
+"   240   240      223            2",
+/* colors */
+".. c #959595",
+".# c #c5c5c5",
+".a c #adadad",
+".b c #dedede",
+".c c #b7b7b7",
+".d c #d2d2d2",
+".e c #bebebe",
+".f c #c9c9c9",
+".g c #b8b8b8",
+".h c #d6d6d6",
+".i c #9e9e9e",
+".j c #eaeaea",
+".k c #b2b2b2",
+".l c #cecece",
+".m c #a5a5a5",
+".n c #e4e4e4",
+".o c #c4c4c4",
+".p c #d9d9d9",
+".q c #b1b1b1",
+/* pixels */
+"aYbla9aN.N#x",

@@ -1,0 +1,186 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+body {
+    background              : #aaaaaa;
+    padding                 : 1em;
+    font-family             : "Helvetica";
+    font-weight             : bold;
+}
+
+span {
+    background              : #ffffff;
+    font-weight             : bold;
+    cursor                  : pointer;
+}
+
+.items > div {
+    cursor                  : pointer;
+    background              : #ffffff;
+    height                  : 2em;
+    padding                 : 0.5em 0.5em 0.0em 0.5em;
+    border-radius           : 0.25em;
+    position                : absolute;
+    left                    : 1em;
+    right                   : 1em;
+    -webkit-transition-property         : -webkit-transform, top;
+    -webkit-transition-duration         : 0.5s, 0.5s;
+    -webkit-transition-delay            : 0s, 0.5s;
+    -webkit-transition-timing-function  : ease-in-out;
+}
+
+.hide {
+    -webkit-transform-origin            : bottom left;
+    -webkit-transform                   : skew(40deg) translate(140%,0em);
+}
+
+.items > div:after {
+    content                 : url(../img/icon_dismiss_x22.png);
+    float                   : right;
+}
+
+.row1 {
+    top                     : 3.5em;
+}
+.row2 {
+    top                     : 6.5em;
+}
+.row3 {
+    top                     : 9.5em;
+}
+.row4 {
+    top                     : 12.5em;
+}
+.row5 {
+    top                     : 15.5em;
+}
+.row6 {
+    top                     : 18.5em;
+}
+.row7 {
+    top                     : 21.5em;
+}
+.row8 {
+    top                     : 24.5em;
+}
+.row9 {
+    top                     : 27.5em;
+}
+.row10 {
+    top                     : 30.5em;
+}
+.row11 {
+    top                     : 33.5em;
+}
+.row12 {
+    top                     : 36.5em;
+}
+.row13 {
+    top                     : 39.5em;
+}
+.row14 {
+    top                     : 42.5em;
+}
+.row15 {
+    top                     : 45.5em;
+}
+
+.items > div {
+    padding-left            : 3.0em;
+    color                   : #444444;
+    background-size         : contain;
+    background-repeat       : no-repeat;
+}
+
+.items > div[title='cat1'] {
+    background-image            : url(../img/ic_fe_036.png);
+}
+
+.items > div[title='cat2'] {
+    background-image            : url(../img/ic_na_036.png);
+}
+
+.items > div[title='cat3'] {
+    background-image            : url(../img/ic_ni_036.png);
+}
+
+.items > div[title='cat4'] {
+    background-image            : url(../img/ic_mg_036.png);
+}
+
+nav {
+    position                : absolute;
+    background              : #aaaaaa;
+    top                     : 0;
+    left                    : 0;
+    right                   : 0;
+    z-index                 : 10;
+    height                  : 2em;
+    text-align              : center;
+    padding                 : 0.5em;
+}
+
+nav > div {
+    background-size         : contain;
+    background-repeat       : no-repeat;
+    display                 : inline-block;
+    width                   : 36px;
+    height                  : 36px;
+    margin-left             : 0.25em;
+    margin-right            : 0.25em;
+    background-image        : -webkit-gradient(linear,center top,center bottom,from(#ffffff),to(#eeeeee));
+}
+
+nav > div {
+    background-image            : url(../img/icon_list-all.png);
+}
+nav > .cat1 {
+    background-image            : url(../img/ic_fe_036.png);
+}
+nav > .cat2 {
+    background-image            : url(../img/ic_na_036.png);
+}
+nav > .cat3 {
+    background-image            : url(../img/ic_ni_036.png);
+}
+nav > .cat4 {
+    background-image            : url(../img/ic_mg_036.png);
+}
+

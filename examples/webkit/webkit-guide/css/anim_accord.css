@@ -1,0 +1,246 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+body {
+    background          : #aaaaaa;
+    font-family         : sans-serif;
+    width               : 100;
+}
+
+body > section {
+    border-radius       : 1em;
+    background          : #ffffff;
+    border-radius       : 1em;
+    padding             : 1em;
+    background          : #ffffff;
+    min-height          : 70%;
+}
+
+.hidden {
+    display             : none;
+}
+
+.active {
+    color               : blue;
+    cursor              : pointer;
+    text-decoration     : none;
+}
+
+.nav > a {
+    display             : inline-block;
+    width               : 48px;
+    height              : 48px;
+}
+
+h1, h2, h3, h4 {
+    margin-top          : 0.0em;
+    font-size           : smaller;
+    padding-top         : 1em;
+}
+
+body > section.main {
+    position            : absolute;
+    left                : 1em;
+    right               : 1em;
+    top                 : 1em;
+    min-height          : 50%;
+    border-radius       : 0.5em;
+    background          : #aaaaaa;
+    padding             : 0;
+}
+
+section.main > article {
+    background          : #ffffff;
+    padding             : 1em;
+    margin-bottom       : 10em;
+    border-radius       : 0.5em;
+}
+
+#accordion,
+#accordion > dt,
+#accordion > dd,
+{
+    display             : block;
+}
+
+#accordion > dt {
+    border-top          : thin solid #777777;
+}
+
+#accordion > dd {
+    border-bottom       : thin solid #777777;
+}
+
+#accordion > dd {
+    background-image    : -webkit-gradient(linear,center top,center bottom,from(#aaaaaa),to(#ffffff));
+}
+
+#accordion.collapsed {
+    background-size     : auto;
+    background-image    : url(../img/icon_expand-nav.png);
+    background-repeat   : no-repeat;
+    background-position : 0.25em 0.25em;
+}
+
+#accordion {
+    position        : absolute;;
+    right           : 2em;
+    top             : 0em;
+    overflow        : hidden;
+    background      : #ffffff;
+    cursor          : pointer;
+    z-index         : 100;
+    font-weight     : bold;
+}
+
+#accordion.expanded {
+    border          : thin solid #206ead;
+    width           : 80%;
+    height          : 90%;
+    -webkit-transition:
+        width 0.5s ease-in-out 0.0s,
+        height 0.5s ease-in-out 0.5s
+    ;
+}
+
+#accordion.collapsed {
+    width       : 15%;
+    height      : 9%;
+    -webkit-transition:
+        height 0.5s ease-in-out 0.0s,
+        width 0.5s ease-in-out 0.5s
+    ;
+}
+
+#accordion.collapsed > dt,
+#accordion.collapsed > dd {
+    -webkit-transform       : translate(100%);
+    -webkit-transition      : -webkit-transform 0.5s ease-in-out 0.5s;
+}
+
+#accordion.expanded > dt,
+#accordion.expanded > dd {
+    -webkit-transform       : translate(0%);
+    -webkit-transition      : -webkit-transform 0.5s ease-in-out 0.0s;
+}
+
+#accordion > dt > a {
+    margin-left             : 0.5em;
+}
+
+#accordion > dt ,
+#accordion > dd {
+    padding                 : 0.5em;
+}
+
+#accordion > dt ~ dd {
+    margin                  : 0;
+}
+
+#accordion > dd > ul,
+#accordion > dd > ul > li
+{
+    padding                 : 0;
+    margin                  : 0;
+}
+
+#accordion a,
+#accordion a:active,
+#accordion a:hover,
+#accordion a:visited
+{
+    text-decoration     : none;
+    color               : #000000;
+}
+
+#accordion > dt.expanded:before {
+    content                 : url(../img/icon_head-expanded_x13.png);
+}
+
+#accordion > dt.collapsed:before {
+    content                 : url(../img/icon_head-collapsed_x13.png);
+}
+
+#accordion > dt.expanded {
+    background-image        : -webkit-gradient(linear, center top, center bottom, from(#aaaaaa), to(#ffffff));
+}
+
+#accordion > dt.collapsed {
+    background-image        : -webkit-gradient(linear, center top, center bottom, from(#aaaaaa), to(#ffffff));
+}
+
+#accordion > dt + dd {
+    background              : #ffffff;
+    display                 : block;
+}
+
+#accordion dd {
+    overflow                : none;
+}
+
+#accordion > dt.collapsed + dd {
+    max-height              : 0%;
+    opacity                 : 0;
+    -webkit-transform       : scaleY(0);
+    -webkit-transition      : all 0.5s ease-in-out;
+}
+
+#accordion > dt.expanded + dd {
+    max-height              : 50%;
+    opacity                 : 1;
+    -webkit-transform       : scaleY(1);
+    -webkit-transition      : all 0.5s ease-in-out;
+}
+
+#accordion > dd  {
+    margin                  : 0;
+    padding                 : 0;
+}
+
+#accordion > dd > ul > li {
+    padding-top             : 0.25em;
+    padding-bottom          : 0.5em;
+    padding-left            : 1.0em;
+    padding-right           : 1.0em;
+}
+
+#accordion> dt.collapsed:last-of-type {
+    border-bottom           : thin solid #aaaaaa;
+}
+

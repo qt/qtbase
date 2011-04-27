@@ -1,0 +1,5 @@
+# Version: 1
+# CheckVsReference: 1% (0 0 800 800)
+
+setRenderHint LineAntialiasing
+import "linedashes2.qps"

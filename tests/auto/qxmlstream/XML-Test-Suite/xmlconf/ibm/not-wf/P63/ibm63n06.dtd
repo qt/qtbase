@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 63-->
+<![
+<!ELEMENT animal EMPTY>
+<!ELEMENT tiger EMPTY>
+[IGNORE
+]]>
+<!--Negative test with pattern6 of P63-->
+<!--Wrong Ordering. Ignore sect contents preceding IGNORE. -->

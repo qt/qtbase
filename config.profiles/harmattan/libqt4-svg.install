@@ -1,0 +1,4 @@
+usr/lib/libQtSvg.so.*
+usr/lib/qt4/plugins/iconengines/libqsvgicon.so
+usr/lib/qt4/plugins/imageformats/libqsvg.so
+

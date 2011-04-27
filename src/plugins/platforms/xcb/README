@@ -1,0 +1,3 @@
+Required packages:
+libxcb1 libxcb1-dev libx11-xcb1 libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-image0 libxcb-image0-dev libxcb-shm0 libxcb-shm0-dev libxcb-icccm1 libxcb-icccm1-dev libxcb-sync0 libxcb-sync0-dev
+

@@ -1,0 +1,8 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* wrong order *-->
+<!ENTITY pImage "image.jpg" SYSTEM>
+]>
+<root/>

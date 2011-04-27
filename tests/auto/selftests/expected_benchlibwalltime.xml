@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_BenchlibWalltime">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="waitForOneThousand">
+<BenchmarkResult metric="walltime" tag="" value="1005" iterations="1" />
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="waitForFourThousand">
+<BenchmarkResult metric="walltime" tag="" value="4008" iterations="1" />
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="qbenchmark_once">
+<BenchmarkResult metric="walltime" tag="" value="0" iterations="1" />
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

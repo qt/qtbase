@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<![
+<!ELEMENT tiger EMPTY>
+<!ELEMENT animal ANY>
+[INCLUDE
+]]>
+<!--Negative test with pattern6 of P62-->
+<!--Wrong Ordering. External subset declaration prior to the keyword INCLUDE-->

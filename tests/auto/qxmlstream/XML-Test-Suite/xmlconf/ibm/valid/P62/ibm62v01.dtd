@@ -1,0 +1,8 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<![INCLUDE[
+<!ELEMENT tiger EMPTY>
+<!ELEMENT animal ANY>
+]]>
+
+<!--positive test with pattern1 for P62-->

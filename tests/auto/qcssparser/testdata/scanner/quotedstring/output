@@ -1,0 +1,5 @@
+IDENT|background
+COLON|:
+S| 
+STRING|'test_bug.png'
+SEMICOLON|;

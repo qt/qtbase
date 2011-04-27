@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<confml:configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:confml="http://www.s60.com/xml/confml/2" xsi:schemaLocation="http://www.s60.com/xml/confml/2 http://www.s60.com/xml/confml/1#//confml2">
+    <confml:feature name="QT" ref="qt">
+        <confml:desc>QT settings</confml:desc>
+        <confml:setting name="QT enabled"
+                        ref="Enabled"
+                        type="boolean">
+            <confml:desc>To enable QT usage</confml:desc>
+        </confml:setting>
+    </confml:feature>
+    <confml:data>
+        <confml:qt>
+            <confml:Enabled>true</confml:Enabled>
+        </confml:qt>
+    </confml:data>
+</confml:configuration>

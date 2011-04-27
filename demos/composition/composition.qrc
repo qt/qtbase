@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res/composition">
+   <file>composition.cpp</file>
+   <file>composition.html</file>
+   <file>flower.jpg</file>
+   <file>flower_alpha.jpg</file>
+</qresource>
+</RCC>

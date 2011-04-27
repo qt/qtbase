@@ -1,0 +1,9 @@
+********* Start testing of tst_BenchlibTickCounter *********
+Config: Using QTest library 4.5.0, Qt 4.5.0
+PASS   : tst_BenchlibTickCounter::initTestCase()
+RESULT : tst_BenchlibTickCounter::threeBillionTicks():
+     3,000,000,000 ticks per iteration (total: 3000000000, iterations: 1)
+PASS   : tst_BenchlibTickCounter::threeBillionTicks()
+PASS   : tst_BenchlibTickCounter::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_BenchlibTickCounter *********

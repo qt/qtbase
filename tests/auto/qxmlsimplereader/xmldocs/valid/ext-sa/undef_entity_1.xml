@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE foo SYSTEM "foo.dtd" [
+    <!ENTITY def "foo">
+]>
+<foo>
+    <!-- check that the call to skippedEntity() is inserted in the right place -->
+    <a>abc&undef;gh</a>
+    <b>&undef;gh</b>
+    <c>abc&undef;</c>
+    <d>&undef;</d>
+    <e>&undef;&def;&undef;&def;</e>
+    <e>a&undef;b&def;c&undef;d&def;e</e>
+</foo>

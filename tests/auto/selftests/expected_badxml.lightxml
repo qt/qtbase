@@ -1,0 +1,55 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="badDataTag">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/badxml/tst_badxml.cpp" line="109">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[a message]]></Description>
+</Message>
+    <Description><![CDATA[a failure]]></Description>
+<BenchmarkResult metric="Events" tag="end cdata ]]&gt; text ]]&gt; more text" value="0" iterations="1" />
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[a message]]></Description>
+</Message>
+    <Description><![CDATA[a failure]]></Description>
+<BenchmarkResult metric="Events" tag="quotes &quot; text&quot; more text" value="0" iterations="1" />
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[a message]]></Description>
+</Message>
+    <Description><![CDATA[a failure]]></Description>
+<BenchmarkResult metric="Events" tag="xml close &gt; open &lt; tags &lt; text" value="0" iterations="1" />
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[a message]]></Description>
+</Message>
+    <Description><![CDATA[a failure]]></Description>
+<BenchmarkResult metric="Events" tag="all &gt; &quot; mixed ]]&gt; up &gt; &quot; in &lt; the ]]&gt; hopes &lt; of triggering &quot;&lt; ]]&gt; bugs" value="0" iterations="1" />
+</Incident>
+</TestFunction>
+<TestFunction name="badMessage">
+<Incident type="pass" file="" line="0">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[end cdata ]]]><![CDATA[]> text ]]]><![CDATA[]> more text]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[quotes " text" more text]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[xml close > open < tags < text]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[all > " mixed ]]]><![CDATA[]> up > " in < the ]]]><![CDATA[]> hopes < of triggering "< ]]]><![CDATA[]> bugs]]></Description>
+</Message>
+</Incident>
+</TestFunction>
+<TestFunction name="failWithNoFile">
+<Incident type="fail" file="" line="0">
+    <Description><![CDATA[failure message]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

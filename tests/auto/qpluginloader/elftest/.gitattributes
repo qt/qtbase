@@ -1,0 +1,10 @@
+corrupt1.elf64.so   set  -crlf -diff
+corrupt2.elf64.so  set  -crlf -diff
+corrupt3.elf64.so  set  -crlf -diff
+debugobj.so  set  -crlf -diff
+garbage1.so  set  -crlf -diff
+garbage2.so  set  -crlf -diff
+garbage3.so  set  -crlf -diff
+garbage4.so  set  -crlf -diff
+garbage5.so set  -crlf -diff
+

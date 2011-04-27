@@ -1,0 +1,6 @@
+qt4-acceptance-tests: unknown-control-file digsigsums
+qt4-acceptance-tests: file-in-unusual-dir usr/tests/qt4/tst_qdbusconnection
+qt4-acceptance-tests: file-in-unusual-dir usr/tests/qt4/tst_qhash
+qt4-acceptance-tests: file-in-unusual-dir usr/tests/qt4/tst_qlist
+qt4-acceptance-tests: file-in-unusual-dir usr/tests/qt4/tst_qmap
+qt4-acceptance-tests: non-standard-dir-in-usr usr/tests/

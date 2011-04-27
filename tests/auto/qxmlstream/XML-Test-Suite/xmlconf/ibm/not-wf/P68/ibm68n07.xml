@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* Entity referenced before declared *-->
+<!ATTLIST root att1 CDATA "&aaa;">
+<!ENTITY aaa "aString">
+]>
+<root/>

@@ -1,0 +1,144 @@
+# Version: 1
+# CheckVsReference: 2% (0 0 600 750)
+
+path_addRect path 400 0 80 80
+path_addEllipse path 440 40 60 60
+
+setRenderHint Antialiasing
+
+setPen black
+
+begin_block gradients
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setLinear 20 20 70 70
+drawRect 0 0 100 100
+
+gradient_setSpread ReflectSpread
+gradient_setLinear 120 20 170 70
+drawEllipse 100 0 100 100
+
+gradient_setSpread RepeatSpread
+gradient_setLinear 220 20 270 70
+drawRoundRect 200 0 100 100
+
+gradient_clearStops
+gradient_appendStop 0   3f7f7fff
+gradient_appendStop 0.5 dfdfffff
+gradient_appendStop 1   7f00007f
+
+gradient_setSpread PadSpread
+gradient_setLinear 320 20 340 40
+drawPolygon [300 0 390 0 350 99]
+
+gradient_setSpread ReflectSpread
+gradient_setLinear 420 20 440 40
+drawPath path
+
+gradient_setSpread RepeatSpread
+gradient_setLinear 520 20 540 40
+drawPie 500 0 100 100 720 4320
+end_block
+
+translate 0 100
+scale 1 2
+repeat_block gradients
+
+resetMatrix
+translate 0 300
+brushTranslate 30 0
+brushScale 0.9 0.9
+brushRotate 20
+repeat_block gradients
+
+# Vertical gradient tests
+resetMatrix
+setBrush noBrush
+translate 0 400
+
+begin_block vertical_gradients
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setLinear 20 20 20 70
+drawRect 0 0 100 100
+
+gradient_setSpread ReflectSpread
+gradient_setLinear 120 20 120 70
+drawEllipse 100 0 100 100
+
+gradient_setSpread RepeatSpread
+gradient_setLinear 220 20 220 70
+drawRoundRect 200 0 100 100
+
+gradient_clearStops
+gradient_appendStop 0   3f7f7fff
+gradient_appendStop 0.5 dfdfffff
+gradient_appendStop 1   7f00007f
+
+gradient_setSpread PadSpread
+gradient_setLinear 320 20 320 40
+drawPolygon [300 0 390 0 350 99]
+
+gradient_setSpread ReflectSpread
+gradient_setLinear 420 20 420 40
+drawPath path
+
+gradient_setSpread RepeatSpread
+gradient_setLinear 520 20 520 40
+drawPie 500 0 100 100 720 4320
+end_block
+
+translate 0 100
+scale 1 1.5
+repeat_block vertical_gradients
+
+resetMatrix
+translate 0 650
+brushTranslate 30 0
+brushScale 0.9 0.9
+brushRotate 20
+repeat_block vertical_gradients
+
+# Some helpful info perhaps?
+resetMatrix
+setPen black
+# gradient line indicators
+drawLine 20 20 70 70
+drawLine 120 20 170 70
+drawLine 220 20 270 70
+drawLine 320 20 340 40
+drawLine 420 20 440 40
+drawLine 520 20 540 40
+
+drawLine 20 140 70 240
+drawLine 120 140 170 240
+drawLine 220 140 270 240
+drawLine 320 140 340 180
+drawLine 420 140 440 180
+drawLine 520 140 540 180
+
+drawText 610 50 "No XForm"
+drawText 610 200 "scale 1x2"
+drawText 610 350 "brush transform"
+drawText 610 450 "vertical brush"
+drawText 610 570 "vertical brush scale 1x1.5"
+drawText 610 700 "vertical brush transform"
+
+drawText 10 780 "Pad"
+drawText 110 780 "Reflect"
+drawText 210 780 "Repeat"
+drawText 310 780 "Pad w/alpha"
+drawText 410 780 "Reflect w/alpha"
+drawText 510 780 "Repeat w/alpha"

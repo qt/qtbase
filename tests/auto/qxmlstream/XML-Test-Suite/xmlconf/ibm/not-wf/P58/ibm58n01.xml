@@ -1,0 +1,13 @@
+<?xml  version="1.0"?>
+<!-- syntax test for Production 58-->
+<!DOCTYPE test
+ [
+ <!ELEMENT test ANY>
+ <!ELEMENT one EMPTY>
+ <!NOTATION this SYSTEM "alpha">
+ <!ATTLIST one attr notation (this) #IMPLIED>
+ ]>
+ <test>
+This is a Negative test with notation (name) 
+It is case sensitive.
+</test>

@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* missing closing bracket  *-->
+<!ENTITY % paaa "<!-- comments -->"
+%paaa;
+]>
+<root/>

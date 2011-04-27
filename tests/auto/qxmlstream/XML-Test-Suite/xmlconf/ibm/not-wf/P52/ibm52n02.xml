@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Missing white space after 'ATTLIST' *-->
+<!ATTLISTa attr1 ID #REQUIRED >
+]>
+<root>Any content</root>

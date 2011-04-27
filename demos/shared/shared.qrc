@@ -1,0 +1,39 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res">
+   <file>images/button_normal_cap_left.png</file>
+   <file>images/button_normal_cap_right.png</file>
+   <file>images/button_normal_stretch.png</file>
+   <file>images/button_pressed_cap_left.png</file>
+   <file>images/button_pressed_cap_right.png</file>
+   <file>images/button_pressed_stretch.png</file>
+   <file>images/radiobutton-on.png</file>
+   <file>images/radiobutton_on.png</file>
+   <file>images/radiobutton_off.png</file>
+   <file>images/slider_bar.png</file>
+   <file>images/slider_thumb_on.png</file>
+   <file>images/groupframe_topleft.png</file>
+   <file>images/groupframe_topright.png</file>
+   <file>images/groupframe_bottom_left.png</file>
+   <file>images/groupframe_bottom_right.png</file>
+   <file>images/groupframe_top_stretch.png</file>
+   <file>images/groupframe_bottom_stretch.png</file>
+   <file>images/groupframe_left_stretch.png</file>
+   <file>images/groupframe_right_stretch.png</file>
+   <file>images/frame_topleft.png</file>
+   <file>images/frame_topright.png</file>
+   <file>images/frame_bottomleft.png</file>
+   <file>images/frame_bottomright.png</file>
+   <file>images/frame_left.png</file>
+   <file>images/frame_top.png</file>
+   <file>images/frame_right.png</file>
+   <file>images/frame_bottom.png</file>
+   <file>images/title_cap_left.png</file>
+   <file>images/title_cap_right.png</file>
+   <file>images/title_stretch.png</file>
+   <file>images/line_dash_dot.png</file>
+   <file>images/line_dotted.png</file>
+   <file>images/line_dashed.png</file>
+   <file>images/line_solid.png</file>
+   <file>images/line_dash_dot_dot.png</file>
+</qresource>
+</RCC>

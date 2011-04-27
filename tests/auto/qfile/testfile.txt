@@ -1,0 +1,6 @@
+----------------------------------------------------------
+DO NOT CHANGE ANY CONTENT OR ACCESS RIGHTS OF THIS FILE!!!
+----------------------------------------------------------
+
+This demo file has only six lines
+and a size of exactly 245 Bytes.

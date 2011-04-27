@@ -1,0 +1,14 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* indirect recursive entity reference *-->
+<!ENTITY aaa "&bbb;">
+<!ENTITY bbb "&ccc;">
+<!ENTITY ccc "&ddd;">
+<!ENTITY ddd "&eee;">
+<!ENTITY eee "&aaa;">
+]>
+<root>&aaa;</root>
+
+

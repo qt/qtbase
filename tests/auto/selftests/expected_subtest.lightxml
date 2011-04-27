@@ -1,0 +1,49 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="test1">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="test2">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="test3">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="157">
+    <Description><![CDATA[Compared values are not the same
+   Actual (str): hello1
+   Expected (QString("hello0")): hello0]]></Description>
+    <Description><![CDATA[Compared values are not the same
+   Actual (str): hello2
+   Expected (QString("hello0")): hello0]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="floatComparisons">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="167">
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual (operandLeft): 1
+   Expected (operandRight): 3]]></Description>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual (operandLeft): 1e-07
+   Expected (operandRight): 3e-07]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="compareFloatTests">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="206">
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1
+   Expected (t3): 3]]></Description>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1e-07
+   Expected (t3): 3e-07]]></Description>
+    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1e+07
+   Expected (t3): 3e+07]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

@@ -1,0 +1,44 @@
+# Version: 1
+# CheckVsReference: 5%
+
+drawText 75 20 "Linear"
+drawText 176 20 "Radial"
+drawText 277 20 "Conical"
+translate 0 30
+drawText 0 50 "AA off"
+drawText 0 151 "AA on"
+
+setPen nopen
+
+gradient_clearStops
+gradient_appendStop 0     0x00000000
+gradient_appendStop 0.001 red
+gradient_appendStop 0.2   blue
+gradient_appendStop 0.4   yellow
+gradient_appendStop 0.6   cyan
+gradient_appendStop 0.8   green
+gradient_appendStop 0.999 red
+gradient_appendStop 1     0x00000000
+
+gradient_setSpread PadSpread
+gradient_setCoordinateMode ObjectBoundingMode
+
+begin_block row
+save
+gradient_setLinear 0.1 0.0 0.9 0.0
+drawRect 50 0 100 100
+
+gradient_setRadial 0.5 0.5 0.5 0.5 0.5
+translate 101 0
+drawRect 50 0 100 100
+
+gradient_setConical 0.5 0.5 45
+translate 101 0
+drawRect 50 0 100 100
+restore
+end_block row
+
+setRenderHint Antialiasing
+
+translate 0 101
+repeat_block row

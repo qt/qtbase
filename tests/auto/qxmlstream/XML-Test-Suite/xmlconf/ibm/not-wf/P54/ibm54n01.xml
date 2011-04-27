@@ -1,0 +1,11 @@
+<?xml  version="1.0"?>
+<!-- test for Production 54-->
+<!DOCTYPE AttrType
+[
+<!ELEMENT AttrType ANY>
+<!ELEMENT a EMPTY>
+<!ATTLIST a att BOGUSATTR #IMPLIED> 
+]>
+<AttrType>
+Giving a Bogus attribute. 
+</AttrType>

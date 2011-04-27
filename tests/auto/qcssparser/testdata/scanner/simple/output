@@ -1,0 +1,9 @@
+IDENT|p
+LBRACE| {
+S| 
+IDENT|display
+COLON|:
+IDENT|block
+SEMICOLON|;
+S| 
+RBRACE|}

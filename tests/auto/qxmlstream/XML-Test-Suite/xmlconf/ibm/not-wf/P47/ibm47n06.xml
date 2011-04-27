@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Wrong keyword: ^  in children *-->
+<!ELEMENT aElement (a,a)^ >
+]>
+<root>Any content</root>

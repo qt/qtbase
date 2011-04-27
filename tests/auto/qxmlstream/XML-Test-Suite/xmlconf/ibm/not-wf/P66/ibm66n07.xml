@@ -1,0 +1,7 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root EMPTY>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY aaa "wrong charater reference: &#x0=2f;">
+]>
+<root/>

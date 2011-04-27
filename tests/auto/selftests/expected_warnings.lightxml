@@ -1,0 +1,43 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="testWarnings">
+<Incident type="pass" file="" line="0">
+<Message type="qwarn" file="" line="0">
+    <Description><![CDATA[Warning]]></Description>
+</Message>
+<Message type="qwarn" file="" line="0">
+    <Description><![CDATA[Warning]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Debug]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Debug]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Baba]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Baba]]></Description>
+</Message>
+</Incident>
+</TestFunction>
+<TestFunction name="testMissingWarnings">
+<Incident type="fail" file="" line="0">
+<Message type="info" file="" line="0">
+    <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
+</Message>
+<Message type="info" file="" line="0">
+    <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
+</Message>
+    <Description><![CDATA[Not all expected messages were received]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

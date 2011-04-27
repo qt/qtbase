@@ -1,0 +1,21 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Colon in ID attribute name " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo id  ID #IMPLIED
+              ref IDREF #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" qualifiedName="foo"
+    Attribute( name="ref" qualifiedName="ref" value="a:b" )
+ )
+Characters( whitespace text="
+ " )
+StartElement( name="foo" qualifiedName="foo"
+    Attribute( name="id" qualifiedName="id" value="a:b" )
+ )
+EndElement( name="foo" qualifiedName="foo" )
+Characters( whitespace text="
+" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

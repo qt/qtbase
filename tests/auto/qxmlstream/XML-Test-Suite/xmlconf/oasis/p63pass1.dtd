@@ -1,0 +1,13 @@
+<!ELEMENT doc EMPTY>
+<![IGNORE[
+<![INCLUDE[
+<!ELEMENT doc
+]]>]]>
+<![
+IGNORE
+[
+]]>
+<![IGNORE[]]>
+<![IGNORE[ ]]>
+<![IGNORE[
+]]>

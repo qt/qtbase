@@ -1,0 +1,6 @@
+<!DOCTYPE doc
+[
+<!ELEMENT doc EMPTY>
+<!ENTITY % ent1 'a">
+]>
+<doc/>

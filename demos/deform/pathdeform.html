@@ -1,0 +1,24 @@
+<html>
+<center>
+<h2>Vector deformation</h2>
+</center>
+
+<p>This demo shows how to use advanced vector techniques to draw text 
+using a <code>QPainterPath</code>.</p>
+
+<p>We define a vector deformation field in the shape of a lens and apply
+this to all points in a path. This means that what is rendered on
+screen is not pixel manipulation, but modified vector representations of
+the glyphs themselves. This is visible from the high quality of the
+antialiased edges for the deformed glyphs.</p>
+
+<p>To get a fairly complex path we allow the user to type in text and
+convert the text to paths. This is done using the
+<code>QPainterPath::addText()</code> function.</p>
+
+<p>The lens is drawn using a single call to <code>drawEllipse()</code>, using
+a <code>QRadialGradient</code> to fill it with a specialized color table,
+giving the effect of the Sun's reflection and a drop shadow. The lens
+is cached as a pixmap for better performance.</p>
+
+</html>

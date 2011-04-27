@@ -1,0 +1,5 @@
+<?xml encoding='UTF-8'?>
+<![INCLUDE [
+<!ELEMENT root ANY>
+<!ENTITY e SYSTEM "ibm77n15.ent">
+]]>

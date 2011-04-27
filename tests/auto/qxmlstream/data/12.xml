@@ -1,0 +1,8 @@
+<!DOCTYPE doc
+[
+<!NOTATION not1 PUBLIC "0123456789-()+,.'/:=?;!*#@$_%">
+<!NOTATION not2 PUBLIC "'">
+<!NOTATION not3 PUBLIC "asd">
+<!NOTATION not4 PUBLIC 'asd'>
+]>
+<doc/>

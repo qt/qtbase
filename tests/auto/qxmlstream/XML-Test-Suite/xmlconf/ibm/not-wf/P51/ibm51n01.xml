@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!ELEMENT b ANY>
+<!--* wrong keyword : #pcdata in Mixed  *-->
+<!ELEMENT aElement (#pcdata)* >
+]>
+<root>Any content</root>

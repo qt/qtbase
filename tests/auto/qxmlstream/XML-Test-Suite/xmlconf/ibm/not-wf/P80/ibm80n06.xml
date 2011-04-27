@@ -1,0 +1,8 @@
+<?xml version="1.0" Encoding="UTF-8"?>
+<!--* Wrong keyword Encoding in above EncodingDecl *-->
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+]>
+<root/>

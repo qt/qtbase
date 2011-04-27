@@ -1,0 +1,6 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/trolltech/styles/s60style">
+        <file>images/defaults60theme.blob</file>
+    </qresource>
+</RCC>

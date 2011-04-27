@@ -1,0 +1,19 @@
+StartDocument( documentVersion="1.0" )
+DTD( text="
+<!DOCTYPE doc [
+<!ELEMENT doc (#PCDATA)>
+<!ENTITY % e SYSTEM "something">
+%e;
+<!ENTITY not "not">
+<!ENTITY me "me">
+]>" dtdName="doc"
+    EntityDeclaration( name="e" systemId="something" )
+ )
+StartElement( name="doc" qualifiedName="doc"
+    Attribute( name="a" qualifiedName="a" value="do &not; replace me" )
+ )
+Characters( text="and " )
+EntityReference( name="me" )
+Characters( text=" neither" )
+EndElement( name="doc" qualifiedName="doc" )
+EndDocument( )

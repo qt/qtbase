@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_Skip">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="test">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="68">
+    <Description><![CDATA[skipping all]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="emptytest">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="78">
+    <Description><![CDATA[skipping all]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="singleSkip">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="97">
+    <DataTag><![CDATA[local 1]]></DataTag>
+    <Description><![CDATA[skipping one]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[local 2]]></DataTag>
+    <Description><![CDATA[this line should only be reached once (true)]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

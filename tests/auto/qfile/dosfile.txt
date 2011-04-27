@@ -1,0 +1,14 @@
+/dev/system/root     /                    reiserfs   acl,user_xattr        1 1
+/dev/sda1            /boot                ext3       acl,user_xattr        1 2
+/dev/system/home     /home                reiserfs   acl,user_xattr        1 2
+/dev/system/temp     /tmp                 reiserfs   acl,user_xattr        1 2
+/dev/sda2            swap                 swap       pri=42                0 0
+devpts               /dev/pts             devpts     mode=0620,gid=5       0 0
+proc                 /proc                proc       defaults              0 0
+usbfs                /proc/bus/usb        usbfs      noauto                0 0
+sysfs                /sys                 sysfs      noauto                0 0
+/dev/dvd             /media/dvd           subfs      noauto,fs=cdfss,ro,procuid,nosuid,nodev,exec,iocharset=utf8 0 0
+/dev/fd0             /media/floppy        subfs      noauto,fs=floppyfss,procuid,nodev,nosuid,sync 0 0
+/dev/sdb2            /media/ipod          subfs      noauto,rw,noexec,nosuid,nodev,sync,procuid,user,iocharset=utf8 1 2
+/dev/sdc1	     /media/usbkey	  vfat       rw,nosuid,nodev,sync,procuid,user 1 2
+

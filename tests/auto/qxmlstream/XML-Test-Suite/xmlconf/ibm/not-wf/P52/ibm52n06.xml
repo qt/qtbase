@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Wrong begining sequence in AttlistDecl *-->
+<ATTLIST a attr1 CDATA "default">
+]>
+<root>Any content</root>

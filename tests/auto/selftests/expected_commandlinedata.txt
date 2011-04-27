@@ -1,0 +1,24 @@
+********* Start testing of tst_DataTable *********
+Config: Using QTest library 4.5.0, Qt 4.5.0
+INFO   : tst_DataTable::initTestCase() entering
+PASS   : tst_DataTable::initTestCase()
+INFO   : tst_DataTable::fiveTablePasses() entering
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data1) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data2) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data3) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data4) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data5) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+PASS   : tst_DataTable::fiveTablePasses()
+INFO   : tst_DataTable::fiveTablePasses() entering
+INFO   : tst_DataTable::fiveTablePasses(fiveTablePasses_data1) QVERIFY(test)
+   Loc: [tst_commandlinedata.cpp(30)]
+PASS   : tst_DataTable::fiveTablePasses()
+INFO   : tst_DataTable::cleanupTestCase() entering
+PASS   : tst_DataTable::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped
+********* Finished testing of tst_DataTable *********

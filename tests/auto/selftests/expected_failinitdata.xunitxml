@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" tests="1" name="tst_FailInitData">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="fail" name="initTestCase">
+    <failure message="&apos;false&apos; returned FALSE. ()" result="fail"/>
+  </testcase>
+  <system-err/>
+</testsuite>

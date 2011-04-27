@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY % paaa "a string">
+]>
+<root>
+<!ATTLIST root attr1 ID #IMPLIED>
+</root>
+<!--* AttlistDecl in content -->

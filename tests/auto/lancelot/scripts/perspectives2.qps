@@ -1,0 +1,309 @@
+# Version: 1
+
+setRenderHint Antialiasing
+
+image_load zebra.png zebra_png
+
+image_convertToFormat zebra_png zebra ARGB32_Premultiplied
+
+translate 75 100
+# standard draw
+begin_block row
+drawImage zebra -50 -50
+
+translate 90 0
+save
+rotate_y 50
+drawImage zebra -50 -50
+restore
+
+translate 65 0
+save
+rotate_y 60
+drawImage zebra -50 -50
+restore
+
+translate 50 0
+save
+rotate_y 70
+drawImage zebra -50 -50
+restore
+
+translate 30 0
+save
+rotate_y 80
+drawImage zebra -50 -50
+restore
+
+translate 24 0
+save
+rotate_y 82
+drawImage zebra -50 -50
+restore
+
+translate 20 0
+save
+rotate_y 84
+drawImage zebra -50 -50
+restore
+
+translate 16 0
+save
+rotate_y 86
+drawImage zebra -50 -50
+restore
+
+translate 12 0
+save
+rotate_y 87
+drawImage zebra -50 -50
+restore
+
+translate 8 0
+save
+rotate_y 88
+drawImage zebra -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 89
+drawImage zebra -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 91
+drawImage zebra -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 92
+drawImage zebra -50 -50
+restore
+
+translate 8 0
+save
+rotate_y 93
+drawImage zebra -50 -50
+restore
+
+translate 12 0
+save
+rotate_y 94
+drawImage zebra -50 -50
+restore
+
+translate 16 0
+save
+rotate_y 96
+drawImage zebra -50 -50
+restore
+
+translate 20 0
+save
+rotate_y 98
+drawImage zebra -50 -50
+restore
+
+translate 24 0
+save
+rotate_y 100
+drawImage zebra -50 -50
+restore
+
+translate 30 0
+save
+rotate_y 110
+drawImage zebra -50 -50
+restore
+
+translate 50 0
+save
+rotate_y 120
+drawImage zebra -50 -50
+restore
+
+translate 65 0
+save
+rotate_y 130
+drawImage zebra -50 -50
+restore
+
+translate 90 0
+save
+rotate_y 180
+drawImage zebra -50 -50
+restore
+end_block
+
+resetMatrix
+translate 75 280
+setRenderHint SmoothPixmapTransform
+repeat_block row
+
+resetMatrix
+setPen black
+translate 300 20
+drawText 0 0 "Fast Pixmap Transform"
+resetMatrix
+translate 300 210
+drawText 0 0 "Smooth Pixmap Transform"
+
+resetMatrix
+translate 0 400
+
+image_load dome_argb32.png the_pixmap
+
+image_convertToFormat the_pixmap dome ARGB32
+
+setRenderHint SmoothPixmapTransform false
+
+translate 75 100
+# standard draw
+begin_block row
+drawImage dome -50 -50
+
+translate 90 0
+save
+rotate_y 50
+drawImage dome -50 -50
+restore
+
+translate 65 0
+save
+rotate_y 60
+drawImage dome -50 -50
+restore
+
+translate 50 0
+save
+rotate_y 70
+drawImage dome -50 -50
+restore
+
+translate 30 0
+save
+rotate_y 80
+drawImage dome -50 -50
+restore
+
+translate 24 0
+save
+rotate_y 82
+drawImage dome -50 -50
+restore
+
+translate 20 0
+save
+rotate_y 84
+drawImage dome -50 -50
+restore
+
+translate 16 0
+save
+rotate_y 86
+drawImage dome -50 -50
+restore
+
+translate 12 0
+save
+rotate_y 87
+drawImage dome -50 -50
+restore
+
+translate 8 0
+save
+rotate_y 88
+drawImage dome -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 89
+drawImage dome -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 91
+drawImage dome -50 -50
+restore
+
+translate 6 0
+save
+rotate_y 92
+drawImage dome -50 -50
+restore
+
+translate 8 0
+save
+rotate_y 93
+drawImage dome -50 -50
+restore
+
+translate 12 0
+save
+rotate_y 94
+drawImage dome -50 -50
+restore
+
+translate 16 0
+save
+rotate_y 96
+drawImage dome -50 -50
+restore
+
+translate 20 0
+save
+rotate_y 98
+drawImage dome -50 -50
+restore
+
+translate 24 0
+save
+rotate_y 100
+drawImage dome -50 -50
+restore
+
+translate 30 0
+save
+rotate_y 110
+drawImage dome -50 -50
+restore
+
+translate 50 0
+save
+rotate_y 120
+drawImage dome -50 -50
+restore
+
+translate 65 0
+save
+rotate_y 130
+drawImage dome -50 -50
+restore
+
+translate 90 0
+save
+rotate_y 180
+drawImage dome -50 -50
+restore
+end_block
+
+resetMatrix
+translate 0 400
+translate 75 280
+setRenderHint SmoothPixmapTransform
+repeat_block row
+
+resetMatrix
+setPen black
+translate 0 400
+translate 300 20
+drawText 0 0 "Fast Pixmap Transform"
+resetMatrix
+translate 0 400
+translate 300 210
+drawText 0 0 "Smooth Pixmap Transform"

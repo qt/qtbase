@@ -1,0 +1,13 @@
+#!/bin/bash
+
+logfile=baselineserver.log
+
+while true; do
+        echo >> $logfile
+        echo -n "***RESTARTING*** " >> $logfile
+	date >> $logfile
+
+	./baselineserver 2>&1 | tee -a $logfile
+
+	sleep 2
+done

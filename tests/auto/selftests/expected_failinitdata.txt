@@ -1,0 +1,6 @@
+********* Start testing of tst_FailInitData *********
+Config: Using QTest library 4.4.0, Qt 4.4.0
+FAIL!  : tst_FailInitData::initTestCase() 'false' returned FALSE. ()
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/failinitdata/tst_failinitdata.cpp(23)]
+Totals: 0 passed, 1 failed, 0 skipped
+********* Finished testing of tst_FailInitData *********

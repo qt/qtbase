@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Wrong keyword: Any in contentspec *-->
+<!ELEMENT aElement Any>
+]>
+<root>Any content</root>

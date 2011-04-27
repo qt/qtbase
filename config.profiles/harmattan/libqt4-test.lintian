@@ -1,0 +1,2 @@
+libqt4-test: package-name-doesnt-match-sonames libQtTest4
+libqt4-test: unknown-control-file digsigsums

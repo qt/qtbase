@@ -1,0 +1,70 @@
+; Language
+&EN
+
+
+; SIS header: name, uid, version
+#{"Qt"},(0x2001E61C),4,8,0
+
+
+; Manual PKG pre-rules from PRO files
+; Default HW/platform dependencies
+
+; Localised Vendor name
+%{"Nokia, Qt"}
+
+; Unique Vendor name
+:"Nokia, Qt"
+
+; Dependencies of Qt libraries
+
+"" - "z:\sys\bin\QtCore.dll"
+"" - "z:\sys\bin\QtXml.dll"
+"" - "z:\sys\bin\QtGui.dll"
+"" - "z:\sys\bin\QtNetwork.dll"
+"" - "z:\sys\bin\QtTest.dll"
+"" - "z:\sys\bin\QtSql.dll"
+"" - "z:\sys\bin\QtSvg.dll"
+"" - "z:\sys\bin\phonon.dll"
+"" - "z:\sys\bin\QtScript.dll"
+"" - "z:\sys\bin\QtXmlPatterns.dll"
+"" - "z:\sys\bin\QtDeclarative.dll"
+"" - "z:\sys\bin\QtOpenVG.dll"
+"" - "z:\sys\bin\QtOpenGL.dll"
+"" - "z:\sys\bin\QtMultimedia.dll"
+"" - "z:\private\10202D56\import\packages\2001E61C\backup_registration.xml"
+"" - "z:\sys\bin\qjpeg.dll"
+"" - "z:\resource\qt\plugins\imageformats\qjpeg.qtplugin"
+"" - "z:\sys\bin\qgif.dll"
+"" - "z:\resource\qt\plugins\imageformats\qgif.qtplugin"
+"" - "z:\sys\bin\qmng.dll"
+"" - "z:\resource\qt\plugins\imageformats\qmng.qtplugin"
+"" - "z:\sys\bin\qtiff.dll"
+"" - "z:\resource\qt\plugins\imageformats\qtiff.qtplugin"
+"" - "z:\sys\bin\qico.dll"
+"" - "z:\resource\qt\plugins\imageformats\qico.qtplugin"
+"" - "z:\sys\bin\qsvg.dll"
+"" - "z:\resource\qt\plugins\imageformats\qsvg.qtplugin"
+"" - "z:\sys\bin\qcncodecs.dll"
+"" - "z:\resource\qt\plugins\codecs\qcncodecs.qtplugin"
+"" - "z:\sys\bin\qjpcodecs.dll"
+"" - "z:\resource\qt\plugins\codecs\qjpcodecs.qtplugin"
+"" - "z:\sys\bin\qtwcodecs.dll"
+"" - "z:\resource\qt\plugins\codecs\qtwcodecs.qtplugin"
+"" - "z:\sys\bin\qkrcodecs.dll"
+"" - "z:\resource\qt\plugins\codecs\qkrcodecs.qtplugin"
+"" - "z:\sys\bin\qvggraphicssystem.dll"
+"" - "z:\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin"
+"" - "z:\sys\bin\qglgraphicssystem.dll"
+"" - "z:\resource\qt\plugins\graphicssystems\qglgraphicssystem.qtplugin"
+"" - "z:\sys\bin\qsvgicon.dll"
+"" - "z:\resource\qt\plugins\iconengines\qsvgicon.qtplugin"
+"" - "z:\sys\bin\qmlfolderlistmodelplugin.dll"
+"" - "z:\resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin"
+"" - "z:\resource\qt\imports\Qt\labs\folderlistmodel\qmldir"
+"" - "z:\sys\bin\qmlgesturesplugin.dll"
+"" - "z:\resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin"
+"" - "z:\resource\qt\imports\Qt\labs\gestures\qmldir"
+"" - "z:\sys\bin\qmlparticlesplugin.dll"
+"" - "z:\resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin"
+"" - "z:\resource\qt\imports\Qt\labs\particles\qmldir"
+

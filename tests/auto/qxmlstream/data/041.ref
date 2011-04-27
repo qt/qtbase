@@ -1,0 +1,20 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Attribute uniqueness: prefixed and unprefixed attributes with same
+     local name, element in same namespace as prefixed attribute " )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
+ )
+Characters( whitespace text="
+
+" )
+StartElement( name="bar" namespaceUri="http://example.org/~wilbur" qualifiedName="a:bar" prefix="a"
+    Attribute( name="attr" namespaceUri="http://example.org/~wilbur" qualifiedName="a:attr" prefix="a" value="1" )
+
+    Attribute( name="attr" qualifiedName="attr" value="2" )
+ )
+EndElement( name="bar" namespaceUri="http://example.org/~wilbur" qualifiedName="a:bar" )
+Characters( whitespace text="
+
+" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

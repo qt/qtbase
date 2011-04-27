@@ -1,0 +1,47 @@
+commit b2d4d498faa3c532372838ffa287906fdafdc3c6
+Author: Eckhart Koppen <eckhart.koppen@nokia.com>
+Date:   Fri Nov 19 17:31:36 2010 +0200
+
+    Added -listgen option (not functional!) temporarily
+
+diff --git a/qmake/option.cpp b/qmake/option.cpp
+index 27e7c18..1c52d0f 100644
+--- a/qmake/option.cpp
++++ b/qmake/option.cpp
+@@ -112,6 +112,7 @@ QString Option::mkfile::qmakespec;
+ int Option::mkfile::cachefile_depth = -1;
+ bool Option::mkfile::do_deps = true;
+ bool Option::mkfile::do_mocs = true;
++bool Option::mkfile::listgen = false;
+ bool Option::mkfile::do_dep_heuristics = true;
+ bool Option::mkfile::do_preprocess = false;
+ bool Option::mkfile::do_stub_makefile = false;
+@@ -198,6 +199,7 @@ bool usage(const char *a0)
+             "  -nocache       Don't use a cache file      [makefile mode only]\n"
+             "  -nodepend      Don't generate dependencies [makefile mode only]\n"
+             "  -nomoc         Don't generate moc targets  [makefile mode only]\n"
++            "  -listgen       Lists generated files       [makefile mode only]\n"
+             "  -nopwd         Don't look for files in pwd [project mode only]\n"
+             ,a0,
+             default_mode(a0) == Option::QMAKE_GENERATE_PROJECT  ? " (default)" : "", project_builtin_regx().toLatin1().constData(),
+@@ -297,6 +299,8 @@ Option::parseCommandLine(int argc, char **argv, int skip)
+                         Option::mkfile::do_deps = false;
+                     } else if(opt == "nomoc") {
+                         Option::mkfile::do_mocs = false;
++                    } else if(opt == "listgen") {
++                        Option::mkfile::listgen = true;
+                     } else if(opt == "nocache") {
+                         Option::mkfile::do_cache = false;
+                     } else if(opt == "createstub") {
+diff --git a/qmake/option.h b/qmake/option.h
+index b09ead2..a46d7fb 100644
+--- a/qmake/option.h
++++ b/qmake/option.h
+@@ -179,6 +179,7 @@ struct Option
+         static bool do_cache;
+         static bool do_deps;
+         static bool do_mocs;
++        static bool listgen;
+         static bool do_dep_heuristics;
+         static bool do_preprocess;
+         static bool do_stub_makefile;

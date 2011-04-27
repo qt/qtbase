@@ -1,0 +1,81 @@
+The most reliable way of running benchmarks is to do it in an otherwise idle
+system. On a busy system, the results will vary according to the other tasks
+demanding attention in the system.
+
+We have managed to obtain quite reliable results by doing the following on 
+Linux (and you need root):
+
+ - switching the scheduler to a Real-Time mode
+ - setting the processor affinity to one single processor
+ - disabling the other thread of the same core
+
+This should work rather well for CPU-intensive tasks. A task that is in Real-
+Time mode will simply not be preempted by the OS. But if you make OS syscalls, 
+especially I/O ones, your task will be de-scheduled. Note that this includes 
+page faults, so if you can, make sure your benchmark's warmup code paths touch 
+most of the data.
+
+To do this you need a tool called schedtool (package schedtool), from 
+http://freequaos.host.sk/schedtool/
+
+From this point on, we are using CPU0 for all tasks:
+
+If you have a Hyperthreaded multi-core processor (Core-i5 and Core-i7), you 
+have to disable the other thread of the same core as CPU0. To discover which 
+one it is:
+
+$ cat /sys/devices/system/cpu/cpu0/topology/thread_siblings_list
+
+This will print something like 0,4, meaning that CPUs 0 and 4 are sibling 
+threads on the same core. So we'll turn CPU 4 off:
+
+(as root)
+# echo 0 > /sys/devices/system/cpu/cpu4/online
+
+To turn it back on, echo 1 into the same file.
+
+To run a task on CPU 0 exclusively, using FIFO RT priority 10, you run the 
+following:
+
+(as root)
+# schedtool -F -p 10 -a 1 -e ./taskname
+
+For example:
+# schedtool -F -p 10 -a 1 -e ./tst_bench_qstring -tickcounter
+
+Warning: if your task livelocks or takes far too long to complete, your system 
+may be unusable for a long time, especially if you don't have other cores to 
+run stuff on. To prevent that, run it before schedtool and time it.
+
+You can also limit the CPU time that the task is allowed to take. Run in the 
+same shell as you'll run schedtool:
+
+$ ulimit -s 300
+To limit to 300 seconds (5 minutes)
+
+If your task runs away, it will get a SIGXCPU after consuming 5 minutes of CPU 
+time (5 minutes running at 100%).
+
+If your app is multithreaded, you may want to give it more CPUs, like CPU0 and 
+CPU1 with -a 3  (it's a bitmask).
+
+For best results, you should disable ALL other cores and threads of the same 
+processor. The new Core-i7 have one processor with 4 cores, 
+each core can run 2 threads; the older Mac Pros have two processors with 4 
+cores each. So on those Mac Pros, you'd disable cores 1, 2 and 3, while on the 
+Core-i7, you'll need to disable all other CPUs.
+
+However, disabling just the sibling thread seems to produce very reliable 
+results for me already, with variance often below 0.5% (even though there are 
+some measurable spikes).
+
+Other things to try:
+
+Running the benchmark with highest priority, i.e. "sudo nice -19" 
+usually produces stable results on some machines. If the benchmark also 
+involves displaying something on the screen (on X11), running it with 
+"-sync" is a must. Though, in that case the "real" cost is not correct, 
+but it is useful to discover regressions.
+
+Also; not many people know about ionice (1)
+      ionice - get/set program io scheduling class and priority

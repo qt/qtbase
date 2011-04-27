@@ -1,0 +1,102 @@
+# Version: 1
+
+
+setRenderHint Antialiasing
+
+setPen black
+
+translate 10 10
+# standard draw
+begin_block text
+setBrush gray
+drawRect 0 0 300 300
+
+setFont "times" 3
+drawText 10 10 "Hello World...."
+
+setFont "times" 4
+drawText 10 20 "Hello World...."
+
+setFont "times" 5
+drawText 10 30 "Hello World...."
+
+setFont "times" 6
+drawText 10 40 "Hello World...."
+
+setFont "times" 7
+drawText 10 50 "Hello World...."
+
+setFont "times" 8
+drawText 10 60 "Hello World...."
+
+setFont "times" 9
+drawText 10 70 "Hello World...."
+
+setFont "times" 10
+drawText 10 80 "Hello World...."
+
+setFont "times" 16
+drawText 10 100 "Hello World...."
+
+setFont "times" 17
+drawText 10 120 "Hello World...."
+
+setFont "times" 18
+drawText 10 140 "Hello World...."
+
+setFont "times" 20
+drawText 10 160 "Hello World...."
+
+setFont "times" 22
+drawText 10 180 "Hello World...."
+
+setFont "times" 24
+drawText 10 205 "Hello World...."
+
+setFont "times" 26
+drawText 10 230 "Hello World...."
+
+setFont "times" 32
+drawText 10 260 "Hello World...."
+end_block text
+
+# Rotation w/o smooth xform
+save
+translate 350 0
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 50 0 200 300 300 300 0
+  repeat_block text
+restore
+restore
+
+translate 0 320
+
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 0 100 300 200 300 300 0
+  repeat_block text
+restore
+
+save
+translate 350 0
+save
+  setRenderHint SmoothPixmapTransform on
+  mapQuadToQuad 0 0 0 300 300 300 300 0   0 0 0 300 300 250 300 50
+  repeat_block text
+restore
+restore
+
+
+resetMatrix
+setPen black
+translate 125 20
+drawText 0 0 "No transform"
+translate 350 0
+drawText 0 0 "Left Tilted"
+resetMatrix
+translate 125 350
+drawText 0 0 "Bottom Tilted"
+translate 350 0
+drawText 0 0 "Right Tilted"
+translate 120 0

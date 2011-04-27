@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_StrCmp">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="compareCharStars">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="compareByteArray">
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="88">
+    <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="95">
+    <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="102">
+    <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="109">
+    <Description><![CDATA[Compared values are not the same
+   Actual (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
+   Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ...]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="failByteArray">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="115">
+    <Description><![CDATA[Compared values are not the same
+   Actual (QByteArray("abc")): 61 62 63
+   Expected (QByteArray("cba")): 63 62 61]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="failByteArrayNull">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="121">
+    <Description><![CDATA[Compared values are not the same
+   Actual (QByteArray("foo")): 66 6F 6F
+   Expected (QByteArray()): ]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="failByteArrayEmpty">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="126">
+    <Description><![CDATA[Compared values are not the same
+   Actual (QByteArray("")): 
+   Expected (QByteArray("foo")): 66 6F 6F]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="failByteArraySingleChars">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="133">
+    <Description><![CDATA[Compared values are not the same
+   Actual (QByteArray("6")): 36
+   Expected (QByteArray("7")): 37]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

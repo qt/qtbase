@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en_US" lang="en_US">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- examples.qdoc -->
+  <title>CSS: SAMPLE PAGES</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+  <script src="scripts/jquery.js" type="text/javascript"></script>
+  <script src="scripts/functions.js" type="text/javascript"></script>
+  <script src="./scripts/superfish.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="style/superfish.css" />  <script src="./scripts/narrow.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="style/narrow.css" />
+</head>
+<body class="" onload="CheckEmptyAndLoadList();">
+
+ <style>
+div.header, div.toolbar, div.feedback, div#feedbackBox, div.footer, div.sidebar { display: none; background: pink }
+div.toc {
+    background: #dddddd;
+    border: thin solid #777777;
+    padding: 1em;
+    border-radius: 1em;
+    margin: 1em
+}
+div.toc li:before { color: lightcoral; text-transform: uppercase; }
+h3 { border-top: thick pink solid }
+h4 { border-top: medium gold solid }
+h5 { border-top: medium lightgreen solid }
+h3,h4,h5 { padding-top: 1em }
+li.level1 { margin-left: 0 }
+li.level2 { margin-left: 2em }
+li.level3 { margin-left: 4em }
+li.level4 { margin-left: 6em }
+li.level5 { margin-left: 8em }
+table { border: solid #777777 thin }
+tr:nth-of-type(even) { background: beige }
+tr:nth-of-type(odd) { background: lightblue }
+th {
+    background: #777777;
+    color: #ffffff;
+}
+
+img[src^='images/cnd_'] { float: right; margin: 1em ; padding: 1em; border-radius: 1em; border: thin #777777 solid; }
+tt, pre { background: #dddddd; border: thin #dddddd solid; }
+a[href^='http://waplabdc.nokia-boston.com'] { color: black; }
+a[href^='http://waplabdc.nokia-boston.com']:before { content: url(http://waplabdc.nokia-boston.com/browser/users/sierra/x/img/html.jpg); }
+ </style>
+ <div class="header" id="qtdocheader">
+    <div class="content">
+    <div id="nav-logo">
+      <a href="index.html">Home</a></div>
+    <a href="index.html" class="qtref"><span>Qt Reference Documentation</span></a>
+    <div id="narrowsearch"></div>
+    <div id="nav-topright">
+      <ul>
+        <li class="nav-topright-home"><a href="http://qt.nokia.com/">Qt HOME</a></li>
+        <li class="nav-topright-dev"><a href="http://developer.qt.nokia.com/">DEV</a></li>
+        <li class="nav-topright-labs"><a href="http://labs.qt.nokia.com/blogs/">LABS</a></li>
+        <li class="nav-topright-doc nav-topright-doc-active"><a href="http://doc.qt.nokia.com/">
+          DOC</a></li>
+        <li class="nav-topright-blog"><a href="http://blog.qt.nokia.com/">BLOG</a></li>
+      </ul>
+    </div>
+    <div id="shortCut">
+      <ul>
+        <li class="shortCut-topleft-inactive"><span><a href="index.html">Qt 4.7</a></span></li>
+        <li class="shortCut-topleft-active"><a href="http://doc.qt.nokia.com">ALL VERSIONS        </a></li>
+      </ul>
+     </div>
+ <ul class="sf-menu" id="narrowmenu">
+                         <li><a href="#">API Lookup</a>
+                                 <ul>
+                                         <li><a href="classes.html">Class index</a></li>
+           <li><a href="functions.html">Function index</a></li>
+           <li><a href="modules.html">Modules</a></li>
+           <li><a href="namespaces.html">Namespaces</a></li>
+           <li><a href="qtglobal.html">Global Declarations</a></li>
+           <li><a href="qdeclarativeelements.html">QML elements</a></li>
+                     </ul>
+                         </li>
+                         <li><a href="#">Qt Topics</a>
+                                 <ul>
+                                            <li><a href="qt-basic-concepts.html">Programming with Qt</a></li>
+                                            <li><a href="qtquick.html">Device UIs &amp; Qt Quick</a></li>
+                                            <li><a href="qt-gui-concepts.html">UI Design with Qt</a></li>
+                                            <li><a href="developing-with-qt.html">Cross-platform and Platform-specific</a></li>
+                                            <li><a href="platform-specific.html">Platform-specific info</a></li>
+                                            <li><a href="technology-apis.html">Qt and Key Technologies</a></li>
+                                            <li><a href="best-practices.html">How-To's and Best Practices</a></li>
+                      </ul>
+                                 </li>
+                                 <li><a href="#">Examples</a>
+                                         <ul>
+                               <li><a href="all-examples.html">Examples</a></li>
+                               <li><a href="tutorials.html">Tutorials</a></li>
+                               <li><a href="demos.html">Demos</a></li>
+                               <li><a href="qdeclarativeexamples.html">QML Examples</a></li>
+                        </ul>
+                                         </li>
+                                 </ul>
+    </div>
+  </div>
+  <div class="wrapper">
+    <div class="hd">
+      <span></span>
+    </div>
+    <div class="bd group">
+      <div class="sidebar">
+        <div class="searchlabel">
+          Search index:</div>
+        <div class="search" id="sidebarsearch">
+          <form id="qtdocsearch" action="" onsubmit="return false;">
+            <fieldset>
+              <input type="text" name="searchstring" id="pageType" value="" />
+ <div id="resultdialog">
+ <a href="#" id="resultclose">Close</a>
+ <p id="resultlinks" class="all"><a href="#" id="showallresults">All</a> | <a href="#" id="showapiresults">API</a> | <a href="#" id="showarticleresults">Articles</a> | <a href="#" id="showexampleresults">Examples</a></p>
+ <p id="searchcount" class="all"><span id="resultcount"></span><span id="apicount"></span><span id="articlecount"></span><span id="examplecount"></span>&nbsp;results:</p>
+ <ul id="resultlist" class="all">
+ </ul>
+ </div>
+            </fieldset>
+          </form>
+        </div>
+        <div class="box first bottombar" id="lookup">
+          <h2 title="API Lookup"><span></span>
+            API Lookup</h2>
+          <div  id="list001" class="list">
+          <ul id="ul001" >
+              <li class="defaultLink"><a href="classes.html">Class index</a></li>
+              <li class="defaultLink"><a href="functions.html">Function index</a></li>
+              <li class="defaultLink"><a href="modules.html">Modules</a></li>
+              <li class="defaultLink"><a href="namespaces.html">Namespaces</a></li>
+              <li class="defaultLink"><a href="qtglobal.html">Global Declarations</a></li>
+              <li class="defaultLink"><a href="qdeclarativeelements.html">QML elements</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="box bottombar" id="topics">
+          <h2 title="Qt Topics"><span></span>
+            Qt Topics</h2>
+          <div id="list002" class="list">
+            <ul id="ul002" >
+                           <li class="defaultLink"><a href="qt-basic-concepts.html">Programming with Qt</a></li>
+                           <li class="defaultLink"><a href="qtquick.html">Device UIs &amp; Qt Quick</a></li>
+                           <li class="defaultLink"><a href="qt-gui-concepts.html">UI Design with Qt</a></li>
+                           <li class="defaultLink"><a href="developing-with-qt.html">Cross-platform and Platform-specific</a></li>
+                           <li class="defaultLink"><a href="platform-specific.html">Platform-specific info</a></li>
+                           <li class="defaultLink"><a href="technology-apis.html">Qt and Key Technologies</a></li>
+                           <li class="defaultLink"><a href="best-practices.html">How-To's and Best Practices</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="box" id="examples">
+          <h2 title="Examples"><span></span>
+            Examples</h2>
+          <div id="list003" class="list">
+        <ul id="ul003">
+              <li class="defaultLink"><a href="all-examples.html">Examples</a></li>
+              <li class="defaultLink"><a href="tutorials.html">Tutorials</a></li>
+              <li class="defaultLink"><a href="demos.html">Demos</a></li>
+              <li class="defaultLink"><a href="qdeclarativeexamples.html">QML Examples</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="toolbar">
+          <div class="breadcrumb toolblock">
+            <ul>
+              <li class="first"><a href="index.html">Home</a></li>
+              <!--  Bread crumbs goes here -->
+              <li>CSS: SAMPLE PAGES</li>            </ul>
+          </div>
+          <div class="toolbuttons toolblock">
+            <ul>
+              <li id="smallA" class="t_button">A</li>
+              <li id="medA" class="t_button active">A</li>
+              <li id="bigA" class="t_button">A</li>
+              <li id="print" class="t_button"><a href="javascript:this.print();">
+                <span>Print</span></a></li>
+            </ul>
+        </div>
+        </div>
+        <div class="content mainContent">
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#css-sample-pages">CSS: SAMPLE PAGES</a></li>
+<li class="level2"><a href="#media-queries">Media Queries</a></li>
+<li class="level2"><a href="#selectors">Selectors</a></li>
+<li class="level2"><a href="#visual-effects">Visual Effects</a></li>
+<li class="level2"><a href="#dynamic-css">Dynamic CSS</a></li>
+<li class="level1"><a href="#storage">Storage</a></li>
+</ul>
+</div>
+<h1 class="title">CSS: SAMPLE PAGES</h1>
+<span class="subtitle"></span>
+<!-- $$$examples-description -->
+<div class="descr"> <a name="details"></a>
+<a name="css-sample-pages"></a>
+<h2>CSS: SAMPLE PAGES</h2>
+<a name="media-queries"></a>
+<h3>1. Media Queries</h3>
+<ol type="1">
+<li><a target="test" href="mob_mediaquery.htm">MEDIA-QUERY, BASIC</a>: produces message indicating browser class (desktop/touch/low-end mobile)</li>
+<li><a target="test" href="mob_layout.htm">MEDIA-QUERY, LAYOUT</a>: same, but produces various skeletal layouts using media query criteria; large 3-column layout must appear only on desktop browser</li>
+<li><a target="test" href="mob_condjs.htm">MEDIA-QUERY, STYLEMEDIA</a>: Same as #1, but JS produces corresponding message via StyleMedia API</li>
+</ol>
+<a name="selectors"></a>
+<h3>2. Selectors</h3>
+<ol type="1">
+<li><a target="test" href="layout_link-fmt.htm">SELECTOR, ATTRIBUTE PREFIX/SUFFIX</a>: links appear w/different icons based on URL prefix/suffix; linebreaks should not appear within inline links</li>
+<li><a target="test" href="form_tapper.htm">SELECTOR, FORMS, TAP</a>: radio/checkbox inputs can be tapped (only 1 at a time within 'radio' set; any number within 'checkbox' set)</li>
+<li><a target="test" href="form_toggler.htm">SELECTOR, FORMS, TOGGLE</a>: radio/checkbox inputs can be toggled (only 1 at a time within 'radio' inputs; any number within 'checkbox' inputs); 2 "binary" examples at bottom use custom text</li>
+<li><a target="test" href="layout_tbl-keyhole.htm">SELECTOR, NAVIGATIONAL, TABLE</a>: pressing &quot;view listings&quot; displays stacked table rows, one at a time</li>
+<li><a target="test" href="css3_sel-nth.htm">SELECTOR, POSITIONAL</a>: displays 4x6 icon grid, implemted via nth-of-type()</li>
+</ol>
+<a name="visual-effects"></a>
+<h3>3. Visual Effects</h3>
+<ol type="1">
+<li><a target="test" href="css3_backgrounds.htm">CSS, BACKGROUNDS</a>: selected accordion tabs display both gradient background and icon; unselected only displays icon; uses scaleY transition</li>
+<li><a target="test" href="css3_border-img.htm">CSS, BORDER IMAGE</a>: border image surrounds box</li>
+<li><a target="test" href="css3_shadow.htm">CSS, BOX-SHADOW, PLAIN</a>: nav element has shadow; icons appear smaller while pressed</li>
+<li><a target="test" href="css3_gradientBack.htm">CSS, GRADIENT, BACKGROUND</a>: background fades vertically from light to dark</li>
+<li><a target="test" href="css3_gradientBackStop.htm">CSS, GRADIENT, BACKGROUND, COLOR-STOP</a>: as you scroll down page, background fades vertically from dark to light and back to dark again</li>
+<li><a target="test" href="css3_gradientButton.htm">CSS, GRADIENT, BUTTON</a>: buttons appear with vertical shading, appearing w/inverted gradient when pressed</li>
+<li><a target="test" href="css3_grad-radial.htm">CSS, GRADIENT, RADIAL</a>: touching within box produces colorful *splat* effect for duration of touch</li>
+<li><a target="test" href="css3_mask-grad.htm">CSS, MASK, GRADIENT</a>: images appear w/gradient; touching them removes gradient</li>
+<li><a target="test" href="css3_mask-img.htm">CSS, MASK, IMAGE</a>: image fills screen but fades to black around the edges</li>
+<li><a target="test" href="css3_reflect.htm">CSS, REFLECTION</a>: heading and image both appear w/mirror reflections along bottom</li>
+<li><a target="test" href="css3_scroll.htm">CSS, SCROLLBARS</a>: code block scrollable via big buttons</li>
+<li><a target="test" href="css3_text-overflow.htm">CSS, TEXT-OVERFLOW</a>: items appear w/ellipses; touching them expands them; pressing (X) collapses them</li>
+<li><a target="test" href="css3_text-shadow.htm">CSS, TEXT-SHADOW</a>: heading text appears with shadow</li>
+<li><a target="test" href="css3_text-stroke.htm">CSS, TEXT-STROKE</a>: first heading appears w/black outline</li>
+</ol>
+<a name="dynamic-css"></a>
+<h3>4. Dynamic CSS</h3>
+<ol type="1">
+<li><a target="test" href="anim_demo-rotate.htm">ANIMATION, DEMO, ROTATE</a>: animated demo of rotating boxes</li>
+<li><a target="test" href="anim_demo-scale.htm">ANIMATION, DEMO, SCALE</a>: animated demo of shrinking/expanding box</li>
+<li><a target="test" href="anim_demo-skew.htm">ANIMATION, DEMO, SKEW</a>: animated demo of box being pushed and piulled around</li>
+<li><a target="test" href="anim_pulse.htm">ANIMATION, KEYFRAME, PULSE</a>: pressing icons causes them to pulse indefinitely</li>
+<li><a target="test" href="anim_slide1.htm">ANIMATION, KEYFRAME, SLIDING</a>: drill-down menus</li>
+<li><a target="test" href="css3_multicol.htm">ANIMATION, KEYFRAME, BANNER</a>: banner scrolls through 5 colorful items</li>
+<li><a target="test" href="anim_tabbedSkew.htm">ANIMATION, TRANSFORM, SKEWED TABS</a>: touching parts of cube displays different tabbed text</li>
+<li><a target="test" href="anim_accord.htm">ANIMATION, TRANSITION, CHAINED, ACCORDION</a>: tapping icon animates in collapsed accordions; tapping them animates in display of subheads; tapping anywhere else reverses animation sequence, collapsing back to initial icon</li>
+<li><a target="test" href="anim_panel.htm">ANIMATION, TRANSITION, MAX-WIDTH, PANEL</a>: pressing icon animates to expand panel of choices; pressing anywhere collapses panel back down to initial icon</li>
+<li><a target="test" href="anim_skew.htm">ANIMATION, TRANSITION, SKEW</a>: tapping items causes them to wipe off right edge w/skew effect; remainder re-pack vertically; touching each category icon removes non-matching items and drops down matching ones</li>
+<li><a target="test" href="anim_gallery.htm">ANIMATION, TRANSITION, TRANSLATE, GALLERY</a>: tapping images adjacent to main image animates them in; tapping current image flips to display text; w/text displaying, tapping adjacent image animates both effects @ same time</li>
+</ol>
+
+<a name="storage"></a>
+<h2>5. Storage</h2>
+
+<ol type="1">
+<li><a target="test" href="storage.htm">LOCAL/SESSION STORAGE</a>:
+When opened for first time, form opens featuring
+login/password/credit-card fields. Fill them out. Each input's
+background will go pink if input is invalid.  Login & password
+validate simply as "required" so any string will do. Credit card
+validates as 16-digit numeral.  After filling out, press dismiss box.
+Then quit & reopen browser, go back to page, and press (i) info icon
+to get back into form. login/password should be same as initially
+entered (localStorage), but credit-card data s/b absent
+(sessionStorage).
+
+</li>
+</ol>
+
+</div>
+<!-- @@@examples -->
+        <div class="feedback t_button">
+          [+] Documentation Feedback</div>
+      </div>
+    </div>
+    </div>
+    <div class="ft">
+      <span></span>
+    </div>
+  </div>
+  <div class="footer">
+    <p>
+      <acronym title="Copyright">&copy;</acronym> 2008-2010 Nokia Corporation and/or its
+      subsidiaries. Nokia, Qt and their respective logos are trademarks of Nokia Corporation
+      in Finland and/or other countries worldwide.</p>
+    <p>
+      All other trademarks are property of their respective owners. <a title="Privacy Policy"
+        href="http://qt.nokia.com/about/privacy-policy">Privacy Policy</a></p>
+    <br />
+    <p>
+      Licensees holding valid Qt Commercial licenses may use this document in accordance with the      Qt Commercial License Agreement provided with the Software or, alternatively, in accordance      with the terms contained in a written agreement between you and Nokia.</p>
+    <p>
+      Alternatively, this document may be used under the terms of the <a href="http://www.gnu.org/licenses/fdl.html">GNU
+      Free Documentation License version 1.3</a>
+      as published by the Free Software Foundation.</p>
+  </div>
+  <div id="feedbackBox">
+      <div id="feedcloseX" class="feedclose t_button">X</div>
+    <form id="feedform" action="http://doc.qt.nokia.com/docFeedbck/feedback.php" method="get">
+      <p id="noteHead">Thank you for giving your feedback.</p> <p class="note">Make sure it is related to this specific page. For more general bugs and
+      requests, please use the <a href="http://bugreports.qt.nokia.com/secure/Dashboard.jspa">Qt Bug Tracker</a>.</p>
+      <p><textarea id="feedbox" name="feedText" rows="5" cols="40"></textarea></p>
+      <p><input id="feedsubmit" class="feedclose" type="submit" name="feedback" /></p>
+    </form>
+  </div>
+  <div id="blurpage">
+  </div>
+  <script src="scripts/functions.js" type="text/javascript"></script>
+  <!-- <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-4457116-5']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+  </script> -->
+</body>
+</html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="8" failures="1" tests="4" name="tst_Warnings">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testWarnings">
+    <!-- message="Warning" type="qwarn" -->
+    <!-- message="Warning" type="qwarn" -->
+    <!-- message="Debug" type="qdebug" -->
+    <!-- message="Debug" type="qdebug" -->
+    <!-- message="Baba" type="qdebug" -->
+    <!-- message="Baba" type="qdebug" -->
+  </testcase>
+  <testcase result="fail" name="testMissingWarnings">
+    <!-- message="Did not receive message: &quot;Warning0&quot;" type="info" -->
+    <!-- message="Did not receive message: &quot;Warning1&quot;" type="info" -->
+    <failure message="Not all expected messages were received" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[Warning]]>
+<![CDATA[Warning]]>
+<![CDATA[Debug]]>
+<![CDATA[Debug]]>
+<![CDATA[Baba]]>
+<![CDATA[Baba]]>
+<![CDATA[Did not receive message: "Warning0"]]>
+<![CDATA[Did not receive message: "Warning1"]]>
+  </system-err>
+</testsuite>

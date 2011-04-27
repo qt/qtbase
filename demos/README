@@ -1,0 +1,39 @@
+These demonstrations are intended to highlight Qt's capabilities in different
+application areas, and provide examples that are more advanced than those in
+the examples directory.
+
+Beginners to Qt may wish to try out the Qt tutorial and some of the examples
+before examining the demonstrations in detail.
+
+
+The example launcher can be used to explore the different categories
+available. It provides an overview of each example, lets you view the
+documentation in Qt Assistant, and is able to launch examples.
+
+
+Finding the Qt Examples and Demos launcher
+==========================================
+
+On Windows:
+
+The launcher can be accessed via the Windows Start menu. Select the menu
+entry entitled "Qt Examples and Demos" entry in the submenu containing
+the Qt tools.
+
+On Mac OS X:
+
+For the binary distribution, the qtdemo executable is installed in the
+/Developer/Applications/Qt directory. For the source distribution, it is
+installed alongside the other Qt tools on the path specified when Qt is
+configured.
+
+On Unix/Linux:
+
+The qtdemo executable is installed alongside the other Qt tools on the path
+specified when Qt is configured.
+
+On all platforms:
+
+The source code for the launcher can be found in the demos/qtdemo directory
+in the Qt package. This example is built at the same time as the Qt libraries,
+tools, examples, and demonstrations.

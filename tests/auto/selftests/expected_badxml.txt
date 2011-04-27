@@ -1,0 +1,32 @@
+********* Start testing of tst_BadXml *********
+Config: Using QTest library 4.6.4, Qt 4.6.4
+PASS   : tst_BadXml::initTestCase()
+QDEBUG : tst_BadXml::badDataTag(end cdata ]]> text ]]> more text) a message
+FAIL!  : tst_BadXml::badDataTag(end cdata ]]> text ]]> more text) a failure
+   Loc: [/local/rmcgover_builds/qt/4.6/tests/auto/selftests/badxml/tst_badxml.cpp(109)]
+RESULT : tst_BadXml::badDataTag():"end cdata ]]> text ]]> more text":
+     0 events per iteration (total: 0, iterations: 1)
+QDEBUG : tst_BadXml::badDataTag(quotes " text" more text) a message
+FAIL!  : tst_BadXml::badDataTag(quotes " text" more text) a failure
+   Loc: [/local/rmcgover_builds/qt/4.6/tests/auto/selftests/badxml/tst_badxml.cpp(109)]
+RESULT : tst_BadXml::badDataTag():"quotes " text" more text":
+     0 events per iteration (total: 0, iterations: 1)
+QDEBUG : tst_BadXml::badDataTag(xml close > open < tags < text) a message
+FAIL!  : tst_BadXml::badDataTag(xml close > open < tags < text) a failure
+   Loc: [/local/rmcgover_builds/qt/4.6/tests/auto/selftests/badxml/tst_badxml.cpp(109)]
+RESULT : tst_BadXml::badDataTag():"xml close > open < tags < text":
+     0 events per iteration (total: 0, iterations: 1)
+QDEBUG : tst_BadXml::badDataTag(all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs) a message
+FAIL!  : tst_BadXml::badDataTag(all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs) a failure
+   Loc: [/local/rmcgover_builds/qt/4.6/tests/auto/selftests/badxml/tst_badxml.cpp(109)]
+RESULT : tst_BadXml::badDataTag():"all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs":
+     0 events per iteration (total: 0, iterations: 1)
+QDEBUG : tst_BadXml::badMessage(string 0) end cdata ]]> text ]]> more text
+QDEBUG : tst_BadXml::badMessage(string 1) quotes " text" more text
+QDEBUG : tst_BadXml::badMessage(string 2) xml close > open < tags < text
+QDEBUG : tst_BadXml::badMessage(string 3) all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs
+PASS   : tst_BadXml::badMessage()
+FAIL!  : tst_BadXml::failWithNoFile() failure message
+PASS   : tst_BadXml::cleanupTestCase()
+Totals: 3 passed, 5 failed, 0 skipped
+********* Finished testing of tst_BadXml *********

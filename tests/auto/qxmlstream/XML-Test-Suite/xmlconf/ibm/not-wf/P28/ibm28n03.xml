@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<!DOCTYPE SYSTEM "ibm28n01.dtd" animal [
+   <!ATTLIST animal color CDATA #REQUIRED>
+]>
+<!-- Wrong ordering ExternalID Name [ ] in doctypedecl --> 
+<animal color="yellow"/>

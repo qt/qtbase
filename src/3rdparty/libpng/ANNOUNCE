@@ -1,0 +1,96 @@
+
+Libpng 1.5.1 - February 3, 2011
+
+This is a public release of libpng, intended for use in production codes.
+
+Files available for download:
+
+Source files with LF line endings (for Unix/Linux) and with a
+"configure" script
+
+   libpng-1.5.1.tar.xz (LZMA-compressed, recommended)
+   libpng-1.5.1.tar.gz
+   libpng-1.5.1.tar.bz2
+
+Source files with CRLF line endings (for Windows), without the
+"configure" script
+
+   lpng151.7z  (LZMA-compressed, recommended)
+   lpng151.zip
+
+Other information:
+
+   libpng-1.5.1-README.txt
+   libpng-1.5.1-LICENSE.txt
+
+Changes since the last public release (1.5.0):
+
+  Added description of png_set_crc_action() to the manual.
+  Added a note in the manual that the type of the iCCP profile was changed
+    from png_charpp to png_bytepp in png_get_iCCP().  Similarly,
+    it was changed from png_charpp to png_const_bytepp in png_set_iCCP().
+  Ensure that png_rgb_to_gray ignores palette mapped images, if libpng
+    internally happens to call it with one.
+  Fixed the failure to handle palette mapped images correctly.
+  Fixed a bug in handling of interlaced images (bero at arklinux.org).
+  Updated CMakeLists.txt (Clifford Yapp)
+  Fixed typecasting of some png_debug() statements (Cosmin)
+  Updated documentation of png_set|get_tRNS() (Thomas Klausner).
+  Mentioned in the documentation that applications must #include "zlib.h"
+    if they need access to anything in zlib.h, and that a number of
+    macros such as png_memset() are no longer accessible by applications.
+  Corrected pngvalid gamma test "sample" function to access all of the color
+    samples of each pixel, instead of sampling the red channel three times.
+  Changed variable names index, div, exp, and gamma to char_index, divisor,
+    exp_b10, and gamma_val, respectively, to avoid "shadow" warnings.
+  Prevent png_push_crc_skip() from hanging while reading an unknown chunk
+    or an over-large compressed zTXt chunk with the progressive reader.
+  Eliminated more GCC "shadow" warnings.
+  Revised png_fixed() in png.c to avoid compiler warning about reaching the
+    end without returning anything.
+  In the manual, describe the png_get_IHDR() arguments in the correct order.
+  Added const_png_structp and const_png_infop types, and used them in
+    prototypes for most png_get_*() functions.
+  Added png_get_io_chunk_type() and deprecated png_get_io_chunk_name()
+  Added synopses for the IO_STATE functions and other missing synopses
+    to the manual. Removed the synopses from libpngpf.3 because they
+    were out of date and no longer useful.  Better information can be
+    obtained by reading the prototypes and comments in pngpriv.h
+  Attempted to fix cpp on Solaris with S. Studio 12 cc, fix build
+    Added a make macro DFNCPP that is a CPP that will accept the tokens in
+    a .dfn file and adds configure stuff to test for such a CPP.  ./configure
+    should fail if one is not available.
+  Corrected const_png_ in png.h to png_const_ to avoid polluting the namespace.
+  Added png_get_current_row_number and png_get_current_pass_number for the
+    benefit of the user transform callback.
+  Added png_process_data_pause and png_process_data_skip for the benefit of
+    progressive readers that need to stop data processing or want to optimize
+    skipping of unread data (e.g. if the reader marks a chunk to be skipped.)
+  Enhanced pngvalid, corrected an error in gray_to_rgb, corrected doc error.
+    pngvalid contains tests of transforms, which tests are currently disabled
+    because they are incompletely tested.  gray_to_rgb was failing to expand
+    the bit depth for smaller bit depth images; this seems to be a long
+    standing error and resulted, apparently, in invalid output.  The
+    documentation did not accurately describe what libpng really does when
+    converting RGB to gray.
+  Fixed incorrect examples of callback prototypes in the manual, that were
+    introduced in libpng-1.0.0.
+  In addition the order of the png_get_uint macros with respect to the
+    relevant function definitions has been reversed.  This helps the
+    preprocessing of the symbol files be more robust.  Furthermore, the
+    symbol file preprocessing now uses -DPNG_NO_USE_READ_MACROS even when
+    the library may actually be built with PNG_USE_READ_MACROS; this stops
+    the read macros interfering with the symbol file format.
+  Made the manual, synopses, and function prototypes use the function
+    argument names file_gamma, int_file_gamma, and srgb_intent consistently.
+  Changed PNG_UNUSED from "param=param;" to "(void)param;".
+  Added transform tests to pngvalid and simplified the arguments.
+  Added a request in the manual that applications do not use "png_" or
+    "PNG_" to begin any of their own symbols.
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net
+(subscription required; visit
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe) or to glennrp at users.sourceforge.net
+
+Glenn R-P

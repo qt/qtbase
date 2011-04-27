@@ -1,0 +1,211 @@
+<ui version="4.0" >
+ <comment>*********************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the autotests of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+*********************************************************************</comment>
+ <class>PhraseBookBox</class>
+ <widget class="QDialog" name="PhraseBookBox" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>596</width>
+    <height>454</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Edit Phrase Book</string>
+  </property>
+  <property name="whatsThis" >
+   <string>This window allows you to add, modify, or delete phrases in a phrase book.</string>
+  </property>
+  <layout class="QHBoxLayout" name="unnamed" >
+   <item>
+    <layout class="QVBoxLayout" name="inputsLayout" >
+     <item>
+      <layout class="QGridLayout" name="gridLayout" >
+       <item row="1" column="0" >
+        <widget class="QLabel" name="target" >
+         <property name="text" >
+          <string>&amp;Translation:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>targetLed</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QLineEdit" name="targetLed" >
+         <property name="whatsThis" >
+          <string>This is the phrase in the target language corresponding to the source phrase.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QLabel" name="source" >
+         <property name="text" >
+          <string>S&amp;ource phrase:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>sourceLed</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QLineEdit" name="definitionLed" >
+         <property name="whatsThis" >
+          <string>This is a definition for the source phrase.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="sourceLed" >
+         <property name="whatsThis" >
+          <string>This is the phrase in the source language.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="definition" >
+         <property name="text" >
+          <string>&amp;Definition:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>definitionLed</cstring>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTreeView" name="phraseList" >
+       <property name="rootIsDecorated" >
+        <bool>false</bool>
+       </property>
+       <property name="uniformRowHeights" >
+        <bool>true</bool>
+       </property>
+       <property name="itemsExpandable" >
+        <bool>false</bool>
+       </property>
+       <property name="sortingEnabled" >
+        <bool>true</bool>
+       </property>
+       <property name="expandsOnDoubleClick" >
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="buttonLayout" >
+     <item>
+      <widget class="QPushButton" name="newBut" >
+       <property name="whatsThis" >
+        <string>Click here to add the phrase to the phrase book.</string>
+       </property>
+       <property name="text" >
+        <string>&amp;New Phrase</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeBut" >
+       <property name="whatsThis" >
+        <string>Click here to remove the phrase from the phrase book.</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Remove Phrase</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveBut" >
+       <property name="whatsThis" >
+        <string>Click here to save the changes made.</string>
+       </property>
+       <property name="text" >
+        <string>&amp;Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeBut" >
+       <property name="whatsThis" >
+        <string>Click here to close this window.</string>
+       </property>
+       <property name="text" >
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="spacer1" >
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" stdset="0" >
+        <size>
+         <width>20</width>
+         <height>51</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <tabstops>
+  <tabstop>sourceLed</tabstop>
+  <tabstop>targetLed</tabstop>
+  <tabstop>definitionLed</tabstop>
+  <tabstop>newBut</tabstop>
+  <tabstop>removeBut</tabstop>
+  <tabstop>saveBut</tabstop>
+  <tabstop>closeBut</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

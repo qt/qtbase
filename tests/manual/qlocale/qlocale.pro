@@ -1,0 +1,8 @@
+TEMPLATE = app
+TARGET = 
+DEPENDPATH += .
+INCLUDEPATH += .
+
+# Input
+HEADERS += currency.h calendar.h dateformats.h numberformats.h languages.h window.h miscellaneous.h info.h
+SOURCES += currency.cpp main.cpp calendar.cpp dateformats.cpp numberformats.cpp languages.cpp window.cpp miscellaneous.cpp info.cpp

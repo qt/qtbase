@@ -1,0 +1,5 @@
+<!DOCTYPE html [ <!ELEMENT html ANY> ]>
+<html>
+    <% document.println ("hello, world"); %>
+</html>
+

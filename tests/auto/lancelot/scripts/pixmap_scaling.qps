@@ -1,0 +1,224 @@
+# Version: 1
+# CheckVsReference: 0% (0 30 600 70)
+# CheckVsReference: 0% (290 130 280 60)
+# CheckVsReference: 0% (0 180 250 90)
+
+# Hurra! Force line endings (?)
+
+translate 5 25
+setFont "arial" 8
+
+save 
+  drawText 15 0 "opaque image" 
+  translate 50 50
+  save
+    translate 1 1
+    scale 20 20
+    drawImage solid2x2.png 0 0
+  restore
+  save
+    translate -1 1
+    scale -20 20
+    drawImage solid2x2.png 0 0
+  restore
+  save 
+    translate 1 -1
+    scale 20 -20
+    drawImage solid2x2.png 0 0
+  restore
+  save 
+    translate -1 -1
+    scale -20 -20
+    drawImage solid2x2.png 0 0
+  restore
+
+  
+restore 
+
+save
+  translate 150 0
+  drawText 15 0 "alpha image" 
+  translate 50 50
+  save
+    translate 1 1
+    scale 20 20
+    drawImage alpha2x2.png 0 0
+  restore
+  save
+    translate -1 1
+    scale -20 20
+    drawImage alpha2x2.png 0 0
+  restore
+  save 
+    translate 1 -1
+    scale 20 -20
+    drawImage alpha2x2.png 0 0
+  restore
+  save 
+    translate -1 -1
+    scale -20 -20
+    drawImage alpha2x2.png 0 0
+  restore
+restore
+
+
+save
+  translate 0 150
+  drawText 15 0 "solid pixmap" 
+  translate 50 50
+  save
+    translate 1 1
+    scale 20 20
+    drawPixmap solid2x2.png 0 0
+  restore
+  save
+    translate -1 1
+    scale -20 20
+    drawPixmap solid2x2.png 0 0
+  restore
+  save 
+    translate 1 -1
+    scale 20 -20
+    drawPixmap solid2x2.png 0 0
+  restore
+  save 
+    translate -1 -1
+    scale -20 -20
+    drawPixmap solid2x2.png 0 0
+  restore
+restore
+
+
+save
+  translate 150 150 
+  drawText 15 0 "alpha pixmap"
+  translate 50 50 
+  save
+    translate 1 1
+    scale 20 20
+    drawPixmap alpha2x2.png 0 0
+  restore
+  save
+    translate -1 1
+    scale -20 20
+    drawPixmap alpha2x2.png 0 0
+  restore
+  save 
+    translate 1 -1
+    scale 20 -20
+    drawPixmap alpha2x2.png 0 0
+  restore
+  save 
+    translate -1 -1
+    scale -20 -20
+    drawPixmap alpha2x2.png 0 0
+  restore
+restore
+
+
+save 
+  translate 300 10
+  save
+    drawText 0 -10 "subrect solid image"
+    drawImage solid2x2.png 0  0 50 5  0 0.0 2 0.2
+    drawImage solid2x2.png 0  5 50 5  0 0.2 2 0.2
+    drawImage solid2x2.png 0 10 50 5  0 0.4 2 0.2
+    drawImage solid2x2.png 0 15 50 5  0 0.6 2 0.2
+    drawImage solid2x2.png 0 20 50 5  0 0.8 2 0.2
+    drawImage solid2x2.png 0 25 50 5  0 1.0 2 0.2
+    drawImage solid2x2.png 0 30 50 5  0 1.2 2 0.2
+    drawImage solid2x2.png 0 35 50 5  0 1.4 2 0.2
+    drawImage solid2x2.png 0 40 50 5  0 1.6 2 0.2
+    drawImage solid2x2.png 0 45 50 5  0 1.8 2 0.2
+    translate 60 0
+    drawImage solid2x2.png 0  0 5 50  0.0 0 0.2 2
+    drawImage solid2x2.png 5  0 5 50  0.2 0 0.2 2
+    drawImage solid2x2.png 10 0 5 50  0.4 0 0.2 2
+    drawImage solid2x2.png 15 0 5 50  0.6 0 0.2 2
+    drawImage solid2x2.png 20 0 5 50  0.8 0 0.2 2
+    drawImage solid2x2.png 25 0 5 50  1.0 0 0.2 2
+    drawImage solid2x2.png 30 0 5 50  1.2 0 0.2 2
+    drawImage solid2x2.png 35 0 5 50  1.4 0 0.2 2
+    drawImage solid2x2.png 40 0 5 50  1.6 0 0.2 2
+    drawImage solid2x2.png 45 0 5 50  1.8 0 0.2 2
+  restore
+
+  save  
+    translate 150 0
+    drawText 0 -10 "subrect solid image"
+    drawImage alpha2x2.png 0  0 50 5  0 0.0 2 0.2
+    drawImage alpha2x2.png 0  5 50 5  0 0.2 2 0.2
+    drawImage alpha2x2.png 0 10 50 5  0 0.4 2 0.2
+    drawImage alpha2x2.png 0 15 50 5  0 0.6 2 0.2
+    drawImage alpha2x2.png 0 20 50 5  0 0.8 2 0.2
+    drawImage alpha2x2.png 0 25 50 5  0 1.0 2 0.2
+    drawImage alpha2x2.png 0 30 50 5  0 1.2 2 0.2
+    drawImage alpha2x2.png 0 35 50 5  0 1.4 2 0.2
+    drawImage alpha2x2.png 0 40 50 5  0 1.6 2 0.2
+    drawImage alpha2x2.png 0 45 50 5  0 1.8 2 0.2
+    translate 60 0 
+    drawImage alpha2x2.png 0  0 5 50  0.0 0 0.2 2
+    drawImage alpha2x2.png 5  0 5 50  0.2 0 0.2 2
+    drawImage alpha2x2.png 10 0 5 50  0.4 0 0.2 2
+    drawImage alpha2x2.png 15 0 5 50  0.6 0 0.2 2
+    drawImage alpha2x2.png 20 0 5 50  0.8 0 0.2 2
+    drawImage alpha2x2.png 25 0 5 50  1.0 0 0.2 2
+    drawImage alpha2x2.png 30 0 5 50  1.2 0 0.2 2
+    drawImage alpha2x2.png 35 0 5 50  1.4 0 0.2 2
+    drawImage alpha2x2.png 40 0 5 50  1.6 0 0.2 2
+    drawImage alpha2x2.png 45 0 5 50  1.8 0 0.2 2
+  restore
+
+  save
+    translate 0 100
+    drawText 0 -10 "subrect alpha pixmap"
+    drawPixmap solid2x2.png 0  0 50 5  0 0.0 2 0.2
+    drawPixmap solid2x2.png 0  5 50 5  0 0.2 2 0.2
+    drawPixmap solid2x2.png 0 10 50 5  0 0.4 2 0.2
+    drawPixmap solid2x2.png 0 15 50 5  0 0.6 2 0.2
+    drawPixmap solid2x2.png 0 20 50 5  0 0.8 2 0.2
+    drawPixmap solid2x2.png 0 25 50 5  0 1.0 2 0.2
+    drawPixmap solid2x2.png 0 30 50 5  0 1.2 2 0.2
+    drawPixmap solid2x2.png 0 35 50 5  0 1.4 2 0.2
+    drawPixmap solid2x2.png 0 40 50 5  0 1.6 2 0.2
+    drawPixmap solid2x2.png 0 45 50 5  0 1.8 2 0.2
+    translate 60 0
+    drawPixmap solid2x2.png 0  0 5 50  0.0 0 0.2 2
+    drawPixmap solid2x2.png 5  0 5 50  0.2 0 0.2 2
+    drawPixmap solid2x2.png 10 0 5 50  0.4 0 0.2 2
+    drawPixmap solid2x2.png 15 0 5 50  0.6 0 0.2 2
+    drawPixmap solid2x2.png 20 0 5 50  0.8 0 0.2 2
+    drawPixmap solid2x2.png 25 0 5 50  1.0 0 0.2 2
+    drawPixmap solid2x2.png 30 0 5 50  1.2 0 0.2 2
+    drawPixmap solid2x2.png 35 0 5 50  1.4 0 0.2 2
+    drawPixmap solid2x2.png 40 0 5 50  1.6 0 0.2 2
+    drawPixmap solid2x2.png 45 0 5 50  1.8 0 0.2 2
+  restore
+
+  save
+    translate 150 100
+    drawText 0 -10 "subrect alpha pixmap"
+    drawPixmap alpha2x2.png 0  0 50 5  0 0.0 2 0.2
+    drawPixmap alpha2x2.png 0  5 50 5  0 0.2 2 0.2
+    drawPixmap alpha2x2.png 0 10 50 5  0 0.4 2 0.2
+    drawPixmap alpha2x2.png 0 15 50 5  0 0.6 2 0.2
+    drawPixmap alpha2x2.png 0 20 50 5  0 0.8 2 0.2
+    drawPixmap alpha2x2.png 0 25 50 5  0 1.0 2 0.2
+    drawPixmap alpha2x2.png 0 30 50 5  0 1.2 2 0.2
+    drawPixmap alpha2x2.png 0 35 50 5  0 1.4 2 0.2
+    drawPixmap alpha2x2.png 0 40 50 5  0 1.6 2 0.2
+    drawPixmap alpha2x2.png 0 45 50 5  0 1.8 2 0.2
+    translate 60 0
+    drawPixmap alpha2x2.png 0  0 5 50  0.0 0 0.2 2
+    drawPixmap alpha2x2.png 5  0 5 50  0.2 0 0.2 2
+    drawPixmap alpha2x2.png 10 0 5 50  0.4 0 0.2 2
+    drawPixmap alpha2x2.png 15 0 5 50  0.6 0 0.2 2
+    drawPixmap alpha2x2.png 20 0 5 50  0.8 0 0.2 2
+    drawPixmap alpha2x2.png 25 0 5 50  1.0 0 0.2 2
+    drawPixmap alpha2x2.png 30 0 5 50  1.2 0 0.2 2
+    drawPixmap alpha2x2.png 35 0 5 50  1.4 0 0.2 2
+    drawPixmap alpha2x2.png 40 0 5 50  1.6 0 0.2 2
+    drawPixmap alpha2x2.png 45 0 5 50  1.8 0 0.2 2
+  restore
+
+restore

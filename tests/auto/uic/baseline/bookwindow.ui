@@ -1,0 +1,149 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>BookWindow</class>
+ <widget class="QMainWindow" name="BookWindow" >
+ <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>601</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Books</string>
+  </property>
+  <widget class="QWidget" name="centralWidget" >
+   <layout class="QVBoxLayout" >
+    <property name="margin" >
+     <number>9</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QGroupBox" name="groupBox" >
+      <property name="title" >
+       <string>Books</string>
+      </property>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QTableView" name="bookTable" >
+         <property name="selectionBehavior" >
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2" >
+         <property name="title" >
+          <string>Details</string>
+         </property>
+         <layout class="QFormLayout" >
+	   <item row="0" column="0" >
+           <widget class="QLabel" name="label_5" >
+            <property name="text" >
+             <string>&lt;b>Title:&lt;/b></string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QLineEdit" name="titleEdit" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="label_2_2_2_2" >
+            <property name="text" >
+             <string>&lt;b>Author: &lt;/b></string>
+            </property>
+           </widget>
+	    </item>
+	     <item row="1" column="1" >
+           <widget class="QComboBox" name="authorEdit" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>	   
+	  <item row="2" column="0" >
+           <widget class="QLabel" name="label_3" >
+            <property name="text" >
+             <string>&lt;b>Genre:&lt;/b></string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QComboBox" name="genreEdit" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" >
+           <widget class="QLabel" name="label_4" >
+            <property name="text" >
+             <string>&lt;b>Year:&lt;/b></string>
+            </property>
+           </widget>
+          </item>       
+          <item row="3" column="1" >
+           <widget class="QSpinBox" name="yearEdit" >
+            <property name="enabled" >
+             <bool>true</bool>
+            </property>
+            <property name="prefix" >
+             <string/>
+            </property>
+            <property name="maximum" >
+             <number>2100</number>
+            </property>
+            <property name="minimum" >
+             <number>-1000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" >
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>&lt;b>Rating:&lt;/b></string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" >
+           <widget class="QSpinBox" name="ratingEdit" >
+            <property name="maximum" >
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <pixmapfunction></pixmapfunction>
+ <tabstops>
+  <tabstop>bookTable</tabstop>
+  <tabstop>titleEdit</tabstop>
+  <tabstop>authorEdit</tabstop>
+  <tabstop>genreEdit</tabstop>
+  <tabstop>yearEdit</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

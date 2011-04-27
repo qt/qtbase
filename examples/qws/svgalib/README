@@ -1,0 +1,9 @@
+This is the SVGA screen driver plugin example for QWS.
+
+You may need to set the SVGALIB_DEFAULT_MODE environment
+variable. These values have been confirmed to work on one specific
+machine using svgalib 1.4.3: 18, 24, 34, 35, 36
+
+There is a bug in the example causing missing updates in 8-bit mode
+(e.g. modes 10 and 12). Fixing this bug is left as an exercise for the
+reader.

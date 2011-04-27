@@ -1,0 +1,6 @@
+<RCC>
+    <qresource>
+        <file>keys_de.qm</file>
+        <file>qt_de.qm</file>
+    </qresource>
+</RCC>

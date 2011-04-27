@@ -1,0 +1,8 @@
+<!ELEMENT a EMPTY>
+<!ENTITY ge1 "abcdef">
+<!ATTLIST a attr1 CDATA "&ge1;">
+%pe2;
+<!--* PE reference in attr default before declaration *-->
+<!ENTITY % pe2 "<!ATTLIST a attr2 CDATA #IMPLIED>">
+
+

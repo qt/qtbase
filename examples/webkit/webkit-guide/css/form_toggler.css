@@ -1,0 +1,200 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the Qt WebKit module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/* MOBILE UI */
+
+body {
+     background         : #aaaaaa;
+     font-family        : sans-serif;
+}
+
+body > section {
+    border-radius       : 1em;
+    padding             : 1em;
+    background          : #ffffff;
+    margin              : 1em 1em 10em 1em;
+    min-height          : 70%
+}
+
+h1, h2 {
+    margin-top          : 1em;
+    font-size           : smaller;
+    text-align          : center;
+    padding-top         : 1em;
+}
+
+h2 {
+    border-top          : solid thin #dddddd;
+}
+
+                  /* FORM */
+
+form
+{
+    line-height         : 250%;
+    font-weight         : bold;
+    font-size           : small;
+}
+
+             /* DEFAULT INPUT */
+
+input[type=radio],
+input[type=checkbox]
+{
+    text-align          : right;
+    padding-top         : 0.1em;
+    text-transform      : uppercase;
+    float               : right;
+    -webkit-appearance  : button;
+    border              : 0.25em #aaaaaa solid;
+    background          : #aaaaaa;
+    background          : -webkit-gradient(linear,center top,center bottom,from(#999999),to(#ffffff));
+    border-radius       : 0.5em;
+    min-width           : 6em;
+    height              : 2em;
+    display             : inline-block;
+}
+
+             /* CHECKED INPUT */
+
+input[type=radio]:checked,
+input[type=checkbox]:checked
+{
+    text-align          : left;
+}
+
+             /* FLIPPED INPUT */
+
+input.invert
+{
+    text-align          : left;
+}
+
+input.invert:checked
+{
+    text-align          : right;
+}
+
+              /* DEFAULT TEXT */
+
+input[type=radio]:before,
+input[type=checkbox]:before
+{
+    color               : #888888;
+    height              : 1.4em;
+    display             : inline-block;
+    background          : pink;
+    background          : -webkit-gradient(linear,center top,center bottom,from(pink),to(#ffffff));
+    min-width           : 50%;
+    content             : "off";
+    text-align          : center;
+    font-weight         : bold;
+    padding-left        : 0.5em;
+    padding-right       : 0.5em;
+    border-radius       : 0.25em;
+}
+
+              /* CHECKED TEXT */
+
+input[type=radio]:checked:before,
+input[type=checkbox]:checked:before
+{
+    color               : #ffffff;
+    content             : "on";
+    background          : #00aa00;
+    background          : -webkit-gradient(linear,center top,center bottom,from(green),to(cyan));
+}
+
+               /* ALTERNATE DISPLAY */
+
+input.yn:before
+{
+    content             : "no";
+}
+
+input.yn:checked:before
+{
+    content             : "yes";
+}
+
+input.tf:before
+{
+    content             : "false";
+}
+
+input.tf:checked:before
+{
+    content             : "true";
+}
+
+                /* BINARY */
+
+input.binary {
+    display             : inline-block;
+}
+
+input.binary:checked {
+    display             : none;
+}
+
+input.binary:before {
+    background          : #00aa00;
+    background          : -webkit-gradient(linear,center top,center bottom,from(green),to(cyan));
+    color               : #ffffff;
+}
+
+input.binary:nth-of-type(odd) {
+    text-align          : left;
+}
+
+input.binary:nth-of-type(even) {
+    text-align          : right;
+}
+
+                /* CUSTOM */
+
+input.ampm:nth-of-type(odd):before { content : "am"; }
+input.ampm:nth-of-type(even):before { content : "pm"; }
+
+input.sex:nth-of-type(odd):before { content : "male"; }
+input.sex:nth-of-type(even):before { content : "female"; }
+
+input.sex { width : 8em }
+

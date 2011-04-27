@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Reserved prefixes and namespaces: using the xml prefix undeclared " )
+StartElement( name="foo" qualifiedName="foo"
+    Attribute( name="lang" namespaceUri="http://www.w3.org/XML/1998/namespace" qualifiedName="xml:lang" prefix="xml" value="en" )
+ )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

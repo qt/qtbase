@@ -1,0 +1,43 @@
+Source: libgq
+Section: libs
+Priority: extra
+Maintainer: Marius Vollmer <marius.vollmer@nokia.com>
+Origin: maemo
+Build-Depends: debhelper (>= 7), libqt4-dev, doxygen, libgconf2-dev, libglib2.0-dev, autoconf, automake, libtool
+Vcs-Browser: http://gitorious.org/maemo-af/libgq
+Vcs-Git: git@gitorious.org:maemo-af/libgq.git
+
+Package: libgq-gconf0
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: a Qt wrapper for GConf
+ This library contains the GConfItem class, for easy
+ access to GConf from Qt programs.
+ .
+ This package contains the shared run-time library.
+
+Package: libgq-gconf0-dbg
+Architecture: any
+Depends: libgq-gconf0 (= ${source:Version})
+Description: a Qt wrapper for GConf
+ This library contains the GConfItem class, for easy
+ access to GConf from Qt programs.
+ .
+ This package contains the debugging symbols.
+
+Package: libgq-gconf-dev
+Architecture: any
+Depends: libgq-gconf0 (= ${source:Version}), libqt4-dev, libgconf2-dev
+Description: a Qt wrapper for GConf
+ This library contains the GConfItem class, for easy
+ access to GConf from Qt programs.
+ .
+ This package contains the development files.
+
+Package: libgq-gconf-doc
+Architecture: all
+Description: a Qt wrapper for GConf
+ This library contains the GConfItem class, for easy
+ access to GConf from Qt programs.
+ .
+ This package contains the documentation.

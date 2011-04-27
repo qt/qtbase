@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* wrong order  *-->
+<!ENTITY "<!-- comments -->" % paaa >
+%paaa;
+]>
+<root/>

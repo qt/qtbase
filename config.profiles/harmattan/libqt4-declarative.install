@@ -1,0 +1,4 @@
+usr/lib/libQtDeclarative.so.*
+usr/lib/qt4/imports/Qt/labs/folderlistmodel
+usr/lib/qt4/imports/Qt/labs/gestures
+usr/lib/qt4/imports/Qt/labs/particles

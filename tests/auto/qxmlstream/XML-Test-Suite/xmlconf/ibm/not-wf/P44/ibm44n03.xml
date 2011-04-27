@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root EMPTY>
+<!ATTLIST root attr1 CDATA #IMPLIED>
+<!ATTLIST root attr2 CDATA #IMPLIED>
+]>
+<root attr1="any"\>
+<!--* Wrong closing sequence in EmptyElemTag *-->
+
+
+
+

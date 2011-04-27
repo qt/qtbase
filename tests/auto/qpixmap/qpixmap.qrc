@@ -1,0 +1,29 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/designer.png</file>
+    <file>images/dx_0_dy_0_50_50_100_100.png</file>
+    <file>images/dx_0_dy_0_null.png</file>
+    <file>images/dx_0_dy_0_x_y_w_h.png</file>
+    <file>images/dx_0_dy_-10_50_50_100_100.png</file>
+    <file>images/dx_0_dy_10_50_50_100_100.png</file>
+    <file>images/dx_0_dy_-10_x_y_w_h.png</file>
+    <file>images/dx_0_dy_10_x_y_w_h.png</file>
+    <file>images/dx_0_dy_-128_x_y_w_h.png</file>
+    <file>images/dx_0_dy_128_x_y_w_h.png</file>
+    <file>images/dx_0_dy_1_null.png</file>
+    <file>images/dx_-10_dy_0_50_50_100_100.png</file>
+    <file>images/dx_10_dy_0_50_50_100_100.png</file>
+    <file>images/dx_-10_dy_0_x_y_w_h.png</file>
+    <file>images/dx_10_dy_0_x_y_w_h.png</file>
+    <file>images/dx_-10_dy_-10_50_50_100_100.png</file>
+    <file>images/dx_10_dy_10_50_50_100_100.png</file>
+    <file>images/dx_-10_dy_-10_x_y_w_h.png</file>
+    <file>images/dx_10_dy_10_x_y_w_h.png</file>
+    <file>images/dx_-128_dy_0_x_y_w_h.png</file>
+    <file>images/dx_128_dy_0_x_y_w_h.png</file>
+    <file>images/dx_128_dy_128_64_64_128_128.png</file>
+    <file>images/dx_-128_dy_-128_x_y_w_h.png</file>
+    <file>images/dx_128_dy_128_x_y_w_h.png</file>
+    <file>images/dx_1_dy_0_null.png</file>
+</qresource>
+</RCC>

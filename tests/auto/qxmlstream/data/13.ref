@@ -1,0 +1,14 @@
+StartDocument( )
+StartElement( name="a" qualifiedName="a"
+    Attribute( name="attr1" qualifiedName="attr1" value="'" )
+
+    Attribute( name="attr2" qualifiedName="attr2" value=""" )
+
+    Attribute( name="attr3" qualifiedName="attr3" value="a"a" )
+
+    Attribute( name="attr4" qualifiedName="attr4" value="a'a" )
+
+    Attribute( name="attr5" qualifiedName="attr5" value="0123456789-()+,.'/:=?;!*#@$_%" )
+ )
+EndElement( name="a" qualifiedName="a" )
+EndDocument( )

@@ -1,0 +1,6 @@
+StartDocument( )
+StartElement( name="site" qualifiedName="site"
+    Attribute( name="attr" namespaceUri="http://www.w3.org/XML/1998/namespace" qualifiedName="xml:attr" prefix="xml" )
+ )
+EndElement( name="site" qualifiedName="site" )
+EndDocument( )

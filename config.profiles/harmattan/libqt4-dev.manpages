@@ -1,0 +1,5 @@
+debian/manpages/lrelease.1
+debian/manpages/lupdate.1
+debian/manpages/moc.1
+debian/manpages/qmake.1
+debian/manpages/uic.1

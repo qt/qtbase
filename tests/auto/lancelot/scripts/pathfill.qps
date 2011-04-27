@@ -1,0 +1,38 @@
+# Version: 1
+# CheckVsReference: 1% (0 0 850 420)
+
+setPen afff0000 4
+
+setBrush dome_rgb32.png
+drawEllipse 10 10 200 200
+
+setBrush dome_argb32.png
+drawEllipse 220 10 200 200
+
+setPen NoPen
+
+setBrush dome_rgb32.png
+drawEllipse 10 220 200 200
+
+setBrush dome_argb32.png
+drawEllipse 220 220 200 200
+
+setBrushOrigin -30 -30
+
+setPen afff0000 4
+setBrush dome_rgb32.png
+drawEllipse 430 10 200 200
+
+setBrush dome_argb32.png
+drawEllipse 640 10 200 200
+
+setPen NoPen
+setBrush dome_rgb32.png
+drawEllipse 430 220 200 200
+
+setBrush dome_argb32.png
+drawEllipse 640 220 200 200
+
+setPen black
+drawText 150 450 "No offset  RGB/ARGB"
+drawText 550 450 "-30 offset RGB/ARGB"

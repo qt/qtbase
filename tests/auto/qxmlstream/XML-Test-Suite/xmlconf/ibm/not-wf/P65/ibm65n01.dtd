@@ -1,0 +1,12 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!--dtd for production 65-->
+<![IGNORE[
+Everything is ignored within an ignored section, except the
+sub-section delimiters .  These must be balanced
+]]> this is illegal
+<![
+<!ELEMENT animal EMPTY>
+]]>
+hello
+]]>
+<!--Negative test. Pattern1. Illegal sequence of ']]>'-->

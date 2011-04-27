@@ -1,0 +1,162 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+  \page widgets-and-layouts.html
+  \title Widgets and Layouts
+  \ingroup qt-gui-concepts
+  \brief The primary elements for designing user interfaces in Qt.
+
+  \section1 Widgets
+
+  Widgets are the primary elements for creating user interfaces in Qt.
+  \l{The Widget Classes}{Widgets} can display data and status information,
+  receive user input, and provide a container for other widgets that
+  should be grouped together. A widget that is not embedded in a
+  parent widget is called a \l{Window and Dialog Widgets} {window}.
+
+  \image parent-child-widgets.png A parent widget containing various child widgets.
+
+  The QWidget class provides the basic capability to render to the
+  screen, and to handle user input events. All UI elements that Qt
+  provides are either subclasses of QWidget, or are used in connection
+  with a QWidget subclass. Creating custom widgets is done by
+  subclassing QWidget or a suitable subclass and reimplementing the
+  virtual event handlers.
+
+  \section1 Layouts
+
+  \l{Layout Management}{Layouts} are an elegant and flexible way to
+  automatically arrange child widgets within their container. Each
+  widget reports its size requirements to the layout through the
+  \l{QWidget::}{sizeHint} and \l{QWidget::}{sizePolicy} properties,
+  and the layout distributes the available space accordingly.
+
+  \table
+  \row    
+  \o \image qgridlayout-with-5-children.png
+  \o \image qformlayout-with-6-children.png
+  \endtable
+
+  \l{Qt Designer Manual}{\QD} is a powerful tool for interactively creating and
+  arranging widgets in layouts.
+
+  \section1 Widget Styles
+
+  \l{Styles and Style Aware Widgets}{Styles} draw on behalf of
+  widgets and encapsulate the look and feel of a GUI. Qt's built-in
+  widgets use the QStyle class to perform nearly all of their drawing,
+  ensuring that they look exactly like the equivalent native widgets.
+    
+  \table
+  \row
+  \o \image windowsxp-tabwidget.png
+  \o \image plastique-tabwidget.png
+  \o \image macintosh-tabwidget.png
+  \endtable
+
+  \l{Qt Style Sheets} are a powerful mechanism that allows you to customize the
+  appearance of widgets, in addition to what is already possible by subclassing QStyle.
+
+  \section1 The Widget Classes
+
+  The following sections list the widget classes. See the \l{Qt Widget
+  Gallery} for some examples.
+
+  \section2 Basic Widgets
+
+  These basic widgets (controls), e.g. buttons, comboboxes and
+  scroll bars, are designed for direct use.
+
+  \table
+  \row
+  \o \image windows-label.png
+  \o \image windowsvista-pushbutton.png
+  \o \image gtk-progressbar.png
+  \row
+  \o \image plastique-combobox.png
+  \o \image macintosh-radiobutton.png
+  \o \image cde-lineedit.png
+  \endtable
+
+  \annotatedlist basicwidgets
+
+  \section2 Advanced Widgets
+
+  Advanced GUI widgets, e.g. tab widgets and progress bars, provide
+  more complex user interface controls.
+
+  \table
+  \row
+  \o \image windowsxp-treeview.png
+  \o \image gtk-calendarwidget.png
+  \o \image qundoview.png
+  \endtable
+
+  \annotatedlist advanced
+
+  \table
+  \row
+  \o \image windowsvista-tabwidget.png 
+  \o \image macintosh-groupbox.png
+  \endtable
+
+  \section2 Organizer Widgets
+
+  Classes like splitters, tab bars, button groups, etc are used for
+  organizing and grouping GUI primitives into more complex
+  applications and dialogs.
+
+  \annotatedlist organizers
+
+  \section2 Abstract Widget Classes
+
+  The abstract widget classes are base classes. They are not usable as
+  standalone classes but provide functionality when they are subclassed.
+
+  \annotatedlist abstractwidgets
+*/
+
+/*!
+    \group advanced
+    \title Advanced Widgets
+*/
+
+/*!
+    \group abstractwidgets
+    \title Abstract Widget Classes
+*/
+
+/*!
+    \group basicwidgets
+    \title Basic Widgets
+*/
+
+/*!
+    \group organizers
+    \title Organizers
+*/

@@ -1,0 +1,18 @@
+********* Start testing of tst_DateTime *********
+Config: Using QTest library 4.4.0, Qt 4.4.0
+PASS   : tst_DateTime::initTestCase()
+FAIL!  : tst_DateTime::dateTime() Compared values are not the same
+   Actual (local): 2000/05/03 04:03:04.000[local time]
+   Expected (utc): 2000/05/03 04:03:04.000[UTC]
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datetime/tst_datetime.cpp(33)]
+FAIL!  : tst_DateTime::qurl() Compared values are not the same
+   Actual (operandA): http://example.com
+   Expected (operandB): 
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datetime/tst_datetime.cpp(41)]
+FAIL!  : tst_DateTime::qurl() Compared values are not the same
+   Actual (operandA): 
+   Expected (operandB): http://example.com
+   Loc: [/home/fenglich/dev/qt/tests/auto/selftests/datetime/tst_datetime.cpp(41)]
+PASS   : tst_DateTime::cleanupTestCase()
+Totals: 2 passed, 3 failed, 0 skipped
+********* Finished testing of tst_DateTime *********

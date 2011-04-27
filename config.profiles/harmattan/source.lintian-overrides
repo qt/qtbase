@@ -1,0 +1,5 @@
+qt4-x11 source: changelog-should-mention-nmu
+qt4-x11 source: native-package-with-dash-version
+qt4-x11 source: source-nmu-has-incorrect-version-number
+qt4-x11 source: virtual-package-depends-without-real-package-depends build-depends: libgl-dev
+qt4-x11 source: virtual-package-depends-without-real-package-depends build-depends: libgl1

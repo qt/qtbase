@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!--* Missing closing bracket in AttlistDecl *-->
+<!ATTLIST a 
+<!--* random *-->
+]>
+<root>Any content</root>

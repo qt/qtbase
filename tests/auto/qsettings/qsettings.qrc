@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>resourcefile.ini</file>
+    <file>resourcefile2.ini</file>
+    <file>resourcefile3.ini</file>
+    <file>resourcefile4.ini</file>
+    <file>resourcefile5.ini</file>
+</qresource>
+</RCC>

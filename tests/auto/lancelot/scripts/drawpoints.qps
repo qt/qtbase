@@ -1,0 +1,101 @@
+# Version: 1
+# CheckVsReference: 5%
+
+#setRenderHint Antialiasing
+
+setPen red 0 solidline
+begin_block points
+drawPoint 00 00
+drawPoint 10 00
+drawPoint 20 00
+drawPoint 30 00
+drawPoint 40 00
+drawPoint 50 00
+drawPoint 00 10
+drawPoint 10 10
+drawPoint 20 10
+drawPoint 30 10
+drawPoint 40 10
+drawPoint 50 10
+drawPoint 00 20
+drawPoint 10 20
+drawPoint 20 20
+drawPoint 30 20
+drawPoint 40 20
+drawPoint 50 20
+drawPoint 00 30
+drawPoint 10 30
+drawPoint 20 30
+drawPoint 30 30
+drawPoint 40 30
+drawPoint 50 30
+drawPoint 00 40
+drawPoint 10 40
+drawPoint 20 40
+drawPoint 30 40
+drawPoint 40 40
+drawPoint 50 40
+drawPoint 00 50
+drawPoint 10 50
+drawPoint 20 50
+drawPoint 30 50
+drawPoint 40 50
+drawPoint 50 50
+end_block points
+
+translate 100 0
+setPen blue 1 solidline
+repeat_block points
+
+translate 100 0
+setPen green 5 solidline roundcap
+repeat_block points
+
+resetMatrix
+
+translate 0 100
+scale 3 3
+setPen red 0 solidline roundcap
+repeat_block points
+
+translate 60 0
+setPen blue 1 solidline roundcap
+repeat_block points
+
+translate 60 0
+setPen green 5 solidline roundcap
+repeat_block points
+
+resetMatrix
+
+translate 0 300
+scale 3 3
+setPen red 0 solidline flatcap
+repeat_block points
+
+translate 60 0
+setPen blue 1 solidline flatcap
+repeat_block points
+
+translate 60 0
+setPen green 5 solidline flatcap
+repeat_block points
+
+resetMatrix
+translate 10 500
+setPen black 1 solidline flatcap
+drawPoint 0 0
+setPen black 2 solidline flatcap
+drawPoint 3 0
+setPen black 3 solidline flatcap
+drawPoint 8 0
+setPen black 4 solidline flatcap
+drawPoint 15 0
+setPen black 5 solidline flatcap
+drawPoint 24 0
+setPen black 6 solidline flatcap
+drawPoint 35 0
+setPen black 7 solidline flatcap
+drawPoint 48 0
+setPen black 8 solidline flatcap
+drawPoint 63 0

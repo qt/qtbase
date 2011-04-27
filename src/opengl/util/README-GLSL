@@ -1,0 +1,18 @@
+Use of GLSL for vertex and fragment programs in Qt
+---------------------------------------------------
+
+We don't compile the *.glsl files because we don't want the build process of
+Qt to require cgc from nVidia to build the fragment programs.
+
+The script src/opengl/util/glsl_to_include.sh will compile a GLSL program to a file
+that can be included in a C(++) program. The file is the output from cgc
+quoted as a string.
+
+This can be done manually by:
+
+./glsl_to_include.sh radial.glsl
+./glsl_to_include.sh conical.glsl
+
+This will produce the files radial.frag and radial.glsl_quoted.
+(and also conical.frag and conical.glsl_quoted)
+These files are included by qpaintengine_opengl.cpp

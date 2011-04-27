@@ -1,0 +1,570 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+  \page sql-types.html
+  \title Data Types for Qt-supported Database Systems
+  \brief Recommended data types for database systems
+  
+  \ingroup qt-sql
+
+  \section1 Recommended Data Types for Qt-Supported Database Systems
+
+  This table shows the recommended data types for extracting data from
+  the databases supported in Qt. Note that types used in Qt are not
+  necessarily valid as input types to a specific database
+  system. e.g., A double might work perfectly as input for floating
+  point records in a particular database, but not necessarily as a
+  storage format for output from that database, because it would be
+  stored with 64-bit precision in C++.
+
+  \tableofcontents
+
+  \section2 IBM DB2 Data Types
+
+  \table 90%
+    \header
+        \o IBM DB2 data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o SMALLINT
+        \o 16-bit signed integer
+        \o typedef qint16
+    \row
+        \o INTEGER
+        \o 32-bit signed integer
+        \o typedef qint32
+    \row
+        \o BIGINT
+        \o 64-bit signed integer
+        \o typedef qint64
+    \row
+        \o REAL
+        \o 32-bit Single-precision floating point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE PRECISION
+        \o 64-bit Double-precision floating point
+        \o By default mapping to QString
+    \row
+        \o FLOAT
+        \o 64-bit Double-precision floating point
+        \o By default mapping to QString
+    \row
+        \o CHAR
+        \o Fixed-length, null-terminated character string
+        \o Mapped to QString
+    \row
+        \o VARCHAR
+        \o Null-terminated varying length string
+        \o Mapped to QString
+    \row
+        \o LONG VARCHAR
+        \o Not null-terminated varying length character string
+        \o Mapped to QString
+    \row
+        \o BLOB
+        \o Not null-terminated varying binary string with 4-byte string 
+        length indicator
+        \o Mapped to QByteArray
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o DATE
+        \o Null-terminated character string of the following format:
+        yyyy-mm-dd
+        \o Mapped to QDate
+    \row
+        \o TIME
+        \o Null-terminated character string of the following format: hh.mm.ss
+        \o Mapped to QTime
+    \row
+        \o TIMESTAMP
+        \o Null-terminated character string of the following format: yyyy-mm-dd-hh.mm.ss.nnnnnn
+        \o Mapped to QDateTime
+  \endtable
+
+  \section2 Borland InterBase Data Types
+
+  \table 90%
+    \header
+        \o Borland InterBase data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o BOOLEAN
+        \o Boolean
+        \o bool
+    \row
+        \o TINYINT
+        \o 8 bit signed integer
+        \o typedef qint8
+    \row
+        \o SMALLINT
+        \o 16-bit signed integer
+        \o typedef qint16
+    \row
+        \o INTEGER
+        \o 32-bit signed integer
+        \o typedef qint32
+    \row
+        \o BIGINT LONG
+        \o 64-bit signed integer
+        \o typedef qint64
+    \row
+        \o REAL FLOAT
+        \o 32-bit floating point
+        \o By default mapping to QString
+    \row
+        \o FLOAT
+        \o 64-bit floating point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE
+        \o 64-bit floating point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE PRECISION
+        \o 64-bit Double-precision floating point
+        \o By default mapping to QString
+    \row
+        \o VARCHAR STRING
+        \o Character string, Unicode
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o DATE
+        \o Displays date. Format: 'yyyy-mm-dd'
+        \o Mapped to QDate
+    \row
+        \o TIME
+        \o Displays time. Format is 'hh:mm:ss' in 24-hour format
+        \o Mapped to QTime
+    \row
+        \o TIMESTAMP
+        \o Displays a timestamp. Format is 'yyyy-mm-dd hh:mm:ss'
+        \o Mapped to QDateTime
+  \endtable
+
+  \section2 MySQL Data Types
+
+  \table 90%
+    \header
+        \o MySQL data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o TINYINT
+        \o 8 bit signed integer
+        \o typedef qint8
+    \row
+        \o TINYINT UNSIGNED
+        \o 8 bit unsigned integer
+        \o typedef quint8
+    \row
+        \o SMALLINT
+        \o 16-bit signed integer
+        \o typedef qint16
+    \row
+        \o SMALLINT UNSIGNED
+        \o 16-bit unsigned integer
+        \o typedef quint16
+    \row
+        \o INT
+        \o 32-bit signed integer
+        \o typedef qint32
+    \row
+        \o INT UNSIGNED
+        \o 32-bit unsigned integer
+        \o typedef quint32
+    \row
+        \o BIGINT
+        \o 64-bit signed integer
+        \o typedef qint64
+    \row
+        \o FLOAT
+        \o 32-bit Floating Point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE
+        \o 64-bit Floating Point
+        \o By default mapping to QString
+    \row
+        \o CHAR
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o VARCHAR
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o TINYTEXT
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o TEXT
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o MEDIUMTEXT
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o LONGTEXT
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o all BLOB types
+        \o BLOB
+        \o Mapped to QByteArray
+    \row
+        \o DATE
+        \o Date without Time
+        \o Mapped to QDate
+    \row
+        \o DATETIME
+        \o Date and Time
+        \o Mapped to QDateTime
+    \row
+        \o TIMESTAMP
+        \o Date and Time
+        \o Mapped to QDateTime
+    \row
+        \o TIME
+        \o Time
+        \o Mapped to QTime
+    \row
+        \o YEAR
+        \o Year (int)
+        \o Mapped to QDateTime
+    \row
+        \o ENUM
+        \o Enumeration of Value Set
+        \o Mapped to QString
+  \endtable
+
+  \section2 Oracle Call Interface Data Types
+
+  \table 90%
+    \header
+        \o Oracle Call Interface data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o NUMBER
+        \o FLOAT, DOUBLE, PRECISIONc REAL
+        \o By default mapping to QString
+    \row
+        \o NUMBER(38)
+        \o INTEGER INT SMALLINT
+        \o typedef qint8/16/32/64
+    \row
+        \o NUMBER(p,s)
+        \o NUMERIC(p,s) DECIMAL(p,s)a
+        \o By default mapping to QString
+    \row
+        \o NVARCHAR2(n)
+        \o Character string (NATIONAL CHARACTER VARYING(n) NATIONAL 
+        CHAR VARYING(n) NCHAR VARYING(n))
+        \o Mapped to QString
+    \row
+        \o NCHAR(n)
+        \o Character string (NATIONAL CHARACTER(n) NATIONAL CHAR(n) 
+        NCHAR(n))
+    \o Mapped to QString
+    \row
+        \o CHAR(n)
+        \o Character string (CHARACTER(n) CHAR(n))
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o BLOB
+        \o A binary large object
+        \o Mapped to QByteArray
+    \row
+        \o TIMESTAMP
+        \o Year, month, and day values of date, as well as hour, minute,
+        and second values of time
+        \o Mapped to QDateTime
+  \endtable
+
+  \section2 ODBC Data Types
+
+  \table 90%
+    \header
+        \o ODBC data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o BIT
+        \o Boolean
+        \o BOOL
+    \row
+        \o TINYINT
+        \o 8 bit integer
+        \o typedef qint8
+    \row
+        \o SMALLINT
+        \o 16-bit signed integer
+        \o typedef qint16
+    \row
+        \o INTEGER
+        \o 32-bit signed integer
+        \o typedef qint32
+    \row
+        \o BIGINT
+        \o 64-bit signed integer
+        \o typedef qint64
+    \row
+        \o REAL
+        \o 32-bit Single-precision floating point
+        \o By default mapping to QString
+    \row
+        \o FLOAT
+        \o 64-bit Double floating point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE
+        \o 64-bit Double floating point
+        \o By default mapping to QString
+    \row
+        \o CHAR
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o VARCHAR
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o LONGVARCHAR
+        \o Character string
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o DATE
+        \o Character string
+        \o Mapped to QDate
+    \row
+        \o TIME
+        \o Character Time, Character string
+        \o Mapped to QTime
+    \row
+        \o TIMESTAMP
+        \o Character Time, Character string
+        \o Mapped to QDateTime
+  \endtable
+
+  \section2 PostgreSQL Data Types
+
+  \table 90%
+    \header
+        \o PostgreSQL data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o BOOLEAN
+        \o Boolean
+        \o bool
+    \row
+        \o SMALLINT
+        \o 16-bit signed integer
+        \o typedef qint16
+    \row
+        \o INTEGER
+        \o 32-bit signed integer
+        \o typedef qint32
+    \row
+        \o BIGINT
+        \o 64-bit signed integer
+        \o typedef qint64
+    \row
+        \o REAL
+        \o 32-bit variable-precision floating point
+        \o By default mapping to QString
+    \row
+        \o DOUBLE PRECISION
+        \o 64-bit variable-precision floating point
+        \o By default mapping to QString
+    \row
+        \o DECIMAL VARIABLE
+        \o user-specified precision, exact
+        \o Mapped to QString
+    \row
+        \o NUMERIC VARIABLE
+        \o user-specified precision, exact
+        \o Mapped to QString
+    \row
+        \o VARCHAR
+        \o variable-length character string
+        \o Mapped to QString
+    \row
+        \o CHARACTER
+        \o Character string of fixed-length
+        \o Mapped to QString
+    \row
+        \o TEXT
+        \o Character string of variable-length
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o TIMESTAMP
+        \o 8 bytes, both date and time
+        \o Mapped to QDateTime
+    \row
+        \o TIMESTAMP
+        \o 8 bytes, both date and time, with time zone
+        \o Mapped to QDateTime
+    \row
+        \o DATE
+        \o 4 bytes, dates only
+        \o Mapped to QDate
+    \row
+        \o TIME
+        \o 8 bytes, times of day only 00:00:00.00 - 23:59:59.99
+        \o Mapped to QTime
+    \row
+        \o TIME
+        \o 12 bytes times of day only, with time zone 00:00:00.00+12
+        \o Mapped to QDateTime
+  \endtable
+
+  \section2 QSQLITE SQLite version 3 Data Types
+
+  \table 90%
+    \header
+        \o QSQLITE SQLite version 3 data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o NULL
+        \o NULL value.
+        \o NULL
+    \row
+        \o INTEGER
+        \o Signed integer, stored in 8, 16, 24, 32, 48, or 64-bits 
+        depending on the magnitude of the value.
+        \o typedef qint8/16/32/64
+    \row
+        \o REAL
+        \o 64-bit floating point value.
+        \o By default mapping to QString
+    \row
+        \o TEXT
+        \o Character string (UTF-8, UTF-16BE or UTF-16-LE).
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o BLOB
+        \o The value is a BLOB of data, stored exactly as it was input.
+        \o Mapped to QByteArray
+  \endtable
+
+  \section2 Sybase Adaptive Server Data Types
+
+  \table 90%
+    \header
+        \o Sybase Adaptive Server data type
+        \o SQL type description
+        \o Recommended input (C++ or Qt data type)
+    \row
+        \o BINARY
+        \o Describes a fixed-length binary value up to 255 bytes in size.
+        \o Mapped to QByteArray
+    \row
+        \o CHAR
+        \o Character String
+        \o Mapped to QString
+    \row
+        \o DATETIME
+        \o Date and time. Range: 1753-01-01 00:00:00 through 9999-12-31 23:59:59.
+        \o Mapped to QDateTime
+    \row
+        \o NCHAR
+        \o Character String of fixed length
+        \o Mapped to QString
+    \row
+        \o NVARACHAR
+        \o Character String of variable length
+        \o Mapped to QString
+    \row
+        \o VARCHAR
+        \o Character String of fixed length
+        \o Mapped to QString
+    \row
+        \o CLOB
+        \o Character large string object
+        \o Mapped to QString
+    \row
+        \o TIMESTAMP
+        \o A unique number within a database
+        \o Mapped to QString
+    \row
+        \o SMALLDATETIME
+        \o Date and time. Range: 1900-01-01 00:00 through 2079-12-31 23:59
+        \o Mapped to QDateTime
+    \row
+        \o UNICHAR
+        \o Character String of fixed length.(Unicode)
+        \o Mapped to QString
+    \row
+        \o UNIVARCHAR
+        \o Character String of variable length.(Unicode)
+        \o Mapped to QString
+    \row
+        \o VARBINARY
+        \o Describes a variable-length binary value up to 255 bytes in size
+        \o Mapped to QByteArray 
+  \endtable
+
+  \section2 SQLite Version 2
+
+  SQLite version 2 is "typeless". This means that you can store any kind of
+  data you want in any column of any table, regardless of the declared
+  data type of that column. We recommend that you map the data to QString.
+*/

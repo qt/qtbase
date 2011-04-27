@@ -1,0 +1,5 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[{localName="x", qName="x", uri="", type="CDATA", value="foo"}, {localName="y", qName="y", uri="", type="CDATA", value="bar"}, {localName="x", qName="x", uri="", type="CDATA", value="baz"}])
+   endElement(namespaceURI="", localName="doc", qName="doc")
+endDocument()

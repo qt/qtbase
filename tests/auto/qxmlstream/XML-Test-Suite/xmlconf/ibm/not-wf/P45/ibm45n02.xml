@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Mising white space in elementdecl *-->
+<!ELEMENT aEle(#PCDATA)>
+]>
+<root>Any content</root>

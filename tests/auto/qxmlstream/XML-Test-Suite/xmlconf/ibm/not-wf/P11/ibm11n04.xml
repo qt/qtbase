@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE student SYSTEM 'student.DTD [
+	<!ELEMENT student (#PCDATA)> 
+]>
+
+<!-- testing invalid system literal with no closing bracket  -->
+<student>My Name is SnowMan. </student>

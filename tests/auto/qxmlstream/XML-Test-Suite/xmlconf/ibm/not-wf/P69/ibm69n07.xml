@@ -1,0 +1,12 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!--* indirect recursive PE reference -->
+<!ENTITY % paaa "&bbb;">
+<!ENTITY bbb "&ccc;">
+<!ENTITY ccc "&ddd;">
+<!ENTITY ddd "&eee;">
+<!ENTITY eee "%paaa;">
+]>
+<root/>
+

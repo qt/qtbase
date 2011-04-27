@@ -1,0 +1,6 @@
+This is libgq, a set of small libraries with Q wrappers for G things.
+
+* GConf
+
+The libgq-gconf library contains the GConfItem class for accessing
+GConf.

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_Subtest">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="testGlobal">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="skip">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="128">
+    <DataTag><![CDATA[1]]></DataTag>
+    <Description><![CDATA[skipping]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="skipLocal">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="148">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[skipping]]></Description>
+</Message>
+</TestFunction>
+<TestFunction name="skipSingle">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="142">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[skipping]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

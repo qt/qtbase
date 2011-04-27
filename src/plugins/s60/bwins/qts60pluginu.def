@@ -1,0 +1,8 @@
+EXPORTS
+	?defaultFormatL@@YAXAAVTTime@@AAVTDes16@@ABVTDesC16@@ABVTLocale@@@Z @ 1 NONAME ; void defaultFormatL(class TTime &, class TDes16 &, class TDesC16 const &, class TLocale const &)
+	?defaultGetTimeFormatSpec@@YA?AVTPtrC16@@AAVTExtendedLocale@@@Z @ 2 NONAME ; class TPtrC16 defaultGetTimeFormatSpec(class TExtendedLocale &)
+	?defaultGetLongDateFormatSpec@@YA?AVTPtrC16@@AAVTExtendedLocale@@@Z @ 3 NONAME ; class TPtrC16 defaultGetLongDateFormatSpec(class TExtendedLocale &)
+	?defaultGetShortDateFormatSpec@@YA?AVTPtrC16@@AAVTExtendedLocale@@@Z @ 4 NONAME ; class TPtrC16 defaultGetShortDateFormatSpec(class TExtendedLocale &)
+	?localizedDirectoryName@@YA?AVQString@@AAV1@@Z @ 5 NONAME ; class QString localizedDirectoryName(class QString &)
+	?systemDrive@@YA?AW4TDriveNumber@@AAVRFs@@@Z @ 6 NONAME ; enum TDriveNumber systemDrive(class RFs &)
+

@@ -1,0 +1,3 @@
+libqt4-opengl: package-name-doesnt-match-sonames libQtOpenGL4
+libqt4-opengl: package-relation-with-self depends
+libqt4-opengl: unknown-control-file digsigsums

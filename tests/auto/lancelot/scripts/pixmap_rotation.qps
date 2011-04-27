@@ -1,0 +1,30 @@
+# Version: 1
+# CheckVsReference: 0% (0 0 440 220)
+
+translate 120 120
+
+begin_block drawing
+save
+  rotate 90
+  drawPixmap solid.png 0 0
+
+  rotate 90
+  drawPixmap solid.png 0 0
+
+  rotate 90
+  drawPixmap solid.png 0 0
+
+  rotate 90
+  drawPixmap solid.png 0 0
+restore
+end_block
+
+resetMatrix
+
+translate 340 120
+repeat_block drawing
+
+resetMatrix
+
+drawText 50 240 "Normal X form"
+drawText 270 240 "Smooth xform"

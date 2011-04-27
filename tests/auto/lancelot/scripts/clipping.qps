@@ -1,0 +1,182 @@
+# Version: 1
+# CheckVsReference: 5%
+
+region_addRect clip 50 0 90 190
+region_addRect clip 0 50 180 90
+
+region_addRect clip2 30 30 60 60
+
+region_addRect clip3 10 10 60 60
+
+path_cubicTo path 90 0 50 50 90 90
+path_cubicTo path 0 90 50 50 0 0
+
+path_addRect path2 0 0 90 90
+path_moveTo path2 90 45
+path_arcTo path2 0 0 90 90 0 -360
+
+path_addRect emptypath 0 0 0 0
+region_addRect emptyregion 0 0 0 0
+
+# Normal clip rect
+setClipRect 0 0 50 150
+begin_block repaint
+save
+setBrush red
+setPen nopen
+resetMatrix
+region_getClipRegion tmpclip
+path_getClipPath tmpclippath
+drawRect 0 0 width height
+setBrush #3f0000ff
+setClipRegion tmpclip
+drawRect 0 0 width height
+setClipPath tmpclippath
+setBrush #3f00ff00
+drawRect 0 0 width height
+restore
+end_block
+
+# Rotated clip rect
+translate 100 0
+rotate 10
+setClipRect 0 0 50 150
+repeat_block repaint
+
+# simple clip region
+resetMatrix
+translate 0 200
+setClipRegion clip
+repeat_block repaint
+
+# simle rotated clip region
+translate 250 -10
+rotate 10
+setClipRegion clip
+repeat_block repaint
+
+# verify that clip is not xformed with painter
+resetMatrix
+translate 200 0
+setClipRegion clip
+rotate 30
+setBrush red
+setPen nopen
+drawRect 0 0 width height
+
+resetMatrix
+translate 0 400
+save
+setClipRegion clip
+setClipRegion clip2 IntersectClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipRegion clip
+setClipRegion clip2 IntersectClip
+restore
+
+translate 100 0
+save
+setClipRegion clip3
+setClipRegion clip2 UniteClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipRegion clip3
+setClipRegion clip2 UniteClip
+repeat_block repaint
+restore
+
+translate 100 0
+save
+setClipPath path
+repeat_block repaint
+translate 50 100
+rotate 45
+setClipPath path
+repeat_block repaint
+restore
+
+translate 100 0
+save
+setClipPath path
+setClipPath path2 IntersectClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipPath path
+setClipPath path2 IntersectClip
+repeat_block repaint
+restore
+
+translate 100 0
+save
+setClipPath path
+setClipPath path2 UniteClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipPath path
+setClipPath path2 UniteClip
+repeat_block repaint
+restore
+
+translate 100 0
+save
+setClipPath path
+setClipRegion clip3 IntersectClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipRegion clip3
+setClipPath path IntersectClip
+repeat_block repaint
+restore
+
+translate 100 0
+save
+setClipPath path
+setClipRegion clip3 UniteClip
+repeat_block repaint
+translate 0 100
+rotate 10
+setClipRegion clip3
+setClipPath path UniteClip
+repeat_block repaint
+restore
+
+# test that an empty region is not drawn.
+resetMatrix
+setClipRegion emptyregion
+setBrush #3f00ff00
+drawRect 0 0 300 300
+drawText 50 50 "Text should be clipped away by region"
+setClipping false
+
+setClipPath emptypath
+setBrush #3fffff00
+drawRect 50 50 300 300
+drawText 70 80 "Text should be clipped away by path"
+
+# Test that we can extract a clipregion when a matrix is set too
+resetMatrix
+translate 500 10
+scale 2 1
+setBrush blue
+setClipping false
+rotate 5
+drawRect 0 0 100 100
+setClipRect 0 0 100 100
+resetMatrix
+rotate 10
+region_getClipRegion xclip
+setClipRegion xclip
+resetMatrix
+setBrush #7f00ff00
+drawRect 0 0 width height
+
+# the below used to assert in debug mode
+setClipRect 10 10 20 20
+setClipping false
+setClipping true

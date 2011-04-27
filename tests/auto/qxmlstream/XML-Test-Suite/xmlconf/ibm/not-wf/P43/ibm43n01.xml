@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY % paaa "a string">
+]>
+<root>
+<!NOTATION nota1 SYSTEM "bogus.not">
+</root>
+<!--* NotationDecl in content -->

@@ -1,0 +1,291 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example tools/undoframework 
+    \title Undo Framework Example
+
+    This example shows how to implement undo/redo functionality 
+    with the Qt undo framework.
+
+    \image undoframeworkexample.png The Undo Diagram Example
+
+    In the Qt undo framework, all actions that the user performs are
+    implemented in classes that inherit QUndoCommand. An undo command
+    class knows how to both \l{QUndoCommand::}{redo()} - or just do
+    the first time - and \l{QUndoCommand::}{undo()} an action. For
+    each action the user performs, a command is placed on a
+    QUndoStack.  Since the stack contains all commands executed
+    (stacked in chronological order) on the document, it can roll the
+    state of the document backwards and forwards by undoing and redoing
+    its commands. See the \l{Overview of Qt's Undo Framework}{overview
+    document} for a high-level introduction to the undo framework.
+
+    The undo example implements a simple diagram application. It is
+    possible to add and delete items, which are either box or
+    rectangular shaped, and move the items by dragging them with the
+    mouse. The undo stack is shown in a QUndoView, which is a list in
+    which the commands are shown as list items. Undo and redo are
+    available through the edit menu. The user can also select a command
+    from the undo view.
+
+    We use the \l{Graphics View Framework}{graphics view
+    framework} to implement the diagram. We only treat the related
+    code briefly as the framework has examples of its own (e.g., the
+    \l{Diagram Scene Example}).
+
+    The example consists of the following classes:
+
+    \list 
+        \o \c MainWindow is the main window and arranges the
+              example's widgets. It creates the commands based 
+              on user input and keeps them on the command stack.
+        \o \c AddCommand adds an item to the scene.
+        \o \c DeleteCommand deletes an item from the scene.
+        \o \c MoveCommand when an item is moved the MoveCommand keeps record
+              of the start and stop positions of the move, and it
+              moves the item according to these when \c redo() and \c undo()
+              is called.
+        \o \c DiagramScene inherits QGraphicsScene and
+              emits signals for the \c MoveComands when an item is moved.
+        \o \c DiagramItem inherits QGraphicsPolygonItem and represents
+              an item in the diagram.
+    \endlist
+
+    \section1 MainWindow Class Definition
+
+    \snippet examples/tools/undoframework/mainwindow.h 0
+
+    The \c MainWindow class maintains the undo stack, i.e., it creates
+    \l{QUndoCommand}s and pushes and pops them from the stack when it
+    receives the \c triggered() signal from \c undoAction and \c
+    redoAction.
+    
+    \section1 MainWindow Class Implementation
+
+    We will start with a look at the constructor:    
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 0
+
+    In the constructor, we set up the DiagramScene and QGraphicsView. 
+
+    Here is the \c createUndoView() function:    
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 1
+
+    The QUndoView is a widget that display the text, which is set with
+    the \l{QUndoCommand::}{setText()} function, for each QUndoCommand
+    in the undo stack in a list.
+    
+    Here is the \c createActions() function:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 2
+    \codeline
+    \snippet examples/tools/undoframework/mainwindow.cpp 3
+    \dots
+    \snippet examples/tools/undoframework/mainwindow.cpp 5
+
+    The \c createActions() function sets up all the examples actions
+    in the manner shown above. The
+    \l{QUndoStack::}{createUndoAction()} and
+    \l{QUndoStack::}{createRedoAction()} helps us crate actions that
+    are disabled and enabled based on the state of the stack.  Also,
+    the text of the action will be updated automatically based on the
+    \l{QUndoCommand::}{text()} of the undo commands. For the other
+    actions we have implemented slots in the \c MainWindow class.
+
+    Here is the \c createMenus() function:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 6
+
+    \dots
+    \snippet examples/tools/undoframework/mainwindow.cpp 7
+    \dots
+    \snippet examples/tools/undoframework/mainwindow.cpp 8
+
+    We have to use the QMenu \c aboutToShow() and \c aboutToHide()
+    signals since we only want \c deleteAction to be enabled when we
+    have selected an item.     
+
+    Here is the \c itemMoved() slot:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 9
+
+    We simply push a MoveCommand on the stack, which calls \c redo()
+    on it.
+
+    Here is the \c deleteItem() slot:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 10
+
+    An item must be selected to be deleted.  We need to check if it is
+    selected as the \c deleteAction may be enabled even if an item is
+    not selected. This can happen as we do not catch a signal or event
+    when an item is selected.
+
+    Here is the \c itemMenuAboutToShow() and itemMenuAboutToHide() slots:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 11
+    \codeline
+    \snippet examples/tools/undoframework/mainwindow.cpp 12
+
+    We implement \c itemMenuAboutToShow() and \c itemMenuAboutToHide()
+    to get a dynamic item menu. These slots are connected to the 
+    \l{QMenu::}{aboutToShow()} and \l{QMenu::}{aboutToHide()} signals.
+    We need this to disable or enable the \c deleteAction. 
+
+    Here is the \c addBox() slot:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 13
+
+    The \c addBox() function creates an AddCommand and pushes it on
+    the undo stack.
+
+    Here is the \c addTriangle() sot:
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 14
+
+    The \c addTriangle() function creates an AddCommand and pushes it
+    on the undo stack.    
+
+    Here is the implementation of \c about():
+
+    \snippet examples/tools/undoframework/mainwindow.cpp 15
+    
+    The about slot is triggered by the \c aboutAction and displays an
+    about box for the example.
+
+    \section1 AddCommand Class Definition
+    
+    \snippet examples/tools/undoframework/commands.h 2
+
+    The \c AddCommand class adds DiagramItem graphics items to the
+    DiagramScene.  
+
+    \section1 AddCommand Class Implementation
+
+    We start with the constructor:
+
+    \snippet examples/tools/undoframework/commands.cpp 7
+
+    We first create the DiagramItem to add to the DiagramScene.  The
+    \l{QUndoCommand::}{setText()} function let us set a QString that
+    describes the command. We use this to get custom messages in the
+    QUndoView and in the menu of the main window.
+
+    \snippet examples/tools/undoframework/commands.cpp 8
+
+    \c undo() removes the item from the scene.
+
+    \snippet examples/tools/undoframework/commands.cpp 9
+
+    We set the position of the item as we do not do this in the
+    constructor.
+
+    \section1 DeleteCommand Class Definition
+    
+    \snippet examples/tools/undoframework/commands.h 1
+
+    The DeleteCommand class implements the functionality to remove an
+    item from the scene.
+    
+    \section1 DeleteCommand Class Implementation
+
+    \snippet examples/tools/undoframework/commands.cpp 4
+
+    We know that there must be one selected item as it is not possible
+    to create a DeleteCommand unless the item to be deleted is
+    selected and that only one item can be selected at any time. 
+    The item must be unselected if it is inserted back into the 
+    scene.
+
+    \snippet examples/tools/undoframework/commands.cpp 5
+
+    The item is simply reinserted into the scene.
+
+    \snippet examples/tools/undoframework/commands.cpp 6
+
+    The item is removed from the scene.
+
+    \section1 MoveCommand Class Definition
+
+    \snippet examples/tools/undoframework/commands.h 0
+
+    The \l{QUndoCommand::}{mergeWith()} is reimplemented to make
+    consecutive moves of an item one MoveCommand, i.e, the item will
+    be moved back to the start position of the first move.
+
+    \section1 MoveCommand Class Implementation
+
+    
+    The constructor of MoveCommand looks like this:
+
+    \snippet examples/tools/undoframework/commands.cpp 0
+
+    We save both the old and new positions for undo and redo
+    respectively.
+
+    \snippet examples/tools/undoframework/commands.cpp 2
+
+    We simply set the items old position and update the scene.    
+
+    \snippet examples/tools/undoframework/commands.cpp 3
+
+    We set the item to its new position.
+    
+    \snippet examples/tools/undoframework/commands.cpp 1
+
+    Whenever a MoveCommand is created, this function is called to
+    check if it should be merged with the previous command. It is the
+    previous command object that is kept on the stack. The function
+    returns true if the command is merged; otherwise false.
+
+    We first check whether it is the same item that has been moved
+    twice, in which case we merge the commands. We update the position
+    of the item so that it will take the last position in the move
+    sequence when undone. 
+
+    \section1 DiagramScene Class Definition
+
+    \snippet examples/tools/undoframework/diagramscene.h 0
+
+    The DiagramScene implements the functionality to move a
+    DiagramItem with the mouse. It emits a signal when a move is
+    completed. This is caught by the \c MainWindow, which makes
+    MoveCommands. We do not examine the implementation of DiagramScene
+    as it only deals with graphics framework issues.
+
+    \section1 The \c main() Function
+    
+    The \c main() function of the program looks like this:
+
+    \snippet examples/tools/undoframework/main.cpp 0
+
+    We draw a grid in the background of the DiagramScene, so we use a
+    resource file. The rest of the function creates the \c MainWindow and
+    shows it as a top level window.
+*/

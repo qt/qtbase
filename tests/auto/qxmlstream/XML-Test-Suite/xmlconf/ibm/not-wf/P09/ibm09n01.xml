@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE student [
+	<!ELEMENT student (#PCDATA)> 
+ 	<!ENTITY FullName "Snow%Man">
+]>
+
+<!-- testing invalid entity value -->
+<student>My Name is &FullName;. </student>
+
+
+
+
+
+
+
+
+
+
+
+
+ 

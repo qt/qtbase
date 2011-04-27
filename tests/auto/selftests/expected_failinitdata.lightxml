@@ -1,0 +1,9 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/failinitdata/tst_failinitdata.cpp" line="56">
+    <Description><![CDATA['false' returned FALSE. ()]]></Description>
+</Incident>
+</TestFunction>

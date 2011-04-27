@@ -1,0 +1,8 @@
+<?xml version="1.0" "UTF-8"encoding=?>
+<!--* wrong ordering in above EncodingDecl *-->
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+]>
+<root/>

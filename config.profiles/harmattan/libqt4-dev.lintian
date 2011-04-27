@@ -1,0 +1,17 @@
+libqt4-dev: executable-not-elf-or-script ./usr/share/qt4/mkspecs/macx-pbuilder/Info.plist.app
+libqt4-dev: executable-not-elf-or-script ./usr/share/qt4/mkspecs/macx-xcode/Info.plist.app
+libqt4-dev: executable-not-elf-or-script ./usr/share/qt4/mkspecs/macx-xcode/qmake.conf
+libqt4-dev: executable-not-elf-or-script ./usr/share/qt4/mkspecs/macx-pbuilder/qmake.conf
+libqt4-dev: unknown-control-file digsigsums
+libqt4-dev: binary-from-other-architecture ./usr/bin/host-moc
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-moc /scratchbox/host_shared/lib
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-moc /host_usr/lib
+libqt4-dev: binary-from-other-architecture ./usr/bin/host-qmake
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-qmake /scratchbox/host_shared/lib
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-qmake /host_usr/lib
+libqt4-dev: binary-from-other-architecture ./usr/bin/host-rcc
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-rcc /scratchbox/host_shared/lib
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-rcc /host_usr/lib
+libqt4-dev: binary-from-other-architecture ./usr/bin/host-uic
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-uic /scratchbox/host_shared/lib
+libqt4-dev: binary-or-shlib-defines-rpath ./usr/bin/host-uic /host_usr/lib

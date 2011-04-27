@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_DataTable">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="fiveTablePasses">
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data2]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data3]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data4]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data5]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="fiveTablePasses">
+<Message type="info" file="/local/user_builds/qt/4.6/tests/auto/selftests/commandlinedata/tst_commandlinedata.cpp" line="65">
+    <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
+    <Description><![CDATA[QVERIFY(test)]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0" />
+</TestFunction>
+</TestCase>

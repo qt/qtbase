@@ -1,0 +1,160 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the utility applications of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+//  RESOURCE IDENTIFIER
+NAME TATR
+
+
+//  INCLUDES
+#include <eikon.rh>
+#include <avkon.rh>
+#include <avkon.mbg>
+#include <avkon.rsg>
+#include <avkon.hrh>
+#include <uikon.hrh>
+#include <avkonIcons.hrh>
+#include <data_caging_paths_strings.hrh>
+#include <appinfo.rh>
+
+#include "pm_mapper.hrh"
+
+
+//  RESOURCE DEFINITIONS
+
+// -----------------------------------------------------------------------------
+//
+// RSS_SIGNATURE
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE RSS_SIGNATURE { }
+
+
+// -----------------------------------------------------------------------------
+//
+// TBUF
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE TBUF { buf = "pm_mapper"; }
+
+
+// -----------------------------------------------------------------------------
+//
+// EIK_APP_INFO
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE EIK_APP_INFO
+    {
+    }
+
+// -----------------------------------------------------------------------------
+//
+// r_pmmapper_localisable_app_info
+// Captions for this application.
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE LOCALISABLE_APP_INFO r_pmmapper_localisable_app_info
+    {
+    short_caption = "pm_mapper";
+    caption_and_icon =
+        CAPTION_AND_ICON_INFO
+            {
+            caption = "PixelMetricsMapper";
+            };
+    }
+
+// -----------------------------------------------------------------------------
+//
+// r_pmmapper_view
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE AVKON_VIEW r_pmmapper_view
+    {
+    menubar = r_pmmapper_view_menu;
+    cba     = R_AVKON_SOFTKEYS_OPTIONS_EXIT;
+    }
+
+
+// -----------------------------------------------------------------------------
+//
+// r_pmmapper_view_menu
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE MENU_BAR r_pmmapper_view_menu
+    {
+    titles=
+        {
+        MENU_TITLE { txt = "A"; menu_pane = r_pmmapper_system_menu; }
+        };
+    }
+
+// -----------------------------------------------------------------------------
+//
+// r_pmmapper_system_menu
+//
+//
+// -----------------------------------------------------------------------------
+//
+RESOURCE MENU_PANE r_pmmapper_system_menu
+    {
+    items =
+        {
+        MENU_ITEM { command = ECmdStartCalculations; txt = "Start calculations"; },
+        MENU_ITEM { command = ECmdSwitchOrientation; txt = "Switch orientation"; },
+        MENU_ITEM { command = ECmdStatus;            txt = "Status"; },
+        MENU_ITEM { command = ECmdSwitchOutput;      txt = "Switch output (file/screen)"; },
+        MENU_ITEM { command = ECmdCreateHeaderFile;  txt = "Create header file"; }
+        };
+    }
+
+
+// End of File

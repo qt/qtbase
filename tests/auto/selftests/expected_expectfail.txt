@@ -1,0 +1,20 @@
+********* Start testing of tst_ExpectFail *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+PASS   : tst_ExpectFail::initTestCase()
+QDEBUG : tst_ExpectFail::expectAndContinue() begin
+XFAIL  : tst_ExpectFail::expectAndContinue() This should xfail
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/expectfail/tst_expectfail.cpp(27)]
+QDEBUG : tst_ExpectFail::expectAndContinue() after
+PASS   : tst_ExpectFail::expectAndContinue()
+QDEBUG : tst_ExpectFail::expectAndAbort() begin
+XFAIL  : tst_ExpectFail::expectAndAbort() This should xfail
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/expectfail/tst_expectfail.cpp(35)]
+PASS   : tst_ExpectFail::expectAndAbort()
+XFAIL  : tst_ExpectFail::xfailWithQString() A string
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/expectfail/tst_expectfail.cpp(42)]
+XFAIL  : tst_ExpectFail::xfailWithQString() Bug 5 (The message)
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/expectfail/tst_expectfail.cpp(47)]
+PASS   : tst_ExpectFail::xfailWithQString()
+PASS   : tst_ExpectFail::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped
+********* Finished testing of tst_ExpectFail *********

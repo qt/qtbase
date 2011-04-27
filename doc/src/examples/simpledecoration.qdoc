@@ -1,0 +1,252 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example qws/simpledecoration
+    \title Simple Decoration Example
+    \ingroup qt-embedded
+
+    The Simple Decoration example shows how to create a custom window decoration
+    for embedded applications.
+
+    \image embedded-simpledecoration-example.png
+
+    By default, Qt for Embedded Linux applications display windows with one of
+    the standard window decorations provided by Qt which are perfectly suitable
+    for many situations. Nonetheless, for certain applications and devices, it
+    is necessary to provide custom window decorations.
+
+    In this document, we examine the fundamental features of custom window
+    decorations, and create a simple decoration as an example.
+
+    \section1 Styles and Window Decorations
+
+    On many platforms, the style used for the contents of a window (including
+    scroll bars) and the style used for the window decorations (the title bar,
+    window borders, close, maximize and other buttons) are handled differently.
+    This is usually because each application is responsible for rendering the
+    contents of its own windows and the window manager renders the window
+    decorations.
+
+    Although the situation is not quite like this on Qt for Embedded Linux
+    because QApplication automatically handles window decorations as well,
+    there are still two style mechanisms at work: QStyle and its associated
+    classes are responsible for rendering widgets and subclasses of QDecoration
+    are responsible for rendering window decorations.
+
+    \image embedded-simpledecoration-example-styles.png
+
+    Three decorations are provided with Qt for Embedded Linux: \e default is
+    a basic style, \e windows resembles the classic Windows look and feel,
+    and \e styled uses the QStyle classes for QMdiSubWindow to draw window
+    decorations. Of these, \e styled is the most useful if you want to impose
+    a consistent look and feel, but the window decorations may be too large
+    for some use cases.
+
+    If none of these built-in decorations are suitable, a custom style can
+    easily be created and used. To do this, we simply need to create a
+    subclass of QDecorationDefault and apply it to a QApplication instance
+    in a running application.
+
+    \section1 MyDecoration Class Definition
+
+    The \c MyDecoration class is a subclass of QDecorationDefault, a subclass
+    of QDecoration that provides reasonable default behavior for a decoration:
+
+    \snippet examples/qws/simpledecoration/mydecoration.h decoration class definition
+
+    We only need to implement a constructor and reimplement the
+    \l{QDecorationDefault::}{region()} and \l{QDecorationDefault::}{paint()}
+    functions to provide our own custom appearance for window decorations.
+
+    To make things fairly general, we provide a number of private variables
+    to hold parameters which control certain aspects of the decoration's
+    appearance. We also define some data structures that we will use to
+    relate buttons in the window decorations to regions.
+
+    \section1 MyDecoration Class Implementation
+
+    In the constructor of the \c MyDecoration class, we set up some default
+    values for the decoration, specifying a thin window border, a title
+    bar that is just taller than the buttons it will hold, and we create a
+    list of buttons that we support:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp constructor start
+
+    We map each of these Qt::WindowFlags to QDecoration::DecorationRegion
+    enum values to help with the implementation of the
+    \l{#Finding Regions}{region() function implementation}.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp map window flags to decoration regions
+
+    In this decoration, we implement the buttons used in the decoration as
+    pixmaps. To help us relate regions of the window to these, we define
+    mappings between each \l{QDecoration::}{DecorationRegion} and its
+    corresponding pixmap for two situations: when a window is shown normally
+    and when it has been maximized. This is purely for cosmetic purposes.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp map decoration regions to pixmaps
+
+    We finish the constructor by defining the regions for buttons that we
+    understand. This will be useful when we are asked to give regions for
+    window decoration buttons.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp constructor end
+
+    \section2 Finding Regions
+
+    Each decoration needs to be able to describe the regions used for parts
+    of the window furniture, such as the close button, window borders and
+    title bar. We reimplement the \l{QDecorationDefault::}{region()} function
+    to do this for our decoration. This function returns a QRegion object
+    that describes an arbitrarily-shaped region of the screen that can itself
+    be made up of several distinct areas.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp region start
+
+    The function is called for a given \e widget, occupying a region specified
+    by \e insideRect, and is expected to return a region for the collection of
+    \l{QDecoration::}{DecorationRegion} enum values supplied in the
+    \e decorationRegion parameter.
+
+    We begin by figuring out how much space in the decoration we will need to
+    allocate for buttons, and where to place them:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp calculate the positions of buttons based on the window flags used
+
+    In a more sophisticated implementation, we might test the \e decorationRegion
+    supplied for regions related to buttons and the title bar, and only perform
+    this space allocation if asked for regions related to these.
+
+    We also use the information about the area occupied by buttons to determine
+    how large an area we can use for the window title:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp calculate the extent of the title
+
+    With these basic calculations done, we can start to compose a region, first
+    checking whether we have been asked for all of the window, and we return
+    immediately if so.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp check for all regions
+
+    We examine each decoration region in turn, adding the corresponding region
+    to the \c region object created earlier. We take care to avoid "off by one"
+    errors in the coordinate calculations.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp compose a region based on the decorations specified
+
+    Unlike the window borders and title bar, the regions occupied by buttons
+    many of the window decorations do not occupy fixed places in the window.
+    Instead, their locations depend on which other buttons are present.
+    We only add regions for buttons we can handle (defined in the \c stateRegions)
+    member variable, and only for those that are present (defined in the
+    \c buttons hash).
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp add a region for each button only if it is present
+
+    The fully composed region can then be returned:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp region end
+
+    The information returned by this function is used when the decoration is
+    painted. Ideally, this function should be implemented to perform all the
+    calculations necessary to place elements of the decoration; this makes
+    the implementation of the \c paint() function much easier.
+
+    \section2 Painting the Decoration
+
+    The \c paint() function is responsible for drawing each window element
+    for a given widget. Information about the decoration region, its state
+    and the widget itself is provided along with a QPainter object to use.
+
+    The first check we make is for a call with no regions:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp paint start
+
+    We return false to indicate that we have not painted anything. If we paint
+    something, we must return true so that the window can be composed, if
+    necessary.
+
+    Just as with the \c region() function, we test the decoration region to
+    determine which elements need to be drawn. If we paint anything, we set
+    the \c handled variable to true so that we can return the correct value
+    when we have finished.
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp paint different regions
+
+    Note that we use our own \c region() implementation to determine where
+    to draw decorations.
+
+    Since the \c region() function performs calculations to place buttons, we
+    can simply test the window flags against the buttons we support (using the
+    \c buttonHintMap defined in the constructor), and draw each button in the
+    relevant region:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp paint buttons
+
+    Finally, we return the value of \c handled to indicate whether any painting
+    was performed:
+
+    \snippet examples/qws/simpledecoration/mydecoration.cpp paint end
+
+    We now have a decoration class that we can use in an application.
+
+    \section1 Using the Decoration
+
+    In the \c main.cpp file, we set up the application as usual, but we also
+    create an instance of our decoration and set it as the standard decoration
+    for the application:
+
+    \snippet examples/qws/simpledecoration/main.cpp create application
+
+    This causes all windows opened by this application to use our decoration.
+    To demonstrate this, we show the analog clock widget from the
+    \l{Analog Clock Example}, which we build into the application:
+
+    \snippet examples/qws/simpledecoration/main.cpp start application
+
+    The application can be run either
+    \l{Running Qt for Embedded Linux Applications}{as a server or a client
+    application}. In both cases, it will use our decoration rather than the
+    default one provided with Qt.
+
+    \section1 Notes
+
+    This example does not cache any information about the state or buttons
+    used for each window. This means that the \c region() function calculates
+    the locations and regions of buttons in cases where it could re-use
+    existing information.
+
+    If you run the application as a window server, you may expect client
+    applications to use our decoration in preference to the default Qt
+    decoration. However, it is up to each application to draw its own
+    decoration, so this will not happen automatically. One way to achieve
+    this is to compile the decoration with each application that needs it;
+    another way is to build the decoration as a plugin, using the
+    QDecorationPlugin class, and load it into the server and client
+    applications.
+*/

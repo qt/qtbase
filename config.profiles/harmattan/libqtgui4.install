@@ -1,0 +1,7 @@
+usr/lib/libQtGui.so.*
+usr/lib/qt4/plugins/imageformats/libqgif.so
+usr/lib/qt4/plugins/imageformats/libqico.so
+usr/lib/qt4/plugins/imageformats/libqjpeg.so
+usr/lib/qt4/plugins/imageformats/libqtiff.so
+usr/lib/qt4/plugins/inputmethods/libqimsw-multi.so
+usr/lib/qt4/plugins/accessible/libqtaccessiblewidgets.so

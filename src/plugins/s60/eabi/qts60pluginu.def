@@ -1,0 +1,8 @@
+EXPORTS
+	_Z14defaultFormatLR5TTimeR6TDes16RK7TDesC16RK7TLocale @ 1 NONAME
+	_Z24defaultGetTimeFormatSpecR15TExtendedLocale @ 2 NONAME
+	_Z28defaultGetLongDateFormatSpecR15TExtendedLocale @ 3 NONAME
+	_Z29defaultGetShortDateFormatSpecR15TExtendedLocale @ 4 NONAME
+	_Z22localizedDirectoryNameR7QString @ 5 NONAME
+	_Z11systemDriveR3RFs @ 6 NONAME
+

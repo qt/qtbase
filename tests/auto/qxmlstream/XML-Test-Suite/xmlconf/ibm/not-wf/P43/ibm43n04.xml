@@ -1,0 +1,10 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY % paaa "a string">
+]>
+<root>
+<!ENTITY GE1 "This is an entity declaration">
+</root>
+<!--* EntityDecl in content -->

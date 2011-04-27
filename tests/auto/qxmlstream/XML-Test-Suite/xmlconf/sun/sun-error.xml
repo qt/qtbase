@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @(#)error.xml	1.6 98/12/29
+    Copyright 1998 by Sun Microsystems, Inc.
+    All Rights Reserved.
+-->
+
+<TEST URI="not-wf/uri01.xml" ID="uri01" TYPE="error" SECTIONS="4.2.2 [75]">
+    SYSTEM ids may not have URI fragments</TEST>
+

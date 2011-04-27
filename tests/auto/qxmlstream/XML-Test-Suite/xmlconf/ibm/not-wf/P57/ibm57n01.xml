@@ -1,0 +1,10 @@
+<?xml  version="1.0"?>
+<!-- syntax test for Production 57-->
+<!DOCTYPE root
+ [
+ <!ELEMENT root EMPTY>
+ <!ATTLIST root att NMTOKEN (a|b) #IMPLIED>
+ ]>
+ <root>
+This test case tests the illegal enumerated types
+</root>

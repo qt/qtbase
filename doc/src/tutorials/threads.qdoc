@@ -1,0 +1,572 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page thread-basics.html
+    \ingroup tutorials
+    \startpage {index.html}{Qt Reference Documentation}
+
+    \title Threading Basics
+    \brief An introduction to threads
+
+    \section1 What Are Threads?
+
+    Threads are about doing things in parallel, just like processes. So how do
+    threads differ from processes? While you are making calculations on a
+    spreadsheet, there may also be a media player running on the same desktop
+    playing your favorite song. Here is an example of two processes working in
+    parallel: one running the spreadsheet program; one running a media player.
+    Multitasking is a well known term for this. A closer look at the media
+    player reveals that there are again things going on in parallel within one
+    single process. While the media player is sending music to the audio driver,
+    the user interface with all its bells and whistles is being constantly
+    updated. This is what threads are for \mdash concurrency within one single
+    process.
+
+    So how is concurrency implemented? Parallel work on single core CPUs is an
+    illusion which is somewhat similar to the illusion of moving images in
+    cinema.
+    For processes, the illusion is produced by interrupting the processor's
+    work on one process after a very short time. Then the processor moves on to
+    the next process. In order to switch between processes, the current program
+    counter is saved and the next processor's program counter is loaded. This
+    is not sufficient because the same needs to be done with registers and
+    certain architecture and OS specific data.
+
+    Just as one CPU can power two or more processes, it is also possible to let
+    the CPU run on two different code segments of one single process. When a
+    process starts, it always executes one code segment and therefore the
+    process is said to have one thread. However, the program may decide to
+    start a second thread. Then, two different code sequences are processed
+    simultaneously inside one process. Concurrency is achieved on single core
+    CPUs by repeatedly saving program counters and registers then loading the
+    next thread's program counters and registers. No cooperation from the
+    program is required to cycle between the active threads. A thread may be in
+    any state when the switch to the next thread occurs.
+
+    The current trend in CPU design is to have several cores. A typical
+    single-threaded application can make use of only one core. However, a
+    program with multiple threads can be assigned to multiple cores, making
+    things happen in a truly concurrent way. As a result, distributing work
+    to more than one thread can make a program run much faster on multicore
+    CPUs because additional cores can be used.
+
+    \section2 GUI Thread and Worker Thread
+
+    As mentioned, each program has one thread when it is started. This thread
+    is called the "main thread" (also known as the "GUI thread" in Qt
+    applications). The Qt GUI must run in this thread. All widgets and several
+    related classes, for example QPixmap, don't work in secondary threads.
+    A secondary thread is commonly referred to as a "worker thread" because it
+    is used to offload processing work from the main thread.
+
+    \section2 Simultaneous Access to Data
+
+    Each thread has its own stack, which means each thread has its own call
+    history and local variables. Unlike processes, threads share the same
+    address space. The following diagram shows how the building blocks of
+    threads are located in memory. Program counter and registers of inactive
+    threads are typically kept in kernel space. There is a shared copy of the
+    code and a separate stack for each thread.
+
+    \image threadvisual-example.png "Thread visualization"
+
+    If two threads have a pointer to the same object, it is possible that both
+    threads will access that object at the same time and this can potentially
+    destroy the object's integrity. It's easy to imagine the many things that
+    can go wrong when two methods of the same object are executed
+    simultaneously.
+
+    Sometimes it is necessary to access one object from different threads;
+    for example, when objects living in different threads need to communicate.
+    Since threads use the same address space, it is easier and faster for
+    threads to exchange data than it is for processes. Data does not have to be
+    serialized and copied. Passing pointers is possible, but there must be a
+    strict coordination of what thread touches which object. Simultaneous
+    execution of operations on one object must be prevented. There are several
+    ways of achieving this and some of them are described below.
+
+    So what can be done safely? All objects created in a thread can be used
+    safely within that thread provided that other threads don't have references
+    to them and objects don't have implicit coupling with other threads. Such
+    implicit coupling may happen when data is shared between instances as with
+    static members, singletons or global data. Familiarize yourself with the
+    concept of \l{Reentrancy and Thread-Safety}{thread safe and reentrant}
+    classes and functions.
+
+    \section1 Using Threads
+
+    There are basically two use cases for threads:
+
+    \list
+    \o Make processing faster by making use of multicore processors.
+    \o Keep the GUI thread or other time critical threads responsive by
+       offloading long lasting processing or blocking calls to other threads.
+    \endlist
+
+    \section2 When to Use Alternatives to Threads
+
+    Developers need to be very careful with threads. It is easy to start other
+    threads, but very hard to ensure that all shared data remains consistent.
+    Problems are often hard to find because they may only show up once in a
+    while or only on specific hardware configurations. Before creating threads
+    to solve certain problems, possible alternatives should be considered.
+
+    \table
+    \header
+        \o Alternative
+        \o Comment
+    \row
+        \o QEventLoop::processEvents()
+        \o Calling QEventLoop::processEvents() repeatedly during a
+           time-consuming calculation prevents GUI blocking. However, this
+           solution doesn't scale well because the call to processEvents() may
+           occur too often, or not often enough, depending on hardware.
+    \row
+        \o QTimer
+        \o Background processing can sometimes be done conveniently using a
+           timer to schedule execution of a slot at some point in the future.
+           A timer with an interval of 0 will time out as soon as there are no
+           more events to process.
+    \row
+        \o QSocketNotifier QNetworkAccessManager QIODevice::readyRead()
+        \o This is an alternative to having one or multiple threads, each with
+           a blocking read on a slow network connection. As long as the
+           calculation in response to a chunk of network data can be executed
+           quickly, this reactive design is better than synchronous waiting in
+           threads. Reactive design is less error prone and energy efficient
+           than threading. In many cases there are also performance benefits.
+    \endtable
+
+    In general, it is recommended to only use safe and tested paths and to
+    avoid introducing ad-hoc threading concepts. QtConcurrent provides an easy
+    interface for distributing work to all of the processor's cores. The
+    threading code is completely hidden in the QtConcurrent framework, so you
+    don't have to take care of the details. However, QtConcurrent can't be used
+    when communication with the running thread is needed, and it shouldn't be
+    used to handle blocking operations.
+
+    \section2 Which Qt Thread Technology Should You Use?
+
+    Sometimes you want to do more than just running a method in the context of
+    another thread. You may want to have an object which lives in another
+    thread that provides a service to the GUI thread. Maybe you want another
+    thread to stay alive forever to poll hardware ports and send a signal to
+    the GUI thread when something noteworthy has happened. Qt provides
+    different solutions for developing threaded applications. The right
+    solution depends on the purpose of the new thread as well as on the
+    thread's lifetime.
+
+    \table
+    \header
+        \o Lifetime of thread
+        \o Development task
+        \o Solution
+    \row
+        \o One call
+        \o Run one method within another thread and quit the thread when the
+           method is finished.
+        \o Qt provides different solutions:
+           \list
+              \o Write a function and run it with QtConcurrent::run()
+              \o Derive a class from QRunnable and run it in the global thread
+                 pool with QThreadPool::globalInstance()->start()
+              \o Derive a class from QThread, reimplement the QThread::run()
+                 method and use QThread::start() to run it.
+           \endlist
+
+    \row
+        \o One call
+        \o Operations are to be performed on all items of a container.
+           Processing should be performed using all available cores. A common
+           example is to produce thumbnails from a list of images.
+        \o QtConcurrent provides the \l{QtConcurrent::}{map()} function for
+           applying operations on every container element,
+           \l{QtConcurrent::}{filter()} for selecting container elements, and
+           the option of specifying a reduce function for combining the
+           remaining elements.
+    \row
+        \o One call
+        \o A long running operation has to be put in another thread. During the
+           course of processing, status information should be sent to the GUI
+           thread.
+        \o Use QThread, reimplement run and emit signals as needed. Connect the
+           signals to the GUI thread's slots using queued signal/slot
+           connections.
+
+    \row
+        \o Permanent
+        \o Have an object living in another thread and let it perform different
+           tasks upon request.
+           This means communication to and from the worker thread is required.
+        \o Derive a class from QObject and implement the necessary slots and
+           signals, move the object to a thread with a running event loop and
+           communicate with the object over queued signal/slot connections.
+    \row
+        \o Permanent
+        \o Have an object living in another thread, let the object perform
+           repeated tasks such as polling a port and enable communication with
+           the GUI thread.
+        \o Same as above but also use a timer in the worker thread to implement
+           polling. However, the best solution for polling is to avoid it
+           completely. Sometimes using QSocketNotifier is an alternative.
+    \endtable
+
+
+    \section1 Qt Thread Basics
+
+    QThread is a very convenient cross platform abstraction of native platform
+    threads. Starting a thread is very simple. Let us look at a short piece of
+    code that generates another thread which says hello in that thread and then
+    exits.
+
+    \snippet examples/tutorials/threads/hellothread/hellothread.h 1
+
+    We derive a class from QThread and reimplement the \l{QThread::}{run()}
+    method.
+
+    \snippet examples/tutorials/threads/hellothread/hellothread.cpp 1
+
+    The run method contains the code that will be run in a separate thread. In
+    this example, a message containing the thread ID will be printed.
+    QThread::start() will call the method in another thread.
+
+    \snippet examples/tutorials/threads/hellothread/main.cpp 1
+
+    To start the thread, our thread object needs to be instantiated. The
+    \l{QThread::}{start()} method creates a new thread and calls the
+    reimplemented \l{QThread::}{run()} method in this new thread. Right after
+    \l{QThread::}{start()} is called, two program counters walk through the
+    program code. The main function starts with only the GUI thread running and
+    it should terminate with only the GUI thread running. Exiting the program
+    when another thread is still busy is a programming error, and therefore,
+    wait is called which blocks the calling thread until the
+    \l{QThread::}{run()} method has completed.
+
+    This is the result of running the code:
+
+    \badcode
+    hello from GUI thread  3079423696
+    hello from worker thread  3076111216
+    \endcode
+
+
+    \section2 QObject and Threads
+
+    A QObject is said to have a \e{thread affinity} or, in other words, that it
+    lives in a certain thread. This means that, at creation time, QObject saves
+    a pointer to the current thread. This information becomes relevant when an
+    event is posted with \l{QCoreApplication::}{postEvent()}. The event will be
+    put in the corresponding thread's event loop. If the thread where the
+    QObject lives doesn't have an event loop, the event will never be delivered.
+
+    To start an event loop, \l{QThread::}{exec()} must be called inside
+    \l{QThread::}{run()}. Thread affinity can be changed using
+    \l{QObject::}{moveToThread()}.
+
+    As mentioned above, developers must always be careful when calling objects'
+    methods from other threads. Thread affinity does not change this situation.
+    Qt documentation marks several methods as thread-safe.
+    \l{QCoreApplication::}{postEvent()} is a noteworthy example. A thread-safe
+    method may be called from different threads simultaneously.
+
+    In cases where there is usually no concurrent access to methods, calling
+    non-thread-safe methods of objects in other threads may work thousands
+    of times before a concurrent access occurs, causing unexpected behavior.
+    Writing test code does not entirely ensure thread correctness, but it is
+    still important.
+    On Linux, Valgrind and Helgrind can help detect threading errors.
+
+    The anatomy of QThread is quite interesting:
+
+    \list
+    \o QThread does not live in the new thread where \l{QThread::}{run()} is
+       executed. It lives in the old thread.
+    \o Most QThread methods are the thread's control interface and are meant to
+       be called from the old thread. Do not move this interface to the newly
+       created thread using \l{QObject::}{moveToThread()}; i.e., calling
+       \l{QObject::moveToThread()}{moveToThread(this)} is regarded as bad
+       practice.
+    \o \l{QThread::}{exec()} and the static methods
+       \l{QThread::}{usleep()}, \l{QThread::}{msleep()},
+       \l{QThread::}{sleep()} are meant to be called from the newly created
+       thread.
+    \o Additional members defined in the QThread subclass are
+       accessible by both threads. The developer is responsible for
+       coordinating access. A typical strategy is to set the members before
+       \l{QThread::}{start()} is called. Once the worker thread is running,
+       the main thread should not touch the additional members anymore. After
+       the worker has terminated, the main thread can access the additional
+       members again. This is a convenient strategy for passing parameters to a
+       thread before it is started as well as for collecting the result once it
+       has terminated.
+    \endlist
+
+    A QObject's parent must always be in the same thread. This has a surprising
+    consequence for objects generated within the \l{QThread::}{run()} method:
+
+    \code
+    void HelloThread::run()
+    {
+         QObject *object1 = new QObject(this);  //error, parent must be in the same thread
+         QObject object2;  // OK
+         QSharedPointer <QObject> object3(new QObject); // OK
+    }
+    \endcode
+
+    \section2 Using a Mutex to Protect the Integrity of Data
+
+    A mutex is an object that has \l{QMutex::}{lock()} and \l{QMutex::}{unlock()}
+    methods and remembers if it is already locked. A mutex is designed to be
+    called from multiple threads. \l{QMutex::}{lock()} returns immediately if
+    the mutex is not locked. The next call from another thread will find the
+    mutex in a locked state and then \l{QMutex::}{lock()} will block the thread
+    until the other thread calls \l{QMutex::}{unlock()}. This functionality can
+    make sure that a code section will be executed by only one thread at a time.
+
+    The following line sketches how a mutex can be used to make a method
+    thread-safe:
+
+    \code
+    void Worker::work()
+    {
+        this->mutex.lock();  // first thread can pass, other threads will be blocked here
+        doWork();
+        this->mutex.unlock();
+    }
+    \endcode
+
+    What happens if one thread does not unlock a mutex? The result can be a
+    frozen application. In the example above, an exception might be thrown and
+    \c{mutex.unlock()} will never be reached. To prevent problems like this,
+    QMutexLocker should be used.
+
+    \code
+    void Worker::work()
+    {
+        QMutexLocker locker(&mutex);  // Locks the mutex and unlocks when locker exits the scope
+        doWork();
+    }
+    \endcode
+
+    This looks easy, but mutexes introduce a new class of problems: deadlocks.
+    A deadlock happens when a thread waits for a mutex to become unlocked, but
+    the mutex remains locked because the owning thread is waiting for the first
+    thread to unlock it. The result is a frozen application. Mutexes can be
+    used to make a method thread safe. Most Qt methods aren't thread safe
+    because there is always a performance penalty when using mutexes.
+
+    It isn't always possible to lock and unlock a mutex in a method. Sometimes
+    the need to lock spans several calls. For example, modifying a container
+    with an iterator requires a sequence of several calls which should not be
+    interrupted by other threads. In such a scenario, locking can be achieved
+    with a mutex that is kept outside of the object to be manipulated. With an
+    external mutex, the duration of locking can be adjusted to the needs of the
+    operation. One disadvantage is that external mutexes aid locking, but do
+    not enforce it because users of the object may forget to use it.
+
+    \section2 Using the Event Loop to Prevent Data Corruption
+
+    The event loops of Qt are a very valuable tool for inter-thread
+    communication. Every thread may have its own event loop. A safe way of
+    calling a slot in another thread is by placing that call in another
+    thread's event loop. This ensures that the target object finishes the
+    method that is currently running before another method is started.
+
+    So how is it possible to put a method invocation in an event loop? Qt has
+    two ways of doing this. One way is via queued signal-slot connections; the
+    other way is to post an event with QCoreApplication::postEvent(). A queued
+    signal-slot connection is a signal slot connection that is executed
+    asynchronously. The internal implementation is based on posted events. The
+    arguments of the signal are put into the event loop and the signal method
+    returns immediately.
+
+    The connected slot will be executed at a time which depends on what else is
+    in the event loop.
+
+    Communication via the event loop eliminates the deadlock problem we face
+    when using mutexes. This is why we recommend using the event loop rather
+    than locking an object using a mutex.
+
+    \section2 Dealing with Asynchronous Execution
+
+    One way to obtain a worker thread's result is by waiting for the thread
+    to terminate. In many cases, however, a blocking wait isn't acceptable. The
+    alternative to a blocking wait are asynchronous result deliveries with
+    either posted events or queued signals and slots. This generates a certain
+    overhead because an operation's result does not appear on the next source
+    line, but in a slot located somewhere else in the source file. Qt
+    developers are used to working with this kind of asynchronous behavior
+    because it is much similar to the kind of event-driven programming used in
+    GUI applications.
+
+    \section1 Examples
+
+    This tutorial comes with examples for Qt's three basic ways of working with
+    threads. Two more examples show how to communicate with a running thread
+    and how a QObject can be placed in another thread, providing service to the
+    main thread.
+
+    \list
+    \o Using QThread as shown \l{Qt thread basics}{above}
+    \o \l{Example 1: Using the Thread Pool}{Using the global QThreadPool}
+    \o \l{Example 2: Using QtConcurrent}{Using QtConcurrent}
+    \o \l{Example 3: Clock}{Communication with the GUI thread}
+    \o \l{Example 4: A Permanent Thread}{A permanent QObject in another thread
+       provides service to the main thread}
+    \endlist
+
+    The following examples can all be compiled and run independently. The source can
+    be found in the examples directory: examples/tutorials/threads/
+
+    \section2 Example 1: Using the Thread Pool
+
+    Creating and destroying threads frequently can be expensive. To avoid the
+    cost of thread creation, a thread pool can be used. A thread pool is a
+    place where threads can be parked and fetched. We can write the same
+    "hello thread" program as \l{Qt Thread Basics}{above} using the global
+    thread pool. We derive a class from QRunnable. The code we want to run in
+    another thread needs to be placed in the reimplemented QRunnable::run()
+    method.
+
+    \snippet examples/tutorials/threads/hellothreadpool/hellothreadpool.cpp  1
+
+    We instantiate Work in main(), locate the global thread pool and use the
+    QThreadPool::start() method. Now the thread pool runs our worker in another
+    thread. Using the thread pool has a performance advantage because threads
+    are not destroyed after they have finished running. They are kept in a pool
+    and wait to be used again later.
+
+    \section2 Example 2: Using QtConcurrent
+
+    \snippet examples/tutorials/threads/helloconcurrent/helloconcurrent.cpp  1
+
+    We write a global function hello() to implement the work. QtConcurrent::run()
+    is used to run the function in another thread. The result is a QFuture.
+    QFuture provides a method called \l{QFuture::}{waitForFinished()}, which
+    blocks until the calculation is completed. The real power of QtConcurrent
+    becomes visible when data can be made available in a container. QtConcurrent
+    provides several functions that are able to process itemized data on all
+    available cores simultaneously. The use of QtConcurrent is very similar to
+    applying an STL algorithm to an STL container.
+    \l{examples-threadandconcurrent.html}{QtConcurrent Map} is a very short and
+    clear example about how a container of images can be scaled on all available
+    cores. The image scaling example uses the blocking variants of the functions
+    used. For every blocking function there is also a non-blocking, asynchronous
+    counterpart. Getting results asynchronously is implemented with QFuture and
+    QFutureWatcher.
+
+    \section2 Example 3: Clock
+
+    \image thread_clock.png "clock"
+
+    We want to produce a clock application. The application has a GUI and a
+    worker thread. The worker thread checks every 10 milliseconds what time it
+    is. If the formatted time has changed, the result will be sent to the GUI
+    thread where it is displayed.
+
+    Of course, this is an overly complicated way of designing a clock and,
+    actually, a separate thread is unnecessary. We would be better off placing
+    the timer in the main thread because the calculation made in the timer slot
+    is very short-lived. This example is purely for instructional use and shows
+    how to communicate from a worker thread to a GUI thread. Note that
+    communication in this direction is easy. We only need to add a signal
+    to QThread and make a queued signal/slot connection to the main thread.
+    Communication from the GUI to the worker thread is shown in the next
+    example.
+
+    \snippet examples/tutorials/threads/clock/main.cpp  1
+
+    We've connected the \c clockThread with the label. The connection must be a
+    queued signal-slot connection because we want to put the call in the event
+    loop.
+
+    \snippet examples/tutorials/threads/clock/clockthread.h  1
+
+    We have derived a class from QThread and declared the \c sendTime() signal.
+
+    \snippet examples/tutorials/threads/clock/clockthread.cpp  1
+
+    The trickiest part of this example is that the timer is connected to its
+    slot via a direct connection. A default connection would produce a queued
+    signal-slot connection because the connected objects live in different
+    threads; remember that QThread does not live in the thread it creates.
+
+    Still it is safe to access ClockThread::timerHit() from the worker thread
+    because ClockThread::timerHit() is private and only touches local variables
+    and a private member that isn't touched by public methods.
+    QDateTime::currentDateTime() isn't marked as thread-safe in Qt
+    documentation, however we can get away with using it in this small
+    example because we know that the QDateTime::currentDateTime() static
+    method isn't used in any other threads.
+
+    \section2 Example 4: A Permanent Thread
+
+    This example shows how it is possible to have a QObject in a worker thread
+    that accepts requests from the GUI thread, does polling using a timer and
+    continuously reports results back to the GUI thread. The actual work
+    including the polling must be implemented in a class derived from QObject.
+    We have called this class \c WorkerObject in the code shown below. The
+    thread-specific code is hidden in a class called \c Thread, derived from
+    QThread.
+    \c Thread has two additional public members. The \c launchWorker() member
+    takes the worker object and moves it to another thread with a started event
+    loop.
+    The call blocks for a very short moment until the thread creation operation
+    is completed, allowing the worker object to be used again on the next line.
+    The \c Thread class's code is short but somewhat involved, so we only show
+    how to use the class.
+
+    \snippet examples/tutorials/threads/movedobject/main.cpp  1
+
+    QMetaObject::invokeMethod() calls a slot via the event loop. The worker
+    object's methods should not be called directly after the object has been
+    moved to another thread. We let the worker thread do some work and polling,
+    and use a timer to shut the application down after 3 seconds. Shutting the
+    worker down needs some care. We call \c{Thread::stop()} to exit the event
+    loop. We wait for the thread to terminate and, after this has occurred, we
+    delete the worker.
+
+    \section1 Digging Deeper
+
+    Threading is a very complicated subject. Qt offers more classes for
+    threading than we have presented in this tutorial. The following materials
+    can help you go into the subject in more depth:
+
+    \list
+    \o Good video tutorials about threads with Qt can be found in the material
+       from the \l{Training Day at Qt Developer Days 2009}.
+    \o The \l{Thread Support in Qt} document is a good starting point into
+       the reference documentation.
+    \o Qt comes with several additional examples for
+       \l{Threading and Concurrent Programming Examples}{QThread and QtConcurrent}.
+    \o Several good books describe how to work with Qt threads. The most
+       extensive coverage can be found in \e{Advanced Qt Programming} by Mark
+       Summerfield, Prentice Hall - roughly 70 of 500 pages cover QThread and
+       QtConcurrent.
+    \endlist
+*/

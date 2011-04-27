@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* Missing PubidLiteral in PublicID *-->
+<!NOTATION JPGformat PUBLIC >
+<!ENTITY aImage SYSTEM "image.jpg" NDATA JPGformat>
+]>
+<root/>

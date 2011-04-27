@@ -1,0 +1,8 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 63-->
+<![IGNORE[
+<!ELEMENT animal EMPTY>
+<!ELEMENT tiger EMPTY>
+]]>
+<!--Positive test with pattern4 of P63-->
+<!-- Positive test. Test for IGNORE with pattern 4. -->

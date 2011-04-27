@@ -1,0 +1,120 @@
+# Version: 1
+# CheckVsReference: 10%
+
+image_load borderimage.png borderimage
+translate -128 -128
+begin_block draw_border
+# top
+drawImage borderimage   0   0  16  16   0   0  16  16
+drawImage borderimage  16   0  36  16  16   0  32  16
+drawImage borderimage  52   0  16  16  48   0  16  16
+# sides
+drawImage borderimage   0  16  16  16   0  16  16  32
+drawImage borderimage  52  16  16  16  48  16  16  32
+#bottom
+drawImage borderimage   0  32  16  16   0  48  16  16
+drawImage borderimage  16  32  36  16  16  48  32  16
+drawImage borderimage  52  32  16  16  48  48  16  16
+end_block draw_border
+resetMatrix
+begin_block draw_column
+translate 1 1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+translate 0.1 64.1
+repeat_block draw_border
+end_block draw_column
+setRenderHint Antialiasing
+resetMatrix
+translate 72 0
+repeat_block draw_column
+resetMatrix
+scale 1.25 1.25
+translate 144 0
+repeat_block draw_border
+resetMatrix
+scale 1.25 1.25
+translate 246 0
+rotate 30
+repeat_block draw_border
+setRenderHint SmoothPixmapTransform
+resetMatrix
+scale 1.25 1.25
+translate 144 120
+repeat_block draw_border
+resetMatrix
+scale 1.25 1.25
+translate 246 120
+rotate 30
+repeat_block draw_border
+resetMatrix
+translate 215 260
+scale 3.55 3.55
+rotate 30
+repeat_block draw_border
+resetMatrix
+setRenderHint SmoothPixmapTransform off
+setRenderHint Antialiasing off
+translate 480 627
+rotate 180
+repeat_block draw_column
+resetMatrix
+setRenderHint Antialiasing
+translate 552 627
+rotate 180
+repeat_block draw_column
+resetMatrix
+setRenderHint Antialiasing off
+translate 200.1 520.1
+begin_block one_pixel_border
+drawImage borderimage   0   0  16  16   0   0  16  16
+drawImage borderimage  16   0  64  16  16   0   1   1
+drawImage borderimage  80   0  16  16  48   0  16  16
+drawImage borderimage   0  16  16  64  16   0   1   1
+drawImage borderimage  80  16  16  64  16   0   1   1
+drawImage borderimage   0  80  16  16   0  48  16  16
+drawImage borderimage  16  80  64  16  16   0   1   1
+drawImage borderimage  80  80  16  16  48  48  16  16
+end_block one_pixel_border
+resetMatrix
+translate 205.1 626.1
+scale 0.4 0.4
+repeat_block one_pixel_border
+resetMatrix
+translate 255.1 624.1
+scale 0.4 0.4
+rotate 10
+repeat_block one_pixel_border
+resetMatrix
+setPen red
+drawRect 0 0 70 680
+drawText 10 670 "aa off"
+drawRect 72 0 70 680
+drawText 80 670 "aa on"
+drawRect 409 0 70 680
+drawText 419 650 "rot 180"
+drawText 419 670 "aa off"
+drawRect 481 0 70 680
+drawText 491 650 "rot 180"
+drawText 491 670 "aa on"
+drawRect 164 0 224 124
+drawText 174 114 "smoothpixmaptransform off"
+drawRect 164 128 224 134
+drawText 174 252 "smoothpixmaptransform on"
+drawRect 200 520 97 188
+drawText 210 698 "1x1 edges"

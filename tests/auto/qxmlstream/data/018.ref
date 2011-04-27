@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Simple legal case: default namespace " )
+StartElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="http://example.org/namespace" )
+ )
+EndElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="foo" )
+EndDocument( )

@@ -1,0 +1,8 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      internatlEntityDecl(name="e", value="")
+   endDTD()
+   startElement(namespaceURI="", localName="doc", qName="doc", atts=[])
+   endElement(namespaceURI="", localName="doc", qName="doc")
+   fatalError(exception={columnNumber=1, lineNumber=5, publicId="", systemId="", message="unexpected character"})

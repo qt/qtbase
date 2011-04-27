@@ -1,0 +1,203 @@
+; Language
+&EN
+
+; SIS header: name, uid, version
+#{"Qtdemo"},(0xE001E61C),4,8,0,TYPE=SA
+
+; Localised Vendor name
+%{"Nokia, Qt"}
+
+; Unique Vendor name
+:"Nokia, Qt"
+
+"/epoc32/release/armv5/urel/star.exe"    - "!:\sys\bin\star.exe"
+"/epoc32/data/z/resource/apps/star.rsc"    - "!:\resource\apps\star.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/star_reg.rsc"   - "!:\private\10003a3f\import\apps\star_reg.rsc"
+
+"/epoc32/release/armv5/urel/wiggly.exe"    - "!:\sys\bin\wiggly.exe"
+"/epoc32/data/z/resource/apps/wiggly.rsc"    - "!:\resource\apps\wiggly.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/wiggly_reg.rsc"   - "!:\private\10003a3f\import\apps\wiggly_reg.rsc"
+
+"/epoc32/release/armv5/urel/animatedtiles.exe"    - "!:\sys\bin\animatedtiles.exe"
+"/epoc32/data/z/resource/apps/animatedtiles.rsc"    - "!:\resource\apps\animatedtiles.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/animatedtiles_reg.rsc"   - "!:\private\10003a3f\import\apps\animatedtiles_reg.rsc"
+
+"/epoc32/release/armv5/urel/collidingmice.exe"    - "!:\sys\bin\collidingmice.exe"
+"/epoc32/data/z/resource/apps/collidingmice.rsc"    - "!:\resource\apps\collidingmice.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/collidingmice_reg.rsc"   - "!:\private\10003a3f\import\apps\collidingmice_reg.rsc"
+
+"/epoc32/release/armv5/urel/addressbook.exe"    - "!:\sys\bin\addressbook.exe"
+"/epoc32/data/z/resource/apps/addressbook.rsc"    - "!:\resource\apps\addressbook.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/addressbook_reg.rsc"   - "!:\private\10003a3f\import\apps\addressbook_reg.rsc"
+
+"/epoc32/release/armv5/urel/svgviewer.exe"    - "!:\sys\bin\svgviewer.exe"
+"/epoc32/data/z/resource/apps/svgviewer.rsc"    - "!:\resource\apps\svgviewer.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/svgviewer_reg.rsc"   - "!:\private\10003a3f\import\apps\svgviewer_reg.rsc"
+
+"/epoc32/release/armv5/urel/analogclock.exe"    - "!:\sys\bin\analogclock.exe"
+"/epoc32/data/z/resource/apps/analogclock.rsc"    - "!:\resource\apps\analogclock.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/analogclock_reg.rsc"   - "!:\private\10003a3f\import\apps\analogclock_reg.rsc"
+
+"/epoc32/release/armv5/urel/imagegestures.exe"    - "!:\sys\bin\imagegestures.exe"
+"/epoc32/data/z/resource/apps/imagegestures.rsc"    - "!:\resource\apps\imagegestures.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/imagegestures_reg.rsc"   - "!:\private\10003a3f\import\apps\imagegestures_reg.rsc"
+
+"/epoc32/release/armv5/urel/qftp.exe"    - "!:\sys\bin\qftp.exe"
+"/epoc32/data/z/resource/apps/qftp.rsc"    - "!:\resource\apps\qftp.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/qftp_reg.rsc"   - "!:\private\10003a3f\import\apps\qftp_reg.rsc"
+
+"/epoc32/release/armv5/urel/masterdetail.exe"    - "!:\sys\bin\masterdetail.exe"
+"/epoc32/data/z/resource/apps/masterdetail.rsc"    - "!:\resource\apps\masterdetail.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/masterdetail_reg.rsc"   - "!:\private\10003a3f\import\apps\masterdetail_reg.rsc"
+
+"/epoc32/release/armv5/urel/previewer.exe"    - "!:\sys\bin\previewer.exe"
+"/epoc32/data/z/resource/apps/previewer.rsc"    - "!:\resource\apps\previewer.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/previewer_reg.rsc"   - "!:\private\10003a3f\import\apps\previewer_reg.rsc"
+
+"/epoc32/release/armv5/urel/anomaly.exe"    - "!:\sys\bin\anomaly.exe"
+"/epoc32/data/z/resource/apps/anomaly.rsc"    - "!:\resource\apps\anomaly.rsc"
+"/epoc32/data/Z/private/10003a3f/import/Apps/anomaly_reg.rsc"   - "!:\private\10003a3f\import\apps\anomaly_reg.rsc"
+
+;qmlcalculator
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmlcalculator.exe" - "!:\sys\bin\qmlcalculator.exe"
+"/epoc32/data/z/resource/apps/qmlcalculator.rsc" - "!:\resource\apps\qmlcalculator.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmlcalculator_reg.rsc" - "!:\private\10003a3f\import\apps\qmlcalculator_reg.rsc"
+"/epoc32/data/z/resource/apps/qmlcalculator.mif" - "!:\resource\apps\qmlcalculator.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E3FB/calculator.qml" - "!:\private\A000E3FB\calculator.qml"
+"/epoc32/data/z/private/A000E3FB/Core/Button.qml" - "!:\private\A000E3FB\Core\Button.qml"
+"/epoc32/data/z/private/A000E3FB/Core/calculator.js" - "!:\private\A000E3FB\Core\calculator.js"
+"/epoc32/data/z/private/A000E3FB/Core/Display.qml" - "!:\private\A000E3FB\Core\Display.qml"
+"/epoc32/data/z/private/A000E3FB/Core/images/button-.png" - "!:\private\A000E3FB\Core\images\button-.png"
+"/epoc32/data/z/private/A000E3FB/Core/images/button-blue.png" - "!:\private\A000E3FB\Core\images\button-blue.png"
+"/epoc32/data/z/private/A000E3FB/Core/images/button-green.png" - "!:\private\A000E3FB\Core\images\button-green.png"
+"/epoc32/data/z/private/A000E3FB/Core/images/button-purple.png" - "!:\private\A000E3FB\Core\images\button-purple.png"
+"/epoc32/data/z/private/A000E3FB/Core/images/button-red.png" - "!:\private\A000E3FB\Core\images\button-red.png"
+"/epoc32/data/z/private/A000E3FB/Core/images/display.png" - "!:\private\A000E3FB\Core\images\display.png"
+"/epoc32/data/z/private/A000E3FB/Core/qmldir" - "!:\private\A000E3FB\Core\qmldir"
+
+;qmlclocks
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmlclocks.exe" - "!:\sys\bin\qmlclocks.exe"
+"/epoc32/data/z/resource/apps/qmlclocks.rsc" - "!:\resource\apps\qmlclocks.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmlclocks_reg.rsc" - "!:\private\10003a3f\import\apps\qmlclocks_reg.rsc"
+"/epoc32/data/z/resource/apps/qmlclocks.mif" - "!:\resource\apps\qmlclocks.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E3FC/clocks.qml" - "!:\private\A000E3FC\clocks.qml"
+"/epoc32/data/z/private/A000E3FC/content/background.png" - "!:\private\A000E3FC\content\background.png"
+"/epoc32/data/z/private/A000E3FC/content/center.png" - "!:\private\A000E3FC\content\center.png"
+"/epoc32/data/z/private/A000E3FC/content/clock-night.png" - "!:\private\A000E3FC\content\clock-night.png"
+"/epoc32/data/z/private/A000E3FC/content/clock.png" - "!:\private\A000E3FC\content\clock.png"
+"/epoc32/data/z/private/A000E3FC/content/Clock.qml" - "!:\private\A000E3FC\content\Clock.qml"
+"/epoc32/data/z/private/A000E3FC/content/hour.png" - "!:\private\A000E3FC\content\hour.png"
+"/epoc32/data/z/private/A000E3FC/content/minute.png" - "!:\private\A000E3FC\content\minute.png"
+"/epoc32/data/z/private/A000E3FC/content/second.png" - "!:\private\A000E3FC\content\second.png"
+
+;qmldialcontrol
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmldialcontrol.exe" - "!:\sys\bin\qmldialcontrol.exe"
+"/epoc32/data/z/resource/apps/qmldialcontrol.rsc" - "!:\resource\apps\qmldialcontrol.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmldialcontrol_reg.rsc" - "!:\private\10003a3f\import\apps\qmldialcontrol_reg.rsc"
+"/epoc32/data/z/resource/apps/qmldialcontrol.mif" - "!:\resource\apps\qmldialcontrol.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E3FD/dialcontrol.qml" - "!:\private\A000E3FD\dialcontrol.qml"
+"/epoc32/data/z/private/A000E3FD/content/background.png" - "!:\private\A000E3FD\content\background.png"
+"/epoc32/data/z/private/A000E3FD/content/Dial.qml" - "!:\private\A000E3FD\content\Dial.qml"
+"/epoc32/data/z/private/A000E3FD/content/needle.png" - "!:\private\A000E3FD\content\needle.png"
+"/epoc32/data/z/private/A000E3FD/content/needle_shadow.png" - "!:\private\A000E3FD\content\needle_shadow.png"
+"/epoc32/data/z/private/A000E3FD/content/overlay.png" - "!:\private\A000E3FD\content\overlay.png"
+
+;qmleasing
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmleasing.exe" - "!:\sys\bin\qmleasing.exe"
+"/epoc32/data/z/resource/apps/qmleasing.rsc" - "!:\resource\apps\qmleasing.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmleasing_reg.rsc" - "!:\private\10003a3f\import\apps\qmleasing_reg.rsc"
+"/epoc32/data/z/resource/apps/qmleasing.mif" - "!:\resource\apps\qmleasing.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E3FE/easing.qml" - "!:\private\A000E3FE\easing.qml"
+
+;qmlflickr
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmlflickr.exe" - "!:\sys\bin\qmlflickr.exe"
+"/epoc32/data/z/resource/apps/qmlflickr.rsc" - "!:\resource\apps\qmlflickr.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmlflickr_reg.rsc" - "!:\private\10003a3f\import\apps\qmlflickr_reg.rsc"
+"/epoc32/data/z/resource/apps/qmlflickr.mif" - "!:\resource\apps\qmlflickr.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E3FF/flickr.qml" - "!:\private\A000E3FF\flickr.qml"
+"/epoc32/data/z/private/A000E3FF/common/Progress.qml" - "!:\private\A000E3FF\common\Progress.qml"
+"/epoc32/data/z/private/A000E3FF/common/qmldir" - "!:\private\A000E3FF\common\qmldir"
+"/epoc32/data/z/private/A000E3FF/common/RssModel.qml" - "!:\private\A000E3FF\common\RssModel.qml"
+"/epoc32/data/z/private/A000E3FF/common/ScrollBar.qml" - "!:\private\A000E3FF\common\ScrollBar.qml"
+"/epoc32/data/z/private/A000E3FF/common/Slider.qml" - "!:\private\A000E3FF\common\Slider.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/Button.qml" - "!:\private\A000E3FF\mobile\Button.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/GridDelegate.qml" - "!:\private\A000E3FF\mobile\GridDelegate.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/ImageDetails.qml" - "!:\private\A000E3FF\mobile\ImageDetails.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/images/gloss.png" - "!:\private\A000E3FF\mobile\images\gloss.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/lineedit.png" - "!:\private\A000E3FF\mobile\images\lineedit.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/lineedit.sci" - "!:\private\A000E3FF\mobile\images\lineedit.sci"
+"/epoc32/data/z/private/A000E3FF/mobile/images/quit.png" - "!:\private\A000E3FF\mobile\images\quit.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/stripes.png" - "!:\private\A000E3FF\mobile\images\stripes.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/titlebar.png" - "!:\private\A000E3FF\mobile\images\titlebar.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/titlebar.sci" - "!:\private\A000E3FF\mobile\images\titlebar.sci"
+"/epoc32/data/z/private/A000E3FF/mobile/images/toolbutton.png" - "!:\private\A000E3FF\mobile\images\toolbutton.png"
+"/epoc32/data/z/private/A000E3FF/mobile/images/toolbutton.sci" - "!:\private\A000E3FF\mobile\images\toolbutton.sci"
+"/epoc32/data/z/private/A000E3FF/mobile/ListDelegate.qml" - "!:\private\A000E3FF\mobile\ListDelegate.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/TitleBar.qml" - "!:\private\A000E3FF\mobile\TitleBar.qml"
+"/epoc32/data/z/private/A000E3FF/mobile/ToolBar.qml" - "!:\private\A000E3FF\mobile\ToolBar.qml"
+
+;qmlphotoviewer
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmlphotoviewer.exe" - "!:\sys\bin\qmlphotoviewer.exe"
+"/epoc32/data/z/resource/apps/qmlphotoviewer.rsc" - "!:\resource\apps\qmlphotoviewer.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmlphotoviewer_reg.rsc" - "!:\private\10003a3f\import\apps\qmlphotoviewer_reg.rsc"
+"/epoc32/data/z/resource/apps/qmlphotoviewer.mif" - "!:\resource\apps\qmlphotoviewer.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E400/photoviewer.qml" - "!:\private\A000E400\photoviewer.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/AlbumDelegate.qml" - "!:\private\A000E400\PhotoViewerCore\AlbumDelegate.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/BusyIndicator.qml" - "!:\private\A000E400\PhotoViewerCore\BusyIndicator.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/Button.qml" - "!:\private\A000E400\PhotoViewerCore\Button.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/EditableButton.qml" - "!:\private\A000E400\PhotoViewerCore\EditableButton.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/images/box-shadow.png" - "!:\private\A000E400\PhotoViewerCore\images\box-shadow.png"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/images/busy.png" - "!:\private\A000E400\PhotoViewerCore\images\busy.png"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/images/cardboard.png" - "!:\private\A000E400\PhotoViewerCore\images\cardboard.png"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/PhotoDelegate.qml" - "!:\private\A000E400\PhotoViewerCore\PhotoDelegate.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/ProgressBar.qml" - "!:\private\A000E400\PhotoViewerCore\ProgressBar.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/qmldir" - "!:\private\A000E400\PhotoViewerCore\qmldir"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/RssModel.qml" - "!:\private\A000E400\PhotoViewerCore\RssModel.qml"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/script/script.js" - "!:\private\A000E400\PhotoViewerCore\script\script.js"
+"/epoc32/data/z/private/A000E400/PhotoViewerCore/Tag.qml" - "!:\private\A000E400\PhotoViewerCore\Tag.qml"
+
+; qmltwitter
+; Executable and default resource files
+"/epoc32/release/armv5/urel/qmltwitter.exe" - "!:\sys\bin\qmltwitter.exe"
+"/epoc32/data/z/resource/apps/qmltwitter.rsc" - "!:\resource\apps\qmltwitter.rsc"
+"/epoc32/data/z/private/10003a3f/import/apps/qmltwitter_reg.rsc" - "!:\private\10003a3f\import\apps\qmltwitter_reg.rsc"
+"/epoc32/data/z/resource/apps/qmltwitter.mif" - "!:\resource\apps\qmltwitter.mif"
+
+; DEPLOYMENT
+"/epoc32/data/z/private/A000E401/twitter.qml" - "!:\private\A000E401\twitter.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/Button.qml" - "!:\private\A000E401\TwitterCore\Button.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/FatDelegate.qml" - "!:\private\A000E401\TwitterCore\FatDelegate.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/gloss.png" - "!:\private\A000E401\TwitterCore\images\gloss.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/lineedit.png" - "!:\private\A000E401\TwitterCore\images\lineedit.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/lineedit.sci" - "!:\private\A000E401\TwitterCore\images\lineedit.sci"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/loading.png" - "!:\private\A000E401\TwitterCore\images\loading.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/stripes.png" - "!:\private\A000E401\TwitterCore\images\stripes.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/titlebar.png" - "!:\private\A000E401\TwitterCore\images\titlebar.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/titlebar.sci" - "!:\private\A000E401\TwitterCore\images\titlebar.sci"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/toolbutton.png" - "!:\private\A000E401\TwitterCore\images\toolbutton.png"
+"/epoc32/data/z/private/A000E401/TwitterCore/images/toolbutton.sci" - "!:\private\A000E401\TwitterCore\images\toolbutton.sci"
+"/epoc32/data/z/private/A000E401/TwitterCore/Loading.qml" - "!:\private\A000E401\TwitterCore\Loading.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/MultiTitleBar.qml" - "!:\private\A000E401\TwitterCore\MultiTitleBar.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/qmldir" - "!:\private\A000E401\TwitterCore\qmldir"
+"/epoc32/data/z/private/A000E401/TwitterCore/RssModel.qml" - "!:\private\A000E401\TwitterCore\RssModel.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/TitleBar.qml" - "!:\private\A000E401\TwitterCore\TitleBar.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/ToolBar.qml" - "!:\private\A000E401\TwitterCore\ToolBar.qml"
+"/epoc32/data/z/private/A000E401/TwitterCore/UserModel.qml" - "!:\private\A000E401\TwitterCore\UserModel.qml"

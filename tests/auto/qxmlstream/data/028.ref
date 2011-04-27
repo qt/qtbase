@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Reserved prefixes and namespaces: declaring the xml prefix correctly " )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="xml" namespaceUri="http://www.w3.org/XML/1998/namespace" )
+ )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

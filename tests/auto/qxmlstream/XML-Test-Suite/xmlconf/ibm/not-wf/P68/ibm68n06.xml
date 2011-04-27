@@ -1,0 +1,8 @@
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE root SYSTEM "ibm68n06.dtd"
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+
+]>
+<root att="&aaa;">entity declared externally but standalone is yes</root>

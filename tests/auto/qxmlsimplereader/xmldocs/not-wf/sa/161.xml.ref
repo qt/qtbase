@@ -1,0 +1,5 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      internatlEntityDecl(name="%e", value="#PCDATA")
+      fatalError(exception={columnNumber=16, lineNumber=3, publicId="", systemId="", message="letter is expected"})

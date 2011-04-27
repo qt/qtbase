@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!--* missing ExternalID  *-->
+<!ENTITY aImage NDATA JPGformat >
+]>
+<root/>

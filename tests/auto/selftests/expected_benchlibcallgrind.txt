@@ -1,0 +1,9 @@
+********* Start testing of tst_BenchlibCallgrind *********
+Config: Using QTest library 4.5.0, Qt 4.5.0
+PASS   : tst_BenchlibCallgrind::initTestCase()
+RESULT : tst_BenchlibCallgrind::twoHundredMillionInstructions():
+     200,000,000 instruction reads per iteration (total: 200000000, iterations: 1)
+PASS   : tst_BenchlibCallgrind::twoHundredMillionInstructions()
+PASS   : tst_BenchlibCallgrind::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped
+********* Finished testing of tst_BenchlibCallgrind *********

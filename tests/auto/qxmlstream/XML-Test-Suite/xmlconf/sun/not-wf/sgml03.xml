@@ -1,0 +1,4 @@
+<!DOCTYPE root [ <!ELEMENT root EMPTY> ]>
+
+    <!-- SGML-ism:  -- inside comment -->
+<root/>

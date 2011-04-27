@@ -1,0 +1,63 @@
+P {
+	FONT-FAMILY: Times New Roman, Times, serif; FONT-SIZE: 12pt; MARGIN-LEFT: 1pc; TEXT-ALIGN: justify
+}
+H1 {
+	COLOR: #000066; FONT-FAMILY: "Trebuchet MS", Helvetica, Arial, sans-serif; FONT-SIZE: 24pt; FONT-WEIGHT: bold; TEXT-ALIGN: center; TEXT-TRANSFORM: uppercase
+}
+H2 {
+	COLOR: #000066; FONT-FAMILY: "Trebuchet MS", Helvetica, Arial, sans-serif; TEXT-TRANSFORM: capitalize
+}
+H3 {
+	COLOR: #000066; FONT-FAMILY: "Trebuchet MS", Helvetica, Arial, sans-serif; TEXT-TRANSFORM: capitalize
+}
+A {
+	COLOR: blue; FONT-WEIGHT: bold
+}
+A:visited {
+	COLOR: maroon
+}
+A:active {
+	BACKGROUND-COLOR: blue; COLOR: white
+}
+A:hover {
+	BACKGROUND-COLOR: purple; COLOR: white
+}
+BODY {
+	BACKGROUND-COLOR: white; MARGIN-LEFT: 1pc; MARGIN-RIGHT: 1pc
+}
+.topbox {
+	BACKGROUND-COLOR: #cccccc; BORDER-BOTTOM: black thin; BORDER-LEFT: black thin; BORDER-RIGHT: black thin; BORDER-TOP: #000000 thin; COLOR: #000000; FONT-FAMILY: sans-serif; FONT-SIZE: 10pt; FONT-WEIGHT: bold; MARGIN-LEFT: 2%; MARGIN-RIGHT: 2%; PADDING-BOTTOM: 5px; PADDING-TOP: 5px; TEXT-ALIGN: right
+}
+.bottom {
+	BACKGROUND-COLOR: #eeeeee; BORDER-BOTTOM: thin; BORDER-LEFT: thin; BORDER-RIGHT: thin; BORDER-TOP: thin; FONT-FAMILY: sans-serif; FONT-SIZE: 10pt; MARGIN-LEFT: 0%; MARGIN-RIGHT: 0%; PADDING-LEFT: 3pc
+}
+H4 {
+	COLOR: #0066CC; FONT-FAMILY: "Trebuchet MS", Helvetica, Arial, sans-serif; TEXT-TRANSFORM: capitalize
+}
+OL LI {
+	LIST-STYLE: lower-roman
+}
+UL LI {
+	LIST-STYLE: square
+}
+.main {
+	BACKGROUND-COLOR: #6699ff; BORDER-BOTTOM: black thin dotted; BORDER-LEFT: black thin dotted; BORDER-RIGHT: black thin dotted; BORDER-TOP: #000000 thin dotted; COLOR: #eeeeee; FONT-FAMILY: Verdana, Helvetica, Arial, sans-serif; FONT-SIZE: 24pt; FONT-WEIGHT: bold; MARGIN-LEFT: 4%; MARGIN-RIGHT: 4%
+}
+H5 {
+	COLOR: #000066; FONT-FAMILY: "Trebuchet MS", Helvetica, Arial, sans-serif; TEXT-TRANSFORM: capitalize
+}
+.purple {
+	COLOR: #6633ff
+}
+OL LI LI {
+	LIST-STYLE: lower-alpha
+}
+UL LI LI {
+	LIST-STYLE: circle
+}
+.membersonly {
+	BACKGROUND-COLOR: #ccccff; BORDER-BOTTOM: thin solid; BORDER-LEFT: solid; BORDER-RIGHT: solid; BORDER-TOP: thin solid; COLOR: blue; FONT-FAMILY: sans-serif; FONT-WEIGHT: bold
+}
+.public {
+	COLOR: #aaaaff; FONT-WEIGHT: bold
+}

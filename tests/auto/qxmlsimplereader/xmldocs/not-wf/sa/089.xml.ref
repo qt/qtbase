@@ -1,0 +1,5 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      externalEntityDecl(name="%foo", publicId="", systemId="foo.xml")
+      fatalError(exception={columnNumber=33, lineNumber=2, publicId="", systemId="", message="letter is expected"})

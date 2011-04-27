@@ -1,0 +1,43 @@
+CONFIG -= stl_off
+
+# STL usage in S60 requires the "OPTION CW -wchar_t on" mmp statement to be used.
+# This statement is added via $$STLLIB_USAGE_CW_FLAGS variable below.
+# S60 STL documentation instructs to use also "MACRO  _WCHAR_T_DECLARED" statement,
+# but QtS60 will not compile if that statement is set.
+
+QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS 
+
+# Path to stlport headers
+INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE 
+
+# Remove mkspecs/common/symbian/stl-off from beginning of includepath 
+# in order to use new and delete operators from STL
+INCLUDEPATH -= $$[QT_INSTALL_DATA]/mkspecs/common/symbian/stl-off
+
+# libstdcppv5 is preferred over libstdcpp as it has/uses the throwing version of operator new
+# STDCPP turns on standard C++ new behaviour (ie. throwing new)
+use_libstdcppv5 = true
+
+# Fall back to old implementation if that is the only one that is found
+exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcpp.dso)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcpp.dll) {
+    !exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcppv5.dso):!exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
+        use_libstdcppv5 = false
+    }
+}
+
+equals(use_libstdcppv5, true) {
+    LIBS *= -llibstdcppv5.dll
+    symbian-abld|symbian-sbsv2 {
+        MMP_RULES *= "STDCPP"
+    } else {
+        DEFINES *= __SYMBIAN_STDCPP_SUPPORT__
+        LIBS *= -lstdnew.dll
+    }
+} else {
+    LIBS *= -llibstdcpp.dll
+}
+
+# use the runtime support for nested exceptions, if a library is available
+exists($${EPOCROOT}epoc32/release/armv5/urel/usrt_nx_*.lib) {
+    CONFIG += nested_exceptions
+}

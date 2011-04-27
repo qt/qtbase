@@ -1,0 +1,13 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace name test: a syntactically plausible URI with a 
+     fictitious scheme " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" namespaceUri="zarquon://example.org/namespace" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="zarquon://example.org/namespace" )
+ )
+EndElement( name="foo" namespaceUri="zarquon://example.org/namespace" qualifiedName="foo" )
+EndDocument( )

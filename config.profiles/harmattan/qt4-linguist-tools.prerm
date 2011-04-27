@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+BINARIES="lrelease"
+
+case "$1" in
+    upgrade) ;;
+    remove|failed-upgrade|deconfigure)
+	for bin in $BINARIES; do
+	    rm -f "/usr/bin/${bin}"
+	done
+        ;;
+esac
+
+#DEBHELPER#

@@ -1,0 +1,4 @@
+usr/bin/native-lrelease
+usr/bin/host-lrelease
+usr/bin/lupdate
+usr/bin/lconvert

@@ -1,0 +1,81 @@
+# Version: 1
+# CheckVsReference: 5%
+
+
+image_load dome_argb32.png the_pixmap
+image_convertToFormat the_pixmap the_pixmap ARGB32_Premultiplied
+
+begin_block draw_stuff
+  save
+    image_convertToFormat the_pixmap converted ARGB32_Premultiplied
+    drawImage converted 0 0
+    translate 0 110
+
+    image_convertToFormat the_pixmap converted ARGB32
+    drawImage converted 0 0
+    translate 0 110
+
+    image_convertToFormat the_pixmap converted RGB32
+    drawImage converted 0 0
+    translate 0 110
+
+    image_convertToFormat the_pixmap converted Indexed8
+    drawImage converted 0 0
+    translate 0 110
+
+    image_convertToFormat the_pixmap converted MonoLSB
+    drawImage converted 0 0
+    translate 0 110
+
+    image_convertToFormat the_pixmap converted Mono
+    drawImage converted 0 0
+    translate 0 110
+  restore
+end_block
+
+
+image_load dome_argb32.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+
+image_load dome_rgb32.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+image_load dome_indexed.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+
+image_load dome_mono.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+image_load dome_mono_palette.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+image_load dome_indexed_mask.png the_pixmap
+translate 110 0
+repeat_block draw_stuff
+
+
+# helpful texts
+resetMatrix
+setPen black
+
+drawText 10 670 "ARGB32_PM"
+drawText 120 670 "ARGB32"
+drawText 230 670 "RGB32"
+drawText 340 670 "Indexed"
+drawText 450 670 "Mono"
+drawText 560 670 "Mono w/lut"
+drawText 670 670 "Indexed w/mask"
+
+drawText 770 50 "ARGB32_PM"
+drawText 770 160 "ARGB32"
+drawText 770 270 "RGB32"
+drawText 770 380 "Indexed"
+drawText 770 490 "MonoLSB"
+drawText 770 600 "Mono"

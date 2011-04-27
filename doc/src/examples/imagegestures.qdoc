@@ -1,0 +1,100 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example gestures/imagegestures
+    \title Image Gestures Example
+
+    This example shows how to enable gestures for a widget and use gesture input
+    to perform actions.
+
+    We use two classes to create the user interface for the application: \c MainWidget
+    and \c ImageWidget. The \c MainWidget class is simply used as a container for the
+    \c ImageWidget class, which we will configure to accept gesture input. Since we
+    are interested in the way gestures are used, we will concentrate on the
+    implementation of the \c ImageWidget class.
+
+    \section1 ImageWidget Class Definition
+
+    The \c ImageWidget class is a simple QWidget subclass that reimplements the general
+    QWidget::event() handler function in addition to several more specific event handlers:
+
+    \snippet examples/gestures/imagegestures/imagewidget.h class definition begin
+    \dots
+    \snippet examples/gestures/imagegestures/imagewidget.h class definition end
+
+    We also implement a private helper function, \c gestureEvent(), to help manage
+    gesture events delivered to the widget, and three functions to perform actions
+    based on gestures: \c panTriggered(), \c pinchTriggered() and \c swipeTriggered().
+
+    \section1 ImageWidget Class Implementation
+
+    In the widget's constructor, we begin by setting up various parameters that will
+    be used to control the way images are displayed.
+
+    \snippet examples/gestures/imagegestures/imagewidget.cpp constructor
+
+    We enable three of the standard gestures for the widget by calling QWidget::grabGesture()
+    with the types of gesture we need. These will be recognized by the application's
+    default gesture recognizer, and events will be delivered to our widget.
+
+    Since QWidget does not define a specific event handler for gestures, the widget
+    needs to reimplement the general QWidget::event() to receive gesture events.
+
+    \snippet examples/gestures/imagegestures/imagewidget.cpp event handler
+
+    We implement the event handler to delegate gesture events to a private function
+    specifically written for the task, and pass all other events to QWidget's
+    implementation.
+
+    The \c gestureHandler() function examines the gestures supplied by the
+    newly-delivered QGestureEvent. Since only one gesture of a given type can be
+    used on a widget at any particular time, we can check for each gesture type
+    using the QGestureEvent::gesture() function:
+
+    \snippet examples/gestures/imagegestures/imagewidget.cpp gesture event handler
+
+    If a QGesture object is supplied for a certain type of gesture, we call a special
+    purpose function to deal with it, casting the gesture object to the appropriate
+    QGesture subclass.
+
+    To illustrate how a standard gesture can be interpreted by an application, we
+    show the implementation of the \c swipeTriggered() function, which handles the
+    gesture associated with a brushing or swiping motion on the user's display or
+    input device:
+
+    \snippet examples/gestures/imagegestures/imagewidget.cpp swipe function
+
+    The QSwipeGesture class provides specialized functions and defines a enum
+    to make it more convenient for developers to discover which direction, if
+    any, the user swiped the display. Here, we simply navigate to the previous
+    image in the collection if the user swiped upwards or to the left; otherwise
+    we navigate to the next image in the collection.
+
+    The other gestures are also handled by special purpose functions, but use
+    the values of properties held by the QGesture object passed to them.
+*/

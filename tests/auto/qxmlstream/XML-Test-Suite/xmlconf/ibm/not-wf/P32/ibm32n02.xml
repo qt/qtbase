@@ -1,0 +1,6 @@
+<?xml version="1.0" standalone"yes" ?>
+<!DOCTYPE animal [
+   <!ELEMENT animal EMPTY>
+]>
+<!-- Missing Eq in SDDecl -->
+<animal/>

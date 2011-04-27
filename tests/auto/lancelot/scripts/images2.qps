@@ -1,0 +1,145 @@
+# Version: 1
+# CheckVsReference: 5%
+
+image_load dome_argb32.png the_image
+begin_block draw_stuff
+
+save
+  # standard draw
+  drawImage the_image 0 0
+
+  # flip x
+  translate 220 0
+  scale -1 1
+  drawImage the_image 0 0
+  scale -1 1
+
+  # flip y
+  translate 20 100
+  scale 1 -1
+  drawImage the_image 0 0
+  scale 1 -1
+
+  # flip x and y
+  translate 220 0
+  scale -1 -1
+  drawImage the_image 0 0
+  scale -1 -1
+
+  # flip y and scale
+  translate 20 10
+  save
+  scale 1 -1.1
+  drawImage the_image 0 0
+  restore
+
+  # flip y and scale
+  translate 220 -110
+  save
+  scale -1.1 0.9
+  drawImage the_image 0 0
+  restore
+restore
+end_block
+
+setRenderHint Antialiasing
+
+resetMatrix
+translate 0 120
+repeat_block draw_stuff
+
+resetMatrix
+translate 720 60
+setPen black
+drawText 0 0 "aliased"
+translate 0 120
+drawText 0 0 "antialiased"
+resetMatrix
+translate 0 260
+drawText 0 0 "normal"
+translate 120 0
+drawText 0 0 "flip x"
+translate 120 0
+drawText 0 0 "flip y"
+translate 120 0
+drawText 0 0 "flip x and y"
+translate 120 0
+drawText 0 0 "flip y and scale"
+translate 120 0
+drawText 0 0 "flip x and scale"
+translate 120 0
+
+setRenderHint SmoothPixmapTransform
+
+resetMatrix
+translate 20 300
+drawImage border.png 0 0 100 100 1 1 8 8
+drawText 0 -5 "subrect color bleeding"
+translate 0 120
+drawImage border.png 0 0 100 100 0 0 10 10
+
+image_load sign.png the_image
+resetMatrix
+drawText 240 300 "drawImage() with varying sx/sy offsets"
+translate 0 10
+drawRect 240 300 50 50
+drawImage the_image 240 300 50 50 20 0 80 80
+drawRect 300 300 50 50
+drawImage the_image 300 300 50 50 -20 0 80 80
+drawRect 240 370 50 50
+drawImage the_image 240 370 50 50 0 20 80 80
+drawRect 300 370 50 50
+drawImage the_image 300 370 50 50 0 -20 80 80
+
+pixmap_load sign.png the_pixmap
+translate 220 0
+translate 0 -10
+drawText 240 300 "drawPixmap() with varying sx/sy offsets"
+translate 0 10
+drawRect 240 300 50 50
+drawPixmap the_pixmap 240 300 50 50 20 0 80 80
+drawRect 300 300 50 50
+drawPixmap the_pixmap 300 300 50 50 -20 0 80 80
+drawRect 240 370 50 50
+drawPixmap the_pixmap 240 370 50 50 0 20 80 80
+drawRect 300 370 50 50
+drawPixmap the_pixmap 300 370 50 50 0 -20 80 80
+
+
+resetMatrix
+translate 0 170
+drawText 240 300 "drawImage() with varying sx/sy offsets"
+translate 0 10
+drawRect 240 300 50 50
+drawImage the_image 240 300 50 50 50 0 50 50
+drawRect 300 300 50 50
+drawImage the_image 300 300 50 50 -20 0 50 50
+drawRect 240 370 50 50
+drawImage the_image 240 370 50 50 0 50 50 50
+drawRect 300 370 50 50
+drawImage the_image 300 370 50 50 0 -20 50 50
+
+resetMatrix
+translate 220 170
+drawText 240 300 "drawPixmap() with varying sx/sy offsets"
+translate 0 10
+drawRect 240 300 50 50
+drawPixmap the_pixmap 240 300 50 50 50 0 50 50
+drawRect 300 300 50 50
+drawPixmap the_pixmap 300 300 50 50 -20 0 50 50
+drawRect 240 370 50 50
+drawPixmap the_pixmap 240 370 50 50 0 50 50 50
+drawRect 300 370 50 50
+drawPixmap the_pixmap 300 370 50 50 0 -20 50 50
+
+resetMatrix
+drawText 10 620 "drawImage/Pixmap() with negative x/y and sx/sy"
+setPen red
+
+translate 20 640
+drawImage the_image -10 -10 -1 -1 -10 -10 0 0
+drawRect 0 0 80 80
+
+translate 100 0
+drawPixmap the_pixmap -10 -10 -1 -1 -10 -10 0 0
+drawRect 0 0 80 80

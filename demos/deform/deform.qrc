@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res/deform">
+   <file>pathdeform.cpp</file>
+   <file>pathdeform.html</file>
+</qresource>
+</RCC>

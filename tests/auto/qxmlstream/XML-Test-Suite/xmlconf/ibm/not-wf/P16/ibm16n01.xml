@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE student [
+	<!ELEMENT student (#PCDATA)> 
+]>
+
+<!-- testing invalid PI with illegal sequence  -->
+<?MyInstruct This is ?> a test ?>
+<student>My Name is SnowMan. </student>
+
+

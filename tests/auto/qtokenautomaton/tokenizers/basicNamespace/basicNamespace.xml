@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tokenAutomaton scope="public"
+                namespace="BasicNamespace"
+                className="Basic"
+                headerFile="basicNamespace.h"
+                sourceFile="basicNamespace.cpp"
+                hasToString="true"
+                tokenEnum="Token"
+                defaultToken="NoKeyword"
+                includeGuardName="q_BasicNamespace_h">
+    <tokens>
+        <token>aReallyLongTokenIFreakinMeanItUKnowUKnowKnow</token>
+        <token>FFFF</token>
+        <token>FFFG</token>
+        <token>FFGF</token>
+        <token>FFGG</token>
+        <token>FFLM</token>
+        <token name="_111">def</token>
+        <token name="_">abc</token>
+        <token name="wobbly">ghi</token>
+        <token>colon:in:name:</token>
+    </tokens>
+</tokenAutomaton>

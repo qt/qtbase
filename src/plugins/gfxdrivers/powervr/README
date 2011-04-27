@@ -1,0 +1,66 @@
+PowerVR QScreen Driver
+======================
+
+This QScreen plugin driver allows the QtOpenGl module to integrate with PowerVR
+hardware from Imagination Technologies. Using this plugin, applications may use
+QGLWidget & QGLPixelBuffer with OpenGL ES. The integration with PowerVR drivers
+is built as two libraries: The actual QScreen plugin used by Qt (in the
+pvreglscreen directory) and a WSEGL plugin for the PowerVR drivers (in the
+QWSWSEGL directory).
+
+Qt/Embedded needs to be configured with the QT_QWS_CLIENTBLIT and
+QT_NO_QWS_CURSOR defines.
+
+The PowerVR drivers provide the WSEGL plugin API to allow window systems such as
+QWS to integrate correctly. In order to use the integration, the WSEGL plugin
+(libpvrQWSWSEGL.so, usually installed into the Qt library directory) must be in
+the LD library path. The PowerVR driver also needs to be told which WSEGL library
+to use. This is done by creating/modifying /etc/powervr.ini:
+
+[default]
+WindowSystem=libpvrQWSWSEGL.so
+
+Note: It is important that the /etc/powervr.ini file not contain ^M (Ctrl-M) DOS
+end of line markers at the end of its lines. If ^M markers are present, then the
+libpvrQWSWSEGL.so driver will not be loaded and the default null Linux driver
+will be loaded silently instead.  Make sure that the end of line markers are
+strictly Unix-style markers.
+
+
+***************************************************************************
+* IMPORTANT: To build the QScreen plugin and the WSEGL library it depends *
+* on, the pvr2d.h, wsegl.h headers for your platform are required.  You   *
+* can find a copy of these headers in src/3rdparty/powervr for SGX based  *
+* platforms like the TI OMAP3xxx.  They probably will not work on MBX     *
+* because of differences in the layout of certain PVR2D structures.       *
+* You can tell Qt where to find the actual headers for your system by     *
+* setting QMAKE_INCDIR_POWERVR in the mkspec.                             *
+***************************************************************************
+
+When you start a Qt/Embedded application, you should modify the QWS_DISPLAY
+environment variable to use the "powervr" driver instead of "LinuxFb".  For
+example, if your original QWS_DISPLAY variable was:
+
+    LinuxFb:mmWidth40:mmHeight54:0
+
+then it should be changed to:
+
+    powervr:mmWidth40:mmHeight54:0
+
+To test the OpenGL ES integration, you can use the hellogl_es example and run it
+on the device with:
+
+    hellogl_es -qws
+
+The driver also supports screen rotation if Qt is configured with the
+-qt-gfx-transformed option and the QWS_DISPLAY variable is wrapped in a
+"Transformed" declaration:
+
+    Transformed:powervr:mmWidth40:mmHeight54:Rot90:0
+
+Know Issues:
+    * A QGLWidget may not have window decorations if it is a top-level window.
+    * On some platforms, starting a QWS application after the system has been up
+      for a long time may cause the driver to fail. This is due to fragmentation
+      of main memory prevening older PowerVR drivers from allocating a contiguous
+      region of phyical RAM for the GL surface.

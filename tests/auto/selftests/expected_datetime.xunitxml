@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="3" tests="4" name="tst_DateTime">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="fail" name="dateTime">
+    <failure message="Compared values are not the same
+   Actual (local): 2000/05/03 04:03:04.000[local time]
+   Expected (utc): 2000/05/03 04:03:04.000[UTC]" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="qurl">
+    <failure message="Compared values are not the same
+   Actual (operandA): http://example.com
+   Expected (operandB): " result="fail"/>
+    <failure message="Compared values are not the same
+   Actual (operandA): 
+   Expected (operandB): http://example.com" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

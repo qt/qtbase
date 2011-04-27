@@ -1,0 +1,104 @@
+# Version: 1
+# CheckVsReference: 5%
+
+path_addRect p 0 0 75 75
+path_addEllipse p 25 25 75 75
+
+translate 10 10
+
+begin_block setup_gradient
+  gradient_clearStops
+  gradient_appendStop 0   red
+  gradient_appendStop 0.1 blue
+  gradient_appendStop 0.2 yellow
+  gradient_appendStop 0.3 cyan
+  gradient_appendStop 0.4 magenta
+  gradient_appendStop 0.5 green
+  gradient_appendStop 0.6 black
+  gradient_appendStop 0.7 indianred
+  gradient_appendStop 0.8 white
+  gradient_appendStop 0.9 orange
+  gradient_appendStop 1   blue
+ gradient_setLinear 0 0 100 100
+end_block
+
+setPen brush 0
+setBrush nobrush
+
+begin_block drawing
+  save
+    drawLine 0 0 100 100
+
+    translate 0 100
+    drawPath p
+
+    translate 0 110
+    drawRect 0 0 100 100
+
+    translate 0 110
+    drawPolyline [0 0 100 0 50 50]
+
+    drawPoint 40 40
+    drawPoint 41 40
+    drawPoint 42 40
+    drawPoint 43 40
+    drawPoint 44 40
+    drawPoint 45 40
+    drawPoint 46 40
+    drawPoint 47 40
+    drawPoint 48 40
+    drawPoint 49 40
+    drawPoint 50 40
+
+  restore
+end_block
+
+save
+  translate 110 0
+  save
+    setRenderHint Antialiasing
+    repeat_block drawing
+  restore
+
+  setBrush dome_rgb32.png
+  setPen brush 0
+  setBrush nobrush
+
+  translate 110 0
+  repeat_block drawing
+
+  translate 110 0
+  save
+    setRenderHint Antialiasing
+    repeat_block drawing
+  restore
+restore
+
+translate 0 0
+
+save
+  repeat_block setup_gradient
+  setPen brush 5
+  setBrush nobrush
+  translate 0 350
+  repeat_block drawing
+
+  translate 110 0
+  save
+    setRenderHint Antialiasing
+    repeat_block drawing
+  restore
+
+  setBrush dome_rgb32.png
+  setPen brush 5
+  setBrush nobrush
+
+  translate 110 0
+  repeat_block drawing
+
+  translate 110 0
+  save
+    setRenderHint Antialiasing
+    repeat_block drawing
+  restore
+restore

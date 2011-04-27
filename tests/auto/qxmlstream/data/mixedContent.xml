@@ -1,0 +1,35 @@
+<documentElement>
+    <comments>
+        <c1><!-- comment --></c1>
+        <c1><!-- comment -->AFTER</c1>
+        <c1>BEFORE<!-- comment --></c1>
+        <c1>BEFORE<!-- comment -->AFTER</c1>
+        <c1>BEFORE<!-- comment1 -->SPLIT<!-- comment 2-->AFTER</c1>
+        <c1><!-- comment1 -->SPLIT<!-- comment 2-->AFTER</c1>
+        <c1>BEFORE<!-- comment1 -->SPLIT<!-- comment 2--></c1>
+        <c1>BEFORE<!-- comment1 --><!-- comment 2-->AFTER</c1>
+    </comments>
+    <PIs>
+        <p1><!-- comment --></p1>
+        <p1><!-- comment -->AFTER</p1>
+        <p1>BEFORE<!-- comment --></p1>
+        <p1>BEFORE<!-- comment -->AFTER</p1>
+        <p1>BEFORE<!-- comment1 -->SPLIT<!-- comment 2-->AFTER</p1>
+        <p1><!-- comment1 -->SPLIT<!-- comment 2-->AFTER</p1>
+        <p1>BEFORE<!-- comment1 -->SPLIT<!-- comment 2--></p1>
+        <p1>BEFORE<!-- comment1 --><!-- comment 2-->AFTER</p1>
+    </PIs>
+    <mixed>
+        <p1><!-- comment --><?PI?></p1>
+        <p1><?PI?><!-- comment --></p1>
+
+        <p1><?Pi?><!-- comment --><?PI?></p1>
+        <p1><!-- comment --><?PI?><!-- comment --></p1>
+
+        <p1>A<!-- comment -->B<?PI?>C</p1>
+        <p1>A<?PI?>B<!-- comment -->C</p1>
+
+        <p1>A<?Pi?>B<!-- comment -->C<?PI?>D</p1>
+        <p1>A<!-- comment -->B<?PI?>C<!-- comment -->D</p1>
+    </mixed>
+</documentElement>

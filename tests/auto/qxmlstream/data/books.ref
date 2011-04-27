@@ -1,0 +1,18 @@
+StartDocument( documentVersion="1.0" documentEncoding="ISO-8859-1" )
+StartElement( name="bookstore" qualifiedName="bookstore" )
+Characters( whitespace text="
+  " )
+StartElement( name="title" qualifiedName="title"
+    Attribute( name="lang" qualifiedName="lang" value="en" )
+ )
+Characters( text="Everyday Italian" )
+EndElement( name="title" qualifiedName="title" )
+Characters( whitespace text="
+  " )
+StartElement( name="author" qualifiedName="author" )
+Characters( text="Giada De Laurentiis" )
+EndElement( name="author" qualifiedName="author" )
+Characters( whitespace text="
+" )
+EndElement( name="bookstore" qualifiedName="bookstore" )
+EndDocument( )

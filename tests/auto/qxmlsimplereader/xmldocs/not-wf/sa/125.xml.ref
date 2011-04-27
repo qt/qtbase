@@ -1,0 +1,4 @@
+setDocumentLocator(locator={columnNumber=1, lineNumber=1})
+startDocument()
+   startDTD(name="doc", publicId="", systemId="")
+      fatalError(exception={columnNumber=17, lineNumber=2, publicId="", systemId="", message="letter is expected"})

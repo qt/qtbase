@@ -1,0 +1,4 @@
+<?xml version="1.0" standalone="No" ?>
+<!DOCTYPE animal SYSTEM "ibm32n06.dtd">
+<!-- Wrong keyword in SDDecl -->
+<animal/>

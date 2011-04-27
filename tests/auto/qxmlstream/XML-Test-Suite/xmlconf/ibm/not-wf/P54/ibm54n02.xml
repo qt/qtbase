@@ -1,0 +1,12 @@
+<?xml  version="1.0"?>
+<!-- test for Production 54-->
+<!DOCTYPE AttrType
+[
+<!ELEMENT AttrType ANY>
+<!ELEMENT a EMPTY>
+<!ATTLIST a att PCDATA #IMPLIED> 
+]>
+<AttrType>
+Giving a wrong AttType for the attribute. 
+<a att="23" ></a>
+</AttrType>

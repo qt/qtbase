@@ -1,0 +1,7 @@
+********* Start testing of tst_Crashes *********
+Config: Using QTest library 4.1.0, Qt 4.1.1
+PASS   : tst_Crashes::initTestCase()
+FAIL!  : tst_Crashes::crash() Caught unhandled exception
+.\qtestcase.cpp(984) : failure location
+Totals: 1 passed, 1 failed, 0 skipped
+********* Finished testing of tst_Crashes *********

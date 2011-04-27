@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!ELEMENT b ANY>
+<!--* Wrong closing bracket in Mixed  *-->
+<!ELEMENT aElement ( #PCDATA | a ]* >
+]>
+<root>Any content</root>

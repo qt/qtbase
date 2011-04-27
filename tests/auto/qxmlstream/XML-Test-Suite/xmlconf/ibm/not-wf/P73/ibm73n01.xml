@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!--* wrong order: NDataDecl ExternalID  *-->
+<!ENTITY aImage NDATA JPGformat SYSTEM "image.jpg" >
+]>
+<root/>

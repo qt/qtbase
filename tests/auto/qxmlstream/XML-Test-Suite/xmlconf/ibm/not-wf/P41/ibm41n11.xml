@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root ANY>
+<!ATTLIST root attr1 CDATA #IMPLIED>
+<!ATTLIST root attr2 CDATA #IMPLIED>
+<!ENTITY aExternal SYSTEM "ibm41n11.ent">
+<!ENTITY aIndirect "&aExternal;">
+]>
+<root attr1="&aIndirect;">indirect reference to external entinity in Attribute</root>

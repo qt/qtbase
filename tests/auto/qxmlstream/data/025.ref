@@ -1,0 +1,4 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Unbound element prefix " )
+Invalid( name="foo" qualifiedName="a:foo" prefix="a" )
+ERROR: Namespace prefix 'a' not declared

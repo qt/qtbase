@@ -1,0 +1,4 @@
+Ask your question: When is the next Qt release?
+Reply was: Sorry, I don't know the answer
+Ask your question: What is the answer to life, the universe and everything?
+Reply was: 42

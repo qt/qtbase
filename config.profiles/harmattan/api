@@ -1,0 +1,120 @@
+interface: Phonon
+type: library
+libs-pkg: libqt4-phonon
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/phonon/*
+
+interface: QtCore
+type: library
+libs-pkg: libqtcore4
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtCore/*
+
+interface: QtDBus
+type: library
+libs-pkg: libqt4-dbus
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtDBus/*
+
+interface: QtDeclarative
+type: library
+libs-pkg: libqt4-declarative
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtDeclarative/*
+
+interface: QtGui
+type: library
+libs-pkg: libqtgui4
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtGui/*
+
+interface: QtHelp
+type: library
+libs-pkg: libqt4-help
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtHelp/*
+
+interface: QtMultimedia
+type: library
+libs-pkg: libqt4-multimedia
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtMultimedia/*
+
+interface: QtNetwork
+type: library
+libs-pkg: libqt4-network
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtNetwork/*
+
+interface: QtOpenGL
+type: library
+libs-pkg: libqt4-opengl
+dev-pkg: libqt4-dev libqt4-opengl-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtOpenGL/*
+
+interface: QtScript
+type: library
+libs-pkg: libqt4-script
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtScript/*
+
+interface: QtSql
+type: library
+libs-pkg: libqt4-sql-sqlite libqt4-sql
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtSql/*
+
+interface: QtSvg
+type: library
+libs-pkg: libqt4-svg
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtSvg/*
+
+interface: QtTest
+type: library
+libs-pkg: libqt4-test
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtTest/*
+
+interface: QtXml
+type: library
+libs-pkg: libqt4-xml
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtXml/*
+
+interface: QtXmlPatterns
+type: library
+libs-pkg: libqt4-xmlpatterns
+dev-pkg: libqt4-dev
+state: stable
+scope: Nokia MeeGo
+headers: /usr/include/qt4/QtXmlPatterns/*
+

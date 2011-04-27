@@ -1,0 +1,5 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Simple legal case: no namespaces " )
+StartElement( name="foo" qualifiedName="foo" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

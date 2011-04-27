@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<!DOCTYPE animal [
+   <!ELEMENT animal ANY>
+   <!ENTITY % parameterE "leopard EMPTY>">
+   <!ELEMENT %parameterE;
+]>
+<!-- Parameter reference appears inside elementdecl in DTD -->
+<animal>Any content</animal>

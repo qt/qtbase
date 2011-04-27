@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Mising contentspec in elementdecl *-->
+<!ELEMENT root >
+]>
+<root>Any content</root>

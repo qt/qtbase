@@ -1,0 +1,9 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Simple legal case: prefixed attribute " )
+StartElement( name="foo" qualifiedName="foo"
+    Attribute( name="attr" namespaceUri="http://example.org/namespace" qualifiedName="a:attr" prefix="a" value="1" )
+
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/namespace" )
+ )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

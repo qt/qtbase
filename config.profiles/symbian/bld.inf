@@ -1,0 +1,82 @@
+/*
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+*
+* Description:  Build information file for Qt configuration
+*
+*/
+
+#include <platform_paths.hrh>
+
+PRJ_PLATFORMS
+TOOLS2
+
+PRJ_EXPORTS
+qtconfig.xml /epoc32/tools/makefile_templates/qt/qtconfig.xml
+qtconfig.flm /epoc32/tools/makefile_templates/qt/qtconfig.flm
+
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_emulator_deployment.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_extra_pre_targetdep.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_post_link.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qmake_store_build.flm /epoc32/tools/makefile_templates/qt/
+../../mkspecs/symbian-sbsv2/flm/qt/qt.xml /epoc32/tools/makefile_templates/qt/
+
+qt.conf    /epoc32/tools/qt.conf
+
+/* export platform specific configuration */
+
+platform_paths.prf /epoc32/include/
+data_caging_paths.prf /epoc32/include/
+non_foundation_paths.prf /epoc32/include/
+
+environment.prf /epoc32/tools/qt/mkspecs/features/environment.prf
+
+//for loc
+loc.prf                  /epoc32/tools/qt/mkspecs/features/loc.prf
+
+#ifdef FF_QT_IN_UDA
+//For UDA image
+confml/qt.confml                  CONFML_EXPORT_PATH(qt.confml,uda_content)
+implml/qt_copy.implml             CRML_EXPORT_PATH(qt_copy.implml,uda_content)
+content/apps/qt.sisx               CRML_EXPORT_PATH(../content/sis/,uda_content)
+content/apps/qt_stub.sis          /epoc32/data/z/system/install/qt_stub.sis
+#endif
+
+//tools
+../../bin/createpackage.bat         /epoc32/tools/createpackage.bat
+../../bin/createpackage.pl          /epoc32/tools/createpackage.pl
+../../bin/patch_capabilities.bat    /epoc32/tools/patch_capabilities.bat
+../../bin/patch_capabilities.pl     /epoc32/tools/patch_capabilities.pl
+
+
+/* export localization *.ts files */
+translations/qt_ur.ts /epoc32/include/platform/qt/translations/
+translations/qt_fa.ts /epoc32/include/platform/qt/translations/
+translations/qt_ar.ts /epoc32/include/platform/qt/translations/
+translations/qt_he.ts /epoc32/include/platform/qt/translations/
+
+translations/qt_fr_symbian.ts /epoc32/include/platform/qt/translations/qt_fr.ts
+translations/qt_pl_symbian.ts /epoc32/include/platform/qt/translations/qt_pl.ts
+translations/qt_ru_symbian.ts /epoc32/include/platform/qt/translations/qt_ru.ts
+translations/qt_zh_cn_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_cn.ts
+translations/qt_zh_tw_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_tw.ts
+
+../../translations/qt_ar.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_cs.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_da.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_de.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_es.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_gl.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_hu.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_ja.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_pt.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_sk.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_sl.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_sv.ts /epoc32/include/platform/qt/translations/
+../../translations/qt_uk.ts /epoc32/include/platform/qt/translations/
+
+PRJ_EXTENSIONS
+START EXTENSION qt/qtconfig
+OPTION QT_ROOT ..
+OPTION OPTIONS -opensource -confirm-license -openvg -opengl-es-2 -script -no-scripttools -no-webkit -make make -graphicssystem openvg -phonon -phonon-backend -usedeffiles -dont-process -nomake examples -nomake demos -nomake tools -audio-backend -fpu softvfp+vfpv2
+END

@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>animations/chilling</file>
+    <file>animations/dancing</file>
+    <file>animations/dead</file>
+    <file>animations/jumping</file>
+</qresource>
+</RCC>

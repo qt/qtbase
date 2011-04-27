@@ -1,0 +1,4 @@
+qt4-linguist-tools: unknown-control-file digsigsums
+qt4-linguist-tools: binary-from-other-architecture ./usr/bin/host-lrelease
+qt4-linguist-tools: binary-or-shlib-defines-rpath ./usr/bin/host-lrelease /scratchbox/host_shared/lib
+qt4-linguist-tools: binary-or-shlib-defines-rpath ./usr/bin/host-lrelease /host_usr/lib

@@ -1,0 +1,48 @@
+EGL NullWS QScreen Driver
+=========================
+
+If your application draws everything within a single full-screen QGLWidget then
+you may wish to use this QScreen plugin driver. This driver simply returns 0
+(as a EGLNativeWindowType value) when asked by the QtOpenGl module to create a
+native window. Some OpenGL ES implementations (including PowerVR) interpret this
+to mean that a full-screen OpenGL context is desired without any windowing
+support (NullWS).
+
+To tell a Qt/Embedded application to use this driver use the -display command
+line option or the QWS_DISPLAY environment variable. The following driver
+options are supported:
+
+size=WIDTHxHEIGHT   Screen size reported by the driver
+format=FORMAT       Screen format
+
+Run with '-display eglnullws:help' to get a full list of options (including a
+list of supported format strings).
+
+If you choose a screen format that is not supported by the hardware then the
+QtOpenGl module will write out a list of supported EGL configurations. Use
+one of the supported screen formats from this list.
+
+Using this driver with PowerVR hardware
+---------------------------------------
+
+Using this plugin with PowerVR hardware should give a significant speedup
+compared to running with the Qt powervr driver (with a full-screen QGLWidget).
+This is because sacrificing the window system allows less work to be done in
+order to get graphics on the screen. Using this driver also avoids the memory
+fragmentation issues present in the powervr driver and avoids any direct
+dependencies on the deprecated PVR2D API from Imagination Technologies.
+
+To use this driver ensure you have /etc/powervr.ini with contents similar to
+this:
+
+[default]
+WindowSystem=libpvrPVR2D_FLIPWSEGL.so
+
+This driver will also function with libpvrPVR2D_FRONTWSEGL.so, but that draws
+straight into the framebuffer and will therefore cause flickering (it can be
+useful for performance testing though). The flip plugin uses triple buffering,
+so you will need to set the virtual vertical resolution of your framebuffer to
+be three times the physical vertical resolution of your screen. This can be
+done with 'fbset -vyres'. Failure to do this can cause system crashes. You
+should also ensure that the plugin you choose in powervr.ini is in your library
+path (it may just silently default to the flip plugin if not).

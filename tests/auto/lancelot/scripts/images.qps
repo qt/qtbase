@@ -1,0 +1,106 @@
+# Version: 1
+# CheckVsReference: 5%
+
+
+setRenderHint Antialiasing
+
+setPen #00ff00
+
+image_load dome_argb32.png the_image
+begin_block draw_stuff
+
+save
+
+  # standard draw
+  drawImage the_image 0 0
+
+  # sub recting
+  translate 120 0
+  drawImage the_image  0  0  40  40  0  0  40  40
+  drawImage the_image 60  0  40  40 60  0  40  40
+  drawImage the_image  0 60  40  40  0 60  40  40
+  drawImage the_image 60 60  40  40 60 60  40  40
+  drawImage the_image  0 40  40  20  0 40  40  20
+  drawImage the_image 60 40  40  20 60 40  40  20
+  drawImage the_image 40  0  20 100 40  0  20 100
+
+  # subrecting w/scale
+  translate 120 0
+  drawImage the_image 0 0 50 50 0 0 25 25
+  drawImage the_image 50 0 50 50 25 0 25 25
+  drawImage the_image 0 50 50 50 0 25 25 25
+  drawImage the_image 50 50 50 50 25 25 25 25
+
+  # subrecting w/scale & smooth xform
+  translate 120 0
+  setRenderHint SmoothPixmapTransformation
+  drawImage the_image 0 0 50 50 0 0 25 25
+  drawImage the_image 50 0 50 50 25 0 25 25
+  drawImage the_image 0 50 50 50 0 25 25 25
+  drawImage the_image 50 50 50 50 25 25 25 25
+
+
+  # Rotation w/o smooth xform
+  translate 120 0
+  save
+    setRenderHint SmoothPixmapTransform off
+    rotate 10
+    drawImage the_image 0 0
+  restore
+
+  # Rotation w smooth xform
+  translate 120 0
+  save
+    setRenderHint SmoothPixmapTransform
+    rotate 10
+    drawImage the_image 0 0
+  restore
+
+restore
+
+end_block
+
+
+translate 0 120
+image_load dome_rgb32.png the_image
+repeat_block draw_stuff
+
+translate 0 120
+image_load dome_indexed.png the_image
+repeat_block draw_stuff
+
+translate 0 120
+image_load dome_indexed_mask.png the_image
+repeat_block draw_stuff
+
+translate 0 120
+image_load dome_mono.png the_image
+repeat_block draw_stuff
+
+
+resetMatrix
+translate 700 60
+setPen black
+drawText 0 0 "32 bit w/alpha"
+translate 0 120
+drawText 0 0 "32 bit w/o alpha"
+translate 0 120
+drawText 0 0 "8 bit indexed"
+translate 0 120
+drawText 0 0 "8 bit indexed w/mask"
+translate 0 120
+drawText 0 0 "1 bit"
+resetMatrix
+translate 0 600
+drawText 0 0 "normal"
+translate 120 0
+drawText 0 0 "subrect"
+translate 120 0
+drawText 0 0 "subrect scale"
+translate 120 0
+drawText 0 0 "subrect scale smooth"
+translate 120 0
+drawText 0 0 "xform"
+translate 120 0
+drawText 0 0 "smooth xform"
+translate 120 0

@@ -1,0 +1,6 @@
+<?xml version="1.0" standalone="Yes" ?>
+<!DOCTYPE animal [
+   <!ELEMENT animal EMPTY>
+]>
+<!-- Wrong keyword in SDDecl -->
+<animal/>

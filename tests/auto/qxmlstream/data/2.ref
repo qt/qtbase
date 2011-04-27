@@ -1,0 +1,9 @@
+StartDocument( )
+StartElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" prefix="ns"
+    Attribute( name="space" namespaceUri="http://www.w3.org/XML/1998/namespace" qualifiedName="xml:space" prefix="xml" value="preserve" )
+
+    NamespaceDeclaration( prefix="ns" namespaceUri="namespaceUri" )
+ )
+Characters( text="The world goes round and round" )
+EndElement( name="doc" namespaceUri="namespaceUri" qualifiedName="ns:doc" )
+EndDocument( )

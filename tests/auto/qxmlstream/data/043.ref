@@ -1,0 +1,4 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Colon in entity name " )
+Invalid( )
+ERROR: Expected ' ', but got ':'.

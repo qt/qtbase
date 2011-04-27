@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container  xmlns="http://www.symbianfoundation.org/xml/implml/1"
+            condition="${qt.Enabled}">
+    <tag name="target" value="uda" />
+    <content xmlns="http://www.s60.com/xml/content/2">
+      <output dir="sis" flatten="true">
+        <input file="sis/qt.sisx" />
+      </output>
+    </content>
+</container>

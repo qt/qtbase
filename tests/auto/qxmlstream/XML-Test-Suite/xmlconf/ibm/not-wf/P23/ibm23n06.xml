@@ -1,0 +1,6 @@
+<!xml version='1.0' encoding='ASCII' standalone='yes' ?>
+<!DOCTYPE doc [
+   <!ELEMENT doc EMPTY>
+]>
+<doc/>
+<!-- Wrong opening sequence in XMLDecl -->

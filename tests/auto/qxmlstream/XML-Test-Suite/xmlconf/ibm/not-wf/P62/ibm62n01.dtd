@@ -1,0 +1,9 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!-- DTD for Production 62-->
+<![ include [
+<!ELEMENT tiger EMPTY>
+<!ELEMENT animal ANY>
+]]>
+
+<!--Negative test with pattern1 of P62-->
+<!--include(Case sensitive)-->

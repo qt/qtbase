@@ -1,0 +1,7 @@
+********* Start testing of tst_Exception *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+PASS   : tst_Exception::initTestCase()
+FAIL!  : tst_Exception::throwException() Caught unhandled exception
+   Loc: [/home/fenglich/dev/qt-4.3/tools/qtestlib/src/qtestcase.cpp(1220)]
+Totals: 1 passed, 1 failed, 0 skipped
+********* Finished testing of tst_Exception *********

@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/tst_textstream/">
+   <file>resources/big_endian/</file>
+   <file>resources/little_endian/</file>
+</qresource>
+</RCC>

@@ -1,0 +1,10 @@
+data/*.xml                                                      -crlf
+data/*.ref                                                      -crlf
+XML-Test-Suite/*                                                -crlf
+XML-Test-Suite/*/*                                              -crlf
+XML-Test-Suite/*/*/*                                            -crlf
+XML-Test-Suite/*/*/*/*                                          -crlf
+XML-Test-Suite/*/*/*/*/*                                        -crlf
+XML-Test-Suite/*/*/*/*/*/*                                      -crlf
+XML-Test-Suite/*/*/*/*/*/*/*                                    -crlf
+XML-Test-Suite/*/*/*/*/*/*/*/*                                  -crlf

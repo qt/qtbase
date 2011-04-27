@@ -1,0 +1,12 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace name test: a same-document relative URI (deprecated) " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" namespaceUri="#beeblebrox" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="#beeblebrox" )
+ )
+EndElement( name="foo" namespaceUri="#beeblebrox" qualifiedName="foo" )
+EndDocument( )

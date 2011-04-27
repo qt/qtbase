@@ -1,0 +1,7 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY aaa "aString">
+]>
+<root att="&aAa;">reference doesn't match delaration</root>

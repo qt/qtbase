@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @(#)not-wf.xml	1.6 98/12/29
+    Copyright 1998 by Sun Microsystems, Inc.
+    All Rights Reserved.
+-->
+<TEST URI="not-wf/not-sa03.xml" ID="not-wf-sa03" ENTITIES="parameter"
+	SECTIONS="2.9" TYPE="not-wf">
+    Tests the Entity Declared WFC, ensuring that
+    a reference to externally defined entity causes a well-formedness error.</TEST>
+<TEST ID="attlist01" URI="not-wf/attlist01.xml" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NUTOKEN is not allowed.</TEST>
+
+<TEST ID="attlist02" URI="not-wf/attlist02.xml" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NUTOKENS attribute type is not allowed.</TEST>
+
+<TEST ID="attlist03" URI="not-wf/attlist03.xml" TYPE="not-wf" SECTIONS="3.3.1 [59]">
+    Comma doesn't separate enumerations, unlike in SGML.</TEST>
+
+<TEST ID="attlist04" URI="not-wf/attlist04.xml" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NUMBER attribute type is not allowed.</TEST>
+
+<TEST ID="attlist05" URI="not-wf/attlist05.xml" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NUMBERS attribute type is not allowed.</TEST>
+
+<TEST ID="attlist06" URI="not-wf/attlist06.xml" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NAME attribute type is not allowed.</TEST>
+
+<TEST URI="not-wf/attlist07.xml" ID="attlist07" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's NAMES attribute type is not allowed.</TEST>
+
+<TEST URI="not-wf/attlist08.xml" ID="attlist08" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's #CURRENT is not allowed.</TEST>
+
+<TEST URI="not-wf/attlist09.xml" ID="attlist09" TYPE="not-wf" SECTIONS="3.3.1 [56]">
+    SGML's #CONREF is not allowed.</TEST>
+
+<TEST URI="not-wf/attlist10.xml" ID="attlist10" TYPE="not-wf" SECTIONS="3.1 [40]">
+    Whitespace required between attributes</TEST>
+
+<TEST URI="not-wf/attlist11.xml" ID="attlist11" TYPE="not-wf" SECTIONS="3.1 [44]">
+    Whitespace required between attributes</TEST>
+
+<TEST URI="not-wf/cond01.xml" ID="cond01" TYPE="not-wf" SECTIONS="3.4 [61]" ENTITIES="parameter">
+    Only INCLUDE and IGNORE are conditional section keywords</TEST>
+
+<TEST URI="not-wf/cond02.xml" ID="cond02" TYPE="not-wf" SECTIONS="3.4 [61]" ENTITIES="parameter">
+    Must have keyword in conditional sections</TEST>
+
+<TEST URI="not-wf/content01.xml" ID="content01" TYPE="not-wf" SECTIONS="3.2.1 [48]">
+    No whitespace before "?" in content model</TEST>
+
+<TEST URI="not-wf/content02.xml" ID="content02" TYPE="not-wf" SECTIONS="3.2.1 [48]">
+    No whitespace before "*" in content model</TEST>
+
+<TEST URI="not-wf/content03.xml" ID="content03" TYPE="not-wf" SECTIONS="3.2.1 [48]">
+    No whitespace before "+" in content model</TEST>
+
+<TEST URI="not-wf/decl01.xml" ID="decl01" TYPE="not-wf" SECTIONS="4.3.1 [77]"
+    ENTITIES="parameter">
+    External entities may not have standalone decls. </TEST>
+
+<TEST URI="not-wf/dtd00.xml" ID="nwf-dtd00" TYPE="not-wf" SECTIONS="3.2.1 [55]">
+    Comma mandatory in content model</TEST>
+
+<TEST URI="not-wf/dtd01.xml" ID="nwf-dtd01" TYPE="not-wf" SECTIONS="3.2.1 [55]">
+    Can't mix comma and vertical bar in content models</TEST>
+
+<TEST URI="not-wf/dtd02.xml" ID="dtd02" TYPE="not-wf" SECTIONS="4.1 [69]">
+    PE name immediately after "%"</TEST>
+
+<TEST URI="not-wf/dtd03.xml" ID="dtd03" TYPE="not-wf" SECTIONS="4.1 [69]">
+    PE name immediately followed by ";"</TEST>
+
+<TEST URI="not-wf/dtd04.xml" ID="dtd04" TYPE="not-wf" SECTIONS="4.2.2 [75]">
+    PUBLIC literal must be quoted</TEST>
+
+<TEST URI="not-wf/dtd05.xml" ID="dtd05" TYPE="not-wf" SECTIONS="4.2.2 [75]">
+    SYSTEM identifier must be quoted</TEST>
+
+<TEST URI="not-wf/dtd07.xml" ID="dtd07" TYPE="not-wf" SECTIONS="4.3.1 [77]" ENTITIES="parameter">
+    Text declarations (which optionally begin any external entity)
+    are required to have "encoding=...". </TEST>
+
+
+<TEST URI="not-wf/element00.xml" ID="element00" TYPE="not-wf" SECTIONS="3.1 [42]">
+    EOF in middle of incomplete ETAG</TEST>
+
+<TEST URI="not-wf/element01.xml" ID="element01" TYPE="not-wf" SECTIONS="3.1 [42]">
+    EOF in middle of incomplete ETAG</TEST>
+
+<TEST URI="not-wf/element02.xml" ID="element02" TYPE="not-wf" SECTIONS="3.1 [43]">
+    Illegal markup (&lt;%@ ... %&gt;)</TEST>
+
+<TEST URI="not-wf/element03.xml" ID="element03" TYPE="not-wf" SECTIONS="3.1 [43]">
+    Illegal markup (&lt;% ... %&gt;)</TEST>
+
+<TEST URI="not-wf/element04.xml" ID="element04" TYPE="not-wf" SECTIONS="3.1 [43]">
+    Illegal markup (&lt;!ELEMENT ... &gt;)</TEST>
+
+<TEST URI="not-wf/encoding01.xml" ID="encoding01" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character " " in encoding name</TEST>
+
+<TEST URI="not-wf/encoding02.xml" ID="encoding02" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character "/" in encoding name</TEST>
+
+<TEST URI="not-wf/encoding03.xml" ID="encoding03" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character reference in encoding name</TEST>
+
+<TEST URI="not-wf/encoding04.xml" ID="encoding04" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character ":" in encoding name</TEST>
+
+<TEST URI="not-wf/encoding05.xml" ID="encoding05" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character "@" in encoding name</TEST>
+
+<TEST URI="not-wf/encoding06.xml" ID="encoding06" TYPE="not-wf" SECTIONS="4.3.3 [81]">
+    Illegal character "+" in encoding name</TEST>
+
+<TEST URI="not-wf/encoding07.xml" ID="encoding07" TYPE="not-wf" SECTIONS="4.3.1 [77]" ENTITIES="parameter">
+    Text declarations (which optionally begin any external entity)
+    are required to have "encoding=...". </TEST>
+
+<TEST URI="not-wf/pi.xml" ID="pi" TYPE="not-wf" SECTIONS="2.6 [16]">
+    No space between PI target name and data</TEST>
+
+<TEST URI="not-wf/pubid01.xml" ID="pubid01" TYPE="not-wf" SECTIONS="2.3 [12]">
+    Illegal entity ref in public ID</TEST>
+
+<TEST URI="not-wf/pubid02.xml" ID="pubid02" TYPE="not-wf" SECTIONS="2.3 [12]">
+    Illegal characters in public ID</TEST>
+
+<TEST URI="not-wf/pubid03.xml" ID="pubid03" TYPE="not-wf" SECTIONS="2.3 [12]">
+    Illegal characters in public ID</TEST>
+
+<TEST URI="not-wf/pubid04.xml" ID="pubid04" TYPE="not-wf" SECTIONS="2.3 [12]">
+    Illegal characters in public ID</TEST>
+
+<TEST URI="not-wf/pubid05.xml" ID="pubid05" TYPE="not-wf" SECTIONS="2.3 [12]">
+    SGML-ism:  public ID without system ID</TEST>
+
+<TEST URI="not-wf/sgml01.xml" ID="sgml01" TYPE="not-wf" SECTIONS="3 [39]">
+    SGML-ism: omitted end tag for EMPTY content</TEST>
+
+<TEST URI="not-wf/sgml02.xml" ID="sgml02" TYPE="not-wf" SECTIONS="2.8 ">
+    XML declaration must be at the very beginning of a document;
+  it"s not a processing instruction</TEST>
+
+<TEST URI="not-wf/sgml03.xml" ID="sgml03" TYPE="not-wf" SECTIONS="2.5 [15]">
+    Comments may not contain "--"</TEST>
+
+<TEST URI="not-wf/sgml04.xml" ID="sgml04" TYPE="not-wf" SECTIONS="3.3 [52]">
+    ATTLIST declarations apply to only one element, unlike SGML</TEST>
+
+<TEST URI="not-wf/sgml05.xml" ID="sgml05" TYPE="not-wf" SECTIONS="3.2 [45]">
+    ELEMENT declarations apply to only one element, unlike SGML</TEST>
+
+<TEST URI="not-wf/sgml06.xml" ID="sgml06" TYPE="not-wf" SECTIONS="3.3 [52]">
+    ATTLIST declarations are never global, unlike in SGML</TEST>
+
+<TEST URI="not-wf/sgml07.xml" ID="sgml07" TYPE="not-wf" SECTIONS="3.2 [45]">
+    SGML Tag minimization specifications are not allowed</TEST>
+
+<TEST URI="not-wf/sgml08.xml" ID="sgml08" TYPE="not-wf" SECTIONS="3.2 [45]">
+    SGML Tag minimization specifications are not allowed</TEST>
+
+<TEST URI="not-wf/sgml09.xml" ID="sgml09" TYPE="not-wf" SECTIONS="3.2 [45]">
+    SGML Content model exception specifications are not allowed</TEST>
+
+<TEST URI="not-wf/sgml10.xml" ID="sgml10" TYPE="not-wf" SECTIONS="3.2 [45]">
+    SGML Content model exception specifications are not allowed</TEST>
+
+<TEST URI="not-wf/sgml11.xml" ID="sgml11" TYPE="not-wf" SECTIONS="3.2 [46]">
+    CDATA is not a valid content model spec</TEST>
+
+<TEST URI="not-wf/sgml12.xml" ID="sgml12" TYPE="not-wf" SECTIONS="3.2 [46]">
+    RCDATA is not a valid content model spec</TEST>
+
+<TEST URI="not-wf/sgml13.xml" ID="sgml13" TYPE="not-wf" SECTIONS="3.2.1 [47]">
+    SGML Unordered content models not allowed</TEST>

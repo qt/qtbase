@@ -1,0 +1,13 @@
+<!DOCTYPE root [
+    <!ELEMENT root EMPTY>
+
+    <!-- SGML-ism:  illegal attribute types -->
+
+    <!ATTLIST root
+	number	NUTOKENS	"1 2 3"
+	>
+
+]>
+
+<root/>
+

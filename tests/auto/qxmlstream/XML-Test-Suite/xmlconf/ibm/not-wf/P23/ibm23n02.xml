@@ -1,0 +1,6 @@
+<?xml encoding='ASCII' version='1.0'?>
+<!DOCTYPE doc [
+   <!ELEMENT doc EMPTY>
+]>
+<doc/>
+<!-- Wrong ordering between VersionInfo and EncodingDecl in XMLDecl -->

@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>NIST XML Conformance Testing</TITLE>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<META content="XML Conformance" name=keyword>
+<META content=NIST,OASIS,XML,Conformance name=keywords><LINK 
+href="files/committee.css" 
+rel=Stylesheet type=text/css>
+<META content="MSHTML 5.00.2014.210" name=GENERATOR></HEAD>
+<BODY bgColor=#ffffff>
+<p>
+<center>
+<table border="4" width="90%">
+<tr >
+<td>
+<table>
+<tr >
+<td width="40%"><img src="files/a_oasis-logo.gif" width="350" height="125"/></td>
+<td width="30%"/>
+<td width="40%" align="right"><img src="files/top3.jpe" width="400" height="125"/></td>
+</tr>
+</table>
+<center>
+<table>
+<tr>
+<td ><b><font size="+2">A Joint Development Effort</font></b></td>
+</tr>
+</table>
+</center>
+</td>
+</tr>
+</table>
+</center>
+<p/>
+<h4>OASIS XML Conformance Subcommittee<br/>Second Edition (Working Draft)<br/>15 March 2001</h4>
+<table border=2 width=100% cellpadding=5>
+<tr BGCOLOR=#0000FF>
+<th width=20%><font color=yellow size=+1>Filename</font>
+<th width=15%><font color=yellow size=+1>Collection</font>
+<th width=15%><font color=yellow size=+1>Action</font>
+<th width=50%><font color=yellow size=+1>Rationale</font>
+<th width=10%><font color=yellow size=+1>Status</font>
+</tr>
+<tr>
+<td>/ibm directory</td>
+<td>IBM</td>
+<td>add</td>
+<td>Additional 1000 tests contributed by IBM</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>p02pass1.xml</td>
+<td>OASIS</td>
+<td>delete</td>
+<td>Test was in error - was inadvertently included in the test suite</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>o-p12fail7</td>
+<td>OASIS</td>
+<td>modify</td>
+<td>Changed test description to "The public ID has a tab character, which is disallowed"</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>o-p39fail4</td>
+<td>OASIS</td>
+<td>modify</td>
+<td>Changed test description to "The XML declaration is improperly terminated"</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>sa02.xml</td>
+<td>SUN</td>
+<td>modify</td>
+<td>Canonical output file changed -- characters coming from character references are not normalized.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>not-sa02.xml</td>
+<td>SUN</td>
+<td>modify</td>
+<td>Canonical output file changed -- characters coming from character references are not normalized.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>valid-sa-111.xml</td>
+<td>James Clark</td>
+<td>no change</td>
+<td>Question regarding canonical output - W3C WG clarification confirms that the canonical output was okay.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>valid-sa-068.xml</td>
+<td>James Clark</td>
+<td>modify</td>
+<td>Changed canonical output.  Line break normalization only happens when parsing
+external parsed entities, including the document entity.  See 2.11 XML 1.0 Second Edition. </td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>valid-sa-094</td>
+<td>James Clark</td>
+<td>no change</td>
+<td>Test description indicates that it is not well-formed.  W3C WG indicates that PE refs in attribute 
+values are simply not recognized.  See 4.4.1 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P33-ibm33n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P33-ibm33n02.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P34-ibm34n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P35-ibm35n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P35-ibm35n02.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P35-ibm35n03.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P35-ibm35n04.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P35-ibm35n05.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P36-ibm36n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P36-ibm36n02.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P37-ibm37n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P37-ibm37n02.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P37-ibm37n03.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P37-ibm37n04.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P37-ibm37n05.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P38-ibm38n01.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P38-ibm38n02.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P38-ibm38n03.xml</td>
+<td>IBM</td>
+<td>remove</td>
+<td>No longer relevant.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P41-ibm41n11.xml</td>
+<td>IBM</td>
+<td>modify</td>
+<td>Typo -- changed almage to aImage</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>ibm-not-wf-P41-ibm41n12.xml</td>
+<td>IBM</td>
+<td>modify</td>
+<td>Typo -- changed aIndrect to aIndirect</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>lang01-lang06</td>
+<td>SUN</td>
+<td>remove</td>
+<td>Constraints tested are no longer valid.  See 2.12 XML 1.0 Second Edition</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>valid-sa-012, o-p04pass1, o-p05pass1, p-08pass1</td>
+<td>James Clark, OASIS/NIST</td>
+<td>Modify</td>
+<td>Conform to XML but not to XML Namespaces spec.  In testcases.dtd, added a NAMESPACE attribute on 
+the TEST element to indicate whether or not the test conforms to the XML Namespaces spec.</td> 
+<td>Closed</td>
+</tr>
+<tr>
+<td>valid-sa-065, valid-sa-100, o-p73pass1, cond01.xml, cond02.xml, decl01.xml, dtd07.dtd, encoding07.xml</td>
+<td>SUN, OASIS/NIST, James Clark</td>
+<td>no change</td>
+<td>Tests define general entities which are not used, and which are either malformed or missing.  
+W3C Core WG confirms that entities only need to be expanded if they are used.  If they are not used, 
+it doesn't matter whether or not they are well-formed.  See Section 2.1.
+</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>empty, <br>inv-not-sa14</td>
+<td>SUN</td>
+<td>reclassify</td>
+<td>CDATA section containing only whitespace does not match the nonterminal S.  See Section 3 Logical 
+Structure, VC: Element Valid, item 2</td> 
+<td>Closed</td> 
+</tr>
+<tr>
+<td>sa04.xml</td>
+<td>SUN</td>
+<td>Modify</td>
+<td>Literals are quoted with double quotes but appear in the output file with single quotes.  
+Modified Second Canonical Form to surround literals with single quotes.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>pr-xml-*</td>
+<td>Fuji Xerox</td>
+<td>replace</td>
+<td>These files refer to spec.dtd which is missing.  Include right version with the test suite.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>Four of James Clark's tests</td>
+<td>James Clark</td>
+<td>modify</td>
+<td>These tests have NOTATIONS and need a DOCTYPE in canonical form 2.  Output files were modified.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>sa03-sa05</td>
+<td>SUN</td>
+<td>No change</td>
+<td>Tests are standalone, but need to read the external subset to produce the 
+right canonical XML.  XML processors need not read the external subset if the file is standalone.  If 
+your processor produces Second Canonical Form, then it must read the external subset to match the 
+supplied output file. 
+</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>invalid--003 - invalid--006</td>
+<td>James Clark</td>
+<td>modify</td>
+<td>Changed test description from entity declaration to element declaration.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>inv-not-sa02, inv-not-sa08</td>
+<td>SUN</td>
+<td>no change</td>
+<td>Have character references to whitespace characters in a tokenized attribute.  W3C Core WG confirms 
+that files are invalid. 
+</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>p74pass1.xml</td>
+<td>OASIS</td>
+<td>no change</td>
+<td>Comment indicated that the file was classified as Invalid, but seems to be valid.  The root element 'doc' 
+is not declared, so the file is invalid.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>p16fail3.xml</td>
+<td>OASIS</td>
+<td>modify</td>
+<td>Description is erroneous.  File is well-formed but not valid.  Updated test description to indicate
+that a document must conform to the constraints expressed in a dtd to be valid.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>001.xml, 001.ent</td>
+<td>James Clark</td>
+<td>no change</td>
+<td>Section 4.3.2 applies, not the validity constraint.  Comment indicates that test should change to not-wf 
+instead of invalid. W3C Core WG confirms that file is invalid -- spec is confusing and will be clarified.</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>e2.xml</td>
+<td>OASIS</td>
+<td>add</td>
+<td>Errata [E2] imposes a VC on productions [58] and [59].  No duplicate tokens are permitted.
+</td>
+<td>Closed</td>
+</tr>
+<tr>
+<td>attr11.xml, attr12.xml</td>
+<td>SUN</td>
+<td>modify</td>
+<td>Files marked invalid, but are actually valid.  The tests refer to "Attribute Default Legal" VC but this VC
+is only about lexical constraints.  The two tests pass the lexical test, and since the default attributes in 
+error are not effectively used, because the instance documents specify a value for these attributes, the fact 
+that they refer to an undeclared entity does not matter.  Changed tests to effectively make them invalid with 
+respect to the VC that they claim to test.
+</td>
+<td>Closed</td>
+</tr>
+</table>
+</center>
+<p>
+Please forward all comments/suggestions/bugs to <a href="mailto:mbrady@nist.gov">&lt;mbrady@nist.gov&gt;</a>
+<br>
+<hr noShade>
+<div class=bottom><a href="http://www.itl.nist.gov">NIST / Information Technology Lab</a><br> 
+<a href="http://www.oasis-open.org/">OASIS Home</a> / <a href="http://www.oasis-open.org/committees/">OASIS Committee Pages</a> 
+</div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+# Version: 1
+# CheckVsReference: 5%
+
+
+surface_begin 0 0 600 600
+translate 0 50
+
+setPen nopen
+setBrush 0x7f000000
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setRadial 20 20 220 200
+
+drawEllipse 10 10 80 80
+drawEllipse 50 50 120 90
+
+translate 100 0
+brushTranslate 40 20
+brushScale 0.25 0.25
+
+setPen black
+
+drawEllipse 10 10 80 80
+setOpacity 0.5
+setCompositionMode SourceIn
+drawEllipse 50 50 120 90
+setOpacity 1.0
+setRenderHint Antialiasing
+setCompositionMode Xor
+brushTranslate 70 0
+translate 100 0
+drawEllipse 10 10 80 80
+
+setPen nopen
+drawEllipse 50 50 120 90
+
+setOpacity 0.7
+setBrush red
+translate 100 0
+setCompositionMode SourceOver
+
+drawEllipse 10 10 80 80
+
+setOpacity 0.6
+setPen black 5.0
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setLinear 20 20 120 100
+drawEllipse 50 50 120 90
+
+
+translate 100 0
+
+setOpacity 1.0
+drawEllipse 10 10 80 80
+
+setCompositionMode SourceIn
+setOpacity 0.7
+setPen black 3.0
+gradient_clearStops
+gradient_appendStop 0    red
+gradient_appendStop 0.25 orange
+gradient_appendStop 0.5  yellow
+gradient_appendStop 0.8  green
+gradient_appendStop 1    cyan
+
+gradient_setSpread PadSpread
+gradient_setLinear 50 50 80 90
+drawEllipse 50 50 120 90
+
+surface_end
+
+drawText 200 220 "Testing Ellipse drawing with varios combinations"
+drawText 200 240 "of features such as brushes, pens and composition modes"

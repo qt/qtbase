@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<TestCase name="tst_SkipInitData">
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skipinitdata/tst_skipinitdata.cpp" line="56">
+    <Description><![CDATA[Skip inside initTestCase. This should skip all tests in the class.]]></Description>
+</Message>
+</TestFunction>
+</TestCase>

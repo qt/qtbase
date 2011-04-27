@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=QMLViewer
+Exec=/usr/bin/qmlviewer -graphicssystem meego
+Icon=/usr/share/icons/hicolor/64x64/apps/QMLViewer.png
+Categories=X-MeeGo;
+OnlyShowIn=X-MeeGo;

@@ -1,0 +1,6 @@
+# Visual Studio has some definitions set internally.
+# Thus we do not need to redefine these.
+equals(TEMPLATE, "vc.*") {
+    QMAKE_CXXFLAGS += -fp:precise
+}
+

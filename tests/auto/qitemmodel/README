@@ -1,0 +1,3 @@
+This is a QStandardItemModel test.  It will help catch a lot of simple problems.  You should still create your own test for custom functionality and functions that your model has.
+
+Add your model to the modelstotest.cpp file (qt model's are included as examples) and modify the pro file accordingly.  Fix the errors in order of failure as later tests assume the ones before them have passed.

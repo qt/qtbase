@@ -1,0 +1,15 @@
+********* Start testing of tst_BenchlibWalltime *********
+Config: Using QTest library 4.5.0, Qt 4.5.0
+PASS   : tst_BenchlibWalltime::initTestCase()
+RESULT : tst_BenchlibWalltime::waitForOneThousand():
+     1,000 msec per iteration (total: 1000, iterations: 1)
+PASS   : tst_BenchlibWalltime::waitForOneThousand()
+RESULT : tst_BenchlibWalltime::waitForFourThousand():
+     4,000 msec per iteration (total: 4000, iterations: 1)
+PASS   : tst_BenchlibWalltime::waitForFourThousand()
+RESULT : tst_BenchlibWalltime::qbenchmark_once():
+     0 msec per iteration (total: 0, iterations: 1)
+PASS   : tst_BenchlibWalltime::qbenchmark_once()
+PASS   : tst_BenchlibWalltime::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped
+********* Finished testing of tst_BenchlibWalltime *********

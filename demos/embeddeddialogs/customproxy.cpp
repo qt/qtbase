@@ -1,0 +1,167 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the demonstration applications of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "customproxy.h"
+
+#include <QtGui>
+
+CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
+    : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)
+{
+    timeLine = new QTimeLine(250, this);
+    connect(timeLine, SIGNAL(valueChanged(qreal)),
+            this, SLOT(updateStep(qreal)));
+    connect(timeLine, SIGNAL(stateChanged(QTimeLine::State)),
+            this, SLOT(stateChanged(QTimeLine::State)));
+}
+
+QRectF CustomProxy::boundingRect() const
+{
+    return QGraphicsProxyWidget::boundingRect().adjusted(0, 0, 10, 10);
+}
+
+void CustomProxy::paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                                   QWidget *widget)
+{
+    const QColor color(0, 0, 0, 64);
+   
+    QRectF r = windowFrameRect();
+    QRectF right(r.right(), r.top() + 10, 10, r.height() - 10);
+    QRectF bottom(r.left() + 10, r.bottom(), r.width(), 10);
+    bool intersectsRight = right.intersects(option->exposedRect);
+    bool intersectsBottom = bottom.intersects(option->exposedRect);
+    if (intersectsRight && intersectsBottom) {
+        QPainterPath path;
+        path.addRect(right);
+        path.addRect(bottom);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(color);
+        painter->drawPath(path);
+    } else if (intersectsBottom) {
+        painter->fillRect(bottom, color);
+    } else if (intersectsRight) {
+        painter->fillRect(right, color);
+    }
+
+    QGraphicsProxyWidget::paintWindowFrame(painter, option, widget);
+}
+
+void CustomProxy::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsProxyWidget::hoverEnterEvent(event);
+    scene()->setActiveWindow(this);
+    if (timeLine->currentValue() != 1)
+        zoomIn();
+}
+
+void CustomProxy::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsProxyWidget::hoverLeaveEvent(event);
+    if (!popupShown && (timeLine->direction() != QTimeLine::Backward || timeLine->currentValue() != 0))
+        zoomOut();
+}
+
+bool CustomProxy::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
+{
+    if (watched->isWindow() && (event->type() == QEvent::UngrabMouse || event->type() == QEvent::GrabMouse)) {
+        popupShown = watched->isVisible();
+        if (!popupShown && !isUnderMouse())
+            zoomOut();
+    }
+    return QGraphicsProxyWidget::sceneEventFilter(watched, event);
+}
+
+QVariant CustomProxy::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
+        if (change == ItemChildAddedChange) {
+            currentPopup = qvariant_cast<QGraphicsItem *>(value);
+            currentPopup->setCacheMode(ItemCoordinateCache);
+            if (scene())
+                currentPopup->installSceneEventFilter(this);
+        } else if (scene()) {
+            currentPopup->removeSceneEventFilter(this);
+            currentPopup = 0;
+        }
+    } else if (currentPopup && change == ItemSceneHasChanged) {
+        currentPopup->installSceneEventFilter(this);
+    }
+    return QGraphicsProxyWidget::itemChange(change, value);
+}
+
+void CustomProxy::updateStep(qreal step)
+{
+    QRectF r = boundingRect();
+    setTransform(QTransform()
+                 .translate(r.width() / 2, r.height() / 2)
+                 .rotate(step * 30, Qt::XAxis)
+                 .rotate(step * 10, Qt::YAxis)
+                 .rotate(step * 5, Qt::ZAxis)
+                 .scale(1 + 1.5 * step, 1 + 1.5 * step)
+                 .translate(-r.width() / 2, -r.height() / 2));
+}
+
+void CustomProxy::stateChanged(QTimeLine::State state)
+{
+    if (state == QTimeLine::Running) {
+	if (timeLine->direction() == QTimeLine::Forward)
+            setCacheMode(ItemCoordinateCache);
+    } else if (state == QTimeLine::NotRunning) {
+	if (timeLine->direction() == QTimeLine::Backward)
+            setCacheMode(DeviceCoordinateCache);
+    }
+}
+
+void CustomProxy::zoomIn()
+{
+    if (timeLine->direction() != QTimeLine::Forward)
+        timeLine->setDirection(QTimeLine::Forward);
+    if (timeLine->state() == QTimeLine::NotRunning) 
+        timeLine->start();
+}
+
+void CustomProxy::zoomOut()
+{
+    if (timeLine->direction() != QTimeLine::Backward)
+        timeLine->setDirection(QTimeLine::Backward);
+    if (timeLine->state() == QTimeLine::NotRunning) 
+        timeLine->start();
+}

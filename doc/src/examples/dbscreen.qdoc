@@ -1,0 +1,186 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example qws/dbscreen
+    \title Double Buffered Graphics Driver Example
+
+    The Double Buffered Graphics Driver example shows how to write your own
+    double buffered graphics driver and add it to Qt for Embedded Linux.
+
+    Similar to the \l{Accelerated Graphics Driver Example}, there are three steps
+    to writing and implementing this graphics driver:
+
+    \list 1
+        \o \l {Step 1: Creating a Custom Graphics Driver}
+        {Creating a Custom Graphics Driver}
+
+        \o \l {Step 2: Implementing the Back Buffer}
+        {Implementing the Back Buffer}
+
+        \o \l {Step 3: Creating the Driver Plugin}
+        {Creating the Driver Plugin}
+
+    \endlist
+
+    After compiling the example code, install the graphics driver plugin with
+    the command \c {make install}. To start an application using the graphics
+    driver, you can either set the environment variable \l QWS_DISPLAY and
+    then run the application, or you can just run the application using the
+    \c -display switch.
+
+    Note that this is a minimal example and this driver will not work well
+    with widgets painting themself directly to the screen (e.g. widgets with
+    the Qt::WA_PaintOnScreen window attribute set). Also, the example requires
+    the Linux framebuffer to be set up correctly and with the correct device
+    permissions. For further information, refer to
+    \l{Testing the Linux Framebuffer}.
+
+    \section1 Step 1: Creating a Custom Graphics Driver
+
+    Usually, a custom graphics driver is created by subclassing the QScreen
+    class, the base class for implementing screen or graphics drivers in
+    Qt for Embedded Linux. In this example, however, we subclass the QLinuxFbScreen
+    class instead, to ensure that our driver uses the Linux framebuffer.
+
+    For our graphics driver, the \c DBScreen class, we reimplement five
+    functions belonging to QScreen:
+
+    \list
+        \o \l{QScreen::initDevice()}{initDevice()},
+        \o \l{QScreen::shutdownDevice()}{shutdownDevice()},
+        \o \l{QScreen::blit()}{blit()},
+        \o \l{QScreen::solidFill()}{solidFill()}, and
+        \o \l{QScreen::exposeRegion()}{exposeRegion()}.
+    \endlist
+
+    \snippet examples/qws/dbscreen/dbscreen.h 0
+
+    In addition to the abovementioned functions, there is a private instance
+    of QPainter and QImage - \c painter, used for drawing operations on
+    the back buffer, and \c image, the back buffer itself.
+
+    \section1 Step 2: Implementing the Back Buffer
+
+    The graphics driver must carry out three main functions:
+
+    \list 1
+        \o Allocate the back buffer on startup and deallocate it on shutdown.
+        \o Draw to the back buffer instead of directly to the screen
+           (which is what QLinuxFbScreen does).
+        \o Copy the back buffer to the screen whenever a screen update is
+           done.
+    \endlist
+
+    \section2 Device initializing and shutdown 
+
+    We first reimplement \c initDevice() and \c shutdownDevice().
+
+    The \c initDevice() function initializes the framebuffer. We reimplement
+    this function to enable accelerated drivers to set up the graphic card.
+    For this example, we first call the super class' implementation to set up
+    the Linux framebuffer. If this call returns \c false, we return \c false.
+    Otherwise, we initialize the screen cursor with
+    QScreenCursor::initSoftwareCursor() as well as instantiate \c image and
+    \c painter. Then, we return \c true.
+
+    \snippet examples/qws/dbscreen/dbscreen.cpp 0
+
+    The \c shutdownDevice() function's default implementation only hides the
+    mouse cursor. Hence, we reimplement it to carry out the necessary cleanup
+    before the Qt for Embedded Linux server exits.
+
+    \snippet examples/qws/dbscreen/dbscreen.cpp 1
+
+    Again, we call the super class implementation to shutdown the Linux
+    framebuffer prior to deleting \c image and \c painter.
+
+    \section2 Drawing to the back buffer
+
+    We move on to the drawing functions - \c solidFill() and \c blit(). In
+    QLinuxFbScreen, these functions draw directly to the Linux framebuffer;
+    but in our driver we reimplement them to draw to the back buffer instead.
+
+    \snippet examples/qws/dbscreen/dbscreen.cpp 2
+
+    The \c solidFill() function is called from \c exposeRegion() to fill the
+    given \c region of the screen with the specified \c color. In this
+    example, we use \c painter to fill rectangles in \c image, the back
+    buffer, according to the given region.
+
+    \snippet examples/qws/dbscreen/dbscreen.cpp 3
+
+    The \c blit() function is also called from \c exposeRegion() to copy the
+    given QRegion object, \c region, in the given QImage object, \c image, to
+    the QPoint object specified by \c topLeft. Once again we use \c painter
+    to draw in the back buffer, \c image.
+
+    \section2 Displaying the buffer on the screen
+
+    The \c exposeRegion() function is called by the Qt for Embedded Linux server
+    whenever a screen update is required. The given \c region is the screen
+    region that needs to be updated and \c changing is is the index into
+    QWSServer::clientWindows() of the window that caused the update.
+
+    \snippet examples/qws/dbscreen/dbscreen.cpp 4
+
+    In our implementation, we first call the super class implementation to
+    ensure that \c solidFill() and \c blit() will be called correctly. This
+    causes the changed areas to be updated in the back buffer. We then call
+    the super class' implementation of \c blit() to copy the updated region
+    from the back buffer into the Linux framebuffer.
+
+    \section1 Step 3: Creating the Driver Plugin
+
+    Qt provides a high level API for writing Qt extentions. One of the plugin
+    base classes provided is QScreenDriverPlugin, which we use in this example
+    to create our screen driver plugin.
+
+    \snippet examples/qws/dbscreen/dbscreendriverplugin.cpp 0
+
+    There are only two functions to reimplement:
+
+    \list
+        \o \l{QScreenDriverPlugin::create()}{create()} - creates a driver
+           matching the given key
+        \o \l{QScreenDriverPlugin::create()}{keys()} - returns a list of
+           valid keys representing the drivers supported by the plugin
+    \endlist
+
+    \snippet examples/qws/dbscreen/dbscreendriverplugin.cpp 1
+    \codeline
+    \snippet examples/qws/dbscreen/dbscreendriverplugin.cpp 2
+
+    Our plugin will only support one driver, \c dbscreen.
+
+    Lastly, we export the plugin.
+
+    \snippet examples/qws/dbscreen/dbscreendriverplugin.cpp 3
+
+    For detailed information about the Qt plugin system see
+    \l{How to Create Qt Plugins.}
+*/

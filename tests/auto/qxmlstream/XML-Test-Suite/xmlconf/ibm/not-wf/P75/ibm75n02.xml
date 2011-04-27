@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!--* wrong keyword: public  *-->
+<!DOCTYPE root 
+    public "-//W3C//DTD//EN" "empty.dtd"
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+]>
+<root/>

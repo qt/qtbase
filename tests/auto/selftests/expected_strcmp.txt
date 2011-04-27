@@ -1,0 +1,33 @@
+********* Start testing of tst_StrCmp *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+PASS   : tst_StrCmp::initTestCase()
+PASS   : tst_StrCmp::compareCharStars()
+XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
+   Loc: [./tst_strcmp.cpp(55)]
+XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
+   Loc: [./tst_strcmp.cpp(62)]
+XFAIL  : tst_StrCmp::compareByteArray() Next test should fail
+   Loc: [./tst_strcmp.cpp(69)]
+FAIL!  : tst_StrCmp::compareByteArray() Compared values are not the same
+   Actual (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
+   Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ...
+   Loc: [./tst_strcmp.cpp(76)]
+FAIL!  : tst_StrCmp::failByteArray() Compared values are not the same
+   Actual (QByteArray("abc")): 61 62 63
+   Expected (QByteArray("cba")): 63 62 61
+   Loc: [./tst_strcmp.cpp(82)]
+FAIL!  : tst_StrCmp::failByteArrayNull() Compared values are not the same
+   Actual (QByteArray("foo")): 66 6F 6F
+   Expected (QByteArray()): 
+   Loc: [./tst_strcmp.cpp(88)]
+FAIL!  : tst_StrCmp::failByteArrayEmpty() Compared values are not the same
+   Actual (QByteArray("")): 
+   Expected (QByteArray("foo")): 66 6F 6F
+   Loc: [./tst_strcmp.cpp(93)]
+FAIL!  : tst_StrCmp::failByteArraySingleChars() Compared values are not the same
+   Actual (QByteArray("6")): 36
+   Expected (QByteArray("7")): 37
+   Loc: [./tst_strcmp.cpp(100)]
+PASS   : tst_StrCmp::cleanupTestCase()
+Totals: 3 passed, 5 failed, 0 skipped
+********* Finished testing of tst_StrCmp *********

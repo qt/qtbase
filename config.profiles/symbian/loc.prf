@@ -1,0 +1,41 @@
+CONFIG += localize_deployment
+
+qtPrepareTool(LRELEASE, lrelease)
+
+isEmpty(SYMBIANTRANSLATIONSFILES): SYMBIANTRANSLATIONSFILES = $$symbianRemoveSpecialCharacters($$basename(TARGET))    
+isEmpty(SYMBIANTRANSLATIONS):exists($${EPOCROOT}epoc32/tools/qt/mkspecs/features/symbian/symbian_i18n.prf) {
+    load($${EPOCROOT}epoc32/tools/qt/mkspecs/features/symbian/symbian_i18n.prf)
+}
+isEmpty(SYMBIANTRANSLATIONDIR): SYMBIANTRANSLATIONDIR = $${EPOCROOT}epoc32/data/z/resource/qt/translations
+isEmpty(SYMBIANWINSCWUDEBTRANSLATIONDIR): SYMBIANWINSCWUDEBTRANSLATIONDIR = $${EPOCROOT}epoc32/release/winscw/udeb/z/resource/qt/translations
+isEmpty(SYMBIANWINSCWURELTRANSLATIONDIR): SYMBIANWINSCWURELTRANSLATIONDIR = $${EPOCROOT}epoc32/release/winscw/urel/z/resource/qt/translations
+
+for(FILE, SYMBIANTRANSLATIONSFILES) {
+    for(LANGID, SYMBIANTRANSLATIONS) {    
+        TRANSLATIONS += $${EPOCROOT}epoc32/include/platform/qt/translations/$${FILE}_$${LANGID}.ts
+    }
+}
+
+contains(CONFIG, loc_source_string) {
+    LRELEASE_PARAMS = -qm
+} else {
+    LRELEASE_PARAMS = -idbased -qm
+}
+
+loc.CONFIG = no_link target_predeps  
+loc.commands = $$LRELEASE ${QMAKE_FILE_IN} $$LRELEASE_PARAMS ${QMAKE_FILE_OUT}
+loc.input = TRANSLATIONS
+loc.output = $$SYMBIANTRANSLATIONDIR/${QMAKE_FILE_BASE}.qm
+loc.variable_out = GENERATED_QM_FILES
+
+copy_qm_winscw_udeb.CONFIG = no_link target_predeps
+copy_qm_winscw_udeb.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+copy_qm_winscw_udeb.input = GENERATED_QM_FILES
+copy_qm_winscw_udeb.output = $$SYMBIANWINSCWUDEBTRANSLATIONDIR/${QMAKE_FILE_BASE}.qm
+
+copy_qm_winscw_urel.CONFIG = $$copy_qm_winscw_udeb.CONFIG
+copy_qm_winscw_urel.commands = $$copy_qm_winscw_udeb.commands
+copy_qm_winscw_urel.input = $$copy_qm_winscw_udeb.input
+copy_qm_winscw_urel.output = $$SYMBIANWINSCWURELTRANSLATIONDIR/${QMAKE_FILE_BASE}.qm
+
+QMAKE_EXTRA_COMPILERS += loc copy_qm_winscw_udeb copy_qm_winscw_urel

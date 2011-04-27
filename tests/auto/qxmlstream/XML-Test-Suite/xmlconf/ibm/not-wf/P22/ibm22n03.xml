@@ -1,0 +1,7 @@
+<!-- Wrong ordering patter 4 -->
+<!DOCTYPE doc [
+<!ELEMENT doc EMPTY>
+]>
+<!-- Wrong ordering Misc, DTD, Misc, and XMLDecl -->
+<?xml version="1.0" encoding="ASCII" ?>
+<doc/>

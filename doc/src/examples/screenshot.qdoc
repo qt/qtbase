@@ -1,0 +1,248 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example desktop/screenshot
+    \title Screenshot Example
+
+    The Screenshot example shows how to take a screenshot of the
+    desktop using QApplication and QDesktopWidget. It also shows how
+    to use QTimer to provide a single-shot timer, and how to
+    reimplement the QWidget::resizeEvent() event handler to make sure
+    that an application resizes smoothly and without data loss.
+
+    \image screenshot-example.png
+
+    With the application the users can take a screenshot of their
+    desktop. They are provided with a couple of options:
+
+    \list
+    \o Delaying the screenshot, giving them time to rearrange
+       their desktop.
+    \o Hiding the application's window while the screenshot is taken.
+    \endlist
+
+    In addition the application allows the users to save their
+    screenshot if they want to.
+
+    \section1 Screenshot Class Definition
+
+    \snippet examples/desktop/screenshot/screenshot.h 0
+
+    The \c Screenshot class inherits QWidget and is the application's
+    main widget. It displays the application options and a preview of
+    the screenshot.
+
+    We reimplement the QWidget::resizeEvent() function to make sure
+    that the preview of the screenshot scales properly when the user
+    resizes the application widget. We also need several private slots
+    to facilitate the options:
+
+    \list
+    \o The \c newScreenshot() slot prepares a new screenshot.
+    \o The \c saveScreenshot() slot saves the last screenshot.
+    \o The \c shootScreen() slot takes the screenshot.
+    \o The \c updateCheckBox() slot enables or disables the
+       \gui {Hide This Window} option.
+    \endlist
+
+    We also declare some private functions: We use the \c
+    createOptionsGroupBox(), \c createButtonsLayout() and \c
+    createButton() functions when we construct the widget. And we call
+    the private \c updateScreenshotLabel() function whenever a new
+    screenshot is taken or when a resize event changes the size of the
+    screenshot preview label.
+
+    In addition we need to store the screenshot's original pixmap. The
+    reason is that when we display the preview of the screenshot, we
+    need to scale its pixmap, storing the original we make sure that
+    no data are lost in that process.
+
+    \section1 Screenshot Class Implementation
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 0
+
+    In the constructor we first create the QLabel displaying the
+    screenshot preview.
+
+    We set the QLabel's size policy to be QSizePolicy::Expanding both
+    horizontally and vertically. This means that the QLabel's size
+    hint is a sensible size, but the widget can be shrunk and still be
+    useful. Also, the widget can make use of extra space, so it should
+    get as much space as possible. Then we make sure the QLabel is
+    aligned in the center of the \c Screenshot widget, and set its
+    minimum size.
+
+    We create the applications's buttons and the group box containing
+    the application's options, and put it all into a main
+    layout. Finally we take the initial screenshot, and set the inital
+    delay and the window title, before we resize the widget to a
+    suitable size.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 1
+
+    The \c resizeEvent() function is reimplemented to receive the
+    resize events dispatched to the widget. The purpose is to scale
+    the preview screenshot pixmap without deformation of its content,
+    and also make sure that the application can be resized smoothly.
+
+    To achieve the first goal, we scale the screenshot pixmap using
+    Qt::KeepAspectRatio. We scale the pixmap to a rectangle as large
+    as possible inside the current size of the screenshot preview
+    label, preserving the aspect ratio. This means that if the user
+    resizes the application window in only one direction, the preview
+    screenshot keeps the same size.
+
+    To reach our second goal, we make sure that the preview screenshot
+    only is repainted (using the private \c updateScreenshotLabel()
+    function) when it actually changes its size.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 2
+
+    The private \c newScreenshot() slot is called when the user
+    requests a new screenshot; but the slot only prepares a new
+    screenshot.
+
+    First we see if the \gui {Hide This Window} option is checked, if
+    it is we hide the \c Screenshot widget. Then we disable the \gui
+    {New Screenshot} button, to make sure the user only can request
+    one screenshot at a time.
+
+    We create a timer using the QTimer class which provides repetitive
+    and single-shot timers. We set the timer to time out only once,
+    using the static QTimer::singleShot() function. This function
+    calls the private \c shootScreen() slot after the time interval
+    specified by the \gui {Screenshot Delay} option. It is \c
+    shootScreen() that actually performs the screenshot.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 3
+
+    The \c saveScreenshot() slot is called when the user push the \gui
+    Save button, and it presents a file dialog using the QFileDialog
+    class.
+
+    QFileDialog enables a user to traverse the file system in order to
+    select one or many files or a directory. The easiest way to create
+    a QFileDialog is to use the convenience static
+    functions.
+
+    We define the default file format to be png, and we make the file
+    dialog's initial path the path the application is run from. We
+    create the file dialog using the static
+    QFileDialog::getSaveFileName() function which returns a file name
+    selected by the user. The file does not have to exist. If the file
+    name is valid, we use the QPixmap::save() function to save the
+    screenshot's original pixmap in that file.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 4
+
+    The \c shootScreen() slot is called to take the screenshot. If the
+    user has chosen to delay the screenshot, we make the application
+    beep when the screenshot is taken using the static
+    QApplication::beep() function.
+
+    The QApplication class manages the GUI application's control flow
+    and main settings. It contains the main event loop, where all
+    events from the window system and other sources are processed and
+    dispatched.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 5
+
+    We take the screenshot using the static QPixmap::grabWindow()
+    function. The function grabs the contents of the window passed as
+    an argument, makes a pixmap out of it and returns that pixmap.
+
+    We identify the argument window using the QWidget::winID()
+    function which returns the window system identifier. Here it
+    returns the identifier of the current QDesktopWidget retrieved by
+    the QApplication::desktop() function. The QDesktopWidget class
+    provides access to screen information, and inherits
+    QWidget::winID().
+
+    We update the screenshot preview label using the private \c
+    updateScreenshotLabel() function. Then we enable the \gui {New
+    Screenshot} button, and finally we make the \c Screenshot widget
+    visible if it was hidden during the screenshot.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 6
+
+    The \gui {Hide This Window} option is enabled or disabled
+    depending on the delay of the screenshot. If there is no delay,
+    the application window cannot be hidden and the option's checkbox
+    is disabled.
+
+    The \c updateCheckBox() slot is called whenever the user changes
+    the delay using the \gui {Screenshot Delay} option.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 7
+
+    The private \c createOptionsGroupBox() function is called from the
+    constructor.
+
+    First we create a group box that will contain all of the options'
+    widgets. Then we create a QSpinBox and a QLabel for the \gui
+    {Screenshot Delay} option, and connect the spinbox to the \c
+    updateCheckBox() slot. Finally, we create a QCheckBox for the \gui
+    {Hide This Window} option, add all the options' widgets to a
+    QGridLayout and install the layout on the group box.
+
+    Note that we don't have to specify any parents for the widgets
+    when we create them. The reason is that when we add a widget to a
+    layout and install the layout on another widget, the layout's
+    widgets are automatically reparented to the widget the layout is
+    installed on.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 8
+
+    The private \c createButtonsLayout() function is called from the
+    constructor. We create the application's buttons using the private
+    \c createButton() function, and add them to a QHBoxLayout.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 9
+
+    The private \c createButton() function is called from the \c
+    createButtonsLayout() function. It simply creates a QPushButton
+    with the provided text, connects it to the provided receiver and
+    slot, and returns a pointer to the button.
+
+    \snippet examples/desktop/screenshot/screenshot.cpp 10
+
+    The private \c updateScreenshotLabel() function is called whenever
+    the screenshot changes, or when a resize event changes the size of
+    the screenshot preview label. It updates the screenshot preview's
+    label using the QLabel::setPixmap() and QPixmap::scaled()
+    functions.
+
+    QPixmap::scaled() returns a copy of the given pixmap scaled to a
+    rectangle of the given size according to the given
+    Qt::AspectRatioMode and Qt::TransformationMode.
+
+    We scale the original pixmap to fit the current screenshot label's
+    size, preserving the aspect ratio and giving the resulting pixmap
+    smoothed edges.
+*/
+

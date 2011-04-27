@@ -1,0 +1,14 @@
+<?xml  version="1.0"?>
+<!-- syntax test for Production 59-->
+<!DOCTYPE test
+ [
+ <!ELEMENT test ANY>
+ <!ELEMENT one EMPTY>
+ <!ELEMENT two EMPTY>
+ <!ELEMENT enum (#PCDATA)>
+ <!ATTLIST one attr (enum,two) #IMPLIED>
+ ]>
+ <test>
+This is a Negative test
+Wrong Separator(, instead of |)
+</test>

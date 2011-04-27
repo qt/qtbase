@@ -1,0 +1,11 @@
+<!ELEMENT a EMPTY>
+<!ELEMENT b (#PCDATA|c)* >
+<!ELEMENT c ANY>
+
+<!--* open and close parenthesis are in different PE replace Texts *-->
+<!ENTITY % choice1 "(a|b">
+<!ENTITY % choice2 "|c)">
+<!ELEMENT child1 %choice1;%choice2; >
+
+
+

@@ -1,0 +1,6 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Unbound attribute prefix " )
+Invalid( name="foo" qualifiedName="foo"
+    Attribute( name="attr" qualifiedName="a:attr" prefix="a" value="1" )
+ )
+ERROR: Namespace prefix 'a' not declared

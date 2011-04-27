@@ -1,0 +1,12 @@
+StartDocument( documentVersion="1.0" documentEncoding="iso-8859-1" )
+Comment( text=" Namespace name test: an http IRI that is not a URI " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" namespaceUri="http://example.org/rosé" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="http://example.org/rosé" )
+ )
+EndElement( name="foo" namespaceUri="http://example.org/rosé" qualifiedName="foo" )
+EndDocument( )

@@ -1,0 +1,45 @@
+This is a proof-of-concept implemenation of a UIKit based
+QPA plugin. Note that this is completely unsupported, and it is probable
+that many parts of QtCore and other Qt Modules don't work properly.
+
+1) Build Qt
+
+The example Xcode project in the examples subdirectory requires that you do shadow
+builds of Qt in qt-lighthouse-ios-simulator and qt-lighthouse-ios-device directories
+parallel to the sources. To build for simulator make sure that both the Simulator
+configuration *and* the simulator specific target are active. To build for device
+make sure that both the Device configuration *and* the device specific target are
+active.
+
+The setup is configured to use the iOS 4.2 SDKs, you might want to edit the mkspecs
+to fit your need.
+
+After configuring and building Qt you need to also build src/plugins/platforms/uikit.
+
+Simulator:
+----------
+configure -qpa -xplatform qws/macx-iphonesimulator-g++ -arch i386 -developer-build -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+
+Device:
+-------
+configure -qpa -xplatform qws/macx-iphonedevice-g++ -arch armv7 -developer-build -release -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+
+2) XCode setup:
+- there are examples in the examples subdirectory of the platform plugin
+- to create something fresh do something like:
+  - Xcode: Create a "View-based Appplication"
+  - remove the nibs and view controller and app controller files
+  - remove the reference to "Main nib file" from plist file
+  - create a main.mm like in the examples
+  - add the qmlapplicationviewer sources to your project (including the moc_*.h)
+    (best to link, not copy), the code for this is from the Qt Creator
+    mobile Qt Quick application template
+  - Add the Qt .a libraries, uikit platform plugin and libz (v1.2.3) to Frameworks
+  - add "$(SRCROOT)/../../../../qt-lighthouse-ios-device/include" (or -simulator)
+    to the include search paths.
+  - add "$(SRCROOT)/../qmltest" to the include search path if you didn't copy but
+    linked to the qmlapplicationviewer
+  - for device set the architecture to armv7 only
+
+3) Done: Build and Run.
+

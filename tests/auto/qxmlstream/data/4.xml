@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE doc [
+<!ELEMENT doc (#PCDATA)>
+<!ENTITY % e SYSTEM "something">
+<!ENTITY replace "replace">
+<!ENTITY me "me">
+%e;
+]>
+<doc a="do &replace; me">and &me; too</doc>

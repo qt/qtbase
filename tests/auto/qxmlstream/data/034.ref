@@ -1,0 +1,7 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Reserved prefixes and namespaces: binding a reserved prefix " )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="xml2" namespaceUri="http://example.org/namespace" )
+ )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

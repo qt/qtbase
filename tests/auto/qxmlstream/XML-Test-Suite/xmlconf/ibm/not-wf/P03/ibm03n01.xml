@@ -1,0 +1,6 @@
+<!DOCTYPE book [
+<!ELEMENT book ANY>
+]>
+<!-- IllegalChar #x3000
+ in p03: 　 -->
+<book>Illegal space 3000 in the end tag</book 　>

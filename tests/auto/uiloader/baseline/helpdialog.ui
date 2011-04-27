@@ -1,0 +1,404 @@
+<ui version="4.0" >
+ <author></author>
+ <comment>*********************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the autotests of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+*********************************************************************</comment>
+ <exportmacro></exportmacro>
+ <class>HelpDialog</class>
+ <widget class="QWidget" name="HelpDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>417</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Help</string>
+  </property>
+  <property name="whatsThis" >
+   <string>&lt;b>Help&lt;/b>&lt;p>Choose the topic you want help on from the contents list, or search the index for keywords.&lt;/p></string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <property name="margin" >
+    <number>0</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <widget class="QTabWidget" name="tabWidget" >
+     <property name="whatsThis" >
+      <string>Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.</string>
+     </property>
+     <widget class="QWidget" name="contentPage" >
+      <attribute name="title" >
+       <string>Con&amp;tents</string>
+      </attribute>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>5</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QTreeWidget" name="listContents" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="whatsThis" >
+          <string>&lt;b>Help topics organized by category.&lt;/b>&lt;p>Double-click an item to see the topics in that category. To view a topic, just double-click it.&lt;/p></string>
+         </property>
+         <property name="rootIsDecorated" >
+          <bool>true</bool>
+         </property>
+         <property name="uniformRowHeights" >
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text" >
+           <string>column 1</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="indexPage" >
+      <attribute name="title" >
+       <string>&amp;Index</string>
+      </attribute>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>5</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="TextLabel1" >
+         <property name="text" >
+          <string>&amp;Look For:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>editIndex</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="editIndex" >
+         <property name="toolTip" >
+          <string>Enter keyword</string>
+         </property>
+         <property name="whatsThis" >
+          <string>&lt;b>Enter a keyword.&lt;/b>&lt;p>The list will select an item that matches the entered string best.&lt;/p></string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListView" name="listIndex" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="whatsThis" >
+          <string>&lt;b>List of available help topics.&lt;/b>&lt;p>Double-click on an item to open its help page. If more than one is found, you must specify which page you want.&lt;/p></string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="bookmarkPage" >
+      <attribute name="title" >
+       <string>&amp;Bookmarks</string>
+      </attribute>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>5</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QTreeWidget" name="listBookmarks" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="whatsThis" >
+          <string>Displays the list of bookmarks.</string>
+         </property>
+         <property name="uniformRowHeights" >
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text" >
+           <string>column 1</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType" >
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonAdd" >
+           <property name="toolTip" >
+            <string>Add new bookmark</string>
+           </property>
+           <property name="whatsThis" >
+            <string>Add the currently displayed page as a new bookmark.</string>
+           </property>
+           <property name="text" >
+            <string>&amp;New</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonRemove" >
+           <property name="toolTip" >
+            <string>Delete bookmark</string>
+           </property>
+           <property name="whatsThis" >
+            <string>Delete the selected bookmark.</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Delete</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="searchPage" >
+      <attribute name="title" >
+       <string>&amp;Search</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>5</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="3" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QLabel" name="TextLabel1_2" >
+         <property name="text" >
+          <string>Searching f&amp;or:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>termsEdit</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLineEdit" name="termsEdit" >
+         <property name="toolTip" >
+          <string>Enter searchword(s).</string>
+         </property>
+         <property name="whatsThis" >
+          <string>&lt;b>Enter search word(s).&lt;/b>&lt;p>Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.&lt;/p></string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" >
+        <widget class="QListWidget" name="resultBox" >
+         <property name="contextMenuPolicy" >
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
+         <property name="whatsThis" >
+          <string>&lt;b>Found documents&lt;/b>&lt;p>This list contains all found documents from the last search. The documents are ordered, i.e. the first document has the most matches.&lt;/p></string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" >
+        <widget class="QLabel" name="TextLabel2" >
+         <property name="text" >
+          <string>Found &amp;Documents:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>resultBox</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>1</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="helpButton" >
+           <property name="toolTip" >
+            <string>Display the help page.</string>
+           </property>
+           <property name="whatsThis" >
+            <string>Display the help page for the full text search.</string>
+           </property>
+           <property name="text" >
+            <string>He&amp;lp</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType" >
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>61</width>
+             <height>21</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="searchButton" >
+           <property name="toolTip" >
+            <string>Start searching.</string>
+           </property>
+           <property name="whatsThis" >
+            <string>Pressing this button starts the search.</string>
+           </property>
+           <property name="text" >
+            <string>&amp;Search</string>
+           </property>
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="framePrepare" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" >
+      <property name="margin" >
+       <number>3</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="labelPrepare" >
+        <property name="text" >
+         <string>Preparing...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressPrepare" />
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <pixmapfunction></pixmapfunction>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>listContents</tabstop>
+  <tabstop>editIndex</tabstop>
+  <tabstop>listIndex</tabstop>
+  <tabstop>listBookmarks</tabstop>
+  <tabstop>buttonAdd</tabstop>
+  <tabstop>buttonRemove</tabstop>
+  <tabstop>termsEdit</tabstop>
+  <tabstop>searchButton</tabstop>
+  <tabstop>helpButton</tabstop>
+  <tabstop>resultBox</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

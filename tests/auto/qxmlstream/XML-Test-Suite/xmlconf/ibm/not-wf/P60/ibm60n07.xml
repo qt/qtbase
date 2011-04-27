@@ -1,0 +1,15 @@
+<?xml  version="1.0"?>
+<!-- WFC test for Production 60-->
+<!DOCTYPE Java 
+ [
+ <!ELEMENT Java ANY>
+ <!ELEMENT one EMPTY>
+ <!ENTITY avalue "<Introduction">
+ <!ATTLIST one chapter CDATA #REQUIRED>
+ ]>
+<Java>
+<one chapter="&avalue;"></one>
+Negative test. 
+The replacement text of any entity referred to directly or indirectly 
+in an attribute value contains a less than character
+</Java>

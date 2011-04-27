@@ -1,0 +1,413 @@
+# Version: 1
+# CheckVsReference: 5%
+
+setPen nopen
+setBrush red
+translate 0 4
+begin_block polys
+drawPolygon [0 0 2 -2 4 0]
+drawPolygon [0 2 2 4 4 2]
+end_block polys
+translate 6 .5
+repeat_block polys
+translate 6.5 0
+repeat_block polys
+translate 6 .5
+repeat_block polys
+
+resetMatrix
+
+translate 0 12
+setPen black
+drawPolygon [0 0 5 0 5 5 0 5]
+
+translate 10 0
+setPen nopen
+drawPolygon [0 0 5 0 5 5 0 5]
+
+translate 10 0
+drawPolygon [0 0 5 0 5 5 0 5]
+
+setBrush black
+path_addRect stroke -.5 -.5 6 6
+path_addRect stroke .5 .5 4 4
+drawPath stroke
+
+resetMatrix
+
+translate 0 65
+
+setPen red
+drawText 0 0 "path"
+drawText 40 0 "rect"
+drawText 80 0 "img"
+drawText 120 0 "pix"
+drawText 160 0 "brush"
+setPen nopen
+
+translate 0 5
+
+image_load border.png img
+pixmap_load border.png pix
+
+path_addRect rect 0 0 10 10
+begin_block rects
+drawPath rect
+drawRect 40 0 10 10
+drawImage img 80 0
+drawPixmap pix 120 0
+setBrush border.png
+drawRect 160 0 10 10
+setBrush black
+end_block rects
+
+setPen red
+drawText 180 10 "0.0"
+setPen nopen
+
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.1"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.2"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.3"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.4"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.5"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.6"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.7"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.8"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "0.9"
+setPen nopen
+translate 0.1 20
+repeat_block rects
+setPen red
+drawText 180 10 "1.0"
+setPen nopen
+
+resetMatrix
+
+translate 0 400
+
+setPen red
+drawText 0 10 "path"
+drawText 0 30 "rect"
+drawText 0 50 "img"
+drawText 0 70 "pix"
+drawText 0 90 "brush"
+drawText 0 110 "stroke"
+drawText 0 130 "scale"
+drawText 0 170 "rotate"
+setPen nopen
+
+translate 50 0
+
+begin_block rects
+drawPath rect
+drawRect 0 20 10 10
+drawImage img 0 40
+drawPixmap pix 0 60
+save
+setBrush border.png
+drawRect 0 80 10 10
+translate 0 100
+setBrush red
+setPen black
+drawRect 0 0 10 10
+setBrush border.png
+setPen nopen
+translate 0 20
+scale 2 2
+drawRect 0 0 10 10
+translate 10 20
+rotate 90
+drawRect 0 0 10 10
+restore
+end_block rects
+
+setPen red
+drawText -5 -10 "0.0"
+setPen nopen
+
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.1"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.2"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.3"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.4"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.5"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.6"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.7"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.8"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "0.9"
+setPen nopen
+translate 40 0.1
+repeat_block rects
+setPen red
+drawText -5 -10 "1.0"
+setPen nopen
+
+resetMatrix
+
+translate 0 620
+
+setPen red
+drawText 0 10 "path"
+setPen nopen
+
+path_addRect rect2 -5 -5 10 10
+
+translate 55 5
+drawPath rect2
+
+translate 20 0
+rotate 10
+drawPath rect2
+rotate -10
+translate 20 0
+rotate 20
+drawPath rect2
+rotate -20
+translate 20 0
+rotate 30
+drawPath rect2
+rotate -30
+translate 20 0
+rotate 40
+drawPath rect2
+rotate -40
+translate 20 0
+rotate 50
+drawPath rect2
+rotate -50
+translate 20 0
+rotate 60
+drawPath rect2
+rotate -60
+translate 20 0
+rotate 70
+drawPath rect2
+rotate -70
+translate 20 0
+rotate 80
+drawPath rect2
+rotate -80
+translate 20 0
+rotate 90
+drawPath rect2
+rotate -90
+
+resetMatrix
+
+translate 0 600
+
+setPen red
+drawText 0 10 "rect"
+setPen nopen
+
+translate 55 5
+drawRect -5 -5 10 10
+
+translate 20 0
+rotate 10
+drawRect -5 -5 10 10
+rotate -10
+translate 20 0
+rotate 20
+drawRect -5 -5 10 10
+rotate -20
+translate 20 0
+rotate 30
+drawRect -5 -5 10 10
+rotate -30
+translate 20 0
+rotate 40
+drawRect -5 -5 10 10
+rotate -40
+translate 20 0
+rotate 50
+drawRect -5 -5 10 10
+rotate -50
+translate 20 0
+rotate 60
+drawRect -5 -5 10 10
+rotate -60
+translate 20 0
+rotate 70
+drawRect -5 -5 10 10
+rotate -70
+translate 20 0
+rotate 80
+drawRect -5 -5 10 10
+rotate -80
+translate 20 0
+rotate 90
+drawRect -5 -5 10 10
+rotate -90
+
+resetMatrix
+path_addRect vertical 0.1 0.1 0.2 10
+
+translate 0 320
+drawPath vertical
+translate 2.2 0
+drawPath vertical
+translate 2.2 0
+drawPath vertical
+translate 2.2 0
+drawPath vertical
+translate 2.2 0
+drawPath vertical
+
+resetMatrix
+path_addRect horizontal 0.1 0.1 10 0.2
+
+translate 0 340
+drawPath horizontal
+translate 0 2.2
+drawPath horizontal
+translate 0 2.2
+drawPath horizontal
+translate 0 2.2
+drawPath horizontal
+translate 0 2.2
+drawPath horizontal
+
+setOpacity 0.8
+resetMatrix
+
+translate 0.1 24.7
+translate 400 0
+#rotate 88.8
+rotate 89.9
+setBrush red
+drawPolygon [0 0 300 0 0 173]
+setBrush green
+drawPolygon [0 173 300 0 300 173]
+
+resetMatrix
+
+translate 410 24
+path_lineTo left 0 273
+path_lineTo left 300 273
+path_cubicTo left 50 273 250 0 0 0
+
+path_cubicTo right 250 0 50 273 300 273
+path_lineTo right 300 0
+
+translate 310 0
+rotate 90
+setBrush red
+drawPath left
+setBrush green
+drawPath right
+
+resetMatrix
+translate 0.1 680.1
+setPen red
+setOpacity 1
+drawText 115 -20 "0.1"
+drawText 0 0 "pixmap w/ opacity"
+setOpacity 0.6
+drawPixmap pix 120 -10
+translate 0 20
+setOpacity 1
+drawText 0 0 "image w/ opacity"
+setOpacity 0.6
+drawImage img 120 -10
+
+resetMatrix
+path_lineTo fillpath 0 50
+path_lineTo fillpath 50 50
+path_moveTo fillpath 70 50
+path_lineTo fillpath 70 100
+path_lineTo fillpath 40 100
+translate 500 400
+drawPath fillpath
+
+resetMatrix
+path_moveTo vectorarne 50 10
+path_lineTo vectorarne 50 50
+path_lineTo vectorarne 100 50
+path_addEllipse vectorarne 350 20 230 230
+path_moveTo vectorarne 500 500
+path_cubicTo vectorarne 20 20 250 30 50 150
+translate 500 550
+scale 0.4 0.4
+setRenderHint antialiasing
+drawPath vectorarne
+
+resetMatrix
+translate 200 730
+setRenderHint antialiasing off
+setOpacity 1
+setPen red
+drawText 0 0 "outline/fill consistency"
+setPen red
+setBrush green
+translate 80 -30
+drawPolygon [13.6965 -99.1837 -71.4767 13.823 32.4596 -33.1847]

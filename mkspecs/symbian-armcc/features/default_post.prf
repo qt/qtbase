@@ -1,0 +1,5 @@
+load(default_post.prf)
+
+# It is important that this config be executed last,
+# and qmake does them in reverse order.
+CONFIG = symbian_building $$CONFIG

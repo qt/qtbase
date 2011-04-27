@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/tst_qtranslator">
+        <file>hellotr_la.qm</file>
+    </qresource>
+</RCC>

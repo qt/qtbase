@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root ANY>
+<!ATTLIST root attr1 CDATA #IMPLIED>
+<!ATTLIST root attr2 CDATA #IMPLIED>
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!ENTITY aImage SYSTEM "image.jpg" NDATA JPGformat>
+]>
+<root attr1="&aImage;">direct reference to external unparsed entinity in Attribute</root>
+

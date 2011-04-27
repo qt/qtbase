@@ -1,0 +1,63 @@
+# Version: 1
+# CheckVsReference: 5%
+
+
+setRenderHint Antialiasing
+
+path_moveTo p 20 20
+path_cubicTo p 100 20 100 180 180 100
+path_lineTo p 20 180
+path_lineTo p 180 20
+
+setPen black 20 solidline roundcap roundjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline roundcap miterjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline roundcap beveljoin
+drawPath p
+setPen red
+drawPath p
+
+translate -400 200
+setPen black 20 solidline squarecap roundjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline squarecap miterjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline squarecap beveljoin
+drawPath p
+setPen red
+drawPath p
+
+translate -400 200
+setPen black 20 solidline flatcap roundjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline flatcap miterjoin
+drawPath p
+setPen red
+drawPath p
+
+translate 200 0
+setPen black 20 solidline flatcap beveljoin
+drawPath p
+setPen red
+drawPath p

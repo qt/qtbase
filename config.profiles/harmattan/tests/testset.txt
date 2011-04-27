@@ -1,0 +1,11 @@
+    <set feature="qt" level="Component" name="##Package-name_test_name##" type="Functional">
+      <description>##Package-name:test_name##</description>
+      <case level="Component" name="##tst_foo##" type="Functional">
+        <description>##Package-name:test_name##</description>
+        <step>##/usr/tests/qtm/tst_foo##</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>

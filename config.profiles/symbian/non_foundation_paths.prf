@@ -1,0 +1,115 @@
+#
+# ==============================================================================
+#  Name        : non_foundation_paths.prf
+#  Part of     :
+#  Interface   : None foundation code Path Definitions API for Qt/S60
+#  Description : Symbian^3 and onwards specific platform paths
+#
+# Usage examples:
+#
+#     Note: this file will not added automatically. It needs to be included
+#           when needed.
+#
+#     Variable usages to add the system include paths
+#
+#       The include paths has to be related to the layer in which your SW
+#       resides. Thus as an example: a component residing in middleware
+#       layer should use the MW specific macro.
+#
+#         INCLUDEPATH += $$NON_FOUNDATION_APP_LAYER_SYSTEMINCLUDE
+#         INCLUDEPATH += $$NON_FOUNDATION_MW_LAYER_SYSTEMINCLUDE
+#         INCLUDEPATH += $$NON_FOUNDATION_OS_LAYER_SYSTEMINCLUDE
+#         INCLUDEPATH += $$NON_FOUNDATION_ADAPT_LAYER_SYSTEMINCLUDE
+#
+#       Macros related to exporting non-foundation headers  into
+#       correct place in the new system.
+#         NON_FOUNDATION_APP_LAYER_EXPORT_PATH
+#         NON_FOUNDATION_MW_LAYER_EXPORT_PATH
+#         NON_FOUNDATION_OS_LAYER_EXPORT_PATH
+#         NON_FOUNDATION_ADAPT_LAYER_EXPORT_PATH
+#
+# ==============================================================================
+
+# ---------------------------------------
+# Location, where the non-foundation app code should export its headers.
+# These are specific to app layer to which the non-foundation code belongs to.
+# ---------------------------------------
+defineReplace(NON_FOUNDATION_APP_LAYER_EXPORT_PATH) {
+     return (/epoc32/include/ext/app/$$1)
+}
+
+# ---------------------------------------
+# Location, where the non-foundation mw code should export its headers.
+# These are specific to mw layer to which the non-foundation code belongs to.
+# ---------------------------------------
+defineReplace(NON_FOUNDATION_MW_LAYER_EXPORT_PATH) {
+     return (/epoc32/include/ext/mw/$$1)
+}
+
+# ---------------------------------------
+# Location, where the non-foundation os code should export its headers.
+# These are specific to os layer to which the non-foundation code belongs to.
+# ---------------------------------------
+defineReplace(NON_FOUNDATION_OS_LAYER_EXPORT_PATH) {
+     return (/epoc32/include/ext/os/$$1)
+}
+
+# ---------------------------------------
+# Location, where the non-foundation adapt code should export its headers.
+# These are specific to adapt layer to which the non-foundation code belongs to.
+# ---------------------------------------
+# Temporarily commented out to help adaptation side migration
+# defineReplace(NON_FOUNDATION_ADAPT_LAYER_EXPORT_PATH) {
+#      return (/epoc32/include/ext/adapt/$$1)
+# }
+
+# **************************************************************************
+#  General comments about the 3 define statements related to include paths.
+#  It should be enough only to have one of the below macros and one of the include macros
+#  from platform_paths.hrh.
+#  No other systemincludes to epoc32/include or subdirectories.
+# **************************************************************************
+
+# This define statements defines the SYSTEMINCLUDE-line, which is intended to be
+# used in the mmp-files that are part of the applications-layer.
+#
+# Applications layer is the last one in the list, since most likely the most of
+# the headers come from middleware or os-layer  => thus they are first.
+
+NON_FOUNDATION_APP_LAYER_SYSTEMINCLUDE = \
+ /epoc32/include/ext/app \
+ /epoc32/include/ext/mw \
+ /epoc32/include/ext/os
+
+# This define statements defines the SYSTEMINCLUDE-line, which is intended to be
+# used in the mmp-files that are part of the middleware-layer.
+
+NON_FOUNDATION_MW_LAYER_SYSTEMINCLUDE = \
+ /epoc32/include/ext/mw \
+ /epoc32/include/ext/os
+
+# This define statements defines the SYSTEMINCLUDE-line, which is intended to be
+# used in the mmp-files that are part of the os-layer.
+
+NON_FOUNDATION_OS_LAYER_SYSTEMINCLUDE = \
+ /epoc32/include/ext/os
+
+# This define statements defines the SYSTEMINCLUDE-line, which is intended to be
+# used in the mmp-files that are part of the adapt-layer.
+# Temporarily commented out to help adaptation side migration
+# NON_FOUNDATION_ADAPT_LAYER_SYSTEMINCLUDE = \
+# /epoc32/include/ext/os \
+# /epoc32/include/ext/adapt
+
+
+# ****************************************************************************
+# Definitions to export IBY files to different folders where they will be taken
+# to ROM image
+# ****************************************************************************
+
+# Following three definitions are used for exporting IBY files to
+# Core image (ROM+ROFS1). IBY files are exported according to their layer.
+
+defineReplace(NON_FOUNDATION_CORE_ADAPT_LAYER_IBY_EXPORT_PATH) {
+     return (/epoc32/rom/include/$$1)
+}

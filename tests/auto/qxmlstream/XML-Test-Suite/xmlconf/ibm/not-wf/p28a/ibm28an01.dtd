@@ -1,0 +1,6 @@
+   <!ENTITY % make_leopard_element "<!ELEMENT leopard ">
+   %make_leopard_element;ANY>
+   <!-- This is against WFC:PE Between Declatations in 
+    production [28a]. In this file, Only one of the first character
+    and the last character of a markup declaration is contained 
+    in the same parameter-entity text replacement.-->

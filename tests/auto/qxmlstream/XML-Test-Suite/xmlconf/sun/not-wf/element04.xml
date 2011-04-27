@@ -1,0 +1,4 @@
+<!DOCTYPE root [ <!ELEMENT root ANY> ]>
+<root>
+    <!ELEMENT foo EMPTY>
+</root>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="6" failures="0" tests="4" name="tst_DataTable">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="fiveTablePasses">
+    <!-- tag="fiveTablePasses_data1" message="QVERIFY(test)" type="info" -->
+    <!-- tag="fiveTablePasses_data2" message="QVERIFY(test)" type="info" -->
+    <!-- tag="fiveTablePasses_data3" message="QVERIFY(test)" type="info" -->
+    <!-- tag="fiveTablePasses_data4" message="QVERIFY(test)" type="info" -->
+    <!-- tag="fiveTablePasses_data5" message="QVERIFY(test)" type="info" -->
+  </testcase>
+  <testcase result="pass" name="fiveTablePasses">
+    <!-- tag="fiveTablePasses_data1" message="QVERIFY(test)" type="info" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[QVERIFY(test)]]>
+<![CDATA[QVERIFY(test)]]>
+<![CDATA[QVERIFY(test)]]>
+<![CDATA[QVERIFY(test)]]>
+<![CDATA[QVERIFY(test)]]>
+<![CDATA[QVERIFY(test)]]>
+  </system-err>
+</testsuite>

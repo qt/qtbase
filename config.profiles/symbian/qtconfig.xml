@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<build xmlns="http://symbian.com/xml/build"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://symbian.com/xml/build http://symbian.com/xml/build/2_0.xsd">
+
+    <!-- Tools interfaces -->
+
+    <interface name="qt.qtconfig" extends="Symbian.UserFLM" flm="qtconfig.flm">
+        <param name='QT_ROOT' default='../..'/>
+        <param name='INSTALLPATH' default='epoc32/tools'/>
+        <param name='XPLATFORM' default='symbian-sbsv2'/>
+        <param name='PLATFORM.WIN32' default='win32-g++' />
+        <param name='PLATFORM.LINUX' default='linux-g++-32' />
+        <param name='OPTIONS' default='' />
+    </interface>
+
+</build>

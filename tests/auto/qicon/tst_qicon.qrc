@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+<file>image.png</file>
+<file>rect.png</file>
+<file>./icons/testtheme/16x16/actions/appointment-new.png</file>
+<file>./icons/testtheme/22x22/actions/appointment-new.png</file>
+<file>./icons/testtheme/32x32/actions/appointment-new.png</file>
+<file>./icons/testtheme/index.theme</file>
+<file>./icons/testtheme/scalable/actions/svg-only.svg</file>
+<file>./icons/themeparent/16x16/actions/address-book-new.png</file>
+<file>./icons/themeparent/16x16/actions/appointment-new.png</file>
+<file>./icons/themeparent/22x22/actions/address-book-new.png</file>
+<file>./icons/themeparent/22x22/actions/appointment-new.png</file>
+<file>./icons/themeparent/32x32/actions/address-book-new.png</file>
+<file>./icons/themeparent/32x32/actions/appointment-new.png</file>
+<file>./icons/themeparent/index.theme</file>
+<file>./icons/themeparent/scalable/actions/address-book-new.svg</file>
+<file>./icons/themeparent/scalable/actions/appointment-new.svg</file>
+</qresource>
+</RCC>

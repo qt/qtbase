@@ -1,0 +1,5 @@
+<doc>Wrong ordering between prolog and element!</doc>
+<?xml version="1.0"?>
+<!DOCTYPE doc [
+   <!ELEMENT doc ANY>
+]>

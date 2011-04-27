@@ -1,0 +1,36 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace inequality test: different escaping " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns:a CDATA #IMPLIED
+              xmlns:b CDATA #IMPLIED
+              xmlns:c CDATA #IMPLIED>
+<!ELEMENT bar ANY>
+<!ATTLIST bar a:attr CDATA #IMPLIED
+              b:attr CDATA #IMPLIED
+              c:attr CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
+
+    NamespaceDeclaration( prefix="b" namespaceUri="http://example.org/%7ewilbur" )
+
+    NamespaceDeclaration( prefix="c" namespaceUri="http://example.org/%7Ewilbur" )
+ )
+Characters( whitespace text="
+
+" )
+StartElement( name="bar" qualifiedName="bar"
+    Attribute( name="attr" namespaceUri="http://example.org/~wilbur" qualifiedName="a:attr" prefix="a" value="1" )
+
+    Attribute( name="attr" namespaceUri="http://example.org/%7ewilbur" qualifiedName="b:attr" prefix="b" value="2" )
+
+    Attribute( name="attr" namespaceUri="http://example.org/%7Ewilbur" qualifiedName="c:attr" prefix="c" value="3" )
+ )
+EndElement( name="bar" qualifiedName="bar" )
+Characters( whitespace text="
+
+" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

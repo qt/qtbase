@@ -1,0 +1,5 @@
+<!DOCTYPE root [
+    <!-- no whitespace before '?', '*', '+' -->
+    <!ELEMENT root ((root) ?)>
+]>
+<root/>

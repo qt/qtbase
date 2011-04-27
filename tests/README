@@ -1,0 +1,18 @@
+This directory contains autotests and benchmarks based on QTestlib. In order
+to run the autotests reliably, you need to configure a desktop to match the
+test environment that these tests are written for.
+
+Linux X11:
+
+   * The user must be logged in to an active desktop; you can't run the
+     autotests without a valid DISPLAY that allows X11 connections.
+
+   * The tests are run against a KDE3 or KDE4 desktop.
+
+   * Window manager uses "click to focus", and not "focus follows mouse". Many
+     tests move the mouse cursor around and expect this to not affect focus
+     and activation.
+
+   * Disable "click to activate", i.e., when a window is opened, the window
+     manager should automatically activate it (give it input focus) and not
+     wait for the user to click the window.

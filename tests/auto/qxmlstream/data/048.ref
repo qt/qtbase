@@ -1,0 +1,4 @@
+StartDocument( documentVersion="1.0" documentEncoding="UTF-8" )
+StartElement( name="foo" qualifiedName="foo" )
+Invalid( )
+ERROR: Sequence ']]>' not allowed in content.

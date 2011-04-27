@@ -1,0 +1,3 @@
+<?xml encoding='UTF-8'?>
+<!ELEMENT root (#PCDATA)>
+<!ENTITY root_content "&#x009F;&#x0081;">

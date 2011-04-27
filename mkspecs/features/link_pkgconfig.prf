@@ -1,0 +1,12 @@
+# handle pkg-config files
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config # keep consistent with qt_functions.prf too!
+
+for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
+    # don't proceed if the .pro asks for a package we don't have!
+    !packagesExist($$PKGCONFIG_LIB):error("Package $$PKGCONFIG_LIB not found")
+
+    QMAKE_CXXFLAGS += $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
+    QMAKE_CFLAGS += $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
+    LIBS += $$system($$PKG_CONFIG --libs $$PKGCONFIG_LIB)
+}
+

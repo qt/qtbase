@@ -1,0 +1,2039 @@
+qt4-x11 (4.7.2~git20110302-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#226454 - QDeclarativeTextInput::mousePressEvent() doesn't
+    call QInputContext::mouseHandler()
+  * Fixes: NB#220280 - QImage forever loops on SVG
+  * Fixes: NB#222060 - PIN UI freezes if "Continue offline" dialog is
+    shown before PIN query
+  * Fixes: NB#230591 - Regression from QFuture change
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Wed, 02 Mar 2011 12:06:31 +0200
+
+qt4-x11 (4.7.2~git20110221-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#227660 - QFuture uses internally QTime, instead of
+    QElapsedTimer
+  * Fixes: NB#226474 - imMicroFocus query on QML TextInput returns the
+    start of preedit instead of cursor position
+  * Fixes: NB#208927 - X dithering looks better than meego
+    graphicssystem one
+  * Fixes: NB#224327 - Malformed windows icons cause out of bounds
+    writes
+  * Fixes: NB#224413 - XPM files crash QImage (write)
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Mon, 21 Feb 2011 14:15:37 +0200
+
+qt4-x11 (4.7.2~git20110215-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#224314 - malformed bmp's cause QImage to write out of
+    bounds
+  * Fixes: NB#225732 - QGraphicsItem::ItemStopsClickFocusPropagation
+    doesn't stop propagation
+  * Fixes: NB#221924 - Morpheus crashes when network connection is lost
+  * Fixes: NB#218317 - All capital "i" in turkish is wrong inside of
+    buttons.
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Thu, 17 Feb 2011 11:50:12 +0200
+
+qt4-x11 (4.7.2~git20110208-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#217912 - Deadlock after changes in qprocess_unix
+  * Fixes: NB#217850 - floating point compiler optimization has no
+    effect
+  * Fixes: NB#226130 - QtQuick 1.1 integration
+  * Fixes: NB#226478 - TextEdit and TextInput need text selection modes
+  * Fixes: NB#226484 - TextInput selectWord() on word's first letter
+    often selects two words
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Wed, 09 Feb 2011 15:54:33 +0200
+
+qt4-x11 (4.7.2~git20110203-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#215586 - Qt make unnecessary X calls on each mouse move
+    event QETWidget::translateXI2Event
+  * Fixes: NB#210752 - Text in QML application disappears after
+    application is restored from task switcher
+  * Fixes: NB#221806 - Subsequent signal networkAccessibleChanged
+    emitting problem of class QNetworkAccessManager
+  * Fixes: NB#218404 - Memory leaks in qx11embed_x11.cpp
+  * Fixes: NB#218410 - Fix error case in getNetWmState() in
+    qwidget_x11.cpp
+  * Fixes: NB#225875 - Integrate
+    1137379e98cab8cc67fac70b31c97001c4473eb0
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Tue, 08 Feb 2011 10:13:03 +0200
+
+qt4-x11 (4.7.2~git20110119-0maemo2) unstable; urgency=low
+
+  * Fixes: NB#221230 - libqt4-meegographicssystemhelper needs to depend
+    on libqt4-meegographicssystem instead of recommends
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Mon, 24 Jan 2011 10:08:26 +0200
+
+qt4-x11 (4.7.2~git20110119-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#212758 - creating a QPixmap triggers creation of the
+    qt_gl_share_widget
+  * Fixes: NB#219685 - QSystemSemaphore and QSharedMemory are influenced
+    by TMPDIR
+  * Fixes: NB#188780 - Items in larger layout are not centered
+  * Fixes: NB#218317 - All capital "i" in turkish is wrong inside of
+    buttons.
+  * Fixes: NB#216667 - libqt4-meego-dev is not available for i386 at all
+  * Fixes: NB#214064 - Latest focus changes break some platform
+    components
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Wed, 19 Jan 2011 17:06:16 +0200
+
+qt4-x11 (4.7.2~git20110111-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#205680 - meego graphicssystem clears scene even if
+    Qt::WA_OpaquePaintEvent is set
+  * Fixes: NB#215368 - QMeeGoSwitchEvent's eventNumber() is not static
+    and the class is not exported
+  * Fixes: NB#211573 - Qt not configured with -dbus-linked
+  * Fixes: NB#211951 - Qt unnecessary build dependency to libxcursor-dev
+  * Fixes: NB#214064 - Latest focus changes break some platform
+    components
+  * Fixes: NB#216968 - QHostInfoCache should use QElapsedTimer instead
+    of QTime
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Wed, 12 Jan 2011 12:23:50 +0200
+
+qt4-x11 (4.7.2~git20101231-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#213183 - Ensure two Qt raster fixes are released.
+  * Fixes: NB#215639 - Need to repopulate texture glyph cache after
+    recreating GL context
+  * Fixes: NB#212887 - would be possible to open these descriptors on-
+    demand
+  * Fixes: NB#195919 - Check whether shader compilation can be improved
+  * Fixes: NB#195442 - OpenGL paint engine produces artifacts with big
+    images
+  * Fixes: NB#186988 - opengl render Chinese text: fast change text,
+    text become black block.
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Mon, 03 Jan 2011 13:50:51 +0200
+
+qt4-x11 (4.7.2~git20101209-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#205593 - Any app using meegotouch prints to console when started
+  * Fixes: NB#206111 - Sometimes MLabels apppear empty even if the text is set
+  * Fixes: NB#208617 - QtProxyFactory does not return correct (any) proxy data
+  * Fixes: NB#209473 - <UninitVar> qgraphicslayoutitem.cpp:143
+  * Fixes: NB#209863 - Qt tries to use id of a destroyed window
+  * Fixes: NB#210024 - MGS should provide translucency on a per-window basis
+  * Fixes: NB#210594 - Integration of focus change fixes
+  * Fixes: NB#210599 - QDeclarativeEngine object ownership issues
+  * Fixes: NB#210416 - Framerate in portrait is significantly lower than
+    in landscape
+  * Fixes: NB#199755 - Network session error when attempting to open
+    network session
+  * Fixes: NB#201619 - Synchronization is stuck in the progress
+    indicator screen when the internet is interrupted while sync
+  * Fixes: NB#209996 - Backup options view:Text inside the text box not
+    displayed properly in potrait mode
+  * Fixes: NB#194987 - Not all the synced contacts with S60 (N97 mini)
+    have an avatar
+  * Fixes: NB#206740 - Event handling in x11EventSourceDispatch is slow
+  * Fixes: NB#207115 - Qt calls eglSwapBuffers when no painting happened
+  * Fixes: NB#206119 - QSizePolicy causes the performance slow down
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Thu, 16 Dec 2010 12:22:45 +0200
+
+qt4-x11 (4.7.2~git20101130-0maemo6) unstable; urgency=low
+
+  * Fixes: NB#198573 - Need for Signals from Qt indicating aboutToSwich and swiched state
+  * Fixes: NB#194509 - Network access from a Qt app makes dbus daemon consume tons of cpu
+  * Fixes: NB#165283 - artificial emboldening doesn't work
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Tue, 07 Dec 2010 15:31:57 +0200
+
+qt4-x11 (4.7.2~git20101130-0maemo4) unstable; urgency=low
+
+  * Fixes: NB#205453 - Qt Update cause blocker performance drop in browser.
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 10 Dec 2010 13:21:07 +0200
+
+qt4-x11 (4.7.1~git20101130.really.4.7.1~git20101118-0maemo3) unstable; urgency=low
+
+  * Revert to previous release.
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 03 Dec 2010 11:24:03 +0200
+
+qt4-x11 (4.7.1~git20101118-0maemo2) unstable; urgency=low
+
+  * Proper workaround for bug 196954.
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Mon, 29 Nov 2010 14:05:44 +0200
+
+qt4-x11 (4.7.1~git20101118-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Enable using OpenGL scissor test
+  * Fixes: NB#188174 - The effect of filling massive amount of html <div> elements with color ...
+  * Fixes: NB#194032 - Gallery crashed random while slideshow is going on
+  * Fixes: NB#193247 - Slider widget crashes WG in a given scenario
+  * Fixes: NB#199790 - Qt sends touch point update event too late on release.
+  * Fixes: NB#200091 - Random crashes observed when trying to paste value
+  * Fixes: NB#163620 - QtTest headers prevent compilation with -Wshadow -Werror
+  * Fixes: NB#189468 - <Safety> Invalid read reported by valgrind in libX11 when analysing accounts-ui application
+  * Fixes: NB#191811 - <Safety> Invalid read frequently reported in scratchbox
+  * Fixes: NB#193881 - Image format autodetection causes unnecessary lseeks
+  * Fixes: NB#198023 - GLib >= 2.22 requires use of g_main_context_push_thread_default in QEventDispatcher when a QThread is created
+  * Fixes: NB#202866 - MeeGo graphicssystem dithering for textures with alpha channel looks crappy
+  * Fixes: NB#204234 - obsolete driver work-around
+  * Fixes: NB#204890 - device lock prompt keeps reappearing
+  * Fixes: NB#194345 - CoreWeb: 950 coredumps with stacktrace ending in QGestureManager::deliverEvents()
+  * Fixes: NB#204098 - qstrtod does not reset errno
+  * Fixes: NB#161439 - Using optimizations causes trouble
+  * Fixes: NB#186988 - opengl render Chinese text: fast change text, text become black block
+  * Fixes: NB#193505 - after maximizing applications fonts are sometimes corrupted
+  * Fixes: 204443 - Pinch gesture semantics change
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Mon, 22 Nov 2010 12:05:12 +0200
+
+qt4-x11 (4.7.1~git20101111.really.4.7.1~git20101103-0maemo2) unstable; urgen
+
+  * Revert to previous released version
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 19 Nov 2010 10:50:40 +
+
+qt4-x11 (4.7.1~git20101103-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Provide menu link and icon for QMLViewer
+  * Remove backported QScroller patch, it is to be used externally
+  * Fixes: NB#196806 - <MemLeak> Memory leak in feednamespacepluginmanager.cpp
+  * Fixes: NB#164431 - Blocking dialog doesn't work correctly
+  * Fixes: NB#170001 - QTouchEvent::touchpoint's isPrimary -method returns always false
+  * Fixes: NB#191116 - <MemLeak> Memory leak reported by valgrind on device, in XIQueryPointer.c
+  * Fixes: NB#198833 - Qt forgets to initialize members of QSharedPointer and its helpers
+  * Fixes: NB#200433 - cannot compile QMeeGoLivePixmap::livePixmapWithSize
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Thu, 04 Nov 2010 12:14:46 +0200
+
+qt4-x11 (4.7.1~git20101021-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Previous problem with the experimental client decorations are
+  * now fixed, enable them again.
+  * Fixes: NB#195540 - libqt4-doc has extra <tr> tags
+  * Fixes: NB#198766 - MeeGo graphicssystem does not create proper deep copies of QPixmaps
+  * Fixes: NB#194397 - /usr/lib/qt4/imports/Qt/labs/ missing from packages
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Thu, 21 Oct 2010 16:01:33 +0300
+
+qt4-x11 (4.7.1~git20101008-0maemo2) unstable; urgency=low
+
+  * Disable experimental client decorations again
+  * Fixes: NB#196543 - libQtMeeGoGraphicsSystemHelper not shipped with latest packages
+  * Fixes: NB#196712 - SVG and PNG data URIs don't work in offline mode
+  * Fixes: NB#197530 - Missing menu items from ui-file
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 15 Oct 2010 11:49:02 +0300
+
+qt4-x11 (4.7.1~git20101008-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Backport QScroller from 4.8
+  * Fixes: NB#184580 - QGraphicsItem::setCacheMode(DeviceCoordinateCache) unefficient in portrait mode
+  * Fixes: NB#191792 - QML: clickable items in GridView intermittently unresponsive on B2 hardware
+  * Fixes: NB#189797 - Qt build-depends circular dependency
+  * Fixes: NB#183846 - VKB adds and accumulates _NET_WM_STATE atoms when ever it's shown
+  * Fixes: 192385 - QML: runtime.orientation doesn't change when device orientation changes
+  * Fixes: NB#197181 - host binaries in libqt4-dev do not work in x86 target
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 08 Oct 2010 14:14:42 +0300
+
+qt4-x11 (4.7.1~git20101001-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Cross-compile Qt and install both host and native binaries
+  * of build tools
+  * Enable experimental client decorations
+  * Fixes: NB#191476 - Wrong reordering of Bidi Text in Labels
+  * Fixes: NB#186087 - QGraphicsItem never gets focusOutEvent on hide
+  * Fixes: NB#186988 - opengl render Chinese text: fast change text, text become black block
+  * Fixes: NB#189686 - connecting to dbus slows down MApplication c'tor creation by ~80ms
+  * Fixes: NB#188145 - Network interface doesn't go down after last client disconnects
+  * Fixes: NB#189001 - Qt4.7 bearer management icd plugin uses embedded libconninet
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Fri, 01 Oct 2010 12:44:54 +0300
+
+qt4-x11 (4.7.0~git20100917-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#187981 - Device hangs up when region is set to Arabic language.
+  * Fixes: NB#163798 - QRasterPaintEnginePrivate::drawImage using memcpy instead of ARM optimized implementation
+  * Fixes: NB#187851 - Font rendering issues with Nokia font
+  * Fixes: NB#190817 - libqt4-doc has extra </div> and <tr> tags
+  * Fixes: NB#191880 - QPixmap::size() should return 0x0 when there is no data
+  * Fixes: NB#193700 - Pinching in calendar weekly view regression
+
+ -- Petri Latvala <ext-petri.latvala@nokia.com>  Tue, 21 Sep 2010 10:48:49 +0300
+
+qt4-x11 (4.7.0~git20100827-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#189487 - qt4-x11 fails to build due to problems with opening data base file doc/qch/qt.qch
+  * Fixes: NB#174335 - Pinch gesture events are sent twice to application
+  * Fixes: NB#175685 - QTextDocument setTextDirection without QStaticText is not obeyed in Qt 4.7
+  * Fixes: NB#185563 - QTouchEvents are not correctly delivered to widgets
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Mon, 06 Sep 2010 16:48:24 +0300
+
+qt4-x11 (4.7.0~git20100823-0maemo2) unstable; urgency=low
+
+  * Fixes: NB#178358 - Qt doc package missing
+  * Stop building QtWebKit library from Qt source tree. QtWebKit will 
+  * be delivered as an independent package.
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Tue, 31 Aug 2010 10:10:15 +0300
+
+qt4-x11 (4.7.0~git20100823-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#178358 - Qt doc package missing
+  * Fixes: NB#183896 - QAuthenticator need to be patched to enable signon usage for authentication
+  * Fixes: NB#176070 - QNetworkAccessManager can't be used in QThreads 
+  * Fixes: NB#176651 - Height for Width in QGraphicsLayout
+  * Fixes: NB#174429 - Qt source packages are missing API files
+
+ -- Stefano Pironato <stefano.pironato@nokia.com>  Tue, 24 Aug 2010 14:11:00 +0300
+
+qt4-x11 (4.7.0~git20100811-0maemo1) unstable; urgency=low
+
+  * Pull from upstream 
+  * Fixes: NB#165683 - QGraphicsGridLayout::setColumnSpacing is used even after item has been removed
+  * Fixes: NB#172554 - POP: Random fenix crash @ "QAbstractSocket::writeData" when move to option selected
+  * Fixes: NB#175618 - qDrawBorderPixmap is not executing correctly when borders are too thick
+  * Fixes: NB#176643 - Segmentation fault occurs while using networking
+  * Fixes: NB#180034 - we need QTBUG-11213 fixed in Harmattan - QUuid::createUuid() is not random at all
+  * Fixes: NB#182005 - Unable to build libmcontentwidgets package with libqt4 4.7.0~git20100716-0maemo1+0m6
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Wed, 11 Aug 2010 11:03:15 +0200
+
+qt4-x11 (4.7.0~git20100716-0maemo1) unstable; urgency=low
+
+  * Pull from upstream 
+  * Fixes: NB#176070 - QNetworkAccessManager can't be used in QThreads
+  * Fixes: NB#180047 - Call UI gets shrunken while calling any number
+  * Fixes: NB#174856 - QNetworkAccessManager broken in 4.7.0~git20100609-0maemo1+0m6
+  * Fixes: NB#179240 - QFile::read does not advance the stream
+  * Fixes: NB#173119 - Bidirectional Text Rendering in Arabic language is broken with Latin characters
+  * Fixes: NB#161897 - DuiInfoBanner's setBodyText ignores <br/> tag
+  * Fixes: NB#177478 - QAuthenticator should have property map
+
+ -- Janne Hamalainen <janne.a.hamalainen@nokia.com>  Thu, 22 Jul 2010 11:19:09 +0200
+
+qt4-x11 (4.7.0~git20100704-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#172773 - celluid process is causing the wakeups in idle mode
+  * Fixes: NB#175064 - QNetworkSession signals wrong state after calling stop()
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Mon, 5 Jul 2010 14:39:09 +0200
+
+qt4-x11 (4.7.0~git20100614-0maemo2) unstable; urgency=low
+
+  * Fixes: NB#167514 - [browser-blocker] Multitouch events don't work if application is launched during device start-up
+  * Fixes: NB#175383 - qt4-acceptance-tests fail during ART Execution
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Mon, 5 Jul 2010 14:39:09 +0200
+
+qt4-x11 (4.7.0~git20100614-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#172906 - Majority of applications crashing on exit
+  * Fixes: NB#173866 - Data added to HTML5 database doesn't get flushed/persisted to database
+  * Fixes: NB#173250 - QGLContext can create end up creating a QWidget during the QApplication destructor, leading to crash
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Tue, 15 Jun 2010 11:14:33 +0200
+
+qt4-x11 (4.7.0~git20100609-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#170006 - Qt 4.7 singleShot timer calls function immediately instead of at the next event loop
+  * Fixes: NB#167058 - TapGesture not working 
+  * Fixes: NB#173089 - The Qt 4.7 does not compile icd bearermanagement network plugin  
+  * Fixes: NB#172749 - If grabGesture() called QGraphicsWidget will crash in deletion
+  * Fixes: NB#155179 - (QTBUG-9707) qpainter->drawTiledPixmap cause slow call of QX11PixmapData::toImage.
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Thu, 10 Jun 2010 16:46:15 +0200
+
+qt4-x11 (4.6.3~git20100602.0.4.7-0maemo1) unstable; urgency=low
+
+  * Release Qt 4.7. The version still keeps the 4.6.3 package version, 
+  * in order to allow for emergency rollback to Qt 4.6.
+  * Fixes: NB#161556 - [METABUG] Integrate Qt 4.7 into Harmattan
+  * Fixes: NB#151100 - (QT-2948) The Qt Reg-Exp engine sometimes gives false positive empty match
+  * Fixes: NB#157450 - Frequent use of QTime in animation related routines causes bad performance
+  * Fixes: NB#156908 - Qt's QTime::currentTime is slow
+  * Fixes: NB#166193 - MDialog crashes with ~40% likelihood
+  * Fixes: NB#170944 - Gesture not delivered to a QGraphicsWidget, asserts inside Qt
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Wed, 4 Jun 2010 12:46:15 +0300
+
+qt4-x11 (4.6.3~git20100521-0maemo2) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#169433 -  when freeing a QQLWidget not all memory is actually freed
+  * Fixes: NB#165175 -  a class inherited from QDBusInterface can't invoke a method
+
+ -- Janne Hamalainen <janne.a.hamalainen@nokia.com>  Tue, 25 May 2010 10:13:31 +0300
+
+qt4-x11 (4.6.3~git20100514-0maemo2) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#164183 - Random gestureEvent crashes
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Tue, 18 May 2010 12:57:30 +0300
+
+qt4-x11 (4.6.3~git20100411-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#162327 unlocking the device causes a segfault in any app open in foreground
+  * Fixes: NB#163414 Crash when hiding VKB and keep finger on screen.
+  * Fixes: NB#160270 <MemLeak> valgrind report shows memory leak for QImage::save()
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Mon, 12 Apr 2010 13:51:00 +2000
+
+qt4-x11 (4.6.3~git20100319-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Multi-touch support
+  * Fixes: NB#159993  Qt is freezing application for 2 seconds when calling showFullScreen
+  * Fixes: NB#155384 Make drawGlyphs API public
+
+ -- Stefano Pironato <stefano.pironato@nokia.com>  Fri, 19 Mar 2010 15:31:00 +2000
+
+qt4-x11 (4.6.3~git20100310-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#146992 Double tap doesn't get recognized in MAFW test gui
+  * Fixes: NB#134295 QDBusInterface::callWithCallback deadlocks if called from the callWithCallback error callback
+
+ -- Bojan Radakovic <bojan.radakovic@nokia.com>  Mon, 15 Mar 2010 12:34:26 +2000
+
+qt4-x11 (4.6.3~git20100224-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Remove Qt3Support
+  * Add lconvert
+  * Fixes: NB#154800 Using -opensource configuration in maemo6
+  * Fixes: NB#158708 Googleplugin crashes while configuring google account
+  * Fixes: NB#158242 all unit tests for quillimagefilter-tests are core dumped
+  * Fixes: NB#157696 QDBusServiceWatcher watches only one service at a time
+
+ -- Janne Hamalainen <janne.a.hamalainen@nokia.com>  Wed, 24 Feb 2010 11:34:26 +2000
+
+qt4-x11 (4.6.2~git20100205-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#142357 - (#QT-2307) Using QDBus::CallMode other than 
+  *        QDBus::Block produces invalid reply
+  * Fixes: NB#138587 - QGraphicsGridLayout row span feature is not working properly
+  * Fixes: NB#153726 - QtMultimedia module is not packaged
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Fri, 12 Feb 2010 12:20:26 +2000
+
+qt4-x11 (4.6.1~git20091228.4-0maemo1) unstable; urgency=low
+
+  * Turn off the HW multi-touch implementation using kernel device API.
+  * Removed Qt Assistant and Designer packages.
+  * Fixes: NB#148497 - Devel package missing requires for some libraries
+  * Fixes: NB#151088 - Packaging of the Qt4.6 developer tools
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Thu, 14 Jan 2010 12:43:37 +2000
+
+qt4-x11 (4.6.1~git20091228.2-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#144690 - Please cherrypick ConsumeEventHint patch (Gesture)
+  * Fixes: NB#143903 - Application not working in none gui mode -> The KDE libs cannot be installed.
+  * Fixes: NB#143427 - Qt 4.6 - lrelease does not accept empty <source>
+  * Fixes: NB#147283 - All DUI application crash in scratchbox
+  * Fixes: NB#147461 - QVariant::isNull() == true after QVariant::setValue()
+  * Fixes: NB#149547 - With latest Qt 20091127 Clock  application is closing on setting alarm operation
+  * Fixes: NB#117725 - sb2 cannot build camera-ui
+  * Fixes: NB#148359 - webkit traverse fixture links against phonon but it is not in package dependencies
+  * Fixes: NB#148082 - Performance of the graphics view drops when text element is rotated
+  * Fixes: NB#142507 - QTimeLine's signals are not sent while an object is being dragged with mouseMoveEvent()
+  * Fixes: NB#147744 - Translucent QGLWidgets no longer works
+  * Fixes: NB#150790 - QWebKit based application crashes when executing SunSpider
+  * Fixes: NB#150808 - Loading a web page from network to qwebview fails on columbus
+
+ -- Stefano Pironato <stefano.pironato@nokia.com>  Tue, 05 Jan 2010 11:10:00 +2000
+
+qt4-x11 (4.6.0~git20091030.2-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#129594 - Qt compiled without compiler optimization
+  * The X org package does not support the MIT SHM extension anymore, 
+    so the MIT SHM option is removed from Qt configuration also.
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Fri, 20 Nov 2009 16:59:11 +2000
+
+qt4-x11 (4.6.0~git20091030-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#134295 - QDBusInterface::callWithCallback deadlocks if called from the callWithCallback error callback
+  * Fixes: NB#133005 - enabling accessibility while building Qt 
+  * Fixes: NB#144501 - Application launcher does not start with the new Qt 4.6 versions
+  * Fixes: NB#129494 - Qt compiled without compiler optimization
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Fri, 30 Oct 2009 15:13:18 +1000
+
+qt4-x11 (4.6.0~git20091012-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#141280 - libqt4-dev.postinst rules for Qt4.6 wrong
+  * Fixes: NB#133500 - libqt4-dev postinst is broken by update-alternatives from dpkg 1.15
+  * Fixes: NB#142136 - Error in satisfying dependencies for qt4-x11
+
+ -- Stefano Pironato <stefano.pironato@nokia.com>  Thu, 12 Oct 2009 10:30:00 +0300
+
+qt4-x11 (4.6.0~git20091008-0maemo1) unstable; urgency=low
+
+  * Fixes NB#141891: - Compiling a library which uses QStateMachine doesn't work
+  * Modify rpath-link options to adapt to armel scratchbox environment
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Wed, 08 Oct 2009 11:18:37 +0300
+
+qt4-x11 (4.6.0~git20091002-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#141550 - Error in qdatastream.h in libqt4-dev 4.6.0~git20091001-0maemo1+0m6
+  * Fixes: NB#140293 - applet titles in applet library are not shown properly - added PATCH in qt changing glyph cache
+  * Fixes: NB#140727 - Enable multitouch support on device
+  * Fixes: NB#123012 - QPainter::drawTiledPixmap does not work properly with
+    non-power-of-two pixmaps when used in a DuiWidgetView
+
+ -- Stefano Pironato <stefano.pironato@nokia.com>  Thu, 01 Oct 2009 15:08:32 +0300
+
+qt4-x11 (4.6.0~git20090925-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#140735 - QtGui 4.6 should have dependency to EGL
+  * Fixes: NB#139269 - qmake CONFIG=debug does not add -g
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Fri, 25 Sep 2009 15:48:32 +0300
+
+qt4-x11 (4.6.0~git20090911-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Fixes: NB#111282 - Homescreen rotation takes too long
+  * Fixes: NB#110604 - DuiLayouts using DuiFlowLayoutPolicy don't resize properly
+  * Fixes: NB#121054 - Items being not painted until update()/paint() explicitly called
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Fri, 11 Sep 2009 15:17:33 +0300
+
+qt4-x11 (4.6.0~git20090909-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#137778 - qt macro causing build error when using -pedantic
+  * Fixes: NB#137775 - qt debian packaking installing a missing file
+
+ -- Adrian Constantin <adrian.constantin@nokia.com>  Wed, 09 Aug 2009 15:52:51 +0300
+
+qt4-x11 (4.6.0~git20090907-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#104827 - DuiLabel truncate arabic string and renders replaces the MEDIAL form character into FINAL on the point of truncation
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 08 Aug 2009 15:17:24 +1000
+
+qt4-x11 (4.6.0~git20090828-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Mon, 24 Aug 2009 15:47:37 +1000
+
+qt4-x11 (4.6.0~git20090824-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#127429 - QtOpenGL public header refers to non-existant qglshaderprogram.h
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Mon, 24 Aug 2009 15:47:37 +1000
+
+qt4-x11 (4.6.0~git20090820-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 20 Aug 2009 16:16:14 +1000
+
+qt4-x11 (4.6.0~git20090819-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#132164 - libqt4-webkit package is broken
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 19 Aug 2009 15:32:21 +1000
+
+qt4-x11 (4.6.0~git20090728-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#129594 - Qt compiled without compiler optimization
+  * Fixes: NB#127404 - Rendering errors with OpenGL in Qt 4.6
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 30 Jul 2009 14:02:24 +1000
+
+qt4-x11 (4.6.0~git20090717-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#117929 - Qt mkspecs use -Wl,--rpath by default causing warnings in Debian packaging
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 15 Jul 2009 10:32:20 +1000
+
+qt4-x11 (4.6.0~git20090717-0maemo1) unstable; urgency=low
+
+  * Pull from upstream
+  * Partial fix for 127404.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 15 Jul 2009 10:32:20 +1000
+
+qt4-x11 (4.6.0~git20090706-0maemo1) unstable; urgency=low
+
+  * Switch to using 4.6.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 07 Jul 2009 10:32:20 +1000
+
+qt4-x11 (4.5.2~git20090701-0maemo1) unstable; urgency=low
+
+  * Fixes: NB#122175 - Qt debugging symbols issues 
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 07 Jul 2009 10:32:20 +1000
+
+qt4-x11 (4.5.2~git20090605-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 05 Jun 2009 19:46:34 +1000
+
+qt4-x11 (4.5.2~git20090601-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Mon, 01 Jun 2009 17:01:23 +1000
+
+qt4-x11 (4.5.2~git20090525-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Mon, 25 May 2009 15:30:34 +1000
+
+qt4-x11 (4.5.2~git20090515-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 15 May 2009 20:01:16 +1000
+
+qt4-x11 (4.5.2~git20090508-0maemo2) unstable; urgency=low
+
+  * Changed control file as per Maemo patch.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Mon, 11 May 2009 18:49:23 +1000
+
+qt4-x11 (4.5.2~git20090508-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 08 May 2009 17:51:46 +1000
+
+qt4-x11 (4.5.2~git20090506-0maemo1) unstable; urgency=low
+
+  * Removed -lxcb-xlib referance from mkspec.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Wed, 06 May 2009 19:01:22 +1000
+
+qt4-x11 (4.5.2~git20090505-0maemo2) unstable; urgency=low
+
+  * Removed old EGL config patch.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Wed, 06 May 2009 14:42:35 +1000
+
+qt4-x11 (4.5.2~git20090505-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Added gles translucency patch
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Tue, 05 May 2009 21:32:21 +1000
+
+qt4-x11 (4.5.2~git20090424-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 24 Apr 2009 18:32:37 +1000
+
+qt4-x11 (4.5.1~git20090422-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 22 Apr 2009 17:20:12 +1000
+
+qt4-x11 (4.5.1~git20090417-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#110528 - int QTest::qExec() returns always 0...
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 17 Apr 2009 13:30:20 +1000
+
+qt4-x11 (4.5.1~git20090403-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#109352 - libqt4-dev is missing libQtUiTools.a
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Fri, 03 Apr 2009 17:04:40 +1000
+
+qt4-x11 (4.5.1~git20090331-0maemo2) unstable; urgency=low
+
+  * Move QtClucene from the core package to the help package. This is only
+    used by assistant.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 01 Apr 2009 16:44:52 +1000
+
+qt4-x11 (4.5.1~git20090331-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 31 Mar 2009 10:35:50 +1000
+
+qt4-x11 (4.5.1~git20090326-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Add qdoc3 binary to qt4-dev-tools package.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 26 Mar 2009 14:17:39 +1000
+
+qt4-x11 (4.5.1~git20090324-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 24 Mar 2009 10:39:35 +1000
+
+qt4-x11 (4.5.1~git20090317-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#105936
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 17 Mar 2009 14:15:30 +1000
+
+qt4-x11 (4.5.1~git20090316-0maemo1) unstable; urgency=low
+
+  * Pull from upstream.
+  * Fixes: NB#103601
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Mon, 16 Mar 2009 13:14:17 +1000
+
+qt4-x11 (4.5.0-0maemo2) unstable; urgency=low
+
+  * Fixes: NB#103953, NB#103601
+  * Add additional dependencies for the phonon package.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 05 Mar 2009 16:53:23 +1000
+
+qt4-x11 (4.5.0-0maemo1) unstable; urgency=low
+
+  * Pull from upstream for 4.5.0 release.
+  * Fixes: NB#99812
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 27 Feb 2009 18:37:27 +1000
+
+qt4-x11 (4.5.0~git20090219-0maemo1) unstable; urgency=low
+
+  * Removed subversion files and disabled patches.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 19 Feb 2009 16:09:14 +1000
+
+qt4-x11 (4.5.0~git20090219-maemo1) unstable; urgency=low
+
+  * Migrated to new repository.
+  * Merged with upstream.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 19 Feb 2009 14:24:45 +1000
+
+qt4-x11 (4.5.0~git20090212-maemo2) unstable; urgency=low
+
+  * Removed include/Qt/qpixmapfilter.h from debian/libqt4-dev.install
+
+ -- Mohammad Anwari <mohammad.anwari@nokia.com>  Fri, 13 Feb 2009 09:50:33 +0200
+
+qt4-x11 (4.5.0~git20090212-maemo1) unstable; urgency=low
+
+  * Merged with upstream.
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Thu, 12 Feb 2009 13:45:11 +0200
+
+qt4-x11 (4.5.0~git20090122-maemo6) unstable; urgency=low
+
+  * Added patch 102_egl_config.diff 
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Thu, 12 Feb 2009 12:53:25 +0200
+
+qt4-x11 (4.5.0~git20090122-maemo5) unstable; urgency=low
+
+  * Removed old Ubuntu patches
+  * Added patch 101_multiple-translation.diff to series file
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Mon, 26 Jan 2009 18:48:50 +0200
+
+qt4-x11 (4.5.0~git20090122-maemo4) unstable; urgency=low
+
+  * Multiple translation variant patch was added
+  * Shader patch was removed
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Mon, 26 Jan 2009 17:38:50 +0200
+
+qt4-x11 (4.5.0~git20090122-maemo2) unstable; urgency=low
+
+  * Removed configure switch -no-tablet
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Thu, 22 Jan 2009 18:14:50 +0200
+
+qt4-x11 (4.5.0~git20090122-maemo1) unstable; urgency=low
+
+  * Merged from upstream
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Thu, 22 Jan 2009 17:51:34 +0200
+
+qt4-x11 (4.5.0~git20090108-maemo2) unstable; urgency=low
+
+  * Fixes for lintian errors
+  * Fixes in install files
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Thu, 15 Jan 2009 11:00:17 +0200
+
+qt4-x11 (4.5.0~git20090108-maemo1) unstable; urgency=low
+
+  * Merged from upstream
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Thu, 08 Jan 2009 19:19:29 +0200
+
+qt4-x11 (4.5.0~git20081217-maemo2) unstable; urgency=low
+
+  * Debug packages available again
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Wed, 07 Jan 2009 16:55:53 +0200
+
+qt4-x11 (4.5.0~git20081217-maemo1) unstable; urgency=low
+
+  * Quilt works again
+  * Merged from upstream
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Tue, 17 Dec 2008 10:21:47 +0200
+
+qt4-x11 (4.5.0~git20081216-maemo1) unstable; urgency=low
+
+  * Applied patch 100_glconfig_shader.diff until I have
+    figured out, why quilt won't run.
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Tue, 16 Dec 2008 12:51:47 +0200
+
+qt4-x11 (4.5.0~git20081215-maemo1) unstable; urgency=low
+
+  * added patch 100_glconfig_shader.diff submitted by <mohammad.anwari@nokia.com>:
+    * enable running Qt+GL in newer images of R***r
+    * solved the compilation of TextFragmentShader which failed because lacking of a precision of a vec4
+
+ -- Tobias Koch <ext-tobias.koch@nokia.com>  Mon, 15 Dec 2008 14:43:56 +0200
+
+qt4-x11 (4.5.0~git20081209-maemo1) unstable; urgency=low
+
+  * Merge with upstream
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Tue, 09 Dec 2008 10:31:45 +0200
+
+qt4-x11 (4.5.0~git20081202-maemo3) unstable; urgency=low
+
+  * Removed libglu-dev from libqt4-opengl-dev
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Fri, 05 Dec 2008 00:31:36 +0200
+
+qt4-x11 (4.5.0~git20081202-maemo2) unstable; urgency=low
+
+  * Split opengl packages 
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Tue, 02 Dec 2008 16:35:31 +0200
+
+qt4-x11 (4.5.0~git20081202-maemo1) unstable; urgency=low
+
+  * Pull from upstream 
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Tue, 02 Dec 2008 09:33:02 +0200
+
+qt4-x11 (4.5.0~git20081129-maemo1) unstable; urgency=low
+
+  * Copied to DUI's git 
+
+ -- Mohammad Anwari <Mohammad.Anwari@nokia.com>  Sat, 29 Nov 2008 00:00:04 +0700
+
+qt4-x11 (4.5.0-maemo1-11142008) unstable; urgency=low
+
+  * pull from upstream
+
+ -- Jani Mikkonen <ext-jani.3.mikkonen@nokia.com>  Fri, 14 Nov 2008 15:00:00 +0200
+
+
+qt4-x11 (4.5.0-maemo1) unstable; urgency=low
+
+  * new upstream version with gles2 support
+  * removed nonfunctional patches
+
+ -- Jani Mikkonen <ext-jani.3.mikkonen@nokia.com>  Tue, 11 Nov 2008 18:00:00 +0200
+
+qt4-x11 (4.4.0-2maemo5) unstable; urgency=low
+
+  * Enabled Exceptions
+  * Added QT3 support libraries
+  * Added xml-patterns
+
+ -- Jani Mikkonen <ext-jani.3.mikkonen@nokia.com>  Tue, 28 Oct 2008 12:00:00 +0200
+
+qt4-x11 (4.4.0-2maemo4) unstable; urgency=low
+
+  * testing tag, minor changes 
+
+ -- Jani Mikkonen <ext-jani.3.mikkonen@nokia.com>  Tue, 9 Sep 2008 16:00:00 +0300
+
+qt4-x11 (4.4.0-2maemo3) unstable; urgency=low
+
+  * libreadline dependency, no opengl
+
+ -- Arsi Antila <ext-arsi.antila@nokia.com>  Wed, 9 Jul 2008 15:36:34 +0300
+
+
+qt4-x11 (4.4.0-2maemo2) unstable; urgency=low
+
+  * No interbase support for i386
+
+ -- Jussi Hakala <ext-jussi.hakala@nokia.com>  Wed, 18 Jun 2008 11:59:27 +0300
+
+qt4-x11 (4.4.0-2maemo1) unstable; urgency=low
+
+  * Configuration for maemo environment
+  * Workarounds for find/delete inside sbox environment
+  * Adjusted the control file to behave with etch dpkg
+
+ -- Jussi Hakala <ext-jussi.hakala@nokia.com>  Thu, 12 Jun 2008 13:57:49 +0300
+
+qt4-x11 (4.4.0-2) unstable; urgency=low
+
+  +++ Changes by Fathi Boudra:
+
+  * Split html documentation in qt4-doc-html package.
+  * Merge Ubuntu patches:
+    * Add lpia architecture in trusted dpkg-arch over uname.
+    * Add sqlite3 workaround in config tests fixes.
+  * Add qt-copy patch:
+    * 0227-qdatastream-regression
+      Fix a bug that causes all Qt3/2 applications to crash or hang under KDE4.
+
+  +++ Changes by Modestas Vainius:
+
+  * Add 16_qsortfilterproxymodel_invalidate_noscroll.diff patch which stops
+    scrolling to the current item/index on QSortFilterProxyModel::invalidate()
+    This patch has been scheduled for Qt 4.4.1 (TT #204403).
+  * Add missing Replaces:
+    - libqt4-opengl-dev replaces libqt4-dev (<< 4.4.0-2) due to obvious
+      reasons.
+    - libqt4-dev replaces libqt4-opengl-dev (<< 4.4.0-2) (due to qglobal.h
+      misplace).
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Fri, 09 May 2008 23:35:16 +0300
+
+qt4-x11 (4.4.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+  +++ Changes by Modestas Vainius:
+
+  * Split OpenGL headers from libqt4-dev to libqt4-opengl-dev:
+    - Update install files.
+    - Make libqt4-opengl-dev depend on X OpenGL headers, hence remove the
+      latter from libqt4-dev Recommends.
+    - Add libqt4-opengl-dev to libqt4-dev Recommends.
+    - Remove libq4-opengl from libqt4-dev Depends.
+  * Explicitly add libqtcore4 to libqt4-dev (was implicit before).
+  * Rename libqt4-gui to libqtgui4 (new package).
+  * Make libqt4-gui a transitional package (Closes: #478694) depending on
+    libqtgui4, libqt4-opengl (Closes: #478264), libqt4-sql, libqt4-designer,
+    libqt4-assistant.
+  * Use ${binary:Version} instead of ${source:Version} in dependencies of
+    libqt4-core and libqt4-gui transitional packages.
+  * Require just libqtcore4 to install libqt4-dbg instead of libqt4-gui.
+  * Resync patches:
+    - 05_append_qt4_target.diff - fix offsets.
+    - 11_qdbus_to_dbus_fix.diff - remove, merged upstream.
+    - Revert to "runtime" configuration for xcursor, xinerama, xfixes and drop
+      16_always_init_qt_x11data_ptrx.diff patch. Fixed upstream.
+
+  +++ Changes by Fathi Boudra:
+
+  * Update libqt4-dev and libqt4-opengl-dev install to use complete files
+    list instead of wildcard.
+  * Update installed files: new qt help and assistant translations.
+  * Add qt-copy patch:
+    * 0226-qtreeview-column_resize_when_needed
+      This patch assures that if no header is shown, or if we only have one
+      column (so no other columns become shrinked), the contents will be
+      visible.
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Tue, 06 May 2008 17:37:49 +0200
+
+qt4-x11 (4.4.0~rc1-5) unstable; urgency=high
+
+  +++ Changes by Fathi Boudra:
+
+  * Add libqt4-sql-sqlite dependency to qt4-dev-tools. Qt Assistant and
+    qhelpgenerator use the sqlite plugin. (Closes: #476986)
+  * Remove qt-copy patches 0191 and 0192. The relevant code has changed
+    such that neither patch seems to have any effect (although listviews
+    still do not use active/inactive roles correctly).
+  * Add qt-copy patches:
+    * 0223-fix-qpixmap-hasalpha
+      Fix a performance regression in QPixmap::hasAlpha() in Qt 4.4.
+    * 0224-fast-qpixmap-fill
+      This patch avoids the expensive image->pixmap conversion by discarding
+      the old pixmap, creating a new one with the correct format, and doing
+      the fill server side.
+    * 0225-invalidate-tabbar-geometry-on-refresh
+      Fix problem where Konsole's tab bar is not shown immediately on startup.
+
+  +++ Changes by Modestas Vainius:
+
+  * Downgrade libqt4-dev *gl*-dev dependencies to Recommends.
+    They pull in half of X11 development headers and are rarely needed.
+    What's more, OpenGL apps will probably depend on them explicitly anyway.
+  * Add development packages of the SQL plugins to libqt4-dev Suggests.
+  * Make libqt4-sql recommend its plugins. Depends does not do us any good
+    because we don't know which plugin a user is going to use anyway. Moreover
+    installation of the libqt4-sql package does not necessarily imply usage of
+    the specific plugin(s). Finally, this resolves circular dependencies among
+    libqt4-sql and its plugins.
+  * Add myself to Uploaders.
+  * Add 16_always_init_qt_x11data_ptrx.diff, which ensures that X11->ptrX*
+    are properly initialized when Xcursor, Xinerama, Xfixes are not available
+    in default "runtime" configuration  (Closes: #476608).
+  * Pass -xfixes -xcursor -xinerama to configure because default "runtime"
+    configuration requires a user to have libxfixes-dev, libxcursor-dev and
+    libxinerama-dev installed to enable features requires respective X
+    libraries (QLibrary simply searches for "lib*.so"). This change in
+    configuration makes 16 patch irrelevant for Debian, but I'm leaving it
+    as it's still the fix for the crashes which might occur on default Qt 4.4
+    configutions.
+  * Optimize qmake: pass -optimized-qmake to configure.
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Sun, 27 Apr 2008 04:15:28 +0300
+
+qt4-x11 (4.4.0~rc1-4) unstable; urgency=low
+
+  +++ Changes by Sune Vuorela:
+
+  * Have libqt4-dev conflict/replace libqtwebkit-dev.
+  * Fix qmake to generate a bit better pkg-config files. Those should usually
+    not be generated - as it ends up being crackful. After a bit of patching
+    they are a bit less crackful though. (Closes: 457570)
+  * Postprocess prl files to remove the same crack as in the pc files.
+    (Closes: 470572)
+  * Do a bit nicer linking when needed instead of relying on crackfulness from
+    prl and pc files.
+  * Add a disabled patch to generate better prl files, but unfortunately too
+    much of qt4 build process relies on on it and is not yet fixed, but it is
+    saved for later use.
+  * Fix qmake makefile generation - should not add double slashes to
+    makefiles.
+  * Make libqt4-core transitional package arch:any. It doesn't bloat the
+    archive too much, but it helps on installability.
+
+  +++ Changes by Matthew Rosewarne:
+
+  * Add Recommends: qt4-doc to qt4-demos.
+  * Add watch file.
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Tue, 15 Apr 2008 23:48:31 +0200
+
+qt4-x11 (4.4.0~rc1-3) unstable; urgency=low
+
+  +++ Changes by Sune Vuorela:
+
+  * Clean up a bit in the dependencies of libqt4-dev. Removed dependencies:
+    libqt4-sql-mysql, libqt4-sql-odbc, libqt4-sql-psql, libqt4-sql-sqlite,
+    libqt4-sql-sqlite2, libqt4-sql-ibase, firebird2.0-dev, libaudio-dev,
+    libcupsys2-dev, libdbus-1-dev, libfreetype6-dev, libglib2.0-dev,
+    libice-dev, libiodbc2-dev, libjpeg62-dev, libmng-dev, libmysqlclient15-dev,
+    libpam0g-dev, libpng12-dev, libpq-dev, libreadline5-dev, libsm-dev,
+    libsqlite0-dev, libsqlite3-dev, libtiff4-dev, libx11-dev, libxcursor-dev,
+    libxext-dev, libxft-dev, libxi-dev, libxinerama-dev, libxmu-dev,
+    libxrandr-dev, libxrender-dev, libxslt1-dev, libxt-dev, x11proto-core-dev,
+    zlib1g-dev
+
+  +++ Changes by Fathi Boudra:
+
+  * Add libqt4-svg dependency to libqt4-gui. It helps for the transition as
+    libQtSvg.so.4 was previously in libqt4-gui package. (Closes: #475324)
+  * Replace libqcncodecs.so in libqt4-gui (<< 4.4.0~beta1-1). (Closes: #475340)
+  * Update 20_mips_atomic_ops patch. Qt4.4 introduced two new atomic operations
+    without the necessary assembler .set directives.
+    Thanks to Thiemo Seufer. (Closes: #475402)
+
+ -- Fathi Boudra <fabo@debian.org>  Sat, 12 Apr 2008 07:48:37 +0200
+
+qt4-x11 (4.4.0~rc1-2) unstable; urgency=low
+
+  * Add patch for Explicit template specialization cannot have a storage class
+    with gcc-4.3. Specializations of templates cannot explicitly specify
+    a storage class, and have the same storage as the primary template. 
+
+ -- Fathi Boudra <fabo@debian.org>  Wed, 09 Apr 2008 09:40:00 +0200
+
+qt4-x11 (4.4.0~rc1-1) unstable; urgency=low
+
+  * New upstream release. (Closes: #469783)
+
+  +++ Changes by Modestas Vainius:
+
+  * Refresh qt-copy patches:
+    * 0167-fix-group-reading.diff - adjust offsets.
+    * 0180-window-role.diff - adjust offsets.
+    * 0195-compositing-properties.diff - adjust offsets.
+    * 0203-qtexthtmlparser-link-color.diff - adjust offsets.
+    * 0209-prevent-qt-mixing.diff - adjust offsets.
+    * 0214-fix-qgraphicsproxywidget-tab-crash.diff - adjust offsets.
+    * 0216-allow-isystem-for-headers.diff - adjust offsets.
+  * Remove qt-copy patches:
+    * 0172-prefer-xrandr-over-xinerama.diff - merged upstream.
+    * 0178-transparency-window-types.diff - merged upstream.
+    * 0215-compile-with-Xcursor-linkage.diff - merged upstream.
+    * 0217-qurl-isempty-regression.diff - merged upstream.
+    * 0218-qassert-macro-fix.diff - merged upstream.
+    * fix-qt_bootstrapped-typo.diff  - merged upstream.
+  * Add qt-copy patches:
+    * 0220-no-x-recursion-in-xerrhandler.diff - adjust offsets.
+  * Refresh Debian patches:
+    * 02_launch_assistant-qt4.diff - adjust offsets.
+    * 05_append_qt4_target.diff - adopt to upstream changes. lrelease and
+      lupdate have been moved to tools/linguist/, adjust offsets.
+    * 50_kfreebsd_build_fix.diff - adjust offsets.
+    * 80_hurd_max_path.diff - adjust offsets.
+  * Remove Debian patches:
+    * 08_load_ssl.diff - different fix applied upstream.
+  * Update *.install files:
+    * qt4-dev-tools.install: a few renames of the language files,
+      s/assistant-qt3/assistant-qt4/, add usr/bin/xmlpatterns
+  * Add libqt4-core transitional package. (Closes: #473658)
+  * Add debian/not-installed to document files which are deliberately not
+    installed
+  * Avoid calling ./configure repeatedly during build/install: tie ./configure
+    to config.status
+
+  +++ Changes by Fathi Boudra:
+
+  * Re-introduce LD_LIBRARY_PATH workaround to use lrelease.
+  * Remove Conflicts against libqt4-core.
+  * Reorder libqt4-sql dependencies to have packages available on all
+    architectures listed first. (Closes: #473348)
+  * Add architectures availability list to libqt4-sql-ibase package.
+    (Closes: #473348)
+  * Add patch to fix unaligned access on hppa. Thanks to Bernhard R. Link.
+    (Closes: #458133)
+  * Add patch to replace remaining qdbus by dbus. Fix libqtscriptdbus build.
+  * Update configure options:
+    * Replace -qdbus by -dbus.
+    * Add -svg.
+
+  +++ Changes by Matthew Rosewarne:
+
+  * Rewrite clean rule to remove remaining build cruft.
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Mon, 07 Apr 2008 01:36:54 -0400
+
+qt4-x11 (4.4.0~beta1-1) experimental; urgency=low
+
+  * New upstream release.
+
+  * Add build dependencies: doxygen, firebird2.0-dev, libiodbc2-dev,
+    libpam0g-dev, libreadline5-dev, libxslt1-dev.
+  * Split libqt4-gui and libqt4-core packages.
+  * Create package for each Qt module.
+  * Enable all SQL drivers as plugins and add related packages:
+    libqt4-sql-ibase, libqt4-sql-mysql, libqt4-sql-odbc, libqt4-sql-psql,
+    libqt4-sql-sqlite, libqt4-sql-sqlite2.
+  * Add packages: libqt4-assistant, libqt4-dbus, libqt4-designer, libqt4-help,
+    libqt4-network, libqt4-opengl, libqt4-script, libqt4-svg, libqt4-test,
+    libqt4-webkit, libqt4-xml, libqt4-xmlpatterns and qt4-demos.
+  * Replace libqt4-core by libqtcore4 package.
+  * Rename libqt4-debug to libqt4-dbg like other debug packages in Debian.
+  * Update .lintian override files.
+  * Update .install files.
+  * Move translations files in their respective packages.
+  * Disable DEB_INSTALL_CHANGELOGS_ALL.
+  * Build ibase sql plugin on supported architectures only.
+  * Enable demos, examples, WebKit and XmlPatterns.
+  * Enable exceptions. It is a dependency to XmlPatterns module.
+  * Add qtdemo help collection file.
+  * Split WebKit and XmlPatterns debug packages from libqt4-dbg.
+  * Generate Doxygen tagfile in libqt4-dev. Thanks to Matthew Rosewarne.
+  * Examples and Demos are not shipped compressed anymore.
+  * Refresh qt-copy patches:
+    * 0167-fix-group-reading
+    * 0172-prefer-xrandr-over-xinerama
+    * 0178-transparency-window-types
+    * 0180-window-role
+    * 0191-listview-alternate-row-colors
+    * 0192-itemdelegate-palette-state
+    * 0195-compositing-properties
+    * 0203-qtexthtmlparser-link-color
+    * 0209-prevent-qt-mixing
+    * 0210-fix-crash-q3stylesheet-font-size
+  * Remove qt-copy patches:
+    * 0175-fix-s390-qatomic
+    * 0176-coverity-fixes
+    * 0179-transient-hack
+    * 0187-fix-font-fixed-pitch
+    * 0194-fix-moveonly-dnd-in-itemviews
+    * 0200-fix-qsslsocket-waitfor
+    * 0205-fast-qpixmap-fill
+    * 0211-q3action-crash
+  * Add qt-copy patches:
+    * 0214-fix-qgraphicsproxywidget-tab-crash
+    * 0215-compile-with-Xcursor-linkage
+    * 0216-allow-isystem-for-headers
+    * 0217-qurl-isempty-regression
+    * 0218-qassert-macro-fix
+    * fix-qt_bootstrapped-typo
+  * Refresh Debian patches:
+    * 01_qmake_for_debian
+    * 02_launch_assistant-qt4
+    * 03_launch_moc-qt4
+    * 04_launch_uic-qt4
+    * 05_append_qt4_target
+    * 08_load_ssl
+    * 10_config_tests_fixes
+    * 40_alpha_ice
+    * 41_disable_opengl_visibility
+    * 50_kfreebsd_build_fix
+    * 60_m68k_inotify_fix
+    * 80_hurd_max_path
+  * Remove Debian patches:
+    * 06_qtdemo_destdir. Useless as we ship qtdemo again.
+    * 30_arm_ftbfs_fixes. Merged upstream.
+    * 31_arm_eabi_fix. Upstream changed arm architecture handling.
+      This patch doesn't apply as it is.
+    * 91_qmake_lflags_no-undefined. Merged upstream.
+
+ -- Fathi Boudra <fabo@debian.org>  Thu, 13 Mar 2008 22:34:45 +0100
+
+qt4-x11 (4.3.4-2) unstable; urgency=low
+
+  * Add patches:
+    * 09_qmake_lflags_as-needed
+      workaround as LDFLAGS isn't honored by configure script.
+      we set --as-needed flag for Qt build only.
+    * 10_config_tests_fixes.diff
+      configuration test fixes for Interbase/Firebird and ODBC sql drivers.
+  * Update 01_qmake_for_debian patch:
+    * re-introduce link_prl and drop QT_SHARED workaround.
+  * Update rules:
+    * Remove exported LDFLAGS.
+    * Remove DEB_CONFIGURE_SCRIPT_ENV.
+    * Exclude debug files from dh_shlibdeps using DEB_DH_SHLIBDEPS_ARGS_ALL.
+    * Update configure options to use libtiff from system.
+    * Remove debug configure option to build with -02.
+    * Update common-install-arch target to fix wrong path in pkconfig and prl files.
+  * Add libtiff4-dev build dependency.
+  * Update libqt4-dev dependencies.
+
+ -- Fathi Boudra <fabo@debian.org>  Sat, 08 Mar 2008 10:09:02 +0100
+
+qt4-x11 (4.3.4-1) unstable; urgency=low
+
+  * New upstream release:
+    * This version adds the GNU General Public License (GPL) version 3
+      to all Qt Open Source editions. The GPL Exception version 1.1
+      applies to both versions of the GPL license.
+
+  * Add qt-copy patches:
+    * 0205-fast-qpixmap-fill
+      Fix a performance issue in QPixmap::fill()
+    * 0209-prevent-qt-mixing
+      This patch changes QObjectPrivateVersion, thus preventing mixing parts
+      of upstream Qt and qt-copy.
+    * 0210-fix-crash-q3stylesheet-font-size
+      This patch fixes crashs in q3stylesheet
+      (it was possible to use a qfont size < 1)
+    * 0211-q3action-crash
+      During porting qt3to4 port QGroupAction to Q3GroupAction but not QAction
+      to Q3Action (which is logical) But it crashs when it's not a q3action.
+  * Refresh and enable 0172-prefer-xrandr-over-xinerama patch.
+  * Remove 0204-fix-tulip-aliasing patch. Merged upstream.
+  * Remove 90_qmake_cxxflags_fpermissive patch.
+  * Add ${shlibs:Depends} to libqt4-dev. See missing shared library
+    dependencies thread on debian-devel mailing list.
+  * Add catalan translation. Thanks to Javier Serrano Polo. (Closes: #459822)
+  * Update copyright file. Add GPL version 3.
+  * Remove -fpermissive.
+
+ -- Fathi Boudra <fabo@debian.org>  Tue, 26 Feb 2008 18:38:27 +0100
+
+qt4-x11 (4.3.3-2) unstable; urgency=low
+
+  * Update 0203-qtexthtmlparser-link-color qt-copy patch:
+    Add qt-bugs@ issue and Trolltech task ID.
+  * Add 0204-fix-tulip-aliasing qt-copy patch:
+    Fix KDE4 RC2 crashing on startup due to Qt 4.3.3 update.
+  * Downgrade libqt4-dev dependency to qt4-dev-tools from Recommends to
+    Suggests.
+  * Add semicolon at the end of the MimeType key. Thanks to Pino Toscano.
+  * Remove 91_qmake_ldflags_as-needed patch:
+    It breaks other packages. (Closes: #457038, #457284)
+  * Add 91_qmake_lflags_no-undefined patch:
+    By default, qmake adds --no-undefined linker flag.
+
+ -- Fathi Boudra <fabo@debian.org>  Sun, 30 Dec 2007 23:29:09 +0100
+
+qt4-x11 (4.3.3-1) unstable; urgency=low
+
+  * New upstream release.
+
+  [Adeodato Simó]
+
+  * Do not depend or build-depend on the transitional package xlibmesa-gl-dev,
+    but on libgl1-mesa-dev instead. Ditto for libglu1-xorg-dev/libglu1-mesa-dev.
+
+  [Fathi Boudra]
+
+  * Bump Standards-Version to 3.7.3.
+  * Fix description contains homepage lintian warning.
+  * Merge Kubuntu load ssl patch. Thanks to Jonathan Riddell.
+  * Add CDDL exception to debian/copyright.
+  * Add 21_assume_no_fpu_for_embedded_devices patch. Thanks to Thiemo Seufer
+    and Bradley Hughes. Not Enabled yet: It breaks ABI on mips.
+    We will keep it for later (> 4.3.3-1).
+  * Add 91_qmake_ldflags_as-needed patch. Build with --as-needed linker flag.
+  * Remove qt-copy patches:
+    * 0163-fix-gcc43-support.
+    * 0185-fix-format-strings.
+    * 0188-fix-moc-parser-same-name-header.
+    * 0189-fix-q3toolbar-qcombobox-signal-slot.
+    * 0193-qtreeview-division-by-zero.diff.
+  * Add qt-copy patches:
+    * 0200-fix-qsslsocket-waitfor.
+      Fixes some QSslSocket::waitFor$X methods.
+    * 0203-qtexthtmlparser-link-color.
+      Links are assigned a foreground color according to the system current
+      color scheme.
+
+ -- Fathi Boudra <fabo@debian.org>  Thu, 06 Dec 2007 22:06:46 +0100
+
+qt4-x11 (4.3.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+  [Fathi Boudra]
+  * Update desktop files categories.
+  * Add desktop files icons. (Closes: #433581)
+  * Update patches to Qt4.3.2.
+  * Add 90_qmake_cxxflags_fpermissive patch.
+  * Remove 0186-fix-component-alpha-text patch. Merged upstream.
+  * Add qt-copy patches:
+    * 0188-fix-moc-parser-same-name-header
+    * 0189-fix-q3toolbar-qcombobox-signal-slot
+    * 0191-listview-alternate-row-colors
+    * 0192-itemdelegate-palette-state
+    * 0193-qtreeview-division-by-zero
+    * 0194-fix-moveonly-dnd-in-itemviews
+    * 0195-compositing-properties
+  * Update qt4-dev-tools long description.
+  * Update copyright:
+    * Update Trolltech GPL exception to v1.1.
+    * Add Trolltech GPL exception addenum.
+  * Update rules:
+    * Build with -fpermissive.
+    * Introduce QTVERSION.
+  * Fix qt4-config menu section. (Closes: 444896)
+
+  [Sune Vuorela]
+  * Have strict interdependencies between packages with a shlibs.local file.
+    (Closes: #438746)
+  * Don't trust uname in generating the qt build key. This has bitten us in
+    qt3, but will soon bite us in qt4 as qt4 becomes more popular.
+
+  [Ana Beatriz Guerrero Lopez]
+  * Add desktop files icons uuencoded and update rules to install them uudecoded.
+  * Add sharutils build dependency.
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Sat, 06 Oct 2007 07:00:54 +0200
+
+qt4-x11 (4.3.1-2) unstable; urgency=low
+
+  * There is a large difference between 8 spaces and a tab.
+
+ -- Sune Vuorela <debian@pusling.com>  Fri, 10 Aug 2007 22:20:45 +0200
+
+qt4-x11 (4.3.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+  [Fathi Boudra]
+  * Switch to quilt patch system.
+  * Update copyright. Add Trolltech GPL Exception.
+  * Update section in Debian menu files.
+  * Update patches for Qt4.3.1.
+  * Remove 51_kfreebsd_mkspecs patch. Moved in rules.
+  * Add 0187-fix-font-fixed-pitch patch:
+    This patch works around broken QFontInfo::fixedPitch by always using a
+    glyph metrics comparison test to guess the information. This has the
+    property of both ignoring (bad) and not relying on (good) any information
+    that might be provided by the OS's font facility. For Mac OS X only.
+  * Remove patches merged upstream:
+    * 0177-qurl-clear-fix
+    * 0183-qprocess-corruption
+    * 42_alpha_fetch_and_add
+  * Disable:
+    * 0172-prefer-xrandr-over-xinerama patch. (Closes: #433931)
+    * 0181-qdnd-x11-fix patch.
+
+  [Sune Vuorela]
+  * Add a quick and dirty test to make build on hppa fail if a current
+    getdents kernel bug is detected.
+
+ -- Fathi Boudra <fboudra@free.fr>  Wed, 08 Aug 2007 15:08:11 +0200
+
+qt4-x11 (4.3.0-5) unstable; urgency=low
+
+  [Fathi Boudra]
+  * Update 01_qmake_for_debian patch. Add DEFINES += QT_SHARED in qmake.conf
+    along with the removal of link_prl. (Closes: #434019)
+  * Apply qt-copy patches:
+    * 00_0185-fix-format-strings: This patch fixes various code issues with
+      handling format strings. None of them seem to be exceptionally bad,
+      but its better safe than sorry. It is related to CVE-2007-3388.
+      TT claims the problem is not present in any version of Qt 4. Dirk Muller
+      disagrees and believes that some of them are possible to exploit.
+    * 00_0186-fix-component-alpha-text: This patch fixes component alpha
+      (LCD hinted) text when it's drawn on a non-opaque background. Qt doesn't
+      initialize the alpha channel in the glyph masks, which causes problems
+      in Konsole when transparency is enabled, and in other situations where
+      the background isn't fully opaque.
+
+ -- Fathi Boudra <fboudra@free.fr>  Mon, 30 Jul 2007 21:36:25 +0200
+
+qt4-x11 (4.3.0-4) unstable; urgency=low
+
+  [Fathi Boudra]
+  * Add 42_alpha_fetch_and_add patch to fix broken threading on alpha, hangs
+    uselessly on startup. fetch-and-add is supposed to return the original
+    value before the addition. Thanks to Steve Langasek and Bradley Hughes.
+    (Closes: #433031)
+  * Update control: Replace ${source:Version} by ${binary:Version}.
+    Make the package binNMU safe. Thanks to Lior Kaplan. (Closes: #433548)
+
+ -- Fathi Boudra <fboudra@free.fr>  Mon, 16 Jul 2007 21:32:01 +0200
+
+qt4-x11 (4.3.0-3) unstable; urgency=low
+
+  [Fathi Boudra]
+  * Update control: Replace deprecated ${Source-Version} by ${source:Version}.
+  * Update rules:
+    * Add bindir and libdir configure options.
+    * Replace common-install-arch target. Replaced by build system patches and
+      a fix for pkgconfig files. (Closes: #401807)
+  * Add patches:
+    * 04_launch_uic-qt4: call uic-qt4 binary.
+    * 05_append_qt4_target: append -qt4 when needed. It fixes moc-location and
+      uic_location are properly in pkgconfig files. (See bug #401807)
+    * 06_qtdemo_destdir: remove QT_BUILD_TREE in qtdemo DESTDIR target.
+      (Closes: #408639)
+  * Revert Qt handling argb visuals on X11 patch. There are dependencies
+    not fixed in Qt. They cause a few regressions when this patch is applied.
+    (Closes: #430907, #431436, #431943)
+  * Update Qt support for new window types used for compositing patch.
+    Fix crashes when 'w' is null. (Closes: #431322)
+  * Apply qt-copy patches:
+    * 00_0172-prefer-xrandr-over-xinerama: only trust libxinerama if it is not
+      the emulated information coming from xrandr 1.2.
+    * 00_0177-qurl-clear-fix: fix QUrl::clear(). Applied upstream.
+    * 00_0183-qprocess-corruption: fix plain data loss bug. Applied Upstream.
+
+ -- Fathi Boudra <fboudra@free.fr>  Fri, 29 Jun 2007 08:15:23 +0200
+
+qt4-x11 (4.3.0-2) unstable; urgency=low
+
+  [Brian Nelson]
+  * Changed dist back to unstable.
+  * Tightened qt4-dev-tools's dependency on libqt4-core to
+    (= ${Source-Version}), since it uses internal (non-public) classes in
+    Qt whose ABI can change. (Closes: #429817)
+  * Added a build-dependency on libxi-dev to enable tablet support.
+  * Constrict the hack to clean all binary files to the bin, config.tests,
+    and qmake directories to drastically improve its speed
+
+  [Fathi Boudra]
+  * Qt4 demos builds properly in Qt4.3. (Closes: #408639)
+  * Apply qt-copy patches:
+    * 00_0178-transparency-window-types: adds Qt support for new window types
+      used for compositing.
+    * 00_0179-transient-hack: workaround that makes setting of WM_TRANSIENT_FOR
+      work with some window types.
+    * 00_0180-window-role: several problems with Qt's support for the
+      WM_WINDOW_ROLE property.
+    * 00_0181-qdnd-x11-fix: makes the find_child algorithm in qdnd look at
+      _all_ widgets that contain the QPoint.
+    * 00_0182-argb-visuals-default: Qt handling argb visuals on X11.
+
+ -- Brian Nelson <pyro@debian.org>  Wed, 27 Jun 2007 00:02:07 -0400
+
+qt4-x11 (4.3.0-1) experimental; urgency=low
+
+  * New upstream release.
+    * Fixes a QListView issue. (Closes: #419654)
+
+  * Update uploaders. Add Ana, Sune and Fathi.
+
+  [Sune Vuorela]
+  * Remove 04_utf8_bug_fix: Merged upstream.
+  * Update libqt4-dev.install. Upstream installs pkgconfig files the right place.
+  * Update libqt4-core.install. Add libQtScript.
+  * Update rules:
+    * Add utils.mk to use list-missing.
+    * Cleaning seems to fail a bit. Trying to hack around that in clean::
+      target.
+
+  [Fathi Boudra]
+  * Redo 30_arm_ftbfs_fixes to fix another FTBFS. Add arm target to configure
+    script. Thanks to Sune Vuorela and Aurelien Jarno. (Closes: #426129)
+  * Remove 71_hppa_inotify_fix: Merged upstream.
+  * Update patches:
+    * 02_launch_assistant-qt4
+    * 03_launch_moc-qt4
+    * 50_kfreebsd_build_fix
+    * 80_hurd_max_path
+  * Apply qt-copy patches:
+    * 00_0163-fix-gcc43-support: Various fixes to get Qt 4.3 without hundreds
+      of warnings compiling.
+    * 00_0167-fix-group-reading: In big user environments, getgrgid_r() needs
+      more memory than sysconf() returns.
+    * 00_0175-fix-s390-qatomic: Fix s390(x) build.
+    * 00_0176-coverity-fixes: Fix various obvious memory leaks.
+  * Rename disable opengl visibility patch. It is not alpha architecture only.
+  * Add desktop files to support Desktop Environments. (Closes: #378915)
+  * Update qt4-dev-tools.install. Add qdbusviewer and pixeltool.
+    Thanks to Benjamin Meyer for the reminder.
+  * Update libqt4-dev.install. Remove qtdemo binary as we provide a tarball of the
+    demos directory. qtdemo is useless, it can't launch anything without demos
+    builded. It can only show screenshots and short description of demos,
+    users have it in Qt assistant.
+  * Update rules:
+    * Remove -debug-and-release option. Deprecated.
+    * Add configure options:
+      * -no-exceptions
+      * -debug
+      * -qdbus
+      * -pch
+      * -nomake examples
+      * -nomake demos
+
+ -- Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>  Sat, 09 Jun 2007 00:25:41 +0200
+
+qt4-x11 (4.2.3-1) unstable; urgency=low
+
+  * New upstream release
+    - Fixes build failures when QT_NO_DEBUG_OUTPUT defined
+      (Closes: #418832)
+    - Fixes broken signal/slot connection in QSvgRenderer
+      (Closes: #411292)
+
+ -- Brian Nelson <pyro@debian.org>  Thu, 12 Apr 2007 12:38:06 -0400
+
+qt4-x11 (4.2.2-2) unstable; urgency=high
+
+  * debian/patches/04_utf8_bug_fix.dpatch: new patch to fix the "UTF-8
+    overlong sequence decoding vulnerability" [CVE-2007-0242]
+
+ -- Brian Nelson <pyro@debian.org>  Fri, 30 Mar 2007 11:04:20 -0400
+
+qt4-x11 (4.2.2-1) unstable; urgency=low
+
+  * New upstream release (Closes: #410862)
+
+  * debian/rules: set the sysconfdir to /etc/xdg instead of /etc/qt4 to
+    match the QSettings documentation (Closes: #407297)
+
+  * Added Riku Voipio's patch for ARM EABI (Closes: #408813)
+
+  * debian/patches/22_launch_moc-qt4.dpatch: new patch to ensure the Qt4
+    version of moc is launched by qdbuscpp2xml (Closes: #399049)
+
+  * Added a doc-base file for qt4-doc (Closes: #403290)
+
+  * debian/qt4-designer.links: added a link /usr/share/qt4/bin/designer ->
+    /usr/bin/designer-qt4 (Closes: #410885)
+
+  * Re-arranged patches to group them by arch so that they're easier to
+    deal with
+
+  * Applied new patches for kFreeBSD and Hurd support
+    (Closes: #380097, #402007)
+
+  * debian/libqt4-gui.install: added the codecs plugins, somehow these got
+    accidentally dropped (Closes: #409228)
+
+ -- Brian Nelson <pyro@debian.org>  Sun,  4 Mar 2007 13:50:39 -0500
+
+qt4-x11 (4.2.1-2) unstable; urgency=low
+
+  * debian/patches/20_hppa_inotify_fix.dpatch: new patch that should fix
+    the FTBFS on hppa due to missing defines (Closes: #394953)
+
+  * Added patches for hurd support (Closes: #380097)
+
+  * debian/patches/10_qmake_for_debian.dpatch: restored the modification
+    to remove link_prl from the CONFIG line, which fixes problems with
+    unnecessary linkage (Closes: #394836)
+
+ -- Brian Nelson <pyro@debian.org>  Tue, 31 Oct 2006 02:42:02 -0500
+
+qt4-x11 (4.2.1-1) unstable; urgency=high
+
+  * New upstream release    
+    - Fixes integer overflow in pixmap handling [CVE-2006-4811]
+      (Closes: #394192)
+
+  * Install the libqtaccessiblecompatwidgets.so plugin into
+    libqt4-qt3support, so that libqt4-gui does not circularly depend on
+    libqt4-qt3support (Closes: #394351, #394629)
+
+ -- Brian Nelson <pyro@debian.org>  Mon, 23 Oct 2006 11:59:52 -0400
+
+qt4-x11 (4.2.0-2) unstable; urgency=low
+
+  * debian/control: added a dependency on libglib2.0-dev for libqt4-dev
+    (Closes: #392797, #392173)
+
+  * Added a bunch of plugins and their debugging symbols to be installed
+
+  * debian/patches/19_m68k_inotify_fix.dpatch: new patch to fix FTBFS on
+    m68k (Closes: #391902)
+
+  * Imported Ubuntu fixes, thanks to Jonathan Riddell for the tip
+    - Fix typo in debian/rules -qt-sql-slite to -qt-sql-sqlite
+      (Closes: #392808)
+    - Install usr/bin/qdbus usr/bin/qdbusxml2cpp and usr/bin/qdbuscpp2xml
+      (Closes: #391726)
+
+  * debian/control: added a libqt4-dev dependency on libsqlite0-dev
+    (Closes: #392558)
+
+ -- Brian Nelson <pyro@debian.org>  Tue, 17 Oct 2006 23:44:31 -0400
+
+qt4-x11 (4.2.0-1) unstable; urgency=low
+
+  * New upstream release
+    - No longer includes "CONFIG = ... debug" in the mkspecs/qconfig.pri
+      (Closes: #357136)
+    - Fixes QFontDialog assert() failures (Closes: #380418)
+    
+  * debian/control: made libqt4-gui conflict/replace libqt4-designer, to
+    ensure that old package is removed (Closes: #380253)
+
+  * Enable Qt's new support for using the system's SQLite 3 library
+    (Closes: #382238)
+
+  * debian/rules: removed the PostgreSQL and MySQL include hacks from the
+    configure arguments, since the configure script now autodetects them
+    itself
+
+  * debian/patches/10_qmake_for_debian.dpatch: updated for new upstream
+
+  * debian/patches/13_arm_ftbfs_fixes.dpatch: updated for new upstream
+
+  * debian/patches/19_s390_atomic.dpatch: removed, since it appears to be
+    obsolete
+
+  * debian/libqt4-debug.install: changed the wildcards to match the new
+    debug lib names.  What was once *_debug.so.* is now *.debug.  Ick.
+
+  * debian/control: removed libqt4-debug-dev since now that the _debug
+    libs have been removed and debugging symbols are shipped in their
+    place, this package is no longer needed
+
+  * Tar up the demos directory and include it in qt4-doc.  Also added the
+    qtdemo binary to libqt4-dev. (Closes: #390925)
+
+  * debian/rules: add -DQT_QLOCALE_USES_FCVT to the configure arguments
+    when building on arm, like Qt3, to fix a uic problem (Closes: #386460)
+
+  * debian/libqt4-gui.install: added usr/lib/libQtAssistantClient.so.*,
+    since it's now shipped as a shared library; previously it was a static
+    library
+
+  * Added build-deps on libdbus-1-dev and libglib2.0-dev, and added
+    libQtDBus to the libqt4-core package
+
+ -- Brian Nelson <pyro@debian.org>  Fri,  6 Oct 2006 23:16:46 -0400
+
+qt4-x11 (4.1.4-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Reintroduce the libpq-dev dependency, which seems to have been removed by
+    mistake in 4.1.0-2. (Closes: #327618)
+
+ -- Steinar H. Gunderson <sesse@debian.org>  Tue, 29 Aug 2006 01:10:59 +0200
+
+qt4-x11 (4.1.4-1) unstable; urgency=low
+
+  * New upstream release (Closes: #378443)
+
+  * Moved usr/lib/libQtDesigner.so.* and
+    usr/lib/libQtDesignerComponents.so.* from qt4-designer to libqt4-gui
+    so there the libqt4-dev package won't contain dangling symlinks
+    (Closes: #374612)
+
+ -- Brian Nelson <pyro@debian.org>  Sun, 16 Jul 2006 15:39:29 -0700
+
+qt4-x11 (4.1.3-3) unstable; urgency=low
+
+  * debian/patches/19_s390_atomic: patch from Bastian Blank to fix
+    including of s390 specific atomic header. (Closes: #370241)
+
+  * debian/patches/18_disable_opengl_visibility.dpatch: regenerated so
+    that it applies correctly for me
+
+ -- Brian Nelson <pyro@debian.org>  Sun, 25 Jun 2006 11:42:57 -0700
+
+qt4-x11 (4.1.3-2) unstable; urgency=high
+
+  * patches/18_disable_opengl_visibility: disable -fvisibility-inlines-hidden
+    for src/opengl/opengl.pro as it makes gcc ICE on alpha.
+    (Closes: #368883)
+
+  * urgency set to high so that qt4-x11 stops blocking half of unstable out of
+    testing.
+
+ -- Pierre Habouzit <madcoder@debian.org>  Mon,  5 Jun 2006 10:28:29 +0200
+
+qt4-x11 (4.1.3-1) unstable; urgency=high
+
+  * New upstream release
+
+  * debian/patches/16_hppa_ldcw_fix.dpatch: new patch from Ubuntu to
+    properly support hppa
+
+  * debian/patches/17_alpha_ice.dpatch: new patch from Steve Langasek to
+    fix FTBFS on alpha (Closes: #368883)
+    (urgency set to high for that fix).
+
+  * Dropped the .la files since they pull in too many unneeded
+    dependencies (Closes: #360802)
+
+  * debian/libqt4-debug.install: removed
+    usr/lib/qt4/plugins/codecs/*_debug.so since those aren't included
+    upstream anymore
+
+  * Increased standards version to 3.7.2
+
+ -- Brian Nelson <pyro@debian.org>  Sat,  3 Jun 2006 17:56:32 -0700
+
+qt4-x11 (4.1.2-2) unstable; urgency=low
+
+  * debian/libqt4-debug-dev.install, debian/libqt4-dev.install: added
+    wildcards to install .a static libraries so that the libQtUiTools and
+    libQtAssistantClient libraries are included (Closes: #358224, #355902)
+
+ -- Brian Nelson <pyro@debian.org>  Sun, 14 May 2006 10:03:40 -0700
+
+qt4-x11 (4.1.2-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: removed dependencies on xlibs-static-dev and
+    xlibs-static-pic to transition to building against modular X
+    (Closes: #362262)
+
+  * debian/control: changed x-dev dependencies to x11proto-core-dev, for
+    modular X transition (Closes: #362053)
+
+ -- Brian Nelson <pyro@debian.org>  Thu, 13 Apr 2006 10:35:28 -0700
+
+qt4-x11 (4.1.1-1) unstable; urgency=low
+
+  * New upstream release
+    - Fixes the broken debug-and-release build and a load of resulting
+      bugs (Closes: #337764, #337847, #341807, #338380, #354993, #347251)
+    - debian/patches/15_alpha_ftbfs_fix.dpatch: removed, integrated upstream
+
+  * debian/control: updated libqt4-debug-dev priority to match that of the
+    override file
+
+  * debian/libqt4-dev.links: added a symlink /usr/share/qt4/bin/rcc to
+    /usr/bin/rcc (Closes: #349438)
+
+  * debian/libqt4-gui.install: added libqmng.so and libqgif.so plugins
+    (Closes: #354266)
+
+ -- Brian Nelson <pyro@debian.org>  Mon,  6 Mar 2006 10:20:47 -0800
+
+qt4-x11 (4.1.0-3) unstable; urgency=low
+
+  * Moved *_debug.prl and *_debug.la support files to the libqt4-debug-dev
+    package
+
+  * Updated to debhelper v5 compatibility
+
+  * debian/qt4-dev-tools.install: removed the /usr/share/qt4/templates
+    entry, which no longer contains anything
+
+  * Added gif support (Closes: #348092)
+
+  * debian/patches/12_mips_atomic_ops.dpatch: applied fixes from Isaac
+    Clerencia <isaac@debian.org>, as the last patch was not good enough to
+    fix the FTBFS bug (Closes: #335831)
+
+ -- Brian Nelson <pyro@debian.org>  Tue, 17 Jan 2006 09:49:11 -0800
+
+qt4-x11 (4.1.0-2) unstable; urgency=low
+
+  * debian/patches/12_mips_atomic_ops.dpatch: Updated patch to account for
+    2 new functions, q_atomic_test_and_set_acquire_int and
+    q_atomic_test_and_set_release_int, that were added in this release.
+    This should again fix the build failures on mips. (Closes: #335831)
+
+  * debian/patches/13_arm_ftbfs_fixes.dpatch: renamed, added a fix for the
+    new build failure due to a poorly defined qreal (Closes: #347360)
+
+  * debian/control: build against libmysqlclient15, and updated all
+    dependencies to libmysqlclient15-dev (Closes: #346586)
+
+  * debian/control: added explicit dependencies for libqt4-dev on the
+    Source-Version packages libqt4-core, libqt4-gui, libqt4-sql, and
+    libqt4-qt3support.  These dependencies were accidentally dropped in
+    the last version.  Also removed some unneeded dependencies.
+
+  * Split the *_debug.so symlinks out of libqt4-dev and into a separate
+    libqt4-debug-dev package.  Made the libqt4-debug-dev package depend on
+    the Source-Version of libqt4-debug.  This way, the symlinks won't be
+    dangling if libqt4-debug isn't installed and prevents failed linking
+    due to version mismatches.  (Closes: #346603, #346605)
+
+  * Re-enabled sqlite3 support.  It's still statically linked, however,
+    but that'll have to do because I really don't want to futz with the
+    build system. (Closes: #330976)
+
+  * Enabled sqlite2 support
+
+  * debian/patches/15_alpha_ftbfs_fix.dpatch: new patch to rename
+    q_atomic_test_and_set_release_ptr to q_atomic_test_and_set_ptr, as
+    suggested by Isaac Clerencia <isaac@debian.org>, to fix a FTBFS on
+    alpha. (Closes: #347353)
+
+  * debian/patches/10_qmake_for_debian: renamed from
+    10_qmake_use_qt4_tools, and updated to remove the "link_prl" from the
+    default qmake CONFIG line.  This disables the recursive linkage
+    against all indirectly-used libraries. (Closes: #343190)
+
+ -- Brian Nelson <pyro@debian.org>  Tue, 10 Jan 2006 19:29:52 -0800
+
+qt4-x11 (4.1.0-1) unstable; urgency=low
+
+  * New upstream release
+    - Fixes missing QBitArray operators (Closes: #341658)
+    - Fixes qmake problem with including bad build path (Closes: #327359)
+  
+  * Added the new QTestLib unit testing framework to the libqt4-core
+    package
+
+  * Added the new QtSvg module to the libqt4-gui package
+
+  * debian/patches/13_arm_gcc4.dpatch: new patch from Jeremy Laine to fix
+    FTBFS on arm (Closes: #343176)
+
+  * debian/patches/14_kfreebsd_build_fix.dpatch: new patch from Petr
+    Salinger to fix FTBFS on GNU/kFreeBSD (Closes: #343191)
+
+  * Split the qtconfig tool out of libqt4-gui and into a separate
+    qt4-qtconfig package, due to its linkage against libqt4-qt3support and
+    hence ridiculous dependency chain.
+
+  * debian/rules: improved/cleaned up the clean target
+
+ -- Brian Nelson <pyro@debian.org>  Wed,  4 Jan 2006 12:56:23 -0800
+
+qt4-x11 (4.0.1-6) unstable; urgency=low
+
+  * Added a target to automatically install lintian overrides, stolen from
+    debian-qt-kde.mk
+
+  * Added a bunch of lintian overrides for stuff that should be ignored
+
+ -- Brian Nelson <pyro@debian.org>  Sat, 19 Nov 2005 01:17:03 -0800
+
+qt4-x11 (4.0.1-5) unstable; urgency=low
+
+  * debian/control: made libqt4-gui replace libqt4-core (<< 4.0.1-3), for
+    the plugins move (Closes: #336492)
+
+  * debian/control: removed the mention of a qt4-examples package that
+    doesn't actually exist from the qt4-doc package description
+
+  * debian/rules: remove all *.so files under
+    examples/tools/plugandpaint/plugins/ in the clean target
+    (Closes: #339674)
+
+  * Removed the menu entry for designer-qt4 from qt4-dev-tools.menu, and
+    added it to a new qt4-designer.menu
+
+  * Added a tarball of the examples to qt4-doc (Closes: #336832)
+
+ -- Brian Nelson <pyro@debian.org>  Fri, 18 Nov 2005 10:27:03 -0800
+
+qt4-x11 (4.0.1-4) unstable; urgency=low
+
+  * debian/control: changed qt4-designer's section to "devel"
+
+  * Added a patch from Thiemo Seufer to fix the FTBFS on mips/mipsel
+    (Closes: #335831)
+
+ -- Brian Nelson <pyro@debian.org>  Wed, 26 Oct 2005 00:13:40 -0700
+
+qt4-x11 (4.0.1-3) unstable; urgency=low
+
+  * debian/libqt4-core.install: only install the non-debug codecs, since
+    the debug ones pull in a gratuitous dependency on libqt4-debug
+    (Closes: #328913)
+
+  * debian/libqt4-debug.install: install the debug codecs here instead
+
+  * debian/control: replaced obsolete xlibs-dev dependency with the
+    required split packages (Closes: #329302)
+
+  * Completely disabled SQLite support since it's too fubar in this
+    version to be usable.  The build fails with SQLite2 support, and
+    SQLite3 is only supported by linking staticly with a version
+    distributed in the Qt source.  Meh.
+
+  * Renamed libqt4-designer to qt4-designer, merged in the designer binary
+    from qt4-dev-tools, and added a dependency on libqt4-dev
+    (Closes: #330094)
+
+  * Moved the plugins installed in libqt4-core to libqt4-gui, since they
+    link against the GUI library.  Otherwise a circular libqt4-core <->
+    libqt4-gui dependency results.
+
+ -- Brian Nelson <pyro@debian.org>  Fri, 21 Oct 2005 00:28:53 -0700
+
+qt4-x11 (4.0.1-2) unstable; urgency=low
+
+  * debian/patches/10_qmake_use_qt4_tools.dpatch: new patch that modifies
+    qmake.conf so that qmake generates Makefiles that use the -qt4 tools.
+    This way, it can cope with systems that have alternatives set to use
+    the -qt3 versions.
+  
+  * Increased the conflicting Qt3 package versions to <= 3.3.4-7, since
+    the Qt3 packages still don't use the alternatives system as needed to
+    coexist with Qt4.
+  
+  * debian/libqt4-core.install: added /usr/lib/qt4/plugins/codecs
+
+  * debian/patches/11_launch_assistant-qt4: new patch that modifies the
+    QAssistantClient class to launch Qt Assistant as "assistant-qt4" to
+    cope with the alternatives system (Closes: #327294)
+
+  * debian/control: Upgraded libqt4-dev's dependencies on the modules
+    libqt4-sql and libqt4-qt3support from suggests to depends, and added
+    libpq-dev and libmysqlclient14-dev | libmysqlclient-dev as
+    dependencies.  These dependencies are apparently required to make
+    building pkg-config-using packages happy. (Closes: #327618)
+
+  * debian/control: corrected libqt4-sql to suggest libmysqlclient14-dev,
+    not libmysqlclient12-dev which is deprecated
+
+  * debian/copyright: updated FSF snailmail address
+
+  * debian/libqt4-debug.install: removed the libqt3supportwidgets_debug.so
+    designer plugin, since for some reason having this installed breaks
+    designer (Closes: #325782)
+
+ -- Brian Nelson <pyro@debian.org>  Mon, 12 Sep 2005 12:32:53 -0700
+
+qt4-x11 (4.0.1-1) unstable; urgency=low
+
+  * New upstream release
+
+  * Install changes-4.0.1 as upstream changelog
+  
+  * debian/manpages/assistant-qt4.1: new manpage written from scratch
+    based on the output of "assistant -help"
+
+  * debian/manpages/designer-qt4.1, debian/manpages/linguist-qt4.1:
+    manpages stolen from the Qt3 packages and trivially adapted for Qt4
+    (Closes: #322403)
+
+  * debian/manpages/moc-qt4.1: escape some '-' characters
+
+  * debian/qt4-dev-tools.manpages: install the new assistant-qt4.1,
+    designer-qt4.1, and linguist-qt4.1 manpages
+
+  * debian/control: made qt4-dev-tools recommend qt4-doc, since assisant
+    needs it to be useful (Closes: #323251)
+
+  * Removed the FAQ from qt4-doc.docs, since it's no longer included in
+    4.0.1, and was useless anyway
+
+  * Build-depend on libmysqlclient14-dev since libmysqlclient12-dev is
+    scheduled to be removed
+
+  * debian/libqt4-dev.install: work around TT's broken "install" target in
+    this release so that the pkgconfig files are installed in
+    /usr/lib/pkgconfig instead of directly in /usr/lib.  Grrrr.
+
+ -- Brian Nelson <pyro@debian.org>  Thu, 25 Aug 2005 19:28:35 -0700
+
+qt4-x11 (4.0.0-3) unstable; urgency=low
+
+  * debian/control: changed the xlibs-pic dependency to xlibs-static-pic
+    for the X.org transition (Closes: #319586)
+
+  * Added manpages for lrelease, lupdate, moc, qtconfig, and uic, stolen
+    from the Qt3 upstream tarball, and wrote a manpage for qmake from
+    scratch.  Since now manpages are included for all executables using
+    the alternatives, the symlinks to them no longer dangle.
+    (Closes: #319456)
+
+  * debian/libqt4-core.install: added
+    usr/lib/qt4/plugins/imageformats/libqjpeg.so to include the jpeg
+    plugin (Closes: #321582)
+
+  * debian/libqt4-debug.install: added the libqjpeg_debug.so plugin
+  
+  * debian/rules: don't hardcode the /usr/include/postgresql/8.0 path,
+    instead of the output of `pg_config --includedir`, stolen from Qt3
+    packages
+
+  * debian/libqt4-gui.install: added the OpenGL module library so that it
+    actually gets included in a package (Closes: #321874)
+
+  * debian/control: updated the package descriptions to note that the
+    Network and XML modules are included in the libqt4-core package, and
+    the OpenGL module is included in the libqt4-gui package
+
+ -- Brian Nelson <pyro@debian.org>  Mon,  8 Aug 2005 08:58:10 -0700
+
+qt4-x11 (4.0.0-2) unstable; urgency=low
+
+  * libqt4-dev: added /usr/bin/uic3 (Closes: #318451)
+
+  * Transition to the new X.org packages:
+    + (Build-)depend on libglu1-xorg-dev instead of xlibmesa-gl-dev
+    + (Build-)depend on libxinerama-dev (Closes: #318682)
+
+ -- Brian Nelson <pyro@debian.org>  Tue, 19 Jul 2005 21:28:19 -0700
+
+qt4-x11 (4.0.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #306694)
+
+ -- Brian Nelson <pyro@debian.org>  Tue,  5 Jul 2005 19:42:18 -0700

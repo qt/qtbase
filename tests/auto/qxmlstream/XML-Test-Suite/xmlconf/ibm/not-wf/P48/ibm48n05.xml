@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!ELEMENT a ANY>
+<!ELEMENT b ANY>
+<!--* wrong ordering in cp *-->
+<!ELEMENT aElement (*(a|b),a) >
+]>
+<root>Any content</root>

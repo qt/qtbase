@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+undef $/;
+
+foreach $f ( @ARGV ) {
+    if ( open( F, "< $f" ) ) {
+	$i = <F>;
+	close F;
+	$i =~ s/\n/\r\n/g;
+	$i =~ s/\r+/\r/g;
+	if ( open( F, "> $f" ) ) {
+	    print F $i;
+	    close F;
+	}
+    }
+}

@@ -1,0 +1,5 @@
+<!DOCTYPE doc [
+<!ELEMENT doc EMPTY>
+<!DUNNO should not pass unknown declaration types>
+]>
+<doc/>

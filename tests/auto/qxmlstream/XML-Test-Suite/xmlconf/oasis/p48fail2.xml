@@ -1,0 +1,6 @@
+<!DOCTYPE doc
+[
+<!ELEMENT doc ANY>
+<!ELEMENT a ((doc|a?) +)>
+]>
+<doc/>

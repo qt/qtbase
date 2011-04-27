@@ -1,0 +1,18 @@
+StartDocument( documentVersion="1.0" )
+DTD( text="
+<!DOCTYPE test [
+<!ELEMENT test (#PCDATA) >
+<!ENTITY % xx '%zz;'>
+<!ENTITY % zz '<!ENTITY tricky "error-prone" >' >
+<!ENTITY tricky "error-prone" >
+]>" dtdName="test"
+    EntityDeclaration( name="xx" value="%zz;" )
+
+    EntityDeclaration( name="zz" value="<!ENTITY tricky "error-prone" >" )
+
+    EntityDeclaration( name="tricky" value="error-prone" )
+ )
+StartElement( name="test" qualifiedName="test" )
+Characters( text="This sample shows a error-prone method." )
+EndElement( name="test" qualifiedName="test" )
+EndDocument( )

@@ -1,0 +1,404 @@
+#!/usr/bin/make -f
+
+export QTDIR := $(shell pwd)
+export PATH := $(QTDIR)/bin:$(PATH)
+# workaround to use lrelease.
+export LD_LIBRARY_PATH := $(QTDIR)/lib:$(LD_LIBRARY_PATH)
+export QT_PLUGIN_PATH := $(QTDIR)/plugins
+export DH_VERBOSE=1
+
+# Only present in official source package
+#QTVERSION := $(shell ls changes-* | cut -f2 -d '-')
+CURRENTVERSION := $(shell head -1 debian/changelog  | sed 's/[^(]*(\([^)]*\)).*/\1/')
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+include /usr/share/cdbs/1/rules/utils.mk
+
+# Find out how many parallel threads to run 
+TMP_BUILD_OPTS = $(subst $(comma),$(space),$(DEB_BUILD_OPTIONS))
+ifneq (,$(filter parallel=%,$(TMP_BUILD_OPTS)))
+	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(TMP_BUILD_OPTS)))
+	PARALLEL_MAKEFLAGS += -j$(NUMJOBS)
+endif
+BUILD_NOOPT := no
+ifneq (,$(filter noopt,$(TMP_BUILD_OPTS)))
+	BUILD_NOOPT := yes
+endif
+BUILD_DOCS := yes
+ifneq (,$(filter nodoc,$(TMP_BUILD_OPTS)))
+	BUILD_DOCS := no
+endif
+ifneq (,$(filter nodocs,$(TMP_BUILD_OPTS)))
+	BUILD_DOCS := no
+endif
+TRY_TARGET_BUILD := no
+ifneq (,$(filter native-tools,$(TMP_BUILD_OPTS)))
+	TRY_TARGET_BUILD := yes
+endif
+
+DEB_MAKE_INVOKE := $(MAKE) $(PARALLEL_MAKEFLAGS)
+DEB_MAKE_BUILD_TARGET := sub-src
+DEB_MAKE_INSTALL_TARGET := INSTALL_ROOT=$(DEB_DESTDIR) install
+DEB_DH_INSTALL_SOURCEDIR := debian/tmp
+
+# Ensure the *.debug files aren't included in any package other than libqt4-dbg
+DEB_DH_INSTALL_ARGS := --exclude=.debug
+
+DEB_MAKE_CLEAN_TARGET := confclean distclean
+
+# Shlibs of the current upstream version
+DEB_DH_MAKESHLIBS_ARGS_ALL := -V
+
+DEB_DH_SHLIBDEPS_ARGS_ALL := --exclude=.debug -Xusr/bin/host-
+
+# Only present in official source package
+#DEB_INSTALL_CHANGELOGS_ALL := changes-$(QTVERSION)
+
+QT_MAEMO_TESTDIR := debian/tests
+export QMAKEFEATURES=$(CURDIR)/debian/tests
+export QMAKE_INVOKE=$(CURDIR)/bin/qmake
+export QMAKE_BUILD_ROOT=$(CURDIR)
+
+#Test packages that will run using -style option
+QT_AUTOTESTS_GUI_STYLE := "libqt4-gui-tests"
+
+# Select OpenGL backend driver
+# Enable multituch support
+ifeq ($(DEB_HOST_ARCH),arm)
+	CONFIG_ARCH_OPT = armv6
+else
+	ifeq ($(DEB_HOST_ARCH),armel)
+		CONFIG_ARCH_OPT = armv6
+	else
+		CONFIG_ARCH_OPT = i386
+	endif
+
+endif
+
+EXTRA_CONFIGURE_OPTS += -DQT_QLOCALE_USES_FCVT -DQT_EXPERIMENTAL_CLIENT_DECORATIONS -DQT_MEEGO_EXPERIMENTAL_SHADERCACHE -DQT_MEEGO_EXPERIMENTAL_SHADERCACHE_TRACE
+
+# Check if running inside scratchbox, and that host-gcc works
+IN_SBOX = $(shell if [ -f /targets/links/scratchbox.config ]; then echo yes; else echo no; fi)
+HOST_GCC_WORKS = $(shell if host-gcc --version > /dev/null; then echo yes; else echo no; fi)
+TARGET_BUILD = no
+ifeq ($(TRY_TARGET_BUILD),yes)
+	ifeq ($(IN_SBOX),yes)
+		ifeq ($(HOST_GCC_WORKS),yes)
+			TARGET_BUILD = yes
+		endif
+	endif
+# Except don't use host-gcc if building for i386
+	ifeq ($(DEB_HOST_ARCH),i386)
+		TARGET_BUILD = no
+	endif
+endif
+
+TARGET_PLATFORM = linux-g++-maemo
+HOST_PLATFORM = unsupported/linux-host-g++
+PLATFORM_FLAG = -platform $(TARGET_PLATFORM)
+FORCE_PKG_CONFIG_FLAG =
+HOST_EXLUDES =
+ifeq ($(TARGET_BUILD),yes)
+	PLATFORM_FLAG = -platform $(HOST_PLATFORM) \
+			-xplatform $(TARGET_PLATFORM)
+	FORCE_PKG_CONFIG_FLAG = -force-pkg-config
+	HOST_EXCLUDES := usr/bin/host- usr/bin/qmake
+endif
+
+DEB_STRIP_EXCLUDE := $(HOST_EXCLUDES)
+
+# Determine target architecture
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+	ifeq ($(CONFIG_ARCH_OPT),armv6)
+		GL_BACKEND=es2
+		EXTRA_CONFIGURE_OPTS += -graphicssystem runtime \
+					-runtimegraphicssystem meego 
+		CONFIG_BUILD_OPT = -release
+	else
+		GL_BACKEND=desktop
+		CONFIG_BUILD_OPT = -debug
+	endif
+else
+	TARGET_PLATFORM = glibc-g++
+endif
+
+#If noopt is selected, force -debug and some compilation flags
+ifeq ($(BUILD_NOOPT),yes)
+	CONFIG_BUILD_OPT = -debug
+	CFLAGS = -g
+	CXXFLAGS = -g
+	export CFLAGS
+	export CXXFLAGS
+endif
+
+MAKE_DOCS := -make docs
+DOCS_EXCLUDE :=
+ifeq ($(BUILD_DOCS),no)
+	MAKE_DOCS := -nomake docs
+endif
+
+common-build-arch::  debian/stamp-makefile-build-tools
+
+debian/stamp-makefile-build-tools: debian/stamp-makefile-build
+	$(DEB_MAKE_INVOKE) sub-tools
+	touch $@
+
+common-configure-arch:: config.status
+
+config.status:
+	# Create mkspecs/glibc-g++ from mkspecs/linux-g++, needed by GNU/kFreeBSD
+	# we cannot use directly linux-g++ due to src/corelib/io/io.pri
+	rm -rf mkspecs/glibc-g++
+	cp -a mkspecs/linux-g++ mkspecs/glibc-g++
+	./configure -opensource \
+				-confirm-license \
+				$(CONFIG_BUILD_OPT) \
+				-prefix "/usr" \
+				-bindir "/usr/bin" \
+				-libdir "/usr/lib" \
+				-docdir "/usr/share/qt4/doc" \
+				-headerdir "/usr/include/qt4" \
+				-datadir "/usr/share/qt4" \
+				-plugindir "/usr/lib/qt4/plugins" \
+				-importdir "/usr/lib/qt4/imports" \
+				-translationdir "/usr/share/qt4/translations" \
+				-sysconfdir "/etc/xdg" \
+				$(PLATFORM_FLAG) \
+				$(FORCE_PKG_CONFIG_FLAG) \
+				-arch $(CONFIG_ARCH_OPT) \
+				-fast \
+				-no-optimized-qmake \
+				-reduce-relocations \
+				-no-separate-debug-info \
+				-no-rpath \
+				-system-zlib \
+				-system-libtiff \
+				-system-libpng \
+				-system-libjpeg \
+				-no-nas-sound \
+				-qt-gif \
+				-no-qt3support \
+				-no-libmng \
+				-opengl $(GL_BACKEND) \
+				-accessibility \
+				-make tools \
+				$(MAKE_DOCS) \
+				-nomake examples \
+				-nomake demos \
+				-little-endian \
+				-no-cups \
+				-no-gtkstyle \
+				-exceptions \
+				-no-xinerama \
+				-no-xcursor \
+				-dbus-linked \
+				-glib \
+				-no-pch \
+				-gstreamer \
+				-svg \
+				-no-webkit \
+				-no-sql-ibase \
+				-xmlpatterns \
+				-system-sqlite \
+				-plugin-sql-sqlite \
+				-openssl \
+				-phonon \
+				-xinput2 \
+				-icu \
+				$(EXTRA_CONFIGURE_OPTS)
+
+BINARY_NAMES := qmake moc lrelease rcc uic
+HOST_BINARIES := $(addprefix $(CURDIR)/bin/, $(addprefix host-, $(BINARY_NAMES)))
+
+# host-prefixed binaries are to be copied anyway regardless of the platform
+common-build-arch:: $(HOST_BINARIES) debian/stamp-makefile-build-target-binaries
+
+$(HOST_BINARIES):
+	cp "$(subst host-,,$@)" "$@"
+	if [ -n "$(HOST_EXCLUDES)" ]; then host-strip --strip-all "$@"; fi
+
+debian/stamp-makefile-build-target-binaries: $(HOST_BINARIES)
+# Build target-platform tools when cross-compiling
+	# First make sure qdoc3 is built
+	if [ "x$(BUILD_DOCS)" = "xyes" ]; then $(DEB_MAKE_INVOKE) -C tools/qdoc3; fi
+	# Keep qmake as is while building the rest, build into native-qmake
+	(cd qmake && $(DEB_MAKE_INVOKE) clean && $(QMAKE_INVOKE) -spec "$(CURDIR)/mkspecs/$(TARGET_PLATFORM)" && $(DEB_MAKE_INVOKE) "TARGET=$(QTDIR)/bin/native-qmake")
+	# bootstrap needs to be first
+	for dir in src/tools/bootstrap src/tools/moc tools/linguist/lrelease src/tools/rcc src/tools/uic; do \
+		(cd "$$dir" && $(DEB_MAKE_INVOKE) clean && $(QMAKE_INVOKE) -spec "$(CURDIR)/mkspecs/$(TARGET_PLATFORM)" && $(DEB_MAKE_INVOKE)) \
+	done
+	#Use the host binaries for the rest of the Qt build
+	for binary in moc rcc uic lrelease; do \
+		mv "$(CURDIR)/bin/$$binary" "$(CURDIR)/bin/native-$$binary" ; \
+		cp "$(CURDIR)/bin/host-$$binary" "$(CURDIR)/bin/$$binary"; \
+	done
+	touch $@
+
+#Build the auto tests
+TEST_PACKAGES := $(filter %-tests, $(DEB_PACKAGES))
+common-build-arch:: $(addprefix debian/stamp-makefile-build-autotest-,$(TEST_PACKAGES))
+
+BUILD_TEST_PACKAGE_NAME = $(subst debian/stamp-makefile-build-autotest-,,$@)
+BUILD_TEST_DIR = build_tests/$(BUILD_TEST_PACKAGE_NAME)
+$(addprefix debian/stamp-makefile-build-autotest-,$(TEST_PACKAGES)) :
+	rm -f tests/auto/$(BUILD_TEST_PACKAGE_NAME).pro
+	cp debian/tests/$(BUILD_TEST_PACKAGE_NAME).pro tests/auto
+	mkdir -p $(BUILD_TEST_DIR)
+	cd $(BUILD_TEST_DIR) && $(QMAKE_INVOKE) -recursive $(CURDIR)/tests/auto/$(BUILD_TEST_PACKAGE_NAME).pro CONFIG+=maemo_tests
+	$(DEB_MAKE_INVOKE) -C $(BUILD_TEST_DIR)
+	touch $@
+
+
+clean::
+# Extra stuff missed by confclean/distclean
+
+	# Misc. files
+	rm -f \
+	  config.status \
+	  config.tests/.qmake.cache \
+	  .qmake.cache \
+	  examples/dbus/*/Makefile.* \
+	  mkspecs/qconfig.pri \
+	  src/corelib/global/qconfig.* \
+	  src/tools/uic/qclass_lib_map.h \
+	  lib/*.so.* \
+	  lib/*.la \
+	  tests/auto/libqt4-gui-tests.pri \
+	  tests/auto/maemo-auto.pro \
+	  tests/auto/qt4-acceptance-tests.pri \
+	  tests/auto/qt4-maemo-auto-tests.pri \
+	;
+
+	# Misc. directories
+	rm -rf \
+	  examples/tools/plugandpaint/plugins/ \
+	  examples/tools/styleplugin/styles/ \
+	  mkspecs/glibc-g++/ \
+	  plugins/ \
+	  include/ \
+	  doc-build/ \
+	  doc/html/ \
+	  doc/qch/ \
+	;
+
+	# hppa test directory
+	rm -rf debian/hppa-tmp
+
+	# Leftover dirs
+	find -depth -type d \( -false \
+	  -o -name debug-shared \
+	  -o -name debug-static \
+	  -o -name \*.gch \
+	  -o -name .moc\* \
+	  -o -name .obj\* \
+	  -o -name .pch \
+	  -o -name pkgconfig \
+	  -o -name .rcc \
+	  -o -name release-shared \
+	  -o -name release-static \
+	  -o -name .uic \
+	\) -print0 | xargs -0 rm -rf
+
+	# Leftover files and all symlinks except those in .git
+	find \( -false \
+	  -o \( -name \*.a -a ! -path \*/tests/auto/qdir/types/\*.a \) \
+	  -o -name Makefile.Debug \
+	  -o -name Makefile.Release \
+	  -o -name \*.o \
+	  -o -name \*.prl \
+	  -o \( -name \*.so -a ! -path \*/tests/auto/qlibrary/library_path/invalid.so \) \
+	  -o -name \*.so.debug \
+	  -o -type l \
+	  \! -path ./.git/\* \
+	\) -print0 | xargs -0 rm -rf 
+
+	# Delete all Makefiles, excluding some from src/3rdparty
+	find $(CURDIR) -name Makefile \
+	  ! -path $(CURDIR)/src/3rdparty/Makefile \
+	  ! -path $(CURDIR)/src/3rdparty/freetype/\* \
+	  ! -path $(CURDIR)/src/3rdparty/zlib/\* \
+	  ! -path $(CURDIR)/src/3rdparty/ptmalloc/Makefile \
+	  ! -path $(CURDIR)/util/gencmap/Makefile \
+	 -print0 | xargs -0 rm -rf 
+
+	# Any remaining executables
+	find $(CURDIR) -type f -perm +111 -exec file -i '{}' \; \
+	 | grep -e application/x-executable \
+	 | cut -d ':' -f 1 | xargs rm -f
+
+	# Generated on build
+	rm -f debian/shlibs.local
+	rm -f debian/stamp-makefile-build-tools
+	rm -f debian/stamp-makefile-build-docs
+	rm -f debian/stamp-makefile-build-target-binaries
+	rm -f $(addprefix debian/stamp-makefile-build-autotest-,$(TEST_PACKAGES))
+	rm -f $(addprefix debian/,$(addsuffix .install, $(TEST_PACKAGES)))
+	rm -f $(addprefix tests/auto/,$(addsuffix .pro, $(TEST_PACKAGES)))
+	rm -rf build_tests/
+
+
+common-install-arch::
+	mkdir -p $(DEB_DESTDIR)/usr/share/qt4/translations/
+	cp $(CURDIR)/translations/*.ts $(DEB_DESTDIR)/usr/share/qt4/translations/.
+	find $(DEB_DESTDIR)/usr/share/qt4/translations/ -type f -name "*.ts" | xargs $(CURDIR)/bin/lrelease
+	rm -rf $(DEB_DESTDIR)/usr/share/qt4/translations/*.ts
+# Fix wrong path in pkgconfig files
+	find $(DEB_DESTDIR)/usr/lib/pkgconfig -type f -name '*.pc' \
+		-exec perl -pi -e "s, -L$(CURDIR)/?\S+,,g" {} \;
+# Fix wrong path in prl files
+	find $(DEB_DESTDIR)/usr/lib -type f -name '*.prl' \
+		-exec perl -pi -e "s, -L$(CURDIR)/\S+,,g" {} \;
+	find $(DEB_DESTDIR)/usr/lib -type f -name '*.prl' \
+		-exec sed -i -e "/^QMAKE_PRL_BUILD_DIR/d;s/\(QMAKE_PRL_LIBS =\).*/\1/" {} \;
+
+
+install/qt4-declarative-qmlviewer::
+	install -p -D "debian/QMLViewer.desktop" "$(DEB_DESTDIR)/usr/share/applications/QMLViewer.desktop"
+	install -p -D "debian/QMLViewer.png" "$(DEB_DESTDIR)/usr/share/icons/hicolor/64x64/apps/QMLViewer.png"
+
+
+$(patsubst %,install/%,$(TEST_PACKAGES)) :: install/%:
+	rm -f debian/$(cdbs_curpkg).install
+	$(DEB_MAKE_INVOKE) -C build_tests/$(cdbs_curpkg) $(DEB_MAKE_INSTALL_TARGET)
+	$(DEB_MAKE_INVOKE) -C build_tests/$(cdbs_curpkg) QTM_TEST_INSTALL_FILE=$(CURDIR)/debian/$(cdbs_curpkg).install installtests
+	if [ -z "$(findstring $(cdbs_curpkg),$(QT_AUTOTESTS_GUI_STYLE))" ]; then \
+		$(QT_MAEMO_TESTDIR)/create_tests_xml -t $(QT_MAEMO_TESTDIR) \
+	            -i $(DEB_DESTDIR) -p $(CURDIR)/debian/$(cdbs_curpkg).install ;\
+	else \
+		$(QT_MAEMO_TESTDIR)/create_tests_xml -t $(QT_MAEMO_TESTDIR) -c "-style plastique" \
+                    -i $(DEB_DESTDIR) -p $(CURDIR)/debian/$(cdbs_curpkg).install ;\
+	fi
+
+common-install-arch::
+	find "$(CURDIR)/bin" -name "host-*" -exec install -p -D {} "$(DEB_DESTDIR)/usr/bin" \;
+	find "$(CURDIR)/bin" -name "native-*" -exec install -p -D {} "$(DEB_DESTDIR)/usr/bin" \;
+
+
+install/libqt4-doc::
+	mkdir -p "$(DEB_DESTDIR)/usr/share/qt4/doc/html/"
+	if [ "x$(BUILD_DOCS)" = "xno" ]; then touch "$(DEB_DESTDIR)/usr/share/qt4/doc/html/BUILT_WITH_NODOCS"; fi
+
+common-build-indep:: debian/stamp-makefile-build-docs
+
+debian/stamp-makefile-build-docs:
+	if [ "x$(BUILD_DOCS)" = "xyes" ]; then $(DEB_MAKE_INVOKE) docs; fi
+	touch $@
+
+binary-predeb/libqt4-dev::
+	sed -i -e 's/#PLATFORM_ARG#/$(TARGET_PLATFORM)/g' debian/$(cdbs_curpkg)/DEBIAN/postinst
+
+# Automatically install lintian overrides, stolen from debian-qt-kde.mk
+$(patsubst %,binary-install/%,$(DEB_PACKAGES)) :: binary-install/%:
+	if test -e debian/$(cdbs_curpkg).lintian; then \
+	    install -p -D -m644 debian/$(cdbs_curpkg).lintian \
+	    debian/$(cdbs_curpkg)/usr/share/lintian/overrides/$(cdbs_curpkg); \
+        fi
+
+# Generate shlibs local files
+$(patsubst %,binary-fixup/%,$(DEB_ALL_PACKAGES)) :: binary-fixup/%: binary-strip/%
+	if test -e debian/$(cdbs_curpkg)/DEBIAN/shlibs ; then \
+		sed 's/>=[^)]*/= $(CURRENTVERSION)/' debian/$(cdbs_curpkg)/DEBIAN/shlibs >> debian/shlibs.local ;\
+	fi
+

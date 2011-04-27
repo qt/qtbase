@@ -1,0 +1,6 @@
+<!DOCTYPE doc
+[
+<!ELEMENT doc ANY>
+<!ELEMENT a (#PCDATA) -(doc)>
+]>
+<doc/>

@@ -1,0 +1,9 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!ENTITY aaa "aString">
+<!NOTATION JPGformat SYSTEM "JPGFormat">
+<!ENTITY aImage SYSTEM "image.jpg" NDATA JPGformat>
+]>
+<root>unparsed entity reference in the wrong place &aImage;</root>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="7" failures="0" tests="5" name="tst_ExpectFail">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="xfail" name="expectAndContinue">
+    <!-- message="begin" type="qdebug" -->
+    <!-- message="This should xfail" type="info" -->
+    <!-- message="after" type="qdebug" -->
+  </testcase>
+  <testcase result="xfail" name="expectAndAbort">
+    <!-- message="begin" type="qdebug" -->
+    <!-- message="This should xfail" type="info" -->
+  </testcase>
+  <testcase result="xfail" name="xfailWithQString">
+    <!-- message="A string" type="info" -->
+    <!-- message="Bug 5 (The message)" type="info" -->
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err>
+<![CDATA[begin]]>
+<![CDATA[This should xfail]]>
+<![CDATA[after]]>
+<![CDATA[begin]]>
+<![CDATA[This should xfail]]>
+<![CDATA[A string]]>
+<![CDATA[Bug 5 (The message)]]>
+  </system-err>
+</testsuite>

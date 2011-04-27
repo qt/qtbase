@@ -1,0 +1,4 @@
+<!ENTITY ge1 "abcdef">
+<!ELEMENT a EMPTY>
+<!ATTLIST a attr1 CDATA "&ge2;">
+<!--* GE reference therebefore doesn't match declaration *-->

@@ -1,0 +1,3 @@
+<!ELEMENT animal (#PCDATA|a)* >
+<!ELEMENT a EMPTY>
+<!ATTLIST animal xml:space (default|preserve) 'preserve'>

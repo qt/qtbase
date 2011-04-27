@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE SystemDefinition SYSTEM "sysdef_1_5_1.dtd" [
+  <!-- location of Qt in the platform source tree -->
+  <!ENTITY layer_real_source_path "sf/mw/qt" >
+
+  <!-- location of our configuration files -->
+  <!ENTITY config_path "config.profiles/symbian" >
+]>
+
+<SystemDefinition name="qt" schema="1.5.1">
+    <systemModel>
+        <layer name="tools_layer">
+            <module name="qtconf">
+                <unit unitID="qtdo.qt.qtconf" mrp="" bldFile="&layer_real_source_path;/&config_path;" name="qtconf" />
+            </module>
+        </layer>
+        <layer name="mw_layer">
+            <module name="qt">
+                <unit unitID="qtdo.qt" mrp="" bldFile="&layer_real_source_path;" name="qt" proFile="projects.pro" qmakeArgs="-r"/>
+            </module>
+
+            <module name="qtlocalization">
+                <unit unitID="qtdo.qt.localization" mrp="" bldFile="&layer_real_source_path;/&config_path;/translations_symbian" name="qtlocalization" proFile="translations.pro" qmakeArgs="-r"/>
+            </module>
+        </layer>
+        <layer name="app_layer">
+            <module name="qtdemos">
+                <unit unitID="qtdo.qt.demos" mrp="" bldFile="&layer_real_source_path;/demos" name="qtdemos" proFile="demos.pro" qmakeArgs="-r" filter="qtdemos"/>
+            </module>
+            <module name="qtexamples">
+                <unit unitID="qtdo.qt.examples" mrp="" bldFile="&layer_real_source_path;/examples" name="qtexamples" proFile="examples.pro" qmakeArgs="-r" filter="qtexamples"/>
+            </module>
+        </layer>
+    </systemModel>
+</SystemDefinition>

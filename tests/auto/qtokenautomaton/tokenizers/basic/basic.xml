@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tokenAutomaton scope="public"
+                className="Basic"
+                headerFile="basic.h"
+                sourceFile="basic.cpp"
+                defaultToken="NoKeyword"
+                tokenEnum="Token"
+                hasToString="true"
+                includeGuardName="q_Basic_h">
+    <tokens>
+        <token>aReallyLongTokenIFreakinMeanItUKnowUKnowKnow</token>
+        <token>FFFF</token>
+        <token>FFFG</token>
+        <token>FFGF</token>
+        <token>FFGG</token>
+        <token>FFLM</token>
+        <token name="_111">def</token>
+        <token name="_">abc</token>
+        <token name="wobbly">ghi</token>
+        <token>we-have-dashes</token>
+        <token name="WeHaveDashes2">we-have-dashes-</token>
+        <token>colon:in:name:</token>
+        <token>one:colon</token>
+    </tokens>
+</tokenAutomaton>

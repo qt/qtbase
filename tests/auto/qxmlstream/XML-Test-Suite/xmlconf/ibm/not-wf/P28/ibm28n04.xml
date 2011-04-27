@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<!DOCTYPE aniaml [
+   <!ELEMENT animal ANY>
+   <!ENTITY generalE "leopard">
+   &generalE;
+   <!ENTITY % parameterE "<!ELEMENT leopard EMPTY>">
+   %parameterE;
+] animal>
+<!-- Wrong componet general entity reference occurs inside the DTD -->
+<!-- General entity sould be used in the document content --> 
+<animal>&generalE</animal>

@@ -1,0 +1,45 @@
+********* Start testing of tst_Subtest *********
+Config: Using QTest library 4.3.0, Qt 4.3.0
+initTestCase initTestCase (null)
+PASS   : tst_Subtest::initTestCase()
+init testGlobal local 1
+global: 0
+local: 0
+cleanup testGlobal local 1
+init testGlobal local 2
+global: 0
+local: 1
+cleanup testGlobal local 2
+init testGlobal local 1
+global: 1
+local: 0
+cleanup testGlobal local 1
+init testGlobal local 2
+global: 1
+local: 1
+cleanup testGlobal local 2
+PASS   : tst_Subtest::testGlobal()
+SKIP   : tst_Subtest::skip(1) skipping
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/globaldata/tst_globaldata.cpp(95)]
+init skipLocal local 1
+SKIP   : tst_Subtest::skipLocal(1:local 1) skipping
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/globaldata/tst_globaldata.cpp(115)]
+cleanup skipLocal local 1
+init skipSingle local 1
+global: 0, local 0
+cleanup skipSingle local 1
+init skipSingle local 2
+global: 0, local 1
+cleanup skipSingle local 2
+init skipSingle local 1
+SKIP   : tst_Subtest::skipSingle(2:local 1) skipping
+   Loc: [/home/fenglich/dev/qt-4.3/tests/auto/selftests/globaldata/tst_globaldata.cpp(109)]
+cleanup skipSingle local 1
+init skipSingle local 2
+global: 1, local 1
+cleanup skipSingle local 2
+PASS   : tst_Subtest::skipSingle()
+cleanupTestCase cleanupTestCase (null)
+PASS   : tst_Subtest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 3 skipped
+********* Finished testing of tst_Subtest *********

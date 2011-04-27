@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file>files/add.png</file>
+    <file>files/blue.qss</file>
+    <file>files/khaki.qss</file>
+    <file>files/nostyle.qss</file>
+    <file>files/transparent.qss</file>
+    <file>files/application.qss</file>
+    <file>files/nature_1.jpg</file>
+    <file>files/remove.png</file>
+</qresource>
+</RCC>
+

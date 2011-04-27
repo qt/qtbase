@@ -1,0 +1,2 @@
+<!ELEMENT root (#PCDATA)>
+<!ENTITY root_content "Test content test">

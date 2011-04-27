@@ -1,0 +1,27 @@
+<Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+</Environment>
+<TestFunction name="initTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>
+<TestFunction name="dateTime">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/datetime/tst_datetime.cpp" line="66">
+    <Description><![CDATA[Compared values are not the same
+   Actual (local): 2000/05/03 04:03:04.000[local time]
+   Expected (utc): 2000/05/03 04:03:04.000[UTC]]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="qurl">
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/datetime/tst_datetime.cpp" line="74">
+    <Description><![CDATA[Compared values are not the same
+   Actual (operandA): http://example.com
+   Expected (operandB): ]]></Description>
+    <Description><![CDATA[Compared values are not the same
+   Actual (operandA): 
+   Expected (operandB): http://example.com]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="cleanupTestCase">
+<Incident type="pass" file="" line="0"/>
+</TestFunction>

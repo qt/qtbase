@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* Wrong ordering in NotationDecl *-->
+<!NOTATION SYSTEM "JPGFormat" JPGformat >
+<!ENTITY aImage SYSTEM "image.jpg" NDATA JPGformat>
+]>
+<root/>

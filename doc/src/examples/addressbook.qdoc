@@ -1,0 +1,442 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example itemviews/addressbook
+    \title Address Book Example
+
+    The address book example shows how to use proxy models to display
+    different views onto data from a single model.
+
+    \image addressbook-example.png Screenshot of the Address Book example
+
+    This example provides an address book that allows contacts to be
+    grouped alphabetically into 9 groups: ABC, DEF, GHI, ... , VW,
+    ..., XYZ. This is achieved by using multiple views on the same
+    model, each of which is filtered using an instance of the
+    QSortFilterProxyModel class.
+
+
+    \section1 Overview
+
+    The address book contains 5 classes: \c MainWindow,
+    \c AddressWidget, \c TableModel, \c NewAddressTab and
+    \c AddDialog. The \c MainWindow class uses \c AddressWidget as
+    its central widget and provides \gui File and \gui Tools menus.
+
+    \image addressbook-classes.png Diagram for Address Book Example
+
+    The \c AddressWidget class is a QTabWidget subclass that is used
+    to manipulate the 10 tabs displayed in the example: the 9
+    alphabet group tabs and an instance of \c NewAddressTab.
+    The \c NewAddressTab class is a subclass of QWidget that
+    is only used whenever the address book is empty, prompting the
+    user to add some contacts. \c AddressWidget also interacts with
+    an instance of \c TableModel to add, edit and remove entries to
+    the address book.
+
+    \c TableModel is a subclass of QAbstractTableModel that provides
+    the standard model/view API to access data. It also holds a
+    QList of \l{QPair}s corresponding to the contacts added.
+    However, this data is not all visible in a single tab. Instead,
+    QTableView is used to provide 9 different views of the same
+    data, according to the alphabet groups.
+
+    QSortFilterProxyModel is the class responsible for filtering
+    the contacts for each group of contacts. Each proxy model uses
+    a QRegExp to filter out contacts that do not belong in the
+    corresponding alphabetical group. The \c AddDialog class is
+    used to obtain information from the user for the address book.
+    This QDialog subclass is instantiated by \c NewAddressTab to
+    add contacts, and by \c AddressWidget to add and edit contacts.
+
+    We begin by looking at the \c TableModel implementation.
+
+
+    \section1 TableModel Class Definition
+
+    The \c TableModel class provides standard API to access data in
+    its QList of \l{QPair}s by subclassing QAbstractTableModel. The
+    basic functions that must be implemented in order to do so are:
+    \c rowCount(), \c columnCount(), \c data(), \c headerData().
+    For TableModel to be editable, it has to provide implementations
+    \c insertRows(), \c removeRows(), \c setData() and \c flags()
+    functions.
+
+    \snippet itemviews/addressbook/tablemodel.h 0
+
+    Two constructors are used, a default constructor which uses
+    \c TableModel's own \c {QList<QPair<QString, QString>>} and one
+    that takes \c {QList<QPair<QString, QString>} as an argument,
+    for convenience.
+
+
+    \section1 TableModel Class Implementation
+
+    We implement the two constructors as defined in the header file.
+    The second constructor initializes the list of pairs in the
+    model, with the parameter value.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 0
+
+    The \c rowCount() and \c columnCount() functions return the
+    dimensions of the model. Whereas, \c rowCount()'s value will vary
+    depending on the number of contacts added to the address book,
+    \c columnCount()'s value is always 2 because we only need space
+    for the \bold Name and \bold Address columns.
+
+    \note The \c Q_UNUSED() macro prevents the compiler from
+    generating warnings regarding unused parameters.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 1
+
+    The \c data() function returns either a \bold Name or
+    \bold {Address}, based on the contents of the model index
+    supplied. The row number stored in the model index is used to
+    reference an item in the list of pairs. Selection is handled
+    by the QItemSelectionModel, which will be explained with
+    \c AddressWidget.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 2
+
+    The \c headerData() function displays the table's header,
+    \bold Name and \bold Address. If you require numbered entries
+    for your address book, you can use a vertical header which we
+    have hidden in this example (see the \c AddressWidget
+    implementation).
+
+    \snippet itemviews/addressbook/tablemodel.cpp 3
+
+    The \c insertRows() function is called before new data is added,
+    otherwise the data will not be displayed. The
+    \c beginInsertRows() and \c endInsertRows() functions are called
+    to ensure all connected views are aware of the changes.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 4
+
+    The \c removeRows() function is called to remove data. Again,
+    \l{QAbstractItemModel::}{beginRemoveRows()} and
+    \l{QAbstractItemModel::}{endRemoveRows()} are called to ensure
+    all connected views are aware of the changes.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 5
+
+    The \c setData() function is the function that inserts data into
+    the table, item by item and not row by row. This means that to
+    fill a row in the address book, \c setData() must be called
+    twice, as each row has 2 columns. It is important to emit the
+    \l{QAbstractItemModel::}{dataChanged()} signal as it tells all
+    connected views to update their displays.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 6
+
+    The \c flags() function returns the item flags for the given
+    index.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 7
+
+    We set the Qt::ItemIsEditable flag because we want to allow the
+    \c TableModel to be edited. Although for this example we don't
+    use the editing features of the QTableView object, we enable
+    them here so that we can reuse the model in other programs.
+
+    The last function in \c {TableModel}, \c getList() returns the
+    QList<QPair<QString, QString>> object that holds all the
+    contacts in the address book. We use this function later to
+    obtain the list of contacts to check for existing entries, write
+    the contacts to a file and read them back. Further explanation is
+    given with \c AddressWidget.
+
+    \snippet itemviews/addressbook/tablemodel.cpp 8
+
+
+    \section1 AddressWidget Class Definition
+
+    The \c AddressWidget class is technically the main class
+    involved in this example as it provides functions to add, edit
+    and remove contacts, to save the contacts to a file and to load
+    them from a file.
+
+    \snippet itemviews/addressbook/addresswidget.h 0
+
+    \c AddressWidget extends QTabWidget in order to hold 10 tabs
+    (\c NewAddressTab and the 9 alphabet group tabs) and also
+    manipulates \c table, the \c TableModel object, \c proxyModel,
+    the QSortFilterProxyModel object that we use to filter the
+    entries, and \c tableView, the QTableView object.
+
+
+    \section1 AddressWidget Class Implementation
+
+    The \c AddressWidget constructor accepts a parent widget and
+    instantiates \c NewAddressTab, \c TableModel and
+    QSortFilterProxyModel. The \c NewAddressTab object, which is
+    used to indicate that the address book is empty, is added
+    and the rest of the 9 tabs are set up with \c setupTabs().
+
+    \snippet itemviews/addressbook/addresswidget.cpp 0
+
+    The \c setupTabs() function is used to set up the 9 alphabet
+    group tabs, table views and proxy models in
+    \c AddressWidget. Each proxy model in turn is set to filter
+    contact names according to the relevant alphabet group using a
+    \l{Qt::CaseInsensitive}{case-insensitive} QRegExp object. The
+    table views are also sorted in ascending order using the
+    corresponding proxy model's \l{QSortFilterProxyModel::}{sort()}
+    function.
+
+    Each table view's \l{QTableView::}{selectionMode} is set to
+    QAbstractItemView::SingleSelection and
+    \l{QTableView::}{selectionBehavior} is set to
+    QAbstractItemView::SelectRows, allowing the user to select
+    all the items in one row at the same time. Each QTableView object
+    is automatically given a QItemSelectionModel that keeps track
+    of the selected indexes.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 1
+
+    The QItemSelectionModel class provides a
+    \l{QItemSelectionModel::selectionChanged()}{selectionChanged}
+    signal that is connected to \c{AddressWidget}'s
+    \c selectionChanged() signal. This signal to signal connection
+    is necessary to enable the \gui{Edit Entry...} and
+    \gui{Remove Entry} actions in \c MainWindow's Tools menu. This
+    connection is further explained in \c MainWindow's
+    implementation.
+
+    Each table view in the address book is added as a tab to the
+    QTabWidget with the relevant label, obtained from the QStringList
+    of groups.
+
+    \image addressbook-signals.png Signals and Slots Connections
+
+    We provide 2 \c addEntry() functions: 1 which is intended to be
+    used to accept user input, and the other which performs the actual
+    task of adding new entries to the address book. We divide the
+    responsibility of adding entries into two parts to allow
+    \c newAddressTab to  insert data without having to popup a dialog.
+
+    The first \c addEntry() function is a slot connected to the
+    \c MainWindow's \gui{Add Entry...} action. This function creates an
+    \c AddDialog object and then calls the second \c addEntry()
+    function to actually add the contact to \c table.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 2
+
+    Basic validation is done in the second \c addEntry() function to
+    prevent duplicate entries in the address book. As mentioned with
+    \c TableModel, this is part of the reason why we require the
+    getter method \c getList().
+
+    \snippet itemviews/addressbook/addresswidget.cpp 3
+
+    If the model does not already contain an entry with the same name,
+    we call \c setData() to insert the name and address into the
+    first and second columns. Otherwise, we display a QMessageBox
+    to inform the user.
+
+    \note The \c newAddressTab is removed once a contact is added
+    as the address book is no longer empty.
+
+    Editing an entry is a way to update the contact's address only,
+    as the example does not allow the user to change the name of an
+    existing contact.
+
+    Firstly, we obtain the active tab's QTableView object using
+    QTabWidget::currentWidget(). Then we extract the
+    \c selectionModel from the \c tableView to obtain the selected
+    indexes.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 4a
+
+    Next we extract data from the row the user intends to 
+    edit. This data is displayed in an instance of \c AddDialog
+    with a different window title. The \c table is only
+    updated if changes have been made to data in \c aDialog.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 4b
+
+    \image addressbook-editdialog.png Screenshot of Dialog to Edit a Contact
+
+    Entries are removed using the \c removeEntry() function.
+    The selected row is removed by accessing it through the
+    QItemSelectionModel object, \c selectionModel. The
+    \c newAddressTab is re-added to the \c AddressWidget only if
+    the user removes all the contacts in the address book.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 5
+
+    The \c writeToFile() function is used to save a file containing
+    all the contacts in the address book. The file is saved in a
+    custom \c{.dat} format. The contents of the QList of \l{QPair}s
+    are written to \c file using QDataStream. If the file cannot be
+    opened, a QMessageBox is displayed with the related error message.
+
+    \snippet itemviews/addressbook/addresswidget.cpp 6
+
+    The \c readFromFile() function loads a file containing all the
+    contacts in the address book, previously saved using
+    \c writeToFile(). QDataStream is used to read the contents of a
+    \c{.dat} file into a list of pairs and each of these is added
+    using \c addEntry().
+
+    \snippet itemviews/addressbook/addresswidget.cpp 7
+
+
+    \section1 NewAddressTab Class Definition
+
+    The \c NewAddressTab class provides an informative tab telling
+    the user that the address book is empty. It appears and
+    disappears according to the contents of the address book, as
+    mentioned in \c{AddressWidget}'s implementation.
+
+    \image addressbook-newaddresstab.png Screenshot of NewAddressTab
+
+    The \c NewAddressTab class extends QWidget and contains a QLabel
+    and QPushButton.
+
+    \snippet itemviews/addressbook/newaddresstab.h 0
+
+
+    \section1 NewAddressTab Class Implementation
+
+    The constructor instantiates the \c addButton,
+    \c descriptionLabel and connects the \c{addButton}'s signal to
+    the \c{addEntry()} slot.
+
+    \snippet itemviews/addressbook/newaddresstab.cpp 0
+
+    The \c addEntry() function is similar to \c AddressWidget's
+    \c addEntry() in the sense that both functions instantiate an
+    \c AddDialog object. Data from the dialog is extracted and sent
+    to \c AddressWidget's \c addEntry() slot by emitting the
+    \c sendDetails() signal.
+
+    \snippet itemviews/addressbook/newaddresstab.cpp 1
+
+    \image signals-n-slots-aw-nat.png
+
+
+    \section1 AddDialog Class Definition
+
+    The \c AddDialog class extends QDialog and provides the user
+    with a QLineEdit and a QTextEdit to input data into the
+    address book.
+
+    \snippet itemviews/addressbook/adddialog.h 0
+
+    \image addressbook-adddialog.png
+
+
+    \section1 AddDialog Class Implementation
+
+    The \c AddDialog's constructor sets up the user interface,
+    creating the necessary widgets and placing them into layouts.
+
+    \snippet itemviews/addressbook/adddialog.cpp 0
+
+    To give the dialog the desired behavior, we connect the \gui OK
+    and \gui Cancel buttons to the dialog's \l{QDialog::}{accept()} and
+    \l{QDialog::}{reject()} slots. Since the dialog only acts as a
+    container for name and address information, we do not need to
+    implement any other functions for it.
+
+
+    \section1 MainWindow Class Definition
+
+    The \c MainWindow class extends QMainWindow and implements the
+    menus and actions necessary to manipulate the address book.
+
+    \table
+    \row \o \inlineimage addressbook-filemenu.png
+         \o \inlineimage addressbook-toolsmenu.png
+    \endtable
+
+    \snippet itemviews/addressbook/mainwindow.h 0
+
+    The \c MainWindow class uses an \c AddressWidget as its central
+    widget and provides the File menu with \gui Open, \gui Close and
+    \gui Exit actions, as well as the \gui Tools menu with
+    \gui{Add Entry...}, \gui{Edit Entry...} and \gui{Remove Entry}
+    actions.
+
+
+    \section1 MainWindow Class Implementation
+
+    The constructor for \c MainWindow instantiates AddressWidget,
+    sets it as its central widget and calls the \c createMenus()
+    function.
+
+    \snippet itemviews/addressbook/mainwindow.cpp 0
+
+    The \c createMenus() function sets up the \gui File and
+    \gui Tools menus, connecting the actions to their respective slots.
+    Both the \gui{Edit Entry...} and \gui{Remove Entry} actions are
+    disabled by default as such actions cannot be carried out on an empty
+    address book. They are only enabled when one or more contacts
+    are added.
+
+    \snippet itemviews/addressbook/mainwindow.cpp 1a
+    \dots
+    \codeline
+    \snippet itemviews/addressbook/mainwindow.cpp 1b
+
+    Apart from connecting all the actions' signals to their
+    respective slots, we also connect \c AddressWidget's
+    \c selectionChanged() signal to its \c updateActions() slot.
+
+    The \c openFile() function allows the user to choose a file with
+    the \l{QFileDialog::getOpenFileName()}{open file dialog}. The chosen
+    file has to be a custom \c{.dat} file that contains address book
+    contacts. This function is a slot connected to \c openAct in the
+    \gui File menu.
+
+    \snippet itemviews/addressbook/mainwindow.cpp 2
+
+    The \c saveFile() function allows the user to save a file with
+    the \l{QFileDialog::getSaveFileName()}{save file dialog}. This function
+    is a slot connected to \c saveAct in the \gui File menu.
+
+    \snippet itemviews/addressbook/mainwindow.cpp 3
+
+    The \c updateActions() function enables and disables
+    \gui{Edit Entry...} and \gui{Remove Entry} depending on the contents of
+    the address book. If the address book is empty, these actions
+    are disabled; otherwise, they are enabled. This function is a slot
+    is connected to the \c AddressWidget's \c selectionChanged()
+    signal.
+
+    \snippet itemviews/addressbook/mainwindow.cpp 4
+
+
+    \section1 main() Function
+
+    The main function for the address book instantiates QApplication
+    and opens a \c MainWindow before running the event loop.
+
+    \snippet itemviews/addressbook/main.cpp 0
+*/

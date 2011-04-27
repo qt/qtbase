@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Bogus content type: #CDATA in contentspec *-->
+<!ELEMENT aElement #CDATA>
+]>
+<root>Any content</root>

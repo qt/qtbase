@@ -1,0 +1,446 @@
+<ui version="4.0" >
+ <class>WateringConfigDialog</class>
+ <widget class="QDialog" name="WateringConfigDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>334</width>
+    <height>550</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Watering Configuration</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label_3" >
+       <property name="text" >
+        <string>Plant:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="3" >
+      <widget class="QComboBox" name="plantComboBox" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text" >
+         <string>Squash</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Bean</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Carrot</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Strawberry</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Raspberry</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Blueberry</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>67</width>
+         <height>16</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_2" >
+       <property name="text" >
+        <string>Water when:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3" >
+      <widget class="QCheckBox" name="temperatureCheckBox" >
+       <property name="text" >
+        <string>Temperature is higher than:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>16</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="4" column="2" >
+      <widget class="QSpinBox" name="temperatureSpinBox" >
+       <property name="enabled" >
+        <bool>false</bool>
+       </property>
+       <property name="specialValueText" >
+        <string/>
+       </property>
+       <property name="suffix" >
+        <string>C</string>
+       </property>
+       <property name="minimum" >
+        <number>10</number>
+       </property>
+       <property name="maximum" >
+        <number>60</number>
+       </property>
+       <property name="value" >
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="5" column="1" colspan="3" >
+      <widget class="QCheckBox" name="rainCheckBox" >
+       <property name="text" >
+        <string>Rain less than:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>16</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="6" column="2" >
+      <widget class="QSpinBox" name="rainSpinBox" >
+       <property name="enabled" >
+        <bool>false</bool>
+       </property>
+       <property name="specialValueText" >
+        <string/>
+       </property>
+       <property name="suffix" >
+        <string>mm</string>
+       </property>
+       <property name="minimum" >
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="3" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="7" column="2" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="8" column="0" >
+      <widget class="QLabel" name="label" >
+       <property name="text" >
+        <string>Starting Time:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="3" >
+      <widget class="QTimeEdit" name="startTimeEdit" />
+     </item>
+     <item row="9" column="0" >
+      <widget class="QLabel" name="label_4" >
+       <property name="text" >
+        <string>Amount:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1" colspan="3" >
+      <widget class="QSpinBox" name="amountSpinBox" >
+       <property name="suffix" >
+        <string>l</string>
+       </property>
+       <property name="minimum" >
+        <number>100</number>
+       </property>
+       <property name="maximum" >
+        <number>10000</number>
+       </property>
+       <property name="singleStep" >
+        <number>100</number>
+       </property>
+       <property name="value" >
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0" >
+      <widget class="QLabel" name="label_5" >
+       <property name="text" >
+        <string>Source:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1" colspan="3" >
+      <widget class="QComboBox" name="sourceComboBox" >
+       <item>
+        <property name="text" >
+         <string>Foundain</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>River</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Lake</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Public Water System</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="11" column="0" >
+      <widget class="QLabel" name="label_6" >
+       <property name="text" >
+        <string>Filter:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1" colspan="2" >
+      <widget class="QCheckBox" name="filterCheckBox" >
+       <property name="text" >
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>20</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="4" column="4" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" >
+     <item row="0" column="1" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="0" colspan="2" >
+      <widget class="HelpBrowser" name="helpBrowser" />
+     </item>
+     <item row="0" column="0" >
+      <widget class="QLabel" name="helpLabel" >
+       <property name="text" >
+        <string>&lt;a href="test">Show Details&lt;/a></string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HelpBrowser</class>
+   <extends>QTextBrowser</extends>
+   <header>helpbrowser.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>WateringConfigDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>227</x>
+     <y>372</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>WateringConfigDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>286</x>
+     <y>378</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>temperatureCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>temperatureSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>132</x>
+     <y>101</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>132</x>
+     <y>125</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rainCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>rainSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>110</x>
+     <y>154</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>113</x>
+     <y>169</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

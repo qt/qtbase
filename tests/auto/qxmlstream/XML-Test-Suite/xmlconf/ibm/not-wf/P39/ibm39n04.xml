@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+]>
+</root>
+<!--* Missing start tag and no content -->
+
+

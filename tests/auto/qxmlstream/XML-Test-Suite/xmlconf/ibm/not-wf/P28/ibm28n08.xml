@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<?DOCTYPE animal [
+   <!ELEMENT animal EMPTY>
+]>
+<!-- Wrong opening sequence in doctypedecl --> 
+<animal/>

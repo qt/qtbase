@@ -1,0 +1,1 @@
+include(../wince50standard-armv4i-msvc2005/default_post.prf)

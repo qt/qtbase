@@ -1,0 +1,81 @@
+********* Start testing of tst_Subtest *********
+Config: Using QTest library 4.4.0, Qt 4.4.0
+initTestCase initTestCase (null)
+PASS   : tst_Subtest::initTestCase()
+init test1 (null)
+test1 test1 (null)
+cleanup test1 (null)
+PASS   : tst_Subtest::test1()
+test2_data test2 (null)
+test2_data end
+init test2 data0
+test2 test2 data0
+test2 end
+cleanup test2 data0
+init test2 data1
+test2 test2 data1
+test2 end
+cleanup test2 data1
+init test2 data2
+test2 test2 data2
+test2 end
+cleanup test2 data2
+PASS   : tst_Subtest::test2()
+test3_data test3 (null)
+test3_data end
+init test3 data0
+test2 test3 data0
+test2 end
+cleanup test3 data0
+init test3 data1
+test2 test3 data1
+FAIL!  : tst_Subtest::test3(data1) Compared values are not the same
+   Actual (str): hello1
+   Expected (QString("hello0")): hello0
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(124)]
+cleanup test3 data1
+init test3 data2
+test2 test3 data2
+FAIL!  : tst_Subtest::test3(data2) Compared values are not the same
+   Actual (str): hello2
+   Expected (QString("hello0")): hello0
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(124)]
+cleanup test3 data2
+init floatComparisons should SUCCEED
+cleanup floatComparisons should SUCCEED
+init floatComparisons should FAIL
+FAIL!  : tst_Subtest::floatComparisons(should FAIL) Compared floats are not the same (fuzzy compare)
+   Actual (operandLeft): 1
+   Expected (operandRight): 3
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(134)]
+cleanup floatComparisons should FAIL
+init floatComparisons should FAIL
+FAIL!  : tst_Subtest::floatComparisons(should FAIL) Compared floats are not the same (fuzzy compare)
+   Actual (operandLeft): 1e-07
+   Expected (operandRight): 3e-07
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(134)]
+cleanup floatComparisons should FAIL
+init floatComparisons should FAIL
+cleanup floatComparisons should FAIL
+init compareFloatTests 1e0
+FAIL!  : tst_Subtest::compareFloatTests(1e0) Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1
+   Expected (t3): 3
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(173)]
+cleanup compareFloatTests 1e0
+init compareFloatTests 1e-7
+FAIL!  : tst_Subtest::compareFloatTests(1e-7) Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1e-07
+   Expected (t3): 3e-07
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(173)]
+cleanup compareFloatTests 1e-7
+init compareFloatTests 1e+7
+FAIL!  : tst_Subtest::compareFloatTests(1e+7) Compared floats are not the same (fuzzy compare)
+   Actual (t1): 1e+07
+   Expected (t3): 3e+07
+   Loc: [/home/fenglich/dev/qt-4.4/tests/auto/selftests/subtest/tst_subtest.cpp(173)]
+cleanup compareFloatTests 1e+7
+cleanupTestCase cleanupTestCase (null)
+PASS   : tst_Subtest::cleanupTestCase()
+Totals: 4 passed, 7 failed, 0 skipped
+********* Finished testing of tst_Subtest *********

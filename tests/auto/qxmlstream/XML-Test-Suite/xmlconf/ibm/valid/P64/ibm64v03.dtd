@@ -1,0 +1,20 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!--dtd for production 64-->
+<![IGNORE[
+begin
+Everything is ignored within an ignored section, except the
+sub-section delimiters '<![' and ']]>'.  These must be balanced
+<![
+<!ELEMENT animal EMPTY>
+]]>
+nesting
+<![
+<!ELEMENT tiger (#PCDATA)>
+]]>
+nesting again
+<![
+<!ELEMENT abc ANY>
+]]>
+end
+]]>
+<!--Positive test. Pattern3.-->

@@ -1,0 +1,601 @@
+EXPORTS
+	??0AbstractAudioOutput@Phonon@@IAE@AAVAbstractAudioOutputPrivate@1@PAVQObject@@@Z @ 1 NONAME ; Phonon::AbstractAudioOutput::AbstractAudioOutput(class Phonon::AbstractAudioOutputPrivate &, class QObject *)
+	??0AbstractMediaStream@Phonon@@IAE@AAVAbstractMediaStreamPrivate@1@PAVQObject@@@Z @ 2 NONAME ; Phonon::AbstractMediaStream::AbstractMediaStream(class Phonon::AbstractMediaStreamPrivate &, class QObject *)
+	??0AbstractMediaStream@Phonon@@IAE@PAVQObject@@@Z @ 3 NONAME ; Phonon::AbstractMediaStream::AbstractMediaStream(class QObject *)
+	??0AbstractMediaStreamPrivate@Phonon@@IAE@XZ @ 4 NONAME ; Phonon::AbstractMediaStreamPrivate::AbstractMediaStreamPrivate(void)
+	??0AbstractVideoOutput@Phonon@@IAE@AAVAbstractVideoOutputPrivate@1@@Z @ 5 NONAME ; Phonon::AbstractVideoOutput::AbstractVideoOutput(class Phonon::AbstractVideoOutputPrivate &)
+	??0AudioOutput@Phonon@@QAE@PAVQObject@@@Z @ 6 NONAME ; Phonon::AudioOutput::AudioOutput(class QObject *)
+	??0AudioOutput@Phonon@@QAE@W4Category@1@PAVQObject@@@Z @ 7 NONAME ; Phonon::AudioOutput::AudioOutput(enum Phonon::Category, class QObject *)
+	??0Effect@Phonon@@IAE@AAVEffectPrivate@1@PAVQObject@@@Z @ 8 NONAME ; Phonon::Effect::Effect(class Phonon::EffectPrivate &, class QObject *)
+	??0Effect@Phonon@@QAE@ABV?$ObjectDescription@$00@1@PAVQObject@@@Z @ 9 NONAME ; Phonon::Effect::Effect(class Phonon::ObjectDescription<1> const &, class QObject *)
+	??0EffectParameter@Phonon@@QAE@ABV01@@Z @ 10 NONAME ; Phonon::EffectParameter::EffectParameter(class Phonon::EffectParameter const &)
+	??0EffectParameter@Phonon@@QAE@HABVQString@@V?$QFlags@W4Hint@EffectParameter@Phonon@@@@ABVQVariant@@22ABV?$QList@VQVariant@@@@0@Z @ 11 NONAME ; Phonon::EffectParameter::EffectParameter(int, class QString const &, class QFlags<enum Phonon::EffectParameter::Hint>, class QVariant const &, class QVariant const &, class QVariant const &, class QList<class QVariant> const &, class QString const &)
+	??0EffectParameter@Phonon@@QAE@XZ @ 12 NONAME ; Phonon::EffectParameter::EffectParameter(void)
+	??0EffectWidget@Phonon@@QAE@PAVEffect@1@PAVQWidget@@@Z @ 13 NONAME ; Phonon::EffectWidget::EffectWidget(class Phonon::Effect *, class QWidget *)
+	??0GlobalConfig@Phonon@@QAE@XZ @ 14 NONAME ; Phonon::GlobalConfig::GlobalConfig(void)
+	??0MediaController@Phonon@@QAE@PAVMediaObject@1@@Z @ 15 NONAME ; Phonon::MediaController::MediaController(class Phonon::MediaObject *)
+	??0MediaNode@Phonon@@IAE@AAVMediaNodePrivate@1@@Z @ 16 NONAME ; Phonon::MediaNode::MediaNode(class Phonon::MediaNodePrivate &)
+	??0MediaNodePrivate@Phonon@@IAE@W4CastId@01@@Z @ 17 NONAME ; Phonon::MediaNodePrivate::MediaNodePrivate(enum Phonon::MediaNodePrivate::CastId)
+	??0MediaObject@Phonon@@QAE@PAVQObject@@@Z @ 18 NONAME ; Phonon::MediaObject::MediaObject(class QObject *)
+	??0MediaSource@Phonon@@IAE@AAVMediaSourcePrivate@1@@Z @ 19 NONAME ; Phonon::MediaSource::MediaSource(class Phonon::MediaSourcePrivate &)
+	??0MediaSource@Phonon@@QAE@ABV01@@Z @ 20 NONAME ; Phonon::MediaSource::MediaSource(class Phonon::MediaSource const &)
+	??0MediaSource@Phonon@@QAE@ABVQString@@@Z @ 21 NONAME ; Phonon::MediaSource::MediaSource(class QString const &)
+	??0MediaSource@Phonon@@QAE@ABVQUrl@@@Z @ 22 NONAME ; Phonon::MediaSource::MediaSource(class QUrl const &)
+	??0MediaSource@Phonon@@QAE@PAVAbstractMediaStream@1@@Z @ 23 NONAME ; Phonon::MediaSource::MediaSource(class Phonon::AbstractMediaStream *)
+	??0MediaSource@Phonon@@QAE@PAVQIODevice@@@Z @ 24 NONAME ; Phonon::MediaSource::MediaSource(class QIODevice *)
+	??0MediaSource@Phonon@@QAE@W4DiscType@1@ABVQString@@@Z @ 25 NONAME ; Phonon::MediaSource::MediaSource(enum Phonon::DiscType, class QString const &)
+	??0MediaSource@Phonon@@QAE@XZ @ 26 NONAME ; Phonon::MediaSource::MediaSource(void)
+	??0MediaSourcePrivate@Phonon@@QAE@W4Type@MediaSource@1@@Z @ 27 NONAME ; Phonon::MediaSourcePrivate::MediaSourcePrivate(enum Phonon::MediaSource::Type)
+	??0ObjectDescriptionData@Phonon@@QAE@HABV?$QHash@VQByteArray@@VQVariant@@@@@Z @ 28 NONAME ; Phonon::ObjectDescriptionData::ObjectDescriptionData(int, class QHash<class QByteArray, class QVariant> const &)
+	??0ObjectDescriptionData@Phonon@@QAE@PAVObjectDescriptionPrivate@1@@Z @ 29 NONAME ; Phonon::ObjectDescriptionData::ObjectDescriptionData(class Phonon::ObjectDescriptionPrivate *)
+	??0ObjectDescriptionModelData@Phonon@@QAE@PAVQAbstractListModel@@@Z @ 30 NONAME ; Phonon::ObjectDescriptionModelData::ObjectDescriptionModelData(class QAbstractListModel *)
+	??0Path@Phonon@@QAE@ABV01@@Z @ 31 NONAME ; Phonon::Path::Path(class Phonon::Path const &)
+	??0Path@Phonon@@QAE@XZ @ 32 NONAME ; Phonon::Path::Path(void)
+	??0SeekSlider@Phonon@@QAE@PAVMediaObject@1@PAVQWidget@@@Z @ 33 NONAME ; Phonon::SeekSlider::SeekSlider(class Phonon::MediaObject *, class QWidget *)
+	??0SeekSlider@Phonon@@QAE@PAVQWidget@@@Z @ 34 NONAME ; Phonon::SeekSlider::SeekSlider(class QWidget *)
+	??0StreamInterface@Phonon@@IAE@XZ @ 35 NONAME ; Phonon::StreamInterface::StreamInterface(void)
+	??0VideoPlayer@Phonon@@QAE@PAVQWidget@@@Z @ 36 NONAME ; Phonon::VideoPlayer::VideoPlayer(class QWidget *)
+	??0VideoPlayer@Phonon@@QAE@W4Category@1@PAVQWidget@@@Z @ 37 NONAME ; Phonon::VideoPlayer::VideoPlayer(enum Phonon::Category, class QWidget *)
+	??0VideoWidget@Phonon@@IAE@AAVVideoWidgetPrivate@1@PAVQWidget@@@Z @ 38 NONAME ; Phonon::VideoWidget::VideoWidget(class Phonon::VideoWidgetPrivate &, class QWidget *)
+	??0VideoWidget@Phonon@@QAE@PAVQWidget@@@Z @ 39 NONAME ; Phonon::VideoWidget::VideoWidget(class QWidget *)
+	??0VolumeFaderEffect@Phonon@@QAE@PAVQObject@@@Z @ 40 NONAME ; Phonon::VolumeFaderEffect::VolumeFaderEffect(class QObject *)
+	??0VolumeSlider@Phonon@@QAE@PAVAudioOutput@1@PAVQWidget@@@Z @ 41 NONAME ; Phonon::VolumeSlider::VolumeSlider(class Phonon::AudioOutput *, class QWidget *)
+	??0VolumeSlider@Phonon@@QAE@PAVQWidget@@@Z @ 42 NONAME ; Phonon::VolumeSlider::VolumeSlider(class QWidget *)
+	??1AbstractAudioOutput@Phonon@@UAE@XZ @ 43 NONAME ; Phonon::AbstractAudioOutput::~AbstractAudioOutput(void)
+	??1AbstractMediaStream@Phonon@@UAE@XZ @ 44 NONAME ; Phonon::AbstractMediaStream::~AbstractMediaStream(void)
+	??1AbstractMediaStreamPrivate@Phonon@@UAE@XZ @ 45 NONAME ; Phonon::AbstractMediaStreamPrivate::~AbstractMediaStreamPrivate(void)
+	??1AbstractVideoOutput@Phonon@@UAE@XZ @ 46 NONAME ; Phonon::AbstractVideoOutput::~AbstractVideoOutput(void)
+	??1AudioOutput@Phonon@@UAE@XZ @ 47 NONAME ; Phonon::AudioOutput::~AudioOutput(void)
+	??1Effect@Phonon@@UAE@XZ @ 48 NONAME ; Phonon::Effect::~Effect(void)
+	??1EffectParameter@Phonon@@QAE@XZ @ 49 NONAME ; Phonon::EffectParameter::~EffectParameter(void)
+	??1EffectWidget@Phonon@@UAE@XZ @ 50 NONAME ; Phonon::EffectWidget::~EffectWidget(void)
+	??1GlobalConfig@Phonon@@UAE@XZ @ 51 NONAME ; Phonon::GlobalConfig::~GlobalConfig(void)
+	??1MediaController@Phonon@@UAE@XZ @ 52 NONAME ; Phonon::MediaController::~MediaController(void)
+	??1MediaNode@Phonon@@UAE@XZ @ 53 NONAME ; Phonon::MediaNode::~MediaNode(void)
+	??1MediaNodePrivate@Phonon@@MAE@XZ @ 54 NONAME ; Phonon::MediaNodePrivate::~MediaNodePrivate(void)
+	??1MediaObject@Phonon@@UAE@XZ @ 55 NONAME ; Phonon::MediaObject::~MediaObject(void)
+	??1MediaSource@Phonon@@QAE@XZ @ 56 NONAME ; Phonon::MediaSource::~MediaSource(void)
+	??1MediaSourcePrivate@Phonon@@UAE@XZ @ 57 NONAME ; Phonon::MediaSourcePrivate::~MediaSourcePrivate(void)
+	??1ObjectDescriptionData@Phonon@@QAE@XZ @ 58 NONAME ; Phonon::ObjectDescriptionData::~ObjectDescriptionData(void)
+	??1ObjectDescriptionModelData@Phonon@@IAE@XZ @ 59 NONAME ; Phonon::ObjectDescriptionModelData::~ObjectDescriptionModelData(void)
+	??1Path@Phonon@@QAE@XZ @ 60 NONAME ; Phonon::Path::~Path(void)
+	??1SeekSlider@Phonon@@UAE@XZ @ 61 NONAME ; Phonon::SeekSlider::~SeekSlider(void)
+	??1StreamInterface@Phonon@@UAE@XZ @ 62 NONAME ; Phonon::StreamInterface::~StreamInterface(void)
+	??1VideoPlayer@Phonon@@UAE@XZ @ 63 NONAME ; Phonon::VideoPlayer::~VideoPlayer(void)
+	??1VideoWidget@Phonon@@UAE@XZ @ 64 NONAME ; Phonon::VideoWidget::~VideoWidget(void)
+	??1VolumeFaderEffect@Phonon@@UAE@XZ @ 65 NONAME ; Phonon::VolumeFaderEffect::~VolumeFaderEffect(void)
+	??1VolumeSlider@Phonon@@UAE@XZ @ 66 NONAME ; Phonon::VolumeSlider::~VolumeSlider(void)
+	??4EffectParameter@Phonon@@QAEAAV01@ABV01@@Z @ 67 NONAME ; class Phonon::EffectParameter & Phonon::EffectParameter::operator=(class Phonon::EffectParameter const &)
+	??4MediaSource@Phonon@@QAEAAV01@ABV01@@Z @ 68 NONAME ; class Phonon::MediaSource & Phonon::MediaSource::operator=(class Phonon::MediaSource const &)
+	??4Path@Phonon@@QAEAAV01@ABV01@@Z @ 69 NONAME ; class Phonon::Path & Phonon::Path::operator=(class Phonon::Path const &)
+	??8EffectParameter@Phonon@@QBE_NABV01@@Z @ 70 NONAME ; bool Phonon::EffectParameter::operator==(class Phonon::EffectParameter const &) const
+	??8MediaSource@Phonon@@QBE_NABV01@@Z @ 71 NONAME ; bool Phonon::MediaSource::operator==(class Phonon::MediaSource const &) const
+	??8ObjectDescriptionData@Phonon@@QBE_NABV01@@Z @ 72 NONAME ; bool Phonon::ObjectDescriptionData::operator==(class Phonon::ObjectDescriptionData const &) const
+	??8Path@Phonon@@QBE_NABV01@@Z @ 73 NONAME ; bool Phonon::Path::operator==(class Phonon::Path const &) const
+	??9Path@Phonon@@QBE_NABV01@@Z @ 74 NONAME ; bool Phonon::Path::operator!=(class Phonon::Path const &) const
+	??MEffectParameter@Phonon@@QBE_NABV01@@Z @ 75 NONAME ; bool Phonon::EffectParameter::operator<(class Phonon::EffectParameter const &) const
+	??OEffectParameter@Phonon@@QBE_NABV01@@Z @ 76 NONAME ; bool Phonon::EffectParameter::operator>(class Phonon::EffectParameter const &) const
+	??_EAbstractAudioOutput@Phonon@@UAE@I@Z @ 77 NONAME ; Phonon::AbstractAudioOutput::~AbstractAudioOutput(unsigned int)
+	??_EAbstractMediaStream@Phonon@@UAE@I@Z @ 78 NONAME ; Phonon::AbstractMediaStream::~AbstractMediaStream(unsigned int)
+	??_EAbstractMediaStreamPrivate@Phonon@@UAE@I@Z @ 79 NONAME ; Phonon::AbstractMediaStreamPrivate::~AbstractMediaStreamPrivate(unsigned int)
+	??_EAbstractVideoOutput@Phonon@@UAE@I@Z @ 80 NONAME ; Phonon::AbstractVideoOutput::~AbstractVideoOutput(unsigned int)
+	??_EAudioOutput@Phonon@@UAE@I@Z @ 81 NONAME ; Phonon::AudioOutput::~AudioOutput(unsigned int)
+	??_EEffect@Phonon@@UAE@I@Z @ 82 NONAME ; Phonon::Effect::~Effect(unsigned int)
+	??_EEffectWidget@Phonon@@UAE@I@Z @ 83 NONAME ; Phonon::EffectWidget::~EffectWidget(unsigned int)
+	??_EGlobalConfig@Phonon@@UAE@I@Z @ 84 NONAME ; Phonon::GlobalConfig::~GlobalConfig(unsigned int)
+	??_EMediaController@Phonon@@UAE@I@Z @ 85 NONAME ; Phonon::MediaController::~MediaController(unsigned int)
+	??_EMediaNode@Phonon@@UAE@I@Z @ 86 NONAME ; Phonon::MediaNode::~MediaNode(unsigned int)
+	??_EMediaNodePrivate@Phonon@@UAE@I@Z @ 87 NONAME ; Phonon::MediaNodePrivate::~MediaNodePrivate(unsigned int)
+	??_EMediaObject@Phonon@@UAE@I@Z @ 88 NONAME ; Phonon::MediaObject::~MediaObject(unsigned int)
+	??_EMediaSourcePrivate@Phonon@@UAE@I@Z @ 89 NONAME ; Phonon::MediaSourcePrivate::~MediaSourcePrivate(unsigned int)
+	??_ESeekSlider@Phonon@@UAE@I@Z @ 90 NONAME ; Phonon::SeekSlider::~SeekSlider(unsigned int)
+	??_EStreamInterface@Phonon@@UAE@I@Z @ 91 NONAME ; Phonon::StreamInterface::~StreamInterface(unsigned int)
+	??_EVideoPlayer@Phonon@@UAE@I@Z @ 92 NONAME ; Phonon::VideoPlayer::~VideoPlayer(unsigned int)
+	??_EVideoWidget@Phonon@@UAE@I@Z @ 93 NONAME ; Phonon::VideoWidget::~VideoWidget(unsigned int)
+	??_EVolumeFaderEffect@Phonon@@UAE@I@Z @ 94 NONAME ; Phonon::VolumeFaderEffect::~VolumeFaderEffect(unsigned int)
+	??_EVolumeSlider@Phonon@@UAE@I@Z @ 95 NONAME ; Phonon::VolumeSlider::~VolumeSlider(unsigned int)
+	?_k_stateChanged@MediaObjectPrivate@Phonon@@IAEXW4State@2@0@Z @ 96 NONAME ; void Phonon::MediaObjectPrivate::_k_stateChanged(enum Phonon::State, enum Phonon::State)
+	?aboutToFinish@MediaObject@Phonon@@IAEXXZ @ 97 NONAME ; void Phonon::MediaObject::aboutToFinish(void)
+	?addDestructionHandler@MediaNodePrivate@Phonon@@QAEXPAVMediaNodeDestructionHandler@2@@Z @ 98 NONAME ; void Phonon::MediaNodePrivate::addDestructionHandler(class Phonon::MediaNodeDestructionHandler *)
+	?addInputPath@MediaNodePrivate@Phonon@@QAEXABVPath@2@@Z @ 99 NONAME ; void Phonon::MediaNodePrivate::addInputPath(class Phonon::Path const &)
+	?addOutputPath@MediaNodePrivate@Phonon@@QAEXABVPath@2@@Z @ 100 NONAME ; void Phonon::MediaNodePrivate::addOutputPath(class Phonon::Path const &)
+	?angleChanged@MediaController@Phonon@@IAEXH@Z @ 101 NONAME ; void Phonon::MediaController::angleChanged(int)
+	?aspectRatio@VideoWidget@Phonon@@QBE?AW4AspectRatio@12@XZ @ 102 NONAME ; enum Phonon::VideoWidget::AspectRatio Phonon::VideoWidget::aspectRatio(void) const
+	?audioCaptureDeviceFor@GlobalConfig@Phonon@@QBEHW4Category@2@H@Z @ 103 NONAME ; int Phonon::GlobalConfig::audioCaptureDeviceFor(enum Phonon::Category, int) const
+	?audioCaptureDeviceListFor@GlobalConfig@Phonon@@QBE?AV?$QList@H@@W4Category@2@H@Z @ 104 NONAME ; class QList<int> Phonon::GlobalConfig::audioCaptureDeviceListFor(enum Phonon::Category, int) const
+	?audioOutput@VideoPlayer@Phonon@@QBEPAVAudioOutput@2@XZ @ 105 NONAME ; class Phonon::AudioOutput * Phonon::VideoPlayer::audioOutput(void) const
+	?audioOutput@VolumeSlider@Phonon@@QBEPAVAudioOutput@2@XZ @ 106 NONAME ; class Phonon::AudioOutput * Phonon::VolumeSlider::audioOutput(void) const
+	?audioOutputDeviceFor@GlobalConfig@Phonon@@QBEHW4Category@2@H@Z @ 107 NONAME ; int Phonon::GlobalConfig::audioOutputDeviceFor(enum Phonon::Category, int) const
+	?audioOutputDeviceListFor@GlobalConfig@Phonon@@QBE?AV?$QList@H@@W4Category@2@H@Z @ 108 NONAME ; class QList<int> Phonon::GlobalConfig::audioOutputDeviceListFor(enum Phonon::Category, int) const
+	?autoDelete@MediaSource@Phonon@@QBE_NXZ @ 109 NONAME ; bool Phonon::MediaSource::autoDelete(void) const
+	?autoplayTitles@MediaController@Phonon@@QBE_NXZ @ 110 NONAME ; bool Phonon::MediaController::autoplayTitles(void) const
+	?availableAngles@MediaController@Phonon@@QBEHXZ @ 111 NONAME ; int Phonon::MediaController::availableAngles(void) const
+	?availableAnglesChanged@MediaController@Phonon@@IAEXH@Z @ 112 NONAME ; void Phonon::MediaController::availableAnglesChanged(int)
+	?availableAudioCaptureDevices@BackendCapabilities@Phonon@@YA?AV?$QList@V?$ObjectDescription@$03@Phonon@@@@XZ @ 113 NONAME ; class QList<class Phonon::ObjectDescription<4> > Phonon::BackendCapabilities::availableAudioCaptureDevices(void)
+	?availableAudioChannels@MediaController@Phonon@@QBE?AV?$QList@V?$ObjectDescription@$01@Phonon@@@@XZ @ 114 NONAME ; class QList<class Phonon::ObjectDescription<2> > Phonon::MediaController::availableAudioChannels(void) const
+	?availableAudioChannelsChanged@MediaController@Phonon@@IAEXXZ @ 115 NONAME ; void Phonon::MediaController::availableAudioChannelsChanged(void)
+	?availableAudioEffects@BackendCapabilities@Phonon@@YA?AV?$QList@V?$ObjectDescription@$00@Phonon@@@@XZ @ 116 NONAME ; class QList<class Phonon::ObjectDescription<1> > Phonon::BackendCapabilities::availableAudioEffects(void)
+	?availableAudioOutputDevices@BackendCapabilities@Phonon@@YA?AV?$QList@V?$ObjectDescription@$0A@@Phonon@@@@XZ @ 117 NONAME ; class QList<class Phonon::ObjectDescription<0> > Phonon::BackendCapabilities::availableAudioOutputDevices(void)
+	?availableChapters@MediaController@Phonon@@QBEHXZ @ 118 NONAME ; int Phonon::MediaController::availableChapters(void) const
+	?availableChaptersChanged@MediaController@Phonon@@IAEXH@Z @ 119 NONAME ; void Phonon::MediaController::availableChaptersChanged(int)
+	?availableMimeTypes@BackendCapabilities@Phonon@@YA?AVQStringList@@XZ @ 120 NONAME ; class QStringList Phonon::BackendCapabilities::availableMimeTypes(void)
+	?availableSubtitles@MediaController@Phonon@@QBE?AV?$QList@V?$ObjectDescription@$02@Phonon@@@@XZ @ 121 NONAME ; class QList<class Phonon::ObjectDescription<3> > Phonon::MediaController::availableSubtitles(void) const
+	?availableSubtitlesChanged@MediaController@Phonon@@IAEXXZ @ 122 NONAME ; void Phonon::MediaController::availableSubtitlesChanged(void)
+	?availableTitles@MediaController@Phonon@@QBEHXZ @ 123 NONAME ; int Phonon::MediaController::availableTitles(void) const
+	?availableTitlesChanged@MediaController@Phonon@@IAEXH@Z @ 124 NONAME ; void Phonon::MediaController::availableTitlesChanged(int)
+	?backend@Factory@Phonon@@YAPAVQObject@@_N@Z @ 125 NONAME ; class QObject * Phonon::Factory::backend(bool)
+	?backendName@Factory@Phonon@@YA?AVQString@@XZ @ 126 NONAME ; class QString Phonon::Factory::backendName(void)
+	?backendObject@MediaNodePrivate@Phonon@@QAEPAVQObject@@XZ @ 127 NONAME ; class QObject * Phonon::MediaNodePrivate::backendObject(void)
+	?brightness@VideoWidget@Phonon@@QBEMXZ @ 128 NONAME ; float Phonon::VideoWidget::brightness(void) const
+	?bufferStatus@MediaObject@Phonon@@IAEXH@Z @ 129 NONAME ; void Phonon::MediaObject::bufferStatus(int)
+	?category@AudioOutput@Phonon@@QBE?AW4Category@2@XZ @ 130 NONAME ; enum Phonon::Category Phonon::AudioOutput::category(void) const
+	?categoryToString@Phonon@@YA?AVQString@@W4Category@1@@Z @ 131 NONAME ; class QString Phonon::categoryToString(enum Phonon::Category)
+	?chapterChanged@MediaController@Phonon@@IAEXH@Z @ 132 NONAME ; void Phonon::MediaController::chapterChanged(int)
+	?clear@MediaObject@Phonon@@QAEXXZ @ 133 NONAME ; void Phonon::MediaObject::clear(void)
+	?clearQueue@MediaObject@Phonon@@QAEXXZ @ 134 NONAME ; void Phonon::MediaObject::clearQueue(void)
+	?connectToSource@StreamInterface@Phonon@@QAEXABVMediaSource@2@@Z @ 135 NONAME ; void Phonon::StreamInterface::connectToSource(class Phonon::MediaSource const &)
+	?contrast@VideoWidget@Phonon@@QBEMXZ @ 136 NONAME ; float Phonon::VideoWidget::contrast(void) const
+	?createPath@Phonon@@YA?AVPath@1@PAVMediaNode@1@0@Z @ 137 NONAME ; class Phonon::Path Phonon::createPath(class Phonon::MediaNode *, class Phonon::MediaNode *)
+	?createPlayer@Phonon@@YAPAVMediaObject@1@W4Category@1@ABVMediaSource@1@@Z @ 138 NONAME ; class Phonon::MediaObject * Phonon::createPlayer(enum Phonon::Category, class Phonon::MediaSource const &)
+	?currentAngle@MediaController@Phonon@@QBEHXZ @ 139 NONAME ; int Phonon::MediaController::currentAngle(void) const
+	?currentAudioChannel@MediaController@Phonon@@QBE?AV?$ObjectDescription@$01@2@XZ @ 140 NONAME ; class Phonon::ObjectDescription<2> Phonon::MediaController::currentAudioChannel(void) const
+	?currentChapter@MediaController@Phonon@@QBEHXZ @ 141 NONAME ; int Phonon::MediaController::currentChapter(void) const
+	?currentSource@MediaObject@Phonon@@QBE?AVMediaSource@2@XZ @ 142 NONAME ; class Phonon::MediaSource Phonon::MediaObject::currentSource(void) const
+	?currentSourceChanged@MediaObject@Phonon@@IAEXABVMediaSource@2@@Z @ 143 NONAME ; void Phonon::MediaObject::currentSourceChanged(class Phonon::MediaSource const &)
+	?currentSubtitle@MediaController@Phonon@@QBE?AV?$ObjectDescription@$02@2@XZ @ 144 NONAME ; class Phonon::ObjectDescription<3> Phonon::MediaController::currentSubtitle(void) const
+	?currentTime@MediaObject@Phonon@@QBE_JXZ @ 145 NONAME ; long long Phonon::MediaObject::currentTime(void) const
+	?currentTime@VideoPlayer@Phonon@@QBE_JXZ @ 146 NONAME ; long long Phonon::VideoPlayer::currentTime(void) const
+	?currentTitle@MediaController@Phonon@@QBEHXZ @ 147 NONAME ; int Phonon::MediaController::currentTitle(void) const
+	?d_func@AbstractMediaStream@Phonon@@AAEPAVAbstractMediaStreamPrivate@2@XZ @ 148 NONAME ; class Phonon::AbstractMediaStreamPrivate * Phonon::AbstractMediaStream::d_func(void)
+	?d_func@AbstractMediaStream@Phonon@@ABEPBVAbstractMediaStreamPrivate@2@XZ @ 149 NONAME ; class Phonon::AbstractMediaStreamPrivate const * Phonon::AbstractMediaStream::d_func(void) const
+	?data@ObjectDescriptionModelData@Phonon@@QBE?AVQVariant@@ABVQModelIndex@@H@Z @ 150 NONAME ; class QVariant Phonon::ObjectDescriptionModelData::data(class QModelIndex const &, int) const
+	?defaultValue@EffectParameter@Phonon@@QBE?AVQVariant@@XZ @ 151 NONAME ; class QVariant Phonon::EffectParameter::defaultValue(void) const
+	?deleteBackendObject@MediaNodePrivate@Phonon@@IAEXXZ @ 152 NONAME ; void Phonon::MediaNodePrivate::deleteBackendObject(void)
+	?deregisterFrontendObject@Factory@Phonon@@YAXPAVMediaNodePrivate@2@@Z @ 153 NONAME ; void Phonon::Factory::deregisterFrontendObject(class Phonon::MediaNodePrivate *)
+	?description@Effect@Phonon@@QBE?AV?$ObjectDescription@$00@2@XZ @ 154 NONAME ; class Phonon::ObjectDescription<1> Phonon::Effect::description(void) const
+	?description@EffectParameter@Phonon@@QBEABVQString@@XZ @ 155 NONAME ; class QString const & Phonon::EffectParameter::description(void) const
+	?description@ObjectDescriptionData@Phonon@@QBE?AVQString@@XZ @ 156 NONAME ; class QString Phonon::ObjectDescriptionData::description(void) const
+	?deviceAccessListFor@AudioOutputInterface42@Phonon@@QBE?AV?$QList@U?$QPair@VQByteArray@@VQString@@@@@@ABV?$ObjectDescription@$0A@@2@@Z @ 157 NONAME ; class QList<struct QPair<class QByteArray, class QString> > Phonon::AudioOutputInterface42::deviceAccessListFor(class Phonon::ObjectDescription<0> const &) const
+	?deviceName@MediaSource@Phonon@@QBE?AVQString@@XZ @ 158 NONAME ; class QString Phonon::MediaSource::deviceName(void) const
+	?discType@MediaSource@Phonon@@QBE?AW4DiscType@2@XZ @ 159 NONAME ; enum Phonon::DiscType Phonon::MediaSource::discType(void) const
+	?disconnect@Path@Phonon@@QAE_NXZ @ 160 NONAME ; bool Phonon::Path::disconnect(void)
+	?dropMimeData@ObjectDescriptionModelData@Phonon@@QAE_NW4ObjectDescriptionType@2@PBVQMimeData@@W4DropAction@Qt@@HHABVQModelIndex@@@Z @ 161 NONAME ; bool Phonon::ObjectDescriptionModelData::dropMimeData(enum Phonon::ObjectDescriptionType, class QMimeData const *, enum Qt::DropAction, int, int, class QModelIndex const &)
+	?effects@Path@Phonon@@QBE?AV?$QList@PAVEffect@Phonon@@@@XZ @ 162 NONAME ; class QList<class Phonon::Effect *> Phonon::Path::effects(void) const
+	?endOfData@AbstractMediaStream@Phonon@@IAEXXZ @ 163 NONAME ; void Phonon::AbstractMediaStream::endOfData(void)
+	?endOfData@AbstractMediaStreamPrivate@Phonon@@MAEXXZ @ 164 NONAME ; void Phonon::AbstractMediaStreamPrivate::endOfData(void)
+	?enoughData@AbstractMediaStream@Phonon@@MAEXXZ @ 165 NONAME ; void Phonon::AbstractMediaStream::enoughData(void)
+	?enoughData@StreamInterface@Phonon@@QAEXXZ @ 166 NONAME ; void Phonon::StreamInterface::enoughData(void)
+	?enqueue@MediaObject@Phonon@@QAEXABV?$QList@VMediaSource@Phonon@@@@@Z @ 167 NONAME ; void Phonon::MediaObject::enqueue(class QList<class Phonon::MediaSource> const &)
+	?enqueue@MediaObject@Phonon@@QAEXABV?$QList@VQUrl@@@@@Z @ 168 NONAME ; void Phonon::MediaObject::enqueue(class QList<class QUrl> const &)
+	?enqueue@MediaObject@Phonon@@QAEXABVMediaSource@2@@Z @ 169 NONAME ; void Phonon::MediaObject::enqueue(class Phonon::MediaSource const &)
+	?enterFullScreen@VideoWidget@Phonon@@QAEXXZ @ 170 NONAME ; void Phonon::VideoWidget::enterFullScreen(void)
+	?error@AbstractMediaStream@Phonon@@IAEXW4ErrorType@2@ABVQString@@@Z @ 171 NONAME ; void Phonon::AbstractMediaStream::error(enum Phonon::ErrorType, class QString const &)
+	?errorString@MediaObject@Phonon@@QBE?AVQString@@XZ @ 172 NONAME ; class QString Phonon::MediaObject::errorString(void) const
+	?errorType@MediaObject@Phonon@@QBE?AW4ErrorType@2@XZ @ 173 NONAME ; enum Phonon::ErrorType Phonon::MediaObject::errorType(void) const
+	?event@VideoWidget@Phonon@@MAE_NPAVQEvent@@@Z @ 174 NONAME ; bool Phonon::VideoWidget::event(class QEvent *)
+	?exitFullScreen@VideoWidget@Phonon@@QAEXXZ @ 175 NONAME ; void Phonon::VideoWidget::exitFullScreen(void)
+	?fadeCurve@VolumeFaderEffect@Phonon@@QBE?AW4FadeCurve@12@XZ @ 176 NONAME ; enum Phonon::VolumeFaderEffect::FadeCurve Phonon::VolumeFaderEffect::fadeCurve(void) const
+	?fadeIn@VolumeFaderEffect@Phonon@@QAEXH@Z @ 177 NONAME ; void Phonon::VolumeFaderEffect::fadeIn(int)
+	?fadeOut@VolumeFaderEffect@Phonon@@QAEXH@Z @ 178 NONAME ; void Phonon::VolumeFaderEffect::fadeOut(int)
+	?fadeTo@VolumeFaderEffect@Phonon@@QAEXMH@Z @ 179 NONAME ; void Phonon::VolumeFaderEffect::fadeTo(float, int)
+	?fileName@MediaSource@Phonon@@QBE?AVQString@@XZ @ 180 NONAME ; class QString Phonon::MediaSource::fileName(void) const
+	?finished@MediaObject@Phonon@@IAEXXZ @ 181 NONAME ; void Phonon::MediaObject::finished(void)
+	?finished@VideoPlayer@Phonon@@IAEXXZ @ 182 NONAME ; void Phonon::VideoPlayer::finished(void)
+	?flags@ObjectDescriptionModelData@Phonon@@QBE?AV?$QFlags@W4ItemFlag@Qt@@@@ABVQModelIndex@@@Z @ 183 NONAME ; class QFlags<enum Qt::ItemFlag> Phonon::ObjectDescriptionModelData::flags(class QModelIndex const &) const
+	?fromIndex@ObjectDescriptionData@Phonon@@SAPAV12@W4ObjectDescriptionType@2@H@Z @ 184 NONAME ; class Phonon::ObjectDescriptionData * Phonon::ObjectDescriptionData::fromIndex(enum Phonon::ObjectDescriptionType, int)
+	?getStaticMetaObject@AbstractAudioOutput@Phonon@@SAABUQMetaObject@@XZ @ 185 NONAME ; struct QMetaObject const & Phonon::AbstractAudioOutput::getStaticMetaObject(void)
+	?getStaticMetaObject@AbstractMediaStream@Phonon@@SAABUQMetaObject@@XZ @ 186 NONAME ; struct QMetaObject const & Phonon::AbstractMediaStream::getStaticMetaObject(void)
+	?getStaticMetaObject@AudioOutput@Phonon@@SAABUQMetaObject@@XZ @ 187 NONAME ; struct QMetaObject const & Phonon::AudioOutput::getStaticMetaObject(void)
+	?getStaticMetaObject@Effect@Phonon@@SAABUQMetaObject@@XZ @ 188 NONAME ; struct QMetaObject const & Phonon::Effect::getStaticMetaObject(void)
+	?getStaticMetaObject@EffectWidget@Phonon@@SAABUQMetaObject@@XZ @ 189 NONAME ; struct QMetaObject const & Phonon::EffectWidget::getStaticMetaObject(void)
+	?getStaticMetaObject@MediaController@Phonon@@SAABUQMetaObject@@XZ @ 190 NONAME ; struct QMetaObject const & Phonon::MediaController::getStaticMetaObject(void)
+	?getStaticMetaObject@MediaObject@Phonon@@SAABUQMetaObject@@XZ @ 191 NONAME ; struct QMetaObject const & Phonon::MediaObject::getStaticMetaObject(void)
+	?getStaticMetaObject@SeekSlider@Phonon@@SAABUQMetaObject@@XZ @ 192 NONAME ; struct QMetaObject const & Phonon::SeekSlider::getStaticMetaObject(void)
+	?getStaticMetaObject@VideoPlayer@Phonon@@SAABUQMetaObject@@XZ @ 193 NONAME ; struct QMetaObject const & Phonon::VideoPlayer::getStaticMetaObject(void)
+	?getStaticMetaObject@VideoWidget@Phonon@@SAABUQMetaObject@@XZ @ 194 NONAME ; struct QMetaObject const & Phonon::VideoWidget::getStaticMetaObject(void)
+	?getStaticMetaObject@VolumeFaderEffect@Phonon@@SAABUQMetaObject@@XZ @ 195 NONAME ; struct QMetaObject const & Phonon::VolumeFaderEffect::getStaticMetaObject(void)
+	?getStaticMetaObject@VolumeSlider@Phonon@@SAABUQMetaObject@@XZ @ 196 NONAME ; struct QMetaObject const & Phonon::VolumeSlider::getStaticMetaObject(void)
+	?hasTracking@SeekSlider@Phonon@@QBE_NXZ @ 197 NONAME ; bool Phonon::SeekSlider::hasTracking(void) const
+	?hasTracking@VolumeSlider@Phonon@@QBE_NXZ @ 198 NONAME ; bool Phonon::VolumeSlider::hasTracking(void) const
+	?hasVideo@MediaObject@Phonon@@QBE_NXZ @ 199 NONAME ; bool Phonon::MediaObject::hasVideo(void) const
+	?hasVideoChanged@MediaObject@Phonon@@IAEX_N@Z @ 200 NONAME ; void Phonon::MediaObject::hasVideoChanged(bool)
+	?hue@VideoWidget@Phonon@@QBEMXZ @ 201 NONAME ; float Phonon::VideoWidget::hue(void) const
+	?iconSize@SeekSlider@Phonon@@QBE?AVQSize@@XZ @ 202 NONAME ; class QSize Phonon::SeekSlider::iconSize(void) const
+	?iconSize@VolumeSlider@Phonon@@QBE?AVQSize@@XZ @ 203 NONAME ; class QSize Phonon::VolumeSlider::iconSize(void) const
+	?id@EffectParameter@Phonon@@QBEHXZ @ 204 NONAME ; int Phonon::EffectParameter::id(void) const
+	?index@ObjectDescriptionData@Phonon@@QBEHXZ @ 205 NONAME ; int Phonon::ObjectDescriptionData::index(void) const
+	?inputPaths@MediaNode@Phonon@@QBE?AV?$QList@VPath@Phonon@@@@XZ @ 206 NONAME ; class QList<class Phonon::Path> Phonon::MediaNode::inputPaths(void) const
+	?insertEffect@Path@Phonon@@QAEPAVEffect@2@ABV?$ObjectDescription@$00@2@PAV32@@Z @ 207 NONAME ; class Phonon::Effect * Phonon::Path::insertEffect(class Phonon::ObjectDescription<1> const &, class Phonon::Effect *)
+	?insertEffect@Path@Phonon@@QAE_NPAVEffect@2@0@Z @ 208 NONAME ; bool Phonon::Path::insertEffect(class Phonon::Effect *, class Phonon::Effect *)
+	?isIconVisible@SeekSlider@Phonon@@QBE_NXZ @ 209 NONAME ; bool Phonon::SeekSlider::isIconVisible(void) const
+	?isLogarithmicControl@EffectParameter@Phonon@@QBE_NXZ @ 210 NONAME ; bool Phonon::EffectParameter::isLogarithmicControl(void) const
+	?isMimeTypeAvailable@BackendCapabilities@Phonon@@YA_NABVQString@@@Z @ 211 NONAME ; bool Phonon::BackendCapabilities::isMimeTypeAvailable(class QString const &)
+	?isMuteVisible@VolumeSlider@Phonon@@QBE_NXZ @ 212 NONAME ; bool Phonon::VolumeSlider::isMuteVisible(void) const
+	?isMuted@AudioOutput@Phonon@@QBE_NXZ @ 213 NONAME ; bool Phonon::AudioOutput::isMuted(void) const
+	?isPaused@VideoPlayer@Phonon@@QBE_NXZ @ 214 NONAME ; bool Phonon::VideoPlayer::isPaused(void) const
+	?isPlaying@VideoPlayer@Phonon@@QBE_NXZ @ 215 NONAME ; bool Phonon::VideoPlayer::isPlaying(void) const
+	?isSeekable@MediaObject@Phonon@@QBE_NXZ @ 216 NONAME ; bool Phonon::MediaObject::isSeekable(void) const
+	?isValid@MediaNode@Phonon@@QBE_NXZ @ 217 NONAME ; bool Phonon::MediaNode::isValid(void) const
+	?isValid@ObjectDescriptionData@Phonon@@QBE_NXZ @ 218 NONAME ; bool Phonon::ObjectDescriptionData::isValid(void) const
+	?isValid@Path@Phonon@@QBE_NXZ @ 219 NONAME ; bool Phonon::Path::isValid(void) const
+	?k_func@AbstractAudioOutput@Phonon@@AAEPAVAbstractAudioOutputPrivate@2@XZ @ 220 NONAME ; class Phonon::AbstractAudioOutputPrivate * Phonon::AbstractAudioOutput::k_func(void)
+	?k_func@AbstractAudioOutput@Phonon@@ABEPBVAbstractAudioOutputPrivate@2@XZ @ 221 NONAME ; class Phonon::AbstractAudioOutputPrivate const * Phonon::AbstractAudioOutput::k_func(void) const
+	?k_func@AbstractVideoOutput@Phonon@@AAEPAVAbstractVideoOutputPrivate@2@XZ @ 222 NONAME ; class Phonon::AbstractVideoOutputPrivate * Phonon::AbstractVideoOutput::k_func(void)
+	?k_func@AbstractVideoOutput@Phonon@@ABEPBVAbstractVideoOutputPrivate@2@XZ @ 223 NONAME ; class Phonon::AbstractVideoOutputPrivate const * Phonon::AbstractVideoOutput::k_func(void) const
+	?k_func@AudioOutput@Phonon@@AAEPAVAudioOutputPrivate@2@XZ @ 224 NONAME ; class Phonon::AudioOutputPrivate * Phonon::AudioOutput::k_func(void)
+	?k_func@AudioOutput@Phonon@@ABEPBVAudioOutputPrivate@2@XZ @ 225 NONAME ; class Phonon::AudioOutputPrivate const * Phonon::AudioOutput::k_func(void) const
+	?k_func@Effect@Phonon@@AAEPAVEffectPrivate@2@XZ @ 226 NONAME ; class Phonon::EffectPrivate * Phonon::Effect::k_func(void)
+	?k_func@Effect@Phonon@@ABEPBVEffectPrivate@2@XZ @ 227 NONAME ; class Phonon::EffectPrivate const * Phonon::Effect::k_func(void) const
+	?k_func@EffectWidget@Phonon@@AAEPAVEffectWidgetPrivate@2@XZ @ 228 NONAME ; class Phonon::EffectWidgetPrivate * Phonon::EffectWidget::k_func(void)
+	?k_func@EffectWidget@Phonon@@ABEPBVEffectWidgetPrivate@2@XZ @ 229 NONAME ; class Phonon::EffectWidgetPrivate const * Phonon::EffectWidget::k_func(void) const
+	?k_func@MediaNode@Phonon@@AAEPAVMediaNodePrivate@2@XZ @ 230 NONAME ; class Phonon::MediaNodePrivate * Phonon::MediaNode::k_func(void)
+	?k_func@MediaNode@Phonon@@ABEPBVMediaNodePrivate@2@XZ @ 231 NONAME ; class Phonon::MediaNodePrivate const * Phonon::MediaNode::k_func(void) const
+	?k_func@MediaObject@Phonon@@AAEPAVMediaObjectPrivate@2@XZ @ 232 NONAME ; class Phonon::MediaObjectPrivate * Phonon::MediaObject::k_func(void)
+	?k_func@MediaObject@Phonon@@ABEPBVMediaObjectPrivate@2@XZ @ 233 NONAME ; class Phonon::MediaObjectPrivate const * Phonon::MediaObject::k_func(void) const
+	?k_func@SeekSlider@Phonon@@AAEPAVSeekSliderPrivate@2@XZ @ 234 NONAME ; class Phonon::SeekSliderPrivate * Phonon::SeekSlider::k_func(void)
+	?k_func@SeekSlider@Phonon@@ABEPBVSeekSliderPrivate@2@XZ @ 235 NONAME ; class Phonon::SeekSliderPrivate const * Phonon::SeekSlider::k_func(void) const
+	?k_func@VideoWidget@Phonon@@AAEPAVVideoWidgetPrivate@2@XZ @ 236 NONAME ; class Phonon::VideoWidgetPrivate * Phonon::VideoWidget::k_func(void)
+	?k_func@VideoWidget@Phonon@@ABEPBVVideoWidgetPrivate@2@XZ @ 237 NONAME ; class Phonon::VideoWidgetPrivate const * Phonon::VideoWidget::k_func(void) const
+	?k_func@VolumeFaderEffect@Phonon@@AAEPAVVolumeFaderEffectPrivate@2@XZ @ 238 NONAME ; class Phonon::VolumeFaderEffectPrivate * Phonon::VolumeFaderEffect::k_func(void)
+	?k_func@VolumeFaderEffect@Phonon@@ABEPBVVolumeFaderEffectPrivate@2@XZ @ 239 NONAME ; class Phonon::VolumeFaderEffectPrivate const * Phonon::VolumeFaderEffect::k_func(void) const
+	?k_func@VolumeSlider@Phonon@@AAEPAVVolumeSliderPrivate@2@XZ @ 240 NONAME ; class Phonon::VolumeSliderPrivate * Phonon::VolumeSlider::k_func(void)
+	?k_func@VolumeSlider@Phonon@@ABEPBVVolumeSliderPrivate@2@XZ @ 241 NONAME ; class Phonon::VolumeSliderPrivate const * Phonon::VolumeSlider::k_func(void) const
+	?load@VideoPlayer@Phonon@@QAEXABVMediaSource@2@@Z @ 242 NONAME ; void Phonon::VideoPlayer::load(class Phonon::MediaSource const &)
+	?maximumValue@EffectParameter@Phonon@@QBE?AVQVariant@@XZ @ 243 NONAME ; class QVariant Phonon::EffectParameter::maximumValue(void) const
+	?maximumVolume@VolumeSlider@Phonon@@QBEMXZ @ 244 NONAME ; float Phonon::VolumeSlider::maximumVolume(void) const
+	?mediaObject@SeekSlider@Phonon@@QBEPAVMediaObject@2@XZ @ 245 NONAME ; class Phonon::MediaObject * Phonon::SeekSlider::mediaObject(void) const
+	?mediaObject@VideoPlayer@Phonon@@QBEPAVMediaObject@2@XZ @ 246 NONAME ; class Phonon::MediaObject * Phonon::VideoPlayer::mediaObject(void) const
+	?metaData@MediaObject@Phonon@@QBE?AV?$QMultiMap@VQString@@V1@@@XZ @ 247 NONAME ; class QMultiMap<class QString, class QString> Phonon::MediaObject::metaData(void) const
+	?metaData@MediaObject@Phonon@@QBE?AVQStringList@@ABVQString@@@Z @ 248 NONAME ; class QStringList Phonon::MediaObject::metaData(class QString const &) const
+	?metaData@MediaObject@Phonon@@QBE?AVQStringList@@W4MetaData@2@@Z @ 249 NONAME ; class QStringList Phonon::MediaObject::metaData(enum Phonon::MetaData) const
+	?metaDataChanged@MediaObject@Phonon@@IAEXXZ @ 250 NONAME ; void Phonon::MediaObject::metaDataChanged(void)
+	?metaObject@?$ObjectDescriptionModel@$00@Phonon@@UBEPBUQMetaObject@@XZ @ 251 NONAME ; struct QMetaObject const * Phonon::ObjectDescriptionModel<1>::metaObject(void) const
+	?metaObject@?$ObjectDescriptionModel@$01@Phonon@@UBEPBUQMetaObject@@XZ @ 252 NONAME ; struct QMetaObject const * Phonon::ObjectDescriptionModel<2>::metaObject(void) const
+	?metaObject@?$ObjectDescriptionModel@$02@Phonon@@UBEPBUQMetaObject@@XZ @ 253 NONAME ; struct QMetaObject const * Phonon::ObjectDescriptionModel<3>::metaObject(void) const
+	?metaObject@?$ObjectDescriptionModel@$03@Phonon@@UBEPBUQMetaObject@@XZ @ 254 NONAME ; struct QMetaObject const * Phonon::ObjectDescriptionModel<4>::metaObject(void) const
+	?metaObject@?$ObjectDescriptionModel@$0A@@Phonon@@UBEPBUQMetaObject@@XZ @ 255 NONAME ; struct QMetaObject const * Phonon::ObjectDescriptionModel<0>::metaObject(void) const
+	?metaObject@AbstractAudioOutput@Phonon@@UBEPBUQMetaObject@@XZ @ 256 NONAME ; struct QMetaObject const * Phonon::AbstractAudioOutput::metaObject(void) const
+	?metaObject@AbstractMediaStream@Phonon@@UBEPBUQMetaObject@@XZ @ 257 NONAME ; struct QMetaObject const * Phonon::AbstractMediaStream::metaObject(void) const
+	?metaObject@AudioOutput@Phonon@@UBEPBUQMetaObject@@XZ @ 258 NONAME ; struct QMetaObject const * Phonon::AudioOutput::metaObject(void) const
+	?metaObject@Effect@Phonon@@UBEPBUQMetaObject@@XZ @ 259 NONAME ; struct QMetaObject const * Phonon::Effect::metaObject(void) const
+	?metaObject@EffectWidget@Phonon@@UBEPBUQMetaObject@@XZ @ 260 NONAME ; struct QMetaObject const * Phonon::EffectWidget::metaObject(void) const
+	?metaObject@MediaController@Phonon@@UBEPBUQMetaObject@@XZ @ 261 NONAME ; struct QMetaObject const * Phonon::MediaController::metaObject(void) const
+	?metaObject@MediaObject@Phonon@@UBEPBUQMetaObject@@XZ @ 262 NONAME ; struct QMetaObject const * Phonon::MediaObject::metaObject(void) const
+	?metaObject@SeekSlider@Phonon@@UBEPBUQMetaObject@@XZ @ 263 NONAME ; struct QMetaObject const * Phonon::SeekSlider::metaObject(void) const
+	?metaObject@VideoPlayer@Phonon@@UBEPBUQMetaObject@@XZ @ 264 NONAME ; struct QMetaObject const * Phonon::VideoPlayer::metaObject(void) const
+	?metaObject@VideoWidget@Phonon@@UBEPBUQMetaObject@@XZ @ 265 NONAME ; struct QMetaObject const * Phonon::VideoWidget::metaObject(void) const
+	?metaObject@VolumeFaderEffect@Phonon@@UBEPBUQMetaObject@@XZ @ 266 NONAME ; struct QMetaObject const * Phonon::VolumeFaderEffect::metaObject(void) const
+	?metaObject@VolumeSlider@Phonon@@UBEPBUQMetaObject@@XZ @ 267 NONAME ; struct QMetaObject const * Phonon::VolumeSlider::metaObject(void) const
+	?mimeData@ObjectDescriptionModelData@Phonon@@QBEPAVQMimeData@@W4ObjectDescriptionType@2@ABV?$QList@VQModelIndex@@@@@Z @ 268 NONAME ; class QMimeData * Phonon::ObjectDescriptionModelData::mimeData(enum Phonon::ObjectDescriptionType, class QList<class QModelIndex> const &) const
+	?mimeTypes@ObjectDescriptionModelData@Phonon@@QBE?AVQStringList@@W4ObjectDescriptionType@2@@Z @ 269 NONAME ; class QStringList Phonon::ObjectDescriptionModelData::mimeTypes(enum Phonon::ObjectDescriptionType) const
+	?minimumValue@EffectParameter@Phonon@@QBE?AVQVariant@@XZ @ 270 NONAME ; class QVariant Phonon::EffectParameter::minimumValue(void) const
+	?modelData@ObjectDescriptionModelData@Phonon@@QBE?AV?$QExplicitlySharedDataPointer@VObjectDescriptionData@Phonon@@@@ABVQModelIndex@@@Z @ 271 NONAME ; class QExplicitlySharedDataPointer<class Phonon::ObjectDescriptionData> Phonon::ObjectDescriptionModelData::modelData(class QModelIndex const &) const
+	?modelData@ObjectDescriptionModelData@Phonon@@QBE?AV?$QList@V?$QExplicitlySharedDataPointer@VObjectDescriptionData@Phonon@@@@@@XZ @ 272 NONAME ; class QList<class QExplicitlySharedDataPointer<class Phonon::ObjectDescriptionData> > Phonon::ObjectDescriptionModelData::modelData(void) const
+	?mouseMoveEvent@VideoWidget@Phonon@@MAEXPAVQMouseEvent@@@Z @ 273 NONAME ; void Phonon::VideoWidget::mouseMoveEvent(class QMouseEvent *)
+	?moveDown@ObjectDescriptionModelData@Phonon@@QAEXABVQModelIndex@@@Z @ 274 NONAME ; void Phonon::ObjectDescriptionModelData::moveDown(class QModelIndex const &)
+	?moveUp@ObjectDescriptionModelData@Phonon@@QAEXABVQModelIndex@@@Z @ 275 NONAME ; void Phonon::ObjectDescriptionModelData::moveUp(class QModelIndex const &)
+	?mutedChanged@AudioOutput@Phonon@@IAEX_N@Z @ 276 NONAME ; void Phonon::AudioOutput::mutedChanged(bool)
+	?name@AudioOutput@Phonon@@QBE?AVQString@@XZ @ 277 NONAME ; class QString Phonon::AudioOutput::name(void) const
+	?name@EffectParameter@Phonon@@QBEABVQString@@XZ @ 278 NONAME ; class QString const & Phonon::EffectParameter::name(void) const
+	?name@ObjectDescriptionData@Phonon@@QBE?AVQString@@XZ @ 279 NONAME ; class QString Phonon::ObjectDescriptionData::name(void) const
+	?needData@StreamInterface@Phonon@@QAEXXZ @ 280 NONAME ; void Phonon::StreamInterface::needData(void)
+	?nextTitle@MediaController@Phonon@@QAEXXZ @ 281 NONAME ; void Phonon::MediaController::nextTitle(void)
+	?notifier@BackendCapabilities@Phonon@@YAPAVNotifier@12@XZ @ 282 NONAME ; class Phonon::BackendCapabilities::Notifier * Phonon::BackendCapabilities::notifier(void)
+	?orientation@SeekSlider@Phonon@@QBE?AW4Orientation@Qt@@XZ @ 283 NONAME ; enum Qt::Orientation Phonon::SeekSlider::orientation(void) const
+	?orientation@VolumeSlider@Phonon@@QBE?AW4Orientation@Qt@@XZ @ 284 NONAME ; enum Qt::Orientation Phonon::VolumeSlider::orientation(void) const
+	?outputDevice@AudioOutput@Phonon@@QBE?AV?$ObjectDescription@$0A@@2@XZ @ 285 NONAME ; class Phonon::ObjectDescription<0> Phonon::AudioOutput::outputDevice(void) const
+	?outputDeviceChanged@AudioOutput@Phonon@@IAEXABV?$ObjectDescription@$0A@@2@@Z @ 286 NONAME ; void Phonon::AudioOutput::outputDeviceChanged(class Phonon::ObjectDescription<0> const &)
+	?outputPaths@MediaNode@Phonon@@QBE?AV?$QList@VPath@Phonon@@@@XZ @ 287 NONAME ; class QList<class Phonon::Path> Phonon::MediaNode::outputPaths(void) const
+	?pageStep@SeekSlider@Phonon@@QBEHXZ @ 288 NONAME ; int Phonon::SeekSlider::pageStep(void) const
+	?pageStep@VolumeSlider@Phonon@@QBEHXZ @ 289 NONAME ; int Phonon::VolumeSlider::pageStep(void) const
+	?parameterValue@Effect@Phonon@@QBE?AVQVariant@@ABVEffectParameter@2@@Z @ 290 NONAME ; class QVariant Phonon::Effect::parameterValue(class Phonon::EffectParameter const &) const
+	?parameters@Effect@Phonon@@QBE?AV?$QList@VEffectParameter@Phonon@@@@XZ @ 291 NONAME ; class QList<class Phonon::EffectParameter> Phonon::Effect::parameters(void) const
+	?pause@MediaObject@Phonon@@QAEXXZ @ 292 NONAME ; void Phonon::MediaObject::pause(void)
+	?pause@VideoPlayer@Phonon@@QAEXXZ @ 293 NONAME ; void Phonon::VideoPlayer::pause(void)
+	?phononObjectDestroyed@AbstractMediaStreamPrivate@Phonon@@MAEXPAVMediaNodePrivate@2@@Z @ 294 NONAME ; void Phonon::AbstractMediaStreamPrivate::phononObjectDestroyed(class Phonon::MediaNodePrivate *)
+	?phononVersion@Phonon@@YAPBDXZ @ 295 NONAME ; char const * Phonon::phononVersion(void)
+	?platformPlugin@Factory@Phonon@@YAPAVPlatformPlugin@2@XZ @ 296 NONAME ; class Phonon::PlatformPlugin * Phonon::Factory::platformPlugin(void)
+	?play@MediaObject@Phonon@@QAEXXZ @ 297 NONAME ; void Phonon::MediaObject::play(void)
+	?play@VideoPlayer@Phonon@@QAEXABVMediaSource@2@@Z @ 298 NONAME ; void Phonon::VideoPlayer::play(class Phonon::MediaSource const &)
+	?play@VideoPlayer@Phonon@@QAEXXZ @ 299 NONAME ; void Phonon::VideoPlayer::play(void)
+	?possibleValues@EffectParameter@Phonon@@QBE?AV?$QList@VQVariant@@@@XZ @ 300 NONAME ; class QList<class QVariant> Phonon::EffectParameter::possibleValues(void) const
+	?prefinishMark@MediaObject@Phonon@@QBEHXZ @ 301 NONAME ; int Phonon::MediaObject::prefinishMark(void) const
+	?prefinishMarkReached@MediaObject@Phonon@@IAEXH@Z @ 302 NONAME ; void Phonon::MediaObject::prefinishMarkReached(int)
+	?previousTitle@MediaController@Phonon@@QAEXXZ @ 303 NONAME ; void Phonon::MediaController::previousTitle(void)
+	?property@ObjectDescriptionData@Phonon@@QBE?AVQVariant@@PBD@Z @ 304 NONAME ; class QVariant Phonon::ObjectDescriptionData::property(char const *) const
+	?propertyNames@ObjectDescriptionData@Phonon@@QBE?AV?$QList@VQByteArray@@@@XZ @ 305 NONAME ; class QList<class QByteArray> Phonon::ObjectDescriptionData::propertyNames(void) const
+	?qHash@Phonon@@YAIABVEffectParameter@1@@Z @ 306 NONAME ; unsigned int Phonon::qHash(class Phonon::EffectParameter const &)
+	?qObject@MediaNodePrivate@Phonon@@QBEPBVQObject@@XZ @ 307 NONAME ; class QObject const * Phonon::MediaNodePrivate::qObject(void) const
+	?qObject@MediaNodePrivate@Phonon@@UAEPAVQObject@@XZ @ 308 NONAME ; class QObject * Phonon::MediaNodePrivate::qObject(void)
+	?q_func@AbstractMediaStreamPrivate@Phonon@@AAEPAVAbstractMediaStream@2@XZ @ 309 NONAME ; class Phonon::AbstractMediaStream * Phonon::AbstractMediaStreamPrivate::q_func(void)
+	?q_func@AbstractMediaStreamPrivate@Phonon@@ABEPBVAbstractMediaStream@2@XZ @ 310 NONAME ; class Phonon::AbstractMediaStream const * Phonon::AbstractMediaStreamPrivate::q_func(void) const
+	?q_func@MediaNodePrivate@Phonon@@AAEPAVMediaNode@2@XZ @ 311 NONAME ; class Phonon::MediaNode * Phonon::MediaNodePrivate::q_func(void)
+	?q_func@MediaNodePrivate@Phonon@@ABEPBVMediaNode@2@XZ @ 312 NONAME ; class Phonon::MediaNode const * Phonon::MediaNodePrivate::q_func(void) const
+	?qt_metacall@AbstractAudioOutput@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 313 NONAME ; int Phonon::AbstractAudioOutput::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@AbstractMediaStream@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 314 NONAME ; int Phonon::AbstractMediaStream::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@AudioOutput@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 315 NONAME ; int Phonon::AudioOutput::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@Effect@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 316 NONAME ; int Phonon::Effect::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@EffectWidget@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 317 NONAME ; int Phonon::EffectWidget::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@MediaController@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 318 NONAME ; int Phonon::MediaController::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@MediaObject@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 319 NONAME ; int Phonon::MediaObject::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@SeekSlider@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 320 NONAME ; int Phonon::SeekSlider::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@VideoPlayer@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 321 NONAME ; int Phonon::VideoPlayer::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@VideoWidget@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 322 NONAME ; int Phonon::VideoWidget::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@VolumeFaderEffect@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 323 NONAME ; int Phonon::VolumeFaderEffect::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@VolumeSlider@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 324 NONAME ; int Phonon::VolumeSlider::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@?$ObjectDescriptionModel@$00@Phonon@@UAEPAXPBD@Z @ 325 NONAME ; void * Phonon::ObjectDescriptionModel<1>::qt_metacast(char const *)
+	?qt_metacast@?$ObjectDescriptionModel@$01@Phonon@@UAEPAXPBD@Z @ 326 NONAME ; void * Phonon::ObjectDescriptionModel<2>::qt_metacast(char const *)
+	?qt_metacast@?$ObjectDescriptionModel@$02@Phonon@@UAEPAXPBD@Z @ 327 NONAME ; void * Phonon::ObjectDescriptionModel<3>::qt_metacast(char const *)
+	?qt_metacast@?$ObjectDescriptionModel@$03@Phonon@@UAEPAXPBD@Z @ 328 NONAME ; void * Phonon::ObjectDescriptionModel<4>::qt_metacast(char const *)
+	?qt_metacast@?$ObjectDescriptionModel@$0A@@Phonon@@UAEPAXPBD@Z @ 329 NONAME ; void * Phonon::ObjectDescriptionModel<0>::qt_metacast(char const *)
+	?qt_metacast@AbstractAudioOutput@Phonon@@UAEPAXPBD@Z @ 330 NONAME ; void * Phonon::AbstractAudioOutput::qt_metacast(char const *)
+	?qt_metacast@AbstractMediaStream@Phonon@@UAEPAXPBD@Z @ 331 NONAME ; void * Phonon::AbstractMediaStream::qt_metacast(char const *)
+	?qt_metacast@AudioOutput@Phonon@@UAEPAXPBD@Z @ 332 NONAME ; void * Phonon::AudioOutput::qt_metacast(char const *)
+	?qt_metacast@Effect@Phonon@@UAEPAXPBD@Z @ 333 NONAME ; void * Phonon::Effect::qt_metacast(char const *)
+	?qt_metacast@EffectWidget@Phonon@@UAEPAXPBD@Z @ 334 NONAME ; void * Phonon::EffectWidget::qt_metacast(char const *)
+	?qt_metacast@MediaController@Phonon@@UAEPAXPBD@Z @ 335 NONAME ; void * Phonon::MediaController::qt_metacast(char const *)
+	?qt_metacast@MediaObject@Phonon@@UAEPAXPBD@Z @ 336 NONAME ; void * Phonon::MediaObject::qt_metacast(char const *)
+	?qt_metacast@SeekSlider@Phonon@@UAEPAXPBD@Z @ 337 NONAME ; void * Phonon::SeekSlider::qt_metacast(char const *)
+	?qt_metacast@VideoPlayer@Phonon@@UAEPAXPBD@Z @ 338 NONAME ; void * Phonon::VideoPlayer::qt_metacast(char const *)
+	?qt_metacast@VideoWidget@Phonon@@UAEPAXPBD@Z @ 339 NONAME ; void * Phonon::VideoWidget::qt_metacast(char const *)
+	?qt_metacast@VolumeFaderEffect@Phonon@@UAEPAXPBD@Z @ 340 NONAME ; void * Phonon::VolumeFaderEffect::qt_metacast(char const *)
+	?qt_metacast@VolumeSlider@Phonon@@UAEPAXPBD@Z @ 341 NONAME ; void * Phonon::VolumeSlider::qt_metacast(char const *)
+	?queue@MediaObject@Phonon@@QBE?AV?$QList@VMediaSource@Phonon@@@@XZ @ 342 NONAME ; class QList<class Phonon::MediaSource> Phonon::MediaObject::queue(void) const
+	?reconnect@Path@Phonon@@QAE_NPAVMediaNode@2@0@Z @ 343 NONAME ; bool Phonon::Path::reconnect(class Phonon::MediaNode *, class Phonon::MediaNode *)
+	?registerFrontendObject@Factory@Phonon@@YAXPAVMediaNodePrivate@2@@Z @ 344 NONAME ; void Phonon::Factory::registerFrontendObject(class Phonon::MediaNodePrivate *)
+	?registerQObject@Factory@Phonon@@YAPAVQObject@@PAV3@@Z @ 345 NONAME ; class QObject * Phonon::Factory::registerQObject(class QObject *)
+	?remainingTime@MediaObject@Phonon@@QBE_JXZ @ 346 NONAME ; long long Phonon::MediaObject::remainingTime(void) const
+	?removeDestructionHandler@MediaNodePrivate@Phonon@@QAEXPAVMediaNodeDestructionHandler@2@@Z @ 347 NONAME ; void Phonon::MediaNodePrivate::removeDestructionHandler(class Phonon::MediaNodeDestructionHandler *)
+	?removeEffect@Path@Phonon@@QAE_NPAVEffect@2@@Z @ 348 NONAME ; bool Phonon::Path::removeEffect(class Phonon::Effect *)
+	?removeInputPath@MediaNodePrivate@Phonon@@QAEXABVPath@2@@Z @ 349 NONAME ; void Phonon::MediaNodePrivate::removeInputPath(class Phonon::Path const &)
+	?removeOutputPath@MediaNodePrivate@Phonon@@QAEXABVPath@2@@Z @ 350 NONAME ; void Phonon::MediaNodePrivate::removeOutputPath(class Phonon::Path const &)
+	?removeRows@ObjectDescriptionModelData@Phonon@@QAE_NHHABVQModelIndex@@@Z @ 351 NONAME ; bool Phonon::ObjectDescriptionModelData::removeRows(int, int, class QModelIndex const &)
+	?reset@StreamInterface@Phonon@@QAEXXZ @ 352 NONAME ; void Phonon::StreamInterface::reset(void)
+	?rowCount@ObjectDescriptionModelData@Phonon@@QBEHABVQModelIndex@@@Z @ 353 NONAME ; int Phonon::ObjectDescriptionModelData::rowCount(class QModelIndex const &) const
+	?saturation@VideoWidget@Phonon@@QBEMXZ @ 354 NONAME ; float Phonon::VideoWidget::saturation(void) const
+	?scaleMode@VideoWidget@Phonon@@QBE?AW4ScaleMode@12@XZ @ 355 NONAME ; enum Phonon::VideoWidget::ScaleMode Phonon::VideoWidget::scaleMode(void) const
+	?seek@MediaObject@Phonon@@QAEX_J@Z @ 356 NONAME ; void Phonon::MediaObject::seek(long long)
+	?seek@VideoPlayer@Phonon@@QAEX_J@Z @ 357 NONAME ; void Phonon::VideoPlayer::seek(long long)
+	?seekStream@AbstractMediaStream@Phonon@@MAEX_J@Z @ 358 NONAME ; void Phonon::AbstractMediaStream::seekStream(long long)
+	?seekStream@StreamInterface@Phonon@@QAEX_J@Z @ 359 NONAME ; void Phonon::StreamInterface::seekStream(long long)
+	?seekableChanged@MediaObject@Phonon@@IAEX_N@Z @ 360 NONAME ; void Phonon::MediaObject::seekableChanged(bool)
+	?sender@Factory@Phonon@@YAPAVSender@12@XZ @ 361 NONAME ; class Phonon::Factory::Sender * Phonon::Factory::sender(void)
+	?setAspectRatio@VideoWidget@Phonon@@QAEXW4AspectRatio@12@@Z @ 362 NONAME ; void Phonon::VideoWidget::setAspectRatio(enum Phonon::VideoWidget::AspectRatio)
+	?setAudioOutput@VolumeSlider@Phonon@@QAEXPAVAudioOutput@2@@Z @ 363 NONAME ; void Phonon::VolumeSlider::setAudioOutput(class Phonon::AudioOutput *)
+	?setAutoDelete@MediaSource@Phonon@@QAEX_N@Z @ 364 NONAME ; void Phonon::MediaSource::setAutoDelete(bool)
+	?setAutoplayTitles@MediaController@Phonon@@QAEX_N@Z @ 365 NONAME ; void Phonon::MediaController::setAutoplayTitles(bool)
+	?setBackend@Factory@Phonon@@YAXPAVQObject@@@Z @ 366 NONAME ; void Phonon::Factory::setBackend(class QObject *)
+	?setBrightness@VideoWidget@Phonon@@QAEXM@Z @ 367 NONAME ; void Phonon::VideoWidget::setBrightness(float)
+	?setContrast@VideoWidget@Phonon@@QAEXM@Z @ 368 NONAME ; void Phonon::VideoWidget::setContrast(float)
+	?setCurrentAngle@MediaController@Phonon@@QAEXH@Z @ 369 NONAME ; void Phonon::MediaController::setCurrentAngle(int)
+	?setCurrentAudioChannel@MediaController@Phonon@@QAEXABV?$ObjectDescription@$01@2@@Z @ 370 NONAME ; void Phonon::MediaController::setCurrentAudioChannel(class Phonon::ObjectDescription<2> const &)
+	?setCurrentChapter@MediaController@Phonon@@QAEXH@Z @ 371 NONAME ; void Phonon::MediaController::setCurrentChapter(int)
+	?setCurrentSource@MediaObject@Phonon@@QAEXABVMediaSource@2@@Z @ 372 NONAME ; void Phonon::MediaObject::setCurrentSource(class Phonon::MediaSource const &)
+	?setCurrentSubtitle@MediaController@Phonon@@QAEXABV?$ObjectDescription@$02@2@@Z @ 373 NONAME ; void Phonon::MediaController::setCurrentSubtitle(class Phonon::ObjectDescription<3> const &)
+	?setCurrentTitle@MediaController@Phonon@@QAEXH@Z @ 374 NONAME ; void Phonon::MediaController::setCurrentTitle(int)
+	?setFadeCurve@VolumeFaderEffect@Phonon@@QAEXW4FadeCurve@12@@Z @ 375 NONAME ; void Phonon::VolumeFaderEffect::setFadeCurve(enum Phonon::VolumeFaderEffect::FadeCurve)
+	?setFullScreen@VideoWidget@Phonon@@QAEX_N@Z @ 376 NONAME ; void Phonon::VideoWidget::setFullScreen(bool)
+	?setHue@VideoWidget@Phonon@@QAEXM@Z @ 377 NONAME ; void Phonon::VideoWidget::setHue(float)
+	?setIconSize@SeekSlider@Phonon@@QAEXABVQSize@@@Z @ 378 NONAME ; void Phonon::SeekSlider::setIconSize(class QSize const &)
+	?setIconSize@VolumeSlider@Phonon@@QAEXABVQSize@@@Z @ 379 NONAME ; void Phonon::VolumeSlider::setIconSize(class QSize const &)
+	?setIconVisible@SeekSlider@Phonon@@QAEX_N@Z @ 380 NONAME ; void Phonon::SeekSlider::setIconVisible(bool)
+	?setMaximumVolume@VolumeSlider@Phonon@@QAEXM@Z @ 381 NONAME ; void Phonon::VolumeSlider::setMaximumVolume(float)
+	?setMediaObject@SeekSlider@Phonon@@QAEXPAVMediaObject@2@@Z @ 382 NONAME ; void Phonon::SeekSlider::setMediaObject(class Phonon::MediaObject *)
+	?setMediaObjectPrivate@AbstractMediaStreamPrivate@Phonon@@QAEXPAVMediaObjectPrivate@2@@Z @ 383 NONAME ; void Phonon::AbstractMediaStreamPrivate::setMediaObjectPrivate(class Phonon::MediaObjectPrivate *)
+	?setModelData@ObjectDescriptionModelData@Phonon@@QAEXABV?$QList@V?$QExplicitlySharedDataPointer@VObjectDescriptionData@Phonon@@@@@@@Z @ 384 NONAME ; void Phonon::ObjectDescriptionModelData::setModelData(class QList<class QExplicitlySharedDataPointer<class Phonon::ObjectDescriptionData> > const &)
+	?setMuteVisible@VolumeSlider@Phonon@@QAEX_N@Z @ 385 NONAME ; void Phonon::VolumeSlider::setMuteVisible(bool)
+	?setMuted@AudioOutput@Phonon@@QAEX_N@Z @ 386 NONAME ; void Phonon::AudioOutput::setMuted(bool)
+	?setName@AudioOutput@Phonon@@QAEXABVQString@@@Z @ 387 NONAME ; void Phonon::AudioOutput::setName(class QString const &)
+	?setOrientation@SeekSlider@Phonon@@QAEXW4Orientation@Qt@@@Z @ 388 NONAME ; void Phonon::SeekSlider::setOrientation(enum Qt::Orientation)
+	?setOrientation@VolumeSlider@Phonon@@QAEXW4Orientation@Qt@@@Z @ 389 NONAME ; void Phonon::VolumeSlider::setOrientation(enum Qt::Orientation)
+	?setOutputDevice@AudioOutput@Phonon@@QAE_NABV?$ObjectDescription@$0A@@2@@Z @ 390 NONAME ; bool Phonon::AudioOutput::setOutputDevice(class Phonon::ObjectDescription<0> const &)
+	?setPageStep@SeekSlider@Phonon@@QAEXH@Z @ 391 NONAME ; void Phonon::SeekSlider::setPageStep(int)
+	?setPageStep@VolumeSlider@Phonon@@QAEXH@Z @ 392 NONAME ; void Phonon::VolumeSlider::setPageStep(int)
+	?setParameterValue@Effect@Phonon@@QAEXABVEffectParameter@2@ABVQVariant@@@Z @ 393 NONAME ; void Phonon::Effect::setParameterValue(class Phonon::EffectParameter const &, class QVariant const &)
+	?setPrefinishMark@MediaObject@Phonon@@QAEXH@Z @ 394 NONAME ; void Phonon::MediaObject::setPrefinishMark(int)
+	?setQueue@MediaObject@Phonon@@QAEXABV?$QList@VMediaSource@Phonon@@@@@Z @ 395 NONAME ; void Phonon::MediaObject::setQueue(class QList<class Phonon::MediaSource> const &)
+	?setQueue@MediaObject@Phonon@@QAEXABV?$QList@VQUrl@@@@@Z @ 396 NONAME ; void Phonon::MediaObject::setQueue(class QList<class QUrl> const &)
+	?setSaturation@VideoWidget@Phonon@@QAEXM@Z @ 397 NONAME ; void Phonon::VideoWidget::setSaturation(float)
+	?setScaleMode@VideoWidget@Phonon@@QAEXW4ScaleMode@12@@Z @ 398 NONAME ; void Phonon::VideoWidget::setScaleMode(enum Phonon::VideoWidget::ScaleMode)
+	?setSingleStep@SeekSlider@Phonon@@QAEXH@Z @ 399 NONAME ; void Phonon::SeekSlider::setSingleStep(int)
+	?setSingleStep@VolumeSlider@Phonon@@QAEXH@Z @ 400 NONAME ; void Phonon::VolumeSlider::setSingleStep(int)
+	?setStream@MediaSourcePrivate@Phonon@@QAEXPAVAbstractMediaStream@2@@Z @ 401 NONAME ; void Phonon::MediaSourcePrivate::setStream(class Phonon::AbstractMediaStream *)
+	?setStreamInterface@AbstractMediaStreamPrivate@Phonon@@QAEXPAVStreamInterface@2@@Z @ 402 NONAME ; void Phonon::AbstractMediaStreamPrivate::setStreamInterface(class Phonon::StreamInterface *)
+	?setStreamSeekable@AbstractMediaStream@Phonon@@IAEX_N@Z @ 403 NONAME ; void Phonon::AbstractMediaStream::setStreamSeekable(bool)
+	?setStreamSeekable@AbstractMediaStreamPrivate@Phonon@@MAEX_N@Z @ 404 NONAME ; void Phonon::AbstractMediaStreamPrivate::setStreamSeekable(bool)
+	?setStreamSize@AbstractMediaStream@Phonon@@IAEX_J@Z @ 405 NONAME ; void Phonon::AbstractMediaStream::setStreamSize(long long)
+	?setStreamSize@AbstractMediaStreamPrivate@Phonon@@MAEX_J@Z @ 406 NONAME ; void Phonon::AbstractMediaStreamPrivate::setStreamSize(long long)
+	?setTickInterval@MediaObject@Phonon@@QAEXH@Z @ 407 NONAME ; void Phonon::MediaObject::setTickInterval(int)
+	?setTracking@SeekSlider@Phonon@@QAEX_N@Z @ 408 NONAME ; void Phonon::SeekSlider::setTracking(bool)
+	?setTracking@VolumeSlider@Phonon@@QAEX_N@Z @ 409 NONAME ; void Phonon::VolumeSlider::setTracking(bool)
+	?setTransitionTime@MediaObject@Phonon@@QAEXH@Z @ 410 NONAME ; void Phonon::MediaObject::setTransitionTime(int)
+	?setVolume@AudioOutput@Phonon@@QAEXM@Z @ 411 NONAME ; void Phonon::AudioOutput::setVolume(float)
+	?setVolume@VideoPlayer@Phonon@@QAEXM@Z @ 412 NONAME ; void Phonon::VideoPlayer::setVolume(float)
+	?setVolume@VolumeFaderEffect@Phonon@@QAEXM@Z @ 413 NONAME ; void Phonon::VolumeFaderEffect::setVolume(float)
+	?setVolumeDecibel@AudioOutput@Phonon@@QAEXM@Z @ 414 NONAME ; void Phonon::AudioOutput::setVolumeDecibel(float)
+	?setVolumeDecibel@VolumeFaderEffect@Phonon@@QAEXN@Z @ 415 NONAME ; void Phonon::VolumeFaderEffect::setVolumeDecibel(double)
+	?setupBackendObject@MediaObjectPrivate@Phonon@@IAEXXZ @ 416 NONAME ; void Phonon::MediaObjectPrivate::setupBackendObject(void)
+	?singleStep@SeekSlider@Phonon@@QBEHXZ @ 417 NONAME ; int Phonon::SeekSlider::singleStep(void) const
+	?singleStep@VolumeSlider@Phonon@@QBEHXZ @ 418 NONAME ; int Phonon::VolumeSlider::singleStep(void) const
+	?sink@Path@Phonon@@QBEPAVMediaNode@2@XZ @ 419 NONAME ; class Phonon::MediaNode * Phonon::Path::sink(void) const
+	?source@Path@Phonon@@QBEPAVMediaNode@2@XZ @ 420 NONAME ; class Phonon::MediaNode * Phonon::Path::source(void) const
+	?state@MediaObject@Phonon@@QBE?AW4State@2@XZ @ 421 NONAME ; enum Phonon::State Phonon::MediaObject::state(void) const
+	?stateChanged@MediaObject@Phonon@@IAEXW4State@2@0@Z @ 422 NONAME ; void Phonon::MediaObject::stateChanged(enum Phonon::State, enum Phonon::State)
+	?stop@MediaObject@Phonon@@QAEXXZ @ 423 NONAME ; void Phonon::MediaObject::stop(void)
+	?stop@VideoPlayer@Phonon@@QAEXXZ @ 424 NONAME ; void Phonon::VideoPlayer::stop(void)
+	?stream@MediaSource@Phonon@@QBEPAVAbstractMediaStream@2@XZ @ 425 NONAME ; class Phonon::AbstractMediaStream * Phonon::MediaSource::stream(void) const
+	?streamSeekable@AbstractMediaStream@Phonon@@IBE_NXZ @ 426 NONAME ; bool Phonon::AbstractMediaStream::streamSeekable(void) const
+	?streamSize@AbstractMediaStream@Phonon@@IBE_JXZ @ 427 NONAME ; long long Phonon::AbstractMediaStream::streamSize(void) const
+	?supportedDropActions@ObjectDescriptionModelData@Phonon@@QBE?AV?$QFlags@W4DropAction@Qt@@@@XZ @ 428 NONAME ; class QFlags<enum Qt::DropAction> Phonon::ObjectDescriptionModelData::supportedDropActions(void) const
+	?supportedFeatures@MediaController@Phonon@@QBE?AV?$QFlags@W4Feature@MediaController@Phonon@@@@XZ @ 429 NONAME ; class QFlags<enum Phonon::MediaController::Feature> Phonon::MediaController::supportedFeatures(void) const
+	?tick@MediaObject@Phonon@@IAEX_J@Z @ 430 NONAME ; void Phonon::MediaObject::tick(long long)
+	?tickInterval@MediaObject@Phonon@@QBEHXZ @ 431 NONAME ; int Phonon::MediaObject::tickInterval(void) const
+	?titleChanged@MediaController@Phonon@@IAEXH@Z @ 432 NONAME ; void Phonon::MediaController::titleChanged(int)
+	?totalTime@MediaObject@Phonon@@QBE_JXZ @ 433 NONAME ; long long Phonon::MediaObject::totalTime(void) const
+	?totalTime@VideoPlayer@Phonon@@QBE_JXZ @ 434 NONAME ; long long Phonon::VideoPlayer::totalTime(void) const
+	?totalTimeChanged@MediaObject@Phonon@@IAEX_J@Z @ 435 NONAME ; void Phonon::MediaObject::totalTimeChanged(long long)
+	?tr@AbstractAudioOutput@Phonon@@SA?AVQString@@PBD0@Z @ 436 NONAME ; class QString Phonon::AbstractAudioOutput::tr(char const *, char const *)
+	?tr@AbstractAudioOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 437 NONAME ; class QString Phonon::AbstractAudioOutput::tr(char const *, char const *, int)
+	?tr@AbstractMediaStream@Phonon@@SA?AVQString@@PBD0@Z @ 438 NONAME ; class QString Phonon::AbstractMediaStream::tr(char const *, char const *)
+	?tr@AbstractMediaStream@Phonon@@SA?AVQString@@PBD0H@Z @ 439 NONAME ; class QString Phonon::AbstractMediaStream::tr(char const *, char const *, int)
+	?tr@AudioOutput@Phonon@@SA?AVQString@@PBD0@Z @ 440 NONAME ; class QString Phonon::AudioOutput::tr(char const *, char const *)
+	?tr@AudioOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 441 NONAME ; class QString Phonon::AudioOutput::tr(char const *, char const *, int)
+	?tr@Effect@Phonon@@SA?AVQString@@PBD0@Z @ 442 NONAME ; class QString Phonon::Effect::tr(char const *, char const *)
+	?tr@Effect@Phonon@@SA?AVQString@@PBD0H@Z @ 443 NONAME ; class QString Phonon::Effect::tr(char const *, char const *, int)
+	?tr@EffectWidget@Phonon@@SA?AVQString@@PBD0@Z @ 444 NONAME ; class QString Phonon::EffectWidget::tr(char const *, char const *)
+	?tr@EffectWidget@Phonon@@SA?AVQString@@PBD0H@Z @ 445 NONAME ; class QString Phonon::EffectWidget::tr(char const *, char const *, int)
+	?tr@MediaController@Phonon@@SA?AVQString@@PBD0@Z @ 446 NONAME ; class QString Phonon::MediaController::tr(char const *, char const *)
+	?tr@MediaController@Phonon@@SA?AVQString@@PBD0H@Z @ 447 NONAME ; class QString Phonon::MediaController::tr(char const *, char const *, int)
+	?tr@MediaObject@Phonon@@SA?AVQString@@PBD0@Z @ 448 NONAME ; class QString Phonon::MediaObject::tr(char const *, char const *)
+	?tr@MediaObject@Phonon@@SA?AVQString@@PBD0H@Z @ 449 NONAME ; class QString Phonon::MediaObject::tr(char const *, char const *, int)
+	?tr@SeekSlider@Phonon@@SA?AVQString@@PBD0@Z @ 450 NONAME ; class QString Phonon::SeekSlider::tr(char const *, char const *)
+	?tr@SeekSlider@Phonon@@SA?AVQString@@PBD0H@Z @ 451 NONAME ; class QString Phonon::SeekSlider::tr(char const *, char const *, int)
+	?tr@VideoPlayer@Phonon@@SA?AVQString@@PBD0@Z @ 452 NONAME ; class QString Phonon::VideoPlayer::tr(char const *, char const *)
+	?tr@VideoPlayer@Phonon@@SA?AVQString@@PBD0H@Z @ 453 NONAME ; class QString Phonon::VideoPlayer::tr(char const *, char const *, int)
+	?tr@VideoWidget@Phonon@@SA?AVQString@@PBD0@Z @ 454 NONAME ; class QString Phonon::VideoWidget::tr(char const *, char const *)
+	?tr@VideoWidget@Phonon@@SA?AVQString@@PBD0H@Z @ 455 NONAME ; class QString Phonon::VideoWidget::tr(char const *, char const *, int)
+	?tr@VolumeFaderEffect@Phonon@@SA?AVQString@@PBD0@Z @ 456 NONAME ; class QString Phonon::VolumeFaderEffect::tr(char const *, char const *)
+	?tr@VolumeFaderEffect@Phonon@@SA?AVQString@@PBD0H@Z @ 457 NONAME ; class QString Phonon::VolumeFaderEffect::tr(char const *, char const *, int)
+	?tr@VolumeSlider@Phonon@@SA?AVQString@@PBD0@Z @ 458 NONAME ; class QString Phonon::VolumeSlider::tr(char const *, char const *)
+	?tr@VolumeSlider@Phonon@@SA?AVQString@@PBD0H@Z @ 459 NONAME ; class QString Phonon::VolumeSlider::tr(char const *, char const *, int)
+	?trUtf8@AbstractAudioOutput@Phonon@@SA?AVQString@@PBD0@Z @ 460 NONAME ; class QString Phonon::AbstractAudioOutput::trUtf8(char const *, char const *)
+	?trUtf8@AbstractAudioOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 461 NONAME ; class QString Phonon::AbstractAudioOutput::trUtf8(char const *, char const *, int)
+	?trUtf8@AbstractMediaStream@Phonon@@SA?AVQString@@PBD0@Z @ 462 NONAME ; class QString Phonon::AbstractMediaStream::trUtf8(char const *, char const *)
+	?trUtf8@AbstractMediaStream@Phonon@@SA?AVQString@@PBD0H@Z @ 463 NONAME ; class QString Phonon::AbstractMediaStream::trUtf8(char const *, char const *, int)
+	?trUtf8@AudioOutput@Phonon@@SA?AVQString@@PBD0@Z @ 464 NONAME ; class QString Phonon::AudioOutput::trUtf8(char const *, char const *)
+	?trUtf8@AudioOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 465 NONAME ; class QString Phonon::AudioOutput::trUtf8(char const *, char const *, int)
+	?trUtf8@Effect@Phonon@@SA?AVQString@@PBD0@Z @ 466 NONAME ; class QString Phonon::Effect::trUtf8(char const *, char const *)
+	?trUtf8@Effect@Phonon@@SA?AVQString@@PBD0H@Z @ 467 NONAME ; class QString Phonon::Effect::trUtf8(char const *, char const *, int)
+	?trUtf8@EffectWidget@Phonon@@SA?AVQString@@PBD0@Z @ 468 NONAME ; class QString Phonon::EffectWidget::trUtf8(char const *, char const *)
+	?trUtf8@EffectWidget@Phonon@@SA?AVQString@@PBD0H@Z @ 469 NONAME ; class QString Phonon::EffectWidget::trUtf8(char const *, char const *, int)
+	?trUtf8@MediaController@Phonon@@SA?AVQString@@PBD0@Z @ 470 NONAME ; class QString Phonon::MediaController::trUtf8(char const *, char const *)
+	?trUtf8@MediaController@Phonon@@SA?AVQString@@PBD0H@Z @ 471 NONAME ; class QString Phonon::MediaController::trUtf8(char const *, char const *, int)
+	?trUtf8@MediaObject@Phonon@@SA?AVQString@@PBD0@Z @ 472 NONAME ; class QString Phonon::MediaObject::trUtf8(char const *, char const *)
+	?trUtf8@MediaObject@Phonon@@SA?AVQString@@PBD0H@Z @ 473 NONAME ; class QString Phonon::MediaObject::trUtf8(char const *, char const *, int)
+	?trUtf8@SeekSlider@Phonon@@SA?AVQString@@PBD0@Z @ 474 NONAME ; class QString Phonon::SeekSlider::trUtf8(char const *, char const *)
+	?trUtf8@SeekSlider@Phonon@@SA?AVQString@@PBD0H@Z @ 475 NONAME ; class QString Phonon::SeekSlider::trUtf8(char const *, char const *, int)
+	?trUtf8@VideoPlayer@Phonon@@SA?AVQString@@PBD0@Z @ 476 NONAME ; class QString Phonon::VideoPlayer::trUtf8(char const *, char const *)
+	?trUtf8@VideoPlayer@Phonon@@SA?AVQString@@PBD0H@Z @ 477 NONAME ; class QString Phonon::VideoPlayer::trUtf8(char const *, char const *, int)
+	?trUtf8@VideoWidget@Phonon@@SA?AVQString@@PBD0@Z @ 478 NONAME ; class QString Phonon::VideoWidget::trUtf8(char const *, char const *)
+	?trUtf8@VideoWidget@Phonon@@SA?AVQString@@PBD0H@Z @ 479 NONAME ; class QString Phonon::VideoWidget::trUtf8(char const *, char const *, int)
+	?trUtf8@VolumeFaderEffect@Phonon@@SA?AVQString@@PBD0@Z @ 480 NONAME ; class QString Phonon::VolumeFaderEffect::trUtf8(char const *, char const *)
+	?trUtf8@VolumeFaderEffect@Phonon@@SA?AVQString@@PBD0H@Z @ 481 NONAME ; class QString Phonon::VolumeFaderEffect::trUtf8(char const *, char const *, int)
+	?trUtf8@VolumeSlider@Phonon@@SA?AVQString@@PBD0@Z @ 482 NONAME ; class QString Phonon::VolumeSlider::trUtf8(char const *, char const *)
+	?trUtf8@VolumeSlider@Phonon@@SA?AVQString@@PBD0H@Z @ 483 NONAME ; class QString Phonon::VolumeSlider::trUtf8(char const *, char const *, int)
+	?transitionTime@MediaObject@Phonon@@QBEHXZ @ 484 NONAME ; int Phonon::MediaObject::transitionTime(void) const
+	?tupleIndexAtPositionIndex@ObjectDescriptionModelData@Phonon@@QBEHH@Z @ 485 NONAME ; int Phonon::ObjectDescriptionModelData::tupleIndexAtPositionIndex(int) const
+	?tupleIndexOrder@ObjectDescriptionModelData@Phonon@@QBE?AV?$QList@H@@XZ @ 486 NONAME ; class QList<int> Phonon::ObjectDescriptionModelData::tupleIndexOrder(void) const
+	?type@EffectParameter@Phonon@@QBE?AW4Type@QVariant@@XZ @ 487 NONAME ; enum QVariant::Type Phonon::EffectParameter::type(void) const
+	?type@MediaSource@Phonon@@QBE?AW4Type@12@XZ @ 488 NONAME ; enum Phonon::MediaSource::Type Phonon::MediaSource::type(void) const
+	?url@MediaSource@Phonon@@QBE?AVQUrl@@XZ @ 489 NONAME ; class QUrl Phonon::MediaSource::url(void) const
+	?videoWidget@VideoPlayer@Phonon@@QBEPAVVideoWidget@2@XZ @ 490 NONAME ; class Phonon::VideoWidget * Phonon::VideoPlayer::videoWidget(void) const
+	?volume@AudioOutput@Phonon@@QBEMXZ @ 491 NONAME ; float Phonon::AudioOutput::volume(void) const
+	?volume@VideoPlayer@Phonon@@QBEMXZ @ 492 NONAME ; float Phonon::VideoPlayer::volume(void) const
+	?volume@VolumeFaderEffect@Phonon@@QBEMXZ @ 493 NONAME ; float Phonon::VolumeFaderEffect::volume(void) const
+	?volumeChanged@AudioOutput@Phonon@@IAEXM@Z @ 494 NONAME ; void Phonon::AudioOutput::volumeChanged(float)
+	?volumeDecibel@AudioOutput@Phonon@@QBEMXZ @ 495 NONAME ; float Phonon::AudioOutput::volumeDecibel(void) const
+	?volumeDecibel@VolumeFaderEffect@Phonon@@QBENXZ @ 496 NONAME ; double Phonon::VolumeFaderEffect::volumeDecibel(void) const
+	?writeData@AbstractMediaStream@Phonon@@IAEXABVQByteArray@@@Z @ 497 NONAME ; void Phonon::AbstractMediaStream::writeData(class QByteArray const &)
+	?writeData@AbstractMediaStreamPrivate@Phonon@@MAEXABVQByteArray@@@Z @ 498 NONAME ; void Phonon::AbstractMediaStreamPrivate::writeData(class QByteArray const &)
+	?staticMetaObject@AbstractAudioOutput@Phonon@@2UQMetaObject@@B @ 499 NONAME ; struct QMetaObject const Phonon::AbstractAudioOutput::staticMetaObject
+	?staticMetaObject@VolumeFaderEffect@Phonon@@2UQMetaObject@@B @ 500 NONAME ; struct QMetaObject const Phonon::VolumeFaderEffect::staticMetaObject
+	?staticMetaObject@VideoPlayer@Phonon@@2UQMetaObject@@B @ 501 NONAME ; struct QMetaObject const Phonon::VideoPlayer::staticMetaObject
+	?staticMetaObject@?$ObjectDescriptionModel@$03@Phonon@@2UQMetaObject@@B @ 502 NONAME ; struct QMetaObject const Phonon::ObjectDescriptionModel<4>::staticMetaObject
+	?staticMetaObject@EffectWidget@Phonon@@2UQMetaObject@@B @ 503 NONAME ; struct QMetaObject const Phonon::EffectWidget::staticMetaObject
+	?staticMetaObject@MediaObject@Phonon@@2UQMetaObject@@B @ 504 NONAME ; struct QMetaObject const Phonon::MediaObject::staticMetaObject
+	?staticMetaObject@AbstractMediaStream@Phonon@@2UQMetaObject@@B @ 505 NONAME ; struct QMetaObject const Phonon::AbstractMediaStream::staticMetaObject
+	?staticMetaObject@Effect@Phonon@@2UQMetaObject@@B @ 506 NONAME ; struct QMetaObject const Phonon::Effect::staticMetaObject
+	?staticMetaObject@?$ObjectDescriptionModel@$02@Phonon@@2UQMetaObject@@B @ 507 NONAME ; struct QMetaObject const Phonon::ObjectDescriptionModel<3>::staticMetaObject
+	?staticMetaObject@VolumeSlider@Phonon@@2UQMetaObject@@B @ 508 NONAME ; struct QMetaObject const Phonon::VolumeSlider::staticMetaObject
+	?staticMetaObject@?$ObjectDescriptionModel@$00@Phonon@@2UQMetaObject@@B @ 509 NONAME ; struct QMetaObject const Phonon::ObjectDescriptionModel<1>::staticMetaObject
+	?staticMetaObject@MediaController@Phonon@@2UQMetaObject@@B @ 510 NONAME ; struct QMetaObject const Phonon::MediaController::staticMetaObject
+	?staticMetaObject@?$ObjectDescriptionModel@$0A@@Phonon@@2UQMetaObject@@B @ 511 NONAME ; struct QMetaObject const Phonon::ObjectDescriptionModel<0>::staticMetaObject
+	?staticMetaObject@?$ObjectDescriptionModel@$01@Phonon@@2UQMetaObject@@B @ 512 NONAME ; struct QMetaObject const Phonon::ObjectDescriptionModel<2>::staticMetaObject
+	?staticMetaObject@AudioOutput@Phonon@@2UQMetaObject@@B @ 513 NONAME ; struct QMetaObject const Phonon::AudioOutput::staticMetaObject
+	?staticMetaObject@VideoWidget@Phonon@@2UQMetaObject@@B @ 514 NONAME ; struct QMetaObject const Phonon::VideoWidget::staticMetaObject
+	?staticMetaObject@SeekSlider@Phonon@@2UQMetaObject@@B @ 515 NONAME ; struct QMetaObject const Phonon::SeekSlider::staticMetaObject
+	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 516 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *, int)
+	?setHideAdvancedDevices@GlobalConfig@Phonon@@QAEX_N@Z @ 517 NONAME ; void Phonon::GlobalConfig::setHideAdvancedDevices(bool)
+	??_EAudioDataOutput@Phonon@@UAE@I@Z @ 518 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(unsigned int)
+	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 519 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *)
+	?setDataSize@AudioDataOutput@Phonon@@QAEXH@Z @ 520 NONAME ; void Phonon::AudioDataOutput::setDataSize(int)
+	?qt_metacall@AudioDataOutput@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 521 NONAME ; int Phonon::AudioDataOutput::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?getStaticMetaObject@AudioDataOutput@Phonon@@SAABUQMetaObject@@XZ @ 522 NONAME ; struct QMetaObject const & Phonon::AudioDataOutput::getStaticMetaObject(void)
+	?createAudioDataOutput@Factory@Phonon@@YAPAVQObject@@PAV3@@Z @ 523 NONAME ; class QObject * Phonon::Factory::createAudioDataOutput(class QObject *)
+	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 524 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *)
+	??1AudioDataOutput@Phonon@@UAE@XZ @ 525 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(void)
+	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 526 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *, int)
+	?staticMetaObject@PulseSupport@Phonon@@2UQMetaObject@@B @ 527 NONAME ; struct QMetaObject const Phonon::PulseSupport::staticMetaObject
+	??1PulseSupport@Phonon@@EAE@XZ @ 528 NONAME ; Phonon::PulseSupport::~PulseSupport(void)
+	?metaObject@PulseSupport@Phonon@@UBEPBUQMetaObject@@XZ @ 529 NONAME ; struct QMetaObject const * Phonon::PulseSupport::metaObject(void) const
+	?emitObjectDescriptionChanged@PulseSupport@Phonon@@QAEXW4ObjectDescriptionType@2@@Z @ 530 NONAME ; void Phonon::PulseSupport::emitObjectDescriptionChanged(enum Phonon::ObjectDescriptionType)
+	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 531 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *, int)
+	?sampleRate@AudioDataOutput@Phonon@@QBEHXZ @ 532 NONAME ; int Phonon::AudioDataOutput::sampleRate(void) const
+	?qt_metacast@PulseSupport@Phonon@@UAEPAXPBD@Z @ 533 NONAME ; void * Phonon::PulseSupport::qt_metacast(char const *)
+	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 534 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *, int)
+	?enable@PulseSupport@Phonon@@QAEX_N@Z @ 535 NONAME ; void Phonon::PulseSupport::enable(bool)
+	?staticMetaObject@AudioDataOutput@Phonon@@2UQMetaObject@@B @ 536 NONAME ; struct QMetaObject const Phonon::AudioDataOutput::staticMetaObject
+	?hideAdvancedDevices@GlobalConfig@Phonon@@QBE_NXZ @ 537 NONAME ; bool Phonon::GlobalConfig::hideAdvancedDevices(void) const
+	?setOutputDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 538 NONAME ; void Phonon::PulseSupport::setOutputDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
+	??0AudioDataOutput@Phonon@@QAE@PAVQObject@@@Z @ 539 NONAME ; Phonon::AudioDataOutput::AudioDataOutput(class QObject *)
+	?dataSize@AudioDataOutput@Phonon@@QBEHXZ @ 540 NONAME ; int Phonon::AudioDataOutput::dataSize(void) const
+	?shutdown@PulseSupport@Phonon@@SAXXZ @ 541 NONAME ; void Phonon::PulseSupport::shutdown(void)
+	?emitUsingDevice@PulseSupport@Phonon@@QAEXVQString@@H@Z @ 542 NONAME ; void Phonon::PulseSupport::emitUsingDevice(class QString, int)
+	?isActive@PulseSupport@Phonon@@QAE_NXZ @ 543 NONAME ; bool Phonon::PulseSupport::isActive(void)
+	?getStaticMetaObject@PulseSupport@Phonon@@SAABUQMetaObject@@XZ @ 544 NONAME ; struct QMetaObject const & Phonon::PulseSupport::getStaticMetaObject(void)
+	??0PulseSupport@Phonon@@AAE@XZ @ 545 NONAME ; Phonon::PulseSupport::PulseSupport(void)
+	??_EPulseSupport@Phonon@@UAE@I@Z @ 546 NONAME ; Phonon::PulseSupport::~PulseSupport(unsigned int)
+	?setCaptureDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 547 NONAME ; bool Phonon::PulseSupport::setCaptureDevice(class QString, int)
+	?setCaptureDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 548 NONAME ; void Phonon::PulseSupport::setCaptureDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
+	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 549 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *)
+	?setAudioCaptureDeviceListFor@GlobalConfig@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 550 NONAME ; void Phonon::GlobalConfig::setAudioCaptureDeviceListFor(enum Phonon::Category, class QList<int>)
+	?metaObject@AudioDataOutput@Phonon@@UBEPBUQMetaObject@@XZ @ 551 NONAME ; struct QMetaObject const * Phonon::AudioDataOutput::metaObject(void) const
+	?k_func@AudioDataOutput@Phonon@@AAEPAVAudioDataOutputPrivate@2@XZ @ 552 NONAME ; class Phonon::AudioDataOutputPrivate * Phonon::AudioDataOutput::k_func(void)
+	?setAudioOutputDeviceListFor@GlobalConfig@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 553 NONAME ; void Phonon::GlobalConfig::setAudioOutputDeviceListFor(enum Phonon::Category, class QList<int>)
+	?dataReady@AudioDataOutput@Phonon@@IAEXABV?$QMap@W4Channel@AudioDataOutput@Phonon@@V?$QVector@F@@@@@Z @ 554 NONAME ; void Phonon::AudioDataOutput::dataReady(class QMap<enum Phonon::AudioDataOutput::Channel, class QVector<short> > const &)
+	?qt_metacall@PulseSupport@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 555 NONAME ; int Phonon::PulseSupport::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?k_func@GlobalConfig@Phonon@@ABEPBVGlobalConfigPrivate@2@XZ @ 556 NONAME ; class Phonon::GlobalConfigPrivate const * Phonon::GlobalConfig::k_func(void) const
+	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 557 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *)
+	?setStreamPropList@PulseSupport@Phonon@@QAEXW4Category@2@VQString@@@Z @ 558 NONAME ; void Phonon::PulseSupport::setStreamPropList(enum Phonon::Category, class QString)
+	?k_func@GlobalConfig@Phonon@@AAEPAVGlobalConfigPrivate@2@XZ @ 559 NONAME ; class Phonon::GlobalConfigPrivate * Phonon::GlobalConfig::k_func(void)
+	?objectDescriptionChanged@PulseSupport@Phonon@@IAEXW4ObjectDescriptionType@2@@Z @ 560 NONAME ; void Phonon::PulseSupport::objectDescriptionChanged(enum Phonon::ObjectDescriptionType)
+	?k_func@AudioDataOutput@Phonon@@ABEPBVAudioDataOutputPrivate@2@XZ @ 561 NONAME ; class Phonon::AudioDataOutputPrivate const * Phonon::AudioDataOutput::k_func(void) const
+	?objectDescriptionIndexes@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@@Z @ 562 NONAME ; class QList<int> Phonon::PulseSupport::objectDescriptionIndexes(enum Phonon::ObjectDescriptionType) const
+	?getInstance@PulseSupport@Phonon@@SAPAV12@XZ @ 563 NONAME ; class Phonon::PulseSupport * Phonon::PulseSupport::getInstance(void)
+	?usingDevice@PulseSupport@Phonon@@IAEXVQString@@H@Z @ 564 NONAME ; void Phonon::PulseSupport::usingDevice(class QString, int)
+	?snapshot@VideoWidget@Phonon@@QBE?AVQImage@@XZ @ 565 NONAME ; class QImage Phonon::VideoWidget::snapshot(void) const
+	?objectIndexesByCategory@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@W4Category@2@@Z @ 566 NONAME ; class QList<int> Phonon::PulseSupport::objectIndexesByCategory(enum Phonon::ObjectDescriptionType, enum Phonon::Category) const
+	?endOfMedia@AudioDataOutput@Phonon@@IAEXH@Z @ 567 NONAME ; void Phonon::AudioDataOutput::endOfMedia(int)
+	?objectDescriptionProperties@PulseSupport@Phonon@@QBE?AV?$QHash@VQByteArray@@VQVariant@@@@W4ObjectDescriptionType@2@H@Z @ 568 NONAME ; class QHash<class QByteArray, class QVariant> Phonon::PulseSupport::objectDescriptionProperties(enum Phonon::ObjectDescriptionType, int) const
+	?setOutputDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 569 NONAME ; bool Phonon::PulseSupport::setOutputDevice(class QString, int)
+	?qt_metacast@AudioDataOutput@Phonon@@UAEPAXPBD@Z @ 570 NONAME ; void * Phonon::AudioDataOutput::qt_metacast(char const *)
+	?clearStreamCache@PulseSupport@Phonon@@QAEXVQString@@@Z @ 571 NONAME ; void Phonon::PulseSupport::clearStreamCache(class QString)
+	?qt_static_metacall@MediaObject@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 572 NONAME ; void Phonon::MediaObject::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@AbstractMediaStream@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 573 NONAME ; void Phonon::AbstractMediaStream::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@MediaController@Phonon@@0UQMetaObjectExtraData@@B @ 574 NONAME ; struct QMetaObjectExtraData const Phonon::MediaController::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@AudioDataOutput@Phonon@@0UQMetaObjectExtraData@@B @ 575 NONAME ; struct QMetaObjectExtraData const Phonon::AudioDataOutput::staticMetaObjectExtraData
+	?qt_static_metacall@VolumeFaderEffect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 576 NONAME ; void Phonon::VolumeFaderEffect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@AbstractMediaStream@Phonon@@0UQMetaObjectExtraData@@B @ 577 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractMediaStream::staticMetaObjectExtraData
+	?qt_static_metacall@AbstractAudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 578 NONAME ; void Phonon::AbstractAudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@AudioDataOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 579 NONAME ; void Phonon::AudioDataOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@PulseSupport@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 580 NONAME ; void Phonon::PulseSupport::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@SeekSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 581 NONAME ; void Phonon::SeekSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@AudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 582 NONAME ; struct QMetaObjectExtraData const Phonon::AudioOutput::staticMetaObjectExtraData
+	?qt_static_metacall@MediaController@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 583 NONAME ; void Phonon::MediaController::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@VolumeSlider@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 584 NONAME ; void Phonon::VolumeSlider::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@VideoPlayer@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 585 NONAME ; void Phonon::VideoPlayer::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@Effect@Phonon@@0UQMetaObjectExtraData@@B @ 586 NONAME ; struct QMetaObjectExtraData const Phonon::Effect::staticMetaObjectExtraData
+	?qt_static_metacall@VideoWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 587 NONAME ; void Phonon::VideoWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@VideoPlayer@Phonon@@0UQMetaObjectExtraData@@B @ 588 NONAME ; struct QMetaObjectExtraData const Phonon::VideoPlayer::staticMetaObjectExtraData
+	?qt_static_metacall@EffectWidget@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 589 NONAME ; void Phonon::EffectWidget::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@VolumeSlider@Phonon@@0UQMetaObjectExtraData@@B @ 590 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeSlider::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@AbstractAudioOutput@Phonon@@0UQMetaObjectExtraData@@B @ 591 NONAME ; struct QMetaObjectExtraData const Phonon::AbstractAudioOutput::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@PulseSupport@Phonon@@0UQMetaObjectExtraData@@B @ 592 NONAME ; struct QMetaObjectExtraData const Phonon::PulseSupport::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@VideoWidget@Phonon@@0UQMetaObjectExtraData@@B @ 593 NONAME ; struct QMetaObjectExtraData const Phonon::VideoWidget::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@VolumeFaderEffect@Phonon@@0UQMetaObjectExtraData@@B @ 594 NONAME ; struct QMetaObjectExtraData const Phonon::VolumeFaderEffect::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@EffectWidget@Phonon@@0UQMetaObjectExtraData@@B @ 595 NONAME ; struct QMetaObjectExtraData const Phonon::EffectWidget::staticMetaObjectExtraData
+	?staticMetaObjectExtraData@SeekSlider@Phonon@@0UQMetaObjectExtraData@@B @ 596 NONAME ; struct QMetaObjectExtraData const Phonon::SeekSlider::staticMetaObjectExtraData
+	?qt_static_metacall@Effect@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 597 NONAME ; void Phonon::Effect::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?qt_static_metacall@AudioOutput@Phonon@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 598 NONAME ; void Phonon::AudioOutput::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	?staticMetaObjectExtraData@MediaObject@Phonon@@0UQMetaObjectExtraData@@B @ 599 NONAME ; struct QMetaObjectExtraData const Phonon::MediaObject::staticMetaObjectExtraData
+

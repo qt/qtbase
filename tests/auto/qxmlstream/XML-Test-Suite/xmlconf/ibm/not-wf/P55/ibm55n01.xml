@@ -1,0 +1,11 @@
+<?xml  version="1.0"?>
+<!-- test syntax invalid for Production 55-->
+<!DOCTYPE AttrType
+[
+<!ELEMENT AttrType (#PCDATA)>
+<!ELEMENT a EMPTY>
+<!ATTLIST a att cdata #IMPLIED>  
+]>
+<AttrType>
+Giving a lowercase for CDATA attribute.
+</AttrType>

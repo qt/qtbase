@@ -1,0 +1,8 @@
+<!DOCTYPE root 
+[
+<!ELEMENT root (#PCDATA)>
+<!ATTLIST root att CDATA #IMPLIED>
+<!--* missing space *-->
+<!ENTITY pImage SYSTEM"image.jpg">
+]>
+<root/>

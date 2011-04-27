@@ -1,0 +1,12 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Namespace name test: a perfectly good http URI " )
+DTD( text="
+<!DOCTYPE foo [
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns CDATA #IMPLIED>
+]>" dtdName="foo" )
+StartElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="foo"
+    NamespaceDeclaration( namespaceUri="http://example.org/namespace" )
+ )
+EndElement( name="foo" namespaceUri="http://example.org/namespace" qualifiedName="foo" )
+EndDocument( )

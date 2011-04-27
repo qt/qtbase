@@ -1,0 +1,21 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Attribute uniqueness: different attributes with same local name " )
+StartElement( name="foo" qualifiedName="foo"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
+
+    NamespaceDeclaration( prefix="b" namespaceUri="http://example.org/~kipper" )
+ )
+Characters( whitespace text="
+
+" )
+StartElement( name="bar" qualifiedName="bar"
+    Attribute( name="attr" namespaceUri="http://example.org/~wilbur" qualifiedName="a:attr" prefix="a" value="1" )
+
+    Attribute( name="attr" namespaceUri="http://example.org/~kipper" qualifiedName="b:attr" prefix="b" value="2" )
+ )
+EndElement( name="bar" qualifiedName="bar" )
+Characters( whitespace text="
+
+" )
+EndElement( name="foo" qualifiedName="foo" )
+EndDocument( )

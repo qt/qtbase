@@ -1,0 +1,5 @@
+usr/include/gq/GConfItem
+usr/include/gq/gconfitem.h
+usr/lib/libgq-gconf.so
+usr/lib/libgq-gconf.a
+usr/lib/pkgconfig/gq-gconf.pc

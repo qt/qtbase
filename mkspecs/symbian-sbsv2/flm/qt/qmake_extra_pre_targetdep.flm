@@ -1,0 +1,37 @@
+# /****************************************************************************
+# **
+# ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+# ** Contact: Nokia Corporation (qt-info@nokia.com)
+# **
+# ** This file is part of symbian-sbsv2 mkspec.
+# **
+# ****************************************************************************/
+
+
+SINGLETON:=$(call sanitise,TARGET_$(PREDEP_TARGET))
+
+$(call makepathfor,$(PREDEP_TARGET))
+
+ifeq ($(patsubst /epoc32/%,MATCH,$(firstword $(COMMAND))),MATCH)
+COMMAND:=$(EPOCROOT)$(COMMAND)
+endif
+
+define qmake_extra_pre_targetdep
+EXPORT:: $(PREDEP_TARGET)
+
+# Prevent duplicate targets from being created
+$(SINGLETON):=1
+
+$(PREDEP_TARGET): $(DEPS)
+	$(call startrule,qmake_extra_pre_targetdep,FORCESUCCESS) \
+	$(COMMAND) \
+	$(call endrule,qmake_extra_pre_targetdep)
+endef
+
+ifeq ($($(SINGLETON)),)
+$(eval $(qmake_extra_pre_targetdep))
+$(eval $(call GenerateStandardCleanTarget,$(PREDEP_TARGET),''))
+endif	
+
+
+

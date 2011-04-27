@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE root [
+<!ELEMENT root (#PCDATA)>
+<!--* Wrong ordering in elementdecl *-->
+<!ELEMENT (#PCDATA) aElement >
+]>
+<root>Any content</root>

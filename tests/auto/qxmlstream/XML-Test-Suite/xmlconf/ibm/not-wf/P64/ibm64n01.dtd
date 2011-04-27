@@ -1,0 +1,10 @@
+<?xml  version="1.0" encoding='UTF-8'?>
+<!--dtd for production 64-->
+<![IGNORE[
+start
+<?[
+<!ELEMENT animal EMPTY>
+]]>
+end
+]]>
+<!--Negative test. Pattern2(Wrong character '?' instead of '[')-->

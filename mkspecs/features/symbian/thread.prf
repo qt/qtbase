@@ -1,0 +1,2 @@
+# Symbian behaves like POSIX when it comes to threads.
+include(../unix/thread.prf)

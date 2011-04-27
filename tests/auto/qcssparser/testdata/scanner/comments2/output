@@ -1,0 +1,12 @@
+S|/*foo*/
+LBRACE|{
+S|/*foo*/
+PLUS|+
+S|/*foo*/
+GREATER|>
+S|/*foo*/
+COMMA|,
+S|/*foo*/
+RBRACE|}
+S|/*foo*/
+MINUS|-
