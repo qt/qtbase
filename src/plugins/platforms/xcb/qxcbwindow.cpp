@@ -90,7 +90,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_context(0)
 {
     QWidget *tlw = window->widget();
-    m_screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(tlw));
+    m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
 
     setConnection(m_screen->connection());
 
@@ -112,9 +112,11 @@ QXcbWindow::QXcbWindow(QWindow *window)
         | XCB_EVENT_MASK_FOCUS_CHANGE
     };
 
+    QRect rect = window->geometry();
+
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (window->surfaceType() == QWindow::OpenGLSurface
-        && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window->requestedWindowFormat());
@@ -136,7 +138,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
 
             XSetWindowAttributes a;
             a.colormap = cmap;
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), tlw->x(), tlw->y(), tlw->width(), tlw->height(),
+            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), rect.x(), rect.y(), rect.width(), rect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWColormap, &a);
 
@@ -153,10 +155,10 @@ QXcbWindow::QXcbWindow(QWindow *window)
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
                                      m_window,                        // window id
                                      m_screen->root(),                // parent window id
-                                     tlw->x(),
-                                     tlw->y(),
-                                     tlw->width(),
-                                     tlw->height(),
+                                     rect.x(),
+                                     rect.y(),
+                                     rect.width(),
+                                     rect.height(),
                                      0,                               // border width
                                      XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
                                      m_screen->screen()->root_visual, // visual
@@ -165,6 +167,8 @@ QXcbWindow::QXcbWindow(QWindow *window)
 
         printf("created regular window: %d\n", m_window);
     }
+
+    connection()->addWindow(m_window, this);
 
     Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
 
@@ -177,7 +181,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     if (m_screen->syncRequestSupported())
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
 
-    if (tlw->windowFlags() & Qt::WindowContextHelpButtonHint)
+    if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
     Q_XCB_CALL(xcb_change_property(xcb_connection(),
@@ -205,7 +209,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
                                        &m_syncCounter));
     }
 
-    if (isTransient(tlw) && tlw->parentWidget()) {
+    if (tlw && isTransient(tlw) && tlw->parentWidget()) {
         // ICCCM 4.1.2.6
         QWidget *p = tlw->parentWidget()->window();
         xcb_window_t parentWindow = p->winId();
@@ -227,6 +231,7 @@ QXcbWindow::~QXcbWindow()
     delete m_context;
     if (m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
+    connection()->removeWindow(m_window);
     Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
 }
 
@@ -245,7 +250,7 @@ void QXcbWindow::setVisible(bool visible)
     xcb_wm_hints_t hints;
     if (visible) {
         // TODO: QWindow::isMinimized() or similar
-        if (window()->widget()->isMinimized())
+        if (window()->windowState() & Qt::WindowMinimized)
             xcb_wm_hints_set_iconic(&hints);
         else
             xcb_wm_hints_set_normal(&hints);
@@ -522,11 +527,15 @@ QPlatformGLContext *QXcbWindow::glContext() const
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
-    QWindowSurface *surface = window()->widget()->windowSurface();
+    QWidget *widget = window()->widget();
+    if (!widget)
+        return;
+
+    QWindowSurface *surface = widget->windowSurface();
     if (surface) {
         QRect rect(event->x, event->y, event->width, event->height);
 
-        surface->flush(window()->widget(), rect, QPoint());
+        surface->flush(widget, rect, QPoint());
     }
 }
 

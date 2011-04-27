@@ -67,6 +67,8 @@ public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
+    void createEventDispatcher();
+
     static int keyboard_input_time;
     static int mouse_double_click_time;
 

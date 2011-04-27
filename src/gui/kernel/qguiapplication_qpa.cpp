@@ -45,6 +45,12 @@
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include "private/qevent_p.h"
 
+#if !defined(QT_NO_GLIB)
+#include "qeventdispatcher_glib_qpa_p.h"
+#endif
+#include "qeventdispatcher_qpa_p.h"
+
+#include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
@@ -100,6 +106,8 @@ QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
 {
     d_func()->init();
+
+    QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
 QGuiApplication::QGuiApplication(QGuiApplicationPrivate &p)
@@ -162,6 +170,16 @@ static void init_plugins(const QList<QByteArray> pluginList)
     }
 }
 
+void QGuiApplicationPrivate::createEventDispatcher()
+{
+    Q_Q(QGuiApplication);
+#if !defined(QT_NO_GLIB)
+    if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
+        eventDispatcher = new QPAEventDispatcherGlib(q);
+    else
+#endif
+    eventDispatcher = new QEventDispatcherQPA(q);
+}
 
 void QGuiApplicationPrivate::init()
 {
@@ -213,12 +231,17 @@ void QGuiApplicationPrivate::init()
     init_plugins(pluginList);
 
     QFont::initialize();
+
+    is_app_running = true;
 }
 
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
     delete platform_integration;
     platform_integration = 0;
+
+    is_app_closing = true;
+    is_app_running = false;
 
     QFont::cleanup();
 }
@@ -362,14 +385,15 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         stateChange = Qt::NoButton;
     }
 
-    QWidget * tlw = e->window.data() ? e->window.data()->widget() : 0;
+    QWindow *window = e->window.data();
+
+    QWidget * tlw = window ? window->widget() : 0;
 
     QPoint localPoint = e->localPos;
     QPoint globalPoint = e->globalPos;
     QWidget *mouseWindow = tlw;
 
     Qt::MouseButton button = Qt::NoButton;
-
 
     if (qt_last_x != globalPoint.x() || qt_last_y != globalPoint.y()) {
         type = QEvent::MouseMove;
@@ -408,6 +432,13 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
         else
             type = QEvent::MouseButtonRelease;
+    }
+
+
+    if (window && !tlw) {
+        QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
+        QGuiApplication::sendSpontaneousEvent(window, &ev);
+        return;
     }
 
 #if 0
@@ -606,7 +637,7 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
     qt_last_mouse_receiver = e->enter.data() ? e->enter.data()->widget() : 0;
 }
 
-void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e)
+void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *)
 {
 //    QGuiApplicationPrivate::dispatchEnterLeave(0,qt_last_mouse_receiver);
 
@@ -618,7 +649,7 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 
 }
 
-void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
+void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *)
 {
 //    QGuiApplication::setActiveWindow(e->activated.data());
 }
@@ -628,7 +659,7 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
     if (e->tlw.isNull())
        return;
     QWidget *tlw = e->tlw.data() ? e->tlw.data()->widget() : 0;
-    if (!tlw->isWindow())
+    if (!tlw || !tlw->isWindow())
         return; //geo of native child widgets is controlled by lighthouse
                 //so we already have sent the events; besides this new rect
                 //is not mapped to parent
@@ -660,12 +691,12 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 //    e->topLevel.data()->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
-void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
+void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *)
 {
 //    translateRawTouchEvent(e->widget.data(), e->devType, e->points);
 }
 
-void QGuiApplicationPrivate::reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *e)
+void QGuiApplicationPrivate::reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
@@ -677,7 +708,7 @@ void QGuiApplicationPrivate::reportScreenCount(QWindowSystemInterfacePrivate::Sc
     //emit desktop->screenCountChanged(e->count);
 }
 
-void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e)
+void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
@@ -703,7 +734,7 @@ void QGuiApplicationPrivate::reportGeometryChange(QWindowSystemInterfacePrivate:
 }
 
 void QGuiApplicationPrivate::reportAvailableGeometryChange(
-        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e)
+        QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *)
 {
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())

@@ -78,13 +78,7 @@ QString QApplicationPrivate::appName() const
 
 void QApplicationPrivate::createEventDispatcher()
 {
-    Q_Q(QApplication);
-#if !defined(QT_NO_GLIB)
-    if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QPAEventDispatcherGlib(q);
-    else
-#endif
-    eventDispatcher = new QEventDispatcherQPA(q);
+    QGuiApplicationPrivate::createEventDispatcher();
 }
 
 static bool qt_try_modal(QWidget *widget, QEvent::Type type)

@@ -94,6 +94,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QWindow *win = topData()->window;
 
     win->setWindowFlags(data.window_flags);
+    win->setGeometry(q->geometry());
     win->create();
 
     data.window_flags = win->windowFlags();

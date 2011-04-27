@@ -143,23 +143,26 @@ QXcbConnection::~QXcbConnection()
     delete m_keyboard;
 }
 
-QXcbWindow *platformWindowFromId(xcb_window_t id)
+void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
 {
-    QWidget *widget = QWidget::find(id);
-    if (widget)
-        return static_cast<QXcbWindow *>(widget->windowHandle()->handle());
-    return 0;
+    m_mapper.insert(id, window);
+}
+
+void QXcbConnection::removeWindow(xcb_window_t id)
+{
+    m_mapper.remove(id);
+}
+
+QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+{
+    return m_mapper.value(id, 0);
 }
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember)) { \
-        QWindow *windowHandle = platformWindow->window(); \
-        QObjectPrivate *d = QObjectPrivate::get(windowHandle->widget()); \
-        if (!d->wasDeleted) \
-            platformWindow->handler(e); \
-    } \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember)) \
+        platformWindow->handler(e); \
 } \
 break;
 

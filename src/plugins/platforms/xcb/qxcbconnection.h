@@ -44,6 +44,7 @@
 
 #include <xcb/xcb.h>
 
+#include <QHash>
 #include <QList>
 #include <QObject>
 #include <QVector>
@@ -51,6 +52,9 @@
 #define Q_XCB_DEBUG
 
 class QXcbScreen;
+class QXcbWindow;
+
+typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
 namespace QXcbAtom {
     enum Atom {
@@ -255,6 +259,9 @@ public:
     void sync();
     void handleXcbError(xcb_generic_error_t *error);
 
+    void addWindow(xcb_window_t id, QXcbWindow *window);
+    void removeWindow(xcb_window_t id);
+
 private slots:
     void processXcbEvents();
 
@@ -264,6 +271,7 @@ private:
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
+    QXcbWindow *platformWindowFromId(xcb_window_t id);
 
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
@@ -303,6 +311,8 @@ private:
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
 #endif
+
+    WindowMapper m_mapper;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

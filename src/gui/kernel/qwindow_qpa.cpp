@@ -410,10 +410,29 @@ void QWindow::hideEvent(QHideEvent *)
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
-bool QWindow::event(QEvent *)
+bool QWindow::event(QEvent *event)
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
-    return false;
+    switch (event->type()) {
+    case QEvent::MouseMove:
+        mouseMoveEvent((QMouseEvent*)event);
+        break;
+
+    case QEvent::MouseButtonPress:
+        mousePressEvent((QMouseEvent*)event);
+        break;
+
+    case QEvent::MouseButtonRelease:
+        mouseReleaseEvent((QMouseEvent*)event);
+        break;
+
+    case QEvent::MouseButtonDblClick:
+        mouseDoubleClickEvent((QMouseEvent*)event);
+        break;
+
+    default:
+        return QObject::event(event);
+    }
+    return true;
 }
 
 void QWindow::keyPressEvent(QKeyEvent *)
