@@ -535,16 +535,6 @@ QString QPaintBuffer::commandDescription(int command) const
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
 
-        QFont font(ti.font());
-        font.setUnderline(false);
-        font.setStrikeOut(false);
-        font.setOverline(false);
-
-        const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
-        qreal justificationWidth = 0;
-        if (si.justified)
-            justificationWidth = si.width.toReal();
-
         debug << "Cmd_DrawTextItem:" << pos << " " << text;
         break; }
     case QPaintBufferPrivate::Cmd_SystemStateChanged: {

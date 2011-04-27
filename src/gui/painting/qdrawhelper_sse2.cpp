@@ -112,8 +112,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
                 // First, align dest to 16 bytes:
                 ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
 
@@ -127,8 +125,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                     }
                 }
                 for (; x<w; ++x) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
                 dst = (quint32 *)(((uchar *) dst) + dbpl);
