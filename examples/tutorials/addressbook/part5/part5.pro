@@ -10,4 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part5.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part5
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

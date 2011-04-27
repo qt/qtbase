@@ -14,7 +14,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS icons.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/icons
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 wince*: {
     imageFiles.files = images/*

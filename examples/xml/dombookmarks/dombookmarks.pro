@@ -11,7 +11,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dombookmarks.pro *.xbel
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/dombookmarks
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 wince*: {
      addFiles.files = frank.xbel jennifer.xbel

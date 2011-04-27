@@ -15,4 +15,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS undoframework.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/undoframework
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

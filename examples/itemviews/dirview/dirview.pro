@@ -6,4 +6,4 @@ sources.files = $$SOURCES *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/dirview
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

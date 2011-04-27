@@ -11,7 +11,7 @@ INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000E406
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    CONFIG += qt_example
     TARGET.CAPABILITY = "NetworkServices ReadUserData"
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }

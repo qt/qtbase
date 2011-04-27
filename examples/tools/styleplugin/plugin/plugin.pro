@@ -20,6 +20,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugin.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/styleplugin/plugin
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 symbian:TARGET.EPOCALLOWDLLDATA = 1

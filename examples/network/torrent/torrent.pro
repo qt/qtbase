@@ -36,4 +36,4 @@ sources.files += icons forms 3rdparty
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/torrent
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

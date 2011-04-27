@@ -32,4 +32,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS opengl.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

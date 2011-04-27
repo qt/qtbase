@@ -16,4 +16,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS 2dpainting.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/2dpainting
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

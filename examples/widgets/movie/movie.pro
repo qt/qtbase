@@ -8,7 +8,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro animation.mng
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/movie
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 wince*: {
    addFiles.files += *.mng

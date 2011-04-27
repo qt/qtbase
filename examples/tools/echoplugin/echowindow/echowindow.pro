@@ -18,4 +18,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS echowindow.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin/echowindow
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

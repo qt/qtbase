@@ -9,4 +9,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro forms
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/uitools/textfinder
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example

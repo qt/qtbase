@@ -16,4 +16,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.png *.jpg *.plist *.ic
 sources.path = $$[QT_INSTALL_DEMOS]/qtbase/embeddeddialogs
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+symbian: CONFIG += qt_demo
