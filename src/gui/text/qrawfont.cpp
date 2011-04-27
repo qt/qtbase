@@ -579,8 +579,19 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
 */
 void QRawFont::setPixelSize(int pixelSize)
 {
+    if (d->fontEngine == 0)
+        return;
+
     detach();
-    d->platformSetPixelSize(pixelSize);
+    QFontEngine *oldFontEngine = d->fontEngine;
+
+    d->fontEngine = d->fontEngine->cloneWithSize(pixelSize);
+    if (d->fontEngine != 0)
+        d->fontEngine->ref.ref();
+
+    oldFontEngine->ref.deref();
+    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
+        delete oldFontEngine;
 }
 
 /*!

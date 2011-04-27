@@ -2069,6 +2069,41 @@ HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     return result;
 }
 
+bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
+{
+    if (!init(fe->faceId(), fe->antialias, fe->defaultFormat, fe->freetype))
+        return false;
+
+    // Increase the reference of this QFreetypeFace since one more QFontEngineFT
+    // will be using it
+    freetype->ref.ref();
+
+    default_load_flags = fe->default_load_flags;
+    default_hint_style = fe->default_hint_style;
+    antialias = fe->antialias;
+    transform = fe->transform;
+    embolden = fe->embolden;
+    subpixelType = fe->subpixelType;
+    lcdFilterType = fe->lcdFilterType;
+    canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
+    embeddedbitmap = fe->embeddedbitmap;
+
+    return true;
+}
+
+QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineFT *fe = new QFontEngineFT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+        return fe;
+    }
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_FREETYPE

@@ -235,6 +235,8 @@ public:
 
     virtual int glyphCount() const;
 
+    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
+
     HB_Font harfbuzzFont() const;
     HB_Face harfbuzzFace() const;
 

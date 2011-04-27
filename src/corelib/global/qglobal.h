@@ -2755,7 +2755,8 @@ QT_LICENSED_MODULE(DBus)
 
 #if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
     && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
-    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE))
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
+    && !(defined(Q_WS_QPA))
 #  define QT_NO_RAWFONT
 #endif
 

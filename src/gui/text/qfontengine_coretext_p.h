@@ -91,6 +91,8 @@ public:
     virtual qreal minLeftBearing() const;
     virtual QFixed emSquareSize() const;
 
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+
 private:
     friend class QRawFontPrivate;
 

@@ -83,7 +83,6 @@ public:
         , fontHandle(NULL)
         , ptrAddFontMemResourceEx(other.ptrAddFontMemResourceEx)
         , ptrRemoveFontMemResourceEx(other.ptrRemoveFontMemResourceEx)
-        , uniqueFamilyName(other.uniqueFamilyName)
 #endif
     {
         fontEngine = other.fontEngine;
@@ -102,7 +101,6 @@ public:
     void platformLoadFromData(const QByteArray &fontData,
                               int pixelSize,
                               QFont::HintingPreference hintingPreference);
-    void platformSetPixelSize(int pixelSize);
 
     static QRawFontPrivate *get(const QRawFont &font) { return font.d.data(); }
 
@@ -119,8 +117,6 @@ public:
 
     PtrAddFontMemResourceEx ptrAddFontMemResourceEx;
     PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx;
-
-    QString uniqueFamilyName;
 
 #endif // Q_WS_WIN
 };
