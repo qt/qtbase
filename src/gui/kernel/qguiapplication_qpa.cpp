@@ -61,6 +61,7 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
+#include "private/qwindow_qpa_p.h"
 
 #ifndef QT_NO_CLIPBOARD
 #include <QtGui/QClipboard>
@@ -658,8 +659,32 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
 {
     if (e->tlw.isNull())
        return;
-    QWidget *tlw = e->tlw.data() ? e->tlw.data()->widget() : 0;
-    if (!tlw || !tlw->isWindow())
+
+    QWindow *window = e->tlw.data();
+    QWidget *tlw = window ? window->widget() : 0;
+    if (!tlw) {
+        if (window) {
+            QRect newRect = e->newGeometry;
+            QRect cr = window->geometry();
+
+            bool isResize = cr.size() != newRect.size();
+            bool isMove = cr.topLeft() != newRect.topLeft();
+            window->d_func()->geometry = newRect;
+            if (isResize) {
+                QResizeEvent e(newRect.size(), cr.size());
+                QGuiApplication::sendSpontaneousEvent(window, &e);
+            }
+
+            if (isMove) {
+                //### frame geometry
+                QMoveEvent e(newRect.topLeft(), cr.topLeft());
+                QGuiApplication::sendSpontaneousEvent(window, &e);
+            }
+        }
+        return;
+    }
+
+    if (!tlw->isWindow())
         return; //geo of native child widgets is controlled by lighthouse
                 //so we already have sent the events; besides this new rect
                 //is not mapped to parent

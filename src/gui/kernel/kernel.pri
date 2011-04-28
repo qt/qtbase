@@ -230,6 +230,7 @@ qpa {
                 kernel/qwindowformat_qpa.h \
                 kernel/qguiapplication_qpa.h \
                 kernel/qguiapplication_qpa_p.h \
+                kernel/qwindow_qpa_p.h \
                 kernel/qwindow_qpa.h
 
 	SOURCES += \

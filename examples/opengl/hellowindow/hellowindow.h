@@ -13,6 +13,7 @@ public:
 
 protected:
     void mousePressEvent(QMouseEvent *);
+    void resizeEvent(QResizeEvent *);
 
 private slots:
     void render();

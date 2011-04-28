@@ -34,6 +34,13 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
     updateColor();
 }
 
+void HelloWindow::resizeEvent(QResizeEvent *)
+{
+    glContext()->makeCurrent();
+
+    glViewport(0, 0, geometry().width(), geometry().height());
+}
+
 void HelloWindow::updateColor()
 {
     float colors[][4] =
