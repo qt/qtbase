@@ -483,7 +483,7 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
 #endif
     const QByteArray envLibraryPath = qgetenv(libraryPath);
     bool needToAddLibraryPath = !envLibraryPath.isEmpty() &&
-                                !environment.contains(libraryPath);
+                                !environment.contains(QProcessEnvironmentPrivate::Key(QByteArray(libraryPath)));
 
     char **envp = new char *[environment.count() + 2];
     envp[environment.count()] = 0;
@@ -492,7 +492,7 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
     QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
     const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key();
+        QByteArray key = it.key().key;
         QByteArray value = it.value();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');

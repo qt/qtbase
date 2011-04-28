@@ -101,11 +101,33 @@ public:
     inline Value prepareValue(const QString &value) const { return value; }
     inline QString valueToString(const Value &value) const { return value; }
 #else
-    typedef QByteArray Key;
+    class Key
+    {
+    public:
+        Key() : hash(0) {}
+        explicit Key(const QByteArray &other) : key(other), hash(qHash(key)) {}
+        Key(const Key &other) { *this = other; }
+        bool operator==(const Key &other) const { return key == other.key; }
+
+        QByteArray key;
+        uint hash;
+    };
+
     typedef QByteArray Value;
 
-    inline Key prepareName(const QString &name) const { return name.toLocal8Bit(); }
-    inline QString nameToString(const Key &name) const { return QString::fromLocal8Bit(name); }
+    inline Key prepareName(const QString &name) const
+    {
+        Key &ent = nameMap[name];
+        if (ent.key.isEmpty())
+            ent = Key(name.toLocal8Bit());
+        return ent;
+    }
+    inline QString nameToString(const Key &name) const
+    {
+        const QString sname = QString::fromLocal8Bit(name.key);
+        nameMap[sname] = name;
+        return sname;
+    }
     inline Value prepareValue(const QString &value) const { return value.toLocal8Bit(); }
     inline QString valueToString(const Value &value) const { return QString::fromLocal8Bit(value); }
 #endif
@@ -113,14 +135,22 @@ public:
     typedef QHash<Key, Value> Hash;
     Hash hash;
 
+#ifdef Q_OS_UNIX
+    typedef QHash<QString, Key> NameHash;
+    mutable NameHash nameMap;
+#endif
+
     static QProcessEnvironment fromList(const QStringList &list);
     QStringList toList() const;
     QStringList keys() const;
-    void insert(const Hash &hash);
+    void insert(const QProcessEnvironmentPrivate &other);
 };
-#ifdef Q_OS_WIN
 Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Key, Q_MOVABLE_TYPE);
+
+#ifdef Q_OS_WIN
 inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return qHash(key.toCaseFolded()); }
+#else
+inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return key.hash; }
 #endif
 
 class QProcessPrivate : public QIODevicePrivate

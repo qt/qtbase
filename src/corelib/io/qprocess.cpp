@@ -202,12 +202,19 @@ QStringList QProcessEnvironmentPrivate::keys() const
     return result;
 }
 
-void QProcessEnvironmentPrivate::insert(const Hash &h)
+void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
 {
-    Hash::ConstIterator it = h.constBegin(),
-                       end = h.constEnd();
+    Hash::ConstIterator it = other.hash.constBegin(),
+                       end = other.hash.constEnd();
     for ( ; it != end; ++it)
         hash.insert(it.key(), it.value());
+
+#ifdef Q_OS_UNIX
+    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
+                                      nend = other.nameMap.constEnd();
+    for ( ; nit != nend; ++nit)
+        nameMap.insert(nit.key(), nit.value());
+#endif
 }
 
 /*!
@@ -288,6 +295,8 @@ void QProcessEnvironment::clear()
 {
     if (d)
         d->hash.clear();
+    // Unix: Don't clear d->nameMap, as the environment is likely to be
+    // re-populated with the same keys again.
 }
 
 /*!
@@ -409,7 +418,7 @@ void QProcessEnvironment::insert(const QProcessEnvironment &e)
         return;
 
     // d detaches from null
-    d->insert(e.d->hash);
+    d->insert(*e.d);
 }
 
 void QProcessPrivate::Channel::clear()
