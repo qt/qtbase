@@ -101,6 +101,8 @@ public:
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, int margin,
                                const QTransform &xform);
 
+    QFontEngine *cloneWithSize(qreal pixelSize) const;
+
     bool canRender(const QChar *string, int len);
     Type type() const;
 

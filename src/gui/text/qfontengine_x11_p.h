@@ -161,6 +161,8 @@ public:
     explicit QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int screen);
     ~QFontEngineX11FT();
 
+    QFontEngine *cloneWithSize(qreal pixelSize) const;
+
 #ifndef QT_NO_XRENDER
     int xglyph_format;
 #endif

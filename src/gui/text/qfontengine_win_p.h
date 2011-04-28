@@ -106,6 +106,8 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &xform);
     virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
 
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+
 #ifndef Q_CC_MINGW
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
 #endif
@@ -118,6 +120,7 @@ public:
 #endif
 
     QString     _name;
+    QString     uniqueFamilyName;
     HFONT       hfont;
     LOGFONT     logfont;
     uint        stockFont  : 1;

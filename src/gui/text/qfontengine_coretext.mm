@@ -837,6 +837,15 @@ QFixed QCoreTextFontEngine::emSquareSize() const
     return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
 }
 
+QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef newFontDef = fontDef;
+    newFontDef.pixelSize = pixelSize;
+    newFontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+
+    return new QCoreTextFontEngine(cgFont, fontDef);
+}
+
 QT_END_NAMESPACE
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
