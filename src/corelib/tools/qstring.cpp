@@ -8014,47 +8014,6 @@ QString QStringRef::toString() const {
     return QString(m_string->unicode() + m_position, m_size);
 }
 
-/*!
-    Returns a Latin-1 representation of the string reference as a QByteArray.
-
-    The returned byte array is undefined if the string reference contains
-    non-Latin1 characters. Those characters may be suppressed or replaced with a
-    question mark.
-
-    \sa QString::toLatin1(), toUtf8()
-    \since 4.8
-*/
-QByteArray QStringRef::toLatin1() const
-{
-    if (!m_string)
-        return QByteArray();
-    return toLatin1_helper(m_string->unicode() + m_position, m_size);
-}
-
-/*!
-    Returns a UTF-8 representation of the string reference as a QByteArray.
-
-    UTF-8 is a Unicode codec and can represent all characters in a Unicode
-    string like QString.
-
-    However, in the Unicode range, there are certain codepoints that are not
-    considered characters. The Unicode standard reserves the last two
-    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
-    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
-    inclusive, as non-characters. If any of those appear in the string, they
-    may be discarded and will not appear in the UTF-8 representation, or they
-    may be replaced by one or more replacement characters.
-
-    \sa QString::toUtf8(), toLatin1(), QTextCodec
-    \since 4.8
-*/
-QByteArray QStringRef::toUtf8() const
-{
-    if (isNull())
-        return QByteArray();
-    return QUtf8::convertFromUnicode(m_string->unicode() + m_position, m_size, 0);
-}
-
 
 /*! \relates QStringRef
 
