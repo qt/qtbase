@@ -507,10 +507,8 @@ public:
         const typename Simd::Float32x4 v_dr = Simd::v_dup(op->radial.dr);
 
         const typename Simd::Float32x4 v_min = Simd::v_dup(0.0f);
-        const typename Simd::Float32x4 v_max = Simd::v_dup(GRADIENT_STOPTABLE_SIZE-1.5f);
+        const typename Simd::Float32x4 v_max = Simd::v_dup(float(GRADIENT_STOPTABLE_SIZE-1));
         const typename Simd::Float32x4 v_half = Simd::v_dup(0.5f);
-
-        const typename Simd::Float32x4 v_table_size_minus_one = Simd::v_dup(float(GRADIENT_STOPTABLE_SIZE-1));
 
         const typename Simd::Int32x4 v_repeat_mask = Simd::v_dup(~(uint(0xffffff) << GRADIENT_STOPTABLE_SIZE_SHIFT));
         const typename Simd::Int32x4 v_reflect_mask = Simd::v_dup(~(uint(0xffffff) << (GRADIENT_STOPTABLE_SIZE_SHIFT+1)));
@@ -524,7 +522,7 @@ public:
             typename Simd::Vect_buffer_i v_buffer_mask; \
             v_buffer_mask.v = Simd::v_greaterOrEqual(det_vec.v, v_min); \
             const typename Simd::Float32x4 v_index_local = Simd::v_sub(Simd::v_sqrt(Simd::v_max(v_min, det_vec.v)), b_vec.v); \
-            const typename Simd::Float32x4 v_index = Simd::v_add(Simd::v_mul(v_index_local, v_table_size_minus_one), v_half); \
+            const typename Simd::Float32x4 v_index = Simd::v_add(Simd::v_mul(v_index_local, v_max), v_half); \
             v_buffer_mask.v = Simd::v_and(v_buffer_mask.v, Simd::v_greaterOrEqual(Simd::v_add(v_r0, Simd::v_mul(v_dr, v_index_local)), v_min)); \
             typename Simd::Vect_buffer_i index_vec;
 #define FETCH_RADIAL_LOOP_CLAMP_REPEAT \
