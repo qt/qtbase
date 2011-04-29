@@ -553,12 +553,15 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 //    QPoint localPoint = ev.pos();
     QPoint globalPoint = e->globalPos;
 //    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
-    QWidget *mouseWidget;
 
     qt_last_x = globalPoint.x();
     qt_last_y = globalPoint.y();
 
-     QWidget *mouseWindow = e->window.data() ? e->window.data()->widget() : 0;
+    QWindow *window = e->window.data();
+    if (!window)
+        return;
+
+    QWidget *mouseWidget = window ? window->widget() : 0;
 
      // find the tlw if we didn't get it from the plugin
 #if 0
@@ -567,10 +570,12 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
      }
 #endif
 
-     if (!mouseWindow)
+     if (!mouseWidget) {
+         QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, QGuiApplication::keyboardModifiers(),
+                        e->orient);
+         QGuiApplication::sendSpontaneousEvent(window, &ev);
          return;
-
-     mouseWidget = mouseWindow;
+     }
 
 #if 0
      if (app_do_modal && !qt_try_modal(mouseWindow, QEvent::Wheel) ) {
@@ -583,11 +588,11 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
          mouseWidget = w;
          p = mouseWidget->mapFromGlobal(globalPoint);
      }
+#endif
 
-     QWheelEvent ev(p, globalPoint, e->delta, buttons, QGuiApplication::keyboardModifiers(),
+     QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, QGuiApplication::keyboardModifiers(),
                    e->orient);
      QGuiApplication::sendSpontaneousEvent(mouseWidget, &ev);
-#endif
 }
 
 
@@ -596,28 +601,31 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
 
 void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e)
 {
-    QWidget *focusW = 0;
+    QWindow *window = e->window.data();
+    if (!window)
+        return;
+
+    QObject *target = window->widget() ? static_cast<QObject *>(window->widget()) : static_cast<QObject *>(window);
+
 #if 0
+    QWidget *focusW = 0;
     if (self->inPopupMode()) {
         QWidget *popupW = qApp->activePopupWidget();
         focusW = popupW->focusWidget() ? popupW->focusWidget() : popupW;
     }
     if (!focusW)
         focusW = QGuiApplication::focusWidget();
-#endif
-    if (!focusW) {
-        focusW = e->window.data() ? e->window.data()->widget() : 0;
-    }
-#if 0
+    if (!focusW)
+        focusW = window->widget();
     if (!focusW)
         focusW = QGuiApplication::activeWindow();
 #endif
 
     //qDebug() << "handleKeyEvent" << hex << e->key() << e->modifiers() << e->text() << "widget" << focusW;
 
+#if 0
     if (!focusW)
         return;
-#if 0
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 #endif
@@ -625,10 +633,10 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (e->nativeScanCode || e->nativeVirtualKey || e->nativeModifiers) {
         QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
                        e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
-        QGuiApplication::sendSpontaneousEvent(focusW, &ev);
+        QGuiApplication::sendSpontaneousEvent(target, &ev);
     } else {
         QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
-        QGuiApplication::sendSpontaneousEvent(focusW, &ev);
+        QGuiApplication::sendSpontaneousEvent(target, &ev);
     }
 }
 
@@ -661,49 +669,40 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
        return;
 
     QWindow *window = e->tlw.data();
-    QWidget *tlw = window ? window->widget() : 0;
-    if (!tlw) {
-        if (window) {
-            QRect newRect = e->newGeometry;
-            QRect cr = window->geometry();
-
-            bool isResize = cr.size() != newRect.size();
-            bool isMove = cr.topLeft() != newRect.topLeft();
-            window->d_func()->geometry = newRect;
-            if (isResize) {
-                QResizeEvent e(newRect.size(), cr.size());
-                QGuiApplication::sendSpontaneousEvent(window, &e);
-            }
-
-            if (isMove) {
-                //### frame geometry
-                QMoveEvent e(newRect.topLeft(), cr.topLeft());
-                QGuiApplication::sendSpontaneousEvent(window, &e);
-            }
-        }
+    if (!window)
         return;
-    }
 
-    if (!tlw->isWindow())
+    QWidget *tlw = window->widget();
+    QObject *target = tlw ? static_cast<QObject *>(tlw) : static_cast<QObject *>(window);
+
+    QRect newRect = e->newGeometry;
+    QRect cr = tlw ? tlw->geometry() : window->geometry();
+
+    bool isResize = cr.size() != newRect.size();
+    bool isMove = cr.topLeft() != newRect.topLeft();
+
+    if (tlw && !tlw->isWindow())
         return; //geo of native child widgets is controlled by lighthouse
                 //so we already have sent the events; besides this new rect
                 //is not mapped to parent
 
-    QRect newRect = e->newGeometry;
-    QRect cr(tlw->geometry());
-    bool isResize = cr.size() != newRect.size();
-    bool isMove = cr.topLeft() != newRect.topLeft();
-    tlw->data->crect = newRect;
+
+    if (tlw)
+        tlw->data->crect = newRect;
+    else
+        window->d_func()->geometry = newRect;
+
     if (isResize) {
-        QResizeEvent e(tlw->data->crect.size(), cr.size());
-        QGuiApplication::sendSpontaneousEvent(tlw, &e);
-        tlw->update();
+        QResizeEvent e(newRect.size(), cr.size());
+        QGuiApplication::sendSpontaneousEvent(target, &e);
+        if (tlw)
+            tlw->update();
     }
 
     if (isMove) {
         //### frame geometry
-        QMoveEvent e(tlw->data->crect.topLeft(), cr.topLeft());
-        QGuiApplication::sendSpontaneousEvent(tlw, &e);
+        QMoveEvent e(newRect.topLeft(), cr.topLeft());
+        QGuiApplication::sendSpontaneousEvent(target, &e);
     }
 }
 

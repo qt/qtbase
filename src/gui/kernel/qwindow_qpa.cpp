@@ -401,6 +401,20 @@ bool QWindow::event(QEvent *event)
         resizeEvent(static_cast<QResizeEvent*>(event));
         break;
 
+    case QEvent::KeyPress:
+        keyPressEvent(static_cast<QKeyEvent *>(event));
+        break;
+
+    case QEvent::KeyRelease:
+        keyReleaseEvent(static_cast<QKeyEvent *>(event));
+        break;
+
+#ifndef QT_NO_WHEELEVENT
+    case QEvent::Wheel:
+        wheelEvent(static_cast<QWheelEvent*>(event));
+        break;
+#endif
+
     default:
         return QObject::event(event);
     }
@@ -409,7 +423,6 @@ bool QWindow::event(QEvent *event)
 
 void QWindow::keyPressEvent(QKeyEvent *)
 {
-
 }
 
 void QWindow::keyReleaseEvent(QKeyEvent *)
