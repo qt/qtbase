@@ -2317,6 +2317,9 @@ QList<QGlyphs> QTextLine::glyphs(int from, int length) const
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                     glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
                                                 GlyphInfo(subLayout, pos, flags));
+                    for (int i = 0; i < subLayout.numGlyphs; i++)
+                        pos += QPointF(subLayout.advances_x[i].toReal(),
+                                       subLayout.advances_y[i].toReal());
 
                     start = end;
                     which = e;
