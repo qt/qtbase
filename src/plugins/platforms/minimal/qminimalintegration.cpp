@@ -69,14 +69,14 @@ QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) 
     return new QRasterPixmapData(type);
 }
 
-QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QPlatformWindow(widget);
+    Q_UNUSED(window);
+    return new QPlatformWindow(window);
 }
 
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QMinimalIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QMinimalWindowSurface(widget);
+    return new QMinimalWindowSurface(window->widget());
 }
