@@ -51,7 +51,7 @@ class QWaylandGLContext;
 class QWaylandEglWindow : public QWaylandWindow
 {
 public:
-    QWaylandEglWindow(QWidget *window);
+    QWaylandEglWindow(QWindow *window);
     ~QWaylandEglWindow();
     WindowType windowType() const;
     void setGeometry(const QRect &rect);

@@ -41,7 +41,7 @@
 
 #include "qwaylandreadbackglxwindow.h"
 
-QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration)
+QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration)
     : QWaylandShmWindow(window)
     , mGlxIntegration(glxIntegration)
     , mContext(0)

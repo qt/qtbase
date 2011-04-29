@@ -85,7 +85,7 @@ public:
 
     // input methods
     virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
-    virtual void changeCursor(QCursor * widgetCursor, QWidget * widget) = 0;
+    virtual void changeCursor(QCursor * widgetCursor, QWindow * widget) = 0;
 
 protected:
     QPlatformScreen* screen;  // Where to request an update

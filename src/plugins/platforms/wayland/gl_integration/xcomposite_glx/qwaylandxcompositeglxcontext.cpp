@@ -46,6 +46,7 @@
 
 #include "wayland-xcomposite-client-protocol.h"
 #include <QtCore/QDebug>
+#include <QtGui/QRegion>
 
 #include <X11/extensions/Xcomposite.h>
 
@@ -55,7 +56,7 @@ QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(QWaylandXCompositeGLX
     , mWindow(window)
     , mBuffer(0)
     , mXWindow(0)
-    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat()))
+    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->window()->format()))
     , mWaitingForSyncCallback(false)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);
@@ -90,7 +91,7 @@ void * QWaylandXCompositeGLXContext::getProcAddress(const QString &procName)
     return (void *) glXGetProcAddress(reinterpret_cast<GLubyte *>(procName.toLatin1().data()));
 }
 
-QPlatformWindowFormat QWaylandXCompositeGLXContext::platformWindowFormat() const
+QWindowFormat QWaylandXCompositeGLXContext::windowFormat() const
 {
     return qglx_platformWindowFromGLXFBConfig(mGlxIntegration->xDisplay(),mConfig,mContext);
 }

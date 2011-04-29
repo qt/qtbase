@@ -44,7 +44,7 @@
 #include "qwaylandscreen.h"
 #include "qwaylandglcontext.h"
 
-QWaylandEglWindow::QWaylandEglWindow(QWidget *window)
+QWaylandEglWindow::QWaylandEglWindow(QWindow *window)
     : QWaylandWindow(window)
     , mGLContext(0)
     , mWaylandEglWindow(0)

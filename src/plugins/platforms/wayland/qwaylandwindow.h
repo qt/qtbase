@@ -59,7 +59,7 @@ public:
         Egl
     };
 
-    QWaylandWindow(QWidget *window);
+    QWaylandWindow(QWindow *window);
     ~QWaylandWindow();
 
     virtual WindowType windowType() const = 0;

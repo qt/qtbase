@@ -44,7 +44,7 @@
 
 class QWaylandWindow;
 class QWaylandDisplay;
-class QWidget;
+class QWindow;
 
 class QWaylandGLIntegration
 {
@@ -54,7 +54,7 @@ public:
 
     virtual void initialize() = 0;
 
-    virtual QWaylandWindow *createEglWindow(QWidget *widget) = 0;
+    virtual QWaylandWindow *createEglWindow(QWindow *window) = 0;
 
     static QWaylandGLIntegration *createGLIntegration(QWaylandDisplay *waylandDisplay);
 };

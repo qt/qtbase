@@ -49,7 +49,7 @@
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #ifdef QT_WAYLAND_GL_SUPPORT
@@ -89,27 +89,25 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
     return new QRasterPixmapData(type);
 }
 
-QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
 #ifdef QT_WAYLAND_GL_SUPPORT
-    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    bool useOpenGL = mUseOpenGL || window->surfaceType() == QWindow::OpenGLSurface;
     if (useOpenGL)
-        return mDisplay->eglIntegration()->createEglWindow(widget);
+        return mDisplay->eglIntegration()->createEglWindow(window);
 #endif
-    return new QWaylandShmWindow(widget);
+    return new QWaylandShmWindow(window);
 }
 
-QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QWaylandIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
     Q_UNUSED(winId);
-    Q_UNUSED(winId);
 #ifdef QT_WAYLAND_GL_SUPPORT
-    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
+    bool useOpenGL = mUseOpenGL || window->surfaceType() == QWindow::OpenGLSurface;
     if (useOpenGL)
-        return new QWaylandGLWindowSurface(widget);
+        return new QWaylandGLWindowSurface(window);
 #endif
-    return new QWaylandShmWindowSurface(widget);
+    return new QWaylandShmWindowSurface(window);
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

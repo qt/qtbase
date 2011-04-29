@@ -64,7 +64,7 @@ public:
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
-    QPlatformWindowFormat platformWindowFormat() const;
+    QWindowFormat windowFormat() const;
 
     void geometryChanged();
 

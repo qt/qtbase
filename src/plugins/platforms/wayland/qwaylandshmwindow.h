@@ -48,7 +48,7 @@
 class QWaylandShmWindow : public QWaylandWindow
 {
 public:
-    QWaylandShmWindow(QWidget *widget);
+    QWaylandShmWindow(QWindow *window);
     ~QWaylandShmWindow();
 
     WindowType windowType() const;

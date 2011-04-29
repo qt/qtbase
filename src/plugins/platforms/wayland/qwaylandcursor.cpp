@@ -108,11 +108,11 @@ QWaylandCursor::QWaylandCursor(QWaylandScreen *screen)
 {
 }
 
-void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
+void QWaylandCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     const struct pointer_image *p;
 
-    if (widget == NULL)
+    if (window == NULL)
         return;
 
     p = NULL;

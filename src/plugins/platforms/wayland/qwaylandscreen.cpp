@@ -81,9 +81,9 @@ QImage::Format QWaylandScreen::format() const
     return mFormat;
 }
 
-QWaylandScreen * QWaylandScreen::waylandScreenFromWidget(QWidget *widget)
+QWaylandScreen * QWaylandScreen::waylandScreenFromWindow(QWindow *window)
 {
-    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWidget(widget);
+    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(window);
     return static_cast<QWaylandScreen *>(platformScreen);
 }
 

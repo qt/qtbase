@@ -818,7 +818,7 @@ void qt_qpa_set_cursor(QWidget * w, bool force)
     } while (0);
     foreach (QWeakPointer<QPlatformCursor> cursor, QPlatformCursorPrivate::getInstances())
         if (cursor)
-            cursor.data()->changeCursor(&cursorCursor, cursorWidget);
+            cursor.data()->changeCursor(&cursorCursor, cursorWidget->windowHandle());
 }
 #endif //QT_NO_CURSOR 
 

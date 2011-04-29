@@ -44,7 +44,7 @@
 
 #include "qwaylandbuffer.h"
 #include <QtGui/private/qwindowsurface_p.h>
-
+#include <QtGui/QImage>
 #include <QtGui/QPlatformWindow>
 
 QT_BEGIN_NAMESPACE
@@ -65,11 +65,11 @@ private:
 class QWaylandShmWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandShmWindowSurface(QWidget *window);
+    QWaylandShmWindowSurface(QWindow *window);
     ~QWaylandShmWindowSurface();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
     void beginPaint(const QRegion &);
 

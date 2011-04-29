@@ -51,13 +51,13 @@ class QGLFramebufferObject;
 class QWaylandGLWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandGLWindowSurface(QWidget *window);
+    QWaylandGLWindowSurface(QWindow *window);
     ~QWaylandGLWindowSurface();
 
     void beginPaint(const QRegion &);
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
 
     void resize(const QSize &size);
 

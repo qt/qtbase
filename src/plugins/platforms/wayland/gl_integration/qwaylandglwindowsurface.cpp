@@ -47,6 +47,7 @@
 
 #include <QtOpenGL/QGLFramebufferObject>
 #include <QtOpenGL/QGLContext>
+#include <QPlatformGLContext>
 
 #include <QtOpenGL/private/qglengineshadermanager_p.h>
 
@@ -133,9 +134,9 @@ static void blitTexture(QGLContext *ctx, GLuint texture, const QSize &viewport, 
     drawTexture(r, texture, texSize, sourceRect);
 }
 
-QWaylandGLWindowSurface::QWaylandGLWindowSurface(QWidget *window)
+QWaylandGLWindowSurface::QWaylandGLWindowSurface(QWindow *window)
     : QWindowSurface(window)
-    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
     , mPaintDevice(0)
 {
 
@@ -153,30 +154,29 @@ QPaintDevice *QWaylandGLWindowSurface::paintDevice()
 
 void QWaylandGLWindowSurface::beginPaint(const QRegion &)
 {
-    window()->platformWindow()->glContext()->makeCurrent();
+    window()->handle()->glContext()->makeCurrent();
     glClearColor(0,0,0,0xff);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void QWaylandGLWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QWaylandGLWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset);
     Q_UNUSED(region);
-    QWaylandWindow *ww = (QWaylandWindow *) widget->platformWindow();
-
+    
     if (mPaintDevice->isBound())
         mPaintDevice->release();
 
     QRect rect(0,0,size().width(),size().height());
-    QGLContext *ctx = QGLContext::fromPlatformGLContext(ww->glContext());
+    QGLContext *ctx = QGLContext::fromWindowContext(window->glContext());
     blitTexture(ctx,mPaintDevice->texture(),size(),mPaintDevice->size(),rect,rect);
-    ww->glContext()->swapBuffers();
+    window->glContext()->swapBuffers();
 }
 
 void QWaylandGLWindowSurface::resize(const QSize &size)
 {
     QWindowSurface::resize(size);
-    window()->platformWindow()->glContext()->makeCurrent();
+    window()->glContext()->makeCurrent();
     delete mPaintDevice;
     mPaintDevice = new QGLFramebufferObject(size);
 }

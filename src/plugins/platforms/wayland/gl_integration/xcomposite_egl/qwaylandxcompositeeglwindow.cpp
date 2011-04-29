@@ -43,7 +43,7 @@
 
 #include <QtCore/QDebug>
 
-QWaylandXCompositeEGLWindow::QWaylandXCompositeEGLWindow(QWidget *window, QWaylandXCompositeEGLIntegration *glxIntegration)
+QWaylandXCompositeEGLWindow::QWaylandXCompositeEGLWindow(QWindow *window, QWaylandXCompositeEGLIntegration *glxIntegration)
     : QWaylandWindow(window)
     , mGlxIntegration(glxIntegration)
     , mContext(0)

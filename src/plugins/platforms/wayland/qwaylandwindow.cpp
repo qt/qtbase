@@ -46,14 +46,14 @@
 #include "qwaylandinputdevice.h"
 #include "qwaylandscreen.h"
 
-#include <QtGui/QWidget>
+#include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
 
 #include <QDebug>
 
-QWaylandWindow::QWaylandWindow(QWidget *window)
+QWaylandWindow::QWaylandWindow(QWindow *window)
     : QPlatformWindow(window)
-    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
     , mBuffer(0)
     , mWaitingForFrameSync(false)
 {
@@ -109,7 +109,7 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
 
     setGeometry(geometry);
 
-    QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+    QWindowSystemInterface::handleGeometryChange(window(), geometry);
 }
 
 void QWaylandWindow::attach(QWaylandBuffer *buffer)

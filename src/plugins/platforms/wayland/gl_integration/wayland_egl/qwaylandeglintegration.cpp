@@ -74,7 +74,7 @@ void QWaylandEglIntegration::initialize()
     }
 }
 
-QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWidget *window)
+QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWindow *window)
 {
     return new QWaylandEglWindow(window);
 }

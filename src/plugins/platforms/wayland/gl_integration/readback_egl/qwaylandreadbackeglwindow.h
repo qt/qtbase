@@ -50,7 +50,7 @@ class QWaylandReadbackEglContext;
 class QWaylandReadbackEglWindow : public QWaylandShmWindow
 {
 public:
-    QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration);
+    QWaylandReadbackEglWindow(QWindow *window, QWaylandReadbackEglIntegration *eglIntegration);
 
     WindowType windowType() const;
 

@@ -43,7 +43,6 @@
 #define QWAYLANDREADBACKEGLGLCONTEXT_H
 
 #include <QPlatformGLContext>
-#include <QtGui/QWidget>
 
 #include "qwaylandreadbackeglintegration.h"
 #include "qwaylandreadbackeglwindow.h"

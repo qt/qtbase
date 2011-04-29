@@ -43,7 +43,7 @@
 
 #include "qwaylandreadbackeglcontext.h"
 
-QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration)
+QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWindow *window, QWaylandReadbackEglIntegration *eglIntegration)
     : QWaylandShmWindow(window)
     , mEglIntegration(eglIntegration)
     , mContext(0)

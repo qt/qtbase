@@ -91,10 +91,10 @@ QWaylandShmBuffer::~QWaylandShmBuffer(void)
     wl_buffer_destroy(mBuffer);
 }
 
-QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWidget *window)
+QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWindow *window)
     : QWindowSurface(window)
     , mBuffer(0)
-    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
 {
 }
 
@@ -109,27 +109,27 @@ QPaintDevice *QWaylandShmWindowSurface::paintDevice()
 
 void QWaylandShmWindowSurface::beginPaint(const QRegion &)
 {
-    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
+    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
     waylandWindow->waitForFrameSync();
 }
 
-void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QWaylandShmWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     Q_UNUSED(offset);
-    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
+    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
     waylandWindow->damage(region);
 }
 
 void QWaylandShmWindowSurface::resize(const QSize &size)
 {
-    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
+    QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
 
     QWindowSurface::resize(size);
-    QImage::Format format = QPlatformScreen::platformScreenForWidget(window())->format();
+    QImage::Format format = QPlatformScreen::platformScreenForWindow(window())->format();
 
     if (mBuffer != NULL && mBuffer->size() == size)
 	return;

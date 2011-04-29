@@ -104,7 +104,7 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
     inputDevice->mSurfacePos = QPoint(surface_x, surface_y);
     inputDevice->mGlobalPos = QPoint(x, y);
     inputDevice->mTime = time;
-    QWindowSystemInterface::handleMouseEvent(window->widget(),
+    QWindowSystemInterface::handleMouseEvent(window->window(),
 					     time,
 					     inputDevice->mSurfacePos,
 					     inputDevice->mGlobalPos,
@@ -140,7 +140,7 @@ void QWaylandInputDevice::inputHandleButton(void *data,
 	inputDevice->mButtons &= ~qt_button;
 
     inputDevice->mTime = time;
-    QWindowSystemInterface::handleMouseEvent(window->widget(),
+    QWindowSystemInterface::handleMouseEvent(window->window(),
 					     time,
 					     inputDevice->mSurfacePos,
 					     inputDevice->mGlobalPos,
@@ -254,7 +254,7 @@ void QWaylandInputDevice::inputHandleKey(void *data,
 	     code, sym, s[0], (int) inputDevice->mModifiers);
 
     if (window) {
-        QWindowSystemInterface::handleKeyEvent(window->widget(),
+        QWindowSystemInterface::handleKeyEvent(window->window(),
                                                time, type, sym,
                                                inputDevice->mModifiers,
                                                QString::fromLatin1(s));
@@ -277,13 +277,13 @@ void QWaylandInputDevice::inputHandlePointerFocus(void *data,
 
     if (inputDevice->mPointerFocus) {
 	window = inputDevice->mPointerFocus;
-	QWindowSystemInterface::handleLeaveEvent(window->widget());
+	QWindowSystemInterface::handleLeaveEvent(window->window());
 	inputDevice->mPointerFocus = NULL;
     }
 
     if (surface) {
 	window = (QWaylandWindow *) wl_surface_get_user_data(surface);
-	QWindowSystemInterface::handleEnterEvent(window->widget());
+	QWindowSystemInterface::handleEnterEvent(window->window());
 	inputDevice->mPointerFocus = window;
     }
 
@@ -315,7 +315,7 @@ void QWaylandInputDevice::inputHandleKeyboardFocus(void *data,
     if (surface) {
 	window = (QWaylandWindow *) wl_surface_get_user_data(surface);
 	inputDevice->mKeyboardFocus = window;
-	QWindowSystemInterface::handleWindowActivated(window->widget());
+	QWindowSystemInterface::handleWindowActivated(window->window());
     } else {
 	inputDevice->mKeyboardFocus = NULL;
 	QWindowSystemInterface::handleWindowActivated(0);

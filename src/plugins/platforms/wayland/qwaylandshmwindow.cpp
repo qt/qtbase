@@ -47,8 +47,8 @@
 
 #include <QtCore/QDebug>
 
-QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
-    : QWaylandWindow(widget)
+QWaylandShmWindow::QWaylandShmWindow(QWindow *window)
+    : QWaylandWindow(window)
 {
     newSurfaceCreated();
 }

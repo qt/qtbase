@@ -66,9 +66,9 @@ void QWaylandReadbackGlxIntegration::initialize()
 {
 }
 
-QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWidget *widget)
+QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandReadbackGlxWindow(widget,this);
+    return new QWaylandReadbackGlxWindow(window,this);
 }
 
 QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)

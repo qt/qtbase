@@ -49,7 +49,7 @@
 class QWaylandReadbackGlxWindow : public QWaylandShmWindow
 {
 public:
-    QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration);
+    QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration);
     WindowType windowType() const;
 
     QPlatformGLContext *glContext() const;

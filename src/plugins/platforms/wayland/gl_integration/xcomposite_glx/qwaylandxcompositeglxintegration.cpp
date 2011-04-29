@@ -70,9 +70,9 @@ void QWaylandXCompositeGLXIntegration::initialize()
 {
 }
 
-QWaylandWindow * QWaylandXCompositeGLXIntegration::createEglWindow(QWidget *widget)
+QWaylandWindow * QWaylandXCompositeGLXIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandXCompositeGLXWindow(widget,this);
+    return new QWaylandXCompositeGLXWindow(window,this);
 }
 
 Display * QWaylandXCompositeGLXIntegration::xDisplay() const

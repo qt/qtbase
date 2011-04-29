@@ -49,7 +49,7 @@
 class QWaylandXCompositeGLXWindow : public QWaylandWindow
 {
 public:
-    QWaylandXCompositeGLXWindow(QWidget *window, QWaylandXCompositeGLXIntegration *glxIntegration);
+    QWaylandXCompositeGLXWindow(QWindow *window, QWaylandXCompositeGLXIntegration *glxIntegration);
     WindowType windowType() const;
 
     QPlatformGLContext *glContext() const;

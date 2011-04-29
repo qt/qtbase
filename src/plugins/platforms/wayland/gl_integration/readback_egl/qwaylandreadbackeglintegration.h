@@ -48,7 +48,6 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
-#include <QtGui/QWidget>
 
 #include <X11/Xlib.h>
 
@@ -61,7 +60,7 @@ public:
     ~QWaylandReadbackEglIntegration();
 
     void initialize();
-    QWaylandWindow *createEglWindow(QWidget *widget);
+    QWaylandWindow *createEglWindow(QWindow *window);
 
     QWaylandDisplay *waylandDisplay() const;
     Display *xDisplay() const;
