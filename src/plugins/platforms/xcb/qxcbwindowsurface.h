@@ -53,11 +53,11 @@ class QXcbShmImage;
 class QXcbWindowSurface : public QXcbObject, public QWindowSurface
 {
 public:
-    QXcbWindowSurface(QWidget *widget, bool setDefaultSurface = true);
+    QXcbWindowSurface(QWindow *widget, bool setDefaultSurface = true);
     ~QXcbWindowSurface();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
     bool scroll(const QRegion &area, int dx, int dy);
 

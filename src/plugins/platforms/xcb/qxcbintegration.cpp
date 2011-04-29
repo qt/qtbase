@@ -95,7 +95,7 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 QWindowSurface *QXcbIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QXcbWindowSurface(window->widget());
+    return new QXcbWindowSurface(window);
 }
 
 QList<QPlatformScreen *> QXcbIntegration::screens() const

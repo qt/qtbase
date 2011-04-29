@@ -77,6 +77,9 @@ public:
     //jl: should this function be in QPlatformIntegration
     //jl: maybe screenForWidget is a better name?
     static QPlatformScreen *platformScreenForWidget(const QWidget *widget);
+
+    // temporary convenience
+    static QPlatformScreen *platformScreenForWindow(const QWindow *window);
 };
 
 QT_END_NAMESPACE

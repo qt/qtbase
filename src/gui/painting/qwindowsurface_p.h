@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/qwidget.h>
+#include <QtGui/qwindow_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,18 +76,18 @@ public:
     };
     Q_DECLARE_FLAGS(WindowSurfaceFeatures, WindowSurfaceFeature)
 
-    QWindowSurface(QWidget *window, bool setDefaultSurface = true);
+    QWindowSurface(QWindow *window, bool setDefaultSurface = true);
     virtual ~QWindowSurface();
 
-    QWidget *window() const;
+    QWindow *window() const;
 
     virtual QPaintDevice *paintDevice() = 0;
 
-    // 'widget' can be a child widget, in which case 'region' is in child widget coordinates and
-    // offset is the (child) widget's offset in relation to the window surface. On QWS, 'offset'
-    // can be larger than just the offset from the top-level widget as there may also be window
+    // 'window' can be a child window, in which case 'region' is in child window coordinates and
+    // offset is the (child) window's offset in relation to the window surface. On QWS, 'offset'
+    // can be larger than just the offset from the top-level window as there may also be window
     // decorations which are painted into the window surface.
-    virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset) = 0;
+    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
 #if !defined(Q_WS_QPA)
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
@@ -102,11 +102,10 @@ public:
     virtual void beginPaint(const QRegion &);
     virtual void endPaint(const QRegion &);
 
-    virtual QImage* buffer(const QWidget *widget);
-    virtual QPixmap grabWidget(const QWidget *widget, const QRect& rectangle = QRect()) const;
+    virtual QPixmap grabWindow(const QWindow *window, const QRect& rectangle = QRect()) const;
 
-    virtual QPoint offset(const QWidget *widget) const;
-    inline QRect rect(const QWidget *widget) const;
+    virtual QPoint offset(const QWindow *window) const;
+    inline QRect rect(const QWindow *window) const;
 
     bool hasFeature(WindowSurfaceFeature feature) const;
     virtual WindowSurfaceFeatures features() const;
@@ -123,9 +122,9 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowSurface::WindowSurfaceFeatures)
 
-inline QRect QWindowSurface::rect(const QWidget *widget) const
+inline QRect QWindowSurface::rect(const QWindow *window) const
 {
-    return widget->rect().translated(offset(widget));
+    return window->geometry().translated(offset(window));
 }
 
 inline bool QWindowSurface::hasFeature(WindowSurfaceFeature feature) const

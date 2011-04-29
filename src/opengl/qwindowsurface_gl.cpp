@@ -86,6 +86,10 @@
 #include <private/qeglcontext_p.h>
 #endif
 
+#ifdef Q_WS_QPA
+#include <qplatformscreen_qpa.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -353,7 +357,31 @@ QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
 
 int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
 {
-    return qt_paint_device_metric(d->q_ptr->window(), m);
+    QWindow *window = d->q_ptr->window();
+    QPlatformScreen *screen = QPlatformScreen::platformScreenForWindow(window);
+    if (!screen) {
+        if (m == PdmDpiX || m == PdmDpiY)
+              return 72;
+    }
+    int val;
+    if (m == PdmWidth) {
+        val = window->geometry().width();
+    } else if (m == PdmWidthMM) {
+        val = window->geometry().width() * screen->physicalSize().width() / screen->geometry().width();
+    } else if (m == PdmHeight) {
+        val = window->geometry().height();
+    } else if (m == PdmHeightMM) {
+        val = window->geometry().height() * screen->physicalSize().height() / screen->geometry().height();
+    } else if (m == PdmDepth) {
+        val = screen->depth();
+    } else if (m == PdmDpiX || m == PdmPhysicalDpiX) {
+        val = qRound(screen->geometry().width() / double(screen->physicalSize().width() / 25.4));
+    } else if (m == PdmDpiY || m == PdmPhysicalDpiY) {
+        val = qRound(screen->geometry().height() / double(screen->physicalSize().height() / 25.4));
+    } else {
+        val = 1 << qMax(24, screen->depth());
+    }
+    return val;
 }
 
 QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
@@ -361,7 +389,7 @@ QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
     return qt_qgl_paint_engine();
 }
 
-QGLWindowSurface::QGLWindowSurface(QWidget *window)
+QGLWindowSurface::QGLWindowSurface(QWindow *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
 {
 //    Q_ASSERT(window->isTopLevel());
@@ -422,6 +450,7 @@ QGLWindowSurface::~QGLWindowSurface()
 
 void QGLWindowSurface::deleted(QObject *object)
 {
+#if 0
     QWidget *widget = qobject_cast<QWidget *>(object);
     if (widget) {
         if (widget == window()) {
@@ -444,10 +473,12 @@ void QGLWindowSurface::deleted(QObject *object)
         }
 #endif
     }
+#endif
 }
 
-void QGLWindowSurface::hijackWindow(QWidget *widget)
+void QGLWindowSurface::hijackWindow(QWindow *window)
 {
+#if 0
     QWidgetPrivate *widgetPrivate = widget->d_func();
     widgetPrivate->createExtra();
     if (widgetPrivate->extraData()->glContext)
@@ -505,6 +536,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 #ifndef Q_OS_SYMBIAN
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 #endif
+#endif
 }
 
 QGLContext *QGLWindowSurface::context() const
@@ -522,8 +554,10 @@ QPaintDevice *QGLWindowSurface::paintDevice()
     if (d_ptr->ctx)
         return &d_ptr->glDevice;
 
+#if 0
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
+#endif
 
     Q_ASSERT(d_ptr->fbo);
     return d_ptr->fbo;
@@ -594,8 +628,9 @@ static void blitTexture(QGLContext *ctx, GLuint texture, const QSize &viewport, 
 }
 
 
-void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
+void QGLWindowSurface::flush(QWindow *window, const QRegion &rgn, const QPoint &offset)
 {
+#if 0
     //### Find out why d_ptr->geometry_updated isn't always false.
     // flush() should not be called when d_ptr->geometry_updated is true. It assumes that either
     // d_ptr->fbo or d_ptr->pb is allocated and has the correct size.
@@ -847,7 +882,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         ctx->swapBuffers();
     else
         glFlush();
-
+#endif
     d_ptr->did_paint = false;
 }
 
@@ -867,6 +902,7 @@ void QGLWindowSurface::resize(const QSize &size)
 #endif
 
 void QGLWindowSurface::updateGeometry() {
+#if 0
     if (!d_ptr->geometry_updated)
         return;
     d_ptr->geometry_updated = false;
@@ -1001,6 +1037,7 @@ void QGLWindowSurface::updateGeometry() {
 #endif
     d_ptr->ctx = ctx;
     d_ptr->ctx->d_ptr->internal_context = true;
+#endif
 }
 
 bool QGLWindowSurface::initializeOffscreenTexture(const QSize &size)
@@ -1022,6 +1059,7 @@ bool QGLWindowSurface::initializeOffscreenTexture(const QSize &size)
 
 bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
+#if 0
     // this code randomly fails currently for unknown reasons
     return false;
 
@@ -1050,7 +1088,7 @@ bool QGLWindowSurface::scroll(const QRegion &area, int dx, int dy)
     glBindTexture(target, 0);
 
     drawTexture(br.translated(dx, dy), d_ptr->tex_id, window()->size());
-
+#endif
     return true;
 }
 
@@ -1113,26 +1151,6 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
     glBindTexture(target, 0);
 #endif
-}
-
-QImage *QGLWindowSurface::buffer(const QWidget *widget)
-{
-    QImage image;
-
-    if (d_ptr->pb)
-        image = d_ptr->pb->toImage();
-    else if (d_ptr->fbo)
-        image = d_ptr->fbo->toImage();
-
-    if (image.isNull())
-        return 0;
-
-    QRect rect = widget->rect();
-    rect.translate(widget->mapTo(widget->window(), QPoint()));
-
-    QImage subImage = image.copy(rect);
-    d_ptr->buffers << subImage;
-    return &d_ptr->buffers.last();
 }
 
 QWindowSurface::WindowSurfaceFeatures QGLWindowSurface::features() const

@@ -66,18 +66,6 @@ QWindow::~QWindow()
     destroy();
 }
 
-QWidget *QWindow::widget() const
-{
-    Q_D(const QWindow);
-    return d->widget;
-}
-
-void QWindow::setWidget(QWidget *widget)
-{
-    Q_D(QWindow);
-    d->widget = widget;
-}
-
 void QWindow::setVisible(bool visible)
 {
     Q_D(QWindow);

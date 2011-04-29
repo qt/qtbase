@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <private/qwindowsurface_p.h>
-#include <qwidget.h>
-#include <private/qwidget_p.h>
+#include <qwindow_qpa.h>
+#include <private/qwindow_qpa_p.h>
 #include <private/qbackingstore_p.h>
 #include <private/qapplication_p.h>
 
@@ -50,19 +50,18 @@ QT_BEGIN_NAMESPACE
 class QWindowSurfacePrivate
 {
 public:
-    QWindowSurfacePrivate(QWidget *w)
+    QWindowSurfacePrivate(QWindow *w)
         : window(w)
     {
     }
 
-    QWidget *window;
+    QWindow *window;
 #if !defined(Q_WS_QPA)
     QRect geometry;
 #else
     QSize size;
 #endif //Q_WS_QPA
     QRegion staticContents;
-    QList<QImage*> bufferImages;
 };
 
 /*!
@@ -96,10 +95,10 @@ public:
 */
 
 /*!
-    \fn void QWindowSurface::flush(QWidget *widget, const QRegion &region,
+    \fn void QWindowSurface::flush(QWindow *window, const QRegion &region,
                                   const QPoint &offset)
 
-    Flushes the given \a region from the specified \a widget onto the
+    Flushes the given \a region from the specified \a window onto the
     screen.
 
     Note that the \a offset parameter is currently unused.
@@ -114,13 +113,15 @@ public:
 /*!
     Constructs an empty surface for the given top-level \a window.
 */
-QWindowSurface::QWindowSurface(QWidget *window, bool setDefaultSurface)
+QWindowSurface::QWindowSurface(QWindow *window, bool /*setDefaultSurface*/)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
+#if 0
     if (!QApplicationPrivate::runtime_graphics_system) {
-        if(setDefaultSurface && window)
+        if (setDefaultSurface && window)
             window->setWindowSurface(this);
     }
+#endif
 }
 
 /*!
@@ -128,8 +129,8 @@ QWindowSurface::QWindowSurface(QWidget *window, bool setDefaultSurface)
 */
 QWindowSurface::~QWindowSurface()
 {
-    if (d_ptr->window)
-        d_ptr->window->d_func()->extra->topextra->windowSurface = 0;
+//    if (d_ptr->window)
+//        d_ptr->window->d_func()->extra->topextra->windowSurface = 0;
     delete d_ptr;
 }
 
@@ -137,7 +138,7 @@ QWindowSurface::~QWindowSurface()
     Returns a pointer to the top-level window associated with this
     surface.
 */
-QWidget* QWindowSurface::window() const
+QWindow* QWindowSurface::window() const
 {
     return d_ptr->window;
 }
@@ -149,8 +150,6 @@ void QWindowSurface::beginPaint(const QRegion &)
 void QWindowSurface::endPaint(const QRegion &)
 {
 //     QApplication::syncX();
-    qDeleteAll(d_ptr->bufferImages);
-    d_ptr->bufferImages.clear();
 }
 
 #if !defined(Q_WS_QPA)
@@ -211,67 +210,35 @@ bool QWindowSurface::scroll(const QRegion &area, int dx, int dy)
 }
 
 /*!
-    Returns a QImage pointer which represents the actual buffer the \a widget
-    is drawn into or 0 if this is unavailable.
-
-    You must call beginPaint() before you call this function and the returned
-    pointer is only valid until endPaint() is called.
-*/
-QImage* QWindowSurface::buffer(const QWidget *widget)
-{
-    if (widget->window() != window())
-        return 0;
-
-    QPaintDevice *pdev = paintDevice();
-    if (!pdev || pdev->devType() != QInternal::Image)
-        return 0;
-
-    const QPoint off = offset(widget);
-    QImage *img = static_cast<QImage*>(pdev);
-
-    QRect rect(off, widget->size());
-    rect &= QRect(QPoint(), img->size());
-
-    if (rect.isEmpty())
-        return 0;
-
-    img = new QImage(img->scanLine(rect.y()) + rect.x() * img->depth() / 8,
-                     rect.width(), rect.height(),
-                     img->bytesPerLine(), img->format());
-    d_ptr->bufferImages.append(img);
-
-    return img;
-}
-
-/*!
   Returns a QPixmap generated from the part of the backing store
-  corresponding to \a widget. Returns a null QPixmap if an error
+  corresponding to \a window. Returns a null QPixmap if an error
   occurs. The contents of the pixmap are only defined for the regions
-  of \a widget that have received paint events since the last resize
+  of \a window that have received paint events since the last resize
   of the backing store.
 
-  If \a rectangle is a null rectangle (the default), the entire widget
+  If \a rectangle is a null rectangle (the default), the entire window
   is grabbed. Otherwise, the grabbed area is limited to \a rectangle.
 
   The default implementation uses QWindowSurface::buffer().
 
-  \sa QPixmap::grabWidget()
+  \sa QPixmap::grabWindow()
 */
-QPixmap QWindowSurface::grabWidget(const QWidget *widget, const QRect &rectangle) const
+QPixmap QWindowSurface::grabWindow(const QWindow *, const QRect &) const
 {
     QPixmap result;
 
-    if (widget->window() != window())
+#if 0
+    if (window->window() != window())
         return result;
 
-    const QImage *img = const_cast<QWindowSurface *>(this)->buffer(widget->window());
+    const QImage *img = const_cast<QWindowSurface *>(this)->buffer(window->window());
 
     if (!img || img->isNull())
         return result;
 
-    QRect rect = rectangle.isEmpty() ? widget->rect() : (widget->rect() & rectangle);
+    QRect rect = rectangle.isEmpty() ? window->rect() : (window->rect() & rectangle);
 
-    rect.translate(offset(widget) - offset(widget->window()));
+    rect.translate(offset(window) - offset(window->window()));
     rect &= QRect(QPoint(), img->size());
 
     if (rect.isEmpty())
@@ -283,27 +250,28 @@ QPixmap QWindowSurface::grabWidget(const QWidget *widget, const QRect &rectangle
     subimg.detach(); //### expensive -- maybe we should have a real SubImage that shares reference count
 
     result = QPixmap::fromImage(subimg);
+#endif
     return result;
 }
 
 /*!
-  Returns the offset of \a widget in the coordinates of this
+  Returns the offset of \a window in the coordinates of this
   window surface.
  */
-QPoint QWindowSurface::offset(const QWidget *widget) const
+QPoint QWindowSurface::offset(const QWindow *) const
 {
-    QWidget *window = d_ptr->window;
-    QPoint offset = widget->mapTo(window, QPoint());
-#ifdef Q_WS_QWS
-    offset += window->geometry().topLeft() - window->frameGeometry().topLeft();
+    QPoint offset;
+#if 0
+    QWindow *window = d_ptr->window;
+    QPoint offset = window->mapTo(window, QPoint());
 #endif
     return offset;
 }
 
 /*!
-  \fn QRect QWindowSurface::rect(const QWidget *widget) const
+  \fn QRect QWindowSurface::rect(const QWindow *window) const
 
-  Returns the rectangle for \a widget in the coordinates of this
+  Returns the rectangle for \a window in the coordinates of this
   window surface.
 */
 

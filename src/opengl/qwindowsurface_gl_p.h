@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QPaintDevice;
 class QPoint;
 class QRegion;
-class QWidget;
+class QWindow;
 struct QGLWindowSurfacePrivate;
 
 Q_OPENGL_EXPORT QGLWidget* qt_gl_share_widget();
@@ -84,11 +84,11 @@ class Q_OPENGL_EXPORT QGLWindowSurface : public QObject, public QWindowSurface /
 {
     Q_OBJECT
 public:
-    QGLWindowSurface(QWidget *window);
+    QGLWindowSurface(QWindow *window);
     ~QGLWindowSurface();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
 
 #if !defined(Q_WS_QPA)
     void setGeometry(const QRect &rect);
@@ -101,8 +101,6 @@ public:
 
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
-
-    QImage *buffer(const QWidget *widget);
 
     WindowSurfaceFeatures features() const;
 
@@ -117,7 +115,7 @@ private slots:
     void deleted(QObject *object);
 
 private:
-    void hijackWindow(QWidget *widget);
+    void hijackWindow(QWindow *window);
     bool initializeOffscreenTexture(const QSize &size);
 
     QGLWindowSurfacePrivate *d_ptr;

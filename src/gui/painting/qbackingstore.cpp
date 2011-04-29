@@ -114,9 +114,9 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QWindowSurfa
         }
     }
     if (widget != tlw)
-        windowSurface->flush(widget, region, tlwOffset + widget->mapTo(tlw, QPoint()));
+        windowSurface->flush(widget->windowHandle(), region, tlwOffset + widget->mapTo(tlw, QPoint()));
     else
-        windowSurface->flush(widget, region, tlwOffset);
+        windowSurface->flush(widget->windowHandle(), region, tlwOffset);
 }
 
 #ifndef QT_NO_PAINT_DEBUG

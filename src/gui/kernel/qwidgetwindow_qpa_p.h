@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOW_QPA_P_H
-#define QWINDOW_QPA_P_H
+#ifndef QWIDGETWINDOW_QPA_P_H
+#define QWIDGETWINDOW_QPA_P_H
 
 #include <QtGui/qwindow_qpa.h>
 
@@ -52,39 +52,23 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QWindowPrivate : public QObjectPrivate
+class QWidgetWindow : public QWindow
 {
+    Q_OBJECT
 public:
-    QWindowPrivate()
-        : QObjectPrivate()
-        , windowFlags(Qt::Window)
-        , surfaceType(QWindow::RasterSurface)
-        , platformWindow(0)
-        , visible(false)
-        , glContext(0)
-    {
-        isWindow = true;
-    }
+    QWidgetWindow(QWidget *widget);
 
-    ~QWindowPrivate()
-    {
+    QWidget *widget() const { return m_widget; }
 
-    }
+protected:
+    bool event(QEvent *);
 
-    Qt::WindowFlags windowFlags;
-    QWindow::SurfaceType surfaceType;
-    QWindow *parentWindow;
-    QPlatformWindow *platformWindow;
-    bool visible;
-    QWindowFormat requestedFormat;
-    QString windowTitle;
-    QRect geometry;
-    QWindowContext *glContext;
+private:
+    QWidget *m_widget;
 };
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QWINDOW_QPA_P_H
+#endif // QWIDGETWINDOW_QPA_P_H

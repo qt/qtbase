@@ -70,28 +70,14 @@ QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) co
     return new QGLPixmapData(type);
 }
 
-QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
+QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWindow *window) const
 {
 #ifdef Q_WS_WIN
     // On Windows the QGLWindowSurface class can't handle
     // drop shadows and native effects, e.g. fading a menu in/out using
     // top level window opacity.
-    if (widget->windowType() == Qt::Popup)
-        return new QRasterWindowSurface(widget);
-#endif
-
-#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
-    if (m_useX11GL && QX11GLPixmapData::hasX11GLPixmaps()) {
-        // If the widget is a QGraphicsView which will be re-drawing the entire
-        // scene each frame anyway, we should use QGLWindowSurface as this may
-        // provide proper buffer flipping, which should be faster than QX11GL's
-        // blitting approach:
-        QGraphicsView* qgv = qobject_cast<QGraphicsView*>(widget);
-        if (qgv && qgv->viewportUpdateMode() == QGraphicsView::FullViewportUpdate)
-            return new QGLWindowSurface(widget);
-        else
-            return new QX11GLWindowSurface(widget);
-    }
+    if (window->windowType() == Qt::Popup)
+        return new QRasterWindowSurface(window);
 #endif
 
 #if defined(Q_OS_SYMBIAN)
@@ -102,7 +88,7 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
     }
 #endif
 
-    return new QGLWindowSurface(widget);
+    return new QGLWindowSurface(window);
 }
 #ifdef QGL_USE_TEXTURE_POOL
 void QGLGraphicsSystem::releaseCachedResources()

@@ -388,7 +388,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     QWindow *window = e->window.data();
 
-    QWidget * tlw = window ? window->widget() : 0;
+    QWidget * tlw = 0;//window ? window->widget() : 0;
 
     QPoint localPoint = e->localPos;
     QPoint globalPoint = e->globalPos;
@@ -512,10 +512,12 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         implicit_mouse_grabber.clear();
     }
 
+#if 0
     if (mouseWidget != qt_last_mouse_receiver) {
 //        dispatchEnterLeave(mouseWidget, qt_last_mouse_receiver);
         qt_last_mouse_receiver = mouseWidget;
     }
+#endif
 
     // Remember, we might enter a modal event loop when sending the event,
     // so think carefully before adding code below this point.
@@ -561,7 +563,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     if (!window)
         return;
 
-    QWidget *mouseWidget = window ? window->widget() : 0;
+    QWidget *mouseWidget = 0;//window ? window->widget() : 0;
 
      // find the tlw if we didn't get it from the plugin
 #if 0
@@ -605,7 +607,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (!window)
         return;
 
-    QObject *target = window->widget() ? static_cast<QObject *>(window->widget()) : static_cast<QObject *>(window);
+    QObject *target = window;//window->widget() ? static_cast<QObject *>(window->widget()) : static_cast<QObject *>(window);
 
 #if 0
     QWidget *focusW = 0;
@@ -643,7 +645,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
 //    QGuiApplicationPrivate::dispatchEnterLeave(e->enter.data(),0);
-    qt_last_mouse_receiver = e->enter.data() ? e->enter.data()->widget() : 0;
+//    qt_last_mouse_receiver = e->enter.data();
 }
 
 void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *)
@@ -672,7 +674,7 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
     if (!window)
         return;
 
-    QWidget *tlw = window->widget();
+    QWidget *tlw = 0;//window->widget();
     QObject *target = tlw ? static_cast<QObject *>(tlw) : static_cast<QObject *>(window);
 
     QRect newRect = e->newGeometry;

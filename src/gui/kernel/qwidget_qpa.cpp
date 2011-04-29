@@ -44,6 +44,7 @@
 #include "QtGui/qapplication.h"
 #include "QtGui/private/qbackingstore_p.h"
 #include "QtGui/private/qwidget_p.h"
+#include "QtGui/private/qwidgetwindow_qpa_p.h"
 #include "QtGui/private/qgraphicssystem_p.h"
 #include "QtGui/private/qapplication_p.h"
 #include "QtGui/qdesktopwidget.h"
@@ -102,6 +103,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (!surface ) {
         if (win) {
             surface = QApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
+            q->setWindowSurface(surface);
         } else {
             q->setAttribute(Qt::WA_PaintOnScreen,true);
         }
@@ -700,8 +702,7 @@ void QWidgetPrivate::createTLSysExtra()
 {
     Q_Q(QWidget);
     extra->topextra->screenIndex = 0;
-    extra->topextra->window = new QWindow;
-    extra->topextra->window->setWidget(q);
+    extra->topextra->window = new QWidgetWindow(q);
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

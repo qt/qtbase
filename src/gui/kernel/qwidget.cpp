@@ -78,6 +78,7 @@
 #endif
 #if defined(Q_WS_QPA)
 #include "qplatformwindow_qpa.h"
+#include "private/qwidgetwindow_qpa_p.h"
 #endif
 #include "qpainter.h"
 #include "qtooltip.h"
@@ -358,9 +359,9 @@ QWidgetPrivate::~QWidgetPrivate()
 class QDummyWindowSurface : public QWindowSurface
 {
 public:
-    QDummyWindowSurface(QWidget *window) : QWindowSurface(window) {}
-    QPaintDevice *paintDevice() { return window(); }
-    void flush(QWidget *, const QRegion &, const QPoint &) {}
+    QDummyWindowSurface(QWindow *window) : QWindowSurface(window) {}
+    QPaintDevice *paintDevice() { return static_cast<QWidgetWindow *>(window())->widget(); }
+    void flush(QWindow *, const QRegion &, const QPoint &) {}
 };
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
@@ -370,12 +371,12 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     QWindowSurface *surface;
 #ifndef QT_NO_PROPERTIES
     if (q->property("_q_DummyWindowSurface").toBool()) {
-        surface = new QDummyWindowSurface(q);
+        surface = new QDummyWindowSurface(q->windowHandle());
     } else
 #endif
     {
         if (QApplicationPrivate::graphicsSystem())
-            surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
+            surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q->windowHandle());
         else
             surface = createDefaultWindowSurface_sys();
     }

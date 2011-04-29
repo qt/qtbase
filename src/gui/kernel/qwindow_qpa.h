@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QWindowPrivate;
-class QWidget;
 
 class QResizeEvent;
 class QShowEvent;
@@ -84,17 +83,17 @@ public:
     QWindow(QWindow *parent = 0);
     virtual ~QWindow();
 
-    // to be removed at some point in the future
-    QWidget *widget() const;
-    void setWidget(QWidget *widget);
-
     void setVisible(bool visible);
     bool visible() const;
 
     void create();
 
     WId winId() const;
+
+    QWindow *parent() const;
     void setParent(QWindow *parent);
+
+    QWindow *topLevelWindow() const;
 
     void setWindowFormat(const QWindowFormat &format);
     QWindowFormat requestedWindowFormat() const;

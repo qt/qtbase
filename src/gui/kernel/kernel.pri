@@ -230,6 +230,7 @@ qpa {
                 kernel/qwindowformat_qpa.h \
                 kernel/qguiapplication_qpa.h \
                 kernel/qguiapplication_qpa_p.h \
+                kernel/qwidgetwindow_qpa_p.h \
                 kernel/qwindow_qpa_p.h \
                 kernel/qwindow_qpa.h
 
@@ -259,6 +260,7 @@ qpa {
                 kernel/qsessionmanager_qpa.cpp \
                 kernel/qwindowformat_qpa.cpp \
                 kernel/qguiapplication_qpa.cpp \
+                kernel/qwidgetwindow_qpa.cpp \
                 kernel/qwindow_qpa.cpp
 
         contains(QT_CONFIG, glib) {

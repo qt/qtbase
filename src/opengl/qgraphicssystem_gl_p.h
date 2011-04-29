@@ -65,7 +65,7 @@ public:
     QGLGraphicsSystem(bool useX11GL);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QWindowSurface *createWindowSurface(QWidget *widget) const;
+    QWindowSurface *createWindowSurface(QWindow *window) const;
 
 #ifdef QGL_USE_TEXTURE_POOL
     void releaseCachedResources();

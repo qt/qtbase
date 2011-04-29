@@ -117,7 +117,7 @@ static bool qt_try_modal(QWidget *widget, QEvent::Type type)
 
 
 
-void QApplicationPrivate::enterModal_sys(QWidget *widget)
+void QApplicationPrivate::enterModal_sys(QWidget *)
 {
 #if 0
     if (!qt_modal_stack)
@@ -127,7 +127,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 #endif
 }
 
-void QApplicationPrivate::leaveModal_sys(QWidget *widget )
+void QApplicationPrivate::leaveModal_sys(QWidget *)
 {
 #if 0
     if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
