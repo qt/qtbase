@@ -43,8 +43,10 @@
 #define QWAYLANDXCOMPOSITEBUFFER_H
 
 #include "qwaylandbuffer.h"
+#include <stdint.h>
 
-#include "wayland-xcomposite-client-protocol.h"
+struct wl_xcomposite;
+struct wl_visual;
 
 class QWaylandXCompositeBuffer : public QWaylandBuffer
 {
