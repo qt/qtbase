@@ -46,7 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QMinimalWindowSurface::QMinimalWindowSurface(QWidget *window)
+QMinimalWindowSurface::QMinimalWindowSurface(QWindow *window)
     : QWindowSurface(window)
 {
     //qDebug() << "QMinimalWindowSurface::QMinimalWindowSurface:" << (long)this;
@@ -62,9 +62,9 @@ QPaintDevice *QMinimalWindowSurface::paintDevice()
     return &mImage;
 }
 
-void QMinimalWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QMinimalWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 

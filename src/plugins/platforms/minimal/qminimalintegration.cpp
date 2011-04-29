@@ -78,5 +78,5 @@ QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) cons
 QWindowSurface *QMinimalIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QMinimalWindowSurface(window->widget());
+    return new QMinimalWindowSurface(window);
 }
