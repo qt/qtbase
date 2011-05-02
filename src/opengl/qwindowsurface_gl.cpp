@@ -610,6 +610,17 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
 
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget 
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
