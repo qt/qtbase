@@ -294,7 +294,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
             }
             entry += entryLen + 1;
         }
-        FreeEnvironmentStrings(envStrings);
+        FreeEnvironmentStringsW(envStrings);
     }
     return env;
 }
