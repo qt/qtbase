@@ -327,6 +327,12 @@ QPlatformWindow *QWindow::handle() const
     return d->platformWindow;
 }
 
+QWindowSurface *QWindow::surface() const
+{
+    Q_D(const QWindow);
+    return d->surface;
+}
+
 void QWindow::showMinimized()
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;

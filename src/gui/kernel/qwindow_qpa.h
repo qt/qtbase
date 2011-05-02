@@ -66,6 +66,7 @@ class QWheelEvent;
 
 class QPlatformWindow;
 class QWindowContext;
+class QWindowSurface;
 
 class Q_GUI_EXPORT QWindow : public QObject
 {
@@ -132,6 +133,7 @@ public:
     void destroy();
 
     QPlatformWindow *handle() const;
+    QWindowSurface *surface() const;
 
 public Q_SLOTS:
     inline void show() { setVisible(true); }
@@ -174,6 +176,7 @@ private:
 
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
+    friend class QWindowSurface;
 };
 
 QT_END_NAMESPACE

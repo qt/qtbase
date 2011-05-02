@@ -62,13 +62,13 @@ public:
         , platformWindow(0)
         , visible(false)
         , glContext(0)
+        , surface(0)
     {
         isWindow = true;
     }
 
     ~QWindowPrivate()
     {
-
     }
 
     Qt::WindowFlags windowFlags;
@@ -80,6 +80,7 @@ public:
     QString windowTitle;
     QRect geometry;
     QWindowContext *glContext;
+    QWindowSurface *surface;
 };
 
 

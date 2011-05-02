@@ -528,18 +528,12 @@ QPlatformGLContext *QXcbWindow::glContext() const
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
-#if 0
-    QWidget *widget = window()->widget();
-    if (!widget)
-        return;
-
-    QWindowSurface *surface = widget->windowSurface();
+    QWindowSurface *surface = window()->surface();
     if (surface) {
         QRect rect(event->x, event->y, event->width, event->height);
 
-        surface->flush(widget, rect, QPoint());
+        surface->flush(window(), rect, QPoint());
     }
-#endif
 }
 
 void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)

@@ -116,6 +116,8 @@ public:
 QWindowSurface::QWindowSurface(QWindow *window, bool /*setDefaultSurface*/)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
+    if (window)
+        window->d_func()->surface = this;
 #if 0
     if (!QApplicationPrivate::runtime_graphics_system) {
         if (setDefaultSurface && window)
