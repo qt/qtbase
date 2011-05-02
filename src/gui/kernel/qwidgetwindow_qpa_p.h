@@ -63,6 +63,9 @@ public:
 protected:
     bool event(QEvent *);
 
+    void handleMouseEvent(QMouseEvent *);
+    void handleKeyEvent(QKeyEvent *);
+
 private:
     QWidget *m_widget;
 };

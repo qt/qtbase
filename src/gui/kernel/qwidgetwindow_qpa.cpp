@@ -50,10 +50,50 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 
 bool QWidgetWindow::event(QEvent *event)
 {
-    if (m_widget->event(event))
+    switch (event->type()) {
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+        handleMouseEvent(static_cast<QMouseEvent *>(event));
         return true;
 
-    return QWindow::event(event);
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        handleKeyEvent(static_cast<QKeyEvent *>(event));
+        return true;
+
+    default:
+        break;
+    }
+
+    return m_widget->event(event) || QWindow::event(event);
+}
+
+void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
+{
+    // which child should have it?
+    QWidget *widget = m_widget->childAt(event->pos());
+
+    // TODO: make sure mouse release is delivered to same widget that got the press event
+
+    if (!widget)
+        widget = m_widget;
+
+    QPoint mapped = widget->mapFrom(m_widget, event->pos());
+
+    QMouseEvent translated(event->type(), mapped, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+    QGuiApplication::sendSpontaneousEvent(widget, &translated);
+}
+
+void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
+{
+    QWidget *widget = m_widget->focusWidget();
+
+    if (!widget)
+        widget = m_widget;
+
+    QGuiApplication::sendSpontaneousEvent(widget, event);
 }
 
 QT_END_NAMESPACE

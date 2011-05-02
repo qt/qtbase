@@ -642,7 +642,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     }
 }
 
-void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
+void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *)
 {
 //    QGuiApplicationPrivate::dispatchEnterLeave(e->enter.data(),0);
 //    qt_last_mouse_receiver = e->enter.data();

@@ -214,6 +214,7 @@ private:
     friend class Q3AccelManager;
     friend class QShortcutMap;
     friend class QWidget;
+    friend class QWidgetWindow;
     friend class QWidgetPrivate;
     friend bool qt_sendSpontaneousEvent(QObject*, QEvent*);
     friend Q_CORE_EXPORT QString qAppName();

@@ -95,7 +95,7 @@ QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget
     return integration->screens()[screenIndex];
 }
 
-QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)
+QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *)
 {
     return QGuiApplicationPrivate::platformIntegration()->screens().at(0);
 }
