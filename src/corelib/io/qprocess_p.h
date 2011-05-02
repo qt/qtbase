@@ -81,68 +81,76 @@ class QTimer;
 class RProcess;
 #endif
 
+#ifdef Q_OS_WIN
+class QProcEnvKey : public QString
+{
+public:
+    QProcEnvKey() {}
+    explicit QProcEnvKey(const QString &other) : QString(other) {}
+    QProcEnvKey(const QProcEnvKey &other) : QString(other) {}
+    bool operator==(const QProcEnvKey &other) const { return !compare(other, Qt::CaseInsensitive); }
+};
+inline uint qHash(const QProcEnvKey &key) { return qHash(key.toCaseFolded()); }
+
+typedef QString QProcEnvValue;
+#else
+class QProcEnvKey
+{
+public:
+    QProcEnvKey() : hash(0) {}
+    explicit QProcEnvKey(const QByteArray &other) : key(other), hash(qHash(key)) {}
+    QProcEnvKey(const QProcEnvKey &other) { *this = other; }
+    bool operator==(const QProcEnvKey &other) const { return key == other.key; }
+
+    QByteArray key;
+    uint hash;
+};
+inline uint qHash(const QProcEnvKey &key) { return key.hash; }
+
+class QProcEnvValue
+{
+public:
+    QProcEnvValue() {}
+    QProcEnvValue(const QProcEnvValue &other) { *this = other; }
+    explicit QProcEnvValue(const QString &value) : stringValue(value) {}
+    explicit QProcEnvValue(const QByteArray &value) : byteValue(value) {}
+    bool operator==(const QProcEnvValue &other) const
+    {
+        return byteValue.isEmpty() && other.byteValue.isEmpty()
+                ? stringValue == other.stringValue
+                : bytes() == other.bytes();
+    }
+    QByteArray bytes() const
+    {
+        if (byteValue.isEmpty() && !stringValue.isEmpty())
+            byteValue = stringValue.toLocal8Bit();
+        return byteValue;
+    }
+    QString string() const
+    {
+        if (stringValue.isEmpty() && !byteValue.isEmpty())
+            stringValue = QString::fromLocal8Bit(byteValue);
+        return stringValue;
+    }
+
+    mutable QByteArray byteValue;
+    mutable QString stringValue;
+};
+Q_DECLARE_TYPEINFO(QProcEnvValue, Q_MOVABLE_TYPE);
+#endif
+Q_DECLARE_TYPEINFO(QProcEnvKey, Q_MOVABLE_TYPE);
+
 class QProcessEnvironmentPrivate: public QSharedData
 {
 public:
+    typedef QProcEnvKey Key;
+    typedef QProcEnvValue Value;
 #ifdef Q_OS_WIN
-    class Key : public QString
-    {
-    public:
-        Key() {}
-        explicit Key(const QString &other) : QString(other) {}
-        Key(const Key &other) : QString(other) {}
-        bool operator==(const Key &other) const { return !compare(other, Qt::CaseInsensitive); }
-    };
-
-    typedef QString Value;
-
     inline Key prepareName(const QString &name) const { return Key(name); }
     inline QString nameToString(const Key &name) const { return name; }
     inline Value prepareValue(const QString &value) const { return value; }
     inline QString valueToString(const Value &value) const { return value; }
 #else
-    class Key
-    {
-    public:
-        Key() : hash(0) {}
-        explicit Key(const QByteArray &other) : key(other), hash(qHash(key)) {}
-        Key(const Key &other) { *this = other; }
-        bool operator==(const Key &other) const { return key == other.key; }
-
-        QByteArray key;
-        uint hash;
-    };
-
-    class Value
-    {
-    public:
-        Value() {}
-        Value(const Value &other) { *this = other; }
-        explicit Value(const QString &value) : stringValue(value) {}
-        explicit Value(const QByteArray &value) : byteValue(value) {}
-        bool operator==(const Value &other) const
-        {
-            return byteValue.isEmpty() && other.byteValue.isEmpty()
-                    ? stringValue == other.stringValue
-                    : bytes() == other.bytes();
-        }
-        QByteArray bytes() const
-        {
-            if (byteValue.isEmpty() && !stringValue.isEmpty())
-                byteValue = stringValue.toLocal8Bit();
-            return byteValue;
-        }
-        QString string() const
-        {
-            if (stringValue.isEmpty() && !byteValue.isEmpty())
-                stringValue = QString::fromLocal8Bit(byteValue);
-            return stringValue;
-        }
-
-        mutable QByteArray byteValue;
-        mutable QString stringValue;
-    };
-
     inline Key prepareName(const QString &name) const
     {
         Key &ent = nameMap[name];
@@ -173,16 +181,6 @@ public:
     QStringList keys() const;
     void insert(const QProcessEnvironmentPrivate &other);
 };
-Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Key, Q_MOVABLE_TYPE);
-#ifdef Q_OS_UNIX
-Q_DECLARE_TYPEINFO(QProcessEnvironmentPrivate::Value, Q_MOVABLE_TYPE);
-#endif
-
-#ifdef Q_OS_WIN
-inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return qHash(key.toCaseFolded()); }
-#else
-inline uint qHash(const QProcessEnvironmentPrivate::Key &key) { return key.hash; }
-#endif
 
 class QProcessPrivate : public QIODevicePrivate
 {
