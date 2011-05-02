@@ -281,6 +281,7 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
+#if !defined(Q_OS_WINCE)
     // Calls to setenv() affect the low-level environment as well.
     // This is not the case the other way round.
     if (wchar_t *envStrings = GetEnvironmentStringsW()) {
@@ -296,9 +297,11 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
         }
         FreeEnvironmentStringsW(envStrings);
     }
+#endif
     return env;
 }
 
+#if !defined(Q_OS_WINCE)
 static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
@@ -358,6 +361,7 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &
     }
     return envlist;
 }
+#endif
 
 void QProcessPrivate::startProcess()
 {
