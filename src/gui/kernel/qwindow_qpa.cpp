@@ -88,6 +88,8 @@ void QWindow::create()
     if (!d->platformWindow) {
         d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
         d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
+        if (!d->windowTitle.isNull())
+            d->platformWindow->setWindowTitle(d->windowTitle);
     }
     Q_ASSERT(d->platformWindow);
 

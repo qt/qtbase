@@ -10,6 +10,7 @@ HelloWindow::HelloWindow()
     : colorIndex(0)
 {
     setSurfaceType(OpenGLSurface);
+    setWindowTitle(QLatin1String("Hello Window"));
 
     QWindowFormat format;
     format.setDepthBufferSize(16);
