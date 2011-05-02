@@ -185,8 +185,8 @@ fi
 #-------------------------------------------------------------------------------
 
 PLATFORM_X11=no
-PLATFORM_QWS=maybe
-PLATFORM_QPA=maybe
+PLATFORM_QWS=no
+PLATFORM_QPA=yes
 BUILD_ON_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     PLATFORM_MAC=maybe
