@@ -65,6 +65,8 @@ protected:
 
     void handleMouseEvent(QMouseEvent *);
     void handleKeyEvent(QKeyEvent *);
+    void handleMoveEvent(QMoveEvent *);
+    void handleResizeEvent(QResizeEvent *);
 
 private:
     QWidget *m_widget;

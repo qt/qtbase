@@ -63,6 +63,14 @@ bool QWidgetWindow::event(QEvent *event)
         handleKeyEvent(static_cast<QKeyEvent *>(event));
         return true;
 
+    case QEvent::Move:
+        handleMoveEvent(static_cast<QMoveEvent *>(event));
+        return true;
+
+    case QEvent::Resize:
+        handleResizeEvent(static_cast<QResizeEvent *>(event));
+        return true;
+
     default:
         break;
     }
@@ -94,6 +102,18 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
         widget = m_widget;
 
     QGuiApplication::sendSpontaneousEvent(widget, event);
+}
+
+void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
+{
+    m_widget->data->crect = geometry();
+    QGuiApplication::sendSpontaneousEvent(m_widget, event);
+}
+
+void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
+{
+    m_widget->data->crect = geometry();
+    QGuiApplication::sendSpontaneousEvent(m_widget, event);
 }
 
 QT_END_NAMESPACE
