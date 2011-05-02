@@ -73,9 +73,9 @@ public:
 
     class CloseEvent : public WindowSystemEvent {
     public:
-        CloseEvent(QWindow *tlw)
-            : WindowSystemEvent(Close), topLevel(tlw) { }
-        QWeakPointer<QWindow> topLevel;
+        CloseEvent(QWindow *w)
+            : WindowSystemEvent(Close), window(w) { }
+        QWeakPointer<QWindow> window;
     };
 
     class GeometryChangeEvent : public WindowSystemEvent {

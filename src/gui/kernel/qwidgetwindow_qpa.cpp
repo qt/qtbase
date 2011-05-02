@@ -41,6 +41,8 @@
 
 #include "qwidgetwindow_qpa_p.h"
 
+#include "private/qwidget_p.h"
+
 QT_BEGIN_NAMESPACE
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
@@ -51,16 +53,20 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 bool QWidgetWindow::event(QEvent *event)
 {
     switch (event->type()) {
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick:
-        handleMouseEvent(static_cast<QMouseEvent *>(event));
+    case QEvent::Close:
+        handleCloseEvent(static_cast<QCloseEvent *>(event));
         return true;
 
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
         handleKeyEvent(static_cast<QKeyEvent *>(event));
+        return true;
+
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+        handleMouseEvent(static_cast<QMouseEvent *>(event));
         return true;
 
     case QEvent::Move:
@@ -114,6 +120,11 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
     m_widget->data->crect = geometry();
     QGuiApplication::sendSpontaneousEvent(m_widget, event);
+}
+
+void QWidgetWindow::handleCloseEvent(QCloseEvent *)
+{
+    m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
 QT_END_NAMESPACE

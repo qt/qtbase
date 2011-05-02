@@ -710,11 +710,11 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
 
 void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e)
 {
-    if (e->topLevel.isNull()) {
-        //qDebug() << "QGuiApplicationPrivate::processCloseEvent NULL";
+    if (e->window.isNull())
         return;
-    }
-//    e->topLevel.data()->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+
+    QCloseEvent event;
+    QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
 }
 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *)

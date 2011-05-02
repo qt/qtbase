@@ -63,8 +63,9 @@ public:
 protected:
     bool event(QEvent *);
 
-    void handleMouseEvent(QMouseEvent *);
+    void handleCloseEvent(QCloseEvent *);
     void handleKeyEvent(QKeyEvent *);
+    void handleMouseEvent(QMouseEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
 

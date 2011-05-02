@@ -293,7 +293,7 @@ void QWindow::setWindowIcon(const QImage &icon) const
 QWindowContext * QWindow::glContext() const
 {
     Q_D(const QWindow);
-    if (!d->glContext)
+    if (d->platformWindow && !d->glContext)
         const_cast<QWindowPrivate *>(d)->glContext = new QWindowContext(const_cast<QWindow *>(this));
     return d->glContext;
 }
@@ -410,6 +410,10 @@ bool QWindow::event(QEvent *event)
         wheelEvent(static_cast<QWheelEvent*>(event));
         break;
 #endif
+
+    case QEvent::Close:
+        destroy();
+        break;
 
     default:
         return QObject::event(event);

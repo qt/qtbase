@@ -63,6 +63,9 @@ void HelloWindow::updateColor()
 
 void HelloWindow::render()
 {
+    if (!glContext())
+        return;
+
     glContext()->makeCurrent();
 
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
