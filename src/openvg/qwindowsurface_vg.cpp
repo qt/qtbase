@@ -83,7 +83,7 @@ void QVGWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoin
     if (window() != widget) {
         // For performance reasons we don't support
         // flushing native child widgets on Symbian.
-        // It breaks overlapping native child widget 
+        // It breaks overlapping native child widget
         // rendering in some cases but we prefer performance.
         return;
     }
