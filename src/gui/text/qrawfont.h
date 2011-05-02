@@ -103,6 +103,10 @@ public:
 
     qreal ascent() const;
     qreal descent() const;
+    qreal leading() const;
+    qreal xHeight() const;
+    qreal averageCharWidth() const;
+    qreal maxCharWidth() const;
 
     qreal unitsPerEm() const;
 

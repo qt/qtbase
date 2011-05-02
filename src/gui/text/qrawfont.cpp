@@ -302,6 +302,58 @@ qreal QRawFont::descent() const
 }
 
 /*!
+   Returns the xHeight of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::xHeight()
+*/
+qreal QRawFont::xHeight() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->xHeight().toReal();
+}
+
+/*!
+   Returns the leading of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::leading()
+*/
+qreal QRawFont::leading() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->leading().toReal();
+}
+
+/*!
+   Returns the average character width of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::averageCharWidth()
+*/
+qreal QRawFont::averageCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->averageCharWidth().toReal();
+}
+
+/*!
+   Returns the width of the widest character in the font.
+
+   \sa QFontMetricsF::maxWidth()
+*/
+qreal QRawFont::maxCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->maxCharWidth();
+}
+
+/*!
    Returns the pixel size set for this QRawFont. The pixel size affects how glyphs are
    rasterized, the size of glyphs returned by pathForGlyph(), and is used to convert
    internal metrics from design units to logical pixel units.
