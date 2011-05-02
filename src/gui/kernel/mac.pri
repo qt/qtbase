@@ -1,4 +1,4 @@
-!x11:!embedded:!qpa:mac {
+!x11:!qpa:mac {
    LIBS_PRIVATE += -framework Carbon -lz
    *-mwerks:INCLUDEPATH += compat
 }

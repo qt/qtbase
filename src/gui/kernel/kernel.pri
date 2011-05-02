@@ -173,32 +173,6 @@ unix:x11 {
                 kernel/qeventdispatcher_x11_p.h
 }
 
-embedded {
-	HEADERS += \
-		kernel/qeventdispatcher_qws_p.h
-
-	SOURCES += \
-		kernel/qapplication_qws.cpp \
-		kernel/qclipboard_qws.cpp \
-		kernel/qcursor_qws.cpp \
-		kernel/qdesktopwidget_qws.cpp \
-		kernel/qdnd_qws.cpp \
-		kernel/qeventdispatcher_qws.cpp \
-		kernel/qsound_qws.cpp \
-		kernel/qwidget_qws.cpp \
-		kernel/qkeymapper_qws.cpp \
-		kernel/qsessionmanager_qws.cpp
-
-        contains(QT_CONFIG, glib) {
-            SOURCES += \
-		kernel/qeventdispatcher_glib_qws.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_glib_qws_p.h
-            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-            LIBS_PRIVATE +=$$QT_LIBS_GLIB
-	}
-}
-
 !qpa {
         HEADERS += \
                 kernel/qsound.h \
@@ -273,7 +247,7 @@ qpa {
 	}
 }
 
-!embedded:!qpa:!x11:mac {
+!qpa:!x11:mac {
 	SOURCES += \
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \

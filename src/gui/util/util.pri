@@ -41,12 +41,12 @@ unix:x11 {
 				util/qsystemtrayicon_x11.cpp
 }
 
-embedded|qpa {
+qpa {
 		SOURCES += \
                                 util/qsystemtrayicon_qpa.cpp
 }
 
-!embedded:!qpa:!x11:mac {
+!qpa:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
 

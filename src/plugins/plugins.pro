@@ -7,8 +7,7 @@ unix:!symbian {
         SUBDIRS *= codecs
 }
 !contains(QT_CONFIG, no-gui): SUBDIRS *= imageformats
-!embedded:!qpa:SUBDIRS *= graphicssystems
-embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
+!qpa:SUBDIRS *= graphicssystems
 !win32:!embedded:!mac:!symbian:SUBDIRS *= inputmethods
 !symbian:!contains(QT_CONFIG, no-gui):SUBDIRS += accessible
 symbian:SUBDIRS += s60

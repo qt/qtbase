@@ -5,7 +5,7 @@ DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-!win32:!embedded:!qpa:!mac:!symbian:CONFIG      += x11
+!win32:!qpa:!mac:!symbian:CONFIG      += x11
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
@@ -17,7 +17,6 @@ contains(QT_CONFIG, x11sm):CONFIG += x11sm
 x11:include(kernel/x11.pri)
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
-embedded:include(embedded/embedded.pri)
 symbian {
     include(kernel/symbian.pri)
     include(s60framework/s60framework.pri)
@@ -43,7 +42,6 @@ include(effects/effects.pri)
 
 include(egl/egl.pri)
 win32:!wince*: DEFINES += QT_NO_EGL
-embedded: QT += network
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 

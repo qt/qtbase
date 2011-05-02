@@ -12,7 +12,7 @@ contains(QT_CONFIG, accessibility) {
 		 accessible/qaccessiblewidget.cpp \
 		 accessible/qaccessibleplugin.cpp
 
-      mac:!embedded:!qpa {
+      mac:!qpa {
         HEADERS += accessible/qaccessible_mac_p.h
         OBJECTIVE_SOURCES += accessible/qaccessible_mac.mm \
                              accessible/qaccessible_mac_cocoa.mm

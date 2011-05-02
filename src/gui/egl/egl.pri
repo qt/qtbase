@@ -25,19 +25,15 @@ contains(QT_CONFIG, egl): {
 	wince*: SOURCES += egl/qegl_wince.cpp
 
 	unix {
-	    embedded {
-	        SOURCES += egl/qegl_qws.cpp
-	    } else {
-	        qpa {
-	            SOURCES += egl/qegl_qpa.cpp
-	        } else {
-	            symbian {
-	                SOURCES += egl/qegl_symbian.cpp
-	            } else {
-	                SOURCES += egl/qegl_x11.cpp
-	            }
-	        }
-	    }
+            qpa {
+                SOURCES += egl/qegl_qpa.cpp
+            } else {
+                symbian {
+                    SOURCES += egl/qegl_symbian.cpp
+                } else {
+                    SOURCES += egl/qegl_x11.cpp
+                }
+            }
 	}
 } else:symbian {
 	DEFINES += QT_NO_EGL

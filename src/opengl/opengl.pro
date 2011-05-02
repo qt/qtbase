@@ -11,7 +11,7 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
-!win32:!embedded:!mac:!symbian:!qpa:CONFIG	   += x11
+!win32:!mac:!symbian:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
@@ -105,7 +105,6 @@ x11 {
 
     contains(QT_CONFIG, fontconfig) {
         contains(QT_CONFIG, system-freetype) {
-            embedded:CONFIG += opentype
             # pull in the proper freetype2 include directory
             include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
             LIBS_PRIVATE += -lfreetype
@@ -136,24 +135,6 @@ wince*: {
                qgl_egl.cpp
 
     HEADERS += qgl_egl_p.h
-}
-
-embedded {
-    SOURCES += qgl_qws.cpp \
-               qglpixelbuffer_egl.cpp \
-               qglscreen_qws.cpp \
-               qglwindowsurface_qws.cpp \
-               qgl_egl.cpp
-
-    HEADERS += qglscreen_qws.h \
-               qglwindowsurface_qws_p.h \
-               qgl_egl_p.h
-
-    contains(QT_CONFIG, fontconfig) {
-        include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
-    } else {
-       DEFINES *= QT_NO_FREETYPE
-    }
 }
 
 symbian {

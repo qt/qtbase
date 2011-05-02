@@ -62,9 +62,6 @@ SOURCES += \
 win32 {
     SOURCES += image/qpixmap_win.cpp
 }
-else:embedded {
-    SOURCES += image/qpixmap_qws.cpp
-}
 else:qpa {
     SOURCES += image/qpixmap_qpa.cpp
 }

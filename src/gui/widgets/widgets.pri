@@ -144,7 +144,7 @@ SOURCES += \
         widgets/qplaintextedit.cpp \
         widgets/qprintpreviewwidget.cpp
 
-!embedded:!qpa:mac {
+!qpa:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
                widgets/qmaccocoaviewcontainer_mac.h
     OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \ 

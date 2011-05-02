@@ -15,11 +15,7 @@ win32 {
     HEADERS += inputmethod/qwininputcontext_p.h
     SOURCES += inputmethod/qwininputcontext_win.cpp
 }
-embedded {
-    HEADERS += inputmethod/qwsinputcontext_p.h
-    SOURCES += inputmethod/qwsinputcontext_qws.cpp
-}
-mac:!embedded:!qpa {
+mac:!qpa {
     HEADERS += inputmethod/qmacinputcontext_p.h
     SOURCES += inputmethod/qmacinputcontext_mac.cpp
 }

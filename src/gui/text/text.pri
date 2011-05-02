@@ -103,7 +103,7 @@ unix:x11 {
                 text/qrawfont_ft.cpp
 }
 
-!embedded:!qpa:!x11:mac {
+!qpa:!x11:mac {
         HEADERS += \
                 text/qfontengine_mac_p.h
         OBJECTIVE_HEADERS += \
@@ -114,22 +114,6 @@ unix:x11 {
         OBJECTIVE_SOURCES += \
                 text/qfontengine_coretext.mm \
                 text/qfontengine_mac.mm
-}
-
-embedded {
-	SOURCES += \
-		text/qfont_qws.cpp \
-		text/qfontengine_qws.cpp \
-		text/qfontengine_ft.cpp \
-		text/qfontengine_qpf.cpp \
-                text/qabstractfontengine_qws.cpp \
-                text/qrawfont_ft.cpp
-	HEADERS += \
-		text/qfontengine_ft_p.h \
-		text/qfontengine_qpf_p.h \
-		text/qabstractfontengine_qws.h \
-		text/qabstractfontengine_p.h
-	DEFINES += QT_NO_FONTCONFIG
 }
 
 qpa {
@@ -228,9 +212,7 @@ contains(QT_CONFIG, freetype) {
 
     DEFINES += FT2_BUILD_LIBRARY FT_CONFIG_OPTION_SYSTEM_ZLIB
     
-    embedded:CONFIG += opentype
 } else:contains(QT_CONFIG, system-freetype) {
-    embedded:CONFIG += opentype
     # pull in the proper freetype2 include directory
     include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
     LIBS_PRIVATE += -lfreetype

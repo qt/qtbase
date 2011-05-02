@@ -114,14 +114,7 @@ win32 {
         !win32-borland:!wince*:LIBS += -lmsimg32
 }
 
-embedded {
-    HEADERS += \
-        painting/qgraphicssystem_qws_p.h \
-
-    SOURCES += \
-        painting/qgraphicssystem_qws.cpp \
-
-} else: if(!qpa) {
+if(!qpa) {
     HEADERS += \
         painting/qgraphicssystem_raster_p.h \
         painting/qgraphicssystem_runtime_p.h \
@@ -147,7 +140,7 @@ unix:x11 {
                 painting/qpaintengine_x11.cpp
 }
 
-!embedded:!qpa:!x11:mac {
+!qpa:!x11:mac {
         HEADERS += \
                 painting/qpaintengine_mac_p.h \
                 painting/qgraphicssystem_mac_p.h \
@@ -170,21 +163,9 @@ unix:!mac:!symbian|qpa {
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|embedded|qpa|symbian {
+win32|x11|mac|qpa|symbian {
         SOURCES += painting/qbackingstore.cpp
         HEADERS += painting/qbackingstore_p.h
-}
-
-embedded {
-        contains(QT_CONFIG,qtopia) {
-                DEFINES += QTOPIA_PRINTENGINE
-                HEADERS += painting/qprintengine_qws_p.h
-                SOURCES += painting/qprintengine_qws.cpp
-        }
-
-        SOURCES += \
-                painting/qcolormap_qws.cpp \
-                painting/qpaintdevice_qws.cpp
 }
 
 qpa {
@@ -203,7 +184,7 @@ symbian {
                 painting/qpaintengine_s60_p.h
 }
 
-x11|embedded|qpa {
+x11|qpa {
         contains(QT_CONFIG,qtopia) {
             DEFINES += QT_NO_CUPS QT_NO_LPR
         } else {
@@ -233,19 +214,12 @@ x11 {
         SOURCES += painting/qwindowsurface_x11.cpp
 }
 
-!embedded:!qpa:mac {
+!qpa:mac {
         HEADERS += painting/qwindowsurface_mac_p.h \
                    painting/qunifiedtoolbarsurface_mac_p.h
         SOURCES += painting/qwindowsurface_mac.cpp \
                    painting/qunifiedtoolbarsurface_mac.cpp
 }
-
-embedded {
-        HEADERS += painting/qwindowsurface_qws_p.h
-        SOURCES += painting/qwindowsurface_qws.cpp
-}
-
-
 
 symbian {
         HEADERS += painting/qwindowsurface_s60_p.h \
