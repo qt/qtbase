@@ -345,6 +345,7 @@ private slots:
     void immediateRepaintAfterInvalidateBuffer();
 #endif
     void effectiveWinId();
+    void effectiveWinId2();
     void customDpi();
     void customDpiProperty();
 
@@ -8493,6 +8494,30 @@ void tst_QWidget::effectiveWinId()
 
     QVERIFY(parent.effectiveWinId());
     QVERIFY(child.effectiveWinId());
+}
+
+void tst_QWidget::effectiveWinId2()
+{
+    QWidget parent;
+
+    class MyWidget : public QWidget {
+        bool event(QEvent *e)
+        {
+            if (e->type() == QEvent::WinIdChange) {
+                // Shouldn't crash.
+                effectiveWinId();
+            }
+
+            return QWidget::event(e);
+        }
+    };
+
+    MyWidget child;
+    child.setParent(&parent);
+    parent.show();
+
+    child.setParent(0);
+    child.setParent(&parent);
 }
 
 class CustomWidget : public QWidget
