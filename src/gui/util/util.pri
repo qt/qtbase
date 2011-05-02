@@ -43,7 +43,7 @@ unix:x11 {
 
 embedded|qpa {
 		SOURCES += \
-				util/qsystemtrayicon_qws.cpp
+                                util/qsystemtrayicon_qpa.cpp
 }
 
 !embedded:!qpa:!x11:mac {

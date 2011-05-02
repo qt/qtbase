@@ -238,11 +238,11 @@ qpa {
                 kernel/qapplication_qpa.cpp \
                 kernel/qclipboard_qpa.cpp \
                 kernel/qcursor_qpa.cpp \
-                kernel/qdnd_qws.cpp \
+                kernel/qdnd_qpa.cpp \
                 kernel/qdesktopwidget_qpa.cpp \
                 kernel/qgenericpluginfactory_qpa.cpp \
                 kernel/qgenericplugin_qpa.cpp \
-                kernel/qkeymapper_qws.cpp \
+                kernel/qkeymapper_qpa.cpp \
                 kernel/qwidget_qpa.cpp \
                 kernel/qeventdispatcher_qpa.cpp \
                 kernel/qwindowsysteminterface_qpa.cpp \
