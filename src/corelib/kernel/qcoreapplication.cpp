@@ -270,7 +270,16 @@ bool QCoreApplicationPrivate::is_app_closing = false;
 Q_CORE_EXPORT bool qt_locale_initialized = false;
 
 
-QSettings *QCoreApplicationPrivate::trolltechConf = 0;
+/*
+  Create an instance of Trolltech.conf. This ensures that the settings will not
+  be thrown out of QSetting's cache for unused settings.
+  */
+Q_GLOBAL_STATIC_WITH_ARGS(QSettings, trolltechConf, (QSettings::UserScope, QLatin1String("Trolltech")))
+
+QSettings *QCoreApplicationPrivate::trolltechConf()
+{
+    return ::trolltechConf();
+}
 
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
@@ -373,9 +382,6 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
         threadData->postEventList.recursion = 0;
         threadData->quitNow = false;
     }
-
-    delete trolltechConf;
-    trolltechConf = 0;
 }
 
 void QCoreApplicationPrivate::createEventDispatcher()
@@ -696,13 +702,6 @@ void QCoreApplication::init()
         CleanupStack::PopAndDestroy(&loader);
     }
 #endif
-
-
-    /*
-      Create an instance of Trolltech.conf. This ensures that the settings will not
-      be thrown out of QSetting's cache for unused settings.
-      */
-    d->trolltechConf = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
 
     qt_startup_hook();
 }

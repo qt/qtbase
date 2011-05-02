@@ -706,7 +706,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
-        settings = QCoreApplicationPrivate::trolltechConf;
+        settings = QCoreApplicationPrivate::trolltechConf();
     }
     reg = settings->value(regkey).toStringList();
 #endif
