@@ -73,29 +73,29 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
-void *QXcbNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
+void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
     void *result = 0;
     switch(resource) {
     case Display:
-        result = displayForWidget(widget);
+        result = displayForWindow(window);
         break;
     case EglDisplay:
-        result = eglDisplayForWidget(widget);
+        result = eglDisplayForWindow(window);
         break;
     case Connection:
-        result = connectionForWidget(widget);
+        result = connectionForWindow(window);
         break;
     case Screen:
-        result = qPlatformScreenForWidget(widget);
+        result = qPlatformScreenForWindow(window);
         break;
     case GraphicsDevice:
-        result = graphicsDeviceForWidget(widget);
+        result = graphicsDeviceForWindow(window);
         break;
     case EglContext:
-        result = eglContextForWidget(widget);
+        result = eglContextForWindow(window);
         break;
     default:
         result = 0;
@@ -103,75 +103,70 @@ void *QXcbNativeInterface::nativeResourceForWidget(const QByteArray &resourceStr
     return result;
 }
 
-QXcbScreen *QXcbNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QXcbScreen *screen;
-    if (widget) {
-        screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    if (window) {
+        screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window));
     }else {
         screen = static_cast<QXcbScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
     }
     return screen;
 }
 
-void *QXcbNativeInterface::displayForWidget(QWidget *widget)
+void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_XLIB)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->connection()->xlib_display();
 #else
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 #endif
 }
 
-void *QXcbNativeInterface::eglDisplayForWidget(QWidget *widget)
+void *QXcbNativeInterface::eglDisplayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->connection()->egl_display();
 #else
-    Q_UNUSED(widget)
+    Q_UNUSED(window)
     return 0;
 #endif
 }
 
-void *QXcbNativeInterface::connectionForWidget(QWidget *widget)
+void *QXcbNativeInterface::connectionForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->xcb_connection();
 }
 
-void *QXcbNativeInterface::screenForWidget(QWidget *widget)
+void *QXcbNativeInterface::screenForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->screen();
 }
 
-void *QXcbNativeInterface::graphicsDeviceForWidget(QWidget *widget)
+void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
 {
 #if defined(XCB_USE_DRI2)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     QByteArray deviceName = screen->connection()->dri2DeviceName();
     return deviceName.data();
 #else
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 #endif
 
 }
 
-void * QXcbNativeInterface::eglContextForWidget(QWidget *widget)
+void * QXcbNativeInterface::eglContextForWindow(QWindow *window)
 {
-    Q_ASSERT(widget);
-    if (!widget->windowHandle()) {
-        qDebug() << "QPlatformWindow does not exist for widget" << widget
-                 << "cannot return EGLContext";
-        return 0;
-    }
-    QPlatformGLContext *platformContext = widget->windowHandle()->glContext()->handle();
+    Q_ASSERT(window);
+    QPlatformGLContext *platformContext = window->glContext()->handle();
     if (!platformContext) {
-        qDebug() << "QWindow" << widget->windowHandle() << "does not have a glContext"
+        qDebug() << "QWindow" << window << "does not have a glContext"
                  << "cannot return EGLContext";
         return 0;
     }
