@@ -4738,7 +4738,8 @@ void tst_QWidget::update()
         QCOMPARE(w.visibleRegion(), expectedVisible);
         QCOMPARE(w.paintedRegion, expectedVisible);
 #ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
+        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
+            QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
 #endif
         QCOMPARE(child.numPaintEvents, 0);
 
