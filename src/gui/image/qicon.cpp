@@ -66,7 +66,7 @@
 #include "private/qkde_p.h"
 #endif
 
-#include "private/qstylehelper_p.h"
+#include "private/qhexstring_p.h"
 
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE

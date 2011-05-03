@@ -86,7 +86,7 @@
 #endif
 
 #include "qpixmap_raster_p.h"
-#include "private/qstylehelper_p.h"
+#include "private/qhexstring_p.h"
 
 QT_BEGIN_NAMESPACE
 

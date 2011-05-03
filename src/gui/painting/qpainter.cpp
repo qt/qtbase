@@ -74,7 +74,7 @@
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
 #include <private/qglyphs_p.h>
-#include <private/qstylehelper_p.h>
+#include <private/qhexstring_p.h>
 #include <private/qrawfont_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -48,7 +48,7 @@
 #include <private/qpaintengineex_p.h>
 #include <qvarlengtharray.h>
 #include <qmath.h>
-#include <private/qstylehelper_p.h>
+#include <private/qhexstring_p.h>
 
 QT_BEGIN_NAMESPACE
 

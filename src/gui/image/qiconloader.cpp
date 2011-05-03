@@ -63,7 +63,7 @@
 #include <private/qt_x11_p.h>
 #endif
 
-#include <private/qstylehelper_p.h>
+#include <private/qhexstring_p.h>
 
 QT_BEGIN_NAMESPACE
 

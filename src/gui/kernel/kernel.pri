@@ -49,6 +49,7 @@ HEADERS += \
 	kernel/qsoftkeymanager_p.h \
     kernel/qsoftkeymanager_common_p.h \
 	kernel/qguiplatformplugin_p.h \
+        kernel/qhexstring_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
