@@ -94,6 +94,9 @@ int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
 int QGuiApplicationPrivate::mouse_double_click_distance = 5;
 
+static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
+static bool force_reverse = false;
+
 QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 
 #ifndef QT_NO_CLIPBOARD
@@ -102,6 +105,16 @@ QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
+
+static bool qt_detectRTLLanguage()
+{
+    return force_reverse ^
+        (QApplication::tr("QT_LAYOUT_DIRECTION",
+                         "Translate this string to the string 'LTR' in left-to-right"
+                         " languages or to 'RTL' in right-to-left languages (such as Hebrew"
+                         " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
+}
+
 
 QGuiApplication::QGuiApplication(int &argc, char **argv, int flags)
     : QCoreApplication(*new QGuiApplicationPrivate(argc, argv, flags))
@@ -213,6 +226,9 @@ void QGuiApplicationPrivate::init()
         } else if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];
+        } else if (arg == "-reverse") {
+            force_reverse = true;
+            QGuiApplication::setLayoutDirection(Qt::RightToLeft);
         } else {
             argv[j++] = argv[i];
         }
@@ -245,6 +261,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     is_app_running = false;
 
     QFont::cleanup();
+
+    layout_direction = Qt::LeftToRight;
 }
 
 #if 0
@@ -314,6 +332,9 @@ bool QGuiApplication::notify(QObject *object, QEvent *event)
 
 bool QGuiApplication::event(QEvent *e)
 {
+    if(e->type() == QEvent::LanguageChange) {
+        setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+    }
     return QCoreApplication::event(e);
 }
 
@@ -815,5 +836,54 @@ void QGuiApplication::setFont(const QFont &font)
     else
         *QGuiApplicationPrivate::app_font = font;
 }
+
+/*!
+    \fn bool QGuiApplication::isRightToLeft()
+
+    Returns true if the application's layout direction is
+    Qt::RightToLeft; otherwise returns false.
+
+    \sa layoutDirection(), isLeftToRight()
+*/
+
+/*!
+    \fn bool QGuiApplication::isLeftToRight()
+
+    Returns true if the application's layout direction is
+    Qt::LeftToRight; otherwise returns false.
+
+    \sa layoutDirection(), isRightToLeft()
+*/
+
+void QGuiApplicationPrivate::notifyLayoutDirectionChange()
+{
+}
+
+/*!
+    \property QGuiApplication::layoutDirection
+    \brief the default layout direction for this application
+
+    On system start-up, the default layout direction depends on the
+    application's language.
+
+    \sa QWidget::layoutDirection, isLeftToRight(), isRightToLeft()
+ */
+
+void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
+{
+    if (layout_direction == direction || direction == Qt::LayoutDirectionAuto)
+        return;
+
+    layout_direction = direction;
+
+    QGuiApplicationPrivate::self->notifyLayoutDirectionChange();
+}
+
+Qt::LayoutDirection QGuiApplication::layoutDirection()
+{
+    return layout_direction;
+}
+
+
 
 QT_END_NAMESPACE

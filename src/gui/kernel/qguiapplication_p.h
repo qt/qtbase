@@ -69,6 +69,8 @@ public:
 
     void createEventDispatcher();
 
+    virtual void notifyLayoutDirectionChange();
+
     static int keyboard_input_time;
     static int mouse_double_click_time;
 

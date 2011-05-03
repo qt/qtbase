@@ -105,7 +105,6 @@ class QApplicationPrivate;
 class Q_GUI_EXPORT QApplication : public QApplicationBase
 {
     Q_OBJECT
-    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime WRITE setCursorFlashTime)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
@@ -232,12 +231,6 @@ public:
     static int startDragTime();
     static void setStartDragDistance(int l);
     static int startDragDistance();
-
-    static void setLayoutDirection(Qt::LayoutDirection direction);
-    static Qt::LayoutDirection layoutDirection();
-
-    static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
-    static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
     static bool isEffectEnabled(Qt::UIEffect);
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);

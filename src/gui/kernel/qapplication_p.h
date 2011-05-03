@@ -303,6 +303,8 @@ public:
     QApplicationPrivate(int &argc, char **argv, QApplication::Type type, int flags);
     ~QApplicationPrivate();
 
+    virtual void notifyLayoutDirectionChange();
+
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static bool x11_apply_settings();

@@ -59,6 +59,7 @@ class QPlatformNativeInterface;
 class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
 
@@ -90,6 +91,12 @@ public:
 
     static void setKeyboardInputInterval(int);
     static int keyboardInputInterval();
+
+    static void setLayoutDirection(Qt::LayoutDirection direction);
+    static Qt::LayoutDirection layoutDirection();
+
+    static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
+    static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
     static QPlatformNativeInterface *platformNativeInterface();
 

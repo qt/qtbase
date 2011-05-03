@@ -480,7 +480,6 @@ static int drag_distance = 12; //XXX move to qplatformdefs.h
 #else
 static int drag_distance = QT_GUI_DRAG_DISTANCE;
 #endif
-static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
 bool QApplicationPrivate::animate_ui = true;
 bool QApplicationPrivate::animate_menu = false;
@@ -502,7 +501,6 @@ QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
 
 bool qt_tabletChokeMouse = false;
-static bool force_reverse = false;
 
 inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
@@ -590,9 +588,6 @@ void QApplicationPrivate::process_cmdline()
             styleSheet = QLatin1String("file:///");
             styleSheet.append(QString::fromLocal8Bit(arg.right(arg.length() - 12)));
 #endif
-        } else if (qstrcmp(arg, "-reverse") == 0) {
-            force_reverse = true;
-            QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
         } else if (qstrcmp(arg, "-testability") == 0) {
@@ -1156,7 +1151,6 @@ QApplication::~QApplication()
 
     drag_time = 500;
     drag_distance = 4;
-    layout_direction = Qt::LeftToRight;
     QApplicationPrivate::app_strut = QSize(0, 0);
     QApplicationPrivate::animate_ui = true;
     QApplicationPrivate::animate_menu = false;
@@ -2337,14 +2331,6 @@ void QApplication::aboutQt()
 */
 
 #ifndef QT_NO_TRANSLATION
-static bool qt_detectRTLLanguage()
-{
-    return force_reverse ^
-        (QApplication::tr("QT_LAYOUT_DIRECTION",
-                         "Translate this string to the string 'LTR' in left-to-right"
-                         " languages or to 'RTL' in right-to-left languages (such as Hebrew"
-                         " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
-}
 #if defined(Q_WS_MAC)
 static const char *application_menu_strings[] = {
     QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
@@ -2401,19 +2387,6 @@ bool QApplication::event(QEvent *e)
                 qt_abortFullScreenEffect();
 #endif
         }
-    } else if(e->type() == QEvent::LanguageChange) {
-#ifndef QT_NO_TRANSLATION
-        setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
-#endif
-#if defined(QT_MAC_USE_COCOA)
-        qt_mac_post_retranslateAppMenu();
-#endif
-        QWidgetList list = topLevelWidgets();
-        for (int i = 0; i < list.size(); ++i) {
-            QWidget *w = list.at(i);
-            if (!(w->windowType() == Qt::Desktop))
-                postEvent(w, new QEvent(QEvent::LanguageChange));
-        }
 #ifndef Q_OS_WIN
     } else if (e->type() == QEvent::LocaleChange) {
         // on Windows the event propagation is taken care by the
@@ -2455,6 +2428,19 @@ bool QApplication::event(QEvent *e)
         }
     }
     return QApplicationBase::event(e);
+
+    if(e->type() == QEvent::LanguageChange) {
+#if defined(QT_MAC_USE_COCOA)
+        qt_mac_post_retranslateAppMenu();
+#endif
+        QWidgetList list = topLevelWidgets();
+        for (int i = 0; i < list.size(); ++i) {
+            QWidget *w = list.at(i);
+            if (!(w->windowType() == Qt::Desktop))
+                postEvent(w, new QEvent(QEvent::LanguageChange));
+        }
+    }
+
 }
 #if !defined(Q_WS_X11)
 
@@ -2463,6 +2449,18 @@ bool QApplication::event(QEvent *e)
 void QApplication::syncX()        {}                // do nothing
 
 #endif
+
+void QApplicationPrivate::notifyLayoutDirectionChange()
+{
+    Q_Q(QApplication);
+    QWidgetList list = q->topLevelWidgets();
+    for (int i = 0; i < list.size(); ++i) {
+        QWidget *w = list.at(i);
+        QEvent ev(QEvent::ApplicationLayoutDirectionChange);
+        q->sendEvent(w, &ev);
+    }
+}
+
 
 /*!
     \fn Qt::WindowsVersion QApplication::winVersion()
@@ -3547,54 +3545,6 @@ int QApplication::startDragDistance()
 
     Use layoutDirection() instead.
 */
-
-/*!
-    \fn bool QApplication::isRightToLeft()
-
-    Returns true if the application's layout direction is
-    Qt::RightToLeft; otherwise returns false.
-
-    \sa layoutDirection(), isLeftToRight()
-*/
-
-/*!
-    \fn bool QApplication::isLeftToRight()
-
-    Returns true if the application's layout direction is
-    Qt::LeftToRight; otherwise returns false.
-
-    \sa layoutDirection(), isRightToLeft()
-*/
-
-/*!
-    \property QApplication::layoutDirection
-    \brief the default layout direction for this application
-
-    On system start-up, the default layout direction depends on the
-    application's language.
-
-    \sa QWidget::layoutDirection, isLeftToRight(), isRightToLeft()
- */
-
-void QApplication::setLayoutDirection(Qt::LayoutDirection direction)
-{
-    if (layout_direction == direction || direction == Qt::LayoutDirectionAuto)
-        return;
-
-    layout_direction = direction;
-
-    QWidgetList list = topLevelWidgets();
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
-        QEvent ev(QEvent::ApplicationLayoutDirectionChange);
-        sendEvent(w, &ev);
-    }
-}
-
-Qt::LayoutDirection QApplication::layoutDirection()
-{
-    return layout_direction;
-}
 
 
 /*!
