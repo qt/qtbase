@@ -45,7 +45,6 @@
 #include "qvariant.h"
 #include <qpainter.h>
 #include <private/qgraphicssystem_p.h>
-#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -275,9 +274,7 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
         img.setColor(1, c0);
     }
 
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::BitmapType)
-                : QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType));
+    QScopedPointer<QPixmapData> data(QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType));
 
     data->fromImage(img, flags | Qt::MonoOnly);
     return QPixmap(data.take());
