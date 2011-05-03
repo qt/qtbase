@@ -41,6 +41,7 @@
 
 #include "qplatformglcontext_qpa.h"
 #include "qwindowcontext_qpa.h"
+#include "qwindow_qpa.h"
 
 #include <QtCore/QThreadStorage>
 #include <QtCore/QThread>

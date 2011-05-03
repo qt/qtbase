@@ -44,7 +44,7 @@
 #include <qpainter.h>
 #include <qimage.h>
 
-#include <private/qguiapplication_qpa_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qblittable_p.h>
 
 #include <private/qdrawhelper_p.h>

@@ -42,7 +42,7 @@
 #ifndef QGUIAPPLICATION_QPA_P_H
 #define QGUIAPPLICATION_QPA_P_H
 
-#include <QtGui/qguiapplication_qpa.h>
+#include <QtGui/qguiapplication.h>
 
 #include <QtCore/private/qcoreapplication_p.h>
 

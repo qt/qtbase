@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <qpixmap.h>
-#include <private/qguiapplication_qpa_p.h>
+#include <private/qguiapplication_p.h>
 
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {

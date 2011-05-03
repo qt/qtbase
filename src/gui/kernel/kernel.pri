@@ -203,8 +203,8 @@ qpa {
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
                 kernel/qwindowformat_qpa.h \
-                kernel/qguiapplication_qpa.h \
-                kernel/qguiapplication_qpa_p.h \
+                kernel/qguiapplication.h \
+                kernel/qguiapplication_p.h \
                 kernel/qwidgetwindow_qpa_p.h \
                 kernel/qwindow_qpa_p.h \
                 kernel/qwindow_qpa.h
@@ -234,7 +234,7 @@ qpa {
                 kernel/qplatformnativeinterface_qpa.cpp \
                 kernel/qsessionmanager_qpa.cpp \
                 kernel/qwindowformat_qpa.cpp \
-                kernel/qguiapplication_qpa.cpp \
+                kernel/qguiapplication.cpp \
                 kernel/qwidgetwindow_qpa.cpp \
                 kernel/qwindow_qpa.cpp
 

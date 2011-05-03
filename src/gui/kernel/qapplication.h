@@ -59,7 +59,7 @@
 # include <QtGui/qtransportauth_qws.h>
 #endif
 #ifdef Q_WS_QPA
-# include <QtGui/qguiapplication_qpa.h>
+# include <QtGui/qguiapplication.h>
 #endif
 
 QT_BEGIN_HEADER

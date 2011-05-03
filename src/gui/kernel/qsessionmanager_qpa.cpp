@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qsessionmanager.h>
+#include <qapplication.h>
 
 #include <private/qobject_p.h>
 #ifndef QT_NO_SESSIONMANAGER

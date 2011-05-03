@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qguiapplication_qpa.h"
+#include "qguiapplication.h"
 
-#include "private/qguiapplication_qpa_p.h"
+#include "private/qguiapplication_p.h"
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include "private/qevent_p.h"
 
@@ -123,7 +123,7 @@ QGuiApplication::~QGuiApplication()
     // flush clipboard contents
     if (QGuiApplicationPrivate::qt_clipboard) {
         QEvent event(QEvent::Clipboard);
-        QApplication::sendEvent(QGuiApplicationPrivate::qt_clipboard, &event);
+        QGuiApplication::sendEvent(QGuiApplicationPrivate::qt_clipboard, &event);
     }
 
     d->eventDispatcher->closingDown();

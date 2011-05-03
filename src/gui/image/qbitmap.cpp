@@ -44,7 +44,7 @@
 #include "qimage.h"
 #include "qvariant.h"
 #include <qpainter.h>
-#include <private/qguiapplication_qpa_p.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 

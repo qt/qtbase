@@ -42,7 +42,6 @@
 #include "qdrawutil.h"
 #include "qbitmap.h"
 #include "qpixmapcache.h"
-#include "qapplication.h"
 #include "qpainter.h"
 #include "qpalette.h"
 #include <private/qpaintengineex_p.h>

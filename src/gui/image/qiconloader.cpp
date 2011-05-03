@@ -41,7 +41,7 @@
 #ifndef QT_NO_ICON
 #include <private/qiconloader_p.h>
 
-#include <private/qguiapplication_qpa_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qicon_p.h>
 #include <private/qguiplatformplugin_p.h>
 
@@ -489,8 +489,8 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
     if (basePixmap.isNull())
         basePixmap.load(filename);
 
+#if 0 // ### Qt5
     int actualSize = qMin(size.width(), size.height());
-
     QString key = QLatin1Literal("$qt_theme_")
                   % HexString<qint64>(basePixmap.cacheKey())
                   % HexString<int>(mode)
@@ -507,6 +507,9 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
         QPixmapCache::insert(key, cachedPixmap);
     }
     return cachedPixmap;
+#else
+    return basePixmap;
+#endif
 }
 
 QPixmap ScalableEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
