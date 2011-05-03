@@ -3526,8 +3526,8 @@ void QWidgetPrivate::show_sys()
             // INVARIANT: q is native. Just show the view:
             [view setHidden:NO];
         } else {
-            // INVARIANT: q is alien. Repaint q instead:
-            q->repaint();
+            // INVARIANT: q is alien. Update q instead:
+            q->update();
         }
 #endif
     }
