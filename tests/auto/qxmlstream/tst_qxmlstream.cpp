@@ -221,8 +221,7 @@ static QString documentElement(const QByteArray &document)
         reader.readNext();
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO,
-               qPrintable(QString::fromLatin1("The input %1 didn't contain an element.").arg(QString::fromUtf8(document.constData()))));
+    qFatal("The input %s didn't contain an element", document.constData());
     return QString();
 }
 
@@ -461,7 +460,7 @@ public:
             }
             else
             {
-                Q_ASSERT_X(false, Q_FUNC_INFO, "The input catalog is invalid.");
+                qFatal("The input catalog is invalid.");
                 return false;
             }
         }
