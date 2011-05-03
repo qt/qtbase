@@ -139,7 +139,8 @@ public:
 
     virtual ~Data()
     {
-        Q_ASSERT_X(generation > 0, "tst_QSharedPointer", "Double deletion!");
+        if (generation <= 0)
+            qFatal("tst_qsharedpointer: Double deletion!");
         generation = 0;
         ++destructorCounter;
     }
