@@ -60,7 +60,7 @@
 # include <private/qpixmap_s60_p.h>
 #endif
 
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 

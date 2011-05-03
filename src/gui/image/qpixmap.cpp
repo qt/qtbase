@@ -52,8 +52,7 @@
 #include "qpainter.h"
 #include "qdatastream.h"
 #include "qbuffer.h"
-#include "qapplication.h"
-#include <private/qapplication_p.h>
+#include <private/qguiapplication_qpa_p.h>
 #include <private/qwidget_p.h>
 #include "qevent.h"
 #include "qfile.h"
@@ -64,6 +63,7 @@
 #include "qimagewriter.h"
 #include "qpaintengine.h"
 #include "qthread.h"
+#include "qdebug.h"
 
 #ifdef Q_WS_MAC
 # include "private/qt_mac_p.h"
@@ -97,25 +97,17 @@ Q_GUI_EXPORT qint64 qt_pixmap_id(const QPixmap &pixmap)
 
 static bool qt_pixmap_thread_test()
 {
-    if (!qApp) {
+    if (!QCoreApplication::instance()) {
         qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
         return false;
     }
 
     if (qApp->thread() != QThread::currentThread()) {
         bool fail = false;
-#if defined (Q_WS_X11)
-        if (!QApplication::testAttribute(Qt::AA_X11InitThreads))
-            fail = true;
-#elif defined (Q_WS_QPA)
-        if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
+        if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps)) {
             printf("Lighthouse plugin does not support threaded pixmaps!\n");
             fail = true;
         }
-#else
-        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster"))
-            fail = true;
-#endif
         if (fail) {
             qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
             return false;
@@ -129,16 +121,8 @@ void QPixmap::init(int w, int h, Type type)
     init(w, h, int(type));
 }
 
-extern QApplication::Type qt_appType;
-
 void QPixmap::init(int w, int h, int type)
 {
-    if (qt_appType == QApplication::Tty) {
-        qWarning("QPixmap: Cannot create a QPixmap when no GUI is being used");
-        data = 0;
-        return;
-    }
-
     if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
         data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
     else
@@ -985,7 +969,7 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
     return writer->write(toImage());
 }
 
-
+// #### Qt5: needs fixing
 // The implementation (and documentation) of
 // QPixmap::fill(const QWidget *, const QPoint &)
 // is in qwidget.cpp
@@ -1071,6 +1055,7 @@ qint64 QPixmap::cacheKey() const
     return data->cacheKey();
 }
 
+#if 0
 static void sendResizeEvents(QWidget *target)
 {
     QResizeEvent e(target->size(), QSize());
@@ -1083,6 +1068,7 @@ static void sendResizeEvents(QWidget *target)
             sendResizeEvents(child);
     }
 }
+#endif
 
 /*!
     \fn QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rectangle)
@@ -1116,6 +1102,11 @@ static void sendResizeEvents(QWidget *target)
 
 QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 {
+    // ### Qt5: should we keep or remove this method?
+    // SC solution would be to install a callback form QtWidgets, but ugly.
+    qWarning() << "QPixmap::grabWidget is deprecated, use QWidget::render() instead";
+    return QPixmap();
+#if 0
     if (!widget)
         return QPixmap();
 
@@ -1141,6 +1132,7 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
     widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
                              | QWidget::DrawChildren | QWidget::IgnoreMask, true);
     return res;
+#endif
 }
 
 /*!

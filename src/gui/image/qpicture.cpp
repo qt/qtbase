@@ -1217,7 +1217,6 @@ QDataStream &operator>>(QDataStream &s, QPicture &r)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qregexp.h"
-#include "qapplication.h"
 #include "qpictureformatplugin.h"
 QT_END_INCLUDE_NAMESPACE
 
