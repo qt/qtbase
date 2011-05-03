@@ -10422,7 +10422,7 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
     w.setFocusProxy(fp);
     QWidget::setTabOrder(&w, fp);
 
-    // No Q_ASSERT, then it's allright.
+    // In debug mode, no assertion failure means it's alright.
 }
 
 void tst_QWidget::movedAndResizedAttributes()
