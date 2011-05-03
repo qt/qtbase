@@ -48,6 +48,7 @@ symbian: SUBDIRS = \
     SUBDIRS += multimedia
 }
 
+qpa:SUBDIRS += qpa
 embedded:SUBDIRS += qws
 contains(QT_BUILD_PARTS, tools):!contains(QT_CONFIG, no-gui):SUBDIRS += qtestlib
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
