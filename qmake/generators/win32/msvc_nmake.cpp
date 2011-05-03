@@ -85,6 +85,15 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
     return false;
 }
 
+void NmakeMakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &callPrefix,
+                                              const QString &makeArguments, const QString &callPostfix)
+{
+    // Pass MAKEFLAGS as environment variable to sub-make calls.
+    // Unlike other make tools nmake doesn't do this automatically.
+    t << "\n\t@set MAKEFLAGS=$(MAKEFLAGS)";
+    Win32MakefileGenerator::writeSubMakeCall(t, callPrefix, makeArguments, callPostfix);
+}
+
 QString NmakeMakefileGenerator::getPdbTarget()
 {
     return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
