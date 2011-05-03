@@ -6452,7 +6452,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
-        underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
+        underlineStyle = QTextCharFormat::SpellCheckUnderline; // ### Qt5 QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
     }
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
@@ -8296,7 +8296,7 @@ QPainterState::QPainterState()
       wx(0), wy(0), ww(0), wh(0), vx(0), vy(0), vw(0), vh(0),
       opacity(1), WxF(false), VxF(false), clipEnabled(true),
       bgMode(Qt::TransparentMode), painter(0),
-      layoutDirection(QApplication::layoutDirection()),
+      layoutDirection(QGuiApplication::layoutDirection()),
       composition_mode(QPainter::CompositionMode_SourceOver),
       emulationSpecifier(0), changeFlags(0)
 {
@@ -8326,7 +8326,7 @@ void QPainterState::init(QPainter *p) {
     clipInfo.clear();
     worldMatrix.reset();
     matrix.reset();
-    layoutDirection = QApplication::layoutDirection();
+    layoutDirection = QGuiApplication::layoutDirection();
     composition_mode = QPainter::CompositionMode_SourceOver;
     emulationSpecifier = 0;
     dirtyFlags = 0;

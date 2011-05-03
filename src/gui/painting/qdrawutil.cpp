@@ -949,7 +949,7 @@ QRect qItemRect(QPainter *p, Qt::GUIStyle gs,
             x += w - pixmap->width();
         else if ((flags & Qt::AlignHCenter) == Qt::AlignHCenter)
             x += w/2 - pixmap->width()/2;
-        else if ((flags & Qt::AlignLeft) != Qt::AlignLeft && QApplication::isRightToLeft())
+        else if ((flags & Qt::AlignLeft) != Qt::AlignLeft && QGuiApplication::isRightToLeft())
             x += w - pixmap->width();
         result = QRect(x, y, pixmap->width(), pixmap->height());
     } else if (!text.isNull() && p) {
@@ -1008,7 +1008,7 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
             x += w - pm.width();
         else if ((flags & Qt::AlignHCenter) == Qt::AlignHCenter)
             x += w/2 - pm.width()/2;
-        else if (((flags & Qt::AlignLeft) != Qt::AlignLeft) && QApplication::isRightToLeft()) // Qt::AlignAuto && rightToLeft
+        else if (((flags & Qt::AlignLeft) != Qt::AlignLeft) && QGuiApplication::isRightToLeft()) // Qt::AlignAuto && rightToLeft
             x += w - pm.width();
 
         if (!enabled) {

@@ -138,7 +138,7 @@ QString QTextItem::text() const
 QFont QTextItem::font() const
 {
     const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
-    return ti->f ? *ti->f : QApplication::font();
+    return ti->f ? *ti->f : QGuiApplication::font();
 }
 
 

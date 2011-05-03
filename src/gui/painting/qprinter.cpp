@@ -45,7 +45,7 @@
 #include "qprinterinfo.h"
 #include "qlist.h"
 #include <qpagesetupdialog.h>
-#include <qapplication.h>
+#include <qcoreapplication.h>
 #include <qfileinfo.h>
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #include "private/qcups_p.h"
@@ -627,9 +627,9 @@ QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
 void QPrinter::init(PrinterMode mode)
 {
 #if !defined(Q_WS_X11)
-    if (!qApp) {
+    if (!QCoreApplication::instance()) {
 #else
-    if (!qApp || !X11) {
+    if (!QCoreApplication::instance() || !X11) {
 #endif
         qFatal("QPrinter: Must construct a QApplication before a QPaintDevice");
         return;

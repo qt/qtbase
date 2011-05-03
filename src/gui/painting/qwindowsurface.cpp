@@ -116,12 +116,6 @@ QWindowSurface::QWindowSurface(QWindow *window, bool /*setDefaultSurface*/)
 {
     if (window)
         window->d_func()->surface = this;
-#if 0
-    if (!QApplicationPrivate::runtime_graphics_system) {
-        if (setDefaultSurface && window)
-            window->setWindowSurface(this);
-    }
-#endif
 }
 
 /*!
@@ -149,7 +143,6 @@ void QWindowSurface::beginPaint(const QRegion &)
 
 void QWindowSurface::endPaint(const QRegion &)
 {
-//     QApplication::syncX();
 }
 
 #if !defined(Q_WS_QPA)
