@@ -726,7 +726,6 @@ void QUnixPrintWidgetPrivate::updateWidget()
         if (widget.printers->count())
             widget.printers->insertSeparator(widget.printers->count());
         widget.printers->addItem(QPrintDialog::tr("Print to File (PDF)"));
-        widget.printers->addItem(QPrintDialog::tr("Print to File (Postscript)"));
         filePrintersAdded = true;
     }
     if (!printToFile && filePrintersAdded) {
@@ -740,8 +739,6 @@ void QUnixPrintWidgetPrivate::updateWidget()
                                          || printer->printerName().isEmpty()))
     {
         if (printer->outputFormat() == QPrinter::PdfFormat)
-            widget.printers->setCurrentIndex(widget.printers->count() - 2);
-        else if (printer->outputFormat() == QPrinter::PostScriptFormat)
             widget.printers->setCurrentIndex(widget.printers->count() - 1);
         widget.filename->setEnabled(true);
         widget.lOutput->setEnabled(true);
@@ -771,19 +768,13 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
 
     if (filePrintersAdded) {
         Q_ASSERT(index != printerCount - 3); // separator
-        if (index > printerCount - 3) { // PDF or postscript
-            bool pdfPrinter = (index == printerCount - 2);
+        if (index == printerCount - 1) { // PDF
             widget.location->setText(QPrintDialog::tr("Local file"));
-            widget.type->setText(QPrintDialog::tr("Write %1 file").arg(pdfPrinter ? QString::fromLatin1("PDF")
-                                                                       : QString::fromLatin1("PostScript")));
+            widget.type->setText(QPrintDialog::tr("Write PDF file"));
             widget.properties->setEnabled(true);
             widget.filename->setEnabled(true);
             QString filename = widget.filename->text();
             QString suffix = QFileInfo(filename).suffix();
-            if (pdfPrinter && suffix == QLatin1String("ps"))
-                filename = filename.replace(QLatin1String(".ps"), QLatin1String(".pdf"));
-            if (!pdfPrinter && suffix == QLatin1String("pdf"))
-                filename = filename.replace(QLatin1String(".pdf"), QLatin1String(".ps"));
             widget.filename->setText(filename);
             widget.lOutput->setEnabled(true);
             if (propertiesDialog)
@@ -852,12 +843,7 @@ void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
 #endif
     if (!filename.isEmpty()) {
         widget.filename->setText(filename);
-        if (filename.endsWith(QString::fromLatin1(".ps"), Qt::CaseInsensitive))
-            widget.printers->setCurrentIndex(widget.printers->count() - 1); // the postscript one
-        else if (filename.endsWith(QString::fromLatin1(".pdf"), Qt::CaseInsensitive))
-            widget.printers->setCurrentIndex(widget.printers->count() - 2); // the pdf one
-        else if (widget.printers->currentIndex() != widget.printers->count() - 1) // if ps is not selected, pdf is default
-            widget.printers->setCurrentIndex(widget.printers->count() - 2); // the pdf one
+        widget.printers->setCurrentIndex(widget.printers->count() - 1); // the pdf one
     }
 }
 
@@ -877,20 +863,14 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties(QPrinter *p)
             cur = home;
 #ifdef Q_WS_X11
         if (p->docName().isEmpty()) {
-            if (p->outputFormat() == QPrinter::PostScriptFormat)
-                cur += QLatin1String("print.ps");
-            else
-                cur += QLatin1String("print.pdf");
+            cur += QLatin1String("print.pdf");
         } else {
             QRegExp re(QString::fromLatin1("(.*)\\.\\S+"));
             if (re.exactMatch(p->docName()))
                 cur += re.cap(1);
             else
                 cur += p->docName();
-            if (p->outputFormat() == QPrinter::PostScriptFormat)
-                cur += QLatin1String(".ps");
-            else
-                cur += QLatin1String(".pdf");
+            cur += QLatin1String(".pdf");
         }
 #endif
         widget.filename->setText(cur);
@@ -962,7 +942,7 @@ void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
         propertiesDialog->applyPrinterProperties(q->printer());
 
         if (q->isOptionEnabled(QPrintDialog::PrintToFile)
-            && (widget.printers->currentIndex() > widget.printers->count() - 3)) // PDF or postscript
+            && (widget.printers->currentIndex() == widget.printers->count() - 1)) // PDF
             propertiesDialog->selectPdfPsPrinter(q->printer());
         else
             propertiesDialog->selectPrinter();
@@ -1004,13 +984,10 @@ void QUnixPrintWidgetPrivate::setupPrinter()
     const int printerCount = widget.printers->count();
     const int index = widget.printers->currentIndex();
 
-    if (filePrintersAdded && index > printerCount - 3) { // PDF or postscript
+    if (filePrintersAdded && index == printerCount - 1) { // PDF
         printer->setPrinterName(QString());
         Q_ASSERT(index != printerCount - 3); // separator
-        if (index == printerCount - 2)
-            printer->setOutputFormat(QPrinter::PdfFormat);
-        else
-            printer->setOutputFormat(QPrinter::PostScriptFormat);
+        printer->setOutputFormat(QPrinter::PdfFormat);
         QString path = widget.filename->text();
         if (QDir::isRelativePath(path))
             path = QDir::homePath() + QDir::separator() + path;

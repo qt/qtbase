@@ -60,7 +60,6 @@
 #elif defined (QTOPIA_PRINTENGINE)
 #include <private/qprintengine_qws_p.h>
 #endif
-#include <private/qprintengine_ps_p.h>
 
 #if defined(Q_WS_X11)
 #include <private/qt_x11_p.h>
@@ -164,7 +163,7 @@ void QPrinterPrivate::createDefaultEngines()
 #if !defined (QTOPIA_PRINTENGINE)
 #if defined (Q_OS_UNIX) && ! defined (Q_WS_MAC)
     if(outputFormat == QPrinter::NativeFormat) {
-        realOutputFormat = QPrinter::PostScriptFormat;
+        realOutputFormat = QPrinter::PdfFormat;
     }
 #endif
 #endif
@@ -192,12 +191,6 @@ void QPrinterPrivate::createDefaultEngines()
         QPdfEngine *pdfEngine = new QPdfEngine(printerMode);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
-    }
-        break;
-    case QPrinter::PostScriptFormat: {
-        QPSPrintEngine *psEngine = new QPSPrintEngine(printerMode);
-        paintEngine = psEngine;
-        printEngine = psEngine;
     }
         break;
     }
@@ -260,7 +253,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   When printing directly to a printer on Windows or Mac OS X, QPrinter uses
   the built-in printer drivers. On X11, QPrinter uses the
   \l{Common Unix Printing System (CUPS)} or the standard Unix \l lpr utility
-  to send PostScript or PDF output to the printer. As an alternative,
+  to send PDF output to the printer. As an alternative,
   the printProgram() function can be used to specify the command or utility
   to use instead of the system default.
 
@@ -347,8 +340,8 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
     printer code.
 
     \value HighResolution On Windows, sets the printer resolution to that
-    defined for the printer in use. For PostScript printing, sets the
-    resolution of the PostScript driver to 1200 dpi.
+    defined for the printer in use. For PDF printing, sets the
+    resolution of the PDF driver to 1200 dpi.
 
     \note When rendering text on a QPrinter device, it is important
     to realize that the size of text, when specified in points, is
@@ -709,9 +702,6 @@ QPrinter::~QPrinter()
     \value PdfFormat QPrinter will generate its output as a searchable PDF file.
     This mode is the default when printing to a file.
 
-    \value PostScriptFormat QPrinter will generate its output as in the PostScript format.
-    (This feature was introduced in Qt 4.2.)
-
     \sa outputFormat(), setOutputFormat(), setOutputFileName()
 */
 
@@ -753,7 +743,7 @@ void QPrinter::setOutputFormat(OutputFormat format)
     if (def_engine)
         delete oldPrintEngine;
 
-    if (d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat)
+    if (d->outputFormat == QPrinter::PdfFormat)
         d->validPrinter = true;
 #else
     Q_UNUSED(format);
@@ -803,20 +793,15 @@ void QPrinter::setPrinterName(const QString &name)
     ABORT_IF_ACTIVE("QPrinter::setPrinterName");
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_CUPS)
-    if(d->use_default_engine
-        && d->outputFormat == QPrinter::NativeFormat) {
-        if (QCUPSSupport::cupsVersion() >= 10200
-            && QCUPSSupport::printerHasPPD(name.toLocal8Bit().constData()))
-            setOutputFormat(QPrinter::PdfFormat);
-        else
-            setOutputFormat(QPrinter::PostScriptFormat);
+    if(d->use_default_engine && d->outputFormat == QPrinter::NativeFormat) {
+        setOutputFormat(QPrinter::PdfFormat);
         d->outputFormat = QPrinter::NativeFormat;
     }
 #endif
 
     QList<QPrinterInfo> prnList = QPrinterInfo::availablePrinters();
     if (name.isEmpty()) {
-        d->validPrinter = d->outputFormat == QPrinter::PdfFormat || d->outputFormat == QPrinter::PostScriptFormat;
+        d->validPrinter = d->outputFormat == QPrinter::PdfFormat;
     } else {
         d->validPrinter = false;
         for (int i = 0; i < prnList.size(); ++i) {
@@ -836,7 +821,7 @@ void QPrinter::setPrinterName(const QString &name)
   \since 4.4
 
   Returns true if the printer currently selected is a valid printer
-  in the system, or a pure PDF/PostScript printer; otherwise returns false.
+  in the system, or a pure PDF printer; otherwise returns false.
 
   To detect other failures check the output of QPainter::begin() or QPrinter::newPage().
 
@@ -902,13 +887,12 @@ QString QPrinter::outputFileName() const
     Setting a null or empty name (0 or "") disables printing to a file.
     Setting a non-empty name enables printing to a file.
 
-    This can change the value of outputFormat().  If the file name has the
-    suffix ".ps" then PostScript is automatically selected as output format.
+    This can change the value of outputFormat().
     If the file name has the ".pdf" suffix PDF is generated. If the file name
-    has a suffix other than ".ps" and ".pdf", the output format used is the
+    has a suffix other than ".pdf", the output format used is the
     one set with setOutputFormat().
 
-    QPrinter uses Qt's cross-platform PostScript or PDF print engines
+    QPrinter uses Qt's cross-platform PDF print engines
     respectively. If you can produce this format natively, for example
     Mac OS X can generate PDF's from its print engine, set the output format
     back to NativeFormat.
@@ -922,9 +906,7 @@ void QPrinter::setOutputFileName(const QString &fileName)
     ABORT_IF_ACTIVE("QPrinter::setOutputFileName");
 
     QFileInfo fi(fileName);
-    if (!fi.suffix().compare(QLatin1String("ps"), Qt::CaseInsensitive))
-        setOutputFormat(QPrinter::PostScriptFormat);
-    else if (!fi.suffix().compare(QLatin1String("pdf"), Qt::CaseInsensitive))
+    if (!fi.suffix().compare(QLatin1String("pdf"), Qt::CaseInsensitive))
         setOutputFormat(QPrinter::PdfFormat);
     else if (fileName.isEmpty())
         setOutputFormat(QPrinter::NativeFormat);
@@ -956,7 +938,7 @@ QString QPrinter::printProgram() const
   Sets the name of the program that should do the print job to \a
   printProg.
 
-  On X11, this function sets the program to call with the PostScript
+  On X11, this function sets the program to call with the PDF
   output. On other platforms, it has no effect.
 
   \sa printProgram()
@@ -1798,9 +1780,9 @@ int QPrinter::winPageSize() const
     Returns a list of the resolutions (a list of dots-per-inch
     integers) that the printer says it supports.
 
-    For X11 where all printing is directly to postscript, this
+    For X11 where all printing is directly to PDF, this
     function will always return a one item list containing only the
-    postscript resolution, i.e., 72 (72 dpi -- but see PrinterMode).
+    PDF resolution, i.e., 72 (72 dpi -- but see PrinterMode).
 */
 QList<int> QPrinter::supportedResolutions() const
 {

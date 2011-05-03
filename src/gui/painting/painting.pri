@@ -28,8 +28,6 @@ HEADERS += \
         painting/qpolygon.h \
         painting/qpolygonclipper_p.h \
         painting/qprintengine.h \
-        painting/qprintengine_pdf_p.h \
-        painting/qprintengine_ps_p.h \
         painting/qprinter.h \
         painting/qprinter_p.h \
         painting/qprinterinfo.h \
@@ -70,7 +68,6 @@ SOURCES += \
         painting/qpen.cpp \
         painting/qpolygon.cpp \
         painting/qprintengine_pdf.cpp \
-        painting/qprintengine_ps.cpp \
         painting/qprinter.cpp \
         painting/qprinterinfo.cpp \
         painting/qrasterizer.cpp \
