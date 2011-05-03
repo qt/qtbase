@@ -952,8 +952,13 @@ static void qt_x11_recreateWidget(QWidget *widget)
         // recreate their GL context, which in turn causes them to choose
         // their visual again. Now that WA_TranslucentBackground is set,
         // QGLContext::chooseVisual will select an ARGB visual.
-        QEvent e(QEvent::ParentChange);
-        QApplication::sendEvent(widget, &e);
+
+        // QGLWidget expects a ParentAboutToChange to be sent first
+        QEvent aboutToChangeEvent(QEvent::ParentAboutToChange);
+        QApplication::sendEvent(widget, &aboutToChangeEvent);
+
+        QEvent parentChangeEvent(QEvent::ParentChange);
+        QApplication::sendEvent(widget, &parentChangeEvent);
     } else {
         // For regular widgets, reparent them with their parent which
         // also triggers a recreation of the native window
