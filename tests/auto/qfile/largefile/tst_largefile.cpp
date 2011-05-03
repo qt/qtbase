@@ -160,13 +160,10 @@ static inline void appendRaw(QByteArray &array, T data)
  */
 static inline void topUpWith(QByteArray &array, QByteArray filler, int size)
 {
-    Q_ASSERT(filler.size() > 0);
-
     for (int i = (size - array.size()) / filler.size(); i > 0; --i)
         array.append(filler);
 
     if (array.size() < size) {
-        Q_ASSERT(size - array.size() < filler.size());
         array.append(filler.left(size - array.size()));
     }
 }
@@ -211,8 +208,6 @@ static inline QByteArray generateDataBlock(int blockSize, QString text, qint64 u
     appendRaw(block, counter);
     appendRaw(block, userBits);
     appendRaw(block, randomBits);
-
-    Q_ASSERT( block.size() == blockSize );
 
     ++counter;
     return block;
