@@ -218,7 +218,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
     qreal ymax(INT_MIN/256);
 
     //painter.begin(pg, pgSize);
-    Q_ASSERT(pg[0] == pg[pgSize-1]);
+    if (pg[0] != pg[pgSize-1])
+        qWarning() << Q_FUNC_INFO << "Malformed polygon (first and last points must be identical)";
     // generate edge table
 //     qDebug() << "POINTS:";
     for (int x = 0; x < pgSize-1; ++x) {
