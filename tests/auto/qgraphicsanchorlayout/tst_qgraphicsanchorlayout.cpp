@@ -135,7 +135,6 @@ static void setAnchor(QGraphicsAnchorLayout *l,
 static bool checkReverseDirection(QGraphicsWidget *widget)
 {
     QGraphicsLayout *layout = widget->layout();
-    Q_ASSERT(layout);
     qreal left, top, right, bottom;
     layout->getContentsMargins(&left, &top, &right, &bottom);
     widget->setLayoutDirection(Qt::LeftToRight);
@@ -345,6 +344,7 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     p->show();
     view->show();
 
+    QVERIFY(p->layout());
     QCOMPARE(checkReverseDirection(p), true);
 
     if (hasSimplification) {
@@ -445,6 +445,7 @@ void tst_QGraphicsAnchorLayout::diagonal()
         QVERIFY(!usedSimplex(l, Qt::Vertical));
     }
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 
     c->setMinimumWidth(300);
@@ -735,6 +736,7 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 }
 
