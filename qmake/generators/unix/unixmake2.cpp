@@ -96,7 +96,8 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (project->values("TEMPLATE").first() == "app" ||
-        project->values("TEMPLATE").first() == "lib") {
+        project->values("TEMPLATE").first() == "lib" ||
+        project->values("TEMPLATE").first() == "aux") {
         if(Option::mkfile::do_stub_makefile && MakefileGenerator::writeStubMakefile(t))
             return true;
         writeMakeParts(t);
@@ -1016,6 +1017,9 @@ void UnixMakefileGenerator::init2()
     project->values("VER_PAT").append(l[2]);
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
+
+    if (project->values("TEMPLATE").first() == "aux")
+        return;
 
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
