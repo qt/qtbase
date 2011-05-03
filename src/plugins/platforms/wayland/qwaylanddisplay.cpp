@@ -126,6 +126,7 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
+    blockingReadEvents();
 
     qRegisterMetaType<uint32_t>("uint32_t");
 
@@ -216,9 +217,6 @@ void QWaylandDisplay::outputHandleGeometry(void *data,
                                            int32_t x, int32_t y,
                                            int32_t width, int32_t height)
 {
-    //call back function called from another thread;
-    //but its safe to call createScreen from another thread since
-    //QWaylandScreen does a moveToThread
     QWaylandDisplay *waylandDisplay = static_cast<QWaylandDisplay *>(data);
     QRect outputRect = QRect(x, y, width, height);
     waylandDisplay->createNewScreen(output,outputRect);

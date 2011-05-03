@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #ifndef XCOMPOSITE_CLIENT_PROTOCOL_H
 #define XCOMPOSITE_CLIENT_PROTOCOL_H
 
@@ -55,84 +54,63 @@ struct wl_client;
 
 struct wl_xcomposite;
 
-struct wl_proxy;
-
-extern void
-wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
-extern struct wl_proxy *
-wl_proxy_create(struct wl_proxy *factory,
-		const struct wl_interface *interface);
-extern struct wl_proxy *
-wl_proxy_create_for_id(struct wl_display *display,
-		       const struct wl_interface *interface, uint32_t id);
-extern void
-wl_proxy_destroy(struct wl_proxy *proxy);
-
-extern int
-wl_proxy_add_listener(struct wl_proxy *proxy,
-		      void (**implementation)(void), void *data);
-
-extern void
-wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
-
-extern void *
-wl_proxy_get_user_data(struct wl_proxy *proxy);
-
 extern const struct wl_interface wl_xcomposite_interface;
 
 struct wl_xcomposite_listener {
 	void (*root)(void *data,
-		     struct wl_xcomposite *xcomposite,
+		     struct wl_xcomposite *wl_xcomposite,
 		     const char *display_name,
 		     uint32_t root_window);
 };
 
 static inline int
-wl_xcomposite_add_listener(struct wl_xcomposite *xcomposite,
-			   const struct wl_xcomposite_listener *listener, void *data)
+wl_xcomposite_add_listener(struct wl_xcomposite *wl_xcomposite,
+			      const struct wl_xcomposite_listener *listener, void *data)
 {
-	return wl_proxy_add_listener((struct wl_proxy *) xcomposite,
+	return wl_proxy_add_listener((struct wl_proxy *) wl_xcomposite,
 				     (void (**)(void)) listener, data);
 }
 
 #define WL_XCOMPOSITE_CREATE_BUFFER	0
 
 static inline struct wl_xcomposite *
-wl_xcomposite_create(struct wl_display *display, uint32_t id)
+wl_xcomposite_create(struct wl_display *display, uint32_t id, uint32_t version)
 {
+	wl_display_bind(display, id, "wl_xcomposite", version);
+
 	return (struct wl_xcomposite *)
 		wl_proxy_create_for_id(display, &wl_xcomposite_interface, id);
 }
 
 static inline void
-wl_xcomposite_set_user_data(struct wl_xcomposite *xcomposite, void *user_data)
+wl_xcomposite_set_user_data(struct wl_xcomposite *wl_xcomposite, void *user_data)
 {
-	wl_proxy_set_user_data((struct wl_proxy *) xcomposite, user_data);
+	wl_proxy_set_user_data((struct wl_proxy *) wl_xcomposite, user_data);
 }
 
 static inline void *
-wl_xcomposite_get_user_data(struct wl_xcomposite *xcomposite)
+wl_xcomposite_get_user_data(struct wl_xcomposite *wl_xcomposite)
 {
-	return wl_proxy_get_user_data((struct wl_proxy *) xcomposite);
+	return wl_proxy_get_user_data((struct wl_proxy *) wl_xcomposite);
 }
 
 static inline void
-wl_xcomposite_destroy(struct wl_xcomposite *xcomposite)
+wl_xcomposite_destroy(struct wl_xcomposite *wl_xcomposite)
 {
-	wl_proxy_destroy((struct wl_proxy *) xcomposite);
+	wl_proxy_destroy((struct wl_proxy *) wl_xcomposite);
 }
 
 static inline struct wl_buffer *
-wl_xcomposite_create_buffer(struct wl_xcomposite *xcomposite, uint32_t x_window, int width, int height, struct wl_visual *visual)
+wl_xcomposite_create_buffer(struct wl_xcomposite *wl_xcomposite, uint32_t x_window, int width, int height, struct wl_visual *visual)
 {
 	struct wl_proxy *id;
 
-	id = wl_proxy_create((struct wl_proxy *) xcomposite,
+	id = wl_proxy_create((struct wl_proxy *) wl_xcomposite,
 			     &wl_buffer_interface);
 	if (!id)
 		return NULL;
 
-	wl_proxy_marshal((struct wl_proxy *) xcomposite,
+	wl_proxy_marshal((struct wl_proxy *) wl_xcomposite,
 			 WL_XCOMPOSITE_CREATE_BUFFER, id, x_window, width, height, visual);
 
 	return (struct wl_buffer *) id;
