@@ -97,8 +97,6 @@ QWaylandReadbackEglContext::~QWaylandReadbackEglContext()
 
 void QWaylandReadbackEglContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
-
     mWindow->waitForFrameSync();
 
     eglMakeCurrent(mEglIntegration->eglDisplay(),mPixmapSurface,mPixmapSurface,mContext);
@@ -114,7 +112,7 @@ void QWaylandReadbackEglContext::swapBuffers()
 {
     eglSwapBuffers(mEglIntegration->eglDisplay(),mPixmapSurface);
 
-    if (QPlatformGLContext::currentContext() != this) {
+    if (QWindowContext::currentContext().handle() != this) {
         makeCurrent();
     }
 

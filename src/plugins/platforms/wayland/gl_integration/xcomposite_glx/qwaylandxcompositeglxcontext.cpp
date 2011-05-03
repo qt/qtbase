@@ -67,7 +67,6 @@ QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(QWaylandXCompositeGLX
 
 void QWaylandXCompositeGLXContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
     glXMakeCurrent(mGlxIntegration->xDisplay(),mXWindow,mContext);
 }
 

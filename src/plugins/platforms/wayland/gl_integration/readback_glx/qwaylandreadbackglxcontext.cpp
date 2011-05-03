@@ -85,8 +85,6 @@ QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegr
 
 void QWaylandReadbackGlxContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
-
     glXMakeCurrent(mGlxIntegration->xDisplay(),mGlxPixmap,mContext);
 }
 
@@ -97,7 +95,7 @@ void QWaylandReadbackGlxContext::doneCurrent()
 
 void QWaylandReadbackGlxContext::swapBuffers()
 {
-    if (QPlatformGLContext::currentContext() != this) {
+    if (QWindowContext::currentContext().handle() != this) {
         makeCurrent();
     }
 

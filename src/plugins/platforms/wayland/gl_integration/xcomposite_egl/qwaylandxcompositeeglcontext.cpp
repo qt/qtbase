@@ -75,8 +75,6 @@ QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(QWaylandXCompositeEGL
 
 void QWaylandXCompositeEGLContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
-
     eglMakeCurrent(mEglIntegration->eglDisplay(),mEglWindowSurface,mEglWindowSurface,mContext);
 }
 

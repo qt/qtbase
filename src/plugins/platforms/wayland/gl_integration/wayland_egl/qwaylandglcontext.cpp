@@ -90,7 +90,6 @@ QWaylandGLContext::~QWaylandGLContext()
 
 void QWaylandGLContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
     if (mSurface == EGL_NO_SURFACE) {
         qWarning("makeCurrent with EGL_NO_SURFACE");
     }
