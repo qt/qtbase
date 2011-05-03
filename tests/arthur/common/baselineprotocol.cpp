@@ -424,15 +424,17 @@ bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, Ima
         it->testFunction = testFunction;
 
     QByteArray block;
-    QDataStream ds(&block, QIODevice::ReadWrite);
+    QDataStream ds(&block, QIODevice::WriteOnly);
     ds << *itemList;
     if (!sendBlock(RequestBaselineChecksums, block))
         return false;
+
     Command cmd;
-    if (!receiveBlock(&cmd, &block))
+    QByteArray rcvBlock;
+    if (!receiveBlock(&cmd, &rcvBlock) || cmd != BaselineProtocol::Ack)
         return false;
-    ds.device()->seek(0);
-    ds >> *itemList;
+    QDataStream rds(&rcvBlock, QIODevice::ReadOnly);
+    rds >> *itemList;
     return true;
 }
 
