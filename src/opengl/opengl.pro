@@ -49,7 +49,6 @@ SOURCES += qgl.cpp \
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
                 qgraphicsshadereffect_p.h \
-                qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \
                 gl2paintengineex/qglgradientcache_p.h \
@@ -67,7 +66,6 @@ SOURCES += qgl.cpp \
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
                 qgraphicsshadereffect.cpp \
-                qgraphicssystem_gl.cpp \
                 qwindowsurface_gl.cpp \
                 qpixmapdata_gl.cpp \
                 gl2paintengineex/qglgradientcache.cpp \

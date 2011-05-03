@@ -69,10 +69,6 @@
 #include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
 #include <QTime>
-#ifdef Q_WS_QWS
-#include "QtGui/qscreen_qws.h"
-#include <private/qgraphicssystem_qws_p.h>
-#endif
 #ifdef Q_OS_SYMBIAN
 #include <w32std.h>
 #endif
@@ -87,7 +83,6 @@ QT_BEGIN_NAMESPACE
 
 class QClipboard;
 class QGraphicsScene;
-class QGraphicsSystem;
 class QInputContext;
 class QObject;
 class QWidget;
@@ -325,12 +320,6 @@ public:
     static bool autoSipEnabled;
     static QString desktopStyleKey();
 
-    static QGraphicsSystem *graphicsSystem()
-#if defined(Q_WS_QWS)
-    { return QScreen::instance()->graphicsSystem(); }
-#else
-    { return graphics_system; }
-#endif
 
     void createEventDispatcher();
     QString appName() const;
@@ -429,9 +418,6 @@ public:
     static QPalette *app_pal;
     static QPalette *sys_pal;
     static QPalette *set_pal;
-    static QGraphicsSystem *graphics_system;
-    static QString graphics_system_name;
-    static bool runtime_graphics_system;
 
 private:
 #ifndef Q_WS_QPA

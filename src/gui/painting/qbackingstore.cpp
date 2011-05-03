@@ -58,8 +58,6 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qgraphicseffect_p.h>
 
-#include "qgraphicssystem_p.h"
-
 #ifdef Q_WS_QWS
 #include <QtGui/qwsmanager_qws.h>
 #include <private/qwsmanager_p.h>

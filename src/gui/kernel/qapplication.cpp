@@ -64,16 +64,10 @@
 #include "qdnd_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
-#include "private/qgraphicssystemfactory_p.h"
-#include "private/qgraphicssystem_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
 #include <QtGui/qgraphicsproxywidget.h>
-
-#ifdef QT_GRAPHICSSYSTEM_RUNTIME
-#include "private/qgraphicssystem_runtime_p.h"
-#endif
 
 #include "qinputcontext.h"
 #include "qkeymapper_p.h"
@@ -453,10 +447,6 @@ QPalette *QApplicationPrivate::app_pal = 0;        // default application palett
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
-QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
-QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
-bool QApplicationPrivate::runtime_graphics_system = false;
-
 #ifndef Q_WS_QPA
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QApplicationPrivate::app_font = 0;        // default application font
@@ -607,8 +597,6 @@ void QApplicationPrivate::process_cmdline()
             widgetCount = true;
         } else if (qstrcmp(arg, "-testability") == 0) {
             load_testability = true;
-        } else if (arg == "-graphicssystem" && i < argc-1) {
-            graphics_system_name = QString::fromLocal8Bit(argv[++i]);
         } else {
             argv[j++] = argv[i];
         }
@@ -678,8 +666,6 @@ void QApplicationPrivate::process_cmdline()
             the same time
         \o  -reverse, sets the application's layout direction to
             Qt::RightToLeft
-        \o  -graphicssystem, sets the backend to be used for on-screen widgets
-            and QPixmaps. Available options are \c{raster} and \c{opengl}.
         \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
             The value must be of format port:1234[,block], where block is optional
             and will make the application wait until a debugger connects to it.
@@ -813,21 +799,6 @@ void QApplicationPrivate::construct(
 
     qt_is_gui_used = (qt_appType != QApplication::Tty);
     process_cmdline();
-    // the environment variable has the lowest precedence of runtime graphicssystem switches
-    if (graphics_system_name.isEmpty())
-        graphics_system_name = QString::fromLocal8Bit(qgetenv("QT_GRAPHICSSYSTEM"));
-
-#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
-    if (graphics_system_name.isEmpty()) {
-        bool linksWithMeeGoTouch = dl_iterate_phdr(qt_matchLibraryName, const_cast<char *>("libmeegotouchcore"));
-        bool linksWithMeeGoGraphicsSystemHelper = dl_iterate_phdr(qt_matchLibraryName, const_cast<char *>("libQtMeeGoGraphicsSystemHelper"));
-
-        if (linksWithMeeGoTouch && !linksWithMeeGoGraphicsSystemHelper) {
-            qWarning("Running non-meego graphics system enabled  MeeGo touch, forcing native graphicssystem\n");
-            graphics_system_name = QLatin1String("native");
-        }
-    }
-#endif
 
     // Must be called before initialize()
     qt_init(this, qt_appType
@@ -969,14 +940,6 @@ void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
-
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
-    // initialize the graphics system - on X11 this is initialized inside
-    // qt_init() in qapplication_x11.cpp because of several reasons.
-    // On QWS, the graphics system is set by the QScreen plugin.
-    // We don't use graphics systems in Qt QPA
-    graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
-#endif
 
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
@@ -1166,8 +1129,6 @@ QApplication::~QApplication()
     QApplicationPrivate::app_style = 0;
     delete QApplicationPrivate::app_icon;
     QApplicationPrivate::app_icon = 0;
-    delete QApplicationPrivate::graphics_system;
-    QApplicationPrivate::graphics_system = 0;
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
 #endif
@@ -1625,46 +1586,6 @@ QStyle* QApplication::setStyle(const QString& style)
 
     setStyle(s);
     return s;
-}
-
-/*!
-    \since 4.5
-
-    Sets the default graphics backend to \a system, which will be used for
-    on-screen widgets and QPixmaps. The available systems are \c{"native"},
-    \c{"raster"} and \c{"opengl"}.
-
-    There are several ways to set the graphics backend, in order of decreasing
-    precedence:
-    \list
-        \o the application commandline \c{-graphicssystem} switch
-        \o QApplication::setGraphicsSystem()
-        \o the QT_GRAPHICSSYSTEM environment variable
-        \o the Qt configure \c{-graphicssystem} switch
-    \endlist
-    If the highest precedence switch sets an invalid name, the error will be
-    ignored and the default backend will be used.
-
-    \warning This function is only effective before the QApplication constructor
-    is called.
-
-    \note The \c{"opengl"} option is currently experimental.
-*/
-
-void QApplication::setGraphicsSystem(const QString &system)
-{
-#ifdef Q_WS_QPA
-        Q_UNUSED(system);
-#else
-# ifdef QT_GRAPHICSSYSTEM_RUNTIME
-    if (QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
-        QRuntimeGraphicsSystem *r =
-                static_cast<QRuntimeGraphicsSystem *>(QApplicationPrivate::graphics_system);
-        r->setGraphicsSystem(system);
-    } else
-# endif
-        QApplicationPrivate::graphics_system_name = system;
-#endif
 }
 
 /*!

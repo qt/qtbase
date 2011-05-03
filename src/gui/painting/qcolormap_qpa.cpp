@@ -43,7 +43,6 @@
 #include "qcolor.h"
 #include "qpaintdevice.h"
 #include "private/qapplication_p.h"
-#include "private/qgraphicssystem_p.h"
 
 QT_BEGIN_NAMESPACE
 

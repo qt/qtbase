@@ -45,7 +45,6 @@
 #include <qimage.h>
 
 #include <private/qapplication_p.h>
-#include <private/qgraphicssystem_p.h>
 #include <private/qblittable_p.h>
 
 #include <private/qdrawhelper_p.h>

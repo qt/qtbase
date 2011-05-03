@@ -154,7 +154,8 @@ public:
     enum ColorSpec { NormalColor=0, CustomColor=1, ManyColor=2 };
     static int colorSpec();
     static void setColorSpec(int);
-    static void setGraphicsSystem(const QString &);
+    // ### Qt4 compatibility, remove?
+    static inline void setGraphicsSystem(const QString &) {}
 
 #ifndef QT_NO_CURSOR
     static QCursor *overrideCursor();

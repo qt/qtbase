@@ -61,7 +61,6 @@
 #endif
 
 #include "private/qapplication_p.h"
-#include "private/qgraphicssystem_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -76,22 +75,8 @@ public:
 
 QPixmapData* QSimplePixmapDataFactory::create(QPixmapData::PixelType type)
 {
-    if (QApplicationPrivate::graphicsSystem())
-        return QApplicationPrivate::graphicsSystem()->createPixmapData(type);
-
-#if defined(Q_WS_X11)
-    return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN)
-    return new QRasterPixmapData(type);
-#elif defined(Q_WS_MAC)
-    return new QMacPixmapData(type);
-#elif defined(Q_WS_QPA)
-    return new QRasterPixmapData(type);
-#elif defined(Q_OS_SYMBIAN)
-    return new QS60PixmapData(type);
-#else
-#error QSimplePixmapDataFactory::create() not implemented
-#endif
+    // ### should we always use Raster instead?
+    return QGuiApplicationPrivate::platformIntegration()->createPixmapData(type);
 }
 
 Q_GLOBAL_STATIC(QSimplePixmapDataFactory, factory)

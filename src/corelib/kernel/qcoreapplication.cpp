@@ -2171,7 +2171,6 @@ QStringList QCoreApplication::arguments()
                 ;
             else if (l1arg == "-style" ||
                      l1arg == "-session" ||
-                     l1arg == "-graphicssystem" ||
                      l1arg == "-testability")
                 ++a;
             else

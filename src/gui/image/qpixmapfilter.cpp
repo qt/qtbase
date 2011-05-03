@@ -49,7 +49,6 @@
 #include "qvarlengtharray.h"
 
 #include "private/qapplication_p.h"
-#include "private/qgraphicssystem_p.h"
 #include "private/qpaintengineex_p.h"
 #include "private/qpaintengine_raster_p.h"
 #include "qmath.h"

@@ -1370,10 +1370,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     only use the format types QImage::Format_ARGB32_Premultiplied,
     QImage::Format_RGB32 or QImage::Format_RGB16. Any other format,
     including QImage::Format_ARGB32, has significantly worse
-    performance. This engine is also used by default on Windows and on
-    QWS. It can be used as default graphics system on any
-    OS/hardware/software combination by passing \c {-graphicssystem
-    raster} on the command line
+    performance. This engine is used by default for QWidget and QPixmap.
 
     \o OpenGL 2.0 (ES) - This backend is the primary backend for
     hardware accelerated graphics. It can be run on desktop machines

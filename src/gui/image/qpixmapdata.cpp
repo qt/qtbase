@@ -43,7 +43,6 @@
 #include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>
-#include <private/qgraphicssystem_p.h>
 #include <private/qapplication_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 
@@ -54,12 +53,7 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
 
 QPixmapData *QPixmapData::create(int w, int h, PixelType type)
 {
-    QPixmapData *data;
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        data = gs->createPixmapData(static_cast<QPixmapData::PixelType>(type));
-    else
-        data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
+    QPixmapData *data = QGuiApplicationPrivate::platformIntegration()->createPixmapData(static_cast<QPixmapData::PixelType>(type));
     data->resize(w, h);
     return data;
 }
@@ -95,12 +89,7 @@ QPixmapData::~QPixmapData()
 
 QPixmapData *QPixmapData::createCompatiblePixmapData() const
 {
-    QPixmapData *d;
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(pixelType());
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(pixelType());
+    QPixmapData *d = QGuiApplicationPrivate::platformIntegration()->createPixmapData(pixelType());
     return d;
 }
 

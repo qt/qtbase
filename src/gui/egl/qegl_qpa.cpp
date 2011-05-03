@@ -46,7 +46,6 @@
 
 #if !defined(QT_NO_EGL)
 
-#include <QtGui/private/qgraphicssystem_p.h>
 #include <QtGui/private/qapplication_p.h>
 #include <QtGui/qdesktopwidget.h>
 

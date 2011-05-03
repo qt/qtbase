@@ -41,7 +41,6 @@
 
 #include "qdesktopwidget.h"
 #include "private/qapplication_p.h"
-#include "private/qgraphicssystem_p.h"
 #include <QWidget>
 #include "private/qwidget_p.h"
 #include "private/qdesktopwidget_qpa_p.h"

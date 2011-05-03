@@ -121,7 +121,6 @@
 #include "private/qabstractscrollarea_p.h"
 #include "private/qevent_p.h"
 
-#include "private/qgraphicssystem_p.h"
 #include "private/qgesturemanager_p.h"
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -161,11 +160,7 @@ static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 
 static inline bool hasBackingStoreSupport()
 {
-#ifdef Q_WS_MAC
-    return QApplicationPrivate::graphicsSystem() != 0;
-#else
     return true;
-#endif
 }
 
 #ifdef Q_WS_MAC
@@ -375,10 +370,8 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
     } else
 #endif
     {
-        if (QApplicationPrivate::graphicsSystem())
-            surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q->windowHandle());
-        else
-            surface = createDefaultWindowSurface_sys();
+        QWindow *win = topData()->window;
+        surface = QGuiApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
     }
 
     return surface;

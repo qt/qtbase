@@ -45,7 +45,6 @@
 #include "QtGui/private/qbackingstore_p.h"
 #include "QtGui/private/qwidget_p.h"
 #include "QtGui/private/qwidgetwindow_qpa_p.h"
-#include "QtGui/private/qgraphicssystem_p.h"
 #include "QtGui/private/qapplication_p.h"
 #include "QtGui/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"

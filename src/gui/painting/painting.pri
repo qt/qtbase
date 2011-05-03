@@ -8,7 +8,6 @@ HEADERS += \
         painting/qcolormap.h \
         painting/qdrawutil.h \
         painting/qemulationpaintengine_p.h \
-        painting/qgraphicssystem_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
@@ -56,7 +55,6 @@ SOURCES += \
         painting/qcssutil.cpp \
         painting/qdrawutil.cpp \
         painting/qemulationpaintengine.cpp \
-        painting/qgraphicssystem.cpp \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
@@ -114,21 +112,6 @@ win32 {
         !win32-borland:!wince*:LIBS += -lmsimg32
 }
 
-if(!qpa) {
-    HEADERS += \
-        painting/qgraphicssystem_raster_p.h \
-        painting/qgraphicssystem_runtime_p.h \
-        painting/qgraphicssystemfactory_p.h \
-        painting/qgraphicssystemplugin_p.h \
-        painting/qwindowsurface_raster_p.h
-
-    SOURCES += \
-        painting/qgraphicssystem_raster.cpp \
-        painting/qgraphicssystem_runtime.cpp \
-        painting/qgraphicssystemfactory.cpp \
-        painting/qgraphicssystemplugin.cpp \
-        painting/qwindowsurface_raster.cpp
-}
 
 unix:x11 {
         HEADERS += \
@@ -143,14 +126,12 @@ unix:x11 {
 !qpa:!x11:mac {
         HEADERS += \
                 painting/qpaintengine_mac_p.h \
-                painting/qgraphicssystem_mac_p.h \
                 painting/qprintengine_mac_p.h
 
         SOURCES += \
                 painting/qcolormap_mac.cpp \
                 painting/qpaintdevice_mac.cpp \
                 painting/qpaintengine_mac.cpp \
-                painting/qgraphicssystem_mac.cpp \
                 painting/qprinterinfo_mac.cpp
         OBJECTIVE_SOURCES += \
                 painting/qprintengine_mac.mm \

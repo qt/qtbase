@@ -46,7 +46,6 @@
 #include "private/qpixmapdata_p.h"
 #include "private/qimagepixmapcleanuphooks_p.h"
 #include "qglpixmapfilter_p.h"
-#include "qgraphicssystem_gl_p.h"
 #include "qpaintengine_opengl_p.h"
 #include "qcache.h"
 

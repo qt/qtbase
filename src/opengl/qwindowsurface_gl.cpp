@@ -68,7 +68,6 @@
 #include <private/qgl_p.h>
 
 #include <private/qglpixelbuffer_p.h>
-#include <private/qgraphicssystem_gl_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
 #include <private/qpixmapdata_gl_p.h>
@@ -91,96 +90,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-//
-// QGLGraphicsSystem
-//
-#ifdef Q_WS_WIN
-extern Q_GUI_EXPORT bool qt_win_owndc_required;
-#endif
-QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
-    : QGraphicsSystem(), m_useX11GL(useX11GL)
-{
-#if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
-    // only override the system defaults if the user hasn't already
-    // picked a visual
-    if (X11->visual == 0 && X11->visual_id == -1 && X11->visual_class == -1) {
-        // find a double buffered, RGBA visual that supports OpenGL
-        // and set that as the default visual for windows in Qt
-        int i = 0;
-        int spec[16];
-        spec[i++] = GLX_RGBA;
-        spec[i++] = GLX_DOUBLEBUFFER;
-
-        if (!qgetenv("QT_GL_SWAPBUFFER_PRESERVE").isNull()) {
-            spec[i++] = GLX_DEPTH_SIZE;
-            spec[i++] = 8;
-            spec[i++] = GLX_STENCIL_SIZE;
-            spec[i++] = 8;
-            spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
-            spec[i++] = 1;
-            spec[i++] = GLX_SAMPLES_ARB;
-            spec[i++] = 4;
-        }
-
-        spec[i++] = XNone;
-
-        XVisualInfo *vi = glXChooseVisual(X11->display, X11->defaultScreen, spec);
-        if (vi) {
-            X11->visual_id = vi->visualid;
-            X11->visual_class = vi->c_class;
-
-            QGLFormat format;
-            int res;
-            glXGetConfig(X11->display, vi, GLX_LEVEL, &res);
-            format.setPlane(res);
-            glXGetConfig(X11->display, vi, GLX_DOUBLEBUFFER, &res);
-            format.setDoubleBuffer(res);
-            glXGetConfig(X11->display, vi, GLX_DEPTH_SIZE, &res);
-            format.setDepth(res);
-            if (format.depth())
-                format.setDepthBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_RGBA, &res);
-            format.setRgba(res);
-            glXGetConfig(X11->display, vi, GLX_RED_SIZE, &res);
-            format.setRedBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_GREEN_SIZE, &res);
-            format.setGreenBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_BLUE_SIZE, &res);
-            format.setBlueBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_ALPHA_SIZE, &res);
-            format.setAlpha(res);
-            if (format.alpha())
-                format.setAlphaBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_ACCUM_RED_SIZE, &res);
-            format.setAccum(res);
-            if (format.accum())
-                format.setAccumBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_STENCIL_SIZE, &res);
-            format.setStencil(res);
-            if (format.stencil())
-                format.setStencilBufferSize(res);
-            glXGetConfig(X11->display, vi, GLX_STEREO, &res);
-            format.setStereo(res);
-            glXGetConfig(X11->display, vi, GLX_SAMPLE_BUFFERS_ARB, &res);
-            format.setSampleBuffers(res);
-            if (format.sampleBuffers()) {
-                glXGetConfig(X11->display, vi, GLX_SAMPLES_ARB, &res);
-                format.setSamples(res);
-            }
-
-            QGLWindowSurface::surfaceFormat = format;
-            XFree(vi);
-
-            printf("using visual class %x, id %x\n", X11->visual_class, X11->visual_id);
-        }
-    }
-#elif defined(Q_WS_WIN)
-    QGLWindowSurface::surfaceFormat.setDoubleBuffer(true);
-
-    qt_win_owndc_required = true;
-#endif
-}
 
 //
 // QGLWindowSurface

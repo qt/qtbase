@@ -46,7 +46,6 @@
 #include "private/qpaintengine_raster_p.h"
 
 #include "private/qapplication_p.h"
-#include "private/qgraphicssystem_p.h"
 
 #if defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
 #include <qx11info_x11.h>

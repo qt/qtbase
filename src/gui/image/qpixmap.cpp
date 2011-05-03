@@ -54,7 +54,6 @@
 #include "qbuffer.h"
 #include "qapplication.h"
 #include <private/qapplication_p.h>
-#include <private/qgraphicssystem_p.h>
 #include <private/qwidget_p.h>
 #include "qevent.h"
 #include "qfile.h"
@@ -1217,7 +1216,6 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
     graphics system is explicitly enabled.
 
     \sa detach()
-    \sa QApplication::setGraphicsSystem()
 */
 
 Qt::HANDLE QPixmap::handle() const
@@ -1992,7 +1990,7 @@ int QPixmap::defaultDepth()
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
 #elif defined(Q_WS_QPA)
-    return 32; //LITE: use graphicssystem (we should do that in general)
+    return 32; //LITE: ### use graphicssystem (we should do that in general)
 #endif
 }
 
@@ -2084,9 +2082,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
-            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPixmapData> data(QGuiApplicationPrivate::platformIntegration()->createPixmapData(QPixmapData::PixmapType));
     data->fromImage(image, flags);
     return QPixmap(data.take());
 }
@@ -2105,9 +2101,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
 {
-    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
-    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
-            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPixmapData> data(QGuiApplicationPrivate::platformIntegration()->createPixmapData(QPixmapData::PixmapType));
     data->fromImageReader(imageReader, flags);
     return QPixmap(data.take());
 }
