@@ -44,7 +44,6 @@
 #include "private/qblittable_p.h"
 #include "private/qpaintengine_raster_p.h"
 #include "private/qpainter_p.h"
-#include "private/qapplication_p.h"
 #include "private/qpixmap_blitter_p.h"
 
 #ifndef QT_NO_BLITTABLE

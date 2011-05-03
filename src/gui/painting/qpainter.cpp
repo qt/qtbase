@@ -57,7 +57,6 @@
 #include "qpolygon.h"
 #include "qtextlayout.h"
 #include "qwidget.h"
-#include "qapplication.h"
 #include "qstyle.h"
 #include "qthread.h"
 #include "qvarlengtharray.h"

@@ -43,7 +43,6 @@
 #include "qpainter_p.h"
 #include "qpolygon.h"
 #include "qbitmap.h"
-#include "qapplication.h"
 #include <qdebug.h>
 #include <qmath.h>
 #include <private/qtextengine_p.h>
