@@ -227,7 +227,6 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
         return widget->model();
     }
 
-    Q_ASSERT(false);
     return 0;
 }
 
