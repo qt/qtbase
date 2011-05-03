@@ -237,6 +237,7 @@ static void resolveAygLibs()
 #  define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #endif
 
+Q_GUI_EXPORT qreal qt_fontsmoothing_gamma;
 Q_GUI_EXPORT bool qt_cleartype_enabled;
 Q_GUI_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
 
@@ -653,8 +654,18 @@ static void qt_win_read_cleartype_settings()
     if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0))
         qt_cleartype_enabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
 #endif
-}
 
+    int winSmooth;
+    if (SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &winSmooth, 0)) {
+        qt_fontsmoothing_gamma = winSmooth / qreal(1000.0);
+    } else {
+        qt_fontsmoothing_gamma = 1.0;
+    }
+
+    // Safeguard ourselves against corrupt registry values...
+    if (qt_fontsmoothing_gamma > 5 || qt_fontsmoothing_gamma < 1)
+        qt_fontsmoothing_gamma = qreal(1.4);
+}
 
 static void qt_set_windows_resources()
 {

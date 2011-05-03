@@ -288,7 +288,8 @@ public:
         PVRTCTextureCompression = 0x00020000,
         FragmentShader          = 0x00040000,
         ElementIndexUint        = 0x00080000,
-        Depth24                 = 0x00100000
+        Depth24                 = 0x00100000,
+        SRGBFrameBuffer         = 0x00200000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
