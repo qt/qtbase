@@ -288,7 +288,7 @@ QImage::Format QNativeImage::systemFormat()
 
 #else // other platforms...
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format,  bool /* isTextBuffer */, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format,  bool /* isTextBuffer */, QWindow *)
     : image(width, height, format)
 {
 
