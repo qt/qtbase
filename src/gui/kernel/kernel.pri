@@ -206,8 +206,8 @@ qpa {
                 kernel/qguiapplication.h \
                 kernel/qguiapplication_p.h \
                 kernel/qwidgetwindow_qpa_p.h \
-                kernel/qwindow_qpa_p.h \
-                kernel/qwindow_qpa.h
+                kernel/qwindow_p.h \
+                kernel/qwindow.h
 
 	SOURCES += \
                 kernel/qapplication_qpa.cpp \
@@ -236,7 +236,7 @@ qpa {
                 kernel/qwindowformat_qpa.cpp \
                 kernel/qguiapplication.cpp \
                 kernel/qwidgetwindow_qpa.cpp \
-                kernel/qwindow_qpa.cpp
+                kernel/qwindow.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

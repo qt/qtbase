@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <private/qwindowsurface_p.h>
-#include <qwindow_qpa.h>
-#include <private/qwindow_qpa_p.h>
+#include <qwindow.h>
+#include <private/qwindow_p.h>
 #include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE

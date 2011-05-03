@@ -61,7 +61,7 @@
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
-#include "private/qwindow_qpa_p.h"
+#include "private/qwindow_p.h"
 
 #ifndef QT_NO_CLIPBOARD
 #include <QtGui/QClipboard>

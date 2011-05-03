@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/qwindow_qpa.h>
+#include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
 

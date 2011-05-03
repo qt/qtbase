@@ -42,7 +42,7 @@
 #ifndef QWINDOW_QPA_P_H
 #define QWINDOW_QPA_P_H
 
-#include <QtGui/qwindow_qpa.h>
+#include <QtGui/qwindow.h>
 
 #include <QtCore/private/qobject_p.h>
 

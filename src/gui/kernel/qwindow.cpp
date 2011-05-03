@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qwindow_qpa.h"
+#include "qwindow.h"
 
 #include "qplatformwindow_qpa.h"
 #include "qwindowformat_qpa.h"
 #include "qplatformglcontext_qpa.h"
 #include "qwindowcontext_qpa.h"
 
-#include "qwindow_qpa_p.h"
+#include "qwindow_p.h"
 #include "qapplication_p.h"
 
 #include <QtCore/QDebug>
