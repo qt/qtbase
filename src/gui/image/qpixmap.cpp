@@ -640,65 +640,6 @@ int QPixmap::depth() const
         pixmap = pixmap.copy(QRect(QPoint(0, 0), size));
     \endcode
 */
-#ifdef QT3_SUPPORT
-void QPixmap::resize_helper(const QSize &s)
-{
-    int w = s.width();
-    int h = s.height();
-    if (w < 1 || h < 1) {
-        *this = QPixmap();
-        return;
-    }
-
-    if (size() == s)
-        return;
-
-    // QPixmap.data member may be QRuntimePixmapData so use pixmapData() function to get
-    // the actual underlaying runtime pixmap data.
-    QPixmapData *pd = pixmapData();
-
-    // Create new pixmap
-    QPixmap pm(QSize(w, h), pd ? pd->type : QPixmapData::PixmapType);
-    bool uninit = false;
-#if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = pd && pd->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(pd) : 0;
-    if (x11Data) {
-        pm.x11SetScreen(x11Data->xinfo.screen());
-        uninit = x11Data->flags & QX11PixmapData::Uninitialized;
-    }
-#elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = pd && pd->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;
-    if (macData)
-        uninit = macData->uninit;
-#endif
-    if (!uninit && !isNull()) {
-        // Copy old pixmap
-        if (hasAlphaChannel())
-            pm.fill(Qt::transparent);
-        QPainter p(&pm);
-        p.drawPixmap(0, 0, *this, 0, 0, qMin(width(), w), qMin(height(), h));
-    }
-
-#if defined(Q_WS_X11)
-    if (x11Data && x11Data->x11_mask) {
-        QPixmapData *newPd = pm.pixmapData();
-        QX11PixmapData *pmData = (newPd && newPd->classId() == QPixmapData::X11Class)
-                                 ? static_cast<QX11PixmapData*>(newPd) : 0;
-        if (pmData) {
-            pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
-                                                         RootWindow(x11Data->xinfo.display(),
-                                                                    x11Data->xinfo.screen()),
-                                                         w, h, 1);
-            GC gc = XCreateGC(X11->display, pmData->x11_mask, 0, 0);
-            XCopyArea(X11->display, x11Data->x11_mask, pmData->x11_mask, gc, 0, 0,
-                      qMin(width(), w), qMin(height(), h), 0, 0);
-            XFreeGC(X11->display, gc);
-        }
-    }
-#endif
-    *this = pm;
-}
-#endif
 
 /*!
     \fn void QPixmap::resize(int width, int height)
@@ -1226,104 +1167,6 @@ Qt::HANDLE QPixmap::handle() const
 #endif
 
 
-#ifdef QT3_SUPPORT
-static Qt::ImageConversionFlags colorModeToFlags(QPixmap::ColorMode mode)
-{
-    Qt::ImageConversionFlags flags = Qt::AutoColor;
-    switch (mode) {
-      case QPixmap::Color:
-        flags |= Qt::ColorOnly;
-        break;
-      case QPixmap::Mono:
-        flags |= Qt::MonoOnly;
-        break;
-      default:
-        break;// Nothing.
-    }
-    return flags;
-}
-
-/*!
-    Use the constructor that takes a Qt::ImageConversionFlag instead.
-*/
-
-QPixmap::QPixmap(const QString& fileName, const char *format, ColorMode mode)
-    : QPaintDevice()
-{
-    init(0, 0, QPixmapData::PixmapType);
-    if (!qt_pixmap_thread_test())
-        return;
-
-    load(fileName, format, colorModeToFlags(mode));
-}
-
-/*!
-    Constructs a pixmap from the QImage \a image.
-
-    Use the static fromImage() function instead.
-*/
-QPixmap::QPixmap(const QImage& image)
-    : QPaintDevice()
-{
-    init(0, 0, QPixmapData::PixmapType);
-    if (!qt_pixmap_thread_test())
-        return;
-
-    if (data && data->pixelType() == QPixmapData::BitmapType)
-        *this = QBitmap::fromImage(image);
-    else
-        *this = fromImage(image);
-}
-
-/*!
-    \overload
-
-    Converts the given \a image to a pixmap that is assigned to this
-    pixmap.
-
-    Use the static fromImage() function instead.
-*/
-
-QPixmap &QPixmap::operator=(const QImage &image)
-{
-    if (data && data->pixelType() == QPixmapData::BitmapType)
-        *this = QBitmap::fromImage(image);
-    else
-        *this = fromImage(image);
-    return *this;
-}
-
-/*!
-    Use the load() function that takes a Qt::ImageConversionFlag instead.
-*/
-
-bool QPixmap::load(const QString &fileName, const char *format, ColorMode mode)
-{
-    return load(fileName, format, colorModeToFlags(mode));
-}
-
-/*!
-    Use the loadFromData() function that takes a Qt::ImageConversionFlag instead.
-*/
-
-bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, ColorMode mode)
-{
-    return loadFromData(buf, len, format, colorModeToFlags(mode));
-}
-
-/*!
-    Use the static fromImage() function instead.
-*/
-bool QPixmap::convertFromImage(const QImage &image, ColorMode mode)
-{
-    if (data && data->pixelType() == QPixmapData::BitmapType)
-        *this = QBitmap::fromImage(image, colorModeToFlags(mode));
-    else
-        *this = fromImage(image, colorModeToFlags(mode));
-    return !isNull();
-}
-
-#endif
 
 /*****************************************************************************
   QPixmap stream functions
@@ -1368,34 +1211,6 @@ QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
 }
 
 #endif // QT_NO_DATASTREAM
-
-#ifdef QT3_SUPPORT
-Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy,
-                          const QPixmap *src, int sx, int sy, int sw, int sh)
-{
-    Q_ASSERT_X(dst, "::copyBlt", "Destination pixmap must be non-null");
-    Q_ASSERT_X(src, "::copyBlt", "Source pixmap must be non-null");
-
-    if (src->hasAlphaChannel()) {
-        if (dst->paintEngine()->hasFeature(QPaintEngine::PorterDuff)) {
-            QPainter p(dst);
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.drawPixmap(dx, dy, *src, sx, sy, sw, sh);
-        } else {
-            QImage image = dst->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            QPainter p(&image);
-            p.setCompositionMode(QPainter::CompositionMode_Source);
-            p.drawPixmap(dx, dy, *src, sx, sy, sw, sh);
-            p.end();
-            *dst = QPixmap::fromImage(image);
-        }
-    } else {
-        QPainter p(dst);
-        p.drawPixmap(dx, dy, *src, sx, sy, sw, sh);
-    }
-
-}
-#endif
 
 /*!
     \internal

@@ -70,10 +70,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT3_SUPPORT
-extern QDataStream &qt_stream_out_qcolorgroup(QDataStream &s, const QColorGroup &g);
-extern QDataStream &qt_stream_in_qcolorgroup(QDataStream &s, QColorGroup &g);
-#endif
 
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
@@ -107,11 +103,6 @@ static void construct(QVariant::Private *x, const void *copy)
     case QVariant::Palette:
         v_construct<QPalette>(x, copy);
         break;
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        v_construct<QColorGroup>(x, copy);
-        break;
-#endif
 #ifndef QT_NO_ICON
     case QVariant::Icon:
         v_construct<QIcon>(x, copy);
@@ -218,11 +209,6 @@ static void clear(QVariant::Private *d)
     case QVariant::Palette:
         v_clear<QPalette>(d);
         break;
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        v_clear<QColorGroup>(d);
-        break;
-#endif
 #ifndef QT_NO_ICON
     case QVariant::Icon:
         v_clear<QIcon>(d);
@@ -313,9 +299,6 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Brush:
     case QVariant::Color:
     case QVariant::Palette:
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-#endif
     case QVariant::SizePolicy:
 #ifndef QT_NO_SHORTCUT
     case QVariant::KeySequence:
@@ -374,10 +357,6 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return *v_cast<QColor>(a) == *v_cast<QColor>(b);
     case QVariant::Palette:
         return *v_cast<QPalette>(a) == *v_cast<QPalette>(b);
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        return *v_cast<QColorGroup>(a) == *v_cast<QColorGroup>(b);
-#endif
 #ifndef QT_NO_ICON
     case QVariant::Icon:
         /* QIcon::operator==() cannot be reasonably implemented for QIcon,
@@ -688,9 +667,6 @@ extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper;
      static const QLoad##TYPE qLoad##TYPE = qMetaTypeLoadHelper<TYPE>;
 #endif
 
-#ifdef QT3_SUPPORT
-Q_DECL_METATYPE_HELPER(QColorGroup)
-#endif
 Q_DECL_METATYPE_HELPER(QFont)
 Q_DECL_METATYPE_HELPER(QPixmap)
 Q_DECL_METATYPE_HELPER(QBrush)
@@ -745,11 +721,7 @@ Q_DECL_METATYPE_HELPER(QQuaternion)
 #endif
 
 static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
-#ifdef QT3_SUPPORT
-    Q_IMPL_METATYPE_HELPER(QColorGroup),
-#else
     {0, 0, 0, 0},
-#endif
     Q_IMPL_METATYPE_HELPER(QFont),
     Q_IMPL_METATYPE_HELPER(QPixmap),
     Q_IMPL_METATYPE_HELPER(QBrush),

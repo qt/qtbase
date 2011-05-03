@@ -855,7 +855,6 @@ public:
     const QT3_SUPPORT QPixmap *backgroundPixmap() const;
     void QT3_SUPPORT setBackgroundPixmap(const QPixmap &);
     QT3_SUPPORT void setBackgroundColor(const QColor &);
-    QT3_SUPPORT QColorGroup colorGroup() const;
     QT3_SUPPORT QWidget *parentWidget(bool sameWindow) const;
     inline QT3_SUPPORT void setKeyCompression(bool b) { setAttribute(Qt::WA_KeyCompression, b); }
     inline QT3_SUPPORT void setFont(const QFont &f, bool) { setFont(f); }
@@ -1052,8 +1051,6 @@ inline QWidget *QWidget::parentWidget(bool sameWindow) const
         return 0;
     return static_cast<QWidget *>(QObject::parent());
 }
-inline QColorGroup QWidget::colorGroup() const
-{ return QColorGroup(palette()); }
 inline void QWidget::setPaletteForegroundColor(const QColor &c)
 { QPalette p = palette(); p.setColor(foregroundRole(), c); setPalette(p); }
 inline const QBrush& QWidget::backgroundBrush() const { return palette().brush(backgroundRole()); }

@@ -11692,11 +11692,6 @@ void QWidget::languageChange() { }  // compat
     \endcode
 */
 
-/*!
-    \fn QColorGroup QWidget::colorGroup() const
-
-    Use QColorGroup(palette()) instead.
-*/
 
 /*!
     \fn QWidget *QWidget::parentWidget(bool sameWindow) const

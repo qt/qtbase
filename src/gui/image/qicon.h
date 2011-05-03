@@ -114,21 +114,6 @@ public:
     static QString themeName();
     static void setThemeName(const QString &path);
 
-
-#ifdef QT3_SUPPORT
-    enum Size { Small, Large, Automatic = Small };
-    static QT3_SUPPORT void setPixmapSize(Size which, const QSize &size);
-    static QT3_SUPPORT QSize pixmapSize(Size which);
-    inline QT3_SUPPORT void reset(const QPixmap &pixmap, Size /*size*/) { *this = QIcon(pixmap); }
-    inline QT3_SUPPORT void setPixmap(const QPixmap &pixmap, Size, Mode mode = Normal, State state = Off)
-        { addPixmap(pixmap, mode, state); }
-    inline QT3_SUPPORT void setPixmap(const QString &fileName, Size, Mode mode = Normal, State state = Off)
-        { addPixmap(QPixmap(fileName), mode, state); }
-    QT3_SUPPORT QPixmap pixmap(Size size, Mode mode, State state = Off) const;
-    QT3_SUPPORT QPixmap pixmap(Size size, bool enabled, State state = Off) const;
-    QT3_SUPPORT QPixmap pixmap() const;
-#endif
-
     Q_DUMMY_COMPARISON_OPERATOR(QIcon)
 
 private:
@@ -149,10 +134,6 @@ Q_DECLARE_TYPEINFO(QIcon, Q_MOVABLE_TYPE);
 #if !defined(QT_NO_DATASTREAM)
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
-#endif
-
-#ifdef QT3_SUPPORT
-typedef QIcon QIconSet;
 #endif
 
 QT_END_NAMESPACE

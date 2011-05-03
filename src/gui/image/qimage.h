@@ -283,50 +283,6 @@ public:
     void setText(const char* key, const char* lang, const QString&);
 #endif
 
-#ifdef QT3_SUPPORT
-    enum Endian { BigEndian, LittleEndian, IgnoreEndian };
-    QT3_SUPPORT_CONSTRUCTOR QImage(int width, int height, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT_CONSTRUCTOR QImage(const QSize&, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT_CONSTRUCTOR QImage(uchar *data, int w, int h, int depth, const QRgb *colortable, int numColors, Endian bitOrder);
-#ifdef Q_WS_QWS
-    QT3_SUPPORT_CONSTRUCTOR QImage(uchar *data, int w, int h, int depth, int pbl, const QRgb *colortable, int numColors, Endian bitOrder);
-#endif
-    inline QT3_SUPPORT Endian bitOrder() const {
-        Format f = format();
-        return f == Format_Mono ? BigEndian : (f == Format_MonoLSB ? LittleEndian : IgnoreEndian);
-    }
-    QT3_SUPPORT QImage convertDepth(int, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
-    QT3_SUPPORT QImage convertDepthWithPalette(int, QRgb* p, int pc, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
-    QT3_SUPPORT QImage convertBitOrder(Endian) const;
-    QT3_SUPPORT bool hasAlphaBuffer() const;
-    QT3_SUPPORT void setAlphaBuffer(bool);
-    QT3_SUPPORT uchar **jumpTable();
-    QT3_SUPPORT const uchar * const *jumpTable() const;
-    inline QT3_SUPPORT void reset() { *this = QImage(); }
-    static inline QT3_SUPPORT Endian systemByteOrder()
-        { return QSysInfo::ByteOrder == QSysInfo::BigEndian ? BigEndian : LittleEndian; }
-    inline QT3_SUPPORT QImage swapRGB() const { return rgbSwapped(); }
-    inline QT3_SUPPORT QImage mirror(bool horizontally = false, bool vertically = true) const
-        { return mirrored(horizontally, vertically); }
-    QT3_SUPPORT bool create(const QSize&, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT bool create(int width, int height, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    inline QT3_SUPPORT QImage xForm(const QMatrix &matrix) const { return transformed(QTransform(matrix)); }
-    inline QT3_SUPPORT QImage smoothScale(int w, int h, Qt::AspectRatioMode mode = Qt::IgnoreAspectRatio) const
-        { return scaled(QSize(w, h), mode, Qt::SmoothTransformation); }
-    inline QImage QT3_SUPPORT smoothScale(const QSize &s, Qt::AspectRatioMode mode = Qt::IgnoreAspectRatio) const
-        { return scaled(s, mode, Qt::SmoothTransformation); }
-    inline QT3_SUPPORT QImage scaleWidth(int w) const { return scaledToWidth(w); }
-    inline QT3_SUPPORT QImage scaleHeight(int h) const { return scaledToHeight(h); }
-    inline QT3_SUPPORT void invertPixels(bool invertAlpha) { invertAlpha ? invertPixels(InvertRgba) : invertPixels(InvertRgb); }
-    inline QT3_SUPPORT QImage copy(int x, int y, int w, int h, Qt::ImageConversionFlags) const
-        { return copy(QRect(x, y, w, h)); }
-    inline QT3_SUPPORT QImage copy(const QRect &rect, Qt::ImageConversionFlags) const
-        { return copy(rect); }
-    static QT3_SUPPORT Endian systemBitOrder();
-    inline QT3_SUPPORT_CONSTRUCTOR QImage(const QByteArray &data)
-        { d = 0; *this = QImage::fromData(data); }
-#endif
-
 protected:
     virtual int metric(PaintDeviceMetric metric) const;
 
@@ -360,11 +316,6 @@ Q_GUI_EXPORT_INLINE void QImage::setPixel(const QPoint &pt, uint index_or_rgb) {
 #if !defined(QT_NO_DATASTREAM)
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QImage &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QImage &);
-#endif
-
-#ifdef QT3_SUPPORT
-Q_GUI_EXPORT QT3_SUPPORT void bitBlt(QImage* dst, int dx, int dy, const QImage* src,
-                                     int sx=0, int sy=0, int sw=-1, int sh=-1, Qt::ImageConversionFlags flags = Qt::AutoColor);
 #endif
 
 QT_END_NAMESPACE

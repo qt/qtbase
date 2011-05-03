@@ -51,11 +51,6 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qimagereader.h>
 
-#ifdef QT3_SUPPORT
-#include <QtGui/qimage.h>
-#include <QtGui/qpixmap.h>
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -151,21 +146,6 @@ public Q_SLOTS:
 private:
     Q_DISABLE_COPY(QMovie)
     Q_PRIVATE_SLOT(d_func(), void _q_loadNextFrame())
-
-#ifdef QT3_SUPPORT
-public:
-    inline QT3_SUPPORT bool isNull() const { return isValid(); }
-    inline QT3_SUPPORT int frameNumber() const { return currentFrameNumber(); }
-    inline QT3_SUPPORT bool running() const { return state() == Running; }
-    inline QT3_SUPPORT bool paused() const { return state() == Paused; }
-    inline QT3_SUPPORT bool finished() const { return state() == NotRunning; }
-    inline QT3_SUPPORT void restart() { stop(); start(); }
-    inline QT3_SUPPORT QImage frameImage() const { return currentImage(); }
-    inline QT3_SUPPORT QPixmap framePixmap() const { return currentPixmap(); }
-    inline QT3_SUPPORT void step() { jumpToNextFrame(); }
-    inline QT3_SUPPORT void pause() { setPaused(true); }
-    inline QT3_SUPPORT void unpause() { setPaused(false); }
-#endif
 };
 
 QT_END_NAMESPACE

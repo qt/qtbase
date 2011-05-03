@@ -224,26 +224,6 @@ public:
 protected:
     int metric(PaintDeviceMetric) const;
 
-#ifdef QT3_SUPPORT
-public:
-    enum ColorMode { Auto, Color, Mono };
-    QT3_SUPPORT_CONSTRUCTOR QPixmap(const QString& fileName, const char *format, ColorMode mode);
-    QT3_SUPPORT bool load(const QString& fileName, const char *format, ColorMode mode);
-    QT3_SUPPORT bool loadFromData(const uchar *buf, uint len, const char* format, ColorMode mode);
-    QT3_SUPPORT_CONSTRUCTOR QPixmap(const QImage& image);
-    QT3_SUPPORT QPixmap &operator=(const QImage &);
-    inline QT3_SUPPORT QImage convertToImage() const { return toImage(); }
-    QT3_SUPPORT bool convertFromImage(const QImage &, ColorMode mode);
-    inline QT3_SUPPORT operator QImage() const { return toImage(); }
-    inline QT3_SUPPORT QPixmap xForm(const QMatrix &matrix) const { return transformed(QTransform(matrix)); }
-    inline QT3_SUPPORT bool selfMask() const { return false; }
-private:
-    void resize_helper(const QSize &s);
-public:
-    inline QT3_SUPPORT void resize(const QSize &s) { resize_helper(s); }
-    inline QT3_SUPPORT void resize(int width, int height) { resize_helper(QSize(width, height)); }
-#endif
-
 private:
     QExplicitlySharedDataPointer<QPixmapData> data;
 
@@ -319,14 +299,6 @@ inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPixmap &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPixmap &);
 #endif
-
-/*****************************************************************************
- QPixmap (and QImage) helper functions
-*****************************************************************************/
-#ifdef QT3_SUPPORT
-QT3_SUPPORT Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy, const QPixmap *src,
-                                    int sx=0, int sy=0, int sw=-1, int sh=-1);
-#endif // QT3_SUPPORT
 
 QT_END_NAMESPACE
 

@@ -107,15 +107,6 @@ public:
     inline bool hasExtendedInfo() const { return reinterpret_cast<const QMouseEvent *>(d) == this; }
     QPointF posF() const;
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state);
-    QT3_SUPPORT_CONSTRUCTOR QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
-                                      Qt::ButtonState button, int state);
-    inline QT3_SUPPORT Qt::ButtonState state() const
-    { return Qt::ButtonState((mouseState^b)|int(modifiers())); }
-    inline QT3_SUPPORT Qt::ButtonState stateAfter() const
-    { return Qt::ButtonState(int(mouseState)|int(modifiers())); }
-#endif
 protected:
     QPoint p, g;
     Qt::MouseButton b;
@@ -158,14 +149,6 @@ public:
     inline Qt::MouseButtons buttons() const { return mouseState; }
     Qt::Orientation orientation() const { return o; }
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QWheelEvent(const QPoint &pos, int delta, int state,
-                                      Qt::Orientation orient = Qt::Vertical);
-    QT3_SUPPORT_CONSTRUCTOR QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, int state,
-                                      Qt::Orientation orient = Qt::Vertical);
-    inline QT3_SUPPORT Qt::ButtonState state() const
-    { return static_cast<Qt::ButtonState>(int(buttons())|int(modifiers())); }
-#endif
 protected:
     QPoint p;
     QPoint g;
@@ -248,22 +231,6 @@ public:
     quint32 nativeVirtualKey() const;
     quint32 nativeModifiers() const;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT_CONSTRUCTOR QKeyEvent(Type type, int key, int /*ascii*/,
-                                           int modifiers, const QString& text = QString(),
-                                           bool autorep = false, ushort count = 1)
-        : QInputEvent(type, Qt::KeyboardModifiers(modifiers & (int)Qt::KeyButtonMask)), txt(text), k(key),
-          c(count), autor(autorep)
-    {
-        if (key >= Qt::Key_Back && key <= Qt::Key_MediaLast)
-            ignore();
-    }
-    inline QT3_SUPPORT int ascii() const
-    { return (txt.length() ? txt.unicode()->toLatin1() : 0); }
-    inline QT3_SUPPORT Qt::ButtonState state() const { return Qt::ButtonState(QInputEvent::modifiers()); }
-    inline QT3_SUPPORT Qt::ButtonState stateAfter() const { return Qt::ButtonState(modifiers()); }
-#endif
-
 protected:
     QString txt;
     int k;
@@ -281,12 +248,6 @@ public:
     inline bool gotFocus() const { return type() == FocusIn; }
     inline bool lostFocus() const { return type() == FocusOut; }
 
-#ifdef QT3_SUPPORT
-    enum Reason { Mouse=Qt::MouseFocusReason, Tab=Qt::TabFocusReason,
-                  Backtab=Qt::BacktabFocusReason, MenuBar=Qt::MenuBarFocusReason,
-                  ActiveWindow=Qt::ActiveWindowFocusReason, Other=Qt::OtherFocusReason,
-                  Popup=Qt::PopupFocusReason, Shortcut=Qt::ShortcutFocusReason };
-#endif
     Qt::FocusReason reason();
     Qt::FocusReason reason() const;
 
@@ -304,12 +265,6 @@ public:
 
     inline const QRect &rect() const { return m_rect; }
     inline const QRegion &region() const { return m_region; }
-
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QPaintEvent(const QRegion &paintRegion, const QRect &paintRect);
-    inline QT3_SUPPORT bool erased() const { return m_erased; }
-    inline QT3_SUPPORT void setErased(bool b) { m_erased = b; }
-#endif
 
 protected:
     friend class QApplication;
@@ -414,12 +369,6 @@ public:
 
     inline Reason reason() const { return Reason(reas); }
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos, int);
-    QT3_SUPPORT_CONSTRUCTOR QContextMenuEvent(Reason reason, const QPoint &pos, int);
-
-    QT3_SUPPORT Qt::ButtonState state() const;
-#endif
 protected:
     QPoint p;
     QPoint gp;
@@ -502,16 +451,6 @@ public:
     QByteArray encodedData(const char*) const;
     bool provides(const char*) const;
 // END QT3_SUPPORT
-#ifdef QT3_SUPPORT
-    inline void accept() { QEvent::accept(); }
-    inline QT3_SUPPORT void accept(bool y) { setAccepted(y); }
-    inline QT3_SUPPORT QByteArray data(const char* f) const { return encodedData(f); }
-
-    enum Action { Copy, Link, Move, Private, UserAction = Private };
-    QT3_SUPPORT Action action() const;
-    inline QT3_SUPPORT void acceptAction(bool y = true)  { if (y) { drop_action = default_action; accept(); } }
-    inline QT3_SUPPORT void setPoint(const QPoint& np) { p = np; }
-#endif
 
 
 protected:
@@ -541,10 +480,6 @@ public:
 
     inline void accept(const QRect & r) { accept(); rect = r; }
     inline void ignore(const QRect & r) { ignore(); rect = r; }
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void accept(bool y) { setAccepted(y); }
-#endif
 
 protected:
     friend class QApplication;
@@ -715,18 +650,6 @@ public:
 private:
     Qt::WindowStates ostate;
 };
-
-#ifdef QT3_SUPPORT
-class QMenuBar;
-class Q_GUI_EXPORT QMenubarUpdatedEvent: public QEvent
-{
-public:
-    QMenubarUpdatedEvent(QMenuBar * const menBar);
-    inline QMenuBar *menuBar() { return m_menuBar; }
-private:
-    QMenuBar *m_menuBar;
-};
-#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);

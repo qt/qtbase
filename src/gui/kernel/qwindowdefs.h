@@ -57,9 +57,6 @@ class QWidget;
 class QDialog;
 class QColor;
 class QPalette;
-#ifdef QT3_SUPPORT
-class QColorGroup;
-#endif
 class QCursor;
 class QPoint;
 class QSize;

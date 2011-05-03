@@ -67,8 +67,8 @@ SOURCES += \
 	kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
-	kernel/qmime.cpp \
-	kernel/qpalette.cpp \
+        kernel/qmime.cpp \
+        kernel/qpalette.cpp \
 	kernel/qshortcut.cpp \
 	kernel/qshortcutmap.cpp \
 	kernel/qstackedlayout.cpp \

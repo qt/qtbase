@@ -1350,10 +1350,6 @@ bool QDragManager::eventFilter(QObject * o, QEvent * e)
       case QEvent::KeyRelease:
       case QEvent::Wheel:
       case QEvent::ShortcutOverride:
-#ifdef QT3_SUPPORT
-      case QEvent::Accel:
-      case QEvent::AccelAvailable:
-#endif
         return true;
       default:
         return false;

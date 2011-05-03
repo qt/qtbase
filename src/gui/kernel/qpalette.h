@@ -52,9 +52,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifdef QT3_SUPPORT
-class QColorGroup;
-#endif
 class QPalettePrivate;
 class QVariant;
 
@@ -72,9 +69,6 @@ public:
              const QBrush &bright_text, const QBrush &base, const QBrush &window);
     QPalette(const QColor &windowText, const QColor &window, const QColor &light,
              const QColor &dark, const QColor &mid, const QColor &text, const QColor &base);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QPalette(const QColorGroup &active, const QColorGroup &disabled, const QColorGroup &inactive);
-#endif
     QPalette(const QPalette &palette);
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
@@ -142,19 +136,6 @@ public:
     inline const QBrush &link() const { return brush(Link); }
     inline const QBrush &linkVisited() const { return brush(LinkVisited); }
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QPalette copy() const { QPalette p = *this; p.detach(); return p; }
-    QT3_SUPPORT QColorGroup normal() const;
-    inline QT3_SUPPORT void setNormal(const QColorGroup &cg) { setColorGroup(Active, cg); }
-
-    QT3_SUPPORT QColorGroup active() const;
-    QT3_SUPPORT QColorGroup disabled() const;
-    QT3_SUPPORT QColorGroup inactive() const;
-    inline QT3_SUPPORT void setActive(const QColorGroup &cg) { setColorGroup(Active, cg); }
-    inline QT3_SUPPORT void setDisabled(const QColorGroup &cg) { setColorGroup(Disabled, cg); }
-    inline QT3_SUPPORT void setInactive(const QColorGroup &cg) { setColorGroup(Inactive, cg); }
-#endif
-
     bool operator==(const QPalette &p) const;
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }
     bool isCopyOf(const QPalette &p) const;
@@ -184,11 +165,6 @@ private:
                        const QBrush &highlight, const QBrush &highlighted_text,
                        const QBrush &link, const QBrush &link_visited,
                        const QBrush &toolTipBase, const QBrush &toolTipText);
-#ifdef QT3_SUPPORT
-    friend class QColorGroup;
-    void setColorGroup(ColorGroup, const QColorGroup &);
-    QColorGroup createColorGroup(ColorGroup) const;
-#endif
     void init();
     void detach();
 
@@ -205,55 +181,6 @@ inline void QPalette::setColor(ColorRole acr, const QColor &acolor)
 { setColor(All, acr, acolor); }
 inline void QPalette::setBrush(ColorRole acr, const QBrush &abrush)
 { setBrush(All, acr, abrush); }
-
-#ifdef QT3_SUPPORT
-class Q_GUI_EXPORT QColorGroup : public QPalette
-{
-public:
-    inline QColorGroup() : QPalette() {}
-    inline QColorGroup(const QBrush &foreground, const QBrush &button, const QBrush &light,
-                const QBrush &dark, const QBrush &mid, const QBrush &text,
-                const QBrush &bright_text, const QBrush &base, const QBrush &background)
-        : QPalette(foreground, button, light, dark, mid, text, bright_text, base, background)
-    {}
-    inline QColorGroup(const QColor &foreground, const QColor &background, const QColor &light,
-                const QColor &dark, const QColor &mid, const QColor &text, const QColor &base)
-        : QPalette(foreground, background, light, dark, mid, text, base) {}
-    inline QColorGroup(const QColorGroup &cg) : QPalette(cg) {}
-    inline QColorGroup(const QPalette &pal) : QPalette(pal) {}
-    bool operator==(const QColorGroup &other) const;
-    inline bool operator!=(const QColorGroup &other) const { return !(operator==(other)); }
-    operator QVariant() const;
-
-    inline QT3_SUPPORT const QColor &foreground() const { return color(WindowText); }
-    inline QT3_SUPPORT const QColor &button() const { return color(Button); }
-    inline QT3_SUPPORT const QColor &light() const { return color(Light); }
-    inline QT3_SUPPORT const QColor &dark() const { return color(Dark); }
-    inline QT3_SUPPORT const QColor &mid() const { return color(Mid); }
-    inline QT3_SUPPORT const QColor &text() const { return color(Text); }
-    inline QT3_SUPPORT const QColor &base() const { return color(Base); }
-    inline QT3_SUPPORT const QColor &background() const { return color(Window); }
-    inline QT3_SUPPORT const QColor &midlight() const { return color(Midlight); }
-    inline QT3_SUPPORT const QColor &brightText() const { return color(BrightText); }
-    inline QT3_SUPPORT const QColor &buttonText() const { return color(ButtonText); }
-    inline QT3_SUPPORT const QColor &shadow() const { return color(Shadow); }
-    inline QT3_SUPPORT const QColor &highlight() const { return color(Highlight); }
-    inline QT3_SUPPORT const QColor &highlightedText() const { return color(HighlightedText); }
-    inline QT3_SUPPORT const QColor &link() const { return color(Link); }
-    inline QT3_SUPPORT const QColor &linkVisited() const { return color(LinkVisited); }
-};
-
-#ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QT3_SUPPORT QDataStream &operator<<(QDataStream &ds, const QColorGroup &cg);
-Q_GUI_EXPORT QT3_SUPPORT QDataStream &operator>>(QDataStream &ds, QColorGroup &cg);
-#endif
-
-inline QColorGroup QPalette::inactive() const { return createColorGroup(Inactive); }
-inline QColorGroup QPalette::disabled() const { return createColorGroup(Disabled); }
-inline QColorGroup QPalette::active() const { return createColorGroup(Active); }
-inline QColorGroup QPalette::normal() const { return createColorGroup(Active); }
-
-#endif
 
 /*****************************************************************************
   QPalette stream functions
