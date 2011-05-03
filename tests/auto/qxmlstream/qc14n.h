@@ -47,17 +47,9 @@ QT_FORWARD_DECLARE_CLASS(QString)
 class QC14N
 {
 public:
-    enum Option
-    {
-        IgnoreProcessingInstruction,
-        IgnoreComments
-    };
-    typedef QFlags<Option> Options;
-
     static bool isEqual(QIODevice *const firstDocument,
                         QIODevice *const secondDocument,
-                        QString *const message = 0,
-                        const Options options = Options());
+                        QString *const message = 0);
 
 private:
     static bool isDifferent(const QXmlStreamReader &r1,
@@ -76,8 +68,7 @@ private:
  */
 bool QC14N::isEqual(QIODevice *const firstDocument,
                     QIODevice *const secondDocument,
-                    QString *const message,
-                    const Options options)
+                    QString *const message)
 {
     qDebug() << Q_FUNC_INFO;
     Q_ASSERT_X(firstDocument, Q_FUNC_INFO,
@@ -86,10 +77,6 @@ bool QC14N::isEqual(QIODevice *const firstDocument,
                "A valid QIODevice pointer must be supplied");
     Q_ASSERT_X(firstDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
     Q_ASSERT_X(secondDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
-               
-    Q_ASSERT_X(options == Options(), Q_FUNC_INFO,
-               "Not yet implemented.");
-    Q_UNUSED(options);
 
     QXmlStreamReader r1(firstDocument);
     QXmlStreamReader r2(secondDocument);
