@@ -122,15 +122,6 @@ public:
     inline bool operator !=(const QFontMetrics &other) { return !operator==(other); } // 5.0 - remove me
     inline bool operator !=(const QFontMetrics &other) const { return !operator==(other); }
 
-#ifdef QT3_SUPPORT
-    inline QRect boundingRect(const QString &text, int len) const
-        { return boundingRect(text.left(len)); }
-    inline QRect boundingRect(int x, int y, int w, int h, int flags, const QString& str, int len,
-                              int tabstops=0, int *tabarray=0) const
-        { return boundingRect(QRect(x, y, w, h), flags, str.left(len), tabstops, tabarray); }
-    inline QSize size(int flags, const QString& str, int len, int tabstops=0, int *tabarray=0) const
-        { return size(flags, str.left(len), tabstops, tabarray); }
-#endif
 private:
 #if defined(Q_WS_MAC)
     friend class QFontPrivate;

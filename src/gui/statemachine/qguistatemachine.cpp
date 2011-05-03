@@ -155,15 +155,6 @@ static QEvent *cloneEvent(QEvent *e)
         return new QChildEvent(*static_cast<QChildEvent*>(e));
     case QEvent::ChildPolished:
         return new QChildEvent(*static_cast<QChildEvent*>(e));
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInsertedRequest:
-        return new QEvent(*e);
-    case QEvent::ChildInserted:
-        return new QChildEvent(*static_cast<QChildEvent*>(e));
-    case QEvent::LayoutHint:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-#endif
     case QEvent::ChildRemoved:
         return new QChildEvent(*static_cast<QChildEvent*>(e));
     case QEvent::ShowWindowRequest:
@@ -266,15 +257,6 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ShortcutOverride:
         return new QKeyEvent(*static_cast<QKeyEvent*>(e));
 
-#ifdef QT3_SUPPORT
-    case QEvent::Accel:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-    case QEvent::AccelAvailable:
-        Q_ASSERT_X(false, "cloneEvent()", "not implemented");
-        break;
-#endif
-
 #ifndef QT_NO_WHATSTHIS
     case QEvent::WhatsThisClicked:
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
@@ -320,11 +302,6 @@ static QEvent *cloneEvent(QEvent *e)
 #endif
     case QEvent::AcceptDropsChange:
         return new QEvent(*e);
-
-#ifdef QT3_SUPPORT
-    case QEvent::MenubarUpdated:
-        return new QMenubarUpdatedEvent(*static_cast<QMenubarUpdatedEvent*>(e));
-#endif
 
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");

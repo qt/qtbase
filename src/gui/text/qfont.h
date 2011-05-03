@@ -283,14 +283,6 @@ public:
     inline uint resolve() const { return resolve_mask; }
     inline void resolve(uint mask) { resolve_mask = mask; }
 
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QFont defaultFont();
-    static QT3_SUPPORT void setDefaultFont(const QFont &);
-    QT3_SUPPORT void setPixelSizeFloat(qreal);
-    QT3_SUPPORT qreal pointSizeFloat() const { return pointSizeF(); }
-    QT3_SUPPORT void setPointSizeFloat(qreal size) { setPointSizeF(size); }
-#endif
-
 private:
     QFont(QFontPrivate *);
 

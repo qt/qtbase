@@ -189,29 +189,6 @@ QSound::QSound(const QString& filename, QObject* parent)
     server().init(this);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-
-    Constructs a QSound object from the file specified by the given \a
-    filename and with the given \a parent and \a name. Use the
-    QSound() construcor and QObject::setObjectName() instead.
-
-    \oldcode
-        QSound *mySound = new QSound(filename, parent, name);
-    \newcode
-        QSounc *mySound = new QSound(filename, parent);
-        mySound->setObjectName(name);
-    \endcode
-*/
-QSound::QSound(const QString& filename, QObject* parent, const char* name)
-    : QObject(*new QSoundPrivate(filename), parent)
-{
-    setObjectName(QString::fromAscii(name));
-    server().init(this);
-}
-#endif
-
 /*!
     Destroys this sound object. If the sound is not finished playing,
     the stop() function is called before the sound object is

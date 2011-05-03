@@ -252,17 +252,6 @@ QRegion::QRegion(int x, int y, int w, int h, RegionType t)
     d = tmp.d;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use the constructor tha takes a Qt::FillRule as the second
-    argument instead.
-*/
-QRegion::QRegion(const QPolygon &pa, bool winding)
-{
-    new (this) QRegion(pa, winding ? Qt::WindingFill : Qt::OddEvenFill);
-}
-#endif
-
 /*!
     \fn QRegion::~QRegion()
     \internal

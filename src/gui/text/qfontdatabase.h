@@ -45,10 +45,6 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qfont.h>
-#ifdef QT3_SUPPORT
-#include <QtCore/qstringlist.h>
-#include <QtCore/qlist.h>
-#endif
 
 QT_BEGIN_HEADER
 

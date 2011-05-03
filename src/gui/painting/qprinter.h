@@ -143,10 +143,6 @@ public:
         DuplexShortSide
     };
 
-#ifdef QT3_SUPPORT
-    enum PrinterOption { PrintToFile, PrintSelection, PrintPageRange };
-#endif // QT3_SUPPORT
-
     void setOutputFormat(OutputFormat format);
     OutputFormat outputFormat() const;
 
@@ -259,33 +255,6 @@ public:
     void setPageMargins(qreal left, qreal top, qreal right, qreal bottom, Unit unit);
     void getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, Unit unit) const;
 
-#ifdef QT3_SUPPORT
-#ifdef Q_WS_MAC
-    QT3_SUPPORT bool pageSetup(QWidget *parent = 0);
-    QT3_SUPPORT bool printSetup(QWidget *parent = 0);
-#endif
-
-    QT3_SUPPORT bool setup(QWidget *parent = 0);
-
-    QT3_SUPPORT void setMinMax(int minPage, int maxPage);
-    QT3_SUPPORT int minPage() const;
-    QT3_SUPPORT int maxPage() const;
-
-    QT3_SUPPORT void setCollateCopiesEnabled(bool);
-    QT3_SUPPORT bool collateCopiesEnabled() const;
-
-    QT3_SUPPORT void setOptionEnabled(PrinterOption, bool enable);
-    QT3_SUPPORT bool isOptionEnabled(PrinterOption) const;
-
-    inline QT3_SUPPORT QSize margins() const;
-    inline QT3_SUPPORT void margins(uint *top, uint *left, uint *bottom, uint *right) const;
-
-    inline QT3_SUPPORT bool aborted() { return printerState() == Aborted; }
-
-    QT3_SUPPORT void setOutputToFile(bool);
-    inline QT3_SUPPORT bool outputToFile() const { return !outputFileName().isEmpty(); }
-#endif
-
 protected:
     int metric(PaintDeviceMetric) const;
     void setEngines(QPrintEngine *printEngine, QPaintEngine *paintEngine);
@@ -304,29 +273,6 @@ private:
     friend class QTextDocument;
     friend class QPageSetupWidget;
 };
-
-#ifdef QT3_SUPPORT
-inline QSize QPrinter::margins() const
-{
-    QRect page = pageRect();
-    QRect paper = paperRect();
-    return QSize(page.left() - paper.left(), page.top() - paper.top());
-}
-
-inline void QPrinter::margins(uint *top, uint *left, uint *bottom, uint *right) const
-{
-    QRect page = pageRect();
-    QRect paper = paperRect();
-    if (top)
-        *top = page.top() - paper.top();
-    if (left)
-        *left = page.left() - paper.left();
-    if (bottom)
-        *bottom = paper.bottom() - page.bottom();
-    if (right)
-        *right = paper.right() - page.right();
-}
-#endif
 
 #endif // QT_NO_PRINTER
 

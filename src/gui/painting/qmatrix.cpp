@@ -731,42 +731,6 @@ QPainterPath QMatrix::map(const QPainterPath &path) const
 }
 
 /*!
-    \fn QRegion QMatrix::mapToRegion(const QRect &rectangle) const
-
-    Returns the transformed rectangle \a rectangle as a QRegion
-    object. A rectangle which has been rotated or sheared may result
-    in a non-rectangular region being returned.
-
-    Use the mapToPolygon() or map() function instead.
-*/
-#ifdef QT3_SUPPORT
-QRegion QMatrix::mapToRegion(const QRect &rect) const
-{
-    QRegion result;
-    if (isIdentity()) {
-        result = rect;
-    } else if (m12() == 0.0F && m21() == 0.0F) {
-        int x = qRound(m11()*rect.x() + dx());
-        int y = qRound(m22()*rect.y() + dy());
-        int w = qRound(m11()*rect.width());
-        int h = qRound(m22()*rect.height());
-        if (w < 0) {
-            w = -w;
-            x -= w - 1;
-        }
-        if (h < 0) {
-            h = -h;
-            y -= h - 1;
-        }
-        result = QRect(x, y, w, h);
-    } else {
-        result = QRegion(mapToPolygon(rect));
-    }
-    return result;
-
-}
-#endif
-/*!
     \fn QPolygon QMatrix::mapToPolygon(const QRect &rectangle) const
 
     Creates and returns a QPolygon representation of the given \a

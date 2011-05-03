@@ -64,11 +64,6 @@
 #include <QtGui/qtextdocumentfragment.h>
 #include <QtGui/qclipboard.h>
 
-#ifdef QT3_SUPPORT
-#include <QtGui/qtextobject.h>
-#include <QtGui/qtextlayout.h>
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

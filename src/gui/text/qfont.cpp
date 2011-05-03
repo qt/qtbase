@@ -1096,18 +1096,6 @@ int QFont::pixelSize() const
     return d->request.pixelSize;
 }
 
-#ifdef QT3_SUPPORT
-/*! \obsolete
-
-  Sets the logical pixel height of font characters when shown on
-  the screen to \a pixelSize.
-*/
-void QFont::setPixelSizeFloat(qreal pixelSize)
-{
-    setPixelSize((int)pixelSize);
-}
-#endif
-
 /*!
   \fn bool QFont::italic() const
 
@@ -1874,43 +1862,6 @@ QFont QFont::resolve(const QFont &other) const
     \fn void QFont::resolve(uint mask)
     \internal
 */
-
-#ifdef QT3_SUPPORT
-
-/*! \obsolete
-
-  Please use QApplication::font() instead.
-*/
-QFont QFont::defaultFont()
-{
-    return QApplication::font();
-}
-
-/*! \obsolete
-
-  Please use QApplication::setFont() instead.
-*/
-void QFont::setDefaultFont(const QFont &f)
-{
-    QApplication::setFont(f);
-}
-
-/*!
-    \fn qreal QFont::pointSizeFloat() const
-    \compat
-
-    Use pointSizeF() instead.
-*/
-
-/*!
-    \fn void QFont::setPointSizeFloat(qreal size)
-    \compat
-
-    Use setPointSizeF() instead.
-*/
-#endif
-
-
 
 
 /*****************************************************************************
