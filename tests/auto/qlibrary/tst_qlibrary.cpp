@@ -468,7 +468,7 @@ void tst_QLibrary::errorString()
             }
             break;}
         default:
-            Q_ASSERT(0);
+            QFAIL(qPrintable(QString("Unknown operation: %1").arg(operation)));
             break;
     }
     QRegExp re(errorString);
