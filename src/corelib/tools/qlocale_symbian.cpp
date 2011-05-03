@@ -133,6 +133,7 @@ static const symbianToISO symbian_to_iso_list[] = {
     { ELangHebrew,              "he_IL", "he" },    // 57
     { ELangHindi,               "hi_IN", "hi" },    // 58
     { ELangIndonesian,          "id_ID", "id" },    // 59
+    { 63/*ELangKazakh*/,        "kk_KZ", "kk" },    // 63
     { ELangKorean,              "ko_KO", "ko" },    // 65
     { ELangLatvian,             "lv_LV", "lv" },    // 67
     { ELangLithuanian,          "lt_LT", "lt" },    // 68
