@@ -51,7 +51,6 @@
 #include <qpainterpath.h>
 #include <qdebug.h>
 #include <qhash.h>
-#include <qlabel.h>
 #include <qbitmap.h>
 #include <qmath.h>
 
