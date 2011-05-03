@@ -343,7 +343,6 @@ protected:
 private:
     friend class QFontEngineFTRawFont;
 
-    QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const;
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
     GlyphFormat defaultFormat;
