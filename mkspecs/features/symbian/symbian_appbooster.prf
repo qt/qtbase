@@ -1,0 +1,32 @@
+contains(TEMPLATE, ".*app") {
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+
+    symbian-abld|symbian-sbsv2 {
+        LITE_REG_TARGET = $$_PRO_FILE_PWD_
+    } else {
+        contains(DESTDIR, "/.*") {
+            LITE_REG_TARGET = $$DESTDIR
+        } else:isEmpty(DESTDIR) {
+            LITE_REG_TARGET = $$OUT_PWD
+        } else {
+            LITE_REG_TARGET = $$OUT_PWD/$$DESTDIR
+        }
+    }
+
+    LITE_REG_TARGET = $${LITE_REG_TARGET}/$${baseTarget}.applite
+    LITE_REG_TEMPLATE = $$[QT_INSTALL_DATA]/mkspecs/common/symbian/template.applite
+
+    lite_reg_copy.input = LITE_REG_TEMPLATE
+    lite_reg_copy.output = $$LITE_REG_TARGET
+    lite_reg_copy.variable_out = PRE_TARGETDEPS
+    lite_reg_copy.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+    lite_reg_copy.CONFIG += no_link
+    QMAKE_EXTRA_COMPILERS += lite_reg_copy
+
+    isEmpty(LITE_IMPORT_DIR): LITE_IMPORT_DIR = /private/20034884/import/apps
+    lite_deployment.sources += $$LITE_REG_TARGET
+    lite_deployment.path = $$LITE_IMPORT_DIR
+    DEPLOYMENT += lite_deployment
+
+    LIBS += -lqDeclarativeBooster.dll
+}
