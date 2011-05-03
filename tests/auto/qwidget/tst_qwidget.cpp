@@ -6337,11 +6337,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         expected =
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 1));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6433,11 +6437,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 
@@ -6529,11 +6537,15 @@ void tst_QWidget::compatibilityChildInsertedEvents()
 #endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-            << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
-            << qMakePair(&widget, QEvent::UpdateRequest)
-#endif
-            ;
+            << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
+
+#ifndef QT_MAC_USE_CARBON
+#ifdef QT_MAC_USE_COCOA
+        if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+#endif // QT_MAC_USE_COCOA
+            expected << qMakePair(&widget, QEvent::UpdateRequest);
+#endif // !QT_MAC_USE_CARBON
+
         QCOMPARE(spy.eventList(), expected);
     }
 }
