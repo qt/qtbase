@@ -3239,18 +3239,21 @@ struct MyData
 {
     void *ptr;
     MyData() : ptr(this) {}
-    ~MyData() { Q_ASSERT(ptr == this); }
+    ~MyData()
+    {
+        if (ptr != this) qWarning("MyData::~MyData(): object has moved");
+    }
     MyData(const MyData& o) : ptr(this) { Q_ASSERT(o.ptr == &o); }
     MyData &operator=(const MyData &o)
     {
-        Q_ASSERT(ptr == this);
-        Q_ASSERT(o.ptr == &o);
+        if (ptr != this) qWarning("MyData::operator=(): object has moved");
+        if (o.ptr != &o) qWarning("MyData::operator=(): other object has moved");
         return *this;
     }
     bool operator==(const MyData &o) const
     {
-        Q_ASSERT(ptr == this);
-        Q_ASSERT(o.ptr == &o);
+        if (ptr != this) qWarning("MyData::operator==(): object has moved");
+        if (o.ptr != &o) qWarning("MyData::operator==(): other object has moved");
         return true;
     }
 };
