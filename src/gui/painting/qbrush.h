@@ -126,12 +126,6 @@ public:
     bool operator==(const QBrush &b) const;
     inline bool operator!=(const QBrush &b) const { return !(operator==(b)); }
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT operator const QColor&() const;
-    QT3_SUPPORT QPixmap *pixmap() const;
-    inline QT3_SUPPORT void setPixmap(const QPixmap &pixmap) { setTexture(pixmap); }
-#endif
-
 private:
 #if defined(Q_WS_X11)
     friend class QX11PaintEngine;
@@ -184,10 +178,6 @@ inline const QColor &QBrush::color() const { return d->color; }
 inline const QMatrix &QBrush::matrix() const { return d->transform.toAffine(); }
 inline QTransform QBrush::transform() const { return d->transform; }
 inline bool QBrush::isDetached() const { return d->ref == 1; }
-
-#ifdef QT3_SUPPORT
-inline QBrush::operator const QColor&() const { return d->color; }
-#endif
 
 
 /*******************************************************************************

@@ -2463,30 +2463,6 @@ void QColor::invalidate()
     ct.argb.pad = 0;
 }
 
-#ifdef QT3_SUPPORT
-
-/*!
-    Returns the pixel value used by the underlying window system to refer to a
-    color.
-
-    Use QColormap::pixel() instead.
-
-    \oldcode
-        QColor myColor;
-        uint pixel = myColor.pixel(screen);
-    \newcode
-        QColormap cmap = QColormap::instance(screen);
-        uint pixel  = cmap.pixel(*this);
-    \endcode
-*/
-uint QColor::pixel(int screen) const
-{
-    QColormap cmap = QColormap::instance(screen);
-    return cmap.pixel(*this);
-}
-
-#endif // QT3_SUPPORT
-
 /*****************************************************************************
   QColor stream functions
  *****************************************************************************/

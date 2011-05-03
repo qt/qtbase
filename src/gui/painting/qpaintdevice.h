@@ -111,54 +111,11 @@ protected:
 private:
     Q_DISABLE_COPY(QPaintDevice)
 
-#if defined(Q_WS_X11) && defined(QT3_SUPPORT)
-public:
-    QT3_SUPPORT Display *x11Display() const;
-    QT3_SUPPORT int x11Screen() const;
-    QT3_SUPPORT int x11Depth() const;
-    QT3_SUPPORT int x11Cells() const;
-    QT3_SUPPORT Qt::HANDLE x11Colormap() const;
-    QT3_SUPPORT bool x11DefaultColormap() const;
-    QT3_SUPPORT void *x11Visual() const;
-    QT3_SUPPORT bool x11DefaultVisual() const;
-
-    static QT3_SUPPORT Display *x11AppDisplay();
-    static QT3_SUPPORT int x11AppScreen();
-    static QT3_SUPPORT int x11AppDepth(int screen = -1);
-    static QT3_SUPPORT int x11AppCells(int screen = -1);
-    static QT3_SUPPORT Qt::HANDLE x11AppRootWindow(int screen = -1);
-    static QT3_SUPPORT Qt::HANDLE x11AppColormap(int screen = -1);
-    static QT3_SUPPORT void *x11AppVisual(int screen = -1);
-    static QT3_SUPPORT bool x11AppDefaultColormap(int screen =-1);
-    static QT3_SUPPORT bool x11AppDefaultVisual(int screen =-1);
-    static QT3_SUPPORT int x11AppDpiX(int screen = -1);
-    static QT3_SUPPORT int x11AppDpiY(int screen = -1);
-    static QT3_SUPPORT void x11SetAppDpiX(int, int);
-    static QT3_SUPPORT void x11SetAppDpiY(int, int);
-#endif
-
     friend class QPainter;
     friend class QFontEngineMac;
     friend class QX11PaintEngine;
     friend Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, PaintDeviceMetric metric);
 };
-
-#ifdef QT3_SUPPORT
-QT3_SUPPORT Q_GUI_EXPORT
-void bitBlt(QPaintDevice *dst, int dx, int dy,
-             const QPaintDevice *src, int sx=0, int sy=0, int sw=-1, int sh=-1,
-             bool ignoreMask=false);
-
-QT3_SUPPORT Q_GUI_EXPORT
-void bitBlt(QPaintDevice *dst, int dx, int dy,
-             const QImage *src, int sx=0, int sy=0, int sw=-1, int sh=-1,
-             int conversion_flags=0);
-
-QT3_SUPPORT Q_GUI_EXPORT
-void bitBlt(QPaintDevice *dst, const QPoint &dp,
-            const QPaintDevice *src, const QRect &sr=QRect(0,0,-1,-1),
-            bool ignoreMask=false);
-#endif
 
 /*****************************************************************************
   Inline functions

@@ -53,9 +53,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QPainter;
-#ifndef QT3_SUPPORT
-class QColorGroup;
-#endif
 class QPalette;
 class QPoint;
 class QColor;
@@ -115,23 +112,6 @@ Q_GUI_EXPORT void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &,
                               int lineWidth = 1, const QBrush *fill = 0);
 
 
-#ifdef QT3_SUPPORT
-//
-// Use QStyle::itemRect(), QStyle::drawItem() and QStyle::drawArrow() instead.
-//
-Q_GUI_EXPORT QT3_SUPPORT QRect qItemRect(QPainter *p, Qt::GUIStyle gs, int x, int y, int w, int h,
-                          int flags, bool enabled,
-                          const QPixmap *pixmap, const QString& text, int len=-1);
-
-Q_GUI_EXPORT QT3_SUPPORT void qDrawItem(QPainter *p, Qt::GUIStyle gs, int x, int y, int w, int h,
-                         int flags, const QPalette &pal, bool enabled,
-                         const QPixmap *pixmap, const QString& text,
-                         int len=-1, const QColor* penColor = 0);
-
-Q_GUI_EXPORT QT3_SUPPORT void qDrawArrow(QPainter *p, Qt::ArrowType type, Qt::GUIStyle style, bool down,
-                          int x, int y, int w, int h,
-                          const QPalette &pal, bool enabled);
-#endif
 
 struct QTileRules
 {

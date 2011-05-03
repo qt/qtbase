@@ -712,36 +712,6 @@ void QBrush::setColor(const QColor &c)
     Sets the brush color to the given \a color.
 */
 
-
-#ifdef QT3_SUPPORT
-
-/*!
-    \fn void QBrush::setPixmap(const QPixmap &pixmap)
-
-    \compat
-
-    Sets a custom pattern for this brush.
-
-    Use setTexture() instead.
-*/
-
-/*!
-    \fn QPixmap *QBrush::pixmap() const
-
-    Returns a pointer to the custom brush pattern.
-
-    Use texture() instead.
-*/
-QPixmap *QBrush::pixmap() const
-{
-    if (d->style != Qt::TexturePattern)
-        return 0;
-    QTexturedBrushData *data  = static_cast<QTexturedBrushData*>(d.data());
-    QPixmap &pixmap = data->pixmap();
-    return pixmap.isNull() ? 0 : &pixmap;
-}
-#endif
-
 /*!
     \fn QPixmap QBrush::texture() const
 
