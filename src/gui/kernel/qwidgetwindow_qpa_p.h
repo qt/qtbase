@@ -68,6 +68,7 @@ protected:
     void handleMouseEvent(QMouseEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
+    void handleWheelEvent(QWheelEvent *);
 
 private:
     QWidget *m_widget;

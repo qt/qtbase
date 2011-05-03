@@ -77,6 +77,10 @@ bool QWidgetWindow::event(QEvent *event)
         handleResizeEvent(static_cast<QResizeEvent *>(event));
         return true;
 
+    case QEvent::Wheel:
+        handleWheelEvent(static_cast<QWheelEvent *>(event));
+        return true;
+
     default:
         break;
     }
@@ -125,6 +129,20 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 void QWidgetWindow::handleCloseEvent(QCloseEvent *)
 {
     m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+}
+
+void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
+{
+    // which child should have it?
+    QWidget *widget = m_widget->childAt(event->pos());
+
+    if (!widget)
+        widget = m_widget;
+
+    QPoint mapped = widget->mapFrom(m_widget, event->pos());
+
+    QWheelEvent translated(mapped, event->globalPos(), event->delta(), event->buttons(), event->modifiers(), event->orientation());
+    QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
 
 QT_END_NAMESPACE
