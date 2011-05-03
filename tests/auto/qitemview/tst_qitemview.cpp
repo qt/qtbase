@@ -297,9 +297,11 @@ void tst_QItemView::nonDestructiveBasicTest()
 #endif
 
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
 
@@ -454,9 +456,11 @@ void tst_QItemView::spider()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -489,9 +493,11 @@ void tst_QItemView::resize()
     // This test needs to be re-thought out, it takes too long and
     // doesn't really catch theproblem.
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -517,9 +523,11 @@ void tst_QItemView::visualRect()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     QCOMPARE(view->visualRect(QModelIndex()), QRect());
@@ -651,9 +659,11 @@ void tst_QItemView::indexAt()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->show();
@@ -685,9 +695,11 @@ void tst_QItemView::scrollTo()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -735,6 +747,7 @@ void tst_QItemView::moveCursor()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
+    QVERIFY(view);
     if (view->objectName() == "QHeaderView")
         return;
 
