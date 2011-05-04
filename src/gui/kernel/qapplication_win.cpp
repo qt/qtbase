@@ -656,7 +656,7 @@ static void qt_win_read_cleartype_settings()
 #endif
 
     int winSmooth;
-    if (SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &winSmooth, 0)) {
+    if (SystemParametersInfo(0x200C /* SPI_GETFONTSMOOTHINGCONTRAST */, 0, &winSmooth, 0)) {
         qt_fontsmoothing_gamma = winSmooth / qreal(1000.0);
     } else {
         qt_fontsmoothing_gamma = 1.0;
