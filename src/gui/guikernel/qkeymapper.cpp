@@ -91,6 +91,8 @@ void QKeyMapper::changeKeyboard()
 {
     instance()->d_func()->clearMappings();
 
+    // ## TODO: Support KeyboardLayoutChange on QPA
+#if 0
     // inform all toplevel widgets of the change
     QEvent e(QEvent::KeyboardLayoutChange);
     QWidgetList list = QApplication::topLevelWidgets();
@@ -98,6 +100,7 @@ void QKeyMapper::changeKeyboard()
         QWidget *w = list.at(i);
         qt_sendSpontaneousEvent(w, &e);
     }
+#endif
 }
 
 Q_GLOBAL_STATIC(QKeyMapper, keymapper)

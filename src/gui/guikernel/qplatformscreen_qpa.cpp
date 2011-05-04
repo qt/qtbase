@@ -40,26 +40,23 @@
 ****************************************************************************/
 
 #include "qplatformscreen_qpa.h"
-#include <QtGui/qapplication.h>
-#include <QtGui/private/qapplication_p.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformintegration_qpa.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/private/qwidget_p.h>
+#include <QtGui/qwindow.h>
 
 /*!
-    Return the given top level widget for a given position.
+    Return the given top level window for a given position.
 
-    Default implementation retrieves a list of all top level widgets and finds the first widget
+    Default implementation retrieves a list of all top level windows and finds the first window
     which contains point \a pos
 */
-QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
+QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 {
-    QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = list.size()-1; i >= 0; --i) {
-        QWidget *w = list[i];
-        //### mask is ignored
-        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
+        QWindow *w = list[i];
+        if (w->visible() && w->geometry().contains(pos))
             return w;
     }
 
@@ -79,20 +76,6 @@ QSize QPlatformScreen::physicalSize() const
     int width = geometry().width() / dpi * qreal(25.4) ;
     int height = geometry().height() / dpi * qreal(25.4) ;
     return QSize(width,height);
-}
-
-Q_GUI_EXPORT extern QWidgetPrivate *qt_widget_private(QWidget *widget);
-QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget)
-{
-    int screenIndex = 0;
-    QWidget *window = widget->window();
-    QWidgetPrivate *windowPrivate = qt_widget_private(window);
-    QTLWExtra * topData = windowPrivate->maybeTopData();
-    if (topData)
-        screenIndex = topData->screenIndex;
-    QPlatformIntegration *integration =
-            QGuiApplicationPrivate::platformIntegration();
-    return integration->screens()[screenIndex];
 }
 
 QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *)

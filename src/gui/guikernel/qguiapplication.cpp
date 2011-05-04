@@ -105,6 +105,8 @@ QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 #endif
 
+QWindowList QGuiApplicationPrivate::window_list;
+
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
 
@@ -156,6 +158,11 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     : QCoreApplicationPrivate(argc, argv, flags)
 {
     self = this;
+}
+
+QWindowList QGuiApplication::topLevelWindows()
+{
+    return QGuiApplicationPrivate::window_list;
 }
 
 static void init_platform(const QString &name, const QString &platformPluginPath)

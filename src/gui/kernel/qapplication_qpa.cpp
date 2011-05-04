@@ -65,6 +65,7 @@
 #include <QPlatformIntegration>
 
 #include "qdesktopwidget_qpa_p.h"
+#include "qwidgetwindow_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -343,13 +344,15 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
 
     // The first screen in a virtual environment should know about all top levels
     if (pi->isVirtualDesktop()) {
-        QWidget *w = (*screen)->topLevelAt(pos);
-        return w;
+        QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->topLevelAt(pos));
+        return w ? w->widget() : 0;
     }
 
     while (screen != end) {
-        if ((*screen)->geometry().contains(pos))
-            return (*screen)->topLevelAt(pos);
+        if ((*screen)->geometry().contains(pos)) {
+            QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->topLevelAt(pos));
+            return w ? w->widget() : 0;
+        }
         ++screen;
     }
     return 0;

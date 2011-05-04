@@ -54,6 +54,7 @@ QT_MODULE(Gui)
 
 class QPaintDevice;
 class QWidget;
+class QWindow;
 class QDialog;
 class QColor;
 class QPalette;
@@ -85,6 +86,7 @@ class QApplication;
 
 template<typename T> class QList;
 typedef QList<QWidget *> QWidgetList;
+typedef QList<QWindow *> QWindowList;
 
 QT_END_NAMESPACE
 QT_END_HEADER

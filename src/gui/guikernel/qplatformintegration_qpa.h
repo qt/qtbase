@@ -56,7 +56,6 @@ QT_MODULE(Gui)
 class QPlatformWindow;
 class QWindow;
 class QBlittable;
-class QWidget;
 class QPlatformEventLoopIntegration;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
@@ -82,7 +81,7 @@ public:
 
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;
-    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
+    virtual void moveToScreen(QWindow *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 

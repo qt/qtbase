@@ -43,7 +43,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QBitmap>
-#include <QApplication>
+#include <QGuiApplication>
 
 #include <QDebug>
 

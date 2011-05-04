@@ -42,7 +42,7 @@
 #include "qplatformwindow_qpa.h"
 
 #include <QtGui/qwindowsysteminterface_qpa.h>
-#include <QtGui/qwidget.h>
+#include <QtGui/qwindow.h>
 
 class QPlatformWindowPrivate
 {
@@ -52,7 +52,7 @@ class QPlatformWindowPrivate
 };
 
 /*!
-    Constructs a platform window with the given top level widget.
+    Constructs a platform window with the given top level window.
 */
 
 QPlatformWindow::QPlatformWindow(QWindow *window)
@@ -63,14 +63,14 @@ QPlatformWindow::QPlatformWindow(QWindow *window)
 }
 
 /*!
-    Virtual destructor does not delete its top level widget.
+    Virtual destructor does not delete its top level window.
 */
 QPlatformWindow::~QPlatformWindow()
 {
 }
 
 /*!
-    Returnes the widget which belongs to the QPlatformWindow
+    Returnes the window which belongs to the QPlatformWindow
 */
 QWindow *QPlatformWindow::window() const
 {
@@ -82,7 +82,7 @@ QWindow *QPlatformWindow::window() const
     This function is called by Qt whenever a window is moved or the window is resized. The resize
     can happen programatically(from ie. user application) or by the window manager. This means that
     there is no need to call this function specifically from the window manager callback, instead
-    call QWindowSystemInterface::handleGeometryChange(QWidget *w, const QRect &newRect);
+    call QWindowSystemInterface::handleGeometryChange(QWindow *w, const QRect &newRect);
 */
 void QPlatformWindow::setGeometry(const QRect &rect)
 {
@@ -122,7 +122,7 @@ Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 WId QPlatformWindow::winId() const { return WId(0); }
 
 /*!
-    This function is called to enable native child widgets in QPA. It is common not to support this
+    This function is called to enable native child window in QPA. It is common not to support this
     feature in Window systems, but can be faked. When this function is called all geometry of this
     platform window will be relative to the parent.
 */
@@ -162,14 +162,14 @@ void QPlatformWindow::setOpacity(qreal level)
   Reimplement to let Qt be able to request activation/focus for a window
 
   Some window systems will probably not have callbacks for this functionality,
-  and then calling QWindowSystemInterface::handleWindowActivated(QWidget *w)
+  and then calling QWindowSystemInterface::handleWindowActivated(QWindow *w)
   would be sufficient.
 
   If the window system has some event handling/callbacks then call
-  QWindowSystemInterface::handleWindowActivated(QWidget *w) when the window system
+  QWindowSystemInterface::handleWindowActivated(QWindow *w) when the window system
   gives the notification.
 
-  Default implementation calls QWindowSystem::handleWindowActivated(QWidget *w)
+  Default implementation calls QWindowSystem::handleWindowActivated(QWindow *w)
 */
 void QPlatformWindow::requestActivateWindow()
 {
@@ -193,16 +193,16 @@ QPlatformGLContext *QPlatformWindow::glContext() const
 
     \brief The QPlatformWindow class provides an abstraction for top-level windows.
 
-    The QPlatformWindow abstraction is used by QWidget for all its top level widgets. It is being
+    The QPlatformWindow abstraction is used by QWindow for all its top level windows. It is being
     created by calling the createPlatformWindow function in the loaded QPlatformIntegration
     instance.
 
     QPlatformWindow is used to signal to the windowing system, how Qt persieves its frame.
     However, it is not concerned with how Qt renders into the window it represents.
 
-    Top level QWidgets(tlw) will always have a QPlatformWindow. However, it is not necessary for
-    all tlw to have a QWindowSurface. This is the case for QGLWidget. And could be the case for
-    widgets where some  3.party renders into it.
+    Visible QWindows will always have a QPlatformWindow. However, it is not necessary for
+    all windows to have a QWindowSurface. This is the case for QGLWidget. And could be the case for
+    windows where some  3.party renders into it.
 
     The platform specific window handle can be retrieved by the winId function.
 
@@ -212,5 +212,5 @@ QPlatformGLContext *QPlatformWindow::glContext() const
     The only way to retrieve a QPlatformGLContext in QPA is by calling the glContext() function
     on QPlatformWindow.
 
-    \sa QWindowSurface, QWidget
+    \sa QWindowSurface, QWindow
 */

@@ -145,7 +145,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const
+    \fn QPlatformWindow *createPlatformWindow(QWindow *window, WId winId = 0) const
 
     Factory function for QPlatformWindow. The widget parameter is a pointer to the top level
     widget(tlw) which the QPlatformWindow is suppose to be created for. The WId handle is actually
@@ -158,27 +158,27 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     created.
 
     \sa QPlatformWindow, QPlatformWindowFormat
-    \sa createWindowSurface(QWidget *widget, WId winId) const
+    \sa createWindowSurface(QWindow *window, WId winId) const
 */
 
 /*!
-    \fn QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const
+    \fn QWindowSurface *createWindowSurface(QWindow *window, WId winId) const
 
-    Factory function for QWindowSurface. The QWidget parameter is a pointer to the
+    Factory function for QWindowSurface. The QWindow parameter is a pointer to the
     top level widget(tlw) the window surface is created for. A QPlatformWindow is always created
     before the QWindowSurface for tlw where the widget also requires a WindowSurface. It is
-    possible to create top level QWidgets without a QWindowSurface by specifying
+    possible to create top level QWindow without a QWindowSurface by specifying
     QPlatformWindowFormat::setWindowSurface(false) for the tlw QPlatformWindowFormat.
 
     \sa QWindowSurface
-    \sa createPlatformWindow(QWidget *widget, WId winId = 0) const
+    \sa createPlatformWindow(QWindow *window, WId winId = 0) const
 */
 
 /*!
-    \fn void moveToScreen(QWidget *window, int screen)
+    \fn void moveToScreen(QWindow *window, int screen)
 
-    This function is called when a QWidget is displayed on screen, or the QWidget is to be
-    displayed on a new screen. The QWidget parameter is a pointer to the top level widget and
+    This function is called when a QWindow is displayed on screen, or the QWindow is to be
+    displayed on a new screen. The QWindow parameter is a pointer to the top level widget and
     the int parameter is the index to the screen in QList<QPlatformScreen *> screens() const.
 
     Default implementation does nothing.

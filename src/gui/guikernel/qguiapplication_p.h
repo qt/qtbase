@@ -149,6 +149,8 @@ public:
     static QClipboard *qt_clipboard;
 #endif
 
+    static QWindowList window_list;
+
 #ifndef QT_NO_CURSOR
     QList<QCursor> cursor_list;
 #endif

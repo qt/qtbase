@@ -51,7 +51,7 @@
 
 #include <QtGui/qcursor.h>
 #include <QtGui/qimage.h>
-#include <QtGui/qwidget.h>
+#include <QtGui/qwindowdefs.h>
 
 QT_BEGIN_HEADER
 
@@ -72,13 +72,10 @@ public:
     virtual QSize physicalSize() const;
     //jl: should setDirty be removed.
     virtual void setDirty(const QRect &) {}
-    virtual QWidget *topLevelAt(const QPoint &point) const;
+    virtual QWindow *topLevelAt(const QPoint &point) const;
 
     //jl: should this function be in QPlatformIntegration
-    //jl: maybe screenForWidget is a better name?
-    static QPlatformScreen *platformScreenForWidget(const QWidget *widget);
-
-    // temporary convenience
+    //jl: maybe screenForWindow is a better name?
     static QPlatformScreen *platformScreenForWindow(const QWindow *window);
 };
 

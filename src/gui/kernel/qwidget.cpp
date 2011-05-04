@@ -1302,7 +1302,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (desktopWidget) {
         int screen = desktopWidget->d_func()->topData()->screenIndex;
         QPlatformIntegration *platform = QGuiApplicationPrivate::platformIntegration();
-        platform->moveToScreen(q, screen);
+        platform->moveToScreen(q->windowHandle(), screen);
     }
 #else
     Q_UNUSED(desktopWidget);

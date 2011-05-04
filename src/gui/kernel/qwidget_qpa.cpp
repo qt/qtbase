@@ -119,7 +119,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 //    first check children. and create them if necessary
 //    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
 
-    QGuiApplicationPrivate::platformIntegration()->moveToScreen(q, topData()->screenIndex);
+    QGuiApplicationPrivate::platformIntegration()->moveToScreen(win, topData()->screenIndex);
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
@@ -216,7 +216,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         // only if it is already created
         if (q->testAttribute(Qt::WA_WState_Created)) {
             QPlatformIntegration *platform = QGuiApplicationPrivate::platformIntegration();
-            platform->moveToScreen(q, targetScreen);
+            platform->moveToScreen(q->windowHandle(), targetScreen);
         }
     }
 }
@@ -638,7 +638,7 @@ int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
 
-    QPlatformScreen *screen = QPlatformScreen::platformScreenForWidget(this);
+    QPlatformScreen *screen = QPlatformScreen::platformScreenForWindow(windowHandle());
     if (!screen) {
         if (m == PdmDpiX || m == PdmDpiY)
               return 72;
