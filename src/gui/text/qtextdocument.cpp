@@ -2076,6 +2076,10 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
             html += QLatin1String(" font-size:");
             html += QString::number(defaultCharFormat.fontPointSize());
             html += QLatin1String("pt;");
+        } else if (defaultCharFormat.hasProperty(QTextFormat::FontPixelSize)) {
+            html += QLatin1String(" font-size:");
+            html += QString::number(defaultCharFormat.intProperty(QTextFormat::FontPixelSize));
+            html += QLatin1String("px;");
         }
 
         html += QLatin1String(" font-weight:");
@@ -2156,6 +2160,10 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             html += QLatin1Char(';');
             attributesEmitted = true;
         }
+    } else if (format.hasProperty(QTextFormat::FontPixelSize)) {
+        html += QLatin1String(" font-size:");
+        html += QString::number(format.intProperty(QTextFormat::FontPixelSize));
+        html += QLatin1String("px;");
     }
 
     if (format.hasProperty(QTextFormat::FontWeight)
