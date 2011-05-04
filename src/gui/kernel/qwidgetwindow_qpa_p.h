@@ -72,6 +72,7 @@ protected:
 
 private:
     QWidget *m_widget;
+    QWeakPointer<QWidget> m_implicit_mouse_grabber;
 };
 
 QT_END_NAMESPACE

@@ -91,12 +91,18 @@ bool QWidgetWindow::event(QEvent *event)
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
     // which child should have it?
-    QWidget *widget = m_widget->childAt(event->pos());
+    QWidget *widget = m_implicit_mouse_grabber ? m_implicit_mouse_grabber.data() : m_widget->childAt(event->pos());
 
     // TODO: make sure mouse release is delivered to same widget that got the press event
 
     if (!widget)
         widget = m_widget;
+
+    if (event->type() == QEvent::MouseButtonPress && !m_implicit_mouse_grabber)
+        m_implicit_mouse_grabber = widget;
+
+    if (event->buttons() == Qt::NoButton)
+        m_implicit_mouse_grabber.clear();
 
     QPoint mapped = widget->mapFrom(m_widget, event->pos());
 
