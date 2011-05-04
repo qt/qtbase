@@ -672,13 +672,13 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
     QEvent event(QEvent::Enter);
-    QApplication::sendSpontaneousEvent(e->enter.data(), &event);
+    QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
 
 void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e)
 {
     QEvent event(QEvent::Leave);
-    QApplication::sendSpontaneousEvent(e->leave.data(), &event);
+    QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);
 }
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *)

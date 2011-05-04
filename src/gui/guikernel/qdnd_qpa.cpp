@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qapplication.h"
+#include "qguiapplication.h"
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -95,7 +95,7 @@ public:
         // ### Temporary workaround for 4.2-rc1!!! To prevent flickering when
         // using drag'n drop in a client application. (task 126956)
         // setAttribute() should be done unconditionally!
-        if (QApplication::type() == QApplication::GuiServer)
+        // if (QApplication::type() == QApplication::GuiServer)
             setAttribute(Qt::WA_TransparentForMouseEvents);
     }
 
@@ -157,13 +157,13 @@ void QDragManager::updateCursor()
         if (qt_qws_dnd_deco)
             qt_qws_dnd_deco->show();
         if (currentActionForOverrideCursor != global_accepted_action) {
-            QApplication::changeOverrideCursor(QCursor(dragCursor(global_accepted_action), 0, 0));
+            QGuiApplication::changeOverrideCursor(QCursor(dragCursor(global_accepted_action), 0, 0));
             currentActionForOverrideCursor = global_accepted_action;
         }
     } else {
-        QCursor *overrideCursor = QApplication::overrideCursor();
+        QCursor *overrideCursor = QGuiApplication::overrideCursor();
         if (!overrideCursor || overrideCursor->shape() != Qt::ForbiddenCursor) {
-            QApplication::changeOverrideCursor(QCursor(Qt::ForbiddenCursor));
+            QGuiApplication::changeOverrideCursor(QCursor(Qt::ForbiddenCursor));
             currentActionForOverrideCursor = Qt::IgnoreAction;
         }
         if (qt_qws_dnd_deco)
@@ -242,7 +242,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                 if (object->target() != cw) {
                     if (object->target()) {
                         QDragLeaveEvent dle;
-                        QApplication::sendEvent(object->target(), &dle);
+                        QCoreApplication::sendEvent(object->target(), &dle);
                         willDrop = false;
                         global_accepted_action = Qt::IgnoreAction;
                         updateCursor();
@@ -253,7 +253,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                         object->d_func()->target = cw;
                         QDragEnterEvent dee(cw->mapFromGlobal(me->globalPos()), possible_actions, dropData,
                                             me->buttons(), me->modifiers());
-                        QApplication::sendEvent(object->target(), &dee);
+                        QCoreApplication::sendEvent(object->target(), &dee);
                         willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
                         global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
                         updateCursor();
@@ -266,7 +266,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                         dme.setDropAction(global_accepted_action);
                         dme.accept();
                     }
-                    QApplication::sendEvent(cw, &dme);
+                    QCoreApplication::sendEvent(cw, &dme);
                     willDrop = dme.isAccepted();
                     global_accepted_action = willDrop ? dme.dropAction() : Qt::IgnoreAction;
                     updatePixmap();
@@ -284,7 +284,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
             if (restoreCursor) {
                 willDrop = false;
 #ifndef QT_NO_CURSOR
-                QApplication::restoreOverrideCursor();
+                QGuiApplication::restoreOverrideCursor();
 #endif
                 restoreCursor = false;
             }
@@ -296,7 +296,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
 
                 QDropEvent de(object->target()->mapFromGlobal(me->globalPos()), possible_actions, dropData,
                               me->buttons(), me->modifiers());
-                QApplication::sendEvent(object->target(), &de);
+                QCoreApplication::sendEvent(object->target(), &de);
                 if (de.isAccepted())
                     global_accepted_action = de.dropAction();
                 else
@@ -370,12 +370,12 @@ void QDragManager::cancel(bool deleteSource)
 
     if (object->target()) {
         QDragLeaveEvent dle;
-        QApplication::sendEvent(object->target(), &dle);
+        QCoreApplication::sendEvent(object->target(), &dle);
     }
 
 #ifndef QT_NO_CURSOR
     if (restoreCursor) {
-        QApplication::restoreOverrideCursor();
+        QGuiApplication::restoreOverrideCursor();
         restoreCursor = false;
     }
 #endif

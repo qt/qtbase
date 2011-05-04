@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 #include "qplatformdefs.h"
-#include "qapplication.h"
+#include "qcoreapplication.h"
 #include "qeventdispatcher_qpa_p.h"
 #include "private/qeventdispatcher_unix_p.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include "qplatformeventloopintegration_qpa.h"
 
 #include <QWindowSystemInterface>
@@ -216,7 +216,7 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     // handle gui and posted events
     d->interrupt = false;
-    QApplication::sendPostedEvents();
+    QCoreApplication::sendPostedEvents();
 
     while (!d->interrupt) {        // also flushes output buffer ###can be optimized
         QWindowSystemInterfacePrivate::WindowSystemEvent *event;
