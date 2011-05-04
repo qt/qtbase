@@ -5,11 +5,6 @@
 
 HEADERS += \
         image/qbitmap.h \
-        image/qicon.h \
-        image/qicon_p.h \
-        image/qiconloader_p.h \
-        image/qiconengine.h \
-        image/qiconengineplugin.h \
         image/qimage.h \
         image/qimage_p.h \
         image/qimageiohandler.h \
@@ -36,8 +31,6 @@ HEADERS += \
 
 SOURCES += \
         image/qbitmap.cpp \
-        image/qicon.cpp \
-        image/qiconloader.cpp \
         image/qimage.cpp \
         image/qimageiohandler.cpp \
         image/qimagereader.cpp \
@@ -50,8 +43,6 @@ SOURCES += \
         image/qpixmapdata.cpp \
         image/qpixmapdatafactory.cpp \
         image/qpixmapfilter.cpp \
-        image/qiconengine.cpp \
-        image/qiconengineplugin.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
