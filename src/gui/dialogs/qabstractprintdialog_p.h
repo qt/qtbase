@@ -73,6 +73,8 @@ class QAbstractPrintDialogPrivate : public QDialogPrivate
 public:
     QAbstractPrintDialogPrivate()
         : printer(0), pd(0), ownsPrinter(false)
+        , options(QAbstractPrintDialog::PrintToFile | QAbstractPrintDialog::PrintPageRange |
+                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize)
     {
     }
 
@@ -81,6 +83,8 @@ public:
     bool ownsPrinter;
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
+
+    QAbstractPrintDialog::PrintDialogOptions options;
 
     virtual void setTabs(const QList<QWidget *> &) {}
     void setPrinter(QPrinter *newPrinter);

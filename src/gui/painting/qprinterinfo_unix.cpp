@@ -45,9 +45,9 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qprintdialog.h>
 #include <qlibrary.h>
 #include <qtextstream.h>
+#include <qcoreapplication.h>
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #  include <private/qcups_p.h>
@@ -130,10 +130,8 @@ void qt_perhapsAddPrinter(QList<QPrinterDescription> *printers, const QString &n
         if (printers->at(i).samePrinter(name))
             return;
 
-#ifndef QT_NO_PRINTDIALOG
     if (host.isEmpty())
-        host = QPrintDialog::tr("locally connected");
-#endif
+        host = QCoreApplication::translate("QPrinter", "locally connected");
     printers->append(QPrinterDescription(name.simplified(), host.simplified(), comment.simplified(), aliases));
 }
 
@@ -153,11 +151,9 @@ void qt_parsePrinterDesc(QString printerDesc, QList<QPrinterDescription> *printe
         if (j > 0 && j < i) {
             printerName = printerDesc.left(j);
             aliases = printerDesc.mid(j + 1, i - j - 1).split(QLatin1Char('|'));
-#ifndef QT_NO_PRINTDIALOG
             // try extracting a comment from the aliases
-            printerComment = QPrintDialog::tr("Aliases: %1")
+            printerComment = QCoreApplication::translate("QPrinter", "Aliases: %1")
                              .arg(aliases.join(QLatin1String(", ")));
-#endif
         } else {
             printerName = printerDesc.left(i);
         }
@@ -379,10 +375,8 @@ char *qt_parsePrintersConf(QList<QPrinterDescription> *printers, bool *found)
                 if (j > 0) {
                     // try extracting a comment from the aliases
                     aliases = printerDesc.mid(j + 1, i - j - 1).split(QLatin1Char('|'));
-#ifndef QT_NO_PRINTDIALOG
-                    printerComment = QPrintDialog::tr("Aliases: %1")
+                    printerComment = QCoreApplication::translate("QPrinter", "Aliases: %1")
                                      .arg(aliases.join(QLatin1String(", ")));
-#endif
                 }
                 // look for signs of this being a remote printer
                 i = printerDesc.indexOf(
@@ -593,9 +587,6 @@ void qt_parseEtcLpMember(QList<QPrinterDescription> *printers)
     if (dirs.isEmpty())
         return;
 
-#ifdef QT_NO_PRINTDIALOG
-    Q_UNUSED(printers);
-#else
     QString tmp;
     for (int i = 0; i < dirs.size(); ++i) {
         QFileInfo printer = dirs.at(i);
@@ -605,10 +596,9 @@ void qt_parseEtcLpMember(QList<QPrinterDescription> *printers)
         // decent way to locate aliases and remote printers.
         if (printer.isFile())
             qt_perhapsAddPrinter(printers, printer.fileName(),
-                                 QPrintDialog::tr("unknown"),
+                                 QCoreApplication::translate("QPrinter", "unknown"),
                                  QLatin1String(""));
     }
-#endif
 }
 
 // IRIX 6.x
@@ -801,12 +791,10 @@ int qt_getLprPrinters(QList<QPrinterDescription>& printers)
             dollarPrinter = QString::fromLocal8Bit(qgetenv("NPRINTER"));
         if (dollarPrinter.isEmpty())
             dollarPrinter = QString::fromLocal8Bit(qgetenv("NGPRINTER"));
-#ifndef QT_NO_PRINTDIALOG
         if (!dollarPrinter.isEmpty())
             qt_perhapsAddPrinter(&printers, dollarPrinter,
-                                 QPrintDialog::tr("unknown"),
+                                 QCoreApplication::translate("QPrinter", "unknown"),
                                  QLatin1String(""));
-#endif
     }
 
     QRegExp ps(QLatin1String("[^a-z]ps(?:[^a-z]|$)"));

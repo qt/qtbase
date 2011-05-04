@@ -62,6 +62,7 @@ class Q_GUI_EXPORT QAbstractPrintDialog : public QDialog
     Q_OBJECT
 
 public:
+    // Keep in sync with QPrinter::PrintRange
     enum PrintRange {
         AllPages,
         Selection,

@@ -60,7 +60,6 @@
 
 #include "QtGui/qprinter.h"
 #include "QtGui/qprintengine.h"
-#include "QtGui/qprintdialog.h"
 #include "QtCore/qpointer.h"
 
 #include <limits.h>
@@ -79,9 +78,7 @@ public:
         : printEngine(0)
         , paintEngine(0)
         , q_ptr(printer)
-        , options(QAbstractPrintDialog::PrintToFile | QAbstractPrintDialog::PrintPageRange |
-                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize)
-        , printRange(QAbstractPrintDialog::AllPages)
+        , printRange(QPrinter::AllPages)
         , minPage(1)
         , maxPage(INT_MAX)
         , fromPage(0)
@@ -118,8 +115,7 @@ public:
 
     QPrinter *q_ptr;
 
-    QAbstractPrintDialog::PrintDialogOptions options;
-    QAbstractPrintDialog::PrintRange printRange;
+    QPrinter::PrintRange printRange;
     int minPage, maxPage, fromPage, toPage;
 
     uint use_default_engine : 1;

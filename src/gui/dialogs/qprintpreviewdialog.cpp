@@ -43,6 +43,7 @@
 #include "qprintpreviewwidget.h"
 #include <private/qprinter_p.h>
 #include "private/qdialog_p.h"
+#include "qprintdialog.h"
 
 #include <QtGui/qaction.h>
 #include <QtGui/qboxlayout.h>

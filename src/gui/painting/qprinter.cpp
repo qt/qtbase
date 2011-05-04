@@ -44,7 +44,6 @@
 #include "qprintengine.h"
 #include "qprinterinfo.h"
 #include "qlist.h"
-#include <qpagesetupdialog.h>
 #include <qcoreapplication.h>
 #include <qfileinfo.h>
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
@@ -2051,7 +2050,6 @@ void QPrinter::setFromTo(int from, int to)
     if (d->minPage == 0 && d->maxPage == 0) {
         d->minPage = 1;
         d->maxPage = to;
-        d->options |= QAbstractPrintDialog::PrintPageRange;
     }
 }
 
@@ -2063,7 +2061,7 @@ void QPrinter::setFromTo(int from, int to)
 void QPrinter::setPrintRange( PrintRange range )
 {
     Q_D(QPrinter);
-    d->printRange = QAbstractPrintDialog::PrintRange(range);
+    d->printRange = range;
 }
 
 /*!
@@ -2078,7 +2076,7 @@ void QPrinter::setPrintRange( PrintRange range )
 QPrinter::PrintRange QPrinter::printRange() const
 {
     Q_D(const QPrinter);
-    return PrintRange(d->printRange);
+    return d->printRange;
 }
 
 
