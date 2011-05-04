@@ -3237,16 +3237,16 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     QTest::newRow("must-revalidate,200,prefer-network")
             << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
     QTest::newRow("must-revalidate,200,prefer-cache")
-            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << false;
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << false << true;
     QTest::newRow("must-revalidate,200,always-cache")
-            << reply200 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << true << false;
+            << reply200 << "" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     QTest::newRow("must-revalidate,304,prefer-network")
             << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << true << true;
     QTest::newRow("must-revalidate,304,prefer-cache")
-            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << false;
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << true;
     QTest::newRow("must-revalidate,304,always-cache")
-            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << true << false;
+            << reply304 << "" << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     //
     // Partial content

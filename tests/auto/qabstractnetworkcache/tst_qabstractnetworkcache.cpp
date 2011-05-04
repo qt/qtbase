@@ -263,14 +263,14 @@ void tst_QAbstractNetworkCache::cacheControl_data()
 
     QTest::newRow("200-2") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << AlwaysFalse;
     QTest::newRow("200-3") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?no-cache" << false;
-    QTest::newRow("200-4") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;//AlwaysTrue;
+    QTest::newRow("200-4") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
     QTest::newRow("200-5") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?no-cache" << false;
 
     QTest::newRow("304-0") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000" << true;
 
     QTest::newRow("304-1") << QNetworkRequest::AlwaysNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << AlwaysFalse;
     QTest::newRow("304-2") << QNetworkRequest::PreferNetwork << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
-    QTest::newRow("304-3") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << AlwaysTrue;
+    QTest::newRow("304-3") << QNetworkRequest::AlwaysCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << false;
     QTest::newRow("304-4") << QNetworkRequest::PreferCache << "httpcachetest_cachecontrol.cgi?max-age=1000, must-revalidate" << true;
 
     // see QTBUG-7060
