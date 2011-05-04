@@ -1406,7 +1406,7 @@ void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDo
     if (!url.isEmpty() && resourceProvider) {
         QVariant val = resourceProvider->resource(QTextDocument::ImageResource, url);
 
-        if (qApp->thread() != QThread::currentThread()) {
+        if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
             // must use images in non-GUI threads
             if (val.type() == QVariant::Image) {
                 QImage image = qvariant_cast<QImage>(val);

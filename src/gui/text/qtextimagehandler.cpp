@@ -42,7 +42,7 @@
 
 #include "qtextimagehandler_p.h"
 
-#include <qapplication.h>
+#include <qcoreapplication.h>
 #include <qtextformat.h>
 #include <qpainter.h>
 #include <qdebug.h>
@@ -210,7 +210,7 @@ QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, c
     Q_UNUSED(posInDocument)
     const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (qApp->thread() != QThread::currentThread())
+    if (QCoreApplication::instance()->thread() != QThread::currentThread())
         return getImageSize(doc, imageFormat);
     return getPixmapSize(doc, imageFormat);
 }
@@ -220,7 +220,7 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
     Q_UNUSED(posInDocument)
         const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (qApp->thread() != QThread::currentThread()) {
+    if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
         const QImage image = getImage(doc, imageFormat);
         p->drawImage(rect, image, image.rect());
     } else {
