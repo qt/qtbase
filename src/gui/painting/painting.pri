@@ -6,7 +6,6 @@ HEADERS += \
         painting/qcolor.h \
         painting/qcolor_p.h \
         painting/qcolormap.h \
-        painting/qdrawutil.h \
         painting/qemulationpaintengine_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
@@ -49,7 +48,6 @@ SOURCES += \
         painting/qcolor.cpp \
         painting/qcolor_p.cpp \
         painting/qcssutil.cpp \
-        painting/qdrawutil.cpp \
         painting/qemulationpaintengine.cpp \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \

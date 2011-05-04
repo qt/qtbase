@@ -54,7 +54,6 @@
 //
 
 #include <QtGui/qpaintengine.h>
-#include <QtGui/qdrawutil.h>
 
 #include <private/qpaintengine_p.h>
 #include <private/qstroker_p.h>
