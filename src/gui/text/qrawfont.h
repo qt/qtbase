@@ -96,8 +96,8 @@ public:
                             const QTransform &transform = QTransform()) const;
     QPainterPath pathForGlyph(quint32 glyphIndex) const;
 
-    void setPixelSize(int pixelSize);
-    int pixelSize() const;
+    void setPixelSize(qreal pixelSize);
+    qreal pixelSize() const;
 
     QFont::HintingPreference hintingPreference() const;
 

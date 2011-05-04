@@ -43,6 +43,7 @@
 #include "qplatformdefs.h"
 #include "qgl.h"
 #include <qdebug.h>
+#include <qglfunctions.h>
 
 #if defined(Q_WS_X11)
 #include "private/qt_x11_p.h"
@@ -1663,6 +1664,7 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
 QGLContextPrivate::QGLContextPrivate(QGLContext *context)
     : internal_context(false)
     , q_ptr(context)
+    , functions(0)
 {
     group = new QGLContextGroup(context);
     texture_destroyer = new QGLTextureDestroyer;
@@ -1671,6 +1673,8 @@ QGLContextPrivate::QGLContextPrivate(QGLContext *context)
 
 QGLContextPrivate::~QGLContextPrivate()
 {
+    delete functions;
+
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -2708,6 +2712,19 @@ int QGLContextPrivate::maxTextureSize()
     max_texture_size = size;
     return max_texture_size;
 #endif
+}
+
+/*!
+  Returns a QGLFunctions object that is initialized for this context.
+ */
+QGLFunctions *QGLContext::functions() const
+{
+    QGLContextPrivate *d = const_cast<QGLContextPrivate *>(d_func());
+    if (!d->functions) {
+        d->functions = new QGLFunctions(this);
+        d->functions->initializeGLFunctions(this);
+    }
+    return d->functions;
 }
 
 /*!
@@ -3790,6 +3807,20 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+}
+
+/*!
+  \internal
+ */
+QGLWidget::QGLWidget(QGLWidgetPrivate &dd, const QGLFormat &format, QWidget *parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
+    : QWidget(dd, parent, f | Qt::MSWindowsOwnDC)
+{
+    Q_D(QGLWidget);
+    setAttribute(Qt::WA_PaintOnScreen);
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAutoFillBackground(true); // for compatibility
+    d->init(new QGLContext(format, this), shareWidget);
+
 }
 
 
@@ -5489,6 +5520,13 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 
     if (extensions.match("GL_EXT_bgra"))
         glExtensions |= BGRATextureFormat;
+
+    {
+        GLboolean srgbCapableFramebuffers;
+        glGetBooleanv(FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
+        if (srgbCapableFramebuffers)
+            glExtensions |= SRGBFrameBuffer;
+    }
 
     return glExtensions;
 }

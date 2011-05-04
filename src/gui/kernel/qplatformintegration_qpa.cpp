@@ -214,6 +214,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
+    Q_UNUSED(cap);
     return false;
 }
 

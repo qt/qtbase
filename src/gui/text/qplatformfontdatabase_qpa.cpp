@@ -218,6 +218,16 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicode
     return engine;
 }
 
+QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
+                                               QFont::HintingPreference hintingPreference)
+{
+    Q_UNUSED(fontData);
+    Q_UNUSED(pixelSize);
+    Q_UNUSED(hintingPreference);
+    qWarning("This plugin does not support font engines created directly from font data");
+    return 0;
+}
+
 /*!
 
 */

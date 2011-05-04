@@ -90,32 +90,6 @@ public:
 
         return init(faceId, true, Format_None, fontData);
     }
-
-    bool initFromFontEngine(QFontEngine *oldFontEngine)
-    {
-        QFontEngineFT *fe = static_cast<QFontEngineFT *>(oldFontEngine);
-
-        // Increase the reference of this QFreetypeFace since one more QFontEngineFT
-        // will be using it
-        fe->freetype->ref.ref();
-        if (!init(fe->faceId(), fe->antialias, fe->defaultFormat, fe->freetype))
-            return false;
-
-        default_load_flags = fe->default_load_flags;
-        default_hint_style = fe->default_hint_style;
-        antialias = fe->antialias;
-        transform = fe->transform;
-        embolden = fe->embolden;
-        subpixelType = fe->subpixelType;
-        lcdFilterType = fe->lcdFilterType;
-        canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
-        embeddedbitmap = fe->embeddedbitmap;
-
-#if defined(Q_WS_X11)
-        xglyph_format = static_cast<QFontEngineX11FT *>(fe)->xglyph_format;
-#endif
-        return true;
-    }
 };
 
 
@@ -157,31 +131,6 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, int pixel
 
     fontEngine = fe;
     fontEngine->ref.ref();
-}
-
-void QRawFontPrivate::platformSetPixelSize(int pixelSize)
-{
-    if (fontEngine == NULL)
-        return;
-
-    QFontEngine *oldFontEngine = fontEngine;
-
-    QFontDef fontDef;
-    fontDef.pixelSize = pixelSize;
-    QFontEngineFTRawFont *fe = new QFontEngineFTRawFont(fontDef);
-    if (!fe->initFromFontEngine(oldFontEngine)) {
-        delete fe;
-        return;
-    }
-
-    fontEngine = fe;
-    fontEngine->fontDef = oldFontEngine->fontDef;
-    fontEngine->fontDef.pixelSize = pixelSize;
-    fontEngine->ref.ref();
-    Q_ASSERT(fontEngine != oldFontEngine);
-    oldFontEngine->ref.deref();
-    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
-        delete oldFontEngine;
 }
 
 QT_END_NAMESPACE

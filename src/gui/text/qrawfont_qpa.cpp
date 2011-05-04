@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -44,7 +44,8 @@
 #if !defined(QT_NO_RAWFONT)
 
 #include "qrawfont_p.h"
-#include "qfontengine_coretext_p.h"
+#include <QtGui/qplatformfontdatabase_qpa.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,30 +53,15 @@ void QRawFontPrivate::platformCleanUp()
 {
 }
 
-extern int qt_defaultDpi();
-
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           int pixelSize,
+void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, int pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
-    // Mac OS X ignores it
-    Q_UNUSED(hintingPreference);
+    Q_ASSERT(fontEngine == 0);
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
-
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
+    QPlatformFontDatabase *pfdb = QApplicationPrivate::platformIntegration()->fontDatabase();
+    fontEngine = pfdb->fontEngine(fontData, pixelSize, hintingPreference);
+    if (fontEngine != 0)
         fontEngine->ref.ref();
-    }
 }
 
 QT_END_NAMESPACE

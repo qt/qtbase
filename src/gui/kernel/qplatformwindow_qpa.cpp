@@ -150,7 +150,7 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
 /*!
   Reimplement to set the window title to \a title
 */
-void QPlatformWindow::setWindowTitle(const QString &title) {}
+void QPlatformWindow::setWindowTitle(const QString &) {}
 
 /*!
   Reimplement to be able to let Qt rais windows to the top of the desktop

@@ -477,6 +477,14 @@ struct QGLExtensionFuncs
 
 // OpenGL constants
 
+#ifndef FRAMEBUFFER_SRGB_CAPABLE_EXT
+#define FRAMEBUFFER_SRGB_CAPABLE_EXT 0x8DBA
+#endif
+
+#ifndef FRAMEBUFFER_SRGB_EXT
+#define FRAMEBUFFER_SRGB_EXT 0x8DB9
+#endif
+
 #ifndef GL_ARRAY_BUFFER
 #define GL_ARRAY_BUFFER                   0x8892
 #endif
