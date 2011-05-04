@@ -120,8 +120,6 @@ public:
 
     static bool app_do_modal;
 
-    static QPointer<QWidget> qt_last_mouse_receiver;
-
     static QWidgetList qt_modal_stack;
 
     static Qt::MouseButtons buttons;

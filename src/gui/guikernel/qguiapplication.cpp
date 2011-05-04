@@ -84,7 +84,6 @@ bool QGuiApplicationPrivate::app_do_modal = false;
 
 int qt_last_x = 0;
 int qt_last_y = 0;
-QPointer<QWidget> QGuiApplicationPrivate::qt_last_mouse_receiver = 0;
 
 QWidgetList QGuiApplicationPrivate::qt_modal_stack;
 
@@ -666,8 +665,6 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
-//    QGuiApplicationPrivate::dispatchEnterLeave(e->enter.data(),0);
-//    qt_last_mouse_receiver = e->enter.data();
     QEvent event(QEvent::Enter);
     QApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
