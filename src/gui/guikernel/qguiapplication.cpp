@@ -64,6 +64,8 @@
 #include "private/qwindow_p.h"
 #include "private/qkeymapper_p.h"
 
+#include <QtGui/QPixmap>
+
 #ifndef QT_NO_CLIPBOARD
 #include <QtGui/QClipboard>
 #endif
@@ -144,6 +146,10 @@ QGuiApplication::~QGuiApplication()
 
     delete QGuiApplicationPrivate::qt_clipboard;
     QGuiApplicationPrivate::qt_clipboard = 0;
+
+#ifndef QT_NO_CURSOR
+    d->cursor_list.clear();
+#endif
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -466,7 +472,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 #if 0
     if (self->inPopupMode()) {
         //popup mouse handling is magical...
-        mouseWindow = qApp->activePopupWidget();
+        mouseWindow = qGuiApp->activePopupWidget();
 
         implicit_mouse_grabber.clear();
         //### how should popup mode and implicit mouse grab interact?
@@ -878,6 +884,63 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
     return layout_direction;
 }
 
+/*!
+    \fn QCursor *QGuiApplication::overrideCursor()
+
+    Returns the active application override cursor.
+
+    This function returns 0 if no application cursor has been defined (i.e. the
+    internal cursor stack is empty).
+
+    \sa setOverrideCursor(), restoreOverrideCursor()
+*/
+#ifndef QT_NO_CURSOR
+QCursor *QGuiApplication::overrideCursor()
+{
+    return qGuiApp->d_func()->cursor_list.isEmpty() ? 0 : &qGuiApp->d_func()->cursor_list.first();
+}
+
+/*!
+    Changes the currently active application override cursor to \a cursor.
+
+    This function has no effect if setOverrideCursor() was not called.
+
+    \sa setOverrideCursor(), overrideCursor(), restoreOverrideCursor(),
+    QWidget::setCursor()
+ */
+void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
+{
+    if (qGuiApp->d_func()->cursor_list.isEmpty())
+        return;
+    qGuiApp->d_func()->cursor_list.removeFirst();
+    setOverrideCursor(cursor);
+}
+#endif
+
+/*!
+    \fn void QGuiApplication::setOverrideCursor(const QCursor &cursor, bool replace)
+
+    Use changeOverrideCursor(\a cursor) (if \a replace is true) or
+    setOverrideCursor(\a cursor) (if \a replace is false).
+*/
+
+#ifndef QT_NO_CURSOR
+void QGuiApplication::setOverrideCursor(const QCursor &cursor)
+{
+    qGuiApp->d_func()->cursor_list.prepend(cursor);
+    qt_qpa_set_cursor(0, false);
+}
+
+void QGuiApplication::restoreOverrideCursor()
+{
+    if (qGuiApp->d_func()->cursor_list.isEmpty())
+        return;
+    qGuiApp->d_func()->cursor_list.removeFirst();
+    qt_qpa_set_cursor(0, false);
+}
+#endif// QT_NO_CURSOR
+
+
 // Returns the current platform used by keyBindings
 uint QGuiApplicationPrivate::currentKeyPlatform()
 {
@@ -935,5 +998,230 @@ Qt::LayoutDirection QGuiApplication::keyboardInputDirection()
     QFontDatabase::removeApplicationFont()
 */
 
+// These pixmaps approximate the images in the Windows User Interface Guidelines.
+
+// XPM
+
+static const char * const move_xpm[] = {
+"11 20 3 1",
+".        c None",
+#if defined(Q_WS_WIN)
+"a        c #000000",
+"X        c #FFFFFF", // Windows cursor is traditionally white
+#else
+"a        c #FFFFFF",
+"X        c #000000", // X11 cursor is traditionally black
+#endif
+"aa.........",
+"aXa........",
+"aXXa.......",
+"aXXXa......",
+"aXXXXa.....",
+"aXXXXXa....",
+"aXXXXXXa...",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+#ifdef Q_WS_WIN
+/* XPM */
+static const char * const ignore_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa.....XXXX.....",
+".......aXXa..XXaaaaXX...",
+".......aXXa.XaaaaaaaaX..",
+"........aa.XaaaXXXXaaaX.",
+"...........XaaaaX..XaaX.",
+"..........XaaXaaaX..XaaX",
+"..........XaaXXaaaX.XaaX",
+"..........XaaX.XaaaXXaaX",
+"..........XaaX..XaaaXaaX",
+"...........XaaX..XaaaaX.",
+"...........XaaaXXXXaaaX.",
+"............XaaaaaaaaX..",
+".............XXaaaaXX...",
+"...............XXXX....."};
+#endif
+
+/* XPM */
+static const char * const copy_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXaaaaaXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+/* XPM */
+static const char * const link_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXaaaaXXa",
+".............aXXXXaaaXXa",
+".............aXXXaaaaXXa",
+".............aXXaaaXaXXa",
+".............aXXaaXXXXXa",
+".............aXXaXXXXXXa",
+".............aXXXaXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
+{
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+    if (!move_cursor) {
+        move_cursor = new QPixmap((const char **)move_xpm);
+        copy_cursor = new QPixmap((const char **)copy_xpm);
+        link_cursor = new QPixmap((const char **)link_xpm);
+#ifdef Q_WS_WIN
+        ignore_cursor = new QPixmap((const char **)ignore_xpm);
+#endif
+    }
+
+    switch (cshape) {
+    case Qt::DragMoveCursor:
+        return *move_cursor;
+    case Qt::DragCopyCursor:
+        return *copy_cursor;
+    case Qt::DragLinkCursor:
+        return *link_cursor;
+#ifdef Q_WS_WIN
+    case Qt::ForbiddenCursor:
+        return *ignore_cursor;
+#endif
+    default:
+        break;
+    }
+#else
+    Q_UNUSED(cshape);
+#endif
+    return QPixmap();
+}
 
 QT_END_NAMESPACE

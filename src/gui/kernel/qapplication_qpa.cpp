@@ -333,23 +333,6 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
     }
 }
 
-#ifndef QT_NO_CURSOR
-void QApplication::setOverrideCursor(const QCursor &cursor)
-{
-    qApp->d_func()->cursor_list.prepend(cursor);
-    qt_qpa_set_cursor(0, false);
-}
-
-void QApplication::restoreOverrideCursor()
-{
-    if (qApp->d_func()->cursor_list.isEmpty())
-        return;
-    qApp->d_func()->cursor_list.removeFirst();
-    qt_qpa_set_cursor(0, false);
-}
-
-#endif// QT_NO_CURSOR
-
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();

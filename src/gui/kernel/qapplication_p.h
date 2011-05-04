@@ -367,9 +367,6 @@ public:
     bool is_session_restored;
 #endif
 
-#ifndef QT_NO_CURSOR
-    QList<QCursor> cursor_list;
-#endif
 #ifndef QT_NO_GRAPHICSVIEW
     // Maintain a list of all scenes to ensure font and palette propagation to
     // all scenes.
@@ -528,7 +525,6 @@ public:
 #if defined(Q_WS_WIN)
     QPixmap *ignore_cursor;
 #endif
-    QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
@@ -622,8 +618,6 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
   extern void qt_x11_enforce_cursor(QWidget *);
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
-#elif defined (Q_WS_QPA)
-  extern void qt_qpa_set_cursor(QWidget *, bool);
 #endif
 
 QT_END_NAMESPACE

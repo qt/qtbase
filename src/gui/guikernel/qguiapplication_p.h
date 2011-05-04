@@ -130,6 +130,9 @@ public:
         return alignment;
     }
 
+    QPixmap getPixmapCursor(Qt::CursorShape cshape);
+
+    static QGuiApplicationPrivate *instance() { return self; }
 
     static bool app_do_modal;
 
@@ -146,12 +149,18 @@ public:
     static QClipboard *qt_clipboard;
 #endif
 
+#ifndef QT_NO_CURSOR
+    QList<QCursor> cursor_list;
+#endif
+
     static QFont *app_font;
 private:
     void init();
 
     static QGuiApplicationPrivate *self;
 };
+
+extern void qt_qpa_set_cursor(QWidget *, bool);
 
 QT_END_NAMESPACE
 

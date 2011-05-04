@@ -47,7 +47,7 @@
 #include "qevent.h"
 #include "qfile.h"
 #include "qtextcodec.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qpoint.h"
 #include "qwidget.h"
 #include "qbuffer.h"
@@ -60,7 +60,7 @@
 #include "qdebug.h"
 #include <ctype.h>
 
-#include <private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -154,7 +154,7 @@ QDragManager::~QDragManager()
 {
 #ifndef QT_NO_CURSOR
     if (restoreCursor)
-        QApplication::restoreOverrideCursor();
+        QGuiApplication::restoreOverrideCursor();
 #endif
     instance = 0;
     delete dropData;
@@ -173,14 +173,14 @@ QPixmap QDragManager::dragCursor(Qt::DropAction action) const
     if (d && d->customCursors.contains(action))
         return d->customCursors[action];
     else if (action == Qt::MoveAction)
-        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragMoveCursor);
+        return QGuiApplicationPrivate::instance()->getPixmapCursor(Qt::DragMoveCursor);
     else if (action == Qt::CopyAction)
-        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragCopyCursor);
+        return QGuiApplicationPrivate::instance()->getPixmapCursor(Qt::DragCopyCursor);
     else if (action == Qt::LinkAction)
-        return QApplicationPrivate::instance()->getPixmapCursor(Qt::DragLinkCursor);
+        return QGuiApplicationPrivate::instance()->getPixmapCursor(Qt::DragLinkCursor);
 #ifdef Q_WS_WIN
     else if (action == Qt::IgnoreAction)
-        return QApplicationPrivate::instance()->getPixmapCursor(Qt::ForbiddenCursor);
+        return QGuiApplicationPrivate::instance()->getPixmapCursor(Qt::ForbiddenCursor);
 #endif
     return QPixmap();
 }

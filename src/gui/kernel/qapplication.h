@@ -156,12 +156,6 @@ public:
     // ### Qt4 compatibility, remove?
     static inline void setGraphicsSystem(const QString &) {}
 
-#ifndef QT_NO_CURSOR
-    static QCursor *overrideCursor();
-    static void setOverrideCursor(const QCursor &);
-    static void changeOverrideCursor(const QCursor &);
-    static void restoreOverrideCursor();
-#endif
     static QPalette palette();
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);

@@ -57,6 +57,16 @@ QT_MODULE(Gui)
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
 
+#if defined(qApp)
+#undef qApp
+#endif
+#define qApp (static_cast<QGuiApplication *>(QCoreApplication::instance()))
+
+#if defined(qGuiApp)
+#undef qGuiApp
+#endif
+#define qGuiApp (static_cast<QGuiApplication *>(QCoreApplication::instance()))
+
 class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
@@ -68,13 +78,11 @@ public:
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QGuiApplication();
 
-#if 0
 #ifndef QT_NO_CURSOR
     static QCursor *overrideCursor();
     static void setOverrideCursor(const QCursor &);
     static void changeOverrideCursor(const QCursor &);
     static void restoreOverrideCursor();
-#endif
 #endif
 
     static QFont font();

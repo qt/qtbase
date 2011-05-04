@@ -43,7 +43,7 @@
 
 #ifndef QT_NO_CURSOR
 
-#include <qapplication.h>
+#include <qcoreapplication.h>
 #include <qbitmap.h>
 #include <qimage.h>
 #include <qdatastream.h>
@@ -410,7 +410,7 @@ void QCursorData::initialize()
 QCursor::QCursor()
 {
     if (!QCursorData::initialized) {
-        if (QApplication::startingUp()) {
+        if (QCoreApplication::startingUp()) {
             d = 0;
             return;
         }
