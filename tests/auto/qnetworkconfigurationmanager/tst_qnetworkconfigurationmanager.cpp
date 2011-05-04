@@ -62,6 +62,7 @@ public slots:
     void cleanup();
 
 private slots:
+    void usedInThread(); // this test must be first, or it will falsely pass
     void allConfigurations();
     void defaultConfiguration();
     void configurationFromIdentifier();
@@ -329,6 +330,43 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
     QVERIFY(!invalid.isValid());
 }
 
+class QNCMTestThread : public QThread
+{
+protected:
+    virtual void run()
+    {
+        QNetworkConfigurationManager manager;
+        preScanConfigs = manager.allConfigurations();
+        QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+        manager.updateConfigurations(); //initiate scans
+        QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+        configs = manager.allConfigurations();
+    }
+public:
+    QList<QNetworkConfiguration> configs;
+    QList<QNetworkConfiguration> preScanConfigs;
+};
+
+// regression test for QTBUG-18795
+void tst_QNetworkConfigurationManager::usedInThread()
+{
+    QNCMTestThread thread;
+    connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    thread.start();
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(thread.isFinished());
+    qDebug() << "prescan:" << thread.preScanConfigs.count();
+    qDebug() << "postscan:" << thread.configs.count();
+
+    QNetworkConfigurationManager manager;
+    QList<QNetworkConfiguration> preScanConfigs = manager.allConfigurations();
+    QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
+    manager.updateConfigurations(); //initiate scans
+    QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
+    QList<QNetworkConfiguration> configs = manager.allConfigurations();
+    QCOMPARE(thread.configs, configs);
+    QCOMPARE(thread.preScanConfigs, preScanConfigs);
+}
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
 #include "tst_qnetworkconfigurationmanager.moc"

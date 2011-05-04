@@ -385,8 +385,6 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                         this, SLOT(configurationRemoved(QNetworkConfigurationPrivatePointer)));
                 connect(engine, SIGNAL(configurationChanged(QNetworkConfigurationPrivatePointer)),
                         this, SLOT(configurationChanged(QNetworkConfigurationPrivatePointer)));
-
-                QMetaObject::invokeMethod(engine, "initialize");
             }
         }
 
@@ -410,8 +408,19 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             startPolling();
     }
 
-    if (firstUpdate)
+    if (firstUpdate) {
         firstUpdate = false;
+        QList<QBearerEngine*> enginesToInitialize = sessionEngines; //shallow copy the list in case it is modified when we unlock mutex
+        Qt::ConnectionType connectionType;
+        if (QCoreApplicationPrivate::mainThread() == QThread::currentThread())
+            connectionType = Qt::DirectConnection;
+        else
+            connectionType = Qt::BlockingQueuedConnection;
+        locker.unlock();
+        foreach (QBearerEngine* engine, enginesToInitialize) {
+                QMetaObject::invokeMethod(engine, "initialize", connectionType);
+        }
+    }
 }
 
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
