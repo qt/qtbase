@@ -43,6 +43,7 @@
 #include "qfont_p.h"
 #include "qfontengine_p.h"
 #include "qfontengine_mac_p.h"
+#include "qfontengine_coretext_p.h"
 #include "qfontinfo.h"
 #include "qfontmetrics.h"
 #include "qpaintdevice.h"
@@ -119,10 +120,10 @@ quint32 QFont::macFontID() const  // ### need 64-bit version
 // Returns an ATSUFonFamilyRef
 Qt::HANDLE QFont::handle() const
 {
-#if 0
+#ifdef QT_MAC_USE_COCOA
     QFontEngine *fe = d->engineForScript(QUnicodeTables::Common);
-    if (fe && fe->type() == QFontEngine::Mac)
-        return (Qt::HANDLE)static_cast<QFontEngineMacMulti*>(fe)->fontFamilyRef();
+    if (fe && fe->type() == QFontEngine::Multi)
+        return (Qt::HANDLE)static_cast<QCoreTextFontEngineMulti*>(fe)->macFontID();
 #endif
     return 0;
 }
