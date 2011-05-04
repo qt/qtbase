@@ -5338,25 +5338,6 @@ QInputContext *QApplication::inputContext() const
 }
 #endif // QT_NO_IM
 
-//Returns the current platform used by keyBindings
-uint QApplicationPrivate::currentPlatform(){
-    uint platform = KB_Win;
-#ifdef Q_WS_MAC
-    platform = KB_Mac;
-#elif defined Q_WS_X11
-    platform = KB_X11;
-    if (X11->desktopEnvironment == DE_KDE)
-        platform |= KB_KDE;
-    if (X11->desktopEnvironment == DE_GNOME)
-        platform |= KB_Gnome;
-    if (X11->desktopEnvironment == DE_CDE)
-        platform |= KB_CDE;
-#elif defined(Q_OS_SYMBIAN)
-    platform = KB_S60;
-#endif
-    return platform;
-}
-
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 {
     return QApplicationBase::sendSpontaneousEvent(receiver, event);

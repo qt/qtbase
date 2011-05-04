@@ -878,6 +878,27 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
     return layout_direction;
 }
 
+// Returns the current platform used by keyBindings
+uint QGuiApplicationPrivate::currentKeyPlatform()
+{
+    uint platform = KB_Win;
+#ifdef Q_WS_MAC
+    platform = KB_Mac;
+#elif defined Q_WS_X11
+    platform = KB_X11;
+    // ## TODO: detect these
+#if 0
+    if (X11->desktopEnvironment == DE_KDE)
+        platform |= KB_KDE;
+    if (X11->desktopEnvironment == DE_GNOME)
+        platform |= KB_Gnome;
+    if (X11->desktopEnvironment == DE_CDE)
+        platform |= KB_CDE;
+#endif
+#endif
+    return platform;
+}
+
 /*!
     \since 4.2
 

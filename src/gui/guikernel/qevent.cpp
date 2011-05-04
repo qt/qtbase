@@ -42,7 +42,7 @@
 #include "qevent.h"
 #include "qcursor.h"
 #include "qapplication.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
 #include "qwidget.h"
@@ -858,7 +858,7 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
-    uint platform = QApplicationPrivate::currentPlatform();
+    uint platform = QGuiApplicationPrivate::currentKeyPlatform();
 
 #ifdef Q_WS_MAC
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
