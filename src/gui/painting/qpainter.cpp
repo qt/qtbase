@@ -7370,27 +7370,6 @@ void QPainter::setViewTransformEnabled(bool enable)
     d->updateMatrix();
 }
 
-
-struct QPaintDeviceRedirection
-{
-    QPaintDeviceRedirection() : device(0), replacement(0), internalWidgetRedirectionIndex(-1) {}
-    QPaintDeviceRedirection(const QPaintDevice *device, QPaintDevice *replacement,
-                            const QPoint& offset, int internalWidgetRedirectionIndex)
-        : device(device), replacement(replacement), offset(offset),
-          internalWidgetRedirectionIndex(internalWidgetRedirectionIndex) { }
-    const QPaintDevice *device;
-    QPaintDevice *replacement;
-    QPoint offset;
-    int internalWidgetRedirectionIndex;
-    bool operator==(const QPaintDevice *pdev) const { return device == pdev; }
-    Q_DUMMY_COMPARISON_OPERATOR(QPaintDeviceRedirection)
-};
-
-typedef QList<QPaintDeviceRedirection> QPaintDeviceRedirectionList;
-Q_GLOBAL_STATIC(QPaintDeviceRedirectionList, globalRedirections)
-Q_GLOBAL_STATIC(QMutex, globalRedirectionsMutex)
-Q_GLOBAL_STATIC(QAtomicInt, globalRedirectionAtomic)
-
 /*!
     \threadsafe
 
@@ -7465,36 +7444,6 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
 QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 {
     return 0;
-}
-
-
-void qt_painter_removePaintDevice(QPaintDevice *dev)
-{
-    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
-        return;
-
-    QMutex *mutex = 0;
-    QT_TRY {
-        mutex = globalRedirectionsMutex();
-    } QT_CATCH(...) {
-        // ignore the missing mutex, since we could be called from
-        // a destructor, and destructors shall not throw
-    }
-    QMutexLocker locker(mutex);
-    QPaintDeviceRedirectionList *redirections = 0;
-    QT_TRY {
-        redirections = globalRedirections();
-    } QT_CATCH(...) {
-        // do nothing - code below is safe with redirections being 0.
-    }
-    if (redirections) {
-        for (int i = 0; i < redirections->size(); ) {
-            if(redirections->at(i) == dev || redirections->at(i).replacement == dev)
-                redirections->removeAt(i);
-            else
-                ++i;
-        }
-    }
 }
 
 void qt_format_text(const QFont &fnt, const QRectF &_r,

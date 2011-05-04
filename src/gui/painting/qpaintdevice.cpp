@@ -43,8 +43,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
 QPaintDevice::QPaintDevice()
 {
     painters = 0;
@@ -55,7 +53,6 @@ QPaintDevice::~QPaintDevice()
     if (paintingActive())
         qWarning("QPaintDevice: Cannot destroy paint device that is being "
                   "painted");
-    qt_painter_removePaintDevice(this);
 }
 
 
