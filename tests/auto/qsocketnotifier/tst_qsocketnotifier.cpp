@@ -122,7 +122,7 @@ signals:
 void tst_QSocketNotifier::unexpectedDisconnection()
 {
 #ifdef Q_OS_SYMBIAN
-    QSKIP("Symbian socket engine psuedo descriptors can't be used for QSocketNotifier", SkipAll);
+    QSKIP("Symbian socket engine pseudo descriptors can't be used for QSocketNotifier", SkipAll);
 #else
     /*
       Given two sockets and two QSocketNotifiers registered on each
