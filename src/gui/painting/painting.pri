@@ -186,22 +186,8 @@ if(mmx|3dnow|sse|sse2|iwmmxt) {
     IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 }
 
-x11 {
-        HEADERS += painting/qwindowsurface_x11_p.h
-        SOURCES += painting/qwindowsurface_x11.cpp
-}
-
-!qpa:mac {
-        HEADERS += painting/qwindowsurface_mac_p.h \
-                   painting/qunifiedtoolbarsurface_mac_p.h
-        SOURCES += painting/qwindowsurface_mac.cpp \
-                   painting/qunifiedtoolbarsurface_mac.cpp
-}
-
 symbian {
-        HEADERS += painting/qwindowsurface_s60_p.h \
-                    painting/qdrawhelper_arm_simd_p.h
-        SOURCES += painting/qwindowsurface_s60.cpp
+        HEADERS += painting/qdrawhelper_arm_simd_p.h
         armccIfdefBlock = \
         "$${LITERAL_HASH}if defined(ARMV6)" \
         "MACRO QT_HAVE_ARM_SIMD" \

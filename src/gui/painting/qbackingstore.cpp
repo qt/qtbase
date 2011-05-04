@@ -53,7 +53,6 @@
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include <private/qwidget_p.h>
-#include <private/qwindowsurface_raster_p.h>
 #include <private/qapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qgraphicseffect_p.h>
