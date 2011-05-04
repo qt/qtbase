@@ -1,12 +1,12 @@
-QT_OPENGL_VERSION = $$QT_VERSION
-QT_OPENGL_MAJOR_VERSION = $$QT_MAJOR_VERSION
-QT_OPENGL_MINOR_VERSION = $$QT_MINOR_VERSION
-QT_OPENGL_PATCH_VERSION = $$QT_PATCH_VERSION
+QT.opengl.VERSION = 4.8.0
+QT.opengl.MAJOR_VERSION = 4
+QT.opengl.MINOR_VERSION = 8
+QT.opengl.PATCH_VERSION = 0
 
 QT.opengl.name = QtOpenGL
 QT.opengl.bins = $$QT_MODULE_BIN_BASE
 QT.opengl.includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL
-QT.opengl.private_includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL/private
+QT.opengl.private_includes = $$QT_MODULE_INCLUDE_BASE/QtOpenGL/$$QT.opengl.VERSION
 QT.opengl.sources = $$QT_MODULE_BASE/src/opengl
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
 QT.opengl.plugins = $$QT_MODULE_PLUGIN_BASE

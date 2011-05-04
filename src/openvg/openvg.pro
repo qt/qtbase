@@ -2,6 +2,9 @@ TARGET = QtOpenVG
 QT += core \
     gui
 
+CONFIG += module
+MODULE_PRI = ../modules/qt_openvg.pri
+
 DEFINES+=QT_BUILD_OPENVG_LIB
 
 contains(QT_CONFIG, shivavg) {

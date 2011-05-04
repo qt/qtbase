@@ -4934,7 +4934,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
             -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
             -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-	    -e "s,@QMAKESPEC@,$adjqmakespec,g" "$in_mkfile" >>"$mkfile"
+            -e "s,@QMAKESPEC@,$adjqmakespec,g" -e "s,@QT_VERSION@,$QT_VERSION,g" "$in_mkfile" >>"$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
@@ -8514,7 +8514,7 @@ CACHEFILE="$outpath/.qmake.cache"
 [ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
 cat >>"$CACHEFILE.tmp" <<EOF
 include(\$\$PWD/mkspecs/qmodule.pri)
-CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs QTDIR_build
+CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
 QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
 QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 

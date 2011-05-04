@@ -28,6 +28,8 @@ INCLUDEPATH += \
            $$QT_SOURCE_TREE/src/corelib/global \
            $$QT_BUILD_TREE/include \
            $$QT_BUILD_TREE/include/QtCore \
+           $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION \
+           $$QT_BUILD_TREE/include/QtCore/$$QT.core.VERSION/QtCore \
            $$QT_SOURCE_TREE/tools/shared
 
 HEADERS  = configureapp.h environment.h tools.h\
