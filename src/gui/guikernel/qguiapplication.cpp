@@ -664,22 +664,18 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     }
 }
 
-void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *)
+void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
 //    QGuiApplicationPrivate::dispatchEnterLeave(e->enter.data(),0);
 //    qt_last_mouse_receiver = e->enter.data();
+    QEvent event(QEvent::Enter);
+    QApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
 
-void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *)
+void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e)
 {
-//    QGuiApplicationPrivate::dispatchEnterLeave(0,qt_last_mouse_receiver);
-
-#if 0
-    if (e->leave.data() && !e->leave.data()->isAncestorOf(qt_last_mouse_receiver)) //(???) this should not happen
-        QGuiApplicationPrivate::dispatchEnterLeave(0, e->leave.data());
-#endif
-    qt_last_mouse_receiver = 0;
-
+    QEvent event(QEvent::Leave);
+    QApplication::sendSpontaneousEvent(e->leave.data(), &event);
 }
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *)

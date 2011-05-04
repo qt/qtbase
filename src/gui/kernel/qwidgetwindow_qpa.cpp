@@ -42,6 +42,7 @@
 #include "qwidgetwindow_qpa_p.h"
 
 #include "private/qwidget_p.h"
+#include "private/qapplication_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +56,11 @@ bool QWidgetWindow::event(QEvent *event)
     switch (event->type()) {
     case QEvent::Close:
         handleCloseEvent(static_cast<QCloseEvent *>(event));
+        return true;
+
+    case QEvent::Enter:
+    case QEvent::Leave:
+        handleEnterLeaveEvent(event);
         return true;
 
     case QEvent::KeyPress:
@@ -88,6 +94,20 @@ bool QWidgetWindow::event(QEvent *event)
     return m_widget->event(event) || QWindow::event(event);
 }
 
+QPointer<QWidget> qt_last_mouse_receiver = 0;
+
+void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
+{
+    if (event->type() == QEvent::Leave) {
+        QApplicationPrivate::dispatchEnterLeave(0, m_widget);
+        qt_last_mouse_receiver = 0;
+    } else {
+        QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
+        qt_last_mouse_receiver = m_widget;
+        printf("Enter event: %p\n", m_widget);
+    }
+}
+
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
     // which child should have it?
@@ -105,6 +125,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         m_implicit_mouse_grabber.clear();
 
     QPoint mapped = widget->mapFrom(m_widget, event->pos());
+
+    if (widget != qt_last_mouse_receiver) {
+        QApplicationPrivate::dispatchEnterLeave(widget, qt_last_mouse_receiver);
+        qt_last_mouse_receiver = widget;
+    }
 
     QMouseEvent translated(event->type(), mapped, event->globalPos(), event->button(), event->buttons(), event->modifiers());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);

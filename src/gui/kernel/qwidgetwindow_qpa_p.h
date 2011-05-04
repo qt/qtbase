@@ -64,6 +64,7 @@ protected:
     bool event(QEvent *);
 
     void handleCloseEvent(QCloseEvent *);
+    void handleEnterLeaveEvent(QEvent *);
     void handleKeyEvent(QKeyEvent *);
     void handleMouseEvent(QMouseEvent *);
     void handleMoveEvent(QMoveEvent *);
