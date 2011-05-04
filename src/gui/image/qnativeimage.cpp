@@ -51,7 +51,6 @@
 #include <qx11info_x11.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <qwidget.h>
 #endif
 
 #ifdef Q_WS_MAC

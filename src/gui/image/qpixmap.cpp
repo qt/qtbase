@@ -48,12 +48,10 @@
 #include "qbitmap.h"
 #include "qcolormap.h"
 #include "qimage.h"
-#include "qwidget.h"
 #include "qpainter.h"
 #include "qdatastream.h"
 #include "qbuffer.h"
 #include <private/qguiapplication_p.h>
-#include <private/qwidget_p.h>
 #include "qevent.h"
 #include "qfile.h"
 #include "qfileinfo.h"

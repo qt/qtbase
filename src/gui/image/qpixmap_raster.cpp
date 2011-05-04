@@ -54,7 +54,6 @@
 #include <QImageReader>
 #include <private/qimage_p.h>
 #include <private/qsimd_p.h>
-#include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
 
 QT_BEGIN_NAMESPACE
