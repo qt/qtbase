@@ -67,7 +67,6 @@
 #include <private/qemulationpaintengine_p.h>
 #include <private/qpainterpath_p.h>
 #include <private/qtextengine_p.h>
-#include <private/qwidget_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
@@ -247,33 +246,9 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q);
     Q_ASSERT(pdev);
 
-    if (pdev->devType() != QInternal::Widget)
+    QPainter *sp = pdev->sharedPainter();
+    if (!sp)
         return false;
-
-    QWidget *widget = static_cast<QWidget *>(pdev);
-    Q_ASSERT(widget);
-
-    // Someone either called QPainter::setRedirected in the widget's paint event
-    // right before this painter was created (or begin was called) or
-    // sent a paint event directly to the widget.
-    if (!widget->d_func()->redirectDev)
-        return false;
-
-    QPainter *sp = widget->d_func()->sharedPainter();
-    if (!sp || !sp->isActive())
-        return false;
-
-    if (sp->paintEngine()->paintDevice() != widget->d_func()->redirectDev)
-        return false;
-
-    // Check if we're attempting to paint outside a paint event.
-    if (!sp->d_ptr->engine->hasFeature(QPaintEngine::PaintOutsidePaintEvent)
-        && !widget->testAttribute(Qt::WA_PaintOutsidePaintEvent)
-        && !widget->testAttribute(Qt::WA_WState_InPaintEvent)) {
-
-        qWarning("QPainter::begin: Widget painting can only begin as a result of a paintEvent");
-        return false;
-    }
 
     // Save the current state of the shared painter and assign
     // the current d_ptr to the shared painter's d_ptr.
@@ -298,14 +273,14 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q->d_ptr->state);
 
     // Now initialize the painter with correct widget properties.
-    q->initFrom(widget);
+    q->initFrom(pdev);
     QPoint offset;
-    widget->d_func()->redirected(&offset);
+    pdev->redirected(&offset);
     offset += q->d_ptr->engine->coordinateOffset();
 
     // Update system rect.
-    q->d_ptr->state->ww = q->d_ptr->state->vw = widget->width();
-    q->d_ptr->state->wh = q->d_ptr->state->vh = widget->height();
+    q->d_ptr->state->ww = q->d_ptr->state->vw = pdev->width();
+    q->d_ptr->state->wh = q->d_ptr->state->vh = pdev->height();
 
     // Update matrix.
     if (q->d_ptr->state->WxF) {
@@ -319,13 +294,13 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     q->d_ptr->updateMatrix();
 
     QPaintEnginePrivate *enginePrivate = q->d_ptr->engine->d_func();
-    if (enginePrivate->currentClipWidget == widget) {
+    if (enginePrivate->currentClipDevice == pdev) {
         enginePrivate->systemStateChanged();
         return true;
     }
 
     // Update system transform and clip.
-    enginePrivate->currentClipWidget = widget;
+    enginePrivate->currentClipDevice = pdev;
     enginePrivate->setSystemTransform(q->d_ptr->state->matrix);
     return true;
 }
@@ -1536,8 +1511,8 @@ QPainter::~QPainter()
 QPaintDevice *QPainter::device() const
 {
     Q_D(const QPainter);
-    if (isActive() && d->engine->d_func()->currentClipWidget)
-        return d->engine->d_func()->currentClipWidget;
+    if (isActive() && d->engine->d_func()->currentClipDevice)
+        return d->engine->d_func()->currentClipDevice;
     return d->original_device;
 }
 
@@ -1745,22 +1720,9 @@ bool QPainter::begin(QPaintDevice *pd)
 
     d->helper_device = pd;
     d->original_device = pd;
-    QPaintDevice *rpd = 0;
 
     QPoint redirectionOffset;
-    // We know for sure that redirection is broken when the widget is inside
-    // its paint event, so it's safe to use our hard-coded redirection. However,
-    // there IS one particular case we still need to support, and that's
-    // when people call QPainter::setRedirected in the widget's paint event right
-    // before any painter is created (or QPainter::begin is called). In that
-    // particular case our hard-coded redirection is restored and the redirection
-    // is retrieved from QPainter::redirected (as before).
-    if (pd->devType() == QInternal::Widget)
-        rpd = static_cast<QWidget *>(pd)->d_func()->redirected(&redirectionOffset);
-
-    if (!rpd)
-        rpd = redirected(pd, &redirectionOffset);
-
+    QPaintDevice *rpd = pd->redirected(&redirectionOffset);
     if (rpd)
         pd = rpd;
 
@@ -1803,6 +1765,8 @@ bool QPainter::begin(QPaintDevice *pd)
         d->engine->state = d->state;
 
     switch (pd->devType()) {
+#if 0
+        // is this needed any more??
         case QInternal::Widget:
         {
             const QWidget *widget = static_cast<const QWidget *>(pd);
@@ -1810,13 +1774,6 @@ bool QPainter::begin(QPaintDevice *pd)
 
             const bool paintOutsidePaintEvent = widget->testAttribute(Qt::WA_PaintOutsidePaintEvent);
             const bool inPaintEvent = widget->testAttribute(Qt::WA_WState_InPaintEvent);
-            if(!d->engine->hasFeature(QPaintEngine::PaintOutsidePaintEvent)
-                && !paintOutsidePaintEvent && !inPaintEvent) {
-                qWarning("QPainter::begin: Widget painting can only begin as a "
-                         "result of a paintEvent");
-                qt_cleanup_painter_state(d);
-                return false;
-            }
 
             // Adjust offset for alien widgets painting outside the paint event.
             if (!inPaintEvent && paintOutsidePaintEvent && !widget->internalWinId()
@@ -1826,6 +1783,7 @@ bool QPainter::begin(QPaintDevice *pd)
             }
             break;
         }
+#endif
         case QInternal::Pixmap:
         {
             QPixmap *pm = static_cast<QPixmap *>(pd);
@@ -1886,8 +1844,7 @@ bool QPainter::begin(QPaintDevice *pd)
     // Copy painter properties from original paint device,
     // required for QPixmap::grabWidget()
     if (d->original_device->devType() == QInternal::Widget) {
-        QWidget *widget = static_cast<QWidget *>(d->original_device);
-        initFrom(widget);
+        initFrom(d->original_device);
     } else {
         d->state->layoutDirection = Qt::LayoutDirectionAuto;
         // make sure we have a font compatible with the paintdevice
@@ -7462,29 +7419,7 @@ void QPainter::setRedirected(const QPaintDevice *device,
 {
     Q_ASSERT(device != 0);
 
-    bool hadInternalWidgetRedirection = false;
-    if (device->devType() == QInternal::Widget) {
-        const QWidgetPrivate *widgetPrivate = static_cast<const QWidget *>(device)->d_func();
-        // This is the case when the widget is in a paint event.
-        if (widgetPrivate->redirectDev) {
-            // Remove internal redirection and put it back into the global redirection list.
-            QPoint oldOffset;
-            QPaintDevice *oldReplacement = widgetPrivate->redirected(&oldOffset);
-            const_cast<QWidgetPrivate *>(widgetPrivate)->restoreRedirected();
-            setRedirected(device, oldReplacement, oldOffset);
-            hadInternalWidgetRedirection = true;
-        }
-    }
-
-    QPoint roffset;
-    QPaintDevice *rdev = redirected(replacement, &roffset);
-
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    *redirections += QPaintDeviceRedirection(device, rdev ? rdev : replacement, offset + roffset,
-                                             hadInternalWidgetRedirection ? redirections->size() - 1 : -1);
-    globalRedirectionAtomic()->ref();
+    qWarning() << "QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead";
 }
 
 /*!
@@ -7506,29 +7441,7 @@ void QPainter::setRedirected(const QPaintDevice *device,
  */
 void QPainter::restoreRedirected(const QPaintDevice *device)
 {
-    Q_ASSERT(device != 0);
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    for (int i = redirections->size()-1; i >= 0; --i) {
-        if (redirections->at(i) == device) {
-            globalRedirectionAtomic()->deref();
-            const int internalWidgetRedirectionIndex = redirections->at(i).internalWidgetRedirectionIndex;
-            redirections->removeAt(i);
-            // Restore the internal widget redirection, i.e. remove it from the global
-            // redirection list and put it back into QWidgetPrivate. The index is only set when
-            // someone call QPainter::setRedirected in a widget's paint event and we internally
-            // have a redirection set (typically set in QWidgetPrivate::drawWidget).
-            if (internalWidgetRedirectionIndex >= 0) {
-                Q_ASSERT(internalWidgetRedirectionIndex < redirections->size());
-                const QPaintDeviceRedirection &redirectionDevice = redirections->at(internalWidgetRedirectionIndex);
-                QWidget *widget = static_cast<QWidget *>(const_cast<QPaintDevice *>(device));
-                widget->d_func()->setRedirected(redirectionDevice.replacement, redirectionDevice.offset);
-                redirections->removeAt(internalWidgetRedirectionIndex);
-            }
-            return;
-        }
-    }
+    qWarning() << "QPainter::restoreRedirected(): ignoring call to deprecated function, use QWidget::render() instead";
 }
 
 /*!
@@ -7550,28 +7463,6 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
 */
 QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 {
-    Q_ASSERT(device != 0);
-
-    if (device->devType() == QInternal::Widget) {
-        const QWidgetPrivate *widgetPrivate = static_cast<const QWidget *>(device)->d_func();
-        if (widgetPrivate->redirectDev)
-            return widgetPrivate->redirected(offset);
-    }
-
-    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
-        return 0;
-
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    for (int i = redirections->size()-1; i >= 0; --i)
-        if (redirections->at(i) == device) {
-            if (offset)
-                *offset = redirections->at(i).offset;
-            return redirections->at(i).replacement;
-        }
-    if (offset)
-        *offset = QPoint(0, 0);
     return 0;
 }
 

@@ -703,6 +703,8 @@ protected:
 
     int metric(PaintDeviceMetric) const;
     void init(QPainter *painter) const;
+    QPaintDevice *redirected(QPoint *offset) const;
+    QPainter *sharedPainter() const;
 
     virtual void inputMethodEvent(QInputMethodEvent *);
 public:

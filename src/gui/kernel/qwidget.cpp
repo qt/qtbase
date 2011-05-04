@@ -5559,7 +5559,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 if (!sharedPainter)
                     paintEngine->d_func()->systemRect = QRect();
                 else
-                    paintEngine->d_func()->currentClipWidget = 0;
+                    paintEngine->d_func()->currentClipDevice = 0;
                 paintEngine->d_func()->systemClip = QRegion();
             }
             q->setAttribute(Qt::WA_WState_InPaintEvent, false);
@@ -12514,6 +12514,27 @@ void QWidget::init(QPainter *painter) const
     QFont f(font(), const_cast<QWidget *>(this));
     painter->d_func()->state->deviceFont = f;
     painter->d_func()->state->font = f;
+}
+
+QPaintDevice *QWidget::redirected(QPoint *offset) const
+{
+    return d_func()->redirected(offset);
+}
+
+QPainter *QWidget::sharedPainter() const
+{
+    // Someone sent a paint event directly to the widget
+    if (!d_func()->redirectDev)
+        return 0;
+
+    QPainter *sp = d_func()->sharedPainter();
+    if (!sp || !sp->isActive())
+        return 0;
+
+    if (sp->paintEngine()->paintDevice() != d_func()->redirectDev)
+        return 0;
+
+    return sp;
 }
 
 /*!

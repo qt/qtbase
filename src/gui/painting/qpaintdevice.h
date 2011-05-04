@@ -106,6 +106,8 @@ protected:
     QPaintDevice();
     virtual int metric(PaintDeviceMetric metric) const;
     virtual void init(QPainter *painter) const;
+    virtual QPaintDevice *redirected(QPoint *offset) const;
+    virtual QPainter *sharedPainter() const;
 
     ushort        painters;                        // refcount
 
@@ -113,6 +115,7 @@ private:
     Q_DISABLE_COPY(QPaintDevice)
 
     friend class QPainter;
+    friend class QPainterPrivate;
     friend class QFontEngineMac;
     friend class QX11PaintEngine;
     friend Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, PaintDeviceMetric metric);
