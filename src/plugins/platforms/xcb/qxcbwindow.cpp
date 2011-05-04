@@ -51,7 +51,7 @@
 
 #include <xcb/xcb_icccm.h>
 
-#include <private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qwindowsurface_p.h>
 
 #include <QtGui/QWindowSystemInterface>
@@ -114,8 +114,8 @@ QXcbWindow::QXcbWindow(QWindow *window)
     QRect rect = window->geometry();
 
     xcb_window_t xcb_parent_id = m_screen->root();
-    if (window->parent() && window->parent()->windowHandle())
-        xcb_parent_id = static_cast<QXcbWindow *>(window->parent()->windowHandle())->xcb_window();
+    if (window->parent() && window->parent()->handle())
+        xcb_parent_id = static_cast<QXcbWindow *>(window->parent()->handle())->xcb_window();
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (window->surfaceType() == QWindow::OpenGLSurface
@@ -503,7 +503,7 @@ void QXcbWindow::requestActivateWindow()
 
 QPlatformGLContext *QXcbWindow::glContext() const
 {
-    if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
         printf("no opengl\n");
         return 0;
     }

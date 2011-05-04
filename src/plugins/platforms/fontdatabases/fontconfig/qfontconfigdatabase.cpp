@@ -46,7 +46,6 @@
 
 #include <QtCore/QElapsedTimer>
 
-#include <QtGui/private/qapplication_p.h>
 #include <QtGui/QPlatformScreen>
 
 #include <QtGui/private/qfontengine_ft_p.h>

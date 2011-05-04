@@ -43,7 +43,7 @@
 
 #include "qxcbscreen.h"
 
-#include <QtGui/private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 #include <QtCore/QMap>
 
 #include <QtCore/QDebug>
@@ -109,7 +109,7 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
     if (window) {
         screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window));
     }else {
-        screen = static_cast<QXcbScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
+        screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens()[0]);
     }
     return screen;
 }

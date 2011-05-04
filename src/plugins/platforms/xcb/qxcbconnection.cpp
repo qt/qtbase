@@ -46,7 +46,7 @@
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QAbstractEventDispatcher>
 
 #include <QtCore/QDebug>
