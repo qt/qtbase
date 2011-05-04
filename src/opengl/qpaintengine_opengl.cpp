@@ -2358,8 +2358,8 @@ void QOpenGLPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOpe
         } else {
 #ifndef Q_WS_QWS
             // Only use the system clip if we're currently rendering a widget with a GL painter.
-            if (d->currentClipWidget) {
-                QWidgetPrivate *widgetPrivate = qt_widget_private(d->currentClipWidget->window());
+            if (d->currentClipDevice) {
+                QWidgetPrivate *widgetPrivate = qt_widget_private(static_cast<QWidget *>(d->currentClipDevice)->window());
                 d->use_system_clip = widgetPrivate->extra && widgetPrivate->extra->inRenderWithPainter;
             }
 #endif

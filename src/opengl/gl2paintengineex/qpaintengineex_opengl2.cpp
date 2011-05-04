@@ -2357,8 +2357,8 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
     if (systemClip.isEmpty()) {
         useSystemClip = false;
     } else {
-        if (q->paintDevice()->devType() == QInternal::Widget && currentClipWidget) {
-            QWidgetPrivate *widgetPrivate = qt_widget_private(currentClipWidget->window());
+        if (q->paintDevice()->devType() == QInternal::Widget && currentClipDevice) {
+            QWidgetPrivate *widgetPrivate = qt_widget_private(static_cast<QWidget *>(currentClipDevice)->window());
             useSystemClip = widgetPrivate->extra && widgetPrivate->extra->inRenderWithPainter;
         } else {
             useSystemClip = true;
