@@ -501,7 +501,13 @@ void QHttpSocketEngine::slotSocketConnected()
     data += path;
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n"
-            "User-Agent: Mozilla/5.0\r\n"
+            "User-Agent: ";
+    QVariant v = property("_q_user-agent");
+    if (v.isValid())
+        data += v.toByteArray();
+    else
+        data += "Mozilla/5.0";
+    data += "\r\n"
             "Host: " + peerAddress + "\r\n";
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
     //qDebug() << "slotSocketConnected: priv=" << priv << (priv ? (int)priv->method : -1);

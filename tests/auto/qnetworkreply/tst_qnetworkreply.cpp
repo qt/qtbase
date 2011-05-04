@@ -4970,7 +4970,9 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
 
     manager.setProxy(proxy);
-    QNetworkReplyPtr reply = manager.get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
+    QNetworkReplyPtr reply = manager.get(request);
     manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
@@ -4988,6 +4990,12 @@ void tst_QNetworkReply::httpProxyCommands()
 
     QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
+
+    //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
+    int uapos = proxyServer.receivedData.indexOf("User-Agent");
+    int uaend = proxyServer.receivedData.indexOf("\r\n", uapos);
+    QByteArray uaheader = proxyServer.receivedData.mid(uapos, uaend - uapos);
+    QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
 }
 
 class ProxyChangeHelper : public QObject {

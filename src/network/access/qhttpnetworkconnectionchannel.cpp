@@ -579,6 +579,12 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             connectHost = connection->d_func()->networkProxy.hostName();
             connectPort = connection->d_func()->networkProxy.port();
         }
+        if (socket->proxy().type() == QNetworkProxy::HttpProxy) {
+            // Make user-agent field available to HTTP proxy socket engine (QTBUG-17223)
+            QByteArray value = request.headerField("user-agent");
+            if (!value.isEmpty())
+                socket->setProperty("_q_user-agent", value);
+        }
 #endif
         if (ssl) {
 #ifndef QT_NO_OPENSSL

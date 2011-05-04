@@ -556,6 +556,10 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
         q->setErrorString(QAbstractSocket::tr("Operation on socket is not supported"));
         return false;
     }
+#ifndef QT_NO_NETWORKPROXY
+    //copy user agent to socket engine (if it has been set)
+    socketEngine->setProperty("_q_user-agent", q->property("_q_user-agent"));
+#endif
     if (!socketEngine->initialize(q->socketType(), protocol)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::initSocketLayer(%s, %s) failed (%s)",
