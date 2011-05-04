@@ -23,6 +23,8 @@ HEADERS = \
         qxcbwindowsurface.h \
         qxcbnativeinterface.h
 
+QT += gui-private
+
 contains(QT_CONFIG, opengl) {
     QT += opengl
 

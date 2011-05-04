@@ -110,6 +110,12 @@ WId QWindow::winId() const
     return d->platformWindow->winId();
 }
 
+QWindow *QWindow::parent() const
+{
+    Q_D(const QWindow);
+    return d->parentWindow;
+}
+
 /**
   Sets the parent Window. This will lead to the windowing system managing the clip of the window, so it will be clipped to the parent window.
   Setting parent to be 0(NULL) means map it as a top level window. If the parent window has grabbed its window system resources, then the current window will also grab its window system resources.
