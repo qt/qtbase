@@ -103,6 +103,9 @@ public:
     static int exec();
     bool notify(QObject *, QEvent *);
 
+Q_SIGNALS:
+    void fontDatabaseChanged();
+
 protected:
     bool event(QEvent *);
     bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
@@ -116,6 +119,7 @@ private:
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
 #endif
+    friend class QFontDatabasePrivate;
 };
 
 QT_END_NAMESPACE

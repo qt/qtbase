@@ -91,7 +91,7 @@ QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget
     if (topData)
         screenIndex = topData->screenIndex;
     QPlatformIntegration *integration =
-            QApplicationPrivate::platformIntegration();
+            QGuiApplicationPrivate::platformIntegration();
     return integration->screens()[screenIndex];
 }
 

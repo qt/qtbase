@@ -101,7 +101,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (!surface ) {
         if (win) {
-            surface = QApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
+            surface = QGuiApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
             q->setWindowSurface(surface);
         } else {
             q->setAttribute(Qt::WA_PaintOnScreen,true);
@@ -122,7 +122,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
-    QApplicationPrivate::platformIntegration()->moveToScreen(q, topData()->screenIndex);
+    QGuiApplicationPrivate::platformIntegration()->moveToScreen(q, topData()->screenIndex);
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
@@ -218,7 +218,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             maybeTopData()->screenIndex = targetScreen;
         // only if it is already created
         if (q->testAttribute(Qt::WA_WState_Created)) {
-            QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
+            QPlatformIntegration *platform = QGuiApplicationPrivate::platformIntegration();
             platform->moveToScreen(q, targetScreen);
         }
     }

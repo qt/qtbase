@@ -884,6 +884,17 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
     return layout_direction;
 }
 
+/*!
+    \since 4.5
+    \fn void QGuiApplication::fontDatabaseChanged()
+
+    This signal is emitted when application fonts are loaded or removed.
+
+    \sa QFontDatabase::addApplicationFont(),
+    QFontDatabase::addApplicationFontFromData(),
+    QFontDatabase::removeAllApplicationFonts(),
+    QFontDatabase::removeApplicationFont()
+*/
 
 
 QT_END_NAMESPACE

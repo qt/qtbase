@@ -352,7 +352,7 @@ void QApplication::restoreOverrideCursor()
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
 
     QList<QPlatformScreen *> screens = pi->screens();
     QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
@@ -382,7 +382,7 @@ void QApplication::alert(QWidget *, int)
 
 QPlatformNativeInterface *QApplication::platformNativeInterface()
 {
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->nativeInterface();
 }
 

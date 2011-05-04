@@ -64,14 +64,14 @@ bool QClipboard::event(QEvent *e)
 
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) return 0;
     return clipboard->mimeData(mode);
 }
 
 void QClipboard::setMimeData(QMimeData* src, Mode mode)
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) return;
 
     clipboard->setMimeData(src,mode);
@@ -81,7 +81,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
 
 bool QClipboard::supportsMode(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     return clipboard->supportsMode(mode);
 }
 

@@ -74,7 +74,7 @@ EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
 
 static QPlatformScreen *screenForDevice(QPaintDevice *device)
 {
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
 
     QList<QPlatformScreen *> screens = pi->screens();
 

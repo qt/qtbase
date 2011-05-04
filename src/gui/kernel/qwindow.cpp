@@ -86,7 +86,7 @@ void QWindow::create()
 {
     Q_D(QWindow);
     if (!d->platformWindow) {
-        d->platformWindow = QApplicationPrivate::platformIntegration()->createPlatformWindow(this);
+        d->platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(this);
         d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
         if (!d->windowTitle.isNull())
             d->platformWindow->setWindowTitle(d->windowTitle);

@@ -402,7 +402,6 @@ private:
     friend class QTextControl;
 #endif
     friend class QAction;
-    friend class QFontDatabasePrivate;
 
 #if defined(Q_WS_QWS)
     friend class QInputContext;

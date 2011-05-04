@@ -48,7 +48,7 @@
 #include "qpainter.h"
 #include "qhash.h"
 #include "qdatastream.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qstringlist.h"
 
 #include "qthread.h"
@@ -77,7 +77,7 @@
 #endif
 #ifdef Q_WS_QPA
 #include <QtGui/qplatformscreen_qpa.h>
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #endif
 
 #include <QMutexLocker>
@@ -180,9 +180,9 @@ Q_GUI_EXPORT int qt_defaultDpiX()
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (pi) {
-        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+        QPlatformScreen *screen = pi->screens().at(0);
         const QSize screenSize = screen->geometry().size();
         const QSize physicalSize = screen->physicalSize();
         dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
@@ -219,9 +219,9 @@ Q_GUI_EXPORT int qt_defaultDpiY()
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (pi) {
-        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+        QPlatformScreen *screen = pi->screens().at(0);
         const QSize screenSize = screen->geometry().size();
         const QSize physicalSize = screen->physicalSize();
         dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
@@ -448,9 +448,9 @@ QFontEngineData::~QFontEngineData()
     Use QFontMetrics to get measurements, e.g. the pixel length of a
     string using QFontMetrics::width().
 
-    Note that a QApplication instance must exist before a QFont can be
+    Note that a QGuiApplication instance must exist before a QFont can be
     used. You can set the application's default font with
-    QApplication::setFont().
+    QGuiApplication::setFont().
 
     If a chosen font does not include all the characters that
     need to be displayed, QFont will try to find the characters in the
@@ -781,10 +781,10 @@ void QFont::detach()
 /*!
     Constructs a font object that uses the application's default font.
 
-    \sa QApplication::setFont(), QApplication::font()
+    \sa QGuiApplication::setFont(), QGuiApplication::font()
 */
 QFont::QFont()
-    : d(QApplication::font().d.data()), resolve_mask(0)
+    : d(QGuiApplication::font().d.data()), resolve_mask(0)
 {
 }
 
@@ -804,7 +804,7 @@ QFont::QFont()
     algorithm.
 
     \sa Weight, setFamily(), setPointSize(), setWeight(), setItalic(),
-    setStyleHint() QApplication::font()
+    setStyleHint() QGuiApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)

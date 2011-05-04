@@ -43,7 +43,7 @@
 #include "qfontdatabase.h"
 #include "qdebug.h"
 #include "qalgorithms.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qvarlengtharray.h" // here or earlier - workaround for VC++6
 #include "qthread.h"
 #include "qmutex.h"
@@ -51,7 +51,7 @@
 #include "qfontengine_p.h"
 
 #ifdef Q_WS_QPA
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformfontdatabase_qpa.h>
 #include "qabstractfileengine.h"
 #endif
@@ -103,34 +103,34 @@ static int getFontWeight(const QString &weightString)
     // Test in decreasing order of commonness
     if (s == QLatin1String("medium") ||
         s == QLatin1String("normal")
-        || s.compare(QApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Normal"), Qt::CaseInsensitive) == 0)
         return QFont::Normal;
     if (s == QLatin1String("bold")
-        || s.compare(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive) == 0)
         return QFont::Bold;
     if (s == QLatin1String("demibold") || s == QLatin1String("demi bold")
-        || s.compare(QApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Demi Bold"), Qt::CaseInsensitive) == 0)
         return QFont::DemiBold;
     if (s == QLatin1String("black")
-        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return QFont::Black;
     if (s == QLatin1String("light"))
         return QFont::Light;
 
     if (s.contains(QLatin1String("bold"))
-        || s.contains(QApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
+        || s.contains(QCoreApplication::translate("QFontDatabase", "Bold"), Qt::CaseInsensitive)) {
         if (s.contains(QLatin1String("demi"))
-            || s.compare(QApplication::translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
+            || s.compare(QCoreApplication::translate("QFontDatabase", "Demi"), Qt::CaseInsensitive) == 0)
             return (int) QFont::DemiBold;
         return (int) QFont::Bold;
     }
 
     if (s.contains(QLatin1String("light"))
-        || s.compare(QApplication::translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Light"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Light;
 
     if (s.contains(QLatin1String("black"))
-        || s.compare(QApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
+        || s.compare(QCoreApplication::translate("QFontDatabase", "Black"), Qt::CaseInsensitive) == 0)
         return (int) QFont::Black;
 
     return (int) QFont::Normal;
@@ -264,7 +264,7 @@ struct QtFontStyle
             pixelSizes[count].fileName.~QByteArray();
 #endif
 #if defined (Q_WS_QPA)
-            QPlatformIntegration *integration = QApplicationPrivate::platformIntegration();
+            QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
             if (integration) { //on shut down there will be some that we don't release.
                 integration->fontDatabase()->releaseHandle(pixelSizes[count].handle);
             }
@@ -297,10 +297,10 @@ QtFontStyle::Key::Key(const QString &styleString)
     weight = getFontWeight(styleString);
 
     if (styleString.contains(QLatin1String("Italic"))
-        || styleString.contains(QApplication::translate("QFontDatabase", "Italic")))
+        || styleString.contains(QCoreApplication::translate("QFontDatabase", "Italic")))
         style = QFont::StyleItalic;
     else if (styleString.contains(QLatin1String("Oblique"))
-             || styleString.contains(QApplication::translate("QFontDatabase", "Oblique")))
+             || styleString.contains(QCoreApplication::translate("QFontDatabase", "Oblique")))
         style = QFont::StyleOblique;
 }
 
@@ -748,7 +748,7 @@ void QFontDatabasePrivate::invalidate()
 {
     QFontCache::instance()->clear();
     free();
-    emit static_cast<QApplication *>(QApplication::instance())->fontDatabaseChanged();
+    emit static_cast<QGuiApplication *>(QCoreApplication::instance())->fontDatabaseChanged();
 }
 
 QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
@@ -1506,21 +1506,21 @@ static QString styleStringHelper(int weight, QFont::Style style)
 {
     QString result;
     if (weight >= QFont::Black)
-        result = QApplication::translate("QFontDatabase", "Black");
+        result = QCoreApplication::translate("QFontDatabase", "Black");
     else if (weight >= QFont::Bold)
-        result = QApplication::translate("QFontDatabase", "Bold");
+        result = QCoreApplication::translate("QFontDatabase", "Bold");
     else if (weight >= QFont::DemiBold)
-        result = QApplication::translate("QFontDatabase", "Demi Bold");
+        result = QCoreApplication::translate("QFontDatabase", "Demi Bold");
     else if (weight < QFont::Normal)
-        result = QApplication::translate("QFontDatabase", "Light");
+        result = QCoreApplication::translate("QFontDatabase", "Light");
 
     if (style == QFont::StyleItalic)
-        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Italic");
+        result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Italic");
     else if (style == QFont::StyleOblique)
-        result += QLatin1Char(' ') + QApplication::translate("QFontDatabase", "Oblique");
+        result += QLatin1Char(' ') + QCoreApplication::translate("QFontDatabase", "Oblique");
 
     if (result.isEmpty())
-        result = QApplication::translate("QFontDatabase", "Normal");
+        result = QCoreApplication::translate("QFontDatabase", "Normal");
 
     return result.simplified();
 }
@@ -2002,7 +2002,7 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 
     QtFontFoundry allStyles(foundryName);
     QtFontFamily *f = d->family(familyName);
-    if (!f) return QApplication::font();
+    if (!f) return QGuiApplication::font();
 
     for (int j = 0; j < f->count; j++) {
         QtFontFoundry *foundry = f->foundries[j];
@@ -2016,7 +2016,7 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
     QtFontStyle *s = bestStyle(&allStyles, styleKey);
 
     if (!s) // no styles found?
-        return QApplication::font();
+        return QGuiApplication::font();
     QFont fnt(family, pointSize, s->key.weight);
     fnt.setStyle((QFont::Style)s->key.style);
     return fnt;
@@ -2326,7 +2326,7 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
     }
-    return QApplication::translate("QFontDatabase", name);
+    return QCoreApplication::translate("QFontDatabase", name);
 }
 
 

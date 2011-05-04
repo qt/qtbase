@@ -2318,17 +2318,6 @@ void QApplication::aboutQt()
     \sa QWidget::setFocus(), QWidget::clearFocus(), Qt::FocusReason
 */
 
-/*!
-    \since 4.5
-    \fn void QApplication::fontDatabaseChanged()
-
-    This signal is emitted when application fonts are loaded or removed.
-
-    \sa QFontDatabase::addApplicationFont(),
-    QFontDatabase::addApplicationFontFromData(),
-    QFontDatabase::removeAllApplicationFonts(),
-    QFontDatabase::removeApplicationFont()
-*/
 
 #ifndef QT_NO_TRANSLATION
 #if defined(Q_WS_MAC)

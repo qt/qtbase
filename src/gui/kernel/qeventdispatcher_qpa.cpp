@@ -144,8 +144,8 @@ public:
         if (!m_integrationInitialised) {
             QEventDispatcherQPAPrivate *that = const_cast<QEventDispatcherQPAPrivate *>(this);
             if (qApp && (qApp->thread() == QThread::currentThread())) { // guiThread
-                if (QApplicationPrivate::platformIntegration()) {
-                    that->eventLoopIntegration = QApplicationPrivate::platformIntegration()->createEventLoopIntegration();
+                if (QGuiApplicationPrivate::platformIntegration()) {
+                    that->eventLoopIntegration = QGuiApplicationPrivate::platformIntegration()->createEventLoopIntegration();
                     if (that->eventLoopIntegration) {
                         that->selectWorker = new SelectWorker(that);
                         that->barrierBeforeBlocking = new Rendezvous;

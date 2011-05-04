@@ -135,7 +135,7 @@ bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     static bool init = false;
     if (!init) {
-        if (QApplicationPrivate::platformIntegration()->createEventLoopIntegration()) {
+        if (QGuiApplicationPrivate::platformIntegration()->createEventLoopIntegration()) {
             qWarning("Eventloop integration is not supported by the glib event dispatcher");
             qWarning("Use the UNIX event dispatcher by defining environment variable QT_NO_GLIB=1");
         }
