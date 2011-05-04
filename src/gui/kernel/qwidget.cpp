@@ -2316,26 +2316,6 @@ void QWidgetPrivate::updateIsTranslucent()
 #endif
 }
 
-/*!
-    \fn void QPixmap::fill(const QWidget *widget, const QPoint &offset)
-
-    Fills the pixmap with the \a widget's background color or pixmap
-    according to the given offset.
-
-    The QPoint \a offset defines a point in widget coordinates to
-    which the pixmap's top-left pixel will be mapped to. This is only
-    significant if the widget has a background pixmap; otherwise the
-    pixmap will simply be filled with the background color of the
-    widget.
-*/
-
-void QPixmap::fill( const QWidget *widget, const QPoint &off )
-{
-    QPainter p(this);
-    p.translate(-off);
-    widget->d_func()->paintBackground(&p, QRect(off, size()));
-}
-
 static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     Q_ASSERT(painter);

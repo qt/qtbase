@@ -910,20 +910,23 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
     return writer->write(toImage());
 }
 
-// #### Qt5: needs fixing
-// The implementation (and documentation) of
-// QPixmap::fill(const QWidget *, const QPoint &)
-// is in qwidget.cpp
-
 /*!
-    \fn void QPixmap::fill(const QWidget *widget, int x, int y)
+    \fn void QPixmap::fill(const QPaintDevice *device, int x, int y)
     \overload
 
-    Fills the pixmap with the \a widget's background color or pixmap.
+    \obsolete
+
+    Fills the pixmap with the \a device's background color or pixmap.
     The given point, (\a x, \a y), defines an offset in widget
     coordinates to which the pixmap's top-left pixel will be mapped
     to.
 */
+
+void QPixmap::fill(const QPaintDevice *, const QPoint &)
+{
+    qWarning() << "QPixmap::fill(const QPaintDevice *device, const QPoint &offset) is deprecated, ignored";
+}
+
 
 /*!
     Fills the pixmap with the given \a color.
@@ -1012,7 +1015,7 @@ static void sendResizeEvents(QWidget *target)
 #endif
 
 /*!
-    \fn QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rectangle)
+    \fn QPixmap QPixmap::grabWidget(QPaintDevice * widget, const QRect &rectangle)
 
     Creates a pixmap and paints the given \a widget, restricted by the
     given \a rectangle, in it. If the \a widget has any children, then
@@ -1041,7 +1044,7 @@ static void sendResizeEvents(QWidget *target)
     \sa grabWindow()
 */
 
-QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
+QPixmap QPixmap::grabWidget(QPaintDevice * widget, const QRect &rect)
 {
     // ### Qt5: should we keep or remove this method?
     // SC solution would be to install a callback form QtWidgets, but ugly.

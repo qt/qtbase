@@ -103,8 +103,8 @@ public:
     static int defaultDepth();
 
     void fill(const QColor &fillColor = Qt::white);
-    void fill(const QWidget *widget, const QPoint &ofs);
-    inline void fill(const QWidget *widget, int xofs, int yofs) { fill(widget, QPoint(xofs, yofs)); }
+    void fill(const QPaintDevice *device, const QPoint &ofs);
+    inline void fill(const QPaintDevice *device, int xofs, int yofs) { fill(device, QPoint(xofs, yofs)); }
 
     QBitmap mask() const;
     void setMask(const QBitmap &);
@@ -122,8 +122,8 @@ public:
     QBitmap createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode) const;
 
     static QPixmap grabWindow(WId, int x=0, int y=0, int w=-1, int h=-1);
-    static QPixmap grabWidget(QWidget *widget, const QRect &rect);
-    static inline QPixmap grabWidget(QWidget *widget, int x=0, int y=0, int w=-1, int h=-1)
+    static QPixmap grabWidget(QPaintDevice *widget, const QRect &rect);
+    static inline QPixmap grabWidget(QPaintDevice *widget, int x=0, int y=0, int w=-1, int h=-1)
     { return grabWidget(widget, QRect(x, y, w, h)); }
 
 

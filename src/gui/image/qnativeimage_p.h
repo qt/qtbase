@@ -58,9 +58,6 @@
 #ifdef Q_WS_WIN
 #include "qt_windows.h"
 
-#elif defined(Q_WS_X11)
-#include <private/qt_x11_p.h>
-
 #elif defined(Q_WS_MAC)
 #include <private/qt_mac_p.h>
 
@@ -73,7 +70,7 @@ class QWindow;
 class QNativeImage
 {
 public:
-    QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer = false, QWindow *widget = 0);
+    QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer = false, QWindow *window = 0);
     ~QNativeImage();
 
     inline int width() const;
@@ -87,11 +84,6 @@ public:
     HDC hdc;
     HBITMAP bitmap;
     HBITMAP null_bitmap;
-
-#elif defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
-    XImage *xshmimg;
-    Pixmap xshmpm;
-    XShmSegmentInfo xshminfo;
 
 #elif defined(Q_WS_MAC)
     CGContextRef cg;

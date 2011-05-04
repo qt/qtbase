@@ -69,7 +69,7 @@ typedef struct {
 } BITMAPINFO_MASK;
 
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool isTextBuffer, QWindow *)
 {
 #ifndef Q_WS_WINCE
     Q_UNUSED(isTextBuffer);
@@ -146,102 +146,9 @@ QImage::Format QNativeImage::systemFormat()
     return QImage::Format_RGB32;
 }
 
-
-#elif defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
-
-QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* isTextBuffer */, QWidget *widget)
-    : xshmimg(0), xshmpm(0)
-{
-    if (!X11->use_mitshm) {
-        image = QImage(width, height, format);
-        // follow good coding practice and set xshminfo attributes, though values not used in this case
-        xshminfo.readOnly = true;
-        xshminfo.shmaddr = 0;
-        xshminfo.shmid = 0;
-        xshminfo.shmseg = 0;
-        return;
-    }
-
-    QX11Info info = widget->x11Info();
-
-    int dd = info.depth();
-    Visual *vis = (Visual*) info.visual();
-
-    xshmimg = XShmCreateImage(X11->display, vis, dd, ZPixmap, 0, &xshminfo, width, height);
-    if (!xshmimg) {
-        qWarning("QNativeImage: Unable to create shared XImage.");
-        return;
-    }
-
-    bool ok;
-    xshminfo.shmid = shmget(IPC_PRIVATE, xshmimg->bytes_per_line * xshmimg->height,
-                            IPC_CREAT | 0777);
-    ok = xshminfo.shmid != -1;
-    if (ok) {
-        xshmimg->data = (char*)shmat(xshminfo.shmid, 0, 0);
-        xshminfo.shmaddr = xshmimg->data;
-        ok = (xshminfo.shmaddr != (char*)-1);
-        if (ok)
-            image = QImage((uchar *)xshmimg->data, width, height, format);
-    }
-    xshminfo.readOnly = false;
-    if (ok) {
-        ok = XShmAttach(X11->display, &xshminfo);
-        XSync(X11->display, False);
-        if (shmctl(xshminfo.shmid, IPC_RMID, 0) == -1)
-            qWarning() << "Error while marking the shared memory segment to be destroyed";
-    }
-    if (!ok) {
-        qWarning() << "QNativeImage: Unable to attach to shared memory segment.";
-        if (xshmimg->data) {
-            free(xshmimg->data);
-            xshmimg->data = 0;
-        }
-        XDestroyImage(xshmimg);
-        xshmimg = 0;
-        if (xshminfo.shmaddr)
-            shmdt(xshminfo.shmaddr);
-        if (xshminfo.shmid != -1)
-            shmctl(xshminfo.shmid, IPC_RMID, 0);
-        return;
-    }
-    if (X11->use_mitshm_pixmaps) {
-        xshmpm = XShmCreatePixmap(X11->display, DefaultRootWindow(X11->display), xshmimg->data,
-                                  &xshminfo, width, height, dd);
-        if (!xshmpm) {
-            qWarning() << "QNativeImage: Unable to create shared Pixmap.";
-        }
-    }
-}
-
-
-QNativeImage::~QNativeImage()
-{
-    if (!xshmimg)
-        return;
-
-    if (xshmpm) {
-        XFreePixmap(X11->display, xshmpm);
-        xshmpm = 0;
-    }
-    XShmDetach(X11->display, &xshminfo);
-    xshmimg->data = 0;
-    XDestroyImage(xshmimg);
-    xshmimg = 0;
-    shmdt(xshminfo.shmaddr);
-    shmctl(xshminfo.shmid, IPC_RMID, 0);
-}
-
-QImage::Format QNativeImage::systemFormat()
-{
-    if (QX11Info::appDepth() == 16)
-        return QImage::Format_RGB16;
-    return QImage::Format_RGB32;
-}
-
 #elif defined(Q_WS_MAC)
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWindow *)
     : image(width, height, format)
 {
 
@@ -266,7 +173,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
 #endif
 
     cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(),
-                               QCoreGraphicsPaintEngine::macDisplayColorSpace(widget), cgflags);
+                               QCoreGraphicsPaintEngine::macDisplayColorSpace(0), cgflags);
     CGContextTranslateCTM(cg, 0, height);
     CGContextScaleCTM(cg, 1, -1);
 
