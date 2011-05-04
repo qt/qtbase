@@ -1,6 +1,7 @@
 TARGET = qminimal
 include(../../qpluginbase.pri)
 
+QT = core-private gui-private
 DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES =   main.cpp \
