@@ -52,7 +52,7 @@
 #include "qdnd_p.h"
 #include "qevent_p.h"
 #include "qgesture.h"
-#include "qgesture_p.h"
+#include "private/qgesture_p.h"
 
 #ifdef Q_OS_SYMBIAN
 #include "private/qcore_symbian_p.h"

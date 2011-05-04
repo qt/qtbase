@@ -43,7 +43,7 @@
 #include "qapplication.h"
 #include "qeventdispatcher_qpa_p.h"
 #include "private/qeventdispatcher_unix_p.h"
-#include "qapplication_p.h"
+#include "private/qapplication_p.h"
 #include "qplatformeventloopintegration_qpa.h"
 
 #include <QWindowSystemInterface>

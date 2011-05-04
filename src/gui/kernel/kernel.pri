@@ -11,25 +11,15 @@ HEADERS += \
 	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
+        kernel/qbackingstore_p.h \
 	kernel/qboxlayout.h \
-	kernel/qclipboard.h \
-	kernel/qcursor.h \
 	kernel/qdesktopwidget.h \
-	kernel/qdrag.h \
-	kernel/qdnd_p.h \
-	kernel/qevent.h \
-	kernel/qevent_p.h \
 	kernel/qformlayout.h \
 	kernel/qgridlayout.h \
-	kernel/qkeysequence.h \
 	kernel/qlayout.h \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
 	kernel/qlayoutitem.h \
-	kernel/qmime.h \
-	kernel/qsessionmanager.h \
-	kernel/qshortcut.h \
-	kernel/qshortcutmap_p.h \
 	kernel/qsizepolicy.h \
 	kernel/qpalette.h \
 	kernel/qstackedlayout.h \
@@ -39,8 +29,6 @@ HEADERS += \
     kernel/qwidget_p.h \
 	kernel/qwidgetaction.h \
 	kernel/qwidgetaction_p.h \
-	kernel/qwindowdefs.h \
-	kernel/qkeymapper_p.h \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
 	kernel/qstandardgestures_p.h \
@@ -48,36 +36,25 @@ HEADERS += \
 	kernel/qgesturemanager_p.h \
 	kernel/qsoftkeymanager_p.h \
     kernel/qsoftkeymanager_common_p.h \
-	kernel/qguiplatformplugin_p.h \
-        kernel/qhexstring_p.h
+        kernel/qguiplatformplugin_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
 	kernel/qactiongroup.cpp \
 	kernel/qapplication.cpp \
-	kernel/qboxlayout.cpp \
-	kernel/qclipboard.cpp \
-	kernel/qcursor.cpp \
-	kernel/qdrag.cpp \
-	kernel/qdnd.cpp \
-	kernel/qevent.cpp \
+        kernel/qbackingstore.cpp \
+        kernel/qboxlayout.cpp \
 	kernel/qformlayout.cpp \
 	kernel/qgridlayout.cpp \
-	kernel/qkeysequence.cpp \
 	kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
-        kernel/qmime.cpp \
         kernel/qpalette.cpp \
-	kernel/qshortcut.cpp \
-	kernel/qshortcutmap.cpp \
 	kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
-	kernel/qguivariant.cpp \
 	kernel/qwhatsthis.cpp \
 	kernel/qwidget.cpp \
 	kernel/qwidgetaction.cpp \
-	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
 	kernel/qstandardgestures.cpp \
 	kernel/qgesturerecognizer.cpp \
@@ -184,68 +161,15 @@ unix:x11 {
 }
 
 qpa {
-	HEADERS += \
-                kernel/qgenericpluginfactory_qpa.h \
-                kernel/qgenericplugin_qpa.h \
-                kernel/qeventdispatcher_qpa_p.h \
-                kernel/qwindowsysteminterface_qpa.h \
-                kernel/qwindowsysteminterface_qpa_p.h \
-                kernel/qplatformintegration_qpa.h \
-                kernel/qplatformscreen_qpa.h \
-                kernel/qplatformintegrationfactory_qpa_p.h \
-                kernel/qplatformintegrationplugin_qpa.h \
-                kernel/qplatformwindow_qpa.h \
-                kernel/qplatformglcontext_qpa.h \
-                kernel/qwindowcontext_qpa.h \
+        HEADERS += \
                 kernel/qdesktopwidget_qpa_p.h \
-                kernel/qplatformeventloopintegration_qpa.h \
-                kernel/qplatformcursor_qpa.h \
-                kernel/qplatformclipboard_qpa.h \
-                kernel/qplatformnativeinterface_qpa.h \
-                kernel/qwindowformat_qpa.h \
-                kernel/qguiapplication.h \
-                kernel/qguiapplication_p.h \
                 kernel/qwidgetwindow_qpa_p.h \
-                kernel/qwindow_p.h \
-                kernel/qwindow.h
 
-	SOURCES += \
+        SOURCES += \
                 kernel/qapplication_qpa.cpp \
-                kernel/qclipboard_qpa.cpp \
-                kernel/qcursor_qpa.cpp \
-                kernel/qdnd_qpa.cpp \
                 kernel/qdesktopwidget_qpa.cpp \
-                kernel/qgenericpluginfactory_qpa.cpp \
-                kernel/qgenericplugin_qpa.cpp \
-                kernel/qkeymapper_qpa.cpp \
                 kernel/qwidget_qpa.cpp \
-                kernel/qeventdispatcher_qpa.cpp \
-                kernel/qwindowsysteminterface_qpa.cpp \
-                kernel/qplatformintegration_qpa.cpp \
-                kernel/qplatformscreen_qpa.cpp \
-                kernel/qplatformintegrationfactory_qpa.cpp \
-                kernel/qplatformintegrationplugin_qpa.cpp \
-                kernel/qplatformwindow_qpa.cpp \
-                kernel/qplatformeventloopintegration_qpa.cpp \
-                kernel/qplatformglcontext_qpa.cpp \
-                kernel/qwindowcontext_qpa.cpp \
-                kernel/qplatformcursor_qpa.cpp \
-                kernel/qplatformclipboard_qpa.cpp \
-                kernel/qplatformnativeinterface_qpa.cpp \
-                kernel/qsessionmanager_qpa.cpp \
-                kernel/qwindowformat_qpa.cpp \
-                kernel/qguiapplication.cpp \
                 kernel/qwidgetwindow_qpa.cpp \
-                kernel/qwindow.cpp
-
-        contains(QT_CONFIG, glib) {
-            SOURCES += \
-		kernel/qeventdispatcher_glib_qpa.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_glib_qpa_p.h
-            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-            LIBS_PRIVATE +=$$QT_LIBS_GLIB
-	}
 }
 
 !qpa:!x11:mac {

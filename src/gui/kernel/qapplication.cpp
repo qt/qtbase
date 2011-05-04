@@ -61,7 +61,7 @@
 #include "qtranslator.h"
 #include "qvariant.h"
 #include "qwidget.h"
-#include "qdnd_p.h"
+#include "private/qdnd_p.h"
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
@@ -70,7 +70,7 @@
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
-#include "qkeymapper_p.h"
+#include "private/qkeymapper_p.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -94,7 +94,7 @@
 #endif
 
 #include "qapplication_p.h"
-#include "qevent_p.h"
+#include "private/qevent_p.h"
 #include "qwidget_p.h"
 
 #include "qapplication.h"

@@ -52,7 +52,7 @@
 #include "qmenu.h"
 #include "qmenubar.h"
 #include "qshortcut.h"
-#include "qapplication_p.h"
+#include "private/qapplication_p.h"
 #include <private/qaction_p.h>
 #include <private/qkeymapper_p.h>
 #include <private/qwidget_p.h>
@@ -337,7 +337,7 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
         ushort orgType = e->t;
         e->t = QEvent::ShortcutOverride;
         e->ignore();
-        QApplication::sendEvent(o, e);
+        QCoreApplication::sendEvent(o, e);
         e->t = orgType;
         e->spont = wasSpontaneous;
         if (e->isAccepted()) {

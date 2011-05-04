@@ -44,7 +44,7 @@
 #ifndef QT_NO_CLIPBOARD
 
 #include "qapplication.h"
-#include "qapplication_p.h"
+#include "private/qapplication_p.h"
 #include "qpixmap.h"
 #include "qclipboard_p.h"
 #include "qvariant.h"

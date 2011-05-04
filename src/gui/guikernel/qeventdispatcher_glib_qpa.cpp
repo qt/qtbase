@@ -47,7 +47,7 @@
 #include "qapplication.h"
 
 #include <glib.h>
-#include "qapplication_p.h"
+#include "private/qapplication_p.h"
 
 #include <qdebug.h>
 

@@ -47,7 +47,7 @@
 #include "qwindowcontext_qpa.h"
 
 #include "qwindow_p.h"
-#include "qapplication_p.h"
+#include "qguiapplication_p.h"
 
 #include <QtCore/QDebug>
 

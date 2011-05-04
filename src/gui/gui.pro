@@ -26,12 +26,15 @@ symbian {
     include(s60framework/s60framework.pri)
 }
 
+# stuff that goes into new QtGui
+include(guikernel/guikernel.pri)
+include(image/image.pri)
+include(text/text.pri)
+include(painting/painting.pri)
+
 #modules
 include(animation/animation.pri)
 include(kernel/kernel.pri)
-include(image/image.pri)
-include(painting/painting.pri)
-include(text/text.pri)
 include(styles/styles.pri)
 include(widgets/widgets.pri)
 include(dialogs/dialogs.pri)

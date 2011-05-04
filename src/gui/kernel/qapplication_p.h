@@ -74,7 +74,7 @@
 #endif
 #ifdef Q_WS_QPA
 #include <QWindowSystemInterface>
-#include "qwindowsysteminterface_qpa_p.h"
+#include "private/qwindowsysteminterface_qpa_p.h"
 #include "QtGui/qplatformintegration_qpa.h"
 #include "QtGui/private/qguiapplication_p.h"
 #endif

@@ -43,9 +43,9 @@
 #include "qcolormap.h"
 #include "qpixmapcache.h"
 #if !defined(QT_NO_GLIB)
-#include "qeventdispatcher_glib_qpa_p.h"
+#include "private/qeventdispatcher_glib_qpa_p.h"
 #endif
-#include "qeventdispatcher_qpa_p.h"
+#include "private/qeventdispatcher_qpa_p.h"
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif
@@ -54,14 +54,14 @@
 #include "private/qevent_p.h"
 
 #include "qgenericpluginfactory_qpa.h"
-#include "qplatformintegrationfactory_qpa_p.h"
+#include "private/qplatformintegrationfactory_qpa_p.h"
 #include <qdesktopwidget.h>
 
 #include <qinputcontext.h>
 #include <QPlatformCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
-#include "qwindowsysteminterface_qpa_p.h"
+#include "private/qwindowsysteminterface_qpa_p.h"
 #include <QPlatformIntegration>
 
 #include "qdesktopwidget_qpa_p.h"

@@ -140,11 +140,6 @@ unix:!mac:!symbian|qpa {
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|qpa|symbian {
-        SOURCES += painting/qbackingstore.cpp
-        HEADERS += painting/qbackingstore_p.h
-}
-
 qpa {
         SOURCES += \
                 painting/qcolormap_qpa.cpp \
