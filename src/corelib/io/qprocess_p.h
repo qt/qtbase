@@ -182,6 +182,18 @@ public:
     void insert(const QProcessEnvironmentPrivate &other);
 };
 
+template<> Q_INLINE_TEMPLATE void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
+{
+    if (d && d->ref == 1)
+        return;
+    QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
+                                     : new QProcessEnvironmentPrivate);
+    x->ref.ref();
+    if (d && !d->ref.deref())
+        delete d;
+    d = x;
+}
+
 class QProcessPrivate : public QIODevicePrivate
 {
 public:

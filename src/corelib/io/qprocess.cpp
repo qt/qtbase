@@ -144,18 +144,6 @@ QT_BEGIN_NAMESPACE
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
 
-template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
-{
-    if (d && d->ref == 1)
-        return;
-    QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
-                                     : new QProcessEnvironmentPrivate);
-    x->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = x;
-}
-
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
