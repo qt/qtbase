@@ -35,7 +35,6 @@ HEADERS += \
         painting/qrasterizer_p.h \
         painting/qregion.h \
         painting/qstroker_p.h \
-        painting/qstylepainter.h \
         painting/qtessellator_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
@@ -72,7 +71,6 @@ SOURCES += \
         painting/qrasterizer.cpp \
         painting/qregion.cpp \
         painting/qstroker.cpp \
-        painting/qstylepainter.cpp \
         painting/qtessellator.cpp \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \

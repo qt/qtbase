@@ -10,7 +10,8 @@ HEADERS += \
 	styles/qstylehelper_p.h \
 	styles/qproxystyle.h \
 	styles/qproxystyle_p.h \
-	styles/qstylesheetstyle_p.h
+        styles/qstylepainter.h \
+        styles/qstylesheetstyle_p.h
 
 SOURCES += \
 	styles/qstyle.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
 	styles/qstylehelper.cpp \
 	styles/qcommonstyle.cpp \
 	styles/qproxystyle.cpp \
+        styles/qstylepainter.cpp \
         styles/qstylesheetstyle.cpp \
         styles/qstylesheetstyle_default.cpp
 
