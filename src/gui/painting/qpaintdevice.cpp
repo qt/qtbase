@@ -67,6 +67,10 @@ int QPaintDevice::metric(PaintDeviceMetric) const
 }
 #endif
 
+void QPaintDevice::init(QPainter *painter) const
+{
+}
+
 Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric)
 {
     return device->metric(metric);

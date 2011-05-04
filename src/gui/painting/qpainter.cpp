@@ -1556,25 +1556,23 @@ bool QPainter::isActive() const
 
 /*!
     Initializes the painters pen, background and font to the same as
-    the given \a widget. This function is called automatically when the
-    painter is opened on a QWidget.
+    the given \a paint device.
+
+    \obsolete
 
     \sa begin(), {QPainter#Settings}{Settings}
 */
-void QPainter::initFrom(const QWidget *widget)
+void QPainter::initFrom(const QPaintDevice *device)
 {
-    Q_ASSERT_X(widget, "QPainter::initFrom(const QWidget *widget)", "Widget cannot be 0");
+    Q_ASSERT_X(device, "QPainter::initFrom(const QPaintDevice *device)", "QPaintDevice cannot be 0");
     Q_D(QPainter);
     if (!d->engine) {
         qWarning("QPainter::initFrom: Painter not active, aborted");
         return;
     }
 
-    const QPalette &pal = widget->palette();
-    d->state->pen = QPen(pal.brush(widget->foregroundRole()), 0);
-    d->state->bgBrush = pal.brush(widget->backgroundRole());
-    d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
-    d->state->font = d->state->deviceFont;
+    device->init(this);
+
     if (d->extended) {
         d->extended->penChanged();
     } else if (d->engine) {

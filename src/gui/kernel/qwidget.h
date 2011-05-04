@@ -702,6 +702,7 @@ protected:
     virtual void changeEvent(QEvent *);
 
     int metric(PaintDeviceMetric) const;
+    void init(QPainter *painter) const;
 
     virtual void inputMethodEvent(QInputMethodEvent *);
 public:

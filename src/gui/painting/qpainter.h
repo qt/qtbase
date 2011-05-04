@@ -133,7 +133,7 @@ public:
     bool end();
     bool isActive() const;
 
-    void initFrom(const QWidget *widget);
+    void initFrom(const QPaintDevice *device);
 
     enum CompositionMode {
         CompositionMode_SourceOver,
@@ -470,6 +470,7 @@ private:
 
     QScopedPointer<QPainterPrivate> d_ptr;
 
+    friend class QWidget;
     friend class QFontEngine;
     friend class QFontEngineBox;
     friend class QFontEngineFT;

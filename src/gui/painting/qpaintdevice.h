@@ -105,6 +105,7 @@ public:
 protected:
     QPaintDevice();
     virtual int metric(PaintDeviceMetric metric) const;
+    virtual void init(QPainter *painter) const;
 
     ushort        painters;                        // refcount
 

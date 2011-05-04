@@ -12506,6 +12506,16 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     \a m is the metric to get.
 */
 
+void QWidget::init(QPainter *painter) const
+{
+    const QPalette &pal = palette();
+    painter->d_func()->state->pen = QPen(pal.brush(foregroundRole()), 0);
+    painter->d_func()->state->bgBrush = pal.brush(backgroundRole());
+    QFont f(font(), const_cast<QWidget *>(this));
+    painter->d_func()->state->deviceFont = f;
+    painter->d_func()->state->font = f;
+}
+
 /*!
     \fn void QWidget::setMask(const QRegion &region)
     \overload
