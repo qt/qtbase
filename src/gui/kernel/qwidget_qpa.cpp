@@ -64,9 +64,8 @@ void q_createNativeChildrenAndSetParent(QWindow *parentWindow, const QWidget *pa
                 if (childWidget->testAttribute(Qt::WA_NativeWindow)) {
                     if (!childWidget->windowHandle())
                         childWidget->winId();
-                }
-                if (childWidget->windowHandle()) {
-                    childWidget->windowHandle()->setParent(parentWindow);
+                    if (childWidget->windowHandle())
+                        childWidget->windowHandle()->setParent(parentWindow);
                 } else {
                     q_createNativeChildrenAndSetParent(parentWindow,childWidget);
                 }
@@ -93,6 +92,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     QWindow *win = topData()->window;
 
+    if (!q->isWindow()) {
+        if (QWidget *nativeParent = q->nativeParentWidget()) {
+            if (nativeParent->windowHandle())
+                win->setParent(nativeParent->windowHandle());
+        }
+    }
+
     win->setWindowFlags(data.window_flags);
     win->setGeometry(q->geometry());
     win->create();
@@ -111,16 +117,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     setWinId(win->winId());
 
 //    first check children. and create them if necessary
-    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
-
-    //if we we have a parent, then set correct parent;
-    if (!q->isWindow()) {
-        if (QWidget *nativeParent = q->nativeParentWidget()) {
-            if (nativeParent->windowHandle()) {
-                win->setParent(nativeParent->windowHandle());
-            }
-        }
-    }
+//    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
 
     QGuiApplicationPrivate::platformIntegration()->moveToScreen(q, topData()->screenIndex);
 //    qDebug() << "create_sys" << q << q->internalWinId();
@@ -380,6 +377,9 @@ void QWidgetPrivate::show_sys()
     }
 
     QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
+
+    if (!q->isWindow() && !q->testAttribute(Qt::WA_NativeWindow))
+        return;
 
     QWindow *window = q->windowHandle();
     if (window) {

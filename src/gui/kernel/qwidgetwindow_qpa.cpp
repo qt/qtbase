@@ -108,6 +108,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
     QMouseEvent translated(event->type(), mapped, event->globalPos(), event->button(), event->buttons(), event->modifiers());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
+
+    if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::RightButton) {
+        QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
+        QGuiApplication::sendSpontaneousEvent(widget, &e);
+    }
 }
 
 void QWidgetWindow::handleKeyEvent(QKeyEvent *event)

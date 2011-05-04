@@ -113,6 +113,10 @@ QXcbWindow::QXcbWindow(QWindow *window)
 
     QRect rect = window->geometry();
 
+    xcb_window_t xcb_parent_id = m_screen->root();
+    if (window->parent() && window->parent()->windowHandle())
+        xcb_parent_id = static_cast<QXcbWindow *>(window->parent()->windowHandle())->xcb_window();
+
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (window->surfaceType() == QWindow::OpenGLSurface
         && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
@@ -133,11 +137,11 @@ QXcbWindow::QXcbWindow(QWindow *window)
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //XCB_USE_GLX
         if (visualInfo) {
-            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), m_screen->root(), visualInfo->visual, AllocNone);
+            Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
             a.colormap = cmap;
-            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), m_screen->root(), rect.x(), rect.y(), rect.width(), rect.height(),
+            m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWColormap, &a);
 
@@ -153,7 +157,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
                                      m_window,                        // window id
-                                     m_screen->root(),                // parent window id
+                                     xcb_parent_id,                   // parent window id
                                      rect.x(),
                                      rect.y(),
                                      rect.width(),

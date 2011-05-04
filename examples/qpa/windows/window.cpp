@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include <private/qguiapplication_qpa_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qwindowsurface_p.h>
 
 #include <QPainter>
@@ -15,21 +15,16 @@ QColor colorTable[] =
 };
 
 Window::Window(QWindow *parent)
-    : QWindow(0)
+    : QWindow(parent)
     , m_backgroundColorIndex(colorIndexId++)
 {
     setSurfaceType(RasterSurface);
     setWindowTitle(QLatin1String("Window"));
 
     if (parent)
-        setGeometry(QRect(10, 10, 40, 40));
+        setGeometry(QRect(160, 120, 320, 240));
     else
         setGeometry(QRect(10, 10, 640, 480));
-
-    if (parent) {
-        setParent(parent);
-        setGeometry(QRect(160, 120, 320, 240));
-    }
 
     create();
     QGuiApplicationPrivate::platformIntegration()->createWindowSurface(this, winId());

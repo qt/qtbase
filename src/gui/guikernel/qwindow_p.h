@@ -59,6 +59,7 @@ public:
         : QObjectPrivate()
         , windowFlags(Qt::Window)
         , surfaceType(QWindow::RasterSurface)
+        , parentWindow(0)
         , platformWindow(0)
         , visible(false)
         , glContext(0)

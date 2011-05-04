@@ -54,11 +54,10 @@
 QT_BEGIN_NAMESPACE
 
 QWindow::QWindow(QWindow *parent)
-    : QObject(*new QWindowPrivate())
+    : QObject(*new QWindowPrivate(), parent)
 {
-    if (parent) {
-        setParent(parent);
-    }
+    Q_D(QWindow);
+    d->parentWindow = parent;
 }
 
 QWindow::~QWindow()
@@ -90,15 +89,15 @@ void QWindow::create()
         d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
         if (!d->windowTitle.isNull())
             d->platformWindow->setWindowTitle(d->windowTitle);
-    }
-    Q_ASSERT(d->platformWindow);
 
-    QObjectList childObjects = children();
-    for (int i = 0; i < childObjects.size(); i ++) {
-        QObject *object = childObjects.at(i);
-        if(object->isWindowType()) {
-            QWindow *window = static_cast<QWindow *>(object);
-            window->setParent(this);
+        QObjectList childObjects = children();
+        for (int i = 0; i < childObjects.size(); i ++) {
+            QObject *object = childObjects.at(i);
+            if(object->isWindowType()) {
+                QWindow *window = static_cast<QWindow *>(object);
+                if (window->d_func()->platformWindow)
+                    window->d_func()->platformWindow->setParent(d->platformWindow);
+            }
         }
     }
 }
@@ -120,26 +119,20 @@ void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
 
-    if (d->parent == parent)
+    if (d->parentWindow == parent)
         return;
 
     QObject::setParent(parent);
 
-    if (parent) {
-        if (parent->d_func()->platformWindow) {
-            if(!d->platformWindow) {
-                create();
-            }
+    if (d->platformWindow) {
+        if (parent && parent->d_func()->platformWindow) {
             d->platformWindow->setParent(parent->d_func()->platformWindow);
-            d->parent = parent;
-        }
-    } else  {
-        d->parent = 0;
-        if (d->parentWindow) {
+        } else if (!parent) {
             d->platformWindow->setParent(0);
         }
     }
 
+    d->parentWindow = parent;
 }
 
 void QWindow::setWindowFormat(const QWindowFormat &format)

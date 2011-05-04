@@ -44,6 +44,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtCore/qlocale.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 
