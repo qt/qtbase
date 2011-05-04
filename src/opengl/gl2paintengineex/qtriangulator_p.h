@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QVertexIndexVector
+class Q_OPENGL_EXPORT QVertexIndexVector
 {
 public:
     enum Type {
@@ -111,7 +111,7 @@ private:
     QVector<quint16> indices16;
 };
 
-struct QTriangleSet
+struct Q_OPENGL_EXPORT QTriangleSet
 {
     inline QTriangleSet() { }
     inline QTriangleSet(const QTriangleSet &other) : vertices(other.vertices), indices(other.indices) { }
@@ -122,14 +122,14 @@ struct QTriangleSet
     QVertexIndexVector indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
-struct QPolylineSet
+struct Q_OPENGL_EXPORT QPolylineSet
 {
     inline QPolylineSet() { }
     inline QPolylineSet(const QPolylineSet &other) : vertices(other.vertices), indices(other.indices) { }
     QPolylineSet &operator = (const QPolylineSet &other) {vertices = other.vertices; indices = other.indices; return *this;}
 
     QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
-    QVertexIndexVector indices;
+    QVertexIndexVector indices; // End of polyline is marked with -1.
 };
 
 // The vertex coordinates of the returned triangle set will be rounded to a grid with a mesh size
@@ -139,9 +139,9 @@ struct QPolylineSet
 // 'lod' is the level of detail. Default is 1. Curves are split into more lines when 'lod' is higher.
 QTriangleSet qTriangulate(const qreal *polygon, int count, uint hint = QVectorPath::PolygonHint | QVectorPath::OddEvenFill, const QTransform &matrix = QTransform());
 QTriangleSet qTriangulate(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
-QTriangleSet qTriangulate(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
+QTriangleSet Q_OPENGL_EXPORT qTriangulate(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 QPolylineSet qPolyline(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
-QPolylineSet qPolyline(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
+QPolylineSet Q_OPENGL_EXPORT qPolyline(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 
 QT_END_NAMESPACE
 

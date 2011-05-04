@@ -49,7 +49,6 @@
 
 QWaylandEglIntegration::QWaylandEglIntegration(struct wl_display *waylandDisplay)
     : mWaylandDisplay(waylandDisplay)
-    , mNativeEglDisplay(wl_egl_display_create(mWaylandDisplay))
 {
     qDebug() << "Using Wayland-EGL";
 }
@@ -63,7 +62,7 @@ QWaylandEglIntegration::~QWaylandEglIntegration()
 void QWaylandEglIntegration::initialize()
 {
     EGLint major,minor;
-    mEglDisplay = eglGetDisplay((EGLNativeDisplayType)mNativeEglDisplay);
+    mEglDisplay = eglGetDisplay(mWaylandDisplay);
     if (mEglDisplay == NULL) {
         qWarning("EGL not available");
     } else {
@@ -82,11 +81,6 @@ QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWindow *window)
 EGLDisplay QWaylandEglIntegration::eglDisplay() const
 {
     return mEglDisplay;
-}
-
-wl_egl_display * QWaylandEglIntegration::nativeDisplay() const
-{
-    return mNativeEglDisplay;
 }
 
 QWaylandGLIntegration *QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)

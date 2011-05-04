@@ -712,17 +712,13 @@ QStaticTextItem::~QStaticTextItem()
 {
     if (m_userData != 0 && !m_userData->ref.deref())
         delete m_userData;
-    if (!m_fontEngine->ref.deref())
-        delete m_fontEngine;
+    m_fontEngine->ref.deref();
 }
 
 void QStaticTextItem::setFontEngine(QFontEngine *fe)
 {
-    if (m_fontEngine != 0) {
-        if (!m_fontEngine->ref.deref())
-            delete m_fontEngine;
-    }
-
+    if (m_fontEngine != 0)
+        m_fontEngine->ref.deref();
     m_fontEngine = fe;
     if (m_fontEngine != 0)
         m_fontEngine->ref.ref();

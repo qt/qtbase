@@ -1877,7 +1877,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
     }
 
     Q_ASSERT(d->socketEngine);
-    forever {
+    do {
         bool readyToRead = false;
         bool readyToWrite = false;
         if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
@@ -1904,7 +1904,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
         if (state() != ConnectedState)
             return false;
-    }
+    } while (qt_timeout_value(msecs, stopWatch.elapsed()) > 0);
     return false;
 }
 

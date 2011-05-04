@@ -1,7 +1,7 @@
 TARGET = qconnmanbearer
 include(../../qpluginbase.pri)
 
-QT = core network dbus
+QT = core network-private dbus
 
 HEADERS += qconnmanservice_linux_p.h \
            qofonoservice_linux_p.h \

@@ -11,6 +11,7 @@ build_all:!build_pass {
     CONFIG += release
 }
 TARGET = demo_shared
+QT += gui-private
 
 SOURCES += \
 	arthurstyle.cpp\

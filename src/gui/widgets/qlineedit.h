@@ -43,6 +43,7 @@
 #define QLINEEDIT_H
 
 #include <QtGui/qframe.h>
+#include <QtGui/qtextcursor.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmargins.h>
 
@@ -157,6 +158,9 @@ public:
 
     void setDragEnabled(bool b);
     bool dragEnabled() const;
+
+    void setCursorMoveStyle(QTextCursor::MoveStyle style);
+    QTextCursor::MoveStyle cursorMoveStyle() const;
 
     QString inputMask() const;
     void setInputMask(const QString &inputMask);

@@ -47,26 +47,63 @@
 
 #include <QtDebug>
 
+class EAGLPaintDevice;
+
+@interface PaintDeviceHelper : NSObject {
+    EAGLPaintDevice *device;
+}
+
+@property (nonatomic, assign) EAGLPaintDevice *device;
+
+- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer;
+
+@end
+
 class EAGLPaintDevice : public QGLPaintDevice
 {
 public:
     EAGLPaintDevice(QPlatformWindow *window)
         :QGLPaintDevice(), mWindow(window)
     {
+#if defined(QT_OPENGL_ES_2)
+        helper = [[PaintDeviceHelper alloc] init];
+        helper.device = this;
+        EAGLView *view = static_cast<QUIKitWindow *>(window)->nativeView();
+        view.delegate = helper;
+        m_thisFBO = view.fbo;
+#endif
     }
 
+    ~EAGLPaintDevice()
+    {
+#if defined(QT_OPENGL_ES_2)
+        [helper release];
+#endif
+    }
+
+    void setFramebuffer(GLuint buffer) { m_thisFBO = buffer; }
     int devType() const { return QInternal::OpenGL; }
     QSize size() const { return mWindow->geometry().size(); }
     QGLContext* context() const { return QGLContext::fromPlatformGLContext(mWindow->glContext()); }
 
     QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 
-    void  beginPaint(){
-        QGLPaintDevice::beginPaint();
-    }
 private:
     QPlatformWindow *mWindow;
+    PaintDeviceHelper *helper;
 };
+
+@implementation PaintDeviceHelper
+@synthesize device;
+
+- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer
+{
+    Q_UNUSED(view)
+    if (device)
+        device->setFramebuffer(buffer);
+}
+
+@end
 
 QT_BEGIN_NAMESPACE
 

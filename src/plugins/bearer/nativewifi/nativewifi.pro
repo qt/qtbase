@@ -1,7 +1,7 @@
 TARGET = qnativewifibearer
 include(../../qpluginbase.pri)
 
-QT = core network
+QT = core-private network-private
 
 HEADERS += qnativewifiengine.h \
            platformdefs.h \

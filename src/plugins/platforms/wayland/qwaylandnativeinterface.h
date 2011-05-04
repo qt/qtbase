@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QWAYLANDNATIVEINTERFACE_H
+#define QWAYLANDNATIVEINTERFACE_H
 
-#if !defined(QT_NO_RAWFONT)
+#include "qwaylandscreen.h"
 
-#include "qrawfont_p.h"
-#include "qfontengine_coretext_p.h"
+#include <QtGui/QPlatformNativeInterface>
 
-QT_BEGIN_NAMESPACE
-
-void QRawFontPrivate::platformCleanUp()
+class QWaylandNativeInterface : public QPlatformNativeInterface
 {
-}
+public:
+    void *nativeResourceForWidget(const QByteArray &resourceString,
+				  QWidget *widget);
 
-extern int qt_defaultDpi();
+private:
+    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
+};
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           int pixelSize,
-                                           QFont::HintingPreference hintingPreference)
-{
-    // Mac OS X ignores it
-    Q_UNUSED(hintingPreference);
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
-
-    CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
-
-    if (cgFont == NULL) {
-        qWarning("QRawFont::platformLoadFromData: CGFontCreateWithDataProvider failed");
-    } else {
-        QFontDef def;
-        def.pixelSize = pixelSize;
-        def.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-        fontEngine = new QCoreTextFontEngine(cgFont, def);
-        CFRelease(cgFont);
-        fontEngine->ref.ref();
-    }
-}
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_RAWFONT
+#endif // QWAYLANDNATIVEINTERFACE_H

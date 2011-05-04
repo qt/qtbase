@@ -131,7 +131,7 @@ public:
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
-                      unsigned short *logClusters, const HB_CharAttributes *charAttributes) const;
+                      unsigned short *logClusters, const HB_CharAttributes *charAttributes, QScriptItem *) const;
 
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
     virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;

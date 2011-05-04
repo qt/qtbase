@@ -42,7 +42,6 @@
 
 #include <QtTest/QtTest>
 
-
 #include <qtextedit.h>
 #include <qtextcursor.h>
 #include <qtextlist.h>
@@ -69,6 +68,7 @@ typedef QList<keyPairType> pairListType;
 Q_DECLARE_METATYPE(pairListType);
 Q_DECLARE_METATYPE(keyPairType);
 Q_DECLARE_METATYPE(QList<bool>);
+Q_DECLARE_METATYPE(QList<int>);
 
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>
@@ -205,6 +205,11 @@ private slots:
 #ifndef QT_NO_CONTEXTMENU
     void taskQTBUG_7902_contextMenuCrash();
 #endif
+    void bidiVisualMovement_data();
+    void bidiVisualMovement();
+
+    void bidiLogicalMovement_data();
+    void bidiLogicalMovement();
 
 private:
     void createSelection();
@@ -2234,6 +2239,148 @@ void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
     // No crash, it's allright.
 }
 #endif
+
+void tst_QTextEdit::bidiVisualMovement_data()
+{
+    QTest::addColumn<QString>("logical");
+    QTest::addColumn<int>("basicDir");
+    QTest::addColumn<QList<int> >("positionList");
+
+    QTest::newRow("Latin text")
+        << QString::fromUtf8("abc")
+        << (int) QChar::DirL
+        << (QList<int>() << 0 << 1 << 2 << 3);
+    QTest::newRow("Hebrew text, one item")
+        << QString::fromUtf8("\327\220\327\221\327\222")
+        << (int) QChar::DirR
+        << (QList<int>() << 0 << 1 << 2 << 3);
+    QTest::newRow("Hebrew text after Latin text")
+        << QString::fromUtf8("abc\327\220\327\221\327\222")
+        << (int) QChar::DirL
+        << (QList<int>() << 0 << 1 << 2 << 6 << 5 << 4 << 3);
+    QTest::newRow("Latin text after Hebrew text")
+        << QString::fromUtf8("\327\220\327\221\327\222abc")
+        << (int) QChar::DirR
+        << (QList<int>() << 0 << 1 << 2 << 6 << 5 << 4 << 3);
+    QTest::newRow("LTR, 3 items")
+        << QString::fromUtf8("abc\327\220\327\221\327\222abc")
+        << (int) QChar::DirL
+        << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 9);
+    QTest::newRow("RTL, 3 items")
+        << QString::fromUtf8("\327\220\327\221\327\222abc\327\220\327\221\327\222")
+        << (int) QChar::DirR
+        << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 9);
+    QTest::newRow("LTR, 4 items")
+        << QString::fromUtf8("abc\327\220\327\221\327\222abc\327\220\327\221\327\222")
+        << (int) QChar::DirL
+        << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 12 << 11 << 10 << 9);
+    QTest::newRow("RTL, 4 items")
+        << QString::fromUtf8("\327\220\327\221\327\222abc\327\220\327\221\327\222abc")
+        << (int) QChar::DirR
+        << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 12 << 11 << 10 << 9);
+}
+
+void tst_QTextEdit::bidiVisualMovement()
+{
+    QFETCH(QString,      logical);
+    QFETCH(int,          basicDir);
+    QFETCH(QList<int>,   positionList);
+
+    ed->setText(logical);
+
+    QTextOption option = ed->document()->defaultTextOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    ed->document()->setDefaultTextOption(option);
+
+    ed->document()->setDefaultCursorMoveStyle(QTextCursor::Visual);
+    ed->moveCursor(QTextCursor::Start);
+    ed->show();
+
+    bool moved;
+    int i = 0, oldPos, newPos = 0;
+
+    do {
+        oldPos = newPos;
+        QVERIFY(oldPos == positionList[i]);
+        if (basicDir == QChar::DirL) {
+            ed->moveCursor(QTextCursor::Right);
+        } else
+        {
+            ed->moveCursor(QTextCursor::Left);
+        }
+        newPos = ed->textCursor().position();
+        moved = (oldPos != newPos);
+        i++;
+    } while (moved);
+
+    QVERIFY(i == positionList.size());
+
+    do {
+        i--;
+        oldPos = newPos;
+        QVERIFY(oldPos == positionList[i]);
+        if (basicDir == QChar::DirL) {
+            ed->moveCursor(QTextCursor::Left);
+        } else
+        {
+            ed->moveCursor(QTextCursor::Right);
+        }
+        newPos = ed->textCursor().position();
+        moved = (oldPos != newPos);
+    } while (moved && i >= 0);
+}
+
+void tst_QTextEdit::bidiLogicalMovement_data()
+{
+    bidiVisualMovement_data();
+}
+
+void tst_QTextEdit::bidiLogicalMovement()
+{
+    QFETCH(QString,      logical);
+    QFETCH(int,          basicDir);
+
+    ed->setText(logical);
+
+    QTextOption option = ed->document()->defaultTextOption();
+    option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
+    ed->document()->setDefaultTextOption(option);
+
+    ed->document()->setDefaultCursorMoveStyle(QTextCursor::Logical);
+    ed->moveCursor(QTextCursor::Start);
+    ed->show();
+
+    bool moved;
+    int i = 0, oldPos, newPos = 0;
+
+    do {
+        oldPos = newPos;
+        QVERIFY(oldPos == i);
+        if (basicDir == QChar::DirL) {
+            ed->moveCursor(QTextCursor::Right);
+        } else
+        {
+            ed->moveCursor(QTextCursor::Left);
+        }
+        newPos = ed->textCursor().position();
+        moved = (oldPos != newPos);
+        i++;
+    } while (moved);
+
+    do {
+        i--;
+        oldPos = newPos;
+        QVERIFY(oldPos == i);
+        if (basicDir == QChar::DirL) {
+            ed->moveCursor(QTextCursor::Left);
+        } else
+        {
+            ed->moveCursor(QTextCursor::Right);
+        }
+        newPos = ed->textCursor().position();
+        moved = (oldPos != newPos);
+    } while (moved && i >= 0);
+}
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

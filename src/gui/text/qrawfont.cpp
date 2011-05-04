@@ -308,10 +308,10 @@ qreal QRawFont::descent() const
 
    \sa setPixelSize()
 */
-int QRawFont::pixelSize() const
+qreal QRawFont::pixelSize() const
 {
     if (!isValid())
-        return -1;
+        return 0.0;
 
     return d->fontEngine->fontDef.pixelSize;
 }
@@ -577,10 +577,21 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
 /*!
    Sets the pixel size with which this font should be rendered to \a pixelSize.
 */
-void QRawFont::setPixelSize(int pixelSize)
+void QRawFont::setPixelSize(qreal pixelSize)
 {
+    if (d->fontEngine == 0)
+        return;
+
     detach();
-    d->platformSetPixelSize(pixelSize);
+    QFontEngine *oldFontEngine = d->fontEngine;
+
+    d->fontEngine = d->fontEngine->cloneWithSize(pixelSize);
+    if (d->fontEngine != 0)
+        d->fontEngine->ref.ref();
+
+    oldFontEngine->ref.deref();
+    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
+        delete oldFontEngine;
 }
 
 /*!

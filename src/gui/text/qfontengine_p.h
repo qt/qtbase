@@ -235,6 +235,8 @@ public:
 
     virtual int glyphCount() const;
 
+    virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
+
     HB_Font harfbuzzFont() const;
     HB_Face harfbuzzFace() const;
 
@@ -247,6 +249,14 @@ public:
     static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
 
     static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
+
+    enum HintStyle {
+        HintNone,
+        HintLight,
+        HintMedium,
+        HintFull
+    };
+    virtual void setDefaultHintStyle(HintStyle) { }
 
     QAtomicInt ref;
     QFontDef fontDef;

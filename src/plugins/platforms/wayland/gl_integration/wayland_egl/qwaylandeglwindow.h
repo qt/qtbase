@@ -63,7 +63,6 @@ private:
     QWaylandEglIntegration *mEglIntegration;
     QWaylandGLContext *mGLContext;
     struct wl_egl_window *mWaylandEglWindow;
-    EGLConfig mConfig;
 
     const QWaylandWindow *mParentWindow;
 };

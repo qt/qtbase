@@ -180,15 +180,21 @@ public:
     static void updateAnimationTimer();
 
     void installAnimationDriver(QAnimationDriver *driver);
+    void uninstallAnimationDriver(QAnimationDriver *driver);
+    bool canUninstallAnimationDriver(QAnimationDriver *driver);
 
     void restartAnimationTimer();
-    void updateAnimationsTime();
+    void updateAnimationsTime(qint64 timeStep);
+
+    //useful for profiling/debugging
+    int runningAnimationCount() { return animations.count(); }
 
 protected:
     void timerEvent(QTimerEvent *);
 
 private:
     friend class QDefaultAnimationDriver;
+    friend class QAnimationDriver;
 
     QAnimationDriver *driver;
     QDefaultAnimationDriver defaultDriver;

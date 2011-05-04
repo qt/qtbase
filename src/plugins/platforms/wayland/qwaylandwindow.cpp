@@ -146,6 +146,7 @@ void QWaylandWindow::newSurfaceCreated()
 void QWaylandWindow::frameCallback(struct wl_surface *surface, void *data, uint32_t time)
 {
     Q_UNUSED(time);
+    Q_UNUSED(surface);
     QWaylandWindow *self = static_cast<QWaylandWindow*>(data);
     self->mWaitingForFrameSync = false;
 }

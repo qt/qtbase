@@ -1,6 +1,8 @@
 TARGET  = qjpeg
 include(../../qpluginbase.pri)
 
+QT += core-private
+
 QTDIR_build:REQUIRES = "!contains(QT_CONFIG, no-jpeg)"
 
 include(../../../gui/image/qjpeghandler.pri)

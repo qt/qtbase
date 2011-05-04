@@ -334,7 +334,6 @@ static int qCocoaViewCount = 0;
         //
         // Qt will then forward the update to the children.
         if (qwidget->isWindow()) {
-            qwidget->update(qwidget->rect());
             qwidgetprivate->syncBackingStore(qwidget->rect());
         }
     }

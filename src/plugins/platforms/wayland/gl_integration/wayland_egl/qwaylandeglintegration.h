@@ -65,9 +65,6 @@ private:
     struct wl_display *mWaylandDisplay;
 
     EGLDisplay mEglDisplay;
-    struct wl_egl_display *mNativeEglDisplay;
-
-
 };
 
 #endif // QWAYLANDEGLINTEGRATION_H

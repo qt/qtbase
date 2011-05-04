@@ -153,7 +153,8 @@ static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
 {
     return type == QPaintEngine::OpenGL2
             || type == QPaintEngine::OpenVG
-            || type == QPaintEngine::OpenGL;
+            || type == QPaintEngine::OpenGL
+            || type == QPaintEngine::CoreGraphics;
 }
 
 #ifndef QT_NO_DEBUG
@@ -5683,7 +5684,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
     bool paintEngineSupportsTransformations =
             d->extended != 0
             ? qt_paintengine_supports_transformations(d->extended->type())
-            : false;
+            : qt_paintengine_supports_transformations(d->engine->type());
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
         if (!paintEngineSupportsTransformations)

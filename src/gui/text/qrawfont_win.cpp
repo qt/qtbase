@@ -559,7 +559,7 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
         GUID guid;
         CoCreateGuid(&guid);
 
-        uniqueFamilyName = QString::fromLatin1("f")
+        QString uniqueFamilyName = QString::fromLatin1("f")
                 + QString::number(guid.Data1, 36) + QLatin1Char('-')
                 + QString::number(guid.Data2, 36) + QLatin1Char('-')
                 + QString::number(guid.Data3, 36) + QLatin1Char('-')
@@ -613,6 +613,7 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
                 Q_ASSERT(fontEngine->cache_count == 0 && fontEngine->ref == 0);
 
                 // Override the generated font name
+                static_cast<QFontEngineWin *>(fontEngine)->uniqueFamilyName = uniqueFamilyName;
                 fontEngine->fontDef.family = actualFontName;
                 fontEngine->ref.ref();
             }
@@ -699,50 +700,6 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
             fontEngine->fontDef.weight = weightFromInteger(os2Table->weightClass);
         }
     }
-}
-
-void QRawFontPrivate::platformSetPixelSize(int pixelSize)
-{
-    if (fontEngine == NULL)
-        return;
-
-    QFontEngine *oldFontEngine = fontEngine;
-
-#if !defined(QT_NO_DIRECTWRITE)
-    if (fontEngine->type() == QFontEngine::Win)
-#endif
-
-    {
-        QFontDef request = fontEngine->fontDef;
-        QString actualFontName = request.family;
-        if (!uniqueFamilyName.isEmpty())
-            request.family = uniqueFamilyName;
-        request.pixelSize = pixelSize;
-
-        fontEngine = qt_load_font_engine_win(request);
-        if (fontEngine != NULL) {
-            fontEngine->fontDef.family = actualFontName;
-            fontEngine->ref.ref();
-        }
-    }
-
-#if !defined(QT_NO_DIRECTWRITE)
-    else {
-        QFontEngineDirectWrite *dWriteFE = static_cast<QFontEngineDirectWrite *>(fontEngine);
-        fontEngine = new QFontEngineDirectWrite(dWriteFE->m_directWriteFactory,
-                                                dWriteFE->m_directWriteFontFace,
-                                                pixelSize);
-
-        fontEngine->fontDef = dWriteFE->fontDef;
-        fontEngine->fontDef.pixelSize = pixelSize;
-        fontEngine->ref.ref();
-    }
-#endif
-
-    Q_ASSERT(fontEngine != oldFontEngine);
-    oldFontEngine->ref.deref();
-    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
-        delete oldFontEngine;
 }
 
 QT_END_NAMESPACE

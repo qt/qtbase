@@ -64,6 +64,7 @@
 #include "private/qtextformat_p.h"
 #include "QtGui/qtextdocument.h"
 #include "QtGui/qtextobject.h"
+#include "QtGui/qtextcursor.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qurl.h"
@@ -244,6 +245,8 @@ public:
 
     int nextCursorPosition(int position, QTextLayout::CursorMode mode) const;
     int previousCursorPosition(int position, QTextLayout::CursorMode mode) const;
+    int leftCursorPosition(int position) const;
+    int rightCursorPosition(int position) const;
 
     void changeObjectFormat(QTextObject *group, int format);
 
@@ -339,6 +342,7 @@ private:
 
 public:
     QTextOption defaultTextOption;
+    QTextCursor::MoveStyle defaultCursorMoveStyle;
 #ifndef QT_NO_CSSPARSER
     QCss::StyleSheet parsedDefaultStyleSheet;
 #endif

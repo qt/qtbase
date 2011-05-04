@@ -585,6 +585,29 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
 }
 
 /*!
+    \since 4.8
+
+    The default cursor movement style is used by all QTextCursor objects
+    created from the document. The default is QTextCursor::Logical.
+*/
+QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle() const
+{
+    Q_D(const QTextDocument);
+    return d->defaultCursorMoveStyle;
+}
+
+/*!
+    \since 4.8
+
+    Set the default cursor movement style.
+*/
+void QTextDocument::setDefaultCursorMoveStyle(QTextCursor::MoveStyle style)
+{
+    Q_D(QTextDocument);
+    d->defaultCursorMoveStyle = style;
+}
+
+/*!
     \fn void QTextDocument::markContentsDirty(int position, int length)
 
     Marks the contents specified by the given \a position and \a length
@@ -2075,6 +2098,10 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
             html += QLatin1String(" font-size:");
             html += QString::number(defaultCharFormat.fontPointSize());
             html += QLatin1String("pt;");
+        } else if (defaultCharFormat.hasProperty(QTextFormat::FontPixelSize)) {
+            html += QLatin1String(" font-size:");
+            html += QString::number(defaultCharFormat.intProperty(QTextFormat::FontPixelSize));
+            html += QLatin1String("px;");
         }
 
         html += QLatin1String(" font-weight:");
@@ -2155,6 +2182,10 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             html += QLatin1Char(';');
             attributesEmitted = true;
         }
+    } else if (format.hasProperty(QTextFormat::FontPixelSize)) {
+        html += QLatin1String(" font-size:");
+        html += QString::number(format.intProperty(QTextFormat::FontPixelSize));
+        html += QLatin1String("px;");
     }
 
     if (format.hasProperty(QTextFormat::FontWeight)

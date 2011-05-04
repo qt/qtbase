@@ -630,6 +630,17 @@ QFontEngine::Type QFontEngineDirectWrite::type() const
     return QFontEngine::DirectWrite;
 }
 
+QFontEngine *QFontEngineDirectWrite::cloneWithSize(qreal pixelSize) const
+{
+    QFontEngine *fontEngine = new QFontEngineDirectWrite(m_directWriteFactory, m_directWriteFontFace,
+                                                         pixelSize);
+
+    fontEngine->fontDef = fontDef;
+    fontEngine->fontDef.pixelSize = pixelSize;
+
+    return fontEngine;
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_DIRECTWRITE

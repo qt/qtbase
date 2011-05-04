@@ -103,7 +103,7 @@ void QWaylandEglWindow::newSurfaceCreated()
     if (!size.isValid())
         size = QSize(0,0);
 
-    mWaylandEglWindow = wl_egl_window_create(mEglIntegration->nativeDisplay(),mSurface,size.width(),size.height(),visual);
+    mWaylandEglWindow = wl_egl_window_create(mSurface,size.width(),size.height(),visual);
     if (mGLContext) {
         EGLNativeWindowType window(reinterpret_cast<EGLNativeWindowType>(mWaylandEglWindow));
         EGLSurface surface = eglCreateWindowSurface(mEglIntegration->eglDisplay(),mGLContext->eglConfig(),window,NULL);

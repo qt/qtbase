@@ -239,7 +239,7 @@ public:
     bool isCopyOf(const QFont &) const;
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QFont &operator=(QFont &&other)
-    { qSwap(d, other.d); return *this; }
+    { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
 #endif
 
 #ifdef Q_WS_WIN
