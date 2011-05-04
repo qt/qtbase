@@ -72,6 +72,7 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif
 
+#if 0
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWidget *w)
 {
@@ -84,6 +85,7 @@ static inline bool isTransient(const QWidget *w)
              || w->windowType() == Qt::Popup)
             && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
 }
+#endif
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
