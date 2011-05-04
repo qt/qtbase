@@ -43,7 +43,6 @@
 #include "qtextengine_p.h"
 
 #include <qfont.h>
-#include <qapplication.h>
 #include <qpainter.h>
 #include <qvarlengtharray.h>
 #include <qtextformat.h>

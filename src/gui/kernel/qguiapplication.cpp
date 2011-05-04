@@ -62,6 +62,7 @@
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
+#include "private/qkeymapper_p.h"
 
 #ifndef QT_NO_CLIPBOARD
 #include <QtGui/QClipboard>
@@ -882,6 +883,30 @@ void QGuiApplication::setLayoutDirection(Qt::LayoutDirection direction)
 Qt::LayoutDirection QGuiApplication::layoutDirection()
 {
     return layout_direction;
+}
+
+/*!
+    \since 4.2
+
+    Returns the current keyboard input locale.
+*/
+QLocale QGuiApplication::keyboardInputLocale()
+{
+    if (!QGuiApplicationPrivate::checkInstance("keyboardInputLocale"))
+        return QLocale::c();
+    return qt_keymapper_private()->keyboardInputLocale;
+}
+
+/*!
+    \since 4.2
+
+    Returns the current keyboard input direction.
+*/
+Qt::LayoutDirection QGuiApplication::keyboardInputDirection()
+{
+    if (!QGuiApplicationPrivate::checkInstance("keyboardInputDirection"))
+        return Qt::LeftToRight;
+    return qt_keymapper_private()->keyboardInputDirection;
 }
 
 /*!

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qtextoption.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qlist.h"
 
 QT_BEGIN_NAMESPACE
@@ -82,7 +82,7 @@ QTextOption::QTextOption(Qt::Alignment alignment)
       tab(-1),
       d(0)
 {
-    direction = QApplication::layoutDirection();
+    direction = QGuiApplication::layoutDirection();
 }
 
 /*!

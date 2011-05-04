@@ -98,6 +98,9 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
+    static QLocale keyboardInputLocale();
+    static Qt::LayoutDirection keyboardInputDirection();
+
     static QPlatformNativeInterface *platformNativeInterface();
 
     static int exec();

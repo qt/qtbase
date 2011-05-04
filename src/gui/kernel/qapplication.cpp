@@ -5363,30 +5363,6 @@ bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
 }
 
 
-/*!
-    \since 4.2
-
-    Returns the current keyboard input locale.
-*/
-QLocale QApplication::keyboardInputLocale()
-{
-    if (!QApplicationPrivate::checkInstance("keyboardInputLocale"))
-        return QLocale::c();
-    return qt_keymapper_private()->keyboardInputLocale;
-}
-
-/*!
-    \since 4.2
-
-    Returns the current keyboard input direction.
-*/
-Qt::LayoutDirection QApplication::keyboardInputDirection()
-{
-    if (!QApplicationPrivate::checkInstance("keyboardInputDirection"))
-        return Qt::LeftToRight;
-    return qt_keymapper_private()->keyboardInputDirection;
-}
-
 void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget,
                                                           Qt::FocusPolicy focusPolicy,
                                                           Qt::FocusReason focusReason)
