@@ -184,7 +184,7 @@ public:
     bool canUninstallAnimationDriver(QAnimationDriver *driver);
 
     void restartAnimationTimer();
-    void updateAnimationsTime();
+    void updateAnimationsTime(qint64 timeStep);
 
     //useful for profiling/debugging
     int runningAnimationCount() { return animations.count(); }
@@ -194,6 +194,7 @@ protected:
 
 private:
     friend class QDefaultAnimationDriver;
+    friend class QAnimationDriver;
 
     QAnimationDriver *driver;
     QDefaultAnimationDriver defaultDriver;

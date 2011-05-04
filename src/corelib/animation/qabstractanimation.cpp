@@ -201,16 +201,17 @@ void QUnifiedTimer::ensureTimerUpdate()
 {
     QUnifiedTimer *inst = QUnifiedTimer::instance(false);
     if (inst && inst->isPauseTimerActive)
-        inst->updateAnimationsTime();
+        inst->updateAnimationsTime(-1);
 }
 
-void QUnifiedTimer::updateAnimationsTime()
+void QUnifiedTimer::updateAnimationsTime(qint64 timeStep)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
         return;
 
-    qint64 totalElapsed = time.elapsed();
+    qint64 totalElapsed = timeStep >= 0 ? timeStep : time.elapsed();
+
     // ignore consistentTiming in case the pause timer is active
     int delta = (consistentTiming && !isPauseTimerActive) ?
                         timingInterval : totalElapsed - lastTick;
@@ -303,7 +304,7 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
 
     if (event->timerId() == animationTimer.timerId()) {
         // update current time on all top level animations
-        updateAnimationsTime();
+        updateAnimationsTime(-1);
         restartAnimationTimer();
     }
 }
@@ -462,37 +463,56 @@ QAnimationDriver::~QAnimationDriver()
         uninstall();
 }
 
-/*!
-    Advances the animation based on the current time. This function should
-    be continuously called by the driver while the animation is running.
 
-    \internal
+
+/*!
+    Advances the animation based to the specified \a timeStep. This function should
+    be continuously called by the driver subclasses while the animation is running.
+
+    If \a timeStep is positive, it will be used as the current time in the
+    calculations; otherwise, the current clock time will be used.
  */
-void QAnimationDriver::advance()
+
+void QAnimationDriver::advanceAnimation(qint64 timeStep)
 {
     QUnifiedTimer *instance = QUnifiedTimer::instance();
 
     // update current time on all top level animations
-    instance->updateAnimationsTime();
+    instance->updateAnimationsTime(timeStep);
     instance->restartAnimationTimer();
 }
+
+
+
+/*!
+    Advances the animation. This function should be continously called
+    by the driver while the animation is running.
+ */
+
+void QAnimationDriver::advance()
+{
+    advanceAnimation(-1);
+}
+
 
 
 /*!
     Installs this animation driver. The animation driver is thread local and
     will only apply for the thread its installed in.
-
-    \internal
  */
+
 void QAnimationDriver::install()
 {
     QUnifiedTimer *timer = QUnifiedTimer::instance(true);
     timer->installAnimationDriver(this);
 }
 
+
+
 /*!
     Uninstalls this animation driver.
  */
+
 void QAnimationDriver::uninstall()
 {
     QUnifiedTimer *timer = QUnifiedTimer::instance(true);
@@ -509,7 +529,7 @@ void QAnimationDriver::start()
 {
     Q_D(QAnimationDriver);
     if (!d->running) {
-        started();
+        emit started();
         d->running = true;
     }
 }
@@ -519,16 +539,28 @@ void QAnimationDriver::stop()
 {
     Q_D(QAnimationDriver);
     if (d->running) {
-        stopped();
+        emit stopped();
         d->running = false;
     }
+}
+
+
+/*!
+    \fn qint64 QAnimationDriver::elapsed() const
+
+    Returns the number of milliseconds since the animations was started.
+ */
+
+qint64 QAnimationDriver::elapsed() const
+{
+    return QUnifiedTimer::instance()->time.elapsed();
 }
 
 /*!
     \fn QAnimationDriver::started()
 
-    This function is called by the animation framework to notify the driver
-    that it should start running.
+    This signal is emitted by the animation framework to notify the driver
+    that continous animation has started.
 
     \internal
  */
@@ -536,8 +568,8 @@ void QAnimationDriver::stop()
 /*!
     \fn QAnimationDriver::stopped()
 
-    This function is called by the animation framework to notify the driver
-    that it should stop running.
+    This signal is emitted by the animation framework to notify the driver
+    that continous animation has stopped.
 
     \internal
  */
