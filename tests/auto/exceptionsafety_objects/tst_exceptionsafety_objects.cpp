@@ -371,7 +371,8 @@ struct WidgetCreator : public AbstractTester
 {
     void operator()(QObject *parent)
     {
-        Q_ASSERT(!parent || parent->isWidgetType());
+        if (parent && !parent->isWidgetType())
+            qFatal("%s: parent must be either null or a widget type", Q_FUNC_INFO);
         QScopedPointer<T> ptr(parent ? new T(static_cast<QWidget *>(parent)) : new T);
     }
 };
@@ -381,7 +382,8 @@ template <> struct WidgetCreator<QSizeGrip> : public AbstractTester
 {
     void operator()(QObject *parent)
     {
-        Q_ASSERT(!parent || parent->isWidgetType());
+        if (parent && !parent->isWidgetType())
+            qFatal("%s: parent must be either null or a widget type", Q_FUNC_INFO);
         QScopedPointer<QSizeGrip> ptr(new QSizeGrip(static_cast<QWidget *>(parent)));
     }
 };
@@ -391,7 +393,8 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
 {
     void operator()(QObject *parent)
     {
-        Q_ASSERT(!parent || parent->isWidgetType());
+        if (parent && !parent->isWidgetType())
+            qFatal("%s: parent must be either null or a widget type", Q_FUNC_INFO);
         QScopedPointer<QDesktopWidget> ptr(new QDesktopWidget());
     }
 };
