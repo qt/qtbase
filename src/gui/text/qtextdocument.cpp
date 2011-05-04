@@ -58,7 +58,6 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qapplication.h>
 #include "qtextcontrol_p.h"
 #include "qfont_p.h"
 #include "private/qtextedit_p.h"

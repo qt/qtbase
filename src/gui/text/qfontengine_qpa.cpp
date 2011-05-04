@@ -46,7 +46,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QBuffer>
 
-#include <QtGui/private/qapplication_p.h>
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/private/qpaintengine_raster_p.h>
 
