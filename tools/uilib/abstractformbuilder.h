@@ -47,6 +47,7 @@
 #include <QtCore/QList>
 #include <QtCore/QHash>
 #include <QtCore/QDir>
+#include <QtCore/QScopedPointer>
 
 #include <QtGui/QSizePolicy>
 #include <QtGui/QPalette>
@@ -105,6 +106,7 @@ class DomResourcePixmap;
 
 class QResourceBuilder;
 class QTextBuilder;
+class QFormBuilderExtra;
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT
 class QFormScriptRunner;
@@ -186,13 +188,6 @@ protected:
 
     virtual void layoutInfo(DomLayout *layout, QObject *parent, int *margin, int *spacing);
 
-    virtual QIcon nameToIcon(const QString &filePath, const QString &qrcPath);
-    virtual QString iconToFilePath(const QIcon &pm) const;
-    virtual QString iconToQrcPath(const QIcon &pm) const;
-    virtual QPixmap nameToPixmap(const QString &filePath, const QString &qrcPath);
-    virtual QString pixmapToFilePath(const QPixmap &pm) const;
-    virtual QString pixmapToQrcPath(const QPixmap &pm) const;
-
     void loadListWidgetExtraInfo(DomWidget *ui_widget, QListWidget *listWidget, QWidget *parentWidget);
     void loadTreeWidgetExtraInfo(DomWidget *ui_widget, QTreeWidget *treeWidget, QWidget *parentWidget);
     void loadTableWidgetExtraInfo(DomWidget *ui_widget, QTableWidget *tableWidget, QWidget *parentWidget);
@@ -259,13 +254,6 @@ protected:
     QPixmap domPropertyToPixmap(const DomResourcePixmap* p);
     QPixmap domPropertyToPixmap(const DomProperty* p);
 
-    QHash<QObject*, bool> m_laidout;
-    QHash<QString, QAction*> m_actions;
-    QHash<QString, QActionGroup*> m_actionGroups;
-    int m_defaultMargin;
-    int m_defaultSpacing;
-    QDir m_workingDirectory;
-
 private:
 //
 //  utils
@@ -277,6 +265,9 @@ private:
 
     friend QDESIGNER_UILIB_EXPORT DomProperty *variantToDomProperty(QAbstractFormBuilder *abstractFormBuilder, const QMetaObject *meta, const QString &propertyName, const QVariant &value);
     friend QDESIGNER_UILIB_EXPORT QVariant domPropertyToVariant(QAbstractFormBuilder *abstractFormBuilder,const QMetaObject *meta, const DomProperty *property);
+
+protected:
+    QScopedPointer<QFormBuilderExtra> d;
 };
 
 #ifdef QFORMINTERNAL_NAMESPACE

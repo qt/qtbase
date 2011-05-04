@@ -61,19 +61,23 @@
 
 #include <QtCore/QHash>
 #include <QtCore/QPointer>
-#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QMap>
+#include <QtCore/QDir>
 
 QT_BEGIN_NAMESPACE
 
+class QDesignerCustomWidgetInterface;
 class QObject;
 class QVariant;
 class QWidget;
 class QObject;
 class QLabel;
 class QButtonGroup;
-
 class QBoxLayout;
 class QGridLayout;
+class QAction;
+class QActionGroup;
 
 #ifdef QFORMINTERNAL_NAMESPACE
 namespace QFormInternal
@@ -90,9 +94,10 @@ class QTextBuilder;
 
 class QDESIGNER_UILIB_EXPORT QFormBuilderExtra
 {
+public:
     QFormBuilderExtra();
     ~QFormBuilderExtra();
-public:
+
     struct CustomWidgetData {
         CustomWidgetData();
         explicit CustomWidgetData(const DomCustomWidget *dc);
@@ -130,9 +135,6 @@ public:
     void setTextBuilder(QTextBuilder *builder);
     QTextBuilder *textBuilder() const;
 
-    static QFormBuilderExtra *instance(const QAbstractFormBuilder *afb);
-    static void removeInstance(const QAbstractFormBuilder *afb);
-
     void storeCustomWidgetData(const QString &className, const DomCustomWidget *d);
     QString customWidgetAddPageMethod(const QString &className) const;
     QString customWidgetBaseClass(const QString &className) const;
@@ -168,6 +170,16 @@ public:
     static QString gridLayoutColumnMinimumWidth(const QGridLayout *);
     static bool setGridLayoutColumnMinimumWidth(const QString &, QGridLayout *);
     static void clearGridLayoutColumnMinimumWidth(QGridLayout *);
+
+    QStringList m_pluginPaths;
+    QMap<QString, QDesignerCustomWidgetInterface*> m_customWidgets;
+
+    QHash<QObject*, bool> m_laidout;
+    QHash<QString, QAction*> m_actions;
+    QHash<QString, QActionGroup*> m_actionGroups;
+    int m_defaultMargin;
+    int m_defaultSpacing;
+    QDir m_workingDirectory;
 
 private:
     void clearResourceBuilder();
