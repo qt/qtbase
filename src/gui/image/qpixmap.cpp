@@ -1044,7 +1044,7 @@ static void sendResizeEvents(QWidget *target)
     \sa grabWindow()
 */
 
-QPixmap QPixmap::grabWidget(QPaintDevice * widget, const QRect &rect)
+QPixmap QPixmap::grabWidget(QPaintDevice *, const QRect &)
 {
     // ### Qt5: should we keep or remove this method?
     // SC solution would be to install a callback form QtWidgets, but ugly.
