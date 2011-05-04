@@ -876,7 +876,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
         << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ')';
 #endif
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);
-    QApplication::sendEvent(const_cast<QObject *>(next->owner), &se);
+    QCoreApplication::sendEvent(const_cast<QObject *>(next->owner), &se);
 }
 
 /* \internal

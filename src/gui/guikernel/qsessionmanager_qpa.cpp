@@ -69,7 +69,7 @@ QSessionManagerPrivate::QSessionManagerPrivate(QSessionManager*,
 {
 }
 
-QSessionManager::QSessionManager(QApplication *app, QString &id, QString &key)
+QSessionManager::QSessionManager(QGuiApplication *app, QString &id, QString &key)
     : QObject(*(new QSessionManagerPrivate(this, id, key)), app)
 {
     Q_D(QSessionManager);

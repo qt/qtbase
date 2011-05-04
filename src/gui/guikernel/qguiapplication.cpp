@@ -111,7 +111,7 @@ QFont *QGuiApplicationPrivate::app_font = 0;
 static bool qt_detectRTLLanguage()
 {
     return force_reverse ^
-        (QApplication::tr("QT_LAYOUT_DIRECTION",
+        (QCoreApplication::tr("QT_LAYOUT_DIRECTION",
                          "Translate this string to the string 'LTR' in left-to-right"
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
@@ -811,7 +811,7 @@ QClipboard * QGuiApplication::clipboard()
 {
     if (QGuiApplicationPrivate::qt_clipboard == 0) {
         if (!qApp) {
-            qWarning("QApplication: Must construct a QApplication before accessing a QClipboard");
+            qWarning("QGuiApplication: Must construct a QGuiApplication before accessing a QClipboard");
             return 0;
         }
         QGuiApplicationPrivate::qt_clipboard = new QClipboard(0);

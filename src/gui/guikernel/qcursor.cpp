@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
     To associate a cursor with a widget, use QWidget::setCursor(). To
     associate a cursor with all widgets (normally for a short period
-    of time), use QApplication::setOverrideCursor().
+    of time), use QGuiApplication::setOverrideCursor().
 
     To set a cursor shape use QCursor::setShape() or use the QCursor
     constructor which takes the shape as argument, or you can use one
@@ -85,9 +85,9 @@ QT_BEGIN_NAMESPACE
     methods QCursor::pos() and QCursor::setPos().
 
     \bold{Note:} It is possible to create a QCursor before
-    QApplication, but it is not useful except as a place-holder for a
-    real QCursor created after QApplication. Attempting to use a
-    QCursor that was created before QApplication will result in a
+    QGuiApplication, but it is not useful except as a place-holder for a
+    real QCursor created after QGuiApplication. Attempting to use a
+    QCursor that was created before QGuiApplication will result in a
     crash.
 
     \section1 A Note for X11 Users

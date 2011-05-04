@@ -187,7 +187,7 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
     windowSystemEventQueue.append(ev);
     queueMutex.unlock();
 
-    QAbstractEventDispatcher *dispatcher = QApplicationPrivate::qt_qpa_core_dispatcher();
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
     if (dispatcher)
         dispatcher->wakeUp();
 }
