@@ -389,6 +389,7 @@ private:
     friend class QGraphicsScenePrivate;
     friend class QWidget;
     friend class QWidgetPrivate;
+    friend class QWidgetWindow;
     friend class QETWidget;
     friend class Q3AccelManager;
     friend class QTranslator;
