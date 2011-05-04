@@ -49,7 +49,6 @@
 #include <qabstracttextdocumentlayout.h>
 #include "qtextdocument_p.h"
 #include "qtextformat_p.h"
-#include "qstyleoption.h"
 #include "qpainterpath.h"
 #include "qglyphs.h"
 #include "qglyphs_p.h"

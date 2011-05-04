@@ -3547,7 +3547,7 @@ int QApplication::startDragDistance()
 #ifdef QT3_SUPPORT
 Qt::Alignment QApplication::horizontalAlignment(Qt::Alignment align)
 {
-    return QStyle::visualAlignment(layoutDirection(), align);
+    return QGuiApplicationPrivate::visualAlignment(layoutDirection(), align);
 }
 #endif
 

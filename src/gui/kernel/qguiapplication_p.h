@@ -105,6 +105,19 @@ public:
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
     static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
 
+    static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
+    {
+        if (!(alignment & Qt::AlignHorizontal_Mask))
+            alignment |= Qt::AlignLeft;
+        if ((alignment & Qt::AlignAbsolute) == 0 && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
+            if (direction == Qt::RightToLeft)
+                alignment ^= (Qt::AlignLeft | Qt::AlignRight);
+            alignment |= Qt::AlignAbsolute;
+        }
+        return alignment;
+    }
+
+
     static bool app_do_modal;
 
     static QPointer<QWidget> qt_last_mouse_receiver;

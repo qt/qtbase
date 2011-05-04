@@ -56,7 +56,6 @@
 #include "qpixmapcache.h"
 #include "qpolygon.h"
 #include "qtextlayout.h"
-#include "qstyle.h"
 #include "qthread.h"
 #include "qvarlengtharray.h"
 #include "qstatictext.h"
@@ -72,6 +71,7 @@
 #include <private/qstatictext_p.h>
 #include <private/qglyphs_p.h>
 #include <private/qhexstring_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qrawfont_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -7547,7 +7547,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     else
         layout_direction = Qt::LeftToRight;
 
-    tf = QStyle::visualAlignment(layout_direction, QFlag(tf));
+    tf = QGuiApplicationPrivate::visualAlignment(layout_direction, QFlag(tf));
 
     bool isRightToLeft = layout_direction == Qt::RightToLeft;
     bool expandtabs = ((tf & Qt::TextExpandTabs) &&

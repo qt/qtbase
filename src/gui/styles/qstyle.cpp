@@ -47,6 +47,7 @@
 #include "qpixmapcache.h"
 #include "qstyleoption.h"
 #include "private/qstyle_p.h"
+#include "private/qguiapplication_p.h"
 #ifndef QT_NO_DEBUG
 #include "qdebug.h"
 #endif
@@ -2096,14 +2097,7 @@ QRect QStyle::alignedRect(Qt::LayoutDirection direction, Qt::Alignment alignment
 */
 Qt::Alignment QStyle::visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
 {
-    if (!(alignment & Qt::AlignHorizontal_Mask))
-        alignment |= Qt::AlignLeft;
-    if ((alignment & Qt::AlignAbsolute) == 0 && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
-        if (direction == Qt::RightToLeft)
-            alignment ^= (Qt::AlignLeft | Qt::AlignRight);
-        alignment |= Qt::AlignAbsolute;
-    }
-    return alignment;
+    return QGuiApplicationPrivate::visualAlignment(direction, alignment);
 }
 
 /*!
