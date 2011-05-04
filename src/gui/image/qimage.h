@@ -132,9 +132,6 @@ public:
     explicit QImage(const char * const xpm[]);
 #endif
     explicit QImage(const QString &fileName, const char *format = 0);
-#ifndef QT_NO_CAST_FROM_ASCII
-    explicit QImage(const char *fileName, const char *format = 0);
-#endif
 
     QImage(const QImage &);
     ~QImage();
