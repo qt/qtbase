@@ -127,7 +127,7 @@
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QString, QString> _q_mapFromOnelineName(char *name);
+static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -324,7 +324,7 @@ QString QSslCertificate::issuerInfo(SubjectInfo info) const
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
     return d->issuerInfo.value(_q_SubjectInfoToString(info));
 }
@@ -341,7 +341,7 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
     return d->issuerInfo.value(QString::fromLatin1(tag));
 }
@@ -360,7 +360,7 @@ QString QSslCertificate::subjectInfo(SubjectInfo info) const
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
     return d->subjectInfo.value(_q_SubjectInfoToString(info));
 }
@@ -376,7 +376,7 @@ QString QSslCertificate::subjectInfo(const QByteArray &tag) const
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
-                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
     return d->subjectInfo.value(QString::fromLatin1(tag));
 }
@@ -666,37 +666,18 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
 }
 
-static QMap<QString, QString> _q_mapFromOnelineName(char *name)
+static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
 {
     QMap<QString, QString> info;
-    QString infoStr = QString::fromLocal8Bit(name);
-    q_CRYPTO_free(name);
-
-    // ### The right-hand encoding seems to allow hex (Regulierungsbeh\xC8orde)
-    //entry.replace(QLatin1String("\\x"), QLatin1String("%"));
-    //entry = QUrl::fromPercentEncoding(entry.toLatin1());
-    // ### See RFC-4630 for more details!
-
-    QRegExp rx(QLatin1String("/([A-Za-z]+)=(.+)"));
-
-    int pos = 0;
-    while ((pos = rx.indexIn(infoStr, pos)) != -1) {
-        const QString name = rx.cap(1);
-
-        QString value = rx.cap(2);
-        const int valuePos = rx.pos(2);
-
-        const int next = rx.indexIn(value);
-        if (next == -1) {
-            info.insert(name, value);
-            break;
-        }
-
-        value = value.left(next);
-        info.insert(name, value);
-        pos = valuePos + value.length();
+    for( int i = 0; i < q_X509_NAME_entry_count(name); ++i )  
+    {
+        X509_NAME_ENTRY *e = q_X509_NAME_get_entry( name, i );
+        const char *obj = q_OBJ_nid2sn( q_OBJ_obj2nid( q_X509_NAME_ENTRY_get_object( e ) ) );
+        unsigned char *data = 0;
+        int size = q_ASN1_STRING_to_UTF8( &data, q_X509_NAME_ENTRY_get_data( e ) );
+        info[QString::fromUtf8( obj )] = QString::fromUtf8( (char*)data, size );
+        q_CRYPTO_free( data );
     }
-
     return info;
 }
 
