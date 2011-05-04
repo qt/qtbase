@@ -47,6 +47,8 @@
 #import <UIKit/UIKit.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
 #import <OpenGLES/EAGL.h>
 
 @interface EAGLView : UIView <UIKeyInput>
@@ -59,6 +61,7 @@
 
     GLuint mFramebuffer, mColorRenderbuffer, mDepthRenderbuffer;
 
+    id delegate;
     // ------- Text Input ----------
     UITextAutocapitalizationType autocapitalizationType;
     UITextAutocorrectionType autocorrectionType;
@@ -77,6 +80,8 @@
 - (void)setWindow:(QPlatformWindow *)window;
 - (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
 
+@property (readonly,getter=fbo) GLint fbo;
+@property (nonatomic, assign) id delegate;
 
 // ------- Text Input ----------
 
@@ -88,6 +93,10 @@
 @property(nonatomic) UIReturnKeyType returnKeyType;
 @property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
 
+@end
+
+@protocol EAGLViewDelegate
+- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer;
 @end
 
 class EAGLPlatformContext;
@@ -103,7 +112,7 @@ public:
     ~QUIKitWindow();
 
     UIWindow *nativeWindow() const { return mWindow; }
-    UIView *nativeView() const { return mView; }
+    EAGLView *nativeView() const { return mView; }
     void setGeometry(const QRect &rect);
 
     UIWindow *ensureNativeWindow();

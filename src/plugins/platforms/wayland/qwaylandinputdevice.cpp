@@ -61,7 +61,7 @@
 QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
 					 uint32_t id)
     : mDisplay(display)
-    , mInputDevice(wl_input_device_create(display, id))
+    , mInputDevice(wl_input_device_create(display, id, 1))
     , mPointerFocus(NULL)
     , mKeyboardFocus(NULL)
     , mButtons(0)
