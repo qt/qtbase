@@ -64,10 +64,6 @@
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
 
-#ifdef Q_WS_QWS
-#include "QtGui/qscreen_qws.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_MSVC) && _MSCVER <= 1300 && !defined(Q_CC_INTEL)
@@ -170,10 +166,6 @@ extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
-#if defined(Q_WS_QWS) && !defined(QT_NO_RASTERCALLBACKS)
-extern DrawHelper qDrawHelperCallback[QImage::NImageFormats];
-void qBlendTextureCallback(int count, const QSpan *spans, void *userData);
-#endif
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *dest, const uint *src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
@@ -231,11 +223,7 @@ struct QGradientData
         QConicalGradientData conical;
     };
 
-#ifdef Q_WS_QWS
-#define GRADIENT_STOPTABLE_SIZE 256
-#else
 #define GRADIENT_STOPTABLE_SIZE 1024
-#endif
 
     uint* colorTable; //[GRADIENT_STOPTABLE_SIZE];
 
@@ -272,9 +260,6 @@ struct QSpanData
     ~QSpanData() { delete tempImage; }
 
     QRasterBuffer *rasterBuffer;
-#ifdef Q_WS_QWS
-    QRasterPaintEngine *rasterEngine;
-#endif
     ProcessSpans blend;
     ProcessSpans unclipped_blend;
     BitmapBlitFunc bitmapBlit;
@@ -1238,37 +1223,6 @@ inline quint32 qt_colorConvert(qrgb888 color, quint32 dummy)
     return quint32(color);
 }
 
-#ifdef QT_QWS_DEPTH_8
-template <>
-inline quint8 qt_colorConvert(quint32 color, quint8 dummy)
-{
-    Q_UNUSED(dummy);
-
-    uchar r = ((qRed(color) & 0xf8) + 0x19) / 0x33;
-    uchar g = ((qGreen(color) &0xf8) + 0x19) / 0x33;
-    uchar b = ((qBlue(color) &0xf8) + 0x19) / 0x33;
-
-    return r*6*6 + g*6 + b;
-}
-
-template <>
-inline quint8 qt_colorConvert(quint16 color, quint8 dummy)
-{
-    Q_UNUSED(dummy);
-
-    uchar r = (color & 0xf800) >> (11-3);
-    uchar g = (color & 0x07c0) >> (6-3);
-    uchar b = (color & 0x001f) << 3;
-
-    uchar tr = (r + 0x19) / 0x33;
-    uchar tg = (g + 0x19) / 0x33;
-    uchar tb = (b + 0x19) / 0x33;
-
-    return tr*6*6 + tg*6 + tb;
-}
-
-#endif // QT_QWS_DEPTH_8
-
 // hw: endianess??
 class quint24
 {
@@ -1505,84 +1459,6 @@ qrgb444 qrgb444::byte_mul(quint8 a) const
     return result;
 }
 
-#ifdef QT_QWS_DEPTH_GENERIC
-
-struct qrgb
-{
-public:
-    static int bpp;
-    static int len_red;
-    static int len_green;
-    static int len_blue;
-    static int len_alpha;
-    static int off_red;
-    static int off_green;
-    static int off_blue;
-    static int off_alpha;
-} Q_PACKED;
-
-template <typename SRC>
-Q_STATIC_TEMPLATE_FUNCTION inline quint32 qt_convertToRgb(SRC color);
-
-template <>
-inline quint32 qt_convertToRgb(quint32 color)
-{
-    const int r = qRed(color) >> (8 - qrgb::len_red);
-    const int g = qGreen(color) >> (8 - qrgb::len_green);
-    const int b = qBlue(color) >> (8 - qrgb::len_blue);
-    const int a = qAlpha(color) >> (8 - qrgb::len_alpha);
-    const quint32 v = (r << qrgb::off_red)
-                      | (g << qrgb::off_green)
-                      | (b << qrgb::off_blue)
-                      | (a << qrgb::off_alpha);
-
-    return v;
-}
-
-template <>
-inline quint32 qt_convertToRgb(quint16 color)
-{
-    return qt_convertToRgb(qt_colorConvert<quint32, quint16>(color, 0));
-}
-
-class qrgb_generic16
-{
-public:
-    inline qrgb_generic16(quint32 color)
-    {
-        const int r = qRed(color) >> (8 - qrgb::len_red);
-        const int g = qGreen(color) >> (8 - qrgb::len_green);
-        const int b = qBlue(color) >> (8 - qrgb::len_blue);
-        const int a = qAlpha(color) >> (8 - qrgb::len_alpha);
-        data = (r << qrgb::off_red)
-               | (g << qrgb::off_green)
-               | (b << qrgb::off_blue)
-               | (a << qrgb::off_alpha);
-    }
-
-    inline operator quint16 () { return data; }
-    inline quint32 operator<<(int shift) const { return data << shift; }
-
-private:
-    quint16 data;
-} Q_PACKED;
-
-template <>
-inline qrgb_generic16 qt_colorConvert(quint32 color, qrgb_generic16 dummy)
-{
-    Q_UNUSED(dummy);
-    return qrgb_generic16(color);
-}
-
-template <>
-inline qrgb_generic16 qt_colorConvert(quint16 color, qrgb_generic16 dummy)
-{
-    Q_UNUSED(dummy);
-    return qrgb_generic16(qt_colorConvert<quint32, quint16>(color, 0));
-}
-
-#endif // QT_QWS_DEPTH_GENERIC
-
 template <class T>
 void qt_memfill(T *dest, T value, int count);
 
@@ -1790,16 +1666,6 @@ QT_RECTCONVERT_TRIVIAL_IMPL(qargb4444)
 QT_RECTCONVERT_TRIVIAL_IMPL(qrgb444)
 #undef QT_RECTCONVERT_TRIVIAL_IMPL
 
-#ifdef QT_QWS_DEPTH_GENERIC
-template <> void qt_rectconvert(qrgb *dest, const quint32 *src,
-                                int x, int y, int width, int height,
-                                int dstStride, int srcStride);
-
-template <> void qt_rectconvert(qrgb *dest, const quint16 *src,
-                                int x, int y, int width, int height,
-                                int dstStride, int srcStride);
-#endif // QT_QWS_DEPTH_GENERIC
-
 #define QT_MEMFILL_UINT(dest, length, color)            \
     qt_memfill<quint32>(dest, color, length);
 
@@ -1861,16 +1727,6 @@ inline ushort qConvertRgb32To16(uint c)
        | (((c) >> 5) & 0x07e0)
        | (((c) >> 8) & 0xf800);
 }
-
-#if defined(Q_WS_QWS) || (QT_VERSION >= 0x040400)
-inline quint32 qConvertRgb32To16x2(quint64 c)
-{
-    c = (((c) >> 3) & Q_UINT64_C(0x001f0000001f))
-        | (((c) >> 5) & Q_UINT64_C(0x07e0000007e0))
-        | (((c) >> 8) & Q_UINT64_C(0xf8000000f800));
-    return c | (c >> 16);
-}
-#endif
 
 inline QRgb qConvertRgb16To32(uint c)
 {
