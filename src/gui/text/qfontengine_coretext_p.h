@@ -124,6 +124,8 @@ public:
                       QScriptItem *si) const;
 
     virtual const char *name() const { return "CoreText"; }
+    inline CTFontRef macFontID() const { return ctfont; }
+
 protected:
     virtual void loadEngine(int at);
 

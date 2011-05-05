@@ -1597,7 +1597,7 @@ void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlag
     FT_Face face = 0;
     bool design = (default_hint_style == HintNone ||
                    default_hint_style == HintLight ||
-                   (flags & HB_ShaperFlag_UseDesignMetrics));
+                   (flags & HB_ShaperFlag_UseDesignMetrics)) && FT_IS_SCALABLE(freetype->face);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = defaultGlyphSet.getGlyph(glyphs->glyphs[i]);
         if (g) {
