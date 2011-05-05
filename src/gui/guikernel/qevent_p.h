@@ -124,53 +124,6 @@ public:
     qreal pressure;
 };
 
-#ifndef QT_NO_GESTURES
-class QNativeGestureEvent : public QEvent
-{
-public:
-    enum Type {
-        None,
-        GestureBegin,
-        GestureEnd,
-        Pan,
-        Zoom,
-        Rotate,
-        Swipe
-    };
-
-    QNativeGestureEvent()
-        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0)
-#ifdef Q_WS_WIN
-        , sequenceId(0), argument(0)
-#endif
-    {
-    }
-
-    Type gestureType;
-    float percentage;
-    QPoint position;
-    float angle;
-#ifdef Q_WS_WIN
-    ulong sequenceId;
-    quint64 argument;
-#endif
-};
-
-class QGestureEventPrivate
-{
-public:
-    inline QGestureEventPrivate(const QList<QGesture *> &list)
-        : gestures(list), widget(0)
-    {
-    }
-
-    QList<QGesture *> gestures;
-    QWidget *widget;
-    QMap<Qt::GestureType, bool> accepted;
-    QMap<Qt::GestureType, QWidget *> targetWidgets;
-};
-#endif // QT_NO_GESTURES
-
 class QFileOpenEventPrivate
 {
 public:

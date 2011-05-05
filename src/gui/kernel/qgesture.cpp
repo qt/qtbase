@@ -42,6 +42,7 @@
 #include "qgesture.h"
 #include "private/qgesture_p.h"
 #include "private/qstandardgestures_p.h"
+#include "qgraphicsview.h"
 
 #ifndef QT_NO_GESTURES
 
@@ -799,6 +800,316 @@ int QTapAndHoldGesture::timeout()
 }
 
 int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
+
+
+/*!
+    \class QGestureEvent
+    \since 4.6
+    \ingroup events
+    \ingroup gestures
+
+    \brief The QGestureEvent class provides the description of triggered gestures.
+
+    The QGestureEvent class contains a list of gestures, which can be obtained using the
+    gestures() function.
+
+    The gestures are either active or canceled. A list of those that are currently being
+    executed can be obtained using the activeGestures() function. A list of those which
+    were previously active and have been canceled can be accessed using the
+    canceledGestures() function. A gesture might be canceled if the current window loses
+    focus, for example, or because of a timeout, or for other reasons.
+
+    If the event handler does not accept the event by calling the generic
+    QEvent::accept() function, all individual QGesture object that were not
+    accepted and in the Qt::GestureStarted state will be propagated up the
+    parent widget chain until a widget accepts them individually, by calling
+    QGestureEvent::accept() for each of them, or an event filter consumes the
+    event.
+
+    \section1 Further Reading
+
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
+    \sa QGesture, QGestureRecognizer,
+        QWidget::grabGesture(), QGraphicsObject::grabGesture()
+*/
+
+/*!
+    Creates new QGestureEvent containing a list of \a gestures.
+*/
+QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
+    : QEvent(QEvent::Gesture)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QGestureEventPrivate(gestures));
+}
+
+/*!
+    Destroys QGestureEvent.
+*/
+QGestureEvent::~QGestureEvent()
+{
+    delete reinterpret_cast<QGestureEventPrivate *>(d);
+}
+
+/*!
+    Returns all gestures that are delivered in the event.
+*/
+QList<QGesture *> QGestureEvent::gestures() const
+{
+    return d_func()->gestures;
+}
+
+/*!
+    Returns a gesture object by \a type.
+*/
+QGesture *QGestureEvent::gesture(Qt::GestureType type) const
+{
+    const QGestureEventPrivate *d = d_func();
+    for(int i = 0; i < d->gestures.size(); ++i)
+        if (d->gestures.at(i)->gestureType() == type)
+            return d->gestures.at(i);
+    return 0;
+}
+
+/*!
+    Returns a list of active (not canceled) gestures.
+*/
+QList<QGesture *> QGestureEvent::activeGestures() const
+{
+    QList<QGesture *> gestures;
+    foreach (QGesture *gesture, d_func()->gestures) {
+        if (gesture->state() != Qt::GestureCanceled)
+            gestures.append(gesture);
+    }
+    return gestures;
+}
+
+/*!
+    Returns a list of canceled gestures.
+*/
+QList<QGesture *> QGestureEvent::canceledGestures() const
+{
+    QList<QGesture *> gestures;
+    foreach (QGesture *gesture, d_func()->gestures) {
+        if (gesture->state() == Qt::GestureCanceled)
+            gestures.append(gesture);
+    }
+    return gestures;
+}
+
+/*!
+    Sets the accept flag of the given \a gesture object to the specified \a value.
+
+    Setting the accept flag indicates that the event receiver wants the \a gesture.
+    Unwanted gestures may be propagated to the parent widget.
+
+    By default, gestures in events of type QEvent::Gesture are accepted, and
+    gestures in QEvent::GestureOverride events are ignored.
+
+    For convenience, the accept flag can also be set with
+    \l{QGestureEvent::accept()}{accept(gesture)}, and cleared with
+    \l{QGestureEvent::ignore()}{ignore(gesture)}.
+*/
+void QGestureEvent::setAccepted(QGesture *gesture, bool value)
+{
+    if (gesture)
+        setAccepted(gesture->gestureType(), value);
+}
+
+/*!
+    Sets the accept flag of the given \a gesture object, the equivalent of calling
+    \l{QGestureEvent::setAccepted()}{setAccepted(gesture, true)}.
+
+    Setting the accept flag indicates that the event receiver wants the
+    gesture. Unwanted gestures may be propagated to the parent widget.
+
+    \sa QGestureEvent::ignore()
+*/
+void QGestureEvent::accept(QGesture *gesture)
+{
+    if (gesture)
+        setAccepted(gesture->gestureType(), true);
+}
+
+/*!
+    Clears the accept flag parameter of the given \a gesture object, the equivalent
+    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
+
+    Clearing the accept flag indicates that the event receiver does not
+    want the gesture. Unwanted gestures may be propagated to the parent widget.
+
+    \sa QGestureEvent::accept()
+*/
+void QGestureEvent::ignore(QGesture *gesture)
+{
+    if (gesture)
+        setAccepted(gesture->gestureType(), false);
+}
+
+/*!
+    Returns true if the \a gesture is accepted; otherwise returns false.
+*/
+bool QGestureEvent::isAccepted(QGesture *gesture) const
+{
+    return gesture ? isAccepted(gesture->gestureType()) : false;
+}
+
+/*!
+    Sets the accept flag of the given \a gestureType object to the specified
+    \a value.
+
+    Setting the accept flag indicates that the event receiver wants to receive
+    gestures of the specified type, \a gestureType. Unwanted gestures may be
+    propagated to the parent widget.
+
+    By default, gestures in events of type QEvent::Gesture are accepted, and
+    gestures in QEvent::GestureOverride events are ignored.
+
+    For convenience, the accept flag can also be set with
+    \l{QGestureEvent::accept()}{accept(gestureType)}, and cleared with
+    \l{QGestureEvent::ignore()}{ignore(gestureType)}.
+*/
+void QGestureEvent::setAccepted(Qt::GestureType gestureType, bool value)
+{
+    setAccepted(false);
+    d_func()->accepted[gestureType] = value;
+}
+
+/*!
+    Sets the accept flag of the given \a gestureType, the equivalent of calling
+    \l{QGestureEvent::setAccepted()}{setAccepted(gestureType, true)}.
+
+    Setting the accept flag indicates that the event receiver wants the
+    gesture. Unwanted gestures may be propagated to the parent widget.
+
+    \sa QGestureEvent::ignore()
+*/
+void QGestureEvent::accept(Qt::GestureType gestureType)
+{
+    setAccepted(gestureType, true);
+}
+
+/*!
+    Clears the accept flag parameter of the given \a gestureType, the equivalent
+    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
+
+    Clearing the accept flag indicates that the event receiver does not
+    want the gesture. Unwanted gestures may be propgated to the parent widget.
+
+    \sa QGestureEvent::accept()
+*/
+void QGestureEvent::ignore(Qt::GestureType gestureType)
+{
+    setAccepted(gestureType, false);
+}
+
+/*!
+    Returns true if the gesture of type \a gestureType is accepted; otherwise
+    returns false.
+*/
+bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
+{
+    return d_func()->accepted.value(gestureType, true);
+}
+
+/*!
+    \internal
+
+    Sets the widget for this event to the \a widget specified.
+*/
+void QGestureEvent::setWidget(QWidget *widget)
+{
+    d_func()->widget = widget;
+}
+
+/*!
+    Returns the widget on which the event occurred.
+*/
+QWidget *QGestureEvent::widget() const
+{
+    return d_func()->widget;
+}
+
+#ifndef QT_NO_GRAPHICSVIEW
+/*!
+    Returns the scene-local coordinates if the \a gesturePoint is inside a
+    graphics view.
+
+    This functional might be useful when the gesture event is delivered to a
+    QGraphicsObject to translate a point in screen coordinates to scene-local
+    coordinates.
+
+    \sa QPointF::isNull().
+*/
+QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
+{
+    QWidget *w = widget();
+    if (w) // we get the viewport as widget, not the graphics view
+        w = w->parentWidget();
+    QGraphicsView *view = qobject_cast<QGraphicsView*>(w);
+    if (view) {
+        return view->mapToScene(view->mapFromGlobal(gesturePoint.toPoint()));
+    }
+    return QPointF();
+}
+#endif //QT_NO_GRAPHICSVIEW
+
+/*!
+    \internal
+*/
+QGestureEventPrivate *QGestureEvent::d_func()
+{
+    return reinterpret_cast<QGestureEventPrivate *>(d);
+}
+
+/*!
+    \internal
+*/
+const QGestureEventPrivate *QGestureEvent::d_func() const
+{
+    return reinterpret_cast<const QGestureEventPrivate *>(d);
+}
+
+#ifdef Q_NO_USING_KEYWORD
+/*!
+    \fn void QGestureEvent::setAccepted(bool accepted)
+
+    Sets or clears the event's internal flag that determines whether it should
+    be delivered to other objects.
+
+    Calling this function with a value of true for \a accepted indicates that the
+    caller has accepted the event and that it should not be propagated further.
+    Calling this function with a value of false indicates that the caller has
+    ignored the event and that it should be delivered to other objects.
+
+    For convenience, the accept flag can also be set with accept(), and cleared
+    with ignore().
+
+    \sa QEvent::accepted
+*/
+/*!
+    \fn bool QGestureEvent::isAccepted() const
+
+    Returns true is the event has been accepted; otherwise returns false.
+
+    \sa QEvent::accepted
+*/
+/*!
+    \fn void QGestureEvent::accept()
+
+    Accepts the event, the equivalent of calling setAccepted(true).
+
+    \sa QEvent::accept()
+*/
+/*!
+    \fn void QGestureEvent::ignore()
+
+    Ignores the event, the equivalent of calling setAccepted(false).
+
+    \sa QEvent::ignore()
+*/
+#endif
 
 QT_END_NAMESPACE
 
