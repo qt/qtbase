@@ -12,6 +12,7 @@ HEADERS += \
         guikernel/qevent_p.h \
         guikernel/qkeysequence.h \
         guikernel/qkeysequence_p.h \
+        guikernel/qkeymapper_p.h \
         guikernel/qmime.h \
         guikernel/qsessionmanager.h \
         guikernel/qwindowdefs.h \
@@ -21,6 +22,8 @@ SOURCES += \
         guikernel/qcursor.cpp \
         guikernel/qevent.cpp \
         guikernel/qkeysequence.cpp \
+        guikernel/qkeymapper.cpp \
+        guikernel/qkeymapper_qpa.cpp \
         guikernel/qmime.cpp \
         guikernel/qguivariant.cpp \
 
