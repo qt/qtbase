@@ -46,6 +46,7 @@
 #include <qapplication.h>
 #include <qpainter.h>
 #include <qbitmap.h>
+#include <qdrag.h>
 #include <qvector.h>
 #include <qstyle.h>
 #include <qevent.h>

@@ -45,6 +45,7 @@
 #ifndef QT_NO_LINEEDIT
 
 #include "qabstractitemview.h"
+#include "qdrag.h"
 #include "qclipboard.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"

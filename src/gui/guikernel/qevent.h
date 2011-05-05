@@ -50,7 +50,6 @@
 #include <QtGui/qkeysequence.h>
 #include <QtCore/qcoreevent.h>
 #include <QtGui/qmime.h>
-#include <QtGui/qdrag.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>

@@ -48,6 +48,7 @@
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qimage.h"
+#include "qdrag.h"
 #include "qlabel.h"
 #include "qlayout.h"
 #include "qlineedit.h"
