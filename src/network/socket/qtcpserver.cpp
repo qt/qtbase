@@ -416,6 +416,11 @@ bool QTcpServer::setSocketDescriptor(int socketDescriptor)
     if (d->socketEngine)
         delete d->socketEngine;
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
+    if (!d->socketEngine) {
+        d->serverSocketError = QAbstractSocket::UnsupportedSocketOperationError;
+        d->serverSocketErrorString = tr("Operation on socket is not supported");
+        return false;
+    }
 #ifndef QT_NO_BEARERMANAGEMENT
     //copy network session down to the socket engine (if it has been set)
     d->socketEngine->setProperty("_q_networksession", property("_q_networksession"));
