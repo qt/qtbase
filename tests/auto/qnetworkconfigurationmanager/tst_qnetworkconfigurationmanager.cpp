@@ -350,10 +350,13 @@ public:
 // regression test for QTBUG-18795
 void tst_QNetworkConfigurationManager::usedInThread()
 {
+#if defined Q_OS_MAC && !defined (QT_NO_COREWLAN)
+    QSKIP("QTBUG-19070 Mac CoreWlan plugin is broken", SkipAll);
+#else
     QNCMTestThread thread;
     connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     thread.start();
-    QTestEventLoop::instance().enterLoop(5);
+    QTestEventLoop::instance().enterLoop(100); //QTRY_VERIFY could take ~90 seconds to time out in the thread
     QVERIFY(thread.isFinished());
     qDebug() << "prescan:" << thread.preScanConfigs.count();
     qDebug() << "postscan:" << thread.configs.count();
@@ -366,6 +369,7 @@ void tst_QNetworkConfigurationManager::usedInThread()
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
     QCOMPARE(thread.configs, configs);
     QCOMPARE(thread.preScanConfigs, preScanConfigs);
+#endif
 }
 
 QTEST_MAIN(tst_QNetworkConfigurationManager)
