@@ -520,6 +520,15 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
     return false;
 }
 
+QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
+{
+    if (!highPriorityQueue.isEmpty())
+        return highPriorityQueue.last().first;
+    if (!lowPriorityQueue.isEmpty())
+        return lowPriorityQueue.last().first;
+    return QHttpNetworkRequest();
+}
+
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
 void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 {

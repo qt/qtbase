@@ -581,7 +581,12 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         }
         if (socket->proxy().type() == QNetworkProxy::HttpProxy) {
             // Make user-agent field available to HTTP proxy socket engine (QTBUG-17223)
-            QByteArray value = request.headerField("user-agent");
+            QByteArray value;
+            // ensureConnection is called before any request has been assigned, but can also be called again if reconnecting
+            if (request.url().isEmpty())
+                value = connection->d_func()->predictNextRequest().headerField("user-agent");
+            else
+                value = request.headerField("user-agent");
             if (!value.isEmpty())
                 socket->setProperty("_q_user-agent", value);
         }
