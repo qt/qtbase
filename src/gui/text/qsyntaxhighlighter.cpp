@@ -50,7 +50,6 @@
 #include <qtextobject.h>
 #include <qtextcursor.h>
 #include <qdebug.h>
-#include <qtextedit.h>
 #include <qtimer.h>
 
 QT_BEGIN_NAMESPACE
@@ -311,10 +310,19 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
 
 /*!
     Constructs a QSyntaxHighlighter with the given \a parent.
+
+    If the parent is a QTextEdit, it installs the syntaxhighlighter on the
+    parents document. The specified QTextEdit also becomes the owner of
+    the QSyntaxHighlighter.
 */
 QSyntaxHighlighter::QSyntaxHighlighter(QObject *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
+    if (parent->inherits("QTextEdit")) {
+        QTextDocument *doc = qobject_cast<QTextDocument *>(parent->property("document").value<QObject *>());
+        if (doc)
+            setDocument(doc);
+    }
 }
 
 /*!
@@ -326,17 +334,6 @@ QSyntaxHighlighter::QSyntaxHighlighter(QTextDocument *parent)
     : QObject(*new QSyntaxHighlighterPrivate, parent)
 {
     setDocument(parent);
-}
-
-/*!
-    Constructs a QSyntaxHighlighter and installs it on \a parent 's
-    QTextDocument. The specified QTextEdit also becomes the owner of
-    the QSyntaxHighlighter.
-*/
-QSyntaxHighlighter::QSyntaxHighlighter(QTextEdit *parent)
-    : QObject(*new QSyntaxHighlighterPrivate, parent)
-{
-    setDocument(parent->document());
 }
 
 /*!

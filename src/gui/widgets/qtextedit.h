@@ -90,6 +90,7 @@ class Q_GUI_EXPORT QTextEdit : public QAbstractScrollArea
     Q_PROPERTY(bool acceptRichText READ acceptRichText WRITE setAcceptRichText)
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
     Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(QObject *document READ document)
 public:
     enum LineWrapMode {
         NoWrap,

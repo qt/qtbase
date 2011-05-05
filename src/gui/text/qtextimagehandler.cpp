@@ -48,7 +48,6 @@
 #include <qdebug.h>
 #include <private/qtextengine_p.h>
 #include <qpalette.h>
-#include <qtextbrowser.h>
 #include <qthread.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +72,8 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
 
     if (pm.isNull()) {
         QString context;
-#ifndef QT_NO_TEXTBROWSER
+#if 0
+        // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
@@ -150,7 +150,9 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
 
     if (image.isNull()) {
         QString context;
-#ifndef QT_NO_TEXTBROWSER
+
+#if 0
+        // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
