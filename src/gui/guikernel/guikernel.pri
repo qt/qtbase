@@ -18,8 +18,7 @@ HEADERS += \
         guikernel/qshortcut.h \
         guikernel/qshortcutmap_p.h \
         guikernel/qwindowdefs.h \
-        guikernel/qkeymapper_p.h \
-        guikernel/qhexstring_p.h
+        guikernel/qkeymapper_p.h
 
 SOURCES += \
         guikernel/qclipboard.cpp \

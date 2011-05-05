@@ -4,7 +4,6 @@ HEADERS += \
         util/qsystemtrayicon.h \
         util/qcompleter.h \
         util/qcompleter_p.h \
-        util/qdesktopservices.h \
         util/qsystemtrayicon_p.h \
         util/qscroller.h \
         util/qscroller_p.h \
@@ -19,7 +18,6 @@ HEADERS += \
 SOURCES += \
         util/qsystemtrayicon.cpp \
         util/qcompleter.cpp \
-        util/qdesktopservices.cpp \
         util/qscroller.cpp \
         util/qscrollerproperties.cpp \
         util/qflickgesture.cpp \

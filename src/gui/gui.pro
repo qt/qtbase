@@ -31,6 +31,7 @@ include(guikernel/guikernel.pri)
 include(image/image.pri)
 include(text/text.pri)
 include(painting/painting.pri)
+include(guiutil/guiutil.pri)
 
 #modules
 include(animation/animation.pri)

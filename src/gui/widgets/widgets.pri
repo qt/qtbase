@@ -69,7 +69,6 @@ HEADERS += \
         widgets/qtoolbarseparator_p.h \
         widgets/qtoolbox.h \
         widgets/qtoolbutton.h \
-        widgets/qvalidator.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
         widgets/qwidgetresizehandler_p.h \
@@ -131,7 +130,6 @@ SOURCES += \
         widgets/qtoolbarseparator.cpp \
         widgets/qtoolbox.cpp \
         widgets/qtoolbutton.cpp \
-        widgets/qvalidator.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
