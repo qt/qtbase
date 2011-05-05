@@ -4973,16 +4973,21 @@ void tst_QNetworkReply::httpProxyCommands()
     QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
     QNetworkReplyPtr reply = manager.get(request);
-    manager.setProxy(QNetworkProxy());
+    //clearing the proxy here causes the test to fail.
+    //the proxy isn't used until after the bearer has been started
+    //which is correct in general, because system proxy isn't known until that time.
+    //removing this line is safe, as the proxy is also reset by the cleanup() function
+    //manager.setProxy(QNetworkProxy());
 
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(15);
 
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     //qDebug() << reply->error() << reply->errorString();
+    //qDebug() << proxyServer.receivedData;
 
     // we don't really care if the request succeeded
     // especially since it won't succeed in the HTTPS case
