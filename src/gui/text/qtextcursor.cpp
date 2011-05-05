@@ -362,20 +362,23 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     currentCharFormat = -1;
     bool adjustX = true;
     QTextBlock blockIt = block();
+    bool visualMovement = priv->defaultCursorMoveStyle == QTextCursor::Visual;
 
     if (!blockIt.isValid())
         return false;
 
-    if (op >= QTextCursor::Left && op <= QTextCursor::WordRight
-        && blockIt.textDirection() == Qt::RightToLeft) {
-        if (op == QTextCursor::Left)
-            op = QTextCursor::NextCharacter;
-        else if (op == QTextCursor::Right)
-            op = QTextCursor::PreviousCharacter;
-        else if (op == QTextCursor::WordLeft)
+    if (blockIt.textDirection() == Qt::RightToLeft) {
+        if (op == QTextCursor::WordLeft)
             op = QTextCursor::NextWord;
         else if (op == QTextCursor::WordRight)
             op = QTextCursor::PreviousWord;
+
+        if (!visualMovement) {
+            if (op == QTextCursor::Left)
+                op = QTextCursor::NextCharacter;
+            else if (op == QTextCursor::Right)
+                op = QTextCursor::PreviousCharacter;
+        }
     }
 
     const QTextLayout *layout = blockLayout(blockIt);
@@ -418,8 +421,11 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         break;
     }
     case QTextCursor::PreviousCharacter:
-    case QTextCursor::Left:
         newPosition = priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
+        break;
+    case QTextCursor::Left:
+        newPosition = visualMovement ? priv->leftCursorPosition(position)
+                                     : priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::StartOfWord: {
         if (relativePos == 0)
@@ -529,8 +535,11 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         break;
     }
     case QTextCursor::NextCharacter:
-    case QTextCursor::Right:
         newPosition = priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
+        break;
+    case QTextCursor::Right:
+        newPosition = visualMovement ? priv->rightCursorPosition(position)
+                                     : priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::NextWord:
     case QTextCursor::WordRight:
@@ -2557,5 +2566,20 @@ QTextDocument *QTextCursor::document() const
         return d->priv->document();
     return 0; // document went away
 }
+
+/*!
+    \enum QTextCursor::MoveStyle
+
+    This enum describes the movement style available to QTextCursor. The options
+    are:
+
+    \value Logical Within a left-to-right text block, increase cursor position
+    when pressing left arrow key, decrease cursor position when pressing the
+    right arrow key. If the text block is right-to-left, the opposite behavior
+    applies.
+    \value Visual Pressing the left arrow key will always cause the cursor to move
+    left, regardless of the text's writing direction. The same behavior applies to
+    right arrow key.
+*/
 
 QT_END_NAMESPACE

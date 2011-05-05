@@ -1843,6 +1843,10 @@ inline QT3_SUPPORT void qSuppressObsoleteWarnings(bool = true) {}
 inline QT3_SUPPORT void qObsolete(const char *, const char * = 0, const char * = 0) {}
 #endif
 
+#if !defined(Q_UNIMPLEMENTED)
+#  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
+#endif
+
 #if defined(QT_NO_THREAD)
 
 template <typename T>
@@ -2755,7 +2759,8 @@ QT_LICENSED_MODULE(DBus)
 
 #if !(defined(Q_WS_WIN) && !defined(Q_WS_WINCE)) \
     && !(defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)) \
-    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE))
+    && !(defined(Q_WS_X11) && !defined(QT_NO_FREETYPE)) \
+    && !(defined(Q_WS_QPA))
 #  define QT_NO_RAWFONT
 #endif
 

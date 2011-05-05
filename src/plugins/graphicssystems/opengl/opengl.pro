@@ -1,7 +1,7 @@
 TARGET = qglgraphicssystem
 include(../../qpluginbase.pri)
 
-QT += opengl
+QT += core-private gui-private opengl-private
 
 DESTDIR = $$QT.gui.plugins/graphicssystems
 

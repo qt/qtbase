@@ -46,6 +46,7 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qfont.h>
+#include <QtGui/qtextcursor.h>
 
 QT_BEGIN_HEADER
 
@@ -60,7 +61,6 @@ class QPainter;
 class QPrinter;
 class QAbstractTextDocumentLayout;
 class QPoint;
-class QTextCursor;
 class QTextObject;
 class QTextFormat;
 class QTextFrame;
@@ -268,6 +268,9 @@ public:
 
     QTextOption defaultTextOption() const;
     void setDefaultTextOption(const QTextOption &option);
+
+    QTextCursor::MoveStyle defaultCursorMoveStyle() const;
+    void setDefaultCursorMoveStyle(QTextCursor::MoveStyle style);
 
 Q_SIGNALS:
     void contentsChange(int from, int charsRemoves, int charsAdded);

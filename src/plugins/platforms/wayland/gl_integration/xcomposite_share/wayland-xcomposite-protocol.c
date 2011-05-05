@@ -43,17 +43,17 @@
 #include <stdint.h>
 #include "wayland-util.h"
 
-static const struct wl_message xcomposite_requests[] = {
+static const struct wl_message wl_xcomposite_requests[] = {
 	{ "create_buffer", "nuiio" },
 };
 
-static const struct wl_message xcomposite_events[] = {
+static const struct wl_message wl_xcomposite_events[] = {
 	{ "root", "su" },
 };
 
 WL_EXPORT const struct wl_interface wl_xcomposite_interface = {
-	"xcomposite", 1,
-	ARRAY_LENGTH(xcomposite_requests), xcomposite_requests,
-	ARRAY_LENGTH(xcomposite_events), xcomposite_events,
+	"wl_xcomposite", 1,
+	ARRAY_LENGTH(wl_xcomposite_requests), wl_xcomposite_requests,
+	ARRAY_LENGTH(wl_xcomposite_events), wl_xcomposite_events,
 };
 

@@ -122,7 +122,7 @@ struct QFreetypeFace
     static void addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point, QPainterPath *path, bool = false);
 
 private:
-    friend class QFontEngineFTRawFont;
+    friend class QFontEngineFT;
     friend class QScopedPointerDeleter<QFreetypeFace>;
     QFreetypeFace() : _lock(QMutex::Recursive) {}
     ~QFreetypeFace() {}
@@ -311,14 +311,12 @@ private:
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
-    enum HintStyle {
-        HintNone,
-        HintLight,
-        HintMedium,
-        HintFull
-    };
 
-    void setDefaultHintStyle(HintStyle style);
+    virtual void setDefaultHintStyle(HintStyle style);
+
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+    bool initFromFontEngine(const QFontEngineFT *fontEngine);
+
     HintStyle defaultHintStyle() const { return default_hint_style; }
 protected:
 
@@ -345,7 +343,6 @@ protected:
 private:
     friend class QFontEngineFTRawFont;
 
-    QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const;
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
 
     GlyphFormat defaultFormat;

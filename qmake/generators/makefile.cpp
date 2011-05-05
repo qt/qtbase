@@ -2376,6 +2376,14 @@ MakefileGenerator::writeSubDirs(QTextStream &t)
     qDeleteAll(targets);
 }
 
+void MakefileGenerator::writeSubMakeCall(QTextStream &t, const QString &callPrefix,
+                                         const QString &makeArguments, const QString &callPostfix)
+{
+    t << callPrefix
+      << "$(MAKE)" << makeArguments
+      << callPostfix << endl;
+}
+
 void
 MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubTarget*> targets, int flags)
 {
@@ -2499,9 +2507,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 t << " " << valList(subtarget->depends);
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
-            t << out_directory_cdin
-              << "$(MAKE)" << makefilein
-              << out_directory_cdout << endl;
+            writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
         }
 
         for(int suffix = 0; suffix < targetSuffixes.size(); ++suffix) {
@@ -2521,9 +2527,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                     t << " " << targets.at(target-1)->target << "-" << targetSuffixes.at(suffix) << "-ordered ";
                 if(project->isEmpty("QMAKE_NOFORCE"))
                     t <<  " FORCE";
-                t << out_directory_cdin
-                  << "$(MAKE)" << makefilein << " " << s
-                  << out_directory_cdout << endl;
+                writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
             }
             t << subtarget->target << "-" << targetSuffixes.at(suffix) << ": " << mkfile;
             if(!subtarget->depends.isEmpty())
@@ -2531,9 +2535,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                                     "-"+targetSuffixes.at(suffix));
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
-            t << out_directory_cdin
-              << "$(MAKE)" << makefilein << " " << s
-              << out_directory_cdout << endl;
+            writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
         }
     }
     t << endl;
@@ -2671,12 +2673,10 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
                 //write the commands
                 if(!out_directory.isEmpty()) {
-                    t << out_directory_cdin
-                      << "$(MAKE)" << makefilein << " " << sub_targ
-                      << out_directory_cdout << endl;
+                    writeSubMakeCall(t, out_directory_cdin, makefilein + " " + sub_targ,
+                                     out_directory_cdout);
                 } else {
-                    t << "\n\t"
-                      << "$(MAKE)" << makefilein << " " << sub_targ << endl;
+                    writeSubMakeCall(t, "\n\t", makefilein + " " + sub_targ, QString());
                 }
             }
         }

@@ -1,6 +1,10 @@
 TARGET     = QtOpenGL
 QPRO_PWD   = $$PWD
-QT         = core gui
+QT         = core-private gui-private
+
+CONFIG += module
+MODULE_PRI = ../modules/qt_opengl.pri
+
 DEFINES   += QT_BUILD_OPENGL_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000

@@ -392,6 +392,16 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #endif
 }
 
+void QCoreApplicationPrivate::_q_initializeProcessManager()
+{
+#ifndef QT_NO_PROCESS
+#  ifdef Q_OS_UNIX
+    QProcessPrivate::initializeProcessManager();
+#  endif
+#endif
+}
+
+
 QThread *QCoreApplicationPrivate::theMainThread = 0;
 QThread *QCoreApplicationPrivate::mainThread()
 {
@@ -654,12 +664,6 @@ void QCoreApplication::init()
     } else {
         d->appendApplicationPathToLibraryPaths();
     }
-#endif
-
-#if defined(Q_OS_UNIX) && !(defined(QT_NO_PROCESS))
-    // Make sure the process manager thread object is created in the main
-    // thread.
-    QProcessPrivate::initializeProcessManager();
 #endif
 
 #ifdef QT_EVAL
@@ -2728,3 +2732,5 @@ int QCoreApplication::loopLevel()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qcoreapplication.cpp"

@@ -803,106 +803,6 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     return load_flags;
 }
 
-QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const
-{
-    Glyph *g = set->getGlyph(glyph);
-    if (g && g->format == format)
-        return g;
-
-    bool hsubpixel = false;
-    int vfactor = 1;
-    int load_flags = loadFlags(set, format, 0, hsubpixel, vfactor);
-
-    // apply our matrix to this, but note that the metrics will not be affected by this.
-    FT_Face face = lockFace();
-    FT_Matrix matrix = this->matrix;
-    FT_Matrix_Multiply(&set->transformationMatrix, &matrix);
-    FT_Set_Transform(face, &matrix, 0);
-    freetype->matrix = matrix;
-
-    bool transform = matrix.xx != 0x10000 || matrix.yy != 0x10000 || matrix.xy != 0 || matrix.yx != 0;
-    if (transform)
-        load_flags |= FT_LOAD_NO_BITMAP;
-
-    FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
-    if (err && (load_flags & FT_LOAD_NO_BITMAP)) {
-        load_flags &= ~FT_LOAD_NO_BITMAP;
-        err = FT_Load_Glyph(face, glyph, load_flags);
-    }
-    if (err == FT_Err_Too_Few_Arguments) {
-        // this is an error in the bytecode interpreter, just try to run without it
-        load_flags |= FT_LOAD_FORCE_AUTOHINT;
-        err = FT_Load_Glyph(face, glyph, load_flags);
-    }
-    if (err != FT_Err_Ok)
-        qWarning("load glyph failed err=%x face=%p, glyph=%d", err, face, glyph);
-
-    unlockFace();
-    if (set->outline_drawing)
-        return 0;
-
-    if (!g) {
-        g = new Glyph;
-        g->uploadedToServer = false;
-        g->data = 0;
-    }
-
-    FT_GlyphSlot slot = face->glyph;
-    if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
-    int left  = slot->metrics.horiBearingX;
-    int right = slot->metrics.horiBearingX + slot->metrics.width;
-    int top    = slot->metrics.horiBearingY;
-    int bottom = slot->metrics.horiBearingY - slot->metrics.height;
-    if (transform && slot->format != FT_GLYPH_FORMAT_BITMAP) { // freetype doesn't apply the transformation on the metrics
-        int l, r, t, b;
-        FT_Vector vector;
-        vector.x = left;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        l = r = vector.x;
-        t = b = vector.y;
-        vector.x = right;
-        vector.y = top;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = right;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        vector.x = left;
-        vector.y = bottom;
-        FT_Vector_Transform(&vector, &matrix);
-        if (l > vector.x) l = vector.x;
-        if (r < vector.x) r = vector.x;
-        if (t < vector.y) t = vector.y;
-        if (b > vector.y) b = vector.y;
-        left = l;
-        right = r;
-        top = t;
-        bottom = b;
-    }
-    left = FLOOR(left);
-    right = CEIL(right);
-    bottom = FLOOR(bottom);
-    top = CEIL(top);
-
-    g->linearAdvance = face->glyph->linearHoriAdvance >> 10;
-    g->width = TRUNC(right-left);
-    g->height = TRUNC(top-bottom);
-    g->x = TRUNC(left);
-    g->y = TRUNC(top);
-    g->advance = TRUNC(ROUND(face->glyph->advance.x));
-    g->format = Format_None;
-
-    return g;
-}
-
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                QFixed subPixelPosition,
                                                GlyphFormat format,
@@ -2067,6 +1967,41 @@ HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     HB_Error result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
+}
+
+bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
+{
+    if (!init(fe->faceId(), fe->antialias, fe->defaultFormat, fe->freetype))
+        return false;
+
+    // Increase the reference of this QFreetypeFace since one more QFontEngineFT
+    // will be using it
+    freetype->ref.ref();
+
+    default_load_flags = fe->default_load_flags;
+    default_hint_style = fe->default_hint_style;
+    antialias = fe->antialias;
+    transform = fe->transform;
+    embolden = fe->embolden;
+    subpixelType = fe->subpixelType;
+    lcdFilterType = fe->lcdFilterType;
+    canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
+    embeddedbitmap = fe->embeddedbitmap;
+
+    return true;
+}
+
+QFontEngine *QFontEngineFT::cloneWithSize(qreal pixelSize) const
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+    QFontEngineFT *fe = new QFontEngineFT(fontDef);
+    if (!fe->initFromFontEngine(this)) {
+        delete fe;
+        return 0;
+    } else {
+        return fe;
+    }
 }
 
 QT_END_NAMESPACE

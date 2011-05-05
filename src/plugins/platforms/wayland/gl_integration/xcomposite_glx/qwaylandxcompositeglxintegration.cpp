@@ -106,9 +106,9 @@ const struct wl_xcomposite_listener QWaylandXCompositeGLXIntegration::xcomposite
 void QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal(wl_display *display, uint32_t id, const char *interface, uint32_t version, void *data)
 {
     Q_UNUSED(version);
-    if (strcmp(interface, "xcomposite") == 0) {
+    if (strcmp(interface, "wl_xcomposite") == 0) {
         QWaylandXCompositeGLXIntegration *integration = static_cast<QWaylandXCompositeGLXIntegration *>(data);
-        integration->mWaylandComposite = wl_xcomposite_create(display,id);
+        integration->mWaylandComposite = wl_xcomposite_create(display,id,1);
         wl_xcomposite_add_listener(integration->mWaylandComposite,&xcomposite_listener,integration);
     }
 

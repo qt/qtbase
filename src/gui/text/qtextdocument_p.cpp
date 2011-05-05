@@ -209,6 +209,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    defaultCursorMoveStyle = QTextCursor::Logical;
 
     indentWidth = 40;
     documentMargin = 4;
@@ -1380,6 +1381,20 @@ int QTextDocumentPrivate::previousCursorPosition(int position, QTextLayout::Curs
         return start - 1;
 
     return it.layout()->previousCursorPosition(position-start, mode) + start;
+}
+
+int QTextDocumentPrivate::leftCursorPosition(int position) const
+{
+    QTextBlock it = blocksFind(position);
+    int start = it.position();
+    return it.layout()->leftCursorPosition(position-start) + start;
+}
+
+int QTextDocumentPrivate::rightCursorPosition(int position) const
+{
+    QTextBlock it = blocksFind(position);
+    int start = it.position();
+    return it.layout()->rightCursorPosition(position-start) + start;
 }
 
 void QTextDocumentPrivate::changeObjectFormat(QTextObject *obj, int format)

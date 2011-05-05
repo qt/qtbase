@@ -605,11 +605,11 @@ void QTextEngine::shapeTextMac(int item) const
     unsigned short *log_clusters = logClusters(&si);
 
     bool stringToCMapFailed = false;
-    if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes())) {
+    if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes(), &si)) {
         ensureSpace(num_glyphs);
         g = availableGlyphs(&si);
         stringToCMapFailed = !fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters,
-                                               attributes());
+                                               attributes(), &si);
     }
 
     if (!stringToCMapFailed) {

@@ -377,7 +377,7 @@ bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *
 }
 
 bool QFontEngineMacMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags,
-                                       unsigned short *logClusters, const HB_CharAttributes *charAttributes) const
+                                       unsigned short *logClusters, const HB_CharAttributes *charAttributes, QScriptItem *) const
 {
     if (*nglyphs < len) {
         *nglyphs = len;

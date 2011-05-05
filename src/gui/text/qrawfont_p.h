@@ -62,7 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace { class CustomFontFileLoader; }
-class Q_AUTOTEST_EXPORT QRawFontPrivate
+class Q_GUI_EXPORT QRawFontPrivate
 {
 public:
     QRawFontPrivate()
@@ -83,7 +83,6 @@ public:
         , fontHandle(NULL)
         , ptrAddFontMemResourceEx(other.ptrAddFontMemResourceEx)
         , ptrRemoveFontMemResourceEx(other.ptrRemoveFontMemResourceEx)
-        , uniqueFamilyName(other.uniqueFamilyName)
 #endif
     {
         fontEngine = other.fontEngine;
@@ -102,7 +101,6 @@ public:
     void platformLoadFromData(const QByteArray &fontData,
                               int pixelSize,
                               QFont::HintingPreference hintingPreference);
-    void platformSetPixelSize(int pixelSize);
 
     static QRawFontPrivate *get(const QRawFont &font) { return font.d.data(); }
 
@@ -119,8 +117,6 @@ public:
 
     PtrAddFontMemResourceEx ptrAddFontMemResourceEx;
     PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx;
-
-    QString uniqueFamilyName;
 
 #endif // Q_WS_WIN
 };
