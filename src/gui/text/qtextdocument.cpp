@@ -58,7 +58,6 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdir.h>
-#include "qtextcontrol_p.h"
 #include "qfont_p.h"
 #include "private/qtextedit_p.h"
 #include "private/qdataurl_p.h"
@@ -1970,6 +1969,8 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     if (doc) {
         r = doc->loadResource(type, name);
     }
+#if 0
+    // ### Qt5: reenable
 #ifndef QT_NO_TEXTEDIT
     else if (QTextEdit *edit = qobject_cast<QTextEdit *>(parent())) {
         QUrl resolvedName = edit->d_func()->resolveUrl(name);
@@ -1980,6 +1981,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     else if (QTextControl *control = qobject_cast<QTextControl *>(parent())) {
         r = control->loadResource(type, name);
     }
+#endif
 #endif
 
     // handle data: URLs
