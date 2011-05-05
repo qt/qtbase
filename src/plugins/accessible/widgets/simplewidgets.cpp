@@ -176,7 +176,7 @@ QString QAccessibleButton::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, child);;
+        str = QAccessibleWidgetEx::text(t, child);
     return qt_accStripAmp(str);
 }
 
