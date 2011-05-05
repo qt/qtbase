@@ -148,11 +148,11 @@ class QCalendarPopup : public QWidget
     Q_OBJECT
 public:
     QCalendarPopup(QWidget *parent = 0, QCalendarWidget *cw = 0);
-    QDate selectedDate() { return calendar->selectedDate(); }
+    QDate selectedDate() { return verifyCalendarInstance()->selectedDate(); }
     void setDate(const QDate &date);
     void setDateRange(const QDate &min, const QDate &max);
-    void setFirstDayOfWeek(Qt::DayOfWeek dow) { calendar->setFirstDayOfWeek(dow); }
-    QCalendarWidget *calendarWidget() const { return calendar; }
+    void setFirstDayOfWeek(Qt::DayOfWeek dow) { verifyCalendarInstance()->setFirstDayOfWeek(dow); }
+    QCalendarWidget *calendarWidget() const { return const_cast<QCalendarPopup*>(this)->verifyCalendarInstance(); }
     void setCalendarWidget(QCalendarWidget *cw);
 Q_SIGNALS:
     void activated(const QDate &date);
@@ -171,7 +171,9 @@ protected:
     bool event(QEvent *e);
 
 private:
-    QCalendarWidget *calendar;
+    QCalendarWidget *verifyCalendarInstance();
+
+    QWeakPointer<QCalendarWidget> calendar;
     QDate oldDate;
     bool dateChanged;
 };
