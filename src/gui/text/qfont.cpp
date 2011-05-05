@@ -65,13 +65,6 @@
 #include "qx11info_x11.h"
 #include <private/qt_x11_p.h>
 #endif
-#ifdef Q_WS_QWS
-#include "qscreen_qws.h"
-#if !defined(QT_NO_QWS_QPF2)
-#include <qfile.h>
-#include "qfontengine_qpf_p.h"
-#endif
-#endif
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
 #endif
@@ -171,14 +164,6 @@ Q_GUI_EXPORT int qt_defaultDpiX()
 #elif defined(Q_WS_MAC)
     extern float qt_mac_defaultDpi_x(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_x();
-#elif defined(Q_WS_QWS)
-    if (!qt_screen)
-        return 72;
-    QScreen *screen = qt_screen;
-    const QList<QScreen*> subScreens = qt_screen->subScreens();
-    if (!subScreens.isEmpty())
-        screen = subScreens.at(0);
-    dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (pi) {
@@ -210,14 +195,6 @@ Q_GUI_EXPORT int qt_defaultDpiY()
 #elif defined(Q_WS_MAC)
     extern float qt_mac_defaultDpi_y(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_y();
-#elif defined(Q_WS_QWS)
-    if (!qt_screen)
-        return 72;
-    QScreen *screen = qt_screen;
-    const QList<QScreen*> subScreens = qt_screen->subScreens();
-    if (!subScreens.isEmpty())
-        screen = subScreens.at(0);
-    dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (pi) {

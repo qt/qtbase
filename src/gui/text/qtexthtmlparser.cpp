@@ -43,7 +43,6 @@
 
 #include <qbytearray.h>
 #include <qtextcodec.h>
-#include <qapplication.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
@@ -1055,7 +1054,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
                     && !attributes.at(i + 1).isEmpty()) {
                     hasHref = true;
                     charFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-                    charFormat.setForeground(QApplication::palette().link());
+                    charFormat.setForeground(Qt::blue); // ### Qt5: QApplication::palette().link());
                 }
             }
 
