@@ -55,7 +55,8 @@ Q_DECLARE_METATYPE ( QModelIndex )
 */
 ModelTest::ModelTest ( QAbstractItemModel *_model, QObject *parent ) : QObject ( parent ), model ( _model ), fetchingMore ( false )
 {
-    Q_ASSERT ( model );
+    if (!model)
+        qFatal("%s: model must not be null", Q_FUNC_INFO);
 
     connect ( model, SIGNAL ( columnsAboutToBeInserted ( const QModelIndex &, int, int ) ),
               this, SLOT ( runAllTests() ) );
