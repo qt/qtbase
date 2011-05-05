@@ -110,7 +110,6 @@ void QGLXContext::swapBuffers()
 {
     Q_XCB_NOOP(m_screen->connection());
     glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), m_drawable);
-    doneCurrent();
     Q_XCB_NOOP(m_screen->connection());
 }
 
