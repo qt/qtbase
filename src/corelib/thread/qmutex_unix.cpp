@@ -107,18 +107,21 @@ bool QMutexPrivate::wait(int timeout)
         // lock acquired without waiting
         return true;
     }
-    bool returnValue;
+    kern_return_t r;
     if (timeout < 0) {
-        returnValue = semaphore_wait(mach_semaphore) == KERN_SUCCESS;
+        do {
+            r = semaphore_wait(mach_semaphore);
+        } while (r == KERN_ABORTED);
+	if (r != KERN_SUCCESS)
+            qWarning("QMutex: infinite wait failed, error %d", r);
     } else {
         mach_timespec_t ts;
         ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
         ts.tv_sec = (timeout / 1000);
-        kern_return_t r = semaphore_timedwait(mach_semaphore, ts);
-        returnValue = r == KERN_SUCCESS;
+        r = semaphore_timedwait(mach_semaphore, ts);
     }
     contenders.deref();
-    return returnValue;
+    return r == KERN_SUCCESS;
 }
 
 void QMutexPrivate::wakeUp()
