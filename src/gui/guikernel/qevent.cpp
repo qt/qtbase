@@ -41,7 +41,6 @@
 
 #include "qevent.h"
 #include "qcursor.h"
-#include "qapplication.h"
 #include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
@@ -49,7 +48,7 @@
 #include "qgraphicsview.h"
 #include "qdebug.h"
 #include "qmime.h"
-#include "qdnd_p.h"
+#include "private/qdnd_p.h"
 #include "qevent_p.h"
 #include "qgesture.h"
 #include "private/qgesture_p.h"

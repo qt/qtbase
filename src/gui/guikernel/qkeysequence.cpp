@@ -45,7 +45,6 @@
 
 #ifndef QT_NO_SHORTCUT
 
-#include "qshortcut.h"
 #include "qdebug.h"
 #ifndef QT_NO_REGEXP
 # include "qregexp.h"
@@ -1234,10 +1233,10 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
 
     QList<QModifKeyName> modifs;
     if (nativeText) {
-        modifs << QModifKeyName(Qt::CTRL, QShortcut::tr("Ctrl").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::SHIFT, QShortcut::tr("Shift").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::ALT, QShortcut::tr("Alt").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::META, QShortcut::tr("Meta").toLower().append(QLatin1Char('+')));
+        modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::ALT, QCoreApplication::translate("QShortcut", "Alt").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(QLatin1Char('+')));
     }
     modifs += *gmodifs; // Test non-translated ones last
 
@@ -1299,7 +1298,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                 ++tran;
             for (int i = 0; keyname[i].name; ++i) {
                 QString keyName(tran == 0
-                                ? QShortcut::tr(keyname[i].name)
+                                ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
                 if (accel == keyName.toLower()) {
                     ret |= keyname[i].key;
@@ -1327,7 +1326,7 @@ QString QKeySequence::encodeString(int key)
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
 {
     if (!str.isEmpty())
-        str += (format == QKeySequence::NativeText) ? QShortcut::tr("+")
+        str += (format == QKeySequence::NativeText) ? QCoreApplication::translate("QShortcut", "+")
                                                     : QString::fromLatin1("+");
     str += theKey;
 }
@@ -1367,13 +1366,13 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     {
         // On other systems the order is Meta, Control, Alt, Shift
         if ((key & Qt::META) == Qt::META)
-            s = nativeText ? QShortcut::tr("Meta") : QString::fromLatin1("Meta");
+            s = nativeText ? QCoreApplication::translate("QShortcut", "Meta") : QString::fromLatin1("Meta");
         if ((key & Qt::CTRL) == Qt::CTRL)
-            addKey(s, nativeText ? QShortcut::tr("Ctrl") : QString::fromLatin1("Ctrl"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Ctrl") : QString::fromLatin1("Ctrl"), format);
         if ((key & Qt::ALT) == Qt::ALT)
-            addKey(s, nativeText ? QShortcut::tr("Alt") : QString::fromLatin1("Alt"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Alt") : QString::fromLatin1("Alt"), format);
         if ((key & Qt::SHIFT) == Qt::SHIFT)
-            addKey(s, nativeText ? QShortcut::tr("Shift") : QString::fromLatin1("Shift"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Shift") : QString::fromLatin1("Shift"), format);
     }
 
 
@@ -1388,7 +1387,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
             p += QChar((key-0x10000)%400+0xdc00);
         }
     } else if (key >= Qt::Key_F1 && key <= Qt::Key_F35) {
-            p = nativeText ? QShortcut::tr("F%1").arg(key - Qt::Key_F1 + 1)
+            p = nativeText ? QCoreApplication::translate("QShortcut", "F%1").arg(key - Qt::Key_F1 + 1)
                            : QString::fromLatin1("F%1").arg(key - Qt::Key_F1 + 1);
     } else if (key) {
         int i=0;
@@ -1407,7 +1406,7 @@ NonSymbol:
 #endif
             while (keyname[i].name) {
                 if (key == keyname[i].key) {
-                    p = nativeText ? QShortcut::tr(keyname[i].name)
+                    p = nativeText ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                    : QString::fromLatin1(keyname[i].name);
                     break;
                 }

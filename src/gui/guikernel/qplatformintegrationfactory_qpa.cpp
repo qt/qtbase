@@ -44,7 +44,7 @@
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
 
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE

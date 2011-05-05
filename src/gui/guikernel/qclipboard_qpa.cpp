@@ -44,7 +44,7 @@
 #ifndef QT_NO_CLIPBOARD
 
 #include "qmimedata.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include "qplatformclipboard_qpa.h"
 
 QT_BEGIN_NAMESPACE

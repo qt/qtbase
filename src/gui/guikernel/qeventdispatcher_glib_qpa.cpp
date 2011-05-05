@@ -41,13 +41,12 @@
 
 #include "qeventdispatcher_glib_qpa_p.h"
 
-#include "qapplication.h"
+#include "qguiapplication.h"
 
 #include "qplatformdefs.h"
-#include "qapplication.h"
 
 #include <glib.h>
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 
 #include <qdebug.h>
 
