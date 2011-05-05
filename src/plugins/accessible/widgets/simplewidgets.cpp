@@ -396,7 +396,7 @@ QString QAccessibleToolButton::text(Text t, int child) const
     QString str;
     switch (t) {
     case Name:
-        str = toolButton()->text();
+        str = toolButton()->accessibleName();
         if (str.isEmpty())
             str = toolButton()->text();
         break;
