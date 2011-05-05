@@ -2742,7 +2742,7 @@ void tst_QTextDocument::copiedFontSize()
     QTextDocument documentOutput;
 
     QFont fontInput;
-    fontInput.setPixelSize(24);  // With pixels font size is not transfered in html
+    fontInput.setPixelSize(24);
 
     QTextCursor cursorInput(&documentInput);
     QTextCharFormat formatInput = cursorInput.charFormat();
