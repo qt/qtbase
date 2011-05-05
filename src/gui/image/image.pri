@@ -23,7 +23,6 @@ HEADERS += \
         image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
         image/qpixmapdatafactory_p.h \
-        image/qpixmapfilter_p.h \
         image/qimagepixmapcleanuphooks_p.h \
         image/qvolatileimage_p.h \
         image/qvolatileimagedata_p.h \
@@ -42,7 +41,6 @@ SOURCES += \
         image/qpixmapcache.cpp \
         image/qpixmapdata.cpp \
         image/qpixmapdatafactory.cpp \
-        image/qpixmapfilter.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
