@@ -46,7 +46,7 @@
 #include "private/qkeysequence_p.h"
 #include "qdebug.h"
 #include "qmime.h"
-#include "private/qdnd_p.h"
+//#include "private/qdnd_p.h"
 #include "qevent_p.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -2186,7 +2186,7 @@ QDropEvent::QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeDa
       modState(modifiers), act(actions),
       mdata(data)
 {
-    default_action = QDragManager::self()->defaultAction(act, modifiers);
+    default_action = Qt::CopyAction; // ### Qt5: QDragManager::self()->defaultAction(act, modifiers);
     drop_action = default_action;
     ignore();
 }
@@ -2267,8 +2267,10 @@ bool QDropEvent::provides(const char *mimeType) const
 */
 QWidget* QDropEvent::source() const
 {
-    QDragManager *manager = QDragManager::self();
-    return manager ? manager->source() : 0;
+    return 0;
+    // ### Qt5
+//    QDragManager *manager = QDragManager::self();
+//    return manager ? manager->source() : 0;
 }
 
 
