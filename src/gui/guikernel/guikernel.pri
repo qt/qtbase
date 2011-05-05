@@ -8,30 +8,21 @@ KERNEL_P= guikernel
 HEADERS += \
         guikernel/qclipboard.h \
         guikernel/qcursor.h \
-        guikernel/qdrag.h \
-        guikernel/qdnd_p.h \
         guikernel/qevent.h \
         guikernel/qevent_p.h \
         guikernel/qkeysequence.h \
+        guikernel/qkeysequence_p.h \
         guikernel/qmime.h \
         guikernel/qsessionmanager.h \
-        guikernel/qshortcut.h \
-        guikernel/qshortcutmap_p.h \
         guikernel/qwindowdefs.h \
-        guikernel/qkeymapper_p.h
 
 SOURCES += \
         guikernel/qclipboard.cpp \
         guikernel/qcursor.cpp \
-        guikernel/qdrag.cpp \
-        guikernel/qdnd.cpp \
         guikernel/qevent.cpp \
         guikernel/qkeysequence.cpp \
         guikernel/qmime.cpp \
-        guikernel/qshortcut.cpp \
-        guikernel/qshortcutmap.cpp \
         guikernel/qguivariant.cpp \
-        guikernel/qkeymapper.cpp \
 
 qpa {
 	HEADERS += \
@@ -60,10 +51,8 @@ qpa {
 	SOURCES += \
                 guikernel/qclipboard_qpa.cpp \
                 guikernel/qcursor_qpa.cpp \
-                guikernel/qdnd_qpa.cpp \
                 guikernel/qgenericpluginfactory_qpa.cpp \
                 guikernel/qgenericplugin_qpa.cpp \
-                guikernel/qkeymapper_qpa.cpp \
                 guikernel/qeventdispatcher_qpa.cpp \
                 guikernel/qwindowsysteminterface_qpa.cpp \
                 guikernel/qplatformintegration_qpa.cpp \

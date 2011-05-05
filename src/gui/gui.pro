@@ -33,6 +33,9 @@ include(text/text.pri)
 include(painting/painting.pri)
 include(guiutil/guiutil.pri)
 
+# to be moved into QtGui
+include(to_be_moved/to_be_moved.pri)
+
 #modules
 include(animation/animation.pri)
 include(kernel/kernel.pri)
