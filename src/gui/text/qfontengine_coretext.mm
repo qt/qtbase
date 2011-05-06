@@ -871,7 +871,7 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
     newFontDef.pixelSize = pixelSize;
     newFontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
 
-    return new QCoreTextFontEngine(cgFont, fontDef);
+    return new QCoreTextFontEngine(cgFont, newFontDef);
 }
 
 QT_END_NAMESPACE
