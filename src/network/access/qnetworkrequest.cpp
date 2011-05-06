@@ -247,10 +247,13 @@ QT_BEGIN_NAMESPACE
 
     \value AlwaysNetwork        always load from network and do not
     check if the cache has a valid entry (similar to the
-    "Reload" feature in browsers)
+    "Reload" feature in browsers); in addition, force intermediate
+    caches to re-validate.
 
     \value PreferNetwork        default value; load from the network
-    if the cached entry is older than the network entry
+    if the cached entry is older than the network entry. This will never
+    return stale data from the cache, but revalidate resources that
+    have become stale.
 
     \value PreferCache          load from cache if available,
     otherwise load from network. Note that this can return possibly

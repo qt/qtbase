@@ -94,14 +94,20 @@ public:
     QNetworkReply *postProcess(QNetworkReply *reply);
     void createCookieJar() const;
 
-    void authenticationRequired(QNetworkAccessBackend *backend, QAuthenticator *authenticator);
+    void authenticationRequired(QAuthenticator *authenticator,
+                                QNetworkReply *reply,
+                                bool synchronous,
+                                QUrl &url,
+                                QUrl *urlForLastAuthentication);
     void cacheCredentials(const QUrl &url, const QAuthenticator *auth);
     QNetworkAuthenticationCredential *fetchCachedCredentials(const QUrl &url,
                                                              const QAuthenticator *auth = 0);
 
 #ifndef QT_NO_NETWORKPROXY
-    void proxyAuthenticationRequired(QNetworkAccessBackend *backend, const QNetworkProxy &proxy,
-                                     QAuthenticator *authenticator);
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy,
+                                bool synchronous,
+                                QAuthenticator *authenticator,
+                                QNetworkProxy *lastProxyAuthentication);
     void cacheProxyCredentials(const QNetworkProxy &proxy, const QAuthenticator *auth);
     QNetworkAuthenticationCredential *fetchCachedProxyCredentials(const QNetworkProxy &proxy,
                                                              const QAuthenticator *auth = 0);

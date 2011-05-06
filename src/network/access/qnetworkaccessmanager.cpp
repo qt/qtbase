@@ -67,13 +67,12 @@
 #include "QtNetwork/qhttpmultipart.h"
 #include "qhttpmultipart_p.h"
 
+#include "qnetworkreplyhttpimpl_p.h"
+
 #include "qthread.h"
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_HTTP
-Q_GLOBAL_STATIC(QNetworkAccessHttpBackendFactory, httpBackend)
-#endif // QT_NO_HTTP
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
 #ifndef QT_NO_FTP
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
@@ -85,10 +84,6 @@ Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 
 static void ensureInitialized()
 {
-#ifndef QT_NO_HTTP
-    (void) httpBackend();
-#endif // QT_NO_HTTP
-
 #ifndef QT_NO_FTP
     (void) ftpBackend();
 #endif
@@ -356,6 +351,17 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     ensureInitialized();
 
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+#ifndef QT_NO_NETWORKPROXY
+    qRegisterMetaType<QNetworkProxy>("QNetworkProxy");
+#endif
+#ifndef QT_NO_OPENSSL
+    qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
+    qRegisterMetaType<QSslConfiguration>("QSslConfiguration");
+#endif
+    qRegisterMetaType<QList<QPair<QByteArray,QByteArray> > >("QList<QPair<QByteArray,QByteArray> >");
+    qRegisterMetaType<QHttpNetworkRequest>("QHttpNetworkRequest");
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    qRegisterMetaType<QSharedPointer<char> >("QSharedPointer<char>");
 }
 
 /*!
@@ -967,6 +973,18 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
 
+#ifndef QT_NO_HTTP
+    // Since Qt 5 we use the new QNetworkReplyHttpImpl
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") ) {
+        QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);
+#ifndef QT_NO_BEARERMANAGEMENT
+        connect(this, SIGNAL(networkSessionConnected()),
+                reply, SLOT(_q_networkSessionConnected()));
+#endif
+        return reply;
+    }
+#endif // QT_NO_HTTP
+
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
@@ -1055,42 +1073,43 @@ void QNetworkAccessManagerPrivate::createCookieJar() const
     }
 }
 
-void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend *backend,
-                                                          QAuthenticator *authenticator)
+void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authenticator,
+                                                          QNetworkReply *reply,
+                                                          bool synchronous,
+                                                          QUrl &url,
+                                                          QUrl *urlForLastAuthentication)
 {
     Q_Q(QNetworkAccessManager);
-
-    // FIXME: Add support for domains (i.e., the leading path)
-    QUrl url = backend->reply->url;
 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
     // also called when last URL is empty, e.g. on first call
-    if (backend->reply->urlForLastAuthentication.isEmpty()
-            || url != backend->reply->urlForLastAuthentication) {
+    if (urlForLastAuthentication->isEmpty()
+            || url != *urlForLastAuthentication) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedCredentials(url, authenticator);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
             authenticator->setPassword(cred.password);
-            backend->reply->urlForLastAuthentication = url;
+            *urlForLastAuthentication = url;
             return;
         }
     }
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
-    if (backend->isSynchronous())
+    if (synchronous)
         return;
 
-    backend->reply->urlForLastAuthentication = url;
-    emit q->authenticationRequired(backend->reply->q_func(), authenticator);
+    *urlForLastAuthentication = url;
+    emit q->authenticationRequired(reply, authenticator);
     authenticationManager->cacheCredentials(url, authenticator);
 }
 
 #ifndef QT_NO_NETWORKPROXY
-void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBackend *backend,
-                                                               const QNetworkProxy &proxy,
-                                                               QAuthenticator *authenticator)
+void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(const QNetworkProxy &proxy,
+                                                               bool synchronous,
+                                                               QAuthenticator *authenticator,
+                                                               QNetworkProxy *lastProxyAuthentication)
 {
     Q_Q(QNetworkAccessManager);
     // ### FIXME Tracking of successful authentications
@@ -1100,7 +1119,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
     //      proxyAuthenticationRequired gets emitted again
     // possible solution: some tracking inside the authenticator
     //      or a new function proxyAuthenticationSucceeded(true|false)
-    if (proxy != backend->reply->lastProxyAuthentication) {
+    if (proxy != *lastProxyAuthentication) {
         QNetworkAuthenticationCredential cred = authenticationManager->fetchCachedProxyCredentials(proxy);
         if (!cred.isNull()) {
             authenticator->setUser(cred.user);
@@ -1111,10 +1130,10 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
 
     // if we emit a signal here in synchronous mode, the user might spin
     // an event loop, which might recurse and lead to problems
-    if (backend->isSynchronous())
+    if (synchronous)
         return;
 
-    backend->reply->lastProxyAuthentication = proxy;
+    *lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);
     authenticationManager->cacheProxyCredentials(proxy, authenticator);
 }

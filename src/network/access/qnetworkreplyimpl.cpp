@@ -47,7 +47,6 @@
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworksession.h"
-#include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
 
 #include <QtCore/QCoreApplication>
@@ -356,7 +355,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
 #ifndef QT_NO_HTTP
-        if (qobject_cast<QNetworkAccessHttpBackend *>(backend) || (backend && backend->isSynchronous())) {
+        if (backend && backend->isSynchronous()) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
@@ -1043,11 +1042,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     }
 
 #ifndef QT_NO_HTTP
-    if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
-        _q_startOperation();
-    } else {
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-    }
+    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #else
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #endif // QT_NO_HTTP

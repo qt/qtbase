@@ -315,13 +315,13 @@ void QNetworkAccessBackend::error(QNetworkReply::NetworkError code, const QStrin
 void QNetworkAccessBackend::proxyAuthenticationRequired(const QNetworkProxy &proxy,
                                                         QAuthenticator *authenticator)
 {
-    manager->proxyAuthenticationRequired(this, proxy, authenticator);
+    manager->proxyAuthenticationRequired(proxy, synchronous, authenticator, &reply->lastProxyAuthentication);
 }
 #endif
 
 void QNetworkAccessBackend::authenticationRequired(QAuthenticator *authenticator)
 {
-    manager->authenticationRequired(this, authenticator);
+    manager->authenticationRequired(authenticator, reply->q_func(), synchronous, reply->url, &reply->urlForLastAuthentication);
 }
 
 void QNetworkAccessBackend::metaDataChanged()
