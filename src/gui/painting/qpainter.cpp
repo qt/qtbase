@@ -5811,6 +5811,13 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
             d->extended != 0
             ? qt_paintengine_supports_transformations(d->extended->type())
             : qt_paintengine_supports_transformations(d->engine->type());
+
+    // If the matrix is not affine, the paint engine will fall back to
+    // drawing the glyphs as paths, which in turn means we should not
+    // preprocess the glyph positions
+    if (!d->state->matrix.isAffine())
+        paintEngineSupportsTransformations = true;
+
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
         if (!paintEngineSupportsTransformations)
@@ -5854,7 +5861,7 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
 
     QFixed width = rightMost - leftMost;
 
-    if (extended != 0) {
+    if (extended != 0 && state->matrix.isAffine()) {
         QStaticTextItem staticTextItem;
         staticTextItem.color = state->pen.color();
         staticTextItem.font = state->font;
