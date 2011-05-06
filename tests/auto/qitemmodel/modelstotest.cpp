@@ -313,10 +313,17 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
     }
 
     if (QDirModel *dirModel = qobject_cast<QDirModel *>(model)) {
-        // Don't risk somthing bad happening, assert if this fails
-        Q_ASSERT(QDir(QDir::currentPath()).mkdir("test"));
-        for (int i = 0; i < 26; ++i)
-            Q_ASSERT(QDir(QDir::currentPath()).mkdir(QString("test/foo_%1").arg(i)));
+        if (!QDir::current().mkdir("test"))
+            qFatal("%s: cannot create directory %s",
+                   Q_FUNC_INFO,
+                   qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/test")));
+        for (int i = 0; i < 26; ++i) {
+            QString subdir = QString("test/foo_%1").arg(i);
+            if (!QDir::current().mkdir(subdir))
+                qFatal("%s: cannot create directory %s",
+                       Q_FUNC_INFO,
+                       qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/"+subdir)));
+        }
         return dirModel->index(QDir::currentPath()+"/test");
     }
 
@@ -386,9 +393,17 @@ void ModelsToTest::cleanupTestArea(QAbstractItemModel *model)
     {
         if (QDir(QDir::currentPath()+"/test").exists())
         {
-            for (int i = 0; i < 26; ++i)
-                QDir::current().rmdir(QString("test/foo_%1").arg(i));
-            Q_ASSERT(QDir::current().rmdir("test"));
+            for (int i = 0; i < 26; ++i) {
+                QString subdir(QString("test/foo_%1").arg(i));
+                if (!QDir::current().rmdir(subdir))
+                    qFatal("%s: cannot remove directory %s",
+                           Q_FUNC_INFO,
+                           qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/"+subdir)));
+            }
+            if (!QDir::current().rmdir("test"))
+                qFatal("%s: cannot remove directory %s",
+                       Q_FUNC_INFO,
+                       qPrintable(QDir::toNativeSeparators(QDir::currentPath()+"/test")));
         }
     } else if (qobject_cast<QSqlQueryModel *>(model)) {
         QSqlQuery q("DROP TABLE test");
