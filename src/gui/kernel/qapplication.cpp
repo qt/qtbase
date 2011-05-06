@@ -443,7 +443,6 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = 0;
 
 int QApplicationPrivate::app_cspec = QApplication::NormalColor;
-QPalette *QApplicationPrivate::app_pal = 0;        // default application palette
 QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
@@ -1678,17 +1677,6 @@ void QApplication::setGlobalStrut(const QSize& strut)
     QApplicationPrivate::app_strut = strut;
 }
 
-/*!
-    Returns the application palette.
-
-    \sa setPalette(), QWidget::palette()
-*/
-QPalette QApplication::palette()
-{
-    if (!QApplicationPrivate::app_pal)
-        QApplicationPrivate::app_pal = new QPalette(Qt::black);
-    return *QApplicationPrivate::app_pal;
-}
 
 /*!
     \fn QPalette QApplication::palette(const QWidget* widget)

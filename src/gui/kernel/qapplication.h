@@ -156,7 +156,7 @@ public:
     // ### Qt4 compatibility, remove?
     static inline void setGraphicsSystem(const QString &) {}
 
-    static QPalette palette();
+    using QGuiApplication::palette;
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);
     static void setPalette(const QPalette &, const char* className = 0);

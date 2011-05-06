@@ -147,6 +147,8 @@ public:
     static QClipboard *qt_clipboard;
 #endif
 
+    static QPalette *app_pal;
+
     static QWindowList window_list;
 
 #ifndef QT_NO_CURSOR

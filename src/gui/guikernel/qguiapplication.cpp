@@ -82,6 +82,8 @@ QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 
 bool QGuiApplicationPrivate::app_do_modal = false;
 
+QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
+
 int qt_last_x = 0;
 int qt_last_y = 0;
 
@@ -144,6 +146,9 @@ QGuiApplication::~QGuiApplication()
 
     delete QGuiApplicationPrivate::qt_clipboard;
     QGuiApplicationPrivate::qt_clipboard = 0;
+
+    delete QGuiApplicationPrivate::app_pal;
+    QGuiApplicationPrivate::app_pal = 0;
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
@@ -609,6 +614,18 @@ QClipboard * QGuiApplication::clipboard()
     return QGuiApplicationPrivate::qt_clipboard;
 }
 #endif
+
+/*!
+    Returns the application palette.
+
+    \sa setPalette(), QWidget::palette()
+*/
+QPalette QGuiApplication::palette()
+{
+    if (!QGuiApplicationPrivate::app_pal)
+        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+    return *QGuiApplicationPrivate::app_pal;
+}
 
 QFont QGuiApplication::font()
 {

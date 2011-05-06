@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qpalette.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qdatastream.h"
 #include "qvariant.h"
 
@@ -336,7 +336,7 @@ static QColor qt_mix_colors(QColor a, QColor b)
     roles are enumerated and defined in the \l ColorRole documentation.
 
     We strongly recommend that you use the default palette of the
-    current style (returned by QApplication::palette()) and
+    current style (returned by QGuiApplication::palette()) and
     modify that as necessary. This is done by Qt's widgets when they
     are drawn.
 
@@ -487,7 +487,7 @@ static QColor qt_mix_colors(QColor a, QColor b)
     \sa QApplication::setPalette(), QApplication::palette()
 */
 QPalette::QPalette()
-    : d(QApplication::palette().d),
+    : d(QGuiApplication::palette().d),
       current_group(Active),
       resolve_mask(0)
 {

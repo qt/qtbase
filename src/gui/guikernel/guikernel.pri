@@ -14,6 +14,7 @@ HEADERS += \
         guikernel/qkeysequence_p.h \
         guikernel/qkeymapper_p.h \
         guikernel/qmime.h \
+        guikernel/qpalette.h \
         guikernel/qsessionmanager.h \
         guikernel/qwindowdefs.h \
 
@@ -25,6 +26,7 @@ SOURCES += \
         guikernel/qkeymapper.cpp \
         guikernel/qkeymapper_qpa.cpp \
         guikernel/qmime.cpp \
+        guikernel/qpalette.cpp \
         guikernel/qguivariant.cpp \
 
 qpa {

@@ -56,6 +56,7 @@ QT_MODULE(Gui)
 
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
+class QPalette;
 
 #if defined(qApp)
 #undef qApp
@@ -93,6 +94,8 @@ public:
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *clipboard();
 #endif
+
+    static QPalette palette();
 
     static Qt::KeyboardModifiers keyboardModifiers();
     static Qt::MouseButtons mouseButtons();
