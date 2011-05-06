@@ -42,8 +42,6 @@
 #ifndef MSVC_VCXPROJ_H
 #define MSVC_VCXPROJ_H
 
-#include "winmakefile.h"
-#include "msbuild_objectmodel.h"
 #include "msvc_vcproj.h"
 
 QT_BEGIN_NAMESPACE
@@ -52,18 +50,10 @@ class VcxprojGenerator : public VcprojGenerator
 {
 public:
     VcxprojGenerator();
-    ~VcxprojGenerator();
 
 protected:
     virtual VCProjectWriter *createProjectWriter();
-
-private:
-    friend class VCFilter;
-
 };
-
-inline VcxprojGenerator::~VcxprojGenerator()
-{ }
 
 QT_END_NAMESPACE
 

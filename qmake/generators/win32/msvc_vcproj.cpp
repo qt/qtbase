@@ -208,6 +208,7 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       init_flag(false),
+      is64Bit(false),
       projectWriter(0)
 {
 }
@@ -597,14 +598,16 @@ nextfile:
         }
     }
     t << _slnGlobalBeg;
+
+    QString slnConf = _slnSolutionConf;
     if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")) {
-        QString slnConfCE = _slnSolutionConf;
-        QString platform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-        slnConfCE.replace(QString("|Win32"), platform);
-        t << slnConfCE;
-    } else {
-        t << _slnSolutionConf;
+        QString slnPlatform = QString("|") + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
+        slnConf.replace(QString("|Win32"), slnPlatform);
+    } else if (is64Bit) {
+        slnConf.replace(QString("|Win32"), "|x64");
     }
+    t << slnConf;
+
     t << _slnProjDepBeg;
 
     // Restore previous after_user_var options
@@ -621,7 +624,7 @@ nextfile:
     t << _slnProjDepEnd;
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
-        QString platform = "Win32";
+        QString platform = is64Bit ? "x64" : "Win32";
         if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             platform = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
         t << "\n\t\t" << (*it)->uuid << QString(_slnProjDbgConfTag1).arg(platform) << platform;
@@ -661,6 +664,7 @@ void VcprojGenerator::init()
     if (init_flag)
         return;
     init_flag = true;
+    is64Bit = (project->first("QMAKE_TARGET.arch") == "x86_64");
     projectWriter = createProjectWriter();
 
     if(project->first("TEMPLATE") == "vcsubdirs") //too much work for subdirs
@@ -831,7 +835,7 @@ void VcprojGenerator::initProject()
 
     vcProject.Keyword = project->first("VCPROJ_KEYWORD");
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        vcProject.PlatformName = (vcProject.Configuration.idl.TargetEnvironment == midlTargetWin64 ? "Win64" : "Win32");
+        vcProject.PlatformName = (is64Bit ? "x64" : "Win32");
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
@@ -895,7 +899,7 @@ void VcprojGenerator::initConfiguration()
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        conf.Name += (conf.idl.TargetEnvironment == midlTargetWin64 ? "|Win64" : "|Win32");
+        conf.Name += (is64Bit ? "|x64" : "|Win32");
     } else {
         conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
     }
