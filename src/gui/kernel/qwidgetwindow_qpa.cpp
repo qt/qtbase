@@ -46,6 +46,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QWidget *qt_button_down = 0; // widget got last button-down
+
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : m_widget(widget)
 {

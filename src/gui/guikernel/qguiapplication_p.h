@@ -136,8 +136,6 @@ public:
 
     static bool app_do_modal;
 
-    static QWidgetList qt_modal_stack;
-
     static Qt::MouseButtons buttons;
     static ulong mousePressTime;
     static Qt::MouseButton mousePressButton;
@@ -162,6 +160,7 @@ private:
     static QGuiApplicationPrivate *self;
 };
 
+class QWidget;
 extern void qt_qpa_set_cursor(QWidget *, bool);
 
 QT_END_NAMESPACE
