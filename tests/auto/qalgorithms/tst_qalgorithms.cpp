@@ -241,7 +241,8 @@ QList<ResultSet> testAlgorithm(Algorithm &algorithm,  QStringList dataSetTypes, 
     foreach(QString dataSetType, dataSetTypes) {
         QVector<DataType> container = generateData<DataType>(dataSetType, size);
         results.append(testRun(container, algorithm, time));
-        Q_ASSERT(isSorted(container));
+        if (!isSorted(container))
+            qWarning("%s: container is not sorted after test", Q_FUNC_INFO);
     }
     return results;
 }
