@@ -62,6 +62,7 @@ public:
     virtual const QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard ) const;
     virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
     virtual bool supportsMode(QClipboard::Mode mode) const;
+    void emitChanged(QClipboard::Mode mode);
 };
 
 QT_END_NAMESPACE

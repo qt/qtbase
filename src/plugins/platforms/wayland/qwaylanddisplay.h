@@ -80,6 +80,7 @@ public:
     void frameCallback(wl_display_frame_func_t func, struct wl_surface *surface, void *data);
 
     struct wl_display *wl_display() const { return mDisplay; }
+    struct wl_shell *wl_shell() const { return mShell; }
 
     QList<QWaylandInputDevice *> inputDevices() const { return mInputDevices; }
 
