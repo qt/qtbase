@@ -372,7 +372,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         return QModelIndex();
     }
 
-    Q_ASSERT(false);
+    qFatal("%s: unknown type of model", Q_FUNC_INFO);
     return QModelIndex();
 }
 
