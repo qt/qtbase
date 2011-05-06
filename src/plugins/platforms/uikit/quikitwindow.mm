@@ -79,7 +79,11 @@ public:
         mFormat.setStereo(false);
         mFormat.setDirectRendering(false);
 
+#if defined(QT_OPENGL_ES_2)
+        EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+#else
         EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+#endif
         [mView setContext:aContext];
     }
 
@@ -115,6 +119,8 @@ private:
 };
 
 @implementation EAGLView
+
+@synthesize delegate;
 
 + (Class)layerClass
 {
@@ -156,8 +162,8 @@ private:
 {
     if (mContext) {
         [EAGLContext setCurrentContext:mContext];
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mColorRenderbuffer);
-        [mContext presentRenderbuffer:GL_RENDERBUFFER_OES];
+        glBindRenderbuffer(GL_RENDERBUFFER, mColorRenderbuffer);
+        [mContext presentRenderbuffer:GL_RENDERBUFFER];
     }
 }
 
@@ -167,15 +173,15 @@ private:
     {
         [EAGLContext setCurrentContext:mContext];
         if (mFramebuffer) {
-            glDeleteFramebuffersOES(1, &mFramebuffer);
+            glDeleteFramebuffers(1, &mFramebuffer);
             mFramebuffer = 0;
         }
         if (mColorRenderbuffer) {
-            glDeleteRenderbuffersOES(1, &mColorRenderbuffer);
+            glDeleteRenderbuffers(1, &mColorRenderbuffer);
             mColorRenderbuffer = 0;
         }
         if (mDepthRenderbuffer) {
-            glDeleteRenderbuffersOES(1, &mDepthRenderbuffer);
+            glDeleteRenderbuffers(1, &mDepthRenderbuffer);
             mDepthRenderbuffer = 0;
         }
     }
@@ -186,24 +192,27 @@ private:
     if (mContext && !mFramebuffer)
     {
         [EAGLContext setCurrentContext:mContext];
-        glGenFramebuffersOES(1, &mFramebuffer);
-        glBindFramebufferOES(GL_FRAMEBUFFER_OES, mFramebuffer);
+        glGenFramebuffers(1, &mFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
 
-        glGenRenderbuffersOES(1, &mColorRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mColorRenderbuffer);
-        [mContext renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &mFramebufferWidth);
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &mFramebufferHeight);
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, mColorRenderbuffer);
+        glGenRenderbuffers(1, &mColorRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, mColorRenderbuffer);
+        [mContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &mFramebufferWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &mFramebufferHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColorRenderbuffer);
 
-        glGenRenderbuffersOES(1, &mDepthRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, mDepthRenderbuffer);
-        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, mDepthRenderbuffer);
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER_OES, mDepthRenderbuffer);
+        glGenRenderbuffers(1, &mDepthRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, mDepthRenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
 
-        if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
-            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        if (delegate && [delegate respondsToSelector:@selector(eaglView:usesFramebuffer:)]) {
+            [delegate eaglView:self usesFramebuffer:mFramebuffer];
+        }
     }
 }
 
@@ -214,9 +223,14 @@ private:
         [EAGLContext setCurrentContext:mContext];
         if (!mFramebuffer)
             [self createFramebuffer];
-        glBindFramebufferOES(GL_FRAMEBUFFER_OES, mFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
         glViewport(0, 0, mFramebufferWidth, mFramebufferHeight);
     }
+}
+
+- (GLint)fbo
+{
+    return mFramebuffer;
 }
 
 - (void)setWindow:(QPlatformWindow *)window
@@ -322,6 +336,7 @@ QUIKitWindow::QUIKitWindow(QWidget *tlw) :
     CGRect screenBounds = [mScreen->uiScreen() bounds];
     QRect geom(screenBounds.origin.x, screenBounds.origin.y, screenBounds.size.width, screenBounds.size.height);
     setGeometry(geom);
+    mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     // TODO ensure the native window if the application is already running
 }
 
@@ -334,7 +349,7 @@ QUIKitWindow::~QUIKitWindow()
 
 void QUIKitWindow::setGeometry(const QRect &rect)
 {
-    if (mWindow) {
+    if (mWindow && rect != geometry()) {
         mWindow.frame = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
         mView.frame = CGRectMake(0, 0, rect.width(), rect.height());
         [mView deleteFramebuffer];
@@ -347,14 +362,16 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
 {
     if (!mWindow) {
         // window
-        QRect geom = geometry();
-        CGRect frame = CGRectMake(geom.x(), geom.y(), geom.width(), geom.height());
-        mWindow = [[UIWindow alloc] initWithFrame:frame];
+        CGRect frame = [mScreen->uiScreen() applicationFrame];
+        QRect geom = QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+        widget()->setGeometry(geom);
+        mWindow = [[UIWindow alloc] init];
         mWindow.screen = mScreen->uiScreen();
-        mWindow.frame = frame; // for some reason setting the screen resets frame.origin
+        mWindow.frame = frame; // for some reason setting the screen resets frame.origin, so we need to set the frame afterwards
 
         // view
-        mView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, geom.width(), geom.height())];
+        [mView deleteFramebuffer];
+        mView.frame = CGRectMake(0, 0, frame.size.width, frame.size.height); // fill
         [mView setMultipleTouchEnabled:YES];
         [mView setWindow:this];
         [mWindow addSubview:mView];

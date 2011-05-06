@@ -92,6 +92,8 @@ public:
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
 
+    virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
+
     virtual QString fontDir() const;
 
     //callback

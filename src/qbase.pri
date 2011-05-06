@@ -4,6 +4,9 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(TARGET):error("You must set TARGET before include()'ing $${_FILE_}")
 
 MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
+MODULE_PRIVATE_INCLUDES = $$eval(QT.$${MODULE}.private_includes)
+INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
+INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES/$$TARGET
 INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have some compat
 !isEmpty(RCC_DIR): INCLUDEPATH += $$RCC_DIR
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700

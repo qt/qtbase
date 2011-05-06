@@ -27,6 +27,8 @@ INCLUDEPATH += . \
            generators/symbian \
            $$QT_SOURCE_TREE/include \
            $$QT_SOURCE_TREE/include/QtCore \
+           $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION \
+           $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION/QtCore \
            $$QT_SOURCE_TREE/qmake
 
 VPATH += $$QT_SOURCE_TREE/tools/shared

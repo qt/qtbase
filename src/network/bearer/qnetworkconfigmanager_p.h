@@ -64,6 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
+class QTimer;
 
 class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
@@ -107,6 +108,7 @@ private Q_SLOTS:
 
 private:
     void startPolling();
+    QTimer *pollTimer;
 
 private:
     mutable QMutex mutex;

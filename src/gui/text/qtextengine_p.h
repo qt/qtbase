@@ -64,6 +64,7 @@
 #include "QtGui/qpaintengine.h"
 #include "QtGui/qtextobject.h"
 #include "QtGui/qtextoption.h"
+#include "QtGui/qtextcursor.h"
 #include "QtCore/qset.h"
 #include "QtCore/qdebug.h"
 #ifndef QT_BUILD_COMPAT_LIB
@@ -471,6 +472,7 @@ public:
     void shape(int item) const;
 
     void justify(const QScriptLine &si);
+    QFixed alignLine(const QScriptLine &line);
 
     QFixed width(int charFrom, int numChars) const;
     glyph_metrics_t boundingBox(int from,  int len) const;
@@ -586,12 +588,18 @@ public:
     uint cacheGlyphs : 1;
     uint stackEngine : 1;
     uint forceJustification : 1;
+    uint visualMovement : 1;
 
     int *underlinePositions;
 
     mutable LayoutData *layoutData;
 
     inline bool hasFormats() const { return (block.docHandle() || specialData); }
+    inline bool visualCursorMovement() const
+    {
+        return (visualMovement ||
+                (block.docHandle() ? block.docHandle()->defaultCursorMoveStyle == QTextCursor::Visual : false));
+    }
 
     struct SpecialData {
         int preeditPosition;
@@ -611,6 +619,13 @@ public:
     void shapeLine(const QScriptLine &line);
     QFixed leadingSpaceWidth(const QScriptLine &line);
 
+    QFixed offsetInLigature(const QScriptItem *si, int pos, int max, int glyph_pos);
+    int previousLogicalPosition(int oldPos) const;
+    int nextLogicalPosition(int oldPos) const;
+    int lineNumberForTextPosition(int pos);
+    int positionAfterVisualMovement(int oldPos, QTextCursor::MoveOperation op);
+    void insertionPointsForLine(int lineNum, QVector<int> &insertionPoints);
+
 private:
     void setBoundary(int strPos) const;
     void addRequiredBoundaries() const;
@@ -625,6 +640,8 @@ private:
     void splitItem(int item, int pos) const;
 
     void resolveAdditionalFormats() const;
+    int endOfLine(int lineNum);
+    int beginningOfLine(int lineNum);
 };
 
 class QStackTextEngine : public QTextEngine {
@@ -635,6 +652,49 @@ public:
     void *_memory[MemSize];
 };
 
+struct QTextLineItemIterator
+{
+    QTextLineItemIterator(QTextEngine *eng, int lineNum, const QPointF &pos = QPointF(),
+                          const QTextLayout::FormatRange *_selection = 0);
+
+    inline bool atEnd() const { return logicalItem >= nItems - 1; }
+    inline bool atBeginning() const { return logicalItem <= 0; }
+    QScriptItem &next();
+
+    bool getSelectionBounds(QFixed *selectionX, QFixed *selectionWidth) const;
+    inline bool isOutsideSelection() const {
+        QFixed tmp1, tmp2;
+        return !getSelectionBounds(&tmp1, &tmp2);
+    }
+
+    QTextEngine *eng;
+
+    QFixed x;
+    QFixed pos_x;
+    const QScriptLine &line;
+    QScriptItem *si;
+
+    int lineNum;
+    int lineEnd;
+    int firstItem;
+    int lastItem;
+    int nItems;
+    int logicalItem;
+    int item;
+    int itemLength;
+
+    int glyphsStart;
+    int glyphsEnd;
+    int itemStart;
+    int itemEnd;
+
+    QFixed itemWidth;
+
+    QVarLengthArray<int> visualOrder;
+    QVarLengthArray<uchar> levels;
+
+    const QTextLayout::FormatRange *selection;
+};
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEngine::ShaperFlags)
 

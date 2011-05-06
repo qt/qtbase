@@ -74,6 +74,9 @@ public:
     void damage(const QRegion &region);
 
     void waitForFrameSync();
+
+    struct wl_surface *wl_surface() const { return mSurface; }
+
 protected:
     struct wl_surface *mSurface;
     virtual void newSurfaceCreated();

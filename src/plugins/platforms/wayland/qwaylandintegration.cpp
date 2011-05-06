@@ -44,6 +44,7 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandshmsurface.h"
 #include "qwaylandshmwindow.h"
+#include "qwaylandnativeinterface.h"
 
 #include "qgenericunixfontdatabase.h"
 
@@ -62,7 +63,13 @@ QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
     : mFontDb(new QGenericUnixFontDatabase())
     , mDisplay(new QWaylandDisplay())
     , mUseOpenGL(useOpenGL)
+    , mNativeInterface(new QWaylandNativeInterface)
 {
+}
+
+QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
+{
+    return mNativeInterface;
 }
 
 QList<QPlatformScreen *>

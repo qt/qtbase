@@ -505,7 +505,7 @@ bool FormBuilderPrivate::addItem(DomWidget *ui_widget, QWidget *widget, QWidget 
 
     // Check special cases. First: Custom container
     const QString className = QLatin1String(parentWidget->metaObject()->className());
-    if (!QFormBuilderExtra::instance(this)->customWidgetAddPageMethod(className).isEmpty())
+    if (!d->customWidgetAddPageMethod(className).isEmpty())
         return true;
 
     const QFormBuilderStrings &strings = QFormBuilderStrings::instance();

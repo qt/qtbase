@@ -54,7 +54,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     UIScreen *screen = [[UIScreen screens] objectAtIndex:screenIndex];
     CGRect bounds = [screen bounds];
-    m_geometry = QRect(0, 0, bounds.size.width, bounds.size.height);
+    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
 
     m_format = QImage::Format_ARGB32;
 
@@ -62,7 +62,7 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
 
     const qreal inch = 25.4;
     qreal dpi = 160.;
-    int dragDistance = 14;
+    int dragDistance = 12;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
         dpi = 132.;
         dragDistance = 10;

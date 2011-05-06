@@ -1,5 +1,6 @@
 SOURCE_PATH = @SOURCE_PATH@
 BUILD_PATH = @BUILD_PATH@
+QT_VERSION = @QT_VERSION@
 QTOBJS = @QMAKE_QTOBJS@
 QTSRCS = @QMAKE_QTSRCS@
 QMAKESPEC = @QMAKESPEC@
@@ -76,6 +77,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
            -Igenerators/mac -Igenerators/symbian -Igenerators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
+	   -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION) -I$(BUILD_PATH)/include/QtCore/$(QT_VERSION)/QtCore \
 	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
 	   -I$(SOURCE_PATH)/tools/shared \
 	   -DQT_NO_PCRE \

@@ -76,7 +76,6 @@ public:
     void updateScreenList();
 
     QList<QDesktopScreenWidget *> screens;
-    QDesktopScreenWidget virtualScreen;
 };
 
 #endif // QDESKTOPWIDGET_QPA_P_H

@@ -124,22 +124,6 @@ void WriteIncludes::acceptUI(DomUI *node)
     add(QLatin1String("QButtonGroup")); // ### only if it is really necessary
     add(QLatin1String("QHeaderView"));
 
-    if (m_uic->hasExternalPixmap() && m_uic->pixmapFunction() == QLatin1String("qPixmapFromMimeSource")) {
-#ifdef QT_NO_QT3_SUPPORT
-        qWarning("%s: Warning: The form file has external pixmaps or qPixmapFromMimeSource() set as a pixmap function. "
-                 "This requires Qt 3 support, which is disabled. The resulting code will not compile.",
-                 qPrintable(m_uic->option().messagePrefix()));
-#endif
-        add(QLatin1String("Q3MimeSourceFactory"));
-    }
-
-    if (m_uic->databaseInfo()->connections().size()) {
-        add(QLatin1String("QSqlDatabase"));
-        add(QLatin1String("Q3SqlCursor"));
-        add(QLatin1String("QSqlRecord"));
-        add(QLatin1String("Q3SqlForm"));
-    }
-
     TreeWalker::acceptUI(node);
 
     writeHeaders(m_globalIncludes, true);
@@ -241,10 +225,6 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
         return;
     }
 
-    if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("Q3ListView"))  ||
-        m_uic->customWidgetsInfo()->extends(className, QLatin1String("Q3Table"))) {
-        add(QLatin1String("Q3Header"));
-    }
     if (determineHeader)
         insertIncludeForClass(className, header, global);
 }

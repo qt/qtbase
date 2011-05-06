@@ -141,23 +141,31 @@ class Q_CORE_EXPORT QAnimationDriver : public QObject
 
 public:
     QAnimationDriver(QObject *parent = 0);
+    ~QAnimationDriver();
 
-    void advance();
+    virtual void advance();
+
     void install();
+    void uninstall();
 
     bool isRunning() const;
 
+    qint64 elapsed() const;
+
+Q_SIGNALS:
+    void started();
+    void stopped();
+
 protected:
-    virtual void started() {};
-    virtual void stopped() {};
+    void advanceAnimation(qint64 timeStep = -1);
+    virtual void start();
+    virtual void stop();
 
     QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
 
 private:
     friend class QUnifiedTimer;
 
-    void start();
-    void stop();
 };
 
 

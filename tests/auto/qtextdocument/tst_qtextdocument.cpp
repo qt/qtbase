@@ -180,6 +180,8 @@ private slots:
     void escape_data();
     void escape();
 
+    void copiedFontSize();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -2732,6 +2734,30 @@ void tst_QTextDocument::escape()
     QFETCH(QString, expected);
 
     QCOMPARE(Qt::escape(original), expected);
+}
+
+void tst_QTextDocument::copiedFontSize()
+{
+    QTextDocument documentInput;
+    QTextDocument documentOutput;
+
+    QFont fontInput;
+    fontInput.setPixelSize(24);
+
+    QTextCursor cursorInput(&documentInput);
+    QTextCharFormat formatInput = cursorInput.charFormat();
+    formatInput.setFont(fontInput);
+    cursorInput.insertText("Should be the same font", formatInput);
+    cursorInput.select(QTextCursor::Document);
+
+    QTextDocumentFragment fragmentInput(cursorInput);
+    QString html =  fragmentInput.toHtml();
+
+    QTextCursor cursorOutput(&documentOutput);
+    QTextDocumentFragment fragmentOutput = QTextDocumentFragment::fromHtml(html);
+    cursorOutput.insertFragment(fragmentOutput);
+
+    QCOMPARE(cursorOutput.charFormat().font().pixelSize(), 24);
 }
 
 QTEST_MAIN(tst_QTextDocument)

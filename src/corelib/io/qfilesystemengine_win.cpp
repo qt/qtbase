@@ -583,6 +583,7 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
         }
     }
 #else
+    Q_UNUSED(entry);
     Q_UNUSED(own);
 #endif
     return name;

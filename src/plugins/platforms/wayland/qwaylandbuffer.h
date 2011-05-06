@@ -44,6 +44,7 @@
 
 #include <QtCore/QSize>
 
+#include <wayland-client.h>
 #include <wayland-client-protocol.h>
 
 class QWaylandBuffer {

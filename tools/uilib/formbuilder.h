@@ -45,9 +45,6 @@
 #include "uilib_global.h"
 #include "abstractformbuilder.h"
 
-#include <QtCore/QStringList>
-#include <QtCore/QMap>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -100,8 +97,6 @@ protected:
     static QWidget *widgetByName(QWidget *topLevel, const QString &name);
 
 private:
-    QStringList m_pluginPaths;
-    QMap<QString, QDesignerCustomWidgetInterface*> m_customWidgets;
 };
 
 #ifdef QFORMINTERNAL_NAMESPACE

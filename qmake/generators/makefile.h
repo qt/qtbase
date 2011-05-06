@@ -127,6 +127,8 @@ protected:
         SubTargetsNoFlags=0x00
     };
     QList<MakefileGenerator::SubTarget*> findSubDirsSubTargets() const;
+    virtual void writeSubMakeCall(QTextStream &t, const QString &outDirectory_cdin,
+                                  const QString &makeFileIn, const QString &outDirectory_cdout);
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface

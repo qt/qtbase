@@ -78,28 +78,6 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
     }
 }
 
-void QRawFontPrivate::platformSetPixelSize(int pixelSize)
-{
-    if (fontEngine == NULL)
-        return;
-
-    QFontEngine *oldFontEngine = fontEngine;
-
-    QFontDef fontDef = oldFontEngine->fontDef;
-    fontDef.pixelSize = pixelSize;
-    fontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
-
-    QCoreTextFontEngine *ctFontEngine = static_cast<QCoreTextFontEngine *>(oldFontEngine);
-    Q_ASSERT(ctFontEngine->cgFont);
-
-    fontEngine = new QCoreTextFontEngine(ctFontEngine->cgFont, fontDef);
-    fontEngine->ref.ref();
-    Q_ASSERT(fontEngine != oldFontEngine);
-    oldFontEngine->ref.deref();
-    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref == 0)
-        delete oldFontEngine;
-}
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_RAWFONT

@@ -1,7 +1,7 @@
 TARGET = qtracegraphicssystem
 include(../../qpluginbase.pri)
 
-QT += network
+QT += core-private gui-private network
 
 DESTDIR = $$QT.gui.plugins/graphicssystems
 symbian:TARGET.UID3 = 0x2002130E

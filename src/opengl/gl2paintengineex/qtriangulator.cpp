@@ -1564,6 +1564,19 @@ QVertexSet<T> QTriangulator<T>::triangulate()
 template <typename T>
 QVertexSet<T> QTriangulator<T>::polyline()
 {
+    for (int i = 0; i < m_vertices.size(); ++i) {
+        Q_ASSERT(qAbs(m_vertices.at(i).x) < (1 << 21));
+        Q_ASSERT(qAbs(m_vertices.at(i).y) < (1 << 21));
+    }
+
+    if (!(m_hint & (QVectorPath::OddEvenFill | QVectorPath::WindingFill)))
+        m_hint |= QVectorPath::OddEvenFill;
+
+    if (m_hint & QVectorPath::NonConvexShapeMask) {
+        ComplexToSimple c2s(this);
+        c2s.decompose();
+    }
+
     QVertexSet<T> result;
     result.indices = m_indices;
     result.vertices.resize(2 * m_vertices.size());
@@ -3084,7 +3097,7 @@ QPolylineSet qPolyline(const QVectorPath &path,
     } else {
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
-        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        QVertexSet<quint16> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUshort(vertexSet.indices);
     }
@@ -3104,7 +3117,7 @@ QPolylineSet qPolyline(const QPainterPath &path,
     } else {
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
-        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        QVertexSet<quint16> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUshort(vertexSet.indices);
     }

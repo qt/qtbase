@@ -42,6 +42,8 @@
 #include <qsessionmanager.h>
 
 #include <private/qobject_p.h>
+#include <qapplication.h>
+
 #ifndef QT_NO_SESSIONMANAGER
 
 QT_BEGIN_NAMESPACE

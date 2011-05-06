@@ -91,6 +91,8 @@ public:
     virtual qreal minLeftBearing() const;
     virtual QFixed emSquareSize() const;
 
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+
 private:
     friend class QRawFontPrivate;
 
@@ -118,9 +120,12 @@ public:
                               QTextEngine::ShaperFlags flags) const;
     bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                       QTextEngine::ShaperFlags flags,
-                      unsigned short *logClusters, const HB_CharAttributes *charAttributes) const;
+                      unsigned short *logClusters, const HB_CharAttributes *charAttributes,
+                      QScriptItem *si) const;
 
     virtual const char *name() const { return "CoreText"; }
+    inline CTFontRef macFontID() const { return ctfont; }
+
 protected:
     virtual void loadEngine(int at);
 

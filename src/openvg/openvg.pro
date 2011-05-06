@@ -1,6 +1,9 @@
 TARGET = QtOpenVG
-QT += core \
-    gui
+QT += core-private \
+    gui-private
+
+CONFIG += module
+MODULE_PRI = ../modules/qt_openvg.pri
 
 DEFINES+=QT_BUILD_OPENVG_LIB
 

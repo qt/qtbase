@@ -1,6 +1,10 @@
 TARGET     = QtGui
 QPRO_PWD   = $$PWD
-QT = core
+QT = core-private
+
+CONFIG += module
+MODULE_PRI = ../modules/qt_gui.pri
+
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
