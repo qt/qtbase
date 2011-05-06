@@ -67,8 +67,9 @@ SOURCES += \
 	kernel/qgesturerecognizer.cpp \
 	kernel/qgesturemanager.cpp \
 	kernel/qsoftkeymanager.cpp \
-    kernel/qdesktopwidget.cpp \
-	kernel/qguiplatformplugin.cpp
+        kernel/qdesktopwidget.cpp \
+        kernel/qguiplatformplugin.cpp \
+        kernel/qwidgetsvariant.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW

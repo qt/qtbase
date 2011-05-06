@@ -224,7 +224,6 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("double") << QMetaType::Double << "double";
     QTest::newRow("qlonglong") << QMetaType::LongLong << "qlonglong";
     QTest::newRow("QRegExp") << QMetaType::QRegExp << "QRegExp";
-    QTest::newRow("QColorGroup") << QMetaType::Type(63) << "QColorGroup";
     QTest::newRow("void*") << QMetaType::VoidStar << "void*";
     QTest::newRow("ulong") << QMetaType::ULong << "ulong";
     QTest::newRow("QWidget*") << QMetaType::QWidgetStar << "QWidget*";

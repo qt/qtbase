@@ -2028,10 +2028,6 @@ void tst_QVariant::typeName_data()
     QTest::newRow("9") << int(QVariant::Size) << QByteArray("QSize");
     QTest::newRow("10") << int(QVariant::Color) << QByteArray("QColor");
     QTest::newRow("11") << int(QVariant::Palette) << QByteArray("QPalette");
-#ifdef QT3_SUPPORT
-    QTest::newRow("12") << int(QVariant::ColorGroup) << QByteArray("QColorGroup");
-    QTest::newRow("13") << int(QVariant::IconSet) << QByteArray("QIcon");
-#endif
     QTest::newRow("14") << int(QVariant::Point) << QByteArray("QPoint");
     QTest::newRow("15") << int(QVariant::Image) << QByteArray("QImage");
     QTest::newRow("16") << int(QVariant::Int) << QByteArray("int");

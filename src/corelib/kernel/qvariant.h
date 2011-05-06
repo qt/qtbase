@@ -127,40 +127,33 @@ class Q_CORE_EXPORT QVariant
         LastCoreType = EasingCurve,
 
         // value 62 is internally reserved
-#ifdef QT3_SUPPORT
-        ColorGroup = 63,
-#endif
         Font = 64,
         Pixmap = 65,
         Brush = 66,
         Color = 67,
         Palette = 68,
-        Icon = 69,
-        Image = 70,
-        Polygon = 71,
-        Region = 72,
-        Bitmap = 73,
-        Cursor = 74,
-        SizePolicy = 75,
-        KeySequence = 76,
-        Pen = 77,
-        TextLength = 78,
-        TextFormat = 79,
-        Matrix = 80,
-        Transform = 81,
-        Matrix4x4 = 82,
-        Vector2D = 83,
-        Vector3D = 84,
-        Vector4D = 85,
-        Quaternion = 86,
+        Image = 69,
+        Polygon = 70,
+        Region = 71,
+        Bitmap = 72,
+        Cursor = 73,
+        KeySequence = 74,
+        Pen = 75,
+        TextLength = 76,
+        TextFormat = 77,
+        Matrix = 78,
+        Transform = 79,
+        Matrix4x4 = 80,
+        Vector2D = 81,
+        Vector3D = 82,
+        Vector4D = 83,
+        Quaternion = 84,
         LastGuiType = Quaternion,
 
+        Icon = 120,
+        SizePolicy = 121,
+
         UserType = 127,
-#ifdef QT3_SUPPORT
-        IconSet = Icon,
-        CString = ByteArray,
-        PointArray = Polygon,
-#endif
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 

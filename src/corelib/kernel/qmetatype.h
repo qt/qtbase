@@ -71,17 +71,18 @@ public:
         QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26, QRegExp = 27,
         QVariantHash = 28, QEasingCurve = 29, LastCoreType = QEasingCurve,
 
-        FirstGuiType = 63 /* QColorGroup */,
-#ifdef QT3_SUPPORT
-        QColorGroup = 63,
-#endif
+        FirstGuiType = 64 /* QFont */,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
-        QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
-        QCursor = 74, QSizePolicy = 75, QKeySequence = 76, QPen = 77,
-        QTextLength = 78, QTextFormat = 79, QMatrix = 80, QTransform = 81,
-        QMatrix4x4 = 82, QVector2D = 83, QVector3D = 84, QVector4D = 85,
-        QQuaternion = 86,
+        QImage = 69, QPolygon = 70, QRegion = 71, QBitmap = 72,
+        QCursor = 73, QKeySequence = 74, QPen = 75,
+        QTextLength = 76, QTextFormat = 77, QMatrix = 78, QTransform = 79,
+        QMatrix4x4 = 80, QVector2D = 81, QVector3D = 82, QVector4D = 83,
+        QQuaternion = 84,
         LastGuiType = QQuaternion,
+
+        FirstWidgetsType = 120, /* QIcon */
+        QIcon = 120, QSizePolicy = 121,
+        LastWidgetsType = QSizePolicy,
 
         FirstCoreExtType = 128 /* VoidStar */,
         VoidStar = 128, Long = 129, Short = 130, Char = 131, ULong = 132,
