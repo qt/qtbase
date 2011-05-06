@@ -91,6 +91,9 @@ private slots:
 
     void unsupportedWritingSystem_data();
     void unsupportedWritingSystem();
+
+    void rawFontSetPixelSize_data();
+    void rawFontSetPixelSize();
 #endif // QT_NO_RAWFONT
 };
 
@@ -805,6 +808,39 @@ void tst_QRawFont::unsupportedWritingSystem()
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
     fontDatabase.removeApplicationFont(id);
+}
+
+void tst_QRawFont::rawFontSetPixelSize_data()
+{
+    QTest::addColumn<QFont::HintingPreference>("hintingPreference");
+
+    QTest::newRow("Default hinting preference") << QFont::PreferDefaultHinting;
+    QTest::newRow("No hinting preference") << QFont::PreferNoHinting;
+    QTest::newRow("Vertical hinting preference") << QFont::PreferVerticalHinting;
+    QTest::newRow("Full hinting preference") << QFont::PreferFullHinting;
+}
+
+void tst_QRawFont::rawFontSetPixelSize()
+{
+    QFETCH(QFont::HintingPreference, hintingPreference);
+
+    QTextLayout layout("Foobar");
+
+    QFont font = layout.font();
+    font.setHintingPreference(hintingPreference);
+    font.setPixelSize(12);
+    layout.setFont(font);
+
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QGlyphs glyphs = layout.glyphs().at(0);
+    QRawFont rawFont = glyphs.font();
+    QCOMPARE(rawFont.pixelSize(), 12.0);
+
+    rawFont.setPixelSize(24);
+    QCOMPARE(rawFont.pixelSize(), 24.0);
 }
 
 #endif // QT_NO_RAWFONT
