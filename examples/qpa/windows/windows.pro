@@ -7,6 +7,9 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+QT += gui-private
+QT += core-private
+
 # Input
 HEADERS += window.h
 SOURCES += window.cpp main.cpp
