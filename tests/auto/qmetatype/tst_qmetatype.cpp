@@ -96,9 +96,17 @@ struct Bar
     Bar()
     {
         // check re-entrancy
-        Q_ASSERT(QMetaType::isRegistered(qRegisterMetaType<Foo>("Foo")));
+        if (!QMetaType::isRegistered(qRegisterMetaType<Foo>("Foo"))) {
+            qWarning("%s: re-entrancy test failed", Q_FUNC_INFO);
+            ++failureCount;
+        }
     }
+
+public:
+    static int failureCount;
 };
+
+int Bar::failureCount = 0;
 
 class MetaTypeTorturer: public QThread
 {
@@ -161,6 +169,7 @@ void tst_QMetaType::threadSafety()
     QCOMPARE(t1.failureCount, 0);
     QCOMPARE(t2.failureCount, 0);
     QCOMPARE(t3.failureCount, 0);
+    QCOMPARE(Bar::failureCount, 0);
 }
 
 namespace TestSpace
