@@ -618,6 +618,8 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
   extern void qt_x11_enforce_cursor(QWidget *);
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
+#else
+  extern void qt_qpa_set_cursor(QWidget * w, bool force);
 #endif
 
 QT_END_NAMESPACE

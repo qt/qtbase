@@ -718,7 +718,6 @@ void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 {
     qGuiApp->d_func()->cursor_list.prepend(cursor);
-    qt_qpa_set_cursor(0, false);
 }
 
 void QGuiApplication::restoreOverrideCursor()
@@ -726,7 +725,6 @@ void QGuiApplication::restoreOverrideCursor()
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
-    qt_qpa_set_cursor(0, false);
 }
 #endif// QT_NO_CURSOR
 

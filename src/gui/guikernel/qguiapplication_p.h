@@ -160,9 +160,6 @@ private:
     static QGuiApplicationPrivate *self;
 };
 
-class QWidget;
-extern void qt_qpa_set_cursor(QWidget *, bool);
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
