@@ -45,8 +45,7 @@
 // based version
 // with NO_CAST * _not_ defined
 #define P +
-#define QT_USE_FAST_OPERATOR_PLUS
-#define QT_USE_FAST_CONCATENATION
+#define QT_USE_QSTRINGBUILDER
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
 

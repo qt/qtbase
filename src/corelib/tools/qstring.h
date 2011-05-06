@@ -1016,8 +1016,7 @@ inline int QByteArray::findRev(const QString &s, int from) const
 #  endif // QT3_SUPPORT
 #endif // QT_NO_CAST_TO_ASCII
 
-#ifndef QT_USE_FAST_OPERATOR_PLUS
-# ifndef QT_USE_FAST_CONCATENATION
+#if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
 inline const QString operator+(const QString &s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 inline const QString operator+(const QString &s1, QChar s2)
@@ -1038,8 +1037,7 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QByteArray &ba, const QS
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteArray &ba)
 { QString t(s); t += QString::fromAscii(ba.constData(), qstrnlen(ba.constData(), ba.size())); return t; }
 #  endif // QT_NO_CAST_FROM_ASCII
-# endif // QT_USE_FAST_CONCATENATION
-#endif // QT_USE_FAST_OPERATOR_PLUS
+#endif // QT_USE_QSTRINGBUILDER
 
 #ifndef QT_NO_STL
 inline std::string QString::toStdString() const
@@ -1288,7 +1286,7 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#ifdef QT_USE_FAST_CONCATENATION
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>
 #endif
 
