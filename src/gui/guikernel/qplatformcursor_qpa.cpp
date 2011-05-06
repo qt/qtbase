@@ -40,7 +40,6 @@
 ****************************************************************************/
 #include "qplatformcursor_qpa.h"
 
-#include <QWidget>
 #include <QPainter>
 #include <QBitmap>
 #include <QGuiApplication>

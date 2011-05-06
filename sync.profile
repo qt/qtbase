@@ -1,5 +1,6 @@
 %modules = ( # path to module name map
     "QtGui" => "$basedir/src/gui",
+    "QtWidgets" => "$basedir/src/widgets",
     "QtOpenGL" => "$basedir/src/opengl",
     "QtCore" => "$basedir/src/corelib",
     "QtXml" => "$basedir/src/xml",
@@ -31,6 +32,7 @@
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",
     "gui" => "#include <QtGui/QtGui>\n",
+    "widgets" => "#include <QtGui/QtWidgets>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "xml" => "#include <QtXml/QtXml>\n",
@@ -41,6 +43,7 @@
     "QtCore" => "$basedir/src/modules/qt_core.pri",
     "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
     "QtGui" => "$basedir/src/modules/qt_gui.pri",
+    "QtWidgets" => "$basedir/src/modules/qt_widgets.pri",
     "QtNetwork" => "$basedir/src/modules/qt_network.pri",
     "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
@@ -86,9 +89,14 @@
     },
     "QtGui" => {
         "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
+    },
+    "QtWidgets" => {
+        "QtCore" => "THIS_REPOSITORY",
     },
     "QtUiTools" => {
         "QtCore" => "THIS_REPOSITORY",
         "QtGui" => "THIS_REPOSITORY",
+        "QtWidgets" => "THIS_REPOSITORY",
     },
 );
