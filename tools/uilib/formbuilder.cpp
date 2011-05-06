@@ -268,23 +268,6 @@ QLayout *QFormBuilder::createLayout(const QString &layoutName, QObject *parent, 
 
     if (l) {
         l->setObjectName(name);
-        if (parentLayout) {
-            QWidget *w = qobject_cast<QWidget *>(parentLayout->parent());
-            if (w && w->inherits("Q3GroupBox")) {
-                l->setContentsMargins(w->style()->pixelMetric(QStyle::PM_LayoutLeftMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutTopMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutRightMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutBottomMargin));
-                QGridLayout *grid = qobject_cast<QGridLayout *>(l);
-                if (grid) {
-                    grid->setHorizontalSpacing(-1);
-                    grid->setVerticalSpacing(-1);
-                } else {
-                    l->setSpacing(-1);
-                }
-                l->setAlignment(Qt::AlignTop);
-            }
-        }
     } else {
         qWarning() << QCoreApplication::translate("QFormBuilder", "The layout type `%1' is not supported.").arg(layoutName);
     }
