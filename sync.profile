@@ -1,7 +1,6 @@
 %modules = ( # path to module name map
     "QtGui" => "$basedir/src/gui",
     "QtOpenGL" => "$basedir/src/opengl",
-    "QtOpenVG" => "$basedir/src/openvg",
     "QtCore" => "$basedir/src/corelib",
     "QtXml" => "$basedir/src/xml",
     "QtSql" => "$basedir/src/sql",
@@ -34,7 +33,6 @@
     "gui" => "#include <QtGui/QtGui>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
-    "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
     "xml" => "#include <QtXml/QtXml>\n",
     "uitools" => "#include <QtUiTools/QtUiTools>\n",
     "designer" => "#include <QtDesigner/QtDesigner>\n",
@@ -45,7 +43,6 @@
     "QtGui" => "$basedir/src/modules/qt_gui.pri",
     "QtNetwork" => "$basedir/src/modules/qt_network.pri",
     "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
-    "QtOpenVG" => "$basedir/src/modules/qt_openvg.pri",
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
@@ -65,10 +62,6 @@
 #   - "LATEST_RELEASE", to always test against the latest public release.
 #   - "THIS_REPOSITORY", to indicate that the module is in this repository.
 %dependencies = (
-    "QtOpenVG" => {
-        "QtCore" => "THIS_REPOSITORY",
-        "QtGui" => "THIS_REPOSITORY",
-    },
     "QtCore" => {
     },
     "QtOpenGL" => {
