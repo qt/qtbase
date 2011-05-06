@@ -360,10 +360,10 @@ public:
 
     void setFileName(const QString &file)
     {
-        Q_ASSERT(!openForRead_);
-        Q_ASSERT(!openForWrite_);
-
-        fileName_ = file;
+        if (openForRead_ || openForWrite_)
+            qWarning("%s: Can't set file name while file is open", Q_FUNC_INFO);
+        else
+            fileName_ = file;
     }
 
     //  typedef QAbstractFileEngineIterator Iterator;
