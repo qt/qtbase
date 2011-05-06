@@ -164,21 +164,27 @@ void tst_QHostAddress::setAddress_QString_data()
     QTest::newRow("ip4_04")  << QString("255.3.2.1\r ") << (bool)TRUE << QString("255.3.2.1") << 4;
     QTest::newRow("ip4_05")  << QString("0.0.0.0") << (bool)TRUE << QString("0.0.0.0") << 4;
 
-    // for the format of IPv6 addresses see also RFC 1884
+    // for the format of IPv6 addresses see also RFC 5952
     QTest::newRow("ip6_00")  << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << (bool)TRUE << QString("FEDC:BA98:7654:3210:FEDC:BA98:7654:3210") << 6;
-    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << (bool)TRUE << QString("1080:0:0:0:8:800:200C:417A") << 6;
-    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << (bool)TRUE << QString("1080:0:0:0:8:800:200C:417A") << 6;
-    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << (bool)TRUE << QString("1080:0:0:0:8:800:200C:417A") << 6;
-    QTest::newRow("ip6_04")  << QString("FF01::43") << (bool)TRUE << QString("FF01:0:0:0:0:0:0:43") << 6;
-    QTest::newRow("ip6_05")  << QString("::1") << (bool)TRUE << QString("0:0:0:0:0:0:0:1") << 6;
-    QTest::newRow("ip6_06")  << QString("1::") << (bool)TRUE << QString("1:0:0:0:0:0:0:0") << 6;
-    QTest::newRow("ip6_07")  << QString("::") << (bool)TRUE << QString("0:0:0:0:0:0:0:0") << 6;
-    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << (bool)TRUE << QString("0:0:0:0:0:0:D01:4403") << 6;
-    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << (bool)TRUE <<  QString("0:0:0:0:0:0:D01:4403") << 6;
-    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << (bool)TRUE << QString("0:0:0:0:0:FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << (bool)TRUE << QString("0:0:0:0:0:FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << (bool)TRUE << QString("1:0:0:0:0:FFFF:8190:3426") << 6;
-    QTest::newRow("ip6_13")  << QString("A:B::D:E") << (bool)TRUE << QString("A:B:0:0:0:0:D:E") << 6;
+    QTest::newRow("ip6_01")  << QString("1080:0000:0000:0000:0008:0800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_02")  << QString("1080:0:0:0:8:800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_03")  << QString("1080::8:800:200C:417A") << (bool)TRUE << QString("1080::8:800:200C:417A") << 6;
+    QTest::newRow("ip6_04")  << QString("FF01::43") << (bool)TRUE << QString("FF01::43") << 6;
+    QTest::newRow("ip6_05")  << QString("::1") << (bool)TRUE << QString("::1") << 6;
+    QTest::newRow("ip6_06")  << QString("1::") << (bool)TRUE << QString("1::") << 6;
+    QTest::newRow("ip6_07")  << QString("::") << (bool)TRUE << QString("::") << 6;
+    QTest::newRow("ip6_08")  << QString("0:0:0:0:0:0:13.1.68.3") << (bool)TRUE << QString("::D01:4403") << 6;
+    QTest::newRow("ip6_09")  << QString("::13.1.68.3") << (bool)TRUE <<  QString("::D01:4403") << 6;
+    QTest::newRow("ip6_10")  << QString("0:0:0:0:0:FFFF:129.144.52.38") << (bool)TRUE << QString("::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_11")  << QString("::FFFF:129.144.52.38") << (bool)TRUE << QString("::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_12")  << QString("1::FFFF:129.144.52.38") << (bool)TRUE << QString("1::FFFF:8190:3426") << 6;
+    QTest::newRow("ip6_13")  << QString("A:B::D:E") << (bool)TRUE << QString("A:B::D:E") << 6;
+    QTest::newRow("ip6_14")  << QString("1080:0:1:0:8:800:200C:417A") << (bool)TRUE << QString("1080:0:1:0:8:800:200C:417A") << 6;
+    QTest::newRow("ip6_15")  << QString("1080:0:1:0:8:800:200C:0") << (bool)TRUE << QString("1080:0:1:0:8:800:200C:0") << 6;
+    QTest::newRow("ip6_16")  << QString("1080:0:1:0:8:800:0:0") << (bool)TRUE << QString("1080:0:1:0:8:800::") << 6;
+    QTest::newRow("ip6_17")  << QString("1080:0:0:0:8:800:0:0") << (bool)TRUE << QString("1080::8:800:0:0") << 6;
+    QTest::newRow("ip6_18")  << QString("0:1:1:1:8:800:0:0") << (bool)TRUE << QString("0:1:1:1:8:800::") << 6;
+    QTest::newRow("ip6_19")  << QString("0:1:1:1:8:800:0:1") << (bool)TRUE << QString("0:1:1:1:8:800:0:1") << 6;
 
     QTest::newRow("error_00")  << QString("foobarcom") << (bool)FALSE << QString() << 0;
     QTest::newRow("error_01")  << QString("foo.bar.com") << (bool)FALSE << QString() << 0;
@@ -329,16 +335,16 @@ void tst_QHostAddress::scopeId()
 {
     QHostAddress address("fe80::2e0:4cff:fefb:662a%eth0");
     QCOMPARE(address.scopeId(), QString("eth0"));
-    QCOMPARE(address.toString().toLower(), QString("fe80:0:0:0:2e0:4cff:fefb:662a%eth0"));
+    QCOMPARE(address.toString().toLower(), QString("fe80::2e0:4cff:fefb:662a%eth0"));
 
     QHostAddress address2("fe80::2e0:4cff:fefb:662a");
     QCOMPARE(address2.scopeId(), QString());
     address2.setScopeId(QString("en0"));
-    QCOMPARE(address2.toString().toLower(), QString("fe80:0:0:0:2e0:4cff:fefb:662a%en0"));
+    QCOMPARE(address2.toString().toLower(), QString("fe80::2e0:4cff:fefb:662a%en0"));
 
     address2 = address;
     QCOMPARE(address2.scopeId(), QString("eth0"));
-    QCOMPARE(address2.toString().toLower(), QString("fe80:0:0:0:2e0:4cff:fefb:662a%eth0"));
+    QCOMPARE(address2.toString().toLower(), QString("fe80::2e0:4cff:fefb:662a%eth0"));
 }
 
 void tst_QHostAddress::hashKey()
