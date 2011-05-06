@@ -333,14 +333,12 @@ void Uic::writeHeaderProtectionEnd()
 
 bool Uic::isMainWindow(const QString &className) const
 {
-    return customWidgetsInfo()->extends(className, QLatin1String("Q3MainWindow"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QMainWindow"));
+    return customWidgetsInfo()->extends(className, QLatin1String("QMainWindow"));
 }
 
 bool Uic::isToolBar(const QString &className) const
 {
-    return customWidgetsInfo()->extends(className, QLatin1String("Q3ToolBar"))
-        || customWidgetsInfo()->extends(className, QLatin1String("QToolBar"));
+    return customWidgetsInfo()->extends(className, QLatin1String("QToolBar"));
 }
 
 bool Uic::isButton(const QString &className) const

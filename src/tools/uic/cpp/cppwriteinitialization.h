@@ -241,7 +241,6 @@ private:
 
     void initializeMenu(DomWidget *w, const QString &parentWidget);
     void initializeComboBox(DomWidget *w);
-    void initializeComboBox3(DomWidget *w);
     void initializeListWidget(DomWidget *w);
     void initializeTreeWidget(DomWidget *w);
     QList<Item *> initializeTreeWidgetItems(const QList<DomItem *> &domItems);
@@ -249,22 +248,6 @@ private:
 
     QString disableSorting(DomWidget *w, const QString &varName);
     void enableSorting(DomWidget *w, const QString &varName, const QString &tempName);
-
-//
-// special initialization for the Q3 support classes
-//
-    void initializeQ3ListBox(DomWidget *w);
-    void initializeQ3IconView(DomWidget *w);
-    void initializeQ3ListView(DomWidget *w);
-    void initializeQ3ListViewItems(const QString &className, const QString &varName, const QList<DomItem*> &items);
-    void initializeQ3Table(DomWidget *w);
-    void initializeQ3TableItems(const QString &className, const QString &varName, const QList<DomItem*> &items);
-
-//
-// Sql
-//
-    void initializeQ3SqlDataTable(DomWidget *w);
-    void initializeQ3SqlDataBrowser(DomWidget *w);
 
     QString findDeclaration(const QString &name);
     DomWidget *findWidget(const QLatin1String &widgetClass);

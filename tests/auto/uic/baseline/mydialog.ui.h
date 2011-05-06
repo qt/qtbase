@@ -10,7 +10,6 @@
 #ifndef MYDIALOG_H
 #define MYDIALOG_H
 
-#include <Qt3Support/Q3MimeSourceFactory>
 #include <QtCore/QVariant>
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
