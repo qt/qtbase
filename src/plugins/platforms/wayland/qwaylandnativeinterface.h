@@ -49,11 +49,11 @@
 class QWaylandNativeInterface : public QPlatformNativeInterface
 {
 public:
-    void *nativeResourceForWidget(const QByteArray &resourceString,
-				  QWidget *widget);
+    void *nativeResourceForWindow(const QByteArray &resourceString,
+				  QWindow *window);
 
 private:
-    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
+    static QWaylandScreen *qPlatformScreenForWindow(QWindow *window);
 };
 
 

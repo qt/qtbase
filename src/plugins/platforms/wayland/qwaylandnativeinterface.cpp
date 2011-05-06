@@ -45,26 +45,26 @@
 #include "qwaylandwindow.h"
 #include <QtGui/private/qapplication_p.h>
 
-void *QWaylandNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
+void *QWaylandNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
 
     if (lowerCaseResource == "display")
-	return qPlatformScreenForWidget(widget)->display()->wl_display();
+	return qPlatformScreenForWindow(window)->display()->wl_display();
     if (lowerCaseResource == "surface") {
-	return ((QWaylandWindow *) widget->platformWindow())->wl_surface();
+	return ((QWaylandWindow *) window->handle())->wl_surface();
     }
 
     return NULL;
 }
 
 
-QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QWaylandScreen *screen;
 
-    if (widget) {
-        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    if (window) {
+        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWindow(window));
     } else {
         screen = static_cast<QWaylandScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
     }

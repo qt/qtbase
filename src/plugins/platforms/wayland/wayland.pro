@@ -33,6 +33,10 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
 INCLUDEPATH += $$PWD
 
+QT += gui-private
+QT += opengl-private
+QT += core-private
+
 include ($$PWD/gl_integration/gl_integration.pri)
 
 include (../fontdatabases/genericunix/genericunix.pri)
