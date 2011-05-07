@@ -1,0 +1,20 @@
+#!/bin/bash
+
+modules=`ls $QTDIR/include`
+
+files=`find * -name '*.h' -or -name '*.cpp' -or -name '*.C'`
+
+echo $files
+
+for module in $modules; do
+# once we change other things, change the line from == "QtWidgets" to != "Qt" to get everything fixed
+    if [ $module == "QtWidgets" ]; then
+        echo $module ":"
+        includes=`ls $QTDIR/include/$module`
+        for i in $includes; do
+#            echo "    fixing " $i
+            perl -pi -e "s,^#include +<.+/$i>,#include <$module/$i>," $files;
+#            perl -pi -e 's,^#include +".+/$i",#include "$module/$i",' $files;
+        done;
+    fi;
+done;
