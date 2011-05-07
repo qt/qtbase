@@ -2527,7 +2527,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                     t << " " << targets.at(target-1)->target << "-" << targetSuffixes.at(suffix) << "-ordered ";
                 if(project->isEmpty("QMAKE_NOFORCE"))
                     t <<  " FORCE";
-                writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
+                writeSubMakeCall(t, out_directory_cdin, makefilein + " " + s, out_directory_cdout);
             }
             t << subtarget->target << "-" << targetSuffixes.at(suffix) << ": " << mkfile;
             if(!subtarget->depends.isEmpty())
@@ -2535,7 +2535,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                                     "-"+targetSuffixes.at(suffix));
             if(project->isEmpty("QMAKE_NOFORCE"))
                 t <<  " FORCE";
-            writeSubMakeCall(t, out_directory_cdin, makefilein, out_directory_cdout);
+            writeSubMakeCall(t, out_directory_cdin, makefilein + " " + s, out_directory_cdout);
         }
     }
     t << endl;
