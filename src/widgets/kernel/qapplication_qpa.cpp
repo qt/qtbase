@@ -393,9 +393,6 @@ void qt_init(QApplicationPrivate *, int type)
 
     qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QColormap::initialize();
-#ifndef QT_NO_CURSOR
-//    QCursorData::initialize();
-#endif
 
     qApp->setObjectName(appName);
 
@@ -407,9 +404,6 @@ void qt_init(QApplicationPrivate *, int type)
 void qt_cleanup()
 {
     QPixmapCache::clear();
-#ifndef QT_NO_CURSOR
-    QCursorData::cleanup();
-#endif
     QColormap::cleanup();
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;

@@ -114,7 +114,7 @@ static const float qt_paperSizes[][2] = {
 };
 
 /// return the multiplier of converting from the unit value to postscript-points.
-double qt_multiplierForUnit(QPrinter::Unit unit, int resolution)
+Q_GUI_EXPORT double qt_multiplierForUnit(QPrinter::Unit unit, int resolution)
 {
     switch(unit) {
     case QPrinter::Millimeter:
@@ -136,7 +136,7 @@ double qt_multiplierForUnit(QPrinter::Unit unit, int resolution)
 }
 
 // not static: it's needed in qpagesetupdialog_unix.cpp
-QSizeF qt_printerPaperSize(QPrinter::Orientation orientation,
+Q_GUI_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientation,
                            QPrinter::PaperSize paperSize,
                            QPrinter::Unit unit,
                            int resolution)

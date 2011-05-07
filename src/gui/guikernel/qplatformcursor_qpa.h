@@ -73,7 +73,7 @@ private:
 
 class QPlatformCursor;
 
-class QPlatformCursorPrivate {
+class Q_GUI_EXPORT QPlatformCursorPrivate {
 public:
     static QList<QWeakPointer<QPlatformCursor> > getInstances() { return instances; }
     static QList<QWeakPointer<QPlatformCursor> > instances;

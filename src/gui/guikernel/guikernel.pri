@@ -8,6 +8,7 @@ KERNEL_P= guikernel
 HEADERS += \
         guikernel/qclipboard.h \
         guikernel/qcursor.h \
+        guikernel/qcursor_p.h \
         guikernel/qevent.h \
         guikernel/qevent_p.h \
         guikernel/qkeysequence.h \

@@ -741,7 +741,7 @@ void qt_parseQconfig(QList<QPrinterDescription> *printers)
     } while (!ts.atEnd());
 }
 
-int qt_getLprPrinters(QList<QPrinterDescription>& printers)
+Q_GUI_EXPORT int qt_getLprPrinters(QList<QPrinterDescription>& printers)
 {
     QByteArray etcLpDefault;
     qt_parsePrintcap(&printers, QLatin1String("/etc/printcap"));

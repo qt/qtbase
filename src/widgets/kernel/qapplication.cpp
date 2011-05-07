@@ -916,10 +916,6 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 
 #endif // Q_WS_X11
 
-extern void qInitDrawhelperAsm();
-extern void qInitImageConversions();
-extern int qRegisterGuiVariant();
-extern int qUnregisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
 extern int qRegisterGuiStateMachine();
 extern int qUnregisterGuiStateMachine();
@@ -937,8 +933,6 @@ void QApplicationPrivate::initialize()
 
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
-    // trigger registering of QVariant's GUI types
-    qRegisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
     qRegisterGuiStateMachine();
@@ -965,11 +959,6 @@ void QApplicationPrivate::initialize()
         autoMaximizeThreshold = -1;
 #endif //QT_AUTO_MAXIMIZE_THRESHOLD
 #endif //Q_WS_WINCE
-
-    // Set up which span functions should be used in raster engine...
-    qInitDrawhelperAsm();
-    // and QImage conversion functions
-    qInitImageConversions();
 
 #ifndef QT_NO_WHEELEVENT
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -1160,8 +1149,6 @@ QApplication::~QApplication()
     // trigger unregistering of QStateMachine's GUI types
     qUnregisterGuiStateMachine();
 #endif
-    // trigger unregistering of QVariant's GUI types
-    qUnregisterGuiVariant();
 }
 
 

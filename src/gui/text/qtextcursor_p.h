@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTextCursorPrivate : public QSharedData
+class Q_GUI_EXPORT QTextCursorPrivate : public QSharedData
 {
 public:
     QTextCursorPrivate(QTextDocumentPrivate *p);

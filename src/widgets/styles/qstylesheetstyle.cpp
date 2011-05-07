@@ -978,8 +978,9 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget
                        hintValue = (int) decl.colorValue().rgba();
                    } else if (hintName.endsWith(QLatin1String("size"))) {
                        hintValue = decl.sizeValue();
-                   } else if (hintName.endsWith(QLatin1String("icon"))) {
-                       hintValue = decl.iconValue();
+                       // ### Qt5
+//                   } else if (hintName.endsWith(QLatin1String("icon"))) {
+//                       hintValue = decl.iconValue();
                    } else if (hintName == QLatin1String("button-layout")
                               && decl.d->values.count() != 0 && decl.d->values.at(0).type == Value::String) {
                        hintValue = subControlLayout(decl.d->values.at(0).variant.toString());
@@ -2508,7 +2509,8 @@ void QStyleSheetStyle::setProperties(QWidget *w)
         }
         QVariant v;
         switch (value.type()) {
-        case QVariant::Icon: v = decl.iconValue(); break;
+            // ### Qt 5
+//        case QVariant::Icon: v = decl.iconValue(); break;
         case QVariant::Image: v = QImage(decl.uriValue()); break;
         case QVariant::Pixmap: v = QPixmap(decl.uriValue()); break;
         case QVariant::Rect: v = decl.rectValue(); break;

@@ -128,7 +128,7 @@ public:
 /*******************************************************************************
  * QRasterPaintEngine
  */
-class QRasterPaintEngine : public QPaintEngineEx
+class Q_GUI_EXPORT QRasterPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QRasterPaintEngine)
 public:

@@ -633,7 +633,7 @@ enum StyleSheetOrigin {
     StyleSheetOrigin_Inline
 };
 
-struct StyleSheet
+struct Q_GUI_EXPORT StyleSheet
 {
     StyleSheet() : origin(StyleSheetOrigin_Unspecified), depth(0) { }
     QVector<StyleRule> styleRules;  //only contains rules that are not indexed

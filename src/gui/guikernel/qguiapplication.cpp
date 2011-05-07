@@ -64,6 +64,7 @@
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "private/qwindow_p.h"
 #include "private/qkeymapper_p.h"
+#include "private/qcursor_p.h"
 
 #include <QtGui/QPixmap>
 
@@ -73,7 +74,7 @@
 
 QT_BEGIN_NAMESPACE
 
-bool qt_is_gui_used = true;
+Q_GUI_EXPORT bool qt_is_gui_used = true;
 
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
@@ -110,6 +111,11 @@ QWindowList QGuiApplicationPrivate::window_list;
 
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
+
+extern int qRegisterGuiVariant();
+extern int qUnregisterGuiVariant();
+extern void qInitDrawhelperAsm();
+extern void qInitImageConversions();
 
 static bool qt_detectRTLLanguage()
 {
@@ -152,6 +158,8 @@ QGuiApplication::~QGuiApplication()
 
     delete QGuiApplicationPrivate::app_pal;
     QGuiApplicationPrivate::app_pal = 0;
+
+    qUnregisterGuiVariant();
 
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
@@ -264,7 +272,19 @@ void QGuiApplicationPrivate::init()
     init_platform(QLatin1String(platformName), platformPluginPath);
     init_plugins(pluginList);
 
+    // Set up which span functions should be used in raster engine...
+    qInitDrawhelperAsm();
+    // and QImage conversion functions
+    qInitImageConversions();
+
     QFont::initialize();
+
+#ifndef QT_NO_CURSOR
+    QCursorData::initialize();
+#endif
+
+    // trigger registering of QVariant's GUI types
+    qRegisterGuiVariant();
 
     is_app_running = true;
 }
@@ -278,6 +298,10 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     is_app_running = false;
 
     QFont::cleanup();
+
+#ifndef QT_NO_CURSOR
+    QCursorData::cleanup();
+#endif
 
     layout_direction = Qt::LeftToRight;
 }

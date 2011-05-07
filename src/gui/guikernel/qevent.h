@@ -273,7 +273,8 @@ protected:
     bool m_erased;
 };
 
-class QUpdateLaterEvent : public QEvent
+// ### Qt5: make internal
+class Q_GUI_EXPORT QUpdateLaterEvent : public QEvent
 {
 public:
     QUpdateLaterEvent(const QRegion& paintRegion);

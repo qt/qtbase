@@ -67,7 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 class QKeyMapperPrivate;
-class QKeyMapper : public QObject
+class Q_GUI_EXPORT QKeyMapper : public QObject
 {
     Q_OBJECT
 public:
