@@ -9,3 +9,4 @@ HEADERS     = dbscreen.h
 SOURCES     = dbscreendriverplugin.cpp \
               dbscreen.cpp 
 
+QT += widgets

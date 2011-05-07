@@ -6,3 +6,4 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook-fr
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS addressbook-fr.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook-fr
 INSTALLS += target sources
+QT += widgets

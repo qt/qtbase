@@ -15,3 +15,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus
 INSTALLS += sources
 
 symbian: CONFIG += qt_example
+QT += widgets

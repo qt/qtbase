@@ -11,3 +11,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/draganddrop/dropsite
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

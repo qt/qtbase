@@ -18,3 +18,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/dragdroprobot
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

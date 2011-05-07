@@ -17,3 +17,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs
 INSTALLS += sources
 
 symbian: CONFIG += qt_example
+QT += widgets

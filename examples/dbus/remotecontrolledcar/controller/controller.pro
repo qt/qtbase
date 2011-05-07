@@ -21,3 +21,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus/remotecontrolledcar/controlle
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

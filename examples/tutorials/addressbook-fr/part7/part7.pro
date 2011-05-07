@@ -9,3 +9,4 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part7
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part7.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part7
 INSTALLS += target sources
+QT += widgets

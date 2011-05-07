@@ -25,3 +25,4 @@ wince*: {
     }
     DEPLOYMENT += imageFiles
 }
+QT += widgets

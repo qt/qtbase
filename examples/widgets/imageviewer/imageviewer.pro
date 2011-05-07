@@ -13,3 +13,4 @@ symbian: CONFIG += qt_example
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qmng qgif
 }
+QT += widgets

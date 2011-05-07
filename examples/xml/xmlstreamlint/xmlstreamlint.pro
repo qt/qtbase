@@ -1,6 +1,6 @@
 CONFIG   += console
 QT       -= gui
-QT       += xml
+QT       += xml widgets
 SOURCES  += main.cpp
 
 # install

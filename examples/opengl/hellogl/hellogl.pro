@@ -8,7 +8,7 @@ SOURCES       = glwidget.cpp \
                 main.cpp \
                 window.cpp \
                 qtlogo.cpp
-QT           += opengl
+QT           += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl

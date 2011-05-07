@@ -12,3 +12,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/completer
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

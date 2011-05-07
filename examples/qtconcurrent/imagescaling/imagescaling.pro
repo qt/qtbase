@@ -15,3 +15,4 @@ INSTALLS += target sources
 symbian: CONFIG += qt_example
 
 wince*: DEPLOYMENT_PLUGIN += qgif qjpeg qtiff
+QT += widgets

@@ -14,3 +14,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/effects/fademessage
 
 DEPLOYMENT_PLUGIN += qjpeg
 
+QT += widgets

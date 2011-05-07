@@ -7,3 +7,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/dirview
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

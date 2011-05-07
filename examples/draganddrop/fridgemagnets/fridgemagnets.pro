@@ -17,3 +17,4 @@ symbian {
 }
 
 
+QT += widgets

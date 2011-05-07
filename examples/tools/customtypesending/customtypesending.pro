@@ -3,3 +3,4 @@ HEADERS   = message.h \
 SOURCES   = main.cpp \
             message.cpp \
             window.cpp
+QT += widgets

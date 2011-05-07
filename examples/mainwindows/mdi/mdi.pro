@@ -12,3 +12,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mdi
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

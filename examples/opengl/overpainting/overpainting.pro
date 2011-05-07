@@ -1,7 +1,7 @@
 VPATH += ../shared
 INCLUDEPATH += ../shared
 
-QT += opengl
+QT += opengl widgets
 HEADERS = bubble.h \
     glwidget.h \
     qtlogo.h

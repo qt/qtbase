@@ -7,8 +7,8 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += gui-private
-QT += core-private
+QT += gui-private widgets
+QT += core-private widgets
 
 # Input
 HEADERS += window.h

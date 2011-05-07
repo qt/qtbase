@@ -27,3 +27,4 @@ wince*: {
    addFile.path = .
    DEPLOYMENT += addFile
 }
+QT += widgets

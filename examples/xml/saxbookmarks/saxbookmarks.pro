@@ -5,7 +5,7 @@ SOURCES       = main.cpp \
                 mainwindow.cpp \
                 xbelgenerator.cpp \
                 xbelhandler.cpp
-QT           += xml
+QT           += xml widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/saxbookmarks

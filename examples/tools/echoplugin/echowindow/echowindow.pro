@@ -19,3 +19,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin/echowindow
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

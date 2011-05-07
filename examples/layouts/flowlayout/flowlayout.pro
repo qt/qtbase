@@ -11,3 +11,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/layouts/flowlayout
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

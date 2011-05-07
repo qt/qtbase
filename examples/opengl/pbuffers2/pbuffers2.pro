@@ -7,7 +7,7 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += opengl svg
+QT += opengl svg widgets
 
 # Input
 HEADERS += glwidget.h

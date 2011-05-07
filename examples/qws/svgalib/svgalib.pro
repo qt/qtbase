@@ -17,3 +17,4 @@ SOURCES	= svgalibscreen.cpp \
           svgalibpaintdevice.cpp \
           svgalibplugin.cpp
 
+QT += widgets

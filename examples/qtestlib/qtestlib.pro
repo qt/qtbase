@@ -8,3 +8,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

@@ -7,7 +7,7 @@ SOURCES = imageitem.cpp \
           informationwindow.cpp \
           main.cpp \
           view.cpp
-QT += sql
+QT += sql widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/drilldown

@@ -7,3 +7,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/trivialwizard
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

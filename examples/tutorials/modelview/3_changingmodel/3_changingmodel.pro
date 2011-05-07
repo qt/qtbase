@@ -14,3 +14,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/3_changingmode
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

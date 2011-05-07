@@ -20,3 +20,4 @@ SOURCES	  = main.cpp \
             util.cpp
 FORMS     = mydialog.ui
 #! [0]
+QT += widgets

@@ -41,3 +41,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

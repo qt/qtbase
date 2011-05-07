@@ -17,3 +17,4 @@ wince*: {
    DEPLOYMENT_PLUGIN += qmng
 }
 
+QT += widgets

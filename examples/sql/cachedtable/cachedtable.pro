@@ -2,7 +2,7 @@ HEADERS       = ../connection.h \
                 tableeditor.h
 SOURCES       = main.cpp \
                 tableeditor.cpp
-QT           += sql
+QT           += sql widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/cachedtable

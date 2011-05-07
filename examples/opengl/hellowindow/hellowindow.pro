@@ -7,7 +7,7 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += opengl
+QT += opengl widgets
 
 # Input
 HEADERS += hellowindow.h

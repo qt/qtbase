@@ -11,3 +11,4 @@ symbian {
     TARGET.UID3 = 0xA000C60C
     CONFIG += qt_example
 }
+QT += widgets

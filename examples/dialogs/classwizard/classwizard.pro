@@ -10,3 +10,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/classwizard
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

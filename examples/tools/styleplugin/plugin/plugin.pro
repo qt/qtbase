@@ -23,3 +23,4 @@ INSTALLS += target sources
 symbian: CONFIG += qt_example
 
 symbian:TARGET.EPOCALLOWDLLDATA = 1
+QT += widgets

@@ -15,3 +15,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/1_readonly
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

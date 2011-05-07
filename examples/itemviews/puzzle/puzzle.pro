@@ -19,3 +19,4 @@ wince* {
    DEPLOYMENT_PLUGIN += qjpeg qgif qtiff
 }
 
+QT += widgets

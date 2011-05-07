@@ -9,3 +9,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/findfiles
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

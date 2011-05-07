@@ -12,3 +12,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES weatheranchorlayout.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/weatheranchorlayout
 INSTALLS += target sources
 
+QT += widgets

@@ -10,3 +10,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/dockwidgets
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets

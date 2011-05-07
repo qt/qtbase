@@ -5,3 +5,4 @@ SOURCES   = main.cpp \
             block.cpp \
             renderthread.cpp \
             window.cpp
+QT += widgets
