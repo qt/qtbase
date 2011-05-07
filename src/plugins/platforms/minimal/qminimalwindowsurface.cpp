@@ -42,7 +42,7 @@
 
 #include "qminimalwindowsurface.h"
 #include <QtCore/qdebug.h>
-#include <QtGui/private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,7 +78,7 @@ void QMinimalWindowSurface::resize(const QSize &size)
 {
     //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
     QWindowSurface::resize(size);
-    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+    QImage::Format format = QGuiApplicationPrivate::platformIntegration()->screens().first()->format();
     if (mImage.size() != size)
         mImage = QImage(size, format);
 }

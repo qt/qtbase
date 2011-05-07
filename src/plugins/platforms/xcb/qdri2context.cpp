@@ -45,7 +45,7 @@
 #include "qxcbconnection.h"
 
 #include <QtCore/QDebug>
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #include <xcb/dri2.h>
 #include <xcb/xfixes.h>

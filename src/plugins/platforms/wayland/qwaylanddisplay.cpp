@@ -51,7 +51,7 @@
 #endif
 
 #include <QtCore/QAbstractEventDispatcher>
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 
 #include <unistd.h>
 #include <fcntl.h>

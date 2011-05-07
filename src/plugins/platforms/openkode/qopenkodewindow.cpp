@@ -53,7 +53,7 @@
 
 #include <EGL/egl.h>
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/private/qwidget_p.h>
 #include <QtGui/private/qapplication_p.h>
 

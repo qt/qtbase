@@ -41,7 +41,7 @@
 
 #include "qbasicunixfontdatabase.h"
 
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPlatformScreen>
 
 #include <QtCore/QFile>

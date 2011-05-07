@@ -46,7 +46,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
 #include <QtGui/QPixmap>
-#include <QtGui/QIcon>
+#include <QtWidgets/QIcon>
 
 QT_BEGIN_NAMESPACE
 
