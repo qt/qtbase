@@ -43,7 +43,7 @@
 #define QFONTDIALOG_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 #include <QtGui/qfont.h>
 
 QT_BEGIN_HEADER

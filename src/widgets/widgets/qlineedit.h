@@ -42,7 +42,7 @@
 #ifndef QLINEEDIT_H
 #define QLINEEDIT_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmargins.h>

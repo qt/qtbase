@@ -42,8 +42,8 @@
 #ifndef QSPLITTER_H
 #define QSPLITTER_H
 
-#include <QtGui/qframe.h>
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qframe.h>
+#include <QtWidgets/qsizepolicy.h>
 
 QT_BEGIN_HEADER
 

@@ -43,8 +43,8 @@
 #define QGRAPHICSWIDGET_H
 
 #include <QtGui/qfont.h>
-#include <QtGui/qgraphicslayoutitem.h>
-#include <QtGui/qgraphicsitem.h>
+#include <QtWidgets/qgraphicslayoutitem.h>
+#include <QtWidgets/qgraphicsitem.h>
 #include <QtGui/qpalette.h>
 
 QT_BEGIN_HEADER

@@ -42,7 +42,7 @@
 #ifndef QTOOLTIP_H
 #define QTOOLTIP_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

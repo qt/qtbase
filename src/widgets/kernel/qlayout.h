@@ -43,8 +43,8 @@
 #define QLAYOUT_H
 
 #include <QtCore/qobject.h>
-#include <QtGui/qlayoutitem.h>
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qlayoutitem.h>
+#include <QtWidgets/qsizepolicy.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qmargins.h>
 
@@ -233,8 +233,8 @@ inline void QLayoutIterator::deleteCurrent() { delete  layout->takeAt(index); }
 //### support old includes
 #if 1 //def QT3_SUPPORT
 QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtGui/qboxlayout.h>
-#include <QtGui/qgridlayout.h>
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qgridlayout.h>
 QT_END_INCLUDE_NAMESPACE
 #endif
 

@@ -42,7 +42,7 @@
 #ifndef QWIZARD_H
 #define QWIZARD_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QDIALOGBUTTONBOX_H
 #define QDIALOGBUTTONBOX_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

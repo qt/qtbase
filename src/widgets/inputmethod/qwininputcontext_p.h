@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtGui/qinputcontext.h"
+#include "QtWidgets/qinputcontext.h"
 #include "QtCore/qt_windows.h"
 
 #if !defined(IMR_RECONVERTSTRING)

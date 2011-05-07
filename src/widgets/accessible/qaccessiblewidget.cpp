@@ -53,8 +53,8 @@
 #include "qdebug.h"
 #include <qmath.h>
 #include <QRubberBand>
-#include <QtGui/QFocusFrame>
-#include <QtGui/QMenu>
+#include <QFocusFrame>
+#include <QMenu>
 
 QT_BEGIN_NAMESPACE
 

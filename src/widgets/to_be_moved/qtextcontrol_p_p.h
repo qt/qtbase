@@ -54,10 +54,10 @@
 //
 
 #include "QtGui/qtextdocumentfragment.h"
-#include "QtGui/qscrollbar.h"
+#include "QtWidgets/qscrollbar.h"
 #include "QtGui/qtextcursor.h"
 #include "QtGui/qtextformat.h"
-#include "QtGui/qmenu.h"
+#include "QtWidgets/qmenu.h"
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qpointer.h"

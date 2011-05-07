@@ -42,7 +42,7 @@
 #ifndef QTABBAR_H
 #define QTABBAR_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

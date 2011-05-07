@@ -53,15 +53,15 @@
 // We mean it.
 //
 
-#include "QtGui/qcombobox.h"
-#include "QtGui/qcalendarwidget.h"
-#include "QtGui/qspinbox.h"
-#include "QtGui/qtoolbutton.h"
-#include "QtGui/qmenu.h"
-#include "QtGui/qlabel.h"
-#include "QtGui/qdatetimeedit.h"
-#include "QtGui/private/qabstractspinbox_p.h"
-#include "QtCore/private/qdatetime_p.h"
+#include "QtWidgets/qcombobox.h"
+#include "QtWidgets/qcalendarwidget.h"
+#include "QtWidgets/qspinbox.h"
+#include "QtWidgets/qtoolbutton.h"
+#include "QtWidgets/qmenu.h"
+#include "QtWidgets/qlabel.h"
+#include "QtWidgets/qdatetimeedit.h"
+#include "private/qabstractspinbox_p.h"
+#include "private/qdatetime_p.h"
 
 #include "qdebug.h"
 

@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "QtGui/qlayoutitem.h"
-#include "QtGui/qstyle.h"
+#include "QtWidgets/qlayoutitem.h"
+#include "QtWidgets/qstyle.h"
 
 QT_BEGIN_NAMESPACE
 

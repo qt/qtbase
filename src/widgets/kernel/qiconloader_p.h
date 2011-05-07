@@ -54,8 +54,8 @@
 // We mean it.
 //
 
-#include <QtGui/QIcon>
-#include <QtGui/QIconEngine>
+#include <QtWidgets/QIcon>
+#include <QtWidgets/QIconEngine>
 #include <QtGui/QPixmapCache>
 #include <private/qicon_p.h>
 #include <private/qfactoryloader_p.h>

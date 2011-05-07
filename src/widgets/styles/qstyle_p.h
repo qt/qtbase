@@ -43,7 +43,7 @@
 #define QSTYLE_P_H
 
 #include "private/qobject_p.h"
-#include <QtGui/qstyle.h>
+#include <QtWidgets/qstyle.h>
 
 QT_BEGIN_NAMESPACE
 

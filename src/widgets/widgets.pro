@@ -1,6 +1,6 @@
-TARGET     = QtGui
+TARGET     = QtWidgets
 QPRO_PWD   = $$PWD
-QT = core-private
+QT = core-private gui-private
 
 CONFIG += module
 MODULE_PRI = ../modules/qt_gui.pri
@@ -75,6 +75,8 @@ neon:*-g++* {
     silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
     QMAKE_EXTRA_COMPILERS += neon_compiler
 }
+
+INCLUDEPATH += ../3rdparty/harfbuzz/src
 
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE

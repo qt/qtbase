@@ -66,7 +66,7 @@
 #include <private/qfont_p.h>
 
 #if defined(Q_WS_S60)
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qdesktopwidget.h>
 #endif
 
 QT_BEGIN_NAMESPACE

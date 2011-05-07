@@ -58,7 +58,7 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#include "QtGui/qmenu.h"
+#include "QtWidgets/qmenu.h"
 #include "QtGui/qpixmap.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qpointer.h"

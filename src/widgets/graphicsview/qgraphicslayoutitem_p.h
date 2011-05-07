@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/QSizeF>
-#include <QtGui/QSizePolicy>
+#include <QtWidgets/QSizePolicy>
 
 QT_BEGIN_NAMESPACE
 

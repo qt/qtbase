@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "QtGui/qwidget.h"
+#include "QtWidgets/qwidget.h"
 #include "QtGui/qevent.h"
-#include "QtGui/qapplication.h"
-#include "QtGui/private/qbackingstore_p.h"
-#include "QtGui/private/qwidget_p.h"
-#include "QtGui/private/qwidgetwindow_qpa_p.h"
-#include "QtGui/private/qapplication_p.h"
-#include "QtGui/qdesktopwidget.h"
+#include "QtWidgets/qapplication.h"
+#include "private/qbackingstore_p.h"
+#include "private/qwidget_p.h"
+#include "private/qwidgetwindow_qpa_p.h"
+#include "private/qapplication_p.h"
+#include "QtWidgets/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
 #include "QtGui/qplatformglcontext_qpa.h"
 

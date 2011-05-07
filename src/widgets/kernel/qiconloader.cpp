@@ -45,10 +45,10 @@
 #include <private/qicon_p.h>
 #include <private/qguiplatformplugin_p.h>
 
-#include <QtGui/QIconEnginePlugin>
+#include <QtWidgets/QIconEnginePlugin>
 #include <QtGui/QPixmapCache>
-#include <QtGui/QIconEngine>
-#include <QtGui/QStyleOption>
+#include <QtWidgets/QIconEngine>
+#include <QtWidgets/QStyleOption>
 #include <QtCore/QList>
 #include <QtCore/QHash>
 #include <QtCore/QDir>

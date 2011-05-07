@@ -43,7 +43,7 @@
 #define QABSTRACTITEMDELEGATE_H
 
 #include <QtCore/qobject.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qstyleoption.h>
 
 QT_BEGIN_HEADER
 

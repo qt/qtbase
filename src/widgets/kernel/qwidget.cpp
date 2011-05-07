@@ -114,10 +114,10 @@
 #include "qwidget_p.h"
 #include "qaction_p.h"
 #include "qlayout_p.h"
-#include "QtGui/qgraphicsproxywidget.h"
-#include "QtGui/qgraphicsscene.h"
+#include "QtWidgets/qgraphicsproxywidget.h"
+#include "QtWidgets/qgraphicsscene.h"
 #include "private/qgraphicsproxywidget_p.h"
-#include "QtGui/qabstractscrollarea.h"
+#include "QtWidgets/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
 #include "private/qevent_p.h"
 

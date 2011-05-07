@@ -42,7 +42,7 @@
 #ifndef QPRINTPREVIEWDIALOG_H
 #define QPRINTPREVIEWDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 

@@ -48,9 +48,9 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qapplication.h>
 #include <QtGui/qpaintengine.h>
-#include <QtGui/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
 
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>

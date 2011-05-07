@@ -42,7 +42,7 @@
 #ifndef QMOTIFSTYLE_H
 #define QMOTIFSTYLE_H
 
-#include <QtGui/qcommonstyle.h>
+#include <QtWidgets/qcommonstyle.h>
 #include <QtCore/qpointer.h>
 
 QT_BEGIN_HEADER

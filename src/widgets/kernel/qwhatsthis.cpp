@@ -53,7 +53,7 @@
 #include "qcursor.h"
 #include "qbitmap.h"
 #include "qtextdocument.h"
-#include "../text/qtextdocumentlayout_p.h"
+#include "private/qtextdocumentlayout_p.h"
 #include "qtoolbutton.h"
 #include "qdebug.h"
 #ifndef QT_NO_ACCESSIBILITY

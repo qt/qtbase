@@ -42,7 +42,7 @@
 #ifndef QTOOLBUTTON_H
 #define QTOOLBUTTON_H
 
-#include <QtGui/qabstractbutton.h>
+#include <QtWidgets/qabstractbutton.h>
 
 QT_BEGIN_HEADER
 

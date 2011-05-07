@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSLAYOUT_H
 #define QGRAPHICSLAYOUT_H
 
-#include <QtGui/qgraphicslayoutitem.h>
+#include <QtWidgets/qgraphicslayoutitem.h>
 
 QT_BEGIN_HEADER
 

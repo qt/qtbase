@@ -44,7 +44,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointF>
-#include <QtGui/QScrollerProperties>
+#include <QtWidgets/QScrollerProperties>
 
 QT_BEGIN_HEADER
 

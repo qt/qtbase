@@ -42,7 +42,7 @@
 #ifndef QMACSTYLE_MAC_H
 #define QMACSTYLE_MAC_H
 
-#include <QtGui/qwindowsstyle.h>
+#include <QtWidgets/qwindowsstyle.h>
 
 QT_BEGIN_HEADER
 

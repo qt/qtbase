@@ -59,9 +59,9 @@
 
 #include "qgraphicslayout.h"
 #include "qgraphicslayoutitem_p.h"
-#include <QtGui/qstyle.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qstyleoption.h>
 
 QT_BEGIN_NAMESPACE
 

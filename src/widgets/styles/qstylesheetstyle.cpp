@@ -84,7 +84,7 @@
 #include "qdrawutil.h"
 
 #include <limits.h>
-#include <QtGui/qtoolbar.h>
+#include <QtWidgets/qtoolbar.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -92,8 +92,8 @@
 #include <qlibrary.h>
 #include <qdatetimeedit.h>
 #include <qmath.h>
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsview.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 
 //

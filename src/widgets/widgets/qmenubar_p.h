@@ -54,7 +54,7 @@
 //
 
 #ifndef QMAC_Q3MENUBAR_CPP_FILE
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qstyleoption.h"
 #include <private/qmenu_p.h> // Mac needs what in this file!
 
 #ifdef Q_WS_WINCE

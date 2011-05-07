@@ -42,7 +42,7 @@
 #ifndef QCLEANLOOKSSTYLE_H
 #define QCLEANLOOKSSTYLE_H
 
-#include <QtGui/qwindowsstyle.h>
+#include <QtWidgets/qwindowsstyle.h>
 
 QT_BEGIN_HEADER
 

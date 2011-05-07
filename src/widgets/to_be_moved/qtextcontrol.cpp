@@ -78,7 +78,7 @@
 #include <qinputcontext.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
-#include <QtGui/qlineedit.h>
+#include <QtWidgets/qlineedit.h>
 
 #ifndef QT_NO_SHORTCUT
 #include "private/qapplication_p.h"

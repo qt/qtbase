@@ -53,24 +53,24 @@
 // We mean it.
 //
 
-#include "QtGui/qcombobox.h"
+#include "QtWidgets/qcombobox.h"
 
 #ifndef QT_NO_COMBOBOX
-#include "QtGui/qabstractslider.h"
-#include "QtGui/qapplication.h"
-#include "QtGui/qitemdelegate.h"
-#include "QtGui/qstandarditemmodel.h"
-#include "QtGui/qlineedit.h"
-#include "QtGui/qlistview.h"
+#include "QtWidgets/qabstractslider.h"
+#include "QtWidgets/qapplication.h"
+#include "QtWidgets/qitemdelegate.h"
+#include "QtWidgets/qstandarditemmodel.h"
+#include "QtWidgets/qlineedit.h"
+#include "QtWidgets/qlistview.h"
 #include "QtGui/qpainter.h"
-#include "QtGui/qstyle.h"
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qstyle.h"
+#include "QtWidgets/qstyleoption.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qpair.h"
 #include "QtCore/qtimer.h"
 #include "private/qwidget_p.h"
 #include "QtCore/qpointer.h"
-#include "QtGui/qcompleter.h"
+#include "QtWidgets/qcompleter.h"
 #include "QtGui/qevent.h"
 #include "QtCore/qdebug.h"
 

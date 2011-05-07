@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "QtGui/qapplication.h"
-#include "QtGui/qwidget.h"
-#include "QtGui/qtabbar.h"
-#include "QtGui/qstyle.h"
-#include "QtGui/qdesktopwidget.h"
+#include "QtWidgets/qapplication.h"
+#include "QtWidgets/qwidget.h"
+#include "QtWidgets/qtabbar.h"
+#include "QtWidgets/qstyle.h"
+#include "QtWidgets/qdesktopwidget.h"
 #include "QtCore/qvariant.h"
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"

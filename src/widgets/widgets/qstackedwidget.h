@@ -42,7 +42,7 @@
 #ifndef QSTACKEDWIDGET_H
 #define QSTACKEDWIDGET_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 
 QT_BEGIN_HEADER
 

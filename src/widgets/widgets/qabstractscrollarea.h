@@ -42,7 +42,7 @@
 #ifndef QABSTRACTSCROLLAREA_H
 #define QABSTRACTSCROLLAREA_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 
 QT_BEGIN_HEADER
 

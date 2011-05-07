@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtGui/qtoolbutton.h"
+#include "QtWidgets/qtoolbutton.h"
 
 QT_BEGIN_NAMESPACE
 

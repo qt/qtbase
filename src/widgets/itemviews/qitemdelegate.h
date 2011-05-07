@@ -42,7 +42,7 @@
 #ifndef QITEMDELEGATE_H
 #define QITEMDELEGATE_H
 
-#include <QtGui/qabstractitemdelegate.h>
+#include <QtWidgets/qabstractitemdelegate.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qpixmap.h>
 #include <QtCore/qvariant.h>

@@ -54,7 +54,7 @@
 //
 
 #include "qcompleter.h"
-#include <QtGui/qfilesystemmodel.h>
+#include <QtWidgets/qfilesystemmodel.h>
 QT_BEGIN_NAMESPACE
 #ifndef QT_NO_FSCOMPLETER
 

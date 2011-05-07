@@ -67,7 +67,7 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
-#include <QtGui/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
 #include "private/qkeymapper_p.h"

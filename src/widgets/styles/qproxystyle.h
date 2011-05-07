@@ -42,7 +42,7 @@
 #ifndef QPROXYSTYLE_H
 #define QPROXYSTYLE_H
 
-#include <QtGui/QCommonStyle>
+#include <QtWidgets/QCommonStyle>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QACCESSIBLE2_H
 #define QACCESSIBLE2_H
 
-#include <QtGui/qaccessible.h>
+#include <QtWidgets/qaccessible.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QACCESSIBLEPLUGIN_H
 #define QACCESSIBLEPLUGIN_H
 
-#include <QtGui/qaccessible.h>
+#include <QtWidgets/qaccessible.h>
 #include <QtCore/qfactoryinterface.h>
 
 QT_BEGIN_HEADER

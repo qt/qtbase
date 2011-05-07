@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "QtGui/qmenubar.h"
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qmenubar.h"
+#include "QtWidgets/qstyleoption.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"

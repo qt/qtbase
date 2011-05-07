@@ -69,8 +69,8 @@
 #include <QtCore/qset.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qstyleoption.h>
 
 QT_BEGIN_NAMESPACE
 

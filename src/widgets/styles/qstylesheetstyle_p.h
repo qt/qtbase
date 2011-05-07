@@ -42,15 +42,15 @@
 #ifndef QSTYLESHEETSTYLE_P_H
 #define QSTYLESHEETSTYLE_P_H
 
-#include "QtGui/qwindowsstyle.h"
+#include "QtWidgets/qwindowsstyle.h"
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qstyleoption.h"
 #include "QtCore/qhash.h"
 #include "QtGui/qevent.h"
 #include "QtCore/qvector.h"
-#include "QtGui/qapplication.h"
+#include "QtWidgets/qapplication.h"
 #include "private/qcssparser_p.h"
 #include "QtGui/qbrush.h"
 

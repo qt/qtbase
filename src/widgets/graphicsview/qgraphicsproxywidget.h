@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSPROXYWIDGET_H
 #define QGRAPHICSPROXYWIDGET_H
 
-#include <QtGui/qgraphicswidget.h>
+#include <QtWidgets/qgraphicswidget.h>
 
 QT_BEGIN_HEADER
 

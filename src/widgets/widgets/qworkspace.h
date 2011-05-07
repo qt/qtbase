@@ -42,7 +42,7 @@
 #ifndef QWORKSPACE_H
 #define QWORKSPACE_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

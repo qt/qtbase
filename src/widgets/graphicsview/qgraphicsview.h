@@ -44,8 +44,8 @@
 
 #include <QtCore/qmetatype.h>
 #include <QtGui/qpainter.h>
-#include <QtGui/qscrollarea.h>
-#include <QtGui/qgraphicsscene.h>
+#include <QtWidgets/qscrollarea.h>
+#include <QtWidgets/qgraphicsscene.h>
 
 QT_BEGIN_HEADER
 

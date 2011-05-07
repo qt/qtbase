@@ -61,7 +61,7 @@
 #include <qaction.h>
 #endif
 #ifdef Q_WS_S60
-#include <QtGui/qdesktopwidget.h>
+#include <QtWidgets/qdesktopwidget.h>
 #endif
 
 

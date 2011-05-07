@@ -44,7 +44,7 @@
 
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 
 QT_BEGIN_HEADER
 

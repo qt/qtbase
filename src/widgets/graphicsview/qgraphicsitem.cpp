@@ -735,15 +735,15 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmapcache.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qstyleoption.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qinputcontext.h>
-#include <QtGui/qgraphicseffect.h>
+#include <QtWidgets/qinputcontext.h>
+#include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
 #endif

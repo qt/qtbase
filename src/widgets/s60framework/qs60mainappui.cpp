@@ -53,9 +53,9 @@
 #include <qconfig.h>
 
 #include "qs60mainappui.h"
-#include <QtGui/qapplication.h>
-#include <QtGui/qsymbianevent.h>
-#include <QtGui/qmenu.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qsymbianevent.h>
+#include <QtWidgets/qmenu.h>
 #include <private/qmenu_p.h>
 #include <private/qt_s60_p.h>
 #include <qdebug.h>

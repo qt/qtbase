@@ -45,7 +45,7 @@
 
 #include <private/qstatemachine_p.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qgraphicssceneevent.h>
+#include <QtWidgets/qgraphicssceneevent.h>
 
 QT_BEGIN_NAMESPACE
 

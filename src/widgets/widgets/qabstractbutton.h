@@ -42,9 +42,9 @@
 #ifndef QABSTRACTBUTTON_H
 #define QABSTRACTBUTTON_H
 
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 #include <QtGui/qkeysequence.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QACTIONGROUP_H
 #define QACTIONGROUP_H
 
-#include <QtGui/qaction.h>
+#include <QtWidgets/qaction.h>
 
 QT_BEGIN_HEADER
 

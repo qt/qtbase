@@ -42,7 +42,7 @@
 #ifndef QLISTVIEW_H
 #define QLISTVIEW_H
 
-#include <QtGui/qabstractitemview.h>
+#include <QtWidgets/qabstractitemview.h>
 
 QT_BEGIN_HEADER
 

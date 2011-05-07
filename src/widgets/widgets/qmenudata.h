@@ -45,7 +45,7 @@
 #include <QtCore/qglobal.h>
 
 #ifdef QT3_SUPPORT
-#include <QtGui/qaction.h>
+#include <QtWidgets/qaction.h>
 
 QT_BEGIN_HEADER
 

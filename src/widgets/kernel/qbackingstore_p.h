@@ -54,7 +54,7 @@
 //
 
 #include <QDebug>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <private/qwidget_p.h>
 #include <private/qwindowsurface_p.h>
 #ifdef Q_WS_QWS

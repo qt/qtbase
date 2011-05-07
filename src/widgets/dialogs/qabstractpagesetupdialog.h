@@ -42,7 +42,7 @@
 #ifndef QABSTRACTPAGESETUPDIALOG_H
 #define QABSTRACTPAGESETUPDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

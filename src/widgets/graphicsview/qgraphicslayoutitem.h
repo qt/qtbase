@@ -43,7 +43,7 @@
 #define QGRAPHICSLAYOUTITEM_H
 
 #include <QtCore/qscopedpointer.h>
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qsizepolicy.h>
 #include <QtGui/qevent.h>
 
 QT_BEGIN_HEADER

@@ -55,7 +55,7 @@
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

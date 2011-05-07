@@ -42,7 +42,7 @@
 #ifndef QTEXTBROWSER_H
 #define QTEXTBROWSER_H
 
-#include <QtGui/qtextedit.h>
+#include <QtWidgets/qtextedit.h>
 #include <QtCore/qurl.h>
 
 QT_BEGIN_HEADER

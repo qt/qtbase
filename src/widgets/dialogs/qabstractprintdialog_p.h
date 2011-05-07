@@ -57,7 +57,7 @@
 
 #ifndef QT_NO_PRINTDIALOG
 
-#include "QtGui/qabstractprintdialog.h"
+#include "QtWidgets/qabstractprintdialog.h"
 
 QT_BEGIN_NAMESPACE
 

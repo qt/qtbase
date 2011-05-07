@@ -57,8 +57,8 @@
 #include <QtGui/qtextoption.h>
 #include <QtGui/qtextcursor.h>
 #include <QtGui/qtextformat.h>
-#include <QtGui/qtextedit.h>
-#include <QtGui/qmenu.h>
+#include <QtWidgets/qtextedit.h>
+#include <QtWidgets/qmenu.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
 #include <QtGui/qtextdocumentfragment.h>

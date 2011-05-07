@@ -42,10 +42,10 @@
 #ifndef QMENU_H
 #define QMENU_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qicon.h>
-#include <QtGui/qaction.h>
+#include <QtWidgets/qicon.h>
+#include <QtWidgets/qaction.h>
 
 #ifdef QT3_SUPPORT
 #include <QtGui/qpixmap.h>

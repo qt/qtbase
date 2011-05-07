@@ -43,7 +43,7 @@
 #define QSPLASHSCREEN_H
 
 #include <QtGui/qpixmap.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

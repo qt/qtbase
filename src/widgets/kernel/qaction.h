@@ -44,9 +44,9 @@
 
 #include <QtGui/qkeysequence.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 
 QT_BEGIN_HEADER
 
@@ -252,7 +252,7 @@ private:
 };
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtGui/qactiongroup.h>
+#include <QtWidgets/qactiongroup.h>
 QT_END_INCLUDE_NAMESPACE
 
 #endif // QT_NO_ACTION

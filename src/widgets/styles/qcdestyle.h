@@ -43,7 +43,7 @@
 #ifndef QCDESTYLE_H
 #define QCDESTYLE_H
 
-#include <QtGui/qmotifstyle.h>
+#include <QtWidgets/qmotifstyle.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QPROGRESSBAR_H
 #define QPROGRESSBAR_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 
 QT_BEGIN_HEADER
 

@@ -43,15 +43,15 @@
 #define QSTYLEOPTION_H
 
 #include <QtCore/qvariant.h>
-#include <QtGui/qabstractspinbox.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qabstractspinbox.h>
+#include <QtWidgets/qicon.h>
 #include <QtGui/qmatrix.h>
-#include <QtGui/qslider.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qtabbar.h>
-#include <QtGui/qtabwidget.h>
-#include <QtGui/qrubberband.h>
-#include <QtGui/qframe.h>
+#include <QtWidgets/qslider.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qtabbar.h>
+#include <QtWidgets/qtabwidget.h>
+#include <QtWidgets/qrubberband.h>
+#include <QtWidgets/qframe.h>
 #ifndef QT_NO_ITEMVIEWS
 #   include <QtCore/qabstractitemmodel.h>
 #endif

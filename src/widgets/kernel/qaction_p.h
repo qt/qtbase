@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "QtGui/qaction.h"
-#include "QtGui/qmenu.h"
+#include "QtWidgets/qaction.h"
+#include "QtWidgets/qmenu.h"
 #include "private/qgraphicswidget_p.h"
 #include "private/qobject_p.h"
 

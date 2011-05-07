@@ -43,7 +43,7 @@
 #ifndef QDIAL_H
 #define QDIAL_H
 
-#include <QtGui/qabstractslider.h>
+#include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_HEADER
 

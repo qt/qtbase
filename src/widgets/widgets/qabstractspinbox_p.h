@@ -53,12 +53,12 @@
 // We mean it.
 //
 
-#include "QtGui/qabstractspinbox.h"
+#include "QtWidgets/qabstractspinbox.h"
 
 #ifndef QT_NO_SPINBOX
 
-#include "QtGui/qlineedit.h"
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qlineedit.h"
+#include "QtWidgets/qstyleoption.h"
 #include "QtGui/qvalidator.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qvariant.h"

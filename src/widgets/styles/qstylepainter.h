@@ -43,8 +43,8 @@
 #define QSTYLEPAINTER_H
 
 #include <QtGui/qpainter.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

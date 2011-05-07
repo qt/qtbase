@@ -53,10 +53,10 @@
 // We mean it.
 //
 
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qstyleoption.h"
 #include "private/qwidget_p.h"
-#include "QtGui/qboxlayout.h"
-#include "QtGui/qdockwidget.h"
+#include "QtWidgets/qboxlayout.h"
+#include "QtWidgets/qdockwidget.h"
 
 #ifndef QT_NO_DOCKWIDGET
 

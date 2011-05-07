@@ -42,8 +42,8 @@
 #ifndef QTOOLBOX_H
 #define QTOOLBOX_H
 
-#include <QtGui/qframe.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qframe.h>
+#include <QtWidgets/qicon.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QMENUBAR_H
 #define QMENUBAR_H
 
-#include <QtGui/qmenu.h>
+#include <QtWidgets/qmenu.h>
 
 QT_BEGIN_HEADER
 

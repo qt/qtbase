@@ -51,15 +51,15 @@
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qlayout.h>
+#include <QtWidgets/qgraphicsscene.h>
+#include <QtWidgets/qgraphicssceneevent.h>
+#include <QtWidgets/qlayout.h>
 #include <QtGui/qpainter.h>
-#include <QtGui/qstyleoption.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qlistview.h>
-#include <QtGui/qlineedit.h>
-#include <QtGui/qtextedit.h>
+#include <QtWidgets/qstyleoption.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qlistview.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qtextedit.h>
 
 QT_BEGIN_NAMESPACE
 

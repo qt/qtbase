@@ -58,8 +58,8 @@
 #ifndef QT_NO_ITEMVIEWS
 
 #include "QtCore/qbitarray.h"
-#include "QtGui/qapplication.h"
-#include "QtGui/qlabel.h"
+#include "QtWidgets/qapplication.h"
+#include "QtWidgets/qlabel.h"
 
 QT_BEGIN_NAMESPACE
 

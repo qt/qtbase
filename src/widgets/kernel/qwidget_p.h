@@ -53,19 +53,19 @@
 // We mean it.
 //
 
-#include "QtGui/qwidget.h"
+#include "QtWidgets/qwidget.h"
 #include "private/qobject_p.h"
 #include "QtCore/qrect.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qset.h"
 #include "QtGui/qregion.h"
-#include "QtGui/qsizepolicy.h"
-#include "QtGui/qstyle.h"
-#include "QtGui/qapplication.h"
+#include "QtWidgets/qsizepolicy.h"
+#include "QtWidgets/qstyle.h"
+#include "QtWidgets/qapplication.h"
 #include <private/qgraphicseffect_p.h>
-#include "QtGui/qgraphicsproxywidget.h"
-#include "QtGui/qgraphicsscene.h"
-#include "QtGui/qgraphicsview.h"
+#include "QtWidgets/qgraphicsproxywidget.h"
+#include "QtWidgets/qgraphicsscene.h"
+#include "QtWidgets/qgraphicsview.h"
 #include <private/qgesture_p.h>
 
 #ifdef Q_WS_WIN
@@ -82,7 +82,7 @@
 #endif
 
 #if defined(Q_WS_QWS)
-#include "QtGui/qinputcontext.h"
+#include "QtWidgets/qinputcontext.h"
 #include "QtGui/qscreen_qws.h"
 #endif
 

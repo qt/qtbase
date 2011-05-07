@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtGui/qwidget.h"
+#include "QtWidgets/qwidget.h"
 
 QT_BEGIN_NAMESPACE
 

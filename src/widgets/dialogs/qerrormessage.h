@@ -42,7 +42,7 @@
 #ifndef QERRORMESSAGE_H
 #define QERRORMESSAGE_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

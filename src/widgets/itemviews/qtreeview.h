@@ -42,7 +42,7 @@
 #ifndef QTREEVIEW_H
 #define QTREEVIEW_H
 
-#include <QtGui/qabstractitemview.h>
+#include <QtWidgets/qabstractitemview.h>
 
 QT_BEGIN_HEADER
 

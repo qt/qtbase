@@ -58,8 +58,8 @@
 #include "qgraphicswidget.h"
 #include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
-#include <QtGui/qsizepolicy.h>
-#include <QtGui/qstyle.h>
+#include <QtWidgets/qsizepolicy.h>
+#include <QtWidgets/qstyle.h>
 
 QT_BEGIN_NAMESPACE
 

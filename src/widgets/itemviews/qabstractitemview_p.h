@@ -55,7 +55,7 @@
 
 #include "private/qabstractscrollarea_p.h"
 #include "private/qabstractitemmodel_p.h"
-#include "QtGui/qapplication.h"
+#include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtGui/qmime.h"
 #include "QtGui/qpainter.h"

@@ -45,10 +45,10 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qpalette.h>
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qsizepolicy.h>
 
 QT_BEGIN_HEADER
 

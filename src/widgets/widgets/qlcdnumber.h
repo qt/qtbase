@@ -42,7 +42,7 @@
 #ifndef QLCDNUMBER_H
 #define QLCDNUMBER_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 #include <QtCore/qbitarray.h>
 
 QT_BEGIN_HEADER

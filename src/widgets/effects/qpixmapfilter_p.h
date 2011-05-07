@@ -55,7 +55,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtGui/qpixmap.h>
-#include <QtGui/qgraphicseffect.h>
+#include <QtWidgets/qgraphicseffect.h>
 
 #ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_HEADER

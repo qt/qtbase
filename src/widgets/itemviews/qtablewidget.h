@@ -42,10 +42,10 @@
 #ifndef QTABLEWIDGET_H
 #define QTABLEWIDGET_H
 
-#include <QtGui/qtableview.h>
+#include <QtWidgets/qtableview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-//#include <QtGui/qitemselectionmodel.h>
+//#include <QtWidgets/qitemselectionmodel.h>
 
 QT_BEGIN_HEADER
 

@@ -62,7 +62,7 @@
 #endif
 
 #include <private/qwidget_p.h>
-#include <QtGui/qabstractscrollarea.h>
+#include <QtWidgets/qabstractscrollarea.h>
 
 #define SZ_SIZEBOTTOMRIGHT  0xf008
 #define SZ_SIZEBOTTOMLEFT   0xf007

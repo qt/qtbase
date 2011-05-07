@@ -69,8 +69,8 @@
 #include "qdialogbuttonbox.h"
 #include "qformlayout.h"
 #include <limits.h>
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsview.h>
 
 #ifdef Q_WS_X11
 #include "qx11info_x11.h"

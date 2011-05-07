@@ -44,7 +44,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

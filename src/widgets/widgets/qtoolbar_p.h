@@ -54,7 +54,7 @@
 //
 
 #include "qtoolbar.h"
-#include "QtGui/qaction.h"
+#include "QtWidgets/qaction.h"
 #include "private/qwidget_p.h"
 #include <QtCore/qbasictimer.h>
 

@@ -42,7 +42,7 @@
 #ifndef QWIDGETACTION_H
 #define QWIDGETACTION_H
 
-#include <QtGui/qaction.h>
+#include <QtWidgets/qaction.h>
 
 QT_BEGIN_HEADER
 

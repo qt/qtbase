@@ -42,8 +42,8 @@
 #ifndef QGRAPHICSLINEARLAYOUT_H
 #define QGRAPHICSLINEARLAYOUT_H
 
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicslayout.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <QtWidgets/qgraphicslayout.h>
 
 QT_BEGIN_HEADER
 

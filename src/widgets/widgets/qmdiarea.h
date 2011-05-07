@@ -42,8 +42,8 @@
 #ifndef QMDIAREA_H
 #define QMDIAREA_H
 
-#include <QtGui/qabstractscrollarea.h>
-#include <QtGui/qtabwidget.h>
+#include <QtWidgets/qabstractscrollarea.h>
+#include <QtWidgets/qtabwidget.h>
 
 QT_BEGIN_HEADER
 

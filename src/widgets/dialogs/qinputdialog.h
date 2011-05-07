@@ -42,9 +42,9 @@
 #ifndef QINPUTDIALOG_H
 #define QINPUTDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qlineedit.h>
+#include <QtWidgets/qlineedit.h>
 
 QT_BEGIN_HEADER
 

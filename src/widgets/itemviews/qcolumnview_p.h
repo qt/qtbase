@@ -61,9 +61,9 @@
 
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpropertyanimation.h>
-#include <QtGui/qabstractitemdelegate.h>
-#include <QtGui/qabstractitemview.h>
-#include <QtGui/qitemdelegate.h>
+#include <QtWidgets/qabstractitemdelegate.h>
+#include <QtWidgets/qabstractitemview.h>
+#include <QtWidgets/qitemdelegate.h>
 #include <qlistview.h>
 #include <qevent.h>
 #include <qscrollbar.h>

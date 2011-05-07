@@ -42,7 +42,7 @@
 #ifndef QLAYOUTITEM_H
 #define QLAYOUTITEM_H
 
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qsizepolicy.h>
 #include <QtCore/qrect.h>
 
 #include <limits.h>

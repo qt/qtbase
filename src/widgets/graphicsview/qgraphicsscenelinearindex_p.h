@@ -59,7 +59,7 @@
 
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qgraphicsitem.h>
+#include <QtWidgets/qgraphicsitem.h>
 #include <private/qgraphicssceneindex_p.h>
 
 QT_BEGIN_HEADER

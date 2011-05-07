@@ -42,7 +42,7 @@
 #ifndef QSTACKEDLAYOUT_H
 #define QSTACKEDLAYOUT_H
 
-#include <QtGui/qlayout.h>
+#include <QtWidgets/qlayout.h>
 
 QT_BEGIN_HEADER
 

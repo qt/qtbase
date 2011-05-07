@@ -42,7 +42,7 @@
 #ifndef QCHECKBOX_H
 #define QCHECKBOX_H
 
-#include <QtGui/qabstractbutton.h>
+#include <QtWidgets/qabstractbutton.h>
 
 QT_BEGIN_HEADER
 

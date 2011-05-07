@@ -42,7 +42,7 @@
 #ifndef QGROUPBOX_H
 #define QGROUPBOX_H
 
-#include <QtGui/qframe.h>
+#include <QtWidgets/qframe.h>
 
 QT_BEGIN_HEADER
 

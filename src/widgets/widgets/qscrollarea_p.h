@@ -56,7 +56,7 @@
 #ifndef QT_NO_SCROLLAREA
 
 #include "private/qabstractscrollarea_p.h"
-#include <QtGui/qscrollbar.h>
+#include <QtWidgets/qscrollbar.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -144,17 +144,17 @@
 
 #ifndef QT_NO_COMPLETER
 
-#include "QtGui/qscrollbar.h"
-#include "QtGui/qstringlistmodel.h"
-#include "QtGui/qdirmodel.h"
-#include "QtGui/qfilesystemmodel.h"
-#include "QtGui/qheaderview.h"
-#include "QtGui/qlistview.h"
-#include "QtGui/qapplication.h"
+#include "QtWidgets/qscrollbar.h"
+#include "QtWidgets/qstringlistmodel.h"
+#include "QtWidgets/qdirmodel.h"
+#include "QtWidgets/qfilesystemmodel.h"
+#include "QtWidgets/qheaderview.h"
+#include "QtWidgets/qlistview.h"
+#include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
-#include "QtGui/qheaderview.h"
-#include "QtGui/qdesktopwidget.h"
-#include "QtGui/qlineedit.h"
+#include "QtWidgets/qheaderview.h"
+#include "QtWidgets/qdesktopwidget.h"
+#include "QtWidgets/qlineedit.h"
 
 QT_BEGIN_NAMESPACE
 

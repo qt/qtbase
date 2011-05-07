@@ -44,11 +44,11 @@
 #include <private/qprinter_p.h>
 
 #include <QtCore/qmath.h>
-#include <QtGui/qboxlayout.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qscrollbar.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qscrollbar.h>
+#include <QtWidgets/qstyleoption.h>
 
 #ifndef QT_NO_PRINTPREVIEWWIDGET
 

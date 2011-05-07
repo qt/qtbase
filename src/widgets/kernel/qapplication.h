@@ -48,10 +48,10 @@
 #include <QtCore/qsize.h>
 #include <QtGui/qcursor.h>
 #ifdef QT_INCLUDE_COMPAT
-# include <QtGui/qdesktopwidget.h>
+# include <QtWidgets/qdesktopwidget.h>
 #endif
 #ifdef QT3_SUPPORT
-# include <QtGui/qwidget.h>
+# include <QtWidgets/qwidget.h>
 # include <QtGui/qpalette.h>
 #endif
 #ifdef Q_WS_QWS

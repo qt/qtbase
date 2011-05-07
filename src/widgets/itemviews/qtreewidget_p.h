@@ -56,9 +56,9 @@
 #include <private/qabstractitemmodel_p.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qbasictimer.h>
-#include <QtGui/qtreewidget.h>
+#include <QtWidgets/qtreewidget.h>
 #include <private/qtreeview_p.h>
-#include <QtGui/qheaderview.h>
+#include <QtWidgets/qheaderview.h>
 
 #ifndef QT_NO_TREEWIDGET
 

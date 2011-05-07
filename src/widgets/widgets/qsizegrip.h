@@ -42,7 +42,7 @@
 #ifndef QSIZEGRIP_H
 #define QSIZEGRIP_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

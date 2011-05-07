@@ -42,8 +42,8 @@
 #ifndef QDYNAMICMAINWINDOW_H
 #define QDYNAMICMAINWINDOW_H
 
-#include <QtGui/qwidget.h>
-#include <QtGui/qtabwidget.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qtabwidget.h>
 
 QT_BEGIN_HEADER
 

@@ -42,9 +42,9 @@
 #ifndef QPLAINTEXTEDIT_H
 #define QPLAINTEXTEDIT_H
 
-#include <QtGui/qtextedit.h>
+#include <QtWidgets/qtextedit.h>
 
-#include <QtGui/qabstractscrollarea.h>
+#include <QtWidgets/qabstractscrollarea.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
 #include <QtGui/qtextcursor.h>

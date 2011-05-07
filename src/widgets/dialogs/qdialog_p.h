@@ -56,8 +56,8 @@
 #include "private/qwidget_p.h"
 #include "QtCore/qeventloop.h"
 #include "QtCore/qpointer.h"
-#include "QtGui/qdialog.h"
-#include "QtGui/qpushbutton.h"
+#include "QtWidgets/qdialog.h"
+#include "QtWidgets/qpushbutton.h"
 
 QT_BEGIN_NAMESPACE
 

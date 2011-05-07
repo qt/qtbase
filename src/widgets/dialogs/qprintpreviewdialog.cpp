@@ -45,20 +45,20 @@
 #include "private/qdialog_p.h"
 #include "qprintdialog.h"
 
-#include <QtGui/qaction.h>
-#include <QtGui/qboxlayout.h>
-#include <QtGui/qcombobox.h>
-#include <QtGui/qlabel.h>
-#include <QtGui/qlineedit.h>
-#include <QtGui/qpagesetupdialog.h>
+#include <QtWidgets/qaction.h>
+#include <QtWidgets/qboxlayout.h>
+#include <QtWidgets/qcombobox.h>
+#include <QtWidgets/qlabel.h>
+#include <QtWidgets/qlineedit.h>
+#include <QtWidgets/qpagesetupdialog.h>
 #include <QtGui/qprinter.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qtoolbutton.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qtoolbutton.h>
 #include <QtGui/qvalidator.h>
-#include <QtGui/qfiledialog.h>
-#include <QtGui/qmainwindow.h>
-#include <QtGui/qtoolbar.h>
-#include <QtGui/qformlayout.h>
+#include <QtWidgets/qfiledialog.h>
+#include <QtWidgets/qmainwindow.h>
+#include <QtWidgets/qtoolbar.h>
+#include <QtWidgets/qformlayout.h>
 #include <QtCore/QCoreApplication>
 
 #include <math.h>

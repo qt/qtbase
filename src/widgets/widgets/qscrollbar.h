@@ -42,8 +42,8 @@
 #ifndef QSCROLLBAR_H
 #define QSCROLLBAR_H
 
-#include <QtGui/qwidget.h>
-#include <QtGui/qabstractslider.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_HEADER
 

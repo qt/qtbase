@@ -42,7 +42,7 @@
 #ifndef QSHORTCUT_H
 #define QSHORTCUT_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/qkeysequence.h>
 
 QT_BEGIN_HEADER

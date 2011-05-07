@@ -44,7 +44,7 @@
 
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qdir.h>
-#include <QtGui/qfileiconprovider.h>
+#include <QtWidgets/qfileiconprovider.h>
 
 QT_BEGIN_HEADER
 

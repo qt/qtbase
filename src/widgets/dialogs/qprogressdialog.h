@@ -42,7 +42,7 @@
 #ifndef QPROGRESSDIALOG_H
 #define QPROGRESSDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 

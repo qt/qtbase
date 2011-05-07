@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <QtCore/qpropertyanimation.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/private/qmainwindowlayout_p.h>
+#include <QtWidgets/qwidget.h>
+#include <private/qmainwindowlayout_p.h>
 
 #include "qwidgetanimator_p.h"
 

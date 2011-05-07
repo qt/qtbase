@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtGui/qinputcontext.h"
+#include "QtWidgets/qinputcontext.h"
 #include "private/qt_mac_p.h"
 
 QT_BEGIN_NAMESPACE

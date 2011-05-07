@@ -45,7 +45,7 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qdir.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 #include <QtCore/qdiriterator.h>
 
 QT_BEGIN_HEADER

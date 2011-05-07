@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/qlayout.h>
+#include <QtWidgets/qlayout.h>
 #include <private/qlayoutengine_p.h>
 #include <QVector>
 

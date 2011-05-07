@@ -42,7 +42,7 @@
 #ifndef QABSTRACTSPINBOX_H
 #define QABSTRACTSPINBOX_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/qvalidator.h>
 
 QT_BEGIN_HEADER

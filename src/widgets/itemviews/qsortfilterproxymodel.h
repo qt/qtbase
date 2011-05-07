@@ -42,7 +42,7 @@
 #ifndef QSORTFILTERPROXYMODEL_H
 #define QSORTFILTERPROXYMODEL_H
 
-#include <QtGui/qabstractproxymodel.h>
+#include <QtWidgets/qabstractproxymodel.h>
 
 #ifndef QT_NO_SORTFILTERPROXYMODEL
 

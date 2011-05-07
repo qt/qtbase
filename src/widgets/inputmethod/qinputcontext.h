@@ -61,7 +61,7 @@
 #include <QtGui/qevent.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qaction.h>
+#include <QtWidgets/qaction.h>
 
 #ifndef QT_NO_IM
 

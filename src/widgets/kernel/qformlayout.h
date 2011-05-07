@@ -42,7 +42,7 @@
 #ifndef QFORMLAYOUT_H
 #define QFORMLAYOUT_H
 
-#include <QtGui/QLayout>
+#include <QtWidgets/QLayout>
 
 QT_BEGIN_HEADER
 

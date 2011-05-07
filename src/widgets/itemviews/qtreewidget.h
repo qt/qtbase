@@ -42,8 +42,8 @@
 #ifndef QTREEWIDGET_H
 #define QTREEWIDGET_H
 
-#include <QtGui/qtreeview.h>
-#include <QtGui/qtreewidgetitemiterator.h>
+#include <QtWidgets/qtreeview.h>
+#include <QtWidgets/qtreewidgetitemiterator.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 

@@ -57,14 +57,14 @@
 
 #ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
-#include "QtGui/qlineedit.h"
+#include "QtWidgets/qlineedit.h"
 #include "QtGui/qtextlayout.h"
-#include "QtGui/qstyleoption.h"
+#include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
-#include "QtGui/qlineedit.h"
+#include "QtWidgets/qlineedit.h"
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
-#include "QtGui/qcompleter.h"
+#include "QtWidgets/qcompleter.h"
 
 QT_BEGIN_HEADER
 

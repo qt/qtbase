@@ -44,7 +44,7 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qabstractspinbox.h>
+#include <QtWidgets/qabstractspinbox.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QTEXTEDIT_H
 #define QTEXTEDIT_H
 
-#include <QtGui/qabstractscrollarea.h>
+#include <QtWidgets/qabstractscrollarea.h>
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
 #include <QtGui/qtextcursor.h>

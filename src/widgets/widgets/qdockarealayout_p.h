@@ -57,7 +57,7 @@
 #include "QtCore/qpair.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qvector.h"
-#include "QtGui/qlayout.h"
+#include "QtWidgets/qlayout.h"
 
 #ifndef QT_NO_DOCKWIDGET
 

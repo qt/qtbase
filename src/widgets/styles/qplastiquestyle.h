@@ -42,7 +42,7 @@
 #ifndef QPLASTIQUESTYLE_H
 #define QPLASTIQUESTYLE_H
 
-#include <QtGui/qwindowsstyle.h>
+#include <QtWidgets/qwindowsstyle.h>
 
 QT_BEGIN_HEADER
 

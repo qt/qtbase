@@ -40,18 +40,18 @@
 ****************************************************************************/
 
 #include <QtCore/qhash.h>
-#include <QtGui/qpushbutton.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qlayout.h>
-#include <QtGui/qdialog.h>
-#include <QtGui/qapplication.h>
-#include <QtGui/private/qwidget_p.h>
-#include <QtGui/qaction.h>
+#include <QtWidgets/qpushbutton.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qlayout.h>
+#include <QtWidgets/qdialog.h>
+#include <QtWidgets/qapplication.h>
+#include <private/qwidget_p.h>
+#include <QtWidgets/qaction.h>
 
 #include "qdialogbuttonbox.h"
 
 #ifdef QT_SOFTKEYS_ENABLED
-#include <QtGui/qaction.h>
+#include <QtWidgets/qaction.h>
 #endif
 
 

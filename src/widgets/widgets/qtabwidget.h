@@ -42,8 +42,8 @@
 #ifndef QTABWIDGET_H
 #define QTABWIDGET_H
 
-#include <QtGui/qwidget.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qicon.h>
 
 QT_BEGIN_HEADER
 

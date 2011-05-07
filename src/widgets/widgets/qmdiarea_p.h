@@ -61,7 +61,7 @@
 #include <QList>
 #include <QRect>
 #include <QPoint>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qapplication.h>
 #include <private/qmdisubwindow_p.h>
 #include <private/qabstractscrollarea_p.h>
 

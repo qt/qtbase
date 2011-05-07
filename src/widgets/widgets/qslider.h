@@ -42,7 +42,7 @@
 #ifndef QSLIDER_H
 #define QSLIDER_H
 
-#include <QtGui/qabstractslider.h>
+#include <QtWidgets/qabstractslider.h>
 
 QT_BEGIN_HEADER
 

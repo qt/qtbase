@@ -42,9 +42,9 @@
 #ifndef QBOXLAYOUT_H
 #define QBOXLAYOUT_H
 
-#include <QtGui/qlayout.h>
+#include <QtWidgets/qlayout.h>
 #ifdef QT_INCLUDE_COMPAT
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #endif
 
 #include <limits.h>

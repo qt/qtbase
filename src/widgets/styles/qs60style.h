@@ -42,7 +42,7 @@
 #ifndef QS60STYLE_H
 #define QS60STYLE_H
 
-#include <QtGui/qcommonstyle.h>
+#include <QtWidgets/qcommonstyle.h>
 
 QT_BEGIN_HEADER
 

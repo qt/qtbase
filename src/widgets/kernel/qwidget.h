@@ -50,7 +50,7 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qfontinfo.h>
-#include <QtGui/qsizepolicy.h>
+#include <QtWidgets/qsizepolicy.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qcursor.h>

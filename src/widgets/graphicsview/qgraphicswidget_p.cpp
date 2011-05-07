@@ -49,11 +49,11 @@
 #include "qgraphicslayoutitem_p.h"
 #include "qgraphicslayout.h"
 #include "qgraphicsscene_p.h"
-#include <QtGui/qapplication.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qstyleoption.h>
-#include <QtGui/QStyleOptionTitleBar>
-#include <QtGui/QGraphicsSceneMouseEvent>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qgraphicsscene.h>
+#include <QtWidgets/qstyleoption.h>
+#include <QtWidgets/QStyleOptionTitleBar>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 # include <QMacStyle>
 #endif

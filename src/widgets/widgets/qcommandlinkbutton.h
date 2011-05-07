@@ -42,7 +42,7 @@
 #ifndef QCOMMANDLINKBUTTON_H
 #define QCOMMANDLINKBUTTON_H
 
-#include <QtGui/qpushbutton.h>
+#include <QtWidgets/qpushbutton.h>
 
 QT_BEGIN_HEADER
 

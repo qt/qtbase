@@ -42,10 +42,10 @@
 #ifndef QLISTWIDGET_H
 #define QLISTWIDGET_H
 
-#include <QtGui/qlistview.h>
+#include <QtWidgets/qlistview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-#include <QtGui/qitemselectionmodel.h>
+#include <QtWidgets/qitemselectionmodel.h>
 
 QT_BEGIN_HEADER
 

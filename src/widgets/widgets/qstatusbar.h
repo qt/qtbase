@@ -42,7 +42,7 @@
 #ifndef QSTATUSBAR_H
 #define QSTATUSBAR_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

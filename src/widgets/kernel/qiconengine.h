@@ -44,7 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 
 QT_BEGIN_HEADER
 

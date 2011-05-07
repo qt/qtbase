@@ -39,27 +39,27 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qmessagebox.h>
+#include <QtWidgets/qmessagebox.h>
 
 #ifndef QT_NO_MESSAGEBOX
 
-#include <QtGui/qdialogbuttonbox.h>
+#include <QtWidgets/qdialogbuttonbox.h>
 #include "private/qlabel_p.h"
 #include "private/qapplication_p.h"
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
-#include <QtGui/qstyle.h>
-#include <QtGui/qstyleoption.h>
-#include <QtGui/qgridlayout.h>
-#include <QtGui/qdesktopwidget.h>
-#include <QtGui/qpushbutton.h>
-#include <QtGui/qaccessible.h>
-#include <QtGui/qicon.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qstyleoption.h>
+#include <QtWidgets/qgridlayout.h>
+#include <QtWidgets/qdesktopwidget.h>
+#include <QtWidgets/qpushbutton.h>
+#include <QtWidgets/qaccessible.h>
+#include <QtWidgets/qicon.h>
 #include <QtGui/qtextdocument.h>
-#include <QtGui/qapplication.h>
-#include <QtGui/qtextedit.h>
-#include <QtGui/qtextbrowser.h>
-#include <QtGui/qmenu.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qtextedit.h>
+#include <QtWidgets/qtextbrowser.h>
+#include <QtWidgets/qmenu.h>
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>
 #include <QtGui/qfontmetrics.h>

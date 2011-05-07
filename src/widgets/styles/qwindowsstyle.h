@@ -42,7 +42,7 @@
 #ifndef QWINDOWSSTYLE_H
 #define QWINDOWSSTYLE_H
 
-#include <QtGui/qcommonstyle.h>
+#include <QtWidgets/qcommonstyle.h>
 
 QT_BEGIN_HEADER
 

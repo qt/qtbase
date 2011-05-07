@@ -53,8 +53,8 @@
 //
 
 #include <QtCore/qabstractitemmodel.h>
-#include <QtGui/qabstractitemview.h>
-#include <QtGui/qlistwidget.h>
+#include <QtWidgets/qabstractitemview.h>
+#include <QtWidgets/qlistwidget.h>
 #include <qitemdelegate.h>
 #include <private/qlistview_p.h>
 #include <private/qwidgetitemdata_p.h>

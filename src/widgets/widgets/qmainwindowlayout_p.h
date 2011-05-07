@@ -57,8 +57,8 @@
 
 #ifndef QT_NO_MAINWINDOW
 
-#include "QtGui/qlayout.h"
-#include "QtGui/qtabbar.h"
+#include "QtWidgets/qlayout.h"
+#include "QtWidgets/qtabbar.h"
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
 #include "QtCore/qbasictimer.h"

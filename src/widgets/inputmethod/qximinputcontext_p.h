@@ -70,7 +70,7 @@
 #if !defined(Q_NO_IM)
 
 #include "QtCore/qglobal.h"
-#include "QtGui/qinputcontext.h"
+#include "QtWidgets/qinputcontext.h"
 #include "QtGui/qfont.h"
 #include "QtCore/qhash.h"
 #ifdef Q_WS_X11

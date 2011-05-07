@@ -54,7 +54,7 @@
 // We mean it.
 //
 
-#include "QtGui/qapplication.h"
+#include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtGui/qfont.h"
 #include "QtGui/qcursor.h"
@@ -65,7 +65,7 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qpointer.h"
 #include "private/qcoreapplication_p.h"
-#include "QtGui/private/qshortcutmap_p.h"
+#include "private/qshortcutmap_p.h"
 #include <private/qthread_p.h>
 #include "QtCore/qpoint.h"
 #include <QTime>
@@ -76,7 +76,7 @@
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
 #include "QtGui/qplatformintegration_qpa.h"
-#include "QtGui/private/qguiapplication_p.h"
+#include "private/qguiapplication_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE

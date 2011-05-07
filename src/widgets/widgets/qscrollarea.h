@@ -42,7 +42,7 @@
 #ifndef QSCROLLAREA_H
 #define QSCROLLAREA_H
 
-#include <QtGui/qabstractscrollarea.h>
+#include <QtWidgets/qabstractscrollarea.h>
 
 QT_BEGIN_HEADER
 

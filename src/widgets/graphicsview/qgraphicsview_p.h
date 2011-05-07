@@ -60,7 +60,7 @@
 #include <QtGui/qevent.h>
 #include <QtCore/qcoreapplication.h>
 #include "qgraphicssceneevent.h"
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qstyleoption.h>
 #include <private/qabstractscrollarea_p.h>
 #include <private/qapplication_p.h>
 

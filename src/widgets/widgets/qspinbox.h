@@ -42,7 +42,7 @@
 #ifndef QSPINBOX_H
 #define QSPINBOX_H
 
-#include <QtGui/qabstractspinbox.h>
+#include <QtWidgets/qabstractspinbox.h>
 
 QT_BEGIN_HEADER
 

@@ -106,7 +106,7 @@
 #include "qgraphicseffect_p.h"
 #include "private/qgraphicsitem_p.h"
 
-#include <QtGui/qgraphicsitem.h>
+#include <QtWidgets/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>

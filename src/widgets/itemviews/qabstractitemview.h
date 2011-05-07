@@ -42,10 +42,10 @@
 #ifndef QABSTRACTITEMVIEW_H
 #define QABSTRACTITEMVIEW_H
 
-#include <QtGui/qabstractscrollarea.h>
+#include <QtWidgets/qabstractscrollarea.h>
 #include <QtCore/qabstractitemmodel.h>
-#include <QtGui/qitemselectionmodel.h>
-#include <QtGui/qabstractitemdelegate.h>
+#include <QtWidgets/qitemselectionmodel.h>
+#include <QtWidgets/qabstractitemdelegate.h>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QCOLORDIALOG_H
 #define QCOLORDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_BEGIN_HEADER
 
