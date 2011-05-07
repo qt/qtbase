@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qlabel.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qlabel.h>
 #include "flowlayout.h"
 #include "window.h"
 

@@ -41,7 +41,7 @@
 #include <QGraphicsWidget>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsAnchorLayout>
-#include <QtGui>
+#include <QtWidgets>
 
 static QGraphicsProxyWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
                                    const QSizeF &preferred = QSize(150.0, 100.0),

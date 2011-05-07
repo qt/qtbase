@@ -41,7 +41,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <QtCore/qpropertyanimation.h>
 

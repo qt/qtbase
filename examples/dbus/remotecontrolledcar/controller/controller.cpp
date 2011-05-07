@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "controller.h"
 #include "car_interface.h"

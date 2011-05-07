@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 //! [0]
 class Window : public QWidget

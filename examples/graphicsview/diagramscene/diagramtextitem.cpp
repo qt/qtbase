@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "diagramtextitem.h"
 #include "diagramscene.h"

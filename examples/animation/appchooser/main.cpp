@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 
 class Pixmap : public QGraphicsWidget

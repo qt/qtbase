@@ -43,7 +43,7 @@
 
 #include <QWidget>
 #include <QImage>
-#include <QtGui>
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
 class QGestureEvent;

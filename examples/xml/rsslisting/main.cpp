@@ -44,7 +44,7 @@ main.cpp
 Provides the main function for the RSS news reader example.
 */
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "rsslisting.h"
 

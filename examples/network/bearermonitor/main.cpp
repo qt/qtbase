@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtGui/QMainWindow>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMainWindow>
 
 #include "bearermonitor.h"
 

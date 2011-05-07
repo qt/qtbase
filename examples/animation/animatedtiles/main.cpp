@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtCore/qstate.h>
 
 class Pixmap : public QObject, public QGraphicsPixmapItem

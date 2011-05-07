@@ -40,7 +40,7 @@
 
 #include "roundrectitem.h"
 
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 //! [0]
 RoundRectItem::RoundRectItem(const QRectF &bounds, const QColor &color,

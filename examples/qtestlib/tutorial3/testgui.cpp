@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 //! [0]
-#include <QtGui>
+#include <QtWidgets>
 #include <QtTest/QtTest>
 
 class TestGui: public QObject

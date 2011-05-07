@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 #include "glwidget.h"
 
 int main(int argc, char **argv)

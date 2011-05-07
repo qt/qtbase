@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "clockthread.h"
 
 //A clock that does time formatting in another thread

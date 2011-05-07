@@ -7,7 +7,7 @@ RESOURCES += securesocketclient.qrc
 FORMS     += certificateinfo.ui \
              sslclient.ui \
              sslerrors.ui
-QT        += network
+QT        += network widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/securesocketclient

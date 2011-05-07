@@ -41,7 +41,7 @@
 #ifndef GRAPHICSVIEW_H
 #define GRAPHICSVIEW
 
-#include <QtGui/QGraphicsView>
+#include <QtWidgets/QGraphicsView>
 
 class MainWindow;
 class GraphicsView: public QGraphicsView

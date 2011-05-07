@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QtUiTools>
-#include <QtGui>
+#include <QtWidgets>
 #include "textfinder.h"
 
 //! [0]

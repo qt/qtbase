@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 //![15]
 class StateSwitchEvent: public QEvent

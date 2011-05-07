@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 #define NUM_ITEMS 100
 #define NUM_LISTS 10

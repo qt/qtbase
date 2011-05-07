@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "iconpreviewarea.h"
 #include "iconsizespinbox.h"

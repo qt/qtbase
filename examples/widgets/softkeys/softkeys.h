@@ -41,7 +41,7 @@
 #ifndef SOFTKEYS_H
 #define SOFTKEYS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class MainWindow : public QMainWindow
 {

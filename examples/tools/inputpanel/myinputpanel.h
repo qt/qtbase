@@ -41,7 +41,7 @@
 #ifndef MYINPUTPANEL_H
 #define MYINPUTPANEL_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtCore>
 
 #include "ui_myinputpanelform.h"

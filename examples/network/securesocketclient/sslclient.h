@@ -41,7 +41,7 @@
 #ifndef SSLCLIENT_H
 #define SSLCLIENT_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 #include <QtNetwork/QAbstractSocket>
 #include <QtNetwork/QSslSocket>
 

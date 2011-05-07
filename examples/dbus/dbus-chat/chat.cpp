@@ -39,8 +39,8 @@
 ****************************************************************************/
 
 #include "chat.h"
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 
 #include "chat_adaptor.h"
 #include "chat_interface.h"

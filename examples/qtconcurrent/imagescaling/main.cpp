@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui>
+#include <QtWidgets>
 
 #ifndef QT_NO_CONCURRENT
 

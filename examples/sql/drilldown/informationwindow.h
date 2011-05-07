@@ -41,7 +41,7 @@
 #ifndef INFORMATIONWINDOW_H
 #define INFORMATIONWINDOW_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 //! [0]

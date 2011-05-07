@@ -41,7 +41,7 @@
 #ifndef VIEW_H
 #define VIEW_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 class ImageItem;

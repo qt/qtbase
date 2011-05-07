@@ -1,5 +1,5 @@
 TARGET = bearermonitor
-QT = core gui network
+QT = core gui network widgets
 
 HEADERS = sessionwidget.h \
           bearermonitor.h

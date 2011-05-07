@@ -40,8 +40,8 @@
 
 //! [Quoting ModelView Tutorial]
 // main.cpp
-#include <QtGui/QApplication>
-#include <QtGui/QTableView>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QTableView>
 #include "mymodel.h"
 
 int main(int argc, char *argv[])

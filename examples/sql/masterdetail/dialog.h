@@ -41,7 +41,7 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 #include <QtXml>
 

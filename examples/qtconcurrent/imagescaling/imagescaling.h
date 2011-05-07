@@ -40,7 +40,7 @@
 #ifndef IMAGESCALING_H
 #define IMAGESCALING_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #ifndef QT_NO_CONCURRENT
 

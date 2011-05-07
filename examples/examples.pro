@@ -1,3 +1,5 @@
+Qt += widgets
+
 TEMPLATE      = subdirs
 SUBDIRS       = \
                 network \

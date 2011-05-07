@@ -41,7 +41,7 @@
 #include "mainwindow.h"
 #include "dialog.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 #include <QtXml>
 

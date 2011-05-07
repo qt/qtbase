@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = dialog.h \
                 fortuneserver.h \
                 fortunethread.h

@@ -40,9 +40,9 @@
 
 #include "car.h"
 #include "car_adaptor.h"
-#include <QtGui/QApplication>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsScene>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QGraphicsScene>
 #include <QtDBus/QDBusConnection>
 
 int main(int argc, char *argv[])

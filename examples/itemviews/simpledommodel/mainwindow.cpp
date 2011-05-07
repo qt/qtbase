@@ -40,7 +40,7 @@
 
 #include <QDomDocument>
 #include <QFile>
-#include <QtGui>
+#include <QtWidgets>
 
 #include "dommodel.h"
 #include "mainwindow.h"

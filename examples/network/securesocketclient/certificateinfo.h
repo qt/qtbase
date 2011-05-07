@@ -41,7 +41,7 @@
 #ifndef CERTIFICATEINFO_H
 #define CERTIFICATEINFO_H
 
-#include <QtGui/QDialog>
+#include <QtWidgets/QDialog>
 #include <QtNetwork/QSslCertificate>
 
 QT_BEGIN_NAMESPACE

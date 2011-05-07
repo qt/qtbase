@@ -45,7 +45,7 @@
 #include "graphicsview.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 class KeyPressTransition: public QSignalTransition
 {

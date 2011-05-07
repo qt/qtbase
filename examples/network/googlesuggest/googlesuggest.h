@@ -41,7 +41,7 @@
 #ifndef GOOGLESUGGEST_H
 #define GOOGLESUGGEST_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 #include <QObject>
 

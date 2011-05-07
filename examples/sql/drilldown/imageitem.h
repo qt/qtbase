@@ -42,7 +42,7 @@
 #define IMAGEITEM_H
 
 #include <QtCore>
-#include <QtGui/QGraphicsPixmapItem>
+#include <QtWidgets/QGraphicsPixmapItem>
 
 //! [0]
 class ImageItem : public QObject, public QGraphicsPixmapItem

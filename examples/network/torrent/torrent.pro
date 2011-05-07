@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += addtorrentdialog.h \
            bencodeparser.h \
            connectionmanager.h \

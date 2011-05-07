@@ -42,8 +42,8 @@
 #include "stickman.h"
 
 #include <QtGui/QKeyEvent>
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsView>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsView>
 
 GraphicsView::GraphicsView(QWidget *parent) : QGraphicsView(parent), m_editor(0) {}
 

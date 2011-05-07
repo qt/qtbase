@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = dialog.h
 SOURCES       = dialog.cpp \
                 main.cpp
