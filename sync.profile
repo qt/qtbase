@@ -32,7 +32,7 @@
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",
     "gui" => "#include <QtGui/QtGui>\n",
-    "widgets" => "#include <QtGui/QtWidgets>\n",
+    "widgets" => "#include <QtWidgets/QtWidgets>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "xml" => "#include <QtXml/QtXml>\n",
