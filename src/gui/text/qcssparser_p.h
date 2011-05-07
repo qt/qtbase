@@ -61,9 +61,9 @@
 #include <QtCore/QMultiHash>
 #include <QtGui/QFont>
 #include <QtGui/QPalette>
-#include <QtGui/QIcon>
 #include <QtCore/QSharedData>
 
+class QIcon;
 
 #ifndef QT_NO_CSSPARSER
 
@@ -453,7 +453,7 @@ struct Q_AUTOTEST_EXPORT Declaration
     QSize sizeValue() const;
     QRect rectValue() const;
     QString uriValue() const;
-    QIcon iconValue() const;
+//    QIcon iconValue() const;
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
 };

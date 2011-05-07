@@ -1275,6 +1275,8 @@ void ValueExtractor::extractFont()
 bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size)
 {
     bool hit = false;
+#if 0
+    // ### Qt5
     for (int i = 0; i < declarations.count(); ++i) {
         const Declaration &decl = declarations.at(i);
         switch (decl.d->propertyId) {
@@ -1295,6 +1297,7 @@ bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size)
         }
         hit = true;
     }
+#endif
     return hit;
 }
 
@@ -1643,6 +1646,8 @@ void Declaration::borderImageValue(QString *image, int *cuts,
         *h = *v;
 }
 
+#if 0
+// ### Qt 5
 QIcon Declaration::iconValue() const
 {
     if (d->parsed.isValid())
@@ -1689,6 +1694,7 @@ QIcon Declaration::iconValue() const
     d->parsed = QVariant::fromValue<QIcon>(icon);
     return icon;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Selector
