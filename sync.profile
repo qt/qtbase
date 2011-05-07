@@ -70,6 +70,7 @@
     "QtOpenGL" => {
         "QtCore" => "THIS_REPOSITORY",
         "QtGui" => "THIS_REPOSITORY",
+        "QtWidgets" => "THIS_REPOSITORY",
     },
     "QtXml" => {
         "QtCore" => "THIS_REPOSITORY",
@@ -89,10 +90,10 @@
     },
     "QtGui" => {
         "QtCore" => "THIS_REPOSITORY",
-        "QtGui" => "THIS_REPOSITORY",
     },
     "QtWidgets" => {
         "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
     },
     "QtUiTools" => {
         "QtCore" => "THIS_REPOSITORY",

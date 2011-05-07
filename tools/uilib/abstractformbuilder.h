@@ -48,7 +48,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QDir>
 
-#include <QtGui/QSizePolicy>
+#include <QtWidgets/QSizePolicy>
 #include <QtGui/QPalette>
 
 QT_BEGIN_HEADER

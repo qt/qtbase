@@ -11,6 +11,6 @@ QT.opengl.sources = $$QT_MODULE_BASE/src/opengl
 QT.opengl.libs = $$QT_MODULE_LIB_BASE
 QT.opengl.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.opengl.imports = $$QT_MODULE_IMPORT_BASE
-QT.opengl.depends = core gui
+QT.opengl.depends = core gui widgets
 QT.opengl.CONFIG = opengl
 QT.opengl.DEFINES = QT_OPENGL_LIB

@@ -42,7 +42,7 @@
 #ifndef QGL_H
 #define QGL_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
