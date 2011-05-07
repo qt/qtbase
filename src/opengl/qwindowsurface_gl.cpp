@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtGui/QColormap>
-#include <QtGui/QDesktopWidget>
+#include <QtWidgets/QDesktopWidget>
 #include <QtGui/QPaintDevice>
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #include <qglframebufferobject.h>
 #include <qglpixelbuffer.h>

@@ -48,8 +48,8 @@
 // and takes care of converting all such calls into cached Qt pixmaps.
 
 #include <private/qstylehelper_p.h>
-#include <QtGui/QWidget>
-#include <QtGui/QStyleOption>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QStyleOption>
 #include <QtGui/QPixmapCache>
 
 QT_BEGIN_NAMESPACE

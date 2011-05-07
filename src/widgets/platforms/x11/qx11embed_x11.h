@@ -42,7 +42,7 @@
 #ifndef QX11EMBED_X11_H
 #define QX11EMBED_X11_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

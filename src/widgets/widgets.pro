@@ -3,7 +3,7 @@ QPRO_PWD   = $$PWD
 QT = core-private gui-private
 
 CONFIG += module
-MODULE_PRI = ../modules/qt_gui.pri
+MODULE_PRI = ../modules/qt_widgets.pri
 
 DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000

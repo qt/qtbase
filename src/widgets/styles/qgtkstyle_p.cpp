@@ -65,15 +65,15 @@
 #include <private/qapplication_p.h>
 #include <private/qiconloader_p.h>
 
-#include <QtGui/QMenu>
-#include <QtGui/QStyle>
-#include <QtGui/QApplication>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QApplication>
 #include <QtGui/QPixmapCache>
-#include <QtGui/QStatusBar>
-#include <QtGui/QMenuBar>
-#include <QtGui/QToolBar>
-#include <QtGui/QToolButton>
-#include <QtGui/QX11Info>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QToolBar>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QX11Info>
 
 #include <private/qt_x11_p.h>
 

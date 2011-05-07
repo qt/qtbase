@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QtGui/private/qapplication_p.h>
+#include <private/qapplication_p.h>
 #include <QPixmap>
 #include <QDebug>
 
-#include <QtGui/private/qapplication_p.h>
+#include <private/qapplication_p.h>
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowContext>

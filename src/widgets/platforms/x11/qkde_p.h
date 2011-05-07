@@ -44,7 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtGui/QPalette>
-#include <QtGui/QIcon>
+#include <QtWidgets/QIcon>
 
 //
 //  W A R N I N G

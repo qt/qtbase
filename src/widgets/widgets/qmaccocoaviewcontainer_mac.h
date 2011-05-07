@@ -42,7 +42,7 @@
 #ifndef QCOCOAVIEWCONTAINER_H
 #define QCOCOAVIEWCONTAINER_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_HEADER
 

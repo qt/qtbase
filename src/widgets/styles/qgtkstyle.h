@@ -42,10 +42,10 @@
 #ifndef QGTKSTYLE_H
 #define QGTKSTYLE_H
 
-#include <QtGui/QCleanlooksStyle>
+#include <QtWidgets/QCleanlooksStyle>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
-#include <QtGui/QFileDialog>
+#include <QtWidgets/QFileDialog>
 
 QT_BEGIN_HEADER
 

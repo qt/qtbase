@@ -42,7 +42,7 @@
 #ifndef QMACNATIVEWIDGET_H
 #define QMACNATIVEWIDGET_H
 
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_HEADER
 

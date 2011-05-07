@@ -60,9 +60,9 @@
 #include <QtCore/qstringbuilder.h>
 #include <QtCore/qcoreapplication.h>
 
-#include <QtGui/QFileDialog>
+#include <QtWidgets/QFileDialog>
 
-#include <QtGui/QGtkStyle>
+#include <QtWidgets/QGtkStyle>
 #include <private/qcleanlooksstyle_p.h>
 
 #undef signals // Collides with GTK stymbols
