@@ -59,7 +59,7 @@
 #ifndef QT_NO_IM
 
 #include "qmultiinputcontext.h"
-#include <QtGui/qinputcontextplugin.h>
+#include <QtWidgets/qinputcontextplugin.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE

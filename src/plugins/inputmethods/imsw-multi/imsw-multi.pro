@@ -1,6 +1,7 @@
 TARGET   = qimsw-multi
 include(../../qpluginbase.pri)
 CONFIG      += warn_on
+QT += widgets
 
 DESTDIR = $$QT.gui.plugins/inputmethods
 

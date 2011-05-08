@@ -58,8 +58,8 @@
 
 #ifndef QT_NO_IM
 
-#include <QtGui/qwidget.h>
-#include <QtGui/qinputcontext.h>
+#include <QtWidgets/qwidget.h>
+#include <QtWidgets/qinputcontext.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmap.h>

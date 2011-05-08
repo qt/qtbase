@@ -42,8 +42,8 @@
 #ifndef RANGECONTROLS_H
 #define RANGECONTROLS_H
 
-#include <QtGui/qaccessiblewidget.h>
-#include <QtGui/qaccessible2.h>
+#include <QtWidgets/qaccessiblewidget.h>
+#include <QtWidgets/qaccessible2.h>
 
 QT_BEGIN_NAMESPACE
 
