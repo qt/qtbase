@@ -11,12 +11,11 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
-# stuff that goes into new QtGui
-include(guikernel/guikernel.pri)
+include(kernel/kernel.pri)
 include(image/image.pri)
 include(text/text.pri)
 include(painting/painting.pri)
-include(guiutil/guiutil.pri)
+include(util/util.pri)
 include(math3d/math3d.pri)
 
 include(egl/egl.pri)
