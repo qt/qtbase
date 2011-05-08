@@ -178,7 +178,7 @@ void QWaylandGLWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
     window()->platformWindow()->glContext()->makeCurrent();
     delete mPaintDevice;
-    mPaintDevice = new QGLFramebufferObject(size);
+    mPaintDevice = new QGLFramebufferObject(size,QGLFramebufferObject::CombinedDepthStencil);
 }
 
 QT_END_NAMESPACE
