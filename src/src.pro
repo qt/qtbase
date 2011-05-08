@@ -4,7 +4,7 @@ TEMPLATE = subdirs
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 symbian:SRC_SUBDIRS += src_s60main
-SRC_SUBDIRS += src_corelib src_network src_sql src_testlib src_xml src_uitools
+SRC_SUBDIRS += src_corelib src_network src_sql src_testlib src_xml src_uitools src_widgets
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
@@ -54,13 +54,13 @@ src_testlib.target = sub-testlib
 !wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib
-   src_widgets.depends = src_corelib gui src_tools_uic
+   src_widgets.depends = src_corelib src_gui src_tools_uic
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
    src_uitools.depends = src_corelib src_xml
    src_dbus.depends = src_corelib src_xml
    src_network.depends = src_corelib
-   src_opengl.depends = src_gui
+   src_opengl.depends = src_gui src_widgets
    src_openvg.depends = src_gui
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib
