@@ -42,7 +42,7 @@
 #ifndef QTBOX_H
 #define QTBOX_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <QtGui/qvector3d.h>
 #include "glbuffers.h"

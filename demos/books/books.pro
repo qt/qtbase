@@ -6,7 +6,7 @@ RESOURCES   = books.qrc
 SOURCES     = bookdelegate.cpp main.cpp bookwindow.cpp
 FORMS       = bookwindow.ui
 
-QT += sql
+QT += sql widgets widgets
 
 target.path = $$[QT_INSTALL_DEMOS]/qtbase/books
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro images

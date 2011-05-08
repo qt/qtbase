@@ -41,7 +41,7 @@
 
 #include "view.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif

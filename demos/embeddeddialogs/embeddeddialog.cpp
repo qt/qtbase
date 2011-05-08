@@ -42,7 +42,7 @@
 #include "embeddeddialog.h"
 #include "ui_embeddeddialog.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 EmbeddedDialog::EmbeddedDialog(QWidget *parent)
     : QDialog(parent)

@@ -41,7 +41,7 @@
 #ifndef MACMAINWINDOW_H
 #define MACMAINWINDOW_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #ifdef Q_WS_MAC
 

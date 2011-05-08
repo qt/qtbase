@@ -8,7 +8,7 @@ include($$SHARED_FOLDER/shared.pri)
 RESOURCES += composition.qrc
 contains(QT_CONFIG, opengl) {
 	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
+	QT += opengl widgets
 }
 
 # install

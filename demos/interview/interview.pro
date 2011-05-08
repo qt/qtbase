@@ -17,3 +17,4 @@ sources.path = $$[QT_INSTALL_DEMOS]/qtbase/interview
 INSTALLS += target sources
 
 symbian: CONFIG += qt_demo
+QT += widgets widgets

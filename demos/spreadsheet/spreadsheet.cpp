@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "spreadsheet.h"
 #include "spreadsheetdelegate.h"
 #include "spreadsheetitem.h"

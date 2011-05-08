@@ -16,3 +16,4 @@ sources.path = $$[QT_INSTALL_DEMOS]/qtbase/undo
 INSTALLS += target sources
 
 symbian: CONFIG += qt_demo
+QT += widgets 

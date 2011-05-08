@@ -9,7 +9,7 @@ RESOURCES += deform.qrc
 
 contains(QT_CONFIG, opengl) {
 	DEFINES += QT_OPENGL_SUPPORT
-	QT += opengl
+	QT += opengl widgets
 }
 
 # install

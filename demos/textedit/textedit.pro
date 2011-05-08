@@ -20,3 +20,4 @@ sources.path = $$[QT_INSTALL_DEMOS]/qtbase/textedit
 INSTALLS += target sources
 
 symbian: CONFIG += qt_demo
+QT += widgets widgets

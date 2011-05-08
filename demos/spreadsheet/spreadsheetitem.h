@@ -43,7 +43,7 @@
 #define SPREADSHEETITEM_H
 
 #include <QTableWidgetItem>
-#include <QtGui>
+#include <QtWidgets>
 #include "spreadsheet.h"
 
 class SpreadSheetItem : public QTableWidgetItem

@@ -43,7 +43,7 @@
 #define TEXTINFORMATIONITEM_H
 
 //Qt
-#include <QtGui/QGraphicsTextItem>
+#include <QtWidgets/QGraphicsTextItem>
 
 class TextInformationItem : public QGraphicsTextItem
 {

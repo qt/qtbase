@@ -9,3 +9,4 @@ target.path = $$[QT_INSTALL_DEMOS]/qtbase/embedded/digiflip
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro
 sources.path = $$[QT_INSTALL_DEMOS]/qtbase/embedded/digiflip
 INSTALLS += target sources
+QT += widgets widgets

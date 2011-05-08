@@ -42,7 +42,7 @@
 #include "browser.h"
 #include "qsqlconnectiondialog.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 Browser::Browser(QWidget *parent)

@@ -41,7 +41,7 @@
 
 #include <math.h>
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 #include "slippymap.h"
 

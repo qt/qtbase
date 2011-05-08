@@ -21,3 +21,4 @@ sources.files = $$SOURCES  *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/qtbase/macmainwindow
 INSTALLS += target sources
 }
+QT += widgets widgets

@@ -41,7 +41,7 @@
 
 #include "connectionwidget.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 ConnectionWidget::ConnectionWidget(QWidget *parent)

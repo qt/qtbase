@@ -43,7 +43,7 @@
 #define CHIP_H
 
 #include <QtGui/QColor>
-#include <QtGui/QGraphicsItem>
+#include <QtWidgets/QGraphicsItem>
 
 class Chip : public QGraphicsItem
 {

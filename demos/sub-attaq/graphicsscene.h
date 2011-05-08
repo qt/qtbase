@@ -43,7 +43,7 @@
 #define __GRAPHICSSCENE__H__
 
 //Qt
-#include <QtGui/QGraphicsScene>
+#include <QtWidgets/QGraphicsScene>
 #include <QtCore/QSet>
 #include <QtCore/QState>
 

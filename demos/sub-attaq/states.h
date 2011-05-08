@@ -46,7 +46,7 @@
 #include <QtCore/QState>
 #include <QtCore/QSignalTransition>
 #include <QtCore/QPropertyAnimation>
-#include <QtGui/QKeyEventTransition>
+#include <QtWidgets/QKeyEventTransition>
 #include <QtCore/QSet>
 
 class GraphicsScene;

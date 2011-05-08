@@ -96,3 +96,4 @@ demos_sub-attaq.subdir = sub-attaq
      demos_pathstroke.depends = demos_shared
 }
 }
+QT += widgets widgets

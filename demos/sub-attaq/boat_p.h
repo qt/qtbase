@@ -58,7 +58,7 @@
 #include "graphicsscene.h"
 
 // Qt
-#include <QtGui/QKeyEventTransition>
+#include <QtWidgets/QKeyEventTransition>
 
 static const int MAX_BOMB = 5;
 

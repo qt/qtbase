@@ -43,7 +43,7 @@
 #define __SUBMARINE__H__
 
 //Qt
-#include <QtGui/QGraphicsTransform>
+#include <QtWidgets/QGraphicsTransform>
 
 #include "pixmapitem.h"
 

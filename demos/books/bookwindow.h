@@ -42,7 +42,7 @@
 #ifndef BOOKWINDOW_H
 #define BOOKWINDOW_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 #include "ui_bookwindow.h"

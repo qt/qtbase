@@ -42,7 +42,7 @@
 #ifndef TRACKBALL_H
 #define TRACKBALL_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <QtGui/qvector3d.h>
 #include <QtGui/qquaternion.h>
