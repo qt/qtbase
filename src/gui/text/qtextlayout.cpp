@@ -997,11 +997,20 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
     \sa draw(), QPainter::drawGlyphRun()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphRun> QTextLayout::glyphRuns() const
-{
+QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
+{    
+    if (from < 0)
+        from = 0;
+    if (length < 0)
+        length = text().length();
+
     QList<QGlyphRun> glyphs;
-    for (int i=0; i<d->lines.size(); ++i)
-        glyphs += QTextLine(i, d).glyphs(-1, -1);
+    for (int i=0; i<d->lines.size(); ++i) {
+        if (d->lines[i].from > from + length)
+            break;
+        else if (d->lines[i].from + d->lines[i].length >= from)
+            glyphs += QTextLine(i, d).glyphRuns(from, length);
+    }
 
     return glyphs;
 }
@@ -2084,24 +2093,31 @@ namespace {
 }
 
 /*!
-    \internal
+    Returns the glyph indexes and positions for all glyphs in this QTextLine for characters
+    in the range defined by \a from and \a length. The \a from index is relative to the beginning
+    of the text in the containing QTextLayout, and the range must be within the range of QTextLine
+    as given by functions textStart() and textLength().
 
-    Returns the glyph indexes and positions for all glyphs in this QTextLine which reside in
-    QScriptItems that overlap with the range defined by \a from and \a length. The arguments
-    specify characters, relative to the text in the layout. Note that it is not possible to
-    use this function to retrieve a subset of the glyphs in a QScriptItem.
+    If \a from is negative, it will default to textStart(), and if \a length is negative it will
+    default to the return value of textLength().
 
-    \since 4.8
+    \since 5.0
 
     \sa QTextLayout::glyphRuns()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphRun> QTextLine::glyphs(int from, int length) const
+QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 {
     const QScriptLine &line = eng->lines[i];
 
     if (line.length == 0)
         return QList<QGlyphRun>();
+
+    if (from < 0)
+        from = textStart();
+
+    if (length < 0)
+        length = textLength();
 
     QHash<QFontEngine *, GlyphInfo> glyphLayoutHash;
 
@@ -2114,8 +2130,9 @@ QList<QGlyphRun> QTextLine::glyphs(int from, int length) const
 
         QPointF pos(iterator.x.toReal(), y);
         if (from >= 0 && length >= 0 &&
-            (from >= si.position + eng->length(&si) || from + length <= si.position))
+            (from >= si.position + eng->length(&si) || from + length <= si.position)) {
             continue;
+        }
 
         QFont font = eng->font(si);
 
@@ -2126,11 +2143,42 @@ QList<QGlyphRun> QTextLine::glyphs(int from, int length) const
             flags |= QTextItem::Underline;
         if (font.strikeOut())
             flags |= QTextItem::StrikeOut;
-        if (si.analysis.bidiLevel % 2)
-            flags |= QTextItem::RightToLeft;
 
-        QGlyphLayout glyphLayout = eng->shapedGlyphs(&si).mid(iterator.glyphsStart,
-                                                              iterator.glyphsEnd - iterator.glyphsStart);
+        bool rtl = false;
+        if (si.analysis.bidiLevel % 2) {
+            flags |= QTextItem::RightToLeft;
+            rtl = true;
+        }
+
+        int relativeFrom = qMax(iterator.itemStart, from) - si.position;
+        int relativeTo = qMin(iterator.itemEnd, from + length - 1) - si.position;
+
+        unsigned short *logClusters = eng->logClusters(&si);
+        int glyphsStart = logClusters[relativeFrom];
+        int glyphsEnd = (relativeTo == eng->length(&si))
+                         ? si.num_glyphs - 1
+                         : logClusters[relativeTo];
+
+        QGlyphLayout glyphLayout = eng->shapedGlyphs(&si);
+
+        // Calculate new x position of glyph layout for a subset. This becomes somewhat complex
+        // when we're breaking a RTL script item, since the expected position passed into
+        // getGlyphPositions() is the left-most edge of the left-most glyph in an RTL run.
+        if (relativeFrom != (iterator.itemStart - si.position) && !rtl) {
+            for (int i=0; i<glyphsStart; ++i) {
+                QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
+                pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
+                               glyphLayout.advances_y[i].toReal());
+            }
+        } else if (relativeTo != (iterator.itemEnd - si.position) && rtl) {
+            for (int i=glyphLayout.numGlyphs - 1; i>glyphsEnd; --i) {
+                QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
+                pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
+                               glyphLayout.advances_y[i].toReal());
+            }
+        }
+
+        glyphLayout = glyphLayout.mid(glyphsStart, glyphsEnd - glyphsStart + 1);
 
         if (glyphLayout.numGlyphs > 0) {
             QFontEngine *mainFontEngine = font.d->engineForScript(si.analysis.script);
@@ -2147,9 +2195,10 @@ QList<QGlyphRun> QTextLine::glyphs(int from, int length) const
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                     glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
                                                 GlyphInfo(subLayout, pos, flags));
-                    for (int i = 0; i < subLayout.numGlyphs; i++)
+                    for (int i = 0; i < subLayout.numGlyphs; i++) {
                         pos += QPointF(subLayout.advances_x[i].toReal(),
                                        subLayout.advances_y[i].toReal());
+                    }
 
                     start = end;
                     which = e;
@@ -2501,8 +2550,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         pos = 0;
 
     int glyph_pos = pos == l ? si->num_glyphs : logClusters[pos];
-    if (edge == Trailing) {
+    if (edge == Trailing && glyph_pos < si->num_glyphs) {
         // trailing edge is leading edge of next cluster
+        glyph_pos++;
         while (glyph_pos < si->num_glyphs && !glyphs.attributes[glyph_pos].clusterStart)
             glyph_pos++;
     }

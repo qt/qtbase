@@ -87,6 +87,8 @@ public:
     void setStrikeOut(bool strikeOut);
     bool strikeOut() const;
 
+    QRectF boundingRect() const;
+
 private:
     friend class QGlyphRunPrivate;
     friend class QTextLine;

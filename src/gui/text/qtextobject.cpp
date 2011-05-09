@@ -1685,7 +1685,7 @@ QList<QGlyphRun> QTextFragment::glyphRuns() const
     QList<QGlyphRun> ret;
     for (int i=0; i<layout->lineCount(); ++i) {
         QTextLine textLine = layout->lineAt(i);
-        ret += textLine.glyphs(pos, len);
+        ret += textLine.glyphRuns(pos, len);
     }
 
     return ret;

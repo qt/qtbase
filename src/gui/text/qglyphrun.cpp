@@ -319,6 +319,35 @@ void QGlyphRun::setStrikeOut(bool strikeOut)
     d->strikeOut = strikeOut;
 }
 
+/*!
+  Returns the smallest rectangle that contains all glyphs in this QGlyphRun.
+
+  \since 5.0
+*/
+QRectF QGlyphRun::boundingRect() const
+{
+    qreal minX, minY, maxX, maxY;
+
+    for (int i=0; i<qMin(d->glyphPositions.size(), d->glyphIndexes.size()); ++i) {
+        QRectF glyphRect = d->rawFont.boundingRect(d->glyphIndexes.at(i));
+        glyphRect.translate(d->glyphPositions.at(i));
+
+        if (i == 0) {
+            minX = glyphRect.left();
+            minY = glyphRect.top();
+            maxX = glyphRect.right();
+            maxY = glyphRect.bottom();
+        } else {
+            minX = qMin(glyphRect.left(), minX);
+            minY = qMin(glyphRect.top(), minY);
+            maxX = qMax(glyphRect.right(),maxX);
+            maxY = qMax(glyphRect.bottom(), maxY);
+        }
+    }
+
+    return QRectF(QPointF(minX, minY), QPointF(maxX, maxY));
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_RAWFONT

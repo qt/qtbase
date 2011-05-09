@@ -718,6 +718,20 @@ void QRawFontPrivate::cleanUp()
     hintingPreference = QFont::PreferDefaultHinting;
 }
 
+/*!
+  Returns the smallest rectangle containing the glyph with the given \a glyphIndex.
+
+  \since 5.0
+*/
+QRectF QRawFont::boundingRect(quint32 glyphIndex) const
+{
+    if (!isValid())
+        return QRectF();
+
+    glyph_metrics_t gm = d->fontEngine->boundingBox(glyphIndex);
+    return QRectF(gm.x.toReal(), gm.y.toReal(), gm.width.toReal(), gm.height.toReal());
+}
+
 #endif // QT_NO_RAWFONT
 
 QT_END_NAMESPACE
