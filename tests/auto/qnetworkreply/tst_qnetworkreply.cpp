@@ -622,9 +622,14 @@ public:
     }
 
     QIODevice *prepare(const QNetworkCacheMetaData &)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); return 0; }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+        return 0;
+    }
     void insert(QIODevice *)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+    }
 
     void clear() { cache.clear(); }
 };
