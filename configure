@@ -5774,7 +5774,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 fi # X11/QWS/Lighthouse
 
 # X11
-if [ "$PLATFORM_X11" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
 
