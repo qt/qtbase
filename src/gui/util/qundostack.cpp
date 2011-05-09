@@ -374,11 +374,24 @@ QUndoAction::QUndoAction(const QString &prefix, QObject *parent)
 
 void QUndoAction::setPrefixedText(const QString &text)
 {
-    QString s = m_prefix;
-    if (!m_prefix.isEmpty() && !text.isEmpty())
-        s.append(QLatin1Char(' '));
-    s.append(text);
-    setText(s);
+    if (m_defaultText.isEmpty()) {
+        QString s = m_prefix;
+        if (!m_prefix.isEmpty() && !text.isEmpty())
+            s.append(QLatin1Char(' '));
+        s.append(text);
+        setText(s);
+    } else {
+        if (text.isEmpty())
+            setText(m_defaultText);
+        else
+            setText(m_prefix.arg(text));
+    }
+}
+
+void QUndoAction::setTextFormat(const QString &textFormat, const QString &defaultText)
+{
+    m_prefix = textFormat;
+    m_defaultText = defaultText;
 }
 
 #endif // QT_NO_ACTION
@@ -822,15 +835,18 @@ QString QUndoStack::redoText() const
     prefixed by the specified \a prefix. If there is no command available for undo,
     this action will be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Undo" was used by default.
 
     \sa createRedoAction(), canUndo(), QUndoCommand::text()
 */
 
 QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Undo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
+
     result->setEnabled(canUndo());
     result->setPrefixedText(undoText());
     connect(this, SIGNAL(canUndoChanged(bool)),
@@ -849,15 +865,18 @@ QAction *QUndoStack::createUndoAction(QObject *parent, const QString &prefix) co
     prefixed by the specified \a prefix. If there is no command available for redo,
     this action will be disabled.
 
-    If \a prefix is empty, the default prefix "Redo" is used.
+    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Redo" was used by default.
 
     \sa createUndoAction(), canRedo(), QUndoCommand::text()
 */
 
 QAction *QUndoStack::createRedoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Redo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
+
     result->setEnabled(canRedo());
     result->setPrefixedText(redoText());
     connect(this, SIGNAL(canRedoChanged(bool)),

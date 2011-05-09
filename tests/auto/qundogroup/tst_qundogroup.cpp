@@ -201,6 +201,7 @@ private slots:
     void deleteStack();
     void checkSignals();
     void addStackAndDie();
+    void commandTextFormat();
 };
 
 tst_QUndoGroup::tst_QUndoGroup()
@@ -602,6 +603,42 @@ void tst_QUndoGroup::addStackAndDie()
     delete group;
     stack->setActive(true);
     delete stack;
+}
+
+void tst_QUndoGroup::commandTextFormat()
+{
+    QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundogroup.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/qundogroup.qm"));
+    qApp->installTranslator(&translator);
+
+    QUndoGroup group;
+    QAction *undo_action = group.createUndoAction(0);
+    QAction *redo_action = group.createRedoAction(0);
+
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    QUndoStack stack(&group);
+    stack.setActive();
+    QString str;
+
+    stack.push(new AppendCommand(&str, "foo"));
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    stack.push(new InsertCommand(&str, 0, "bar"));
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix insert redo-suffix"));
+
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix append redo-suffix"));
+
+    qApp->removeTranslator(&translator);
 }
 
 #else

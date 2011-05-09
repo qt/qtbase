@@ -220,6 +220,7 @@ private slots:
     void macroBeginEnd();
     void compression();
     void undoLimit();
+    void commandTextFormat();
 };
 
 tst_QUndoStack::tst_QUndoStack()
@@ -2933,6 +2934,40 @@ void tst_QUndoStack::undoLimit()
                 true,       // indexChanged
                 true,       // undoChanged
                 true);      // redoChanged
+}
+
+void tst_QUndoStack::commandTextFormat()
+{
+    QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundostack.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/qundostack.qm"));
+    qApp->installTranslator(&translator);
+
+    QUndoStack stack;
+    QAction *undo_action = stack.createUndoAction(0);
+    QAction *redo_action = stack.createRedoAction(0);
+
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    QString str;
+
+    stack.push(new AppendCommand(&str, "foo"));
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("Redo-default-text"));
+
+    stack.push(new InsertCommand(&str, 0, "bar"));
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("undo-prefix append undo-suffix"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix insert redo-suffix"));
+
+    stack.undo();
+    QCOMPARE(undo_action->text(), QString("Undo-default-text"));
+    QCOMPARE(redo_action->text(), QString("redo-prefix append redo-suffix"));
+
+    qApp->removeTranslator(&translator);
 }
 
 QTEST_MAIN(tst_QUndoStack)

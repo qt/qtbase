@@ -375,15 +375,18 @@ bool QUndoGroup::isClean() const
     for undo, if the group is empty or if none of the stacks are active, this action will
     be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Undo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Undo" was used by default.
 
     \sa createRedoAction() canUndo() QUndoCommand::text()
 */
 
 QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Undo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Undo %1"), tr("Undo", "Default text for undo action"));
+
     result->setEnabled(canUndo());
     result->setPrefixedText(undoText());
     connect(this, SIGNAL(canUndoChanged(bool)),
@@ -403,15 +406,18 @@ QAction *QUndoGroup::createUndoAction(QObject *parent, const QString &prefix) co
     for redo, if the group is empty or if none of the stacks are active, this action will
     be disabled.
 
-    If \a prefix is empty, the default prefix "Undo" is used.
+    If \a prefix is empty, the default template "Redo %1" is used instead of prefix.
+    Before Qt 4.8, the prefix "Redo" was used by default.
 
     \sa createUndoAction() canRedo() QUndoCommand::text()
 */
 
 QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) const
 {
-    QString pref = prefix.isEmpty() ? tr("Redo") : prefix;
-    QUndoAction *result = new QUndoAction(pref, parent);
+    QUndoAction *result = new QUndoAction(prefix, parent);
+    if (prefix.isEmpty())
+        result->setTextFormat(tr("Redo %1"), tr("Redo", "Default text for redo action"));
+
     result->setEnabled(canRedo());
     result->setPrefixedText(redoText());
     connect(this, SIGNAL(canRedoChanged(bool)),
