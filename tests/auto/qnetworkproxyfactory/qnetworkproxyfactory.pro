@@ -7,5 +7,5 @@ QT = core network
 
 SOURCES += tst_qnetworkproxyfactory.cpp
 
-symbian: TARGET.CAPABILITY = NetworkServices
+symbian: TARGET.CAPABILITY = NetworkServices ReadUserData
 

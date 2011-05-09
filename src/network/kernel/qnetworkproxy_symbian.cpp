@@ -58,6 +58,7 @@
 #include <commsdattypeinfov1_1.h> // CCDIAPRecord, CCDProxiesRecord
 #include <commsdattypesv1_1.h> // KCDTIdIAPRecord, KCDTIdProxiesRecord
 #include <QtNetwork/QNetworkConfigurationManager>
+#include <QtNetwork/QNetworkConfiguration>
 #include <QFlags>
 
 using namespace CommsDat;
@@ -88,7 +89,7 @@ class SymbianProxyQuery
 {
 public:
     static QNetworkConfiguration findCurrentConfiguration(QNetworkConfigurationManager& configurationManager);
-    static SymbianIapId getIapId(QNetworkConfigurationManager& configurationManager);
+    static SymbianIapId getIapId(QNetworkConfigurationManager &configurationManager, const QNetworkProxyQuery &query);
     static CCDIAPRecord *getIapRecordLC(TUint32 aIAPId, CMDBSession &aDb);
     static CMDBRecordSet<CCDProxiesRecord> *prepareQueryLC(TUint32 serviceId, TDesC& serviceType);
     static QList<QNetworkProxy> proxyQueryL(TUint32 aIAPId, const QNetworkProxyQuery &query);
@@ -137,11 +138,15 @@ QNetworkConfiguration SymbianProxyQuery::findCurrentConfiguration(QNetworkConfig
     return currentConfig;
 }
 
-SymbianIapId SymbianProxyQuery::getIapId(QNetworkConfigurationManager& configurationManager)
+SymbianIapId SymbianProxyQuery::getIapId(QNetworkConfigurationManager& configurationManager, const QNetworkProxyQuery &query)
 {
     SymbianIapId iapId;
 
-    QNetworkConfiguration currentConfig = findCurrentConfiguration(configurationManager);
+    QNetworkConfiguration currentConfig = query.networkConfiguration();
+    if (!currentConfig.isValid()) {
+        //If config is not specified, then try to find out an active or default one
+        currentConfig = findCurrentConfiguration(configurationManager);
+    }
     if (currentConfig.isValid()) {
         // Note: the following code assumes that the identifier is in format
         // I_xxxx where xxxx is the identifier of IAP. This is meant as a
@@ -249,7 +254,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     SymbianIapId iapId;
     TInt error;
     QNetworkConfigurationManager manager;
-    iapId = SymbianProxyQuery::getIapId(manager);
+    iapId = SymbianProxyQuery::getIapId(manager, query);
     if (iapId.isValid()) {
         TRAP(error, proxies = SymbianProxyQuery::proxyQueryL(iapId.iapId(), query))
         if (error != KErrNone) {

@@ -1004,10 +1004,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
 
-#ifndef QT_NO_NETWORKPROXY
-    QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
-    priv->proxyList = proxyList;
-#endif
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;

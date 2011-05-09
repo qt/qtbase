@@ -228,6 +228,10 @@
 #include "qmutex.h"
 #include "qurl.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/QNetworkConfiguration>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSocks5SocketEngineHandler;
@@ -716,6 +720,9 @@ public:
     QUrl remote;
     int localPort;
     QNetworkProxyQuery::QueryType type;
+#ifndef QT_NO_BEARERMANAGEMENT
+    QNetworkConfiguration config;
+#endif
 };
 
 template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
@@ -776,6 +783,11 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
     this information is provided in case a better choice can be made,
     like choosing an caching HTTP proxy for HTTP-based connections,
     but a more powerful SOCKSv5 proxy for all others.
+
+    The network configuration specifies which configuration to use,
+    when bearer management is used. For example on a mobile phone
+    the proxy settings are likely to be different for the cellular
+    network vs WLAN.
 
     Some of the criteria may not make sense in all of the types of
     query. The following table lists the criteria that are most
@@ -901,6 +913,68 @@ QNetworkProxyQuery::QNetworkProxyQuery(quint16 bindPort, const QString &protocol
     d->localPort = bindPort;
     d->type = queryType;
 }
+
+#ifndef QT_NO_BEARERMANAGEMENT
+/*!
+    Constructs a QNetworkProxyQuery with the URL \a requestUrl and
+    sets the query type to \a queryType. The specified \a networkConfiguration
+    is used to resolve the proxy settings.
+
+    \sa protocolTag(), peerHostName(), peerPort(), networkConfiguration()
+*/
+QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
+                                       const QUrl &requestUrl, QueryType queryType)
+{
+    d->config = networkConfiguration;
+    d->remote = requestUrl;
+    d->type = queryType;
+}
+
+/*!
+    Constructs a QNetworkProxyQuery of type \a queryType and sets the
+    protocol tag to be \a protocolTag. This constructor is suitable
+    for QNetworkProxyQuery::TcpSocket queries, because it sets the
+    peer hostname to \a hostname and the peer's port number to \a
+    port. The specified \a networkConfiguration
+    is used to resolve the proxy settings.
+
+    \sa networkConfiguration()
+*/
+QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
+                                       const QString &hostname, int port,
+                                       const QString &protocolTag,
+                                       QueryType queryType)
+{
+    d->config = networkConfiguration;
+    d->remote.setScheme(protocolTag);
+    d->remote.setHost(hostname);
+    d->remote.setPort(port);
+    d->type = queryType;
+}
+
+/*!
+    Constructs a QNetworkProxyQuery of type \a queryType and sets the
+    protocol tag to be \a protocolTag. This constructor is suitable
+    for QNetworkProxyQuery::TcpSocket queries because it sets the
+    local port number to \a bindPort. The specified \a networkConfiguration
+    is used to resolve the proxy settings.
+
+    Note that \a bindPort is of type quint16 to indicate the exact
+    port number that is requested. The value of -1 (unknown) is not
+    allowed in this context.
+
+    \sa localPort(), networkConfiguration()
+*/
+QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
+                                       quint16 bindPort, const QString &protocolTag,
+                                       QueryType queryType)
+{
+    d->config = networkConfiguration;
+    d->remote.setScheme(protocolTag);
+    d->localPort = bindPort;
+    d->type = queryType;
+}
+#endif
 
 /*!
     Constructs a QNetworkProxyQuery object that is a copy of \a other.
@@ -1115,6 +1189,30 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
 {
     d->remote = url;
 }
+
+#ifndef QT_NO_BEARERMANAGEMENT
+QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
+{
+    return d ? d->config : QNetworkConfiguration();
+}
+
+/*!
+    Sets the network configuration component of this QNetworkProxyQuery
+    object to be \a networkConfiguration. The network configuration can
+    be used to return different proxy settings based on the network in
+    use, for example WLAN vs cellular networks on a mobile phone.
+
+    In the case of "user choice" or "service network" configurations,
+    you should first start the QNetworkSession and obtain the active
+    configuration from its properties.
+
+    \sa networkConfiguration
+*/
+void QNetworkProxyQuery::setNetworkConfiguration(const QNetworkConfiguration &networkConfiguration)
+{
+    d->config = networkConfiguration;
+}
+#endif
 
 /*!
     \class QNetworkProxyFactory
