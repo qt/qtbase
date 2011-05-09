@@ -101,6 +101,16 @@ private:
     QString m_text;
 };
 
+class IdleCommand : public QUndoCommand
+{
+public:
+    IdleCommand(QUndoCommand *parent = 0);
+    ~IdleCommand();
+
+    virtual void undo();
+    virtual void redo();
+};
+
 InsertCommand::InsertCommand(QString *str, int idx, const QString &text,
                             QUndoCommand *parent)
     : QUndoCommand(parent)
@@ -201,6 +211,26 @@ bool AppendCommand::mergeWith(const QUndoCommand *other)
     return true;
 }
 
+IdleCommand::IdleCommand(QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    // "idle-item" goes to QUndoStack::{redo,undo}Text
+    // "idle-action" goes to all other places (e.g. QUndoView)
+    setText("idle-item\nidle-action");
+}
+
+IdleCommand::~IdleCommand()
+{
+}
+
+void IdleCommand::redo()
+{
+}
+
+void IdleCommand::undo()
+{
+}
+
 /******************************************************************************
 ** tst_QUndoStack
 */
@@ -221,6 +251,7 @@ private slots:
     void compression();
     void undoLimit();
     void commandTextFormat();
+    void separateUndoText();
 };
 
 tst_QUndoStack::tst_QUndoStack()
@@ -2968,6 +2999,34 @@ void tst_QUndoStack::commandTextFormat()
     QCOMPARE(redo_action->text(), QString("redo-prefix append redo-suffix"));
 
     qApp->removeTranslator(&translator);
+}
+
+void tst_QUndoStack::separateUndoText()
+{
+    QUndoStack stack;
+    QAction *undo_action = stack.createUndoAction(0);
+    QAction *redo_action = stack.createRedoAction(0);
+
+    QUndoCommand *command1 = new IdleCommand();
+    QUndoCommand *command2 = new IdleCommand();
+    stack.push(command1);
+    stack.push(command2);
+    stack.undo();
+
+    QCOMPARE(undo_action->text(), QString("Undo idle-action"));
+    QCOMPARE(redo_action->text(), QString("Redo idle-action"));
+    QCOMPARE(command1->actionText(), QString("idle-action"));
+
+    QCOMPARE(command1->text(), QString("idle-item"));
+    QCOMPARE(stack.text(0), QString("idle-item"));
+
+    command1->setText("idle");
+    QCOMPARE(command1->actionText(), QString("idle"));
+    QCOMPARE(command1->text(), QString("idle"));
+
+    command1->setText("idle-item\nidle-action");
+    QCOMPARE(command1->actionText(), QString("idle-action"));
+    QCOMPARE(command1->text(), QString("idle-item"));
 }
 
 QTEST_MAIN(tst_QUndoStack)

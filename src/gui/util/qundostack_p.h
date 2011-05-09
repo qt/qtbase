@@ -70,6 +70,7 @@ public:
     QUndoCommandPrivate() : id(-1) {}
     QList<QUndoCommand*> child_list;
     QString text;
+    QString actionText;
     int id;
 };
 

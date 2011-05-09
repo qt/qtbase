@@ -70,6 +70,7 @@ public:
     virtual void redo();
 
     QString text() const;
+    QString actionText() const;
     void setText(const QString &text);
 
     virtual int id() const;

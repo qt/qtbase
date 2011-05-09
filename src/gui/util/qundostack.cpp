@@ -114,7 +114,7 @@ QUndoCommand::QUndoCommand(const QString &text, QUndoCommand *parent)
     d = new QUndoCommandPrivate;
     if (parent != 0)
         parent->d->child_list.append(this);
-    d->text = text;
+    setText(text);
 }
 
 /*!
@@ -230,10 +230,9 @@ void QUndoCommand::undo()
     Returns a short text string describing what this command does; for example,
     "insert text".
 
-    The text is used when the text properties of the stack's undo and redo
-    actions are updated.
+    The text is used for names of items in QUndoView.
 
-    \sa setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
+    \sa actionText(), setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
 */
 
 QString QUndoCommand::text() const
@@ -242,17 +241,47 @@ QString QUndoCommand::text() const
 }
 
 /*!
+    \since 4.8
+
+    Returns a short text string describing what this command does; for example,
+    "insert text".
+
+    The text is used when the text properties of the stack's undo and redo
+    actions are updated.
+
+    \sa text(), setText(), QUndoStack::createUndoAction(), QUndoStack::createRedoAction()
+*/
+
+QString QUndoCommand::actionText() const
+{
+    return d->actionText;
+}
+
+/*!
     Sets the command's text to be the \a text specified.
 
     The specified text should be a short user-readable string describing what this
     command does.
 
-    \sa text() QUndoStack::createUndoAction() QUndoStack::createRedoAction()
+    If you need to have two different strings for text() and actionText(), separate
+    them with "\n" and pass into this function. Even if you do not use this feature
+    for English strings during development, you can still let translators use two
+    different strings in order to match specific languages' needs.
+    The described feature and the function actionText() are available since Qt 4.8.
+
+    \sa text() actionText() QUndoStack::createUndoAction() QUndoStack::createRedoAction()
 */
 
 void QUndoCommand::setText(const QString &text)
 {
-    d->text = text;
+    int cdpos = text.indexOf(QLatin1Char('\n'));
+    if (cdpos > 0) {
+        d->text = text.left(cdpos);
+        d->actionText = text.mid(cdpos + 1);
+    } else {
+        d->text = text;
+        d->actionText = text;
+    }
 }
 
 /*!
@@ -796,7 +825,7 @@ bool QUndoStack::canRedo() const
 /*!
     Returns the text of the command which will be undone in the next call to undo().
 
-    \sa QUndoCommand::text() redoText()
+    \sa QUndoCommand::actionText() redoText()
 */
 
 QString QUndoStack::undoText() const
@@ -805,14 +834,14 @@ QString QUndoStack::undoText() const
     if (!d->macro_stack.isEmpty())
         return QString();
     if (d->index > 0)
-        return d->command_list.at(d->index - 1)->text();
+        return d->command_list.at(d->index - 1)->actionText();
     return QString();
 }
 
 /*!
     Returns the text of the command which will be redone in the next call to redo().
 
-    \sa QUndoCommand::text() undoText()
+    \sa QUndoCommand::actionText() undoText()
 */
 
 QString QUndoStack::redoText() const
@@ -821,7 +850,7 @@ QString QUndoStack::redoText() const
     if (!d->macro_stack.isEmpty())
         return QString();
     if (d->index < d->command_list.size())
-        return d->command_list.at(d->index)->text();
+        return d->command_list.at(d->index)->actionText();
     return QString();
 }
 
