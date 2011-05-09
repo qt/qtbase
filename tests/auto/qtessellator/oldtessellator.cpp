@@ -371,7 +371,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
 	    isects[i].edge = edge;
 	}
 
-	Q_ASSERT(isects.size()%2 == 1);
+	if (isects.size()%2 != 1)
+	    qFatal("%s: number of intersection points must be odd", Q_FUNC_INFO);
 
 	// sort intersection points
  	qSort(&isects[0], &isects[isects.size()-1], compareIntersections);
