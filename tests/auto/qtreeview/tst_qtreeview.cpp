@@ -277,7 +277,8 @@ public:
     }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const {
-        Q_ASSERT(fetched);
+        if (!fetched)
+            qFatal("%s: rowCount should not be called before fetching", Q_FUNC_INFO);
         if ((parent.column() > 0) || (level(parent) > levels))
             return 0;
         return rows;
@@ -2567,7 +2568,8 @@ public:
                 }
             }
             if (parent == 0) {
-                Q_ASSERT(children.isEmpty());
+                if (!children.isEmpty())
+                    qFatal("%s: children should be empty when parent is null", Q_FUNC_INFO);
                 populate();
             } else {
                 isDead = true;
