@@ -1579,8 +1579,10 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
     } else {
-        if (cursor.position() != oldCursorPos)
+        if (cursor.position() != oldCursorPos) {
             emit q->cursorPositionChanged();
+            emit q->microFocusChanged();
+        }
         selectionChanged();
     }
     repaintOldAndNewSelection(oldSelection);
