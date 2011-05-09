@@ -41,7 +41,6 @@
 #include "qwaylandshmsurface.h"
 
 #include <QtCore/qdebug.h>
-#include <QtGui/private/qapplication_p.h>
 
 #include "qwaylanddisplay.h"
 #include "qwaylandshmwindow.h"

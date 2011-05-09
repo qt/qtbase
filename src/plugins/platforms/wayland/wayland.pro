@@ -36,6 +36,7 @@ INCLUDEPATH += $$PWD
 QT += gui-private
 QT += opengl-private
 QT += core-private
+QT += widgets-private
 
 include ($$PWD/gl_integration/gl_integration.pri)
 

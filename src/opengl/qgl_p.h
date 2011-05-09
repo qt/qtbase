@@ -60,7 +60,7 @@
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qatomic.h"
-#include "private/qwidget_p.h"
+#include "QtWidgets/private/qwidget_p.h"
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
