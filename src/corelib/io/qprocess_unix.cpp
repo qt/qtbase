@@ -471,9 +471,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_SYMBIAN) || (defined(Q_OS_MAC) && defined(QT_NO_CORESERVICES))
-  static char *qt_empty_environ[] = { 0 };
-#define environ qt_empty_environ
 #else
   extern char **environ;
 #endif
@@ -482,6 +479,7 @@ QT_END_INCLUDE_NAMESPACE
 QProcessEnvironment QProcessEnvironment::systemEnvironment()
 {
     QProcessEnvironment env;
+#if !defined(Q_OS_MAC) || !defined(QT_NO_CORESERVICES)
     const char *entry;
     for (int count = 0; (entry = environ[count]); ++count) {
         const char *equal = strchr(entry, '=');
@@ -493,6 +491,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
         env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
                            QProcessEnvironmentPrivate::Value(value));
     }
+#endif
     return env;
 }
 
