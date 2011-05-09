@@ -1330,14 +1330,16 @@ public:
 
     void customEvent(QEvent *)
     {
-        Q_ASSERT(customEventThread == 0);
+        if (customEventThread)
+            qFatal("%s: customEventThread should be null", Q_FUNC_INFO);
         customEventThread = QThread::currentThread();
         emit theSignal();
     }
 
     void timerEvent(QTimerEvent *)
     {
-        Q_ASSERT(timerEventThread == 0);
+        if (timerEventThread)
+            qFatal("%s: timerEventThread should be null", Q_FUNC_INFO);
         timerEventThread = QThread::currentThread();
         emit theSignal();
     }
@@ -1345,7 +1347,8 @@ public:
 public slots:
     void theSlot()
     {
-        Q_ASSERT(slotThread == 0);
+        if (slotThread)
+            qFatal("%s: slotThread should be null", Q_FUNC_INFO);
         slotThread = QThread::currentThread();
         emit theSignal();
     }
