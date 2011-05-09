@@ -1,6 +1,8 @@
 TARGET = qwayland
 include(../../qpluginbase.pri)
 
+QT+=gui-private core-private opengl-private
+
 DESTDIR = $$QT.gui.plugins/platforms
 
 DEFINES += Q_PLATFORM_WAYLAND
