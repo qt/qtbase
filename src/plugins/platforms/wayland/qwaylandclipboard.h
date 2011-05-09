@@ -39,44 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_WAYLAND_H
-#define QPLATFORMINTEGRATION_WAYLAND_H
+#ifndef QWAYLANDCLIPBOARD_H
+#define QWAYLANDCLIPBOARD_H
 
-#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformClipboard>
+#include <QtCore/QStringList>
 
-QT_BEGIN_NAMESPACE
-
-class QWaylandBuffer;
 class QWaylandDisplay;
+class QWaylandSelection;
+struct wl_selection_offer;
 
-class QWaylandIntegration : public QPlatformIntegration
+class QWaylandClipboard : public QPlatformClipboard
 {
 public:
-    QWaylandIntegration(bool useOpenGL = false);
+    QWaylandClipboard(QWaylandDisplay *display);
+    ~QWaylandClipboard();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    const QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) const;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    bool supportsMode(QClipboard::Mode mode) const;
 
-    QList<QPlatformScreen *> screens() const;
+    void unregisterSelection(QWaylandSelection *selection);
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    QPlatformClipboard *clipboard() const;
+    void createSelectionOffer(uint32_t id);
 
 private:
-    bool hasOpenGL() const;
+    static void offer(void *data,
+                      struct wl_selection_offer *selection_offer,
+                      const char *type);
+    static void keyboardFocus(void *data,
+                              struct wl_selection_offer *selection_offer,
+                              struct wl_input_device *input_device);
+    static const struct wl_selection_offer_listener selectionOfferListener;
 
-    QPlatformFontDatabase *mFontDb;
+    static void syncCallback(void *data);
+    static void forceRoundtrip(struct wl_display *display);
+
     QWaylandDisplay *mDisplay;
-    bool mUseOpenGL;
-    QPlatformNativeInterface *mNativeInterface;
-    mutable QPlatformClipboard *mClipboard;
+    QWaylandSelection *mSelection;
+    mutable QMimeData *mMimeDataIn;
+    QList<QWaylandSelection *> mSelections;
+    QStringList mOfferedMimeTypes;
+    struct wl_selection_offer *mOffer;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // QWAYLANDCLIPBOARD_H

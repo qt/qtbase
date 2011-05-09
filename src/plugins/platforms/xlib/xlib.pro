@@ -3,6 +3,8 @@ TARGET = qxlib
 include(../../qpluginbase.pri)
 DESTDIR = $$QT.gui.plugins/platforms
 
+QT += core-private gui-private opengl-private
+
 SOURCES = \
         main.cpp \
         qxlibintegration.cpp \

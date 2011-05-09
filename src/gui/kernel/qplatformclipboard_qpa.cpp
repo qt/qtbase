@@ -42,6 +42,8 @@
 
 #ifndef QT_NO_CLIPBOARD
 
+#include <QtGui/private/qapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QClipboardData
@@ -98,6 +100,11 @@ void QPlatformClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const
 {
     return mode == QClipboard::Clipboard;
+}
+
+void QPlatformClipboard::emitChanged(QClipboard::Mode mode)
+{
+    QApplication::clipboard()->emitChanged(mode);
 }
 
 QT_END_NAMESPACE
