@@ -435,6 +435,8 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         c += event->commitString().length() - qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
+    if (m_cursor < 0)
+        m_cursor = 0;
 
     // insert commit string
     if (event->replacementLength()) {
@@ -447,7 +449,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         cursorPositionChanged = true;
     }
 
-    m_cursor = qMin(c, m_text.length());
+    m_cursor = qBound(0, c, m_text.length());
 
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);
