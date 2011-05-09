@@ -859,6 +859,8 @@ void QNetworkReplyImpl::abort()
     if (d->state != QNetworkReplyImplPrivate::Finished) {
         // call finished which will emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
+        if (d->state == QNetworkReplyImplPrivate::WaitingForSession)
+            d->state = QNetworkReplyImplPrivate::Working;
         d->finished();
     }
     d->state = QNetworkReplyImplPrivate::Aborted;
