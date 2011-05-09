@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
 
-class QCUPSSupport
+class Q_GUI_EXPORT QCUPSSupport
 {
 public:
     QCUPSSupport();
