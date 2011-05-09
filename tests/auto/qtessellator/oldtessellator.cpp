@@ -80,19 +80,6 @@ struct QEdge {
         horizontal = p1.y == p2.y;
     }
 
-    inline qreal xAt(const qreal &y) const
-    {
-        Q_ASSERT(p1.y != p2.y);
-        XFixed yf = XDoubleToFixed(y);
-
-        if (yf == p1.y)
-            return XFixedToDouble(p1.x);
-        else if (yf == p2.y)
-            return XFixedToDouble(p2.x);
-
-        return (!vertical) ? (((y - b)*im)) : pf1.x();
-    }
-
     QPointF     pf1, pf2;
     XPointFixed p1, p2;
     qreal m;
