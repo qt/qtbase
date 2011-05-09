@@ -1062,6 +1062,11 @@ void QProcessPrivate::initializeProcessManager()
     (void) processManager();
 }
 
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    return QProcessEnvironment();
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_PROCESS
