@@ -1006,7 +1006,8 @@ QString QSqlTableModel::orderByClause() const
 }
 
 /*!
-    Returns the index of the field \a fieldName.
+    Returns the index of the field \a fieldName, or -1 if no corresponding field
+    exists in the model.
 */
 int QSqlTableModel::fieldIndex(const QString &fieldName) const
 {
