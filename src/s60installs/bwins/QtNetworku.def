@@ -1237,4 +1237,9 @@ EXPORTS
 	?qt_static_metacall@QBearerEnginePlugin@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1236 NONAME ; void QBearerEnginePlugin::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
 	?staticMetaObjectExtraData@QNetworkConfigurationManager@@0UQMetaObjectExtraData@@B @ 1237 NONAME ; struct QMetaObjectExtraData const QNetworkConfigurationManager::staticMetaObjectExtraData
 	?qt_static_metacall@QTcpSocket@@CAXPAVQObject@@W4Call@QMetaObject@@HPAPAX@Z @ 1238 NONAME ; void QTcpSocket::qt_static_metacall(class QObject *, enum QMetaObject::Call, int, void * *)
+	??0QNetworkProxyQuery@@QAE@ABVQNetworkConfiguration@@GABVQString@@W4QueryType@0@@Z @ 1239 NONAME ; QNetworkProxyQuery::QNetworkProxyQuery(class QNetworkConfiguration const &, unsigned short, class QString const &, enum QNetworkProxyQuery::QueryType)
+	??0QNetworkProxyQuery@@QAE@ABVQNetworkConfiguration@@ABVQString@@H1W4QueryType@0@@Z @ 1240 NONAME ; QNetworkProxyQuery::QNetworkProxyQuery(class QNetworkConfiguration const &, class QString const &, int, class QString const &, enum QNetworkProxyQuery::QueryType)
+	?networkConfiguration@QNetworkProxyQuery@@QBE?AVQNetworkConfiguration@@XZ @ 1241 NONAME ; class QNetworkConfiguration QNetworkProxyQuery::networkConfiguration(void) const
+	?setNetworkConfiguration@QNetworkProxyQuery@@QAEXABVQNetworkConfiguration@@@Z @ 1242 NONAME ; void QNetworkProxyQuery::setNetworkConfiguration(class QNetworkConfiguration const &)
+	??0QNetworkProxyQuery@@QAE@ABVQNetworkConfiguration@@ABVQUrl@@W4QueryType@0@@Z @ 1243 NONAME ; QNetworkProxyQuery::QNetworkProxyQuery(class QNetworkConfiguration const &, class QUrl const &, enum QNetworkProxyQuery::QueryType)
 

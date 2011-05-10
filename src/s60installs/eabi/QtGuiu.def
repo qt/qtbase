@@ -11820,7 +11820,7 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate16clearFocusHelperEb @ 11819 NONAME
 	_ZN24QImagePixmapCleanupHooks13isImageCachedERK6QImage @ 11820 NONAME
 	_ZN24QImagePixmapCleanupHooks14isPixmapCachedERK7QPixmap @ 11821 NONAME
-	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11822 NONAME
+	_Z14qt_draw_glyphsP8QPainterPKjPK7QPointFi @ 11822 NONAME ABSENT
 	_ZN10QImageData14convertInPlaceEN6QImage6FormatE6QFlagsIN2Qt19ImageConversionFlagEE @ 11823 NONAME
 	_ZN10QZipReader5closeEv @ 11824 NONAME
 	_ZN10QZipReader8FileInfoC1ERKS0_ @ 11825 NONAME
@@ -12230,7 +12230,7 @@ EXPORTS
 	_ZN17QInternalMimeDataD2Ev @ 12229 NONAME
 	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12230 NONAME
 	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12231 NONAME
-	_ZN19QAbstractProxyModel17resetInternalDataEv @ 12232 NONAME
+	_ZN19QAbstractProxyModel17resetInternalDataEv @ 12232 NONAME ABSENT
 	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12233 NONAME
 	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12234 NONAME
 	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12235 NONAME
@@ -12302,22 +12302,22 @@ EXPORTS
 	_ZN5QFont20setHintingPreferenceENS_17HintingPreferenceE @ 12301 NONAME
 	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12302 NONAME
 	_ZN6QImage4fillERK6QColor @ 12303 NONAME
-	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12304 NONAME
-	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12305 NONAME
-	_ZN7QGlyphs5clearEv @ 12306 NONAME
-	_ZN7QGlyphs6detachEv @ 12307 NONAME
-	_ZN7QGlyphs7setFontERK5QFont @ 12308 NONAME
-	_ZN7QGlyphsC1ERKS_ @ 12309 NONAME
-	_ZN7QGlyphsC1Ev @ 12310 NONAME
-	_ZN7QGlyphsC2ERKS_ @ 12311 NONAME
-	_ZN7QGlyphsC2Ev @ 12312 NONAME
-	_ZN7QGlyphsD1Ev @ 12313 NONAME
-	_ZN7QGlyphsD2Ev @ 12314 NONAME
-	_ZN7QGlyphsaSERKS_ @ 12315 NONAME
-	_ZN7QGlyphspLERKS_ @ 12316 NONAME
+	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12304 NONAME ABSENT
+	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12305 NONAME ABSENT
+	_ZN7QGlyphs5clearEv @ 12306 NONAME ABSENT
+	_ZN7QGlyphs6detachEv @ 12307 NONAME ABSENT
+	_ZN7QGlyphs7setFontERK5QFont @ 12308 NONAME ABSENT
+	_ZN7QGlyphsC1ERKS_ @ 12309 NONAME ABSENT
+	_ZN7QGlyphsC1Ev @ 12310 NONAME ABSENT
+	_ZN7QGlyphsC2ERKS_ @ 12311 NONAME ABSENT
+	_ZN7QGlyphsC2Ev @ 12312 NONAME ABSENT
+	_ZN7QGlyphsD1Ev @ 12313 NONAME ABSENT
+	_ZN7QGlyphsD2Ev @ 12314 NONAME ABSENT
+	_ZN7QGlyphsaSERKS_ @ 12315 NONAME ABSENT
+	_ZN7QGlyphspLERKS_ @ 12316 NONAME ABSENT
 	_ZN8QMdiArea14setTabsMovableEb @ 12317 NONAME
 	_ZN8QMdiArea15setTabsClosableEb @ 12318 NONAME
-	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12319 NONAME
+	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12319 NONAME ABSENT
 	_ZN9QScroller11grabGestureEP7QObjectNS_19ScrollerGestureTypeE @ 12320 NONAME
 	_ZN9QScroller11handleInputENS_5InputERK7QPointFx @ 12321 NONAME
 	_ZN9QScroller11hasScrollerEP7QObject @ 12322 NONAME
@@ -12351,9 +12351,9 @@ EXPORTS
 	_ZNK10QBlittable12capabilitiesEv @ 12350 NONAME
 	_ZNK10QBlittable4sizeEv @ 12351 NONAME
 	_ZNK10QTabWidget14heightForWidthEi @ 12352 NONAME
-	_ZNK11QFontEngine18createExplicitFontEv @ 12353 NONAME
-	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12354 NONAME
-	_ZNK11QTextLayout6glyphsEv @ 12355 NONAME
+	_ZNK11QFontEngine18createExplicitFontEv @ 12353 NONAME ABSENT
+	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12354 NONAME ABSENT
+	_ZNK11QTextLayout6glyphsEv @ 12355 NONAME ABSENT
 	_ZNK12QFontMetrics10inFontUcs4Ej @ 12356 NONAME
 	_ZNK12QRadioButton15minimumSizeHintEv @ 12357 NONAME
 	_ZNK12QScrollEvent10contentPosEv @ 12358 NONAME
@@ -12362,7 +12362,7 @@ EXPORTS
 	_ZNK12QScrollEvent6d_funcEv @ 12361 NONAME
 	_ZNK13QFlickGesture10metaObjectEv @ 12362 NONAME
 	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12363 NONAME
-	_ZNK13QTextFragment6glyphsEv @ 12364 NONAME
+	_ZNK13QTextFragment6glyphsEv @ 12364 NONAME ABSENT
 	_ZNK14QFileOpenEvent8openFileER5QFile6QFlagsIN9QIODevice12OpenModeFlagEE @ 12365 NONAME
 	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12366 NONAME
 	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12367 NONAME
@@ -12396,12 +12396,12 @@ EXPORTS
 	_ZNK20QBlittablePixmapData9blittableEv @ 12395 NONAME
 	_ZNK20QRasterWindowSurface24hasStaticContentsSupportEv @ 12396 NONAME ABSENT
 	_ZNK5QFont17hintingPreferenceEv @ 12397 NONAME
-	_ZNK7QGlyphs12glyphIndexesEv @ 12398 NONAME
-	_ZNK7QGlyphs4fontEv @ 12399 NONAME
-	_ZNK7QGlyphs9positionsEv @ 12400 NONAME
-	_ZNK7QGlyphseqERKS_ @ 12401 NONAME
-	_ZNK7QGlyphsneERKS_ @ 12402 NONAME
-	_ZNK7QGlyphsplERKS_ @ 12403 NONAME
+	_ZNK7QGlyphs12glyphIndexesEv @ 12398 NONAME ABSENT
+	_ZNK7QGlyphs4fontEv @ 12399 NONAME ABSENT
+	_ZNK7QGlyphs9positionsEv @ 12400 NONAME ABSENT
+	_ZNK7QGlyphseqERKS_ @ 12401 NONAME ABSENT
+	_ZNK7QGlyphsneERKS_ @ 12402 NONAME ABSENT
+	_ZNK7QGlyphsplERKS_ @ 12403 NONAME ABSENT
 	_ZNK8QMdiArea11tabsMovableEv @ 12404 NONAME
 	_ZNK8QMdiArea12tabsClosableEv @ 12405 NONAME
 	_ZNK8QPainter16clipBoundingRectEv @ 12406 NONAME
@@ -12413,7 +12413,7 @@ EXPORTS
 	_ZNK9QScroller5stateEv @ 12412 NONAME
 	_ZNK9QScroller6targetEv @ 12413 NONAME
 	_ZNK9QScroller8velocityEv @ 12414 NONAME
-	_ZNK9QTextLine6glyphsEii @ 12415 NONAME
+	_ZNK9QTextLine6glyphsEii @ 12415 NONAME ABSENT
 	_ZTI10QBlittable @ 12416 NONAME
 	_ZTI12QScrollEvent @ 12417 NONAME
 	_ZTI13QFlickGesture @ 12418 NONAME
@@ -12799,4 +12799,69 @@ EXPORTS
 	_ZNK10QZipWriter6deviceEv @ 12798 NONAME
 	_ZNK10QZipWriter6existsEv @ 12799 NONAME
 	_ZNK10QZipWriter6statusEv @ 12800 NONAME
+	_Z27qt_isExtendedRadialGradientRK6QBrush @ 12801 NONAME
+	_Z28qt_painterPathFromVectorPathRK11QVectorPath @ 12802 NONAME
+	_Z29qt_draw_decoration_for_glyphsP8QPainterPKjPK11QFixedPointiP11QFontEngineRK5QFontRK15QTextCharFormat @ 12803 NONAME
+	_ZN10QTableView13doItemsLayoutEv @ 12804 NONAME
+	_ZN11QTextEngine15beginningOfLineEi @ 12805 NONAME
+	_ZN11QTextEngine16offsetInLigatureEPK11QScriptItemiii @ 12806 NONAME
+	_ZN11QTextEngine22insertionPointsForLineEiR7QVectorIiE @ 12807 NONAME
+	_ZN11QTextEngine25lineNumberForTextPositionEi @ 12808 NONAME
+	_ZN11QTextEngine27positionAfterVisualMovementEiN11QTextCursor13MoveOperationE @ 12809 NONAME
+	_ZN11QTextEngine9alignLineERK11QScriptLine @ 12810 NONAME
+	_ZN11QTextEngine9endOfLineEi @ 12811 NONAME
+	_ZN11QTextLayout18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12812 NONAME
+	_ZN13QTextDocument25setDefaultCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12813 NONAME
+	_ZN15QGraphicsLayout28instantInvalidatePropagationEv @ 12814 NONAME
+	_ZN15QGraphicsLayout31setInstantInvalidatePropagationEb @ 12815 NONAME
+	_ZN15QRadialGradient14setFocalRadiusEf @ 12816 NONAME
+	_ZN15QRadialGradient15setCenterRadiusEf @ 12817 NONAME
+	_ZN15QRadialGradientC1ERK7QPointFfS2_f @ 12818 NONAME
+	_ZN15QRadialGradientC1Effffff @ 12819 NONAME
+	_ZN15QRadialGradientC2ERK7QPointFfS2_f @ 12820 NONAME
+	_ZN15QRadialGradientC2Effffff @ 12821 NONAME
+	_ZN19QIdentityProxyModel10insertRowsEiiRK11QModelIndex @ 12822 NONAME
+	_ZN19QIdentityProxyModel10removeRowsEiiRK11QModelIndex @ 12823 NONAME
+	_ZN19QIdentityProxyModel11qt_metacallEN11QMetaObject4CallEiPPv @ 12824 NONAME
+	_ZN19QIdentityProxyModel11qt_metacastEPKc @ 12825 NONAME
+	_ZN19QIdentityProxyModel12dropMimeDataEPK9QMimeDataN2Qt10DropActionEiiRK11QModelIndex @ 12826 NONAME
+	_ZN19QIdentityProxyModel13insertColumnsEiiRK11QModelIndex @ 12827 NONAME
+	_ZN19QIdentityProxyModel13removeColumnsEiiRK11QModelIndex @ 12828 NONAME
+	_ZN19QIdentityProxyModel14setSourceModelEP18QAbstractItemModel @ 12829 NONAME
+	_ZN19QIdentityProxyModel16staticMetaObjectE @ 12830 NONAME DATA 16
+	_ZN19QIdentityProxyModel18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 12831 NONAME
+	_ZN19QIdentityProxyModel19getStaticMetaObjectEv @ 12832 NONAME
+	_ZN19QIdentityProxyModel25staticMetaObjectExtraDataE @ 12833 NONAME DATA 8
+	_ZN19QIdentityProxyModelC1EP7QObject @ 12834 NONAME
+	_ZN19QIdentityProxyModelC1ER26QIdentityProxyModelPrivateP7QObject @ 12835 NONAME
+	_ZN19QIdentityProxyModelC2EP7QObject @ 12836 NONAME
+	_ZN19QIdentityProxyModelC2ER26QIdentityProxyModelPrivateP7QObject @ 12837 NONAME
+	_ZN19QIdentityProxyModelD0Ev @ 12838 NONAME
+	_ZN19QIdentityProxyModelD1Ev @ 12839 NONAME
+	_ZN19QIdentityProxyModelD2Ev @ 12840 NONAME
+	_ZN9QLineEdit18setCursorMoveStyleEN11QTextCursor9MoveStyleE @ 12841 NONAME
+	_ZNK10QTextBlock7isValidEv @ 12842 NONAME
+	_ZNK11QTextEngine19nextLogicalPositionEi @ 12843 NONAME
+	_ZNK11QTextEngine23previousLogicalPositionEi @ 12844 NONAME
+	_ZNK11QTextLayout15cursorMoveStyleEv @ 12845 NONAME
+	_ZNK11QTextLayout18leftCursorPositionEi @ 12846 NONAME
+	_ZNK11QTextLayout19rightCursorPositionEi @ 12847 NONAME
+	_ZNK12QUndoCommand10actionTextEv @ 12848 NONAME
+	_ZNK13QTextDocument22defaultCursorMoveStyleEv @ 12849 NONAME
+	_ZNK14QVolatileImage14paintingActiveEv @ 12850 NONAME
+	_ZNK15QRadialGradient11focalRadiusEv @ 12851 NONAME
+	_ZNK15QRadialGradient12centerRadiusEv @ 12852 NONAME
+	_ZNK19QIdentityProxyModel10metaObjectEv @ 12853 NONAME
+	_ZNK19QIdentityProxyModel11columnCountERK11QModelIndex @ 12854 NONAME
+	_ZNK19QIdentityProxyModel11mapToSourceERK11QModelIndex @ 12855 NONAME
+	_ZNK19QIdentityProxyModel13mapFromSourceERK11QModelIndex @ 12856 NONAME
+	_ZNK19QIdentityProxyModel20mapSelectionToSourceERK14QItemSelection @ 12857 NONAME
+	_ZNK19QIdentityProxyModel22mapSelectionFromSourceERK14QItemSelection @ 12858 NONAME
+	_ZNK19QIdentityProxyModel5indexEiiRK11QModelIndex @ 12859 NONAME
+	_ZNK19QIdentityProxyModel5matchERK11QModelIndexiRK8QVarianti6QFlagsIN2Qt9MatchFlagEE @ 12860 NONAME
+	_ZNK19QIdentityProxyModel6parentERK11QModelIndex @ 12861 NONAME
+	_ZNK19QIdentityProxyModel8rowCountERK11QModelIndex @ 12862 NONAME
+	_ZNK9QLineEdit15cursorMoveStyleEv @ 12863 NONAME
+	_ZTI19QIdentityProxyModel @ 12864 NONAME
+	_ZTV19QIdentityProxyModel @ 12865 NONAME
 
