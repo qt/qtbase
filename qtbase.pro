@@ -74,15 +74,15 @@ unix:!symbian {
 			(cd config.tests/x11/xshape && $(MAKE) distclean); \
 			(cd config.tests/x11/opengl && $(MAKE) distclean); \
                         $(DEL_FILE) config.tests/.qmake.cache; \
-			$(DEL_FILE) src/core/global/qconfig.h; \
-			$(DEL_FILE) src/core/global/qconfig.cpp; \
+			$(DEL_FILE) src/corelib/global/qconfig.h; \
+			$(DEL_FILE) src/corelib/global/qconfig.cpp; \
 			$(DEL_FILE) mkspecs/qconfig.pri; \
 			$(DEL_FILE) .qmake.cache; \
  			(cd qmake && $(MAKE) distclean);
 }
 win32 {
-  confclean.commands += -$(DEL_FILE) src\\core\\global\\qconfig.h $$escape_expand(\\n\\t) \
-			-$(DEL_FILE) src\\core\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
+  confclean.commands += -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
 			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
 			(cd qmake && $(MAKE) distclean)
