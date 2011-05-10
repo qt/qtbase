@@ -199,6 +199,8 @@ void QWaylandClipboard::forceRoundtrip(struct wl_display *display)
 QVariant QWaylandClipboard::retrieveData(const QString &mimeType, QVariant::Type type) const
 {
     Q_UNUSED(type);
+    if (mOfferedMimeTypes.isEmpty() || !mOffer)
+        return QVariant();
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         qWarning("QWaylandClipboard: pipe() failed");
