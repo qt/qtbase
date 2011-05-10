@@ -593,11 +593,11 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
         // if none of them match, just pick the first one
         for (int i = 0; i < list.size(); i++) {
             QGlyphRun glyphs = list.at(i);
-            QRawFont rawfont = glyphs.font();
+            QRawFont rawfont = glyphs.rawFont();
             if (rawfont.familyName() == font.family())
                 return rawfont;
         }
-        return list.at(0).font();
+        return list.at(0).rawFont();
     }
     return QRawFont();
 #else
