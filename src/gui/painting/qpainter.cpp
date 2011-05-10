@@ -5801,10 +5801,12 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphRun.positions();
+    QGlyphRunPrivate *glyphRun_d = QGlyphRunPrivate::get(glyphRun);
 
-    int count = qMin(glyphIndexes.size(), glyphPositions.size());
+    const quint32 *glyphIndexes = glyphRun_d->glyphIndexData;
+    const QPointF *glyphPositions = glyphRun_d->glyphPositionData;
+
+    int count = qMin(glyphRun_d->glyphIndexDataSize, glyphRun_d->glyphPositionDataSize);
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
@@ -5818,17 +5820,18 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     }
 
     for (int i=0; i<count; ++i) {
-        QPointF processedPosition = position + glyphPositions.at(i);
+        QPointF processedPosition = position + glyphPositions[i];
         if (!supportsTransformations)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphRun.overline(),
+    d->drawGlyphs(glyphIndexes, fixedPointPositions.data(), count, font, glyphRun.overline(),
                   glyphRun.underline(), glyphRun.strikeOut());
 }
 
-void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positions,
+                                 int glyphCount,
                                  const QRawFont &font, bool overline, bool underline,
                                  bool strikeOut)
 {

@@ -232,7 +232,7 @@ public:
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
 
 #if !defined(QT_NO_RAWFONT)
-    void drawGlyphs(quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount,
+    void drawGlyphs(const quint32 *glyphArray, QFixedPoint *positionArray, int glyphCount,
                     const QRawFont &font, bool overline = false, bool underline = false,
                     bool strikeOut = false);
 #endif

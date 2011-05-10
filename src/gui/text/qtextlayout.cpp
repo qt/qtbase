@@ -2282,10 +2282,20 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
             glyphIndexes.setRawFont(font);
 
             QPair<QFontEngine *, int> key(fontEngine, int(flags));
-            if (!glyphsHash.contains(key))
+            if (!glyphsHash.contains(key)) {
                 glyphsHash.insert(key, glyphIndexes);
-            else
-                glyphsHash[key] += glyphIndexes;
+            } else {
+                QGlyphRun &glyphRun = glyphsHash[key];
+
+                QVector<quint32> indexes = glyphRun.glyphIndexes();
+                QVector<QPointF> positions = glyphRun.positions();
+
+                indexes += glyphIndexes.glyphIndexes();
+                positions += glyphIndexes.positions();
+
+                glyphRun.setGlyphIndexes(indexes);
+                glyphRun.setPositions(positions);
+            }
         }
     }
 
