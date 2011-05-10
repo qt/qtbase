@@ -65,6 +65,39 @@ QT_BEGIN_NAMESPACE
 
 class QNativeImage;
 
+//
+// This is the implementation of the unified toolbar on Mac OS X
+// with the graphics system raster.
+//
+// General idea:
+// -------------
+// We redirect the painting of widgets inside the unified toolbar
+// to a special window surface, the QUnifiedToolbarSurface.
+// We need a separate window surface because the unified toolbar
+// is out of the content view.
+// The input system is the same as for the unified toolbar with the
+// native (CoreGraphics) engine.
+//
+// Execution flow:
+// ---------------
+// The unified toolbar is triggered by QMainWindow::setUnifiedTitleAndToolBarOnMac().
+// It calls QMainWindowLayout::insertIntoMacToolbar() which will
+// set all the appropriate variables (offsets, redirection, ...).
+// When Qt tells a widget to repaint, QWidgetPrivate::drawWidget()
+// checks if the widget is inside the unified toolbar and exits without
+// painting is that is the case.
+// We trigger the rendering of the unified toolbar in QWidget::repaint()
+// and QWidget::update().
+// We keep track of flush requests via "flushRequested" variable. That
+// allow flush() to be a no-op if no repaint occured for a widget.
+// We rely on the needsDisplay: and drawRect: mecanism for drawing our
+// content into the graphics context.
+//
+// Notes:
+// ------
+// The painting of items inside the unified toolbar is expensive.
+// Too many repaints will drastically slow down the whole application.
+//
 
 class QUnifiedToolbarSurfacePrivate
 {

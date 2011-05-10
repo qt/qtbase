@@ -2733,7 +2733,7 @@ QWidget::macCGHandle() const
     return handle();
 }
 
-void qt_mac_repaintParentUnderAlienWidget(QWidget *alienWidget)
+void qt_mac_updateParentUnderAlienWidget(QWidget *alienWidget)
 {
     QWidget *nativeParent = alienWidget->nativeParentWidget();
     if (!nativeParent)
@@ -2741,7 +2741,7 @@ void qt_mac_repaintParentUnderAlienWidget(QWidget *alienWidget)
 
     QPoint globalPos = alienWidget->mapToGlobal(QPoint(0, 0));
     QRect dirtyRect = QRect(nativeParent->mapFromGlobal(globalPos), alienWidget->size());
-    nativeParent->repaint(dirtyRect);
+    nativeParent->update(dirtyRect);
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -2752,7 +2752,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     if (!internalWinId())
-        qt_mac_repaintParentUnderAlienWidget(this);
+        qt_mac_updateParentUnderAlienWidget(this);
     d->deactivateWidgetCleanup();
     qt_mac_event_release(this);
     if(testAttribute(Qt::WA_WState_Created)) {
@@ -3526,8 +3526,8 @@ void QWidgetPrivate::show_sys()
             // INVARIANT: q is native. Just show the view:
             [view setHidden:NO];
         } else {
-            // INVARIANT: q is alien. Repaint q instead:
-            q->repaint();
+            // INVARIANT: q is alien. Update q instead:
+            q->update();
         }
 #endif
     }
@@ -3683,7 +3683,7 @@ void QWidgetPrivate::hide_sys()
             [view setHidden:YES];
         } else {
             // INVARIANT: q is alien. Repaint where q is placed instead:
-            qt_mac_repaintParentUnderAlienWidget(q);
+            qt_mac_updateParentUnderAlienWidget(q);
         }
 #endif
     }

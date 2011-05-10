@@ -152,7 +152,8 @@ void QUnifiedToolbarSurface::beginPaint(const QRegion &rgn)
 void QUnifiedToolbarSurface::updateToolbarOffset(QWidget *widget)
 {
     QMainWindowLayout *mlayout = qobject_cast<QMainWindowLayout*> (widget->window()->layout());
-    mlayout->updateUnifiedToolbarOffset();
+    if (mlayout)
+        mlayout->updateUnifiedToolbarOffset();
 }
 
 void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)

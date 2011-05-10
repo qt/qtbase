@@ -1588,6 +1588,7 @@ QWidget::~QWidget()
 
     // delete layout while we still are a valid widget
     delete d->layout;
+    d->layout = 0;
     // Remove myself from focus list
 
     Q_ASSERT(d->focus_next->d_func()->focus_prev == this);
