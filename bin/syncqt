@@ -27,8 +27,8 @@ our $quoted_basedir;
 # normally the script location should be enough, if not fall back to
 # QTDIR environment variable. If that doesn't work, later ask the
 # user to use the -qtdir option explicitly.
-my $qtbasedir = dirname(dirname($0));
-$qtbasedir = $ENV{"QTDIR"} if ($qtbasedir !~ /qtbase/);
+my $qtbasedir = $ENV{"QTDIR"};
+$qtbasedir = dirname(dirname($0)) if (!$qtbasedir);
 $qtbasedir =~ s=\\=/=g if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
@@ -717,7 +717,7 @@ while ( @ARGV ) {
 die "Cannot automatically detect/use provided path to QtBase's build directory!\n" .
     "QTDIR detected/provided: " . (defined $qtbasedir ? $qtbasedir : "-none-") . "\n" .
     "Please -qtdir option to provide the correct path.\nsyncqt failed"
-        if (!defined $qtbasedir || (!-e "$qtbasedir/.qmake.cache" && $qtbasedir !~ /qtbase/));
+        if (!$qtbasedir || !-d "$qtbasedir/mkspecs");
 
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
