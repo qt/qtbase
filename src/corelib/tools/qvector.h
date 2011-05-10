@@ -574,8 +574,9 @@ void QVector<T>::append(const T &t)
 {
     if (d->ref != 1 || d->size + 1 > d->alloc) {
         const T copy(t);
-        realloc(d->size, QVectorData::grow(sizeOfTypedData(), d->size + 1, sizeof(T),
-                                           QTypeInfo<T>::isStatic));
+        realloc(d->size, (d->size + 1 > d->alloc) ?
+                    QVectorData::grow(sizeOfTypedData(), d->size + 1, sizeof(T), QTypeInfo<T>::isStatic)
+                    : d->alloc);
         if (QTypeInfo<T>::isComplex)
             new (p->array + d->size) T(copy);
         else
