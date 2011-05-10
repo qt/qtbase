@@ -124,8 +124,9 @@ public:
     QDefaultAnimationDriver(QUnifiedTimer *timer);
     void timerEvent(QTimerEvent *e);
 
-    void started();
-    void stopped();
+private Q_SLOTS:
+    void startTimer();
+    void stopTimer();
 
 private:
     QBasicTimer m_timer;
