@@ -655,6 +655,7 @@ void HB_GetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
                           const HB_ScriptItem *items, hb_uint32 numItems,
                           HB_CharAttributes *attributes)
 {
+    memset(attributes, 0, stringLength * sizeof(HB_CharAttributes));
     calcLineBreaks(string, stringLength, attributes);
 
     for (hb_uint32 i = 0; i < numItems; ++i) {

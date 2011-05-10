@@ -173,6 +173,9 @@ public:
     bool forcePenChange;    // Force a pen change, even if the same.
     bool forceBrushChange;  // Force a brush change, even if the same.
 
+    bool hasExtendedRadialGradientPen; // Current pen's brush is extended radial gradient.
+    bool hasExtendedRadialGradientBrush; // Current brush is extended radial gradient.
+
     VGPaintType penType;    // Type of the last pen that was set.
     VGPaintType brushType;  // Type of the last brush that was set.
 
@@ -275,6 +278,27 @@ public:
         }
     }
 
+    inline bool needsEmulation(const QBrush &brush) const
+    {
+        extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+        return qt_isExtendedRadialGradient(brush);
+    }
+
+    inline bool needsEmulation() const
+    {
+        return hasExtendedRadialGradientPen || hasExtendedRadialGradientBrush;
+    }
+
+    inline bool needsPenEmulation() const
+    {
+        return hasExtendedRadialGradientPen;
+    }
+
+    inline bool needsBrushEmulation() const
+    {
+        return hasExtendedRadialGradientBrush;
+    }
+
     // Set various modes, but only if different.
     inline void setImageMode(VGImageMode mode);
     inline void setRenderingQuality(VGRenderingQuality mode);
@@ -355,6 +379,10 @@ void QVGPaintEnginePrivate::init()
 
     forcePenChange = true;
     forceBrushChange = true;
+
+    hasExtendedRadialGradientPen = false;
+    hasExtendedRadialGradientBrush = false;
+
     penType = (VGPaintType)0;
     brushType = (VGPaintType)0;
 
@@ -1530,12 +1558,18 @@ bool QVGPaintEngine::begin(QPaintDevice *pdev)
 
 bool QVGPaintEngine::end()
 {
+    vgSeti(VG_SCISSORING, VG_FALSE);
+    vgSeti(VG_MASKING, VG_FALSE);
     return true;
 }
 
 void QVGPaintEngine::draw(const QVectorPath &path)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::draw(path);
+        return;
+    }
     QVGPainterState *s = state();
     VGPath vgpath = d->vectorPathToVGPath(path);
     if (!path.hasWindingFill())
@@ -1545,9 +1579,19 @@ void QVGPaintEngine::draw(const QVectorPath &path)
     vgDestroyPath(vgpath);
 }
 
+extern QPainterPath qt_painterPathFromVectorPath(const QVectorPath &path);
+
 void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation(brush)) {
+        QPainter *p = painter();
+        QBrush oldBrush = p->brush();
+        p->setBrush(brush);
+        qt_draw_helper(p->d_ptr.data(), qt_painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
+        p->setBrush(oldBrush);
+        return;
+    }
     VGPath vgpath = d->vectorPathToVGPath(path);
     if (!path.hasWindingFill())
         d->fill(vgpath, brush, VG_EVEN_ODD);
@@ -1559,6 +1603,10 @@ void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation(pen.brush())) {
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
     VGPath vgpath = d->vectorPathToVGPath(path);
     d->stroke(vgpath, pen);
     vgDestroyPath(vgpath);
@@ -2362,12 +2410,17 @@ void QVGPaintEngine::penChanged()
 {
     Q_D(QVGPaintEngine);
     d->dirty |= QPaintEngine::DirtyPen;
+
+    d->hasExtendedRadialGradientPen =
+        state()->pen.style() != Qt::NoPen && d->needsEmulation(state()->pen.brush());
 }
 
 void QVGPaintEngine::brushChanged()
 {
     Q_D(QVGPaintEngine);
     d->dirty |= QPaintEngine::DirtyBrush;
+
+    d->hasExtendedRadialGradientPen = d->needsEmulation(state()->brush);
 }
 
 void QVGPaintEngine::brushOriginChanged()
@@ -2546,6 +2599,11 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         return;
     }
 
+    if (d->needsEmulation(brush)) {
+        QPaintEngineEx::fillRect(rect, brush);
+        return;
+    }
+
 #if !defined(QVG_NO_MODIFY_PATH)
     VGfloat coords[8];
     if (d->simpleTransform) {
@@ -2623,6 +2681,10 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
 {
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
+        return;
+    }
     if (d->simpleTransform) {
         QVGPainterState *s = state();
         VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
@@ -2639,6 +2701,10 @@ void QVGPaintEngine::drawRects(const QRect *rects, int rectCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
@@ -2680,6 +2746,10 @@ void QVGPaintEngine::drawRects(const QRectF *rects, int rectCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawRects(rects, rectCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
@@ -2718,6 +2788,10 @@ void QVGPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
@@ -2746,6 +2820,10 @@ void QVGPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawLines(lines, lineCount);
+        return;
+    }
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
@@ -2775,6 +2853,10 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
     // Based on the description of vguEllipse() in the OpenVG specification.
     // We don't use vguEllipse(), to avoid unnecessary library dependencies.
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawEllipse(r);
+        return;
+    }
     if (d->simpleTransform) {
         QVGPainterState *s = state();
         VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
@@ -2825,6 +2907,10 @@ void QVGPaintEngine::drawPath(const QPainterPath &path)
     // Shortcut past the QPainterPath -> QVectorPath conversion,
     // converting the QPainterPath directly into a VGPath.
     Q_D(QVGPaintEngine);
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPath(path);
+        return;
+    }
     QVGPainterState *s = state();
     VGPath vgpath = d->painterPathToVGPath(path);
     if (path.fillRule() == Qt::OddEvenFill)
@@ -2838,6 +2924,11 @@ void QVGPaintEngine::drawPoints(const QPointF *points, int pointCount)
 {
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
+
+    if (d->needsPenEmulation()) {
+        QPaintEngineEx::drawPoints(points, pointCount);
+        return;
+    }
 
     // Set up a new pen if necessary.
     QPen pen = state()->pen;
@@ -2873,6 +2964,11 @@ void QVGPaintEngine::drawPoints(const QPoint *points, int pointCount)
 #if !defined(QVG_NO_MODIFY_PATH)
     Q_D(QVGPaintEngine);
 
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPoints(points, pointCount);
+        return;
+    }
+
     // Set up a new pen if necessary.
     QPen pen = state()->pen;
     if (pen.style() == Qt::NoPen)
@@ -2905,6 +3001,12 @@ void QVGPaintEngine::drawPoints(const QPoint *points, int pointCount)
 void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
+
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPolygon(points, pointCount, mode);
+        return;
+    }
+
     QVGPainterState *s = state();
     VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                                VG_PATH_DATATYPE_F,
@@ -2952,6 +3054,12 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
 void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
+
+    if (d->needsEmulation()) {
+        QPaintEngineEx::drawPolygon(points, pointCount, mode);
+        return;
+    }
+
     QVGPainterState *s = state();
     VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                                VG_PATH_DATATYPE_F,
@@ -3611,6 +3719,11 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         return;
     }
 
+    if (d->needsPenEmulation()) {
+        QPaintEngineEx::drawTextItem(p, textItem);
+        return;
+    }
+
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -3756,6 +3869,8 @@ void QVGPaintEngine::beginNativePainting()
 #if !defined(QVG_NO_DRAW_GLYPHS)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
 #endif
+    vgSeti(VG_SCISSORING, VG_FALSE);
+    vgSeti(VG_MASKING, VG_FALSE);
     d->rawVG = true;
 }
 
@@ -3816,6 +3931,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
     if ((dirty & QPaintEngine::DirtyBrushOrigin) != 0)
         brushOriginChanged();
     d->fillRule = 0;
+    d->clearColor = QColor();
     if ((dirty & QPaintEngine::DirtyOpacity) != 0)
         opacityChanged();
     if ((dirty & QPaintEngine::DirtyTransform) != 0)

@@ -495,6 +495,8 @@ GLuint QGLEngineShaderManager::getUniformLocation(Uniform id)
         "fmp",
         "fmp2_m_radius2",
         "inverse_2_fmp2_m_radius2",
+        "sqrfr",
+        "bradius",
         "invertedTextureSize",
         "brushTransform",
         "brushTexture",

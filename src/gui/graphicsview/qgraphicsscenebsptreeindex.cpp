@@ -50,14 +50,14 @@
 
     QGraphicsSceneBspTreeIndex index use a BSP(Binary Space Partitioning)
     implementation to discover items quickly. This implementation is
-    very efficient for static scene. It has a depth that you can set.
+    very efficient for static scenes. It has a depth that you can set.
     The depth directly affects performance and memory usage; the latter
     growing exponentially with the depth of the tree. With an optimal tree
     depth, the index can instantly determine the locality of items, even
     for scenes with thousands or millions of items. This also greatly improves
     rendering performance.
 
-    By default, the value is 0, in which case Qt will guess a reasonable
+    By default, the depth value is 0, in which case Qt will guess a reasonable
     default depth based on the size, location and number of items in the
     scene. If these parameters change frequently, however, you may experience
     slowdowns as the index retunes the depth internally. You can avoid

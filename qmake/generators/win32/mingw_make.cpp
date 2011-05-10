@@ -141,7 +141,8 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if(project->first("TEMPLATE") == "app" ||
-       project->first("TEMPLATE") == "lib") {
+       project->first("TEMPLATE") == "lib" ||
+       project->first("TEMPLATE") == "aux") {
         if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
             writePkgConfigFile();
 
@@ -436,6 +437,11 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
+    if (project->first("TEMPLATE") == "aux") {
+        t << "first:" << endl;
+        return;
+    }
+
     t << "first: all" << endl;
     t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName())) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS"))," "," "," ") << " $(DESTDIR_TARGET)" << endl << endl;
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");

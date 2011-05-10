@@ -981,23 +981,6 @@ QStringList QSettingsPrivate::splitArgs(const QString &s, int idx)
 // ************************************************************************
 // QConfFileSettingsPrivate
 
-/*
-    If we don't have the permission to read the file, returns false.
-    If the file doesn't exist, returns true.
-*/
-static bool checkAccess(const QString &name)
-{
-    QFileInfo fileInfo(name);
-
-    if (fileInfo.exists()) {
-        QFile file(name);
-        // if the file exists but we can't open it, report an error
-        return file.open(QFile::ReadOnly);
-    } else {
-        return true;
-    }
-}
-
 void QConfFileSettingsPrivate::initFormat()
 {
     extension = (format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini");
@@ -1026,17 +1009,12 @@ void QConfFileSettingsPrivate::initFormat()
 
 void QConfFileSettingsPrivate::initAccess()
 {
-    bool readAccess = false;
     if (confFiles[spec]) {
-        readAccess = checkAccess(confFiles[spec]->name);
         if (format > QSettings::IniFormat) {
             if (!readFunc)
-                readAccess = false;
+                setStatus(QSettings::AccessError);
         }
     }
-
-    if (!readAccess)
-        setStatus(QSettings::AccessError);
 
     sync();       // loads the files the first time
 }
@@ -1432,7 +1410,7 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         We can often optimize the read-only case, if the file on disk
         hasn't changed.
     */
-    if (readOnly) {
+    if (readOnly && confFile->size > 0) {
         QFileInfo fileInfo(confFile->name);
         if (confFile->size == fileInfo.size() && confFile->timeStamp == fileInfo.lastModified())
             return;
@@ -1454,6 +1432,9 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         file.open(QFile::ReadWrite);
     if (!file.isOpen())
         file.open(QFile::ReadOnly);
+
+    if (!createFile && !file.isOpen())
+        setStatus(QSettings::AccessError);
 
 #ifdef Q_OS_WIN
     HANDLE readSemaphore = 0;

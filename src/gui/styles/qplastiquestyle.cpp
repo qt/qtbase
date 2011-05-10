@@ -2007,13 +2007,9 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
     } else {
         alphaCornerColor = mergedColors(option->palette.background().color(), borderColor);
     }
-    QColor alphaTextColor = mergedColors(option->palette.background().color(), option->palette.text().color());
 
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-
-    QColor shadowGradientStartColor = option->palette.button().color().darker(115);
-    QColor shadowGradientStopColor = option->palette.button().color().darker(120);
 
     QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
     QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
@@ -2025,8 +2021,6 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
     QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
 
     QColor alphaInnerColor = mergedColors(highlightedDarkInnerBorderColor, option->palette.base().color());
-    QColor lightShadow = lightShadowGradientStartColor;
-    QColor shadow = shadowGradientStartColor;
 
     switch (element) {
 #ifndef QT_NO_TABBAR
@@ -3786,10 +3780,6 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
     }
     QColor gradientStartColor = option->palette.button().color().lighter(104);
     QColor gradientStopColor = option->palette.button().color().darker(105);
-    QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
-    QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
-    QColor highlightedDarkInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 35);
-    QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
 
     switch (control) {
 #ifndef QT_NO_SLIDER
@@ -3797,7 +3787,6 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
             QRect grooveRegion = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;

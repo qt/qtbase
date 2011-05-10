@@ -117,7 +117,6 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 
 void QHttpNetworkConnectionPrivate::init()
 {
-    Q_Q(QHttpNetworkConnection);
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;

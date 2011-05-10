@@ -63,6 +63,7 @@
 #endif
 #include "private/qrasterdefs_p.h"
 #include <private/qsimd_p.h>
+#include <private/qmath_p.h>
 
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
@@ -178,6 +179,44 @@ void qBlendTextureCallback(int count, const QSpan *spans, void *userData);
 typedef void (QT_FASTCALL *CompositionFunction)(uint *dest, const uint *src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
 
+struct LinearGradientValues
+{
+    qreal dx;
+    qreal dy;
+    qreal l;
+    qreal off;
+};
+
+struct RadialGradientValues
+{
+    qreal dx;
+    qreal dy;
+    qreal dr;
+    qreal sqrfr;
+    qreal a;
+    qreal inv2a;
+    bool extended;
+};
+
+struct Operator;
+typedef uint* (QT_FASTCALL *DestFetchProc)(uint *buffer, QRasterBuffer *rasterBuffer, int x, int y, int length);
+typedef void (QT_FASTCALL *DestStoreProc)(QRasterBuffer *rasterBuffer, int x, int y, const uint *buffer, int length);
+typedef const uint* (QT_FASTCALL *SourceFetchProc)(uint *buffer, const Operator *o, const QSpanData *data, int y, int x, int length);
+
+struct Operator
+{
+    QPainter::CompositionMode mode;
+    DestFetchProc dest_fetch;
+    DestStoreProc dest_store;
+    SourceFetchProc src_fetch;
+    CompositionFunctionSolid funcSolid;
+    CompositionFunction func;
+    union {
+        LinearGradientValues linear;
+        RadialGradientValues radial;
+    };
+};
+
 void qInitDrawhelperAsm();
 
 class QRasterPaintEngine;
@@ -204,12 +243,13 @@ struct QRadialGradientData
     struct {
         qreal x;
         qreal y;
+        qreal radius;
     } center;
     struct {
         qreal x;
         qreal y;
+        qreal radius;
     } focal;
-    qreal radius;
 };
 
 struct QConicalGradientData
@@ -233,8 +273,10 @@ struct QGradientData
 
 #ifdef Q_WS_QWS
 #define GRADIENT_STOPTABLE_SIZE 256
+#define GRADIENT_STOPTABLE_SIZE_SHIFT 8
 #else
 #define GRADIENT_STOPTABLE_SIZE 1024
+#define GRADIENT_STOPTABLE_SIZE_SHIFT 10
 #endif
 
     uint* colorTable; //[GRADIENT_STOPTABLE_SIZE];
@@ -306,6 +348,218 @@ struct QSpanData
     void setupMatrix(const QTransform &matrix, int bilinear);
     void initTexture(const QImage *image, int alpha, QTextureData::Type = QTextureData::Plain, const QRect &sourceRect = QRect());
     void adjustSpanMethods();
+};
+
+static inline uint qt_gradient_clamp(const QGradientData *data, int ipos)
+{
+    if (ipos < 0 || ipos >= GRADIENT_STOPTABLE_SIZE) {
+        if (data->spread == QGradient::RepeatSpread) {
+            ipos = ipos % GRADIENT_STOPTABLE_SIZE;
+            ipos = ipos < 0 ? GRADIENT_STOPTABLE_SIZE + ipos : ipos;
+        } else if (data->spread == QGradient::ReflectSpread) {
+            const int limit = GRADIENT_STOPTABLE_SIZE * 2;
+            ipos = ipos % limit;
+            ipos = ipos < 0 ? limit + ipos : ipos;
+            ipos = ipos >= GRADIENT_STOPTABLE_SIZE ? limit - 1 - ipos : ipos;
+        } else {
+            if (ipos < 0)
+                ipos = 0;
+            else if (ipos >= GRADIENT_STOPTABLE_SIZE)
+                ipos = GRADIENT_STOPTABLE_SIZE-1;
+        }
+    }
+
+    Q_ASSERT(ipos >= 0);
+    Q_ASSERT(ipos < GRADIENT_STOPTABLE_SIZE);
+
+    return ipos;
+}
+
+static inline uint qt_gradient_pixel(const QGradientData *data, qreal pos)
+{
+    int ipos = int(pos * (GRADIENT_STOPTABLE_SIZE - 1) + qreal(0.5));
+    return data->colorTable[qt_gradient_clamp(data, ipos)];
+}
+
+static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
+{
+    return (b * b) - (4 * a * c);
+}
+
+template <class RadialFetchFunc>
+const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
+                                                           int y, int x, int length)
+{
+    // avoid division by zero
+    if (qFuzzyIsNull(op->radial.a)) {
+        extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
+        qt_memfill32(buffer, 0, length);
+        return buffer;
+    }
+
+    const uint *b = buffer;
+    qreal rx = data->m21 * (y + qreal(0.5))
+               + data->dx + data->m11 * (x + qreal(0.5));
+    qreal ry = data->m22 * (y + qreal(0.5))
+               + data->dy + data->m12 * (x + qreal(0.5));
+    bool affine = !data->m13 && !data->m23;
+
+    uint *end = buffer + length;
+    if (affine) {
+        rx -= data->gradient.radial.focal.x;
+        ry -= data->gradient.radial.focal.y;
+
+        qreal inv_a = 1 / qreal(2 * op->radial.a);
+
+        const qreal delta_rx = data->m11;
+        const qreal delta_ry = data->m12;
+
+        qreal b = 2*(op->radial.dr*data->gradient.radial.focal.radius + rx * op->radial.dx + ry * op->radial.dy);
+        qreal delta_b = 2*(delta_rx * op->radial.dx + delta_ry * op->radial.dy);
+        const qreal b_delta_b = 2 * b * delta_b;
+        const qreal delta_b_delta_b = 2 * delta_b * delta_b;
+
+        const qreal bb = b * b;
+        const qreal delta_bb = delta_b * delta_b;
+
+        b *= inv_a;
+        delta_b *= inv_a;
+
+        const qreal rxrxryry = rx * rx + ry * ry;
+        const qreal delta_rxrxryry = delta_rx * delta_rx + delta_ry * delta_ry;
+        const qreal rx_plus_ry = 2*(rx * delta_rx + ry * delta_ry);
+        const qreal delta_rx_plus_ry = 2 * delta_rxrxryry;
+
+        inv_a *= inv_a;
+
+        qreal det = (bb - 4 * op->radial.a * (op->radial.sqrfr - rxrxryry)) * inv_a;
+        qreal delta_det = (b_delta_b + delta_bb + 4 * op->radial.a * (rx_plus_ry + delta_rxrxryry)) * inv_a;
+        const qreal delta_delta_det = (delta_b_delta_b + 4 * op->radial.a * delta_rx_plus_ry) * inv_a;
+
+        RadialFetchFunc::fetch(buffer, end, op, data, det, delta_det, delta_delta_det, b, delta_b);
+    } else {
+        qreal rw = data->m23 * (y + qreal(0.5))
+                   + data->m33 + data->m13 * (x + qreal(0.5));
+
+        while (buffer < end) {
+            if (rw == 0) {
+                *buffer = 0;
+            } else {
+                qreal invRw = 1 / rw;
+                qreal gx = rx * invRw - data->gradient.radial.focal.x;
+                qreal gy = ry * invRw - data->gradient.radial.focal.y;
+                qreal b  = 2*(op->radial.dr*data->gradient.radial.focal.radius + gx*op->radial.dx + gy*op->radial.dy);
+                qreal det = qRadialDeterminant(op->radial.a, b, op->radial.sqrfr - (gx*gx + gy*gy));
+
+                quint32 result = 0;
+                if (det >= 0) {
+                    qreal detSqrt = qSqrt(det);
+
+                    qreal s0 = (-b - detSqrt) * op->radial.inv2a;
+                    qreal s1 = (-b + detSqrt) * op->radial.inv2a;
+
+                    qreal s = qMax(s0, s1);
+
+                    if (data->gradient.radial.focal.radius + op->radial.dr * s >= 0)
+                        result = qt_gradient_pixel(&data->gradient, s);
+                }
+
+                *buffer = result;
+            }
+
+            rx += data->m11;
+            ry += data->m12;
+            rw += data->m13;
+
+            ++buffer;
+        }
+    }
+
+    return b;
+}
+
+template <class Simd>
+class QRadialFetchSimd
+{
+public:
+    static void fetch(uint *buffer, uint *end, const Operator *op, const QSpanData *data, qreal det,
+                      qreal delta_det, qreal delta_delta_det, qreal b, qreal delta_b)
+    {
+        typename Simd::Vect_buffer_f det_vec;
+        typename Simd::Vect_buffer_f delta_det4_vec;
+        typename Simd::Vect_buffer_f b_vec;
+
+        for (int i = 0; i < 4; ++i) {
+            det_vec.f[i] = det;
+            delta_det4_vec.f[i] = 4 * delta_det;
+            b_vec.f[i] = b;
+
+            det += delta_det;
+            delta_det += delta_delta_det;
+            b += delta_b;
+        }
+
+        const typename Simd::Float32x4 v_delta_delta_det16 = Simd::v_dup(16 * delta_delta_det);
+        const typename Simd::Float32x4 v_delta_delta_det6 = Simd::v_dup(6 * delta_delta_det);
+        const typename Simd::Float32x4 v_delta_b4 = Simd::v_dup(4 * delta_b);
+
+        const typename Simd::Float32x4 v_r0 = Simd::v_dup(data->gradient.radial.focal.radius);
+        const typename Simd::Float32x4 v_dr = Simd::v_dup(op->radial.dr);
+
+        const typename Simd::Float32x4 v_min = Simd::v_dup(0.0f);
+        const typename Simd::Float32x4 v_max = Simd::v_dup(float(GRADIENT_STOPTABLE_SIZE-1));
+        const typename Simd::Float32x4 v_half = Simd::v_dup(0.5f);
+
+        const typename Simd::Int32x4 v_repeat_mask = Simd::v_dup(~(uint(0xffffff) << GRADIENT_STOPTABLE_SIZE_SHIFT));
+        const typename Simd::Int32x4 v_reflect_mask = Simd::v_dup(~(uint(0xffffff) << (GRADIENT_STOPTABLE_SIZE_SHIFT+1)));
+
+        const typename Simd::Int32x4 v_reflect_limit = Simd::v_dup(2 * GRADIENT_STOPTABLE_SIZE - 1);
+
+        const int extended_mask = op->radial.extended ? 0x0 : ~0x0;
+
+#define FETCH_RADIAL_LOOP_PROLOGUE \
+        while (buffer < end) { \
+            typename Simd::Vect_buffer_i v_buffer_mask; \
+            v_buffer_mask.v = Simd::v_greaterOrEqual(det_vec.v, v_min); \
+            const typename Simd::Float32x4 v_index_local = Simd::v_sub(Simd::v_sqrt(Simd::v_max(v_min, det_vec.v)), b_vec.v); \
+            const typename Simd::Float32x4 v_index = Simd::v_add(Simd::v_mul(v_index_local, v_max), v_half); \
+            v_buffer_mask.v = Simd::v_and(v_buffer_mask.v, Simd::v_greaterOrEqual(Simd::v_add(v_r0, Simd::v_mul(v_dr, v_index_local)), v_min)); \
+            typename Simd::Vect_buffer_i index_vec;
+#define FETCH_RADIAL_LOOP_CLAMP_REPEAT \
+            index_vec.v = Simd::v_and(v_repeat_mask, Simd::v_toInt(v_index));
+#define FETCH_RADIAL_LOOP_CLAMP_REFLECT \
+            const typename Simd::Int32x4 v_index_i = Simd::v_and(v_reflect_mask, Simd::v_toInt(v_index)); \
+            const typename Simd::Int32x4 v_index_i_inv = Simd::v_sub(v_reflect_limit, v_index_i); \
+            index_vec.v = Simd::v_min_16(v_index_i, v_index_i_inv);
+#define FETCH_RADIAL_LOOP_CLAMP_PAD \
+            index_vec.v = Simd::v_toInt(Simd::v_min(v_max, Simd::v_max(v_min, v_index)));
+#define FETCH_RADIAL_LOOP_EPILOGUE \
+            det_vec.v = Simd::v_add(Simd::v_add(det_vec.v, delta_det4_vec.v), v_delta_delta_det6); \
+            delta_det4_vec.v = Simd::v_add(delta_det4_vec.v, v_delta_delta_det16); \
+            b_vec.v = Simd::v_add(b_vec.v, v_delta_b4); \
+            for (int i = 0; i < 4; ++i) \
+                *buffer++ = (extended_mask | v_buffer_mask.i[i]) & data->gradient.colorTable[index_vec.i[i]]; \
+        }
+
+#define FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP) \
+        FETCH_RADIAL_LOOP_PROLOGUE \
+        FETCH_RADIAL_LOOP_CLAMP \
+        FETCH_RADIAL_LOOP_EPILOGUE
+
+        switch (data->gradient.spread) {
+        case QGradient::RepeatSpread:
+            FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP_REPEAT)
+            break;
+        case QGradient::ReflectSpread:
+            FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP_REFLECT)
+            break;
+        case QGradient::PadSpread:
+            FETCH_RADIAL_LOOP(FETCH_RADIAL_LOOP_CLAMP_PAD)
+            break;
+        default:
+            Q_ASSERT(false);
+        }
+    }
 };
 
 #if defined(Q_CC_RVCT)

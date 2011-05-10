@@ -275,6 +275,8 @@ private slots:
     void focusNextPrevChild();
 
     void taskQTBUG_12384_timeSpecShowTimeOnly();
+    
+    void deleteCalendarWidget();
 
 private:
     EditorDateEdit* testWidget;
@@ -3436,6 +3438,27 @@ void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
     QCOMPARE(edit.minimumTime(), QTime(0, 0, 0, 0));
     QCOMPARE(edit.maximumTime(), QTime(23, 59, 59, 999));
     QCOMPARE(edit.time(), time.time());
+}
+
+void tst_QDateTimeEdit::deleteCalendarWidget()
+{
+    {
+        // setup
+        QCalendarWidget *cw = 0;
+        QDateEdit edit;
+        QVERIFY(!edit.calendarWidget());
+        edit.setCalendarPopup(true);
+        QVERIFY(edit.calendarWidget());
+        edit.calendarWidget()->setObjectName("cw1");;
+        
+        // delete
+        cw = edit.calendarWidget();
+        delete cw;
+        
+        // it should create a new widget
+        QVERIFY(edit.calendarWidget());
+        QVERIFY(edit.calendarWidget()->objectName() != "cw1");
+    }
 }
 
 QTEST_MAIN(tst_QDateTimeEdit)

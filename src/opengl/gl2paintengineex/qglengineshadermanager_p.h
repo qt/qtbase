@@ -442,6 +442,8 @@ public:
         Fmp,
         Fmp2MRadius2,
         Inverse2Fmp2MRadius2,
+        SqrFr,
+        BRadius,
         InvertedTextureSize,
         BrushTransform,
         BrushTexture,

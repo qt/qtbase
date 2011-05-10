@@ -143,55 +143,13 @@ QT_BEGIN_NAMESPACE
 
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
-#ifdef Q_OS_WIN
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toUpper(); }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return QString::fromLocal8Bit(name).toUpper(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value.toLocal8Bit(); }
-#else
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QByteArray &name)
-{ return name; }
-static inline QProcessEnvironmentPrivate::Unit prepareName(const QString &name)
-{ return name.toLocal8Bit(); }
-static inline QString nameToString(const QProcessEnvironmentPrivate::Unit &name)
-{ return QString::fromLocal8Bit(name); }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QByteArray &value)
-{ return value; }
-static inline QProcessEnvironmentPrivate::Unit prepareValue(const QString &value)
-{ return value.toLocal8Bit(); }
-static inline QString valueToString(const QProcessEnvironmentPrivate::Unit &value)
-{ return QString::fromLocal8Bit(value); }
-static inline QByteArray valueToByteArray(const QProcessEnvironmentPrivate::Unit &value)
-{ return value; }
-#endif
-
-template<> void QSharedDataPointer<QProcessEnvironmentPrivate>::detach()
-{
-    if (d && d->ref == 1)
-        return;
-    QProcessEnvironmentPrivate *x = (d ? new QProcessEnvironmentPrivate(*d)
-                                     : new QProcessEnvironmentPrivate);
-    x->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = x;
-}
 
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it) {
         QString data = nameToString(it.key());
         QString value = valueToString(it.value());
@@ -224,19 +182,27 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
 QStringList QProcessEnvironmentPrivate::keys() const
 {
     QStringList result;
-    QHash<Unit, Unit>::ConstIterator it = hash.constBegin(),
-                                    end = hash.constEnd();
+    result.reserve(hash.size());
+    Hash::ConstIterator it = hash.constBegin(),
+                       end = hash.constEnd();
     for ( ; it != end; ++it)
         result << nameToString(it.key());
     return result;
 }
 
-void QProcessEnvironmentPrivate::insert(const Hash &h)
+void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
 {
-    QHash<Unit, Unit>::ConstIterator it = h.constBegin(),
-                                    end = h.constEnd();
+    Hash::ConstIterator it = other.hash.constBegin(),
+                       end = other.hash.constEnd();
     for ( ; it != end; ++it)
         hash.insert(it.key(), it.value());
+
+#ifdef Q_OS_UNIX
+    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
+                                      nend = other.nameMap.constEnd();
+    for ( ; nit != nend; ++nit)
+        nameMap.insert(nit.key(), nit.value());
+#endif
 }
 
 /*!
@@ -317,6 +283,8 @@ void QProcessEnvironment::clear()
 {
     if (d)
         d->hash.clear();
+    // Unix: Don't clear d->nameMap, as the environment is likely to be
+    // re-populated with the same keys again.
 }
 
 /*!
@@ -331,7 +299,7 @@ void QProcessEnvironment::clear()
 */
 bool QProcessEnvironment::contains(const QString &name) const
 {
-    return d ? d->hash.contains(prepareName(name)) : false;
+    return d ? d->hash.contains(d->prepareName(name)) : false;
 }
 
 /*!
@@ -353,7 +321,7 @@ bool QProcessEnvironment::contains(const QString &name) const
 void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     // d detaches from null
-    d->hash.insert(prepareName(name), prepareValue(value));
+    d->hash.insert(d->prepareName(name), d->prepareValue(value));
 }
 
 /*!
@@ -370,7 +338,7 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 void QProcessEnvironment::remove(const QString &name)
 {
     if (d)
-        d->hash.remove(prepareName(name));
+        d->hash.remove(d->prepareName(name));
 }
 
 /*!
@@ -389,11 +357,11 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     if (!d)
         return defaultValue;
 
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(prepareName(name));
+    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
     if (it == d->hash.constEnd())
         return defaultValue;
 
-    return valueToString(it.value());
+    return d->valueToString(it.value());
 }
 
 /*!
@@ -438,7 +406,7 @@ void QProcessEnvironment::insert(const QProcessEnvironment &e)
         return;
 
     // d detaches from null
-    d->insert(e.d->hash);
+    d->insert(*e.d);
 }
 
 void QProcessPrivate::Channel::clear()
@@ -2321,6 +2289,8 @@ QStringList QProcess::systemEnvironment()
 }
 
 /*!
+    \fn QProcessEnvironment QProcessEnvironment::systemEnvironment()
+
     \since 4.6
 
     \brief The systemEnvironment function returns the environment of
@@ -2336,21 +2306,6 @@ QStringList QProcess::systemEnvironment()
 
     \sa QProcess::systemEnvironment()
 */
-QProcessEnvironment QProcessEnvironment::systemEnvironment()
-{
-    QProcessEnvironment env;
-    const char *entry;
-    for (int count = 0; (entry = environ[count]); ++count) {
-        const char *equal = strchr(entry, '=');
-        if (!equal)
-            continue;
-
-        QByteArray name(entry, equal - entry);
-        QByteArray value(equal + 1);
-        env.insert(QString::fromLocal8Bit(name), QString::fromLocal8Bit(value));
-    }
-    return env;
-}
 
 /*!
     \typedef Q_PID

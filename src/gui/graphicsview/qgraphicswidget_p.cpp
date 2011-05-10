@@ -857,8 +857,6 @@ void QGraphicsWidgetPrivate::setWidth(qreal w)
     if (q->geometry().width() == w)
         return;
 
-    QRectF oldGeom = q->geometry();
-
     q->setGeometry(QRectF(q->x(), q->y(), w, height()));
 }
 
@@ -881,8 +879,6 @@ void QGraphicsWidgetPrivate::setHeight(qreal h)
     Q_Q(QGraphicsWidget);
     if (q->geometry().height() == h)
         return;
-
-    QRectF oldGeom = q->geometry();
 
     q->setGeometry(QRectF(q->x(), q->y(), width(), h));
 }

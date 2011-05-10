@@ -199,11 +199,11 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     chars = other.chars;
     length = other.length;
     pos = other.pos;
-    freePrivate = true;
 
     QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *)
-        realloc(d, length*sizeof(HB_CharAttributes));
+        realloc(freePrivate ? d : 0, length*sizeof(HB_CharAttributes));
     Q_CHECK_PTR(newD);
+    freePrivate = true;
     d = newD;
     memcpy(d, other.d, length*sizeof(HB_CharAttributes));
 

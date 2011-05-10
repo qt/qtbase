@@ -52,6 +52,7 @@
 #include <qmap.h>
 #include <qsettings.h>
 #include <qdatetime.h>
+#include <private/qcoreapplication_p.h>
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -408,12 +409,6 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
 
 struct LibraryData {
-    LibraryData() : settings(0) { }
-    ~LibraryData() {
-        delete settings;
-    }
-
-    QSettings *settings;
     LibraryMap libraryMap;
     QSet<QLibraryPrivate*> loadedLibs;
 };
@@ -711,11 +706,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
     QStringList reg;
 #ifndef QT_NO_SETTINGS
     if (!settings) {
-        settings = libraryData()->settings;
-        if (!settings) {
-            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-            libraryData()->settings = settings;
-        }
+        settings = QCoreApplicationPrivate::trolltechConf();
     }
     reg = settings->value(regkey).toStringList();
 #endif

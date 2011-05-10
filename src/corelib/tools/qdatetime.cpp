@@ -2460,7 +2460,11 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DDTHH:MM:SS.
+    dates and times, taking the form YYYY-MM-DDTHH:MM:SS[Z|[+|-]HH:MM],
+    depending on the timeSpec() of the QDateTime. If the timeSpec()
+    is Qt::UTC, Z will be appended to the string; if the timeSpec() is
+    Qt::OffsetFromUTC the offset in hours and minutes from UTC will
+    be appended to the string.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -2497,6 +2501,21 @@ QString QDateTime::toString(Qt::DateFormat f) const
             return QString();   // failed to convert
         buf += QLatin1Char('T');
         buf += d->time.toString(Qt::ISODate);
+        switch (d->spec) {
+        case QDateTimePrivate::UTC:
+            buf += QLatin1Char('Z');
+            break;
+        case QDateTimePrivate::OffsetFromUTC: {
+            int sign = d->utcOffset >= 0 ? 1: -1;
+            buf += QString::fromLatin1("%1%2:%3").
+                arg(sign == 1 ? QLatin1Char('+') : QLatin1Char('-')).
+                arg(d->utcOffset * sign / SECS_PER_HOUR, 2, 10, QLatin1Char('0')).
+                arg((d->utcOffset / 60) % 60, 2, 10, QLatin1Char('0'));
+            break;
+        }
+        default:
+            break;
+        }
     }
 #ifndef QT_NO_TEXTDATE
     else if (f == Qt::TextDate) {

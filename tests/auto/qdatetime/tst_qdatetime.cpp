@@ -85,6 +85,8 @@ private slots:
     void setTime_t();
     void setMSecsSinceEpoch_data();
     void setMSecsSinceEpoch();
+    void toString_isoDate_data();
+    void toString_isoDate();
     void toString_enumformat();
     void toString_strformat_data();
     void toString_strformat();
@@ -504,6 +506,36 @@ void tst_QDateTime::setMSecsSinceEpoch()
 
     QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
     QCOMPARE(dt, reference.addMSecs(msecs));
+}
+
+void tst_QDateTime::toString_isoDate_data()
+{
+    QTest::addColumn<QDateTime>("dt");
+    QTest::addColumn<QString>("formatted");
+
+    QTest::newRow("localtime")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34))
+            << QString("1978-11-09T13:28:34");
+    QTest::newRow("UTC")
+            << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34), Qt::UTC)
+            << QString("1978-11-09T13:28:34Z");
+    QDateTime dt(QDate(1978, 11, 9), QTime(13, 28, 34));
+    dt.setUtcOffset(19800);
+    QTest::newRow("positive OffsetFromUTC")
+            << dt
+            << QString("1978-11-09T13:28:34+05:30");
+    dt.setUtcOffset(-7200);
+    QTest::newRow("negative OffsetFromUTC")
+            << dt
+            << QString("1978-11-09T13:28:34-02:00");
+}
+
+void tst_QDateTime::toString_isoDate()
+{
+    QFETCH(QDateTime, dt);
+    QFETCH(QString, formatted);
+
+    QCOMPARE(dt.toString(Qt::ISODate), formatted);
 }
 
 void tst_QDateTime::toString_enumformat()

@@ -343,6 +343,7 @@ QT_USE_NAMESPACE
     mDialogIsExecuting = true;
     bool modalEnded = false;
     while (!modalEnded) {
+#ifndef QT_NO_EXCEPTIONS
         @try {
             [NSApp runModalForWindow:mColorPanel];
             modalEnded = true;
@@ -351,6 +352,10 @@ QT_USE_NAMESPACE
             // clicking on 'SelectedMenuItemColor' from the 'Developer'
             // palette (tab three).
         }
+#else
+        [NSApp runModalForWindow:mColorPanel];
+        modalEnded = true;
+#endif
     }
 
     QAbstractEventDispatcher::instance()->interrupt();

@@ -1858,8 +1858,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             }
 
             QRect vCheckRect = visualRect(opt->direction, menuitem->rect, QRect(menuitem->rect.x(), menuitem->rect.y(), checkcol, menuitem->rect.height()));
-            if (checked) {
-                if (act && !dis) {
+            if (!menuitem->icon.isNull() && checked) {
+                if (act) {
                     qDrawShadePanel(p, vCheckRect,
                                     menuitem->palette, true, 1,
                                     &menuitem->palette.brush(QPalette::Button));
@@ -2028,10 +2028,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                                          && tabBarAlignment == Qt::AlignLeft);
 
             QColor light = tab->palette.light().color();
-            QColor midlight = tab->palette.midlight().color();
             QColor dark = tab->palette.dark().color();
             QColor shadow = tab->palette.shadow().color();
-            QColor background = tab->palette.background().color();
             int borderThinkness = proxy()->pixelMetric(PM_TabBarBaseOverlap, tab, widget);
             if (selected)
                 borderThinkness /= 2;

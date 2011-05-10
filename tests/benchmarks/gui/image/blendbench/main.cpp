@@ -208,9 +208,9 @@ void BlendBench::unalignedBlendArgb32()
 
     uchar *srcMemory = static_cast<uchar*>(qMallocAligned((dimension * dimension * sizeof(quint32)) + 16, 16));
     QFETCH(int, offset);
-    srcMemory += (offset * sizeof(quint32));
+    uchar *imageSrcMemory = srcMemory + (offset * sizeof(quint32));
 
-    QImage src(srcMemory, dimension, dimension, QImage::Format_ARGB32_Premultiplied);
+    QImage src(imageSrcMemory, dimension, dimension, QImage::Format_ARGB32_Premultiplied);
     src.fill(0x87654321);
 
     QPainter painter(&destination);

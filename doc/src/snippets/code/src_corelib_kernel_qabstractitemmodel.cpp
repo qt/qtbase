@@ -86,38 +86,3 @@ beginMoveRows(parent, 2, 2, parent, 0);
 //! [9]
 beginMoveRows(parent, 2, 2, parent, 4);
 //! [9]
-
-
-//! [10]
-class CustomDataProxy : public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    CustomDataProxy(QObject *parent)
-      : QSortFilterProxyModel(parent)
-    {
-    }
-
-    ...
-
-    QVariant data(const QModelIndex &index, int role)
-    {
-        if (role != Qt::BackgroundRole)
-            return QSortFilterProxyModel::data(index, role);
-
-        if (m_customData.contains(index.row()))
-            return m_customData.value(index.row());
-        return QSortFilterProxyModel::data(index, role);
-    }
-
-private slots:
-    void resetInternalData()
-    {
-        m_customData.clear();
-    }
-
-private:
-  QHash<int, QVariant> m_customData;
-};
-//! [10]
-

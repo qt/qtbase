@@ -1126,6 +1126,7 @@ void QPainterPath::addText(const QPointF &point, const QFont &f, const QString &
     QTextEngine *eng = layout.engine();
     layout.beginLayout();
     QTextLine line = layout.createLine();
+    Q_UNUSED(line);
     layout.endLayout();
     const QScriptLine &sl = eng->lines[0];
     if (!sl.length || !eng->layoutData)

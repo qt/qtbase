@@ -553,6 +553,7 @@ private:
     friend class QPaintEngine;
     friend class QPaintEngineExPrivate;
     friend class QOpenGLPaintEngine;
+    friend class QVGPaintEngine;
     friend class QX11PaintEngine;
     friend class QX11PaintEnginePrivate;
     friend class QWin32PaintEngine;

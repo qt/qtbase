@@ -3090,6 +3090,7 @@ void QTextDocumentLayoutPrivate::ensureLayouted(QFixed y) const
     if (currentLazyLayoutPosition == -1)
         return;
     const QSizeF oldSize = q->dynamicDocumentSize();
+    Q_UNUSED(oldSize);
 
     if (checkPoints.isEmpty())
         layoutStep();

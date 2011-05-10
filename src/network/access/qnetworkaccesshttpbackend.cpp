@@ -262,13 +262,11 @@ bool QNetworkAccessHttpBackend::loadFromCacheIfAllowed(QHttpNetworkRequest &http
     if (lastModified.isValid())
         httpRequest.setHeaderField("If-Modified-Since", QNetworkHeadersPrivate::toHttpDate(lastModified));
 
-    if (CacheLoadControlAttribute == QNetworkRequest::PreferNetwork) {
-        it = cacheHeaders.findRawHeader("Cache-Control");
-        if (it != cacheHeaders.rawHeaders.constEnd()) {
-            QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
-            if (cacheControl.contains("must-revalidate"))
-                return false;
-        }
+    it = cacheHeaders.findRawHeader("Cache-Control");
+    if (it != cacheHeaders.rawHeaders.constEnd()) {
+        QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
+        if (cacheControl.contains("must-revalidate"))
+            return false;
     }
 
     QDateTime currentDateTime = QDateTime::currentDateTime();

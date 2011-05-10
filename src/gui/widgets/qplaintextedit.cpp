@@ -483,6 +483,7 @@ int QPlainTextEditPrivate::verticalOffset(int topBlock, int topLine) const
         QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(doc->documentLayout());
         Q_ASSERT(documentLayout);
         QRectF r = documentLayout->blockBoundingRect(currentBlock);
+        Q_UNUSED(r);
         QTextLayout *layout = currentBlock.layout();
         if (layout && topLine <= layout->lineCount()) {
             QTextLine line = layout->lineAt(topLine - 1);
@@ -648,6 +649,11 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         }
         control->topBlock = blockNumber;
         topLine = lineNumber;
+
+        bool vbarSignalsBlocked = vbar->blockSignals(true);
+        vbar->setValue(block.firstLineNumber() + lineNumber);
+        vbar->blockSignals(vbarSignalsBlocked);
+
         if (dx || dy)
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
         else

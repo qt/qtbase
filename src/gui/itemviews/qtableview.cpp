@@ -1104,6 +1104,21 @@ void QTableView::setRootIndex(const QModelIndex &index)
 /*!
   \reimp
 */
+void QTableView::doItemsLayout()
+{
+    Q_D(QTableView);
+    QAbstractItemView::doItemsLayout();
+    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem)
+        d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
+    else
+        d->verticalHeader->setOffset(verticalScrollBar()->value());
+    if (!d->verticalHeader->updatesEnabled())
+        d->verticalHeader->setUpdatesEnabled(true);
+}
+
+/*!
+  \reimp
+*/
 void QTableView::setSelectionModel(QItemSelectionModel *selectionModel)
 {
     Q_D(QTableView);
@@ -1285,7 +1300,6 @@ void QTableView::paintEvent(QPaintEvent *event)
     const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;
-    const QStyle::State state = option.state;
     const bool alternate = d->alternatingColors;
     const bool rightToLeft = isRightToLeft();
 
@@ -1975,9 +1989,13 @@ QModelIndexList QTableView::selectedIndexes() const
     previous number of rows is specified by \a oldCount, and the new
     number of rows is specified by \a newCount.
 */
-void QTableView::rowCountChanged(int /*oldCount*/, int /*newCount*/ )
+void QTableView::rowCountChanged(int oldCount, int newCount )
 {
     Q_D(QTableView);
+    //when removing rows, we need to disable updates for the header until the geometries have been
+    //updated and the offset has been adjusted, or we risk calling paintSection for all the sections
+    if (newCount < oldCount)
+        d->verticalHeader->setUpdatesEnabled(false);
     d->doDelayedItemsLayout();
 }
 

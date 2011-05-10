@@ -163,6 +163,125 @@ private:
 
 } // namespace QtConcurrent.
 
+namespace QtPrivate {
+
+template <typename T>
+const T& createFunctionWrapper(const T& t)
+{
+    return t;
+}
+
+template <typename T, typename U>
+QtConcurrent::FunctionWrapper1<T, U> createFunctionWrapper(T (*func)(U))
+{
+    return QtConcurrent::FunctionWrapper1<T, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::MemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)())
+{
+    return QtConcurrent::MemberFunctionWrapper<T, C>(func);
+}
+
+template <typename T, typename C, typename U>
+QtConcurrent::MemberFunctionWrapper1<T, C, U> createFunctionWrapper(T (C::*func)(U))
+{
+    return QtConcurrent::MemberFunctionWrapper1<T, C, U>(func);
+}
+
+template <typename T, typename C>
+QtConcurrent::ConstMemberFunctionWrapper<T, C> createFunctionWrapper(T (C::*func)() const)
+{
+    return QtConcurrent::ConstMemberFunctionWrapper<T, C>(func);
+}
+
+
+template<typename T>
+void *lazyResultType_helper(int, typename T::result_type * = 0);
+template<typename T>
+char lazyResultType_helper(double);
+
+template <typename Functor, bool foo = sizeof(lazyResultType_helper<Functor>(0)) != sizeof(void*)>
+struct LazyResultType { typedef typename Functor::result_type Type; };
+template <typename Functor>
+struct LazyResultType<Functor, true> { typedef void Type; };
+
+
+template <class T>
+struct ReduceResultType;
+
+template <class U, class V>
+struct ReduceResultType<void(*)(U&,V)>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C, class U>
+struct ReduceResultType<T(C::*)(U)>
+{
+    typedef C ResultType;
+};
+
+template <class InputSequence, class MapFunctor>
+struct MapResultType
+{
+    typedef typename LazyResultType<MapFunctor>::Type ResultType;
+};
+
+template <class U, class V>
+struct MapResultType<void, U (*)(V)>
+{
+    typedef U ResultType;
+};
+
+template <class T, class C>
+struct MapResultType<void, T(C::*)() const>
+{
+    typedef T ResultType;
+};
+
+#ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+
+template <template <typename> class InputSequence, typename MapFunctor, typename T>
+struct MapResultType<InputSequence<T>, MapFunctor>
+{
+    typedef InputSequence<typename LazyResultType<MapFunctor>::Type> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class V>
+struct MapResultType<InputSequence<T>, U (*)(V)>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+template <template <typename> class InputSequence, class T, class U, class C>
+struct MapResultType<InputSequence<T>, U(C::*)() const>
+{
+    typedef InputSequence<U> ResultType;
+};
+
+#endif // QT_NO_TEMPLATE_TEMPLATE_PARAMETER
+
+template <class MapFunctor>
+struct MapResultType<QStringList, MapFunctor>
+{
+    typedef QList<typename LazyResultType<MapFunctor>::Type> ResultType;
+};
+
+template <class U, class V>
+struct MapResultType<QStringList, U (*)(V)>
+{
+    typedef QList<U> ResultType;
+};
+
+template <class U, class C>
+struct MapResultType<QStringList, U(C::*)() const>
+{
+    typedef QList<U> ResultType;
+};
+
+} // namespace QtPrivate.
+
 #endif //qdoc
 
 QT_END_NAMESPACE
