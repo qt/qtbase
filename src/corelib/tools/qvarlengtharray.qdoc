@@ -337,6 +337,20 @@
     Typedef for const T &. Provided for STL compatibility.
 */
 
+/*!
+    \typedef QVarLengthArray::const_iterator
+    \since 4.7
+
+    Typedef for const T *. Provided for STL compatibility.
+*/
+
+/*!
+    \typedef QVarLengthArray::iterator
+    \since 4.7
+
+    Typedef for T *. Provided for STL compatibility.
+*/
+
 /*! \fn void QVarLengthArray::prepend(const T &value)
 
     \since 4.8
@@ -501,7 +515,7 @@
 
     \relates QVarLengthArray
     \since 4.8
-    Returns true if the two array are equal;
+    Returns true if the two arrays, specified by \a left and \a right, are equal.
 
     Two arrays are considered equal if they contain the same values
     in the same order.
@@ -516,7 +530,7 @@
 
     \relates QVarLengthArray
     \since 4.8
-    Returns true if the two array are different;
+    Returns true if the two arrays, specified by \a left and \a right, are \e not equal.
 
     Two arrays are considered equal if they contain the same values
     in the same order.

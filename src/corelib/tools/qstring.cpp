@@ -837,6 +837,25 @@ int QString::grow(int size)
     \sa QString::const_iterator
 */
 
+/*!
+    \typedef QString::const_reference
+
+    The QString::const_reference typedef provides an STL-style
+    const reference for QString.
+*/
+/*!
+    \typedef QString::reference
+
+    The QString::const_reference typedef provides an STL-style
+    reference for QString.
+*/
+/*!
+    \typedef QString::value_type
+
+    The QString::const_reference typedef provides an STL-style
+    value type for QString.
+*/
+
 /*! \fn QString::iterator QString::begin()
 
     Returns an \l{STL-style iterator} pointing to the first character in
@@ -9111,7 +9130,7 @@ QByteArray QStringRef::toUtf8() const
     UCS-4 is a Unicode codec and is lossless. All characters from this string
     can be encoded in UCS-4.
 
-    \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+    \sa toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 QVector<uint> QStringRef::toUcs4() const
 {

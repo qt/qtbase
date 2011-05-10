@@ -252,10 +252,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QScopedArrayPointer::QScopedArrayPointer(T *p = 0)
+    \fn QScopedArrayPointer::QScopedArrayPointer()
 
-    Constructs this QScopedArrayPointer instance and sets its pointer
-    to \a p.
+    Constructs a QScopedArrayPointer instance.
 */
 
 /*!

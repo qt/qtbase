@@ -2883,8 +2883,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.8
 
-    \brief Hints the compiler that the enclosed condition is likely to evaluate
-    to \c true.
+    \brief Hints to the compiler that the enclosed condition, \a expr, is
+    likely to evaluate to \c true.
 
     Use of this macro can help the compiler to optimize the code.
 
@@ -2900,8 +2900,8 @@ int qrand()
     \relates <QtGlobal>
     \since 4.8
 
-    \brief Hints the compiler that the enclosed condition is likely to evaluate
-    to \c false.
+    \brief Hints to the compiler that the enclosed condition, \a expr, is
+    likely to evaluate to \c false.
 
     Use of this macro can help the compiler to optimize the code.
 

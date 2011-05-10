@@ -123,7 +123,8 @@ QMutexPool *QMutexPool::instance()
     return globalMutexPool();
 }
 
-/*!  \fn QMutexPool::get(void *address)
+/*!
+    \fn QMutexPool::get(const void *address)
     Returns a QMutex from the pool. QMutexPool uses the value \a address
     to determine which mutex is returned from the pool.
 */

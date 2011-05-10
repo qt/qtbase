@@ -600,7 +600,7 @@ static QString find_translation(const QLocale & locale,
 /*!
     \since 4.8
 
-    Loads \a filename + \a prefix + \a \l{QLocale::uiLanguages()}{ui language
+    Loads \a filename + \a prefix + \l{QLocale::uiLanguages()}{ui language
     name} + \a suffix (".qm" if the \a suffix is not specified), which may be
     an absolute file name or relative to \a directory. Returns true if the
     translation is successfully loaded; otherwise returns false.
@@ -618,7 +618,7 @@ static QString find_translation(const QLocale & locale,
     \endlist
 
     For example, an application running in the locale with the following
-    l{QLocale::uiLanguages()}{ui languages} - "es", "fr-CA", "de" might call
+    \l{QLocale::uiLanguages()}{ui languages} - "es", "fr-CA", "de" might call
     load(QLocale::system(), "foo", ".", "/opt/foolib", ".qm"). load() would
     replace '-' (dash) with '_' (underscore) in the ui language and then try to
     open the first existing readable file from this list:
@@ -637,8 +637,8 @@ static QString find_translation(const QLocale & locale,
     \o \c /opt/foolib/foo
     \endlist
 
-    For OSs where file system is case sensitive, QTranslator also tries to load
-    a lower-cased version of the locale name.
+    On operating systems where file system is case sensitive, QTranslator also
+    tries to load a lower-cased version of the locale name.
 */
 bool QTranslator::load(const QLocale & locale,
                        const QString & filename,

@@ -937,7 +937,7 @@ QLocale::Country QLocale::country() const
     name() will not contain it for compatibility reasons. Use bcp47Name() instead
     if you need a full locale name.
 
-    \sa QLocale(const QString &), language(), script(), country(), bcp47Name()
+    \sa QLocale(), language(), script(), country(), bcp47Name()
 */
 
 QString QLocale::name() const

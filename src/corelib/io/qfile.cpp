@@ -1656,6 +1656,8 @@ bool QFile::atEnd() const
 }
 
 /*!
+    \fn bool QFile::seek(qint64 pos)
+
     For random-access devices, this function sets the current position
     to \a pos, returning true on success, or false if an error occurred.
     For sequential devices, the default behavior is to do nothing and

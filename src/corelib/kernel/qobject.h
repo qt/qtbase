@@ -345,6 +345,11 @@ public:
 };
 #endif
 
+#ifdef qdoc
+T qFindChild(const QObject *o, const QString &name = QString());
+QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
+QList<T> qFindChildren(const QObject *o, const QRegExp &re);
+#endif
 #ifdef QT_DEPRECATED
 template<typename T>
 inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())

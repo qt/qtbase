@@ -6088,7 +6088,7 @@ bool QUrl::isDetached() const
     "//servername/path/to/file.txt". Note that only certain platforms can
     actually open this file using QFile::open().
 
-    \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators
+    \sa toLocalFile(), isLocalFile(), QDir::toNativeSeparators()
 */
 QUrl QUrl::fromLocalFile(const QString &localFile)
 {

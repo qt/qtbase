@@ -205,6 +205,9 @@ QTimer::~QTimer()
 
     Starts or restarts the timer with the timeout specified in \l interval.
 
+    If the timer is already running, it will be
+    \l{QTimer::stop()}{stopped} and restarted.
+
     If \l singleShot is true, the timer will be activated only once.
 */
 void QTimer::start()
@@ -218,6 +221,12 @@ void QTimer::start()
 /*!
     Starts or restarts the timer with a timeout interval of \a msec
     milliseconds.
+
+    If the timer is already running, it will be
+    \l{QTimer::stop()}{stopped} and restarted.
+
+    If \l singleShot is true, the timer will be activated only once.
+
 */
 void QTimer::start(int msec)
 {

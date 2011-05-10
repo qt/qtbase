@@ -472,10 +472,10 @@ qint64 QFSFileEngine::size() const
     return d->nativeSize();
 }
 
+#ifndef Q_OS_WIN
 /*!
     \internal
 */
-#ifndef Q_OS_WIN
 qint64 QFSFileEnginePrivate::sizeFdFh() const
 {
     Q_Q(const QFSFileEngine);
