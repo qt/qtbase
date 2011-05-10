@@ -48,8 +48,47 @@
 #include <QtCore/QStringList>
 #include <QtCore/QFile>
 #include <QtCore/QtDebug>
+#include <QtGui/private/qdnd_p.h>
 
 static QWaylandClipboard *clipboard;
+
+class QWaylandMimeData : public QInternalMimeData
+{
+public:
+    void clearAll();
+    void setFormats(const QStringList &formatList);
+    bool hasFormat_sys(const QString &mimeType) const;
+    QStringList formats_sys() const;
+    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
+private:
+    QStringList mFormatList;
+};
+
+void QWaylandMimeData::clearAll()
+{
+    clear();
+    mFormatList.clear();
+}
+
+void QWaylandMimeData::setFormats(const QStringList &formatList)
+{
+    mFormatList = formatList;
+}
+
+bool QWaylandMimeData::hasFormat_sys(const QString &mimeType) const
+{
+    return formats().contains(mimeType);
+}
+
+QStringList QWaylandMimeData::formats_sys() const
+{
+    return mFormatList;
+}
+
+QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
+{
+    return clipboard->retrieveData(mimeType, type);
+}
 
 class QWaylandSelection
 {
@@ -157,32 +196,35 @@ void QWaylandClipboard::forceRoundtrip(struct wl_display *display)
         wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
+QVariant QWaylandClipboard::retrieveData(const QString &mimeType, QVariant::Type type) const
+{
+    Q_UNUSED(type);
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        qWarning("QWaylandClipboard: pipe() failed");
+        return QVariant();
+    }
+    QByteArray mimeTypeBa = mimeType.toLatin1();
+    wl_selection_offer_receive(mOffer, mimeTypeBa.constData(), pipefd[1]);
+    QByteArray content;
+    forceRoundtrip(mDisplay->wl_display());
+    char buf[256];
+    int n;
+    close(pipefd[1]);
+    while ((n = read(pipefd[0], &buf, sizeof buf)) > 0)
+        content.append(buf, n);
+    close(pipefd[0]);
+    return content;
+}
+
 const QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode) const
 {
     Q_ASSERT(mode == QClipboard::Clipboard);
     if (!mMimeDataIn)
-        mMimeDataIn = new QMimeData;
-    mMimeDataIn->clear();
-    if (!mOfferedMimeTypes.isEmpty() && mOffer) {
-        foreach (const QString &mimeType, mOfferedMimeTypes) {
-            int pipefd[2];
-            if (pipe(pipefd) == -1) {
-                qWarning("QWaylandClipboard::mimedata: pipe() failed");
-                break;
-            }
-            QByteArray mimeTypeBa = mimeType.toLatin1();
-            wl_selection_offer_receive(mOffer, mimeTypeBa.constData(), pipefd[1]);
-            QByteArray content;
-            forceRoundtrip(mDisplay->wl_display());
-            char buf[256];
-            int n;
-            close(pipefd[1]);
-            while ((n = read(pipefd[0], &buf, sizeof buf)) > 0)
-                content.append(buf, n);
-            close(pipefd[0]);
-            mMimeDataIn->setData(mimeType, content);
-        }
-    }
+        mMimeDataIn = new QWaylandMimeData;
+    mMimeDataIn->clearAll();
+    if (!mOfferedMimeTypes.isEmpty() && mOffer)
+        mMimeDataIn->setFormats(mOfferedMimeTypes);
     return mMimeDataIn;
 }
 

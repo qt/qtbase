@@ -44,9 +44,11 @@
 
 #include <QtGui/QPlatformClipboard>
 #include <QtCore/QStringList>
+#include <QtCore/QVariant>
 
 class QWaylandDisplay;
 class QWaylandSelection;
+class QWaylandMimeData;
 struct wl_selection_offer;
 
 class QWaylandClipboard : public QPlatformClipboard
@@ -63,6 +65,8 @@ public:
 
     void createSelectionOffer(uint32_t id);
 
+    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const;
+
 private:
     static void offer(void *data,
                       struct wl_selection_offer *selection_offer,
@@ -77,7 +81,7 @@ private:
 
     QWaylandDisplay *mDisplay;
     QWaylandSelection *mSelection;
-    mutable QMimeData *mMimeDataIn;
+    mutable QWaylandMimeData *mMimeDataIn;
     QList<QWaylandSelection *> mSelections;
     QStringList mOfferedMimeTypes;
     struct wl_selection_offer *mOffer;
