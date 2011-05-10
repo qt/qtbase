@@ -57,7 +57,7 @@ public:
     QWaylandClipboard(QWaylandDisplay *display);
     ~QWaylandClipboard();
 
-    const QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) const;
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
     void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
     bool supportsMode(QClipboard::Mode mode) const;
 
@@ -81,7 +81,7 @@ private:
 
     QWaylandDisplay *mDisplay;
     QWaylandSelection *mSelection;
-    mutable QWaylandMimeData *mMimeDataIn;
+    QWaylandMimeData *mMimeDataIn;
     QList<QWaylandSelection *> mSelections;
     QStringList mOfferedMimeTypes;
     struct wl_selection_offer *mOffer;

@@ -217,7 +217,7 @@ QVariant QWaylandClipboard::retrieveData(const QString &mimeType, QVariant::Type
     return content;
 }
 
-const QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode) const
+QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode)
 {
     Q_ASSERT(mode == QClipboard::Clipboard);
     if (!mMimeDataIn)

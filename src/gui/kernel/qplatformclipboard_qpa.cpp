@@ -83,7 +83,7 @@ QPlatformClipboard::~QPlatformClipboard()
 
 }
 
-const QMimeData *QPlatformClipboard::mimeData(QClipboard::Mode mode) const
+QMimeData *QPlatformClipboard::mimeData(QClipboard::Mode mode)
 {
     //we know its clipboard
     Q_UNUSED(mode);
