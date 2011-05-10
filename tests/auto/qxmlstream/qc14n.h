@@ -191,9 +191,9 @@ bool QC14N::isDifferent(const QXmlStreamReader &r1,
                    r2.processingInstructionData() == r2.processingInstructionData();
 
         }
+        default:
+            qFatal("%s: Unknown tokenType: %d", Q_FUNC_INFO, static_cast<int>(r1.tokenType()));
+            return false;
     }
-
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This line should never be reached");
-    return false;
 }
 
