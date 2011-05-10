@@ -52,6 +52,8 @@ symbian {
 
 include(../qbase.pri)
 
+HEADERS += $$QT_SOURCE_TREE/src/openvg/qtopenvgversion.h
+
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 symbian:TARGET.UID3 = 0x2001E62F
 

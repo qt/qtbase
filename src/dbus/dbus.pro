@@ -32,6 +32,9 @@ win32 {
     else:LIBS_PRIVATE += -ldbus-1
 }
 include(../qbase.pri)
+
+HEADERS += $$QT_SOURCE_TREE/src/dub/qtdbusversion.h
+
 PUB_HEADERS = qdbusargument.h \
     qdbusconnectioninterface.h \
     qdbusmacros.h \

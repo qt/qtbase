@@ -19,6 +19,9 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x64000000
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
+
+HEADERS += $$QT_SOURCE_TREE/src/network/qtnetworkversion.h
+
 include(access/access.pri)
 include(bearer/bearer.pri)
 include(kernel/kernel.pri)
