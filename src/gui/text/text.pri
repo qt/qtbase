@@ -40,10 +40,10 @@ HEADERS += \
 	text/qtextodfwriter_p.h \
 	text/qstatictext_p.h \
 	text/qstatictext.h \
-        text/qglyphs.h \
-        text/qglyphs_p.h \
         text/qrawfont.h \
-        text/qrawfont_p.h
+        text/qrawfont_p.h \
+    text/qglyphrun.h \
+    text/qglyphrun_p.h
 
 SOURCES += \
 	text/qfont.cpp \
@@ -74,8 +74,8 @@ SOURCES += \
 	text/qzip.cpp \
 	text/qtextodfwriter.cpp \
 	text/qstatictext.cpp \
-        text/qglyphs.cpp \
-        text/qrawfont.cpp
+        text/qrawfont.cpp \
+    text/qglyphrun.cpp
 
 win32 {
 	SOURCES += \

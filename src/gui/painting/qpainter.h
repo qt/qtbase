@@ -79,7 +79,7 @@ class QTextItem;
 class QMatrix;
 class QTransform;
 class QStaticText;
-class QGlyphs;
+class QGlyphRun;
 
 class QPainterPrivateDeleter;
 
@@ -400,7 +400,7 @@ public:
     Qt::LayoutDirection layoutDirection() const;
 
 #if !defined(QT_NO_RAWFONT)
-    void drawGlyphs(const QPointF &position, const QGlyphs &glyphs);
+    void drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun);
 #endif
 
     void drawStaticText(const QPointF &topLeftPosition, const QStaticText &staticText);

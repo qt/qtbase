@@ -44,7 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtGui/qtextformat.h>
-#include <QtGui/qglyphs.h>
+#include <QtGui/qglyphrun.h>
 
 QT_BEGIN_HEADER
 
@@ -317,7 +317,7 @@ public:
     QString text() const;
 
 #if !defined(QT_NO_RAWFONT)
-    QList<QGlyphs> glyphs() const;
+    QList<QGlyphRun> glyphRuns() const;
 #endif
 
 private:

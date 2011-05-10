@@ -296,12 +296,12 @@ void tst_QRawFont::textLayout()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
+    QGlyphRun glyphs = glyphRuns.at(0);
 
-    QRawFont rawFont = glyphs.font();
+    QRawFont rawFont = glyphs.rawFont();
     QVERIFY(rawFont.isValid());
     QCOMPARE(rawFont.familyName(), familyName);
     QCOMPARE(rawFont.pixelSize(), 18.0);
@@ -795,11 +795,11 @@ void tst_QRawFont::unsupportedWritingSystem()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> glyphss = layout.glyphs();
-    QCOMPARE(glyphss.size(), 1);
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+    QCOMPARE(glyphRuns.size(), 1);
 
-    QGlyphs glyphs = glyphss.at(0);
-    QRawFont layoutFont = glyphs.font();
+    QGlyphRun glyphs = glyphRuns.at(0);
+    QRawFont layoutFont = glyphs.rawFont();
     QVERIFY(layoutFont.familyName() != QString::fromLatin1("QtBidiTestFont"));
     QCOMPARE(layoutFont.pixelSize(), 12.0);
 

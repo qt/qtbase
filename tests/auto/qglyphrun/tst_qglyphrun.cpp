@@ -41,14 +41,14 @@
 
 #include <QtTest/QtTest>
 
-#include <qglyphs.h>
+#include <qglyphrun.h>
 #include <qpainter.h>
 #include <qtextlayout.h>
 #include <qfontdatabase.h>
 
 // #define DEBUG_SAVE_IMAGE
 
-class tst_QGlyphs: public QObject
+class tst_QGlyphRun: public QObject
 {
     Q_OBJECT
 
@@ -82,9 +82,9 @@ private:
 
 #if !defined(QT_NO_RAWFONT)
 
-Q_DECLARE_METATYPE(QGlyphs);
+Q_DECLARE_METATYPE(QGlyphRun);
 
-void tst_QGlyphs::initTestCase()
+void tst_QGlyphRun::initTestCase()
 {
     m_testFontId = QFontDatabase::addApplicationFont(SRCDIR "test.ttf");
     QVERIFY(m_testFontId >= 0);
@@ -94,19 +94,19 @@ void tst_QGlyphs::initTestCase()
     QCOMPARE(QFontInfo(m_testFont).family(), QString::fromLatin1("QtsSpecialTestFont"));
 }
 
-void tst_QGlyphs::cleanupTestCase()
+void tst_QGlyphRun::cleanupTestCase()
 {
     QFontDatabase::removeApplicationFont(m_testFontId);
 }
 
-void tst_QGlyphs::constructionAndDestruction()
+void tst_QGlyphRun::constructionAndDestruction()
 {
-    QGlyphs glyphIndexes;
+    QGlyphRun glyphIndexes;
 }
 
-static QGlyphs make_dummy_indexes()
+static QGlyphRun make_dummy_indexes()
 {
-    QGlyphs glyphs;
+    QGlyphRun glyphs;
 
     QVector<quint32> glyphIndexes;
     QVector<QPointF> positions;
@@ -121,16 +121,16 @@ static QGlyphs make_dummy_indexes()
     positions.append(QPointF(3, 4));
     positions.append(QPointF(5, 6));
 
-    glyphs.setFont(QRawFont::fromFont(font));
+    glyphs.setRawFont(QRawFont::fromFont(font));
     glyphs.setGlyphIndexes(glyphIndexes);
     glyphs.setPositions(positions);
 
     return glyphs;
 }
 
-void tst_QGlyphs::copyConstructor()
+void tst_QGlyphRun::copyConstructor()
 {
-    QGlyphs glyphs;
+    QGlyphRun glyphs;
 
     {
         QVector<quint32> glyphIndexes;
@@ -146,40 +146,40 @@ void tst_QGlyphs::copyConstructor()
         positions.append(QPointF(3, 4));
         positions.append(QPointF(5, 6));
 
-        glyphs.setFont(QRawFont::fromFont(font));
+        glyphs.setRawFont(QRawFont::fromFont(font));
         glyphs.setGlyphIndexes(glyphIndexes);
         glyphs.setPositions(positions);
     }
 
-    QGlyphs otherGlyphs(glyphs);
-    QCOMPARE(otherGlyphs.font(), glyphs.font());
+    QGlyphRun otherGlyphs(glyphs);
+    QCOMPARE(otherGlyphs.rawFont(), glyphs.rawFont());
     QCOMPARE(glyphs.glyphIndexes(), otherGlyphs.glyphIndexes());
     QCOMPARE(glyphs.positions(), otherGlyphs.positions());
 }
 
-void tst_QGlyphs::assignment()
+void tst_QGlyphRun::assignment()
 {
-    QGlyphs glyphs(make_dummy_indexes());
+    QGlyphRun glyphs(make_dummy_indexes());
 
-    QGlyphs otherGlyphs = glyphs;
-    QCOMPARE(otherGlyphs.font(), glyphs.font());
+    QGlyphRun otherGlyphs = glyphs;
+    QCOMPARE(otherGlyphs.rawFont(), glyphs.rawFont());
     QCOMPARE(glyphs.glyphIndexes(), otherGlyphs.glyphIndexes());
     QCOMPARE(glyphs.positions(), otherGlyphs.positions());
 }
 
-void tst_QGlyphs::equalsOperator_data()
+void tst_QGlyphRun::equalsOperator_data()
 {
-    QTest::addColumn<QGlyphs>("one");
-    QTest::addColumn<QGlyphs>("two");
+    QTest::addColumn<QGlyphRun>("one");
+    QTest::addColumn<QGlyphRun>("two");
     QTest::addColumn<bool>("equals");
 
-    QGlyphs one(make_dummy_indexes());
-    QGlyphs two(make_dummy_indexes());
+    QGlyphRun one(make_dummy_indexes());
+    QGlyphRun two(make_dummy_indexes());
 
     QTest::newRow("Identical") << one << two << true;
 
     {
-        QGlyphs busted(two);
+        QGlyphRun busted(two);
 
         QVector<QPointF> positions = busted.positions();
         positions[2] += QPointF(1, 1);
@@ -190,17 +190,17 @@ void tst_QGlyphs::equalsOperator_data()
     }
 
     {
-        QGlyphs busted(two);
+        QGlyphRun busted(two);
 
         QFont font;
-        font.setPixelSize(busted.font().pixelSize() * 2);
-        busted.setFont(QRawFont::fromFont(font));
+        font.setPixelSize(busted.rawFont().pixelSize() * 2);
+        busted.setRawFont(QRawFont::fromFont(font));
 
         QTest::newRow("Different fonts") << one << busted << false;
     }
 
     {
-        QGlyphs busted(two);
+        QGlyphRun busted(two);
 
         QVector<quint32> glyphIndexes = busted.glyphIndexes();
         glyphIndexes[2] += 1;
@@ -211,10 +211,10 @@ void tst_QGlyphs::equalsOperator_data()
 
 }
 
-void tst_QGlyphs::equalsOperator()
+void tst_QGlyphRun::equalsOperator()
 {
-    QFETCH(QGlyphs, one);
-    QFETCH(QGlyphs, two);
+    QFETCH(QGlyphRun, one);
+    QFETCH(QGlyphRun, two);
     QFETCH(bool, equals);
 
     QCOMPARE(one == two, equals);
@@ -222,7 +222,7 @@ void tst_QGlyphs::equalsOperator()
 }
 
 
-void tst_QGlyphs::textLayoutGlyphIndexes()
+void tst_QGlyphRun::textLayoutGlyphIndexes()
 {
     QString s;
     s.append(QLatin1Char('A'));
@@ -234,17 +234,17 @@ void tst_QGlyphs::textLayoutGlyphIndexes()
     layout.createLine();
     layout.endLayout();
 
-    QList<QGlyphs> listOfGlyphs = layout.glyphs();
+    QList<QGlyphRun> listOfGlyphs = layout.glyphRuns();
     QCOMPARE(listOfGlyphs.size(), 1);
 
-    QGlyphs glyphs = listOfGlyphs.at(0);
+    QGlyphRun glyphs = listOfGlyphs.at(0);
 
     QCOMPARE(glyphs.glyphIndexes().size(), 2);
     QCOMPARE(glyphs.glyphIndexes().at(0), quint32(2));
     QCOMPARE(glyphs.glyphIndexes().at(1), quint32(1));
 }
 
-void tst_QGlyphs::drawExistingGlyphs()
+void tst_QGlyphRun::drawExistingGlyphs()
 {
     QPixmap textLayoutDraw(1000, 1000);
     QPixmap drawGlyphs(1000, 1000);
@@ -267,13 +267,13 @@ void tst_QGlyphs::drawExistingGlyphs()
         layout.draw(&p, QPointF(50, 50));
     }
 
-    QGlyphs glyphs = layout.glyphs().size() > 0
-                                 ? layout.glyphs().at(0)
-                                 : QGlyphs();
+    QGlyphRun glyphs = layout.glyphRuns().size() > 0
+                                 ? layout.glyphRuns().at(0)
+                                 : QGlyphRun();
 
     {
         QPainter p(&drawGlyphs);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -284,7 +284,7 @@ void tst_QGlyphs::drawExistingGlyphs()
     QCOMPARE(textLayoutDraw, drawGlyphs);
 }
 
-void tst_QGlyphs::drawNonExistentGlyphs()
+void tst_QGlyphRun::drawNonExistentGlyphs()
 {
     QVector<quint32> glyphIndexes;
     glyphIndexes.append(3);
@@ -292,10 +292,10 @@ void tst_QGlyphs::drawNonExistentGlyphs()
     QVector<QPointF> glyphPositions;
     glyphPositions.append(QPointF(0, 0));
 
-    QGlyphs glyphs;
+    QGlyphRun glyphs;
     glyphs.setGlyphIndexes(glyphIndexes);
     glyphs.setPositions(glyphPositions);
-    glyphs.setFont(QRawFont::fromFont(m_testFont));
+    glyphs.setRawFont(QRawFont::fromFont(m_testFont));
 
     QPixmap image(1000, 1000);
     image.fill(Qt::white);
@@ -303,7 +303,7 @@ void tst_QGlyphs::drawNonExistentGlyphs()
     QPixmap imageBefore = image;
     {
         QPainter p(&image);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -313,7 +313,7 @@ void tst_QGlyphs::drawNonExistentGlyphs()
     QCOMPARE(image, imageBefore); // Should be unchanged
 }
 
-void tst_QGlyphs::drawMultiScriptText1()
+void tst_QGlyphRun::drawMultiScriptText1()
 {
     QString text;
     text += QChar(0x03D0); // Greek, beta
@@ -329,7 +329,7 @@ void tst_QGlyphs::drawMultiScriptText1()
     QPixmap drawGlyphs(1000, 1000);
     drawGlyphs.fill(Qt::white);
 
-    QList<QGlyphs> glyphsList = textLayout.glyphs();
+    QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
     QCOMPARE(glyphsList.size(), 1);
 
     {
@@ -339,8 +339,8 @@ void tst_QGlyphs::drawMultiScriptText1()
 
     {
         QPainter p(&drawGlyphs);
-        foreach (QGlyphs glyphs, glyphsList)
-            p.drawGlyphs(QPointF(50, 50), glyphs);
+        foreach (QGlyphRun glyphs, glyphsList)
+            p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -352,7 +352,7 @@ void tst_QGlyphs::drawMultiScriptText1()
 }
 
 
-void tst_QGlyphs::drawMultiScriptText2()
+void tst_QGlyphRun::drawMultiScriptText2()
 {
     QString text;
     text += QChar(0x0621); // Arabic, Hamza
@@ -369,7 +369,7 @@ void tst_QGlyphs::drawMultiScriptText2()
     QPixmap drawGlyphs(1000, 1000);
     drawGlyphs.fill(Qt::white);
 
-    QList<QGlyphs> glyphsList = textLayout.glyphs();
+    QList<QGlyphRun> glyphsList = textLayout.glyphRuns();
     QCOMPARE(glyphsList.size(), 2);
 
     {
@@ -379,8 +379,8 @@ void tst_QGlyphs::drawMultiScriptText2()
 
     {
         QPainter p(&drawGlyphs);
-        foreach (QGlyphs glyphs, glyphsList)
-            p.drawGlyphs(QPointF(50, 50), glyphs);
+        foreach (QGlyphRun glyphs, glyphsList)
+            p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -391,13 +391,13 @@ void tst_QGlyphs::drawMultiScriptText2()
     QCOMPARE(drawGlyphs, textLayoutDraw);
 }
 
-void tst_QGlyphs::detach()
+void tst_QGlyphRun::detach()
 {
-    QGlyphs glyphs;
+    QGlyphRun glyphs;
 
     glyphs.setGlyphIndexes(QVector<quint32>() << 1 << 2 << 3);
 
-    QGlyphs otherGlyphs;
+    QGlyphRun otherGlyphs;
     otherGlyphs = glyphs;
 
     QCOMPARE(otherGlyphs.glyphIndexes(), glyphs.glyphIndexes());
@@ -408,7 +408,7 @@ void tst_QGlyphs::detach()
     QCOMPARE(glyphs.glyphIndexes(), QVector<quint32>() << 1 << 2 << 3);
 }
 
-void tst_QGlyphs::drawStruckOutText()
+void tst_QGlyphRun::drawStruckOutText()
 {
     QPixmap textLayoutDraw(1000, 1000);
     QPixmap drawGlyphs(1000, 1000);
@@ -432,13 +432,13 @@ void tst_QGlyphs::drawStruckOutText()
         layout.draw(&p, QPointF(50, 50));
     }
 
-    QGlyphs glyphs = layout.glyphs().size() > 0
-                                 ? layout.glyphs().at(0)
-                                 : QGlyphs();
+    QGlyphRun glyphs = layout.glyphRuns().size() > 0
+                                 ? layout.glyphRuns().at(0)
+                                 : QGlyphRun();
 
     {
         QPainter p(&drawGlyphs);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -449,7 +449,7 @@ void tst_QGlyphs::drawStruckOutText()
     QCOMPARE(textLayoutDraw, drawGlyphs);
 }
 
-void tst_QGlyphs::drawOverlinedText()
+void tst_QGlyphRun::drawOverlinedText()
 {
     QPixmap textLayoutDraw(1000, 1000);
     QPixmap drawGlyphs(1000, 1000);
@@ -473,13 +473,13 @@ void tst_QGlyphs::drawOverlinedText()
         layout.draw(&p, QPointF(50, 50));
     }
 
-    QGlyphs glyphs = layout.glyphs().size() > 0
-                                 ? layout.glyphs().at(0)
-                                 : QGlyphs();
+    QGlyphRun glyphs = layout.glyphRuns().size() > 0
+                                 ? layout.glyphRuns().at(0)
+                                 : QGlyphRun();
 
     {
         QPainter p(&drawGlyphs);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -490,7 +490,7 @@ void tst_QGlyphs::drawOverlinedText()
     QCOMPARE(textLayoutDraw, drawGlyphs);
 }
 
-void tst_QGlyphs::drawUnderlinedText()
+void tst_QGlyphRun::drawUnderlinedText()
 {
     QPixmap textLayoutDraw(1000, 1000);
     QPixmap drawGlyphs(1000, 1000);
@@ -514,13 +514,13 @@ void tst_QGlyphs::drawUnderlinedText()
         layout.draw(&p, QPointF(50, 50));
     }
 
-    QGlyphs glyphs = layout.glyphs().size() > 0
-                                 ? layout.glyphs().at(0)
-                                 : QGlyphs();
+    QGlyphRun glyphs = layout.glyphRuns().size() > 0
+                                 ? layout.glyphRuns().at(0)
+                                 : QGlyphRun();
 
     {
         QPainter p(&drawGlyphs);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -531,7 +531,7 @@ void tst_QGlyphs::drawUnderlinedText()
     QCOMPARE(textLayoutDraw, drawGlyphs);
 }
 
-void tst_QGlyphs::drawRightToLeft()
+void tst_QGlyphRun::drawRightToLeft()
 {
     QString s;
     s.append(QChar(1575));
@@ -557,13 +557,13 @@ void tst_QGlyphs::drawRightToLeft()
         layout.draw(&p, QPointF(50, 50));
     }
 
-    QGlyphs glyphs = layout.glyphs().size() > 0
-                                 ? layout.glyphs().at(0)
-                                 : QGlyphs();
+    QGlyphRun glyphs = layout.glyphRuns().size() > 0
+                                 ? layout.glyphRuns().at(0)
+                                 : QGlyphRun();
 
     {
         QPainter p(&drawGlyphs);
-        p.drawGlyphs(QPointF(50, 50), glyphs);
+        p.drawGlyphRun(QPointF(50, 50), glyphs);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -577,6 +577,6 @@ void tst_QGlyphs::drawRightToLeft()
 
 #endif // QT_NO_RAWFONT
 
-QTEST_MAIN(tst_QGlyphs)
-#include "tst_qglyphs.moc"
+QTEST_MAIN(tst_QGlyphRun)
+#include "tst_qglyphrun.moc"
 
