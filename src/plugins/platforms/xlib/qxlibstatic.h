@@ -46,6 +46,9 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
+// qcoreapplication_p.h includes qsettings.h which undefines Status
+// therefore it is included here before the X stuff.
+#include <QtCore/private/qcoreapplication_p.h>
 
 #if defined(_XLIB_H_) // crude hack, but...
 #error "cannot include <X11/Xlib.h> before this file"
