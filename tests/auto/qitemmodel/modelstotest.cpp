@@ -308,7 +308,8 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
             */
         }
         QModelIndex returnIndex = model->index(0,0);
-        Q_ASSERT(returnIndex.isValid());
+        if (!returnIndex.isValid())
+            qFatal("%s: model index to be returned is invalid", Q_FUNC_INFO);
         return returnIndex;
     }
 
