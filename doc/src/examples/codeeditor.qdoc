@@ -190,6 +190,8 @@
     used to implement parenthesis matching. In the \c
     highlightCurrentLine(), the data of the currentBlock() can be
     fetched with QTextBlock::userData(). Matching parentheses can be
-    highlighted with an extra selection.
+    highlighted with an extra selection. The "Matching Parentheses
+    with QSyntaxHighlighter" article in Qt Quarterly 31 implements
+    this. You find it here: \l{http://doc.qt.nokia.com/qq/}.
 
 */
