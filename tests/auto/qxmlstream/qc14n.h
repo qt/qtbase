@@ -71,12 +71,14 @@ bool QC14N::isEqual(QIODevice *const firstDocument,
                     QString *const message)
 {
     qDebug() << Q_FUNC_INFO;
-    Q_ASSERT_X(firstDocument, Q_FUNC_INFO,
-               "A valid QIODevice pointer must be supplied");
-    Q_ASSERT_X(secondDocument, Q_FUNC_INFO,
-               "A valid QIODevice pointer must be supplied");
-    Q_ASSERT_X(firstDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
-    Q_ASSERT_X(secondDocument->isReadable(), Q_FUNC_INFO, "The device must be readable.");
+    if (!firstDocument)
+        qFatal("%s: A valid firstDocument QIODevice pointer must be supplied", Q_FUNC_INFO);
+    if (!secondDocument)
+        qFatal("%s: A valid secondDocument QIODevice pointer must be supplied", Q_FUNC_INFO);
+    if (!firstDocument->isReadable())
+        qFatal("%s: The firstDocument device must be readable.", Q_FUNC_INFO);
+    if (!secondDocument->isReadable())
+        qFatal("%s: The secondDocument device must be readable.", Q_FUNC_INFO);
 
     QXmlStreamReader r1(firstDocument);
     QXmlStreamReader r2(secondDocument);
