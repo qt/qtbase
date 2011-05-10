@@ -112,10 +112,19 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
     // which child should have it?
-    QWidget *widget = m_implicit_mouse_grabber ? m_implicit_mouse_grabber.data() : m_widget->childAt(event->pos());
+    QPoint mapped = event->pos();
+    QWidget *widget = 0;
+
+    if (m_implicit_mouse_grabber) {
+        widget = m_implicit_mouse_grabber.data();
+        mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
+    } else if ((widget = m_widget->childAt(event->pos()))) {
+        mapped = widget->mapFrom(m_widget, event->pos());
+    }
 
     if (qApp->d_func()->inPopupMode()) {
         widget = qApp->activePopupWidget();
+        mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
         m_implicit_mouse_grabber.clear();
     }
 
@@ -127,8 +136,6 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
     if (event->buttons() == Qt::NoButton)
         m_implicit_mouse_grabber.clear();
-
-    QPoint mapped = widget->mapFrom(m_widget, event->pos());
 
     if (widget != qt_last_mouse_receiver) {
         QApplicationPrivate::dispatchEnterLeave(widget, qt_last_mouse_receiver);
