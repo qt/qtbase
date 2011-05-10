@@ -11344,8 +11344,10 @@ void QWidget::updateMicroFocus()
     }
 #endif
 #ifndef QT_NO_ACCESSIBILITY
-    // ##### is this correct
-    QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+    if (isVisible()) {
+        // ##### is this correct
+        QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+    }
 #endif
 }
 

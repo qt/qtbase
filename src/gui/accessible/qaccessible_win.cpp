@@ -47,6 +47,11 @@
 #include "qt_windows.h"
 #include "qwidget.h"
 #include "qsettings.h"
+#include <QtCore/qmap.h>
+#include <QtCore/qpair.h>
+#include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicsscene.h>
+#include <QtGui/qgraphicsview.h>
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
@@ -148,6 +153,106 @@ static const char *roleString(QAccessible::Role role)
    return roles[int(role)];
 }
 
+static const char *eventString(QAccessible::Event ev)
+{
+    static const char *events[] = {
+        "null",                                 // 0
+        "SoundPlayed"          /*= 0x0001*/,
+        "Alert"                /*= 0x0002*/,
+        "ForegroundChanged"    /*= 0x0003*/,
+        "MenuStart"            /*= 0x0004*/,
+        "MenuEnd"              /*= 0x0005*/,
+        "PopupMenuStart"       /*= 0x0006*/,
+        "PopupMenuEnd"         /*= 0x0007*/,
+        "ContextHelpStart"     /*= 0x000C*/,    // 8
+        "ContextHelpEnd"       /*= 0x000D*/,
+        "DragDropStart"        /*= 0x000E*/,
+        "DragDropEnd"          /*= 0x000F*/,
+        "DialogStart"          /*= 0x0010*/,
+        "DialogEnd"            /*= 0x0011*/,
+        "ScrollingStart"       /*= 0x0012*/,
+        "ScrollingEnd"         /*= 0x0013*/,
+        "MenuCommand"          /*= 0x0018*/,    // 16
+
+        // Values from IAccessible2
+        "ActionChanged"        /*= 0x0101*/,    // 17
+        "ActiveDescendantChanged",
+        "AttributeChanged",
+        "DocumentContentChanged",
+        "DocumentLoadComplete",
+        "DocumentLoadStopped",
+        "DocumentReload",
+        "HyperlinkEndIndexChanged",
+        "HyperlinkNumberOfAnchorsChanged",
+        "HyperlinkSelectedLinkChanged",
+        "HypertextLinkActivated",
+        "HypertextLinkSelected",
+        "HyperlinkStartIndexChanged",
+        "HypertextChanged",
+        "HypertextNLinksChanged",
+        "ObjectAttributeChanged",
+        "PageChanged",
+        "SectionChanged",
+        "TableCaptionChanged",
+        "TableColumnDescriptionChanged",
+        "TableColumnHeaderChanged",
+        "TableModelChanged",
+        "TableRowDescriptionChanged",
+        "TableRowHeaderChanged",
+        "TableSummaryChanged",
+        "TextAttributeChanged",
+        "TextCaretMoved",
+        // TextChanged, deprecated, use TextUpdated
+        //TextColumnChanged = TextCaretMoved + 2,
+        "TextInserted",
+        "TextRemoved",
+        "TextUpdated",
+        "TextSelectionChanged",
+        "VisibleDataChanged",  /*= 0x0101+32*/
+        "ObjectCreated"        /*= 0x8000*/,    // 49
+        "ObjectDestroyed"      /*= 0x8001*/,
+        "ObjectShow"           /*= 0x8002*/,
+        "ObjectHide"           /*= 0x8003*/,
+        "ObjectReorder"        /*= 0x8004*/,
+        "Focus"                /*= 0x8005*/,
+        "Selection"            /*= 0x8006*/,
+        "SelectionAdd"         /*= 0x8007*/,
+        "SelectionRemove"      /*= 0x8008*/,
+        "SelectionWithin"      /*= 0x8009*/,
+        "StateChanged"         /*= 0x800A*/,
+        "LocationChanged"      /*= 0x800B*/,
+        "NameChanged"          /*= 0x800C*/,
+        "DescriptionChanged"   /*= 0x800D*/,
+        "ValueChanged"         /*= 0x800E*/,
+        "ParentChanged"        /*= 0x800F*/,
+        "HelpChanged"          /*= 0x80A0*/,
+        "DefaultActionChanged" /*= 0x80B0*/,
+        "AcceleratorChanged"   /*= 0x80C0*/
+    };
+    int e = int(ev);
+    if (e <= 0x80c0) {
+        const int last = sizeof(events)/sizeof(char*) - 1;
+
+        if (e <= 0x07)
+            return events[e];
+        else if (e <= 0x13)
+            return events[e - 0x0c + 8];
+        else if (e == 0x18)
+            return events[16];
+        else if (e <= 0x0101 + 32)
+            return events[e - 0x101 + 17];
+        else if (e <= 0x800f)
+            return events[e - 0x8000 + 49];
+        else if (e == 0x80a0)
+            return events[last - 2];
+        else if (e == 0x80b0)
+            return events[last - 1];
+        else if (e == 0x80c0)
+            return events[last];
+    }
+    return "unknown";
+};
+
 void showDebug(const char* funcName, const QAccessibleInterface *iface)
 {
     qDebug() << "Role:" << roleString(iface->role(0)) 
@@ -158,6 +263,12 @@ void showDebug(const char* funcName, const QAccessibleInterface *iface)
 #else
 # define showDebug(f, iface)
 #endif
+
+// This stuff is used for widgets/items with no window handle:
+typedef QMap<int, QPair<QObject*,int> > NotifyMap;
+Q_GLOBAL_STATIC(NotifyMap, qAccessibleRecentSentEvents)
+static int eventNum = 0;
+
 
 void QAccessible::initialize()
 {
@@ -251,18 +362,35 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     // An event has to be associated with a window,
     // so find the first parent that is a widget.
     QWidget *w = 0;
-    if (o->isWidgetType()) {
-        w = (QWidget*)o;
-    } else {
-        QObject *p = o;
-        while ((p = p->parent()) != 0) {
-            if (p->isWidgetType()) {
-                w = (QWidget*)p;
+    QObject *p = o;
+    do {
+        if (p->isWidgetType()) {
+            w = static_cast<QWidget*>(p);
+            if (w->internalWinId())
                 break;
-            }
         }
-    }
+        if (QGraphicsObject *gfxObj = qobject_cast<QGraphicsObject*>(p)) {
+            QGraphicsItem *parentItem = gfxObj->parentItem();
+            if (parentItem) {
+                p = parentItem->toGraphicsObject();
+            } else {
+                QGraphicsView *view = 0;
+                if (QGraphicsScene *scene = gfxObj->scene()) {
+                    QWidget *fw = QApplication::focusWidget();
+                    const QList<QGraphicsView*> views = scene->views();
+                    for (int i = 0 ; i < views.count() && view != fw; ++i) {
+                        view = views.at(i);
+                    }
+                }
+                p = view;
+            }
+        } else {
+            p = p->parent();
+        }
 
+    } while (p);
+
+    //qDebug() << "updateAccessibility(), hwnd:" << w << ", object:" << o << "," << eventString(reason);
     if (!w) {
         if (reason != QAccessible::ContextHelpStart &&
              reason != QAccessible::ContextHelpEnd)
@@ -282,11 +410,80 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
         }
     }
 
+    WId wid = w->internalWinId();
     if (reason != MenuCommand) { // MenuCommand is faked
-        ptrNotifyWinEvent(reason, w->winId(), OBJID_CLIENT, who);
+        if (w != o) {
+            // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
+            eventNum %= 50;              //[0..49]
+            int eventId = - eventNum - 1;
+
+            qAccessibleRecentSentEvents()->insert(eventId, qMakePair(o,who));
+            ptrNotifyWinEvent(reason, wid, OBJID_CLIENT, eventId );
+
+            ++eventNum;
+        } else {
+            ptrNotifyWinEvent(reason, wid, OBJID_CLIENT, who);
+        }
     }
 #endif // Q_WS_WINCE
 }
+
+/*  == SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE ==
+
+    If the user requested to send the event to a widget with no window,
+    we need to send an event to an object with no hwnd.
+    The way we do that is to send it to the *first* ancestor widget
+    with a window.
+    Then we'll need a way of identifying the child:
+    We'll just keep a list of the most recent events that we have sent,
+    where each entry in the list is identified by a negative value
+    between [-50,-1]. This negative value we will pass on to
+    NotifyWinEvent() as the child id. When the negative value have
+    reached -50, it will wrap around to -1. This seems to be enough
+
+    Now, when the client receives that event, he will first call
+    AccessibleObjectFromEvent() where dwChildID is the special
+    negative value. AccessibleObjectFromEvent does two steps:
+    1. It will first sent a WM_GETOBJECT to the server, asking
+       for the IAccessible interface for the HWND.
+    2. With the IAccessible interface it got hold of it will call
+       acc_getChild where the child id argument is the special
+       negative identifier. In our reimplementation of get_accChild
+       we check for this if the child id is negative. If it is, then
+       we'll look up in our table for the entry that is associated
+       with that value.
+       The entry will then contain a pointer to the QObject /QWidget
+       that we can use to call queryAccessibleInterface() on.
+
+
+    The following figure shows how the interaction between server and
+    client is in the case when the server is sending an event.
+
+SERVER (Qt)                                 | CLIENT                                |
+--------------------------------------------+---------------------------------------+
+                                            |
+acc->updateAccessibility(obj,  childIndex)  |
+                                            |
+recentEvents()->insert(- 1 - eventNum,      |
+            qMakePair(obj, childIndex)      |
+NotifyWinEvent(hwnd, childId) =>            |
+                                            |   AccessibleObjectFromEvent(event, hwnd, OBJID_CLIENT, childId )
+                                            |   will do:
+                                          <===  1. send WM_GETOBJECT(hwnd, OBJID_CLIENT)
+widget ~= hwnd
+iface = queryAccessibleInteface(widget)
+(create IAccessible interface wrapper for
+ iface)
+ return iface                              ===> IAccessible* iface; (for hwnd)
+                                            |
+                                          <===  call iface->get_accChild(childId)
+get_accChild() {                            |
+    if (varChildID.lVal < 0) {
+        QPair ref = recentEvents().value(varChildID.lVal);
+        [...]
+    }
+*/
+
 
 void QAccessible::setRootObject(QObject *o)
 {
@@ -418,15 +615,18 @@ public:
         delete accessible;
     }
 
+    /* IUnknown */
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID *);
     ULONG STDMETHODCALLTYPE AddRef();
     ULONG STDMETHODCALLTYPE Release();
 
+    /* IDispatch */
     HRESULT STDMETHODCALLTYPE GetTypeInfoCount(unsigned int *);
     HRESULT STDMETHODCALLTYPE GetTypeInfo(unsigned int, unsigned long, ITypeInfo **);
     HRESULT STDMETHODCALLTYPE GetIDsOfNames(const _GUID &, wchar_t **, unsigned int, unsigned long, long *);
     HRESULT STDMETHODCALLTYPE Invoke(long, const _GUID &, unsigned long, unsigned short, tagDISPPARAMS *, tagVARIANT *, tagEXCEPINFO *, unsigned int *);
 
+    /* IAccessible */
     HRESULT STDMETHODCALLTYPE accHitTest(long xLeft, long yTop, VARIANT *pvarID);
     HRESULT STDMETHODCALLTYPE accLocation(long *pxLeft, long *pyTop, long *pcxWidth, long *pcyHeight, VARIANT varID);
     HRESULT STDMETHODCALLTYPE accNavigate(long navDir, VARIANT varStart, VARIANT *pvarEnd);
@@ -451,6 +651,7 @@ public:
     HRESULT STDMETHODCALLTYPE get_accFocus(VARIANT *pvarID);
     HRESULT STDMETHODCALLTYPE get_accSelection(VARIANT *pvarChildren);
 
+    /* IOleWindow */
     HRESULT STDMETHODCALLTYPE GetWindow(HWND *phwnd);
     HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode);
 
@@ -896,9 +1097,30 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::get_accChild(VARIANT varChildID, I
     if (varChildID.vt == VT_EMPTY)
         return E_INVALIDARG;
 
+
+    int childIndex = varChildID.lVal;
     QAccessibleInterface *acc = 0;
-    RelationFlag rel = varChildID.lVal ? Child : Self;
-    accessible->navigate(rel, varChildID.lVal, &acc);
+
+    if (childIndex < 0) {
+        const int entry = childIndex;
+        QPair<QObject*, int> ref = qAccessibleRecentSentEvents()->value(entry);
+        if (ref.first) {
+            acc = queryAccessibleInterface(ref.first);
+            if (acc && ref.second) {
+                if (ref.second) {
+                    QAccessibleInterface *res;
+                    int index = acc->navigate(Child, ref.second, &res);
+                    delete acc;
+                    if (index == -1)
+                        return E_INVALIDARG;
+                    acc = res;
+                }
+            }
+        }
+    } else {
+        RelationFlag rel = childIndex ? Child : Self;
+        accessible->navigate(rel, childIndex, &acc);
+    }
 
     if (acc) {
         QWindowsAccessible* wacc = new QWindowsAccessible(acc);
@@ -1203,7 +1425,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
     if (!o || !o->isWidgetType())
         return E_FAIL;
 
-    *phwnd = static_cast<QWidget*>(o)->winId();
+    *phwnd = static_cast<QWidget*>(o)->effectiveWinId();
     return S_OK;
 }
 

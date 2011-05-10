@@ -245,6 +245,10 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
+#ifndef QT_NO_ACCESSIBILITY
+# include <QtGui/qaccessible.h>
+#endif
+
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
@@ -837,6 +841,14 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     if (item)
         focusItem = item;
     updateInputMethodSensitivityInViews();
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (focusItem) {
+        if (QGraphicsObject *focusObj = focusItem->toGraphicsObject()) {
+            QAccessible::updateAccessibility(focusObj, 0, QAccessible::Focus);
+        }
+    }
+#endif
     if (item) {
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
