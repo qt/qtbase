@@ -598,7 +598,7 @@ public:
     inline bool visualCursorMovement() const
     {
         return (visualMovement ||
-                (block.docHandle() ? block.docHandle()->defaultCursorMoveStyle == QTextCursor::Visual : false));
+                (block.docHandle() ? block.docHandle()->defaultCursorMoveStyle == Qt::VisualMoveStyle : false));
     }
 
     struct SpecialData {

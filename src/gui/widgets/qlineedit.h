@@ -85,6 +85,7 @@ class Q_GUI_EXPORT QLineEdit : public QWidget
     Q_PROPERTY(bool redoAvailable READ isRedoAvailable)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput)
     Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
+    Q_PROPERTY(Qt::CursorMoveStyle cursorMoveStyle READ cursorMoveStyle WRITE setCursorMoveStyle)
 
 public:
     explicit QLineEdit(QWidget* parent=0);
@@ -159,8 +160,8 @@ public:
     void setDragEnabled(bool b);
     bool dragEnabled() const;
 
-    void setCursorMoveStyle(QTextCursor::MoveStyle style);
-    QTextCursor::MoveStyle cursorMoveStyle() const;
+    void setCursorMoveStyle(Qt::CursorMoveStyle style);
+    Qt::CursorMoveStyle cursorMoveStyle() const;
 
     QString inputMask() const;
     void setInputMask(const QString &inputMask);

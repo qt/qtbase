@@ -86,10 +86,6 @@ public:
         MoveAnchor,
         KeepAnchor
     };
-    enum MoveStyle {
-        Logical,
-        Visual
-    };
 
     void setPosition(int pos, MoveMode mode = MoveAnchor);
     int position() const;
