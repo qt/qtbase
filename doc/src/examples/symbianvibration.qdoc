@@ -1,0 +1,192 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*! \example widgets/symbianvibration
+    \group all-examples
+    \title Symbian Vibration Example
+
+    The Symbian Vibrator example shows how to get fine-grained vibration
+    control on Symbian devices.
+
+    Native Symbian APIs have to be used to enable vibration, since QtMobility
+    doesn't provide an interface for it yet. It is, however, planned to be
+    included in a future release. In anticipation for that, we make use of the
+    \c XQVibra class that was a part of the Mobile Extensions Technology Preview
+    API for Qt for Symbian. The pre-compiled libraries are no longer compatible
+    with Qt 4.6, but we can include the source code itself with the project.
+
+    \image symbianvibration-example.png Screenshot of the Symbian Vibration example
+
+    The example application divides the window into rectangles, which can be
+    pressed to make the device vibrate. Pressing different rectangles make the
+    device vibrate with different intensities. Each rectangle has a different
+    color and its intensity number is drawn on top of it. Moving the cursor
+    from one rectangle to another changes the vibration intensity to that of
+    the new one.  Vibration stops when the mouse button has been released. It
+    is also possible to launch a short burst of vibration through the menu.
+
+    The example consists of four classes:
+
+    \list
+    \o \c XQVibra is the vibration interface class taken from the Mobile
+       Extensions for Qt for Symbian.
+
+    \o \c XQVibraPrivate is the Symbian specific private implementation of the
+       vibration implementation.
+
+    \o \c VibrationSurface is a custom widget that uses a XQVibra instance to
+       vibrate the device depending on where the user presses.
+
+    \o \c MainWindow inherits from QMainWindow and contains a \c VibrationSurface
+       as its central widget, and also has a menu from which it is possible to
+       make the phone vibrate.
+    \endlist
+
+    \section1 XQVibra Class Definition
+
+    The \c XQVibra class uses the pimpl-idiom to hide the platform specific
+    implementation behind a common interface. Technically it would be possible
+    to support more target platforms, with only the addition of a private
+    implementation. The rest of the code would work the same, since only the
+    common interface is used.
+
+    \snippet examples/widgets/symbianvibration/xqvibra.h 0
+
+    \c XQVibra provides a very simple interface for us to use. The interesting
+    part are the three slots \c start(), \c stop() and \c setIntensity(). Calling the start
+    method initiates vibration for the specified duration. Calling it while the
+    device is already vibrating causes it to stop the current one and start the
+    new one, even if the intensities are the same. The \c setIntensity() method
+    should be called before starting vibration.
+
+
+    \section1 VibrationSurface Class Definition
+
+    \c VibrationSurface inherits from QWidget and acts like a controller for a
+    \c XQVibra object. It responds to mouse events and performs custom painting.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.h 0
+
+    The virtual event methods are reimplemented from QWidget. As can be seen,
+    there is no public programmable interface beyond what QWidget provides.
+
+
+    \section1 VibrationSurface Class Implementation
+
+    Mouse events control the intensity of the vibration.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 0
+    \codeline
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 1
+    \codeline
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 2
+
+    Presses starts the vibration, movement changes the intensity and releases
+    stops the vibration. To set the right amount of vibration, the private
+    method \c applyIntensity() is used. It sets the vibration intensity according to
+    which rectangle the mouse currently resides in.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 3
+
+    We make sure only to change the intensity if it is different than last
+    time, so that the vibrator isn't stopped and restarted unnecessarily.
+
+    The range of vibration intensity ranges from 0 to XQVibra::MaxIntensity. We
+    divide this range into a set of levels. The number of levels and the intensity
+    increase for each level are stored in two constants.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 4
+
+    Each rectangle has an intensity of one \c IntensityPerLevel more than the
+    previous one.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 5
+
+    The rectangles are either put in a row, if the widget's width is greater
+    than its height (landscape), otherwise they are put in a column (portrait).
+    Each rectangle's size is thus dependent on the length of the width or the
+    height of the widget, whichever is longer. The length is then divided by
+    the number of levels, which gets us either the height or the width of each
+    rectangle. The dx and dy specify the distance from one rectangle to the
+    next, which is the same as either the width or height of the rectangle.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 6
+
+    For each level of intensity, we draw a rectangle with increasing
+    brightness.  On top of the rectangle a text label is drawn, specifying the
+    intesity of this level. We use the rectangle rect as a template for
+    drawing, and move it down or right at each iteration.
+
+    The intensity is calculated by dividing the greater of the width and height
+    into \c NumberOfLevels slices.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 7
+
+    In case the widget's geometry is too small to fit all the levels, the user
+    interface will not work. For simplicity, we just return 0.
+
+    When we know the axis along which the rectangles lie, we can find the one
+    in which the mouse cursor lie.
+
+    \snippet examples/widgets/symbianvibration/vibrationsurface.cpp 8
+
+    The final clamp of the intensity value at the end is necessary in case the
+    mouse coordinate lies outside the widget's geometry.
+
+
+    \section1 MainWindow Class Definition
+
+    Here's the definition of the \c MainWindow class:
+
+    \snippet examples/widgets/symbianvibration/mainwindow.h 0
+
+    \c MainWindow is a top level window that uses a \c XQVibra and a
+    \c VibrationSurface. It also adds a menu option to the menu bar which can
+    start a short vibration.
+
+    \section1 MainWindow Class Implementation
+
+    In the \c MainWindow constructor the \c XQVibra and the \c VibrationSurface
+    are created. An action is added to the menu and is connected to the vibrate
+    slot.
+
+    \snippet examples/widgets/symbianvibration/mainwindow.cpp 0
+
+    The \c vibrate() slot offers a way to invoke the vibration in case no
+    mouse is present on the device.
+
+    \snippet examples/widgets/symbianvibration/mainwindow.cpp 1
+
+    \section1 Symbian Vibration Library
+
+    The \c XQVibra class requires a platform library to be included. It is
+    included in the \c .pro file for the symbian target.
+
+    \quotefromfile examples/widgets/symbianvibration/symbianvibration.pro
+    \skipto /^symbian \{/
+    \printuntil /^\}/
+*/

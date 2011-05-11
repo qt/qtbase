@@ -1,0 +1,88 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*! \example widgets/applicationicon
+    \group all-examples
+    \title Application Icon Example
+
+    The example shows how to add an application icon to a mobile application.
+
+    \image appicon_screenshot.png The icon on a Nokia XPressMusic 5800
+
+    \section1 Creating an icon for Maemo
+
+    Maemo expects the icon of an application to be a 64x64 PNG image file. The
+    file name of the icon should be the same as the executable with a \c .png
+    extension. You also need a \c .desktop file that gives the window manager
+    hints about the application, such as name, type and icon.
+
+    \quotefile examples/widgets/applicationicon/applicationicon.desktop
+
+    The \c Icon field should also contain the name of the executable. On the
+    device, application icons are stored in the
+    \c /usr/share/icons/hicolor/64x64/apps directory
+    and desktop files in the \c /usr/share/applications/hildon directory.
+
+    \section1 Creating an icon for Symbian
+
+    Symbian uses Scalable Vector Graphics (SVG Tiny 1.1+) to render
+    application icons in the application menu. Therefore icons could be
+    created manually with a text editor, since SVG files are plain text with
+    XML syntax, but usually you would use a vector graphics program that is
+    able to output SVG files. Popular graphics programs such as Adobe
+    Illustrator or Inkscape are able to do so.
+
+    For best results, the icon should be created on a 44x44 pixel canvas.
+    Otherwise the image might be scaled in unexpected ways.
+
+    Once you have created your icon, make sure that it is stored according to
+    the SVG-Tiny 1.1+ standard. Inkscape, for instance, is not able to save
+    images that way, but there are tools that can convert general SVG files
+    into the Tiny format. For instance, the svg2svgt tool that is bundled with
+    Symbian 3rd and 5th editon SDKs under the folder s60tools can do this
+    conversion to some extent. Another tool to convert SVG to SVG Tiny is SVG
+    Pony.
+
+    \section1 Adding the icons to the project
+
+    Edit the .pro file and specify the ICON variable for the symbian target. 
+    For Maemo, we need to add that the \c .desktop and icon file should be
+    installed.
+
+    \quotefile examples/widgets/applicationicon/applicationicon.pro
+
+    Currently, Qt Creator doesn't include the icon and desktop files in the
+    application package for Maemo, merely the executable file is included. As a
+    workaround for this, the files can be added manually in the Projects tab.
+    In the "Create Package" build step for the Maemo target, the \c .desktop
+    file and icon can be added to be a part of the package contents.
+    Unfortunately, these additions are only stored as a part of the
+    \c .pro.user file. This issue will be resolved in a future release of
+    Qt Creator.
+
+    \image appicon_packagecontents.png Manual addition of files to the "Create Package" build step
+*/
