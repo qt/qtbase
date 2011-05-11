@@ -29,8 +29,11 @@
     \example touch/fingerpaint
     \title Finger Paint Example
 
-    The Finger Paint example shows the use of touch with a custom widget
+    The Finger Paint example shows the use of a touchscreen with a custom widget
     to create a simple painting application.
 
     \image touch-fingerpaint-example.png
+
+    This example was specifically designed to work with a touchscreen. As a result,
+    it is not possible to draw on the custom widget with the mouse cursor.
 */
