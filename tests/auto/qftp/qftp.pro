@@ -2,7 +2,7 @@ load(qttest_p4)
 SOURCES  += tst_qftp.cpp
 
 
-QT = core network
+QT = core network network-private
 
 wince*: {
    addFiles.files = rfc3252.txt

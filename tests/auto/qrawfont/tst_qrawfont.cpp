@@ -835,8 +835,8 @@ void tst_QRawFont::rawFontSetPixelSize()
     layout.createLine();
     layout.endLayout();
 
-    QGlyphs glyphs = layout.glyphs().at(0);
-    QRawFont rawFont = glyphs.font();
+    QGlyphRun glyphs = layout.glyphRuns().at(0);
+    QRawFont rawFont = glyphs.rawFont();
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
     rawFont.setPixelSize(24);

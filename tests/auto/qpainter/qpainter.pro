@@ -1,4 +1,7 @@
 load(qttest_p4)
+
+QT += gui-private
+
 contains(QT_CONFIG, qt3support): QT += qt3support
 SOURCES  += tst_qpainter.cpp
 wince*|symbian: {

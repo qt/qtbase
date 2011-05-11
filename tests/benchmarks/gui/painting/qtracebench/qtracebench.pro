@@ -1,4 +1,7 @@
 load(qttest_p4)
+
+QT += core-private gui-private
+
 TEMPLATE = app
 TARGET = tst_qtracebench
 

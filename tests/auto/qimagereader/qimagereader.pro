@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
-QT += network
+QT += core-private gui-private network
 RESOURCES += qimagereader.qrc
 !symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 

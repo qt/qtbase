@@ -1,8 +1,6 @@
-############################################################
-# Project file for autotest for file qlayout.h
-############################################################
-
 load(qttest_p4)
+
+QT += gui-private
 
 SOURCES += tst_qlayout.cpp
 contains(QT_CONFIG, qt3support): QT += qt3support

@@ -5,7 +5,7 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 QT -= gui
-QT += network
+QT += core-private network network-private
 
 CONFIG += release
 

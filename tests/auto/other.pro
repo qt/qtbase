@@ -10,7 +10,8 @@ SUBDIRS=\
            qalgorithms \
            qcombobox \
            qcssparser \
-           qdatastream \
+           #qdatastream \      # FIXME: cannot be enabled by default in qtbase,
+                               # since it depends on qtsvg
            qdir \
            qfocusevent \
            qimage \
@@ -58,5 +59,7 @@ symbian {
 
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qcombobox \
            qcssparser \
+           qtextedit \
 

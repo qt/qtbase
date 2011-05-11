@@ -1,6 +1,7 @@
 load(qttest_p4)
 TARGET = tst_bench_qstring
 QT -= gui
+QT += core-private
 SOURCES += main.cpp data.cpp fromlatin1.cpp fromutf8.cpp
 
 wince*:{

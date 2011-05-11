@@ -1,4 +1,7 @@
 load(qttest_p4)
+
+QT += core-private gui-private
+
 SOURCES  += tst_qpixmap.cpp
 contains(QT_CONFIG, qt3support): QT += qt3support
 wince*|symbian: {
