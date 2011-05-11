@@ -430,6 +430,9 @@ void tst_QTcpServer::waitForConnectionTest()
 void tst_QTcpServer::setSocketDescriptor()
 {
     QTcpServer server;
+#ifdef Q_OS_SYMBIAN
+    QTest::ignoreMessage(QtWarningMsg, "QSymbianSocketEngine::initialize - socket descriptor not found");
+#endif
     QVERIFY(!server.setSocketDescriptor(42));
     QCOMPARE(server.serverError(), QAbstractSocket::UnsupportedSocketOperationError);
 #ifndef Q_OS_SYMBIAN

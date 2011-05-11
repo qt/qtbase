@@ -251,7 +251,8 @@ QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     readNotificationsEnabled(false),
     writeNotificationsEnabled(false),
     exceptNotificationsEnabled(false),
-    asyncSelect(0)
+    asyncSelect(0),
+    hasReceivedBufferedDatagram(false)
 {
 }
 
@@ -781,21 +782,34 @@ qint64 QSymbianSocketEngine::pendingDatagramSize() const
     Q_D(const QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::pendingDatagramSize(), false);
     Q_CHECK_TYPE(QSymbianSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
-    int nbytes;
+    //can only buffer one datagram at a time
+    if (d->hasReceivedBufferedDatagram)
+        return d->receivedDataBuffer.size();
+    int nbytes = 0;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     if (nbytes > 0) {
         //nbytes includes IP header, which is of variable length (IPv4 with or without options, IPv6...)
-        QByteArray next(nbytes,0);
-        TPtr8 buffer((TUint8*)next.data(), next.size());
+        //therefore read the datagram into a buffer to find its true size
+        d->receivedDataBuffer.resize(nbytes);
+        TPtr8 buffer((TUint8*)d->receivedDataBuffer.data(), nbytes);
+        //nbytes = size including IP header, buffer is a pointer descriptor backed by the receivedDataBuffer
         TInetAddr addr;
         TRequestStatus status;
-        //TODO: rather than peek, should we save this for next call to readDatagram?
-        //what if calls don't match though?
-        d->nativeSocket.RecvFrom(buffer, addr, KSockReadPeek, status);
+        //RecvFrom copies only the payload (we don't want the header so don't specify the option to retrieve it)
+        d->nativeSocket.RecvFrom(buffer, addr, 0, status);
         User::WaitForRequest(status);
-        if (status.Int())
+        if (status != KErrNone) {
+            d->receivedDataBuffer.clear();
             return 0;
-        return buffer.Length();
+        }
+        nbytes = buffer.Length();
+        //nbytes = size of payload, resize the receivedDataBuffer to the final size
+        d->receivedDataBuffer.resize(nbytes);
+        d->hasReceivedBufferedDatagram = true;
+        //now receivedDataBuffer contains one datagram, which has been removed from the socket's internal buffer
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        qDebug() << "QSymbianSocketEngine::pendingDatagramSize buffering" << nbytes << "bytes";
+#endif
     }
     return qint64(nbytes);
 }
@@ -807,6 +821,19 @@ qint64 QSymbianSocketEngine::readDatagram(char *data, qint64 maxSize,
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::readDatagram(), -1);
     Q_CHECK_TYPE(QSymbianSocketEngine::readDatagram(), QAbstractSocket::UdpSocket, false);
+
+    // if a datagram was buffered in pendingDatagramSize(), return it now
+    if (d->hasReceivedBufferedDatagram) {
+        qint64 size = qMin(maxSize, (qint64)d->receivedDataBuffer.size());
+        memcpy(data, d->receivedDataBuffer.constData(), size);
+        d->receivedDataBuffer.clear();
+        d->hasReceivedBufferedDatagram = false;
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        qDebug() << "QSymbianSocketEngine::readDatagram returning" << size << "bytes from buffer";
+#endif
+        return size;
+    }
+
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TInetAddr addr;
     TRequestStatus status;
@@ -985,6 +1012,9 @@ void QSymbianSocketEngine::close()
     d->localAddress.clear();
     d->peerPort = 0;
     d->peerAddress.clear();
+
+    d->hasReceivedBufferedDatagram = false;
+    d->receivedDataBuffer.clear();
 }
 
 qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
@@ -1035,6 +1065,18 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     Q_D(QSymbianSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::read(), -1);
     Q_CHECK_STATES(QSymbianSocketEngine::read(), QAbstractSocket::ConnectedState, QAbstractSocket::BoundState, -1);
+
+    // if a datagram was buffered in pendingDatagramSize(), return it now
+    if (d->hasReceivedBufferedDatagram) {
+        qint64 size = qMin(maxSize, (qint64)d->receivedDataBuffer.size());
+        memcpy(data, d->receivedDataBuffer.constData(), size);
+        d->receivedDataBuffer.clear();
+        d->hasReceivedBufferedDatagram = false;
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+        qDebug() << "QSymbianSocketEngine::read returning" << size << "bytes from buffer";
+#endif
+        return size;
+    }
 
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TSockXfrLength received = 0;
@@ -1440,6 +1482,7 @@ void QSymbianSocketEngine::startNotifications()
         qDebug() << "QSymbianSocketEngine::startNotifications" << d->readNotificationsEnabled << d->writeNotificationsEnabled << d->exceptNotificationsEnabled;
 #endif
     if (!d->asyncSelect && (d->readNotificationsEnabled || d->writeNotificationsEnabled || d->exceptNotificationsEnabled)) {
+        Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::startNotifications(), Q_VOID);
         if (d->threadData->eventDispatcher) {
             d->asyncSelect = q_check_ptr(new QAsyncSelect(
                 static_cast<QEventDispatcherSymbian*> (d->threadData->eventDispatcher), d->nativeSocket,
@@ -1456,14 +1499,12 @@ void QSymbianSocketEngine::startNotifications()
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isReadNotificationEnabled(), false);
     return d->readNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setReadNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setReadNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
@@ -1474,14 +1515,12 @@ void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isWriteNotificationEnabled(), false);
     return d->writeNotificationsEnabled;
 }
 
 void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setWriteNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setWriteNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
@@ -1492,7 +1531,6 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
     Q_D(const QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::isExceptionNotificationEnabled(), false);
     return d->exceptNotificationsEnabled;
     return false;
 }
@@ -1500,7 +1538,6 @@ bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
-    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::setExceptionNotificationEnabled(), Q_VOID);
 #ifdef QNATIVESOCKETENGINE_DEBUG
     qDebug() << "QSymbianSocketEngine::setExceptionNotificationEnabled" << enable << "socket" << d->socketDescriptor;
 #endif
@@ -1660,6 +1697,9 @@ void QAsyncSelect::run()
     //when event loop disabled socket events, defer until later
     if (maybeDeferSocketEvent())
         return;
+#if defined (QNATIVESOCKETENGINE_DEBUG)
+    qDebug() << "QAsyncSelect::run" << m_selectBuf() << m_selectFlags;
+#endif
     m_inSocketEvent = true;
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //KSockSelectReadContinuation is for reading datagrams in a mode that doesn't discard when the

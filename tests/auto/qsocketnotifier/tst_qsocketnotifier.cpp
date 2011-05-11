@@ -53,6 +53,11 @@
 #include <private/qnativesocketengine_p.h>
 #define NATIVESOCKETENGINE QNativeSocketEngine
 #endif
+#ifdef Q_OS_UNIX
+#include <private/qnet_unix_p.h>
+#endif
+#include <limits>
+#include <select.h>
 
 class tst_QSocketNotifier : public QObject
 {
@@ -64,6 +69,8 @@ public:
 private slots:
     void unexpectedDisconnection();
     void mixingWithTimers();
+    void posixSockets();
+    void bogusFds();
 };
 
 tst_QSocketNotifier::tst_QSocketNotifier()
@@ -114,6 +121,9 @@ signals:
 
 void tst_QSocketNotifier::unexpectedDisconnection()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("Symbian socket engine pseudo descriptors can't be used for QSocketNotifier", SkipAll);
+#else
     /*
       Given two sockets and two QSocketNotifiers registered on each
       their socket. If both sockets receive data, and the first slot
@@ -163,10 +173,14 @@ void tst_QSocketNotifier::unexpectedDisconnection()
 
     UnexpectedDisconnectTester tester(&readEnd1, &readEnd2);
 
+    QTimer timer;
+    timer.setSingleShot(true);
+    timer.start(30000);
     do {
         // we have to wait until sequence value changes
         // as any event can make us jump out processing
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+        QVERIFY(timer.isActive); //escape if test would hang
     }  while(tester.sequence <= 0);
 
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
@@ -179,6 +193,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd1->close();
     writeEnd2->close();
     server.close();
+#endif
 }
 
 class MixingWithTimersHelper : public QObject
@@ -241,6 +256,100 @@ void tst_QSocketNotifier::mixingWithTimers()
 
     QCOMPARE(helper.timerActivated, true);
     QCOMPARE(helper.socketActivated, true);
+}
+
+void tst_QSocketNotifier::posixSockets()
+{
+#ifndef Q_OS_UNIX
+    QSKIP("test only for posix", SkipAll);
+#else
+
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+
+    int posixSocket = qt_safe_socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in addr;
+    addr.sin_addr.s_addr = htonl(0x7f000001);
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(server.serverPort());
+    qt_safe_connect(posixSocket, (const struct sockaddr*)&addr, sizeof(sockaddr_in));
+    QVERIFY(server.waitForNewConnection(5000));
+    QScopedPointer<QTcpSocket> passive(server.nextPendingConnection());
+
+    ::fcntl(posixSocket, F_SETFL, ::fcntl(posixSocket, F_GETFL) | O_NONBLOCK);
+
+    {
+        QSocketNotifier rn(posixSocket, QSocketNotifier::Read);
+        connect(&rn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        QSignalSpy readSpy(&rn, SIGNAL(activated(int)));
+        QSocketNotifier wn(posixSocket, QSocketNotifier::Write);
+        connect(&wn, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        QSignalSpy writeSpy(&wn, SIGNAL(activated(int)));
+        QSocketNotifier en(posixSocket, QSocketNotifier::Exception);
+        connect(&en, SIGNAL(activated(int)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+        QSignalSpy errorSpy(&en, SIGNAL(activated(int)));
+
+        passive->write("hello",6);
+        passive->waitForBytesWritten(5000);
+
+        QTestEventLoop::instance().enterLoop(3);
+        QCOMPARE(readSpy.count(), 1);
+        QCOMPARE(writeSpy.count(), 0);
+        QCOMPARE(errorSpy.count(), 0);
+
+        char buffer[100];
+        qt_safe_read(posixSocket, buffer, 100);
+        QCOMPARE(buffer, "hello");
+
+        qt_safe_write(posixSocket, "goodbye", 8);
+
+        QTestEventLoop::instance().enterLoop(3);
+        QCOMPARE(readSpy.count(), 1);
+        QCOMPARE(writeSpy.count(), 1);
+        QCOMPARE(errorSpy.count(), 0);
+        QCOMPARE(passive->readAll(), QByteArray("goodbye",8));
+    }
+    qt_safe_close(posixSocket);
+#endif
+}
+
+void tst_QSocketNotifier::bogusFds()
+{
+#ifndef Q_OS_WIN
+    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
+#endif
+    QSocketNotifier max(std::numeric_limits<int>::max(), QSocketNotifier::Read);
+    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Invalid socket specified");
+#ifndef Q_OS_WIN
+    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
+#endif
+    QSocketNotifier min(std::numeric_limits<int>::min(), QSocketNotifier::Write);
+#ifndef Q_OS_WIN
+    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
+#endif
+    //bogus magic number is the first pseudo socket descriptor from symbian socket engine.
+    QSocketNotifier bogus(0x40000000, QSocketNotifier::Exception);
+    QSocketNotifier largestlegal(FD_SETSIZE - 1, QSocketNotifier::Read);
+
+    QSignalSpy maxspy(&max, SIGNAL(activated(int)));
+    QSignalSpy minspy(&min, SIGNAL(activated(int)));
+    QSignalSpy bogspy(&bogus, SIGNAL(activated(int)));
+    QSignalSpy llspy(&largestlegal, SIGNAL(activated(int)));
+
+    //generate some unrelated socket activity
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTcpSocket client;
+    client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(server.hasPendingConnections());
+
+    //check no activity on bogus notifiers
+    QCOMPARE(maxspy.count(), 0);
+    QCOMPARE(minspy.count(), 0);
+    QCOMPARE(bogspy.count(), 0);
+    QCOMPARE(llspy.count(), 0);
 }
 
 QTEST_MAIN(tst_QSocketNotifier)

@@ -576,6 +576,11 @@ void QWidgetPrivate::show_sys()
                     if (isFullscreen) {
                         const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
                         S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                        if (cbaVisible) {
+                            // Fix window dimensions as without screen furniture they will have
+                            // defaulted to full screen dimensions initially.
+                            id->handleClientAreaChange();
+                        }
                     }
                 }
             }
