@@ -211,19 +211,23 @@ QGLFunctions::QGLFunctions(const QGLContext *context)
 static int qt_gl_resolve_features()
 {
 #if defined(QT_OPENGL_ES_2)
-    return QGLFunctions::Multitexture |
-           QGLFunctions::Shaders |
-           QGLFunctions::Buffers |
-           QGLFunctions::Framebuffers |
-           QGLFunctions::BlendColor |
-           QGLFunctions::BlendEquation |
-           QGLFunctions::BlendEquationSeparate |
-           QGLFunctions::BlendFuncSeparate |
-           QGLFunctions::BlendSubtract |
-           QGLFunctions::CompressedTextures |
-           QGLFunctions::Multisample |
-           QGLFunctions::StencilSeparate |
-           QGLFunctions::NPOTTextures;
+    int features = QGLFunctions::Multitexture |
+                   QGLFunctions::Shaders |
+                   QGLFunctions::Buffers |
+                   QGLFunctions::Framebuffers |
+                   QGLFunctions::BlendColor |
+                   QGLFunctions::BlendEquation |
+                   QGLFunctions::BlendEquationSeparate |
+                   QGLFunctions::BlendFuncSeparate |
+                   QGLFunctions::BlendSubtract |
+                   QGLFunctions::CompressedTextures |
+                   QGLFunctions::Multisample |
+                   QGLFunctions::StencilSeparate;
+    if (extensions.match("GL_OES_texture_npot"))
+        features |= QGLFunctions::NPOTTextures;
+    if (extensions.match("GL_IMG_texture_npot"))
+        features |= QGLFunctions::NPOTTextures;
+    return features;
 #elif defined(QT_OPENGL_ES)
     int features = QGLFunctions::Multitexture |
                    QGLFunctions::Buffers |
@@ -239,6 +243,8 @@ static int qt_gl_resolve_features()
     if (extensions.match("GL_OES_blend_subtract"))
         features |= QGLFunctions::BlendSubtract;
     if (extensions.match("GL_OES_texture_npot"))
+        features |= QGLFunctions::NPOTTextures;
+    if (extensions.match("GL_IMG_texture_npot"))
         features |= QGLFunctions::NPOTTextures;
     return features;
 #else
