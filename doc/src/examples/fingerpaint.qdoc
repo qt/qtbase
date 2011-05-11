@@ -34,6 +34,7 @@
 
     \image touch-fingerpaint-example.png
 
-    This example was specifically designed to work with a touchscreen. As a result,
-    it is not possible to draw on the custom widget with the mouse cursor.
+    This example was specifically designed to work with a touchscreen, using
+    QTouchEvent instead of QMouseEvent to handle user input over the custom
+    widget. As a result, it is not possible to draw with the mouse cursor.
 */
