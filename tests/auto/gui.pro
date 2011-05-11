@@ -209,11 +209,23 @@ SUBDIRS=\
 win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qcolumnview \
+           qgraphicsanchorlayout \
+           qgraphicsanchorlayout1 \
+           qgraphicsitem \
+           qgraphicsscene \
            qgraphicssceneindex \
+           qlistwidget \
+           qmainwindow \
            qnetworkreply \
            qpathclipper \
+           qpixmapcache \
+           qsidebar \
            qstylesheetstyle \
+           qtextlayout \
            qtextpiecetable \
+           qtipc \
+           qtoolbar \
 
 symbian:SUBDIRS -= \
     qsystemtrayicon \

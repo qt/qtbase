@@ -45,10 +45,12 @@ SUBDIRS=\
 #    qnetworkproxyfactory \ # Uses a hardcoded proxy configuration
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
+    platformsocketengine \
     qauthenticator \
+    qhostinfo \
     qhttpnetworkconnection \
     qhttpnetworkreply \
-    platformsocketengine \
+    qhttpsocketengine \
     qsocketnotifier \
     qsocks5socketengine \
 
