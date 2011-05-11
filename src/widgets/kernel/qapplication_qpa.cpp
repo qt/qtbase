@@ -199,7 +199,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
 
 }
 
-static int openPopupCount = 0;
+int openPopupCount = 0;
 void QApplicationPrivate::openPopup(QWidget *popup)
 {
     openPopupCount++;

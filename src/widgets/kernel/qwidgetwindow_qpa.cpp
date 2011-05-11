@@ -48,6 +48,11 @@ QT_BEGIN_NAMESPACE
 
 QWidget *qt_button_down = 0; // widget got last button-down
 
+// popup control
+static QWidget *qt_popup_down = 0; // popup that contains the pressed widget
+extern int openPopupCount;
+static bool replayPopupMouseEvent = false;
+
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : m_widget(widget)
 {
@@ -111,43 +116,115 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
-    // which child should have it?
-    QPoint mapped = event->pos();
-    QWidget *widget = 0;
-
-    if (m_implicit_mouse_grabber) {
-        widget = m_implicit_mouse_grabber.data();
-        mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
-    } else if ((widget = m_widget->childAt(event->pos()))) {
-        mapped = widget->mapFrom(m_widget, event->pos());
-    }
-
     if (qApp->d_func()->inPopupMode()) {
-        widget = qApp->activePopupWidget();
-        mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
-        m_implicit_mouse_grabber.clear();
+        QWidget *activePopupWidget = qApp->activePopupWidget();
+        QWidget *popup = activePopupWidget;
+        QPoint mapped = event->pos();
+        if (popup != m_widget)
+            mapped = popup->mapFromGlobal(event->globalPos());
+        bool releaseAfter = false;
+        QWidget *popupChild  = popup->childAt(mapped);
+
+        if (popup != qt_popup_down) {
+            qt_button_down = 0;
+            qt_popup_down = 0;
+        }
+
+        switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonDblClick:
+            qt_button_down = popupChild;
+            qt_popup_down = popup;
+            break;
+        case QEvent::MouseButtonRelease:
+            releaseAfter = true;
+            break;
+        default:
+            break; // nothing for mouse move
+        }
+
+        int oldOpenPopupCount = openPopupCount;
+
+        if (popup->isEnabled()) {
+            // deliver event
+            replayPopupMouseEvent = false;
+            QWidget *receiver = popup;
+            QPoint widgetPos = mapped;
+            if (qt_button_down)
+                receiver = qt_button_down;
+            else if (popupChild)
+                receiver = popupChild;
+            if (receiver != popup)
+                widgetPos = receiver->mapFromGlobal(event->globalPos());
+            QWidget *alien = m_widget->childAt(m_widget->mapFromGlobal(event->globalPos()));
+            QMouseEvent e(event->type(), widgetPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+            QApplicationPrivate::sendMouseEvent(receiver, &e, alien, m_widget, &qt_button_down, qt_last_mouse_receiver);
+        } else {
+            // close disabled popups when a mouse button is pressed or released
+            switch (event->type()) {
+            case QEvent::MouseButtonPress:
+            case QEvent::MouseButtonDblClick:
+            case QEvent::MouseButtonRelease:
+                popup->close();
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (qApp->activePopupWidget() != activePopupWidget
+            && replayPopupMouseEvent) {
+            if (m_widget->windowType() != Qt::Popup)
+                qt_button_down = 0;
+            replayPopupMouseEvent = false;
+        } else if (event->type() == QEvent::MouseButtonPress
+                   && event->button() == Qt::RightButton
+                   && (openPopupCount == oldOpenPopupCount)) {
+            QWidget *popupEvent = popup;
+            if (qt_button_down)
+                popupEvent = qt_button_down;
+            else if(popupChild)
+                popupEvent = popupChild;
+            QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
+            QApplication::sendSpontaneousEvent(popupEvent, &e);
+        }
+
+        if (releaseAfter) {
+            qt_button_down = 0;
+            qt_popup_down = 0;
+        }
+        return;
     }
 
-    if (!widget)
+    // which child should have it?
+    QWidget *widget = m_widget->childAt(event->pos());
+    QPoint mapped = event->pos();
+
+    if (widget) {
+        mapped = widget->mapFrom(m_widget, event->pos());
+    } else {
         widget = m_widget;
+    }
 
-    if (event->type() == QEvent::MouseButtonPress && !m_implicit_mouse_grabber)
-        m_implicit_mouse_grabber = widget;
+    if (event->type() == QEvent::MouseButtonPress && !qt_button_down)
+        qt_button_down = widget;
 
-    if (event->buttons() == Qt::NoButton)
-        m_implicit_mouse_grabber.clear();
+    QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->globalPos(), mapped, event->type(), event->buttons(),
+                                                               qt_button_down, widget);
 
-    if (widget != qt_last_mouse_receiver) {
-        QApplicationPrivate::dispatchEnterLeave(widget, qt_last_mouse_receiver);
-        qt_last_mouse_receiver = widget;
+    if (!receiver) {
+        if (event->type() == QEvent::MouseButtonRelease)
+            QApplicationPrivate::mouse_buttons &= ~event->button();
+        return;
     }
 
     QMouseEvent translated(event->type(), mapped, event->globalPos(), event->button(), event->buttons(), event->modifiers());
-    QGuiApplication::sendSpontaneousEvent(widget, &translated);
+    QApplicationPrivate::sendMouseEvent(receiver, &translated, widget, m_widget, &qt_button_down,
+                                        qt_last_mouse_receiver);
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::RightButton) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
-        QGuiApplication::sendSpontaneousEvent(widget, &e);
+        QGuiApplication::sendSpontaneousEvent(receiver, &e);
     }
 }
 

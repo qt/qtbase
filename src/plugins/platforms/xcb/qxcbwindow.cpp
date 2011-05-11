@@ -109,6 +109,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
         | XCB_EVENT_MASK_BUTTON_MOTION
         | XCB_EVENT_MASK_ENTER_WINDOW
         | XCB_EVENT_MASK_LEAVE_WINDOW
+        | XCB_EVENT_MASK_POINTER_MOTION
         | XCB_EVENT_MASK_PROPERTY_CHANGE
         | XCB_EVENT_MASK_FOCUS_CHANGE
     };
@@ -664,13 +665,26 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
     QWindowSystemInterface::handleMouseEvent(window(), time, local, global, buttons);
 }
 
-void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *)
+void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
+    if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
+        || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
+        || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
+    {
+        return;
+    }
+
     QWindowSystemInterface::handleEnterEvent(window());
 }
 
-void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *)
+void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
 {
+    if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
+        || event->detail == XCB_NOTIFY_DETAIL_INFERIOR)
+    {
+        return;
+    }
+
     QWindowSystemInterface::handleLeaveEvent(window());
 }
 
