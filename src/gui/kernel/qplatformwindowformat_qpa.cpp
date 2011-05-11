@@ -894,7 +894,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 }
 
 
-/*!
+/*
     Returns the default QPlatformWindowFormat for overlay contexts.
 
     The default overlay format is:

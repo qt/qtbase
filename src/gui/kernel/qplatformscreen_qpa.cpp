@@ -66,12 +66,15 @@ QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
     return 0;
 }
 
-/*! \fn physicalSize() const
-    Reimplement in subclass to return the physical size of the screen. This function is used by
-    QFont to convert point sizes to pixel sizes.
+/*!
+    Reimplement this function in subclass to return the physical size of the
+    screen. This function is used by QFont to convert point sizes to pixel
+    sizes.
 
-    Default implementation takes the pixel size of the screen, considers a dpi of 100 and returns
-    the calculated (and probably wrong) physical size
+    The default implementation takes the pixel size of the screen, considers a
+    resolution of 100 dots per inch, and returns the calculated physical size.
+    A device with a screen that has different resolutions will need to be
+    supported by a suitable reimplementation of this function.
 */
 QSize QPlatformScreen::physicalSize() const
 {
