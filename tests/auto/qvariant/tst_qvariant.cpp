@@ -2650,7 +2650,6 @@ void tst_QVariant::invalidAsByteArray()
 void tst_QVariant::invalidQColor() const
 {
     QVariant va("An invalid QColor::name() value.");
-    QTest::ignoreMessage(QtWarningMsg, "QColor::setNamedColor: Unknown color name 'An invalid QColor::name() value.'");
     QVERIFY(va.canConvert(QVariant::Color));
 
     QVERIFY(!va.convert(QVariant::Color));
