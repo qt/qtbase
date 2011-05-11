@@ -42,7 +42,7 @@
 
 #ifndef QT_NO_CLIPBOARD
 
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -104,7 +104,7 @@ bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const
 
 void QPlatformClipboard::emitChanged(QClipboard::Mode mode)
 {
-    QApplication::clipboard()->emitChanged(mode);
+    QGuiApplication::clipboard()->emitChanged(mode);
 }
 
 QT_END_NAMESPACE

@@ -43,12 +43,12 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandinputdevice.h"
 #include <QtGui/QPlatformNativeInterface>
-#include <QtGui/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtCore/QMimeData>
 #include <QtCore/QStringList>
 #include <QtCore/QFile>
 #include <QtCore/QtDebug>
-#include <QtGui/private/qdnd_p.h>
+#include <QtWidgets/private/qdnd_p.h>
 
 static QWaylandClipboard *clipboard;
 
