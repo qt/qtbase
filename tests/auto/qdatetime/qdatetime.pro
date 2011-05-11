@@ -1,7 +1,7 @@
 load(qttest_p4)
 
 SOURCES += tst_qdatetime.cpp
-QT = core
+QT = core core-private
 
 # For some reason using optimization here triggers a compiler issue, which causes an exception
 # However, the code is correct

@@ -1,4 +1,4 @@
 load(qttest_p4)
-QT = core gui
+QT = core core-private gui
 SOURCES  += tst_qstatemachine.cpp
 

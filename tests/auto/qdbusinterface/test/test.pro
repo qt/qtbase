@@ -3,5 +3,4 @@ SOURCES += ../tst_qdbusinterface.cpp
 HEADERS += ../myobject.h
 TARGET = ../tst_qdbusinterface
 
-QT = core
-QT += dbus
+QT = core core-private dbus

@@ -1,6 +1,6 @@
 load(qttest_p4)
 SOURCES += tst_benchlibtickcounter.cpp
-QT = core
+QT = core testlib-private
 
 mac:CONFIG -= app_bundle
 CONFIG -= debug_and_release_target
