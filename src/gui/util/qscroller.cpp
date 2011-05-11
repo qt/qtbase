@@ -401,7 +401,7 @@ void QScroller::setScrollerProperties(const QScrollerProperties &sp)
     internal states of the widget that received the original mouse press
     are consistent.
 
-    \sa ungrabGesture, grabbedGesture
+    \sa ungrabGesture(), grabbedGesture()
 */
 Qt::GestureType QScroller::grabGesture(QObject *target, ScrollerGestureType scrollGestureType)
 {
@@ -445,7 +445,7 @@ Qt::GestureType QScroller::grabGesture(QObject *target, ScrollerGestureType scro
     Returns the gesture type currently grabbed for the \a target or 0 if no
     gesture is grabbed.
 
-    \sa grabGesture, ungrabGesture
+    \sa grabGesture(), ungrabGesture()
 */
 Qt::GestureType QScroller::grabbedGesture(QObject *target)
 {
@@ -460,7 +460,7 @@ Qt::GestureType QScroller::grabbedGesture(QObject *target)
     Ungrabs the gesture for the \a target.
     Does nothing if no gesture is grabbed.
 
-    \sa grabGesture, grabbedGesture
+    \sa grabGesture(), grabbedGesture()
 */
 void QScroller::ungrabGesture(QObject *target)
 {
@@ -723,7 +723,7 @@ void QScroller::scrollTo(const QPointF &pos, int scrollTime)
 
     This function performs the actual scrolling by calling scrollTo().
 
-    \sa scrollTo
+    \sa scrollTo()
 */
 void QScroller::ensureVisible(const QRectF &rect, qreal xmargin, qreal ymargin)
 {

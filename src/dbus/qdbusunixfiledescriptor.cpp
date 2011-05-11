@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
     invalid state and QDBusUnixFileDescriptor::isSupported() will return
     false.
 
-    \sa QDBusConnection::ConnectionCapabilities, QDBusConnection::connectionCapabilities
+    \sa QDBusConnection::ConnectionCapabilities, QDBusConnection::connectionCapabilities()
 */
 
 class QDBusUnixFileDescriptorPrivate : public QSharedData {
@@ -122,7 +122,7 @@ QExplicitlySharedDataPointer<QDBusUnixFileDescriptorPrivate>::~QExplicitlyShared
     This is equivalent to constructing the object with an invalid file
     descriptor (like -1).
 
-    \sa fileDescriptor, isValid
+    \sa fileDescriptor(), isValid()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
     : d(0)
@@ -140,7 +140,7 @@ QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
     If the \a fileDescriptor parameter is not valid, isValid() will return
     false and fileDescriptor() will return -1.
 
-    \sa setFileDescriptor, fileDescriptor
+    \sa setFileDescriptor(), fileDescriptor()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor(int fileDescriptor)
     : d(0)
@@ -227,7 +227,7 @@ bool QDBusUnixFileDescriptor::isSupported()
 
 /*!
     Sets the file descriptor that this QDBusUnixFileDescriptor object holds
-    to a copy of \a fileDescriptor.T he original file descriptor is not
+    to a copy of \a fileDescriptor. The original file descriptor is not
     touched and must be closed by the user.
 
     Note that the value returned by fileDescriptor() will be different from
