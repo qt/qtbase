@@ -157,7 +157,8 @@ bool QSystemLockPrivate::modifySemaphore(QSystemLockPrivate::Operation op,
     if ((lockCount == 0 && op == Lock) || (lockCount > 0 && op == Unlock)) {
         if (op == Unlock) {
             --lockCount;
-            Q_ASSERT(lockCount >= 0);
+            if (lockCount < 0)
+                qFatal("%s: lockCount must not be negative", Q_FUNC_INFO);
             if (lockCount > 0)
                 return true;
         }
