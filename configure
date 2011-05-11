@@ -8438,7 +8438,7 @@ if [ -n "$QT_CFLAGS_FPU" ]; then
 fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
-    echo "\n#Qt opengl include path" >> "$QTCONFIG.tmp"
+    echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
     echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
 fi
 
