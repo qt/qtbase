@@ -223,6 +223,7 @@ static int qt_gl_resolve_features()
                    QGLFunctions::CompressedTextures |
                    QGLFunctions::Multisample |
                    QGLFunctions::StencilSeparate;
+    QGLExtensionMatcher extensions;
     if (extensions.match("GL_OES_texture_npot"))
         features |= QGLFunctions::NPOTTextures;
     if (extensions.match("GL_IMG_texture_npot"))
