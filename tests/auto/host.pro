@@ -3,7 +3,7 @@ SUBDIRS=\
            compiler \
            headersclean \
            maketestselftest \
-           moc \
+           #moc \           # FIXME: cannot be built as part of qtbase, since it depends on qtsvg
            uic \
            qmake \
            rcc \
