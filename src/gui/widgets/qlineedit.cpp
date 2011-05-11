@@ -1116,24 +1116,24 @@ void QLineEdit::setDragEnabled(bool b)
   \brief the movement style of cursor in this line edit
   \since 4.8
 
-  When this property is set to QTextCursor::Visual, the line edit will use visual
+  When this property is set to Qt::VisualMoveStyle, the line edit will use visual
   movement style. Pressing the left arrow key will always cause the cursor to move
   left, regardless of the text's writing direction. The same behavior applies to
   right arrow key.
 
-  When the property is QTextCursor::Logical (the default), within a LTR text block,
+  When the property is Qt::LogicalMoveStyle (the default), within a LTR text block,
   increase cursor position when pressing left arrow key, decrease cursor position
   when pressing the right arrow key. If the text block is right to left, the opposite
   behavior applies.
 */
 
-QTextCursor::MoveStyle QLineEdit::cursorMoveStyle() const
+Qt::CursorMoveStyle QLineEdit::cursorMoveStyle() const
 {
     Q_D(const QLineEdit);
     return d->control->cursorMoveStyle();
 }
 
-void QLineEdit::setCursorMoveStyle(QTextCursor::MoveStyle style)
+void QLineEdit::setCursorMoveStyle(Qt::CursorMoveStyle style)
 {
     Q_D(QLineEdit);
     d->control->setCursorMoveStyle(style);

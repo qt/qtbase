@@ -342,7 +342,7 @@ private:
 
 public:
     QTextOption defaultTextOption;
-    QTextCursor::MoveStyle defaultCursorMoveStyle;
+    Qt::CursorMoveStyle defaultCursorMoveStyle;
 #ifndef QT_NO_CSSPARSER
     QCss::StyleSheet parsedDefaultStyleSheet;
 #endif

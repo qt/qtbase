@@ -1585,7 +1585,7 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 
     bool unknown = false;
-    bool visual = cursorMoveStyle() == QTextCursor::Visual;
+    bool visual = cursorMoveStyle() == Qt::VisualMoveStyle;
 
     if (false) {
     }
