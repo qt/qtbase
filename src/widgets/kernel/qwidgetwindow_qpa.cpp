@@ -106,7 +106,8 @@ QPointer<QWidget> qt_last_mouse_receiver = 0;
 void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 {
     if (event->type() == QEvent::Leave) {
-        QApplicationPrivate::dispatchEnterLeave(0, m_widget);
+        QWidget *leave = qt_last_mouse_receiver ? qt_last_mouse_receiver.data() : m_widget;
+        QApplicationPrivate::dispatchEnterLeave(0, leave);
         qt_last_mouse_receiver = 0;
     } else {
         QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
