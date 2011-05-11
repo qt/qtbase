@@ -4,7 +4,7 @@ TARGET = tst_bench_opengl
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += opengl
+QT += core-private gui-private opengl opengl-private
 
 # Input
 SOURCES += main.cpp

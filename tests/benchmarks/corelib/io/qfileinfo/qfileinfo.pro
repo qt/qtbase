@@ -6,6 +6,8 @@ INCLUDEPATH += .
 
 QT -= gui
 
+QT += core-private
+
 CONFIG += release
 
 # Input

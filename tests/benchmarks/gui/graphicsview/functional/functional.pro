@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-        GraphicsViewBenchmark
+        #GraphicsViewBenchmark  # FIXME: cannot be compiled by default as part of qtbase,
+                                # since it depends on qtsvg
