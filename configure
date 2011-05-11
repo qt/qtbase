@@ -699,7 +699,7 @@ CFG_FONTCONFIG=auto
 CFG_QWS_FREETYPE=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
-QT_DEFAULT_BUILD_PARTS="libs examples demos"
+QT_DEFAULT_BUILD_PARTS="libs examples demos tests"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
@@ -712,6 +712,7 @@ CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_WEBKIT=auto # (yes|no|auto|debug)
 CFG_JAVASCRIPTCORE_JIT=auto
+CFG_LOCATION=auto
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
 CFG_GFX_ON="linuxfb multiscreen"
@@ -2145,6 +2146,17 @@ while [ "$#" -gt 0 ]; do
         [ "$VAL" = "auto" ] && VAL="yes"
         CFG_WEBKIT="$VAL"
         ;;
+    location)
+        if [ "$VAL" = "yes" ]; then
+            CFG_LOCATION="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_LOCATION="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+	;;
     javascript-jit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
             CFG_JAVASCRIPTCORE_JIT="$VAL"
@@ -3726,6 +3738,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] 
         [-no-declarative] [-declarative] [-no-declarative-debug] [-declarative-debug]
+        [-no-location] [-location]
         [additional platform specific options (see below)]
 
 
@@ -3896,6 +3909,9 @@ fi
 
     -no-declarative-debug ..... Do not build the declarative debugging support.
  +  -declarative-debug ....... Build the declarative debugging support.
+
+    -no-location ....... Do not build the QtLocation module.
+ +  -location .......... Build the QtLocation module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -7659,6 +7675,22 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
 
+if [ "$CFG_LOCATION" = "auto" ]; then
+    CFG_LOCATION="$CFG_GUI"
+fi
+
+if [ "$CFG_LOCATION" = "yes" ] && [ "$CFG_GUI" = "no" ]; then
+    echo "QtLocation requested, but it can't be built without QtGui"
+    exit 1
+fi
+
+#Disable QtLocation until ready
+CFG_LOCATION="no"
+
+if [ "$CFG_LOCATION" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_LOCATION"
+fi
+
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
     case "$COMPILER" in
     g++*)
@@ -8679,6 +8711,7 @@ echo "Declarative module ..... $CFG_DECLARATIVE"
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
     echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
 fi
+echo "Location module ........ $CFG_LOCATION"
 echo "Support for S60 ........ $CFG_S60"
 echo "Symbian DEF files ...... $CFG_SYMBIAN_DEFFILES"
 echo "STL support ............ $CFG_STL"

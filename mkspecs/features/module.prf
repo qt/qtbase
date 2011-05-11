@@ -1,7 +1,7 @@
 !isEmpty(MODULE_PRI) {
     pritarget.path = $$[QT_INSTALL_DATA]/mkspecs/modules
     pritarget.files = $$MODULE_PRI
-    INSTALLS = pritarget
+    INSTALLS += pritarget
 } else {
     warning("Project $$basename(_PRO_FILE_) is a module, but has not defined MODULE_PRI, which is required for Qt to expose the module to other projects")
 }

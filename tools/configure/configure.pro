@@ -81,6 +81,8 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlocale.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlocale_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlocale_tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvector.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qutfcodec.cpp \
            $$QT_SOURCE_TREE/src/corelib/codecs/qtextcodec.cpp \

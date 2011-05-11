@@ -117,7 +117,6 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 
 void QHttpNetworkConnectionPrivate::init()
 {
-    Q_Q(QHttpNetworkConnection);
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
         channels[i].ssl = encrypt;
@@ -518,6 +517,15 @@ bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
         return true;
     }
     return false;
+}
+
+QHttpNetworkRequest QHttpNetworkConnectionPrivate::predictNextRequest()
+{
+    if (!highPriorityQueue.isEmpty())
+        return highPriorityQueue.last().first;
+    if (!lowPriorityQueue.isEmpty())
+        return lowPriorityQueue.last().first;
+    return QHttpNetworkRequest();
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel

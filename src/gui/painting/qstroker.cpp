@@ -552,6 +552,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 
 //             // line to the beginning of the arc segment, (should not be needed).
 //             emitLineTo(qt_real_to_fixed(curve_start.x()), qt_real_to_fixed(curve_start.y()));
+            Q_UNUSED(curve_start);
 
             for (int i=0; i<point_count; i+=3) {
                 emitCubicTo(qt_real_to_fixed(curves[i].x()),

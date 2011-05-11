@@ -41,25 +41,8 @@
 
 #include "msvc_vcxproj.h"
 #include "msbuild_objectmodel.h"
-#include <qdir.h>
-#include <qdiriterator.h>
-#include <quuid.h>
-
 
 QT_BEGIN_NAMESPACE
-// Filter GUIDs (Do NOT change these!) ------------------------------
-const char _GUIDSourceFiles[]          = "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}";
-const char _GUIDHeaderFiles[]          = "{93995380-89BD-4b04-88EB-625FBE52EBFB}";
-const char _GUIDGeneratedFiles[]       = "{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}";
-const char _GUIDResourceFiles[]        = "{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}";
-const char _GUIDLexYaccFiles[]         = "{E12AE0D2-192F-4d59-BD23-7D3FA58D3183}";
-const char _GUIDTranslationFiles[]     = "{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}";
-const char _GUIDFormFiles[]            = "{99349809-55BA-4b9d-BF79-8FDBB0286EB3}";
-const char _GUIDExtraCompilerFiles[]   = "{E0D8C965-CC5F-43d7-AD63-FAEF0BBC0F85}";
-QT_END_NAMESPACE
-
-QT_BEGIN_NAMESPACE
-
 
 VcxprojGenerator::VcxprojGenerator() : VcprojGenerator()
 {
@@ -71,4 +54,3 @@ VCProjectWriter *VcxprojGenerator::createProjectWriter()
 }
 
 QT_END_NAMESPACE
-

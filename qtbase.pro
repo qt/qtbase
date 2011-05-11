@@ -7,12 +7,19 @@ TEMPLATE = subdirs
 
 cross_compile: CONFIG += nostrip
 
+module_qtbase_tests.subdir = tests
+module_qtbase_tests.target = module-qtbase-tests
+module_qtbase_tests.depends = module_qtbase_src
+module_qtbase_tests.CONFIG = no_default_target no_default_install
+
 #process the projects
 for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     isEqual(PROJECT, examples) {
        SUBDIRS += examples
     } else:isEqual(PROJECT, demos) {
        SUBDIRS += demos
+    } else:isEqual(PROJECT, tests) {
+       module_qtbase_tests.CONFIG -= no_default_target
     } else:isEqual(PROJECT, libs) {
        include(src/src.pro)
     } else:isEqual(PROJECT, qmake) {
@@ -22,10 +29,6 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     }
 }
 
-module_qtbase_tests.subdir = tests
-module_qtbase_tests.target = module-qtbase-tests
-module_qtbase_tests.depends = module_qtbase_src
-module_qtbase_tests.CONFIG = no_default_target no_default_install
 SUBDIRS += module_qtbase_tests
 
 !symbian: confclean.depends += clean

@@ -50,8 +50,8 @@
 #include "qtextdocument_p.h"
 #include "qtextformat_p.h"
 #include "qpainterpath.h"
-#include "qglyphs.h"
-#include "qglyphs_p.h"
+#include "qglyphrun.h"
+#include "qglyphrun_p.h"
 #include "qrawfont.h"
 #include "qrawfont_p.h"
 #include <limits.h>
@@ -992,12 +992,12 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 
     \since 4.8
 
-    \sa draw(), QPainter::drawGlyphs()
+    \sa draw(), QPainter::drawGlyphRun()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphs> QTextLayout::glyphs() const
+QList<QGlyphRun> QTextLayout::glyphRuns() const
 {
-    QList<QGlyphs> glyphs;
+    QList<QGlyphRun> glyphs;
     for (int i=0; i<d->lines.size(); ++i)
         glyphs += QTextLine(i, d).glyphs(-1, -1);
 
@@ -1209,8 +1209,6 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
         d->itemize();
 
     QPointF position = pos + d->position;
-    QFixed pos_x = QFixed::fromReal(position.x());
-    QFixed pos_y = QFixed::fromReal(position.y());
 
     cursorPosition = qBound(0, cursorPosition, d->layoutData->string.length());
     int line = d->lineNumberForTextPosition(cursorPosition);
@@ -2093,15 +2091,15 @@ namespace {
 
     \since 4.8
 
-    \sa QTextLayout::glyphs()
+    \sa QTextLayout::glyphRuns()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphs> QTextLine::glyphs(int from, int length) const
+QList<QGlyphRun> QTextLine::glyphs(int from, int length) const
 {
     const QScriptLine &line = eng->lines[i];
 
     if (line.length == 0)
-        return QList<QGlyphs>();
+        return QList<QGlyphRun>();
 
     QHash<QFontEngine *, GlyphInfo> glyphLayoutHash;
 
@@ -2166,7 +2164,7 @@ QList<QGlyphs> QTextLine::glyphs(int from, int length) const
         }
     }
 
-    QHash<QPair<QFontEngine *, int>, QGlyphs> glyphsHash;
+    QHash<QPair<QFontEngine *, int>, QGlyphRun> glyphsHash;
 
     QList<QFontEngine *> keys = glyphLayoutHash.uniqueKeys();
     for (int i=0; i<keys.size(); ++i) {
@@ -2223,14 +2221,14 @@ QList<QGlyphs> QTextLine::glyphs(int from, int length) const
                 positions.append(positionsArray.at(i).toPointF() + pos);
             }
 
-            QGlyphs glyphIndexes;
+            QGlyphRun glyphIndexes;
             glyphIndexes.setGlyphIndexes(glyphs);
             glyphIndexes.setPositions(positions);
 
             glyphIndexes.setOverline(flags.testFlag(QTextItem::Overline));
             glyphIndexes.setUnderline(flags.testFlag(QTextItem::Underline));
             glyphIndexes.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
-            glyphIndexes.setFont(font);
+            glyphIndexes.setRawFont(font);
 
             QPair<QFontEngine *, int> key(fontEngine, int(flags));
             if (!glyphsHash.contains(key))

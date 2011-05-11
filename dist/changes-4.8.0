@@ -97,9 +97,17 @@ Qt for Windows CE
 
 - Assistant
 
-
 - Designer
-
+    * [QTBUG-18631] Enabled the use of promoted QWidgets in the buddy editor.
+    * [QTBUG-18120] Fixed saving of the Z-order.
+    * [QTBUG-13683] Fixed saving of QGridLayout and QFormLayout
+      by QFormBuilder.
+    * [QTBUG-10890] Added a filter to the rich text editor dialog.
+      that simplifies the HTML markup generated.
+    * [QTBUG-7777] Added support for QIcon::fromTheme.
+    * [QTBUG-7169] Fixed QtUiTools to be built with the correct
+      lib-infix.
+    * [QTBUG-3120] Added support for alignment of box layout items.
 
 - Linguist
   - Linguist GUI

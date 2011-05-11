@@ -759,7 +759,7 @@ EXPORTS
 	_ZNK14QGLPaintDevice9isFlippedEv @ 758 NONAME
 	_ZNK16QGLWindowSurface8featuresEv @ 759 NONAME
 	_ZNK26QGLFramebufferObjectFormat6mipmapEv @ 760 NONAME
-	_ZTI22QGLContextResourceBase @ 761 NONAME
+	_ZTI22QGLContextResourceBase @ 761 NONAME ABSENT
 	_ZTI27QGLContextGroupResourceBase @ 762 NONAME
 	_ZTV22QGLContextResourceBase @ 763 NONAME
 	_ZTV27QGLContextGroupResourceBase @ 764 NONAME

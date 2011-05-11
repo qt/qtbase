@@ -55,6 +55,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QCoreApplication>
 
+#include <limits.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QFORMINTERNAL_NAMESPACE
@@ -83,6 +85,8 @@ QFormBuilderExtra::CustomWidgetData::CustomWidgetData(const DomCustomWidget *dcw
 }
 
 QFormBuilderExtra::QFormBuilderExtra() :
+    m_defaultMargin(INT_MIN),
+    m_defaultSpacing(INT_MIN),
     m_layoutWidget(false),
     m_resourceBuilder(0),
     m_textBuilder(0)
@@ -215,33 +219,6 @@ bool QFormBuilderExtra::isCustomWidgetContainer(const QString &className) const
     if (it != m_customWidgetDataHash.constEnd())
         return it.value().isContainer;
     return false;
-}
-
-namespace {
-    typedef QHash<const QAbstractFormBuilder *, QFormBuilderExtra *> FormBuilderPrivateHash;
-}
-
-Q_GLOBAL_STATIC(FormBuilderPrivateHash, g_FormBuilderPrivateHash)
-
-QFormBuilderExtra *QFormBuilderExtra::instance(const QAbstractFormBuilder *afb)
-{
-    FormBuilderPrivateHash &fbHash = *g_FormBuilderPrivateHash();
-
-    FormBuilderPrivateHash::iterator it = fbHash.find(afb);
-    if (it == fbHash.end())
-        it = fbHash.insert(afb, new QFormBuilderExtra);
-    return it.value();
-}
-
-void QFormBuilderExtra::removeInstance(const QAbstractFormBuilder *afb)
-{
-    FormBuilderPrivateHash &fbHash = *g_FormBuilderPrivateHash();
-
-    FormBuilderPrivateHash::iterator it = fbHash.find(afb);
-    if (it != fbHash.end()) {
-        delete it.value();
-        fbHash.erase(it);
-    }
 }
 
 void QFormBuilderExtra::setProcessingLayoutWidget(bool processing)

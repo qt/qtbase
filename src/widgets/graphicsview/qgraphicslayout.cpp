@@ -167,7 +167,7 @@ QGraphicsLayout::QGraphicsLayout(QGraphicsLayoutItem *parent)
                     " neither a QGraphicsWidget nor QGraphicsLayout");
         }
     }
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding, QSizePolicy::DefaultType);
+    d_func()->sizePolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding, QSizePolicy::DefaultType);
     setOwnedByLayout(true);
 }
 
@@ -188,7 +188,7 @@ QGraphicsLayout::QGraphicsLayout(QGraphicsLayoutPrivate &dd, QGraphicsLayoutItem
                     " neither a QGraphicsWidget nor QGraphicsLayout");
         }
     }
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding, QSizePolicy::DefaultType);
+    d_func()->sizePolicy = QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding, QSizePolicy::DefaultType);
     setOwnedByLayout(true);
 }
 

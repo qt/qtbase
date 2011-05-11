@@ -115,19 +115,7 @@ ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, T
 template <typename Sequence, typename KeepFunctor>
 QFuture<void> filter(Sequence &sequence, KeepFunctor keep)
 {
-    return filterInternal(sequence, keep, &Sequence::push_back);
-}
-
-template <typename Sequence, typename T>
-QFuture<void> filter(Sequence &sequence, bool (keep)(T))
-{
-    return filterInternal(sequence, FunctionWrapper1<bool, T>(keep), &Sequence::push_back);
-}
-
-template <typename Sequence, typename C>
-QFuture<void> filter(Sequence &sequence, bool (C::*keep)() const)
-{
-    return filterInternal(sequence, ConstMemberFunctionWrapper<bool, C>(keep), &Sequence::push_back);
+    return filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back);
 }
 
 // filteredReduced() on sequences
@@ -137,103 +125,20 @@ QFuture<ResultType> filteredReduced(const Sequence &sequence,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(sequence, keep, reduce, options);
- }
+    return startFilteredReduced<ResultType>(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
+}
 
-template <typename ResultType, typename Sequence, typename T, typename ReduceFunctor>
-QFuture<ResultType> filteredReduced(const Sequence &sequence,
-                                    bool (filter)(T),
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
+QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(const Sequence &sequence,
+                                    KeepFunctor keep,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return filteredReduced<ResultType>(sequence,
-                                       FunctionWrapper1<bool, T>(filter),
-                                       reduce,
-                                       options);
-}
-
-template <typename ResultType, typename Sequence, typename C, typename ReduceFunctor>
-QFuture<ResultType> filteredReduced(const Sequence &sequence,
-                                    bool (C::*filter)() const,
-                                    ReduceFunctor reduce,
-                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<ResultType>(sequence,
-                                       ConstMemberFunctionWrapper<bool, C>(filter),
-                                       reduce,
-                                       options);
-}
-
-template <typename Sequence, typename KeepFunctor, typename T, typename U, typename V>
-QFuture<U> filteredReduced(const Sequence &sequence,
-                           KeepFunctor keep,
-                           T (reduce)(U &, V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<U>(sequence,
-                              keep,
-                              FunctionWrapper2<T, U &, V>(reduce),
-                              options);
-}
-
-template <typename Sequence, typename KeepFunctor, typename T, typename C, typename U>
-QFuture<C> filteredReduced(const Sequence &sequence,
-                           KeepFunctor keep,
-                           T (C::*reduce)(U),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<C>(sequence,
-                              keep,
-                              MemberFunctionWrapper1<T, C, U>(reduce),
-                              options);
-}
-
-template <typename Sequence, typename T, typename U, typename V, typename W>
-QFuture<V> filteredReduced(const Sequence &sequence,
-                           bool (keep)(T),
-                           U (reduce)(V &, W),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<V>(sequence,
-                              FunctionWrapper1<bool, T>(keep),
-                              FunctionWrapper2<U, V &, W>(reduce),
-                              options);
-}
-
-template <typename Sequence, typename C, typename T, typename U, typename V>
-QFuture<U> filteredReduced(const Sequence &sequence,
-                           bool (C::*keep)() const,
-                           T (reduce)(U &, V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<U>(sequence,
-                              ConstMemberFunctionWrapper<bool, C>(keep),
-                              FunctionWrapper2<T, U &, V>(reduce),
-                              options);
-}
-
-template <typename Sequence, typename T, typename U, typename C, typename V>
-QFuture<C> filteredReduced(const Sequence &sequence,
-                           bool (keep)(T),
-                           U (C::*reduce)(V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<C>(sequence,
-                              FunctionWrapper1<bool, T>(keep),
-                              MemberFunctionWrapper1<U, C, V>(reduce),
-                              options);
-}
-
-template <typename Sequence, typename C, typename T, typename D, typename U>
-QFuture<D> filteredReduced(const Sequence &sequence,
-                           bool (C::*keep)() const,
-                           T (D::*reduce)(U),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<D>(sequence,
-                              ConstMemberFunctionWrapper<bool, C>(keep),
-                              MemberFunctionWrapper1<T, D, U>(reduce),
-                              options);
+    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+            (sequence,
+             QtPrivate::createFunctionWrapper(keep),
+             QtPrivate::createFunctionWrapper(reduce),
+             options);
 }
 
 // filteredReduced() on iterators
@@ -244,184 +149,42 @@ QFuture<ResultType> filteredReduced(Iterator begin,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-   return startFilteredReduced<ResultType>(begin, end, keep, reduce, options);
+   return startFilteredReduced<ResultType>(begin, end, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options);
 }
 
-template <typename ResultType, typename Iterator, typename T, typename ReduceFunctor>
-QFuture<ResultType> filteredReduced(Iterator begin,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
+QFuture<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType> filteredReduced(Iterator begin,
                                     Iterator end,
-                                    bool (filter)(T),
+                                    KeepFunctor keep,
                                     ReduceFunctor reduce,
                                     ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return filteredReduced<ResultType>(begin,
-                                       end,
-                                       FunctionWrapper1<bool, T>(filter),
-                                       reduce,
-                                       options);
+   return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+           (begin, end,
+            QtPrivate::createFunctionWrapper(keep),
+            QtPrivate::createFunctionWrapper(reduce),
+            options);
 }
-
-template <typename ResultType, typename Iterator, typename C, typename ReduceFunctor>
-QFuture<ResultType> filteredReduced(Iterator begin,
-                                    Iterator end,
-                                    bool (C::*filter)() const,
-                                    ReduceFunctor reduce,
-                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<ResultType>(begin,
-                                       end,
-                                       ConstMemberFunctionWrapper<bool, C>(filter),
-                                       reduce,
-                                       options);
-}
-
-template <typename Iterator, typename KeepFunctor, typename T, typename U, typename V>
-QFuture<U> filteredReduced(Iterator begin,
-                           Iterator end,
-                           KeepFunctor keep,
-                           T (reduce)(U &, V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<U>(begin,
-                              end,
-                              keep,
-                              FunctionWrapper2<T, U &, V>(reduce),
-                              options);
-}
-
-template <typename Iterator, typename KeepFunctor, typename T, typename C, typename U>
-QFuture<C> filteredReduced(Iterator begin,
-                           Iterator end,
-                           KeepFunctor keep,
-                           T (C::*reduce)(U),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<C>(begin,
-                              end,
-                              keep,
-                              MemberFunctionWrapper1<T, C, U>(reduce),
-                              options);
-}
-
-template <typename Iterator, typename T, typename U, typename V, typename W>
-QFuture<V> filteredReduced(Iterator begin,
-                           Iterator end,
-                           bool (keep)(T),
-                           U (reduce)(V &, W),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<V>(begin,
-                              end,
-                              FunctionWrapper1<bool, T>(keep),
-                              FunctionWrapper2<U, V &, W>(reduce),
-                              options);
-}
-
-template <typename Iterator, typename C, typename T, typename U, typename V>
-QFuture<U> filteredReduced(Iterator begin,
-                           Iterator end,
-                           bool (C::*keep)() const,
-                           T (reduce)(U &, V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<U>(begin,
-                              end,
-                              ConstMemberFunctionWrapper<bool, C>(keep),
-                              FunctionWrapper2<T, U &, V>(reduce),
-                              options);
-}
-
-template <typename Iterator, typename T, typename U, typename C, typename V>
-QFuture<C> filteredReduced(Iterator begin,
-                           Iterator end,
-                           bool (keep)(T),
-                           U (C::*reduce)(V),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<C>(begin,
-                              end,
-                              FunctionWrapper1<bool, T>(keep),
-                              MemberFunctionWrapper1<U, C, V>(reduce),
-                              options);
-}
-
-template <typename Iterator, typename C, typename T, typename D, typename U>
-QFuture<D> filteredReduced(Iterator begin,
-                           Iterator end,
-                           bool (C::*keep)() const,
-                           T (D::*reduce)(U),
-                           ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return filteredReduced<D>(begin,
-                              end,
-                              ConstMemberFunctionWrapper<bool, C>(keep),
-                              MemberFunctionWrapper1<T, D, U>(reduce),
-                              options);
-}
-
 
 // filtered() on sequences
 template <typename Sequence, typename KeepFunctor>
 QFuture<typename Sequence::value_type> filtered(const Sequence &sequence, KeepFunctor keep)
 {
-    return startFiltered(sequence, keep);
-}
-
-template <typename Sequence, typename T>
-QFuture<typename Sequence::value_type> filtered(const Sequence &sequence, bool (keep)(T))
-{
-    return startFiltered(sequence, FunctionWrapper1<bool, T>(keep));
-}
-
-template <typename Sequence, typename C>
-QFuture<typename Sequence::value_type> filtered(const Sequence &sequence, bool (C::*keep)() const)
-{
-    return startFiltered(sequence, ConstMemberFunctionWrapper<bool, C>(keep));
+    return startFiltered(sequence, QtPrivate::createFunctionWrapper(keep));
 }
 
 // filtered() on iterators
 template <typename Iterator, typename KeepFunctor>
 QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin, Iterator end, KeepFunctor keep)
 {
-    return startFiltered(begin, end, keep);
+    return startFiltered(begin, end, QtPrivate::createFunctionWrapper(keep));
 }
-
-template <typename Iterator, typename T>
-QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin, Iterator end, bool (keep)(T))
-{
-    return startFiltered(begin, end, FunctionWrapper1<bool, T>(keep));
-}
-
-template <typename Iterator, typename C>
-QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin,
-                                                Iterator end,
-                                                bool (C::*keep)() const)
-{
-    return startFiltered(begin, end, ConstMemberFunctionWrapper<bool, C>(keep));
-}
-
 
 // blocking filter() on sequences
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(Sequence &sequence, KeepFunctor keep)
 {
-    filterInternal(sequence, keep, &Sequence::push_back).startBlocking();
-}
-
-template <typename Sequence, typename T>
-void blockingFilter(Sequence &sequence, bool (keep)(T))
-{
-    filterInternal(sequence, FunctionWrapper1<bool, T>(keep), &Sequence::push_back)
-        .startBlocking();
-}
-
-template <typename Sequence, typename C>
-void blockingFilter(Sequence &sequence, bool (C::*keep)() const)
-{
-    filterInternal(sequence,
-                   ConstMemberFunctionWrapper<bool, C>(keep),
-                   &Sequence::push_back)
-        .startBlocking();
+    filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back).startBlocking();
 }
 
 // blocking filteredReduced() on sequences
@@ -431,111 +194,20 @@ ResultType blockingFilteredReduced(const Sequence &sequence,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(sequence, keep, reduce, options)
+    return startFilteredReduced<ResultType>(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::createFunctionWrapper(reduce), options)
         .startBlocking();
 }
 
-template <typename ResultType, typename Sequence, typename T, typename ReduceFunctor>
-ResultType blockingFilteredReduced(const Sequence &sequence,
-                                   bool (filter)(T),
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
+typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(const Sequence &sequence,
+                                   KeepFunctor keep,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return blockingFilteredReduced<ResultType>
+    return blockingFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
         (sequence,
-         FunctionWrapper1<bool, T>(filter),
-         reduce,
-         options);
-}
-
-template <typename ResultType, typename Sequence, typename C, typename ReduceFunctor>
-ResultType blockingFilteredReduced(const Sequence &sequence,
-                                   bool (C::*filter)() const,
-                                   ReduceFunctor reduce,
-                                   ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<ResultType>
-        (sequence,
-         ConstMemberFunctionWrapper<bool, C>(filter),
-         reduce,
-         options);
-}
-
-template <typename Sequence, typename KeepFunctor, typename T, typename U, typename V>
-U blockingFilteredReduced(const Sequence &sequence,
-                          KeepFunctor keep,
-                          T (reduce)(U &, V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<U>
-        (sequence,
-         keep,
-         FunctionWrapper2<T, U &, V>(reduce),
-         options);
-}
-
-template <typename Sequence, typename KeepFunctor, typename T, typename C, typename U>
-C blockingFilteredReduced(const Sequence &sequence,
-                          KeepFunctor keep,
-                          T (C::*reduce)(U),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<C>
-        (sequence,
-         keep,
-         MemberFunctionWrapper1<T, C, U>(reduce),
-         options);
-}
-
-template <typename Sequence, typename T, typename U, typename V, typename W>
-V blockingFilteredReduced(const Sequence &sequence,
-                          bool (keep)(T),
-                          U (reduce)(V &, W),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<V>
-        (sequence,
-         FunctionWrapper1<bool, T>(keep),
-         FunctionWrapper2<U, V &, W>(reduce),
-         options);
-}
-
-template <typename Sequence, typename C, typename T, typename U, typename V>
-U blockingFilteredReduced(const Sequence &sequence,
-                          bool (C::*keep)() const,
-                          T (reduce)(U &, V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<U>
-        (sequence,
-         ConstMemberFunctionWrapper<bool, C>(keep),
-         FunctionWrapper2<T, U &, V>(reduce),
-         options);
-}
-
-template <typename Sequence, typename T, typename U, typename C, typename V>
-C blockingFilteredReduced(const Sequence &sequence,
-                          bool (keep)(T),
-                          U (C::*reduce)(V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<C>
-        (sequence,
-         FunctionWrapper1<bool, T>(keep),
-         MemberFunctionWrapper1<U, C, V>(reduce),
-         options);
-}
-
-template <typename Sequence, typename C, typename T, typename D, typename U>
-D blockingFilteredReduced(const Sequence &sequence,
-                          bool (C::*keep)() const,
-                          T (D::*reduce)(U),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<D>
-        (sequence,
-         ConstMemberFunctionWrapper<bool, C>(keep),
-         MemberFunctionWrapper1<T, D, U>(reduce),
+         QtPrivate::createFunctionWrapper(keep),
+         QtPrivate::createFunctionWrapper(reduce),
          options);
 }
 
@@ -547,150 +219,34 @@ ResultType blockingFilteredReduced(Iterator begin,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return startFilteredReduced<ResultType>(begin, end, keep, reduce, options)
+    return startFilteredReduced<ResultType>
+        (begin, end,
+         QtPrivate::createFunctionWrapper(keep),
+         QtPrivate::createFunctionWrapper(reduce),
+         options)
         .startBlocking();
 }
 
-template <typename ResultType, typename Iterator, typename T, typename ReduceFunctor>
-ResultType blockingFilteredReduced(Iterator begin,
+template <typename Iterator, typename KeepFunctor, typename ReduceFunctor>
+typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFilteredReduced(Iterator begin,
                                    Iterator end,
-                                   bool (filter)(T),
+                                   KeepFunctor keep,
                                    ReduceFunctor reduce,
                                    ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
 {
-    return blockingFilteredReduced<ResultType>
-        (begin,
-         end,
-         FunctionWrapper1<bool, T>(filter),
-         reduce,
-         options);
-}
-
-template <typename ResultType, typename Iterator, typename C, typename ReduceFunctor>
-ResultType blockingFilteredReduced(Iterator begin,
-                                   Iterator end,
-                                   bool (C::*filter)() const,
-                                   ReduceFunctor reduce,
-                                   ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<ResultType>
-        (begin,
-         end,
-         ConstMemberFunctionWrapper<bool, C>(filter),
-         reduce,
-         options);
-}
-
-template <typename Iterator, typename KeepFunctor, typename T, typename U, typename V>
-U blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          KeepFunctor keep,
-                          T (reduce)(U &, V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<U>
-        (begin,
-         end,
-         keep,
-         FunctionWrapper2<T, U &, V>(reduce),
-         options);
-}
-
-template <typename Iterator, typename KeepFunctor, typename T, typename C, typename U>
-C blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          KeepFunctor keep,
-                          T (C::*reduce)(U),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<C>
-        (begin,
-         end,
-         keep,
-         MemberFunctionWrapper1<T, C, U>(reduce),
-         options);
-}
-
-template <typename Iterator, typename T, typename U, typename V, typename W>
-V blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          bool (keep)(T),
-                          U (reduce)(V &, W),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<V>
-        (begin,
-         end,
-         FunctionWrapper1<bool, T>(keep),
-         FunctionWrapper2<U, V &, W>(reduce),
-         options);
-}
-
-template <typename Iterator, typename C, typename T, typename U, typename V>
-U blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          bool (C::*keep)() const,
-                          T (reduce)(U &, V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<U>
-        (begin,
-         end,
-         ConstMemberFunctionWrapper<bool, C>(keep),
-         FunctionWrapper2<T, U &, V>(reduce),
-         options);
-}
-
-template <typename Iterator, typename T, typename U, typename C, typename V>
-C blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          bool (keep)(T),
-                          U (C::*reduce)(V),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<C>
-        (begin,
-         end,
-         FunctionWrapper1<bool, T>(keep),
-         MemberFunctionWrapper1<U, C, V>(reduce),
-         options);
-}
-
-template <typename Iterator, typename C, typename T, typename D, typename U>
-D blockingFilteredReduced(Iterator begin,
-                          Iterator end,
-                          bool (C::*keep)() const,
-                          T (D::*reduce)(U),
-                          ReduceOptions options = ReduceOptions(UnorderedReduce | SequentialReduce))
-{
-    return blockingFilteredReduced<D>
-        (begin,
-         end,
-         ConstMemberFunctionWrapper<bool, C>(keep),
-         MemberFunctionWrapper1<T, D, U>(reduce),
-         options);
+    return startFilteredReduced<typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType>
+        (begin, end,
+         QtPrivate::createFunctionWrapper(keep),
+         QtPrivate::createFunctionWrapper(reduce),
+         options)
+        .startBlocking();
 }
 
 // blocking filtered() on sequences
 template <typename Sequence, typename KeepFunctor>
 Sequence blockingFiltered(const Sequence &sequence, KeepFunctor keep)
 {
-    return blockingFilteredReduced(sequence, keep, &Sequence::push_back, OrderedReduce);
-}
-
-template <typename Sequence, typename T>
-Sequence blockingFiltered(const Sequence &sequence, bool (keep)(T))
-{
-    return blockingFilteredReduced(sequence, keep, &Sequence::push_back, OrderedReduce);
-}
-
-template <typename Sequence, typename C>
-Sequence blockingFiltered(const Sequence &sequence, bool (C::*filter)() const)
-{
-    return blockingFilteredReduced(sequence,
-                                   filter,
-                                   &Sequence::push_back,
-                                   OrderedReduce);
+    return blockingFilteredReduced(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back, OrderedReduce);
 }
 
 // blocking filtered() on iterators
@@ -699,27 +255,7 @@ OutputSequence blockingFiltered(Iterator begin, Iterator end, KeepFunctor keep)
 {
     return blockingFilteredReduced(begin,
                                    end,
-                                   keep,
-                                   &OutputSequence::push_back,
-                                   OrderedReduce);
-}
-
-template <typename OutputSequence, typename Iterator, typename T>
-OutputSequence blockingFiltered(Iterator begin, Iterator end, bool (keep)(T))
-{
-    return blockingFilteredReduced(begin,
-                                   end,
-                                   keep,
-                                   &OutputSequence::push_back,
-                                   OrderedReduce);
-}
-
-template <typename OutputSequence, typename Iterator, typename C>
-OutputSequence blockingFiltered(Iterator begin, Iterator end, bool (C::*filter)() const)
-{
-    return blockingFilteredReduced(begin,
-                                   end,
-                                   filter,
+                                   QtPrivate::createFunctionWrapper(keep),
                                    &OutputSequence::push_back,
                                    OrderedReduce);
 }

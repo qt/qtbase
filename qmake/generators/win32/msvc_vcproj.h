@@ -57,6 +57,7 @@ struct QUuid;
 class VcprojGenerator : public Win32MakefileGenerator
 {
     bool init_flag;
+    bool is64Bit;
     bool writeVcprojParts(QTextStream &);
 
     bool writeMakefile(QTextStream &);

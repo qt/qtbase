@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,65 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHS_P_H
-#define QGLYPHS_P_H
+#include <QtGui>
+#include <windows.h>
+#include "window.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of internal files.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qglyphs.h"
-#include "qrawfont.h"
-
-#include <qfont.h>
-
-#if !defined(QT_NO_RAWFONT)
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QGlyphsPrivate: public QSharedData
+int main(int argc, char **argv)
 {
-public:
-    QGlyphsPrivate()
-        : overline(false)
-        , underline(false)
-        , strikeOut(false)
-    {
-    }
+    QApplication app(argc, argv);
+    Window *window = new Window();
+    window->resize(800, 600);
 
-    QGlyphsPrivate(const QGlyphsPrivate &other)
-      : QSharedData(other)
-      , glyphIndexes(other.glyphIndexes)
-      , glyphPositions(other.glyphPositions)
-      , font(other.font)
-      , overline(other.overline)
-      , underline(other.underline)
-      , strikeOut(other.strikeOut)
-    {
-    }
+    window->show();
 
-    QVector<quint32> glyphIndexes;
-    QVector<QPointF> glyphPositions;
-    QRawFont font;
+    return app.exec();
 
-    uint overline  : 1;
-    uint underline : 1;
-    uint strikeOut : 1;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QGLYPHS_P_H
-
-#endif // QT_NO_RAWFONT
+}

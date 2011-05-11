@@ -48,6 +48,7 @@
 #include <QScopedPointer>
 #include <QTimer>
 #include <QDateTime>
+#include <QSettings>
 
 #include "baselineprotocol.h"
 #include "report.h"
@@ -65,6 +66,7 @@ public:
 
     static QString storagePath();
     static QString baseUrl();
+    static QString settingsFilePath();
 
 protected:
     void incomingConnection(int socketDescriptor);
@@ -79,6 +81,7 @@ private:
     int lastRunIdIdx;
     static QString storage;
     static QString url;
+    static QString settingsFile;
 };
 
 
@@ -132,6 +135,7 @@ private:
     QString runId;
     bool connectionEstablished;
     Report report;
+    QSettings *settings;
 };
 
 #endif // BASELINESERVER_H

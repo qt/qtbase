@@ -1368,6 +1368,16 @@ class QDataStream;
 #    else
 #      define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_LOCATION_LIB)
+#      define Q_LOCATION_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_LOCATION_EXPORT Q_DECL_IMPORT
+#    endif
+#    if defined(QT_BUILD_SENSORS_LIB)
+#      define Q_SENSORS_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_SENSORS_EXPORT Q_DECL_IMPORT
+#    endif
 #    define Q_TEMPLATEDLL
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
@@ -1386,6 +1396,8 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    define Q_COMPAT_EXPORT Q_DECL_IMPORT
 #    define Q_DBUS_EXPORT Q_DECL_IMPORT
+#    define Q_LOCATION_EXPORT Q_DECL_IMPORT
+#    define Q_SENSORS_EXPORT Q_DECL_IMPORT
 #    define Q_TEMPLATEDLL
 #  endif
 #  define Q_NO_DECLARED_NOT_DEFINED
@@ -1415,6 +1427,8 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
 #    define Q_COMPAT_EXPORT Q_DECL_EXPORT
 #    define Q_DBUS_EXPORT Q_DECL_EXPORT
+#    define Q_LOCATION_EXPORT Q_DECL_EXPORT
+#    define Q_SENSORS_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
@@ -1430,6 +1444,8 @@ class QDataStream;
 #    define Q_SCRIPTTOOLS_EXPORT
 #    define Q_COMPAT_EXPORT
 #    define Q_DBUS_EXPORT
+#    define Q_LOCATION_EXPORT
+#    define Q_SENSORS_EXPORT
 #  endif
 #endif
 
@@ -1841,6 +1857,10 @@ Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 #ifdef QT3_SUPPORT
 inline QT3_SUPPORT void qSuppressObsoleteWarnings(bool = true) {}
 inline QT3_SUPPORT void qObsolete(const char *, const char * = 0, const char * = 0) {}
+#endif
+
+#if !defined(Q_UNIMPLEMENTED)
+#  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
 #endif
 
 #if defined(QT_NO_THREAD)
@@ -2587,26 +2607,28 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 */
 
 /* Qt modules */
-#define QT_MODULE_CORE                 0x00001
-#define QT_MODULE_GUI                  0x00002
-#define QT_MODULE_NETWORK              0x00004
-#define QT_MODULE_OPENGL               0x00008
-#define QT_MODULE_SQL                  0x00010
-#define QT_MODULE_XML                  0x00020
-#define QT_MODULE_QT3SUPPORTLIGHT      0x00040
-#define QT_MODULE_QT3SUPPORT           0x00080
-#define QT_MODULE_SVG                  0x00100
-#define QT_MODULE_ACTIVEQT             0x00200
-#define QT_MODULE_GRAPHICSVIEW         0x00400
-#define QT_MODULE_SCRIPT               0x00800
-#define QT_MODULE_XMLPATTERNS          0x01000
-#define QT_MODULE_HELP                 0x02000
-#define QT_MODULE_TEST                 0x04000
-#define QT_MODULE_DBUS                 0x08000
-#define QT_MODULE_SCRIPTTOOLS          0x10000
-#define QT_MODULE_OPENVG               0x20000
-#define QT_MODULE_MULTIMEDIA           0x40000
-#define QT_MODULE_DECLARATIVE          0x80000
+#define QT_MODULE_CORE                 0x000001
+#define QT_MODULE_GUI                  0x000002
+#define QT_MODULE_NETWORK              0x000004
+#define QT_MODULE_OPENGL               0x000008
+#define QT_MODULE_SQL                  0x000010
+#define QT_MODULE_XML                  0x000020
+#define QT_MODULE_QT3SUPPORTLIGHT      0x000040
+#define QT_MODULE_QT3SUPPORT           0x000080
+#define QT_MODULE_SVG                  0x000100
+#define QT_MODULE_ACTIVEQT             0x000200
+#define QT_MODULE_GRAPHICSVIEW         0x000400
+#define QT_MODULE_SCRIPT               0x000800
+#define QT_MODULE_XMLPATTERNS          0x001000
+#define QT_MODULE_HELP                 0x002000
+#define QT_MODULE_TEST                 0x004000
+#define QT_MODULE_DBUS                 0x008000
+#define QT_MODULE_SCRIPTTOOLS          0x010000
+#define QT_MODULE_OPENVG               0x020000
+#define QT_MODULE_MULTIMEDIA           0x040000
+#define QT_MODULE_DECLARATIVE          0x080000
+#define QT_MODULE_LOCATION             0x100000
+#define QT_MODULE_SENSORS              0x200000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2642,6 +2664,8 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
                                  | QT_MODULE_DBUS \
+                                 | QT_MODULE_LOCATION \
+                                 | QT_MODULE_SENSORS \
                                  | QT_MODULE_ACTIVEQT)
 #define QT_EDITION_DESKTOP      (QT_EDITION_OPENSOURCE)
 #define QT_EDITION_UNIVERSAL    QT_EDITION_DESKTOP
@@ -2720,6 +2744,12 @@ QT_LICENSED_MODULE(Test)
 #endif
 #if (QT_EDITION & QT_MODULE_DBUS)
 QT_LICENSED_MODULE(DBus)
+#endif
+#if (QT_EDITION & QT_MODULE_LOCATION)
+QT_LICENSED_MODULE(Location)
+#endif
+#if (QT_EDITION & QT_MODULE_SENSORS)
+QT_LICENSED_MODULE(Sensors)
 #endif
 
 #define QT_MODULE(x) \

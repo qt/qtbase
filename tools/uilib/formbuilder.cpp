@@ -105,7 +105,7 @@ namespace QFormInternal {
     Constructs a new form builder.
 */
 
-QFormBuilder::QFormBuilder() : QAbstractFormBuilder()
+QFormBuilder::QFormBuilder()
 {
 }
 
@@ -121,12 +121,11 @@ QFormBuilder::~QFormBuilder()
 */
 QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
 {
-    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
-    if (!fb->parentWidgetIsSet())
-        fb->setParentWidget(parentWidget);
+    if (!d->parentWidgetIsSet())
+        d->setParentWidget(parentWidget);
     // Is this a QLayoutWidget with a margin of 0: Not a known page-based
     // container and no method for adding pages registered.
-    fb->setProcessingLayoutWidget(false);
+    d->setProcessingLayoutWidget(false);
     if (ui_widget->attributeClass() == QFormBuilderStrings::instance().qWidgetClass && !ui_widget->hasAttributeNative()
             && parentWidget
 #ifndef QT_NO_MAINWINDOW
@@ -152,8 +151,8 @@ QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
 #endif
         ) {
         const QString parentClassName = QLatin1String(parentWidget->metaObject()->className());
-        if (!fb->isCustomWidgetContainer(parentClassName))
-            fb->setProcessingLayoutWidget(true);
+        if (!d->isCustomWidgetContainer(parentClassName))
+            d->setProcessingLayoutWidget(true);
     }
     return QAbstractFormBuilder::create(ui_widget, parentWidget);
 }
@@ -213,14 +212,13 @@ QWidget *QFormBuilder::createWidget(const QString &widgetName, QWidget *parentWi
             break;
 
         // try with a registered custom widget
-        QDesignerCustomWidgetInterface *factory = m_customWidgets.value(widgetName);
+        QDesignerCustomWidgetInterface *factory = d->m_customWidgets.value(widgetName);
         if (factory != 0)
             w = factory->createWidget(parentWidget);
     } while(false);
 
-    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     if (w == 0) { // Attempt to instantiate base class of promoted/custom widgets
-        const QString baseClassName = fb->customWidgetBaseClass(widgetName);
+        const QString baseClassName = d->customWidgetBaseClass(widgetName);
         if (!baseClassName.isEmpty()) {
             qWarning() << QCoreApplication::translate("QFormBuilder", "QFormBuilder was unable to create a custom widget of the class '%1'; defaulting to base class '%2'.").arg(widgetName, baseClassName);
             return createWidget(baseClassName, parentWidget, name);
@@ -271,23 +269,6 @@ QLayout *QFormBuilder::createLayout(const QString &layoutName, QObject *parent, 
 
     if (l) {
         l->setObjectName(name);
-        if (parentLayout) {
-            QWidget *w = qobject_cast<QWidget *>(parentLayout->parent());
-            if (w && w->inherits("Q3GroupBox")) {
-                l->setContentsMargins(w->style()->pixelMetric(QStyle::PM_LayoutLeftMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutTopMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutRightMargin),
-                                    w->style()->pixelMetric(QStyle::PM_LayoutBottomMargin));
-                QGridLayout *grid = qobject_cast<QGridLayout *>(l);
-                if (grid) {
-                    grid->setHorizontalSpacing(-1);
-                    grid->setVerticalSpacing(-1);
-                } else {
-                    l->setSpacing(-1);
-                }
-                l->setAlignment(Qt::AlignTop);
-            }
-        }
     } else {
         qWarning() << QCoreApplication::translate("QFormBuilder", "The layout type `%1' is not supported.").arg(layoutName);
     }
@@ -375,10 +356,9 @@ QWidget *QFormBuilder::create(DomUI *ui, QWidget *parentWidget)
 */
 QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *parentWidget)
 {
-    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     // Is this a temporary layout widget used to represent QLayout hierarchies in Designer?
     // Set its margins to 0.
-    bool layoutWidget = fb->processingLayoutWidget();
+    bool layoutWidget = d->processingLayoutWidget();
     QLayout *l = QAbstractFormBuilder::create(ui_layout, layout, parentWidget);
     if (layoutWidget) {
         const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
@@ -399,7 +379,7 @@ QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *pa
             bottom = prop->elementNumber();
 
         l->setContentsMargins(left, top, right, bottom);
-        fb->setProcessingLayoutWidget(false);
+        d->setProcessingLayoutWidget(false);
     }
     return l;
 }
@@ -435,7 +415,7 @@ QActionGroup *QFormBuilder::create(DomActionGroup *ui_action_group, QObject *par
 */
 QStringList QFormBuilder::pluginPaths() const
 {
-    return m_pluginPaths;
+    return d->m_pluginPaths;
 }
 
 /*!
@@ -446,7 +426,7 @@ QStringList QFormBuilder::pluginPaths() const
 */
 void QFormBuilder::clearPluginPaths()
 {
-    m_pluginPaths.clear();
+    d->m_pluginPaths.clear();
     updateCustomWidgets();
 }
 
@@ -459,7 +439,7 @@ void QFormBuilder::clearPluginPaths()
 */
 void QFormBuilder::addPluginPath(const QString &pluginPath)
 {
-    m_pluginPaths.append(pluginPath);
+    d->m_pluginPaths.append(pluginPath);
     updateCustomWidgets();
 }
 
@@ -470,7 +450,7 @@ void QFormBuilder::addPluginPath(const QString &pluginPath)
 */
 void QFormBuilder::setPluginPath(const QStringList &pluginPaths)
 {
-    m_pluginPaths = pluginPaths;
+    d->m_pluginPaths = pluginPaths;
     updateCustomWidgets();
 }
 
@@ -493,9 +473,9 @@ static void insertPlugins(QObject *o, QMap<QString, QDesignerCustomWidgetInterfa
 */
 void QFormBuilder::updateCustomWidgets()
 {
-    m_customWidgets.clear();
+    d->m_customWidgets.clear();
 
-    foreach (const QString &path, m_pluginPaths) {
+    foreach (const QString &path, d->m_pluginPaths) {
         const QDir dir(path);
         const QStringList candidates = dir.entryList(QDir::Files);
 
@@ -509,14 +489,14 @@ void QFormBuilder::updateCustomWidgets()
 
             QPluginLoader loader(loaderPath);
             if (loader.load())
-                insertPlugins(loader.instance(), &m_customWidgets);
+                insertPlugins(loader.instance(), &d->m_customWidgets);
         }
     }
     // Check statically linked plugins
     const QObjectList staticPlugins = QPluginLoader::staticInstances();
     if (!staticPlugins.empty())
         foreach (QObject *o, staticPlugins)
-            insertPlugins(o, &m_customWidgets);
+            insertPlugins(o, &d->m_customWidgets);
 }
 
 /*!
@@ -526,7 +506,7 @@ void QFormBuilder::updateCustomWidgets()
 */
 QList<QDesignerCustomWidgetInterface*> QFormBuilder::customWidgets() const
 {
-    return m_customWidgets.values();
+    return d->m_customWidgets.values();
 }
 
 /*!
@@ -540,7 +520,6 @@ void QFormBuilder::applyProperties(QObject *o, const QList<DomProperty*> &proper
     if (properties.empty())
         return;
 
-    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
 
     const DomPropertyList::const_iterator cend = properties.constEnd();
@@ -551,10 +530,10 @@ void QFormBuilder::applyProperties(QObject *o, const QList<DomProperty*> &proper
 
         const QString attributeName = (*it)->attributeName();
         const bool isWidget = o->isWidgetType();
-        if (isWidget && o->parent() == fb->parentWidget() && attributeName == strings.geometryProperty) {
+        if (isWidget && o->parent() == d->parentWidget() && attributeName == strings.geometryProperty) {
             // apply only the size part of a geometry for the root widget
             static_cast<QWidget*>(o)->resize(qvariant_cast<QRect>(v).size());
-        } else if (fb->applyPropertyInternally(o, attributeName, v)) {
+        } else if (d->applyPropertyInternally(o, attributeName, v)) {
         } else if (isWidget && !qstrcmp("QFrame", o->metaObject()->className ()) && attributeName == strings.orientationProperty) {
             // ### special-casing for Line (QFrame) -- try to fix me
             o->setProperty("frameShape", v); // v is of QFrame::Shape enum

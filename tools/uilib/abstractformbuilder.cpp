@@ -131,9 +131,7 @@ public:
 
 /*!
     Constructs a new form builder.*/
-QAbstractFormBuilder::QAbstractFormBuilder() :
-    m_defaultMargin(INT_MIN),
-    m_defaultSpacing(INT_MIN)
+QAbstractFormBuilder::QAbstractFormBuilder() : d(new QFormBuilderExtra)
 {
     setResourceBuilder(new QResourceBuilder());
     setTextBuilder(new QTextBuilder());
@@ -143,9 +141,7 @@ QAbstractFormBuilder::QAbstractFormBuilder() :
     Destroys the form builder.*/
 QAbstractFormBuilder::~QAbstractFormBuilder()
 {
-    QFormBuilderExtra::removeInstance(this);
 }
-
 
 /*!
     \fn QWidget *QAbstractFormBuilder::load(QIODevice *device, QWidget *parent)
@@ -195,11 +191,10 @@ QWidget *QAbstractFormBuilder::create(DomUI *ui, QWidget *parentWidget)
 {
     typedef QFormBuilderExtra::ButtonGroupHash ButtonGroupHash;
 
-    QFormBuilderExtra *formBuilderPrivate = QFormBuilderExtra::instance(this);
-    formBuilderPrivate->clear();
+    d->clear();
     if (const DomLayoutDefault *def = ui->elementLayoutDefault()) {
-       m_defaultMargin = def->hasAttributeMargin() ? def->attributeMargin() : INT_MIN;
-        m_defaultSpacing = def->hasAttributeSpacing() ? def->attributeSpacing() : INT_MIN;
+       d->m_defaultMargin = def->hasAttributeMargin() ? def->attributeMargin() : INT_MIN;
+       d->m_defaultSpacing = def->hasAttributeSpacing() ? def->attributeSpacing() : INT_MIN;
     }
 
     DomWidget *ui_widget = ui->elementWidget();
@@ -209,11 +204,11 @@ QWidget *QAbstractFormBuilder::create(DomUI *ui, QWidget *parentWidget)
     initialize(ui);
 
     if (const DomButtonGroups *domButtonGroups = ui->elementButtonGroups())
-        formBuilderPrivate->registerButtonGroups(domButtonGroups);
+        d->registerButtonGroups(domButtonGroups);
 
     if (QWidget *widget = create(ui_widget, parentWidget)) {
         // Reparent button groups that were actually created to main container for them to be found in the signal/slot part
-        const ButtonGroupHash &buttonGroups = formBuilderPrivate->buttonGroups();
+        const ButtonGroupHash &buttonGroups = d->buttonGroups();
         if (!buttonGroups.empty()) {
             const ButtonGroupHash::const_iterator cend = buttonGroups.constEnd();
             for (ButtonGroupHash::const_iterator it = buttonGroups.constBegin(); it != cend; ++it)
@@ -223,12 +218,12 @@ QWidget *QAbstractFormBuilder::create(DomUI *ui, QWidget *parentWidget)
         createConnections(ui->elementConnections(), widget);
         createResources(ui->elementResources()); // maybe this should go first, before create()...
         applyTabStops(widget, ui->elementTabStops());
-        formBuilderPrivate->applyInternalProperties();
+        d->applyInternalProperties();
         reset();
-        formBuilderPrivate->clear();
+        d->clear();
         return widget;
     }
-    formBuilderPrivate->clear();
+    d->clear();
     return 0;
 }
 
@@ -249,10 +244,9 @@ void QAbstractFormBuilder::initialize(const DomUI *ui)
     if (domCustomWidgets) {
         const DomCustomWidgetList customWidgets = domCustomWidgets->elementCustomWidget();
         if (!customWidgets.empty()) {
-            QFormBuilderExtra *formBuilderPrivate = QFormBuilderExtra::instance(this);
             const DomCustomWidgetList::const_iterator cend = customWidgets.constEnd();
             for (DomCustomWidgetList::const_iterator it = customWidgets.constBegin(); it != cend; ++it)
-                formBuilderPrivate->storeCustomWidgetData((*it)->elementClass(), *it);
+                d->storeCustomWidgetData((*it)->elementClass(), *it);
         }
     }
 }
@@ -303,9 +297,9 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
                 sep->setSeparator(true);
                 w->addAction(sep);
                 addMenuAction(sep);
-            } else if (QAction *a = m_actions.value(name)) {
+            } else if (QAction *a = d->m_actions.value(name)) {
                 w->addAction(a);
-            } else if (QActionGroup *g = m_actionGroups.value(name)) {
+            } else if (QActionGroup *g = d->m_actionGroups.value(name)) {
                 w->addActions(g->actions());
             } else if (QMenu *menu = w->findChild<QMenu*>(name)) {
                 w->addAction(menu->menuAction());
@@ -317,9 +311,8 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
     loadExtraInfo(ui_widget, w, parentWidget);
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     QString scriptErrorMessage;
-    QFormBuilderExtra *extra = QFormBuilderExtra::instance(this);
-    extra->formScriptRunner().run(ui_widget,
-                                  extra->customWidgetScript(ui_widget->attributeClass()),
+    d->formScriptRunner().run(ui_widget,
+                                  d->customWidgetScript(ui_widget->attributeClass()),
                                   w, children, &scriptErrorMessage);
 #endif
     addItem(ui_widget, w, parentWidget);
@@ -354,7 +347,7 @@ QAction *QAbstractFormBuilder::create(DomAction *ui_action, QObject *parent)
     if (!a)
         return 0;
 
-    m_actions.insert(ui_action->attributeName(), a);
+    d->m_actions.insert(ui_action->attributeName(), a);
     applyProperties(a, ui_action->elementProperty());
     return a;
 }
@@ -367,7 +360,7 @@ QActionGroup *QAbstractFormBuilder::create(DomActionGroup *ui_action_group, QObj
     QActionGroup *a = createActionGroup(parent, ui_action_group->attributeName());
     if (!a)
         return 0;
-    m_actionGroups.insert(ui_action_group->attributeName(), a);
+    d->m_actionGroups.insert(ui_action_group->attributeName(), a);
     applyProperties(a, ui_action_group->elementProperty());
 
     foreach (DomAction *ui_action, ui_action_group->elementAction()) {
@@ -412,7 +405,7 @@ bool QAbstractFormBuilder::addItem(DomWidget *ui_widget, QWidget *widget, QWidge
         return true;
     // Check special cases. First: Custom container
     const QString className = QLatin1String(parentWidget->metaObject()->className());
-    const QString addPageMethod = QFormBuilderExtra::instance(this)->customWidgetAddPageMethod(className);
+    const QString addPageMethod = d->customWidgetAddPageMethod(className);
     if (!addPageMethod.isEmpty()) {
         // If this fails ( non-existent or non-slot), use ContainerExtension in Designer, else it can't be helped
         return QMetaObject::invokeMethod(parentWidget, addPageMethod.toUtf8().constData(), Qt::DirectConnection, Q_ARG(QWidget*, widget));
@@ -934,14 +927,12 @@ void QAbstractFormBuilder::applyProperties(QObject *o, const QList<DomProperty*>
     if (properties.empty())
         return;
 
-    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
-
     const DomPropertyList::const_iterator cend = properties.constEnd();
     for (DomPropertyList::const_iterator it = properties.constBegin(); it != cend; ++it) {
         const QVariant v = toVariant(o->metaObject(), *it);
         if (!v.isNull()) {
             const  QString attributeName = (*it)->attributeName();
-            if (!fb->applyPropertyInternally(o, attributeName, v))
+            if (!d->applyPropertyInternally(o, attributeName, v))
                 o->setProperty(attributeName.toUtf8(), v);
         }
     }
@@ -956,7 +947,7 @@ void QAbstractFormBuilder::applyProperties(QObject *o, const QList<DomProperty*>
 
 bool QAbstractFormBuilder::applyPropertyInternally(QObject *o, const QString &propertyName, const QVariant &value)
 {
-    return QFormBuilderExtra::instance(this)->applyPropertyInternally(o,propertyName, value);
+    return d->applyPropertyInternally(o,propertyName, value);
 }
 
 /*!
@@ -1240,7 +1231,7 @@ void QAbstractFormBuilder::save(QIODevice *dev, QWidget *widget)
     ui->write(writer);
     writer.writeEndDocument();
 
-    m_laidout.clear();
+    d->m_laidout.clear();
 
     delete ui;
 }
@@ -1340,7 +1331,7 @@ DomWidget *QAbstractFormBuilder::createDom(QWidget *widget, DomWidget *ui_parent
 
     foreach (QObject *obj, children) {
         if (QWidget *childWidget = qobject_cast<QWidget*>(obj)) {
-            if (m_laidout.contains(childWidget) || recursive == false)
+            if (d->m_laidout.contains(childWidget) || recursive == false)
                 continue;
 
             if (QMenu *menu = qobject_cast<QMenu *>(childWidget)) {
@@ -1546,7 +1537,7 @@ DomLayoutItem *QAbstractFormBuilder::createDom(QLayoutItem *item, DomLayout *ui_
 
     if (item->widget())  {
         ui_item->setElementWidget(createDom(item->widget(), ui_parentWidget));
-        m_laidout.insert(item->widget(), true);
+        d->m_laidout.insert(item->widget(), true);
     } else if (item->layout()) {
         ui_item->setElementLayout(createDom(item->layout(), ui_layout, ui_parentWidget));
     } else if (item->spacerItem()) {
@@ -2230,21 +2221,6 @@ void QAbstractFormBuilder::saveComboBoxExtraInfo(QComboBox *comboBox, DomWidget 
     ui_widget->setElementItem(ui_items);
 }
 
-// Return the buttongroups assigned to a button except the internal one
-// (with empty object name) used by Q3ButtonGroup.
-static inline const QButtonGroup *formButtonGroup(const QAbstractButton *widget)
-{
-    const QButtonGroup *buttonGroup = widget->group();
-    if (!buttonGroup)
-        return 0;
-    if (buttonGroup->objectName().isEmpty()) {
-        if (const QWidget *parent = widget->parentWidget())
-            if (!qstrcmp(parent->metaObject()->className(), "Q3ButtonGroup"))
-                return 0;
-    }
-    return buttonGroup;
-}
-
 /*!
     \internal
     \since 4.5
@@ -2253,7 +2229,7 @@ static inline const QButtonGroup *formButtonGroup(const QAbstractButton *widget)
 void QAbstractFormBuilder::saveButtonExtraInfo(const QAbstractButton *widget, DomWidget *ui_widget, DomWidget *)
 {
     typedef QList<DomProperty*> DomPropertyList;
-    if (const QButtonGroup *buttonGroup = formButtonGroup(widget)) {
+    if (const QButtonGroup *buttonGroup = widget->group()) {
         DomPropertyList attributes = ui_widget->elementAttribute();
         DomString *domString = new DomString();
         domString->setText(buttonGroup->objectName());
@@ -2335,7 +2311,7 @@ void QAbstractFormBuilder::saveItemViewExtraInfo(const QAbstractItemView *itemVi
 
 void QAbstractFormBuilder::setResourceBuilder(QResourceBuilder *builder)
 {
-    QFormBuilderExtra::instance(this)->setResourceBuilder(builder);
+    d->setResourceBuilder(builder);
 }
 
 /*!
@@ -2345,7 +2321,7 @@ void QAbstractFormBuilder::setResourceBuilder(QResourceBuilder *builder)
 
 QResourceBuilder *QAbstractFormBuilder::resourceBuilder() const
 {
-    return QFormBuilderExtra::instance(this)->resourceBuilder();
+    return d->resourceBuilder();
 }
 
 /*!
@@ -2355,7 +2331,7 @@ QResourceBuilder *QAbstractFormBuilder::resourceBuilder() const
 
 void QAbstractFormBuilder::setTextBuilder(QTextBuilder *builder)
 {
-    QFormBuilderExtra::instance(this)->setTextBuilder(builder);
+    d->setTextBuilder(builder);
 }
 
 /*!
@@ -2365,7 +2341,7 @@ void QAbstractFormBuilder::setTextBuilder(QTextBuilder *builder)
 
 QTextBuilder *QAbstractFormBuilder::textBuilder() const
 {
-    return QFormBuilderExtra::instance(this)->textBuilder();
+    return d->textBuilder();
 }
 
 /*!
@@ -2629,8 +2605,7 @@ void QAbstractFormBuilder::loadButtonExtraInfo(const DomWidget *ui_widget, QAbst
     if (groupName.isEmpty())
         return;
     // Find entry
-    QFormBuilderExtra *extra = QFormBuilderExtra::instance(this);
-    ButtonGroupHash &buttonGroups = extra->buttonGroups();
+    ButtonGroupHash &buttonGroups = d->buttonGroups();
     ButtonGroupHash::iterator it = buttonGroups.find(groupName);
     if (it == buttonGroups.end()) {
 #ifdef QFORMINTERNAL_NAMESPACE // Suppress the warning when copying in Designer
@@ -2763,74 +2738,12 @@ void QAbstractFormBuilder::loadExtraInfo(DomWidget *ui_widget, QWidget *widget, 
 }
 
 /*!
-    \internal
-*/
-QIcon QAbstractFormBuilder::nameToIcon(const QString &filePath, const QString &qrcPath)
-{
-    Q_UNUSED(filePath)
-    Q_UNUSED(qrcPath)
-    qWarning() << "QAbstractFormBuilder::nameToIcon() is obsoleted";
-    return QIcon();
-}
-
-/*!
-    \internal
-*/
-QString QAbstractFormBuilder::iconToFilePath(const QIcon &pm) const
-{
-    Q_UNUSED(pm)
-    qWarning() << "QAbstractFormBuilder::iconToFilePath() is obsoleted";
-    return QString();
-}
-
-/*!
-    \internal
-*/
-QString QAbstractFormBuilder::iconToQrcPath(const QIcon &pm) const
-{
-    Q_UNUSED(pm)
-    qWarning() << "QAbstractFormBuilder::iconToQrcPath() is obsoleted";
-    return QString();
-}
-
-/*!
-    \internal
-*/
-QPixmap QAbstractFormBuilder::nameToPixmap(const QString &filePath, const QString &qrcPath)
-{
-    Q_UNUSED(filePath)
-    Q_UNUSED(qrcPath)
-    qWarning() << "QAbstractFormBuilder::nameToPixmap() is obsoleted";
-    return QPixmap();
-}
-
-/*!
-    \internal
-*/
-QString QAbstractFormBuilder::pixmapToFilePath(const QPixmap &pm) const
-{
-    Q_UNUSED(pm)
-    qWarning() << "QAbstractFormBuilder::pixmapToFilePath() is obsoleted";
-    return QString();
-}
-
-/*!
-    \internal
-*/
-QString QAbstractFormBuilder::pixmapToQrcPath(const QPixmap &pm) const
-{
-    Q_UNUSED(pm)
-    qWarning() << "QAbstractFormBuilder::pixmapToQrcPath() is obsoleted";
-    return QString();
-}
-
-/*!
     Returns the current working directory of the form builder.
 
     \sa setWorkingDirectory() */
 QDir QAbstractFormBuilder::workingDirectory() const
 {
-    return m_workingDirectory;
+    return d->m_workingDirectory;
 }
 
 /*!
@@ -2840,7 +2753,7 @@ QDir QAbstractFormBuilder::workingDirectory() const
     \sa workingDirectory()*/
 void QAbstractFormBuilder::setWorkingDirectory(const QDir &directory)
 {
-    m_workingDirectory = directory;
+    d->m_workingDirectory = directory;
 }
 
 /*!
@@ -2914,11 +2827,11 @@ void QAbstractFormBuilder::addMenuAction(QAction *action)
 */
 void QAbstractFormBuilder::reset()
 {
-    m_laidout.clear();
-    m_actions.clear();
-    m_actionGroups.clear();
-    m_defaultMargin = INT_MIN;
-    m_defaultSpacing = INT_MIN;
+    d->m_laidout.clear();
+    d->m_actions.clear();
+    d->m_actionGroups.clear();
+    d->m_defaultMargin = INT_MIN;
+    d->m_defaultSpacing = INT_MIN;
 }
 
 /*!
@@ -3131,7 +3044,7 @@ QPixmap QAbstractFormBuilder::domPropertyToPixmap(const DomProperty* p)
 #ifndef QT_FORMBUILDER_NO_SCRIPT
 QFormScriptRunner *QAbstractFormBuilder::formScriptRunner() const
 {
-    return &(QFormBuilderExtra::instance(this)->formScriptRunner());
+    return &(d->formScriptRunner());
 }
 #endif
 

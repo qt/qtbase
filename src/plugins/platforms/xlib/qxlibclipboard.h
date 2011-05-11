@@ -51,7 +51,7 @@ class QXlibClipboard : public QPlatformClipboard
 public:
     QXlibClipboard(QXlibScreen *screen);
 
-    const QMimeData *mimeData(QClipboard::Mode mode) const;
+    QMimeData *mimeData(QClipboard::Mode mode);
     void setMimeData(QMimeData *data, QClipboard::Mode mode);
 
     bool supportsMode(QClipboard::Mode mode) const;

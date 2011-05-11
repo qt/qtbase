@@ -1736,6 +1736,8 @@ void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 po
     }
 #ifndef QT_NO_NETWORKPROXY
     d->plainSocket->setProxy(proxy());
+    //copy user agent down to the plain socket (if it has been set)
+    d->plainSocket->setProperty("_q_user-agent", property("_q_user-agent"));
 #endif
     QIODevice::open(openMode);
     d->plainSocket->connectToHost(hostName, port, openMode);

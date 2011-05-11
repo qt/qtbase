@@ -97,7 +97,9 @@ QT_BEGIN_NAMESPACE
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {}
+    QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {
+        created = true;
+    }
 
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
@@ -136,6 +138,7 @@ public:
     }
 
     static bool cleanedUp;
+    static bool created;
 
     QGLPixmapData *firstPixmap;
     int widgetRefCount;
@@ -146,6 +149,7 @@ private:
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
+bool QGLGlobalShareWidget::created = false;
 
 static void qt_cleanup_gl_share_widget();
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
@@ -155,7 +159,8 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
 
 static void qt_cleanup_gl_share_widget()
 {
-    _qt_gl_share_widget()->cleanup();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->cleanup();
 }
 
 QGLWidget* qt_gl_share_widget()
@@ -167,7 +172,8 @@ QGLWidget* qt_gl_share_widget()
 
 void qt_destroy_gl_share_widget()
 {
-    _qt_gl_share_widget()->destroy();
+    if (QGLGlobalShareWidget::created)
+        _qt_gl_share_widget()->destroy();
 }
 
 const QGLContext *qt_gl_share_context()
@@ -553,6 +559,17 @@ void QGLWindowSurface::flush(QWindow *window, const QRegion &rgn, const QPoint &
     // being executed if it's for nothing.
     if (!d_ptr->destructive_swap_buffers && !d_ptr->did_paint)
         return;
+
+#ifdef Q_OS_SYMBIAN
+    if (window() != widget) {
+        // For performance reasons we don't support
+        // flushing native child widgets on Symbian.
+        // It breaks overlapping native child widget
+        // rendering in some cases but we prefer performance.
+        return;
+    }
+#endif
+
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);

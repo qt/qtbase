@@ -161,12 +161,11 @@ QXlibClipboard::QXlibClipboard(QXlibScreen *screen)
 {
 }
 
-const QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode) const
+QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode)
 {
     if (mode == QClipboard::Clipboard) {
         if (!m_xClipboard) {
-            QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
-            that->m_xClipboard = new QXlibClipboardMime(mode,that);
+            m_xClipboard = new QXlibClipboardMime(mode, this);
         }
         Window clipboardOwner = XGetSelectionOwner(screen()->display()->nativeDisplay(),QXlibStatic::atom(QXlibStatic::CLIPBOARD));
         if (clipboardOwner == owner()) {
@@ -176,8 +175,7 @@ const QMimeData * QXlibClipboard::mimeData(QClipboard::Mode mode) const
         }
     } else if (mode == QClipboard::Selection) {
         if (!m_xSelection) {
-            QXlibClipboard *that = const_cast<QXlibClipboard *>(this);
-            that->m_xSelection = new QXlibClipboardMime(mode,that);
+            m_xSelection = new QXlibClipboardMime(mode, this);
         }
         Window clipboardOwner = XGetSelectionOwner(screen()->display()->nativeDisplay(),XA_PRIMARY);
         if (clipboardOwner == owner()) {

@@ -112,8 +112,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
                 // First, align dest to 16 bytes:
                 ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
 
@@ -127,8 +125,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                     }
                 }
                 for (; x<w; ++x) {
-                    quint32 s = src[x];
-                    s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
                 }
                 dst = (quint32 *)(((uchar *) dst) + dbpl);
@@ -490,6 +486,58 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
         src += stride;
     }
 }
+
+class QSimdSse2
+{
+public:
+    typedef __m128i Int32x4;
+    typedef __m128 Float32x4;
+
+    union Vect_buffer_i { Int32x4 v; int i[4]; };
+    union Vect_buffer_f { Float32x4 v; float f[4]; };
+
+    static inline Float32x4 v_dup(float x) { return _mm_set1_ps(x); }
+    static inline Float32x4 v_dup(double x) { return _mm_set1_ps(x); }
+    static inline Int32x4 v_dup(int x) { return _mm_set1_epi32(x); }
+    static inline Int32x4 v_dup(uint x) { return _mm_set1_epi32(x); }
+
+    static inline Float32x4 v_add(Float32x4 a, Float32x4 b) { return _mm_add_ps(a, b); }
+    static inline Int32x4 v_add(Int32x4 a, Int32x4 b) { return _mm_add_epi32(a, b); }
+
+    static inline Float32x4 v_max(Float32x4 a, Float32x4 b) { return _mm_max_ps(a, b); }
+    static inline Float32x4 v_min(Float32x4 a, Float32x4 b) { return _mm_min_ps(a, b); }
+    static inline Int32x4 v_min_16(Int32x4 a, Int32x4 b) { return _mm_min_epi16(a, b); }
+
+    static inline Int32x4 v_and(Int32x4 a, Int32x4 b) { return _mm_and_si128(a, b); }
+
+    static inline Float32x4 v_sub(Float32x4 a, Float32x4 b) { return _mm_sub_ps(a, b); }
+    static inline Int32x4 v_sub(Int32x4 a, Int32x4 b) { return _mm_sub_epi32(a, b); }
+
+    static inline Float32x4 v_mul(Float32x4 a, Float32x4 b) { return _mm_mul_ps(a, b); }
+
+    static inline Float32x4 v_sqrt(Float32x4 x) { return _mm_sqrt_ps(x); }
+
+    static inline Int32x4 v_toInt(Float32x4 x) { return _mm_cvttps_epi32(x); }
+
+    // pre-VS 2008 doesn't have cast intrinsics, whereas 2008 and later requires it
+#if defined(Q_CC_MSVC) && _MSC_VER < 1500
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b)
+    {
+        union Convert { Int32x4 vi; Float32x4 vf; } convert;
+        convert.vf = _mm_cmpgt_ps(a, b);
+        return convert.vi;
+    }
+#else
+    static inline Int32x4 v_greaterOrEqual(Float32x4 a, Float32x4 b) { return _mm_castps_si128(_mm_cmpgt_ps(a, b)); }
+#endif
+};
+
+const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                       int y, int x, int length)
+{
+    return qt_fetch_radial_gradient_template<QRadialFetchSimd<QSimdSse2> >(buffer, op, data, y, x, length);
+}
+
 
 QT_END_NAMESPACE
 

@@ -1,5 +1,5 @@
 load(qttest_p4)
-QT = core gui
+QT = core core-private gui gui-private
 SOURCES  += tst_qpauseanimation.cpp
 
 

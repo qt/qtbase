@@ -535,16 +535,6 @@ QString QPaintBuffer::commandDescription(int command) const
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
 
-        QFont font(ti.font());
-        font.setUnderline(false);
-        font.setStrikeOut(false);
-        font.setOverline(false);
-
-        const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
-        qreal justificationWidth = 0;
-        if (si.justified)
-            justificationWidth = si.width.toReal();
-
         debug << "Cmd_DrawTextItem:" << pos << " " << text;
         break; }
     case QPaintBufferPrivate::Cmd_SystemStateChanged: {
@@ -1778,12 +1768,12 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             rawFontD->fontEngine = fontD->engineForScript(QUnicodeTables::Common);
             rawFontD->fontEngine->ref.ref();
 
-            QGlyphs glyphs;
-            glyphs.setFont(rawFont);
+            QGlyphRun glyphs;
+            glyphs.setRawFont(rawFont);
             glyphs.setGlyphIndexes(glyphIndexes);
             glyphs.setPositions(positions);
 
-            painter->drawGlyphs(QPointF(), glyphs);
+            painter->drawGlyphRun(QPointF(), glyphs);
             break;
     }
 #endif

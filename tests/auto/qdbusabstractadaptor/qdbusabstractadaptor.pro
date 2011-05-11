@@ -1,5 +1,5 @@
 load(qttest_p4)
-QT = core
+QT = core core-private
 contains(QT_CONFIG,dbus): {
     TEMPLATE = subdirs
     CONFIG += ordered

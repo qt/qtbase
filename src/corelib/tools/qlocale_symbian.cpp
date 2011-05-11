@@ -44,6 +44,7 @@
 #include <QTime>
 #include <QVariant>
 #include <QThread>
+#include <QStringList>
 
 #include <e32std.h>
 #include <e32const.h>
@@ -86,6 +87,7 @@ static TPtrC defaultFormatSpec(TExtendedLocale&)
 struct symbianToISO {
     int symbian_language;
     char iso_name[8];
+    char uilanguage[8];
 };
 
 
@@ -94,77 +96,80 @@ struct symbianToISO {
   NOTE: This array should be sorted by the first column!
 */
 static const symbianToISO symbian_to_iso_list[] = {
-    { ELangEnglish,             "en_GB" },  // 1
-    { ELangFrench,              "fr_FR" },  // 2
-    { ELangGerman,              "de_DE" },  // 3
-    { ELangSpanish,             "es_ES" },  // 4
-    { ELangItalian,             "it_IT" },  // 5
-    { ELangSwedish,             "sv_SE" },  // 6
-    { ELangDanish,              "da_DK" },  // 7
-    { ELangNorwegian,           "no_NO" },  // 8
-    { ELangFinnish,             "fi_FI" },  // 9
-    { ELangAmerican,            "en_US" },  // 10
-    { ELangPortuguese,          "pt_PT" },  // 13
-    { ELangTurkish,             "tr_TR" },  // 14
-    { ELangIcelandic,           "is_IS" },  // 15
-    { ELangRussian,             "ru_RU" },  // 16
-    { ELangHungarian,           "hu_HU" },  // 17
-    { ELangDutch,               "nl_NL" },  // 18
-    { ELangBelgianFlemish,      "nl_BE" },  // 19
-    { ELangCzech,               "cs_CZ" },  // 25
-    { ELangSlovak,              "sk_SK" },  // 26
-    { ELangPolish,              "pl_PL" },  // 27
-    { ELangSlovenian,           "sl_SI" },  // 28
-    { ELangTaiwanChinese,       "zh_TW" },  // 29
-    { ELangHongKongChinese,     "zh_HK" },  // 30
-    { ELangPrcChinese,          "zh_CN" },  // 31
-    { ELangJapanese,            "ja_JP" },  // 32
-    { ELangThai,                "th_TH" },  // 33
-    { ELangArabic,              "ar_AE" },  // 37
-    { ELangTagalog,             "tl_PH" },  // 39
-    { ELangBulgarian,           "bg_BG" },  // 42
-    { ELangCatalan,             "ca_ES" },  // 44
-    { ELangCroatian,            "hr_HR" },  // 45
-    { ELangEstonian,            "et_EE" },  // 49
-    { ELangFarsi,               "fa_IR" },  // 50
-    { ELangCanadianFrench,      "fr_CA" },  // 51
-    { ELangGreek,               "el_GR" },  // 54
-    { ELangHebrew,              "he_IL" },  // 57
-    { ELangHindi,               "hi_IN" },  // 58
-    { ELangIndonesian,          "id_ID" },  // 59
-    { ELangKorean,              "ko_KO" },  // 65
-    { ELangLatvian,             "lv_LV" },  // 67
-    { ELangLithuanian,          "lt_LT" },  // 68
-    { ELangMalay,               "ms_MY" },  // 70
-    { ELangNorwegianNynorsk,    "nn_NO" },  // 75
-    { ELangBrazilianPortuguese, "pt_BR" },  // 76
-    { ELangRomanian,            "ro_RO" },  // 78
-    { ELangSerbian,             "sr_RS" },  // 79
-    { ELangLatinAmericanSpanish,"es_419" }, // 83
-    { ELangUkrainian,           "uk_UA" },  // 93
-    { ELangUrdu,                "ur_PK" },  // 94 - India/Pakistan
-    { ELangVietnamese,          "vi_VN" },  // 96
+    { ELangEnglish,             "en_GB", "en" },    // 1
+    { ELangFrench,              "fr_FR", "fr" },    // 2
+    { ELangGerman,              "de_DE", "de" },    // 3
+    { ELangSpanish,             "es_ES", "es" },    // 4
+    { ELangItalian,             "it_IT", "it" },    // 5
+    { ELangSwedish,             "sv_SE", "sv" },    // 6
+    { ELangDanish,              "da_DK", "da" },    // 7
+    { ELangNorwegian,           "nb_NO", "nb" },    // 8
+    { ELangFinnish,             "fi_FI", "fi" },    // 9
+    { ELangAmerican,            "en_US", "en-US" }, // 10
+    { ELangPortuguese,          "pt_PT", "pt" },    // 13
+    { ELangTurkish,             "tr_TR", "tr" },    // 14
+    { ELangIcelandic,           "is_IS", "is" },    // 15
+    { ELangRussian,             "ru_RU", "ru" },    // 16
+    { ELangHungarian,           "hu_HU", "hu" },    // 17
+    { ELangDutch,               "nl_NL", "nl" },    // 18
+    { ELangCzech,               "cs_CZ", "cs" },    // 25
+    { ELangSlovak,              "sk_SK", "sk" },    // 26
+    { ELangPolish,              "pl_PL", "pl" },    // 27
+    { ELangSlovenian,           "sl_SI", "sl" },    // 28
+    { ELangTaiwanChinese,       "zh_TW", "zh-TW" }, // 29
+    { ELangHongKongChinese,     "zh_HK", "zh-HK" }, // 30
+    { ELangPrcChinese,          "zh_CN", "zh" },    // 31
+    { ELangJapanese,            "ja_JP", "ja" },    // 32
+    { ELangThai,                "th_TH", "th" },    // 33
+    { ELangArabic,              "ar_AE", "ar" },    // 37
+    { ELangTagalog,             "tl_PH", "tl" },    // 39
+    { ELangBulgarian,           "bg_BG", "bg" },    // 42
+    { ELangCatalan,             "ca_ES", "ca" },    // 44
+    { ELangCroatian,            "hr_HR", "hr" },    // 45
+    { ELangEstonian,            "et_EE", "et" },    // 49
+    { ELangFarsi,               "fa_IR", "fa" },    // 50
+    { ELangCanadianFrench,      "fr_CA", "fr-CA" }, // 51
+    { ELangGreek,               "el_GR", "el" },    // 54
+    { ELangHebrew,              "he_IL", "he" },    // 57
+    { ELangHindi,               "hi_IN", "hi" },    // 58
+    { ELangIndonesian,          "id_ID", "id" },    // 59
+    { 63/*ELangKazakh*/,        "kk_KZ", "kk" },    // 63
+    { ELangKorean,              "ko_KO", "ko" },    // 65
+    { ELangLatvian,             "lv_LV", "lv" },    // 67
+    { ELangLithuanian,          "lt_LT", "lt" },    // 68
+    { ELangMalay,               "ms_MY", "ms" },    // 70
+    { ELangNorwegianNynorsk,    "nn_NO", "nn" },    // 75
+    { ELangBrazilianPortuguese, "pt_BR", "pt-BR" }, // 76
+    { ELangRomanian,            "ro_RO", "ro" },    // 78
+    { ELangSerbian,             "sr_RS", "sr" },    // 79
+    { ELangLatinAmericanSpanish,"es_419", "es-419" },// 83
+    { ELangUkrainian,           "uk_UA", "uk" },    // 93
+    { ELangUrdu,                "ur_PK", "ur" },    // 94 - India/Pakistan
+    { ELangVietnamese,          "vi_VN", "vi" },    // 96
 #ifdef __E32LANG_H__
 // 5.0
-    { ELangBasque,              "eu_ES" },  // 102
-    { ELangGalician,            "gl_ES" },  // 103
+    { ELangBasque,              "eu_ES", "eu" },    // 102
+    { ELangGalician,            "gl_ES", "gl" },    // 103
 #endif
 #if !defined(__SERIES60_31__)
-    { ELangEnglish_Apac,        "en" },     // 129
-    { ELangEnglish_Taiwan,      "en_TW" },  // 157 ### Not supported by CLDR
-    { ELangEnglish_HongKong,    "en_HK" },  // 158
-    { ELangEnglish_Prc,         "en_CN" },  // 159 ### Not supported by CLDR
-    { ELangEnglish_Japan,       "en_JP"},   // 160 ### Not supported by CLDR
-    { ELangEnglish_Thailand,    "en_TH" },  // 161 ### Not supported by CLDR
-    { ELangMalay_Apac,          "ms" },     // 326
+    { ELangEnglish_Apac,        "en_GB", "en" },     // 129
+    { ELangEnglish_Taiwan,      "en_TW", "en-TW" },  // 157 ### Not supported by CLDR
+    { ELangEnglish_HongKong,    "en_HK", "en-HK" },  // 158
+    { ELangEnglish_Prc,         "en_CN", "en-CN" },  // 159 ### Not supported by CLDR
+    { ELangEnglish_Japan,       "en_JP", "en" },     // 160 ### Not supported by CLDR
+    { ELangEnglish_Thailand,    "en_TH", "en" },     // 161 ### Not supported by CLDR
+    { 230/*ELangEnglish_India*/,"en_IN", "en" },     // 230
+    { ELangMalay_Apac,          "ms_MY", "ms" },     // 326
 #endif
-    { 327/*ELangIndonesian_Apac*/,"id_ID" } // 327 - appeared in Symbian^3
+    { 327/*ELangIndonesian_Apac*/, "id_ID", "id" }   // 327 - appeared in Symbian^3
 };
 
-/*!
-    Returns ISO name corresponding to the Symbian locale code \a sys_fmt.
-*/
-QByteArray qt_symbianLocaleName(int code)
+enum LocaleNameType {
+    ISO,
+    UILanguage
+};
+
+QByteArray qt_resolveSymbianLocaleName(int code, LocaleNameType type)
 {
     //Number of Symbian to ISO locale mappings
     static const int symbian_to_iso_count
@@ -174,8 +179,11 @@ QByteArray qt_symbianLocaleName(int code)
     if (cmp < 0)
         return 0;
 
-    if (cmp == 0)
-        return symbian_to_iso_list[0].iso_name;
+    if (cmp == 0) {
+        if (type == ISO)
+            return symbian_to_iso_list[0].iso_name;
+        return symbian_to_iso_list[0].uilanguage;
+    }
 
     int begin = 0;
     int end = symbian_to_iso_count;
@@ -185,17 +193,27 @@ QByteArray qt_symbianLocaleName(int code)
 
         const symbianToISO *elt = symbian_to_iso_list + mid;
         int cmp = code - elt->symbian_language;
-        if (cmp < 0)
+        if (cmp < 0) {
             end = mid;
-        else if (cmp > 0)
+        } else if (cmp > 0) {
             begin = mid;
-        else
-            return elt->iso_name;
+        } else {
+            if (type == ISO)
+                return elt->iso_name;
+            return elt->uilanguage;
+        }
     }
 
     return 0;
 }
 
+/*!
+    Returns ISO name corresponding to the Symbian locale code \a sys_fmt.
+*/
+QByteArray qt_symbianLocaleName(int code)
+{
+    return qt_resolveSymbianLocaleName(code, ISO);
+}
 
 // order is: normal, abbr, nmode, nmode+abbr
 static const char *us_locale_dep[] = {
@@ -822,6 +840,13 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(locale);
 }
 
+static QStringList symbianUILanguages()
+{
+    TLanguage lang = User::Language();
+    QString s = QLatin1String(qt_resolveSymbianLocaleName(lang, UILanguage));
+    return QStringList(s);
+}
+
 QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 {
     switch(type) {
@@ -889,6 +914,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             return qt_TDes2QString(TAmPmName(TAmPm(EAm)));
         case PMText:
             return qt_TDes2QString(TAmPmName(TAmPm(EPm)));
+        case UILanguages:
+            return QVariant(symbianUILanguages());
         default:
             break;
     }

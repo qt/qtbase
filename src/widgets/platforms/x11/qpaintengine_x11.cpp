@@ -1611,8 +1611,6 @@ void QX11PaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, int p
         && (fill.style() != Qt::NoBrush)
         && ((has_fill_texture && fill.texture().hasAlpha()) || antialias || !solid_fill || has_alpha_pen != has_alpha_brush))
     {
-        QRect br = tessellator->tessellate((QPointF *)clippedPoints, clippedCount,
-                                              mode == QPaintEngine::WindingMode);
         if (tessellator->size > 0) {
             XRenderPictureAttributes attrs;
             attrs.poly_edge = antialias ? PolyEdgeSmooth : PolyEdgeSharp;
@@ -1771,7 +1769,6 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
     Q_D(QX11PaintEngine);
     if (path.isEmpty())
         return;
-    QTransform old_matrix = d->matrix;
 
     if (d->has_brush)
         d->fillPath(path, QX11PaintEnginePrivate::BrushGC, true);

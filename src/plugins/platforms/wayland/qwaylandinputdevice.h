@@ -60,6 +60,7 @@ public:
     QWaylandInputDevice(struct wl_display *display, uint32_t id);
     void attach(QWaylandBuffer *buffer, int x, int y);
     void handleWindowDestroyed(QWaylandWindow *window);
+    struct wl_input_device *wl_input_device() const { return mInputDevice; }
 
 private:
     struct wl_display *mDisplay;

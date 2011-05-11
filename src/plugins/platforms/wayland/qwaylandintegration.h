@@ -65,6 +65,8 @@ public:
 
     QPlatformNativeInterface *nativeInterface() const;
 
+    QPlatformClipboard *clipboard() const;
+
 private:
     bool hasOpenGL() const;
 
@@ -72,6 +74,7 @@ private:
     QWaylandDisplay *mDisplay;
     bool mUseOpenGL;
     QPlatformNativeInterface *mNativeInterface;
+    mutable QPlatformClipboard *mClipboard;
 };
 
 QT_END_NAMESPACE

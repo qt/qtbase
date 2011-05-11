@@ -2372,8 +2372,13 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
 #ifndef QT_NO_ACCESSIBILITY
         case WM_GETOBJECT:
             {
+                /* On Win64, lParam can be 0x00000000fffffffc or 0xfffffffffffffffc (!),
+                   but MSDN says that lParam should be converted to a DWORD
+                   before its compared against OBJID_CLIENT
+                */
+                const DWORD dwObjId = (DWORD)lParam;
                 // Ignoring all requests while starting up
-                if (QApplication::startingUp() || QApplication::closingDown() || lParam != (LPARAM)OBJID_CLIENT) {
+                if (QApplication::startingUp() || QApplication::closingDown() || dwObjId != OBJID_CLIENT) {
                     result = false;
                     break;
                 }

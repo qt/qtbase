@@ -113,6 +113,7 @@ protected:
     friend class QBaseApplication;
     friend class QDragManager;
     friend class QMimeSource;
+    friend class QPlatformClipboard;
 
 private:
     Q_DISABLE_COPY(QClipboard)

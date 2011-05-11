@@ -150,6 +150,7 @@ private slots:
     void lineWrapProperty();
     void selectionChanged();
     void blockCountChanged();
+    void insertAndScrollToBottom();
 
 private:
     void createSelection();
@@ -1501,6 +1502,23 @@ void tst_QPlainTextEdit::blockCountChanged()
     QCOMPARE(blockCountCpangedSpy.count(), 3);
     ed->setPlainText("Three \n Four");
     QCOMPARE(blockCountCpangedSpy.count(), 3);
+}
+
+
+void tst_QPlainTextEdit::insertAndScrollToBottom()
+{
+    ed->setPlainText("First Line");
+    ed->show();
+    QString text;
+    for(int i = 0; i < 2000; ++i) {
+        text += QLatin1String("this is another line of text to be appended. It is quite long and will probably wrap around, meaning the number of lines is larger than the number of blocks in the text.\n");
+    }
+    QTextCursor cursor = ed->textCursor();
+    cursor.beginEditBlock();
+    cursor.insertText(text);
+    cursor.endEditBlock();
+    ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
+    QCOMPARE(ed->verticalScrollBar()->value(), ed->verticalScrollBar()->maximum());
 }
 
 

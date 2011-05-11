@@ -49,7 +49,7 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
-#include <QtGui/qglyphs.h>
+#include <QtGui/qglyphrun.h>
 #include <QtGui/qtextcursor.h>
 
 QT_BEGIN_HEADER
@@ -174,7 +174,7 @@ public:
     qreal maximumWidth() const;
 
 #if !defined(QT_NO_RAWFONT)
-    QList<QGlyphs> glyphs() const;
+    QList<QGlyphRun> glyphRuns() const;
 #endif
 
     QTextEngine *engine() const { return d; }
@@ -249,7 +249,7 @@ private:
     void layout_helper(int numGlyphs);
 
 #if !defined(QT_NO_RAWFONT)
-    QList<QGlyphs> glyphs(int from, int length) const;
+    QList<QGlyphRun> glyphs(int from, int length) const;
 #endif
 
     friend class QTextLayout;

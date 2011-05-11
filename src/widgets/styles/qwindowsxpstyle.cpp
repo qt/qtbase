@@ -1196,8 +1196,14 @@ QRect QWindowsXPStyle::subElementRect(SubElement sr, const QStyleOption *option,
         if (qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option))
         {
             rect = QWindowsStyle::subElementRect(sr, option, widget);
-            if (sr == SE_TabWidgetTabContents)
-                   rect.adjust(0, 0, -2, -2);
+            if (sr == SE_TabWidgetTabContents) {
+                if (const QTabWidget *tabWidget = qobject_cast<const QTabWidget *>(widget)) {
+                    if (tabWidget->documentMode())
+                        break;
+                }
+
+                rect.adjust(0, 0, -2, -2);
+            }
         }
         break;
     case SE_TabWidgetTabBar: {

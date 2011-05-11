@@ -39,13 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHS_H
-#define QGLYPHS_H
+#ifndef QGLYPHRUN_P_H
+#define QGLYPHRUN_P_H
 
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qvector.h>
-#include <QtCore/qpoint.h>
-#include <QtGui/qrawfont.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of internal files.  This header file may change from version to version
+// without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qglyphrun.h"
+#include "qrawfont.h"
+
+#include <qfont.h>
 
 #if !defined(QT_NO_RAWFONT)
 
@@ -53,55 +64,40 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QGlyphsPrivate;
-class Q_GUI_EXPORT QGlyphs
+class QGlyphRunPrivate: public QSharedData
 {
 public:
-    QGlyphs();
-    QGlyphs(const QGlyphs &other);
-    ~QGlyphs();
+    QGlyphRunPrivate()
+        : overline(false)
+        , underline(false)
+        , strikeOut(false)
+    {
+    }
 
-    QRawFont font() const;
-    void setFont(const QRawFont &font);
+    QGlyphRunPrivate(const QGlyphRunPrivate &other)
+      : QSharedData(other)
+      , glyphIndexes(other.glyphIndexes)
+      , glyphPositions(other.glyphPositions)
+      , rawFont(other.rawFont)
+      , overline(other.overline)
+      , underline(other.underline)
+      , strikeOut(other.strikeOut)
+    {
+    }
 
-    QVector<quint32> glyphIndexes() const;
-    void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
+    QVector<quint32> glyphIndexes;
+    QVector<QPointF> glyphPositions;
+    QRawFont rawFont;
 
-    QVector<QPointF> positions() const;
-    void setPositions(const QVector<QPointF> &positions);
-
-    void clear();
-
-    QGlyphs &operator=(const QGlyphs &other);
-    bool operator==(const QGlyphs &other) const;
-    bool operator!=(const QGlyphs &other) const;
-
-    void setOverline(bool overline);
-    bool overline() const;
-
-    void setUnderline(bool underline);
-    bool underline() const;
-
-    void setStrikeOut(bool strikeOut);
-    bool strikeOut() const;
-
-private:
-    friend class QGlyphsPrivate;
-    friend class QTextLine;
-
-    QGlyphs operator+(const QGlyphs &other) const;
-    QGlyphs &operator+=(const QGlyphs &other);
-
-    void detach();
-    QExplicitlySharedDataPointer<QGlyphsPrivate> d;
+    uint overline  : 1;
+    uint underline : 1;
+    uint strikeOut : 1;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_NO_RAWFONT
+#endif // QGLYPHS_P_H
 
-#endif // QGLYPHS_H
+#endif // QT_NO_RAWFONT

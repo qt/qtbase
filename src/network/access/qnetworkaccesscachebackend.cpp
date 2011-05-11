@@ -66,6 +66,7 @@ void QNetworkAccessCacheBackend::open()
         QString msg = QCoreApplication::translate("QNetworkAccessCacheBackend", "Error opening %1")
                                                 .arg(this->url().toString());
         error(QNetworkReply::ContentNotFoundError, msg);
+    } else {
         setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
     }
     finished();
@@ -85,14 +86,18 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     QNetworkCacheMetaData::AttributesMap attributes = item.attributes();
     setAttribute(QNetworkRequest::HttpStatusCodeAttribute, attributes.value(QNetworkRequest::HttpStatusCodeAttribute));
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
-    setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
 
     // set the raw headers
     QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
     QNetworkCacheMetaData::RawHeaderList::ConstIterator it = rawHeaders.constBegin(),
                                                        end = rawHeaders.constEnd();
-    for ( ; it != end; ++it)
+    for ( ; it != end; ++it) {
+        if (it->first.toLower() == "cache-control" &&
+            it->second.toLower().contains("must-revalidate")) {
+            return false;
+        }
         setRawHeader(it->first, it->second);
+    }
 
     // handle a possible redirect
     QVariant redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);

@@ -586,7 +586,6 @@ void QGtkPainter::paintShadow(GtkWidget *gtkWidget, const gchar* part,
     if (!rect.isValid())
         return;
 
-    QRect r = rect;
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size()) % pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
@@ -605,7 +604,6 @@ void QGtkPainter::paintFlatBox(GtkWidget *gtkWidget, const gchar* part,
 {
     if (!rect.isValid())
         return;
-    QRect r = rect;
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size()) % pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
@@ -632,7 +630,6 @@ void QGtkPainter::paintExtention(GtkWidget *gtkWidget,
     if (!rect.isValid())
         return;
 
-    QRect r = rect;
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size(), gtkWidget)
                          % HexString<uchar>(gap_pos);
@@ -660,7 +657,6 @@ void QGtkPainter::paintOption(GtkWidget *gtkWidget, const QRect &radiorect,
     if (!rect.isValid())
         return;
 
-    QRect r = rect;
     QPixmap cache;
     QString pixmapName = uniqueName(detail, state, shadow, rect.size());
     GdkRectangle gtkCliprect = {0, 0, rect.width(), rect.height()};
@@ -692,7 +688,6 @@ void QGtkPainter::paintCheckbox(GtkWidget *gtkWidget, const QRect &checkrect,
     if (!rect.isValid())
         return;
 
-    QRect r = rect;
     QPixmap cache;
     QString pixmapName = uniqueName(detail, state, shadow, rect.size());
     GdkRectangle gtkCliprect = {0, 0, rect.width(), rect.height()};

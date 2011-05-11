@@ -2782,8 +2782,6 @@ bool QLocalePrivate::numberToCLocale(const QString &num,
     if (idx == l)
         return false;
 
-    const QChar _group = group();
-
     while (idx < l) {
         const QChar &in = uc[idx];
 

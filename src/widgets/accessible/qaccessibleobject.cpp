@@ -322,9 +322,7 @@ QString QAccessibleApplication::text(Text t, int) const
 {
     switch (t) {
     case Name:
-        if (QApplication::activeWindow())
-            return QApplication::activeWindow()->windowTitle();
-        break;
+        return QApplication::applicationName();
     case Description:
         return QApplication::applicationFilePath();
     default:

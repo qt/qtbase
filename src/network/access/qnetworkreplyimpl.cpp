@@ -47,7 +47,6 @@
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworksession.h"
-#include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
 
 #include <QtCore/QCoreApplication>
@@ -90,10 +89,10 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
+    if (!backend->start()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!backend->start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
-        // QNetworkAccessManager will call reply->backend->start() again for us when the session
+        // QNetworkAccessManager will call _q_startOperation again for us when the session
         // state changes.
         state = WaitingForSession;
 
@@ -109,11 +108,20 @@ void QNetworkReplyImplPrivate::_q_startOperation()
                 session->open();
         } else {
             qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+            state = Working;
+            error(QNetworkReplyImpl::UnknownNetworkError,
+                  QCoreApplication::translate("QNetworkReply", "Network session error."));
+            finished();
         }
-
+#else
+        qWarning("Backend start failed");
+        state = Working;
+        error(QNetworkReplyImpl::UnknownNetworkError,
+              QCoreApplication::translate("QNetworkReply", "backend start error."));
+        finished();
+#endif
         return;
     }
-#endif
 
     if (backend && backend->isSynchronous()) {
         state = Finished;
@@ -356,7 +364,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
 #ifndef QT_NO_HTTP
-        if (qobject_cast<QNetworkAccessHttpBackend *>(backend) || (backend && backend->isSynchronous())) {
+        if (backend && backend->isSynchronous()) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
@@ -1043,11 +1051,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     }
 
 #ifndef QT_NO_HTTP
-    if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
-        _q_startOperation();
-    } else {
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
-    }
+    QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #else
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #endif // QT_NO_HTTP

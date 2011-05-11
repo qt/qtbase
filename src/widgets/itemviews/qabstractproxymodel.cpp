@@ -121,15 +121,12 @@ QAbstractProxyModel::~QAbstractProxyModel()
 void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 {
     Q_D(QAbstractProxyModel);
-    if (d->model) {
+    if (d->model)
         disconnect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
-        disconnect(d->model, SIGNAL(modelReset()), this, SLOT(resetInternalData()));
-    }
 
     if (sourceModel) {
         d->model = sourceModel;
         connect(d->model, SIGNAL(destroyed()), this, SLOT(_q_sourceModelDestroyed()));
-        connect(d->model, SIGNAL(modelReset()), this, SLOT(resetInternalData()));
     } else {
         d->model = QAbstractItemModelPrivate::staticEmptyModel();
     }
@@ -381,25 +378,6 @@ Qt::DropActions QAbstractProxyModel::supportedDropActions() const
 {
     Q_D(const QAbstractProxyModel);
     return d->model->supportedDropActions();
-}
-
-/*
-    \since 4.8
-
-    This slot is called just after the internal data of a model is cleared
-    while it is being reset.
-
-    This slot is provided the convenience of subclasses of concrete proxy
-    models, such as subclasses of QSortFilterProxyModel which maintain extra
-    data.
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 10
-
-    \sa modelAboutToBeReset(), modelReset()
-*/
-void QAbstractProxyModel::resetInternalData()
-{
-
 }
 
 QT_END_NAMESPACE

@@ -55,6 +55,9 @@
 #endif // QT_NO_XCURSOR
 
 #ifndef QT_NO_XFIXES
+#ifndef Status
+#define Status int
+#endif
 #  include <X11/extensions/Xfixes.h>
 #endif // QT_NO_XFIXES
 

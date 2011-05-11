@@ -971,7 +971,11 @@ QString QAccessibleItemView::text(Text t, int child) const
             return QAccessibleAbstractScrollArea::text(t, child);
 
         QAccessibleItemRow item(itemView(), childIndex(child));
-        return item.text(t, 1);
+        if (item.isValid()) {
+            return item.text(t, 1);
+        } else {
+            return QString();
+        }
     } else {
         return QAccessibleAbstractScrollArea::text(t, child);
     }

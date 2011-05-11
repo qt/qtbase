@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qchar.cpp
 
-QT = core
+QT = core core-private
 
 wince*|symbian: {
 deploy.files += NormalizationTest.txt

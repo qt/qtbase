@@ -1145,11 +1145,8 @@ void QItemSelectionModel::clearSelection()
     Q_D(QItemSelectionModel);
     if (d->ranges.count() == 0 && d->currentSelection.count() == 0)
         return;
-    QItemSelection selection = d->ranges;
-    selection.merge(d->currentSelection, d->currentCommand);
-    d->ranges.clear();
-    d->currentSelection.clear();
-    emit selectionChanged(QItemSelection(), selection);
+
+    select(QItemSelection(), Clear);
 }
 
 

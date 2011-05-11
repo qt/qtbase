@@ -254,7 +254,8 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
 
 
     if (baseline.status == ImageItem::BaselineNotFound) {
-        proto.submitNewBaseline(rendered, 0);
+        if (!proto.submitNewBaseline(rendered, 0))
+            QWARN("Failed to submit new baseline: " + proto.errorMessage().toLatin1());
         QSKIP("Baseline not found; new baseline created.", SkipSingle);
     }
 

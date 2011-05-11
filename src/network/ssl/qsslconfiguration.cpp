@@ -233,7 +233,7 @@ void QSslConfiguration::setProtocol(QSsl::SslProtocol protocol)
     client), and whether it should require that this certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients, QueryPeer for servers.
 
     \sa setPeerVerifyMode()
 */
@@ -249,7 +249,7 @@ QSslSocket::PeerVerifyMode QSslConfiguration::peerVerifyMode() const
     client), and whether it should require that this certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients, QueryPeer for servers.
 
     \sa peerVerifyMode()
 */

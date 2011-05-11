@@ -161,7 +161,6 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
 
-    QRect r = rect();
     QStyleOptionToolButton opt;
     opt.init(this);
     opt.state |= QStyle::State_AutoRaise;

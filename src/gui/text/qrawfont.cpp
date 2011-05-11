@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
    A QRawFont object represents a single, physical instance of a given font in a given pixel size.
    I.e. in the typical case it represents a set of TrueType or OpenType font tables and uses a
    user specified pixel size to convert metrics into logical pixel units. In can be used in
-   combination with the QGlyphs class to draw specific glyph indexes at specific positions, and
+   combination with the QGlyphRun class to draw specific glyph indexes at specific positions, and
    also have accessors to some relevant data in the physical font.
 
    QRawFont only provides support for the main font technologies: GDI and DirectWrite on Windows
@@ -87,9 +87,9 @@ QT_BEGIN_NAMESPACE
 
    QRawFont can be constructed in a number of ways:
    \list
-   \o \l It can be constructed by calling QTextLayout::glyphs() or QTextFragment::glyphs(). The
-         returned QGlyphs objects will contain QRawFont objects which represent the actual fonts
-         used to render each portion of the text.
+   \o \l It can be constructed by calling QTextLayout::glyphRuns() or QTextFragment::glyphRuns().
+         The returned QGlyphRun objects will contain QRawFont objects which represent the actual
+         fonts used to render each portion of the text.
    \o \l It can be constructed by passing a QFont object to QRawFont::fromFont(). The function
          will return a QRawFont object representing the font that will be selected as response to
          the QFont query and the selected writing system.
@@ -234,7 +234,7 @@ void QRawFont::loadFromData(const QByteArray &fontData,
    the pixel in the rasterization of the glyph. Otherwise, the image will be in the format of
    QImage::Format_A8 and each pixel will contain the opacity of the pixel in the rasterization.
 
-   \sa pathForGlyph(), QPainter::drawGlyphs()
+   \sa pathForGlyph(), QPainter::drawGlyphRun()
 */
 QImage QRawFont::alphaMapForGlyph(quint32 glyphIndex, AntialiasingType antialiasingType,
                                   const QTransform &transform) const
@@ -299,6 +299,58 @@ qreal QRawFont::descent() const
         return 0.0;
 
     return d->fontEngine->descent().toReal();
+}
+
+/*!
+   Returns the xHeight of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::xHeight()
+*/
+qreal QRawFont::xHeight() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->xHeight().toReal();
+}
+
+/*!
+   Returns the leading of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::leading()
+*/
+qreal QRawFont::leading() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->leading().toReal();
+}
+
+/*!
+   Returns the average character width of this QRawFont in pixel units.
+
+   \sa QFontMetricsF::averageCharWidth()
+*/
+qreal QRawFont::averageCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->averageCharWidth().toReal();
+}
+
+/*!
+   Returns the width of the widest character in the font.
+
+   \sa QFontMetricsF::maxWidth()
+*/
+qreal QRawFont::maxCharWidth() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->maxCharWidth();
 }
 
 /*!
@@ -374,9 +426,9 @@ int QRawFont::weight() const
    underlying font. Note that in cases where there are other tables in the font that affect the
    shaping of the text, the returned glyph indexes will not correctly represent the rendering
    of the text. To get the correctly shaped text, you can use QTextLayout to lay out and shape the
-   text, and then call QTextLayout::glyphs() to get the set of glyph index list and QRawFont pairs.
+   text, and then call QTextLayout::glyphRuns() to get the set of glyph index list and QRawFont pairs.
 
-   \sa advancesForGlyphIndexes(), QGlyphs, QTextLayout::glyphs(), QTextFragment::glyphs()
+   \sa advancesForGlyphIndexes(), QGlyphRun, QTextLayout::glyphRuns(), QTextFragment::glyphRuns()
 */
 QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 {
@@ -535,17 +587,17 @@ QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writ
     layout.beginLayout();
     QTextLine line = layout.createLine();
     layout.endLayout();
-    QList<QGlyphs> list = layout.glyphs();
+    QList<QGlyphRun> list = layout.glyphRuns();
     if (list.size()) {
         // Pick the one matches the family name we originally requested,
         // if none of them match, just pick the first one
         for (int i = 0; i < list.size(); i++) {
-            QGlyphs glyphs = list.at(i);
-            QRawFont rawfont = glyphs.font();
+            QGlyphRun glyphs = list.at(i);
+            QRawFont rawfont = glyphs.rawFont();
             if (rawfont.familyName() == font.family())
                 return rawfont;
         }
-        return list.at(0).font();
+        return list.at(0).rawFont();
     }
     return QRawFont();
 #else

@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = \
+
+contains(QT_CONFIG,private-tests):SUBDIRS += \
         qhostinfo

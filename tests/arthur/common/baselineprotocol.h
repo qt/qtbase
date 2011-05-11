@@ -146,7 +146,7 @@ public:
     enum Constant {
         ProtocolVersion = 5,
         ServerPort = 54129,
-        Timeout = 5000
+        Timeout = 15000
     };
 
     enum Command {

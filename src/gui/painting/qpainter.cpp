@@ -59,7 +59,7 @@
 #include "qthread.h"
 #include "qvarlengtharray.h"
 #include "qstatictext.h"
-#include "qglyphs.h"
+#include "qglyphrun.h"
 
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
@@ -69,7 +69,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
-#include <private/qglyphs_p.h>
+#include <private/qglyphrun_p.h>
 #include <private/qhexstring_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qrawfont_p.h>
@@ -477,8 +477,12 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
 
     q->save();
     state->matrix = QTransform();
-    state->dirtyFlags |= QPaintEngine::DirtyTransform;
-    updateState(state);
+    if (extended) {
+        extended->transformChanged();
+    } else {
+        state->dirtyFlags |= QPaintEngine::DirtyTransform;
+        updateState(state);
+    }
     engine->drawImage(absPathRect,
                  image,
                  QRectF(0, 0, absPathRect.width(), absPathRect.height()),
@@ -661,11 +665,14 @@ void QPainterPrivate::updateInvMatrix()
     invMatrix = state->matrix.inverted();
 }
 
+extern bool qt_isExtendedRadialGradient(const QBrush &brush);
+
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 {
     bool alpha = false;
     bool linearGradient = false;
     bool radialGradient = false;
+    bool extendedRadialGradient = false;
     bool conicalGradient = false;
     bool patternBrush = false;
     bool xform = false;
@@ -697,6 +704,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
                            (brushStyle == Qt::LinearGradientPattern));
         radialGradient = ((penBrushStyle == Qt::RadialGradientPattern) ||
                            (brushStyle == Qt::RadialGradientPattern));
+        extendedRadialGradient = radialGradient && (qt_isExtendedRadialGradient(penBrush) || qt_isExtendedRadialGradient(s->brush));
         conicalGradient = ((penBrushStyle == Qt::ConicalGradientPattern) ||
                             (brushStyle == Qt::ConicalGradientPattern));
         patternBrush = (((penBrushStyle > Qt::SolidPattern
@@ -780,7 +788,7 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         s->emulationSpecifier &= ~QPaintEngine::LinearGradientFill;
 
     // Radial gradient emulation
-    if (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill))
+    if (extendedRadialGradient || (radialGradient && !engine->hasFeature(QPaintEngine::RadialGradientFill)))
         s->emulationSpecifier |= QPaintEngine::RadialGradientFill;
     else
         s->emulationSpecifier &= ~QPaintEngine::RadialGradientFill;
@@ -5664,19 +5672,19 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 
     \since 4.8
 
-    \sa QGlyphs::setFont(), QGlyphs::setPositions(), QGlyphs::setGlyphIndexes()
+    \sa QGlyphRun::setRawFont(), QGlyphRun::setPositions(), QGlyphRun::setGlyphIndexes()
 */
 #if !defined(QT_NO_RAWFONT)
-void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
+void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
 {
     Q_D(QPainter);
 
-    QRawFont font = glyphs.font();
+    QRawFont font = glyphRun.rawFont();
     if (!font.isValid())
         return;
 
-    QVector<quint32> glyphIndexes = glyphs.glyphIndexes();
-    QVector<QPointF> glyphPositions = glyphs.positions();
+    QVector<quint32> glyphIndexes = glyphRun.glyphIndexes();
+    QVector<QPointF> glyphPositions = glyphRun.positions();
 
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
@@ -5685,6 +5693,13 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
             d->extended != 0
             ? qt_paintengine_supports_transformations(d->extended->type())
             : qt_paintengine_supports_transformations(d->engine->type());
+
+    // If the matrix is not affine, the paint engine will fall back to
+    // drawing the glyphs as paths, which in turn means we should not
+    // preprocess the glyph positions
+    if (!d->state->matrix.isAffine())
+        paintEngineSupportsTransformations = true;
+
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions.at(i);
         if (!paintEngineSupportsTransformations)
@@ -5692,8 +5707,8 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
 
-    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphs.overline(),
-                  glyphs.underline(), glyphs.strikeOut());
+    d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count, font, glyphRun.overline(),
+                  glyphRun.underline(), glyphRun.strikeOut());
 }
 
 void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, int glyphCount,
@@ -5728,7 +5743,7 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
 
     QFixed width = rightMost - leftMost;
 
-    if (extended != 0) {
+    if (extended != 0 && state->matrix.isAffine()) {
         QStaticTextItem staticTextItem;
         staticTextItem.color = state->pen.color();
         staticTextItem.font = state->font;

@@ -278,29 +278,55 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QHash<QString, QString> &environment)
+QProcessEnvironment QProcessEnvironment::systemEnvironment()
+{
+    QProcessEnvironment env;
+#if !defined(Q_OS_WINCE)
+    // Calls to setenv() affect the low-level environment as well.
+    // This is not the case the other way round.
+    if (wchar_t *envStrings = GetEnvironmentStringsW()) {
+        for (const wchar_t *entry = envStrings; *entry; ) {
+            int entryLen = wcslen(entry);
+            if (const wchar_t *equal = wcschr(entry, L'=')) {
+                int nameLen = equal - entry;
+                QString name = QString::fromWCharArray(entry, nameLen);
+                QString value = QString::fromWCharArray(equal + 1, entryLen - nameLen - 1);
+                env.d->hash.insert(QProcessEnvironmentPrivate::Key(name), value);
+            }
+            entry += entryLen + 1;
+        }
+        FreeEnvironmentStringsW(envStrings);
+    }
+#endif
+    return env;
+}
+
+#if !defined(Q_OS_WINCE)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QHash<QString, QString> copy = environment;
+        QProcessEnvironmentPrivate::Hash copy = environment;
 
         // add PATH if necessary (for DLL loading)
-        if (!copy.contains(QLatin1String("PATH"))) {
+        QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
+        if (!copy.contains(pathKey)) {
             QByteArray path = qgetenv("PATH");
             if (!path.isEmpty())
-                copy.insert(QLatin1String("PATH"), QString::fromLocal8Bit(path));
+                copy.insert(pathKey, QString::fromLocal8Bit(path));
         }
 
         // add systemroot if needed
-        if (!copy.contains(QLatin1String("SYSTEMROOT"))) {
-            QByteArray systemRoot = qgetenv("SYSTEMROOT");
+        QProcessEnvironmentPrivate::Key rootKey(QLatin1String("SystemRoot"));
+        if (!copy.contains(rootKey)) {
+            QByteArray systemRoot = qgetenv("SystemRoot");
             if (!systemRoot.isEmpty())
-                copy.insert(QLatin1String("SYSTEMROOT"), QString::fromLocal8Bit(systemRoot));
+                copy.insert(rootKey, QString::fromLocal8Bit(systemRoot));
         }
 
         int pos = 0;
-        QHash<QString, QString>::ConstIterator it = copy.constBegin(),
-                                              end = copy.constEnd();
+        QProcessEnvironmentPrivate::Hash::ConstIterator it = copy.constBegin(),
+                                                       end = copy.constEnd();
 
         static const wchar_t equal = L'=';
         static const wchar_t nul = L'\0';
@@ -335,6 +361,7 @@ static QByteArray qt_create_environment(const QHash<QString, QString> &environme
     }
     return envlist;
 }
+#endif
 
 void QProcessPrivate::startProcess()
 {

@@ -3230,8 +3230,6 @@ void Configure::generateConfigfiles()
 
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             // These features are not ported to Symbian (yet)
-            qconfigList += "QT_NO_CONCURRENT";
-            qconfigList += "QT_NO_QFUTURE";
             qconfigList += "QT_NO_CRASHHANDLER";
             qconfigList += "QT_NO_PRINTER";
             qconfigList += "QT_NO_SYSTEMTRAYICON";

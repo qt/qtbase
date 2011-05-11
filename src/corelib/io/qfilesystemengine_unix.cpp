@@ -356,6 +356,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         const QByteArray &path = entry.nativeFilePath();
         nativeFilePath = path.constData();
         nativeFilePathLength = path.size();
+        Q_UNUSED(nativeFilePathLength);
     }
 
     bool entryExists = true; // innocent until proven otherwise
@@ -638,7 +639,7 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 #if defined(__GLIBC__) && !defined(PATH_MAX)
         char *currentName = ::get_current_dir_name();
         if (currentName) {
-            result = QFile::decodeName(QByteArray(currentName));
+            result = QFileSystemEntry(QByteArray(currentName), QFileSystemEntry::FromNativePath());
             ::free(currentName);
         }
 #else

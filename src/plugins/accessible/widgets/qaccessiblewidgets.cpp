@@ -401,9 +401,14 @@ int QAccessibleStackedWidget::childCount() const
 
 int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (!child || (stackedWidget()->currentWidget() != child->object()))
+    if (!child)
         return -1;
-    return 1;
+
+    QWidget* widget = qobject_cast<QWidget*>(child->object());
+    int index = stackedWidget()->indexOf(widget);
+    if (index >= 0) // one based counting of children
+        return index + 1;
+    return -1;
 }
 
 int QAccessibleStackedWidget::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
@@ -413,9 +418,9 @@ int QAccessibleStackedWidget::navigate(RelationFlag relation, int entry, QAccess
     QObject *targetObject = 0;
     switch (relation) {
     case Child:
-        if (entry != 1)
+        if (entry < 1 || entry > stackedWidget()->count())
             return -1;
-        targetObject = stackedWidget()->currentWidget();
+        targetObject = stackedWidget()->widget(entry-1);
         break;
     default:
         return QAccessibleWidgetEx::navigate(relation, entry, target);
@@ -1334,7 +1339,7 @@ QRect QAccessibleTextEdit::characterRect(int offset, CoordinateType coordType)
 
     QRect r = edit->cursorRect(cursor);
     if (cursor.movePosition(QTextCursor::NextCharacter)) {
-        r.setWidth(edit->cursorRect(cursor).y() - r.y());
+        r.setWidth(edit->cursorRect(cursor).x() - r.x());
     } else {
         // we don't know the width of the character - maybe because we're at document end
         // in that case, IAccessible2 tells us to return the width of a default character
@@ -1603,7 +1608,7 @@ void QAccessibleTextEdit::setAttributes(int startOffset, int endOffset, const QS
 
 #ifndef QT_NO_MAINWINDOW
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
-    : QAccessibleWidgetEx(widget, Application) { }
+    : QAccessibleWidgetEx(widget, Window) { }
 
 QVariant QAccessibleMainWindow::invokeMethodEx(QAccessible::Method /*method*/, int /*child*/, const QVariantList & /*params*/)
 {

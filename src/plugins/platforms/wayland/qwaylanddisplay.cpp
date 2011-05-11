@@ -45,13 +45,14 @@
 #include "qwaylandscreen.h"
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
+#include "qwaylandclipboard.h"
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
 #endif
 
 #include <QtCore/QAbstractEventDispatcher>
-#include <QtWidgets/QApplication>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -249,7 +250,6 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
                                           uint32_t version)
 {
     Q_UNUSED(version);
-
     if (interface == "wl_output") {
         struct wl_output *output = wl_output_create(mDisplay, id, 1);
         wl_output_add_listener(output, &outputListener, this);
@@ -264,5 +264,9 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         QWaylandInputDevice *inputDevice =
             new QWaylandInputDevice(mDisplay, id);
         mInputDevices.append(inputDevice);
+    } else if (interface == "wl_selection_offer") {
+        QPlatformIntegration *plat = QGuiApplicationPrivate::platformIntegration();
+        QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
+        clipboard->createSelectionOffer(id);
     }
 }

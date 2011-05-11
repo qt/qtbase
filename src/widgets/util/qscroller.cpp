@@ -1777,10 +1777,7 @@ void QScrollerPrivate::setState(QScroller::State newstate)
 */
 void QScrollerPrivate::setContentPositionHelperDragging(const QPointF &deltaPos)
 {
-    Q_Q(QScroller);
-    QPointF ppm = q->pixelPerMeter();
     const QScrollerPropertiesPrivate *sp = properties.d.data();
-    QPointF v = q->velocity();
 
     if (sp->overshootDragResistanceFactor)
         overshootPosition /= sp->overshootDragResistanceFactor;

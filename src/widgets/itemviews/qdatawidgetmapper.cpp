@@ -291,7 +291,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     \snippet doc/src/snippets/code/src_gui_itemviews_qdatawidgetmapper.cpp 0
 
     After the call to toFirst(), \c mySpinBox displays the value \c{1}, \c myLineEdit
-    displays \c {Nokia Corporation and/or its subsidiary(-ies)} and \c myCountryChooser displays \c{Oslo}. The
+    displays \c{Qt Norway} and \c myCountryChooser displays \c{Oslo}. The
     navigational functions toFirst(), toNext(), toPrevious(), toLast() and setCurrentIndex()
     can be used to navigate in the model and update the widgets with contents from
     the model.

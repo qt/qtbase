@@ -1582,6 +1582,7 @@ QWidget::~QWidget()
 
     // delete layout while we still are a valid widget
     delete d->layout;
+    d->layout = 0;
     // Remove myself from focus list
 
     Q_ASSERT(d->focus_next->d_func()->focus_prev == this);
@@ -11177,6 +11178,7 @@ void QWidget::setAccessibleName(const QString &name)
 {
     Q_D(QWidget);
     d->accessibleName = name;
+    QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
 }
 
 QString QWidget::accessibleName() const
@@ -11198,6 +11200,7 @@ void QWidget::setAccessibleDescription(const QString &description)
 {
     Q_D(QWidget);
     d->accessibleDescription = description;
+    QAccessible::updateAccessibility(this, 0, QAccessible::DescriptionChanged);
 }
 
 QString QWidget::accessibleDescription() const
@@ -11313,8 +11316,10 @@ void QWidget::updateMicroFocus()
     }
 #endif
 #ifndef QT_NO_ACCESSIBILITY
-    // ##### is this correct
-    QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+    if (isVisible()) {
+        // ##### is this correct
+        QAccessible::updateAccessibility(this, 0, QAccessible::StateChanged);
+    }
 #endif
 }
 

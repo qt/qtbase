@@ -2,7 +2,7 @@ load(qttest_p4)
 SOURCES  += tst_qbytearray.cpp
 
 
-QT = core
+QT = core core-private
 
 wince*|symbian {
    addFile.files = rfc3252.txt

@@ -810,6 +810,22 @@ const QGradient *QBrush::gradient() const
     return 0;
 }
 
+Q_GUI_EXPORT bool qt_isExtendedRadialGradient(const QBrush &brush)
+{
+    if (brush.style() == Qt::RadialGradientPattern) {
+        const QGradient *g = brush.gradient();
+        const QRadialGradient *rg = static_cast<const QRadialGradient *>(g);
+
+        if (!qFuzzyIsNull(rg->focalRadius()))
+            return true;
+
+        QPointF delta = rg->focalPoint() - rg->center();
+        if (delta.x() * delta.x() + delta.y() * delta.y() > rg->radius() * rg->radius())
+            return true;
+    }
+
+    return false;
+}
 
 /*!
     Returns true if the brush is fully opaque otherwise false. A brush
@@ -819,6 +835,7 @@ const QGradient *QBrush::gradient() const
     \i The alpha component of the color() is 255.
     \i Its texture() does not have an alpha channel and is not a QBitmap.
     \i The colors in the gradient() all have an alpha component that is 255.
+    \i It is an extended radial gradient.
     \endlist
 */
 
@@ -829,6 +846,9 @@ bool QBrush::isOpaque() const
     // Test awfully simple case first
     if (d->style == Qt::SolidPattern)
         return opaqueColor;
+
+    if (qt_isExtendedRadialGradient(*this))
+        return false;
 
     if (d->style == Qt::LinearGradientPattern
         || d->style == Qt::RadialGradientPattern
@@ -1179,8 +1199,10 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
 
     \list
     \o \e Linear gradients interpolate colors between start and end points.
-    \o \e Radial gradients interpolate colors between a focal point and end
-        points on a circle surrounding it.
+    \o \e Simple radial gradients interpolate colors between a focal point
+        and end points on a circle surrounding it.
+    \o \e Extended radial gradients interpolate colors between a center and
+        a focal circle.
     \o \e Conical gradients interpolate colors around a center point.
     \endlist
 
@@ -1476,8 +1498,6 @@ void QGradient::setInterpolationMode(InterpolationMode mode)
     dummy = p;
 }
 
-#undef Q_DUMMY_ACCESSOR
-
 /*!
     \fn bool QGradient::operator!=(const QGradient &gradient) const
     \since 4.2
@@ -1511,7 +1531,7 @@ bool QGradient::operator==(const QGradient &gradient) const
             || m_data.radial.cy != gradient.m_data.radial.cy
             || m_data.radial.fx != gradient.m_data.radial.fx
             || m_data.radial.fy != gradient.m_data.radial.fy
-            || m_data.radial.radius != gradient.m_data.radial.radius)
+            || m_data.radial.cradius != gradient.m_data.radial.cradius)
             return false;
     } else { // m_type == ConicalGradient
         if (m_data.conical.cx != gradient.m_data.conical.cx
@@ -1717,10 +1737,17 @@ void QLinearGradient::setFinalStop(const QPointF &stop)
     \brief The QRadialGradient class is used in combination with QBrush to
     specify a radial gradient brush.
 
-    Radial gradients interpolate colors between a focal point and end
-    points on a circle surrounding it. Outside the end points the
-    gradient is either padded, reflected or repeated depending on the
-    currently set \l {QGradient::Spread}{spread} method:
+    Qt supports both simple and extended radial gradients.
+
+    Simple radial gradients interpolate colors between a focal point and end
+    points on a circle surrounding it. Extended radial gradients interpolate
+    colors between a focal circle and a center circle. Points outside the cone
+    defined by the two circles will be transparent. For simple radial gradients
+    the focal point is adjusted to lie inside the center circle, whereas the
+    focal point can have any position in an extended radial gradient.
+
+    Outside the end points the gradient is either padded, reflected or repeated
+    depending on the currently set \l {QGradient::Spread}{spread} method:
 
     \table
     \row
@@ -1765,8 +1792,13 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
 }
 
 /*!
-    Constructs a radial gradient with the given \a center, \a
+    Constructs a simple radial gradient with the given \a center, \a
     radius and \a focalPoint.
+
+    \note If the given focal point is outside the circle defined by the
+    center (\a cx, \a cy) and the \a radius it will be re-adjusted to
+    the intersection between the line from the center to the focal point
+    and the circle.
 
     \sa QGradient::setColorAt(), QGradient::setStops()
 */
@@ -1777,7 +1809,7 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal radius, const QPoi
     m_spread = PadSpread;
     m_data.radial.cx = center.x();
     m_data.radial.cy = center.y();
-    m_data.radial.radius = radius;
+    m_data.radial.cradius = radius;
 
     QPointF adapted_focal = qt_radial_gradient_adapt_focal_point(center, radius, focalPoint);
     m_data.radial.fx = adapted_focal.x();
@@ -1785,7 +1817,7 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal radius, const QPoi
 }
 
 /*!
-    Constructs a radial gradient with the given \a center, \a
+    Constructs a simple radial gradient with the given \a center, \a
     radius and the focal point in the circle center.
 
     \sa QGradient::setColorAt(), QGradient::setStops()
@@ -1796,15 +1828,20 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal radius)
     m_spread = PadSpread;
     m_data.radial.cx = center.x();
     m_data.radial.cy = center.y();
-    m_data.radial.radius = radius;
+    m_data.radial.cradius = radius;
     m_data.radial.fx = center.x();
     m_data.radial.fy = center.y();
 }
 
 
 /*!
-    Constructs a radial gradient with the given center (\a cx, \a cy),
+    Constructs a simple radial gradient with the given center (\a cx, \a cy),
     \a radius and focal point (\a fx, \a fy).
+
+    \note If the given focal point is outside the circle defined by the
+    center (\a cx, \a cy) and the \a radius it will be re-adjusted to
+    the intersection between the line from the center to the focal point
+    and the circle.
 
     \sa QGradient::setColorAt(), QGradient::setStops()
 */
@@ -1815,7 +1852,7 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius, qreal fx, qre
     m_spread = PadSpread;
     m_data.radial.cx = cx;
     m_data.radial.cy = cy;
-    m_data.radial.radius = radius;
+    m_data.radial.cradius = radius;
 
     QPointF adapted_focal = qt_radial_gradient_adapt_focal_point(QPointF(cx, cy),
                                                                  radius,
@@ -1826,7 +1863,7 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius, qreal fx, qre
 }
 
 /*!
-    Constructs a radial gradient with the center at (\a cx, \a cy) and the
+    Constructs a simple radial gradient with the center at (\a cx, \a cy) and the
     specified \a radius. The focal point lies at the center of the circle.
 
     \sa QGradient::setColorAt(), QGradient::setStops()
@@ -1837,14 +1874,14 @@ QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal radius)
     m_spread = PadSpread;
     m_data.radial.cx = cx;
     m_data.radial.cy = cy;
-    m_data.radial.radius = radius;
+    m_data.radial.cradius = radius;
     m_data.radial.fx = cx;
     m_data.radial.fy = cy;
 }
 
 
 /*!
-    Constructs a radial gradient with the center and focal point at
+    Constructs a simple radial gradient with the center and focal point at
     (0, 0) with a radius of 1.
 */
 QRadialGradient::QRadialGradient()
@@ -1853,11 +1890,51 @@ QRadialGradient::QRadialGradient()
     m_spread = PadSpread;
     m_data.radial.cx = 0;
     m_data.radial.cy = 0;
-    m_data.radial.radius = 1;
+    m_data.radial.cradius = 1;
     m_data.radial.fx = 0;
     m_data.radial.fy = 0;
 }
 
+/*!
+    \since 4.8
+
+    Constructs an extended radial gradient with the given \a center, \a
+    centerRadius, \a focalPoint, and \a focalRadius.
+*/
+QRadialGradient::QRadialGradient(const QPointF &center, qreal centerRadius, const QPointF &focalPoint, qreal focalRadius)
+{
+    m_type = RadialGradient;
+    m_spread = PadSpread;
+    m_data.radial.cx = center.x();
+    m_data.radial.cy = center.y();
+    m_data.radial.cradius = centerRadius;
+
+    m_data.radial.fx = focalPoint.x();
+    m_data.radial.fy = focalPoint.y();
+    setFocalRadius(focalRadius);
+}
+
+/*!
+    \since 4.8
+
+    Constructs an extended radial gradient with the given \a center, \a
+    centerRadius, \a focalPoint, and \a focalRadius.
+    Constructs a radial gradient with the given center (\a cx, \a cy),
+    center radius \a centerRadius, focal point (\a fx, \a fy), and
+    focal radius \a focalRadius.
+*/
+QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal fx, qreal fy, qreal focalRadius)
+{
+    m_type = RadialGradient;
+    m_spread = PadSpread;
+    m_data.radial.cx = cx;
+    m_data.radial.cy = cy;
+    m_data.radial.cradius = centerRadius;
+
+    m_data.radial.fx = fx;
+    m_data.radial.fy = fy;
+    setFocalRadius(focalRadius);
+}
 
 /*!
     Returns the center of this radial gradient in logical coordinates.
@@ -1902,13 +1979,15 @@ void QRadialGradient::setCenter(const QPointF &center)
 /*!
     Returns the radius of this radial gradient in logical coordinates.
 
+    Equivalent to centerRadius()
+
     \sa QGradient::stops()
 */
 
 qreal QRadialGradient::radius() const
 {
     Q_ASSERT(m_type == RadialGradient);
-    return m_data.radial.radius;
+    return m_data.radial.cradius;
 }
 
 
@@ -1917,13 +1996,81 @@ qreal QRadialGradient::radius() const
 
     Sets the radius of this radial gradient in logical coordinates
     to \a radius
+
+    Equivalent to setCenterRadius()
 */
 void QRadialGradient::setRadius(qreal radius)
 {
     Q_ASSERT(m_type == RadialGradient);
-    m_data.radial.radius = radius;
+    m_data.radial.cradius = radius;
 }
 
+/*!
+    \since 4.8
+
+    Returns the center radius of this radial gradient in logical
+    coordinates.
+
+    \sa QGradient::stops()
+*/
+qreal QRadialGradient::centerRadius() const
+{
+    Q_ASSERT(m_type == RadialGradient);
+    return m_data.radial.cradius;
+}
+
+/*
+   \since 4.8
+
+   Sets the center radius of this radial gradient in logical coordinates
+   to \a radius
+*/
+void QRadialGradient::setCenterRadius(qreal radius)
+{
+    Q_ASSERT(m_type == RadialGradient);
+    m_data.radial.cradius = radius;
+}
+
+/*!
+    \since 4.8
+
+    Returns the focal radius of this radial gradient in logical
+    coordinates.
+
+    \sa QGradient::stops()
+*/
+qreal QRadialGradient::focalRadius() const
+{
+    Q_ASSERT(m_type == RadialGradient);
+    Q_DUMMY_ACCESSOR
+
+    // mask away low three bits
+    union { float f; quint32 i; } u;
+    u.i = i & ~0x07;
+    return u.f;
+}
+
+/*
+   \since 4.8
+
+   Sets the focal radius of this radial gradient in logical coordinates
+   to \a radius
+*/
+void QRadialGradient::setFocalRadius(qreal radius)
+{
+    Q_ASSERT(m_type == RadialGradient);
+    Q_DUMMY_ACCESSOR
+
+    // Since there's no QGradientData, we only have the dummy void * to
+    // store additional data in. The three lowest bits are already
+    // taken, thus we cut the three lowest bits from the significand
+    // and store the radius as a float.
+    union { float f; quint32 i; } u;
+    u.f = float(radius);
+    // add 0x04 to round up when we drop the three lowest bits
+    i |= (u.i + 0x04) & ~0x07;
+    dummy = p;
+}
 
 /*!
     Returns the focal point of this radial gradient in logical
@@ -2162,5 +2309,7 @@ void QConicalGradient::setAngle(qreal angle)
 
     \sa setTransform()
 */
+
+#undef Q_DUMMY_ACCESSOR
 
 QT_END_NAMESPACE
