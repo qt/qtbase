@@ -4,6 +4,7 @@ HEADERS += \
 	itemviews/qabstractitemview.h \
     itemviews/qabstractitemview_p.h \
 	itemviews/qheaderview.h \
+	itemviews/qidentityproxymodel.h \
 	itemviews/qlistview.h \
 	itemviews/qlistview_p.h \
 	itemviews/qbsptree_p.h \
@@ -44,6 +45,7 @@ HEADERS += \
 SOURCES += \
 	itemviews/qabstractitemview.cpp \
 	itemviews/qheaderview.cpp \
+	itemviews/qidentityproxymodel.cpp \
 	itemviews/qlistview.cpp \
 	itemviews/qbsptree.cpp \
 	itemviews/qtableview.cpp \
