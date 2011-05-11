@@ -102,7 +102,7 @@ SUBDIRS=\
     qlistview \
     qlistwidget \
     qlocale \
-    qlocalsocket \
+    #qlocalsocket \  # FIXME: uses qtscript, shouldn't be in qtbase
     qmacstyle \
     qmainwindow \
     qmatrixnxn \
