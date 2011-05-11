@@ -1102,7 +1102,7 @@ void QTableView::setRootIndex(const QModelIndex &index)
 }
 
 /*!
-  \reimp
+  \internal
 */
 void QTableView::doItemsLayout()
 {

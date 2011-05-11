@@ -2008,10 +2008,11 @@ void QImage::fill(uint pixel)
 
 /*!
     \fn void QImage::fill(Qt::GlobalColor color)
-
     \overload
-
     \since 4.8
+
+    Fills the image with the given \a color, described as a standard global
+    color.
  */
 
 void QImage::fill(Qt::GlobalColor color)
@@ -2022,7 +2023,7 @@ void QImage::fill(Qt::GlobalColor color)
 
 
 /*!
-    \fn void QImage::fill(Qt::GlobalColor color)
+    \fn void QImage::fill(const QColor &color)
 
     \overload
 

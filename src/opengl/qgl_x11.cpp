@@ -1407,10 +1407,6 @@ bool QGLWidgetPrivate::renderCxPm(QPixmap* pm)
     return true;
 }
 
-/*! \internal
-  Free up any allocated colormaps. This fn is only called for
-  top-level widgets.
-*/
 void QGLWidgetPrivate::cleanupColormaps()
 {
     if (!cmap.handle()) {

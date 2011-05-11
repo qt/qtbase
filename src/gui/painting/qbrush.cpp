@@ -1826,9 +1826,9 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
     radius and \a focalPoint.
 
     \note If the given focal point is outside the circle defined by the
-    center (\a cx, \a cy) and the \a radius it will be re-adjusted to
-    the intersection between the line from the center to the focal point
-    and the circle.
+    \a center point and \a radius, it will be re-adjusted to lie at a point on
+    the circle where it intersects with the line from \a center to
+    \a focalPoint.
 
     \sa QGradient::setColorAt(), QGradient::setStops()
 */
@@ -1947,11 +1947,9 @@ QRadialGradient::QRadialGradient(const QPointF &center, qreal centerRadius, cons
 /*!
     \since 4.8
 
-    Constructs an extended radial gradient with the given \a center, \a
-    centerRadius, \a focalPoint, and \a focalRadius.
-    Constructs a radial gradient with the given center (\a cx, \a cy),
-    center radius \a centerRadius, focal point (\a fx, \a fy), and
-    focal radius \a focalRadius.
+    Constructs an extended radial gradient with the given center
+    (\a cx, \a cy), center radius, \a centerRadius, focal point, (\a fx, \a fy),
+    and focal radius \a focalRadius.
 */
 QRadialGradient::QRadialGradient(qreal cx, qreal cy, qreal centerRadius, qreal fx, qreal fy, qreal focalRadius)
 {
@@ -2049,7 +2047,7 @@ qreal QRadialGradient::centerRadius() const
     return m_data.radial.cradius;
 }
 
-/*
+/*!
    \since 4.8
 
    Sets the center radius of this radial gradient in logical coordinates
@@ -2080,7 +2078,7 @@ qreal QRadialGradient::focalRadius() const
     return u.f;
 }
 
-/*
+/*!
    \since 4.8
 
    Sets the focal radius of this radial gradient in logical coordinates

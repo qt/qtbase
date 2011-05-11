@@ -759,9 +759,6 @@ bool QFontDatabase::supportsThreadedFontRendering()
     return true;
 }
 
-/*!
-    \internal
-*/
 QFontEngine *
 QFontDatabase::findFont(int script, const QFontPrivate *fp,
                         const QFontDef &request)

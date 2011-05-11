@@ -77,7 +77,7 @@
     \endlist
 
 
-    \section Threading
+    \section1 Threading
 
     As of Qt 4.8, it's possible to render into a QGLPixelBuffer using
     a QPainter in a separate thread. Note that OpenGL 2.0 or OpenGL ES

@@ -600,7 +600,7 @@ Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle() const
 /*!
     \since 4.8
 
-    Set the default cursor movement style.
+    Sets the default cursor movement style to the given \a style.
 */
 void QTextDocument::setDefaultCursorMoveStyle(Qt::CursorMoveStyle style)
 {

@@ -380,6 +380,10 @@ QGLContext::QGLContext(QPlatformGLContext *platformContext)
     d->setupSharing();
 }
 
+/*!
+    Returns a OpenGL context for the platform-specific OpenGL context given by
+    \a platformContext.
+*/
 QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
 {
     if (!platformContext)

@@ -110,20 +110,20 @@ QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget
     QPlatformScreen is also used by the public api QDesktopWidget for information about the desktop.
  */
 
-/*! \fn geometry() const
+/*! \fn QRect QPlatformScreen::geometry() const = 0
     Reimplement in subclass to return the pixel geometry of the screen
 */
 
-/*! \fn availableGeometry() const
+/*! \fn QRect QPlatformScreen::availableGeometry() const
     Reimplement in subclass to return the pixel geometry of the available space
     This normally is the desktop screen minus the task manager, global menubar etc.
 */
 
-/*! \fn depth() const
+/*! \fn int QPlatformScreen::depth() const = 0
     Reimplement in subclass to return current depth of the screen
 */
 
-/*! \fn format() const
+/*! \fn QImage::Format QPlatformScreen::format() const = 0
     Reimplement in subclass to return the image format which corresponds to the screen format
 */
 

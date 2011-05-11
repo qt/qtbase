@@ -108,8 +108,8 @@ void QActionGroupPrivate::_q_actionHovered()
 
     \ingroup mainwindow-classes
 
-    In some situations it is useful to group actions together. For
-    example, if you have a \gui{Left Align} action, a \gui{Right
+    In some situations it is useful to group QAction objects together.
+    For example, if you have a \gui{Left Align} action, a \gui{Right
     Align} action, a \gui{Justify} action, and a \gui{Center} action,
     only one of these actions should be active at any one time. One
     simple way of achieving this is to group the actions together in

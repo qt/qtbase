@@ -2176,7 +2176,7 @@ void QMdiArea::setTabsClosable(bool closable)
 
     Tabs are not movable by default.
 
-    \sa QTabBar::tabsMovable, setViewMode()
+    \sa QTabBar::movable, setViewMode()
 */
 bool QMdiArea::tabsMovable() const
 {

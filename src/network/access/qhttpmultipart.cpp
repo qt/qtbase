@@ -256,7 +256,7 @@ void QHttpPart::setBodyDevice(QIODevice *device)
 
 /*!
     Constructs a QHttpMultiPart with content type MixedType and sets
-    parent as the parent object.
+    \a parent as the parent object.
 
     \sa QHttpMultiPart::ContentType
 */

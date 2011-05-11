@@ -675,8 +675,8 @@ QString QSslSocket::peerVerifyName() const
 /*!
     \since 4.8
 
-    Sets a different hostname for the certificate validation instead of the one used for the TCP
-    connection.
+    Sets a different host name, given by \a hostName, for the certificate
+    validation instead of the one used for the TCP connection.
 
     \sa connectToHostEncrypted()
 */

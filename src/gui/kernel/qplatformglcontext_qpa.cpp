@@ -191,17 +191,17 @@ void QPlatformGLContext::deleteQGLContext()
     which maps to the QPlatformGLContext.
 */
 
-/*! \fn void swapBuffers()
+/*! \fn void QPlatformGLContext::swapBuffers()
     Reimplement in subclass to native swap buffers calls
 */
 
-/*! getProcAddress(const QString& procName)
+/*! \fn void *QPlatformGLContext::getProcAddress(const QString &procName)
     Reimplement in subclass to native getProcAddr calls.
 
     Note: its convenient to use qPrintable(const QString &str) to get the const char * pointer
 */
 
-/*! platformWindowFormat() const
+/*! \fn QPlatformWindowFormat QPlatformGLContext::platformWindowFormat() const
     QWidget has the function qplatformWindowFormat(). That function is for the application
     programmer to request the format of the window and the context that he wants.
 

@@ -132,20 +132,20 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     the recommended approach for making new platform plugin is to copy an existing plugin inside
     the QTSRCTREE/src/plugins/platform and develop the plugin inside the source tree.
 
-    The minimal platformintegration is the smallest platform integration it is possible to make,
+    The minimal platform integration is the smallest platform integration it is possible to make,
     which makes it an ideal starting point for new plugins. For a slightly more advanced plugin,
     consider reviewing the directfb plugin, or the testlite plugin.
 */
 
 /*!
-    \fn QPixmapData *createPixmapData(QPixmapData::PixelType type) const
+    \fn QPixmapData *QPlatformIntegration::createPixmapData(QPixmapData::PixelType type) const
 
     Factory function for QPixmapData. PixelType can be either PixmapType or BitmapType.
     \sa QPixmapData
 */
 
 /*!
-    \fn QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const
+    \fn QPlatformWindow *QPlatformIntegration::createPlatformWindow(QWidget *widget, WId winId = 0) const
 
     Factory function for QPlatformWindow. The widget parameter is a pointer to the top level
     widget(tlw) which the QPlatformWindow is suppose to be created for. The WId handle is actually
@@ -162,7 +162,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const
+    \fn QWindowSurface *QPlatformIntegration::createWindowSurface(QWidget *widget, WId winId) const
 
     Factory function for QWindowSurface. The QWidget parameter is a pointer to the
     top level widget(tlw) the window surface is created for. A QPlatformWindow is always created
@@ -175,7 +175,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn void moveToScreen(QWidget *window, int screen)
+    \fn void QPlatformIntegration::moveToScreen(QWidget *window, int screen)
 
     This function is called when a QWidget is displayed on screen, or the QWidget is to be
     displayed on a new screen. The QWidget parameter is a pointer to the top level widget and
@@ -187,14 +187,14 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QList<QPlatformScreen *> screens() const
+    \fn QList<QPlatformScreen *> QPlatformIntegration::screens() const
 
     Accessor function to a list of all the screens on the current system. The screen with the
     index == 0 is the default/main screen.
 */
 
 /*!
-    \fn bool isVirtualDesktop()
+    \fn bool QPlatformIntegration::isVirtualDesktop()
 
     Returns if the current windowing system configuration defines all the screens to be one
     desktop(virtual desktop), or if each screen is a desktop of its own.
@@ -203,7 +203,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QPixmap grabWindow(WId window, int x, int y, int width, int height) const
+    \fn QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 
     This function is called when Qt needs to be able to grab the content of a window.
 

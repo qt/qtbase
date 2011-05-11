@@ -478,7 +478,7 @@ static bool g_instantInvalidatePropagation = false;
 /*!
     \internal
     \since 4.8
-    \see instantInvalidatePropagation
+    \sa instantInvalidatePropagation()
 
     Calling this function with \a enable set to true will enable a feature that
     makes propagation of invalidation up to ancestor layout items to be done in
@@ -489,7 +489,7 @@ static bool g_instantInvalidatePropagation = false;
     invalid (not activated). This is the recommended behaviour.
 
     If not set it will also propagate up the parentLayoutItem() hierarchy, but
-    it will stop at the \i first \i widget it encounters, and post a layout
+    it will stop at the \e{first widget} it encounters, and post a layout
     request to the widget. When the layout request is consumed, this might
     cause it to continue propagation up to the parentLayoutItem() of the
     widget. It will continue in this fashion until it has reached a widget with
@@ -508,7 +508,7 @@ void QGraphicsLayout::setInstantInvalidatePropagation(bool enable)
 /*!
     \internal
     \since 4.8
-    \see setInstantInvalidatePropagation
+    \sa setInstantInvalidatePropagation()
 
     returns true if the complete widget/layout hierarchy is rearranged in one go.
 */

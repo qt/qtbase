@@ -142,7 +142,8 @@ QT_BEGIN_NAMESPACE
   characters.
  */
 
-/*! \fn operator QStringBuilder::QString() const
+/*!
+    \fn operator QStringBuilder::QString() const
  
     Converts the \c QLatin1Literal into a \c QString object.
 */

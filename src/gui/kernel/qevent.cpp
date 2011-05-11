@@ -3103,10 +3103,10 @@ QUrl QFileOpenEvent::url() const
 }
 
 /*!
-    \fn bool openFile(QFile &file, QIODevice::OpenMode flags) const
+    \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 
-    Opens a QFile on the file referenced by this event.
-    Returns true if successful; otherwise returns false.
+    Opens a QFile on the \a file referenced by this event in the mode specified
+    by \a flags. Returns true if successful; otherwise returns false.
 
     This is necessary as some files cannot be opened by name, but require specific
     information stored in this event.
