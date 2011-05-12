@@ -51,6 +51,13 @@ class QWaylandSelection;
 class QWaylandMimeData;
 struct wl_selection_offer;
 
+class QWaylandClipboardSignalEmitter : public QObject
+{
+    Q_OBJECT
+public slots:
+    void emitChanged();
+};
+
 class QWaylandClipboard : public QPlatformClipboard
 {
 public:
@@ -80,11 +87,11 @@ private:
     static void forceRoundtrip(struct wl_display *display);
 
     QWaylandDisplay *mDisplay;
-    QWaylandSelection *mSelection;
     QWaylandMimeData *mMimeDataIn;
     QList<QWaylandSelection *> mSelections;
     QStringList mOfferedMimeTypes;
     struct wl_selection_offer *mOffer;
+    QWaylandClipboardSignalEmitter mEmitter;
 };
 
 #endif // QWAYLANDCLIPBOARD_H
