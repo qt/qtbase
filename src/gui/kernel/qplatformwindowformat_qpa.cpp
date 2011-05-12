@@ -122,8 +122,6 @@ public:
     \i \link setStencil() Stencil buffer.\endlink
     \i \link setStereo() Stereo buffers.\endlink
     \i \link setDirectRendering() Direct rendering.\endlink
-    \i \link setOverlay() Presence of an overlay.\endlink
-    \i \link setPlane() Plane of an overlay.\endlink
     \i \link setSampleBuffers() Multisample buffers.\endlink
     \endlist
 
@@ -168,7 +166,7 @@ public:
         United States and other countries.
     \endlegalese
 
-    \sa QPlatformContext, QWidget
+    \sa QPlatformGLContext, QWidget
 */
 
 /*!
@@ -182,8 +180,6 @@ public:
     \i \link setStencil() Stencil buffer:\endlink Enabled.
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
     \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \endlist
 */
@@ -207,14 +203,10 @@ QPlatformWindowFormat::QPlatformWindowFormat()
     \snippet doc/src/snippets/code/src_opengl_qgl.cpp 3
 
     Note that there are QGL::FormatOption values to turn format settings
-    both on and off, e.g. QGL::DepthBuffer and QGL::NoDepthBuffer,
+    both on and off; e.g., QGL::DepthBuffer and QGL::NoDepthBuffer,
     QGL::DirectRendering and QGL::IndirectRendering, etc.
 
-    The \a plane parameter defaults to 0 and is the plane which this
-    format should be associated with. Not all OpenGL implementations
-    supports overlay/underlay rendering planes.
-
-    \sa defaultFormat(), setOption(), setPlane()
+    \sa defaultFormat(), setOption()
 */
 
 QPlatformWindowFormat::QPlatformWindowFormat(QPlatformWindowFormat::FormatOptions options)
@@ -619,8 +611,6 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
     Otherwise returns false.
 
     WindowSurface is enabled by default.
-
-    \sa setOverlay()
 */
 
 /*!
@@ -628,9 +618,7 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
 
     otherwise the QWidget will only have a QPlatformWindow.
 
-    This is useful for ie. QGLWidget where the QPlatformGLContext controls the surface.
-
-    \sa hasOverlay()
+    This is useful for QGLWidget where the QPlatformGLContext controls the surface.
 */
 
 void QPlatformWindowFormat::setWindowSurface(bool enable)
@@ -907,9 +895,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
     \i \link setStencil() Stencil buffer:\endlink Disabled.
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
     \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
     \endlist
 
     \sa setDefaultFormat()

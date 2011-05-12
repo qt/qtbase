@@ -234,10 +234,11 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
 
 /*!
     \since 4.8
-    \enum QDBusConnection::ConnectionCapabilities
-    The available capabilities for a D-Bus connection.
+    \enum QDBusConnection::ConnectionCapability
 
-    \value UnixFileDescriptorPassing        passing of Unix file descriptors to other processes
+    This enum describes the available capabilities for a D-Bus connection.
+
+    \value UnixFileDescriptorPassing        enables passing of Unix file descriptors to other processes
                                             (see QDBusUnixFileDescriptor)
 
     \sa connectionCapabilities()

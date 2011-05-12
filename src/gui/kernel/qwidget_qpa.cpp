@@ -681,8 +681,10 @@ int QWidget::metric(PaintDeviceMetric m) const
 /*!
     \preliminary
 
-    Sets the window to be the \a window specified.
-    The QWidget takes ownership of the \a surface.
+    Sets the window to be the platform \a window specified.
+
+    The widget takes ownership of the \a window. Any platform window
+    previously set on the widget will be destroyed.
 */
 void QWidget::setPlatformWindow(QPlatformWindow *window)
 {
@@ -711,6 +713,9 @@ QPlatformWindow *QWidget::platformWindow() const
     return 0;
 }
 
+/*!
+    Sets the platform window format for the widget to the \a format specified.
+*/
 void QWidget::setPlatformWindowFormat(const QPlatformWindowFormat &format)
 {
     if (isWindow() || testAttribute(Qt::WA_NativeWindow)) {
@@ -727,6 +732,9 @@ void QWidget::setPlatformWindowFormat(const QPlatformWindowFormat &format)
     }
 }
 
+/*!
+    Returns the platform window format for the widget.
+*/
 QPlatformWindowFormat QWidget::platformWindowFormat() const
 {
     Q_D(const QWidget);

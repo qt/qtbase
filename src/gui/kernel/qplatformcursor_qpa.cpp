@@ -89,9 +89,9 @@ QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
 */
 
 /*!
-    \fn QPlatformCursor::QPlatformCursor()
+    \fn QPlatformCursor::QPlatformCursor(QPlatformScreen *screen)
 
-    \brief Constructs a QPlatformCursor
+    Constructs a QPlatformCursor for the given \a screen.
 */
 QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
         : screen(scr)
@@ -615,22 +615,11 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
 /*!
     \fn QPlatformCursorImage::QPlatformCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
 
-    \brief set the cursor image to the graphic represented by the combination of data, mask,
-    width, and height
+    Sets the cursor image to the graphic represented by the combination of
+    \a data and \a mask, with dimensions given by \a width and \a height and a
+    hotspot at the point specified by (\a hotX, \a hotY).
 
-    \a data The pixel data of the graphic
-
-    \a mask Mask data for the graphic. pixels in data with a corresponding mask bit of 0 are not drawn
-
-    \a width The width of the graphic in pixels
-
-    \a height The height of the graphic in pixels
-
-    \a hotX The X hotspot of the cursor graphic
-
-    \a hotY The Y hotspot of the cursor graphic
-
-    \sa set
+    \sa set()
 */
 
 /*!

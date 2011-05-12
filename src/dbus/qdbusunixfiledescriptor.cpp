@@ -102,6 +102,16 @@ QT_BEGIN_NAMESPACE
     \sa QDBusConnection::ConnectionCapabilities, QDBusConnection::connectionCapabilities()
 */
 
+/*!
+    \typedef QDBusUnixFileDescriptor::Data
+    \internal
+*/
+
+/*!
+    \variable QDBusUnixFileDescriptor::d
+    \internal
+*/
+
 class QDBusUnixFileDescriptorPrivate : public QSharedData {
 public:
     QDBusUnixFileDescriptorPrivate() : fd(-1) { }

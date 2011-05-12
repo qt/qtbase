@@ -769,6 +769,8 @@
   \value Weekdays a QList<Qt::DayOfWeek> specifying the regular weekdays
   \value LocaleChanged this type is queried whenever the system locale is changed.
   \value ListToSeparatedString a string that represents a join of a given QStringList with a locale-defined separator.
+  \value NativeLanguageName a string that represents the name of the native language.
+  \value NativeCountryName a string that represents the name of the native country.
 */
 
 /*!
