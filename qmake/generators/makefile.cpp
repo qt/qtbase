@@ -2647,10 +2647,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
                 QString out_directory_cdin, out_directory_cdout;
                 MAKE_CD_IN_AND_OUT(out_directory);
 
-                //don't need the makefile arg if it isn't changed
-                QString makefilein;
-                if(subtarget->makefile != "$(MAKEFILE)")
-                    makefilein = " -f " + subtarget->makefile;
+                QString makefilein = " -f " + subtarget->makefile;
 
                 //write the rule/depends
                 if(flags & SubTargetOrdered) {
