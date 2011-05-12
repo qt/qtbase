@@ -3,6 +3,8 @@
 #include <qdebug.h>
 #include <math.h>
 
+QT_BEGIN_NAMESPACE
+
 #if 0
 inline QString capString(int caps)
 {
@@ -952,3 +954,5 @@ static void drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         }
     }
 }
+
+QT_END_NAMESPACE
