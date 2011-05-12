@@ -61,10 +61,10 @@
 #include "QtGui/qtextlayout.h"
 #include "QtGui/qstyleoption.h"
 #include "QtCore/qpointer.h"
-#include "QtGui/qlineedit.h"
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
 #include "QtGui/qcompleter.h"
+#include "QtGui/qaccessible.h"
 
 QT_BEGIN_HEADER
 

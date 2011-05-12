@@ -111,8 +111,8 @@ public:
         TableSummaryChanged,
         TextAttributeChanged,
         TextCaretMoved,
-        TextChanged,
-        TextColumnChanged,
+        // TextChanged, deprecated, use TextUpdated
+        TextColumnChanged = TextCaretMoved + 2,
         TextInserted,
         TextRemoved,
         TextUpdated,
