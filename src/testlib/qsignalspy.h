@@ -68,8 +68,15 @@ public:
 #else
         static const int memberOffset = QObject::staticMetaObject.methodCount();
 #endif
-        Q_ASSERT(obj);
-        Q_ASSERT(aSignal);
+        if (!obj) {
+            qWarning("QSignalSpy: Cannot spy on a null object");
+            return;
+        }
+
+        if (!aSignal) {
+            qWarning("QSignalSpy: Null signal name is not valid");
+            return;
+        }
 
         if (((aSignal[0] - '0') & 0x03) != QSIGNAL_CODE) {
             qWarning("QSignalSpy: Not a valid signal, use the SIGNAL macro");
