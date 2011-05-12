@@ -585,9 +585,9 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
     \since 4.8
 
     The default cursor movement style is used by all QTextCursor objects
-    created from the document. The default is QTextCursor::Logical.
+    created from the document. The default is Qt::LogicalMoveStyle.
 */
-QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle() const
+Qt::CursorMoveStyle QTextDocument::defaultCursorMoveStyle() const
 {
     Q_D(const QTextDocument);
     return d->defaultCursorMoveStyle;
@@ -598,7 +598,7 @@ QTextCursor::MoveStyle QTextDocument::defaultCursorMoveStyle() const
 
     Set the default cursor movement style.
 */
-void QTextDocument::setDefaultCursorMoveStyle(QTextCursor::MoveStyle style)
+void QTextDocument::setDefaultCursorMoveStyle(Qt::CursorMoveStyle style)
 {
     Q_D(QTextDocument);
     d->defaultCursorMoveStyle = style;

@@ -90,6 +90,8 @@ public:
 
     QVector<quint32> glyphIndexesForString(const QString &text) const;
     QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
+    bool glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const;
+    bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const;
 
     QImage alphaMapForGlyph(quint32 glyphIndex,
                             AntialiasingType antialiasingType = SubPixelAntialiasing,

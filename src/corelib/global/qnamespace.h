@@ -94,6 +94,7 @@ Qt {
     Q_ENUMS(GestureState)
     Q_ENUMS(GestureType)
 #endif
+    Q_ENUMS(CursorMoveStyle)
 #endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
 
 #if defined(Q_MOC_RUN)
@@ -1727,6 +1728,11 @@ public:
         NavigationModeKeypadDirectional,
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
+    };
+
+    enum CursorMoveStyle {
+        LogicalMoveStyle,
+        VisualMoveStyle
     };
 }
 #ifdef Q_MOC_RUN

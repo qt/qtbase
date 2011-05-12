@@ -6,13 +6,14 @@ HEADERS += \
         painting/qcolor.h \
         painting/qcolor_p.h \
         painting/qcolormap.h \
+        painting/qcosmeticstroker_p.h \
         painting/qemulationpaintengine_p.h \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
-		painting/qpaintengine_p.h \
+        painting/qpaintengine_p.h \
         painting/qpaintengine_alpha_p.h \
         painting/qpaintengine_preview_p.h \
         painting/qpaintengineex_p.h \
@@ -47,6 +48,7 @@ SOURCES += \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
         painting/qcolor_p.cpp \
+        painting/qcosmeticstroker.cpp \
         painting/qcssutil.cpp \
         painting/qemulationpaintengine.cpp \
         painting/qmatrix.cpp \

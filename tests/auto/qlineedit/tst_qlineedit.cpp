@@ -3815,7 +3815,7 @@ void tst_QLineEdit::bidiVisualMovement()
     QLineEdit le;
     le.setText(logical);
 
-    le.setCursorMoveStyle(QTextCursor::Visual);
+    le.setCursorMoveStyle(Qt::VisualMoveStyle);
     le.setCursorPosition(0);
 
     bool moved;
@@ -3863,7 +3863,7 @@ void tst_QLineEdit::bidiLogicalMovement()
     QLineEdit le;
     le.setText(logical);
 
-    le.setCursorMoveStyle(QTextCursor::Logical);
+    le.setCursorMoveStyle(Qt::LogicalMoveStyle);
     le.setCursorPosition(0);
 
     bool moved;

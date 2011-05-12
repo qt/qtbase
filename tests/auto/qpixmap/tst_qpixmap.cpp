@@ -196,6 +196,7 @@ private slots:
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     void vgImageReadBack();
 #endif
+    void scaled_QTBUG19157();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1896,6 +1897,13 @@ void tst_QPixmap::vgImageReadBack()
     }
 }
 #endif // Symbian & OpenVG
+
+void tst_QPixmap::scaled_QTBUG19157()
+{
+    QPixmap foo(5000, 1);
+    foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
+    QVERIFY(!foo.isNull());
+}
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

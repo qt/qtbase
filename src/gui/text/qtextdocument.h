@@ -46,7 +46,6 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qfont.h>
-#include <QtGui/qtextcursor.h>
 
 QT_BEGIN_HEADER
 
@@ -70,6 +69,7 @@ class QUrl;
 class QVariant;
 class QRectF;
 class QTextOption;
+class QTextCursor;
 
 template<typename T> class QVector;
 
@@ -269,8 +269,8 @@ public:
     QTextOption defaultTextOption() const;
     void setDefaultTextOption(const QTextOption &option);
 
-    QTextCursor::MoveStyle defaultCursorMoveStyle() const;
-    void setDefaultCursorMoveStyle(QTextCursor::MoveStyle style);
+    Qt::CursorMoveStyle defaultCursorMoveStyle() const;
+    void setDefaultCursorMoveStyle(Qt::CursorMoveStyle style);
 
 Q_SIGNALS:
     void contentsChange(int from, int charsRemoves, int charsAdded);

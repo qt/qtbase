@@ -11,6 +11,8 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
+HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
+
 include(kernel/kernel.pri)
 include(image/image.pri)
 include(text/text.pri)

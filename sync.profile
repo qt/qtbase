@@ -28,6 +28,15 @@
     "qtconcurrentmap.h" => "QtConcurrentMap",
     "qtconcurrentfilter.h" => "QtConcurrentFilter",
     "qtconcurrentrun.h" => "QtConcurrentRun",
+    "qtcoreversion.h" => "QtCoreVersion",
+    "qtdbusversion.h" => "QtDBusVersion",
+    "qtguiversion.h" => "QtGuiVersion",
+    "qtnetworkversion.h" => "QtNetworkVersion",
+    "qtopenglversion.h" => "QtOpenGLVersion",
+    "qtopenvgversion.h" => "QtOpenVGVersion",
+    "qtsqlversion.h" => "QtSqlVersion",
+    "qttestversion.h" => "QtTestVersion",
+    "qtxmlversion.h" => "QtXmlVersion",
 );
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",

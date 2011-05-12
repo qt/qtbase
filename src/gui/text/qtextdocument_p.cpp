@@ -209,7 +209,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    defaultCursorMoveStyle = QTextCursor::Logical;
+    defaultCursorMoveStyle = Qt::LogicalMoveStyle;
 
     indentWidth = 40;
     documentMargin = 4;

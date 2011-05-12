@@ -577,27 +577,27 @@ bool QTextLayout::cacheEnabled() const
 }
 
 /*!
-    Set the visual cursor movement style. If the QTextLayout is backed by
+    Set the cursor movement style. If the QTextLayout is backed by
     a document, you can ignore this and use the option in QTextDocument,
     this option is for widgets like QLineEdit or custom widgets without
-    a QTextDocument. Default value is QTextCursor::Logical.
+    a QTextDocument. Default value is Qt::LogicalMoveStyle.
 
     \sa setCursorMoveStyle()
 */
-void QTextLayout::setCursorMoveStyle(QTextCursor::MoveStyle style)
+void QTextLayout::setCursorMoveStyle(Qt::CursorMoveStyle style)
 {
-    d->visualMovement = style == QTextCursor::Visual ? true : false;
+    d->visualMovement = style == Qt::VisualMoveStyle ? true : false;
 }
 
 /*!
     The cursor movement style of this QTextLayout. The default is
-    QTextCursor::Logical.
+    Qt::LogicalMoveStyle.
 
     \sa setCursorMoveStyle()
 */
-QTextCursor::MoveStyle QTextLayout::cursorMoveStyle() const
+Qt::CursorMoveStyle QTextLayout::cursorMoveStyle() const
 {
-    return d->visualMovement ? QTextCursor::Visual : QTextCursor::Logical;
+    return d->visualMovement ? Qt::VisualMoveStyle : Qt::LogicalMoveStyle;
 }
 
 /*!

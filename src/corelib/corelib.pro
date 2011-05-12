@@ -11,6 +11,9 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 include(../qbase.pri)
+
+HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
+
 include(animation/animation.pri)
 include(arch/arch.pri)
 include(concurrent/concurrent.pri)

@@ -362,7 +362,7 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     currentCharFormat = -1;
     bool adjustX = true;
     QTextBlock blockIt = block();
-    bool visualMovement = priv->defaultCursorMoveStyle == QTextCursor::Visual;
+    bool visualMovement = priv->defaultCursorMoveStyle == Qt::VisualMoveStyle;
 
     if (!blockIt.isValid())
         return false;
@@ -2568,18 +2568,18 @@ QTextDocument *QTextCursor::document() const
 }
 
 /*!
-    \enum QTextCursor::MoveStyle
+    \enum Qt::CursorMoveStyle
 
-    This enum describes the movement style available to QTextCursor. The options
+    This enum describes the movement style available to text cursors. The options
     are:
 
-    \value Logical Within a left-to-right text block, increase cursor position
-    when pressing left arrow key, decrease cursor position when pressing the
-    right arrow key. If the text block is right-to-left, the opposite behavior
+    \value LogicalMoveStyle Within a left-to-right text block, decrease cursor
+    position when pressing left arrow key, increase cursor position when pressing
+    the right arrow key. If the text block is right-to-left, the opposite behavior
     applies.
-    \value Visual Pressing the left arrow key will always cause the cursor to move
-    left, regardless of the text's writing direction. The same behavior applies to
-    right arrow key.
+    \value VisualMoveStyle Pressing the left arrow key will always cause the cursor
+    to move left, regardless of the text's writing direction. Pressing the right
+    arrow key will always cause the cursor to move right.
 */
 
 QT_END_NAMESPACE

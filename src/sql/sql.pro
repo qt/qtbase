@@ -13,6 +13,8 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
+HEADERS += $$QT_SOURCE_TREE/src/sql/qtsqlversion.h
+
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 SQL_P = sql

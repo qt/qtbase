@@ -3974,6 +3974,8 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
 
     QSize newSize = size();
     newSize.scale(s, aspectMode);
+    newSize.rwidth() = qMax(newSize.width(), 1);
+    newSize.rheight() = qMax(newSize.height(), 1);
     if (newSize == size())
         return *this;
 

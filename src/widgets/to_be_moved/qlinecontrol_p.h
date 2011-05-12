@@ -160,8 +160,8 @@ public:
     int cursorWidth() const { return m_cursorWidth; }
     void setCursorWidth(int value) { m_cursorWidth = value; }
 
-    QTextCursor::MoveStyle cursorMoveStyle() const { return m_textLayout.cursorMoveStyle(); }
-    void setCursorMoveStyle(QTextCursor::MoveStyle style) { m_textLayout.setCursorMoveStyle(style); }
+    Qt::CursorMoveStyle cursorMoveStyle() const { return m_textLayout.cursorMoveStyle(); }
+    void setCursorMoveStyle(Qt::CursorMoveStyle style) { m_textLayout.setCursorMoveStyle(style); }
 
     void moveCursor(int pos, bool mark = false);
     void cursorForward(bool mark, int steps)
@@ -169,11 +169,11 @@ public:
         int c = m_cursor;
         if (steps > 0) {
             while (steps--)
-                c = cursorMoveStyle() == QTextCursor::Visual ? m_textLayout.rightCursorPosition(c)
+                c = cursorMoveStyle() == Qt::VisualMoveStyle ? m_textLayout.rightCursorPosition(c)
                                                              : m_textLayout.nextCursorPosition(c);
         } else if (steps < 0) {
             while (steps++)
-                c = cursorMoveStyle() == QTextCursor::Visual ? m_textLayout.leftCursorPosition(c)
+                c = cursorMoveStyle() == Qt::VisualMoveStyle ? m_textLayout.leftCursorPosition(c)
                                                              : m_textLayout.previousCursorPosition(c);
         }
         moveCursor(c, mark);

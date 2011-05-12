@@ -4,6 +4,7 @@ HEADERS += \
 	itemviews/qabstractitemview.h \
     itemviews/qabstractitemview_p.h \
 	itemviews/qheaderview.h \
+	itemviews/qidentityproxymodel.h \
 	itemviews/qlistview.h \
 	itemviews/qlistview_p.h \
 	itemviews/qbsptree_p.h \
@@ -12,14 +13,14 @@ HEADERS += \
 	itemviews/qtreeview.h \
 	itemviews/qtreeview_p.h \
 	itemviews/qabstractitemdelegate.h \
-	itemviews/qitemdelegate.h \
+        itemviews/qitemdelegate.h \
 	itemviews/qitemselectionmodel.h \
 	itemviews/qitemselectionmodel_p.h \
 	itemviews/qdirmodel.h \
 	itemviews/qlistwidget.h \
 	itemviews/qlistwidget_p.h \
 	itemviews/qtablewidget.h \
-    itemviews/qtablewidget_p.h \
+        itemviews/qtablewidget_p.h \
 	itemviews/qtreewidget.h \
 	itemviews/qtreewidget_p.h \
 	itemviews/qwidgetitemdata_p.h \
@@ -44,12 +45,13 @@ HEADERS += \
 SOURCES += \
 	itemviews/qabstractitemview.cpp \
 	itemviews/qheaderview.cpp \
+	itemviews/qidentityproxymodel.cpp \
 	itemviews/qlistview.cpp \
 	itemviews/qbsptree.cpp \
 	itemviews/qtableview.cpp \
 	itemviews/qtreeview.cpp \
 	itemviews/qabstractitemdelegate.cpp \
-	itemviews/qitemdelegate.cpp \
+        itemviews/qitemdelegate.cpp \
 	itemviews/qitemselectionmodel.cpp \
 	itemviews/qdirmodel.cpp \
 	itemviews/qlistwidget.cpp \

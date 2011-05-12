@@ -1260,4 +1260,12 @@ EXPORTS
 	_ZN4QFtp25staticMetaObjectExtraDataE @ 1259 NONAME DATA 8
 	_ZN5QHttp18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv @ 1260 NONAME
 	_ZN5QHttp25staticMetaObjectExtraDataE @ 1261 NONAME DATA 8
+	_ZN18QNetworkProxyQuery23setNetworkConfigurationERK21QNetworkConfiguration @ 1262 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationRK4QUrlNS_9QueryTypeE @ 1263 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationRK7QStringiS5_NS_9QueryTypeE @ 1264 NONAME
+	_ZN18QNetworkProxyQueryC1ERK21QNetworkConfigurationtRK7QStringNS_9QueryTypeE @ 1265 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationRK4QUrlNS_9QueryTypeE @ 1266 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationRK7QStringiS5_NS_9QueryTypeE @ 1267 NONAME
+	_ZN18QNetworkProxyQueryC2ERK21QNetworkConfigurationtRK7QStringNS_9QueryTypeE @ 1268 NONAME
+	_ZNK18QNetworkProxyQuery20networkConfigurationEv @ 1269 NONAME
 

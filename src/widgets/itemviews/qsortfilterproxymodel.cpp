@@ -1502,7 +1502,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
     \l{Model Subclassing Reference}.
 
     \sa QAbstractProxyModel, QAbstractItemModel, {Model/View Programming},
-    {Basic Sort/Filter Model Example}, {Custom Sort/Filter Model Example}
+    {Basic Sort/Filter Model Example}, {Custom Sort/Filter Model Example}, QIdentityProxyModel
 */
 
 /*!

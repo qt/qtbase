@@ -85,6 +85,9 @@ qpa:mac: {
 }
 
 include(../qbase.pri)
+
+HEADERS += $$QT_SOURCE_TREE/src/testlib/qttestlibversion.h
+
 QMAKE_TARGET_PRODUCT = QTestLib
 QMAKE_TARGET_DESCRIPTION = Qt \
     Unit \

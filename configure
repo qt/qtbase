@@ -5774,7 +5774,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 fi # X11/QWS/Lighthouse
 
 # X11
-if [ "$PLATFORM_X11" = "yes" ]; then
+if [ "$PLATFORM_X11" = "yes" -a "$CFG_GUI" != "no" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
 
@@ -8438,7 +8438,7 @@ if [ -n "$QT_CFLAGS_FPU" ]; then
 fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
-    echo "\n#Qt opengl include path" >> "$QTCONFIG.tmp"
+    echo "#Qt opengl include path" >> "$QTCONFIG.tmp"
     echo "QMAKE_INCDIR_OPENGL_ES2 = \"$QMAKE_INCDIR_OPENGL_ES2\"" >> "$QTCONFIG.tmp"
 fi
 

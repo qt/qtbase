@@ -2292,7 +2292,7 @@ void tst_QTextEdit::bidiVisualMovement()
     option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
     ed->document()->setDefaultTextOption(option);
 
-    ed->document()->setDefaultCursorMoveStyle(QTextCursor::Visual);
+    ed->document()->setDefaultCursorMoveStyle(Qt::VisualMoveStyle);
     ed->moveCursor(QTextCursor::Start);
     ed->show();
 
@@ -2346,7 +2346,7 @@ void tst_QTextEdit::bidiLogicalMovement()
     option.setTextDirection(basicDir == QChar::DirL ? Qt::LeftToRight : Qt::RightToLeft);
     ed->document()->setDefaultTextOption(option);
 
-    ed->document()->setDefaultCursorMoveStyle(QTextCursor::Logical);
+    ed->document()->setDefaultCursorMoveStyle(Qt::LogicalMoveStyle);
     ed->moveCursor(QTextCursor::Start);
     ed->show();
 
