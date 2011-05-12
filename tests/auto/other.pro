@@ -10,8 +10,7 @@ SUBDIRS=\
            qalgorithms \
            qcombobox \
            qcssparser \
-           #qdatastream \      # FIXME: cannot be enabled by default in qtbase,
-                               # since it depends on qtsvg
+           #qdatastream \      # FIXME: uses qtsvg (QTBUG-19244)
            qdir \
            qfocusevent \
            qimage \
