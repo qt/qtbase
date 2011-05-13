@@ -5,8 +5,6 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 QT += core-private gui-private
 
-QT+=gui-private core-private
-
 SOURCES = \
         qxcbconnection.cpp \
         qxcbintegration.cpp \
