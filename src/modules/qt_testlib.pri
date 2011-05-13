@@ -1,6 +1,6 @@
-QT.testlib.VERSION = 4.8.0
-QT.testlib.MAJOR_VERSION = 4
-QT.testlib.MINOR_VERSION = 8
+QT.testlib.VERSION = 5.0.0
+QT.testlib.MAJOR_VERSION = 5
+QT.testlib.MINOR_VERSION = 0
 QT.testlib.PATCH_VERSION = 0
 
 QT.testlib.name = QtTest

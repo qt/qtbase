@@ -1,5 +1,5 @@
 ********* Start testing of tst_Skip *********
-Config: Using QTest library 4.8.0, Qt 4.8.0
+Config: Using QTest library 5.0.0, Qt 5.0.0
 PASS   : tst_Skip::initTestCase()
 SKIP   : tst_Skip::test() skipping all
    Loc: [/home/user/depot/qt-git/mainline/tests/auto/selftests/skip/tst_skip.cpp(68)]
