@@ -1071,7 +1071,7 @@ foreach my $lib (@modules_to_sync) {
             if (-e $modulepri) {
                 my $modulepriname = basename($modulepri);
                 my $moduleprifwd = "$qtbasedir/mkspecs/modules/$modulepriname";
-                open MODULE_PRI_FILE, ">$moduleprifwd";
+                open MODULE_PRI_FILE, ">$moduleprifwd" or die("Could not open $moduleprifwd for writing");
                 print MODULE_PRI_FILE "QT_MODULE_BASE = $basedir\n";
                 print MODULE_PRI_FILE "QT_MODULE_BIN_BASE = $qtbasedir/bin\n";
                 print MODULE_PRI_FILE "QT_MODULE_INCLUDE_BASE = $out_basedir/include\n";
