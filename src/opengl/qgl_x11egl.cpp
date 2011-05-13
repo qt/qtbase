@@ -257,6 +257,20 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     return true;
 }
 
+void *QGLContext::chooseVisual()
+{
+    qFatal("QGLContext::chooseVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
+}
+
+void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
+{
+    Q_UNUSED(f);
+    Q_UNUSED(bufDepth);
+    qFatal("QGLContext::tryVisual - this method must not be called as Qt is built with EGL support");
+    return 0;
+}
+
 void QGLWidget::resizeEvent(QResizeEvent *)
 {
     Q_D(QGLWidget);
