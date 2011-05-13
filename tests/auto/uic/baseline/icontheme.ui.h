@@ -2,7 +2,7 @@
 ** Form generated from reading UI file 'icontheme.ui'
 **
 ** Created: Thu Sep 2 10:28:19 2010
-**      by: Qt User Interface Compiler version 4.8.0
+**      by: Qt User Interface Compiler version 5.0.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/

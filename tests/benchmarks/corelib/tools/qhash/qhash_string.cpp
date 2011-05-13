@@ -51,7 +51,7 @@ string is a good idea.
 ////////////////////////////////////////////////////////////////////
 
 ********* Start testing of tst_QHash *********
-Config: Using QTest library 4.8.0, Qt 4.8.0
+Config: Using QTest library 5.0.0, Qt 5.0.0
 PASS   : tst_QHash::initTestCase()
 RESULT : tst_QHash::qhash_qt4():
      0.041 msecs per iteration (total: 85, iterations: 2048)
