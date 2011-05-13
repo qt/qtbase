@@ -3,7 +3,7 @@ SUBDIRS=\
            compiler \
            headersclean \
            maketestselftest \
-           #moc \           # FIXME: uses qtsvg (QTBUG-19243)
+           moc \
            uic \
            qmake \
            rcc \
