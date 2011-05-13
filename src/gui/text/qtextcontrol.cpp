@@ -677,7 +677,7 @@ void QTextControlPrivate::extendWordwiseSelection(int suggestedNewPosition, qrea
 
     const qreal wordEndX = line.cursorToX(curs.position() - blockPos) + blockCoordinates.x();
 
-    if (mouseXPosition < wordStartX || mouseXPosition > wordEndX)
+    if (!wordSelectionEnabled && (mouseXPosition < wordStartX || mouseXPosition > wordEndX))
         return;
 
     // keep the already selected word even when moving to the left
