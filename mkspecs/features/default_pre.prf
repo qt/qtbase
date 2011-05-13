@@ -12,13 +12,6 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
     isEmpty(QTDIR) {
         QTDIR = $$(QTDIR)
         isEmpty(QTDIR):QTDIR = $$QT_BUILD_TREE
-        isEmpty(QTDIR):QTDIR = $$dirname(_QMAKE_CACHE_)
-        isEmpty(QTDIR) {
-            QMAKE_BASED_QTDIR = $$dirname(QMAKE_QMAKE)
-            QMAKE_BASED_QTDIR = $$dirname(QMAKE_BASED_QTDIR)
-            exists($$QMAKE_BASED_QTDIR/mkspecs/qconfig.pri): QTDIR = $$QMAKE_BASED_QTDIR
-            unset(QMAKE_BASED_QTDIR)
-        }
     }
 
     isEmpty(QTDIR):QTFWD="-no-module-fwd"
