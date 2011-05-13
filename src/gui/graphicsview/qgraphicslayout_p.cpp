@@ -180,9 +180,14 @@ void QGraphicsLayoutPrivate::activateRecursive(QGraphicsLayoutItem *item)
 {
     if (item->isLayout()) {
         QGraphicsLayout *layout = static_cast<QGraphicsLayout *>(item);
-        if (layout->d_func()->activated)
-            layout->invalidate();
-
+        if (layout->d_func()->activated) {
+            if (QGraphicsLayout::instantInvalidatePropagation()) {
+                return;
+            } else {
+                layout->invalidate();   // ### LOOKS SUSPICIOUSLY WRONG!!???
+            }
+        }
+        
         for (int i = layout->count() - 1; i >= 0; --i) {
             QGraphicsLayoutItem *childItem = layout->itemAt(i);
             if (childItem)

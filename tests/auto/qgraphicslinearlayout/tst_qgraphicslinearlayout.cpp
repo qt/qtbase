@@ -94,6 +94,7 @@ private slots:
     void itemSpacing();
     void setStretchFactor_data();
     void setStretchFactor();
+    void testStretch();
     void defaultStretchFactors_data();
     void defaultStretchFactors();
     void sizeHint_data();
@@ -667,6 +668,10 @@ void tst_QGraphicsLinearLayout::invalidate()
     layout.setContentsMargins(0, 0, 0, 0);
     view.show();
     widget->show();
+    //QTest::qWait(1000);
+    QTest::qWaitForWindowShown(&view);
+    qApp->processEvents();
+    layout.layoutRequest = 0;
 
     layout.setContentsMargins(1, 2, 3, 4);
     QApplication::sendPostedEvents(0, 0);
@@ -1128,6 +1133,41 @@ void tst_QGraphicsLinearLayout::setStretchFactor()
     QCOMPARE(sumExtent, totalSize);
 
     delete widget;
+}
+
+void tst_QGraphicsLinearLayout::testStretch()
+{
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene);
+    QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
+
+    scene.addItem(form);
+    form->setMinimumSize(600, 600);
+    form->setMaximumSize(600, 600);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Horizontal, form);
+    QGraphicsWidget *w1 = new RectWidget;
+    w1->setPreferredSize(100,100);
+    w1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QGraphicsWidget *w2 = new RectWidget;
+    w2->setPreferredSize(200,200);
+    w2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addItem(w1);
+    layout->addStretch(2);
+    layout->addItem(w2);
+    QCOMPARE(layout->count(), 2);
+    QVERIFY(layout->itemAt(0) == w1);
+    QVERIFY(layout->itemAt(1) == w2);
+    layout->activate();
+
+    //view->setSceneRect(-50, -50, 800, 800);
+    //view->show();
+    //QTest::qWaitForWindowShown(view);
+    //QTest::qWait(5000);
+    QCOMPARE(form->geometry().size(), QSizeF(600,600));
+    QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));
+    QCOMPARE(w2->geometry(), QRectF(400, 0, 200, 200));
 }
 
 void tst_QGraphicsLinearLayout::defaultStretchFactors_data()

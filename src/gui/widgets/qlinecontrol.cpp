@@ -651,7 +651,12 @@ void QLineControl::internalSetText(const QString &txt, int pos, bool edited)
     m_modifiedState =  m_undoState = 0;
     m_cursor = (pos < 0 || pos > m_text.length()) ? m_text.length() : pos;
     m_textDirty = (oldText != m_text);
-    finishChange(-1, true, edited);
+    bool changed = finishChange(-1, true, edited);
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (changed)
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextUpdated);
+#endif
 }
 
 
@@ -1238,6 +1243,9 @@ void QLineControl::emitCursorPositionChanged()
         const int oldLast = m_lastCursorPos;
         m_lastCursorPos = m_cursor;
         cursorPositionChanged(oldLast, m_cursor);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(parent(), 0, QAccessible::TextCaretMoved);
+#endif
     }
 }
 

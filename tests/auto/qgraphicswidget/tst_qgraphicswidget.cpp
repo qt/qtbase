@@ -186,7 +186,6 @@ private slots:
     void task250119_shortcutContext();
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
     void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
-    void QT_BUG_13865_doublePaintWhenAddingASubItem();
 };
 
 
@@ -3366,46 +3365,6 @@ void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
 
     //This should not crash
 }
-
-
-struct GreenWidget : public QGraphicsWidget
-{
-    GreenWidget() : count(0)
-    {
-    }
-
-    void paint ( QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * )
-    {
-        count++;
-        painter->setPen(Qt::green);
-        painter->drawRect(option->rect.adjusted(0,0,-1,-1));
-    }
-
-    int count;
-};
-
-void tst_QGraphicsWidget::QT_BUG_13865_doublePaintWhenAddingASubItem()
-{
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    QGraphicsWidget *widget =  new QGraphicsWidget;
-    widget->resize(100, 100);
-    scene.addItem(widget);
-    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(widget);
-
-    view.show();
-    QTest::qWaitForWindowShown(&view);
-    QApplication::processEvents();
-
-
-    GreenWidget *sub =  new GreenWidget;
-    layout->addItem(sub);
-
-    QTest::qWait(100);
-    QCOMPARE(sub->count, 1); //it should only be painted once
-
-}
-
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

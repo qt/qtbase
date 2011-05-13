@@ -69,6 +69,7 @@ private slots:
     void simple_lib();
     void simple_dll();
     void subdirs();
+    void subdir_via_pro_file_extra_target();
     void functions();
     void operators();
     void variables();
@@ -232,6 +233,19 @@ void tst_qmake::subdirs()
     // properly
     QVERIFY( test_compiler.makeDistClean( workDir ));
     QVERIFY( test_compiler.removeMakefile( workDir ) );
+}
+
+void tst_qmake::subdir_via_pro_file_extra_target()
+{
+    QString workDir = base_path + "/testdata/subdir_via_pro_file_extra_target";
+
+    QDir D;
+    D.remove( workDir + "/Makefile");
+    D.remove( workDir + "/Makefile.subdir");
+    D.remove( workDir + "/simple/Makefile");
+    D.remove( workDir + "/simple/Makefile.subdir");
+    QVERIFY( test_compiler.qmake( workDir, "subdir_via_pro_file_extra_target" ));
+    QVERIFY( test_compiler.make( workDir, "extratarget" ));
 }
 
 void tst_qmake::functions()
