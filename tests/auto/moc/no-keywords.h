@@ -51,7 +51,7 @@
 #include <QtCore>
 #include <QtNetwork/QtNetwork>
 #include <QtSql/QtSql>
-#include <QtSvg>
+//#include <QtSvg>
 #if defined(QT3_SUPPORT)
 #include <Qt3Support>
 #endif
