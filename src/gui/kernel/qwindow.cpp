@@ -89,6 +89,8 @@ void QWindow::create()
         d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
         if (!d->windowTitle.isNull())
             d->platformWindow->setWindowTitle(d->windowTitle);
+        if (d->windowState != Qt::WindowNoState)
+            d->windowState = d->platformWindow->setWindowState(d->windowState);
 
         QObjectList childObjects = children();
         for (int i = 0; i < childObjects.size(); i ++) {
@@ -232,16 +234,24 @@ void QWindow::requestActivateWindow()
     }
 }
 
-Qt::WindowStates QWindow::windowState() const
+Qt::WindowState QWindow::windowState() const
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
-    return Qt::WindowNoState;
+    Q_D(const QWindow);
+    return d->windowState;
 }
 
-void QWindow::setWindowState(Qt::WindowStates state)
+void QWindow::setWindowState(Qt::WindowState state)
 {
-    Q_UNUSED(state);
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    if (state == Qt::WindowActive) {
+        requestActivateWindow();
+        return;
+    }
+
+    Q_D(QWindow);
+    if (d->platformWindow)
+        d->windowState = d->platformWindow->setWindowState(state);
+    else
+        d->windowState = state;
 }
 
 QSize QWindow::minimumSize() const

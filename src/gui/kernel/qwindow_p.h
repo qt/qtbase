@@ -64,6 +64,7 @@ public:
         , visible(false)
         , glContext(0)
         , surface(0)
+        , windowState(Qt::WindowNoState)
     {
         isWindow = true;
     }
@@ -82,6 +83,7 @@ public:
     QRect geometry;
     QWindowContext *glContext;
     QWindowSurface *surface;
+    Qt::WindowState windowState;
 };
 
 

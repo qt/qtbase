@@ -62,6 +62,7 @@ public:
 
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    Qt::WindowState setWindowState(Qt::WindowState state);
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 
@@ -93,6 +94,7 @@ public:
 
 private:
     void setNetWmWindowTypes(Qt::WindowFlags flags);
+    void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
 
     QXcbScreen *m_screen;
 
@@ -103,6 +105,7 @@ private:
     xcb_sync_counter_t m_syncCounter;
 
     bool m_hasReceivedSyncRequest;
+    Qt::WindowState m_windowState;
 };
 
 #endif

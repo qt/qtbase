@@ -443,7 +443,7 @@ void QWidgetPrivate::setFullScreenSize_helper()
     data.in_set_window_state = old_state;
 }
 
-static Qt::WindowStates effectiveState(Qt::WindowStates state)
+static Qt::WindowState effectiveState(Qt::WindowStates state)
  {
      if (state & Qt::WindowMinimized)
          return Qt::WindowMinimized;
@@ -466,8 +466,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     data->window_state = newstate;
     data->in_set_window_state = 1;
     bool needShow = false;
-    Qt::WindowStates newEffectiveState = effectiveState(newstate);
-    Qt::WindowStates oldEffectiveState = effectiveState(oldstate);
+    Qt::WindowState newEffectiveState = effectiveState(newstate);
+    Qt::WindowState oldEffectiveState = effectiveState(oldstate);
     if (isWindow() && newEffectiveState != oldEffectiveState) {
         d->createTLExtra();
         if (oldEffectiveState == Qt::WindowNoState) { //normal
@@ -479,24 +479,32 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             needShow = true;
         }
 
-        if (newEffectiveState == Qt::WindowMinimized) {
-            //### not ideal...
-            hide();
-            needShow = false;
-        } else if (newEffectiveState == Qt::WindowFullScreen) {
-            d->topData()->savedFlags = windowFlags();
-            setParent(0, Qt::FramelessWindowHint | (windowFlags() & Qt::WindowStaysOnTopHint));
-            d->setFullScreenSize_helper();
-            raise();
-            needShow = true;
-        } else if (newEffectiveState == Qt::WindowMaximized) {
-            createWinId();
-            d->setMaxWindowState_helper();
-        } else { //normal
-            QRect r = d->topData()->normalGeometry;
-            if (r.width() >= 0) {
-                d->topData()->normalGeometry = QRect(0,0,-1,-1);
-                setGeometry(r);
+        Q_ASSERT(windowHandle());
+        windowHandle()->setWindowState(newEffectiveState);
+        bool supported = windowHandle()->windowState() == newEffectiveState;
+
+        if (!supported) {
+            // emulate the window state
+            if (newEffectiveState == Qt::WindowMinimized) {
+                //### not ideal...
+                hide();
+                needShow = false;
+            } else if (newEffectiveState == Qt::WindowFullScreen) {
+                d->topData()->savedFlags = windowFlags();
+                setParent(0, Qt::FramelessWindowHint | (windowFlags() & Qt::WindowStaysOnTopHint));
+                d->setFullScreenSize_helper();
+                raise();
+                needShow = true;
+            } else if (newEffectiveState == Qt::WindowMaximized) {
+                createWinId();
+                d->setMaxWindowState_helper();
+            } else if (newEffectiveState == Qt::WindowNoState) {
+                // reset old geometry
+                QRect r = d->topData()->normalGeometry;
+                if (r.width() >= 0) {
+                    d->topData()->normalGeometry = QRect(0,0,-1,-1);
+                    setGeometry(r);
+                }
             }
         }
     }

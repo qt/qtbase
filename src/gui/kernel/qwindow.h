@@ -111,8 +111,8 @@ public:
     void setOpacity(qreal level);
     void requestActivateWindow();
 
-    Qt::WindowStates windowState() const;
-    void setWindowState(Qt::WindowStates state);
+    Qt::WindowState windowState() const;
+    void setWindowState(Qt::WindowState state);
 
     QSize minimumSize() const;
     QSize maximumSize() const;

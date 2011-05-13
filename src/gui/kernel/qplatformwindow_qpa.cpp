@@ -117,6 +117,17 @@ Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 }
 
 /*!
+    Requests setting the window state of this surface
+    to \a type. Returns the actual state set.
+
+    Qt::WindowActive can be ignored.
+*/
+Qt::WindowState QPlatformWindow::setWindowState(Qt::WindowState)
+{
+    return Qt::WindowNoState;
+}
+
+/*!
   Reimplement in subclasses to return a handle to the native window
 */
 WId QPlatformWindow::winId() const { return WId(0); }
