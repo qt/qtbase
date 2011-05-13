@@ -51,8 +51,8 @@ Makefile*
 !qmake/Makefile.unix
 *.prl
 *.app
-*.pro.user
-*.qmlproject.user
+*.pro.user*
+*.qmlproject.user*
 *.gcov
 bin/Qt*.dll
 bin/assistant*
@@ -253,6 +253,8 @@ d_exc_*.stk
 *.d
 
 qtc-debugging-helper
+qtc-qmldump
+qtc-qmldbg
 src/corelib/lib
 src/network/lib
 src/xml/lib/
