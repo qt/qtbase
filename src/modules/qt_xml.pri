@@ -1,6 +1,6 @@
-QT.xml.VERSION = 4.8.0
-QT.xml.MAJOR_VERSION = 4
-QT.xml.MINOR_VERSION = 8
+QT.xml.VERSION = 5.0.0
+QT.xml.MAJOR_VERSION = 5
+QT.xml.MINOR_VERSION = 0
 QT.xml.PATCH_VERSION = 0
 
 QT.xml.name = QtXml

@@ -1,6 +1,6 @@
-QT.gui.VERSION = 4.8.0
-QT.gui.MAJOR_VERSION = 4
-QT.gui.MINOR_VERSION = 8
+QT.gui.VERSION = 5.0.0
+QT.gui.MAJOR_VERSION = 5
+QT.gui.MINOR_VERSION = 0
 QT.gui.PATCH_VERSION = 0
 
 QT.gui.name = QtGui

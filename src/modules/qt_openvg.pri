@@ -1,6 +1,6 @@
-QT.openvg.VERSION = 4.8.0
-QT.openvg.MAJOR_VERSION = 4
-QT.openvg.MINOR_VERSION = 8
+QT.openvg.VERSION = 5.0.0
+QT.openvg.MAJOR_VERSION = 5
+QT.openvg.MINOR_VERSION = 0
 QT.openvg.PATCH_VERSION = 0
 
 QT.openvg.name = QtOpenVG

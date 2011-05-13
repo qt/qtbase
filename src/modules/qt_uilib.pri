@@ -1,6 +1,6 @@
-QT.uilib.VERSION = 4.8.0
-QT.uilib.MAJOR_VERSION = 4
-QT.uilib.MINOR_VERSION = 8
+QT.uilib.VERSION = 5.0.0
+QT.uilib.MAJOR_VERSION = 5
+QT.uilib.MINOR_VERSION = 0
 QT.uilib.PATCH_VERSION = 0
 
 QT.uilib.name = QtUiLib
