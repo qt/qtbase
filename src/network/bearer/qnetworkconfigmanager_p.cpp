@@ -488,7 +488,7 @@ void QNetworkConfigurationManagerPrivate::enablePolling()
     ++forcedPolling;
 
     if (forcedPolling == 1)
-        startPolling();
+        QMetaObject::invokeMethod(this, "startPolling");
 }
 
 void QNetworkConfigurationManagerPrivate::disablePolling()
