@@ -590,6 +590,12 @@ while ( @ARGV ) {
             $arg eq "-relative" || $arg eq "-check-includes") {
         $var = substr($arg, 1);
         $val = "yes";
+    } elsif($arg eq "-no-module-fwd") {
+        $var = "no_module_fwd";
+        $val = "yes";
+    } elsif($arg eq "-no-module-version-header") {
+        $var = "no_module_version_header";
+        $val = "yes";
     } elsif($arg =~ /^-no-(.*)$/) {
         $var = $1;
         $val = "no";
@@ -619,12 +625,6 @@ while ( @ARGV ) {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
         next;
-    } elsif($arg eq "-no-module-fwd") {
-        $var = "no_module_fwd";
-        $val = "yes";
-    } elsif($arg eq "-no-module-version-header") {
-            $var = "no_module_version_header";
-            $val = "yes";
     } elsif($arg =~/^-/) {
         print "Unknown option: $arg\n\n" if(!$var);
         showUsage();
