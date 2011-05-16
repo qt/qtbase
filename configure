@@ -7535,10 +7535,8 @@ EOF
         canBuildQtConcurrent="no"
 	;;
     symbian-gcce)
-        canBuildQtConcurrent="no"
         ;;
     symbian-armcc)
-        canBuildQtConcurrent="no"
         ;;
 esac
 
@@ -8269,7 +8267,7 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # We cannot use Linux's default export rules since they export everything.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
     # Disable non-working features.
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CONCURRENT QT_NO_QFUTURE QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_SYSTEMTRAYICON"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CRASHHANDLER QT_NO_PRINTER QT_NO_SYSTEMTRAYICON"
 fi
 
 if [ -n "$QCONFIG_FLAGS" ]; then
