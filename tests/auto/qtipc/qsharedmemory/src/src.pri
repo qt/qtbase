@@ -1,5 +1,6 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
+QT += core-private
 
 SOURCES += $$PWD/qsystemlock.cpp
 

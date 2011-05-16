@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qfileinfo.cpp
 
-QT = core
+QT = core-private
 
 
 RESOURCES      += qfileinfo.qrc

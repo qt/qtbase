@@ -7,7 +7,7 @@ include(../platformsocketengine/platformsocketengine.pri)
 
 MOC_DIR=tmp
 
-QT = core network
+QT = core-private network-private
 
 # Symbian toolchain does not support correct include semantics
 symbian:INCLUDEPATH+=..\\..\\..\\include\\QtNetwork\\private
