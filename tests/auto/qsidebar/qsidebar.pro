@@ -1,5 +1,6 @@
 CONFIG += qttest_p4
 
+QT += core-private
 SOURCES		+= tst_qsidebar.cpp 
 TARGET		= tst_qsidebar
 

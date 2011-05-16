@@ -13,7 +13,7 @@ win32 {
 
 !symbian:DEFINES += SRCDIR=\\\"$$PWD/..\\\"
 
-QT = core network
+QT = core-private network-private
 RESOURCES += ../qnetworkreply.qrc
 
 symbian|wince*:{

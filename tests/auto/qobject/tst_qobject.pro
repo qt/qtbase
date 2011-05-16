@@ -7,7 +7,8 @@ SOURCES += moc_oldnormalizeobject.cpp
 
 QT = core \
     network \
-    gui
+    gui \
+    core-private
 wince*: { 
     addFiles.files = signalbug.exe
     addFiles.path = .
