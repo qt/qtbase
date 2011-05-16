@@ -23,8 +23,14 @@ Window::Window(QWindow *parent)
 
     if (parent)
         setGeometry(QRect(160, 120, 320, 240));
-    else
+    else {
         setGeometry(QRect(10, 10, 640, 480));
+
+        setSizeIncrement(QSize(10, 10));
+        setBaseSize(QSize(640, 480));
+        setMinimumSize(QSize(240, 160));
+        setMaximumSize(QSize(800, 600));
+    }
 
     create();
     QGuiApplicationPrivate::platformIntegration()->createWindowSurface(this, winId());

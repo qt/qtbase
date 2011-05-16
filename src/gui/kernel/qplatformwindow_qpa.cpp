@@ -161,6 +161,14 @@ void QPlatformWindow::raise() { qWarning("This plugin does not support raise()")
 void QPlatformWindow::lower() { qWarning("This plugin does not support lower()"); }
 
 /*!
+  Reimplement to propagate the size hints of the QWindow.
+
+  The size hints include QWindow::minimumSize(), QWindow::maximumSize(),
+  QWindow::sizeIncrement(), and QWindow::baseSize().
+*/
+void QPlatformWindow::propagateSizeHints() {qWarning("This plugin does not support propagateSizeHints()"); }
+
+/*!
   Reimplement to be able to let Qt set the opacity level of a window
 */
 void QPlatformWindow::setOpacity(qreal level)

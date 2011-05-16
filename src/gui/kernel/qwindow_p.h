@@ -52,7 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QWindowPrivate : public QObjectPrivate
+#define QWINDOWSIZE_MAX ((1<<24)-1)
+
+class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
 {
 public:
     QWindowPrivate()
@@ -65,6 +67,7 @@ public:
         , glContext(0)
         , surface(0)
         , windowState(Qt::WindowNoState)
+        , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
     {
         isWindow = true;
     }
@@ -84,6 +87,11 @@ public:
     QWindowContext *glContext;
     QWindowSurface *surface;
     Qt::WindowState windowState;
+
+    QSize minimumSize;
+    QSize maximumSize;
+    QSize baseSize;
+    QSize sizeIncrement;
 };
 
 

@@ -49,6 +49,7 @@
 #include "QtWidgets/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
 #include "QtGui/qplatformglcontext_qpa.h"
+#include "QtGui/private/qwindow_p.h"
 
 #include <QtGui/QPlatformCursor>
 
@@ -628,6 +629,22 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
 void QWidgetPrivate::setConstraints_sys()
 {
+    Q_Q(QWidget);
+    if (extra && q->windowHandle()) {
+        QWindow *win = q->windowHandle();
+        QWindowPrivate *winp = qt_window_private(win);
+
+        winp->minimumSize = QSize(extra->minw, extra->minh);
+        winp->maximumSize = QSize(extra->maxw, extra->maxh);
+
+        if (extra->topextra) {
+            winp->baseSize = QSize(extra->topextra->basew, extra->topextra->baseh);
+            winp->sizeIncrement = QSize(extra->topextra->incw, extra->topextra->inch);
+        }
+
+        if (winp->platformWindow)
+            winp->platformWindow->propagateSizeHints();
+    }
 }
 
 void QWidgetPrivate::scroll_sys(int dx, int dy)

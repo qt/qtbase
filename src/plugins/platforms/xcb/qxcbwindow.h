@@ -69,6 +69,7 @@ public:
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
+    void propagateSizeHints();
 
     void requestActivateWindow();
 
@@ -95,6 +96,9 @@ public:
 private:
     void setNetWmWindowTypes(Qt::WindowFlags flags);
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+
+    void show();
+    void hide();
 
     QXcbScreen *m_screen;
 

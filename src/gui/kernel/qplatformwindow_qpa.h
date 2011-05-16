@@ -80,6 +80,8 @@ public:
     virtual void raise();
     virtual void lower();
 
+    virtual void propagateSizeHints();
+
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
 

@@ -52,6 +52,7 @@
 #include <xcb/xcb_icccm.h>
 
 #include <private/qguiapplication_p.h>
+#include <private/qwindow_p.h>
 #include <private/qwindowsurface_p.h>
 
 #include <QtGui/QWindowSystemInterface>
@@ -256,31 +257,49 @@ void QXcbWindow::setGeometry(const QRect &rect)
 
 void QXcbWindow::setVisible(bool visible)
 {
-    xcb_wm_hints_t hints;
-    if (visible) {
-        // TODO: QWindow::isMinimized() or similar
+    if (visible)
+        show();
+    else
+        hide();
+}
+
+void QXcbWindow::show()
+{
+    if (window()->isTopLevel()) {
+        xcb_get_property_cookie_t cookie = xcb_get_wm_hints(xcb_connection(), m_window);
+
+        xcb_wm_hints_t hints;
+        xcb_get_wm_hints_reply(xcb_connection(), cookie, &hints, 0);
+
         if (window()->windowState() & Qt::WindowMinimized)
             xcb_wm_hints_set_iconic(&hints);
         else
             xcb_wm_hints_set_normal(&hints);
+
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
-        Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
-        connection()->sync();
-    } else {
-        Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
 
-        // send synthetic UnmapNotify event according to icccm 4.1.4
-        xcb_unmap_notify_event_t event;
-        event.response_type = XCB_UNMAP_NOTIFY;
-        event.sequence = 0; // does this matter?
-        event.event = m_screen->root();
-        event.window = m_window;
-        event.from_configure = false;
-        Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_screen->root(),
-                                  XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
-
-        xcb_flush(xcb_connection());
+        propagateSizeHints();
     }
+
+    Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+    connection()->sync();
+}
+
+void QXcbWindow::hide()
+{
+    Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
+
+    // send synthetic UnmapNotify event according to icccm 4.1.4
+    xcb_unmap_notify_event_t event;
+    event.response_type = XCB_UNMAP_NOTIFY;
+    event.sequence = 0; // does this matter?
+    event.event = m_screen->root();
+    event.window = m_window;
+    event.from_configure = false;
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_screen->root(),
+                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
+
+    xcb_flush(xcb_connection());
 }
 
 struct QtMWMHints {
@@ -575,6 +594,36 @@ void QXcbWindow::lower()
     const quint32 mask = XCB_CONFIG_WINDOW_STACK_MODE;
     const quint32 values[] = { XCB_STACK_MODE_BELOW };
     Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
+}
+
+void QXcbWindow::propagateSizeHints()
+{
+    xcb_size_hints_t hints;
+
+    QRect rect = geometry();
+
+    xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
+    xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
+
+    QWindow *win = window();
+
+    QSize minimumSize = win->minimumSize();
+    QSize maximumSize = win->maximumSize();
+    QSize baseSize = win->baseSize();
+    QSize sizeIncrement = win->sizeIncrement();
+
+    if (minimumSize.width() > 0 || minimumSize.height() > 0)
+        xcb_size_hints_set_min_size(&hints, minimumSize.width(), minimumSize.height());
+
+    if (maximumSize.width() < QWINDOWSIZE_MAX || maximumSize.height() < QWINDOWSIZE_MAX)
+        xcb_size_hints_set_max_size(&hints, maximumSize.width(), maximumSize.height());
+
+    if (sizeIncrement.width() > 0 || sizeIncrement.height() > 0) {
+        xcb_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
+        xcb_size_hints_set_resize_inc(&hints, sizeIncrement.width(), sizeIncrement.height());
+    }
+
+    xcb_set_wm_normal_hints(xcb_connection(), m_window, &hints);
 }
 
 void QXcbWindow::requestActivateWindow()

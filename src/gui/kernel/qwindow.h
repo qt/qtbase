@@ -94,6 +94,8 @@ public:
     QWindow *parent() const;
     void setParent(QWindow *parent);
 
+    bool isTopLevel() const;
+
     QWindow *topLevelWindow() const;
 
     void setWindowFormat(const QWindowFormat &format);
@@ -116,9 +118,13 @@ public:
 
     QSize minimumSize() const;
     QSize maximumSize() const;
+    QSize baseSize() const;
+    QSize sizeIncrement() const;
 
-    void setMinimumSize(const QSize &size) const;
-    void setMaximumSize(const QSize &size) const;
+    void setMinimumSize(const QSize &size);
+    void setMaximumSize(const QSize &size);
+    void setBaseSize(const QSize &size);
+    void setSizeIncrement(const QSize &size);
 
     void setGeometry(const QRect &rect);
     QRect geometry() const;
@@ -177,6 +183,7 @@ private:
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
     friend class QWindowSurface;
+    friend Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window);
 };
 
 QT_END_NAMESPACE

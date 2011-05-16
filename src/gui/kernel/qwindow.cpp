@@ -143,6 +143,15 @@ void QWindow::setParent(QWindow *parent)
     d->parentWindow = parent;
 }
 
+/*!
+   Returns whether the window is top level, i.e. parent-less.
+ */
+bool QWindow::isTopLevel() const
+{
+    Q_D(const QWindow);
+    return d->parentWindow == 0;
+}
+
 void QWindow::setWindowFormat(const QWindowFormat &format)
 {
     Q_D(QWindow);
@@ -256,26 +265,68 @@ void QWindow::setWindowState(Qt::WindowState state)
 
 QSize QWindow::minimumSize() const
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
-    return QSize();
+    Q_D(const QWindow);
+    return d->minimumSize;
 }
 
 QSize QWindow::maximumSize() const
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
-    return QSize();
+    Q_D(const QWindow);
+    return d->maximumSize;
 }
 
-void QWindow::setMinimumSize(const QSize &size) const
+QSize QWindow::baseSize() const
 {
-    Q_UNUSED(size);
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    Q_D(const QWindow);
+    return d->baseSize;
 }
 
-void QWindow::setMaximumSize(const QSize &size) const
+QSize QWindow::sizeIncrement() const
 {
-    Q_UNUSED(size);
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
+    Q_D(const QWindow);
+    return d->sizeIncrement;
+}
+
+void QWindow::setMinimumSize(const QSize &size)
+{
+    Q_D(QWindow);
+    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
+    if (d->minimumSize == adjustedSize)
+        return;
+    d->minimumSize = adjustedSize;
+    if (d->platformWindow && isTopLevel())
+        d->platformWindow->propagateSizeHints();
+}
+
+void QWindow::setMaximumSize(const QSize &size)
+{
+    Q_D(QWindow);
+    QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
+    if (d->maximumSize == adjustedSize)
+        return;
+    d->maximumSize = adjustedSize;
+    if (d->platformWindow && isTopLevel())
+        d->platformWindow->propagateSizeHints();
+}
+
+void QWindow::setBaseSize(const QSize &size)
+{
+    Q_D(QWindow);
+    if (d->baseSize == size)
+        return;
+    d->baseSize = size;
+    if (d->platformWindow && isTopLevel())
+        d->platformWindow->propagateSizeHints();
+}
+
+void QWindow::setSizeIncrement(const QSize &size)
+{
+    Q_D(QWindow);
+    if (d->sizeIncrement == size)
+        return;
+    d->sizeIncrement = size;
+    if (d->platformWindow && isTopLevel())
+        d->platformWindow->propagateSizeHints();
 }
 
 void QWindow::setGeometry(const QRect &rect)
@@ -463,5 +514,10 @@ void QWindow::wheelEvent(QWheelEvent *)
 {
 }
 #endif //QT_NO_WHEELEVENT
+
+Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
+{
+    return window->d_func();
+}
 
 QT_END_NAMESPACE
