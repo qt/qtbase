@@ -12,7 +12,7 @@ INCLUDEPATH *= $$MODULE_INCLUDES $$MODULE_INCLUDES/.. #just for today to have so
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.8.0
+   VERSION=5.0.0
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }

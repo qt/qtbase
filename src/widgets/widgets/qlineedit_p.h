@@ -84,7 +84,6 @@ public:
 
     ~QLineEditPrivate()
     {
-        delete control;
     }
 
     QLineControl *control;

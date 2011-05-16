@@ -8,7 +8,6 @@ SOURCES += moc_oldnormalizeobject.cpp
 QT = core \
     network \
     gui
-contains(QT_CONFIG, qt3support):DEFINES += QT_HAS_QT3SUPPORT
 wince*: { 
     addFiles.files = signalbug.exe
     addFiles.path = .

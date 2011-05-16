@@ -6,6 +6,12 @@
 #include <private/qpaintengine_raster_p.h>
 #include <qpen.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
 class QCosmeticStroker;
 
 
@@ -97,5 +103,9 @@ private:
 public:
     bool clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2);
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QCOSMETICLINE_H

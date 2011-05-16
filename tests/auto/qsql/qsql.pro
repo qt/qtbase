@@ -3,8 +3,6 @@ SOURCES  += tst_qsql.cpp
 
 QT += sql sql-private
 
-contains(QT_CONFIG, qt3support): QT += qt3support
-
 wince*: {
    DEPLOYMENT_PLUGIN += qsqlite
 }

@@ -1,6 +1,6 @@
-QT.uitools.VERSION = 4.8.0
-QT.uitools.MAJOR_VERSION = 4
-QT.uitools.MINOR_VERSION = 8
+QT.uitools.VERSION = 5.0.0
+QT.uitools.MAJOR_VERSION = 5
+QT.uitools.MINOR_VERSION = 0
 QT.uitools.PATCH_VERSION = 0
 
 QT.uitools.name = QtUiTools

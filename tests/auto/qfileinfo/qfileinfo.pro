@@ -30,6 +30,4 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-contains(QT_CONFIG, qt3support): QT += qt3support
-
 CONFIG += parallel_test

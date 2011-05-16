@@ -3,6 +3,8 @@
 #include <qdebug.h>
 #include <math.h>
 
+QT_BEGIN_NAMESPACE
+
 #if 0
 inline QString capString(int caps)
 {
@@ -148,28 +150,28 @@ static StrokeLine strokeLine(int strokeSelection)
 
     switch (strokeSelection) {
     case Aliased|Solid|RegularDraw:
-        stroke = &::drawLine<drawPixel, NoDasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLine)<drawPixel, NoDasher>;
         break;
     case Aliased|Solid|FastDraw:
-        stroke = &::drawLine<drawPixelARGB32Opaque, NoDasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLine)<drawPixelARGB32Opaque, NoDasher>;
         break;
     case Aliased|Dashed|RegularDraw:
-        stroke = &::drawLine<drawPixel, Dasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLine)<drawPixel, Dasher>;
         break;
     case Aliased|Dashed|FastDraw:
-        stroke = &::drawLine<drawPixelARGB32Opaque, Dasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLine)<drawPixelARGB32Opaque, Dasher>;
         break;
     case AntiAliased|Solid|RegularDraw:
-        stroke = &drawLineAA<drawPixel, NoDasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixel, NoDasher>;
         break;
     case AntiAliased|Solid|FastDraw:
-        stroke = &drawLineAA<drawPixelARGB32, NoDasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixelARGB32, NoDasher>;
         break;
     case AntiAliased|Dashed|RegularDraw:
-        stroke = &drawLineAA<drawPixel, Dasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixel, Dasher>;
         break;
     case AntiAliased|Dashed|FastDraw:
-        stroke = &drawLineAA<drawPixelARGB32, Dasher>;
+        stroke = &QT_PREPEND_NAMESPACE(drawLineAA)<drawPixelARGB32, Dasher>;
         break;
     default:
         Q_ASSERT(false);
@@ -952,3 +954,5 @@ static void drawLineAA(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx
         }
     }
 }
+
+QT_END_NAMESPACE

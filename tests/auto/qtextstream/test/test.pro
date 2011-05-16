@@ -13,7 +13,6 @@ win32 {
 
 RESOURCES += ../qtextstream.qrc
 
-contains(QT_CONFIG, qt3support):QT += qt3support
 QT = core network
 
 

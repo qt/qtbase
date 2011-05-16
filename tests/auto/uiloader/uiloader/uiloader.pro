@@ -14,7 +14,6 @@ win32 {
 }
 
 QT += xml svg network
-contains(QT_CONFIG, qt3support): QT += qt3support
 
 wince*|symbian: {
    configuration.files = ../*.ini

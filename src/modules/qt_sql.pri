@@ -1,6 +1,6 @@
-QT.sql.VERSION = 4.8.0
-QT.sql.MAJOR_VERSION = 4
-QT.sql.MINOR_VERSION = 8
+QT.sql.VERSION = 5.0.0
+QT.sql.MAJOR_VERSION = 5
+QT.sql.MINOR_VERSION = 0
 QT.sql.PATCH_VERSION = 0
 
 QT.sql.name = QtSql

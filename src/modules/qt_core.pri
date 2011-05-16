@@ -1,6 +1,6 @@
-QT.core.VERSION = 4.8.0
-QT.core.MAJOR_VERSION = 4
-QT.core.MINOR_VERSION = 8
+QT.core.VERSION = 5.0.0
+QT.core.MAJOR_VERSION = 5
+QT.core.MINOR_VERSION = 0
 QT.core.PATCH_VERSION = 0
 
 QT.core.name = QtCore

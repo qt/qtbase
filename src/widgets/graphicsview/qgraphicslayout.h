@@ -76,6 +76,8 @@ public:
     virtual QGraphicsLayoutItem *itemAt(int i) const = 0;
     virtual void removeAt(int index) = 0;
 
+    static void setInstantInvalidatePropagation(bool enable);
+    static bool instantInvalidatePropagation();
 protected:
     QGraphicsLayout(QGraphicsLayoutPrivate &, QGraphicsLayoutItem *);
     void addChildLayoutItem(QGraphicsLayoutItem *layoutItem);

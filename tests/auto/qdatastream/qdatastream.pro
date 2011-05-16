@@ -7,7 +7,6 @@ else: DEFINES += SVGFILE=\\\"gearflowers.svg\\\"
 }
 
 # for qpaintdevicemetrics.h
-contains(QT_CONFIG, qt3support):QT += qt3support
 QT += svg
 
 

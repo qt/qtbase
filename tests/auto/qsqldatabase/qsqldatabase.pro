@@ -3,8 +3,6 @@ SOURCES  += tst_qsqldatabase.cpp
 
 QT += sql
 
-contains(QT_CONFIG, qt3support): QT += qt3support
-
 win32: {
    !wince*: LIBS += -lws2_32
    else: LIBS += -lws2

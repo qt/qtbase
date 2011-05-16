@@ -1,6 +1,6 @@
-QT.opengl.VERSION = 4.8.0
-QT.opengl.MAJOR_VERSION = 4
-QT.opengl.MINOR_VERSION = 8
+QT.opengl.VERSION = 5.0.0
+QT.opengl.MAJOR_VERSION = 5
+QT.opengl.MINOR_VERSION = 0
 QT.opengl.PATCH_VERSION = 0
 
 QT.opengl.name = QtOpenGL

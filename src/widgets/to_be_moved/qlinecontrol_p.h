@@ -61,7 +61,6 @@
 #include "QtGui/qtextlayout.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qpointer.h"
-#include "QtWidgets/qlineedit.h"
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"

@@ -512,7 +512,7 @@ void BaselineHandler::testPathMapping()
     item.imageChecksums << 0x0123456789abcdefULL;
     item.itemChecksum = 0x0123;
 
-    plat.insert(PI_QtVersion, QLS("4.8.0"));
+    plat.insert(PI_QtVersion, QLS("5.0.0"));
     plat.insert(PI_BuildKey, QLS("(nobuildkey)"));
     plat.insert(PI_QMakeSpec, QLS("linux-g++"));
     plat.insert(PI_PulseGitBranch, QLS("somebranch"));

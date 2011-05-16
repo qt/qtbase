@@ -1,6 +1,6 @@
-QT.dbus.VERSION = 4.8.0
-QT.dbus.MAJOR_VERSION = 4
-QT.dbus.MINOR_VERSION = 8
+QT.dbus.VERSION = 5.0.0
+QT.dbus.MAJOR_VERSION = 5
+QT.dbus.MINOR_VERSION = 0
 QT.dbus.PATCH_VERSION = 0
 
 QT.dbus.name = QtDBus

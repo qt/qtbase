@@ -715,12 +715,12 @@ void tst_QSet::stlMutableIterator()
         QVERIFY(set2.isEmpty());
         QVERIFY(set3.isEmpty());
 
-#if QT_VERSION >= 0x050000
-        i = set2.insert("foo");
-#else
+// #if QT_VERSION >= 0x050000
+//         i = set2.insert("foo");
+// #else
         QSet<QString>::const_iterator k = set2.insert("foo");
         i = reinterpret_cast<QSet<QString>::iterator &>(k);
-#endif
+// #endif
         QVERIFY(*i == "foo");
     }
 }

@@ -1,6 +1,6 @@
-QT.network.VERSION = 4.8.0
-QT.network.MAJOR_VERSION = 4
-QT.network.MINOR_VERSION = 8
+QT.network.VERSION = 5.0.0
+QT.network.MAJOR_VERSION = 5
+QT.network.MINOR_VERSION = 0
 QT.network.PATCH_VERSION = 0
 
 QT.network.name = QtNetwork

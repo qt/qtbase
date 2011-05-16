@@ -16,5 +16,3 @@ wince* {
 } else:!symbian {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
-
-contains(QT_CONFIG, qt3support): QT += qt3support
