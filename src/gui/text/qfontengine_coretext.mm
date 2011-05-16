@@ -100,7 +100,12 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const 
 
     QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
     QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, &transform);
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, &transform, symbolicTraits, symbolicTraits);
+    ctfont = NULL;
+    // There is a side effect in Core Text: if we apply 0 as symbolic traits to a font in normal weight,
+    // we will get the light version of that font (while the way supposed to work doesn't:
+    // setting kCTFontWeightTrait to some value between -1.0 to 0.0 has no effect on font selection)
+    if (fontDef.weight != QFont::Normal || symbolicTraits)
+        ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, &transform, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)
