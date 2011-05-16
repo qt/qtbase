@@ -1908,7 +1908,7 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
         if (state() != ConnectedState)
             return false;
-    } while (qt_timeout_value(msecs, stopWatch.elapsed()) > 0);
+    } while (msecs == -1 || qt_timeout_value(msecs, stopWatch.elapsed()) > 0);
     return false;
 }
 
