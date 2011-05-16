@@ -106,6 +106,8 @@ private slots:
 
     void moreToFromUnicode_data();
     void moreToFromUnicode();
+
+    void shiftJis();
 };
 
 void tst_QTextCodec::toUnicode_data()
@@ -2234,6 +2236,19 @@ void tst_QTextCodec::moreToFromUnicode()
     QString uStr = c->toUnicode(testData);
     QByteArray cStr = c->fromUnicode(uStr);
     QCOMPARE(testData, cStr);
+}
+
+void tst_QTextCodec::shiftJis()
+{
+    QByteArray backslashTilde("\\~");
+    QTextCodec* codec = QTextCodec::codecForName("shift_jis");
+    QString string = codec->toUnicode(backslashTilde);
+    QCOMPARE(string.length(), 2);
+    QCOMPARE(string.at(0), QChar(QLatin1Char('\\')));
+    QCOMPARE(string.at(1), QChar(QLatin1Char('~')));
+
+    QByteArray encoded = codec->fromUnicode(string);
+    QCOMPARE(encoded, backslashTilde);
 }
 
 struct DontCrashAtExit {
