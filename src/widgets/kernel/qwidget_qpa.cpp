@@ -93,11 +93,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     QWindow *win = topData()->window;
 
-    if (!q->isWindow()) {
-        if (QWidget *nativeParent = q->nativeParentWidget()) {
-            if (nativeParent->windowHandle())
-                win->setParent(nativeParent->windowHandle());
-        }
+    if (QWidget *nativeParent = q->nativeParentWidget()) {
+        if (nativeParent->windowHandle())
+            win->setParent(nativeParent->windowHandle());
     }
 
     win->setWindowFlags(data.window_flags);

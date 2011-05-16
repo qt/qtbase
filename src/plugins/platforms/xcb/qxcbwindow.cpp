@@ -73,20 +73,17 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif
 
-#if 0
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
-static inline bool isTransient(const QWidget *w)
+static inline bool isTransient(const QWindow *w)
 {
-    return ((w->windowType() == Qt::Dialog
-             || w->windowType() == Qt::Sheet
-             || w->windowType() == Qt::Tool
-             || w->windowType() == Qt::SplashScreen
-             || w->windowType() == Qt::ToolTip
-             || w->windowType() == Qt::Drawer
-             || w->windowType() == Qt::Popup)
-            && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
+    return w->windowType() == Qt::Dialog
+           || w->windowType() == Qt::Sheet
+           || w->windowType() == Qt::Tool
+           || w->windowType() == Qt::SplashScreen
+           || w->windowType() == Qt::ToolTip
+           || w->windowType() == Qt::Drawer
+           || w->windowType() == Qt::Popup;
 }
-#endif
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
@@ -119,8 +116,8 @@ QXcbWindow::QXcbWindow(QWindow *window)
     QRect rect = window->geometry();
 
     xcb_window_t xcb_parent_id = m_screen->root();
-    if (window->parent() && window->parent()->handle())
-        xcb_parent_id = static_cast<QXcbWindow *>(window->parent()->handle())->xcb_window();
+    if (parent() && !window->isTopLevel())
+        xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (window->surfaceType() == QWindow::OpenGLSurface
@@ -217,18 +214,6 @@ QXcbWindow::QXcbWindow(QWindow *window)
                                        &m_syncCounter));
     }
 
-#if 0
-    if (tlw && isTransient(tlw) && tlw->parentWidget()) {
-        // ICCCM 4.1.2.6
-        QWidget *p = tlw->parentWidget()->window();
-        xcb_window_t parentWindow = p->winId();
-        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                       XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                       1, &parentWindow));
-
-    }
-#endif
-
     // set the PID to let the WM kill the application if unresponsive
     long pid = getpid();
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
@@ -278,7 +263,19 @@ void QXcbWindow::show()
 
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
+        // update WM_NORMAL_HINTS
         propagateSizeHints();
+
+        // update WM_TRANSIENT_FOR
+        if (isTransient(window()) && parent()) {
+            // ICCCM 4.1.2.6
+            xcb_window_t parentWindow = static_cast<QXcbWindow *>(parent())->xcb_window();
+
+            // todo: set transient for group (wm_client_leader) if no parent, a la qwidget_x11.cpp
+            Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                           XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                                           1, &parentWindow));
+        }
     }
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
@@ -598,6 +595,7 @@ void QXcbWindow::lower()
 
 void QXcbWindow::propagateSizeHints()
 {
+    // update WM_NORMAL_HINTS
     xcb_size_hints_t hints;
 
     QRect rect = geometry();

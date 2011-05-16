@@ -97,7 +97,7 @@ void QWindow::create()
             QObject *object = childObjects.at(i);
             if(object->isWindowType()) {
                 QWindow *window = static_cast<QWindow *>(object);
-                if (window->d_func()->platformWindow)
+                if (window->d_func()->platformWindow && !window->isTopLevel())
                     window->d_func()->platformWindow->setParent(d->platformWindow);
             }
         }
@@ -133,9 +133,9 @@ void QWindow::setParent(QWindow *parent)
     QObject::setParent(parent);
 
     if (d->platformWindow) {
-        if (parent && parent->d_func()->platformWindow) {
+        if (parent && parent->d_func()->platformWindow && !isTopLevel()) {
             d->platformWindow->setParent(parent->d_func()->platformWindow);
-        } else if (!parent) {
+        } else {
             d->platformWindow->setParent(0);
         }
     }
@@ -144,12 +144,12 @@ void QWindow::setParent(QWindow *parent)
 }
 
 /*!
-   Returns whether the window is top level, i.e. parent-less.
+   Returns whether the window is top level.
  */
 bool QWindow::isTopLevel() const
 {
     Q_D(const QWindow);
-    return d->parentWindow == 0;
+    return d->windowFlags & Qt::Window;
 }
 
 void QWindow::setWindowFormat(const QWindowFormat &format)
@@ -194,6 +194,12 @@ Qt::WindowFlags QWindow::windowFlags() const
 {
     Q_D(const QWindow);
     return d->windowFlags;
+}
+
+Qt::WindowType QWindow::windowType() const
+{
+    Q_D(const QWindow);
+    return static_cast<Qt::WindowType>(int(d->windowFlags & Qt::WindowType_Mask));
 }
 
 void QWindow::setWindowTitle(const QString &title)

@@ -66,6 +66,8 @@ public:
     virtual ~QPlatformWindow();
 
     QWindow *window() const;
+    QPlatformWindow *parent() const;
+
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
 

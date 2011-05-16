@@ -70,12 +70,21 @@ QPlatformWindow::~QPlatformWindow()
 }
 
 /*!
-    Returnes the window which belongs to the QPlatformWindow
+    Returns the window which belongs to the QPlatformWindow
 */
 QWindow *QPlatformWindow::window() const
 {
     Q_D(const QPlatformWindow);
     return d->window;
+}
+
+/*!
+    Returns the parent platform window (or 0 if orphan).
+*/
+QPlatformWindow *QPlatformWindow::parent() const
+{
+    Q_D(const QPlatformWindow);
+    return d->window->parent() ? d->window->parent()->handle() : 0;
 }
 
 /*!

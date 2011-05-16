@@ -107,6 +107,7 @@ public:
 
     void setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowFlags windowFlags() const;
+    Qt::WindowType windowType() const;
 
     QString windowTitle() const;
 
