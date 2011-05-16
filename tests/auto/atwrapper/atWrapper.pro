@@ -9,7 +9,6 @@ DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 QT += xml svg network
 
-contains(QT_CONFIG, qt3support): QT += qt3support
 contains(QT_CONFIG, opengl):QT += opengl
 
 include($$ARTHUR/datagenerator/datagenerator.pri)

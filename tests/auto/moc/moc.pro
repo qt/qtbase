@@ -21,8 +21,6 @@ if(*-g++*|*-icc*|*-clang|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win
 SOURCES += tst_moc.cpp
 
 QT += sql network
-contains(QT_CONFIG, script): QT += script
-contains(QT_CONFIG, qt3support): QT += qt3support
 contains(QT_CONFIG, dbus){
     DEFINES += WITH_DBUS
     QT += dbus

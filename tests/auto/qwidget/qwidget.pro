@@ -5,9 +5,6 @@ QT += core-private gui-private
 SOURCES  += tst_qwidget.cpp
 RESOURCES     = qwidget.qrc
 
-contains(QT_CONFIG, qt3support): QT += qt3support
-contains(QT_CONFIG, qt3support):DEFINES+=QT_HAS_QT3SUPPORT
-
 aix-g++*:QMAKE_CXXFLAGS+=-fpermissive
 
 CONFIG += x11inc

@@ -18,7 +18,6 @@ wince* {
   LIBS += -lefsrv
   INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 } else {
-  contains(QT_CONFIG, qt3support):QT += qt3support
   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
