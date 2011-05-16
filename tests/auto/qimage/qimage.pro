@@ -19,6 +19,5 @@ wince*: {
       DEPLOYMENT += imagePlugins
    }
 } else {
-   contains(QT_CONFIG, qt3support): QT += qt3support
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

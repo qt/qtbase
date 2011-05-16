@@ -10,5 +10,3 @@ SUBDIRS=\
            #atwrapper \     # These tests need significant updating,
            #uiloader \      # they have hardcoded machine names etc.
 
-#contains(QT_CONFIG,qt3support):SUBDIRS+=uic3
-

@@ -3,7 +3,6 @@ load(qttest_p4)
 QT += gui-private
 
 SOURCES += tst_qlayout.cpp
-contains(QT_CONFIG, qt3support): QT += qt3support
 wince*|symbian: {
    addFiles.files = baseline
    addFiles.path = .

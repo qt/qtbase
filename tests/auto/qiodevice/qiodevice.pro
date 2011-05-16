@@ -17,7 +17,6 @@ wince*: {
    TARGET.CAPABILITY = NetworkServices
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-   contains(QT_CONFIG, qt3support):QT += qt3support
 }
 MOC_DIR=tmp
 
