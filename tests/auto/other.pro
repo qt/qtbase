@@ -8,7 +8,7 @@ SUBDIRS=\
            qalgorithms \
            qcombobox \
            qcssparser \
-           #qdatastream \      # FIXME: uses qtsvg (QTBUG-19244)
+           qdatastream \
            qdir \
            qfocusevent \
            qimage \
