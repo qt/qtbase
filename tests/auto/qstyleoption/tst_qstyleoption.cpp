@@ -92,9 +92,6 @@ void tst_QStyleOption::qstyleoptioncast_data()
     QTest::newRow("optionHeader") << stylePtr(new QStyleOptionHeader) << false << int(QStyleOption::SO_Header);
     QTest::newRow("optionMenuItem") << stylePtr(new QStyleOptionMenuItem) << false << int(QStyleOption::SO_MenuItem);
     QTest::newRow("optionProgressBar") << stylePtr(new QStyleOptionProgressBar) << false << int(QStyleOption::SO_ProgressBar);
-    QTest::newRow("optionQ3DockWindow") << stylePtr(new QStyleOptionQ3DockWindow) << false << int(QStyleOption::SO_Q3DockWindow);
-    QTest::newRow("optionQ3ListView") << stylePtr(new QStyleOptionQ3ListView) << true << int(QStyleOption::SO_Q3ListView);
-    QTest::newRow("optionQ3ListViewItem") << stylePtr(new QStyleOptionQ3ListViewItem) << false << int(QStyleOption::SO_Q3ListViewItem);
     QTest::newRow("optionSlider") << stylePtr(new QStyleOptionSlider) << true << int(QStyleOption::SO_Slider);
     QTest::newRow("optionSpinBox") << stylePtr(new QStyleOptionSpinBox) << true << int(QStyleOption::SO_SpinBox);
     QTest::newRow("optionTab") << stylePtr(new QStyleOptionTab) << false << int(QStyleOption::SO_Tab);

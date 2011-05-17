@@ -73,8 +73,6 @@ private slots:
     void unget();
     void peek();
     void peekAndRead();
-    void getch();
-    void putch();
 
     void readLine_data();
     void readLine();
@@ -380,47 +378,6 @@ void tst_QIODevice::peekAndRead()
         QCOMPARE(readData, originalData);
     }
     QFile::remove("peektestfile");
-}
-
-void tst_QIODevice::getch()
-{
-#ifdef QT3_SUPPORT
-    QBuffer buffer;
-    buffer.open(QBuffer::ReadWrite);
-    buffer.write("\xff\x7f\x80\x00", 4);
-    buffer.reset();
-    QCOMPARE(buffer.getch(), 0xff);
-    QCOMPARE(buffer.getch(), 0x7f);
-    QCOMPARE(buffer.getch(), 0x80);
-    QCOMPARE(buffer.getch(), 0x00);
-
-    buffer.ungetch(0x00);
-    buffer.ungetch(0x80);
-    buffer.ungetch(0x7f);
-    buffer.ungetch(0xff);
-
-    QCOMPARE(buffer.getch(), 0xff);
-    QCOMPARE(buffer.getch(), 0x7f);
-    QCOMPARE(buffer.getch(), 0x80);
-    QCOMPARE(buffer.getch(), 0x00);
-#endif
-}
-
-void tst_QIODevice::putch()
-{
-#ifdef QT3_SUPPORT
-    QBuffer buffer;
-    buffer.open(QBuffer::ReadWrite);
-    buffer.putch(0xff);
-    buffer.putch(0x7f);
-    buffer.putch(0x80);
-    buffer.putch(0x00);
-    buffer.reset();
-    QCOMPARE(buffer.getch(), 0xff);
-    QCOMPARE(buffer.getch(), 0x7f);
-    QCOMPARE(buffer.getch(), 0x80);
-    QCOMPARE(buffer.getch(), 0x00);
-#endif
 }
 
 void tst_QIODevice::readLine_data()

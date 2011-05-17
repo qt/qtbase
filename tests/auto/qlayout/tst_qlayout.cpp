@@ -76,9 +76,6 @@ private slots:
     void geometry();
     void smartMaxSize();
     void setLayoutBugs();
-#ifdef QT3_SUPPORT
-    void task193350_sizeGrip();
-#endif
     void setContentsMargins();
     void layoutItemRect();
     void warnIfWrongParent();
@@ -234,21 +231,6 @@ void tst_QLayout::setLayoutBugs()
     QVERIFY(widget.layout() == 0);
     QVERIFY(containerWidget.layout() == hBoxLayout);
 }
-
-#ifdef QT3_SUPPORT
-void tst_QLayout::task193350_sizeGrip()
-{
-    QDialog dialog;
-    dialog.setSizeGripEnabled(true);
-
-    QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    layout->setAutoAdd(true);
-    new QLabel("Label", &dialog);
-
-    dialog.show();
-    QCOMPARE(layout->indexOf(qFindChild<QSizeGrip *>(&dialog)),-1);
-}
-#endif
 
 class MyLayout : public QLayout
 {

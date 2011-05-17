@@ -56,14 +56,8 @@ int main(int argc, char **argv)
         type = Test::Qt4Client;
     else if (arg == QLatin1String("qt4server"))
         type = Test::Qt4Server;
-#ifdef QT3_SUPPORT
-    else if (arg == QLatin1String("qt3client"))
-        type = Test::Qt3Client;
-    else if (arg == QLatin1String("qt3server"))
-        type = Test::Qt3Server;
-#endif
     else {
-        qDebug("usage: ./stressTest <qt3client|qt3server|qt4client|qt4server>");
+        qDebug("usage: ./stressTest <qt4client|qt4server>");
         return 0;
     }
 

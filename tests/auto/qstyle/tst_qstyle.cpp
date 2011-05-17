@@ -337,9 +337,6 @@ void tst_QStyle::testAllFunctions(QStyle *style)
         copt6.init(testWidget);
         QStyleOptionToolButton copt7;
         copt7.init(testWidget);
-        QStyleOptionQ3ListView copt8;
-        copt8.init(testWidget);
-        copt8.items << QStyleOptionQ3ListViewItem();
         QStyleOptionComplex copt9;
         copt9.initFrom(testWidget);
 
@@ -351,10 +348,6 @@ void tst_QStyle::testAllFunctions(QStyle *style)
         style->drawComplexControl(QStyle::CC_TitleBar, &copt6, &painter, 0);
         style->drawComplexControl(QStyle::CC_GroupBox, &copt2, &painter, 0);
         style->drawComplexControl(QStyle::CC_Dial, &copt4, &painter, 0);
-#ifdef QT3_SUPPORT
-        style->drawComplexControl(QStyle::CC_Q3ListView, &copt8, &painter, 0);
-        style->drawComplexControl(QStyle::CC_MdiControls, &copt9, &painter, 0);
-#endif
     }
 
     //Check standard pixmaps/icons

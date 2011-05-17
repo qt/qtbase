@@ -164,11 +164,6 @@ private slots:
     void copy();
     void depthOfNullObjects();
 
-#ifdef QT3_SUPPORT
-    void resize();
-    void resizePreserveMask();
-#endif
-
     void transformed();
     void transformed2();
 
@@ -1426,53 +1421,6 @@ void tst_QPixmap::copy()
     QPixmap transCopy = trans.copy();
     QVERIFY(pixmapsAreEqual(&trans, &transCopy));
 }
-
-#ifdef QT3_SUPPORT
-void tst_QPixmap::resize()
-{
-    QPixmap p1(10, 10);
-    p1.fill(Qt::red);
-
-    QPixmap p2 = p1;
-    QPixmap p3(50, 50);
-    p3.fill(Qt::red);
-
-    p1.resize(p3.size());
-    p1.resize(p2.size());
-    p3.resize(p2.size());
-    QCOMPARE(p1.toImage(), p2.toImage());
-    QCOMPARE(p1.toImage(), p3.toImage());
-
-    QBitmap b1;
-    b1.resize(10, 10);
-    QVERIFY(b1.depth() == 1);
-    QPixmap p4;
-    p4.resize(10, 10);
-    QVERIFY(p4.depth() != 0);
-}
-
-void tst_QPixmap::resizePreserveMask()
-{
-    QPixmap pm(100, 100);
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.fillRect(10, 10, 80, 80, Qt::red);
-    p.drawRect(0, 0, 99, 99);
-    p.end();
-
-    QBitmap mask = pm.mask();
-    pm.resize(50, 50);
-
-    QCOMPARE(pm.mask().toImage(), mask.toImage().copy(0, 0, 50, 50));
-
-    pm = QPixmap(100, 100);
-    pm.fill(Qt::red);
-    pm.setMask(mask);
-    pm.resize(50, 50);
-
-    QCOMPARE(pm.mask().toImage(), mask.toImage().copy(0, 0, 50, 50));
-}
-#endif
 
 void tst_QPixmap::depthOfNullObjects()
 {

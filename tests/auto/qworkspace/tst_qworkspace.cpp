@@ -45,10 +45,6 @@
 #include <qmainwindow.h>
 #include <qmenubar.h>
 #include <qworkspace.h>
-#if defined(QT3_SUPPORT)
-#include <q3popupmenu.h>
-#include <q3accel.h>
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -75,7 +71,6 @@ private slots:
     void getSetCheck();
     void windowActivated_data();
     void windowActivated();
-    void accelPropagation();
     void windowActivatedWithMinimize();
     void showWindows();
     void changeWindowTitle();
@@ -312,59 +307,6 @@ void tst_QWorkspace::windowActivatedWithMinimize()
 void tst_QWorkspace::accelActivated()
 {
     accelPressed = TRUE;
-}
-
-void tst_QWorkspace::accelPropagation()
-{
-#if defined (QT3_SUPPORT)
-    QSKIP( "Until QTest::keyPress() sends the events via the OS, this will skip", SkipAll);
-    // See #13987 for details of bug report related to this
-
-    QMainWindow mw(0, Qt::X11BypassWindowManagerHint) ;
-    mw.menuBar();
-    QWorkspace *workspace = new QWorkspace(&mw);
-    workspace->setObjectName("testWidget");
-    mw.setCentralWidget(workspace);
-    connect( workspace, SIGNAL(windowActivated(QWidget*)), this, SLOT(activeChanged(QWidget*)) );
-    mw.show();
-    qApp->setActiveWindow(&mw);
-
-    QMainWindow* mainWindow = new QMainWindow( workspace );
-
-    // The popup menu has to have no parent, this is vital in the
-    // original case of reproducing the bug
-
-    Q3PopupMenu* popup = new Q3PopupMenu;
-    popup->insertItem("First");
-    mainWindow->menuBar()->insertItem("Menu", popup);
-
-    Q3Accel* accel = new Q3Accel(mainWindow);
-    accel->connectItem(accel->insertItem(Qt::Key_Escape), this, SLOT(accelActivated()) );
-
-    mainWindow->show();
-
-    QTest::keyPress( mainWindow, Qt::Key_Escape );
-    QVERIFY( accelPressed );
-    accelPressed = FALSE;
-
-    QTest::mousePress( mainWindow->menuBar(), Qt::LeftButton, 0, QPoint( 5, 5 ) );
-
-    // Check the popup menu did appear to be sure
-    QVERIFY( qApp->activePopupWidget() == popup );
-
-    QTest::mouseClick( popup, Qt::LeftButton, 0, QPoint( 5, 25 ) );
-
-    // Check we did actually cause the popup menu to be closed
-    QVERIFY( !popup->isVisible() );
-
-    // Now we check that the accelarator still works
-    QTest::keyPress( mainWindow, Qt::Key_Escape );
-    QVERIFY( accelPressed );
-    delete popup;
-#else
-    QSKIP( "No Qt3Support. Skipping.", SkipAll);
-#endif
-
 }
 
 void tst_QWorkspace::showWindows()

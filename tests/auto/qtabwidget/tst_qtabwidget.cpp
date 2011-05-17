@@ -381,9 +381,6 @@ void tst_QTabWidget::currentIndex()
 {
     // Test bad arguments
     QSignalSpy spy(tw, SIGNAL(currentChanged(int)));
-#ifdef QT3_SUPPORT
-    QSignalSpy spySupport(tw, SIGNAL(currentChanged(QWidget *)));
-#endif
     QCOMPARE(tw->currentIndex(), -1);
     tw->setCurrentIndex(-1);
     QCOMPARE(tw->currentIndex(), -1);
@@ -395,10 +392,7 @@ void tst_QTabWidget::currentIndex()
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toInt() == firstIndex);
-#ifdef QT3_SUPPORT
-    QCOMPARE(spySupport.count(), 1);
-#endif
-    
+
     int index = addPage();
     QCOMPARE(tw->currentIndex(), firstIndex);
     tw->setCurrentIndex(index);
@@ -406,28 +400,18 @@ void tst_QTabWidget::currentIndex()
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toInt() == index);
-#ifdef QT3_SUPPORT
-    QCOMPARE(spySupport.count(), 2);
-#endif
-    
+
     removePage(index);
     QCOMPARE(tw->currentIndex(), firstIndex);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toInt() == firstIndex);
-#ifdef QT3_SUPPORT
-    QCOMPARE(spySupport.count(), 3);
-#endif
 
     removePage(firstIndex);
     QCOMPARE(tw->currentIndex(), -1);
     QCOMPARE(spy.count(), 1);
     arguments = spy.takeFirst();
     QVERIFY(arguments.at(0).toInt() == -1);
-#ifdef QT3_SUPPORT
-    QCOMPARE(spySupport.count(), 4);
-#endif
-
 }
 
 void tst_QTabWidget::cornerWidget()

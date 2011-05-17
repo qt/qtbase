@@ -40,9 +40,7 @@
 ****************************************************************************/
 
 
-#define QT3_SUPPORT
 #include <QtTest/QtTest>
-
 
 #include <qcoreapplication.h>
 
@@ -2834,11 +2832,6 @@ void tst_QObject::compatibilityChildInsertedEvents()
 
         expected =
             EventSpy::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&object, QEvent::ChildInsertedRequest)
-            << qMakePair(&object, QEvent::ChildInserted)
-            << qMakePair(&object, QEvent::ChildInserted)
-#endif
             << qMakePair(&object, QEvent::Type(QEvent::User + 1))
             << qMakePair(&object, QEvent::Type(QEvent::User + 2));
         QCOMPARE(spy.eventList(), expected);
@@ -2872,10 +2865,6 @@ void tst_QObject::compatibilityChildInsertedEvents()
 
         expected =
             EventSpy::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&object, QEvent::ChildInsertedRequest)
-            << qMakePair(&object, QEvent::ChildInserted)
-#endif
             << qMakePair(&object, QEvent::Type(QEvent::User + 1))
             << qMakePair(&object, QEvent::Type(QEvent::User + 2));
         QCOMPARE(spy.eventList(), expected);

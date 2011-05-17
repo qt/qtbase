@@ -40,10 +40,6 @@
 ****************************************************************************/
 
 
-#if defined(QT3_SUPPORT)
-#include <q3hbox.h>
-#include <q3textedit.h>
-#endif
 #include <qboxlayout.h>
 #include <qapplication.h>
 #include <qbitmap.h>
@@ -169,7 +165,6 @@ public:
     tst_QWidget();
     virtual ~tst_QWidget();
 
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
@@ -189,10 +184,8 @@ private slots:
     void isVisibleTo();
     void isHidden();
     void fonts();
-    void mapToGlobal();
     void mapFromAndTo_data();
     void mapFromAndTo();
-    void checkFocus();
     void focusChainOnHide();
     void focusChainOnReparent();
     void setTabOrder();
@@ -650,9 +643,6 @@ void tst_QWidget::initTestCase()
   // Create the test class
     testWidget = new BezierViewer( 0, "testObject");
     testWidget->resize(200,200);
-#ifdef QT3_SUPPORT
-    qApp->setMainWidget(testWidget);
-#endif
     testWidget->show();
     QTest::qWaitForWindowShown(testWidget);
     QTest::qWait(50);
@@ -1343,27 +1333,6 @@ void tst_QWidget::fonts()
     QVERIFY( cleanTestWidget->font() == originalFont );
 }
 
-void tst_QWidget::mapToGlobal()
-{
-#if !defined(QT3_SUPPORT)
-    QSKIP("No Qt3 Support", SkipAll);
-#else
-    QPoint vis = testWidget->mapToGlobal(QPoint(0,0));
-    testWidget->hide();
-    QCOMPARE(testWidget->mapToGlobal(QPoint(0,0)), vis);
-    testWidget->show();
-
-    // test in a layout and witha move
-    Q3HBox * qhb = new Q3HBox(testWidget);
-    QWidget * qw = new QWidget(qhb);
-    qw->move(6,12);
-    QPoint wVis = qw->mapToGlobal(QPoint(0,0));
-    qw->hide();
-    QCOMPARE(qw->mapToGlobal(QPoint(0,0)), wVis);
-    delete qhb;
-#endif // QT3_SUPPORT
-}
-
 void tst_QWidget::mapFromAndTo_data()
 {
     QTest::addColumn<bool>("windowHidden");
@@ -1652,36 +1621,6 @@ void tst_QWidget::focusChainOnHide()
 
     delete parent;
     testWidget->show(); //don't disturb later tests
-}
-
-void tst_QWidget::checkFocus()
-{
-#if !defined(QT3_SUPPORT)
-    QSKIP("No Qt3 Support", SkipAll);
-#else
-    // This is a very specific test for a specific bug, the bug was
-    // that when setEnabled(FALSE) then setEnabled(TRUE) was called on
-    // the parent of a child widget which had focus while hidden, then
-    // when the widget was shown, the focus would be in the wrong place.
-
-    Q3HBox widget;
-    QLineEdit *focusWidget = new QLineEdit( &widget );
-    new QLineEdit( &widget );
-    new QPushButton( &widget );
-    focusWidget->setFocus();
-    widget.setEnabled( FALSE );
-    widget.setEnabled( TRUE );
-    widget.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-#endif
-    QTest::qWait( 100 );
-    widget.activateWindow();
-    // next call is necessary since the window manager may not give the focus to the widget when
-    // it is shown, which causes the QVERIFY to fail
-    QApplication::setActiveWindow(&widget);
-    QVERIFY( qApp->focusWidget() == focusWidget );
-#endif // QT3_SUPPORT
 }
 
 class Container : public QWidget
@@ -2014,28 +1953,6 @@ void tst_QWidget::showMaximized()
         widget.showMaximized();
         QTRY_VERIFY(widget.size().width() > 20 && widget.size().height() > 20);
     }
-
-#ifdef QT3_SUPPORT
-#if !defined(Q_WS_QWS)
-//embedded respects max/min sizes by design -- maybe wrong design, but that's the way it is now.
-    {
-        Q3HBox box;
-        QWidget widget(&box);
-        widget.setMinimumSize(500, 500);
-        box.showMaximized();
-        QVERIFY(box.isMaximized());
-    }
-
-    {
-        Q3HBox box;
-        QWidget widget(&box);
-        widget.setMaximumSize(500, 500);
-
-        box.showMaximized();
-        QVERIFY(box.isMaximized());
-    }
-#endif
-#endif // QT3_SUPPORT
 }
 
 void tst_QWidget::showFullScreen()
@@ -2107,28 +2024,6 @@ void tst_QWidget::showFullScreen()
         widget.showFullScreen();
         QVERIFY(widget.isFullScreen());
     }
-
-#ifdef QT3_SUPPORT
-#if !defined(Q_WS_QWS)
-//embedded respects max/min sizes by design -- maybe wrong design, but that's the way it is now.
-    {
-        Q3HBox box;
-        QWidget widget(&box);
-        widget.setMinimumSize(500, 500);
-        box.showFullScreen();
-        QVERIFY(box.isFullScreen());
-    }
-
-    {
-        Q3HBox box;
-        QWidget widget(&box);
-        widget.setMaximumSize(500, 500);
-
-        box.showFullScreen();
-        QVERIFY(box.isFullScreen());
-    }
-#endif
-#endif // QT3_SUPPORT
 }
 
 class ResizeWidget : public QWidget {
@@ -6374,11 +6269,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInsertedRequest)
-            << qMakePair(&widget, QEvent::ChildInserted)
-            << qMakePair(&widget, QEvent::ChildInserted)
-#endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::ChildPolished)
@@ -6414,10 +6304,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInserted)
-            << qMakePair(&widget, QEvent::ChildInserted)
-#endif
             << qMakePair(&widget, QEvent::ChildPolished)
             << qMakePair(&widget, QEvent::ChildPolished)
             << qMakePair(&widget, QEvent::Move)
@@ -6433,9 +6319,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInsertedRequest)
-#endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
@@ -6476,10 +6359,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInsertedRequest)
-            << qMakePair(&widget, QEvent::ChildInserted)
-#endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::ChildPolished)
@@ -6516,9 +6395,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInserted)
-#endif
             << qMakePair(&widget, QEvent::ChildPolished)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
@@ -6533,9 +6409,6 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         QCoreApplication::sendPostedEvents();
         expected =
             EventRecorder::EventList()
-#ifdef QT_HAS_QT3SUPPORT
-            << qMakePair(&widget, QEvent::ChildInsertedRequest)
-#endif
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2));
@@ -6996,9 +6869,7 @@ void tst_QWidget::renderWithPainter()
 void tst_QWidget::render_task188133()
 {
     QMainWindow mainWindow;
-#if defined(QT3_SUPPORT)
-    mainWindow.setCentralWidget(new Q3TextEdit);
-#endif
+
     // Make sure QWidget::render does not trigger QWidget::repaint/update
     // and asserts for Qt::WA_WState_Created.
     QPixmap pixmap = QPixmap::grabWidget(&mainWindow);

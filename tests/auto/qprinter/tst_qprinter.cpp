@@ -39,19 +39,13 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
-
-
 
 #include <qprinter.h>
 #include <qpagesetupdialog.h>
 #include <qpainter.h>
 #include <qprintdialog.h>
 #include <qprinterinfo.h>
-#ifdef QT3_SUPPORT
-#include <q3paintdevicemetrics.h>
-#endif
 #include <qvariant.h>
 #include <qpainter.h>
 #include <qprintengine.h>
@@ -420,23 +414,6 @@ void tst_QPrinter::testMargins()
     printer.setPageSize((QPrinter::PageSize)pagesize);
     if (withPainter)
         painter = new QPainter(&printer);
-
-#ifdef QT3_SUPPORT
-    Q3PaintDeviceMetrics metrics(&printer);
-    int pwidth = metrics.width();
-    int pheight = metrics.height();
-
-    if (orientation == QPrinter::Portrait) {
-        QVERIFY(pheight >= pwidth);
-    } else {
-        QVERIFY(pwidth >= pheight);
-    }
-
-    if (fullpage) {
-        QCOMPARE(metrics.widthMM(), width);
-        QCOMPARE(metrics.heightMM(), height);
-    }
-#endif
 
     if (painter)
         delete painter;

@@ -277,11 +277,6 @@ private slots:
     void QTBUG697_paletteCurrentColorGroup();
     void QTBUG13520_textNotVisible();
 
-#ifdef QT3_SUPPORT
-    void validateAndSet_data();
-    void validateAndSet();
-#endif
-
     void bidiVisualMovement_data();
     void bidiVisualMovement();
 
@@ -289,9 +284,6 @@ private slots:
     void bidiLogicalMovement();
 
 protected slots:
-#ifdef QT3_SUPPORT
-    void lostFocus();
-#endif
     void editingFinished();
 
     void onTextChanged( const QString &newString );
@@ -360,9 +352,6 @@ void tst_QLineEdit::initTestCase()
     connect(testWidget, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
     connect(testWidget, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
     connect(testWidget, SIGNAL(editingFinished()), this, SLOT(editingFinished()));
-#ifdef QT3_SUPPORT
-    connect(testWidget, SIGNAL(lostFocus()), this, SLOT(lostFocus()));
-#endif
 
     testWidget->resize(200,50);
     testWidget->show();
@@ -1498,40 +1487,6 @@ void tst_QLineEdit::clear()
     QCOMPARE(testWidget->text(), QString("I am Legend"));
 }
 
-#ifdef QT3_SUPPORT
-void tst_QLineEdit::lostFocus()
-{
-    editingFinished();
-}
-
-void tst_QLineEdit::validateAndSet_data()
-{
-    QTest::addColumn<QString>("newText");
-    QTest::addColumn<int>("newPos");
-    QTest::addColumn<int>("newMarkAnchor");
-    QTest::addColumn<int>("newMarkDrag");
-
-    QTest::newRow("1") << QString("Hello World") << 3 << 3 << 5;
-    QTest::newRow("2") << QString("Hello World") << 5 << 3 << 5;
-}
-
-void tst_QLineEdit::validateAndSet()
-{
-    QFETCH(QString, newText);
-    QFETCH(int, newPos);
-    QFETCH(int, newMarkAnchor);
-    QFETCH(int, newMarkDrag);
-
-    QLineEdit e;
-    e.validateAndSet(newText, newPos, newMarkAnchor, newMarkDrag);
-    QCOMPARE(e.text(), newText);
-    QCOMPARE(e.cursorPosition(), newPos);
-    QCOMPARE(e.selectedText(), newText.mid(newMarkAnchor, newMarkDrag-newMarkAnchor));
-}
-
-
-
-#endif
 void tst_QLineEdit::editingFinished()
 {
     if (testWidget->hasAcceptableInput())
@@ -2660,16 +2615,6 @@ void tst_QLineEdit::setAlignment()
 #endif
     QVERIFY(testWidget->alignment() == Qt::AlignLeft);
 
-#ifdef QT3_SUPPORT
-    testWidget->setText("auto");
-    testWidget->setAlignment(Qt::AlignAuto);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
-    QTEST(testWidget, "auto");
-#endif
-#endif
-#endif
-
     testWidget->setText("hcenter");
     testWidget->setAlignment(Qt::AlignHCenter);
 #ifndef NO_PIXMAP_TESTS
@@ -2679,16 +2624,6 @@ void tst_QLineEdit::setAlignment()
 #endif
     QVERIFY(testWidget->alignment() == Qt::AlignHCenter);
 
-#ifdef QT3_SUPPORT
-    testWidget->setText("auto");
-    testWidget->setAlignment(Qt::AlignAuto);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
-    QTEST(testWidget, "auto");
-#endif
-#endif
-#endif
-
     testWidget->setText("right");
     testWidget->setAlignment(Qt::AlignRight);
 #ifndef NO_PIXMAP_TESTS
@@ -2697,17 +2632,6 @@ void tst_QLineEdit::setAlignment()
 #endif
 #endif
     QVERIFY(testWidget->alignment() == Qt::AlignRight);
-
-#ifdef QT3_SUPPORT
-    testWidget->setText("auto");
-    testWidget->setAlignment(Qt::AlignAuto);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_WS_WIN
-    QTEST(testWidget, "auto");
-#endif
-#endif
-    QVERIFY(testWidget->alignment() == Qt::AlignAuto);
-#endif
 
     testWidget->setAlignment(Qt::AlignTop);
     QVERIFY(testWidget->alignment() == Qt::AlignTop);
