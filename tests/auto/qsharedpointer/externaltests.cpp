@@ -371,8 +371,6 @@ namespace QTest {
             sourceCode += "#include <QtOpenGL/QtOpenGL>\n";
         if (qtModules & QExternalTest::QtSql)
             sourceCode += "#include <QtSql/QtSql>\n";
-        if (qtModules & QExternalTest::Qt3Support)
-            sourceCode += "#include <Qt3Support/Qt3Support>\n";
         if (qtModules & QExternalTest::QtSvg)
             sourceCode += "#include <QtSvg/QtSvg>\n";
         if (qtModules & QExternalTest::QtScript)
@@ -543,8 +541,6 @@ namespace QTest {
             projectFile.write("QT += opengl\n");
         if (qtModules & QExternalTest::QtSql)
             projectFile.write("QT += sql\n");
-        if (qtModules & QExternalTest::Qt3Support)
-            projectFile.write("QT += qt3support\n");
         if (qtModules & QExternalTest::QtSvg)
             projectFile.write("QT += svg\n");
         if (qtModules & QExternalTest::QtScript)
