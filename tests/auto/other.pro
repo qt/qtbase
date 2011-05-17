@@ -5,7 +5,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
-           qaccessibility \
            qalgorithms \
            qcombobox \
            qcssparser \
@@ -35,6 +34,8 @@ SUBDIRS=\
            qworkspace \
            windowsmobile \
            nativeimagehandleprovider
+
+contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {

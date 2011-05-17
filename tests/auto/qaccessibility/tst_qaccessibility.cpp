@@ -350,7 +350,6 @@ public:
     }
 };
 
-#ifdef QTEST_ACCESSIBILITY
 class QtTestAccessibleWidgetIface: public QAccessibleWidget
 {
 public:
@@ -368,7 +367,6 @@ public:
         return 0;
     }
 };
-#endif
 
 tst_QAccessibility::tst_QAccessibility()
 {
@@ -380,17 +378,13 @@ tst_QAccessibility::~tst_QAccessibility()
 
 void tst_QAccessibility::initTestCase()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTestAccessibility::initialize();
     QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
-#endif
 }
 
 void tst_QAccessibility::cleanupTestCase()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTestAccessibility::cleanup();
-#endif
 }
 
 void tst_QAccessibility::init()
@@ -400,7 +394,6 @@ void tst_QAccessibility::init()
 
 void tst_QAccessibility::cleanup()
 {
-#ifdef QTEST_ACCESSIBILITY
     const EventList list = QTestAccessibility::events();
     if (!list.isEmpty()) {
         qWarning("%d accessibility event(s) were not handled in testfunction '%s':", list.count(),
@@ -410,14 +403,10 @@ void tst_QAccessibility::cleanup()
                      eventName(list.at(i).event).toAscii().constData(), list.at(i).event, list.at(i).child);
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::eventTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QPushButton* button = new QPushButton(0);
     button->setObjectName(QString("Olaf"));
 
@@ -438,14 +427,10 @@ void tst_QAccessibility::eventTest()
     QVERIFY_EVENT(button, 0, QAccessible::ObjectHide);
 
     delete button;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::customWidget()
 {
-#ifdef QTEST_ACCESSIBILITY
     QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
@@ -457,14 +442,10 @@ void tst_QAccessibility::customWidget()
 
     delete iface;
     delete widget;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::deletedWidget()
 {
-#ifdef QTEST_ACCESSIBILITY
     QtTestAccessibleWidget *widget = new QtTestAccessibleWidget(0, "Ralf");
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
@@ -475,9 +456,6 @@ void tst_QAccessibility::deletedWidget()
     widget = 0;
     QVERIFY(!iface->isValid());
     delete iface;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 QWidget *tst_QAccessibility::createGUI()
@@ -486,7 +464,6 @@ QWidget *tst_QAccessibility::createGUI()
     qWarning( "Should never get here without Qt3Support");
     return 0;
 #else
-#  ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
     QGridLayout *grid = new QGridLayout(toplevel, 2, 2);
 
@@ -558,10 +535,6 @@ QWidget *tst_QAccessibility::createGUI()
     radioAM->setFocus();
     QTestAccessibility::clearEvents();
     return toplevel;
-#  else
-    Q_ASSERT(0); // this function cannot be called without accessibility support
-    return 0;
-#  endif
 #endif // !QT3_SUPPORT
 }
 
@@ -570,7 +543,6 @@ void tst_QAccessibility::childAt()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     QAccessibleInterface *acc_toplevel = QAccessible::queryAccessibleInterface(toplevel);
     QVERIFY(acc_toplevel);
@@ -602,9 +574,6 @@ void tst_QAccessibility::childAt()
     delete acc_toplevel;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -613,7 +582,6 @@ void tst_QAccessibility::childCount()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     QObject *topLeft = toplevel->child("topLeft");
     QObject *topRight = toplevel->child("topRight");
@@ -646,9 +614,6 @@ void tst_QAccessibility::childCount()
     delete acc_bottomRight;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -657,7 +622,6 @@ void tst_QAccessibility::relationTo()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->resize(400,300);
     QObject *topLeft = toplevel->child("topLeft");
@@ -863,15 +827,11 @@ void tst_QAccessibility::relationTo()
     delete toplevel;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
 void tst_QAccessibility::navigateGeometric()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     static const int skip = 20; //speed the test up significantly
     static const double step = Q_PI / 180;
@@ -967,14 +927,10 @@ void tst_QAccessibility::navigateGeometric()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateSlider()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QSlider *slider = new QSlider(0);
     slider->setObjectName(QString("Slidy"));
@@ -1001,14 +957,10 @@ void tst_QAccessibility::navigateSlider()
     delete slider;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateCovered()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *w = new QWidget(0);
     w->setObjectName(QString("Harry"));
@@ -1111,14 +1063,10 @@ void tst_QAccessibility::navigateCovered()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::navigateHierarchy()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *w = new QWidget(0);
     w->setObjectName(QString("Hans"));
@@ -1214,9 +1162,6 @@ void tst_QAccessibility::navigateHierarchy()
     delete w;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 #define QSETCOMPARE(thetypename, elements, otherelements) \
@@ -1227,7 +1172,6 @@ void tst_QAccessibility::navigateControllers()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     {
     Q3VBox vbox;
     QSlider     slider(&vbox);
@@ -1310,9 +1254,6 @@ void tst_QAccessibility::navigateControllers()
     delete acc_slider;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1321,7 +1262,6 @@ void tst_QAccessibility::navigateLabels()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     {
     Q3VBox vbox;
     Q3HBox hbox(&vbox);
@@ -1443,9 +1383,6 @@ void tst_QAccessibility::navigateLabels()
     delete acc_lineedit3;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1497,7 +1434,6 @@ static QWidget *createWidgets()
 
 void tst_QAccessibility::accessibleName()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createWidgets();
     toplevel->show();
 #if defined(Q_WS_X11)
@@ -1522,9 +1458,6 @@ void tst_QAccessibility::accessibleName()
 
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::text()
@@ -1532,7 +1465,6 @@ void tst_QAccessibility::text()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->show();
 #if defined(Q_WS_X11)
@@ -1628,10 +1560,6 @@ void tst_QAccessibility::text()
 
     delete toplevel;
     QTestAccessibility::clearEvents();
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // !QT3_SUPPORT
 }
 
@@ -1640,7 +1568,6 @@ void tst_QAccessibility::setText()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QWidget *toplevel = createGUI();
     toplevel->show();
     QObject *bottomLeft = toplevel->findChild<QObject *>("bottomLeft");
@@ -1664,16 +1591,11 @@ void tst_QAccessibility::setText()
     delete acc_lineedit;
     delete toplevel;
     QTestAccessibility::clearEvents();
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //QT3_SUPPORT
 }
 
 void tst_QAccessibility::hideShowTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget * const window = new QWidget();
     QWidget * const child = new QWidget(window);
 
@@ -1700,14 +1622,10 @@ void tst_QAccessibility::hideShowTest()
 
     delete window;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::userActionCount()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget widget;
 
     QAccessibleInterface *test = QAccessible::queryAccessibleInterface(&widget);
@@ -1737,14 +1655,10 @@ void tst_QAccessibility::userActionCount()
     QCOMPARE(test->userActionCount(1), 0);
     QCOMPARE(test->userActionCount(-1), 0);
     delete test; test = 0;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::actionText()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget widget;
     widget.show();
 
@@ -1761,19 +1675,11 @@ void tst_QAccessibility::actionText()
     QCOMPARE(test->actionText(QAccessible::SetFocus, QAccessible::Name, 0), QString("SetFocus"));
 
     delete test; test = 0;
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::doAction()
 {
-#ifdef QTEST_ACCESSIBILITY
     QSKIP("TODO: Implement me", SkipAll);
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::applicationTest()
@@ -1828,7 +1734,6 @@ public Q_SLOTS:
 
 void tst_QAccessibility::buttonTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget window;
     window.setLayout(new QVBoxLayout);
 
@@ -2017,10 +1922,6 @@ void tst_QAccessibility::buttonTest()
 //    test->release();
 
     QTestAccessibility::clearEvents();
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::sliderTest()
@@ -2028,7 +1929,6 @@ void tst_QAccessibility::sliderTest()
 #if !defined(QT3_SUPPORT)
     QSKIP("This test needs Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     QAccessibleInterface *test = 0;
     Q3VBox vbox;
     QLabel labelHorizontal("Horizontal", &vbox);
@@ -2057,7 +1957,7 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
     QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderHorizontal.value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
-// Skip acton tests.
+// Skip action tests.
 #if 0
     QCOMPARE(test->defaultAction(0), QAccessible::SetFocus);
     QCOMPARE(test->defaultAction(1), QAccessible::Press);
@@ -2104,7 +2004,7 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(test->text(QAccessible::Value, 1), QString());
     QCOMPARE(test->text(QAccessible::Value, 2), QString::number(sliderVertical.value()));
     QCOMPARE(test->text(QAccessible::Value, 3), QString());
-// Skip acton tests.
+// Skip action tests.
 #if 0
     QCOMPARE(test->defaultAction(0), QAccessible::SetFocus);
     QCOMPARE(test->defaultAction(1), QAccessible::Press);
@@ -2215,17 +2115,12 @@ void tst_QAccessibility::sliderTest()
         delete sliderInterface;
     }
 
-
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //!QT3_SUPPORT
 }
 
 void tst_QAccessibility::scrollBarTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     // Test that when we hide() a slider, the PageLeft, Indicator, and PageRight also gets the
     // Invisible state bit set.
     enum SubControls { LineUp = 1,
@@ -2233,7 +2128,7 @@ void tst_QAccessibility::scrollBarTest()
         Position = 3,
         PageDown = 4,
         LineDown = 5
- };
+    };
 
     QScrollBar *scrollBar  = new QScrollBar();
     QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
@@ -2315,15 +2210,10 @@ void tst_QAccessibility::scrollBarTest()
     }
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 void tst_QAccessibility::tabTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTabBar *tabBar = new QTabBar();
     tabBar->show();
 
@@ -2359,9 +2249,6 @@ void tst_QAccessibility::tabTest()
     delete tabBar;
     delete interface;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::tabWidgetTest()
@@ -2459,7 +2346,6 @@ void tst_QAccessibility::tabWidgetTest()
 
 void tst_QAccessibility::menuTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMainWindow mw;
     mw.resize(300, 200);
@@ -2705,14 +2591,10 @@ void tst_QAccessibility::menuTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs Qt >= 0x040000 and accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::spinBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QSpinBox * const spinBox = new QSpinBox();
     spinBox->show();
 
@@ -2739,14 +2621,10 @@ void tst_QAccessibility::spinBoxTest()
     QVERIFY(events.contains(expectedEvent));
     delete spinBox;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::doubleSpinBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QDoubleSpinBox *doubleSpinBox = new QDoubleSpinBox;
     doubleSpinBox->show();
 
@@ -2766,14 +2644,10 @@ void tst_QAccessibility::doubleSpinBoxTest()
 
     delete doubleSpinBox;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::textEditTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QTextEdit edit;
     QString text = "hello world\nhow are you today?\n";
@@ -2793,14 +2667,10 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::textBrowserTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QTextBrowser textBrowser;
     QString text = QLatin1String("Hello world\nhow are you today?\n");
@@ -2817,14 +2687,10 @@ void tst_QAccessibility::textBrowserTest()
     QCOMPARE(interface->text(QAccessible::Value, 6), QString());
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::listViewTest()
 {
-#if 1 //def QTEST_ACCESSIBILITY
     {
         QListView listView;
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
@@ -2890,15 +2756,11 @@ void tst_QAccessibility::listViewTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 
 void tst_QAccessibility::mdiAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMdiArea mdiArea;
     mdiArea.resize(400,300);
@@ -2947,14 +2809,10 @@ void tst_QAccessibility::mdiAreaTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::mdiSubWindowTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QMdiArea mdiArea;
     mdiArea.show();
@@ -3077,14 +2935,10 @@ void tst_QAccessibility::mdiSubWindowTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::lineEditTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QLineEdit *le = new QLineEdit;
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(le);
     QVERIFY(iface);
@@ -3142,14 +2996,10 @@ void tst_QAccessibility::lineEditTest()
     delete le2;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::workspaceTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWorkspace workspace;
     workspace.resize(400,300);
@@ -3203,14 +3053,10 @@ void tst_QAccessibility::workspaceTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::dialogButtonBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QDialogButtonBox box(QDialogButtonBox::Reset |
                          QDialogButtonBox::Help |
@@ -3323,14 +3169,10 @@ void tst_QAccessibility::dialogButtonBoxTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::dialTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QDial dial;
     dial.setValue(20);
@@ -3372,28 +3214,20 @@ void tst_QAccessibility::dialTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::rubberBandTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QRubberBand rubberBand(QRubberBand::Rectangle);
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&rubberBand);
     QVERIFY(interface);
     QCOMPARE(interface->role(0), QAccessible::Border);
     delete interface;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::abstractScrollAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QAbstractScrollArea abstractScrollArea;
 
@@ -3551,14 +3385,10 @@ void tst_QAccessibility::abstractScrollAreaTest()
     }
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::scrollAreaTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QScrollArea scrollArea;
     scrollArea.show();
@@ -3572,14 +3402,10 @@ void tst_QAccessibility::scrollAreaTest()
     delete interface;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::tableWidgetTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QWidget *topLevel = new QWidget;
     QTableWidget *w = new QTableWidget(8,4,topLevel);
@@ -3619,10 +3445,6 @@ void tst_QAccessibility::tableWidgetTest()
     delete topLevel;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 class QtTestTableModel: public QAbstractTableModel
@@ -3705,7 +3527,6 @@ public:
 
 void tst_QAccessibility::tableViewTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     {
     QtTestTableModel *model = new QtTestTableModel(3, 4);
     QTableView *w = new QTableView();
@@ -3785,15 +3606,11 @@ void tst_QAccessibility::tableViewTest()
     delete model;
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::calendarWidgetTest()
 {
 #ifndef QT_NO_CALENDARWIDGET
-#ifdef QTEST_ACCESSIBILITY
     {
     QCalendarWidget calendarWidget;
 
@@ -3886,17 +3703,12 @@ void tst_QAccessibility::calendarWidgetTest()
 
     }
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // QT_NO_CALENDARWIDGET
 }
 
 void tst_QAccessibility::dockWidgetTest()
 {
 #ifndef QT_NO_DOCKWIDGET
-
-#ifdef QTEST_ACCESSIBILITY
     // Set up a proper main window with two dock widgets
     QMainWindow *mw = new QMainWindow();
     QFrame *central = new QFrame(mw);
@@ -3964,19 +3776,14 @@ void tst_QAccessibility::dockWidgetTest()
     delete dock2;
     delete mw;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif // QT_NO_DOCKWIDGET
 }
 
 void tst_QAccessibility::pushButtonTest()
 {
 #if !defined(QT3_SUPPORT)
-    qWarning( "Should never get here without Qt3Support");
-    return ;
+    QSKIP( "Should never get here without Qt3Support", SkipAll);
 #else
-#ifdef QTEST_ACCESSIBILITY
     // Set up a proper main window with two dock widgets
     QWidget *toplevel = createGUI();
     QObject *topRight = toplevel->findChild<QObject *>("topRight");
@@ -4010,15 +3817,11 @@ void tst_QAccessibility::pushButtonTest()
     delete accToplevel;
     delete toplevel;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 #endif //QT3_SUPPORT
 }
 
 void tst_QAccessibility::comboBoxTest()
 {
-#ifdef QTEST_ACCESSIBILITY
 #if defined(Q_OS_WINCE)
     if (!IsValidCEPlatform()) {
         QSKIP("Test skipped on Windows Mobile test hardware", SkipAll);
@@ -4056,15 +3859,10 @@ void tst_QAccessibility::comboBoxTest()
     delete w;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
-
 }
 
 void tst_QAccessibility::treeWidgetTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *w = new QWidget;
     QTreeWidget *tree = new QTreeWidget(w);
     QHBoxLayout *l = new QHBoxLayout(w);
@@ -4122,14 +3920,10 @@ void tst_QAccessibility::treeWidgetTest()
     delete w;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::labelTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QString text = "Hello World";
     QLabel *label = new QLabel(text);
     label->show();
@@ -4168,14 +3962,10 @@ void tst_QAccessibility::labelTest()
     delete acc_label;
 
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::accelerators()
 {
-#ifdef QTEST_ACCESSIBILITY
     QWidget *window = new QWidget;
     QHBoxLayout *lay = new QHBoxLayout(window);
     QLabel *label = new QLabel(tr("&Line edit"), window);
@@ -4208,9 +3998,6 @@ void tst_QAccessibility::accelerators()
     QTest::qWait(100);
     delete window;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs Qt >= 0x040000 and accessibility support.", SkipAll);
-#endif
 }
 
 
