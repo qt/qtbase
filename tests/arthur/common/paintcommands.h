@@ -185,14 +185,6 @@ private:
     void command_gradient_setCoordinateMode(QRegExp re);
 
     // commands: drawing ops
-#ifdef QT3_SUPPORT
-    void command_qt3_drawArc(QRegExp re);
-    void command_qt3_drawChord(QRegExp re);
-    void command_qt3_drawEllipse(QRegExp re);
-    void command_qt3_drawPie(QRegExp re);
-    void command_qt3_drawRect(QRegExp re);
-    void command_qt3_drawRoundRect(QRegExp re);
-#endif
     void command_drawArc(QRegExp re);
     void command_drawChord(QRegExp re);
     void command_drawConvexPolygon(QRegExp re);

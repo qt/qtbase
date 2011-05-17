@@ -6,7 +6,7 @@
 #include(../arthurtester.pri)
 #TEMPLATE = lib
 #CONFIG += static
-#QT += xml opengl svg qt3support
+#QT += xml opengl svg
 
 #build_all:!build_pass {
 #    CONFIG -= build_all
