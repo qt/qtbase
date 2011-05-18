@@ -3,7 +3,8 @@ TEMPLATE = lib
 TARGET = $$qtLibraryTarget(QtUiTools)
 QT = core xml
 
-CONFIG += qt staticlib   # Not adding module here, since the module pri's are only used for building
+CONFIG += qt staticlib module
+MODULE = uitools
 MODULE_PRI = ../modules/qt_uitools.pri \
              ../modules/qt_uilib.pri
 
