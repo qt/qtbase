@@ -704,13 +704,16 @@ int QAccessibleWidget::navigate(RelationFlag relation, int entry,
             int sibCount = pIface->childCount();
             QAccessibleInterface *candidate = 0;
             for (int i = 0; i < sibCount && entry; ++i) {
-                pIface->navigate(Child, i+1, &candidate);
-                Q_ASSERT(candidate);
-                if (candidate->relationTo(0, this, 0) & Label)
+                const int childId = pIface->navigate(Child, i+1, &candidate);
+                Q_ASSERT(childId >= 0);
+                if (childId > 0)
+                    candidate = pIface;
+                if (candidate->relationTo(childId, this, 0) & Label)
                     --entry;
                 if (!entry)
                     break;
-                delete candidate;
+                if (candidate != pIface)
+                    delete candidate;
                 candidate = 0;
             }
             if (!candidate) {
