@@ -1565,8 +1565,8 @@ protected:
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
-        QVERIFY(socket);
-        QVERIFY(socket->isValid());
+        if (!socket || !socket->isValid())
+            return;             // error
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))
