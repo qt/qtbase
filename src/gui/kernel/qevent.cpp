@@ -2448,21 +2448,6 @@ QDragEnterEvent::~QDragEnterEvent()
 }
 
 /*!
-    Constructs a drag response event containing the \a accepted value,
-    indicating whether the drag and drop operation was accepted by the
-    recipient.
-*/
-QDragResponseEvent::QDragResponseEvent(bool accepted)
-    : QEvent(DragResponse), a(accepted)
-{}
-
-/*! \internal
-*/
-QDragResponseEvent::~QDragResponseEvent()
-{
-}
-
-/*!
     \class QDragMoveEvent
     \brief The QDragMoveEvent class provides an event which is sent while a drag and drop action is in progress.
 

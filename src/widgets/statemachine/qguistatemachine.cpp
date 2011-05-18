@@ -148,8 +148,6 @@ static QEvent *cloneEvent(QEvent *e)
         return new QDragLeaveEvent(*static_cast<QDragLeaveEvent*>(e));
     case QEvent::Drop:
         return new QDropEvent(*static_cast<QDragMoveEvent*>(e));
-    case QEvent::DragResponse:
-        return new QDragResponseEvent(*static_cast<QDragResponseEvent*>(e));
 #endif
     case QEvent::ChildAdded:
         return new QChildEvent(*static_cast<QChildEvent*>(e));

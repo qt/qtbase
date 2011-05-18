@@ -496,19 +496,6 @@ public:
 };
 
 
-/* An internal class */
-class Q_GUI_EXPORT QDragResponseEvent : public QEvent
-{
-public:
-    QDragResponseEvent(bool accepted);
-    ~QDragResponseEvent();
-
-    inline bool dragAccepted() const { return a; }
-protected:
-    bool a;
-};
-
-
 class Q_GUI_EXPORT QDragLeaveEvent : public QEvent
 {
 public:
