@@ -73,6 +73,8 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif
 
+//#ifdef NET_WM_STATE_DEBUG
+
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
 {
@@ -285,10 +287,15 @@ void QXcbWindow::show()
         }
 
         // update _MOTIF_WM_HINTS
-        updateMotifWmHintsBeforeShow();
+        updateMotifWmHintsBeforeMap();
+
+        // update _NET_WM_STATE
+        updateNetWmStateBeforeMap();
     }
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+    xcb_flush(xcb_connection());
+
     connection()->sync();
 }
 
@@ -299,7 +306,6 @@ void QXcbWindow::hide()
     // send synthetic UnmapNotify event according to icccm 4.1.4
     xcb_unmap_notify_event_t event;
     event.response_type = XCB_UNMAP_NOTIFY;
-    event.sequence = 0; // does this matter?
     event.event = m_screen->root();
     event.window = m_window;
     event.from_configure = false;
@@ -388,6 +394,75 @@ static void setMotifWmHints(QXcbConnection *c, xcb_window_t window, const QtMoti
         Q_XCB_CALL2(xcb_delete_property(c->xcb_connection(), window, c->atom(QXcbAtom::_MOTIF_WM_HINTS)), c);
     }
 }
+
+void QXcbWindow::printNetWmState(const QVector<xcb_atom_t> &state)
+{
+    printf("_NET_WM_STATE (%d): ", state.size());
+    for (int i = 0; i < state.size(); ++i) {
+#define CHECK_WM_STATE(state_atom) \
+        if (state.at(i) == atom(QXcbAtom::state_atom))\
+            printf(#state_atom " ");
+        CHECK_WM_STATE(_NET_WM_STATE_ABOVE)
+        CHECK_WM_STATE(_NET_WM_STATE_BELOW)
+        CHECK_WM_STATE(_NET_WM_STATE_FULLSCREEN)
+        CHECK_WM_STATE(_NET_WM_STATE_MAXIMIZED_HORZ)
+        CHECK_WM_STATE(_NET_WM_STATE_MAXIMIZED_VERT)
+        CHECK_WM_STATE(_NET_WM_STATE_MODAL)
+        CHECK_WM_STATE(_NET_WM_STATE_STAYS_ON_TOP)
+        CHECK_WM_STATE(_NET_WM_STATE_DEMANDS_ATTENTION)
+#undef CHECK_WM_STATE
+    }
+    printf("\n");
+}
+
+QVector<xcb_atom_t> QXcbWindow::getNetWmState()
+{
+    QVector<xcb_atom_t> result;
+
+    xcb_get_property_cookie_t get_cookie =
+        xcb_get_property(xcb_connection(), 0, m_window, atom(QXcbAtom::_NET_WM_STATE),
+                         XCB_ATOM_ATOM, 0, 1024);
+
+    xcb_generic_error_t *error;
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection(), get_cookie, &error);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
+        result.resize(reply->length);
+
+        memcpy(result.data(), xcb_get_property_value(reply), reply->length * sizeof(xcb_atom_t));
+
+#ifdef NET_WM_STATE_DEBUG
+        printf("getting net wm state (%x)\n", m_window);
+        printNetWmState(result);
+#endif
+
+        free(reply);
+    } else if (error) {
+        connection()->handleXcbError(error);
+        free(error);
+    } else {
+#ifdef NET_WM_STATE_DEBUG
+        printf("getting net wm state (%x), empty\n", m_window);
+#endif
+    }
+
+    return result;
+}
+
+void QXcbWindow::setNetWmState(const QVector<xcb_atom_t> &atoms)
+{
+    if (atoms.isEmpty()) {
+        Q_XCB_CALL(xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_STATE)));
+    } else {
+        Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                       atom(QXcbAtom::_NET_WM_STATE), XCB_ATOM_ATOM, 32,
+                                       atoms.count(), atoms.constData()));
+    }
+    xcb_flush(xcb_connection());
+}
+
 
 Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
@@ -601,7 +676,7 @@ void QXcbWindow::setNetWmWindowTypes(Qt::WindowFlags flags)
                                    windowTypes.count(), windowTypes.constData()));
 }
 
-void QXcbWindow::updateMotifWmHintsBeforeShow()
+void QXcbWindow::updateMotifWmHintsBeforeMap()
 {
     QtMotifWmHints mwmhints = getMotifWmHints(connection(), m_window);
 
@@ -655,6 +730,34 @@ void QXcbWindow::updateMotifWmHintsBeforeShow()
         mwmhints.functions |= MWM_FUNC_CLOSE;
 
     setMotifWmHints(connection(), m_window, mwmhints);
+}
+
+void QXcbWindow::updateNetWmStateBeforeMap()
+{
+    QVector<xcb_atom_t> netWmState;
+
+    Qt::WindowFlags flags = window()->windowFlags();
+    if (flags & Qt::WindowStaysOnTopHint) {
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_ABOVE));
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP));
+    } else if (flags & Qt::WindowStaysOnBottomHint) {
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_BELOW));
+    }
+
+    if (window()->windowState() & Qt::WindowFullScreen) {
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN));
+    }
+
+    if (window()->windowState() & Qt::WindowMaximized) {
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ));
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT));
+    }
+
+    if (window()->windowModality() != Qt::NonModal) {
+        netWmState.append(atom(QXcbAtom::_NET_WM_STATE_MODAL));
+    }
+
+    setNetWmState(netWmState);
 }
 
 WId QXcbWindow::winId() const

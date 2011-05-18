@@ -96,8 +96,12 @@ public:
 private:
     void setNetWmWindowTypes(Qt::WindowFlags flags);
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+    QVector<xcb_atom_t> getNetWmState();
+    void setNetWmState(const QVector<xcb_atom_t> &atoms);
+    void printNetWmState(const QVector<xcb_atom_t> &state);
 
-    void updateMotifWmHintsBeforeShow();
+    void updateMotifWmHintsBeforeMap();
+    void updateNetWmStateBeforeMap();
 
     void show();
     void hide();
