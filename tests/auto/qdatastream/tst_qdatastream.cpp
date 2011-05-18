@@ -45,13 +45,11 @@
 #ifdef QT3_SUPPORT
 #include <Qt3Support/Qt3Support>
 #endif
-#include <QtSvg/QtSvg>
 
 #if defined(Q_OS_SYMBIAN)
 # define STRINGIFY(x) #x
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
-#define SVGFILE "tests2.svg"
 #endif
 
 Q_DECLARE_METATYPE(QBitArray)
@@ -279,9 +277,6 @@ private:
     void readQWMatrix(QDataStream *s);
     void readQIcon(QDataStream *s);
     void readQEasingCurve(QDataStream *s);
-
-private:
-    QString svgFile;
 };
 
 static int NColorRoles[] = {
@@ -327,7 +322,6 @@ void tst_QDataStream::getSetCheck()
 
 tst_QDataStream::tst_QDataStream()
 {
-    svgFile = QLatin1String(SRCDIR SVGFILE);
 }
 
 tst_QDataStream::~tst_QDataStream()
@@ -1870,9 +1864,6 @@ void tst_QDataStream::writeQIcon(QDataStream *s)
     QPixmap pm(open_xpm);
     QIcon d16(pm);
     *s << d16;
-
-    QIcon svg(svgFile);
-    *s << svg;
 }
 
 void tst_QDataStream::readQIcon(QDataStream *s)
@@ -1883,24 +1874,6 @@ void tst_QDataStream::readQIcon(QDataStream *s)
     *s >> d16;
     QVERIFY(!d16.isNull() && !icon.isNull());
     QCOMPARE(d16.pixmap(100), pm);
-
-    QIcon svg;
-    *s >> svg;
-    QVERIFY(!svg.isNull());
-
-    QImage image(200, 200, QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
-    QPainter p(&image);
-    p.drawPixmap(0, 0, svg.pixmap(200, 200));
-    p.end();
-
-    QIcon svg2(svgFile);
-    QImage image2(200, 200, QImage::Format_ARGB32_Premultiplied);
-    image2.fill(0);
-    p.begin(&image2);
-    p.drawPixmap(0, 0, svg2.pixmap(200, 200));
-    p.end();
-    QCOMPARE(image, image2);
 }
 
 // ************************************
@@ -3219,13 +3192,13 @@ void tst_QDataStream::streamToAndFromQByteArray()
 
 void tst_QDataStream::streamRealDataTypes()
 {
-    // Generate QPicture from SVG.
-    QSvgRenderer renderer(svgFile);
-    QVERIFY(renderer.isValid());
+    // Generate QPicture from pixmap.
+    QPixmap pm(open_xpm);
+    QVERIFY(!pm.isNull());
     QPicture picture;
-    picture.setBoundingRect(QRect(QPoint(0, 0), renderer.defaultSize()));
+    picture.setBoundingRect(QRect(QPoint(0, 0), pm.size()));
     QPainter painter(&picture);
-    renderer.render(&painter);
+    painter.drawPixmap(0, 0, pm);
     painter.end();
 
     // Generate path
