@@ -9,6 +9,8 @@ HEADERS += \
         kernel/qclipboard.h \
         kernel/qcursor.h \
         kernel/qcursor_p.h \
+        kernel/qdrag.h \
+        kernel/qdnd_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
         kernel/qkeysequence.h \
@@ -22,6 +24,9 @@ HEADERS += \
 SOURCES += \
         kernel/qclipboard.cpp \
         kernel/qcursor.cpp \
+        kernel/qdrag.cpp \
+        kernel/qdnd.cpp \
+        kernel/qdnd_qpa.cpp \
         kernel/qevent.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \

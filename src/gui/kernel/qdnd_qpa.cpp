@@ -43,13 +43,13 @@
 
 #ifndef QT_NO_DRAGANDDROP
 
-#include "qwidget.h"
 #include "qdatetime.h"
 #include "qbitmap.h"
 #include "qcursor.h"
 #include "qevent.h"
 #include "qpainter.h"
 #include "qdnd_p.h"
+#include "qwindow.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -86,39 +86,45 @@ static bool qt_qws_dnd_dragging = false;
 
 static Qt::KeyboardModifiers oldstate;
 
-class QShapedPixmapWidget : public QWidget {
+class QShapedPixmapWindow : public QWindow {
     QPixmap pixmap;
 public:
-    QShapedPixmapWidget() :
-        QWidget(0, Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint)
+    QShapedPixmapWindow() :
+        QWindow(0)
     {
-        // ### Temporary workaround for 4.2-rc1!!! To prevent flickering when
-        // using drag'n drop in a client application. (task 126956)
-        // setAttribute() should be done unconditionally!
-        // if (QApplication::type() == QApplication::GuiServer)
-            setAttribute(Qt::WA_TransparentForMouseEvents);
+        setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
+        // ### Should we set the surface type to raster?
+        // ### FIXME
+//            setAttribute(Qt::WA_TransparentForMouseEvents);
     }
 
+    void move(const QPoint &p) {
+        QRect g = geometry();
+        g.setTopLeft(p);
+        setGeometry(g);
+    }
     void setPixmap(QPixmap pm)
     {
         pixmap = pm;
-        if (!pixmap.mask().isNull()) {
-            setMask(pixmap.mask());
-        } else {
-            clearMask();
-        }
-        resize(pm.width(),pm.height());
+        // ###
+//        if (!pixmap.mask().isNull()) {
+//            setMask(pixmap.mask());
+//        } else {
+//            clearMask();
+//        }
+//        resize(pm.width(),pm.height());
     }
 
-    void paintEvent(QPaintEvent*)
-    {
-        QPainter p(this);
-        p.drawPixmap(0,0,pixmap);
-    }
+    // ### Get it painted again!
+//    void paintEvent(QPaintEvent*)
+//    {
+//        QPainter p(this);
+//        p.drawPixmap(0,0,pixmap);
+//    }
 };
 
 
-static QShapedPixmapWidget *qt_qws_dnd_deco = 0;
+static QShapedPixmapWindow *qt_qws_dnd_deco = 0;
 
 
 void QDragManager::updatePixmap()
@@ -175,6 +181,8 @@ void QDragManager::updateCursor()
 
 bool QDragManager::eventFilter(QObject *o, QEvent *e)
 {
+#if 0
+    // ###
  if (beingCancelled) {
      if (e->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape) {
             qApp->removeEventFilter(this);
@@ -313,7 +321,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
         default:
              break;
     }
-
+#endif
     return false;
 }
 
@@ -329,7 +337,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     }
 
     object = drag_object = o;
-    qt_qws_dnd_deco = new QShapedPixmapWidget();
+    qt_qws_dnd_deco = new QShapedPixmapWindow();
     oldstate = Qt::NoModifier; // #### Should use state that caused the drag
 //    drag_mode = mode;
 

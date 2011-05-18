@@ -4055,7 +4055,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             bool isProxyWidget = extra && extra->proxyWidget;
             if (!isProxyWidget)
 #endif
-                w = QDragManager::self()->currentTarget();
+                w = qobject_cast<QWidget *>(QDragManager::self()->currentTarget());
 
             if (!w) {
 #ifdef Q_WS_MAC

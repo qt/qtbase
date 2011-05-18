@@ -56,7 +56,7 @@
 #include "QtCore/qobject.h"
 #include "QtCore/qmap.h"
 #include "QtGui/qmime.h"
-#include "QtWidgets/qdrag.h"
+#include "QtGui/qdrag.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qcursor.h"
 #include "QtCore/qpoint.h"
@@ -174,8 +174,8 @@ private:
 class QDragPrivate : public QObjectPrivate
 {
 public:
-    QWidget *source;
-    QWidget *target;
+    QObject *source;
+    QObject *target;
     QMimeData *data;
     QPixmap pixmap;
     QPoint hotspot;
@@ -203,7 +203,7 @@ public:
 #endif
 };
 
-class QDragManager: public QObject {
+class Q_GUI_EXPORT QDragManager: public QObject {
     Q_OBJECT
 
     QDragManager();
@@ -213,9 +213,6 @@ class QDragManager: public QObject {
     friend class QDragMoveEvent;
     friend class QDropEvent;
     friend class QApplication;
-#ifdef Q_WS_MAC
-    friend class QWidgetPrivate; //dnd is implemented here
-#endif
 
     bool eventFilter(QObject *, QEvent *);
     void timerEvent(QTimerEvent*);
@@ -227,7 +224,7 @@ public:
     void move(const QPoint &);
     void drop();
     void updatePixmap();
-    QWidget *source() const { return object ? object->d_func()->source : 0; }
+    QObject *source() const { return object ? object->d_func()->source : 0; }
     QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
     static QDragPrivate *dragPrivate(QDrag *drag) { return drag ? drag->d_func() : 0; }
 
@@ -252,8 +249,8 @@ public:
 
     void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
 
-    void setCurrentTarget(QWidget *target, bool dropped = false);
-    QWidget *currentTarget();
+    void setCurrentTarget(QObject *target, bool dropped = false);
+    QObject *currentTarget();
 
 #ifdef Q_WS_X11
     QPixmap xdndMimeTransferedPixmap[2];
@@ -269,7 +266,7 @@ private:
     QCursor overrideCursor;
 #endif
 #endif
-    QWidget *currentDropTarget;
+    QObject *currentDropTarget;
 
     static QDragManager *instance;
     Q_DISABLE_COPY(QDragManager)

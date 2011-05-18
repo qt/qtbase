@@ -49,7 +49,6 @@
 #include "qtextcodec.h"
 #include "qguiapplication.h"
 #include "qpoint.h"
-#include "qwidget.h"
 #include "qbuffer.h"
 #include "qimage.h"
 #include "qregexp.h"
@@ -162,7 +161,7 @@ QDragManager::~QDragManager()
 
 QDragManager *QDragManager::self()
 {
-    if (!instance && !QApplication::closingDown())
+    if (!instance && !QGuiApplication::closingDown())
         instance = new QDragManager;
     return instance;
 }
@@ -257,7 +256,7 @@ Qt::DropAction QDragManager::defaultAction(Qt::DropActions possibleActions,
     return defaultAction;
 }
 
-void QDragManager::setCurrentTarget(QWidget *target, bool dropped)
+void QDragManager::setCurrentTarget(QObject *target, bool dropped)
 {
     if (currentDropTarget == target)
         return;
@@ -270,7 +269,7 @@ void QDragManager::setCurrentTarget(QWidget *target, bool dropped)
 
 }
 
-QWidget *QDragManager::currentTarget()
+QObject *QDragManager::currentTarget()
 {
     return currentDropTarget;
 }
