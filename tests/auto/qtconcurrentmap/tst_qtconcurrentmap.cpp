@@ -146,6 +146,15 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(numberList, QList<Number>() << 2 << 4 << 6);
         QtConcurrent::map(numberList.begin(), numberList.end(), &Number::multiplyBy2).waitForFinished();
         QCOMPARE(numberList, QList<Number>() << 4 << 8 << 12);
+
+#ifdef Q_COMPILER_LAMBDA
+        // lambda
+        QtConcurrent::map(list, [](int &x){x *= 2;}).waitForFinished();
+        QCOMPARE(list, QList<int>() << 128 << 256 << 384);
+        QtConcurrent::map(list.begin(), list.end(), [](int &x){x *= 2;}).waitForFinished();
+        QCOMPARE(list, QList<int>() << 256 << 512 << 768);
+#endif
+
     }
 
     // functors don't take arguments by reference, making these no-ops
@@ -170,6 +179,14 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QtConcurrent::map(list.begin(), list.end(), multiplyBy2Immutable).waitForFinished();
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+
+#ifdef Q_COMPILER_LAMBDA
+        // lambda
+        QtConcurrent::map(list, [](int x){x *= 2;}).waitForFinished();
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+        QtConcurrent::map(list.begin(), list.end(), [](int x){x *= 2;}).waitForFinished();
+        QCOMPARE(list, QList<int>() << 1 << 2 << 3);
+#endif
     }
 
     // Linked lists and forward iterators
@@ -2303,6 +2320,10 @@ void tst_QtConcurrentMap::stlContainers()
 {
 #ifdef QT_NO_STL
     QSKIP("Qt compiled without STL support", SkipAll);
+#elif defined(Q_COMPILER_RVALUE_REFS)
+    //mapped uses &Container::push_back,  but in c++0x, std::vector has two overload of it
+    // meaning it is not possible to take the address of that function anymore.
+    QSKIP("mapped do not work with c++0x stl vector", SkipAll);
 #else
     std::vector<int> vector;
     vector.push_back(1);
