@@ -42,9 +42,6 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
-#ifdef QT3_SUPPORT
-#include <Qt3Support/Qt3Support>
-#endif
 
 #if defined(Q_OS_SYMBIAN)
 # define STRINGIFY(x) #x
@@ -112,12 +109,6 @@ private slots:
     void stream_QImage_data();
     void stream_QImage();
 
-    void stream_QPalette_data();
-    void stream_QPalette();
-
-    void stream_QColorGroup_data();
-    void stream_QColorGroup();
-
     void stream_QPen_data();
     void stream_QPen();
 
@@ -153,9 +144,6 @@ private slots:
 
     void stream_qint64_data();
     void stream_qint64();
-
-    void stream_QWMatrix_data();
-    void stream_QWMatrix();
 
     void stream_QIcon_data();
     void stream_QIcon();
@@ -209,10 +197,6 @@ private slots:
 
     void floatingPointPrecision();
 
-#ifdef QT3_SUPPORT
-    void task_224283();
-#endif
-
     void compatibility_Qt3();
     void compatibility_Qt2();
 
@@ -230,8 +214,6 @@ private:
     void writeQDateTime(QDataStream *s);
     void writeQFont(QDataStream *s);
     void writeQImage(QDataStream *s);
-    void writeQPalette(QDataStream *s);
-    void writeQColorGroup(QDataStream *s);
     void writeQPen(QDataStream *s);
     void writeQPixmap(QDataStream *s);
     void writeQPoint(QDataStream *s);
@@ -244,7 +226,6 @@ private:
     void writeMap(QDataStream* dev);
     void writeHash(QDataStream* dev);
     void writeqint64(QDataStream *s);
-    void writeQWMatrix(QDataStream *s);
     void writeQIcon(QDataStream *s);
     void writeQEasingCurve(QDataStream *s);
 
@@ -260,8 +241,6 @@ private:
     void readQDateTime(QDataStream *s);
     void readQFont(QDataStream *s);
     void readQImage(QDataStream *s);
-    void readQPalette(QDataStream *s);
-    void readQColorGroup(QDataStream *s);
     void readQPen(QDataStream *s);
     void readQPixmap(QDataStream *s);
     void readQPoint(QDataStream *s);
@@ -274,7 +253,6 @@ private:
     void readMap(QDataStream *s);
     void readHash(QDataStream *s);
     void readqint64(QDataStream *s);
-    void readQWMatrix(QDataStream *s);
     void readQIcon(QDataStream *s);
     void readQEasingCurve(QDataStream *s);
 };
@@ -1108,22 +1086,16 @@ void tst_QDataStream::readQByteArray(QDataStream *s)
 #ifndef QT_NO_CURSOR
 static QCursor qCursorData(int index)
 {
-    switch (index)
-    {
-#ifdef QT3_SUPPORT
-	case 0: return QCursor(Qt::arrowCursor);
-	case 1: return QCursor(Qt::waitCursor);
-#else
+    switch (index) {
     case 0: return QCursor(Qt::ArrowCursor);
     case 1: return QCursor(Qt::WaitCursor);
-#endif
-	case 2: return QCursor(Qt::BitmapCursor);
-	case 3: return QCursor(Qt::BlankCursor);
-	case 4: return QCursor(Qt::BlankCursor);
-	case 5: return QCursor(QPixmap(open_xpm), 1, 1);
-        case 6: { QPixmap pm(open_xpm); return QCursor(QBitmap(pm), pm.mask(), 3, 4); }
-	case 7: return QCursor(QPixmap(open_xpm), -1, 5);
-	case 8: return QCursor(QPixmap(open_xpm), 5, -1);
+    case 2: return QCursor(Qt::BitmapCursor);
+    case 3: return QCursor(Qt::BlankCursor);
+    case 4: return QCursor(Qt::BlankCursor);
+    case 5: return QCursor(QPixmap(open_xpm), 1, 1);
+    case 6: { QPixmap pm(open_xpm); return QCursor(QBitmap(pm), pm.mask(), 3, 4); }
+    case 7: return QCursor(QPixmap(open_xpm), -1, 5);
+    case 8: return QCursor(QPixmap(open_xpm), 5, -1);
     }
 
     return QCursor();
@@ -1507,7 +1479,6 @@ void tst_QDataStream::stream_QImage()
 void tst_QDataStream::writeQImage(QDataStream *s)
 {
     QImage d12(open_xpm);
-    //debug("Orig alpha: %i", (int)d12.hasAlphaBuffer());
     *s << d12;
 }
 
@@ -1526,15 +1497,8 @@ void tst_QDataStream::readQImage(QDataStream *s)
     QVERIFY(d12.height() == ref.height());
     QVERIFY(d12.depth() == ref.depth());
     QVERIFY(d12.colorCount() == ref.colorCount());
-#ifdef QT3_SUPPORT
-    QVERIFY(d12.hasAlphaBuffer() == ref.hasAlphaBuffer());
-#else
     QVERIFY(d12.hasAlphaChannel() == ref.hasAlphaChannel());
-#endif
 
-//    qDebug("Alpha: %i %i", (int)d12.hasAlphaBuffer(), ref.hasAlphaBuffer());
-//    qDebug("Feil %i %i: %x != %x", 3, 0, d12.pixel(3, 0), ref.pixel(3, 0));
-//
 //     ################ Bug : ref and orig has ff in alpha; readback has 0
 //     ### (Was like this in 1.44 as well)
 //
@@ -1543,166 +1507,6 @@ void tst_QDataStream::readQImage(QDataStream *s)
 //	    if (d12.pixel(j, i) != ref.pixel(j, i))
 //		qDebug("Feil %i %i", j, i);
 //
-}
-
-// ************************************
-#ifdef QT3_SUPPORT
-static QPalette qPaletteData(int index)
-{
-    QColorGroup g1(
-	QBrush(Qt::red, Qt::SolidPattern),
-	QBrush(Qt::blue, Qt::Dense1Pattern),
-	QBrush(Qt::green, Qt::Dense2Pattern),
-	QBrush(Qt::blue, Qt::Dense3Pattern),
-	QBrush(Qt::cyan, Qt::Dense4Pattern),
-	QBrush(Qt::magenta, Qt::Dense5Pattern),
-	QBrush(Qt::black, Qt::Dense6Pattern),
-	QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	QBrush(Qt::gray, Qt::CrossPattern));
-    QColorGroup g2(
-	QBrush(Qt::cyan, Qt::Dense3Pattern),
-	QBrush(Qt::blue, Qt::Dense4Pattern),
-	QBrush(Qt::magenta, Qt::Dense5Pattern),
-	QBrush(Qt::black, Qt::Dense6Pattern),
-	QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	QBrush(Qt::gray, Qt::CrossPattern),
-	QBrush(Qt::green, Qt::SolidPattern),
-	QBrush(Qt::blue, Qt::Dense1Pattern),
-	QBrush(Qt::red, Qt::Dense2Pattern));
-    QColorGroup g3(
-	QBrush(Qt::black, Qt::Dense6Pattern),
-	QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	QBrush(Qt::red, Qt::CrossPattern),
-	QBrush(Qt::gray, Qt::SolidPattern),
-	QBrush(Qt::blue, Qt::Dense1Pattern),
-	QBrush(Qt::cyan, Qt::Dense2Pattern),
-	QBrush(Qt::magenta, Qt::Dense3Pattern),
-	QBrush(Qt::blue, Qt::Dense4Pattern),
-	QBrush(Qt::magenta, Qt::Dense5Pattern));
-
-    switch (index)
-    {
-	case 0: return QPalette(Qt::green);
-	case 1: return QPalette(Qt::cyan, Qt::blue);
-	case 2: return QPalette(Qt::red, Qt::yellow);
-	case 3: return QPalette(g1, g2, g3);
-	case 4: return QPalette(g2, g3, g1);
-	case 5: return QPalette(g3, g1, g2);
-	case 6: return QPalette(g3, g2, g1);
-    }
-    return QPalette(Qt::black);
-}
-#endif
-#define MAX_QPALETTE_DATA 7
-
-void tst_QDataStream::stream_QPalette_data()
-{
-    stream_data(MAX_QPALETTE_DATA);
-}
-
-void tst_QDataStream::stream_QPalette()
-{
-    STREAM_IMPL(QPalette);
-}
-
-void tst_QDataStream::writeQPalette(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    QPalette d13(qPaletteData(dataIndex(QTest::currentDataTag())));
-    *s << d13;
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
-}
-
-void tst_QDataStream::readQPalette(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    QPalette test(qPaletteData(dataIndex(QTest::currentDataTag())));
-    QPalette d13;
-    *s >> d13;
-    QVERIFY(d13 == test);
-    QVERIFY(d13.active() == test.active());
-    QVERIFY(d13.inactive() == test.inactive());
-    QVERIFY(d13.disabled() == test.disabled());
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
-}
-
-// ************************************
-#ifdef QT3_SUPPORT
-static QColorGroup QColorGroupData(int index)
-{
-    switch (index)
-    {
-	case 0: return QColorGroup(
-	    QBrush(Qt::red, Qt::SolidPattern),
-	    QBrush(Qt::blue, Qt::Dense1Pattern),
-	    QBrush(Qt::green, Qt::Dense2Pattern),
-	    QBrush(Qt::blue, Qt::Dense3Pattern),
-	    QBrush(Qt::cyan, Qt::Dense4Pattern),
-	    QBrush(Qt::magenta, Qt::Dense5Pattern),
-	    QBrush(Qt::black, Qt::Dense6Pattern),
-	    QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	    QBrush(Qt::gray, Qt::CrossPattern));
-	case 1: return QColorGroup(
-	    QBrush(Qt::cyan, Qt::Dense3Pattern),
-	    QBrush(Qt::blue, Qt::Dense4Pattern),
-	    QBrush(Qt::magenta, Qt::Dense5Pattern),
-	    QBrush(Qt::black, Qt::Dense6Pattern),
-	    QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	    QBrush(Qt::gray, Qt::CrossPattern),
-	    QBrush(Qt::green, Qt::SolidPattern),
-	    QBrush(Qt::blue, Qt::Dense1Pattern),
-	    QBrush(Qt::red, Qt::Dense2Pattern));
-	case 2: return QColorGroup(
-	    QBrush(Qt::black, Qt::Dense6Pattern),
-	    QBrush(Qt::darkGray, Qt::Dense7Pattern),
-	    QBrush(Qt::red, Qt::CrossPattern),
-	    QBrush(Qt::gray, Qt::SolidPattern),
-	    QBrush(Qt::blue, Qt::Dense1Pattern),
-	    QBrush(Qt::cyan, Qt::Dense2Pattern),
-	    QBrush(Qt::magenta, Qt::Dense3Pattern),
-	    QBrush(Qt::blue, Qt::Dense4Pattern),
-	    QBrush(Qt::magenta, Qt::Dense5Pattern));
-    }
-    return QColorGroup();
-}
-#endif
-
-#define MAX_QCOLORGROUP_DATA 3
-
-void tst_QDataStream::stream_QColorGroup_data()
-{
-    stream_data(MAX_QCOLORGROUP_DATA);
-}
-
-void tst_QDataStream::stream_QColorGroup()
-{
-    STREAM_IMPL(QColorGroup);
-}
-
-void tst_QDataStream::writeQColorGroup(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    QColorGroup d13(QColorGroupData(dataIndex(QTest::currentDataTag())));
-    *s << d13;
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
-}
-
-void tst_QDataStream::readQColorGroup(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    QColorGroup test(QColorGroupData(dataIndex(QTest::currentDataTag())));
-    QColorGroup d14;
-    *s >> d14;
-    QVERIFY(d14 == test);
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
 }
 
 // ************************************
@@ -1851,12 +1655,6 @@ void tst_QDataStream::readQPixmap(QDataStream *s)
     QVERIFY(d16.size() == pm.size());
     QVERIFY(d16.rect() == pm.rect());
     QVERIFY(d16.depth() == pm.depth());
-    // bit depth must be 24 or above for pixmap comparison
-#ifdef QT3_SUPPORT
-    if (Q3PaintDeviceMetrics(&pm).depth() < 24)
-        QSKIP("Don't do pixmap comparison when depth < 24", SkipAll);
-    QCOMPARE(d16, QPixmap(pm));
-#endif
 }
 
 void tst_QDataStream::writeQIcon(QDataStream *s)
@@ -2204,50 +2002,6 @@ void tst_QDataStream::readQSize(QDataStream *s)
     QVERIFY(d21f == QSizeF(ref));
 }
 
-// ************************************
-
-void tst_QDataStream::stream_QWMatrix_data()
-{
-    stream_data(1);
-}
-
-void tst_QDataStream::stream_QWMatrix()
-{
-    STREAM_IMPL(QWMatrix);
-}
-
-void tst_QDataStream::writeQWMatrix(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    // QStringList: Qt 2.0 specific
-    QWMatrix d23(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
-    *s << d23;
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
-}
-
-void tst_QDataStream::readQWMatrix(QDataStream *s)
-{
-#ifdef QT3_SUPPORT
-    // QStringList: Qt 2.0 specific
-
-    QWMatrix d23;
-    *s >> d23;
-    //    QVERIFY(d23 == QWMatrix(1.2, 2.3, 3.4, 4.5, 5.6, 6.7));
-    QWMatrix m(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
-    // Because of double vs. float rounding differences:
-    QVERIFY(QABS(d23.m11() - m.m11()) < 1e-6);
-    QVERIFY(QABS(d23.m12() - m.m12()) < 1e-6);
-    QVERIFY(QABS(d23.m21() - m.m21()) < 1e-6);
-    QVERIFY(QABS(d23.m22() - m.m22()) < 1e-6);
-    QVERIFY(QABS(d23.dx() - m.dx()) < 1e-6);
-    QVERIFY(QABS(d23.dy() - m.dy()) < 1e-6);
-#else
-    QSKIP("No Qt3 Support", SkipAll);
-#endif
-}
-
 // *********************** atEnd ******************************
 
 void tst_QDataStream::stream_atEnd_data()
@@ -2299,11 +2053,7 @@ void tst_QDataStream::stream_atEnd()
 
 	// Do the same test again, but this time with an initial size for the bytearray.
 	{
-#ifdef QT3_SUPPORT
-	    QByteArray ba(10000);
-#else
-        QByteArray ba(10000, '\0');
-#endif
+            QByteArray ba(10000, '\0');
 	    QBuffer bOut(&ba);
 	    bOut.open(QIODevice::WriteOnly | QIODevice::Truncate);
 	    QDataStream sout(&bOut);
@@ -2814,11 +2564,7 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QTest::addColumn<QByteArray>("expectedString");
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
-#ifdef QT3_SUPPORT
-    QByteArray oneMbMinus1(1024 * 1024 - 1);
-#else
     QByteArray oneMbMinus1(1024 * 1024 - 1, '\0');
-#endif
     for (int i = 0; i < oneMbMinus1.size(); ++i)
         oneMbMinus1[i] = 0x1 | (8 * ((uchar)i / 9));
     QByteArray threeMbMinus1 = oneMbMinus1 + 'j' + oneMbMinus1 + 'k' + oneMbMinus1;
@@ -2906,11 +2652,7 @@ void tst_QDataStream::status_charptr_QByteArray()
 
 static QByteArray qstring2qbytearray(const QString &str)
 {
-#ifdef QT3_SUPPORT
-    QByteArray ba(str.size() * 2);
-#else
     QByteArray ba(str.size() * 2 , '\0');
-#endif
     for (int i = 0; i < str.size(); ++i) {
         // BigEndian
         ba[2 * i] = str[i].row();
@@ -3338,32 +3080,6 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(stream.status(), QDataStream::Ok);
     }
 }
-
-#ifdef QT3_SUPPORT
-void tst_QDataStream::task_224283()
-{
-    static const char sdata[] = "\0\0\0\12" "123456789";
-    QByteArray expected = QByteArray::fromRawData(sdata, sizeof sdata); // includes the NUL
-    Q3CString original = "123456789";
-
-    QByteArray data;
-    {
-        QDataStream out(&data, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_3_3);
-        out << original;
-    }
-    QCOMPARE(data, expected);
-
-    {
-        QDataStream in(data);
-        in.setVersion(QDataStream::Qt_3_3);
-        Q3CString s;
-        in >> s;
-        QVERIFY(s.length() == 9);
-        QCOMPARE(s, original);
-    }
-}
-#endif
 
 void tst_QDataStream::compatibility_Qt3()
 {
