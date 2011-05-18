@@ -92,6 +92,8 @@ public:
     QSize maximumSize;
     QSize baseSize;
     QSize sizeIncrement;
+
+    Qt::WindowModality modality;
 };
 
 

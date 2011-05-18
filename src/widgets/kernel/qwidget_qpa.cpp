@@ -763,7 +763,8 @@ void QWidgetPrivate::updateFrameStrut()
 void QWidgetPrivate::setWindowOpacity_sys(qreal level)
 {
     Q_Q(QWidget);
-    q->windowHandle()->setOpacity(level);
+    if (q->windowHandle())
+        q->windowHandle()->setOpacity(level);
 }
 
 void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
@@ -788,6 +789,9 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 
 void QWidgetPrivate::setModal_sys()
 {
+    Q_Q(QWidget);
+    if (q->windowHandle())
+        q->windowHandle()->setWindowModality(q->windowModality());
 }
 
 #ifndef QT_NO_CURSOR

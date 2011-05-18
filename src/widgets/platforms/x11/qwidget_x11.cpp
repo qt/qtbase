@@ -134,7 +134,7 @@ enum {
 };
 
 
-static QtMWMHints GetMWMHints(Display *display, Window window)
+static QtMWMHints getMWMHints(Display *display, Window window)
 {
     QtMWMHints mwmhints;
 

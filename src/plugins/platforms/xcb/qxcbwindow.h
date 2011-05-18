@@ -97,6 +97,8 @@ private:
     void setNetWmWindowTypes(Qt::WindowFlags flags);
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
 
+    void updateMotifWmHintsBeforeShow();
+
     void show();
     void hide();
 

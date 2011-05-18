@@ -152,6 +152,24 @@ bool QWindow::isTopLevel() const
     return d->windowFlags & Qt::Window;
 }
 
+bool QWindow::isModal() const
+{
+    Q_D(const QWindow);
+    return d->modality != Qt::NonModal;
+}
+
+Qt::WindowModality QWindow::windowModality() const
+{
+    Q_D(const QWindow);
+    return d->modality;
+}
+
+void QWindow::setWindowModality(Qt::WindowModality windowModality)
+{
+    Q_D(QWindow);
+    d->modality = windowModality;
+}
+
 void QWindow::setWindowFormat(const QWindowFormat &format)
 {
     Q_D(QWindow);

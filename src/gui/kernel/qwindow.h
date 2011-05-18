@@ -96,7 +96,9 @@ public:
 
     bool isTopLevel() const;
 
-    QWindow *topLevelWindow() const;
+    bool isModal() const;
+    Qt::WindowModality windowModality() const;
+    void setWindowModality(Qt::WindowModality windowModality);
 
     void setWindowFormat(const QWindowFormat &format);
     QWindowFormat requestedWindowFormat() const;
