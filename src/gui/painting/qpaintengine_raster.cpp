@@ -3029,8 +3029,16 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensurePen();
     ensureState();
 
-    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
-                     textItem->fontEngine());
+    QRasterPaintEngineState *s = state();
+
+    QFontEngine *fontEngine = textItem->fontEngine();
+    const qreal pixelSize = fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) < 64 * 64) {
+        drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
+                         fontEngine);
+    } else {
+        QPaintEngineEx::drawStaticTextItem(textItem);
+    }
 }
 
 /*!
