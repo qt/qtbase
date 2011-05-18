@@ -362,17 +362,17 @@ QGLShader::ShaderType QGLShader::shaderType() const
 // The precision qualifiers are useful on OpenGL/ES systems,
 // but usually not present on desktop systems.  Define the
 // keywords to empty strings on desktop systems.
-#ifndef QT_OPENGL_ES
+#if !defined(QT_OPENGL_ES) || defined(QT_OPENGL_FORCE_SHADER_DEFINES)
 #define QGL_DEFINE_QUALIFIERS 1
 static const char qualifierDefines[] =
     "#define lowp\n"
     "#define mediump\n"
     "#define highp\n";
-#endif
+
+#else
 
 // The "highp" qualifier doesn't exist in fragment shaders
 // on all ES platforms.  When it doesn't exist, use "mediump".
-#ifdef QT_OPENGL_ES
 #define QGL_REDEFINE_HIGHP 1
 static const char redefineHighp[] =
     "#ifndef GL_FRAGMENT_PRECISION_HIGH\n"
