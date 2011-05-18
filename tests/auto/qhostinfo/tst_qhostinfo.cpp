@@ -316,16 +316,16 @@ void tst_QHostInfo::lookupIPv6_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
-    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2:0:0:0:2" << int(QHostInfo::NoError);
-    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115:0:0:0:10" << int(QHostInfo::NoError);
-    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115:0:0:0:11 2001:470:1f01:115:0:0:0:12" << int(QHostInfo::NoError);
-    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115:0:0:0:13" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401::4" << int(QHostInfo::NoError);
+    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2::2" << int(QHostInfo::NoError);
+    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115::10" << int(QHostInfo::NoError);
+    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << int(QHostInfo::NoError);
+    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115::13" << int(QHostInfo::NoError);
 
     // avoid using real IPv6 addresses here because this will do a DNS query
     // real addresses are between 2000:: and 3fff:ffff:ffff:ffff:ffff:ffff:ffff
     QTest::newRow("literal_ip6") << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << "f001:6b0:1:ea:202:a5ff:fecd:13a6" << int(QHostInfo::NoError);
-    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401:0:0:0:0:4" << int(QHostInfo::NoError);
+    QTest::newRow("literal_shortip6") << "f001:618:1401::4" << "f001:618:1401::4" << int(QHostInfo::NoError);
 }
 
 void tst_QHostInfo::lookupIPv6()
