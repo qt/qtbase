@@ -277,7 +277,8 @@ public:
     }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const {
-        Q_ASSERT(fetched);
+        if (!fetched)
+            qFatal("%s: rowCount should not be called before fetching", Q_FUNC_INFO);
         if ((parent.column() > 0) || (level(parent) > levels))
             return 0;
         return rows;
@@ -2536,7 +2537,7 @@ void tst_QTreeView::sortByColumn()
 
 /*
     This is a model that every time kill() is called it will completely change
-    all of its nodes for new nodes.  It then asserts if you later use a dead node.
+    all of its nodes for new nodes.  It then qFatal's if you later use a dead node.
  */
 class EvilModel: public QAbstractItemModel
 {
@@ -2567,7 +2568,8 @@ public:
                 }
             }
             if (parent == 0) {
-                Q_ASSERT(children.isEmpty());
+                if (!children.isEmpty())
+                    qFatal("%s: children should be empty when parent is null", Q_FUNC_INFO);
                 populate();
             } else {
                 isDead = true;
@@ -2624,7 +2626,8 @@ public:
         Node *parentNode = root;
         if (parent.isValid()) {
             parentNode = static_cast<Node*>(parent.internalPointer());
-            Q_ASSERT(!parentNode->isDead);
+            if (parentNode->isDead)
+                qFatal("%s: parentNode is dead!", Q_FUNC_INFO);
         }
         return parentNode->children.count();
     }
@@ -2639,9 +2642,11 @@ public:
         Node *grandparentNode = static_cast<Node*>(parent.internalPointer());
         Node *parentNode = root;
         if (parent.isValid()) {
-            Q_ASSERT(!grandparentNode->isDead);
+            if (grandparentNode->isDead)
+                qFatal("%s: grandparentNode is dead!", Q_FUNC_INFO);
             parentNode = grandparentNode->children[parent.row()];
-            Q_ASSERT(!parentNode->isDead);
+            if (parentNode->isDead)
+                qFatal("%s: grandparentNode is dead!", Q_FUNC_INFO);
         }
         return createIndex(row, column, parentNode);
     }
@@ -2661,7 +2666,8 @@ public:
             Node *parentNode = root;
             if (idx.isValid()) {
                 parentNode = static_cast<Node*>(idx.internalPointer());
-                Q_ASSERT(!parentNode->isDead);
+                if (parentNode->isDead)
+                    qFatal("%s: grandparentNode is dead!", Q_FUNC_INFO);
             }
             return QString("[%1,%2,%3]").arg(idx.row()).arg(idx.column())
                 .arg(parentNode->isDead ? "dead" : "alive");

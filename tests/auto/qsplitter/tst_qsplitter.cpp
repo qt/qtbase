@@ -1340,14 +1340,14 @@ void tst_QSplitter::task187373_addAbstractScrollAreas()
     QFETCH(QString, className);
     QFETCH(bool, addInConstructor);
     QFETCH(bool, addOutsideConstructor);
-    Q_ASSERT(addInConstructor || addOutsideConstructor);
+    QVERIFY(addInConstructor || addOutsideConstructor);
 
     QSplitter *splitter = new QSplitter;
     splitter->show();
-    Q_ASSERT(splitter->isVisible());
+    QVERIFY(splitter->isVisible());
 
     QAbstractScrollArea *w = task187373_createScrollArea(splitter, className, addInConstructor);
-    Q_ASSERT(w);
+    QVERIFY(w);
     if (addOutsideConstructor)
         splitter->addWidget(w);
 

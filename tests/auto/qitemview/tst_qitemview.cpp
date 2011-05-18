@@ -148,12 +148,18 @@ public:
     CheckerModel() : QStandardItemModel() {};
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole ) const {
-        Q_ASSERT(index.isValid());
+        if (!index.isValid()) {
+            qWarning("%s: index is not valid", Q_FUNC_INFO);
+            return QVariant();
+        }
         return QStandardItemModel::data(index, role);
     };
 
     Qt::ItemFlags flags(const QModelIndex & index) const {
-        Q_ASSERT(index.isValid());
+        if (!index.isValid()) {
+            qWarning("%s: index is not valid", Q_FUNC_INFO);
+            return Qt::ItemFlags();
+        }
         if (index.row() == 2 || index.row() == rowCount() - 3
             || index.column() == 2 || index.column() == columnCount() - 3) {
             Qt::ItemFlags f = QStandardItemModel::flags(index);
@@ -164,14 +170,26 @@ public:
     };
 
     QModelIndex parent ( const QModelIndex & child ) const {
-        Q_ASSERT(child.isValid());
+        if (!child.isValid()) {
+            qWarning("%s: child index is not valid", Q_FUNC_INFO);
+            return QModelIndex();
+        }
         return QStandardItemModel::parent(child);
     };
 
     QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const {
-        Q_ASSERT(section >= 0);
-        if (orientation == Qt::Horizontal) { Q_ASSERT(section <= columnCount());};
-        if (orientation == Qt::Vertical) { Q_ASSERT(section <= rowCount());};
+        if (orientation == Qt::Horizontal
+            && (section < 0 || section > columnCount())) {
+            qWarning("%s: invalid section %d, must be in range 0..%d",
+                     Q_FUNC_INFO, section, columnCount());
+            return QVariant();
+        }
+        if (orientation == Qt::Vertical
+            && (section < 0 || section > rowCount())) {
+            qWarning("%s: invalid section %d, must be in range 0..%d",
+                     Q_FUNC_INFO, section, rowCount());
+            return QVariant();
+        }
         return QStandardItemModel::headerData(section, orientation, role);
     }
 
@@ -180,23 +198,46 @@ public:
     };
 
     bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole ) {
-        Q_ASSERT(index.isValid());
+        if (!index.isValid()) {
+            qWarning("%s: index is not valid", Q_FUNC_INFO);
+            return false;
+        }
         return QStandardItemModel::setData(index, value, role);
     }
 
     void sort( int column, Qt::SortOrder order = Qt::AscendingOrder ) {
-        Q_ASSERT(column >= 0 && column <= columnCount());
-        QStandardItemModel::sort(column, order);
+        if (column < 0 || column > columnCount())
+            qWarning("%s: invalid column %d, must be in range 0..%d",
+                     Q_FUNC_INFO, column, columnCount());
+        else
+            QStandardItemModel::sort(column, order);
     };
 
     QModelIndexList match ( const QModelIndex & start, int role, const QVariant & value, int hits = 1, Qt::MatchFlags flags = Qt::MatchFlags( Qt::MatchStartsWith | Qt::MatchWrap ) ) const {
-        Q_ASSERT(hits > 0);
-        Q_ASSERT(value.isValid());
+        if (hits <= 0) {
+            qWarning("%s: hits must be greater than zero", Q_FUNC_INFO);
+            return QModelIndexList();
+        }
+        if (!value.isValid()) {
+            qWarning("%s: value is not valid", Q_FUNC_INFO);
+            return QModelIndexList();
+        }
         return QAbstractItemModel::match(start, role, value, hits, flags);
     };
 
     bool setHeaderData ( int section, Qt::Orientation orientation, const QVariant & value, int role = Qt::EditRole ) {
-        Q_ASSERT(section >= 0);
+        if (orientation == Qt::Horizontal
+            && (section < 0 || section > columnCount())) {
+            qWarning("%s: invalid section %d, must be in range 0..%d",
+                     Q_FUNC_INFO, section, columnCount());
+            return false;
+        }
+        if (orientation == Qt::Vertical
+            && (section < 0 || section > rowCount())) {
+            qWarning("%s: invalid section %d, must be in range 0..%d",
+                     Q_FUNC_INFO, section, rowCount());
+            return false;
+        }
         return QAbstractItemModel::setHeaderData(section, orientation, value, role);
     };
 };
@@ -297,9 +338,11 @@ void tst_QItemView::nonDestructiveBasicTest()
 #endif
 
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
 
@@ -454,9 +497,11 @@ void tst_QItemView::spider()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -489,9 +534,11 @@ void tst_QItemView::resize()
     // This test needs to be re-thought out, it takes too long and
     // doesn't really catch theproblem.
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -517,9 +564,11 @@ void tst_QItemView::visualRect()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     QCOMPARE(view->visualRect(QModelIndex()), QRect());
@@ -651,9 +700,11 @@ void tst_QItemView::indexAt()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->show();
@@ -685,9 +736,11 @@ void tst_QItemView::scrollTo()
     QSKIP("This test takes too long to execute on IRIX", SkipAll);
 #endif
     QFETCH(QString, viewType);
-    view = testViews->createView(viewType);
     QFETCH(int, vscroll);
     QFETCH(int, hscroll);
+
+    view = testViews->createView(viewType);
+    QVERIFY(view);
     view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
@@ -735,6 +788,7 @@ void tst_QItemView::moveCursor()
 #endif
     QFETCH(QString, viewType);
     view = testViews->createView(viewType);
+    QVERIFY(view);
     if (view->objectName() == "QHeaderView")
         return;
 

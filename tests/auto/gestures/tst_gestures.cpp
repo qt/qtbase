@@ -280,7 +280,7 @@ protected:
                     eventsPtr->canceled << g->gestureType();
                     break;
                 default:
-                    Q_ASSERT(false);
+                    qWarning() << "Unknown GestureState enum value:" << static_cast<int>(g->state());
                 }
             }
         } else if (event->type() == CustomEvent::EventType) {
@@ -823,7 +823,7 @@ public:
                     emit gestureCanceled(e->type(), g);
                     break;
                 default:
-                    Q_ASSERT(false);
+                    qWarning() << "Unknown GestureState enum value:" << static_cast<int>(g->state());
                 }
             }
         } else if (event->type() == CustomEvent::EventType) {
@@ -1518,17 +1518,20 @@ void tst_Gestures::autoCancelGestures()
 {
     class MockWidget : public GestureWidget {
       public:
-        MockWidget(const char *name) : GestureWidget(name) { }
+        MockWidget(const char *name) : GestureWidget(name), badGestureEvents(0) { }
 
         bool event(QEvent *event)
         {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-                Q_ASSERT(ge->gestures().count() == 1); // can't use QCOMPARE here...
+                if (ge->gestures().count() != 1)
+                    ++badGestureEvents;   // event should contain exactly one gesture
                 ge->gestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
             }
             return GestureWidget::event(event);
         }
+
+        int badGestureEvents;
     };
 
     const Qt::GestureType secondGesture = QGestureRecognizer::registerRecognizer(new CustomGestureRecognizer);
@@ -1563,22 +1566,26 @@ void tst_Gestures::autoCancelGestures()
     event.serial = CustomGesture::SerialFinishedThreshold;
     QApplication::sendEvent(child, &event);
     QCOMPARE(parent.events.all.count(), 2);
+    QCOMPARE(parent.badGestureEvents, 0);
 }
 
 void tst_Gestures::autoCancelGestures2()
 {
     class MockItem : public GestureItem {
       public:
-        MockItem(const char *name) : GestureItem(name) { }
+        MockItem(const char *name) : GestureItem(name), badGestureEvents(0) { }
 
         bool event(QEvent *event) {
             if (event->type() == QEvent::Gesture) {
                 QGestureEvent *ge = static_cast<QGestureEvent*>(event);
-                Q_ASSERT(ge->gestures().count() == 1); // can't use QCOMPARE here...
+                if (ge->gestures().count() != 1)
+                    ++badGestureEvents;   // event should contain exactly one gesture
                 ge->gestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
             }
             return GestureItem::event(event);
         }
+
+        int badGestureEvents;
     };
 
     const Qt::GestureType secondGesture = QGestureRecognizer ::registerRecognizer(new CustomGestureRecognizer);
@@ -1614,6 +1621,7 @@ void tst_Gestures::autoCancelGestures2()
     event.serial = CustomGesture::SerialFinishedThreshold;
     scene.sendEvent(child, &event);
     QCOMPARE(parent->events.all.count(), 2);
+    QCOMPARE(parent->badGestureEvents, 0);
 }
 
 void tst_Gestures::graphicsViewParentPropagation()

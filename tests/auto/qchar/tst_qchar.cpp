@@ -548,14 +548,14 @@ void tst_QChar::normalization_data()
 
         QList<QByteArray> l = line.split(';');
 
-        Q_ASSERT(l.size() == 5);
+        QCOMPARE(l.size(), 5);
 
         QStringList columns;
         for (int i = 0; i < 5; ++i) {
             columns.append(QString());
 
             QList<QByteArray> c = l.at(i).split(' ');
-            Q_ASSERT(!c.isEmpty());
+            QVERIFY(!c.isEmpty());
 
             for (int j = 0; j < c.size(); ++j) {
                 bool ok;

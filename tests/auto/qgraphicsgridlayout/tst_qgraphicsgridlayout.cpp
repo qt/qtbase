@@ -3018,39 +3018,6 @@ static QSizeF wfh(Qt::SizeHint /*which*/, const QSizeF &constraint)
     return result;
 }
 
-static qreal growthFactorBelowPreferredSize(qreal desired, qreal sumAvailable, qreal sumDesired)
-{
-    Q_ASSERT(sumDesired != 0.0);
-    return desired * qPow(sumAvailable / sumDesired, desired / sumDesired);
-}
-
-static void expectedWidth(qreal minSize1, qreal prefSize1,
-                          qreal minSize2, qreal prefSize2,
-                          qreal targetSize, qreal *width1, qreal *width2)
-{
-    qreal sumAvail,factor1,factor2;
-    // stretch behaviour is different below and above preferred size...
-    if (targetSize < prefSize1 + prefSize2) {
-        sumAvail = targetSize - minSize1 - minSize2;
-        const qreal desired1 = prefSize1 - minSize1;
-        const qreal desired2 = prefSize2 - minSize2;
-        const qreal sumDesired = desired1 + desired2;
-        factor1 = growthFactorBelowPreferredSize(desired1, sumAvail, sumDesired);
-        factor2 = growthFactorBelowPreferredSize(desired2, sumAvail, sumDesired);
-        const qreal sumFactors = factor1 + factor2;
-        *width1 = sumAvail*factor1/sumFactors + minSize1;
-        *width2 = sumAvail*factor2/sumFactors + minSize2;
-    } else {
-        sumAvail = targetSize - prefSize1 - prefSize2;
-        factor1 = prefSize1;
-        factor2 = prefSize2;
-        const qreal sumFactors = factor1 + factor2;
-        *width1 = sumAvail*factor1/sumFactors + prefSize1;
-        *width2 = sumAvail*factor2/sumFactors + prefSize2;
-    }
-}
-
-
 bool qFuzzyCompare(const QSizeF &a, const QSizeF &b)
 {
     return qFuzzyCompare(a.width(), b.width()) && qFuzzyCompare(a.height(), b.height());

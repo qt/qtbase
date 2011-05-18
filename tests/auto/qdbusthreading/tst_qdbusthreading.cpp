@@ -592,7 +592,7 @@ void tst_QDBusThreading::callbackInAnotherAuxThread()
     // wait for the event loop
     sem1.release();
     sem2.acquire();
-    Q_ASSERT(loop);
+    QVERIFY(loop);
 
     // create the second thread
     new Thread;

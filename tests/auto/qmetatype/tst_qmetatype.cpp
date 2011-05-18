@@ -96,9 +96,17 @@ struct Bar
     Bar()
     {
         // check re-entrancy
-        Q_ASSERT(QMetaType::isRegistered(qRegisterMetaType<Foo>("Foo")));
+        if (!QMetaType::isRegistered(qRegisterMetaType<Foo>("Foo"))) {
+            qWarning("%s: re-entrancy test failed", Q_FUNC_INFO);
+            ++failureCount;
+        }
     }
+
+public:
+    static int failureCount;
 };
+
+int Bar::failureCount = 0;
 
 class MetaTypeTorturer: public QThread
 {
@@ -113,17 +121,35 @@ protected:
 #ifdef Q_OS_LINUX
             pthread_yield();
 #endif
-            Q_ASSERT(QMetaType::isRegistered(tp));
-            Q_ASSERT(QMetaType::type(nm) == tp);
-            Q_ASSERT(QMetaType::typeName(tp) == name);
+            if (!QMetaType::isRegistered(tp)) {
+                ++failureCount;
+                qWarning() << name << "is not a registered metatype";
+            }
+            if (QMetaType::type(nm) != tp) {
+                ++failureCount;
+                qWarning() << "Wrong metatype returned for" << name;
+            }
+            if (QMetaType::typeName(tp) != name) {
+                ++failureCount;
+                qWarning() << "Wrong typeName returned for" << tp;
+            }
             void *buf = QMetaType::construct(tp, 0);
             void *buf2 = QMetaType::construct(tp, buf);
-            Q_ASSERT(buf);
-            Q_ASSERT(buf2);
+            if (!buf) {
+                ++failureCount;
+                qWarning() << "Null buffer returned by QMetaType::construct(tp, 0)";
+            }
+            if (!buf2) {
+                ++failureCount;
+                qWarning() << "Null buffer returned by QMetaType::construct(tp, buf)";
+            }
             QMetaType::destroy(tp, buf);
             QMetaType::destroy(tp, buf2);
         }
     }
+public:
+    MetaTypeTorturer() : failureCount(0) { }
+    int failureCount;
 };
 
 void tst_QMetaType::threadSafety()
@@ -139,6 +165,11 @@ void tst_QMetaType::threadSafety()
     QVERIFY(t1.wait());
     QVERIFY(t2.wait());
     QVERIFY(t3.wait());
+
+    QCOMPARE(t1.failureCount, 0);
+    QCOMPARE(t2.failureCount, 0);
+    QCOMPARE(t3.failureCount, 0);
+    QCOMPARE(Bar::failureCount, 0);
 }
 
 namespace TestSpace

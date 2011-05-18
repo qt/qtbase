@@ -7234,8 +7234,7 @@ void tst_QWidget::render_systemClip2()
     QFETCH(bool, usePaintEvent);
     QFETCH(QColor, expectedColor);
 
-    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
-               "Qt::red is the reference color for the image, pick another color");
+    QVERIFY2(expectedColor != QColor(Qt::red), "Qt::red is the reference color for the image, pick another color");
 
     class MyWidget : public QWidget
     {
@@ -10422,7 +10421,7 @@ void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
     w.setFocusProxy(fp);
     QWidget::setTabOrder(&w, fp);
 
-    // No Q_ASSERT, then it's allright.
+    // In debug mode, no assertion failure means it's alright.
 }
 
 void tst_QWidget::movedAndResizedAttributes()

@@ -622,9 +622,14 @@ public:
     }
 
     QIODevice *prepare(const QNetworkCacheMetaData &)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); return 0; }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+        return 0;
+    }
     void insert(QIODevice *)
-    { Q_ASSERT(0 && "Should not have tried to add to the cache"); }
+    {
+        qFatal("%s: Should not have tried to add to the cache", Q_FUNC_INFO);
+    }
 
     void clear() { cache.clear(); }
 };
@@ -774,7 +779,9 @@ public:
     QTcpSocket* waitForNextConnectionSocket() {
         waitForNewConnection(-1);
         if (doSsl) {
-            Q_ASSERT(sslSocket);
+            if (!sslSocket)
+                qFatal("%s: sslSocket should not be null after calling waitForNewConnection()",
+                       Q_FUNC_INFO);
             return sslSocket;
         } else {
             //qDebug() << "returning nextPendingConnection";
@@ -946,7 +953,8 @@ protected:
         while (dataIndex < wantedSize) {
             const int remainingBytes = wantedSize - measuredSentBytes;
             const int bytesToWrite = qMin(remainingBytes, static_cast<int>(BlockSize));
-            Q_ASSERT(bytesToWrite);
+            if (bytesToWrite <= 0)
+                qFatal("%s: attempt to write %d bytes", Q_FUNC_INFO, bytesToWrite);
             measuredSentBytes += writeNextData(client, bytesToWrite);
 
             while (client->bytesToWrite() > 0) {
@@ -1005,7 +1013,8 @@ public:
 
         // Wait for data to be readyRead
         bool ok = connect(&senderObj, SIGNAL(dataReady()), this, SLOT(slotDataReady()));
-        Q_ASSERT(ok);
+        if (!ok)
+            qFatal("%s: Cannot connect dataReady signal", Q_FUNC_INFO);
     }
 
     void wrapUp()
@@ -1028,9 +1037,9 @@ protected:
     void timerEvent(QTimerEvent *)
     {
         //qDebug() << "RateControlledReader: timerEvent bytesAvailable=" << device->bytesAvailable();
-        if (readBufferSize > 0) {
-            // This asserts passes all the time, except in the final flush.
-            //Q_ASSERT(device->bytesAvailable() <= readBufferSize);
+        if (readBufferSize > 0 && device->bytesAvailable() > readBufferSize) {
+            // This passes all the time, except in the final flush.
+            //qFatal("%s: Too many bytes available", Q_FUNC_INFO);
         }
 
         qint64 bytesRead = 0;
@@ -1189,7 +1198,7 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         break;
 
     default:
-        Q_ASSERT_X(false, "tst_QNetworkReply", "Invalid/unknown operation requested");
+        qFatal("%s: Invalid/unknown operation requested", Q_FUNC_INFO);
     }
     reply->setParent(this);
 

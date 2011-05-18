@@ -132,33 +132,32 @@ static void setAnchor(QGraphicsAnchorLayout *l,
     anchor->setSpacing(spacing);
 }
 
-static bool checkReverseDirection(QGraphicsWidget *w)
+static bool checkReverseDirection(QGraphicsWidget *widget)
 {
-    QGraphicsLayout *l = w->layout();
-    Q_ASSERT(l);
+    QGraphicsLayout *layout = widget->layout();
     qreal left, top, right, bottom;
-    l->getContentsMargins(&left, &top, &right, &bottom);
-    w->setLayoutDirection(Qt::LeftToRight);
+    layout->getContentsMargins(&left, &top, &right, &bottom);
+    widget->setLayoutDirection(Qt::LeftToRight);
     QApplication::processEvents();
-    const QRectF lg = l->geometry();
+    const QRectF layoutGeometry = layout->geometry();
     QMap<QGraphicsLayoutItem *, QRectF> geometries;
-    for (int i = 0; i < l->count(); ++i) {
-        QGraphicsLayoutItem *w = l->itemAt(i);
-        geometries.insert(w, w->geometry());
+    for (int i = 0; i < layout->count(); ++i) {
+        QGraphicsLayoutItem *item = layout->itemAt(i);
+        geometries.insert(item, item->geometry());
     }
-    w->setLayoutDirection(Qt::RightToLeft);
+    widget->setLayoutDirection(Qt::RightToLeft);
     QApplication::processEvents();
-    lg.adjusted(+right, +top, -left, -bottom);
-    for (int i = 0; i < l->count(); ++i) {
-        QGraphicsLayoutItem *w = l->itemAt(i);
-        const QRectF rtlGeom = w->geometry();
-        const QRectF ltrGeom = geometries.value(w);
-        QRectF expectedGeom = ltrGeom;
-        expectedGeom.moveRight(lg.right() - (0 + ltrGeom.left()));
-        if (expectedGeom != rtlGeom) {
-            qDebug() << "layout->geometry():" << lg
-                     << "expected:" << expectedGeom
-                     << "actual:" << rtlGeom;
+    layoutGeometry.adjusted(+right, +top, -left, -bottom);
+    for (int i = 0; i < layout->count(); ++i) {
+        QGraphicsLayoutItem *item = layout->itemAt(i);
+        const QRectF rightToLeftGeometry = item->geometry();
+        const QRectF leftToRightGeometry = geometries.value(item);
+        QRectF expectedGeometry = leftToRightGeometry;
+        expectedGeometry.moveRight(layoutGeometry.right() - leftToRightGeometry.left());
+        if (expectedGeometry != rightToLeftGeometry) {
+            qDebug() << "layout->geometry():" << layoutGeometry
+                     << "expected:" << expectedGeometry
+                     << "actual:" << rightToLeftGeometry;
             return false;
         }
     }
@@ -345,6 +344,7 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
     p->show();
     view->show();
 
+    QVERIFY(p->layout());
     QCOMPARE(checkReverseDirection(p), true);
 
     if (hasSimplification) {
@@ -445,6 +445,7 @@ void tst_QGraphicsAnchorLayout::diagonal()
         QVERIFY(!usedSimplex(l, Qt::Vertical));
     }
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 
     c->setMinimumWidth(300);
@@ -735,6 +736,7 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
+    QVERIFY(p.layout());
     QCOMPARE(checkReverseDirection(&p), true);
 }
 

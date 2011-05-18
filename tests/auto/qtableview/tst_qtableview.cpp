@@ -3028,7 +3028,7 @@ void tst_QTableView::spans_data()
       << 1
       << 2;
 
-    QTest::newRow("QTBUG-6004: No failing Q_ASSERT, then it passes.")
+    QTest::newRow("QTBUG-6004: No failing assertion, then it passes.")
       << 5 << 5
       << (SpanList() << QRect(0, 0, 2, 2) << QRect(0, 0, 1, 1))
       << false
@@ -3036,7 +3036,7 @@ void tst_QTableView::spans_data()
       << 1
       << 1;
 
-    QTest::newRow("QTBUG-6004 (follow-up): No failing Q_ASSERT, then it passes.")
+    QTest::newRow("QTBUG-6004 (follow-up): No failing assertion, then it passes.")
       << 10 << 10
       << (SpanList() << QRect(2, 2, 1, 3) << QRect(2, 2, 1, 1))
       << false

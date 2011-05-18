@@ -221,8 +221,7 @@ static QString documentElement(const QByteArray &document)
         reader.readNext();
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO,
-               qPrintable(QString::fromLatin1("The input %1 didn't contain an element.").arg(QString::fromUtf8(document.constData()))));
+    qFatal("The input %s didn't contain an element", document.constData());
     return QString();
 }
 
@@ -265,7 +264,8 @@ public:
                                                     expected(aExpected),
                                                     output(aOutput)
         {
-            Q_ASSERT(!aId.isEmpty());
+            if (aId.isEmpty())
+                qFatal("%s: aId must not be an empty string", Q_FUNC_INFO);
         }
 
         QString     id;
@@ -289,7 +289,8 @@ public:
     TestSuiteHandler(const QUrl &baseURI) : runCount(0),
                                             skipCount(0)
     {
-        Q_ASSERT(baseURI.isValid());
+        if (!baseURI.isValid())
+            qFatal("%s: baseURI must be valid", Q_FUNC_INFO);
         m_baseURI.push(baseURI);
     }
 
@@ -461,7 +462,7 @@ public:
             }
             else
             {
-                Q_ASSERT_X(false, Q_FUNC_INFO, "The input catalog is invalid.");
+                qFatal("The input catalog is invalid.");
                 return false;
             }
         }
@@ -481,9 +482,12 @@ public:
 
     static bool isWellformed(QIODevice *const inputFile, const ParseMode mode)
     {
-        Q_ASSERT(inputFile);
-        Q_ASSERT_X(inputFile->isOpen(), Q_FUNC_INFO, "The caller is responsible for opening the device.");
-        Q_ASSERT(mode == ParseIncrementally || mode == ParseSinglePass);
+        if (!inputFile)
+            qFatal("%s: inputFile must be a valid QIODevice pointer", Q_FUNC_INFO);
+        if (!inputFile->isOpen())
+            qFatal("%s: inputFile must be opened by the caller", Q_FUNC_INFO);
+        if (mode != ParseIncrementally && mode != ParseSinglePass)
+            qFatal("%s: mode must be either ParseIncrementally or ParseSinglePass", Q_FUNC_INFO);
 
         if(mode == ParseIncrementally)
         {

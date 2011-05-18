@@ -44,6 +44,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QTimer>
+#include <QtCore/QDebug>
 
 
 DynamicTreeModel::DynamicTreeModel(QObject *parent)
@@ -66,9 +67,11 @@ QModelIndex DynamicTreeModel::index(int row, int column, const QModelIndex &pare
   const qint64 grandParent = findParentId(parent.internalId());
   if (grandParent >= 0) {
     QList<QList<qint64> > parentTable = m_childItems.value(grandParent);
-    Q_ASSERT(parent.column() < parentTable.size());
+    if (parent.column() >= parentTable.size())
+        qFatal("%s: parent.column() must be less than parentTable.size()", Q_FUNC_INFO);
     QList<qint64> parentSiblings = parentTable.at(parent.column());
-    Q_ASSERT(parent.row() < parentSiblings.size());
+    if (parent.row() >= parentSiblings.size())
+        qFatal("%s: parent.row() must be less than parentSiblings.size()", Q_FUNC_INFO);
   }
 
   if (childIdColumns.size() == 0)
@@ -189,7 +192,8 @@ QModelIndex ModelChangeCommand::findIndex(QList<int> rows)
   while (i.hasNext())
   {
     parent = m_model->index(i.next(), col, parent);
-    Q_ASSERT(parent.isValid());
+    if (!parent.isValid())
+        qFatal("%s: parent must be valid", Q_FUNC_INFO);
   }
   return parent;
 }

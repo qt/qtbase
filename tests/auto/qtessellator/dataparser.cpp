@@ -98,8 +98,12 @@ static QList<QPointF> parsePoints(const QByteArray &line)
     QList<qreal> nums = parseNumbersList(it);
     QList<qreal>::const_iterator nitr;
     for (nitr = nums.begin(); nitr != nums.end(); ++nitr) {
-        qreal x = *nitr; ++nitr;
-        Q_ASSERT(nitr != nums.end());
+        qreal x = *nitr;
+        ++nitr;
+        if (nitr == nums.end()) {
+            qWarning() << "parsePoints: Even number of co-ordinates required, odd number found: skipping last point";
+            break;
+        }
         qreal y = *nitr;
         res.append(QPointF(x, y));
     }

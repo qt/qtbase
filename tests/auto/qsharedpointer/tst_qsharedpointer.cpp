@@ -139,7 +139,8 @@ public:
 
     virtual ~Data()
     {
-        Q_ASSERT_X(generation > 0, "tst_QSharedPointer", "Double deletion!");
+        if (generation <= 0)
+            qFatal("tst_qsharedpointer: Double deletion!");
         generation = 0;
         ++destructorCounter;
     }
@@ -283,8 +284,8 @@ void tst_QSharedPointer::operators()
     QSharedPointer<char> p1;
     QSharedPointer<char> p2(new char);
     qptrdiff diff = p2.data() - p1.data();
-    Q_ASSERT(p1.data() != p2.data());
-    Q_ASSERT(diff != 0);
+    QVERIFY(p1.data() != p2.data());
+    QVERIFY(diff != 0);
 
     // operator-
     QCOMPARE(p2 - p1.data(), diff);
@@ -867,8 +868,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
         QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerCast<DiffPtrDerivedData>(baseptr);
@@ -885,8 +886,8 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -908,8 +909,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
@@ -928,8 +929,8 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
     {
         VirtualDerived *aData = new VirtualDerived;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+        QVERIFY(aData == aBase);
+        QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -1605,7 +1606,7 @@ void hashAndMapTest()
     QVERIFY(it != c.find(Key()));
 
     if (Ordered) {
-        Q_ASSERT(k0 < k1);
+        QVERIFY(k0 < k1);
 
         it = c.begin();
         QCOMPARE(it.key(), k0);

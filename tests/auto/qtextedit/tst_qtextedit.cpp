@@ -317,7 +317,7 @@ void tst_QTextEdit::getSetCheck()
     // void QTextEdit::setFontPointSize(qreal)
     obj1.setFontPointSize(qreal(1.1));
     QCOMPARE(qreal(1.1), obj1.fontPointSize());
-    // we currently Q_ASSERT_X in QFont::setPointSizeF for that
+    // we currently assert in QFont::setPointSizeF for that
     //obj1.setFontPointSize(0.0);
     //QCOMPARE(1.1, obj1.fontPointSize()); // Should not accept 0.0 => keep old
 
@@ -327,7 +327,7 @@ void tst_QTextEdit::getSetCheck()
     QCOMPARE(1, obj1.fontWeight()); // Range<1, 99>
     obj1.setFontWeight(99);
     QCOMPARE(99, obj1.fontWeight()); // Range<1, 99>
-    /* Q_ASSERT_X in qfont.cpp
+    /* assertion in qfont.cpp
     obj1.setFontWeight(INT_MIN);
     QCOMPARE(1, obj1.fontWeight()); // Range<1, 99>
     obj1.setFontWeight(INT_MAX);
@@ -2064,7 +2064,7 @@ void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imag
 
     QCOMPARE(original.isNull(), false);
     QCOMPARE(original.size(), image.size());
-    Q_ASSERT(image.depth() == 32);
+    QCOMPARE(image.depth(), 32);
     QCOMPARE(original.depth(), image.depth());
 
     const int bytesPerLine = image.bytesPerLine();

@@ -201,8 +201,10 @@ class ObservingObject : public QObject
     Q_OBJECT
 public:
     ObservingObject(AccessibleProxyModel  *proxy, QObject *parent = 0)
-    : QObject(parent),
-    m_proxy(proxy)
+    : QObject(parent)
+    , m_proxy(proxy)
+    , storePersistentFailureCount(0)
+    , checkPersistentFailureCount(0)
     {
         connect(m_proxy, SIGNAL(layoutAboutToBeChanged()), SLOT(storePersistent()));
         connect(m_proxy, SIGNAL(layoutChanged()), SLOT(checkPersistent()));
@@ -215,8 +217,14 @@ public slots:
         for (int row = 0; row < m_proxy->rowCount(parent); ++row) {
             QModelIndex proxyIndex = m_proxy->index(row, 0, parent);
             QModelIndex sourceIndex = m_proxy->mapToSource(proxyIndex);
-            Q_ASSERT(proxyIndex.isValid());
-            Q_ASSERT(sourceIndex.isValid());
+            if (!proxyIndex.isValid()) {
+                qWarning("%s: Invalid proxy index", Q_FUNC_INFO);
+                ++storePersistentFailureCount;
+            }
+            if (!sourceIndex.isValid()) {
+                qWarning("%s: invalid source index", Q_FUNC_INFO);
+                ++storePersistentFailureCount;
+            }
             m_persistentSourceIndexes.append(sourceIndex);
             m_persistentProxyIndexes.append(proxyIndex);
             if (m_proxy->hasChildren(proxyIndex))
@@ -226,12 +234,24 @@ public slots:
 
     void storePersistent()
     {
-      foreach(const QModelIndex &idx, m_persistentProxyIndexes)
-        Q_ASSERT(idx.isValid()); // This is called from layoutAboutToBeChanged. Persistent indexes should be valid
+        // This method is called from layoutAboutToBeChanged. Persistent indexes should be valid
+        foreach(const QModelIndex &idx, m_persistentProxyIndexes)
+            if (!idx.isValid()) {
+                qWarning("%s: persistentProxyIndexes contains invalid index", Q_FUNC_INFO);
+                ++storePersistentFailureCount;
+            }
 
-        Q_ASSERT(m_proxy->persistent().isEmpty());
+        if (!m_proxy->persistent().isEmpty()) {
+            qWarning("%s: proxy should have no persistent indexes when storePersistent called",
+                     Q_FUNC_INFO);
+            ++storePersistentFailureCount;
+        }
         storePersistent(QModelIndex());
-        Q_ASSERT(!m_proxy->persistent().isEmpty());
+        if (m_proxy->persistent().isEmpty()) {
+            qWarning("%s: proxy should have persistent index after storePersistent called",
+                     Q_FUNC_INFO);
+            ++storePersistentFailureCount;
+        }
     }
 
     void checkPersistent()
@@ -243,7 +263,10 @@ public slots:
         for (int row = 0; row < m_persistentProxyIndexes.size(); ++row) {
             QModelIndex updatedProxy = m_persistentProxyIndexes.at(row);
             QModelIndex updatedSource = m_persistentSourceIndexes.at(row);
-            QCOMPARE(m_proxy->mapToSource(updatedProxy), updatedSource);
+            if (m_proxy->mapToSource(updatedProxy) != updatedSource) {
+                qWarning("%s: check failed at row %d", Q_FUNC_INFO, row);
+                ++checkPersistentFailureCount;
+            }
         }
         m_persistentSourceIndexes.clear();
         m_persistentProxyIndexes.clear();
@@ -253,6 +276,9 @@ private:
     AccessibleProxyModel  *m_proxy;
     QList<QPersistentModelIndex> m_persistentSourceIndexes;
     QList<QPersistentModelIndex> m_persistentProxyIndexes;
+public:
+    int storePersistentFailureCount;
+    int checkPersistentFailureCount;
 };
 
 void tst_ModelTest::moveSourceItems()
@@ -280,6 +306,9 @@ void tst_ModelTest::moveSourceItems()
     moveCommand->setDestAncestors(QList<int>() << 1);
     moveCommand->setDestRow(0);
     moveCommand->doCommand();
+
+    QCOMPARE(observer.storePersistentFailureCount, 0);
+    QCOMPARE(observer.checkPersistentFailureCount, 0);
 }
 
 void tst_ModelTest::testResetThroughProxy()
@@ -302,6 +331,9 @@ void tst_ModelTest::testResetThroughProxy()
     ModelResetCommand *resetCommand = new ModelResetCommand(model, this);
     resetCommand->setNumCols(0);
     resetCommand->doCommand();
+
+    QCOMPARE(observer.storePersistentFailureCount, 0);
+    QCOMPARE(observer.checkPersistentFailureCount, 0);
 }
 
 

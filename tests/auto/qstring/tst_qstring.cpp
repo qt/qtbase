@@ -3429,9 +3429,9 @@ void tst_QString::fromLatin1Roundtrip()
     QFETCH(QString, unicode);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicode.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicode.isEmpty());
-    Q_ASSERT(latin1.length() == unicode.length());
+    QCOMPARE(latin1.isNull(), unicode.isNull());
+    QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
+    QCOMPARE(latin1.length(), unicode.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {
@@ -3484,12 +3484,12 @@ void tst_QString::toLatin1Roundtrip()
     QFETCH(QString, unicodedst);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicodesrc.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodesrc.isEmpty());
-    Q_ASSERT(latin1.length() == unicodesrc.length());
-    Q_ASSERT(latin1.isNull() == unicodedst.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodedst.isEmpty());
-    Q_ASSERT(latin1.length() == unicodedst.length());
+    QCOMPARE(latin1.isNull(), unicodesrc.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
+    QCOMPARE(latin1.length(), unicodesrc.length());
+    QCOMPARE(latin1.isNull(), unicodedst.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodedst.isEmpty());
+    QCOMPARE(latin1.length(), unicodedst.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {
@@ -3519,12 +3519,12 @@ void tst_QString::stringRef_toLatin1Roundtrip()
     QFETCH(QString, unicodedst);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicodesrc.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodesrc.isEmpty());
-    Q_ASSERT(latin1.length() == unicodesrc.length());
-    Q_ASSERT(latin1.isNull() == unicodedst.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodedst.isEmpty());
-    Q_ASSERT(latin1.length() == unicodedst.length());
+    QCOMPARE(latin1.isNull(), unicodesrc.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
+    QCOMPARE(latin1.length(), unicodesrc.length());
+    QCOMPARE(latin1.isNull(), unicodedst.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodedst.isEmpty());
+    QCOMPARE(latin1.length(), unicodedst.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {

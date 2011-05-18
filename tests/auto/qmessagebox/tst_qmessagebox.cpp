@@ -609,48 +609,43 @@ void tst_QMessageBox::testSymbols()
     button = QMessageBox::FlagMask;
 
     mb1.setText("Foo");
-    QString text = mb1.text();
-    Q_ASSERT(text == "Foo");
+    QCOMPARE(mb1.text(), "Foo");
 
     icon = mb1.icon();
-    Q_ASSERT(icon == QMessageBox::NoIcon);
+    QVERIFY(icon == QMessageBox::NoIcon);
     mb1.setIcon(QMessageBox::Question);
-    Q_ASSERT(mb1.icon() == QMessageBox::Question);
+    QVERIFY(mb1.icon() == QMessageBox::Question);
 
     QPixmap iconPixmap = mb1.iconPixmap();
     mb1.setIconPixmap(iconPixmap);
-    Q_ASSERT(mb1.icon() == QMessageBox::NoIcon);
+    QVERIFY(mb1.icon() == QMessageBox::NoIcon);
 
-    QString bt0 = mb1.buttonText(QMessageBox::Ok);
-    QString bt1 = mb1.buttonText(QMessageBox::Cancel);
-    QString bt2 = mb1.buttonText(QMessageBox::Ok | QMessageBox::Default);
-
-    Q_ASSERT(bt0 == "OK");
-    Q_ASSERT(bt1.isEmpty());
-    Q_ASSERT(bt2.isEmpty());
+    QCOMPARE(mb1.buttonText(QMessageBox::Ok), "OK");
+    QCOMPARE(mb1.buttonText(QMessageBox::Cancel), QString());
+    QCOMPARE(mb1.buttonText(QMessageBox::Ok | QMessageBox::Default), QString());
 
     mb2.setButtonText(QMessageBox::Cancel, "Foo");
     mb2.setButtonText(QMessageBox::Ok, "Bar");
     mb2.setButtonText(QMessageBox::Ok | QMessageBox::Default, "Baz");
 
-    Q_ASSERT(mb2.buttonText(QMessageBox::Cancel).isEmpty());
-    Q_ASSERT(mb2.buttonText(QMessageBox::Ok) == "Bar");
+    QCOMPARE(mb2.buttonText(QMessageBox::Cancel), QString());
+    QCOMPARE(mb2.buttonText(QMessageBox::Ok), "Bar");
 
-    Q_ASSERT(mb3b.buttonText(QMessageBox::Yes).endsWith("Yes"));
-    Q_ASSERT(mb3b.buttonText(QMessageBox::YesAll).isEmpty());
-    Q_ASSERT(mb3b.buttonText(QMessageBox::Ok).isEmpty());
+    QVERIFY(mb3b.buttonText(QMessageBox::Yes).endsWith("Yes"));
+    QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
+    QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
 
     mb3b.setButtonText(QMessageBox::Yes, "Blah");
     mb3b.setButtonText(QMessageBox::YesAll, "Zoo");
     mb3b.setButtonText(QMessageBox::Ok, "Zoo");
 
-    Q_ASSERT(mb3b.buttonText(QMessageBox::Yes) == "Blah");
-    Q_ASSERT(mb3b.buttonText(QMessageBox::YesAll).isEmpty());
-    Q_ASSERT(mb3b.buttonText(QMessageBox::Ok).isEmpty());
+    QCOMPARE(mb3b.buttonText(QMessageBox::Yes), "Blah");
+    QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
+    QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
 
-    Q_ASSERT(mb1.textFormat() == Qt::AutoText);
+    QCOMPARE(mb1.textFormat(), Qt::AutoText);
     mb1.setTextFormat(Qt::PlainText);
-    Q_ASSERT(mb1.textFormat() == Qt::PlainText);
+    QCOMPARE(mb1.textFormat(), Qt::PlainText);
 
     CONVENIENCE_FUNC_SYMS(information);
     CONVENIENCE_FUNC_SYMS_EXTRA(information);
@@ -660,7 +655,7 @@ void tst_QMessageBox::testSymbols()
     CONVENIENCE_FUNC_SYMS(critical);
 
     QSize sizeHint = mb1.sizeHint();
-    Q_ASSERT(sizeHint.width() > 20 && sizeHint.height() > 20);
+    QVERIFY(sizeHint.width() > 20 && sizeHint.height() > 20);
 
 #ifdef QT3_SUPPORT
      //test QT3_SUPPORT stuff
@@ -672,8 +667,8 @@ void tst_QMessageBox::testSymbols()
     QPixmap pm = QMessageBox::standardIcon(QMessageBox::Question, Qt::GUIStyle(1));
     QPixmap pm2 = QMessageBox::standardIcon(QMessageBox::Question);
 
-    Q_ASSERT(pm.toImage() == iconPixmap.toImage());
-    Q_ASSERT(pm2.toImage() == iconPixmap.toImage());
+    QVERIFY(pm.toImage() == iconPixmap.toImage());
+    QVERIFY(pm2.toImage() == iconPixmap.toImage());
 
     int ret1 = QMessageBox::message("title", "text");
     int ret2 = QMessageBox::message("title", "text", "OK");
@@ -692,10 +687,10 @@ void tst_QMessageBox::testSymbols()
     Q_UNUSED(ret5);
 
     QPixmap pm3 = QMessageBox::standardIcon(QMessageBox::NoIcon);
-    Q_ASSERT(pm3.isNull());
+    QVERIFY(pm3.isNull());
 
     pm3 = QMessageBox::standardIcon(QMessageBox::Information);
-    Q_ASSERT(!pm3.isNull());
+    QVERIFY(!pm3.isNull());
 #endif //QT3_SUPPORT
 
     QMessageBox::about(&mb1, "title", "text");
