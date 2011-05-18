@@ -14,12 +14,12 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
-   for(dir, $$list($$unique($$list($$dirname(QMAKE_QT_CONFIG) \
-                                   $$replace($$list($$split($$list($$(QMAKEPATH)), $$DIRLIST_SEPARATOR)), $, /mkspecs) \
-                                   $$QMAKE_EXTRA_MODULE_FORWARDS \
-                                   )))) {
+   for(dir, $$list($$unique($$list($$replace($$list($$dirname(QMAKE_QT_CONFIG) \
+                                                    $$replace($$list($$split($$list($$(QMAKEPATH)), $$DIRLIST_SEPARATOR)), $, /mkspecs)), \
+                                             $, /modules) \
+                                   $$QMAKE_EXTRA_MODULE_FORWARDS)))) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
+      for(mod, $$list($$files($$dir/qt_*.pri))) {
          # For installed Qt these paths will be common for all modules
          # For development these will vary per module, and syncqt will override the value in the
          # qt_<module>.pri forwarding file
