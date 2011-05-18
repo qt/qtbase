@@ -185,8 +185,8 @@ void tst_QDBusType::isValidFixedType()
     QFETCH(QString, data);
     QFETCH(bool, result);
     QFETCH(bool, isValid);
-    Q_ASSERT_X(data.length() == 1, "tst_QDBusType", "Test is malformed, this function must test only one-letter types");
-    Q_ASSERT(isValid || (!isValid && !result));
+    QVERIFY2(data.length() == 1, "Test is malformed, this function must test only one-letter types");
+    QVERIFY(isValid || (!isValid && !result));
 
     int type = data.at(0).unicode();
     if (isValid)
@@ -207,8 +207,8 @@ void tst_QDBusType::isValidBasicType()
     QFETCH(QString, data);
     QFETCH(bool, result);
     QFETCH(bool, isValid);
-    Q_ASSERT_X(data.length() == 1, "tst_QDBusType", "Test is malformed, this function must test only one-letter types");
-    Q_ASSERT(isValid || (!isValid && !result));
+    QVERIFY2(data.length() == 1, "Test is malformed, this function must test only one-letter types");
+    QVERIFY(isValid || (!isValid && !result));
 
     int type = data.at(0).unicode();
     if (isValid)
