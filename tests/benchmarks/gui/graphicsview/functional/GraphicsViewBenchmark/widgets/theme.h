@@ -93,9 +93,8 @@ public:
     QPen listItemBorderPen() const { return m_listItemBorderPen; }
     QSize listItemRounding() const { return m_listItemRounding; }
 
-#if (QT_VERSION >= 0x040600)
     bool isIconOpacityEffectEnabled(const ListItem::IconItemPos iconPos) const { return m_iconOpacityEffectEnabled[iconPos]; }
-#endif
+
     qreal iconRotation(const ListItem::IconItemPos iconPos) const { return m_iconRotation[iconPos]; }
     bool isIconSmoothTransformationEnabled(const ListItem::IconItemPos iconPos) const { return m_iconSmoothTransformation[iconPos]; }
 
@@ -124,9 +123,7 @@ private:
     QPen m_listItemBorderPen;
     QSize m_listItemRounding;
 
-#if (QT_VERSION >= 0x040600)
     QHash<ListItem::IconItemPos, bool> m_iconOpacityEffectEnabled;
-#endif
     QHash<ListItem::IconItemPos, qreal> m_iconRotation;
     QHash<ListItem::IconItemPos, bool> m_iconSmoothTransformation;
 };

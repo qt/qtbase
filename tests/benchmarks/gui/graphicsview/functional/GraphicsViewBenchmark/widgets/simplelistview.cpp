@@ -46,9 +46,7 @@
 #include "simplelistview.h"
 #include "scrollbar.h"
 #include "listitem.h"
-#if (QT_VERSION >= 0x040600)
 #include "listitemcache.h"
-#endif
 #include "theme.h"
 
 class SimpleListViewPrivate
@@ -62,9 +60,7 @@ public:
         , m_layout(0)
         , m_twoColumns(false)
         , q_ptr(button)
-#if (QT_VERSION >= 0x040600)
         , m_listItemCaching(false)
-#endif
     {
         Q_Q(SimpleListView);
 
@@ -99,10 +95,9 @@ public:
         if (!m_content)
             return;
 
-#if (QT_VERSION >= 0x040600)
         const bool caching = q->listItemCaching();
         q->setListItemCaching(false);
-#endif
+
         m_content->resize(q->viewport()->size().width(),
                         m_layout->preferredHeight());
         const bool clip = 
@@ -112,9 +107,7 @@ public:
         q->viewport()->setFlag(
                 QGraphicsItem::ItemClipsChildrenToShape, clip);
 
-#if (QT_VERSION >= 0x040600)
         q->setListItemCaching(caching);
-#endif
     }
 
     void resizeScrollBars()
@@ -161,12 +154,11 @@ public:
 
     void updateListContents()
     {
-#if (QT_VERSION >= 0x040600)
         Q_Q(SimpleListView);
 
         const bool caching = q->listItemCaching();
         q->setListItemCaching(false);
-#endif
+
         const QString defaultIcon = Theme::p()->pixmapPath()+"contact_default_icon.svg";
         const int itemCount = m_layout->count();
     
@@ -209,26 +201,21 @@ public:
             // Update icons
             item->icon(ListItem::LeftIcon)->setRotation(Theme::p()->iconRotation(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setRotation(Theme::p()->iconRotation(ListItem::RightIcon));
-#if (QT_VERSION >= 0x040600)
             item->icon(ListItem::LeftIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::RightIcon));
-#endif
             item->icon(ListItem::LeftIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::RightIcon));
         }
-#if (QT_VERSION >= 0x040600)
         q->setListItemCaching(caching);
-#endif
     }
 
     void updateListItemBackgrounds(int index)
     {
-#if (QT_VERSION >= 0x040600)
         Q_Q(SimpleListView);
 
         const bool caching = q->listItemCaching();
         q->setListItemCaching(false);
-#endif
+
         const int itemCount = m_layout->count();
 
         for (int i=index; i<itemCount; ++i) {
@@ -243,9 +230,7 @@ public:
             }
         }
 
-#if (QT_VERSION >= 0x040600)
         q->setListItemCaching(caching);
-#endif
     }
 
     void setTwoColumns(const bool twoColumns)
@@ -256,10 +241,9 @@ public:
         Q_Q(SimpleListView);
         m_twoColumns = twoColumns;
 
-#if (QT_VERSION >= 0x040600)
         bool cache = q->listItemCaching();
         q->setListItemCaching(false);
-#endif
+
         QList<QGraphicsLayoutItem *> moveditems;
         if(twoColumns) {
             int half = m_layout->count()/2;
@@ -293,9 +277,7 @@ public:
         resizeContents(q->size());
         resizeScrollBars();
 
-#if (QT_VERSION >= 0x040600)
         q->setListItemCaching(cache);
-#endif
     }
 
     bool twoColumns()
@@ -307,9 +289,7 @@ public:
     QGraphicsGridLayout *m_layout;
     bool m_twoColumns;
     SimpleListView *q_ptr;
-#if (QT_VERSION >= 0x040600)
     bool m_listItemCaching;
-#endif
 };
 
 SimpleListView::SimpleListView(QGraphicsWidget *parent) 
@@ -361,11 +341,9 @@ void SimpleListView::insertItem(int index, QGraphicsWidget *item)
         d->m_layout->addItem(moveditems.at(i), d->m_layout->count(), 0);
     }
 
-#if (QT_VERSION >= 0x040600)
     ListItemCache *cache = new ListItemCache;
     item->setGraphicsEffect(cache);
     cache->setEnabled(listItemCaching());
-#endif
 
     d->resizeScrollBars();
     d->updateListItemBackgrounds(index);
@@ -416,7 +394,6 @@ int SimpleListView::itemCount()
     return d->m_layout->count();
 }
 
-#if (QT_VERSION >= 0x040600)
 bool SimpleListView::listItemCaching() const
 {
     Q_D(const SimpleListView);
@@ -439,7 +416,6 @@ void SimpleListView::setListItemCaching(bool enabled)
         cache->setEnabled(enabled);
     }
 }
-#endif
 
 void SimpleListView::scrollContentsBy(qreal dx, qreal dy)
 {

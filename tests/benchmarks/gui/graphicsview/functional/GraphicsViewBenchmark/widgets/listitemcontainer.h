@@ -63,11 +63,9 @@ public:
 
     virtual void setTwoColumns(const bool twoColumns);
 
-#if (QT_VERSION >= 0x040600)
     bool listItemCaching() const;
     void setListItemCaching(const bool enabled);
     virtual void setListItemCaching(const bool enabled, const int index);
-#endif
 
 protected:
 
@@ -82,11 +80,9 @@ private:
 
     ItemRecyclingList *m_view;
     QGraphicsLinearLayout *m_layout;
-#if (QT_VERSION >= 0x040600)
+
     void setListItemCaching(const bool enabled, ListItem *listItem);
     bool m_listItemCaching;
-#endif
 };
-
 
 #endif // LISTITEMCONTAINER_H

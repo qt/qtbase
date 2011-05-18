@@ -102,20 +102,12 @@ ScrollBar* SimpleList::verticalScrollBar() const
 
 bool SimpleList::listItemCaching() const
 {
-#if (QT_VERSION >= 0x040600)
     return m_list->listItemCaching();
-#else
-    return false;
-#endif
 }
 
 void SimpleList::setListItemCaching(bool enable)
 {
-#if (QT_VERSION >= 0x040600)
     m_list->setListItemCaching(enable);
-#else
-    Q_UNUSED(enable)
-#endif
 }
 
 void SimpleList::keyPressEvent(QKeyEvent *event)

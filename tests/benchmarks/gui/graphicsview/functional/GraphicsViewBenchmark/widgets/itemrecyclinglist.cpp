@@ -161,10 +161,8 @@ void ItemRecyclingList::themeChange()
             // Update icons
             item->icon(ListItem::LeftIcon)->setRotation(Theme::p()->iconRotation(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setRotation(Theme::p()->iconRotation(ListItem::RightIcon));
-#if (QT_VERSION >= 0x040600)
             item->icon(ListItem::LeftIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setOpacityEffectEnabled(Theme::p()->isIconOpacityEffectEnabled(ListItem::RightIcon));
-#endif
             item->icon(ListItem::LeftIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::LeftIcon));
             item->icon(ListItem::RightIcon)->setSmoothTransformationEnabled(Theme::p()->isIconSmoothTransformationEnabled(ListItem::RightIcon));
         }
@@ -208,25 +206,17 @@ void ItemRecyclingList::keyPressEvent(QKeyEvent *event)
 
 bool ItemRecyclingList::listItemCaching() const
 {
-#if (QT_VERSION >= 0x040600)
     ListItemContainer *container =
         static_cast<ListItemContainer *>(m_container);
 
     return container->listItemCaching();
-#else
-    return false;
-#endif
 }
 
 void ItemRecyclingList::setListItemCaching(bool enabled)
 {
-#if (QT_VERSION >= 0x040600)
     ListItemContainer *container =
         static_cast<ListItemContainer *>(m_container);
     container->setListItemCaching(enabled);
-#else
-    Q_UNUSED(enabled)
-#endif
 }
 
 void ItemRecyclingList::updateListItemBackgrounds(int index)
@@ -255,17 +245,13 @@ void ItemRecyclingList::setTwoColumns(const bool enabled)
     if (twoColumns() == enabled)
         return;
 
-#if (QT_VERSION >= 0x040600)
     const bool caching = listItemCaching();
     setListItemCaching(false);
-#endif
 
     m_container->setTwoColumns(enabled);
     refreshContainerGeometry();
 
-#if (QT_VERSION >= 0x040600)
     setListItemCaching(caching);
-#endif
 }
 
 bool ItemRecyclingList::twoColumns()

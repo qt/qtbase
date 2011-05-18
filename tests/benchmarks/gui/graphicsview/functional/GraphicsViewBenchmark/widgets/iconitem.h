@@ -46,9 +46,7 @@
 
 #include "gvbwidget.h"
 
-#if (QT_VERSION >= 0x040600)
 class QGraphicsOpacityEffect;
-#endif
 class QPainter;
 
 class IconItem : public GvbWidget
@@ -64,10 +62,9 @@ public:
     QString fileName() const;
     void setFileName(const QString &filename);
 
-#if (QT_VERSION >= 0x040600)
     void setOpacityEffectEnabled(const bool enable);
     bool isOpacityEffectEnabled() const;
-#endif
+
     void setRotation(const qreal rotation) { m_rotation = rotation; }
     qreal rotation() const { return m_rotation; }
 
@@ -87,9 +84,7 @@ private:
     QString m_filename;
     QPixmap m_pixmap;
     qreal m_rotation;
-#if (QT_VERSION >= 0x040600)
     QGraphicsOpacityEffect *m_opacityEffect;
-#endif
     bool m_smoothTransformation;
 };
 

@@ -51,10 +51,8 @@ public:
     virtual ~ItemRecyclingListView();
     void setCurrentRow(const int row);
     int rows() const;
-#if (QT_VERSION >= 0x040600)
     virtual bool listItemCaching() const = 0;
     virtual void setListItemCaching(bool enabled) = 0;
-#endif
 
 protected:
     void rowsInserted(const QModelIndex &parent, int start, int end);
