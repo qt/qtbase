@@ -777,15 +777,11 @@ const QString::Null QString::null = { };
 
     \snippet doc/src/snippets/qstring/stringbuilder.cpp 5
 
-    A more global approach is to include this define:
+    A more global approach which is the most convenient but
+    not entirely source compatible, is to this define in your
+    .pro file:
 
     \snippet doc/src/snippets/qstring/stringbuilder.cpp 3
-
-    and use \c{'%'} instead of \c{'+'} for string concatenation
-    everywhere. The third approach, which is the most convenient but
-    not entirely source compatible, is to include two defines:
-
-    \snippet doc/src/snippets/qstring/stringbuilder.cpp 4
 
     and the \c{'+'} will automatically be performed as the
     \c{QStringBuilder} \c{'%'} everywhere.

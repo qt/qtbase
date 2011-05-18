@@ -44,8 +44,7 @@
 // this is the "no harm done" version. Only operator% is active,
 // with NO_CAST * _not_ defined
 #define P %
-#undef QT_USE_FAST_OPERATOR_PLUS
-#undef QT_USE_FAST_CONCATENATION
+#undef QT_USE_QSTRINGBUILDER
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
 
