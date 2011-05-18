@@ -10,7 +10,7 @@ DEFINES   += QT_BUILD_CORE_LIB QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/corelib/qtcoreversion.h
 

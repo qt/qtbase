@@ -10,7 +10,7 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x61000000
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/xml/qtxmlversion.h
 

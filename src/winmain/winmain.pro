@@ -16,6 +16,6 @@ win32 {
 }
 
 !win32:error("$$_FILE_ is intended only for Windows!")
-include(../qbase.pri)
+load(qt_module_config)
 wince*:QMAKE_POST_LINK =
 

@@ -31,7 +31,7 @@ win32 {
     CONFIG(debug, debug|release):LIBS_PRIVATE += -ldbus-1d
     else:LIBS_PRIVATE += -ldbus-1
 }
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/dub/qtdbusversion.h
 

@@ -13,7 +13,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 

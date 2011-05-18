@@ -50,7 +50,7 @@ symbian {
     }
 }
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/openvg/qtopenvgversion.h
 

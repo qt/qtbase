@@ -22,7 +22,7 @@ isEmpty(QT_MAJOR_VERSION) {
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
-include(../qt_targets.pri)
+load(qt_targets)
 QMAKE_TARGET_PRODUCT = UiLoader
 QMAKE_TARGET_DESCRIPTION = QUiLoader
 

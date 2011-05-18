@@ -35,4 +35,4 @@ symbian {
     error("$$_FILE_ is intended only for Symbian!")
 }
 
-include(../qbase.pri)
+load(qt_module_config)

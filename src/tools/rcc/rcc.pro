@@ -13,4 +13,4 @@ include(../bootstrap/bootstrap.pri)
 
 target.path=$$[QT_INSTALL_BINS]
 INSTALLS += target
-include(../../qt_targets.pri)
+load(qt_targets)
