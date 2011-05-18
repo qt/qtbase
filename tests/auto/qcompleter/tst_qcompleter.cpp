@@ -1250,9 +1250,7 @@ public:
 void tst_QCompleter::task189564_omitNonSelectableItems()
 {
     const QString prefix("a");
-    Q_ASSERT(!prefix.isEmpty());
     const int n = 5;
-    Q_ASSERT(n > 0);
 
     QStringList strings;
     for (int i = 0; i < n; ++i)

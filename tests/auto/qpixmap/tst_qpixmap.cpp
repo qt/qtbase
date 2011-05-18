@@ -1697,8 +1697,8 @@ void tst_QPixmap::fromImageReaderAnimatedGif()
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);
 
-    Q_ASSERT(referenceReader.canRead());
-    Q_ASSERT(referenceReader.imageCount() > 1);
+    QVERIFY(referenceReader.canRead());
+    QVERIFY(referenceReader.imageCount() > 1);
 
     for (int i = 0; i < referenceReader.imageCount(); ++i) {
         QImage refImage = referenceReader.read();

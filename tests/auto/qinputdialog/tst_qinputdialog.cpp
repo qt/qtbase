@@ -193,12 +193,12 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
 void testGetText(QInputDialog *dialog)
 {
     QLineEdit *ledit = qFindChild<QLineEdit *>(dialog);
-    Q_ASSERT(ledit);
+    QVERIFY(ledit);
 
     QDialogButtonBox *bbox = qFindChild<QDialogButtonBox *>(dialog);
-    Q_ASSERT(bbox);
+    QVERIFY(bbox);
     QPushButton *okButton = bbox->button(QDialogButtonBox::Ok);
-    Q_ASSERT(okButton);
+    QVERIFY(okButton);
 
     QVERIFY(ledit->hasAcceptableInput());
     QCOMPARE(ledit->selectedText(), ledit->text());
@@ -211,12 +211,12 @@ void testGetText(QInputDialog *dialog)
 void testGetItem(QInputDialog *dialog)
 {
     QComboBox *cbox = qFindChild<QComboBox *>(dialog);
-    Q_ASSERT(cbox);
+    QVERIFY(cbox);
 
     QDialogButtonBox *bbox = qFindChild<QDialogButtonBox *>(dialog);
-    Q_ASSERT(bbox);
+    QVERIFY(bbox);
     QPushButton *okButton = bbox->button(QDialogButtonBox::Ok);
-    Q_ASSERT(okButton);
+    QVERIFY(okButton);
 
     QVERIFY(okButton->isEnabled());
     const int origIndex = cbox->currentIndex();
@@ -249,7 +249,7 @@ void tst_QInputDialog::timerEvent(QTimerEvent *event)
 {
     killTimer(event->timerId());
     QInputDialog *dialog = qFindChild<QInputDialog *>(parent);
-    Q_ASSERT(dialog);
+    QVERIFY(dialog);
     if (testFunc)
         testFunc(dialog);
     dialog->done(doneCode); // cause static function call to return
@@ -270,7 +270,7 @@ void tst_QInputDialog::getInteger()
 {
     QFETCH(int, min);
     QFETCH(int, max);
-    Q_ASSERT(min < max);
+    QVERIFY(min < max);
     parent = new QWidget;
     doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetInteger;
@@ -310,7 +310,7 @@ void tst_QInputDialog::getDouble()
     QFETCH(double, min);
     QFETCH(double, max);
     QFETCH(int, decimals);
-    Q_ASSERT(min < max && decimals >= 0 && decimals <= 13);
+    QVERIFY(min < max && decimals >= 0 && decimals <= 13);
     parent = new QWidget;
     doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetDouble;

@@ -428,7 +428,7 @@ void tst_QTextCodec::flagCodepointFFFF() const
     QString input(ch);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     const QByteArray asDecoded(codec->fromUnicode(input));
     QCOMPARE(asDecoded, QByteArray("?"));
@@ -465,7 +465,7 @@ void tst_QTextCodec::flagF7808080() const
 
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     //QVERIFY(!codec->canEncode(QChar(0x1C0000)));
 
@@ -482,7 +482,7 @@ void tst_QTextCodec::flagEFBFBF() const
     invalidInput[2] = char(0xBF);
 
     const QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     {
         //QVERIFY(!codec->canEncode(QChar(0xFFFF)));
@@ -1627,7 +1627,7 @@ void tst_QTextCodec::utf8bom()
     QFETCH(QString, result);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     QCOMPARE(codec->toUnicode(data.constData(), data.length(), 0), result);
 

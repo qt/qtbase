@@ -3594,7 +3594,7 @@ void tst_QGraphicsScene::task160653_selectionChanged()
             item->flags() | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
         item->setSelected(true);
     }
-    Q_ASSERT(scene.items().size() > 1);
+    QVERIFY(scene.items().size() > 1);
     QCOMPARE(scene.items().size(), scene.selectedItems().size());
 
     QSignalSpy spy(&scene, SIGNAL(selectionChanged()));

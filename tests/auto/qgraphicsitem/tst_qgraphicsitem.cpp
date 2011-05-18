@@ -10732,7 +10732,7 @@ void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
     QTRY_VERIFY(view.repaints > 0);
 
     QGraphicsItemCache *itemCache = QGraphicsItemPrivate::get(item)->extraItemCache();
-    Q_ASSERT(itemCache);
+    QVERIFY(itemCache);
     QPixmapCache::Key currentKey = itemCache->deviceData.value(view.viewport()).key;
 
     // Trigger an update and verify that the cache is unchanged.

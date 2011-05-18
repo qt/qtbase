@@ -7234,8 +7234,7 @@ void tst_QWidget::render_systemClip2()
     QFETCH(bool, usePaintEvent);
     QFETCH(QColor, expectedColor);
 
-    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
-               "Qt::red is the reference color for the image, pick another color");
+    QVERIFY2(expectedColor != QColor(Qt::red), "Qt::red is the reference color for the image, pick another color");
 
     class MyWidget : public QWidget
     {

@@ -668,7 +668,7 @@ void tst_QProcess::exitStatus()
         QSKIP("This test opens a crash dialog on Windows", SkipSingle);
 #endif
 
-    Q_ASSERT(processList.count() == exitStatus.count());
+    QCOMPARE(exitStatus.count(), processList.count());
     for (int i = 0; i < processList.count(); ++i) {
         process->start(processList.at(i));
         QVERIFY(process->waitForStarted(5000));

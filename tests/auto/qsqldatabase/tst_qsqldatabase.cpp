@@ -767,7 +767,7 @@ void tst_QSqlDatabase::checkValues(const FieldDef fieldDefs[], QSqlDatabase db)
     Q3SqlCursor cur(qTableName("qtestfields", __FILE__), true, db);
     QVERIFY_SQL(cur, select());
     QSqlRecord* rec = cur.primeInsert();
-    Q_ASSERT(rec);
+    QVERIFY(rec);
     rec->setValue("id", pkey++);
     int i = 0;
     for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
@@ -828,7 +828,7 @@ void tst_QSqlDatabase::checkNullValues(const FieldDef fieldDefs[], QSqlDatabase 
     Q3SqlCursor cur(qTableName("qtestfields", __FILE__), true, db);
     QVERIFY_SQL(cur, select());
     QSqlRecord* rec = cur.primeInsert();
-    Q_ASSERT(rec);
+    QVERIFY(rec);
     rec->setValue("id", pkey++);
     int i = 0;
     for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {

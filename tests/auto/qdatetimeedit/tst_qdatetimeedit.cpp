@@ -2746,7 +2746,7 @@ void tst_QDateTimeEdit::setCurrentSection()
     QFETCH(QList<int>, setCurrentSections);
     QFETCH(QList<int>, expectedCursorPositions);
 
-    Q_ASSERT(setCurrentSections.size() == expectedCursorPositions.size());
+    QCOMPARE(setCurrentSections.size(), expectedCursorPositions.size());
     testWidget->setDisplayFormat(format);
     testWidget->setDateTime(dateTime);
 #ifdef Q_WS_MAC
