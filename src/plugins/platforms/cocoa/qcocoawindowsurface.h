@@ -54,18 +54,16 @@ QT_BEGIN_NAMESPACE
 class QCocoaWindowSurface : public QWindowSurface
 {
 public:
-    QCocoaWindowSurface(QWidget *window, WId wid);
+    QCocoaWindowSurface(QWindow *window, WId wid);
     ~QCocoaWindowSurface();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
     void resize (const QSize &size);
 
 private:
-
     QCocoaWindow *m_cocoaWindow;
     QImage *m_image;
-    QNSView *m_contentView;
 };
 
 QT_END_NAMESPACE

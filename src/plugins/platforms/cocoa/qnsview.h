@@ -48,17 +48,18 @@
 
 @interface QNSView : NSView {
     CGImageRef m_cgImage;
-    QWidget *m_widget;
+    QWindow *m_window;
     Qt::MouseButtons m_buttons;
 }
 
 - (id)init;
-- (id)initWithWidget:(QWidget *)widget;
+- (id)initWithQWindow:(QWindow *)window;
 
 - (void)setImage:(QImage *)image;
 - (void)drawRect:(NSRect)dirtyRect;
 
 - (BOOL)isFlipped;
+- (BOOL)acceptsFirstResponder;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (void)mouseDown:(NSEvent *)theEvent;
@@ -73,6 +74,12 @@
 - (void)otherMouseDown:(NSEvent *)theEvent;
 - (void)otherMouseDragged:(NSEvent *)theEvent;
 - (void)otherMouseUp:(NSEvent *)theEvent;
+
+- (int) convertKeyCode : (QChar)keyCode;
+- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;
+- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType;
+- (void)keyDown:(NSEvent *)theEvent;
+- (void)keyUp:(NSEvent *)theEvent;
 
 @end
 

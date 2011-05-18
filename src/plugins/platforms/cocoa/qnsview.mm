@@ -52,16 +52,16 @@
     self = [super init];
     if (self) {
         m_cgImage = 0;
-        m_widget = 0;
+        m_window = 0;
         m_buttons = Qt::NoButton;
     }
     return self;
 }
 
-- (id)initWithWidget:(QWidget *)widget {
+- (id)initWithQWindow:(QWindow *)widget {
     self = [self init];
     if (self) {
-        m_widget = widget;
+        m_window = widget;
     }
     return self;
 }
@@ -130,6 +130,11 @@
     return YES;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 {
     NSPoint point = [self convertPoint: [theEvent locationInWindow] fromView: nil];
@@ -138,40 +143,42 @@
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    QWindowSystemInterface::handleMouseEvent(m_widget,qt_timestamp,qt_localPoint,QPoint(),m_buttons);
+    QWindowSystemInterface::handleMouseEvent(m_window,qt_timestamp,qt_localPoint,QPoint(),m_buttons);
 
 }
-    - (void)mouseDown:(NSEvent *)theEvent
-    {
-        m_buttons |= Qt::LeftButton;
-        [self handleMouseEvent:theEvent];
-    }
-    - (void)mouseDragged:(NSEvent *)theEvent
-    {
-        if (!(m_buttons & Qt::LeftButton))
-            qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
-        [self handleMouseEvent:theEvent];
-    }
-    - (void)mouseUp:(NSEvent *)theEvent
-    {
-        m_buttons &= QFlag(~int(Qt::LeftButton));
-        [self handleMouseEvent:theEvent];
-    }
+
+- (void)mouseDown:(NSEvent *)theEvent
+{
+    m_buttons |= Qt::LeftButton;
+    [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent
+{
+    if (!(m_buttons & Qt::LeftButton))
+        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseUp:(NSEvent *)theEvent
+{
+    m_buttons &= QFlag(~int(Qt::LeftButton));
+    [self handleMouseEvent:theEvent];
+}
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-    qDebug() << "mouseMove";
     [self handleMouseEvent:theEvent];
 }
 - (void)mouseEntered:(NSEvent *)theEvent
 {
         Q_UNUSED(theEvent);
-        QWindowSystemInterface::handleEnterEvent(m_widget);
+        QWindowSystemInterface::handleEnterEvent(m_window);
 }
 - (void)mouseExited:(NSEvent *)theEvent
 {
         Q_UNUSED(theEvent);
-        QWindowSystemInterface::handleLeaveEvent(m_widget);
+        QWindowSystemInterface::handleLeaveEvent(m_window);
 }
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
@@ -206,6 +213,84 @@
         [self handleMouseEvent:theEvent];
 }
 
+- (int) convertKeyCode : (QChar)keyChar
+{
+    if (keyChar.isLower())
+        keyChar = keyChar.toUpper();
+    int keyCode = keyChar.unicode();
 
+    int qtKeyCode = Qt::Key(keyCode); // default case, overrides below
+    switch (keyCode) {
+        case NSEnterCharacter: qtKeyCode = Qt::Key_Enter; break;
+        case NSBackspaceCharacter: qtKeyCode = Qt::Key_Backspace; break;
+        case NSTabCharacter: qtKeyCode = Qt::Key_Tab; break;
+        case NSNewlineCharacter:  qtKeyCode = Qt::Key_Return; break;
+        case NSCarriageReturnCharacter: qtKeyCode = Qt::Key_Return; break;
+        case NSBackTabCharacter: qtKeyCode = Qt::Key_Backtab; break;
+        case 27 : qtKeyCode = Qt::Key_Escape; break;
+        case NSDeleteCharacter : qtKeyCode = Qt::Key_Backspace; break; // Cocoa sends us delete when pressing backspace.
+        case NSUpArrowFunctionKey: qtKeyCode = Qt::Key_Up; break;
+        case NSDownArrowFunctionKey: qtKeyCode = Qt::Key_Down; break;
+        case NSLeftArrowFunctionKey: qtKeyCode = Qt::Key_Left; break;
+        case NSRightArrowFunctionKey: qtKeyCode = Qt::Key_Right; break;
+        case NSInsertFunctionKey: qtKeyCode = Qt::Key_Insert; break;
+        case NSDeleteFunctionKey: qtKeyCode = Qt::Key_Delete; break;
+        case NSHomeFunctionKey: qtKeyCode = Qt::Key_Home; break;
+        case NSEndFunctionKey: qtKeyCode = Qt::Key_End; break;
+        case NSPageUpFunctionKey: qtKeyCode = Qt::Key_PageUp; break;
+        case NSPageDownFunctionKey: qtKeyCode = Qt::Key_PageDown; break;
+        case NSPrintScreenFunctionKey: qtKeyCode = Qt::Key_Print; break;
+        case NSScrollLockFunctionKey: qtKeyCode = Qt::Key_ScrollLock; break;
+        case NSPauseFunctionKey: qtKeyCode = Qt::Key_Pause; break;
+        case NSSysReqFunctionKey: qtKeyCode = Qt::Key_SysReq; break;
+        case NSMenuFunctionKey: qtKeyCode = Qt::Key_Menu; break;
+        case NSHelpFunctionKey: qtKeyCode = Qt::Key_Help; break;
+        default : break;
+    }
+
+    // handle all function keys (F1-F35)
+    if (keyCode >= NSF1FunctionKey && keyCode <= NSF35FunctionKey)
+        qtKeyCode = Qt::Key_F1 + (keyCode - NSF1FunctionKey);
+
+    return qtKeyCode;
+}
+
+- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
+{
+    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
+    if (modifierFlags &  NSShiftKeyMask)
+        qtMods |= Qt::ShiftModifier;
+    if (modifierFlags & NSControlKeyMask)
+        qtMods |= Qt::MetaModifier;
+    if (modifierFlags & NSAlternateKeyMask)
+        qtMods |= Qt::AltModifier;
+    if (modifierFlags & NSCommandKeyMask)
+        qtMods |= Qt::ControlModifier;
+    if (modifierFlags & NSNumericPadKeyMask)
+        qtMods |= Qt::KeypadModifier;
+    return qtMods;
+}
+
+- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType
+{
+    NSTimeInterval timestamp = [theEvent timestamp];
+    ulong qt_timestamp = timestamp * 1000;
+    QString characters = QString::fromUtf8([[theEvent characters] UTF8String]);
+    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers : [theEvent modifierFlags]];
+    QChar ch([[theEvent charactersIgnoringModifiers] characterAtIndex:0]);
+    int keyCode = [self convertKeyCode : ch];
+
+    QWindowSystemInterface::handleKeyEvent(m_window, qt_timestamp, QEvent::Type(eventType), keyCode, modifiers, characters);
+}
+
+- (void)keyDown:(NSEvent *)theEvent
+{
+    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyPress)];
+}
+
+- (void)keyUp:(NSEvent *)theEvent
+{
+    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
+}
 
 @end

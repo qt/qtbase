@@ -55,7 +55,7 @@
 
 
 #include <qpaintdevice.h>
-#include <qgl.h>
+#include <QtOpenGL/qgl.h>
 
 
 QT_BEGIN_NAMESPACE

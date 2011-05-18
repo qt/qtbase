@@ -3311,7 +3311,7 @@ if [ '!' -z "$CFG_SDK" ]; then
 fi
 
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3450,7 +3450,7 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
 fi
 
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -6188,7 +6188,9 @@ fi
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
-    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
+    if [ "$CFG_ARCH" = "macosx" ]; then
+        CFG_OPENGL=desktop
+    elif [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
@@ -7342,7 +7344,7 @@ fi
 [ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
 [ '!' -z "$l_FLAGS" ] && QMakeVar add LIBS "$l_FLAGS"
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi

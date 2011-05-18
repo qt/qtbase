@@ -45,9 +45,7 @@
 #include "qcocoawindowsurface.h"
 #include "qcocoaeventloopintegration.h"
 
-#include "qcoretextfontdatabase.h"
-
-#include <QtGui/QApplication>
+#include "qbasicunixfontdatabase.h"
 
 #include <private/qpixmap_raster_p.h>
 
@@ -74,7 +72,7 @@ QCocoaScreen::~QCocoaScreen()
 }
 
 QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QCoreTextFontDatabase())
+    : mFontDb(new QBasicUnixFontDatabase())
 {
     mPool = new QCocoaAutoReleasePool;
 
@@ -98,6 +96,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL : return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -109,15 +108,14 @@ QPixmapData *QCocoaIntegration::createPixmapData(QPixmapData::PixelType type) co
     return new QRasterPixmapData(type);
 }
 
-QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QCocoaWindow(widget);
+    return new QCocoaWindow(window);
 }
 
-QWindowSurface *QCocoaIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QWindowSurface *QCocoaIntegration::createWindowSurface(QWindow *window, WId winId) const
 {
-    return new QCocoaWindowSurface(widget,winId);
+    return new QCocoaWindowSurface(window, winId);
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const

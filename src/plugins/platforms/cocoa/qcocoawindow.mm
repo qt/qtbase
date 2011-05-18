@@ -41,17 +41,16 @@
 #include "qcocoawindow.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaautoreleasepool.h"
-
-#include <QWidget>
-
-#include <QtGui/QApplication>
+#include "qcocoaglcontext.h"
+#include "qnsview.h"
 
 #include <QWindowSystemInterface>
 
 #include <QDebug>
 
-QCocoaWindow::QCocoaWindow(QWidget *tlw)
+QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
+    , m_glContext(0)
 {
     QCocoaAutoReleasePool pool;
     const QRect geo = tlw->geometry();
@@ -67,6 +66,20 @@ QCocoaWindow::QCocoaWindow(QWidget *tlw)
 
     [m_nsWindow makeKeyAndOrderFront:nil];
     [m_nsWindow setAcceptsMouseMovedEvents:YES];
+
+    m_contentView = [[QNSView alloc] initWithQWindow:tlw];
+
+    if (tlw->surfaceType() == QWindow::OpenGLSurface) {
+        NSRect glFrame = NSMakeRect(0, 0, geo.width(), geo.height());
+        m_windowSurfaceView = [[NSOpenGLView alloc] initWithFrame : glFrame pixelFormat : QCocoaGLContext::createNSOpenGLPixelFormat() ];
+        [m_contentView setAutoresizesSubviews : YES];
+        [m_windowSurfaceView setAutoresizingMask : (NSViewWidthSizable | NSViewHeightSizable)];
+        [m_contentView addSubview : m_windowSurfaceView];
+    } else {
+        m_windowSurfaceView = m_contentView;
+    }
+
+    [m_nsWindow setContentView:m_contentView];
 }
 
 QCocoaWindow::~QCocoaWindow()
@@ -88,7 +101,7 @@ void QCocoaWindow::setVisible(bool visible)
 
 WId QCocoaWindow::winId() const
 {
-    return WId([m_nsWindow windowNumber]);
+    return WId(m_nsWindow);
 }
 
 NSView *QCocoaWindow::contentView() const
@@ -96,15 +109,18 @@ NSView *QCocoaWindow::contentView() const
     return [m_nsWindow contentView];
 }
 
-void QCocoaWindow::setContentView(NSView *contentView)
-{
-    [m_nsWindow setContentView:contentView];
-}
-
 void QCocoaWindow::windowDidResize()
 {
     //jlind: XXX This isn't ideal. Eventdispatcher does not run when resizing...
     NSRect rect = [[m_nsWindow contentView]frame];
     QRect geo(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
-    QWindowSystemInterface::handleGeometryChange(widget(),geo);
+    QWindowSystemInterface::handleGeometryChange(window(),geo);
+}
+
+QPlatformGLContext *QCocoaWindow::glContext() const
+{
+    if (!m_glContext) {
+        m_glContext = new QCocoaGLContext(m_windowSurfaceView);
+    }
+    return m_glContext;
 }
