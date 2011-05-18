@@ -653,7 +653,7 @@ QUiLoader::~QUiLoader()
     Loads a form from the given \a device and creates a new widget with the
     given \a parentWidget to hold its contents.
 
-    \sa createWidget()
+    \sa createWidget(), errorString()
 */
 QWidget *QUiLoader::load(QIODevice *device, QWidget *parentWidget)
 {
@@ -934,6 +934,19 @@ bool QUiLoader::isTranslationEnabled() const
 {
     Q_D(const QUiLoader);
     return d->builder.trEnabled;
+}
+
+/*!
+    Returns a human-readable description of the last error occurred in load().
+
+    \since 5.0
+    \sa load()
+*/
+
+QString QUiLoader::errorString() const
+{
+    Q_D(const QUiLoader);
+    return d->builder.errorString();
 }
 
 QT_END_NAMESPACE

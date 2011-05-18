@@ -90,6 +90,8 @@ public:
     void setTranslationEnabled(bool enabled);
     bool isTranslationEnabled() const;
 
+    QString errorString() const;
+
 private:
     QScopedPointer<QUiLoaderPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QUiLoader)
