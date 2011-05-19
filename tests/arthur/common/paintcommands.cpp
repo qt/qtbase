@@ -49,10 +49,6 @@
 #include <qtextlayout.h>
 #include <qdebug.h>
 
-#ifdef QT3_SUPPORT
-#include <q3painter.h>
-#endif
-
 #ifndef QT_NO_OPENGL
 #include <qglpixelbuffer.h>
 #endif
@@ -364,33 +360,6 @@ void PaintCommands::staticInit()
                       "^gradient_setCoordinateMode\\s+(\\w*)$",
                       "gradient_setCoordinateMode <coordinate method enum>",
                       "gradient_setCoordinateMode ObjectBoundingMode");
-#ifdef QT3_SUPPORT
-    DECL_PAINTCOMMANDSECTION("qt3 drawing ops");
-    DECL_PAINTCOMMAND("qt3_drawArc", command_qt3_drawArc,
-                      "^qt3_drawArc\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
-                      "qt3_drawArc <x> <y> <w> <h> <angleStart> <angleArc>\n  - angles are expressed in 1/16th of degree",
-                      "qt3_drawArc 10 10 20 20 0 5760");
-    DECL_PAINTCOMMAND("qt3_drawChord", command_qt3_drawChord,
-                      "^qt3_drawChord\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
-                      "qt3_drawChord <x> <y> <w> <h> <angleStart> <angleArc>\n  - angles are expressed in 1/16th of degree",
-                      "qt3_drawChord 10 10 20 20 0 5760");
-    DECL_PAINTCOMMAND("qt3_drawEllipse", command_qt3_drawEllipse,
-                      "^qt3_drawEllipse\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
-                      "qt3_drawEllipse <x> <y> <w> <h>",
-                      "qt3_drawEllipse 10 10 20 20");
-    DECL_PAINTCOMMAND("qt3_drawPie", command_qt3_drawPie,
-                      "^qt3_drawPie\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
-                      "qt3_drawPie <x> <y> <w> <h> <angleStart> <angleArc>\n  - angles are expressed in 1/16th of degree",
-                      "qt3_drawPie 10 10 20 20 0 5760");
-    DECL_PAINTCOMMAND("qt3_drawRect", command_qt3_drawRect,
-                      "^qt3_drawRect\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
-                      "qt3_drawRect <x> <y> <w> <h>",
-                      "qt3_drawRect 10 10 20 20");
-    DECL_PAINTCOMMAND("qt3_drawRoundRect", command_qt3_drawRoundRect,
-                      "^qt3_drawRoundRect\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w)?\\s*(-?\\w)?$",
-                      "qt3_drawRoundRect <x> <y> <w> <h> [rx] [ry]",
-                      "qt3_drawRoundRect 10 10 20 20 3 3");
-#endif
     DECL_PAINTCOMMANDSECTION("drawing ops");
     DECL_PAINTCOMMAND("drawPoint", command_drawPoint,
                       "^drawPoint\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)$",
@@ -1271,123 +1240,6 @@ void PaintCommands::command_drawArc(QRegExp re)
     m_painter->drawArc(x, y, w, h, angle, sweep);
 }
 
-#ifdef QT3_SUPPORT
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawRect(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawRect(%d, %d, %d, %d)\n", x, y, w, h);
-
-    static_cast<Q3Painter*>(m_painter)->drawRect(x, y, w, h);
-#endif
-}
-
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawRoundRect(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-    int xrnd = caps.at(5).isEmpty() ? 25 : convertToInt(caps.at(5));
-    int yrnd = caps.at(6).isEmpty() ? 25 : convertToInt(caps.at(6));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawRoundRect(%d, %d, %d, %d), %d, %d\n", x, y, w, h, xrnd, yrnd);
-
-    static_cast<Q3Painter*>(m_painter)->drawRoundRect(x, y, w, h, xrnd, yrnd);
-#endif
-}
-
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawEllipse(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawEllipse(%d, %d, %d, %d)\n", x, y, w, h);
-
-    static_cast<Q3Painter*>(m_painter)->drawEllipse(x, y, w, h);
-#endif
-}
-
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawPie(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-    int angle = convertToInt(caps.at(5));
-    int sweep = convertToInt(caps.at(6));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawPie(%d, %d, %d, %d, %d, %d)\n", x, y, w, h, angle, sweep);
-
-    static_cast<Q3Painter*>(m_painter)->drawPie(x, y, w, h, angle, sweep);
-#endif
-}
-
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawChord(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-    int angle = convertToInt(caps.at(5));
-    int sweep = convertToInt(caps.at(6));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawChord(%d, %d, %d, %d, %d, %d)\n", x, y, w, h, angle, sweep);
-
-    static_cast<Q3Painter*>(m_painter)->drawChord(x, y, w, h, angle, sweep);
-#endif
-}
-
-/***************************************************************************************************/
-void PaintCommands::command_qt3_drawArc(QRegExp re)
-{
-    Q_UNUSED(re);
-#ifdef QT3_SUPPORT
-    QStringList caps = re.capturedTexts();
-    int x = convertToInt(caps.at(1));
-    int y = convertToInt(caps.at(2));
-    int w = convertToInt(caps.at(3));
-    int h = convertToInt(caps.at(4));
-    int angle = convertToInt(caps.at(5));
-    int sweep = convertToInt(caps.at(6));
-
-    if (m_verboseMode)
-        printf(" -(lance) qt3_drawArc(%d, %d, %d, %d, %d, %d)\n", x, y, w, h, angle, sweep);
-
-    static_cast<Q3Painter*>(m_painter)->drawArc(x, y, w, h, angle, sweep);
-#endif
-}
-#endif //QT3_SUPPORT
 /***************************************************************************************************/
 void PaintCommands::command_drawText(QRegExp re)
 {

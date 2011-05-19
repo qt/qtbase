@@ -1740,8 +1740,8 @@ void qt_init(QApplicationPrivate *priv, int,
     } else {
         // Qt controls everything (default)
 
-        if (QApplication::testAttribute(Qt::AA_X11InitThreads))
-            XInitThreads();
+        // With the threaded QML renderer, we always need this.
+        XInitThreads();
 
         // Set application name and class
         char *app_class = 0;

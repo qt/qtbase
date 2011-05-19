@@ -50,10 +50,8 @@ Label::Label(const QString& text, QGraphicsItem *parent)
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     setContentsMargins(0, 0, 0, 0);
     setText(text);
-#if QT_VERSION >= 0x040600
     // This flag was introduced in Qt 4.6.
     setFlag(QGraphicsItem::ItemHasNoContents, true);
-#endif
 }
 
 Label::~Label()

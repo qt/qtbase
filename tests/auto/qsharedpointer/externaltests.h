@@ -72,13 +72,12 @@ namespace QTest {
             QtXmlPatterns=0x0010,
             QtOpenGL    = 0x0020,
             QtSql       = 0x0040,
-            Qt3Support  = 0x0080,
-            QtSvg       = 0x0100,
-            QtScript    = 0x0200,
-            QtTest      = 0x0400,
-            QtDBus      = 0x0800,
-            QtWebKit    = 0x1000,
-            Phonon      = 0x2000 // odd man out
+            QtSvg       = 0x0080,
+            QtScript    = 0x0100,
+            QtTest      = 0x0200,
+            QtDBus      = 0x0400,
+            QtWebKit    = 0x0800,
+            Phonon      = 0x1000 // odd man out
         };
         Q_DECLARE_FLAGS(QtModules, QtModule)
 

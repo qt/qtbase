@@ -72,10 +72,8 @@ public:
 public slots:
 
     void themeChange();
-#if (QT_VERSION >= 0x040600)
     bool listItemCaching() const;
     void setListItemCaching(bool enabled);
-#endif
 
 protected:
 

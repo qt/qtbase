@@ -319,12 +319,12 @@ static int dataIndex(const QString &tag)
 {
     int pos = tag.lastIndexOf("_");
     if (pos >= 0) {
-	int ret = 0;
-	QString count = tag.mid(pos + 1);
-	bool ok;
-	ret = count.toInt(&ok);
-	if (ok)
-	    return ret;
+        int ret = 0;
+        QString count = tag.mid(pos + 1);
+        bool ok;
+        ret = count.toInt(&ok);
+        if (ok)
+            return ret;
     }
     return -1;
 }
@@ -350,15 +350,15 @@ void tst_QDataStream::stream_data(int noOfElements)
     QTest::addColumn<QString>("byteOrder");
 
     for (int d=0; devices[d] != 0; d++) {
-	QString device = devices[d];
-	for (int b=0; b<2; b++) {
-	    QString byte_order = b == 0 ? "BigEndian" : "LittleEndian";
+        QString device = devices[d];
+        for (int b=0; b<2; b++) {
+            QString byte_order = b == 0 ? "BigEndian" : "LittleEndian";
 
-	    QString tag = device + "_" + byte_order;
-	    for (int e=0; e<noOfElements; e++) {
-		QTest::newRow(qPrintable(tag + QString("_%1").arg(e))) << device << QString(byte_order);
-	    }
-	}
+            QString tag = device + "_" + byte_order;
+            for (int e=0; e<noOfElements; e++) {
+                QTest::newRow(qPrintable(tag + QString("_%1").arg(e))) << device << QString(byte_order);
+            }
+        }
     }
 }
 
@@ -387,50 +387,49 @@ static const char* open_xpm[]={
 #define STREAM_IMPL(TYPE) \
     QFETCH(QString, device); \
     if (device == "bytearray") { \
-	    QByteArray ba; \
-	    QDataStream sout(&ba, QIODevice::WriteOnly); \
-	    write##TYPE(&sout); \
-	    QDataStream sin(&ba, QIODevice::ReadOnly); \
-	    read##TYPE(&sin); \
+        QByteArray ba; \
+        QDataStream sout(&ba, QIODevice::WriteOnly); \
+        write##TYPE(&sout); \
+        QDataStream sin(&ba, QIODevice::ReadOnly); \
+        read##TYPE(&sin); \
     } else if (device == "file") { \
-	    QString fileName = "qdatastream.out"; \
-	    QFile fOut(fileName); \
-	    QVERIFY(fOut.open(QIODevice::WriteOnly)); \
-	    QDataStream sout(&fOut); \
-	    write##TYPE(&sout); \
-	    fOut.close(); \
-	    QFile fIn(fileName); \
-	    QVERIFY(fIn.open(QIODevice::ReadOnly)); \
-	    QDataStream sin(&fIn); \
-	    read##TYPE(&sin); \
-	    fIn.close(); \
+        QString fileName = "qdatastream.out"; \
+        QFile fOut(fileName); \
+        QVERIFY(fOut.open(QIODevice::WriteOnly)); \
+        QDataStream sout(&fOut); \
+        write##TYPE(&sout); \
+        fOut.close(); \
+        QFile fIn(fileName); \
+        QVERIFY(fIn.open(QIODevice::ReadOnly)); \
+        QDataStream sin(&fIn); \
+        read##TYPE(&sin); \
+        fIn.close(); \
     } else if (device == "buffer") { \
-	    QByteArray ba(10000, '\0'); \
-	    QBuffer bOut(&ba); \
-	    bOut.open(QIODevice::WriteOnly); \
-	    QDataStream sout(&bOut); \
-	    write##TYPE(&sout); \
-	    bOut.close(); \
-	    QBuffer bIn(&ba); \
-	    bIn.open(QIODevice::ReadOnly); \
-	    QDataStream sin(&bIn); \
-	    read##TYPE(&sin); \
-	    bIn.close(); \
+        QByteArray ba(10000, '\0'); \
+        QBuffer bOut(&ba); \
+        bOut.open(QIODevice::WriteOnly); \
+        QDataStream sout(&bOut); \
+        write##TYPE(&sout); \
+        bOut.close(); \
+        QBuffer bIn(&ba); \
+        bIn.open(QIODevice::ReadOnly); \
+        QDataStream sin(&bIn); \
+        read##TYPE(&sin); \
+        bIn.close(); \
     }
 
 // ************************************
 
 static QString QStringData(int index)
 {
-    switch (index)
-    {
-	case 0: return QString();
-	case 1: return QString("");
-	case 2: return QString("A");
-	case 3: return QString("ABCDE FGHI");
-	case 4: return QString("This is a long string");
-	case 5: return QString("And again a string with a \nCRLF");
-	case 6: return QString("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/");
+    switch (index) {
+    case 0: return QString();
+    case 1: return QString("");
+    case 2: return QString("A");
+    case 3: return QString("ABCDE FGHI");
+    case 4: return QString("This is a long string");
+    case 5: return QString("And again a string with a \nCRLF");
+    case 6: return QString("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/");
     }
     return QString("foo");
 }
@@ -489,15 +488,15 @@ void tst_QDataStream::readQString(QDataStream *s)
 
 static QRegExp QRegExpData(int index)
 {
-    switch (index)
-    {
-	case 0: return QRegExp();
-	case 1: return QRegExp("");
-	case 2: return QRegExp("A", Qt::CaseInsensitive);
-	case 3: return QRegExp("ABCDE FGHI", Qt::CaseSensitive, QRegExp::Wildcard);
-	case 4: return QRegExp("This is a long string", Qt::CaseInsensitive, QRegExp::FixedString);
-	case 5: return QRegExp("And again a string with a \nCRLF", Qt::CaseInsensitive, QRegExp::RegExp);
-	case 6: {
+    switch (index) {
+    case 0: return QRegExp();
+    case 1: return QRegExp("");
+    case 2: return QRegExp("A", Qt::CaseInsensitive);
+    case 3: return QRegExp("ABCDE FGHI", Qt::CaseSensitive, QRegExp::Wildcard);
+    case 4: return QRegExp("This is a long string", Qt::CaseInsensitive, QRegExp::FixedString);
+    case 5: return QRegExp("And again a string with a \nCRLF", Qt::CaseInsensitive, QRegExp::RegExp);
+    case 6:
+        {
             QRegExp rx("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRESTUVWXYZ 1234567890 ~`!@#$%^&*()_-+={[}]|\\:;\"'<,>.?/");
             rx.setMinimal(true);
             return rx;
@@ -558,22 +557,21 @@ static Map MapData(int index)
 {
     Map map;
 
-    switch (index)
-    {
-	case 0:
-        default:
-            break;
-	case 1:
-            map.insert(1, "a");
-            map.insert(2, "bbb");
-            map.insert(3, "cccccc");
-            break;
-        case 2:
-            map.insert(1, "a");
-            map.insert(2, "one");
-            map.insertMulti(2, "two");
-            map.insertMulti(2, "three");
-            map.insert(3, "cccccc");
+    switch (index) {
+    case 0:
+    default:
+        break;
+    case 1:
+        map.insert(1, "a");
+        map.insert(2, "bbb");
+        map.insert(3, "cccccc");
+        break;
+    case 2:
+        map.insert(1, "a");
+        map.insert(2, "one");
+        map.insertMulti(2, "two");
+        map.insertMulti(2, "three");
+        map.insert(3, "cccccc");
     }
     return map;
 }
@@ -615,22 +613,21 @@ static Hash HashData(int index)
 {
     Hash map;
 
-    switch (index)
-    {
-	case 0:
-        default:
-            break;
-	case 1:
-            map.insert(1, "a");
-            map.insert(2, "bbb");
-            map.insert(3, "cccccc");
-            break;
-        case 2:
-            map.insert(1, "a");
-            map.insert(2, "one");
-            map.insertMulti(2, "two");
-            map.insertMulti(2, "three");
-            map.insert(3, "cccccc");
+    switch (index) {
+    case 0:
+    default:
+        break;
+    case 1:
+        map.insert(1, "a");
+        map.insert(2, "bbb");
+        map.insert(3, "cccccc");
+        break;
+    case 2:
+        map.insert(1, "a");
+        map.insert(2, "one");
+        map.insertMulti(2, "two");
+        map.insertMulti(2, "three");
+        map.insert(3, "cccccc");
     }
     return map;
 }
@@ -672,32 +669,32 @@ static QEasingCurve QEasingCurveData(int index)
 
     switch (index) {
     case 0:
-        default:
-            break;
+    default:
+        break;
     case 1:
-            easing.setType(QEasingCurve::Linear);
-            break;
+        easing.setType(QEasingCurve::Linear);
+        break;
     case 2:
-            easing.setType(QEasingCurve::OutCubic);
-            break;
+        easing.setType(QEasingCurve::OutCubic);
+        break;
     case 3:
-            easing.setType(QEasingCurve::InOutSine);
-            break;
+        easing.setType(QEasingCurve::InOutSine);
+        break;
     case 4:
-            easing.setType(QEasingCurve::InOutElastic);
-            easing.setPeriod(1.5);
-            easing.setAmplitude(2.0);
-            break;
+        easing.setType(QEasingCurve::InOutElastic);
+        easing.setPeriod(1.5);
+        easing.setAmplitude(2.0);
+        break;
     case 5:
-            easing.setType(QEasingCurve::OutInBack);
-            break;
+        easing.setType(QEasingCurve::OutInBack);
+        break;
     case 6:
-            easing.setType(QEasingCurve::OutCurve);
-            break;
+        easing.setType(QEasingCurve::OutCurve);
+        break;
     case 7:
-            easing.setType(QEasingCurve::InOutBack);
-            easing.setOvershoot(0.5);
-            break;
+        easing.setType(QEasingCurve::InOutBack);
+        easing.setOvershoot(0.5);
+        break;
     }
     return easing;
 }
@@ -783,13 +780,12 @@ void tst_QDataStream::readqint64(QDataStream *s)
 
 static bool boolData(int index)
 {
-    switch (index)
-    {
-	case 0: return true;
-	case 1: return false;
-	case 2: return bool(2);
-	case 3: return bool(-1);
-	case 4: return bool(127);
+    switch (index) {
+    case 0: return true;
+    case 1: return false;
+    case 2: return bool(2);
+    case 3: return bool(-1);
+    case 4: return bool(127);
     }
 
     return false;
@@ -824,13 +820,12 @@ void tst_QDataStream::readbool(QDataStream *s)
 
 static QBool QBoolData(int index)
 {
-    switch (index)
-    {
-	case 0: return QBool(true);
-	case 1: return QBool(false);
-	case 2: return QBool(bool(2));
-	case 3: return QBool(bool(-1));
-	case 4: return QBool(bool(127));
+    switch (index) {
+    case 0: return QBool(true);
+    case 1: return QBool(false);
+    case 2: return QBool(bool(2));
+    case 3: return QBool(bool(-1));
+    case 4: return QBool(bool(127));
     }
 
     return QBool(false);
@@ -877,35 +872,34 @@ void tst_QDataStream::stream_QBool_in_4_0()
 static void QBitArrayData(QBitArray *b, int index)
 {
     QString filler = "";
-    switch (index)
-    {
-	case 0: filler = ""; break;
-	case 1: filler = ""; break;
-	case 2: filler = "0"; break;
-	case 3: filler = "1"; break;
-	case 4: filler = "0000"; break;
-	case 5: filler = "0001"; break;
-	case 6: filler = "0010"; break;
-	case 7: filler = "0100"; break;
-	case 8: filler = "1000"; break;
-	case 9: filler = "1111"; break;
-	case 10: filler = "00000000"; break;
-	case 11: filler = "00000001"; break;
-	case 12: filler = "11111111"; break;
-	case 13: filler = "000000001"; break;
-	case 14: filler = "000000000001"; break;
-	case 15: filler = "0000000000000001"; break;
-	case 16: filler = "0101010101010101010101010101010101010101010101010101010101010101"; break;
-	case 17: filler = "1010101010101010101010101010101010101010101010101010101010101010"; break;
-	case 18: filler = "1111111111111111111111111111111111111111111111111111111111111111"; break;
+    switch (index) {
+    case 0: filler = ""; break;
+    case 1: filler = ""; break;
+    case 2: filler = "0"; break;
+    case 3: filler = "1"; break;
+    case 4: filler = "0000"; break;
+    case 5: filler = "0001"; break;
+    case 6: filler = "0010"; break;
+    case 7: filler = "0100"; break;
+    case 8: filler = "1000"; break;
+    case 9: filler = "1111"; break;
+    case 10: filler = "00000000"; break;
+    case 11: filler = "00000001"; break;
+    case 12: filler = "11111111"; break;
+    case 13: filler = "000000001"; break;
+    case 14: filler = "000000000001"; break;
+    case 15: filler = "0000000000000001"; break;
+    case 16: filler = "0101010101010101010101010101010101010101010101010101010101010101"; break;
+    case 17: filler = "1010101010101010101010101010101010101010101010101010101010101010"; break;
+    case 18: filler = "1111111111111111111111111111111111111111111111111111111111111111"; break;
     }
 
     b->resize(filler.length());
     b->fill(0); // reset all bits to zero
 
     for (int i = 0; i < filler.length(); ++i) {
-	if (filler.at(i) == '1')
-	    b->setBit(i, TRUE);
+        if (filler.at(i) == '1')
+            b->setBit(i, TRUE);
     }
 }
 
@@ -940,19 +934,19 @@ void tst_QDataStream::readQBitArray(QDataStream *s)
 
 static QBrush qBrushData(int index)
 {
-    switch (index)
-    {
-	case 0: return QBrush(Qt::NoBrush);
-	case 1: return QBrush(Qt::SolidPattern);
-	case 2: return QBrush(Qt::Dense7Pattern);
-	case 3: return QBrush(Qt::red, Qt::NoBrush);
-	case 4: return QBrush(Qt::green, Qt::SolidPattern);
-	case 5: return QBrush(Qt::blue, Qt::Dense7Pattern);
-	case 6: {
-	    QPixmap pm(open_xpm);
-	    QBrush custom(Qt::black, pm);
-	    return custom;
-	}
+    switch (index) {
+    case 0: return QBrush(Qt::NoBrush);
+    case 1: return QBrush(Qt::SolidPattern);
+    case 2: return QBrush(Qt::Dense7Pattern);
+    case 3: return QBrush(Qt::red, Qt::NoBrush);
+    case 4: return QBrush(Qt::green, Qt::SolidPattern);
+    case 5: return QBrush(Qt::blue, Qt::Dense7Pattern);
+    case 6:
+        {
+            QPixmap pm(open_xpm);
+            QBrush custom(Qt::black, pm);
+            return custom;
+        }
     case 7:
         QLinearGradient gradient(QPoint(2.718, 3.142), QPoint(3.1337, 42));
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
@@ -975,7 +969,7 @@ void tst_QDataStream::stream_QBrush_data()
 void tst_QDataStream::stream_QBrush()
 {
     if (QString(QTest::currentDataTag()).endsWith("6"))
-	QSKIP("Custom brushes don't seem to be supported with QDataStream", SkipSingle);
+        QSKIP("Custom brushes don't seem to be supported with QDataStream", SkipSingle);
 
     STREAM_IMPL(QBrush);
 }
@@ -999,16 +993,15 @@ void tst_QDataStream::readQBrush(QDataStream *s)
 
 static QColor QColorData(int index)
 {
-    switch (index)
-    {
-	case 0: return QColor(0,0,0);
-	case 1: return QColor(0,0,0);
-	case 2: return QColor(0,0,0);
-	case 3: return QColor(0,0,0);
-	case 4: return QColor(0,0,0);
-	case 5: return QColor(0,0,0);
-	case 6: return QColor(0,0,0);
-	case 7: return QColor(0,0,0);
+    switch (index) {
+    case 0: return QColor(0,0,0);
+    case 1: return QColor(0,0,0);
+    case 2: return QColor(0,0,0);
+    case 3: return QColor(0,0,0);
+    case 4: return QColor(0,0,0);
+    case 5: return QColor(0,0,0);
+    case 6: return QColor(0,0,0);
+    case 7: return QColor(0,0,0);
     }
 
     return QColor(0,0,0);
@@ -1043,16 +1036,15 @@ void tst_QDataStream::readQColor(QDataStream *s)
 
 static QByteArray qByteArrayData(int index)
 {
-    switch (index)
-    {
-	case 0: return QByteArray();
-	case 1: return QByteArray("");
-	case 2: return QByteArray("foo");
-	case 3: return QByteArray("foo bar");
-	case 4: return QByteArray("two\nlines");
-	case 5: return QByteArray("ABCDEFG");
-	case 6: return QByteArray("baec zxv 123"); // kept for nostalgic reasons
-	case 7: return QByteArray("jbc;UBC;jd clhdbcahd vcbd vgdv dhvb laifv kadf jkhfbvljd khd lhvjh ");
+    switch (index) {
+    case 0: return QByteArray();
+    case 1: return QByteArray("");
+    case 2: return QByteArray("foo");
+    case 3: return QByteArray("foo bar");
+    case 4: return QByteArray("two\nlines");
+    case 5: return QByteArray("ABCDEFG");
+    case 6: return QByteArray("baec zxv 123"); // kept for nostalgic reasons
+    case 7: return QByteArray("jbc;UBC;jd clhdbcahd vcbd vgdv dhvb laifv kadf jkhfbvljd khd lhvjh ");
     }
 
     return QByteArray("foo");
@@ -1135,10 +1127,10 @@ void tst_QDataStream::readQCursor(QDataStream *s)
     QVERIFY(d5.hotSpot() == test.hotSpot());
     QVERIFY((d5.bitmap() != 0 && test.bitmap() != 0) || (d5.bitmap() == 0 && test.bitmap() == 0));
     if (d5.bitmap() != 0)
-	QVERIFY(pixmapsAreEqual(d5.bitmap(), test.bitmap()));
+        QVERIFY(pixmapsAreEqual(d5.bitmap(), test.bitmap()));
     QVERIFY((d5.mask() != 0 && test.mask() != 0) || (d5.mask() == 0 && test.mask() == 0));
     if (d5.mask() != 0)
-	QVERIFY(pixmapsAreEqual(d5.mask(), test.mask()));
+        QVERIFY(pixmapsAreEqual(d5.mask(), test.mask()));
 #endif
 }
 
@@ -1146,24 +1138,23 @@ void tst_QDataStream::readQCursor(QDataStream *s)
 
 static QDate qDateData(int index)
 {
-    switch (index)
-    {
-	case 0: return QDate(1752, 9, 14); // the first valid date
-	case 1: return QDate(1900, 1, 1);
-	case 2: return QDate(1976, 4, 5);
-	case 3: return QDate(1960, 5, 27);
-	case 4: return QDate(1999, 12, 31); // w2k effects?
-	case 5: return QDate(2000, 1, 1);
-	case 6: return QDate(2050, 1, 1);// test some values far in the future too
-	case 7: return QDate(3001, 12, 31);
-	case 8: return QDate(4002, 1, 1);
-	case 9: return QDate(4003, 12, 31);
-	case 10: return QDate(5004, 1, 1);
-	case 11: return QDate(5005, 12, 31);
-	case 12: return QDate(6006, 1, 1);
-	case 13: return QDate(6007, 12, 31);
-	case 14: return QDate(7008, 1, 1);
-	case 15: return QDate(7009, 12, 31);
+    switch (index) {
+    case 0: return QDate(1752, 9, 14); // the first valid date
+    case 1: return QDate(1900, 1, 1);
+    case 2: return QDate(1976, 4, 5);
+    case 3: return QDate(1960, 5, 27);
+    case 4: return QDate(1999, 12, 31); // w2k effects?
+    case 5: return QDate(2000, 1, 1);
+    case 6: return QDate(2050, 1, 1);// test some values far in the future too
+    case 7: return QDate(3001, 12, 31);
+    case 8: return QDate(4002, 1, 1);
+    case 9: return QDate(4003, 12, 31);
+    case 10: return QDate(5004, 1, 1);
+    case 11: return QDate(5005, 12, 31);
+    case 12: return QDate(6006, 1, 1);
+    case 13: return QDate(6007, 12, 31);
+    case 14: return QDate(7008, 1, 1);
+    case 15: return QDate(7009, 12, 31);
     }
     return QDate();
 }
@@ -1197,8 +1188,7 @@ void tst_QDataStream::readQDate(QDataStream *s)
 
 static QTime qTimeData(int index)
 {
-    switch (index)
-    {
+    switch (index) {
     case 0 : return QTime(0, 0, 0, 0);
     case 1 : return QTime(0, 0, 0, 1);
     case 2 : return QTime(0, 0, 0, 99);
@@ -1292,24 +1282,23 @@ void tst_QDataStream::readQTime(QDataStream *s)
 
 static QDateTime qDateTimeData(int index)
 {
-    switch (index)
-    {
-        case 0: return QDateTime(QDate(1900, 1, 1), QTime(0,0,0,0));
-        case 1: return QDateTime(QDate(1900, 1, 2), QTime(1,1,1,1));
-        case 2: return QDateTime(QDate(1900, 1, 3), QTime(12,0,0,0));
-        case 3: return QDateTime(QDate(1900, 1, 4), QTime(23,59,59,999));
-        case 4: return QDateTime(QDate(1999, 1, 1), QTime(0,0,0,0));
-        case 5: return QDateTime(QDate(1999, 1, 2), QTime(1,1,1,1));
-        case 6: return QDateTime(QDate(1999, 1, 3), QTime(12,0,0,0));
-        case 7: return QDateTime(QDate(1999, 1, 4), QTime(23,59,59,999));
-        case 8: return QDateTime(QDate(2000, 1, 1), QTime(0,0,0,0));
-        case 9: return QDateTime(QDate(2000, 1, 2), QTime(1,1,1,1));
-        case 10: return QDateTime(QDate(2000, 1, 3), QTime(12,0,0,0));
-        case 11: return QDateTime(QDate(2000, 1, 4), QTime(23,59,59,999));
-        case 12: return QDateTime(QDate(2000, 12, 31), QTime(0,0,0,0));
-        case 13: return QDateTime(QDate(2000, 12, 31), QTime(1,1,1,1));
-        case 14: return QDateTime(QDate(2000, 12, 31), QTime(12,0,0,0));
-        case 15: return QDateTime(QDate(2000, 12, 31), QTime(23,59,59,999));
+    switch (index) {
+    case 0: return QDateTime(QDate(1900, 1, 1), QTime(0,0,0,0));
+    case 1: return QDateTime(QDate(1900, 1, 2), QTime(1,1,1,1));
+    case 2: return QDateTime(QDate(1900, 1, 3), QTime(12,0,0,0));
+    case 3: return QDateTime(QDate(1900, 1, 4), QTime(23,59,59,999));
+    case 4: return QDateTime(QDate(1999, 1, 1), QTime(0,0,0,0));
+    case 5: return QDateTime(QDate(1999, 1, 2), QTime(1,1,1,1));
+    case 6: return QDateTime(QDate(1999, 1, 3), QTime(12,0,0,0));
+    case 7: return QDateTime(QDate(1999, 1, 4), QTime(23,59,59,999));
+    case 8: return QDateTime(QDate(2000, 1, 1), QTime(0,0,0,0));
+    case 9: return QDateTime(QDate(2000, 1, 2), QTime(1,1,1,1));
+    case 10: return QDateTime(QDate(2000, 1, 3), QTime(12,0,0,0));
+    case 11: return QDateTime(QDate(2000, 1, 4), QTime(23,59,59,999));
+    case 12: return QDateTime(QDate(2000, 12, 31), QTime(0,0,0,0));
+    case 13: return QDateTime(QDate(2000, 12, 31), QTime(1,1,1,1));
+    case 14: return QDateTime(QDate(2000, 12, 31), QTime(12,0,0,0));
+    case 15: return QDateTime(QDate(2000, 12, 31), QTime(23,59,59,999));
     }
     return QDateTime(QDate(1900, 1, 1), QTime(0,0,0));
 }
@@ -1343,83 +1332,82 @@ void tst_QDataStream::readQDateTime(QDataStream *s)
 
 static QFont qFontData(int index)
 {
-    switch (index)
-    {
-	case 0: return QFont("Courier", 20, QFont::Bold, TRUE);
-	case 1: return QFont("Courier", 18, QFont::Bold, FALSE);
-	case 2: return QFont("Courier", 16, QFont::Light, TRUE);
-	case 3: return QFont("Courier", 14, QFont::Normal, FALSE);
-	case 4: return QFont("Courier", 12, QFont::DemiBold, TRUE);
-	case 5: return QFont("Courier", 10, QFont::Black, FALSE);
-	case 6:
-	    {
-		QFont f("Helvetica", 10, QFont::Normal, FALSE);
-		f.setPixelSize(2);
-		f.setUnderline(FALSE);
-		f.setStrikeOut(FALSE);
-		f.setFixedPitch(FALSE);
-		return f;
-	    }
-	case 7:
-	    {
-		QFont f("Helvetica", 10, QFont::Bold, FALSE);
-		f.setPixelSize(4);
-		f.setUnderline(TRUE);
-		f.setStrikeOut(FALSE);
-		f.setFixedPitch(FALSE);
-		return f;
-	    }
-	case 8:
-	    {
-		QFont f("Helvetica", 10, QFont::Light, FALSE);
-		f.setPixelSize(6);
-		f.setUnderline(FALSE);
-		f.setStrikeOut(TRUE);
-		f.setFixedPitch(FALSE);
-		return f;
-	    }
-	case 9:
-	    {
-		QFont f("Helvetica", 10, QFont::DemiBold, FALSE);
-		f.setPixelSize(8);
-		f.setUnderline(FALSE);
-		f.setStrikeOut(FALSE);
-		f.setFixedPitch(TRUE);
-		return f;
-	    }
-	case 10:
-	    {
-		QFont f("Helvetica", 10, QFont::Black, FALSE);
-		f.setPixelSize(10);
-		f.setUnderline(TRUE);
-		f.setStrikeOut(TRUE);
-		f.setFixedPitch(FALSE);
-		return f;
-	    }
-	case 11:
-	    {
-		QFont f("Helvetica", 10, QFont::Normal, TRUE);
-		f.setPixelSize(12);
-		f.setUnderline(FALSE);
-		f.setStrikeOut(TRUE);
-		f.setFixedPitch(TRUE);
-		return f;
-	    }
-	case 12:
-	    {
-		QFont f("Helvetica", 10, QFont::Bold, TRUE);
-		f.setPixelSize(14);
-		f.setUnderline(TRUE);
-		f.setStrikeOut(TRUE);
-		f.setFixedPitch(TRUE);
-		return f;
-	    }
-        case 13:
-            {
-                QFont f("Helvetica", 10, QFont::Bold, TRUE);
-                f.setStretch(200);
-                return f;
-            }
+    switch (index) {
+    case 0: return QFont("Courier", 20, QFont::Bold, TRUE);
+    case 1: return QFont("Courier", 18, QFont::Bold, FALSE);
+    case 2: return QFont("Courier", 16, QFont::Light, TRUE);
+    case 3: return QFont("Courier", 14, QFont::Normal, FALSE);
+    case 4: return QFont("Courier", 12, QFont::DemiBold, TRUE);
+    case 5: return QFont("Courier", 10, QFont::Black, FALSE);
+    case 6:
+        {
+            QFont f("Helvetica", 10, QFont::Normal, FALSE);
+            f.setPixelSize(2);
+            f.setUnderline(FALSE);
+            f.setStrikeOut(FALSE);
+            f.setFixedPitch(FALSE);
+            return f;
+        }
+    case 7:
+        {
+            QFont f("Helvetica", 10, QFont::Bold, FALSE);
+            f.setPixelSize(4);
+            f.setUnderline(TRUE);
+            f.setStrikeOut(FALSE);
+            f.setFixedPitch(FALSE);
+            return f;
+        }
+    case 8:
+        {
+            QFont f("Helvetica", 10, QFont::Light, FALSE);
+            f.setPixelSize(6);
+            f.setUnderline(FALSE);
+            f.setStrikeOut(TRUE);
+            f.setFixedPitch(FALSE);
+            return f;
+        }
+    case 9:
+        {
+            QFont f("Helvetica", 10, QFont::DemiBold, FALSE);
+            f.setPixelSize(8);
+            f.setUnderline(FALSE);
+            f.setStrikeOut(FALSE);
+            f.setFixedPitch(TRUE);
+            return f;
+        }
+    case 10:
+        {
+            QFont f("Helvetica", 10, QFont::Black, FALSE);
+            f.setPixelSize(10);
+            f.setUnderline(TRUE);
+            f.setStrikeOut(TRUE);
+            f.setFixedPitch(FALSE);
+            return f;
+        }
+    case 11:
+        {
+            QFont f("Helvetica", 10, QFont::Normal, TRUE);
+            f.setPixelSize(12);
+            f.setUnderline(FALSE);
+            f.setStrikeOut(TRUE);
+            f.setFixedPitch(TRUE);
+            return f;
+        }
+    case 12:
+        {
+            QFont f("Helvetica", 10, QFont::Bold, TRUE);
+            f.setPixelSize(14);
+            f.setUnderline(TRUE);
+            f.setStrikeOut(TRUE);
+            f.setFixedPitch(TRUE);
+            return f;
+        }
+    case 13:
+        {
+            QFont f("Helvetica", 10, QFont::Bold, TRUE);
+            f.setStretch(200);
+            return f;
+        }
     }
     return QFont("Courier", 18, QFont::Bold, TRUE);
 }
@@ -1503,9 +1491,9 @@ void tst_QDataStream::readQImage(QDataStream *s)
 //     ### (Was like this in 1.44 as well)
 //
 //    for(int i = 0; i < d12.height(); i++)
-//	for(int j = 0; j < d12.width(); j++)
-//	    if (d12.pixel(j, i) != ref.pixel(j, i))
-//		qDebug("Feil %i %i", j, i);
+//        for(int j = 0; j < d12.width(); j++)
+//            if (d12.pixel(j, i) != ref.pixel(j, i))
+//                qDebug("Feil %i %i", j, i);
 //
 }
 
@@ -1513,56 +1501,63 @@ void tst_QDataStream::readQImage(QDataStream *s)
 
 static QPen qPenData(int index)
 {
-    switch (index)
-    {
-	case 0: {
-	    QPen p(Qt::blue, 0, Qt::NoPen);
-	    p.setCapStyle(Qt::FlatCap);
-	    p.setJoinStyle(Qt::MiterJoin);
-	    return p;
-	}
-	case 1: {
-	    QPen p(Qt::red, 1, Qt::SolidLine);
-	    p.setCapStyle(Qt::SquareCap);
-	    p.setJoinStyle(Qt::BevelJoin);
-	    return p;
-	}
-	case 2: {
-	    QPen p(Qt::red, 4, Qt::DashDotDotLine);
-	    p.setCapStyle(Qt::RoundCap);
-	    p.setJoinStyle(Qt::RoundJoin);
-	    return p;
-	}
-	case 3: {
-	    QPen p(Qt::blue, 12, Qt::NoPen);
-	    p.setCapStyle(Qt::FlatCap);
-	    p.setJoinStyle(Qt::RoundJoin);
-	    return p;
-	}
-	case 4: {
-	    QPen p(Qt::red, 99, Qt::SolidLine);
-	    p.setCapStyle(Qt::SquareCap);
-	    p.setJoinStyle(Qt::MiterJoin);
-	    return p;
-	}
-	case 5: {
-	    QPen p(Qt::red, 255, Qt::DashDotLine);
-	    p.setCapStyle(Qt::RoundCap);
-	    p.setJoinStyle(Qt::BevelJoin);
-	    return p;
-	}
-	case 6: {
-	    QPen p(Qt::red, 256, Qt::DashDotLine);
-	    p.setCapStyle(Qt::RoundCap);
-	    p.setJoinStyle(Qt::BevelJoin);
-	    return p;
-	}
-	case 7: {
-	    QPen p(Qt::red, 0.25, Qt::DashDotLine);
-	    p.setCapStyle(Qt::RoundCap);
-	    p.setJoinStyle(Qt::BevelJoin);
-	    return p;
-	}
+    switch (index) {
+    case 0:
+        {
+            QPen p(Qt::blue, 0, Qt::NoPen);
+            p.setCapStyle(Qt::FlatCap);
+            p.setJoinStyle(Qt::MiterJoin);
+            return p;
+        }
+    case 1:
+        {
+            QPen p(Qt::red, 1, Qt::SolidLine);
+            p.setCapStyle(Qt::SquareCap);
+            p.setJoinStyle(Qt::BevelJoin);
+            return p;
+        }
+    case 2:
+        {
+            QPen p(Qt::red, 4, Qt::DashDotDotLine);
+            p.setCapStyle(Qt::RoundCap);
+            p.setJoinStyle(Qt::RoundJoin);
+            return p;
+        }
+    case 3:
+        {
+            QPen p(Qt::blue, 12, Qt::NoPen);
+            p.setCapStyle(Qt::FlatCap);
+            p.setJoinStyle(Qt::RoundJoin);
+            return p;
+        }
+    case 4:
+        {
+            QPen p(Qt::red, 99, Qt::SolidLine);
+            p.setCapStyle(Qt::SquareCap);
+            p.setJoinStyle(Qt::MiterJoin);
+            return p;
+        }
+    case 5:
+        {
+            QPen p(Qt::red, 255, Qt::DashDotLine);
+            p.setCapStyle(Qt::RoundCap);
+            p.setJoinStyle(Qt::BevelJoin);
+            return p;
+        }
+    case 6:
+        {
+            QPen p(Qt::red, 256, Qt::DashDotLine);
+            p.setCapStyle(Qt::RoundCap);
+            p.setJoinStyle(Qt::BevelJoin);
+            return p;
+        }
+    case 7:
+        {
+            QPen p(Qt::red, 0.25, Qt::DashDotLine);
+            p.setCapStyle(Qt::RoundCap);
+            p.setJoinStyle(Qt::BevelJoin);
+            return p;
+        }
     }
 
     return QPen();
@@ -1678,19 +1673,18 @@ void tst_QDataStream::readQIcon(QDataStream *s)
 
 QPoint qPointData(int index)
 {
-    switch (index)
-    {
-	case 0: return QPoint(0, 0);
-	case 1: return QPoint(-1, 0);
-	case 2: return QPoint(0, -1);
-	case 3: return QPoint(1, 0);
-	case 4: return QPoint(0, 1);
-	case 5: return QPoint(-1, -1);
-	case 6: return QPoint(1, 1);
-	case 7: return QPoint(255, 255);
-	case 8: return QPoint(256, 256);
-	case 9: return QPoint(-254, -254);
-	case 10: return QPoint(-255, -255);
+    switch (index) {
+    case 0: return QPoint(0, 0);
+    case 1: return QPoint(-1, 0);
+    case 2: return QPoint(0, -1);
+    case 3: return QPoint(1, 0);
+    case 4: return QPoint(0, 1);
+    case 5: return QPoint(-1, -1);
+    case 6: return QPoint(1, 1);
+    case 7: return QPoint(255, 255);
+    case 8: return QPoint(256, 256);
+    case 9: return QPoint(-254, -254);
+    case 10: return QPoint(-255, -255);
     }
 
     return QPoint();
@@ -1733,19 +1727,18 @@ void tst_QDataStream::readQPoint(QDataStream *s)
 
 static QRect qRectData(int index)
 {
-    switch (index)
-    {
-	case 0: return QRect(0, 0, 0, 0);
-	case 1: return QRect(1, 1, 1, 1);
-	case 2: return QRect(1, 2, 3, 4);
-	case 3: return QRect(-1, -1, -1, -1);
-	case 4: return QRect(-1, -2, -3, -4);
-	case 5: return QRect(255, -5, 256, -6);
-	case 6: return QRect(-7, 255, -8, 256);
-	case 7: return QRect(9, -255, 10, -255);
-	case 8: return QRect(-255, 11, -255, 12);
-	case 9: return QRect(256, 512, 1024, 2048);
-	case 10: return QRect(-256, -512, -1024, -2048);
+    switch (index) {
+    case 0: return QRect(0, 0, 0, 0);
+    case 1: return QRect(1, 1, 1, 1);
+    case 2: return QRect(1, 2, 3, 4);
+    case 3: return QRect(-1, -1, -1, -1);
+    case 4: return QRect(-1, -2, -3, -4);
+    case 5: return QRect(255, -5, 256, -6);
+    case 6: return QRect(-7, 255, -8, 256);
+    case 7: return QRect(9, -255, 10, -255);
+    case 8: return QRect(-255, 11, -255, 12);
+    case 9: return QRect(256, 512, 1024, 2048);
+    case 10: return QRect(-256, -512, -1024, -2048);
     }
     return QRect();
 }
@@ -1802,57 +1795,63 @@ static QPolygon qPolygonData(int index)
     QPoint p13(-99998, -34567);
     QPoint p14(45678, -99999);
 
-    switch (index)
-    {
-	case 0: return QPolygon(0);
-	case 1: {
-	    QPolygon p(1);
-	    p.setPoint(0, p0);
-	    return p;
-	}
-	case 2: {
-	    QPolygon p(1);
-	    p.setPoint(0, p5);
-	    return p;
-	}
-	case 3: {
-	    QPolygon p(1);
-	    p.setPoint(0, p12);
-	    return p;
-	}
-	case 4: {
-	    QPolygon p(3);
-	    p.setPoint(0, p1);
-	    p.setPoint(1, p10);
-	    p.setPoint(2, p13);
-	    return p;
-	}
-	case 5: {
-	    QPolygon p(6);
-	    p.setPoint(0, p2);
-	    p.setPoint(1, p11);
-	    p.setPoint(2, p14);
-	    return p;
-	}
-	case 6: {
-	    QPolygon p(15);
-	    p.setPoint(0, p0);
-	    p.setPoint(1, p1);
-	    p.setPoint(2, p2);
-	    p.setPoint(3, p3);
-	    p.setPoint(4, p4);
-	    p.setPoint(5, p5);
-	    p.setPoint(6, p6);
-	    p.setPoint(7, p7);
-	    p.setPoint(8, p8);
-	    p.setPoint(9, p9);
-	    p.setPoint(10, p10);
-	    p.setPoint(11, p11);
-	    p.setPoint(12, p12);
-	    p.setPoint(13, p13);
-	    p.setPoint(14, p14);
-	    return p;
-	}
+    switch (index) {
+    case 0:
+        return QPolygon(0);
+    case 1:
+        {
+            QPolygon p(1);
+            p.setPoint(0, p0);
+            return p;
+        }
+    case 2:
+        {
+            QPolygon p(1);
+            p.setPoint(0, p5);
+            return p;
+        }
+    case 3:
+        {
+            QPolygon p(1);
+            p.setPoint(0, p12);
+            return p;
+        }
+    case 4:
+        {
+            QPolygon p(3);
+            p.setPoint(0, p1);
+            p.setPoint(1, p10);
+            p.setPoint(2, p13);
+            return p;
+        }
+    case 5:
+        {
+            QPolygon p(6);
+            p.setPoint(0, p2);
+            p.setPoint(1, p11);
+            p.setPoint(2, p14);
+            return p;
+        }
+    case 6:
+        {
+            QPolygon p(15);
+            p.setPoint(0, p0);
+            p.setPoint(1, p1);
+            p.setPoint(2, p2);
+            p.setPoint(3, p3);
+            p.setPoint(4, p4);
+            p.setPoint(5, p5);
+            p.setPoint(6, p6);
+            p.setPoint(7, p7);
+            p.setPoint(8, p8);
+            p.setPoint(9, p9);
+            p.setPoint(10, p10);
+            p.setPoint(11, p11);
+            p.setPoint(12, p12);
+            p.setPoint(13, p13);
+            p.setPoint(14, p14);
+            return p;
+        }
     }
     return QRect();
 }
@@ -1893,32 +1892,32 @@ void tst_QDataStream::readQPolygon(QDataStream *s)
 
 static QRegion qRegionData(int index)
 {
-    switch (index)
-    {
-        case 0: return QRegion(0, 0, 0, 0, QRegion::Rectangle);
-	case 1: {
-	    QRegion r(1, 2, 300, 400, QRegion::Rectangle);
-	    if (r != QRegion(1, 2, 300, 400, QRegion::Rectangle))
-		qDebug("Error creating a region");
-	    return r;
-	}
-	case 2: return QRegion(100, 100, 1024, 768, QRegion::Rectangle);
-	case 3: return QRegion(-100, -100, 1024, 1024, QRegion::Rectangle);
-	case 4: return QRegion(100, -100, 2048, 4096, QRegion::Rectangle);
-	case 5: return QRegion(-100, 100, 4096, 2048, QRegion::Rectangle);
-        case 6: return QRegion(0, 0, 0, 0, QRegion::Ellipse);
+    switch (index) {
+    case 0: return QRegion(0, 0, 0, 0, QRegion::Rectangle);
+    case 1:
+        {
+            QRegion r(1, 2, 300, 400, QRegion::Rectangle);
+            if (r != QRegion(1, 2, 300, 400, QRegion::Rectangle))
+                qDebug("Error creating a region");
+            return r;
+        }
+    case 2: return QRegion(100, 100, 1024, 768, QRegion::Rectangle);
+    case 3: return QRegion(-100, -100, 1024, 1024, QRegion::Rectangle);
+    case 4: return QRegion(100, -100, 2048, 4096, QRegion::Rectangle);
+    case 5: return QRegion(-100, 100, 4096, 2048, QRegion::Rectangle);
+    case 6: return QRegion(0, 0, 0, 0, QRegion::Ellipse);
 #if defined(Q_OS_SYMBIAN) || (!defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)) // all our Unix platforms use X regions.
-        case 7: return QRegion(1, 2, 300, 400, QRegion::Ellipse);
-	case 8: return QRegion(100, 100, 1024, 768, QRegion::Ellipse);
-	case 9: return QRegion(-100, -100, 1024, 1024, QRegion::Ellipse);
-	case 10: return QRegion(100, -100, 2048, 4096, QRegion::Ellipse);
-	case 11: return QRegion(-100, 100, 4096, 2048, QRegion::Ellipse);
-	    // simplest X11 case that fails:
-	case 12: return QRegion(0, 0, 3, 3, QRegion::Ellipse);
+    case 7: return QRegion(1, 2, 300, 400, QRegion::Ellipse);
+    case 8: return QRegion(100, 100, 1024, 768, QRegion::Ellipse);
+    case 9: return QRegion(-100, -100, 1024, 1024, QRegion::Ellipse);
+    case 10: return QRegion(100, -100, 2048, 4096, QRegion::Ellipse);
+    case 11: return QRegion(-100, 100, 4096, 2048, QRegion::Ellipse);
+        // simplest X11 case that fails:
+    case 12: return QRegion(0, 0, 3, 3, QRegion::Ellipse);
 #else
-        case 7:
-	    qWarning("Skipping streaming of elliptical regions on embedded, Mac OS X, and X11;"
-		     " our pointarray stuff is not that great at approximating.");
+    case 7:
+        qWarning("Skipping streaming of elliptical regions on embedded, Mac OS X, and X11;"
+                 " our pointarray stuff is not that great at approximating.");
 #endif
     }
     return QRegion();
@@ -1953,19 +1952,18 @@ void tst_QDataStream::readQRegion(QDataStream *s)
 
 static QSize qSizeData(int index)
 {
-    switch (index)
-    {
-	case 0: return QSize(0, 0);
-	case 1: return QSize(-1, 0);
-	case 2: return QSize(0, -1);
-	case 3: return QSize(1, 0);
-	case 4: return QSize(0, 1);
-	case 5: return QSize(-1, -1);
-	case 6: return QSize(1, 1);
-	case 7: return QSize(255, 255);
-	case 8: return QSize(256, 256);
-	case 9: return QSize(-254, -254);
-	case 10: return QSize(-255, -255);
+    switch (index) {
+    case 0: return QSize(0, 0);
+    case 1: return QSize(-1, 0);
+    case 2: return QSize(0, -1);
+    case 3: return QSize(1, 0);
+    case 4: return QSize(0, 1);
+    case 5: return QSize(-1, -1);
+    case 6: return QSize(1, 1);
+    case 7: return QSize(255, 255);
+    case 8: return QSize(256, 256);
+    case 9: return QSize(-254, -254);
+    case 10: return QSize(-255, -255);
     }
     return QSize();
 }
@@ -2013,60 +2011,60 @@ void tst_QDataStream::stream_atEnd()
 {
     QFETCH(QString, device);
     if (device == "bytearray") {
-	    QByteArray ba;
-	    QDataStream sout(&ba, QIODevice::WriteOnly);
-	    writeQString(&sout);
+        QByteArray ba;
+        QDataStream sout(&ba, QIODevice::WriteOnly);
+        writeQString(&sout);
 
-	    QDataStream sin(&ba, QIODevice::ReadOnly);
-	    readQString(&sin);
-	    QVERIFY(sin.atEnd());
+        QDataStream sin(&ba, QIODevice::ReadOnly);
+        readQString(&sin);
+        QVERIFY(sin.atEnd());
     } else if (device == "file") {
-	    QString fileName = "qdatastream.out";
-	    QFile fOut(fileName);
-	    QVERIFY(fOut.open(QIODevice::WriteOnly));
-	    QDataStream sout(&fOut);
-	    writeQString(&sout);
-	    fOut.close();
+        QString fileName = "qdatastream.out";
+        QFile fOut(fileName);
+        QVERIFY(fOut.open(QIODevice::WriteOnly));
+        QDataStream sout(&fOut);
+        writeQString(&sout);
+        fOut.close();
 
-	    QFile fIn(fileName);
-	    QVERIFY(fIn.open(QIODevice::ReadOnly));
-	    QDataStream sin(&fIn);
-	    readQString(&sin);
-	    QVERIFY(sin.atEnd());
-	    fIn.close();
+        QFile fIn(fileName);
+        QVERIFY(fIn.open(QIODevice::ReadOnly));
+        QDataStream sin(&fIn);
+        readQString(&sin);
+        QVERIFY(sin.atEnd());
+        fIn.close();
     } else if (device == "buffer") {
-	{
-	    QByteArray ba(0);
-	    QBuffer bOut(&ba);
-	    bOut.open(QIODevice::WriteOnly);
-	    QDataStream sout(&bOut);
-	    writeQString(&sout);
-	    bOut.close();
+        {
+            QByteArray ba(0);
+            QBuffer bOut(&ba);
+            bOut.open(QIODevice::WriteOnly);
+            QDataStream sout(&bOut);
+            writeQString(&sout);
+            bOut.close();
 
-	    QBuffer bIn(&ba);
-	    bIn.open(QIODevice::ReadOnly);
-	    QDataStream sin(&bIn);
-	    readQString(&sin);
-	    QVERIFY(sin.atEnd());
-	    bIn.close();
-	}
+            QBuffer bIn(&ba);
+            bIn.open(QIODevice::ReadOnly);
+            QDataStream sin(&bIn);
+            readQString(&sin);
+            QVERIFY(sin.atEnd());
+            bIn.close();
+        }
 
-	// Do the same test again, but this time with an initial size for the bytearray.
-	{
+        // Do the same test again, but this time with an initial size for the bytearray.
+        {
             QByteArray ba(10000, '\0');
-	    QBuffer bOut(&ba);
-	    bOut.open(QIODevice::WriteOnly | QIODevice::Truncate);
-	    QDataStream sout(&bOut);
-	    writeQString(&sout);
-	    bOut.close();
+            QBuffer bOut(&ba);
+            bOut.open(QIODevice::WriteOnly | QIODevice::Truncate);
+            QDataStream sout(&bOut);
+            writeQString(&sout);
+            bOut.close();
 
-	    QBuffer bIn(&ba);
-	    bIn.open(QIODevice::ReadOnly);
-	    QDataStream sin(&bIn);
-	    readQString(&sin);
-	    QVERIFY(sin.atEnd());
-	    bIn.close();
-	}
+            QBuffer bIn(&ba);
+            bIn.open(QIODevice::ReadOnly);
+            QDataStream sin(&bIn);
+            readQString(&sin);
+            QVERIFY(sin.atEnd());
+            bIn.close();
+        }
     }
 }
 
@@ -2152,8 +2150,6 @@ void tst_QDataStream::setVersion_data()
 
     for (int vers = 1; vers <= latest.version(); ++vers)
         QTest::newRow(qPrintable(QString("v_%1").arg(vers))) << vers;
-
-
 }
 
 void tst_QDataStream::setVersion()
@@ -2161,8 +2157,8 @@ void tst_QDataStream::setVersion()
     QDataStream latest;
     QFETCH(int, vers);
 
-	/*
-    Test QKeySequence.
+    /*
+        Test QKeySequence.
     */
     QByteArray ba1;
     {
@@ -2186,12 +2182,11 @@ void tst_QDataStream::setVersion()
         QVERIFY(deadbeef == 0xDEADBEEF);
     }
 
-	/*
-    Test QPalette.
+    /*
+        Test QPalette.
     */
 
-
-	// revise the test if new color roles or color groups are added
+    // revise the test if new color roles or color groups are added
     QVERIFY(QPalette::NColorRoles == QPalette::ToolTipText + 1);
     QVERIFY(QPalette::NColorGroups == 3);
 
@@ -2199,7 +2194,7 @@ void tst_QDataStream::setVersion()
     QPalette pal1, pal2;
     for (int grp = 0; grp < (int)QPalette::NColorGroups; ++grp) {
         for (int role = 0; role < (int)QPalette::NColorRoles; ++role) {
-		// random stuff
+            // random stuff
             pal1.setColor((QPalette::ColorGroup)grp, (QPalette::ColorRole)role,
                            QColor(grp * 13, 255 - grp, role));
             pal2.setColor((QPalette::ColorGroup)grp, (QPalette::ColorRole)role,

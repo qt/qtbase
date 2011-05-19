@@ -1230,21 +1230,17 @@ void tst_QComboBox::insertItem_data()
     QTest::addColumn<int>("insertIndex");
     QTest::addColumn<QString>("itemLabel");
     QTest::addColumn<int>("expectedIndex");
-    QTest::addColumn<bool>("testQt3Support");
     QTest::addColumn<bool>("editable");
 
     QStringList initialItems;
     initialItems << "foo" << "bar";
     for(int e = 0 ; e<2 ; e++) {
         bool editable = (e==0);
-        QTest::newRow("Insert less then 0") << initialItems << -1 << "inserted" << 0 << false << editable;
-        QTest::newRow("Insert at 0") << initialItems << 0 << "inserted" << 0 << false << editable;
-        QTest::newRow("Insert beyond count") << initialItems << 3 << "inserted" << 2 << false << editable;
-        QTest::newRow("Insert at count") << initialItems << 2 << "inserted" << 2 << false << editable;
-        QTest::newRow("Insert in the middle") << initialItems << 1 << "inserted" << 1 << false << editable;
-#if defined(QT3_SUPPORT)
-        QTest::newRow("Qt3Support: Insert less then 0") << initialItems << -1 << "inserted" << 2 << true << editable;
-#endif
+        QTest::newRow("Insert less then 0") << initialItems << -1 << "inserted" << 0 << editable;
+        QTest::newRow("Insert at 0") << initialItems << 0 << "inserted" << 0 << editable;
+        QTest::newRow("Insert beyond count") << initialItems << 3 << "inserted" << 2 << editable;
+        QTest::newRow("Insert at count") << initialItems << 2 << "inserted" << 2 << editable;
+        QTest::newRow("Insert in the middle") << initialItems << 1 << "inserted" << 1 << editable;
     }
 }
 
@@ -1254,7 +1250,6 @@ void tst_QComboBox::insertItem()
     QFETCH(int, insertIndex);
     QFETCH(QString, itemLabel);
     QFETCH(int, expectedIndex);
-    QFETCH(bool, testQt3Support);
     QFETCH(bool, editable);
 
     testWidget->insertItems(0, initialItems);
@@ -1263,16 +1258,7 @@ void tst_QComboBox::insertItem()
     testWidget->setEditable(true);
     if (editable)
         testWidget->setEditText("FOO");
-#if defined (QT3_SUPPORT)
-    if (testQt3Support)
-        testWidget->insertItem(itemLabel, insertIndex);
-    else
-        testWidget->insertItem(insertIndex, itemLabel);
-#else
-    Q_UNUSED(testQt3Support);
     testWidget->insertItem(insertIndex, itemLabel);
-#endif
-
 
     QCOMPARE(testWidget->count(), initialItems.count() + 1);
     QCOMPARE(testWidget->itemText(expectedIndex), itemLabel);

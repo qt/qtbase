@@ -44,9 +44,6 @@
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qmenubar.h>
-#ifdef QT3_SUPPORT
-#include <q3popupmenu.h>
-#endif
 #include <qstyle.h>
 #include <qwindowsstyle.h>
 #include <qdesktopwidget.h>
@@ -105,14 +102,7 @@ public:
     tst_QMenuBar();
     virtual ~tst_QMenuBar();
 
-#ifdef QT3_SUPPORT
-    void initSimpleMenubar();
-#endif
     void initSimpleMenubar_noQt3();
-
-#ifdef QT3_SUPPORT
-    void initComplexMenubar();
-#endif
     void initComplexMenubar_noQt3();
 
 public slots:
@@ -132,17 +122,6 @@ private slots:
     void accel_noQt3();
     void activatedCount_noQt3();
     void allowActiveAndDisabled();
-#ifdef QT3_SUPPORT
-    void clear();
-    void removeItemAt_data();
-    void removeItemAt();
-    void removeItem_data();
-    void removeItem();
-    void count();
-    void insertItem_QString_QObject();
-    void accel();
-    void activatedCount();
-#endif
 
     void check_accelKeys();
     void check_cursorKeys1();
@@ -151,9 +130,6 @@ private slots:
 
     void check_homeKey();
     void check_endKey();
-#ifdef QT3_SUPPORT
-    void check_escKey();
-#endif
     void check_escKey_noQt3();
 
 //     void check_mouse1_data();
@@ -170,19 +146,10 @@ private slots:
     void taskQTBUG4965_escapeEaten();
     void taskQTBUG11823_crashwithInvisibleActions();
 
-#if defined(QT3_SUPPORT)
-    void indexBasedInsertion_data();
-    void indexBasedInsertion();
-#endif
-
 protected slots:
-#ifdef QT3_SUPPORT
-    void onActivated( int );
-#endif
     void onActivated_noQt3( QAction*);
 
 private:
-
     void initTestCase_noQt3();
 
     QtTestSlot *menu1;
@@ -204,24 +171,13 @@ private:
 
     void reset() { resetSlots(); resetCount(); };
 
-#ifdef QT3_SUPPORT
-    int last_accel_id;
-#endif
     QAction* last_accel_id_Qt4;
     int activated_count;
 
-#ifdef QT3_SUPPORT
-    int idAccel;
-    int idAccel1;
-#endif
     QAction *action;
     QAction *action1;
     QMainWindow *mw;
     QMenuBar *mb;
-#ifdef QT3_SUPPORT
-    Q3PopupMenu *pm1;
-    Q3PopupMenu *pm2;
-#endif
     QMenu *pm1_Qt4;
     QMenu *pm2_Qt4;
 };
@@ -239,10 +195,6 @@ void tst_QMenuBar::getSetCheck()
     QCOMPARE((QAction *)0, obj1.activeAction());
     delete var1;
 }
-
-////
-
-
 
 #include <qcursor.h>
 
@@ -278,11 +230,6 @@ tst_QMenuBar::tst_QMenuBar()
 
     activated_count = 0;
     mb = 0;
-#ifdef QT3_SUPPORT
-    pm1 = 0;
-    pm2 = 0;
-    last_accel_id = RESET;
-#endif
     pm1_Qt4 = 0;
     pm2_Qt4 = 0;
     last_accel_id_Qt4 = 0;
@@ -296,35 +243,7 @@ tst_QMenuBar::~tst_QMenuBar()
 
 void tst_QMenuBar::initTestCase()
 {
-#ifdef QT3_SUPPORT
-    // create a default mainwindow
-    // If you run a widget test, this will be replaced in the testcase by the
-    // widget under test
-    mw = new QMainWindow(0, Qt::X11BypassWindowManagerHint);
-    mb = new QMenuBar( mw, "menubar" );
-    connect( mb, SIGNAL(activated(int)), this, SLOT(onActivated(int)) );
-
-    initSimpleMenubar();
-
-    qApp->setMainWidget( mw );
-    mw->show();
-    qApp->setActiveWindow(mw);
-
-    menu1 = new QtTestSlot( mw );
-    menu2 = new QtTestSlot( mw );
-    menu3 = new QtTestSlot( mw );
-    menu4 = new QtTestSlot( mw );
-    item1_A = new QtTestSlot( mw );
-    item1_B = new QtTestSlot( mw );
-    item2_C = new QtTestSlot( mw );
-    item2_D = new QtTestSlot( mw );
-    item2_E = new QtTestSlot( mw );
-    item2_F = new QtTestSlot( mw );
-    item2_G = new QtTestSlot( mw );
-    item2_H = new QtTestSlot( mw );
-#else
     initTestCase_noQt3();
-#endif
 }
 
 void tst_QMenuBar::initTestCase_noQt3()
@@ -360,33 +279,6 @@ void tst_QMenuBar::cleanupTestCase()
 {
     delete mw;
 }
-
-#if defined(QT3_SUPPORT)
-void tst_QMenuBar::initSimpleMenubar()
-{
-    mb->hide();
-    mb->clear();
-
-    delete pm1;
-    pm1  = new Q3PopupMenu( mb );
-    idAccel = pm1->insertItem( "menu1", 123 );
-//    pm->setAccel( ALT + Key_A, idAccel );
-    pm1->setAccel( Qt::CTRL + Qt::Key_A, idAccel );
-    mb->insertItem( "&accel", pm1 );
-    connect( pm1, SIGNAL(activated(int)), this, SLOT(onActivated(int)));
-
-    delete pm2;
-    pm2 = new Q3PopupMenu( mb );
-//    idAccel1 = pm2->insertItem( "&Open...", this, SLOT(onActivated(int)), Qt::Key_O, 456 );
-    idAccel1 = pm2->insertItem( "&Open...", 0, 0, Qt::Key_O, 456 );
-    connect(pm2, SIGNAL(activated(int)), this, SLOT(onActivated(int)));
-    mb->insertItem( "accel1", pm2 );
-
-    mb->show();
-    qApp->syncX();
-    qApp->processEvents();
-}
-#endif
 
 void tst_QMenuBar::initSimpleMenubar_noQt3()
 {
@@ -438,21 +330,9 @@ void tst_QMenuBar::resetSlots()
 
 void tst_QMenuBar::resetCount()
 {
-#ifdef QT3_SUPPORT
-    last_accel_id = RESET;
-#endif
     last_accel_id_Qt4 = 0;
     activated_count = 0;
 }
-
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::onActivated( int i )
-{
-    last_accel_id = i;
-    activated_count++;
-//     printf( QString("acceleratorId: %1, count: %1\n").arg( i ).arg(activated_count) );
-}
-#endif
 
 void tst_QMenuBar::onActivated_noQt3( QAction* action )
 {
@@ -460,22 +340,6 @@ void tst_QMenuBar::onActivated_noQt3( QAction* action )
     activated_count++;
 //     printf( QString("acceleratorId: %1, count: %1\n").arg( i ).arg(activated_count) );
 }
-
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::accel()
-{
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, native key events are needed to test menu action activation", SkipAll);
-#endif
-    // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar();
-//    QTest::keyClick( 0, Qt::Key_A, AltKey );
-    QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
-    QTest::qWait(300);
-
-    QCOMPARE( last_accel_id, idAccel );
-}
-#endif //QT3_SUPPORT
 
 void tst_QMenuBar::accel_noQt3()
 {
@@ -494,21 +358,6 @@ void tst_QMenuBar::accel_noQt3()
 
     QCOMPARE( last_accel_id_Qt4, action );
 }
-
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::activatedCount()
-{
-#ifdef Q_WS_MAC
-    QSKIP("On Mac, native key events are needed to test menu action activation", SkipAll);
-#endif
-    // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar();
-
-    QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
-//wait(5000);
-    QCOMPARE( activated_count, 2 ); //1 from the popupmenu and 1 from the menubar
-}
-#endif //QT3_SUPPORT
 
 void tst_QMenuBar::activatedCount_noQt3()
 {
@@ -680,183 +529,6 @@ void tst_QMenuBar::removeItemAt_noQt3()
     QVERIFY( menuBarActions2.size() == 2 );
 }
 
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::clear()
-{
-    mb->clear();
-    QVERIFY( mb->count() == 0 );
-
-    mb->clear();
-    for (uint i=0; i<10; i++) {
-	Q3PopupMenu *pm  = new Q3PopupMenu( mb );
-	for (uint k=0; k<i; k++)
-	    pm->insertItem( QString("Item %1").arg(i*10 + k) );
-	mb->insertItem( QString("Menu %1").arg(i), pm );
-	QCOMPARE( mb->count(), (uint)i+1 );
-    }
-    QCOMPARE( mb->count(), 10u );
-
-    mb->clear();
-    QVERIFY( mb->count() == 0 );
-}
-
-void tst_QMenuBar::count()
-{
-    mb->clear();
-    QVERIFY( mb->count() == 0 );
-
-    for (uint i=0; i<10; i++) {
-	Q3PopupMenu *pm  = new Q3PopupMenu( mb );
-	mb->insertItem( QString("Menu %1").arg(i), pm );
-	QCOMPARE( mb->count(), i+1 );
-    }
-}
-
-void tst_QMenuBar::removeItemAt_data()
-{
-    QTest::addColumn<int>("removeIndex");
-    QTest::newRow( "first" ) << 0;
-    QTest::newRow( "middle" ) << 1;
-    QTest::newRow( "last" ) << 2;
-}
-
-void tst_QMenuBar::removeItemAt()
-{
-    mb->clear();
-
-    Q3PopupMenu *pm;
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 10") );
-    mb->insertItem( QString("Menu 1"), pm );
-
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 20") );
-    pm->insertItem( QString("Item 21") );
-    mb->insertItem( QString("Menu 2"), pm );
-
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 30") );
-    pm->insertItem( QString("Item 31") );
-    pm->insertItem( QString("Item 32") );
-    mb->insertItem( QString("Menu 3"), pm );
-
-    QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 1") );
-    QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 2") );
-    QCOMPARE( mb->text( mb->idAt(2) ), QString("Menu 3") );
-
-    // Ok, now that we know we have created the menu we expect, lets remove an item...
-    QFETCH( int, removeIndex );
-    mb->removeItemAt( removeIndex );
-    switch (removeIndex )
-    {
-    case 0:
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 2") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 3") );
-	break;
-    case 1:
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 1") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 3") );
-	break;
-    case 2:
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 1") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 2") );
-	break;
-    }
-
-    QVERIFY( mb->count() == 2 );
-}
-
-void tst_QMenuBar::removeItem_data()
-{
-    QTest::addColumn<int>("removeIndex");
-    QTest::newRow( "first" ) << 0;
-    QTest::newRow( "middle" ) << 1;
-    QTest::newRow( "last" ) << 2;
-}
-
-// Basically the same test as removeItemAt, except that we remember and remove id's.
-void tst_QMenuBar::removeItem()
-{
-    mb->clear();
-
-    Q3PopupMenu *pm;
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 10") );
-    int id1 = mb->insertItem( QString("Menu 1"), pm );
-
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 20") );
-    pm->insertItem( QString("Item 21") );
-    int id2 = mb->insertItem( QString("Menu 2"), pm );
-
-    pm = new Q3PopupMenu( mb );
-    pm->insertItem( QString("Item 30") );
-    pm->insertItem( QString("Item 31") );
-    pm->insertItem( QString("Item 32") );
-    int id3 = mb->insertItem( QString("Menu 3"), pm );
-
-    QCOMPARE( mb->text( id1 ), QString("Menu 1") );
-    QCOMPARE( mb->text( id2 ), QString("Menu 2") );
-    QCOMPARE( mb->text( id3 ), QString("Menu 3") );
-
-    QVERIFY( mb->idAt(0) == id1 );
-    QVERIFY( mb->idAt(1) == id2 );
-    QVERIFY( mb->idAt(2) == id3 );
-
-    // Ok, now that we know we have created the menu we expect, lets remove an item...
-    QFETCH( int, removeIndex );
-    switch (removeIndex )
-    {
-    case 0:
-	mb->removeItem( id1 );
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 2") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 3") );
-	break;
-    case 1:
-	mb->removeItem( id2 );
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 1") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 3") );
-	break;
-    case 2:
-	mb->removeItem( id3 );
-	QCOMPARE( mb->text( mb->idAt(0) ), QString("Menu 1") );
-	QCOMPARE( mb->text( mb->idAt(1) ), QString("Menu 2") );
-	break;
-    }
-
-    QVERIFY( mb->count() == 2 );
-}
-
-void tst_QMenuBar::initComplexMenubar() // well, complex....
-{
-    mb->hide();
-    mb->clear();
-
-    delete pm1;
-    pm1 = new Q3PopupMenu( mb, "popup1" );
-    pm1->insertItem( QString("Item A"), item1_A, SLOT(selected()), Qt::CTRL+Qt::Key_A );
-    pm1->insertItem( QString("Item B"), item1_B, SLOT(selected()), Qt::CTRL+Qt::Key_B );
-    // use the form insertItem( QString, Q3PopupMenu )
-    mb->insertItem( "Menu &1", pm1 );
-
-    delete pm2;
-    pm2 = new Q3PopupMenu( mb, "popup2" );
-    pm2->insertItem( QString("Item C"), item2_C, SLOT(selected()), Qt::CTRL+Qt::Key_C );
-    pm2->insertItem( QString("Item D"), item2_D, SLOT(selected()), Qt::CTRL+Qt::Key_D );
-    pm2->insertItem( QString("Item E"), item2_E, SLOT(selected()), Qt::CTRL+Qt::Key_E );
-    pm2->insertItem( QString("Item F"), item2_F, SLOT(selected()), Qt::CTRL+Qt::Key_F );
-    pm2->insertSeparator();
-    pm2->insertItem( QString("Item G"), item2_G, SLOT(selected()), Qt::CTRL+Qt::Key_G );
-    pm2->insertItem( QString("Item H"), item2_H, SLOT(selected()), Qt::CTRL+Qt::Key_H );
-    // use the form insertItem( QString, Q3PopupMenu )
-    mb->insertItem( "Menu &2", pm2 );
-
-    // use the form insertItem( QString, QObject, slot, keysequence )
-    mb->insertItem( QString("M&enu 3"), menu3, SLOT(selected()), Qt::ALT+Qt::Key_J );
-    mb->show();
-}
-#endif
-
 void tst_QMenuBar::initComplexMenubar_noQt3() // well, complex....
 {
     mb->hide();
@@ -889,17 +561,6 @@ void tst_QMenuBar::initComplexMenubar_noQt3() // well, complex....
     used less frequently.
 */
 
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::insertItem_QString_QObject()
-{
-    initComplexMenubar();
-    QCOMPARE( mb->text( mb->idAt( 0 ) ), QString("Menu &1") );
-    QCOMPARE( mb->text( mb->idAt( 1 ) ), QString("Menu &2") );
-    QCOMPARE( mb->text( mb->idAt( 2 ) ), QString("M&enu 3") );
-    QCOMPARE( mb->text( mb->idAt( 3 ) ), QString() ); // there is no menu 4!
-}
-#endif
-
 void tst_QMenuBar::insertItem_QString_QObject_noQt3()
 {
     initComplexMenubar_noQt3();
@@ -917,11 +578,7 @@ void tst_QMenuBar::check_accelKeys()
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // start with a bogus key that shouldn't trigger anything
     QTest::keyClick(0, Qt::Key_I, Qt::ControlModifier);
@@ -991,11 +648,7 @@ void tst_QMenuBar::check_cursorKeys1()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // start with a ALT + 1 that activates the first popupmenu
     QTest::keyClick( 0, Qt::Key_1, Qt::AltModifier );
@@ -1026,11 +679,7 @@ void tst_QMenuBar::check_cursorKeys2()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // select popupmenu2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -1060,11 +709,7 @@ void tst_QMenuBar::check_cursorKeys3()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -1095,11 +740,7 @@ void tst_QMenuBar::check_homeKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -1137,11 +778,7 @@ void tst_QMenuBar::check_endKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -1169,46 +806,6 @@ void tst_QMenuBar::check_endKey()
     menubar should become active.
     If Down is pressed next the popup is activated again.
 */
-
-#ifdef QT3_SUPPORT
-void tst_QMenuBar::check_escKey()
-{
-#ifdef Q_WS_MAC
-    QSKIP("Qt/Mac does not use the native popups/menubar", SkipAll);
-#endif
-
-    initComplexMenubar();
-
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( !pm2->isActiveWindow() );
-
-    // select Popupmenu 2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( pm2->isActiveWindow() );
-
-    // If we press ESC, the popup should disappear
-    QTest::keyClick( 0, Qt::Key_Escape );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( !pm2->isActiveWindow() );
-
-    if (!QApplication::style()->inherits("QWindowsStyle"))
-        return;
-
-    // but the menubar item should stay selected
-    QVERIFY( mb->isItemActive(mb->idAt(1)) );
-
-    // If we press Down the popupmenu should be active again
-    QTest::keyClick( 0, Qt::Key_Down );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( pm2->isActiveWindow() );
-
-    // and press ENTER
-    QTest::keyClick( pm2, Qt::Key_Enter );
-    // Let's see if the correct slot is called...
-    QVERIFY2( item2_C->selCount() == 1, "Expected item 2C to be selected" );
-}
-#endif
 
 void tst_QMenuBar::check_escKey_noQt3()
 {
@@ -1403,11 +1000,7 @@ void tst_QMenuBar::check_altPress()
 	      arg( qApp->style()->objectName() ).toAscii(), SkipAll );
     }
 
-#ifdef QT3_SUPPORT
-    initSimpleMenubar();
-#else
     initSimpleMenubar_noQt3();
-#endif
 
     qApp->setActiveWindow(mw);
     mw->setFocus();
@@ -1423,11 +1016,7 @@ void tst_QMenuBar::check_shortcutPress()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
 
     qApp->setActiveWindow(mw);
     QCOMPARE(menu3->selCount(), 0u);
@@ -1437,17 +1026,9 @@ void tst_QMenuBar::check_shortcutPress()
     QVERIFY(!mb->activeAction());
 
     QTest::keyClick(mw, Qt::Key_1, Qt::AltModifier );
-#ifdef QT3_SUPPORT
-    QVERIFY(pm1->isActiveWindow());
-#else
     QVERIFY(pm1_Qt4->isActiveWindow());
-#endif
     QTest::keyClick(mb, Qt::Key_2);
-#ifdef QT3_SUPPORT
-    QVERIFY(pm1->isActiveWindow()); // Should still be the active window
-#else
     QVERIFY(pm1_Qt4->isActiveWindow());
-#endif
 }
 
 void tst_QMenuBar::check_menuPosition()
@@ -1459,11 +1040,7 @@ void tst_QMenuBar::check_menuPosition()
     QSKIP("Qt/CE uses native menubar", SkipAll);
 #endif
     Menu menu;
-#ifdef QT3_SUPPORT
-    initComplexMenubar();
-#else
     initComplexMenubar_noQt3();
-#endif
     menu.setTitle("&menu");
     QRect availRect = QApplication::desktop()->availableGeometry(mw);
     QRect screenRect = QApplication::desktop()->screenGeometry(mw);
@@ -1719,48 +1296,6 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QTest::keyClick(0, Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
 }
-
-
-#if defined(QT3_SUPPORT)
-void tst_QMenuBar::indexBasedInsertion_data()
-{
-    QTest::addColumn<int>("indexForInsertion");
-    QTest::addColumn<int>("expectedIndex");
-
-    QTest::newRow("negative-index-appends") << -1 << 1;
-    QTest::newRow("prepend") << 0 << 0;
-    QTest::newRow("append") << 1 << 1;
-}
-
-void tst_QMenuBar::indexBasedInsertion()
-{
-    // test the compat'ed index based insertion
-
-    QFETCH(int, indexForInsertion);
-    QFETCH(int, expectedIndex);
-
-    {
-        QMenuBar menu;
-        menu.addAction("Regular Item");
-
-        menu.insertItem("New Item", -1 /*id*/, indexForInsertion);
-
-        QAction *act = menu.actions().value(expectedIndex);
-        QVERIFY(act);
-        QCOMPARE(act->text(), QString("New Item"));
-    }
-    {
-        QMenuBar menu;
-        menu.addAction("Regular Item");
-
-        menu.insertSeparator(indexForInsertion);
-
-        QAction *act = menu.actions().value(expectedIndex);
-        QVERIFY(act);
-        QVERIFY(act->isSeparator());
-    }
-}
-#endif
 
 QTEST_MAIN(tst_QMenuBar)
 #include "tst_qmenubar.moc"

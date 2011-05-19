@@ -106,12 +106,10 @@ void AbstractViewItem::themeChange()
     ; // No impl yet
 }
 
-#if (QT_VERSION >= 0x040600)
 /*virtual*/
 void AbstractViewItem::setSubtreeCacheEnabled(bool enabled)
 {
     Q_UNUSED(enabled)
     ; // No impl
 }
-#endif
 

@@ -1,6 +1,7 @@
 include(../qsharedmemory/src/src.pri)
 
 QT = core script
+QT += core-private
 
 CONFIG += qtestlib
 

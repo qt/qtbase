@@ -64,10 +64,8 @@ public:
     QGraphicsWidget* takeItem(int row);
     QGraphicsWidget* itemAt(int row);
     int itemCount() const;
-#if (QT_VERSION >= 0x040600)
     bool listItemCaching() const;
     void setListItemCaching(bool enable);
-#endif
     ScrollBar* verticalScrollBar() const;
 
     void setTwoColumns(const bool twoColumns);

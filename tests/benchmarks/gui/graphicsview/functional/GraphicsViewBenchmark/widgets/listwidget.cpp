@@ -109,7 +109,6 @@ ScrollBar* ListWidget::verticalScrollBar() const
     return 0;
 }
 
-#if (QT_VERSION >= 0x040600)
 bool ListWidget::listItemCaching() const
 {
     return m_listView->listItemCaching();
@@ -119,7 +118,6 @@ void ListWidget::setListItemCaching(bool enable)
 {
     m_listView->setListItemCaching(enable);
 }
-#endif
 
 void ListWidget::setTwoColumns(const bool twoColumns)
 {

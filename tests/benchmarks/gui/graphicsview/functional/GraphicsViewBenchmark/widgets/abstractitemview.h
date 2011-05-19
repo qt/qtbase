@@ -76,10 +76,8 @@ public:
     void updateViewContent();
     virtual void scrollContentsBy(qreal dx, qreal dy);
 
-#if (QT_VERSION >= 0x040600)
     virtual bool listItemCaching() const = 0;
     virtual void setListItemCaching(bool enabled) = 0;
-#endif
 
 protected:
     virtual bool event(QEvent *e);

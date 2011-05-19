@@ -47,19 +47,14 @@
 #include "abstractviewitem.h"
 
 #include "recycledlistitem.h"
-
-#if (QT_VERSION >= 0x040600)
 #include "listitemcache.h"
 #include "itemrecyclinglist.h"
-#endif
 
 ListItemContainer::ListItemContainer(int bufferSize, ItemRecyclingList *view, QGraphicsWidget *parent)
     : AbstractItemContainer(bufferSize, parent)
     , m_view(view)
     , m_layout(new QGraphicsLinearLayout(Qt::Vertical))
-#if (QT_VERSION >= 0x040600)
     , m_listItemCaching(false)
-#endif
 {
     setContentsMargins(0,0,0,0);    
     m_layout->setContentsMargins(0,0,0,0);
@@ -70,9 +65,7 @@ ListItemContainer::ListItemContainer(int bufferSize, ItemRecyclingList *view, QG
 /*virtual*/
 ListItemContainer::~ListItemContainer()
 {
-#if (QT_VERSION >= 0x040600)
     setListItemCaching(false);
-#endif
     for (int i = 0; i < m_items.count(); ++i) {
         m_layout->removeItem(m_items.at(i));
         m_items.at(i)->setParentItem(0);
@@ -81,7 +74,6 @@ ListItemContainer::~ListItemContainer()
     m_items.clear();
 }
 
-#if (QT_VERSION >= 0x040600)
 bool ListItemContainer::listItemCaching() const
 {
     return m_listItemCaching;
@@ -99,7 +91,6 @@ void ListItemContainer::setListItemCaching(const bool enabled)
     for (int i = 0; i < itemCount; ++i)
         setListItemCaching(enabled, i);
 }
-#endif
 
 /*virtual*/
 void ListItemContainer::adjustVisibleContainerSize(const QSizeF &size)
@@ -112,9 +103,7 @@ void ListItemContainer::addItemToVisibleLayout(int index, AbstractViewItem *item
 {
     m_layout->insertItem(index,item);
 
-#if (QT_VERSION >= 0x040600)    
     setListItemCaching(m_listItemCaching, index);
-#endif
 }
 
 /*virtual*/
@@ -122,7 +111,6 @@ void ListItemContainer::removeItemFromVisibleLayout(AbstractViewItem *item)
 {
     m_layout->removeItem(item);
 
-#if (QT_VERSION >= 0x040600)
     RecycledListItem *recycledItem = static_cast<RecycledListItem*>(item);
 
     if (!recycledItem)
@@ -131,7 +119,6 @@ void ListItemContainer::removeItemFromVisibleLayout(AbstractViewItem *item)
     ListItem *listItem = recycledItem->item();
 
     setListItemCaching(false, listItem);
-#endif
 }
 
 /*virtual*/
@@ -168,7 +155,6 @@ int ListItemContainer::maxItemCountInItemBuffer() const
     return count;
 }
 
-#if (QT_VERSION >= 0x040600)
 void ListItemContainer::setListItemCaching(const bool enabled, const int index)
 {
     RecycledListItem *recycledItem = static_cast<RecycledListItem*>(m_layout->itemAt(index));
@@ -198,8 +184,6 @@ void ListItemContainer::setListItemCaching(const bool enabled, ListItem *listIte
         listItem->setGraphicsEffect(cache);
     }
 }
-#endif
-
 
 void ListItemContainer::setTwoColumns(const bool twoColumns)
 {

@@ -213,7 +213,6 @@ void tst_QtBench::qtBench_data()
     benchmarks << (new DrawText(longString, DrawText::PixmapMode));
     benchmarks << (new DrawText(superLongString, DrawText::PixmapMode));
 
-#if QT_VERSION >= 0x040700
     benchmarks << (new DrawText(shortString, DrawText::StaticTextMode));
     benchmarks << (new DrawText(middleString, DrawText::StaticTextMode));
     benchmarks << (new DrawText(longString, DrawText::StaticTextMode));
@@ -228,7 +227,6 @@ void tst_QtBench::qtBench_data()
     benchmarks << (new DrawText(middleString, DrawText::StaticTextBackendOptimizations));
     benchmarks << (new DrawText(longString, DrawText::StaticTextBackendOptimizations));
     benchmarks << (new DrawText(superLongString, DrawText::StaticTextBackendOptimizations));
-#endif
 
     foreach (Benchmark *benchmark, benchmarks)
         QTest::newRow(qPrintable(benchmark->name())) << reinterpret_cast<void *>(benchmark);
