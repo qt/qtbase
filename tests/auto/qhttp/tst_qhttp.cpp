@@ -772,6 +772,7 @@ void tst_QHttp::authorization()
         http.setUser(user, pass);
     http.setHost(host);
     int id = http.get(path);
+    Q_UNUSED(id);
 
     QTimer::singleShot(5000, &loop, SLOT(quit()));
     loop.exec();

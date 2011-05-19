@@ -3800,7 +3800,7 @@ class Model_11466 : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    Model_11466(QObject *parent) :
+    Model_11466(QObject * /* parent */) :
         m_block(false)
     {
         // set up the model to have two top level items and a few others
@@ -3817,7 +3817,7 @@ public:
         return 2; // two top level items
     }
 
-    int columnCount(const QModelIndex &parent) const
+    int columnCount(const QModelIndex & /* parent */) const
     {
         return 2;
     }

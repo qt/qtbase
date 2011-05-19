@@ -212,7 +212,6 @@ private:
 
 // number of records to be inserted per testfunction
 static const int ITERATION_COUNT = 2;
-static int pkey = 1;
 
 //helper class for database specific tests
 struct FieldDef {
@@ -483,8 +482,9 @@ void tst_QSqlDatabase::tables()
 
 
     if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + qtest)) {
-        qDebug(QString("DBMS '%1' cannot handle VIEWs: %2").arg(
-                tst_Databases::dbToString(db)).arg(QString(tst_Databases::printError(q.lastError()))).toLatin1());
+        qDebug("DBMS '%s' cannot handle VIEWs: %s",
+               qPrintable(tst_Databases::dbToString(db)),
+               qPrintable(tst_Databases::printError(q.lastError())));
         views = false;
     }
 
@@ -1080,7 +1080,7 @@ void tst_QSqlDatabase::transaction()
     q.clear(); // for SQLite which does not allow any references on rows that shall be rolled back
     if (!db.rollback()) {
     if (db.driverName().startsWith("QMYSQL")) {
-        qDebug("MySQL: " + tst_Databases::printError(db.lastError()));
+        qDebug("MySQL: %s", qPrintable(tst_Databases::printError(db.lastError())));
         QSKIP("MySQL transaction failed ", SkipSingle); //non-fatal
     } else {
         QFAIL("Could not rollback transaction: " + tst_Databases::printError(db.lastError()));
@@ -1861,7 +1861,7 @@ void tst_QSqlDatabase::oci_serverDetach()
         }
     }
     if(!db.open())
-        qFatal(tst_Databases::printError(db.lastError(), db));
+        qFatal("%s", qPrintable(tst_Databases::printError(db.lastError(), db)));
 }
 
 void tst_QSqlDatabase::oci_xmltypeSupport()

@@ -1108,6 +1108,8 @@ void tst_QTextPieceTable::removeWithChildFrame()
 
     QTextFrame *frame = table->insertFrame(1, 6, ffmt);
     QTextFrame *childFrame = table->insertFrame(3, 5, ffmt);
+    Q_UNUSED(frame);
+    Q_UNUSED(childFrame);
 
     // used to give a failing assertion
     table->remove(2, 5);

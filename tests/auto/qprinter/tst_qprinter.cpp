@@ -406,6 +406,8 @@ void tst_QPrinter::testMargins()
     QFETCH(int,  width);
     QFETCH(int,  height);
     QFETCH(bool, fullpage);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
     QPrinter printer;
     QPainter *painter = 0;
     printer.setOutputFileName("silly");

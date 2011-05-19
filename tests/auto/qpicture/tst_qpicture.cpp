@@ -81,7 +81,7 @@ void tst_QPicture::getSetCheck()
     // void QPictureIO::setPicture(const QPicture &)
     // const char * QPictureIO::format()
     // void QPictureIO::setFormat(const char *)
-    char *var2 = "PNG";
+    const char var2[] = "PNG";
     obj1.setFormat(var2);
     QCOMPARE(var2, obj1.format());
     obj1.setFormat((char *)0);
@@ -90,7 +90,7 @@ void tst_QPicture::getSetCheck()
 
     // const char * QPictureIO::parameters()
     // void QPictureIO::setParameters(const char *)
-    char *var3 = "Bogus data";
+    const char var3[] = "Bogus data";
     obj1.setParameters(var3);
     QCOMPARE(var3, obj1.parameters());
     obj1.setParameters((char *)0);

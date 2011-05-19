@@ -299,7 +299,7 @@ void tst_QGraphicsLinearLayout::alignment()
 
     int i;
     bool addWidget = true;
-    for (i = 0; i < sizeof(alignmentsToTest)/sizeof(Qt::Alignment); ++i) {
+    for (size_t i = 0; i < sizeof(alignmentsToTest)/sizeof(Qt::Alignment); ++i) {
         QGraphicsLayoutItem *loutItem;
         Qt::Alignment align = alignmentsToTest[i];
         if (!align && i > 0)
@@ -1139,6 +1139,7 @@ void tst_QGraphicsLinearLayout::testStretch()
 {
     QGraphicsScene scene;
     QGraphicsView *view = new QGraphicsView(&scene);
+    Q_UNUSED(view);
     QGraphicsWidget *form = new QGraphicsWidget(0, Qt::Window);
 
     scene.addItem(form);

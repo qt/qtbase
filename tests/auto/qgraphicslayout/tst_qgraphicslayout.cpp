@@ -644,7 +644,7 @@ void AnimatedLayoutItem::setGeometry(const QRectF &geom)
     QGraphicsLayoutItem::setGeometry(geom);
 }
 
-QSizeF AnimatedLayoutItem::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+QSizeF AnimatedLayoutItem::sizeHint(Qt::SizeHint which, const QSizeF & /* constraint */) const
 {
     switch (which) {
     case Qt::MinimumSize:
@@ -760,7 +760,7 @@ private:
     QSet<QGraphicsLayoutItem*> *m_destructedSet;
 };
 
-QSizeF CustomLayoutItem::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+QSizeF CustomLayoutItem::sizeHint(Qt::SizeHint which, const QSizeF & /* constraint */) const
 {
     switch (which) {
     case Qt::MinimumSize:
@@ -800,7 +800,7 @@ private:
     QSet<QGraphicsLayoutItem*> *m_destructedSet;
 };
 
-QSizeF CustomGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+QSizeF CustomGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF & /* constraint */) const
 {
     switch (which) {
     case Qt::MinimumSize:
@@ -889,7 +889,7 @@ void updateParentWidget(QGraphicsWidget *item)
     }
 }
 
-QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+QSizeF sizeHint(Qt::SizeHint /* which */, const QSizeF & /* constraint */) const
 {
     return QSizeF(50,50);
 }
