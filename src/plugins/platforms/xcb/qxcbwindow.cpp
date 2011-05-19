@@ -89,17 +89,35 @@ static inline bool isTransient(const QWindow *w)
 
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
+    , m_window(0)
     , m_context(0)
-    , m_windowState(Qt::WindowNoState)
+    , m_syncCounter(0)
 {
     m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
 
     setConnection(m_screen->connection());
 
-    const quint32 mask = XCB_CW_BACK_PIXMAP | XCB_CW_EVENT_MASK;
+    create();
+}
+
+void QXcbWindow::create()
+{
+    bool wasCreated = (m_window != 0);
+    destroy();
+
+    m_windowState = Qt::WindowNoState;
+    m_hasReceivedSyncRequest = false;
+
+    Qt::WindowType type = window()->windowType();
+
+    const quint32 mask = XCB_CW_BACK_PIXMAP | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
     const quint32 values[] = {
         // XCB_CW_BACK_PIXMAP
         XCB_NONE,
+        // XCB_CW_OVERRIDE_REDIRECT
+        type == Qt::Popup,
+        // XCB_CW_SAVE_UNDER
+        type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
         // XCB_CW_EVENT_MASK
         XCB_EVENT_MASK_EXPOSURE
         | XCB_EVENT_MASK_STRUCTURE_NOTIFY
@@ -115,21 +133,21 @@ QXcbWindow::QXcbWindow(QWindow *window)
         | XCB_EVENT_MASK_FOCUS_CHANGE
     };
 
-    QRect rect = window->geometry();
+    QRect rect = window()->geometry();
 
     xcb_window_t xcb_parent_id = m_screen->root();
-    if (parent() && !window->isTopLevel())
+    if (parent() && !window()->isTopLevel())
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
-    if (window->surfaceType() == QWindow::OpenGLSurface
+    if (window()->surfaceType() == QWindow::OpenGLSurface
         && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
     {
 #if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window->requestedWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->requestedWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,window->requestedWindowFormat(),true);
+        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,window()->requestedWindowFormat(),true);
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -149,7 +167,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWColormap, &a);
 
-            printf("created GL window: %d\n", m_window);
+            printf("created GL window: %x\n", m_window);
         } else {
             qFatal("no window!");
         }
@@ -172,7 +190,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
                                      0,                               // value mask
                                      0));                             // value list
 
-        printf("created regular window: %d\n", m_window);
+        printf("created regular window: %x\n", m_window);
     }
 
     connection()->addWindow(m_window, this);
@@ -188,7 +206,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     if (m_screen->syncRequestSupported())
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
 
-    if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
+    if (window()->windowFlags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
     Q_XCB_CALL(xcb_change_property(xcb_connection(),
@@ -221,15 +239,36 @@ QXcbWindow::QXcbWindow(QWindow *window)
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
                                    1, &pid));
+
+    xcb_wm_hints_t hints;
+    memset(&hints, 0, sizeof(hints));
+    xcb_wm_hints_set_normal(&hints);
+
+    xcb_set_wm_hints(xcb_connection(), m_window, &hints);
+
+    xcb_window_t leader = m_screen->clientLeader();
+    Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                   atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
+                                   1, &leader));
+
+    if (wasCreated)
+        setWindowFlags(window()->windowFlags());
 }
 
 QXcbWindow::~QXcbWindow()
 {
+    destroy();
+}
+
+void QXcbWindow::destroy()
+{
     delete m_context;
-    if (m_screen->syncRequestSupported())
+    if (m_syncCounter && m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
-    connection()->removeWindow(m_window);
-    Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
+    if (m_window) {
+        connection()->removeWindow(m_window);
+        Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
+    }
 }
 
 void QXcbWindow::setGeometry(const QRect &rect)
@@ -468,27 +507,20 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
-    setNetWmWindowTypes(flags);
-
     if (type == Qt::ToolTip)
         flags |= Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint;
     if (type == Qt::Popup)
         flags |= Qt::X11BypassWindowManagerHint;
 
-    bool topLevel = (flags & Qt::Window);
-    bool popup = (type == Qt::Popup);
-    bool dialog = (type == Qt::Dialog
-                   || type == Qt::Sheet);
-    bool desktop = (type == Qt::Desktop);
-    bool tool = (type == Qt::Tool || type == Qt::SplashScreen
-                 || type == Qt::ToolTip || type == Qt::Drawer);
+    setNetWmWindowFlags(flags);
+    setMotifWindowFlags(flags);
 
-    Q_UNUSED(topLevel);
-    Q_UNUSED(dialog);
-    Q_UNUSED(desktop);
-    Q_UNUSED(tool);
+    return flags;
+}
 
-    bool tooltip = (type == Qt::ToolTip);
+void QXcbWindow::setMotifWindowFlags(Qt::WindowFlags flags)
+{
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
     QtMotifWmHints mwmhints;
     mwmhints.flags = 0L;
@@ -551,15 +583,6 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     setMotifWmHints(connection(), m_window, mwmhints);
-
-    if (popup || tooltip) {
-        const quint32 mask = XCB_CW_OVERRIDE_REDIRECT | XCB_CW_SAVE_UNDER;
-        const quint32 values[] = { true, true };
-
-        Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
-    }
-
-    return flags;
 }
 
 void QXcbWindow::changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two)
@@ -640,7 +663,7 @@ Qt::WindowState QXcbWindow::setWindowState(Qt::WindowState state)
     return m_windowState;
 }
 
-void QXcbWindow::setNetWmWindowTypes(Qt::WindowFlags flags)
+void QXcbWindow::setNetWmWindowFlags(Qt::WindowFlags flags)
 {
     // in order of decreasing priority
     QVector<uint> windowTypes;
@@ -767,6 +790,9 @@ WId QXcbWindow::winId() const
 
 void QXcbWindow::setParent(const QPlatformWindow *parent)
 {
+    // re-create for compatibility
+    create();
+
     QPoint topLeft = geometry().topLeft();
 
     xcb_window_t xcb_parent_id = parent ? static_cast<const QXcbWindow *>(parent)->xcb_window() : m_screen->root();

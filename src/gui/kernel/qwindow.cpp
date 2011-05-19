@@ -127,9 +127,6 @@ void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
 
-    if (d->parentWindow == parent)
-        return;
-
     QObject::setParent(parent);
 
     if (d->platformWindow) {

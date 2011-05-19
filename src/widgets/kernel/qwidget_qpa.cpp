@@ -93,13 +93,14 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     QWindow *win = topData()->window;
 
+    win->setWindowFlags(data.window_flags);
+    win->setGeometry(q->geometry());
+
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle())
             win->setParent(nativeParent->windowHandle());
     }
 
-    win->setWindowFlags(data.window_flags);
-    win->setGeometry(q->geometry());
     win->create();
 
     data.window_flags = win->windowFlags();
@@ -174,13 +175,12 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
-        if (q->windowHandle() && newparent) {
-            QWidget * parentWithWindow = newparent->windowHandle()? newparent : newparent->nativeParentWidget();
-            if (parentWithWindow && parentWithWindow->windowHandle()) {
-                q->windowHandle()->setParent(parentWithWindow->windowHandle());
-            }
+        if (q->windowHandle()) {
+            q->windowHandle()->setWindowFlags(f);
+            QWidget *parentWithWindow =
+                newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
+            q->windowHandle()->setParent(parentWithWindow ? parentWithWindow->windowHandle() : 0);
         }
-
     }
 
     if (!newparent) {

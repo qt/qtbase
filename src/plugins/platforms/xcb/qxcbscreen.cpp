@@ -102,6 +102,26 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     free(reply);
 
     m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
+
+    m_clientLeader = xcb_generate_id(xcb_connection());
+    Q_XCB_CALL2(xcb_create_window(xcb_connection(),
+                                  XCB_COPY_FROM_PARENT,
+                                  m_clientLeader,
+                                  m_screen->root,
+                                  0, 0, 1, 1,
+                                  0,
+                                  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                  m_screen->root_visual,
+                                  0, 0), connection);
+
+    Q_XCB_CALL2(xcb_change_property(xcb_connection(),
+                                    XCB_PROP_MODE_REPLACE,
+                                    m_clientLeader,
+                                    atom(QXcbAtom::WM_CLIENT_LEADER),
+                                    XCB_ATOM_WINDOW,
+                                    32,
+                                    1,
+                                    &m_clientLeader), connection);
 }
 
 QXcbScreen::~QXcbScreen()
