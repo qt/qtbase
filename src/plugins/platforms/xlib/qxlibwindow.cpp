@@ -81,9 +81,10 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int w = window->width();
     int h = window->height();
 
-    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL) ) {
 #if !defined(QT_NO_OPENGL)
+    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
+            || window->platformWindowFormat().alpha()) {
 #if !defined(QT_OPENGL_ES_2)
         XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
 #else
@@ -117,8 +118,9 @@ QXlibWindow::QXlibWindow(QWidget *window)
         } else {
             qFatal("no window!");
         }
+    } else
 #endif //!defined(QT_NO_OPENGL)
-    } else {
+    {
         mDepth = mScreen->depth();
         mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
         mVisual = mScreen->defaultVisual();

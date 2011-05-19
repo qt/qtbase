@@ -113,7 +113,8 @@ QXcbWindow::QXcbWindow(QWidget *tlw)
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-        && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
+        || tlw->platformWindowFormat().alpha())
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), tlw->platformWindowFormat());

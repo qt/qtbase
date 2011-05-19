@@ -49,6 +49,8 @@
 #include "qxlibscreen.h"
 #include "qxlibdisplay.h"
 
+#include "qpainter.h"
+
 # include <sys/ipc.h>
 # include <sys/shm.h>
 # include <X11/extensions/XShm.h>
@@ -108,7 +110,7 @@ void QXlibWindowSurface::resizeShmImage(int width, int height)
 
     Q_ASSERT(shm_attach_status == True);
 
-    shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, QImage::Format_RGB32 );
+    shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, win->format() );
 #endif
     painted = false;
 }
@@ -213,6 +215,16 @@ void QXlibWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
     resizeBuffer(size());
+
+    if (shm_img.hasAlphaChannel()) {
+        QPainter p(&shm_img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QVector<QRect> rects = region.rects();
+        const QColor blank = Qt::transparent;
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            p.fillRect(*it, blank);
+        }
+    }
 }
 
 void QXlibWindowSurface::endPaint(const QRegion &region)

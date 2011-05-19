@@ -150,6 +150,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             if (shareContext) {
                 winFormat.setSharedContext(shareContext->d_func()->platformContext);
             }
+            if (widget->testAttribute(Qt::WA_TranslucentBackground))
+                winFormat.setAlpha(true);
             winFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
             winFormat.setWindowSurface(false);
             widget->setPlatformWindowFormat(winFormat);

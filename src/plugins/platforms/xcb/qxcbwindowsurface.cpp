@@ -54,6 +54,7 @@
 #include <stdio.h>
 
 #include <qdebug.h>
+#include <qpainter.h>
 
 class QXcbShmImage : public QXcbObject
 {
@@ -189,6 +190,16 @@ QPaintDevice *QXcbWindowSurface::paintDevice()
 void QXcbWindowSurface::beginPaint(const QRegion &region)
 {
     m_image->preparePaint(region);
+
+    if (m_image->image()->hasAlphaChannel()) {
+        QPainter p(m_image->image());
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QVector<QRect> rects = region.rects();
+        const QColor blank = Qt::transparent;
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            p.fillRect(*it, blank);
+        }
+    }
 }
 
 void QXcbWindowSurface::endPaint(const QRegion &)
