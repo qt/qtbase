@@ -47,14 +47,6 @@
 #include "qxlibstatic.h"
 #include "qxlibdisplay.h"
 
-#include <QtGui/QWindowSystemInterface>
-#include <QSocketNotifier>
-#include <QApplication>
-#include <QDebug>
-
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qapplication_p.h>
-
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
@@ -65,6 +57,15 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif  //QT_OPENGL_ES_2
 #endif //QT_NO_OPENGL
+
+
+#include <QtGui/QWindowSystemInterface>
+#include <QSocketNotifier>
+#include <QApplication>
+#include <QDebug>
+
+#include <QtGui/private/qwindowsurface_p.h>
+#include <QtGui/private/qapplication_p.h>
 
 //#define MYX11_DEBUG
 
@@ -80,9 +81,10 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int w = window->width();
     int h = window->height();
 
-    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL) ) {
 #if !defined(QT_NO_OPENGL)
+    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
+            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
+            || window->platformWindowFormat().alpha()) {
 #if !defined(QT_OPENGL_ES_2)
         XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
 #else
@@ -101,18 +103,28 @@ QXlibWindow::QXlibWindow(QWidget *window)
         visualInfo = XGetVisualInfo(mScreen->display()->nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //!defined(QT_OPENGL_ES_2)
         if (visualInfo) {
-            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+            mDepth = visualInfo->depth;
+            mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            mVisual = visualInfo->visual;
+            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(), mScreen->rootWindow(), visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
+            a.background_pixel = WhitePixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
+            a.border_pixel = BlackPixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
             a.colormap = cmap;
             x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                     CWColormap, &a);
+                                     CWBackPixel|CWBorderPixel|CWColormap, &a);
         } else {
             qFatal("no window!");
         }
+    } else
 #endif //!defined(QT_NO_OPENGL)
-    } else {
+    {
+        mDepth = mScreen->depth();
+        mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        mVisual = mScreen->defaultVisual();
+
         x_window = XCreateSimpleWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        mScreen->blackPixel(), mScreen->whitePixel());

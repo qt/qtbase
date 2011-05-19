@@ -50,8 +50,8 @@ QMinimalIntegration::QMinimalIntegration()
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
-    mPrimaryScreen->mDepth = 16;
-    mPrimaryScreen->mFormat = QImage::Format_RGB16;
+    mPrimaryScreen->mDepth = 32;
+    mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
 
     mScreens.append(mPrimaryScreen);
 }

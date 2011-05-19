@@ -43,6 +43,10 @@
 
 #include <QtCore/QVector>
 
+#ifndef QT_NO_XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
+
 enum {
     XFocusOut = FocusOut,
     XFocusIn = FocusIn,
@@ -84,14 +88,15 @@ QVector<int> qglx_buildSpec(const QPlatformWindowFormat &format, int drawableBit
                 spec[i++] = GLX_ALPHA_SIZE; spec[i++] = (format.alphaBufferSize() == -1) ? 1 : format.alphaBufferSize();
             }
 
-        spec[i++] = GLX_ACCUM_RED_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
-        spec[i++] = GLX_ACCUM_GREEN_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
-        spec[i++] = GLX_ACCUM_BLUE_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
+        if (format.accum()) {
+            spec[i++] = GLX_ACCUM_RED_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
+            spec[i++] = GLX_ACCUM_GREEN_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
+            spec[i++] = GLX_ACCUM_BLUE_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
 
-        if (format.alpha()) {
-            spec[i++] = GLX_ACCUM_ALPHA_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
+            if (format.alpha()) {
+                spec[i++] = GLX_ACCUM_ALPHA_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 1 : format.accumBufferSize();
+            }
         }
-
     } else {
         spec[i++] = GLX_RENDER_TYPE; spec[i++] = GLX_COLOR_INDEX_BIT; //I'm really not sure if this works....
         spec[i++] = GLX_BUFFER_SIZE; spec[i++] = 8;
@@ -136,8 +141,17 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QPlatformWindow
                 if (reducedFormat.alpha()) {
                     int alphaSize;
                     glXGetFBConfigAttrib(display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
-                    if (alphaSize > 0)
-                        break;
+                    if (alphaSize > 0) {
+                        XVisualInfo *visual = glXGetVisualFromFBConfig(display, chosenConfig);
+#if !defined(QT_NO_XRENDER)
+                        XRenderPictFormat *pictFormat = XRenderFindVisualFormat(display, visual->visual);
+                        if (pictFormat->direct.alphaMask > 0)
+                            break;
+#else
+                        if (visual->depth == 32)
+                            break;
+#endif
+                    }
                 } else {
                     break; // Just choose the first in the list if there's no alpha requested
                 }

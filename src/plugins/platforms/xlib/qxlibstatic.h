@@ -135,6 +135,7 @@ typedef char *XPointer;
 #endif
 
 #ifndef QT_NO_XFIXES
+#include <X11/extensions/Xfixes.h>
 typedef Bool (*PtrXFixesQueryExtension)(Display *, int *, int *);
 typedef Status (*PtrXFixesQueryVersion)(Display *, int *, int *);
 typedef void (*PtrXFixesSetCursorName)(Display *dpy, Cursor cursor, const char *name);

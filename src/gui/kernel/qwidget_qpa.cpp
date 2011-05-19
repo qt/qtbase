@@ -731,12 +731,19 @@ QPlatformWindowFormat QWidget::platformWindowFormat() const
 {
     Q_D(const QWidget);
 
+    QPlatformWindowFormat format;
+
     QTLWExtra *extra = d->maybeTopData();
     if (extra){
-        return extra->platformWindowFormat;
+        format = extra->platformWindowFormat;
     } else {
-        return QPlatformWindowFormat::defaultFormat();
+        format = QPlatformWindowFormat::defaultFormat();
     }
+
+    if (testAttribute(Qt::WA_TranslucentBackground))
+        format.setAlpha(true);
+
+    return format;
 }
 
 void QWidgetPrivate::createSysExtra()
