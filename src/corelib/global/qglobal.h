@@ -2790,6 +2790,12 @@ QT_LICENSED_MODULE(Sensors)
 #  define QT_NO_RAWFONT
 #endif
 
+namespace QtPrivate {
+//like std::enable_if
+template <bool B, typename T = void> struct QEnableIf;
+template <typename T> struct QEnableIf<true, T> { typedef T Type; };
+}
+
 QT_END_NAMESPACE
 QT_END_HEADER
 
