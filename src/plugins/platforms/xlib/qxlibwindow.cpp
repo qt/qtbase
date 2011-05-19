@@ -47,14 +47,6 @@
 #include "qxlibstatic.h"
 #include "qxlibdisplay.h"
 
-#include <QtGui/QWindowSystemInterface>
-#include <QSocketNotifier>
-#include <QApplication>
-#include <QDebug>
-
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qapplication_p.h>
-
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
@@ -65,6 +57,15 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif  //QT_OPENGL_ES_2
 #endif //QT_NO_OPENGL
+
+
+#include <QtGui/QWindowSystemInterface>
+#include <QSocketNotifier>
+#include <QApplication>
+#include <QDebug>
+
+#include <QtGui/private/qwindowsurface_p.h>
+#include <QtGui/private/qapplication_p.h>
 
 //#define MYX11_DEBUG
 

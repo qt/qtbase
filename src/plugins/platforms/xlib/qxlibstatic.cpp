@@ -51,10 +51,6 @@
 
 #include <QDebug>
 
-#ifndef QT_NO_XFIXES
-#include <X11/extensions/Xfixes.h>
-#endif // QT_NO_XFIXES
-
 static const char * x11_atomnames = {
     // window-manager <-> client protocols
     "WM_PROTOCOLS\0"
