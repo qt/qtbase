@@ -175,9 +175,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << "MOVE          = " << var("QMAKE_MOVE") << endl;
     t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
     t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
-    if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
-        t << "export MACOSX_DEPLOYMENT_TARGET = " //exported to children processes
-          << project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET") << endl;
 
     if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
         t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(":") << endl;

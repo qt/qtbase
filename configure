@@ -6967,19 +6967,6 @@ fi
 [ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
 [ "$XPLATFORM_SYMBIAN" = "yes" ] && CFG_MAC_COCOA="no"
 
-# set the global Mac deployment target. This is overridden on an arch-by-arch basis
-# in some cases, see code further down
-case "$PLATFORM,$CFG_MAC_COCOA" in
-    macx*,yes)
-	# Cocoa
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
-	;;
-    macx*,no)
-	# gcc, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
-	;;
-esac
-
 # disable Qt 3 support on VxWorks and Symbian
 case "$XPLATFORM" in
     unsupported/vxworks*|symbian*)
@@ -7716,9 +7703,7 @@ if [ "$CFG_EXCEPTIONS" = "no" ]; then
 fi
 
 # On Mac, set the minimum deployment target for the different architechtures 
-# using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
-# deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
-# env. variable. 
+# using the Xarch compiler option when supported (10.5 and up).
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
     if echo "$CFG_MAC_ARCHS" | grep '\<x86\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"

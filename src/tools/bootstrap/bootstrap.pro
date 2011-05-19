@@ -108,7 +108,6 @@ else:unix:SOURCES += ../../corelib/tools/qlocale_unix.cpp
 else:win32:SOURCES += ../../corelib/tools/qlocale_win.cpp
 
 macx: {
-   QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
    SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp
    SOURCES += ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
