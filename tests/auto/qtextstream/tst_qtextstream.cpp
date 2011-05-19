@@ -2580,7 +2580,7 @@ void tst_QTextStream::readBomSeekBackReadBomAgain()
     QFile::remove("utf8bom");
     QFile file("utf8bom");
     QVERIFY(file.open(QFile::ReadWrite));
-    file.write("\xef\xbb\xbf""Andreas");
+    file.write("\xef\xbb\xbf" "Andreas");
     file.seek(0);
     QCOMPARE(file.pos(), qint64(0));
 
