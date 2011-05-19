@@ -657,42 +657,6 @@ void tst_QMessageBox::testSymbols()
     QSize sizeHint = mb1.sizeHint();
     QVERIFY(sizeHint.width() > 20 && sizeHint.height() > 20);
 
-#ifdef QT3_SUPPORT
-     //test QT3_SUPPORT stuff
-
-    QMessageBox mb4("title", "text", icon, QMessageBox::Yes, QMessageBox::No | QMessageBox::Default,
-                    QMessageBox::Cancel, &mb1, "name", true, Qt::Dialog);
-    QMessageBox mb5(&mb1, "name");
-
-    QPixmap pm = QMessageBox::standardIcon(QMessageBox::Question, Qt::GUIStyle(1));
-    QPixmap pm2 = QMessageBox::standardIcon(QMessageBox::Question);
-
-    QVERIFY(pm.toImage() == iconPixmap.toImage());
-    QVERIFY(pm2.toImage() == iconPixmap.toImage());
-
-    int ret1 = QMessageBox::message("title", "text");
-    int ret2 = QMessageBox::message("title", "text", "OK");
-    int ret3 = QMessageBox::message("title", "text", "OK", &mb1);
-    int ret4 = QMessageBox::message("title", "text", "OK", &mb1, "name");
-    qDebug("%d %d %d %d", ret1, ret2, ret3, ret4);
-
-    bool ret5 = QMessageBox::query("title", "text");
-    bool ret6 = QMessageBox::query("title", "text", "Ja");
-    bool ret7 = QMessageBox::query("title", "text", "Ja", "Nein");
-    bool ret8 = QMessageBox::query("title", "text", "Ja", "Nein", &mb1);
-    bool ret9 = QMessageBox::query("title", "text", "Ja", "Nein", &mb1, "name");
-    qDebug("%d %d %d %d %d", ret5, ret6, ret7, ret8, ret9);
-
-    Q_UNUSED(ret1);
-    Q_UNUSED(ret5);
-
-    QPixmap pm3 = QMessageBox::standardIcon(QMessageBox::NoIcon);
-    QVERIFY(pm3.isNull());
-
-    pm3 = QMessageBox::standardIcon(QMessageBox::Information);
-    QVERIFY(!pm3.isNull());
-#endif //QT3_SUPPORT
-
     QMessageBox::about(&mb1, "title", "text");
     QMessageBox::aboutQt(&mb1);
     QMessageBox::aboutQt(&mb1, "title");

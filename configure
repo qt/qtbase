@@ -751,6 +751,7 @@ CFG_DECORATION_PLUGIN_AVAILABLE=
 CFG_DECORATION_PLUGIN=
 CFG_XINPUT=runtime
 CFG_XKB=auto
+CFG_XCB=no
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1043,7 +1044,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1967,6 +1968,13 @@ while [ "$#" -gt 0 ]; do
     xkb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XKB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xcb)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XCB="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3711,6 +3719,14 @@ if [ "$OPT_HELP" = "yes" ]; then
         PHN=" "
     fi
 
+    if [ "$CFG_XCB" = "no" ]; then
+        XCY=" "
+        XCN="*"
+    else
+        XCY="*"
+        XCN=" "
+    fi
+
     cat <<EOF
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
@@ -4060,6 +4076,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 
  $SBN  -no-separate-debug-info . Do not store debug information in a separate file.
  $SBY  -separate-debug-info .... Strip debug information into a separate .debug file.
+
+ $XKN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
+ $XKY  -xcb ............... Compile Xcb support.
 
 EOF
 
@@ -7281,6 +7300,7 @@ fi
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
+[ "$CFG_XCB" = "yes" ] && QT_CONFIG="$QT_CONFIG xcb"
 
 if [ "$PLATFORM_X11" = "yes" ]; then
     [ "$CFG_SM" = "yes" ] && QT_CONFIG="$QT_CONFIG x11sm"
@@ -8845,6 +8865,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 echo "ICD support ............ $CFG_ICD"
 echo "libICU support ......... $CFG_ICU"
+echo "Xcb support ............ $CFG_XCB"
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"

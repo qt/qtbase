@@ -1436,19 +1436,30 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 
     ensureActive();
 
-    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine()->glyphFormat >= 0
-                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
-                                            : d->glyphCacheType;
-    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || state()->matrix.type() > QTransform::TxTranslate
-            || (state()->composition_mode != QPainter::CompositionMode_Source
-            && state()->composition_mode != QPainter::CompositionMode_SourceOver))
-        {
-            glyphType = QFontEngineGlyphCache::Raster_A8;
-        }
-    }
+    QPainterState *s = state();
+    float det = s->matrix.determinant();
 
-    d->drawCachedGlyphs(glyphType, textItem);
+    // don't try to cache huge fonts or vastly transformed fonts
+    QFontEngine *fontEngine = textItem->fontEngine();
+    const qreal pixelSize = fontEngine->fontDef.pixelSize;
+    if (pixelSize * pixelSize * qAbs(det) < QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE ||
+        det < 0.25f || det > 4.f) {
+        QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
+                                                ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
+                                                : d->glyphCacheType;
+        if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+                || (s->composition_mode != QPainter::CompositionMode_Source
+                && s->composition_mode != QPainter::CompositionMode_SourceOver))
+            {
+                glyphType = QFontEngineGlyphCache::Raster_A8;
+            }
+        }
+
+        d->drawCachedGlyphs(glyphType, textItem);
+    } else {
+        QPaintEngineEx::drawStaticTextItem(textItem);
+    }
 }
 
 bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)

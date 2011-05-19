@@ -180,6 +180,8 @@ public:
     int m_defaultMargin;
     int m_defaultSpacing;
     QDir m_workingDirectory;
+    QString m_errorString;
+    QString m_language;
 
 private:
     void clearResourceBuilder();

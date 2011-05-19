@@ -42,47 +42,9 @@
 #define TEST_H
 
 //------------------------------------------------------------------------------
-// Qt
-#ifdef QT3_SUPPORT
-#include <Q3ServerSocket>
-#include <Q3Socket>
-#endif
 
 #include <QTcpServer>
 #include <QTcpSocket>
-
-//------------------------------------------------------------------------------
-#ifdef QT3_SUPPORT
-class My3Socket : public Q3Socket
-{
-    Q_OBJECT
-public:
-    My3Socket(QObject *parent);
-
-    void sendTest(Q_UINT32 num);
-    bool safeShutDown;
-
-private slots:
-    void read();
-    void closed();
-};
-
-//------------------------------------------------------------------------------
-class My3Server : public Q3ServerSocket
-{
-    Q_OBJECT
-public:
-    My3Server(QObject *parent = 0);
-
-    void newConnection(int socket);
-
-private slots:
-    void stopServer();
-
-private:
-    My3Socket *m_socket;
-};
-#endif
 
 //------------------------------------------------------------------------------
 class My4Socket : public QTcpSocket
@@ -125,10 +87,6 @@ public:
     enum Type {
         Qt4Client,
         Qt4Server,
-#ifdef QT3_SUPPORT
-        Qt3Client,
-        Qt3Server
-#endif
     };
     Test(Type type);
 };

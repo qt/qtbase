@@ -119,13 +119,6 @@ void tst_QToolButton::getSetCheck()
     obj1.setDefaultAction((QAction *)0);
     QCOMPARE((QAction *)0, obj1.defaultAction());
     delete var4;
-
-#ifdef QT_HAS_QT3SUPPORT
-    //ensure that popup delay is not reset on style change
-    obj1.setPopupDelay(5);
-    obj1.setStyle(new QWindowsStyle);
-    QCOMPARE(obj1.popupDelay(), 5);
-#endif
 }
 
 Q_DECLARE_METATYPE(QAction*)

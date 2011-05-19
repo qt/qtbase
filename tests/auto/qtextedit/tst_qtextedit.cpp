@@ -76,7 +76,6 @@ Q_DECLARE_METATYPE(QList<int>);
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
-#undef QT3_SUPPORT
 #endif
 
 
@@ -134,9 +133,6 @@ private slots:
     void mergeCurrentBlockCharFormat();
     void emptyAppend();
     void appendOnEmptyDocumentShouldReuseInitialParagraph();
-#ifdef QT3_SUPPORT
-    void textSemantics();
-#endif
     void cursorPositionChanged();
     void setTextCursor();
 #ifndef QT_NO_CLIPBOARD
@@ -704,19 +700,6 @@ void tst_QTextEdit::appendOnEmptyDocumentShouldReuseInitialParagraph()
     ed->append("Blah");
     QCOMPARE(blockCount(), 1);
 }
-
-#ifdef QT3_SUPPORT
-void tst_QTextEdit::textSemantics()
-{
-    ed->setTextFormat(Qt::AutoText);
-
-    ed->setPlainText("Hello World");
-    QVERIFY(!Qt::mightBeRichText(ed->text()));
-
-    ed->setHtml("<b>Hey</b>");
-    QVERIFY(Qt::mightBeRichText(ed->text()));
-}
-#endif
 
 class CursorPositionChangedRecorder : public QObject
 {

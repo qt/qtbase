@@ -44,11 +44,6 @@
 #include <qsqldatabase.h>
 #include <qsqlquery.h>
 #include <qsqldriver.h>
-#ifdef QT3_SUPPORT
-#include <q3sqlcursor.h>
-#include <q3sqlrecordinfo.h>
-#include <q3cstring.h>
-#endif
 #include <qsqlrecord.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
@@ -130,8 +125,6 @@ private slots:
     //problem specific tests
     void alterTable_data() { generic_data(); }
     void alterTable();
-    void recordNonSelect_data() { generic_data(); }
-    void recordNonSelect();
     void caseSensivity_data() { generic_data(); }
     void caseSensivity();
     void noEscapedFieldNamesInRecord_data() { generic_data(); }
@@ -211,13 +204,8 @@ private:
     void populateTestTables(QSqlDatabase db);
     void generic_data(const QString &engine=QString());
 
-#ifdef QT3_SUPPORT
-    void testRecordInfo(const FieldDef fieldDefs[], const Q3SqlRecordInfo& inf);
-#endif
     void testRecord(const FieldDef fieldDefs[], const QSqlRecord& inf, QSqlDatabase db);
     void commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase, const int);
-    void checkValues(const FieldDef fieldDefs[], QSqlDatabase db);
-    void checkNullValues(const FieldDef fieldDefs[], QSqlDatabase db);
 
     tst_Databases dbs;
 };
@@ -238,11 +226,7 @@ struct FieldDef {
     {
         QString rt = typeName;
         rt.replace(QRegExp("\\s"), QString("_"));
-#ifdef QT3_SUPPORT
-        int i = rt.find("(");
-#else
         int i = rt.indexOf("(");
-#endif
         if (i == -1)
             i = rt.length();
         if (i > 20)
@@ -482,31 +466,6 @@ void tst_QSqlDatabase::open()
     }
 }
 
-void tst_QSqlDatabase::recordNonSelect()
-{
-#ifdef QT3_SUPPORT
-    QFETCH(QString, dbName);
-    QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-
-    QSqlQuery q(db);
-
-    // nothing should happen on an empty query
-    QSqlRecord rec = db.record(q);
-    QVERIFY(rec.isEmpty());
-    Q3SqlRecordInfo rInf = db.recordInfo(q);
-    QVERIFY(rInf.isEmpty());
-
-    QVERIFY_SQL(q, exec("create table " + qTableName("qtest_temp", __FILE__) + " (id int)"));
-
-    // query without result set should return empty record
-    rec = db.record(q);
-    QVERIFY(rec.isEmpty());
-    rInf = db.recordInfo(q);
-    QVERIFY(rInf.isEmpty());
-#endif
-}
-
 void tst_QSqlDatabase::tables()
 {
     QFETCH(QString, dbName);
@@ -612,18 +571,10 @@ void tst_QSqlDatabase::alterTable()
     QVERIFY_SQL(q, exec("create table " + qtestalter + " (F1 char(20), F2 char(20), F3 char(20))"));
     QSqlRecord rec = db.record(qtestalter);
     QCOMPARE((int)rec.count(), 3);
-#ifdef QT3_SUPPORT
-    Q3SqlRecordInfo rinf = db.recordInfo(qtestalter);
-    QCOMPARE((int)rinf.count(), 3);
-#endif
-
 
     int i;
     for (i = 0; i < 3; ++i) {
         QCOMPARE(rec.field(i).name().toUpper(), QString("F%1").arg(i + 1));
-#ifdef QT3_SUPPORT
-        QCOMPARE(rinf[ i ].name().upper(), QString("F%1").arg(i + 1));
-#endif
     }
 
     if (!q.exec("alter table " + qtestalter + " drop column F2")) {
@@ -631,36 +582,13 @@ void tst_QSqlDatabase::alterTable()
     }
 
     rec = db.record(qtestalter);
-#ifdef QT3_SUPPORT
-    rinf = db.recordInfo(qtestalter);
-#endif
 
     QCOMPARE((int)rec.count(), 2);
-#ifdef QT3_SUPPORT
-    QCOMPARE((int)rinf.count(), 2);
-#endif
 
     QCOMPARE(rec.field(0).name().toUpper(), QString("F1"));
     QCOMPARE(rec.field(1).name().toUpper(), QString("F3"));
-#ifdef QT3_SUPPORT
-    QCOMPARE(rinf[ 0 ].name().upper(), QString("F1"));
-    QCOMPARE(rinf[ 1 ].name().upper(), QString("F3"));
-#endif
 
     q.exec("select * from " + qtestalter);
-
-#ifdef QT3_SUPPORT
-    rec = db.record(q);
-    rinf = db.recordInfo(q);
-
-    QCOMPARE((int)rec.count(), 2);
-    QCOMPARE((int)rinf.count(), 2);
-
-    QCOMPARE(rec.field(0).name().upper(), QString("F1"));
-    QCOMPARE(rec.field(1).name().upper(), QString("F3"));
-    QCOMPARE(rinf[ 0 ].name().upper(), QString("F1"));
-    QCOMPARE(rinf[ 1 ].name().upper(), QString("F3"));
-#endif
 }
 
 #if 0
@@ -684,27 +612,7 @@ void tst_QSqlDatabase::record()
     const int fieldCount = createFieldTable(fieldDefs, db);
     QVERIFY(fieldCount > 0);
 
-// doesn't work with oracle:   checkNullValues(fieldDefs, db);
     commonFieldTest(fieldDefs, db, fieldCount);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-        checkValues(fieldDefs, db);
-    }
-}
-#endif
-
-#ifdef QT3_SUPPORT
-void tst_QSqlDatabase::testRecordInfo(const FieldDef fieldDefs[], const Q3SqlRecordInfo& inf)
-{
-    int i = 0;
-    for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
-        QCOMPARE(inf[i+1].name().upper(), fieldDefs[ i ].fieldName().upper());
-        if (inf[i+1].type() != fieldDefs[ i ].type) {
-            QFAIL(QString(" Expected: '%1' Received: '%2' for field %3 in testRecordInfo").arg(
-            QVariant::typeToName(fieldDefs[ i ].type)).arg(
-              QVariant::typeToName(inf[i+1].type())).arg(
-            fieldDefs[ i ].fieldName()));
-        }
-    }
 }
 #endif
 
@@ -732,126 +640,12 @@ void tst_QSqlDatabase::commonFieldTest(const FieldDef fieldDefs[], QSqlDatabase 
 {
     CHECK_DATABASE(db);
 
-    // check whether recordInfo returns the right types
-#ifdef QT3_SUPPORT
-    Q3SqlRecordInfo inf = db.recordInfo(qTableName("qtestfields", __FILE__));
-    QCOMPARE((int)inf.count(), fieldCount+1);
-    testRecordInfo(fieldDefs, inf);
-#endif
-
     QSqlRecord rec = db.record(qTableName("qtestfields", __FILE__));
     QCOMPARE((int)rec.count(), fieldCount+1);
     testRecord(fieldDefs, rec, db);
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtestfields", __FILE__)));
-
-#ifdef QT3_SUPPORT
-    inf = db.recordInfo(q);
-    QCOMPARE((int)inf.count(), fieldCount+1);
-    testRecordInfo(fieldDefs, inf);
-
-    rec = db.record(q);
-    QCOMPARE((int)rec.count(), fieldCount+1);
-    testRecord(fieldDefs, rec, db);
-#endif
-}
-
-// inserts testdata into the testtable, fetches and compares them
-void tst_QSqlDatabase::checkValues(const FieldDef fieldDefs[], QSqlDatabase db)
-{
-    Q_UNUSED(fieldDefs);
-#ifdef QT3_SUPPORT
-    CHECK_DATABASE(db);
-
-    Q3SqlCursor cur(qTableName("qtestfields", __FILE__), true, db);
-    QVERIFY_SQL(cur, select());
-    QSqlRecord* rec = cur.primeInsert();
-    QVERIFY(rec);
-    rec->setValue("id", pkey++);
-    int i = 0;
-    for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
-        rec->setValue(fieldDefs[ i ].fieldName(), fieldDefs[ i ].val);
-//     qDebug(QString("inserting %1 into %2").arg(fieldDefs[ i ].val.toString()).arg(fieldDefs[ i ].fieldName()));
-    }
-    QVERIFY_SQL(cur, insert());
-    cur.setForwardOnly(true);
-    QVERIFY_SQL(cur, select("id = " + QString::number(pkey - 1)));
-    QVERIFY_SQL(cur, next());
-
-    for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
-        bool ok = false;
-        QVariant val1 = cur.value(fieldDefs[ i ].fieldName());
-        QVariant val2 = fieldDefs[ i ].val;
-        if (val1.type() == QVariant::String)
-            //TDS Workaround
-            val1 = val1.toString().stripWhiteSpace();
-        if (fieldDefs[ i ].fieldName() == "t_real") {
-            // strip precision
-            val1 = (float)val1.toDouble();
-            val2 = (float)val2.toDouble();
-        }
-        if (val1.canCast(QVariant::Double) && val2.type() == QVariant::Double) {
-            // we don't care about precision here, we just want to know whether
-            // we can insert/fetch the right values
-            ok = (val1.toDouble() - val2.toDouble() < 0.00001);
-        } else if (val1.type() == val2.type()) {
-                ok = (val1 == val2);
-        } else {
-            ok = (val1.toString() == val2.toString());
-        }
-        if (!ok) {
-            if (val2.type() == QVariant::DateTime || val2.type() == QVariant::Time)
-               qDebug("Expected Time: " + val2.toTime().toString("hh:mm:ss.zzz"));
-            if (val1.type() == QVariant::DateTime || val1.type() == QVariant::Time)
-               qDebug("Received Time: " + val1.toTime().toString("hh:mm:ss.zzz"));
-            QFAIL(QString(" Expected: '%1' Received: '%2' for field %3 (etype %4 rtype %5) in checkValues").arg(
-            val2.type() == QVariant::ByteArray ? val2.toByteArray().toHex() : val2.toString()).arg(
-            val1.type() == QVariant::ByteArray ? val1.toByteArray().toHex() : val1.toString()).arg(
-            fieldDefs[ i ].fieldName()).arg(
-            val2.typeName()).arg(
-            val1.typeName())
-            );
-        }
-    }
-#endif
-}
-
-// inserts a NULL value for each nullable field in testdata, fetches and checks whether
-// we get back NULL
-void tst_QSqlDatabase::checkNullValues(const FieldDef fieldDefs[], QSqlDatabase db)
-{
-    Q_UNUSED(fieldDefs);
-#ifdef QT3_SUPPORT
-    CHECK_DATABASE(db);
-
-    Q3SqlCursor cur(qTableName("qtestfields", __FILE__), true, db);
-    QVERIFY_SQL(cur, select());
-    QSqlRecord* rec = cur.primeInsert();
-    QVERIFY(rec);
-    rec->setValue("id", pkey++);
-    int i = 0;
-    for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
-        if (fieldDefs[ i ].fieldName(), fieldDefs[ i ].nullable)
-            rec->setNull(fieldDefs[ i ].fieldName());
-        else
-            rec->setValue(fieldDefs[ i ].fieldName(), fieldDefs[ i ].val);
-    }
-    QVERIFY_SQL(cur, insert());
-    cur.setForwardOnly(true);
-    QVERIFY_SQL(cur, select("id = " + QString::number(pkey - 1)));
-    QVERIFY_SQL(cur, next());
-
-    for (i = 0; !fieldDefs[ i ].typeName.isNull(); ++i) {
-        if (fieldDefs[ i ].nullable == false)
-            continue;
-        // multiple inheritance sucks so much
-        QVERIFY2(((QSqlQuery)cur).isNull(i + 1), "Check whether '" + fieldDefs[ i ].fieldName() + "' is null in QSqlQuery");
-        QVERIFY2(((QSqlRecord)cur).isNull(fieldDefs[ i ].fieldName()), "Check whether '" + fieldDefs[ i ].fieldName() + "' is null in QSqlRecord");
-        if (!cur.value(fieldDefs[ i ].fieldName()).isNull())
-            qDebug(QString("QVariant is not null for NULL-Value in Field '%1'").arg(fieldDefs[ i ].fieldName()));
-    }
-#endif
 }
 
 void tst_QSqlDatabase::recordTDS()
@@ -880,11 +674,6 @@ void tst_QSqlDatabase::recordTDS()
     FieldDef("nchar(20)", QVariant::String,	"blah3"),
     FieldDef("nvarchar(20)", QVariant::String,	"blah4"),
     FieldDef("text", QVariant::String,		"blah5"),
-#ifdef QT3_SUPPORT
-    FieldDef("binary(20)", QVariant::ByteArray,	Q3CString("blah6")),
-    FieldDef("varbinary(20)", QVariant::ByteArray, Q3CString("blah7")),
-    FieldDef("image", QVariant::ByteArray,		Q3CString("blah8")),
-#endif
     FieldDef("bit", QVariant::Int,			1, false),
 
     FieldDef()
@@ -894,10 +683,6 @@ void tst_QSqlDatabase::recordTDS()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-    checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::recordOCI()
@@ -954,9 +739,6 @@ void tst_QSqlDatabase::recordOCI()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i)
-        checkValues(fieldDefs, db);
 
     // some additional tests
     QSqlRecord rec = db.record(qTableName("qtestfields", __FILE__));
@@ -978,18 +760,11 @@ void tst_QSqlDatabase::recordPSQL()
 
     FieldDef byteadef;
     if (db.driver()->hasFeature(QSqlDriver::BLOB))
-#ifdef QT3_SUPPORT
-    byteadef = FieldDef("bytea", QVariant::ByteArray, QByteArray(Q3CString("bl\\ah")));
-#else
         byteadef = FieldDef("bytea", QVariant::ByteArray, QByteArray("bl\\ah"));
-#endif
     static FieldDef fieldDefs[] = {
     FieldDef("bigint", QVariant::LongLong,	Q_INT64_C(9223372036854775807)),
     FieldDef("bigserial", QVariant::LongLong, 100, false),
     FieldDef("bit", QVariant::String,	"1"), // a bit in postgres is a bit-string
-#ifdef QT3_SUPPORT
-    FieldDef("boolean", QVariant::Bool,	QVariant(bool(true), 0)),
-#endif
     FieldDef("box", QVariant::String,	"(5,6),(1,2)"),
     FieldDef("char(20)", QVariant::String, "blah5678901234567890"),
     FieldDef("varchar(20)", QVariant::String, "blah5678901234567890"),
@@ -1038,7 +813,6 @@ void tst_QSqlDatabase::recordPSQL()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
     for (int i = 0; i < ITERATION_COUNT; ++i) {
     // increase serial values
     for (int i2 = 0; !fieldDefs[ i2 ].typeName.isNull(); ++i2) {
@@ -1046,15 +820,10 @@ void tst_QSqlDatabase::recordPSQL()
          fieldDefs[ i2 ].typeName == "bigserial") {
 
         FieldDef def = fieldDefs[ i2 ];
-#ifdef QT3_SUPPORT
-        def.val = def.val.asInt() + 1;
-#else
         def.val = def.val.toInt() + 1;
-#endif
         fieldDefs[ i2 ] = def;
         }
     }
-    checkValues(fieldDefs, db);
     }
 }
 
@@ -1076,13 +845,8 @@ void tst_QSqlDatabase::recordMySQL()
         with space on insert, and trailing spaces are removed on select.
     */
     if( vernum >= ((5 << 16) + 15) ) {
-#ifdef QT3_SUPPORT
-        bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
-        varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
-#else
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QString("123abc    "));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QString("123abcv   "));
-#endif
     }
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
@@ -1108,20 +872,10 @@ void tst_QSqlDatabase::recordMySQL()
     FieldDef("year", QVariant::Int,	    2003),
     FieldDef("char(20)", QVariant::String,	    "Blah"),
     FieldDef("varchar(20)", QVariant::String,  "BlahBlah"),
-#ifdef QT3_SUPPORT
-    FieldDef("tinyblob", QVariant::ByteArray,  QByteArray(Q3CString("blah1"))),
-    FieldDef("blob", QVariant::ByteArray,	    QByteArray(Q3CString("blah2"))),
-    FieldDef("mediumblob", QVariant::ByteArray,QByteArray(Q3CString("blah3"))),
-    FieldDef("longblob", QVariant::ByteArray,  QByteArray(Q3CString("blah4"))),
-#endif
     FieldDef("tinytext", QVariant::String,    QString("blah5")),
     FieldDef("text", QVariant::String,	    QString("blah6")),
     FieldDef("mediumtext", QVariant::String,  QString("blah7")),
     FieldDef("longtext", QVariant::String,    QString("blah8")),
-#ifdef QT3_SUPPORT
-    bin10,
-    varbin10,
-#endif
     // SET OF?
 
     FieldDef()
@@ -1131,10 +885,6 @@ void tst_QSqlDatabase::recordMySQL()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-    checkValues(fieldDefs, db);
-    }
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("SELECT DATE_SUB(CURDATE(), INTERVAL 2 DAY)"));
@@ -1168,11 +918,6 @@ void tst_QSqlDatabase::recordDB2()
 //     FieldDef("graphic(20)", QVariant::String,	QString("Blah4")),
 //     FieldDef("vargraphic(20)", QVariant::String,	QString("Blah5")),
 //     FieldDef("long vargraphic", QVariant::String,	QString("Blah6")),
-#ifdef QT3_SUPPORT
-//     FieldDef("clob(20)", QVariant::CString,	QString("Blah7")),
-//     FieldDef("dbclob(20)", QVariant::CString,	QString("Blah8")),
-//     FieldDef("blob(20)", QVariant::ByteArray,	QByteArray(Q3CString("Blah9"))),
-#endif
     //X	FieldDef("datalink", QVariant::String,		QString("DLVALUE('Blah10')")),
     FieldDef()
     };
@@ -1181,10 +926,6 @@ void tst_QSqlDatabase::recordDB2()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-    checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::recordIBase()
@@ -1211,10 +952,6 @@ void tst_QSqlDatabase::recordIBase()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-        checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::recordSQLite()
@@ -1241,10 +978,6 @@ void tst_QSqlDatabase::recordSQLite()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-        checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::recordSQLServer()
@@ -1264,9 +997,6 @@ void tst_QSqlDatabase::recordSQLServer()
         FieldDef("bigint", QVariant::LongLong, 12345),
         FieldDef("int", QVariant::Int, 123456),
         FieldDef("tinyint", QVariant::UInt, 255),
-#ifdef QT3_SUPPORT
-        FieldDef("image", QVariant::ByteArray, Q3CString("Blah1")),
-#endif
         FieldDef("float", QVariant::Double, 1.12345),
         FieldDef("numeric(5,2)", QVariant::Double, 123.45),
         FieldDef("uniqueidentifier", QVariant::String,
@@ -1279,10 +1009,6 @@ void tst_QSqlDatabase::recordSQLServer()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-        checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::recordAccess()
@@ -1306,9 +1032,6 @@ void tst_QSqlDatabase::recordAccess()
     FieldDef("single", QVariant::Double, 1.12345),
     FieldDef("double", QVariant::Double, 1.123456),
     FieldDef("byte", QVariant::UInt, 255),
-#ifdef QT3_SUPPORT
-    FieldDef("binary(5)", QVariant::ByteArray, Q3CString("Blah2")),
-#endif
     FieldDef("long", QVariant::Int, 2147483647),
         FieldDef("memo", QVariant::String, memo),
     FieldDef()
@@ -1318,10 +1041,6 @@ void tst_QSqlDatabase::recordAccess()
     QVERIFY(fieldCount > 0);
 
     commonFieldTest(fieldDefs, db, fieldCount);
-    checkNullValues(fieldDefs, db);
-    for (int i = 0; i < ITERATION_COUNT; ++i) {
-        checkValues(fieldDefs, db);
-    }
 }
 
 void tst_QSqlDatabase::transaction()
@@ -1462,17 +1181,6 @@ void tst_QSqlDatabase::caseSensivity()
     QVERIFY((int)rec.count() > 0);
     }
 
-#ifdef QT3_SUPPORT
-    Q3SqlRecordInfo rInf = db.recordInfo(qTableName("qtest", __FILE__));
-    QVERIFY((int)rInf.count() > 0);
-    if (!cs) {
-    rInf = db.recordInfo(qTableName("QTEST", __FILE__).upper());
-    QVERIFY((int)rInf.count() > 0);
-    rInf = db.recordInfo(qTableName("qTesT", __FILE__));
-    QVERIFY((int)rInf.count() > 0);
-    }
-#endif
-
     rec = db.primaryIndex(qTableName("qtest", __FILE__));
     QVERIFY((int)rec.count() > 0);
     if (!cs) {
@@ -1526,12 +1234,6 @@ void tst_QSqlDatabase::psql_schemas()
     QCOMPARE(rec.fieldName(0), QString("id"));
     QCOMPARE(rec.fieldName(1), QString("name"));
 
-#ifdef QT3_SUPPORT
-    rec = db.record(QSqlQuery("select * from " + table, db));
-    QCOMPARE(rec.count(), 2);
-    QCOMPARE(rec.fieldName(0), QString("id"));
-    QCOMPARE(rec.fieldName(1), QString("name"));
-#endif
     QSqlIndex idx = db.primaryIndex(table);
     QCOMPARE(idx.count(), 1);
     QCOMPARE(idx.fieldName(0), QString("id"));

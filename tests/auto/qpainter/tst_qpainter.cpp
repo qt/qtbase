@@ -54,9 +54,6 @@
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include <qprinter.h>
 #include <math.h>
-#ifdef QT3_SUPPORT
-#include <q3painter.h>
-#endif
 #endif
 #include <qpaintengine.h>
 #include <qdesktopwidget.h>
@@ -1271,24 +1268,6 @@ void tst_QPainter::drawRect()
         QCOMPARE(painted.width(), rect.width() + increment);
         QCOMPARE(painted.height(), rect.height() + increment);
     }
-
-#ifdef QT3_SUPPORT
-    {
-        if (usePen && (rect.width() < 2 || rect.height() < 2))
-            return;
-        pixmap.fill(Qt::white);
-        Q3Painter p(&pixmap);
-        p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
-        p.setBrush(Qt::black);
-        p.drawRect(rect);
-        p.end();
-
-        const QRect painted = getPaintedSize(pixmap, Qt::white);
-
-        QCOMPARE(painted.width(), rect.width());
-        QCOMPARE(painted.height(), rect.height());
-    }
-#endif
 }
 
 void tst_QPainter::drawRect2()
@@ -1696,22 +1675,6 @@ void tst_QPainter::drawRoundRect()
         QCOMPARE(painted.width(), rect.width() + increment);
         QCOMPARE(painted.height(), rect.height() + increment);
     }
-
-#ifdef QT3_SUPPORT
-    {
-        pixmap.fill(Qt::white);
-        Q3Painter p(&pixmap);
-        p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
-        p.setBrush(Qt::black);
-        p.drawRoundRect(rect);
-        p.end();
-
-        const QRect painted = getPaintedSize(pixmap, Qt::white);
-
-        QCOMPARE(painted.width(), rect.width());
-        QCOMPARE(painted.height(), rect.height());
-    }
-#endif
 }
 
 Q_DECLARE_METATYPE(QImage::Format)

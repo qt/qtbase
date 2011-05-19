@@ -151,7 +151,6 @@ private slots:
     void indexOf3_data();
 //  void indexOf3();
     void sprintf();
-    void copy();
     void fill();
     void truncate();
     void constructor();
@@ -902,19 +901,6 @@ void tst_QString::fill()
     QCOMPARE(f,(QString)"fff");
     f.fill('F');
     QCOMPARE(f,(QString)"FFF");
-}
-
-void tst_QString::copy()
-{
-#ifdef QT3_SUPPORT
-    QString e;
-    e = "String E";
-    QString ce = e.copy();
-    QCOMPARE(ce,(QString)"String E");
-    e = "XXX";
-    QCOMPARE(ce,(QString)"String E");
-    QCOMPARE(e,(QString)"XXX");
-#endif
 }
 
 void tst_QString::sprintf()
@@ -3364,7 +3350,7 @@ void tst_QString::local8Bit_data()
 
 /*
     QString::local8Bit() called on a null QString returns an _empty_
-    QByteArray. This is the correct behavior since Qt 3.1.
+    QByteArray.
 */
     QTest::newRow("nullString") << QString() << QByteArray("");
     QTest::newRow("emptyString") << QString("") << QByteArray("");

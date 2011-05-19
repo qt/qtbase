@@ -2167,20 +2167,12 @@ void tst_QTcpSocket::suddenRemoteDisconnect_data()
     QTest::addColumn<QString>("client");
     QTest::addColumn<QString>("server");
 
-#ifdef QT3_SUPPORT
-    QTest::newRow("Qt3 Client <-> Qt3 Server") << QString::fromLatin1("qt3client") << QString::fromLatin1("qt3server");
-    QTest::newRow("Qt3 Client <-> Qt4 Server") << QString::fromLatin1("qt3client") << QString::fromLatin1("qt4server");
-    QTest::newRow("Qt4 Client <-> Qt3 Server") << QString::fromLatin1("qt4client") << QString::fromLatin1("qt3server");
-#endif
-
     QTest::newRow("Qt4 Client <-> Qt4 Server") << QString::fromLatin1("qt4client") << QString::fromLatin1("qt4server");
 }
 
 void tst_QTcpSocket::suddenRemoteDisconnect()
 {
-#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
-    QSKIP("stressTest subprocess needs Qt3Support", SkipAll);
-#elif defined( Q_OS_SYMBIAN )
+#if defined( Q_OS_SYMBIAN )
     QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);
 #else
     QFETCH(QString, client);

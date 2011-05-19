@@ -52,9 +52,6 @@
 #include <QtNetwork/QtNetwork>
 #include <QtSql/QtSql>
 //#include <QtSvg>
-#if defined(QT3_SUPPORT)
-#include <Qt3Support>
-#endif
 #if defined(WITH_DBUS)
 #include <QtDBus>
 #endif
