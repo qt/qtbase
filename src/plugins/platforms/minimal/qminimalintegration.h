@@ -51,7 +51,7 @@ class QMinimalScreen : public QPlatformScreen
 {
 public:
     QMinimalScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16) {}
+        : mDepth(32), mFormat(QImage::Format_ARGB32_Premultiplied) {}
 
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
