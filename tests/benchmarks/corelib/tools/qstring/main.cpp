@@ -921,7 +921,7 @@ static inline int ucstrncmp_short_tail(const ushort *p1, const ushort *p2, int l
     return 0;
 }
 
-static inline int bsf_nonzero(register long val)
+static inline int bsf_nonzero(register int val)
 {
     int result;
 # ifdef Q_CC_GNU
