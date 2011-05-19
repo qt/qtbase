@@ -122,6 +122,10 @@ public:
     Window xWindow() const;
     GC graphicsContext() const;
 
+    inline uint depth() const { return mDepth; }
+    QImage::Format format() const { return mFormat; }
+    Visual* visual() const { return mVisual; }
+
 protected:
     QVector<Atom> getNetWmState() const;
     void setMWMHints(const QXlibMWMHints &mwmhints);
@@ -134,6 +138,10 @@ private:
 
     Window x_window;
     GC gc;
+
+    uint mDepth;
+    QImage::Format mFormat;
+    Visual* mVisual;
 
     GC createGC();
 

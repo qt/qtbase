@@ -102,18 +102,27 @@ QXlibWindow::QXlibWindow(QWidget *window)
         visualInfo = XGetVisualInfo(mScreen->display()->nativeDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //!defined(QT_OPENGL_ES_2)
         if (visualInfo) {
-            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+            mDepth = visualInfo->depth;
+            mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            mVisual = visualInfo->visual;
+            Colormap cmap = XCreateColormap(mScreen->display()->nativeDisplay(), mScreen->rootWindow(), visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
+            a.background_pixel = WhitePixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
+            a.border_pixel = BlackPixel(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber());
             a.colormap = cmap;
             x_window = XCreateWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),x, y, w, h,
                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                     CWColormap, &a);
+                                     CWBackPixel|CWBorderPixel|CWColormap, &a);
         } else {
             qFatal("no window!");
         }
 #endif //!defined(QT_NO_OPENGL)
     } else {
+        mDepth = mScreen->depth();
+        mFormat = (mDepth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        mVisual = mScreen->defaultVisual();
+
         x_window = XCreateSimpleWindow(mScreen->display()->nativeDisplay(), mScreen->rootWindow(),
                                        x, y, w, h, 0 /*border_width*/,
                                        mScreen->blackPixel(), mScreen->whitePixel());

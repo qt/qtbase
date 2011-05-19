@@ -5,3 +5,11 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/qglxconvenience.cpp
+
+CONFIG += xrender
+
+xrender {
+	LIBS += -lXrender
+} else {
+	DEFINES += QT_NO_XRENDER
+}

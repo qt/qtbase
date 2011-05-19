@@ -80,20 +80,19 @@ void QXlibShmImageInfo::destroy()
 
 void QXlibWindowSurface::resizeShmImage(int width, int height)
 {
+    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(window());
+    QXlibWindow *win = static_cast<QXlibWindow*>(window()->platformWindow());
 
 #ifdef DONT_USE_MIT_SHM
-    shm_img = QImage(width, height, QImage::Format_RGB32);
+    shm_img = QImage(width, height, win->format());
 #else
 
-    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(window());
     if (image_info)
         image_info->destroy();
     else
         image_info = new QXlibShmImageInfo(screen->display()->nativeDisplay());
 
-    Visual *visual = screen->defaultVisual();
-
-    XImage *image = XShmCreateImage (screen->display()->nativeDisplay(), visual, 24, ZPixmap, 0,
+    XImage *image = XShmCreateImage (screen->display()->nativeDisplay(), win->visual(), win->depth(), ZPixmap, 0,
                                      &image_info->shminfo, width, height);
 
 
@@ -160,11 +159,11 @@ void QXlibWindowSurface::flush(QWidget *widget, const QRegion &region, const QPo
 #ifdef DONT_USE_MIT_SHM
     // just convert the image every time...
     if (!shm_img.isNull()) {
-        Visual *visual = DefaultVisual(screen->display(), screen->xScreenNumber());
+        QXlibWindow *win = static_cast<QXlibWindow*>(window()->platformWindow());
 
         QImage image = shm_img;
         //img.convertToFormat(
-        XImage *xi = XCreateImage(screen->display(), visual, 24, ZPixmap,
+        XImage *xi = XCreateImage(screen->display(), win->visual(), win->depth(), ZPixmap,
                                   0, (char *) image.scanLine(0), image.width(), image.height(),
                                   32, image.bytesPerLine());
 

@@ -58,7 +58,7 @@
 class QXcbShmImage : public QXcbObject
 {
 public:
-    QXcbShmImage(QXcbScreen *connection, const QSize &size);
+    QXcbShmImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
     ~QXcbShmImage() { destroy(); }
 
     QImage *image() { return &m_qimage; }
@@ -81,7 +81,7 @@ private:
     QRegion m_dirty;
 };
 
-QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
+QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
     : QXcbObject(screen->connection())
     , m_gc(0)
     , m_gc_window(0)
@@ -91,7 +91,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
                                           size.width(),
                                           size.height(),
                                           XCB_IMAGE_FORMAT_Z_PIXMAP,
-                                          screen->depth(),
+                                          depth,
                                           0,
                                           ~0,
                                           0);
@@ -111,7 +111,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size)
     if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
         qWarning() << "QXcbWindowSurface: Error while marking the shared memory segment to be destroyed";
 
-    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, screen->format());
+    m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
 }
 
 void QXcbShmImage::destroy()
@@ -232,9 +232,10 @@ void QXcbWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(window()));
+    QXcbWindow* win = static_cast<QXcbWindow *>(window()->platformWindow());
 
     delete m_image;
-    m_image = new QXcbShmImage(screen, size);
+    m_image = new QXcbShmImage(screen, size, win->depth(), win->format());
     Q_XCB_NOOP(connection());
 
     m_syncingResize = true;
