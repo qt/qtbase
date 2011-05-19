@@ -38,6 +38,10 @@ embedded:       check.commands += -qws
 
 # Allow for custom arguments to tests
 check.commands += $(TESTARGS)
+
+# If the test is marked as insignificant, discard the exit code
+insignificant_test:check.commands = -$${check.commands}
+
 QMAKE_EXTRA_TARGETS *= check
 
 !debug_and_release|build_pass {
