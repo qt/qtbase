@@ -348,7 +348,6 @@ QStringList tst_MakeTestSelfTest::find_subdirs(QString const& pro_file, FindSubd
         << "QT_CONFIG+=phonon"
         << "QT_CONFIG+=private_tests"
         << "QT_CONFIG+=pulseaudio"
-        << "QT_CONFIG+=qt3support"
         << "QT_CONFIG+=script"
         << "QT_CONFIG+=svg"
         << "QT_CONFIG+=webkit"
