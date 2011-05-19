@@ -1506,7 +1506,6 @@ void tst_QColor::setallowX11ColorNames()
     for (int i = 0; i < x11RgbTblSize; ++i) {
         QString colorName = QLatin1String(x11RgbTbl[i].name);
         QColor color;
-        QTest::ignoreMessage(QtWarningMsg, QString("QColor::setNamedColor: Unknown color name '%1'").arg(colorName).toLatin1());
         color.setNamedColor(colorName);
         QVERIFY(!color.isValid());
     }
@@ -1528,7 +1527,6 @@ void tst_QColor::setallowX11ColorNames()
     for (int i = 0; i < x11RgbTblSize; ++i) {
         QString colorName = QLatin1String(x11RgbTbl[i].name);
         QColor color;
-        QTest::ignoreMessage(QtWarningMsg, QString("QColor::setNamedColor: Unknown color name '%1'").arg(colorName).toLatin1());
         color.setNamedColor(colorName);
         QVERIFY(!color.isValid());
     }

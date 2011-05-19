@@ -532,8 +532,7 @@ QString QColor::name() const
 
 void QColor::setNamedColor(const QString &name)
 {
-    if (!setColorFromString(name))
-        qWarning("QColor::setNamedColor: Unknown color name '%s'", name.toLatin1().constData());
+    setColorFromString(name);
 }
 
 /*!
