@@ -1000,6 +1000,7 @@ public:
 public Q_SLOTS:
     void finishedSlot() {
         QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        Q_UNUSED(reply);
         receivedCount++;
 
         if (receivedCount == requestCount)
@@ -1046,6 +1047,7 @@ public:
 public Q_SLOTS:
     void finishedSlot() {
         QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        Q_UNUSED(reply);
         receivedCount++;
 
         if (receivedCount == requestCount)

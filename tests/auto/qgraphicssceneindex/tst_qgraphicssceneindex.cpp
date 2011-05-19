@@ -290,7 +290,7 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option */, QWidget * /* widget */)
     {
         painter->setBrush(brush);
         painter->drawRect(boundingRect());
@@ -348,7 +348,7 @@ void tst_QGraphicsSceneIndex::clear()
         int numPaints;
     protected:
         QRectF boundingRect() const { return QRectF(0, 0, 10, 10); }
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        void paint(QPainter * /* painter */, const QStyleOptionGraphicsItem *, QWidget *)
         { ++numPaints; }
     };
 

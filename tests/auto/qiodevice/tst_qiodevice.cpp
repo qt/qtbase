@@ -570,7 +570,7 @@ public:
         }
         return maxlen;
     }
-    qint64 writeData(const char *data, qint64 maxlen) {
+    qint64 writeData(const char * /* data */, qint64 /* maxlen */) {
         return -1;
     }
 

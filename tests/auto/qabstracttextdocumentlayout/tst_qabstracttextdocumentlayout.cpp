@@ -90,7 +90,7 @@ public:
     QSizeF documentSize() const { return QSizeF(); }
     QRectF frameBoundingRect(QTextFrame *) const { return QRectF(); }
     QRectF blockBoundingRect(const QTextBlock &) const { return QRectF(); }
-    void documentChanged(int from, int oldLength, int length) {
+    void documentChanged(int from, int /* oldLength */, int length) {
         ++changeEvents;
 
         QTextBlock last = document()->lastBlock();

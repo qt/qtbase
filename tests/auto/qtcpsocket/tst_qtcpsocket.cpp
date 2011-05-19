@@ -430,7 +430,7 @@ void tst_QTcpSocket::socketsConstructedBeforeEventLoop()
     earlyConstructedSockets->endPoints[1]->close();
 }
 
-void tst_QTcpSocket::earlySocketBytesSent(qint64 bytes)
+void tst_QTcpSocket::earlySocketBytesSent(qint64 /* bytes */)
 {
     earlyBytesWrittenCount++;
 }

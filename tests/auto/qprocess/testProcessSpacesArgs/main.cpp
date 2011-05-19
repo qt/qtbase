@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
     for (int i = 0; i < argc; ++i) {
         if (i)
             printf("|");
-        printf(argv[i]);
+        printf("%s", argv[i]);
     }
 #endif
     return 0;

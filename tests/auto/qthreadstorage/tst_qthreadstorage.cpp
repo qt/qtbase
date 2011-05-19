@@ -320,7 +320,7 @@ public:
     static QBasicAtomicInt count;
     inline SPointer() { count.ref(); }
     inline ~SPointer() { count.deref(); }
-    inline SPointer(const SPointer &other) { count.ref(); }
+    inline SPointer(const SPointer & /* other */) { count.ref(); }
 };
 QBasicAtomicInt SPointer::count = Q_BASIC_ATOMIC_INITIALIZER(0);
 

@@ -501,7 +501,7 @@ void tst_qnetworkreply::echoPerformance()
     QByteArray data;
     data.resize(1024*1024*10); // 10 MB
     // init with garbage. needed so ssl cannot compress it in an efficient way.
-    for (int i = 0; i < data.size() / sizeof(int); i++) {
+    for (size_t i = 0; i < data.size() / sizeof(int); i++) {
         int r = qrand();
         data.data()[i*sizeof(int)] = r;
     }

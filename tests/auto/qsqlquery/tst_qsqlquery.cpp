@@ -1558,7 +1558,7 @@ void tst_QSqlQuery::transaction()
 
     if ( !q.exec( "rollback" ) ) {
         if ( db.driverName().startsWith( "QMYSQL" ) ) {
-            qDebug( "MySQL: " + tst_Databases::printError( q.lastError() ) );
+            qDebug( "MySQL: %s", qPrintable(tst_Databases::printError( q.lastError() ) ));
             QSKIP( "MySQL transaction failed ", SkipSingle ); //non-fatal
         } else
             QFAIL( "Could not rollback transaction: " + tst_Databases::printError( q.lastError() ) );
@@ -1578,8 +1578,8 @@ void tst_QSqlQuery::transaction()
     QVERIFY_SQL( q2, exec( "select * from" + qtest + " where id = 42" ) );
 
     if ( q2.next() )
-        qDebug( QString( "DBMS '%1' doesn't support query based transactions with concurrent access" ).arg(
-                    tst_Databases::dbToString( db ) ).toLatin1() );
+        qDebug("DBMS '%s' doesn't support query based transactions with concurrent access",
+               qPrintable(tst_Databases::dbToString( db )));
 
     QVERIFY_SQL( q, exec( "commit" ) );
 

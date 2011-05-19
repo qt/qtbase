@@ -470,7 +470,7 @@ void ModelTest::data()
 
     \sa rowsInserted()
  */
-void ModelTest::rowsAboutToBeInserted ( const QModelIndex &parent, int start, int end )
+void ModelTest::rowsAboutToBeInserted ( const QModelIndex &parent, int start, int /* end */)
 {
 //     Q_UNUSED(end);
 //    qDebug() << "rowsAboutToBeInserted" << "start=" << start << "end=" << end << "parent=" << model->data ( parent ).toString()

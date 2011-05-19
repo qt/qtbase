@@ -333,6 +333,8 @@ private:
             case OpenRFile:
                 return openRFile(file, mode, handleFlags);
 #endif
+            case NumberOfFileTypes:
+                break;
         }
 
         return false;

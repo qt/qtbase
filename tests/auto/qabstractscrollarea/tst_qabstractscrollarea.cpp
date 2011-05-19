@@ -299,7 +299,7 @@ public:
         startTimer(2000);
     }
 
-    void timerEvent(QTimerEvent *event)
+    void timerEvent(QTimerEvent * /* event */)
     {
         // should not crash.
         (void)new QScrollArea(this);

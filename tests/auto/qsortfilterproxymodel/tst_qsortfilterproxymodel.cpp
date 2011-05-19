@@ -3193,7 +3193,7 @@ public:
   }
 
 protected:
-  bool filterAcceptsColumn(int column, const QModelIndex &source_parent) const
+  bool filterAcceptsColumn(int column, const QModelIndex & /* source_parent */) const
   {
     return column % 2 != 0;
   }

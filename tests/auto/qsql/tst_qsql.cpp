@@ -140,7 +140,7 @@ void tst_QSql::basicDriverTest()
             continue;
         }
 
-        qDebug( qPrintable( QLatin1String( "Testing: " ) + tst_Databases::dbToString( db ) ) );
+        qDebug("Testing: %s", qPrintable(tst_Databases::dbToString( db )));
 
         QSqlRecord rInf = db.record( tableName );
         QCOMPARE( rInf.count(), 2 );
@@ -230,8 +230,8 @@ void tst_QSql::openErrorRecovery()
 
 	// force an open error
 	if ( db.open( "dummy130977", "doesnt_exist" ) ) {
-	    qDebug( qPrintable(QLatin1String("Promiscuous database server without access control - test skipped for ") +
-		    tst_Databases::dbToString( db )) );
+            qDebug("Promiscuous database server without access control - test skipped for %s",
+                  qPrintable(tst_Databases::dbToString( db )) );
 	    QVERIFY(1);
 	    continue;
 	}

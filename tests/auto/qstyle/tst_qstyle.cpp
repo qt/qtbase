@@ -373,6 +373,8 @@ void tst_QStyle::testScrollBarSubControls(QStyle* style)
 #ifdef Q_OS_WINCE_WM
     if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())
         QSKIP("SmartPhone doesn't have scrollbar subcontrols.", SkipAll);
+#else
+    Q_UNUSED(style);
 #endif
 
     QScrollBar scrollBar;
