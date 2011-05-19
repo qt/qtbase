@@ -2921,6 +2921,7 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
     if (matrix.type() == QTransform::TxScale)
         fe->setFontScale(matrix.m11());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
     const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
 
     for (int i=0; i<glyphs.size(); ++i) {
@@ -2928,8 +2929,8 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
         const TUint8 *glyphBitmapBytes;
         TSize glyphBitmapSize;
         fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
-        const int x = qFloor(positions[i].x + metrics.x + aliasDelta);
-        const int y = qFloor(positions[i].y + metrics.y + aliasDelta);
+        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX() + aliasDelta);
+        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY() + aliasDelta);
         alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
     }
 
