@@ -51,6 +51,10 @@
 #include "gl_integration/qwaylandglintegration.h"
 #endif
 
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
+#endif
+
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QApplication>
 #include <QtGui/private/qapplication_p.h>
@@ -97,6 +101,13 @@ QWaylandGLIntegration * QWaylandDisplay::eglIntegration()
 }
 #endif
 
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+QWaylandWindowManagerIntegration *QWaylandDisplay::windowManagerIntegration()
+{
+    return mWindowManagerIntegration;
+}
+#endif
+
 void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
                                            uint32_t time, uint32_t edges,
                                            struct wl_surface *surface,
@@ -134,6 +145,10 @@ QWaylandDisplay::QWaylandDisplay(void)
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
+#endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    mWindowManagerIntegration = QWaylandWindowManagerIntegration::createIntegration(this);
 #endif
 
     connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));

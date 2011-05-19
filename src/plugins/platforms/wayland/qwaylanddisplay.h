@@ -55,6 +55,8 @@ class QWaylandBuffer;
 class QPlatformScreen;
 class QWaylandScreen;
 class QWaylandGLIntegration;
+class QWaylandWindowManagerIntegration;
+
 class QWaylandDisplay : public QObject {
     Q_OBJECT
 
@@ -74,6 +76,11 @@ public:
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *eglIntegration();
 #endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    QWaylandWindowManagerIntegration *windowManagerIntegration();
+#endif
+
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
     void syncCallback(wl_display_sync_func_t func, void *data);
@@ -122,6 +129,10 @@ private:
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;
+#endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    QWaylandWindowManagerIntegration *mWindowManagerIntegration;
 #endif
 
     static void shellHandleConfigure(void *data, struct wl_shell *shell,
