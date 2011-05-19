@@ -79,6 +79,7 @@ void QWaylandWindowManagerIntegration::wlHandleListenerGlobal(wl_display *displa
 
 void QWaylandWindowManagerIntegration::mapClientToProcess(long long processId)
 {
-    wl_windowmanager_map_client_to_process(mWaylandWindowManager, (uint32_t) processId);
+    if (mWaylandWindowManager)
+        wl_windowmanager_map_client_to_process(mWaylandWindowManager, (uint32_t) processId);
 }
 
