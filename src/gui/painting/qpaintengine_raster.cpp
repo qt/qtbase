@@ -127,6 +127,9 @@ void dumpClip(int width, int height, const QClipData *clip);
 // 4 pixels.
 #define int_dim(pos, dim) (int(pos+dim) - int(pos))
 
+// use the same rounding as in qrasterizer.cpp (6 bit fixed point)
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
 #ifdef Q_WS_WIN
 extern bool qt_cleartype_enabled;
 #endif
@@ -1666,10 +1669,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    int x1 = qRound(rect.x());
-    int y1 = qRound(rect.y());
-    int x2 = qRound(rect.right());
-    int y2 = qRound(rect.bottom());
+    int x1 = qRound(rect.x() + aliasedCoordinateDelta);
+    int y1 = qRound(rect.y() + aliasedCoordinateDelta);
+    int x2 = qRound(rect.right() + aliasedCoordinateDelta);
+    int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
 
     if (x2 < x1)
         qSwap(x1, x2);
@@ -1939,7 +1942,9 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
         // Do the fill...
         ensureBrush();
         if (s->brushData.blend) {
+            d->outlineMapper->setCoordinateRounding(s->penData.blend && s->flags.fast_pen && s->lastPen.brush().isOpaque());
             fillPolygon(points, pointCount, mode);
+            d->outlineMapper->setCoordinateRounding(false);
         }
     }
 
@@ -1986,6 +1991,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         if (s->brushData.blend) {
             // Compose polygon fill..,
             ensureOutlineMapper();
+            d->outlineMapper->setCoordinateRounding(s->penData.blend != 0);
             d->outlineMapper->beginOutline(mode == WindingMode ? Qt::WindingFill : Qt::OddEvenFill);
             d->outlineMapper->moveTo(*points);
             const QPoint *p = points;
@@ -1999,6 +2005,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
             ProcessSpans brushBlend = d->getBrushFunc(d->outlineMapper->controlPointRect,
                                                       &s->brushData);
             d->rasterize(d->outlineMapper->outline(), brushBlend, &s->brushData, d->rasterBuffer.data());
+            d->outlineMapper->setCoordinateRounding(false);
         }
     }
 
@@ -2248,7 +2255,10 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     int sr_b = qCeil(sr.bottom()) - 1;
 
     if (s->matrix.type() <= QTransform::TxScale && !s->flags.antialiased && sr_l == sr_r && sr_t == sr_b) {
+        // as fillRect will apply the aliased coordinate delta we need to
+        // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
+        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
 
         // Do whatever fillRect() does, but without premultiplying the color if it's already premultiplied.
         QRgb color = img.pixel(sr_l, sr_t);
@@ -2392,9 +2402,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
 
+            const QPointF offs = s->flags.antialiased ? QPointF() : QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta);
+
             const QRectF &rect = r.normalized();
-            const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f);
-            const QPointF b = s->matrix.map((rect.topRight() + rect.bottomRight()) * 0.5f);
+            const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f) - offs;
+            const QPointF b = s->matrix.map((rect.topRight() + rect.bottomRight()) * 0.5f) - offs;
 
             if (s->flags.tx_noshear)
                 d->rasterizer->rasterizeLine(a, b, rect.height() / rect.width());
@@ -2403,12 +2415,13 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             return;
         }
 #endif
+        const qreal offs = s->flags.antialiased ? qreal(0) : aliasedCoordinateDelta;
         QPainterPath path;
         path.addRect(r);
         QTransform m = s->matrix;
         s->matrix = QTransform(m.m11(), m.m12(), m.m13(),
                                m.m21(), m.m22(), m.m23(),
-                               m.m31(), m.m32(), m.m33());
+                               m.m31() - offs, m.m32() - offs, m.m33());
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
@@ -2860,6 +2873,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = cache->glyphMargin();
+        const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
@@ -2869,8 +2883,8 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             if (c.isNull())
                 continue;
 
-            int x = qFloor(positions[i].x) + c.baseLineX - margin;
-            int y = qFloor(positions[i].y) - c.baseLineY - margin;
+            int x = qFloor(positions[i].x + offs) + c.baseLineX - margin;
+            int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
             //        c.x, c.y,
@@ -2907,14 +2921,15 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
     if (matrix.type() == QTransform::TxScale)
         fe->setFontScale(matrix.m11());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+    const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
 
     for (int i=0; i<glyphs.size(); ++i) {
         TOpenFontCharMetrics tmetrics;
         const TUint8 *glyphBitmapBytes;
         TSize glyphBitmapSize;
         fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
-        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX());
-        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY());
+        const int x = qFloor(positions[i].x + metrics.x + aliasDelta);
+        const int y = qFloor(positions[i].y + metrics.y + aliasDelta);
         alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
     }
 
@@ -3086,7 +3101,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
             || (fontEngine->type() == QFontEngine::Proxy
                 && !(static_cast<QProxyFontEngine *>(fontEngine)->drawAsOutline()))
             )) {
-        fontEngine->draw(this, qFloor(p.x()), qFloor(p.y()), ti);
+        fontEngine->draw(this, qFloor(p.x() + aliasedCoordinateDelta), qFloor(p.y() + aliasedCoordinateDelta), ti);
         return;
     }
 #endif // Q_WS_QWS
@@ -3109,6 +3124,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         for(int i = 0; i < glyphs.size(); i++) {
             QImage img = fontEngine->alphaMapForGlyph(glyphs[i]);
             glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
+            // ### hm, perhaps an QFixed offs = QFixed::fromReal(aliasedCoordinateDelta) is needed here?
             alphaPenBlt(img.bits(), img.bytesPerLine(), img.depth(),
                                          qRound(positions[i].x + metrics.x),
                                          qRound(positions[i].y + metrics.y),

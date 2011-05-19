@@ -62,8 +62,8 @@ typedef int Q16Dot16;
 
 #define SPAN_BUFFER_SIZE 256
 
-#define COORD_ROUNDING 0 // 0: round up, 1: round down
-#define COORD_OFFSET 0 // 26.6, 32 is half a pixel
+#define COORD_ROUNDING 1 // 0: round up, 1: round down
+#define COORD_OFFSET 32 // 26.6, 32 is half a pixel
 
 static inline QT_FT_Vector PointToVector(const QPointF &p)
 {
