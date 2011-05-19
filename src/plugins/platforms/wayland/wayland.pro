@@ -40,8 +40,10 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 INCLUDEPATH += $$PWD
 
 include ($$PWD/gl_integration/gl_integration.pri)
+include ($$PWD/windowmanager_integration/windowmanager_integration.pri)
 
 include (../fontdatabases/genericunix/genericunix.pri)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
