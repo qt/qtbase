@@ -375,15 +375,12 @@ void tst_QVariant::canConvert_data()
     QTest::addColumn<bool>("BoolCast");
     QTest::addColumn<bool>("BrushCast");
     QTest::addColumn<bool>("ByteArrayCast");
-    QTest::addColumn<bool>("CStringCast");
     QTest::addColumn<bool>("ColorCast");
-    QTest::addColumn<bool>("ColorGroupCast");
     QTest::addColumn<bool>("CursorCast");
     QTest::addColumn<bool>("DateCast");
     QTest::addColumn<bool>("DateTimeCast");
     QTest::addColumn<bool>("DoubleCast");
     QTest::addColumn<bool>("FontCast");
-    QTest::addColumn<bool>("IconSetCast");
     QTest::addColumn<bool>("ImageCast");
     QTest::addColumn<bool>("IntCast");
     QTest::addColumn<bool>("InvalidCast");
@@ -394,7 +391,6 @@ void tst_QVariant::canConvert_data()
     QTest::addColumn<bool>("PaletteCast");
     QTest::addColumn<bool>("PenCast");
     QTest::addColumn<bool>("PixmapCast");
-    QTest::addColumn<bool>("PointArrayCast");
     QTest::addColumn<bool>("PointCast");
     QTest::addColumn<bool>("RectCast");
     QTest::addColumn<bool>("RegionCast");
@@ -415,110 +411,110 @@ void tst_QVariant::canConvert_data()
 #endif
 #define Y true
 #define N false
-    //            bita bitm bool brsh byta cstr col  colg curs date dt   dbl  font icon img  int  inv  kseq list ll   map  pal  pen  pix  pnta pnt  rect reg  size sp   str  strl time uint ull
+    //            bita bitm bool brsh byta col  curs date dt   dbl  font img  int  inv  kseq list ll   map  pal  pen  pix  pnt  rect reg  size sp   str  strl time uint ull
 
 
     QVariant var(QBitArray(0));
     QTest::newRow("BitArray")
-        << var << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QBitmap());
     QTest::newRow("Bitmap")
-        << var << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QBrush());
     QTest::newRow("Brush")
-        << var << N << N << N << Y << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N;
     var = QVariant(QByteArray());
     QTest::newRow("ByteArray")
-        << var << N << N << Y << N << Y << Y << Y << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << Y << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = qVariantFromValue(QColor());
     QTest::newRow("Color")
-        << var << N << N << N << Y << Y << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
+        << var << N << N << N << Y << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
 #ifndef QT_NO_CURSOR
     var = qVariantFromValue(QCursor());
     QTest::newRow("Cursor")
-        << var << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
 #endif
     var = QVariant(QDate());
     QTest::newRow("Date")
-        << var << N << N << N << N << N << N << N << N << N << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
+        << var << N << N << N << N << N << N << N << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
     var = QVariant(QDateTime());
     QTest::newRow("DateTime")
-        << var << N << N << N << N << N << N << N << N << N << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N;
+        << var << N << N << N << N << N << N << N << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N;
     var = QVariant((double)0.1);
     QTest::newRow("Double")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant(0.1f);
     QTest::newRow("Float")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = qVariantFromValue(QFont());
     QTest::newRow("Font")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
     var = qVariantFromValue(QIcon());
     QTest::newRow("Icon")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QImage());
     QTest::newRow("Image")
-        << var << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N;
     var = QVariant((int)1);
     QTest::newRow("Int")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant();
     QTest::newRow("Invalid")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QKeySequence());
     QTest::newRow("KeySequence")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
     var = QVariant(QList<QVariant>());
     QTest::newRow("List")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N;
     var = QVariant((qlonglong)1);
     QTest::newRow("LongLong")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant(QMap<QString,QVariant>());
     QTest::newRow("Map")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QPalette());
     QTest::newRow("Palette")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QPen());
     QTest::newRow("Pen")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QPixmap());
     QTest::newRow("Pixmap")
-        << var << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N;
+        << var << N << Y << N << Y << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QPolygon());
     QTest::newRow("PointArray")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
     var = QVariant(QPoint());
     QTest::newRow("Point")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N;
     var = QVariant(QRect());
     QTest::newRow("Rect")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N;
     var = qVariantFromValue(QRegion());
     QTest::newRow("Region")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N;
     var = QVariant(QSize());
     QTest::newRow("Size")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N;
     var = qVariantFromValue(QSizePolicy());
     QTest::newRow("SizePolicy")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N;
     var = QVariant(QString());
     QTest::newRow("String")
-        << var << N << N << Y << N << Y << Y << Y << N << N << Y << Y << Y << Y << N << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << N << Y << Y << Y << Y << Y;
+        << var << N << N << Y << N << Y << Y << N << Y << Y << Y << Y << N << Y << N << Y << N << Y << N << N << N << N << N << N << N << N << N << Y << Y << Y << Y << Y;
    var = QVariant(QStringList("entry"));
     QTest::newRow("StringList")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << Y << Y << N << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << Y << N << N << N;
     var = QVariant(QTime());
     QTest::newRow("Time")
-        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N;
+        << var << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << Y << N << N;
     var = QVariant((uint)1);
     QTest::newRow("UInt")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
     var = QVariant((qulonglong)1);
     QTest::newRow("ULongLong")
-        << var << N << N << Y << N << Y << Y << N << N << N << N << N << Y << N << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+        << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
 
 #undef N
 #undef Y
@@ -532,15 +528,12 @@ void tst_QVariant::canConvert()
     QFETCH(bool, BoolCast);
     QFETCH(bool, BrushCast);
     QFETCH(bool, ByteArrayCast);
-    QFETCH(bool, CStringCast);
     QFETCH(bool, ColorCast);
-    QFETCH(bool, ColorGroupCast);
     QFETCH(bool, CursorCast);
     QFETCH(bool, DateCast);
     QFETCH(bool, DateTimeCast);
     QFETCH(bool, DoubleCast);
     QFETCH(bool, FontCast);
-    QFETCH(bool, IconSetCast);
     QFETCH(bool, ImageCast);
     QFETCH(bool, IntCast);
     QFETCH(bool, InvalidCast);
@@ -551,7 +544,6 @@ void tst_QVariant::canConvert()
     QFETCH(bool, PaletteCast);
     QFETCH(bool, PenCast);
     QFETCH(bool, PixmapCast);
-    QFETCH(bool, PointArrayCast);
     QFETCH(bool, PointCast);
     QFETCH(bool, RectCast);
     QFETCH(bool, RegionCast);
@@ -568,28 +560,13 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(QVariant::Bool), BoolCast);
     QCOMPARE(val.canConvert(QVariant::Brush), BrushCast);
     QCOMPARE(val.canConvert(QVariant::ByteArray), ByteArrayCast);
-#ifdef QT3_SUPPORT
-    QCOMPARE(val.canConvert(QVariant::CString), CStringCast);
-#else
-    Q_UNUSED(CStringCast);
-#endif
     QCOMPARE(val.canConvert(QVariant::Color), ColorCast);
-#ifdef QT3_SUPPORT
-    QCOMPARE(val.canConvert(QVariant::ColorGroup), ColorGroupCast);
-#else
-    Q_UNUSED(ColorGroupCast);
-#endif
     QCOMPARE(val.canConvert(QVariant::Cursor), CursorCast);
     QCOMPARE(val.canConvert(QVariant::Date), DateCast);
     QCOMPARE(val.canConvert(QVariant::DateTime), DateTimeCast);
     QCOMPARE(val.canConvert(QVariant::Double), DoubleCast);
     QCOMPARE(val.canConvert(QVariant::Type(QMetaType::Float)), DoubleCast);
     QCOMPARE(val.canConvert(QVariant::Font), FontCast);
-#ifdef QT3_SUPPORT
-    QCOMPARE(val.canConvert(QVariant::IconSet), IconSetCast);
-#else
-    Q_UNUSED(IconSetCast);
-#endif
     QCOMPARE(val.canConvert(QVariant::Image), ImageCast);
     QCOMPARE(val.canConvert(QVariant::Int), IntCast);
     QCOMPARE(val.canConvert(QVariant::Invalid), InvalidCast);
@@ -600,11 +577,6 @@ void tst_QVariant::canConvert()
     QCOMPARE(val.canConvert(QVariant::Palette), PaletteCast);
     QCOMPARE(val.canConvert(QVariant::Pen), PenCast);
     QCOMPARE(val.canConvert(QVariant::Pixmap), PixmapCast);
-#ifdef QT3_SUPPORT
-    QCOMPARE(val.canConvert(QVariant::PointArray), PointArrayCast);
-#else
-    Q_UNUSED(PointArrayCast);
-#endif
     QCOMPARE(val.canConvert(QVariant::Point), PointCast);
     QCOMPARE(val.canConvert(QVariant::Rect), RectCast);
     QCOMPARE(val.canConvert(QVariant::Region), RegionCast);
