@@ -1294,7 +1294,7 @@ void tst_QPainter::drawRect2()
         p.end();
 
         QRect stroke = getPaintedSize(image, Qt::white);
-        QCOMPARE(stroke, fill.adjusted(0, 0, 1, 1));
+        QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(0, 0, 1, 1));
     }
 }
 
@@ -1391,13 +1391,13 @@ void tst_QPainter::drawPath_data()
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10, 10);
-        QTest::newRow("non-aligned rect") << p << QRect(2, 2, 10, 10) << 10 * 10;
+        QTest::newRow("non-aligned rect") << p << QRect(3, 3, 10, 10) << 10 * 10;
     }
 
     {
         QPainterPath p;
         p.addRect(2.25, 2.25, 10.5, 10.5);
-        QTest::newRow("non-aligned rect 2") << p << QRect(2, 2, 11, 11) << 11 * 11;
+        QTest::newRow("non-aligned rect 2") << p << QRect(3, 3, 10, 10) << 10 * 10;
     }
 
     {
