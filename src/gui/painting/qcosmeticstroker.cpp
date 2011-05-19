@@ -409,10 +409,11 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
     if (clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    int x1 = toF26Dot6(rx1);
-    int y1 = toF26Dot6(ry1);
-    int x2 = toF26Dot6(rx2);
-    int y2 = toF26Dot6(ry2);
+    const int half = 32;
+    int x1 = toF26Dot6(rx1) + half;
+    int y1 = toF26Dot6(ry1) + half;
+    int x2 = toF26Dot6(rx2) + half;
+    int y2 = toF26Dot6(ry2) + half;
 
     int dx = qAbs(x2 - x1);
     int dy = qAbs(y2 - y1);
@@ -424,6 +425,7 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             swapped = true;
             qSwap(y1, y2);
             qSwap(x1, x2);
+            --x1; --x2; --y1; --y2;
         }
         int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
         int x = x1 << 10;
@@ -455,6 +457,7 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             swapped = true;
             qSwap(x1, x2);
             qSwap(y1, y2);
+            --x1; --x2; --y1; --y2;
         }
         int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
         int y = y1 << 10;
@@ -525,7 +528,9 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
             const QPainterPath::ElementType *e = subPath(type, end, points, &closed);
             if (closed) {
                 const qreal *p = points + 2*(e-type);
-                calculateLastPoint(p[-4], p[-3], p[-2], p[-1]);
+                QPointF p1 = QPointF(p[-4], p[-3]) * state->matrix;
+                QPointF p2 = QPointF(p[-2], p[-1]) * state->matrix;
+                calculateLastPoint(p1.x(), p1.y(), p2.x(), p2.y());
             }
             int caps = (!closed & drawCaps) ? CapBegin : NoCaps;
 //            qDebug() << "closed =" << closed << capString(caps);
@@ -577,8 +582,10 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
         // handle closed path case
         bool closed = path.hasImplicitClose() || (points[0] == end[-2] && points[1] == end[-1]);
         int caps = (!closed & drawCaps) ? CapBegin : NoCaps;
-        if (closed)
-            calculateLastPoint(end[-2], end[-1], points[0], points[1]);
+        if (closed) {
+            QPointF p2 = QPointF(end[-2], end[-1]) * state->matrix;
+            calculateLastPoint(p2.x(), p2.y(), p.x(), p.y());
+        }
 
         points += 2;
         while (points < end) {
