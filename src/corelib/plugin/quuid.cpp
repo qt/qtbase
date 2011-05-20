@@ -427,11 +427,30 @@ QString QUuid::toString() const
 */
 QDataStream &operator<<(QDataStream &s, const QUuid &id)
 {
-    s << (quint32)id.data1;
-    s << (quint16)id.data2;
-    s << (quint16)id.data3;
-    for (int i = 0; i < 8; i++)
-        s << (quint8)id.data4[i];
+    QByteArray bytes;
+    if (s.byteOrder() == QDataStream::BigEndian) {
+        bytes = id.toRfc4122();
+    } else {
+        // we know how many bytes a UUID has, I hope :)
+        bytes = QByteArray(16, Qt::Uninitialized);
+        uchar *data = reinterpret_cast<uchar*>(bytes.data());
+
+        qToLittleEndian(id.data1, data);
+        data += sizeof(quint32);
+        qToLittleEndian(id.data2, data);
+        data += sizeof(quint16);
+        qToLittleEndian(id.data3, data);
+        data += sizeof(quint16);
+
+        for (int i = 0; i < 8; ++i) {
+            *(data) = id.data4[i];
+            data++;
+        }
+    }
+
+    if (s.writeRawData(bytes.data(), 16) != 16) {
+        s.setStatus(QDataStream::WriteFailed);
+    }
     return s;
 }
 
@@ -441,19 +460,30 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
 */
 QDataStream &operator>>(QDataStream &s, QUuid &id)
 {
-    quint32 u32;
-    quint16 u16;
-    quint8 u8;
-    s >> u32;
-    id.data1 = u32;
-    s >> u16;
-    id.data2 = u16;
-    s >> u16;
-    id.data3 = u16;
-    for (int i = 0; i < 8; i++) {
-        s >> u8;
-        id.data4[i] = u8;
+    QByteArray bytes(16, Qt::Uninitialized);
+    if (s.readRawData(bytes.data(), 16) != 16) {
+        s.setStatus(QDataStream::ReadPastEnd);
+        return s;
     }
+
+    if (s.byteOrder() == QDataStream::BigEndian) {
+        id = QUuid::fromRfc4122(bytes);
+    } else {
+        const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+
+        id.data1 = qFromLittleEndian<quint32>(data);
+        data += sizeof(quint32);
+        id.data2 = qFromLittleEndian<quint16>(data);
+        data += sizeof(quint16);
+        id.data3 = qFromLittleEndian<quint16>(data);
+        data += sizeof(quint16);
+
+        for (int i = 0; i < 8; ++i) {
+            id.data4[i] = *(data);
+            data++;
+        }
+    }
+
     return s;
 }
 #endif // QT_NO_DATASTREAM
