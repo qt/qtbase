@@ -57,7 +57,7 @@
 #include <QtTest/qtesttouch.h>
 #include <QtTest/qtestkeyboard.h>
 
-#include <QtGui/qicon.h>
+#include <QtWidgets/qicon.h>
 #include <QtGui/qpixmap.h>
 
 #if 0

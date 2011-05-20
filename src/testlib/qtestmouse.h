@@ -54,9 +54,9 @@
 
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qapplication.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 

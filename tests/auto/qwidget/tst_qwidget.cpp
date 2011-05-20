@@ -72,8 +72,8 @@
 #include <private/qbackingstore_p.h>
 #include <qmenubar.h>
 
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsProxyWidget>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QGraphicsProxyWidget>
 
 #include "../../shared/util.h"
 
