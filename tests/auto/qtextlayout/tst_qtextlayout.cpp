@@ -127,6 +127,7 @@ private slots:
     void textWithSurrogates_qtbug15679();
     void textWidthWithStackedTextEngine();
     void textWidthWithLineSeparator();
+    void cursorInLigatureWithMultipleLines();
 
 private:
     QFont testFont;
@@ -1458,6 +1459,22 @@ void tst_QTextLayout::textWidthWithLineSeparator()
     line1.setLineWidth(0x1000);
     line2.setLineWidth(0x1000);
     QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
+}
+
+void tst_QTextLayout::cursorInLigatureWithMultipleLines()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("This test can not be run on Mac", SkipAll);
+#endif
+    QTextLayout layout("first line finish", QFont("Times", 20));
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(70);
+    line = layout.createLine();
+    layout.endLayout();
+
+    // The second line will be "finish", with "fi" as a ligature
+    QVERIFY(line.cursorToX(0) != line.cursorToX(1));
 }
 
 QTEST_MAIN(tst_QTextLayout)
