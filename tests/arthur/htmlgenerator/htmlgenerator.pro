@@ -9,7 +9,7 @@ DESTDIR = ../bin
 
 CONFIG += console
 
-QT += svg xml
+QT += svg xml core-private gui-private
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2):QT += opengl
 
 # Input
