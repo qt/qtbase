@@ -102,8 +102,8 @@ public:
     tst_QMenuBar();
     virtual ~tst_QMenuBar();
 
-    void initSimpleMenubar_noQt3();
-    void initComplexMenubar_noQt3();
+    void initSimpleMenubar();
+    void initComplexMenubar();
 
 public slots:
     void initTestCase();
@@ -112,15 +112,15 @@ public slots:
 private slots:
     void getSetCheck();
 
-    void clear_noQt3();
-    void removeItemAt_noQt3();
-    void removeItemAt_noQt3_data();
-    void removeItem_noQt3_data();
-    void removeItem_noQt3();
-    void count_noQt3();
-    void insertItem_QString_QObject_noQt3();
-    void accel_noQt3();
-    void activatedCount_noQt3();
+    void clear();
+    void removeItemAt();
+    void removeItemAt_data();
+    void removeItem_data();
+    void removeItem();
+    void count();
+    void insertItem_QString_QObject();
+    void accel();
+    void activatedCount();
     void allowActiveAndDisabled();
 
     void check_accelKeys();
@@ -130,7 +130,7 @@ private slots:
 
     void check_homeKey();
     void check_endKey();
-    void check_escKey_noQt3();
+    void check_escKey();
 
 //     void check_mouse1_data();
 //     void check_mouse1();
@@ -147,11 +147,9 @@ private slots:
     void taskQTBUG11823_crashwithInvisibleActions();
 
 protected slots:
-    void onActivated_noQt3( QAction*);
+    void onActivated( QAction*);
 
 private:
-    void initTestCase_noQt3();
-
     QtTestSlot *menu1;
     QtTestSlot *menu2;
     QtTestSlot *menu3;
@@ -171,15 +169,15 @@ private:
 
     void reset() { resetSlots(); resetCount(); };
 
-    QAction* last_accel_id_Qt4;
+    QAction* last_accel_id;
     int activated_count;
 
     QAction *action;
     QAction *action1;
     QMainWindow *mw;
     QMenuBar *mb;
-    QMenu *pm1_Qt4;
-    QMenu *pm2_Qt4;
+    QMenu *pm1;
+    QMenu *pm2;
 };
 
 // Testing get/set functions
@@ -230,9 +228,9 @@ tst_QMenuBar::tst_QMenuBar()
 
     activated_count = 0;
     mb = 0;
-    pm1_Qt4 = 0;
-    pm2_Qt4 = 0;
-    last_accel_id_Qt4 = 0;
+    pm1 = 0;
+    pm2 = 0;
+    last_accel_id = 0;
 }
 
 tst_QMenuBar::~tst_QMenuBar()
@@ -243,19 +241,14 @@ tst_QMenuBar::~tst_QMenuBar()
 
 void tst_QMenuBar::initTestCase()
 {
-    initTestCase_noQt3();
-}
-
-void tst_QMenuBar::initTestCase_noQt3()
-{
     // create a default mainwindow
     // If you run a widget test, this will be replaced in the testcase by the
     // widget under test
     mw = new QMainWindow(0, Qt::X11BypassWindowManagerHint);
     mb = new QMenuBar( mw );
-    connect( mb, SIGNAL(triggered(QAction *)), this, SLOT(onActivated_noQt3(QAction *)) );
+    connect( mb, SIGNAL(triggered(QAction *)), this, SLOT(onActivated(QAction *)) );
 
-    initSimpleMenubar_noQt3();
+    initSimpleMenubar();
     mw->show();
     QTest::qWaitForWindowShown(mw);
     mw->activateWindow();
@@ -280,26 +273,25 @@ void tst_QMenuBar::cleanupTestCase()
     delete mw;
 }
 
-void tst_QMenuBar::initSimpleMenubar_noQt3()
+void tst_QMenuBar::initSimpleMenubar()
 {
     mb->hide();
     mb->clear();
 
-    delete pm1_Qt4;
-    pm1_Qt4  = mb->addMenu("&accel");
-    action = pm1_Qt4->addAction( "menu1" );
-     action->setShortcut(QKeySequence("ALT+A"));
-     action->setShortcut(QKeySequence("CTRL+A"));
+    delete pm1;
+    pm1  = mb->addMenu("&accel");
+    action = pm1->addAction( "menu1" );
+    action->setShortcut(QKeySequence("ALT+A"));
+    action->setShortcut(QKeySequence("CTRL+A"));
 
+    connect( pm1, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
 
-    connect( pm1_Qt4, SIGNAL(triggered(QAction*)), this, SLOT(onActivated_noQt3(QAction*)));
+    delete pm2;
+    pm2  = mb->addMenu("accel1");
 
-    delete pm2_Qt4;
-    pm2_Qt4  = mb->addMenu("accel1");
-
-    action1 = pm2_Qt4->addAction( "&Open..." );
+    action1 = pm2->addAction( "&Open..." );
     action1->setShortcut(Qt::Key_O);
-    connect(pm2_Qt4, SIGNAL(triggered(QAction*)), this, SLOT(onActivated_noQt3(QAction*)));
+    connect(pm2, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
 
     mb->show();
     qApp->syncX();
@@ -330,18 +322,18 @@ void tst_QMenuBar::resetSlots()
 
 void tst_QMenuBar::resetCount()
 {
-    last_accel_id_Qt4 = 0;
+    last_accel_id = 0;
     activated_count = 0;
 }
 
-void tst_QMenuBar::onActivated_noQt3( QAction* action )
+void tst_QMenuBar::onActivated( QAction* action )
 {
-    last_accel_id_Qt4 = action;
+    last_accel_id = action;
     activated_count++;
 //     printf( QString("acceleratorId: %1, count: %1\n").arg( i ).arg(activated_count) );
 }
 
-void tst_QMenuBar::accel_noQt3()
+void tst_QMenuBar::accel()
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
@@ -351,28 +343,28 @@ void tst_QMenuBar::accel_noQt3()
 #endif
 
     // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar_noQt3();
+    initSimpleMenubar();
 //    QTest::keyClick( 0, Qt::Key_A, AltKey );
     QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
     QTest::qWait(300);
 
-    QCOMPARE( last_accel_id_Qt4, action );
+    QCOMPARE( last_accel_id, action );
 }
 
-void tst_QMenuBar::activatedCount_noQt3()
+void tst_QMenuBar::activatedCount()
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
     // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar_noQt3();
+    initSimpleMenubar();
 
     QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
 //wait(5000);
     QCOMPARE( activated_count, 2 ); //1 from the popupmenu and 1 from the menubar
 }
 
-void tst_QMenuBar::clear_noQt3()
+void tst_QMenuBar::clear()
 {
     mb->clear();
     QVERIFY( (uint) mb->actions().size() == 0 );
@@ -390,7 +382,7 @@ void tst_QMenuBar::clear_noQt3()
     QVERIFY( (uint) mb->actions().size() == 0 );
 }
 
-void tst_QMenuBar::count_noQt3()
+void tst_QMenuBar::count()
 {
     mb->clear();
     QVERIFY( mb->actions().size() == 0 );
@@ -401,7 +393,7 @@ void tst_QMenuBar::count_noQt3()
     }
 }
 
-void tst_QMenuBar::removeItem_noQt3_data()
+void tst_QMenuBar::removeItem_data()
 {
     QTest::addColumn<int>("removeIndex");
     QTest::newRow( "first" ) << 0;
@@ -410,7 +402,7 @@ void tst_QMenuBar::removeItem_noQt3_data()
 }
 
 // Basically the same test as removeItemAt, except that we remember and remove id's.
-void tst_QMenuBar::removeItem_noQt3()
+void tst_QMenuBar::removeItem()
 {
     mb->clear();
 
@@ -472,7 +464,7 @@ void tst_QMenuBar::removeItem_noQt3()
     QVERIFY( menuBarActions2.size() == 2 );
 }
 
-void tst_QMenuBar::removeItemAt_noQt3_data()
+void tst_QMenuBar::removeItemAt_data()
 {
     QTest::addColumn<int>("removeIndex");
     QTest::newRow( "first" ) << 0;
@@ -480,7 +472,7 @@ void tst_QMenuBar::removeItemAt_noQt3_data()
     QTest::newRow( "last" ) << 2;
 }
 
-void tst_QMenuBar::removeItemAt_noQt3()
+void tst_QMenuBar::removeItemAt()
 {
     mb->clear();
 
@@ -529,25 +521,25 @@ void tst_QMenuBar::removeItemAt_noQt3()
     QVERIFY( menuBarActions2.size() == 2 );
 }
 
-void tst_QMenuBar::initComplexMenubar_noQt3() // well, complex....
+void tst_QMenuBar::initComplexMenubar() // well, complex....
 {
     mb->hide();
     mb->clear();
 
-    delete pm1_Qt4;
-    pm1_Qt4 = mb->addMenu("Menu &1");
-    pm1_Qt4->addAction( QString("Item A"), item1_A, SLOT(selected()), Qt::CTRL+Qt::Key_A );
-    pm1_Qt4->addAction( QString("Item B"), item1_B, SLOT(selected()), Qt::CTRL+Qt::Key_B );
+    delete pm1;
+    pm1 = mb->addMenu("Menu &1");
+    pm1->addAction( QString("Item A"), item1_A, SLOT(selected()), Qt::CTRL+Qt::Key_A );
+    pm1->addAction( QString("Item B"), item1_B, SLOT(selected()), Qt::CTRL+Qt::Key_B );
 
-    delete pm2_Qt4;
-    pm2_Qt4 = mb->addMenu("Menu &2");
-    pm2_Qt4->addAction( QString("Item C"), item2_C, SLOT(selected()), Qt::CTRL+Qt::Key_C );
-    pm2_Qt4->addAction( QString("Item D"), item2_D, SLOT(selected()), Qt::CTRL+Qt::Key_D );
-    pm2_Qt4->addAction( QString("Item E"), item2_E, SLOT(selected()), Qt::CTRL+Qt::Key_E );
-    pm2_Qt4->addAction( QString("Item F"), item2_F, SLOT(selected()), Qt::CTRL+Qt::Key_F );
-    pm2_Qt4->addSeparator();
-    pm2_Qt4->addAction( QString("Item G"), item2_G, SLOT(selected()), Qt::CTRL+Qt::Key_G );
-    pm2_Qt4->addAction( QString("Item H"), item2_H, SLOT(selected()), Qt::CTRL+Qt::Key_H );
+    delete pm2;
+    pm2 = mb->addMenu("Menu &2");
+    pm2->addAction( QString("Item C"), item2_C, SLOT(selected()), Qt::CTRL+Qt::Key_C );
+    pm2->addAction( QString("Item D"), item2_D, SLOT(selected()), Qt::CTRL+Qt::Key_D );
+    pm2->addAction( QString("Item E"), item2_E, SLOT(selected()), Qt::CTRL+Qt::Key_E );
+    pm2->addAction( QString("Item F"), item2_F, SLOT(selected()), Qt::CTRL+Qt::Key_F );
+    pm2->addSeparator();
+    pm2->addAction( QString("Item G"), item2_G, SLOT(selected()), Qt::CTRL+Qt::Key_G );
+    pm2->addAction( QString("Item H"), item2_H, SLOT(selected()), Qt::CTRL+Qt::Key_H );
 
     QAction *ac = mb->addAction( QString("M&enu 3"), menu3, SLOT(selected()));
     ac->setShortcut(Qt::ALT+Qt::Key_J);
@@ -561,9 +553,9 @@ void tst_QMenuBar::initComplexMenubar_noQt3() // well, complex....
     used less frequently.
 */
 
-void tst_QMenuBar::insertItem_QString_QObject_noQt3()
+void tst_QMenuBar::insertItem_QString_QObject()
 {
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     QList<QAction *> actions = mb->actions();
 
@@ -578,7 +570,7 @@ void tst_QMenuBar::check_accelKeys()
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("On Mac/WinCE, native key events are needed to test menu action activation", SkipAll);
 #endif
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // start with a bogus key that shouldn't trigger anything
     QTest::keyClick(0, Qt::Key_I, Qt::ControlModifier);
@@ -648,7 +640,7 @@ void tst_QMenuBar::check_cursorKeys1()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // start with a ALT + 1 that activates the first popupmenu
     QTest::keyClick( 0, Qt::Key_1, Qt::AltModifier );
@@ -679,7 +671,7 @@ void tst_QMenuBar::check_cursorKeys2()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // select popupmenu2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -709,7 +701,7 @@ void tst_QMenuBar::check_cursorKeys3()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -740,7 +732,7 @@ void tst_QMenuBar::check_homeKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -778,7 +770,7 @@ void tst_QMenuBar::check_endKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
@@ -807,37 +799,37 @@ void tst_QMenuBar::check_endKey()
     If Down is pressed next the popup is activated again.
 */
 
-void tst_QMenuBar::check_escKey_noQt3()
+void tst_QMenuBar::check_escKey()
 {
 #if defined(Q_WS_MAC) || defined(Q_OS_WINCE_WM)
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
-    QVERIFY( !pm1_Qt4->isActiveWindow() );
-    QVERIFY( !pm2_Qt4->isActiveWindow() );
+    QVERIFY( !pm1->isActiveWindow() );
+    QVERIFY( !pm2->isActiveWindow() );
 
     // select Popupmenu 2
     QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
-    QVERIFY( !pm1_Qt4->isActiveWindow() );
-    QVERIFY( pm2_Qt4->isActiveWindow() );
+    QVERIFY( !pm1->isActiveWindow() );
+    QVERIFY( pm2->isActiveWindow() );
 
     // If we press ESC, the popup should disappear
     QTest::keyClick( 0, Qt::Key_Escape );
-    QVERIFY( !pm1_Qt4->isActiveWindow() );
-    QVERIFY( !pm2_Qt4->isActiveWindow() );
+    QVERIFY( !pm1->isActiveWindow() );
+    QVERIFY( !pm2->isActiveWindow() );
 
     if (!QApplication::style()->inherits("QWindowsStyle"))
         return;
 
     // If we press Down the popupmenu should be active again
     QTest::keyClick( 0, Qt::Key_Down );
-    QVERIFY( !pm1_Qt4->isActiveWindow() );
-    QVERIFY( pm2_Qt4->isActiveWindow() );
+    QVERIFY( !pm1->isActiveWindow() );
+    QVERIFY( pm2->isActiveWindow() );
 
     // and press ENTER
-    QTest::keyClick( pm2_Qt4, Qt::Key_Enter );
+    QTest::keyClick( pm2, Qt::Key_Enter );
     // Let's see if the correct slot is called...
     QVERIFY2( item2_C->selCount() == 1, "Expected item 2C to be selected" );
 }
@@ -1000,7 +992,7 @@ void tst_QMenuBar::check_altPress()
 	      arg( qApp->style()->objectName() ).toAscii(), SkipAll );
     }
 
-    initSimpleMenubar_noQt3();
+    initSimpleMenubar();
 
     qApp->setActiveWindow(mw);
     mw->setFocus();
@@ -1016,7 +1008,7 @@ void tst_QMenuBar::check_shortcutPress()
     QSKIP("Qt/Mac,WinCE does not use the native popups/menubar", SkipAll);
 #endif
 
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
 
     qApp->setActiveWindow(mw);
     QCOMPARE(menu3->selCount(), 0u);
@@ -1026,9 +1018,9 @@ void tst_QMenuBar::check_shortcutPress()
     QVERIFY(!mb->activeAction());
 
     QTest::keyClick(mw, Qt::Key_1, Qt::AltModifier );
-    QVERIFY(pm1_Qt4->isActiveWindow());
+    QVERIFY(pm1->isActiveWindow());
     QTest::keyClick(mb, Qt::Key_2);
-    QVERIFY(pm1_Qt4->isActiveWindow());
+    QVERIFY(pm1->isActiveWindow());
 }
 
 void tst_QMenuBar::check_menuPosition()
@@ -1040,7 +1032,7 @@ void tst_QMenuBar::check_menuPosition()
     QSKIP("Qt/CE uses native menubar", SkipAll);
 #endif
     Menu menu;
-    initComplexMenubar_noQt3();
+    initComplexMenubar();
     menu.setTitle("&menu");
     QRect availRect = QApplication::desktop()->availableGeometry(mw);
     QRect screenRect = QApplication::desktop()->screenGeometry(mw);
