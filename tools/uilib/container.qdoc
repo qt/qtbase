@@ -170,3 +170,30 @@
 
     \sa addWidget(), insertWidget()
 */
+
+/*!
+    \fn bool QDesignerContainerExtension::canAddWidget() const
+
+    Returns whether a widget can be added. This determines whether
+    the context menu options to add or insert pages are enabled.
+
+    This should return false for containers that have a single, fixed
+    page, for example QScrollArea or QDockWidget.
+
+    \since 5.0
+    \sa addWidget(), canRemove()
+*/
+
+/*!
+    \fn bool QDesignerContainerExtension::canRemove(int index) const
+
+    Returns whether the widget at the given \a index can be removed.
+    This determines whether the context menu option to remove the current
+    page is enabled.
+
+    This should return false for containers that have a single, fixed
+    page, for example QScrollArea or QDockWidget.
+
+    \since 5.0
+    \sa remove(), canAddWidget()
+*/
