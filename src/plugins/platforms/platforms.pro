@@ -6,3 +6,7 @@ contains(QT_CONFIG, wayland) {
     SUBDIRS += wayland
 }
 
+mac {
+    SUBDIRS += cocoa
+}
+
