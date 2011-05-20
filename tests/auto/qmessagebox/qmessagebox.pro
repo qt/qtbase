@@ -7,8 +7,7 @@ TARGET = tst_qmessagebox
 DEPENDPATH += .
 INCLUDEPATH += . 
 
-CONFIG += console qtestlib qt3support
-wince*: CONFIG -= qt3support
+CONFIG += console qtestlib
 # Input
 SOURCES += tst_qmessagebox.cpp 
 
