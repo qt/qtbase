@@ -351,6 +351,39 @@ QUuid::QUuid(const char *text)
         return;
     }
 }
+
+/*!
+  Creates a QUuid object from the QByteArray \a text, which must be
+  formatted as five hex fields separated by '-', e.g.,
+  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where 'x' is a hex
+  digit. The curly braces shown here are optional, but it is normal to
+  include them. If the conversion fails, a null UUID is created.  See
+  toByteArray() for an explanation of how the five hex fields map to the
+  public data members in QUuid.
+
+    \since 4.8
+
+    \sa toByteArray(), QUuid()
+*/
+QUuid::QUuid(const QByteArray &text)
+{
+    if (text.length() < 36) {
+        *this = QUuid();
+        return;
+    }
+
+    const char *data = text.constData();
+
+    if (*data == '{' && text.length() < 37) {
+        *this = QUuid();
+        return;
+    }
+
+    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
+        *this = QUuid();
+        return;
+    }
+}
 #endif
 
 /*!
@@ -413,6 +446,52 @@ QString QUuid::toString() const
 {
     QString result(38, Qt::Uninitialized);
     ushort *data = (ushort *)result.unicode();
+
+    _q_uuidToHex(data, data1, data2, data3, data4);
+
+    return result;
+}
+
+/*!
+    Returns the binary representation of this QUuid. The byte array is
+    formatted as five hex fields separated by '-' and enclosed in
+    curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where
+    'x' is a hex digit.  From left to right, the five hex fields are
+    obtained from the four public data members in QUuid as follows:
+
+    \table
+    \header
+    \o Field #
+    \o Source
+
+    \row
+    \o 1
+    \o data1
+
+    \row
+    \o 2
+    \o data2
+
+    \row
+    \o 3
+    \o data3
+
+    \row
+    \o 4
+    \o data4[0] .. data4[1]
+
+    \row
+    \o 5
+    \o data4[2] .. data4[7]
+
+    \endtable
+
+    \since 4.8
+*/
+QByteArray QUuid::toByteArray() const
+{
+    QByteArray result(38, Qt::Uninitialized);
+    char *data = result.data();
 
     _q_uuidToHex(data, data1, data2, data3, data4);
 

@@ -56,6 +56,8 @@ private slots:
     void fromChar();
     void toString();
     void fromString();
+    void toByteArray();
+    void fromByteArray();
     void toDataStream();
     void fromDataStream();
     void isNull();
@@ -88,6 +90,22 @@ void tst_bench_QUuid::toString()
 void tst_bench_QUuid::fromString()
 {
     QString string = "{67C8770B-44F1-410A-AB9A-F9B5446F13EE}";
+    QBENCHMARK {
+        QUuid uuid(string);
+    }
+}
+
+void tst_bench_QUuid::toByteArray()
+{
+    QUuid uuid = QUuid::createUuid();
+    QBENCHMARK {
+        uuid.toByteArray();
+    }
+}
+
+void tst_bench_QUuid::fromByteArray()
+{
+    QByteArray string = "{67C8770B-44F1-410A-AB9A-F9B5446F13EE}";
     QBENCHMARK {
         QUuid uuid(string);
     }
