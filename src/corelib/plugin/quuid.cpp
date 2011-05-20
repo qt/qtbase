@@ -341,7 +341,15 @@ QUuid::QUuid(const QString &text)
 */
 QUuid::QUuid(const char *text)
 {
-    *this = QUuid(QString::fromLatin1(text));
+    if (!text) {
+        *this = QUuid();
+        return;
+    }
+
+    if (!_q_uuidFromHex(text, data1, data2, data3, data4)) {
+        *this = QUuid();
+        return;
+    }
 }
 #endif
 
