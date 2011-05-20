@@ -213,6 +213,13 @@ void tst_QHostInfo::initTestCase()
 #else
     ipv6Available = false;
     ipv6LookupsAvailable = false;
+
+    QTcpServer server;
+    if (server.listen(QHostAddress("::1"))) {
+        // We have IPv6 support
+        ipv6Available = true;
+    }
+
 #if !defined(QT_NO_GETADDRINFO)
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
@@ -234,13 +241,6 @@ void tst_QHostInfo::initTestCase()
     }
 #endif
 #endif
-
-    QTcpServer server;
-    if (server.listen(QHostAddress("::1"))) {
-        // We have IPv6 support
-        ipv6Available = true;
-    }
-
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
