@@ -90,10 +90,6 @@ private slots:
     void tearOff();
     void layoutDirection();
 
-#if defined(QT3_SUPPORT)
-    void indexBasedInsertion_data();
-    void indexBasedInsertion();
-#endif
     void task208001_stylesheet();
     void activeSubMenuPosition();
     void task242454_sizeHint();
@@ -641,49 +637,6 @@ void tst_QMenu::layoutDirection()
     QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
 }
 
-
-
-#if defined(QT3_SUPPORT)
-void tst_QMenu::indexBasedInsertion_data()
-{
-    QTest::addColumn<int>("indexForInsertion");
-    QTest::addColumn<int>("expectedIndex");
-
-    QTest::newRow("negative-index-appends") << -1 << 1;
-    QTest::newRow("prepend") << 0 << 0;
-    QTest::newRow("append") << 1 << 1;
-}
-
-void tst_QMenu::indexBasedInsertion()
-{
-    // test the compat'ed index based insertion
-
-    QFETCH(int, indexForInsertion);
-    QFETCH(int, expectedIndex);
-
-    {
-        QMenu menu;
-        menu.addAction("Regular Item");
-
-        menu.insertItem("New Item", -1 /*id*/, indexForInsertion);
-
-        QAction *act = menu.actions().value(expectedIndex);
-        QVERIFY(act);
-        QCOMPARE(act->text(), QString("New Item"));
-    }
-    {
-        QMenu menu;
-        menu.addAction("Regular Item");
-
-        menu.insertSeparator(indexForInsertion);
-
-        QAction *act = menu.actions().value(expectedIndex);
-        QVERIFY(act);
-        QVERIFY(act->isSeparator());
-    }
-}
-#endif
-
 void tst_QMenu::task208001_stylesheet()
 {
     //test if it crash
@@ -789,7 +742,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
         ++i;
-        Q_ASSERT(i<1000);
+        QVERIFY(i<1000);
     }
     main.setActiveAction(menuAction);
     sub.setActiveAction(subAction);

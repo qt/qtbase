@@ -175,18 +175,14 @@ QVariant ListItem::data(int role) const
         data.icons[ListItem::LeftIcon] = icon(ListItem::LeftIcon)->fileName();
         data.iconRotations[ListItem::LeftIcon] = icon(ListItem::LeftIcon)->rotation();
         data.iconSmoothTransformations[ListItem::LeftIcon] = icon(ListItem::LeftIcon)->isSmoothTransformationEnabled();
-#if (QT_VERSION >= 0x040600)
         data.iconOpacityEffets[ListItem::LeftIcon] = icon(ListItem::LeftIcon)->isOpacityEffectEnabled();
-#endif
     }
 
     if (icon(ListItem::RightIcon)) {
         data.icons[ListItem::RightIcon] = icon(ListItem::RightIcon)->fileName();
         data.iconRotations[ListItem::RightIcon] = icon(ListItem::RightIcon)->rotation();
         data.iconSmoothTransformations[ListItem::RightIcon] = icon(ListItem::RightIcon)->isSmoothTransformationEnabled();
-#if (QT_VERSION >= 0x040600)
         data.iconOpacityEffets[ListItem::RightIcon] = icon(ListItem::RightIcon)->isOpacityEffectEnabled();
-#endif
     }
 
     data.borderPen = m_borderPen;
@@ -226,17 +222,13 @@ void ListItem::setData(const QVariant &value, int role)
     if (icon(ListItem::LeftIcon)) {
         icon(ListItem::LeftIcon)->setRotation(data.iconRotations[ListItem::LeftIcon]);
         icon(ListItem::LeftIcon)->setSmoothTransformationEnabled(data.iconSmoothTransformations[ListItem::LeftIcon]);
-#if (QT_VERSION >= 0x040600)
         icon(ListItem::LeftIcon)->setOpacityEffectEnabled(data.iconOpacityEffets[ListItem::LeftIcon]);
-#endif
     }
 
     if (icon(ListItem::RightIcon)) {
         icon(ListItem::RightIcon)->setRotation(data.iconRotations[ListItem::RightIcon]);
         icon(ListItem::RightIcon)->setSmoothTransformationEnabled(data.iconSmoothTransformations[ListItem::RightIcon]);
-#if (QT_VERSION >= 0x040600)
         icon(ListItem::RightIcon)->setOpacityEffectEnabled(data.iconOpacityEffets[ListItem::RightIcon]);
-#endif
     }
 
     m_borderPen = data.borderPen;

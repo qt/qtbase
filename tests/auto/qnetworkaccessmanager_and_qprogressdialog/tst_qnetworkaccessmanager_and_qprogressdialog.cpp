@@ -65,9 +65,9 @@ class DownloadCheckWidget : public QWidget
 {
     Q_OBJECT
 public:
-    DownloadCheckWidget(QWidget *parent = 0) : QWidget(parent)
-                                    , progressDlg(this), netmanager(this)
-                                    , lateReadyRead(true)
+    DownloadCheckWidget(QWidget *parent = 0) :
+        QWidget(parent), lateReadyRead(true), zeroCopy(false),
+        progressDlg(this), netmanager(this)
     {
         progressDlg.setRange(1, 100);
         QMetaObject::invokeMethod(this, "go", Qt::QueuedConnection);
@@ -96,12 +96,14 @@ public slots:
     void dataReadProgress(qint64 done, qint64 total)
     {
         QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+        Q_UNUSED(reply);
         progressDlg.setMaximum(total);
         progressDlg.setValue(done);
     }
     void dataReadyRead()
     {
         QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+        Q_UNUSED(reply);
         lateReadyRead = true;
     }
     void finishedFromReply()

@@ -83,21 +83,21 @@ QGLFormat QGLFormat::fromWindowFormat(const QWindowFormat &format)
 QWindowFormat QGLFormat::toWindowFormat(const QGLFormat &format)
 {
     QWindowFormat retFormat;
-    if (format.alphaBufferSize() >= 0)
-        retFormat.setAlphaBufferSize(format.alphaBufferSize());
+    if (format.alpha())
+        retFormat.setAlphaBufferSize(format.alphaBufferSize() == -1 ? 1 : format.alphaBufferSize());
     if (format.blueBufferSize() >= 0)
         retFormat.setBlueBufferSize(format.blueBufferSize());
     if (format.greenBufferSize() >= 0)
         retFormat.setGreenBufferSize(format.greenBufferSize());
     if (format.redBufferSize() >= 0)
         retFormat.setRedBufferSize(format.redBufferSize());
-    if (format.depthBufferSize() >= 0)
-        retFormat.setDepthBufferSize(format.depthBufferSize());
+    if (format.depth())
+        retFormat.setDepthBufferSize(format.depthBufferSize() == -1 ? 1 : format.depthBufferSize());
     retFormat.setSwapBehavior(format.doubleBuffer() ? QWindowFormat::DoubleBuffer : QWindowFormat::DefaultSwapBehavior);
-    if (format.sampleBuffers() && format.samples() > 1)
-        retFormat.setSamples(format.samples());
-    if (format.stencil() && format.stencilBufferSize() > 0)
-        retFormat.setStencilBufferSize(format.stencilBufferSize());
+    if (format.sampleBuffers())
+        retFormat.setSamples(format.samples() == -1 ? 4 : format.samples());
+    if (format.stencil())
+        retFormat.setStencilBufferSize(format.stencilBufferSize() == -1 ? 1 : format.stencilBufferSize());
     retFormat.setStereo(format.stereo());
     return retFormat;
 }
@@ -138,6 +138,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
                 winFormat.setSharedContext(shareContext->d_func()->windowContext);
             }
             widget->windowHandle()->setSurfaceType(QWindow::OpenGLSurface);
+            if (widget->testAttribute(Qt::WA_TranslucentBackground))
+                winFormat.setAlphaBufferSize(qMax(winFormat.alphaBufferSize(), 8));
             winFormat.setWindowSurface(false);
             widget->windowHandle()->setWindowFormat(winFormat);
             widget->winId();//make window

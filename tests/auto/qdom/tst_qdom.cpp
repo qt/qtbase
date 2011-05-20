@@ -137,7 +137,6 @@ private slots:
 
 private:
     static QDomDocument generateRequest();
-    static QDomDocument doc(const QString &title, const QByteArray &ba);
     static int hasAttributesHelper( const QDomNode& node );
     static bool compareDocuments( const QDomDocument &doc1, const QDomDocument &doc2 );
     static bool compareNodes( const QDomNode &node1, const QDomNode &node2, bool deep );
@@ -1591,14 +1590,6 @@ void tst_QDom::reportDuplicateAttributes() const
     QVERIFY2(!isSuccess, "Duplicate attributes are well-formedness errors, and should be reported as such.");
 }
 
-QDomDocument tst_QDom::doc(const QString &title, const QByteArray &ba)
-{
-    QDomDocument doc(title);
-    const bool ret = doc.setContent(ba, true);
-    Q_ASSERT(ret);
-    return doc;
-}
-
 void tst_QDom::namespacedAttributes() const
 {
     static const char *const xml =
@@ -1611,8 +1602,13 @@ void tst_QDom::namespacedAttributes() const
         "  <Title displayLabel='Title' >>>> SIMPLE BASIC OP - SEND - DUT AS SINK</Title>\n"
         "</xan:td>\n";
 
-    QDomDocument one = doc("document", xml);
-    QDomDocument two = doc("document2", one.toByteArray(2));
+    QDomDocument one("document");
+    QString error;
+    bool docParsed = one.setContent(QByteArray(xml), true, &error);
+    QVERIFY2(docParsed, qPrintable(error));
+    QDomDocument two("document2");
+    docParsed = two.setContent(one.toByteArray(2), true, &error);
+    QVERIFY2(docParsed, qPrintable(error));
 
     QVERIFY(isDeepEqual(one, two));
 }

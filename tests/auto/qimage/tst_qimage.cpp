@@ -73,7 +73,6 @@ private slots:
     void create();
     void createInvalidXPM();
     void createFromUChar();
-    void convertBitOrder();
     void formatHandlersInput_data();
     void formatHandlersInput();
 
@@ -263,32 +262,6 @@ void tst_QImage::createFromUChar()
     *(QRgb*)data = 6U;
     QCOMPARE(i3.pixel(0,0), 6U);
     QCOMPARE(i4.pixel(0,0), 6U);
-}
-
-void tst_QImage::convertBitOrder()
-{
-#if !defined(QT3_SUPPORT)
-    QSKIP("Qt compiled without Qt3Support", SkipAll);
-#else
-    QImage i(9,5,1,2,QImage::LittleEndian);
-    qMemSet(i.bits(), 0, i.byteCount());
-
-    i.setDotsPerMeterX(9);
-    i.setDotsPerMeterY(5);
-    i.fill(0x12345678);
-    QVERIFY(!i.isNull());
-
-    QImage ni = i.convertBitOrder(QImage::BigEndian);
-    QVERIFY(!ni.isNull());
-    QVERIFY(ni.bitOrder() == QImage::BigEndian);
-
-    // A bunch of verifies to make sure that nothing was lost
-    QVERIFY(i.dotsPerMeterX() == ni.dotsPerMeterX());
-    QVERIFY(i.dotsPerMeterY() == ni.dotsPerMeterY());
-    QVERIFY(i.depth() == ni.depth());
-    QVERIFY(i.size() == ni.size());
-    QVERIFY(i.colorCount() == ni.colorCount());
-#endif
 }
 
 void tst_QImage::formatHandlersInput_data()

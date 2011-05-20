@@ -924,6 +924,7 @@ void tst_QPainter::fillPrimitives_helper(QPainter *p, PrimitiveType type, Primit
     case Primitive_Float_RectPath:      QBENCHMARK { p->drawPath(s->f_path_rect); } break;
     case Primitive_Float_2RectPath:     QBENCHMARK { p->drawPath(s->f_path_2rects); } break;
     case Primitive_Float_EllipsePath:   QBENCHMARK { p->drawPath(s->f_path_ellipse); } break;
+    case Primitive_Last_Primitive: break;
     }
 }
 

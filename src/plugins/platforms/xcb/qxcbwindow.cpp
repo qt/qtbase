@@ -140,8 +140,9 @@ void QXcbWindow::create()
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
-    if (window()->surfaceType() == QWindow::OpenGLSurface
+    if ((window()->surfaceType() == QWindow::OpenGLSurface
         && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
+        || window()->requestedWindowFormat().hasAlpha())
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->requestedWindowFormat());
@@ -159,13 +160,17 @@ void QXcbWindow::create()
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
 #endif //XCB_USE_GLX
         if (visualInfo) {
+            m_depth = visualInfo->depth;
+            m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
             Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
+            a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
+            a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(this), m_screen->screenNumber());
             a.colormap = cmap;
             m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                      CWColormap, &a);
+                                      CWBackPixel|CWBorderPixel|CWColormap, &a);
 
             printf("created GL window: %x\n", m_window);
         } else {
@@ -175,6 +180,8 @@ void QXcbWindow::create()
 #endif //defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     {
         m_window = xcb_generate_id(xcb_connection());
+        m_depth = m_screen->screen()->root_depth;
+        m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root

@@ -284,6 +284,7 @@ void tst_QGraphicsObject::deleted()
     bool item2_wasDeleted = false;
     DeleteTester *item1 = new DeleteTester(&item1_wasDeleted, &item1_parentWasDeleted);
     DeleteTester *item2 = new DeleteTester(&item2_wasDeleted, &item2_parentWasDeleted, item1);
+    Q_UNUSED(item2);
     delete item1;
 
     QVERIFY(!item1_wasDeleted); // destructor not called yet

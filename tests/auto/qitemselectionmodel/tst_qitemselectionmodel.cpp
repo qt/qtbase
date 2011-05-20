@@ -2289,7 +2289,7 @@ void tst_QItemSelectionModel::QTBUG5671_layoutChangedWithAllSelected()
     struct MyFilterModel : public QSortFilterProxyModel
     {     // Override sort filter proxy to remove even numbered rows.
         bool filtering;
-        virtual bool filterAcceptsRow( int source_row, const QModelIndex& source_parent ) const
+        virtual bool filterAcceptsRow( int source_row, const QModelIndex& /* source_parent */) const
         {
             return !filtering || !( source_row & 1 );
         }
@@ -2373,7 +2373,7 @@ public:
     }
 
 public slots:
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+    void selectionChanged(const QItemSelection & /* selected */, const QItemSelection &deselected)
     {
         foreach(const QModelIndex &index, deselected.indexes()) {
             QVERIFY(!m_itemSelectionModel->selection().contains(index));

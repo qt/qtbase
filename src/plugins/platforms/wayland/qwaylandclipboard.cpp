@@ -48,7 +48,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QFile>
 #include <QtCore/QtDebug>
-#include <QtWidgets/private/qdnd_p.h>
+#include <QtGui/private/qdnd_p.h>
 
 static QWaylandClipboard *clipboard;
 

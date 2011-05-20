@@ -148,7 +148,7 @@ void tst_QCssParser::scanner_data()
 }
 
 
-static char *tokenName(QCss::TokenType t)
+static const char *tokenName(QCss::TokenType t)
 {
     switch (t) {
         case QCss::NONE: return "NONE";

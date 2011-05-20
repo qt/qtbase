@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += core-private gui-private
 SOURCES  += tst_qgraphicsscene.cpp
 RESOURCES += images.qrc
 win32:!wince*: LIBS += -lUser32

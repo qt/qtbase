@@ -410,7 +410,9 @@ operator%(const A &a, const B &b)
    return QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>(a, b);
 }
 
-#ifdef QT_USE_FAST_OPERATOR_PLUS
+// QT_USE_FAST_OPERATOR_PLUS was introduced in 4.7, QT_USE_QSTRINGBUILDER is to be used from 4.8 onwards
+// QT_USE_FAST_OPERATOR_PLUS does not remove the normal operator+ for QByteArray
+#if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 template <typename A, typename B>
 QStringBuilder<typename QConcatenable<A>::type, typename QConcatenable<B>::type>
 operator+(const A &a, const B &b)

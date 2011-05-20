@@ -69,9 +69,7 @@ public:
     virtual void updateItemContents();
     virtual void themeChange();
 
-#if (QT_VERSION >= 0x040600)
     virtual void setSubtreeCacheEnabled(bool enabled);
-#endif
 
     virtual QSizeF effectiveSizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 

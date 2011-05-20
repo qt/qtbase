@@ -123,14 +123,14 @@ void tst_QTextBoundaryFinder::graphemeBoundaries()
             if (test.at(pos).unicode() == 0xf7)
                 breakPositions.append(strPos);
             else
-                Q_ASSERT(test.at(pos).unicode() == 0xd7);
+                QVERIFY(test.at(pos).unicode() == 0xd7);
             ++pos;
             if (pos < test.length()) {
-                Q_ASSERT(pos < test.length() - 4);
+                QVERIFY(pos < test.length() - 4);
                 QString hex = test.mid(pos, 4);
                 bool ok = true;
                 testString.append(QChar(hex.toInt(&ok, 16)));
-                Q_ASSERT(ok);
+                QVERIFY(ok);
                 pos += 4;
             }
             ++strPos;
@@ -176,14 +176,14 @@ void tst_QTextBoundaryFinder::wordBoundaries()
             if (test.at(pos).unicode() == 0xf7)
                 breakPositions.append(strPos);
             else
-                Q_ASSERT(test.at(pos).unicode() == 0xd7);
+                QVERIFY(test.at(pos).unicode() == 0xd7);
             ++pos;
             if (pos < test.length()) {
-                Q_ASSERT(pos < test.length() - 4);
+                QVERIFY(pos < test.length() - 4);
                 QString hex = test.mid(pos, 4);
                 bool ok = true;
                 testString.append(QChar(hex.toInt(&ok, 16)));
-                Q_ASSERT(ok);
+                QVERIFY(ok);
                 pos += 4;
             }
             ++strPos;
@@ -228,14 +228,14 @@ void tst_QTextBoundaryFinder::sentenceBoundaries()
             if (test.at(pos).unicode() == 0xf7)
                 breakPositions.append(strPos);
             else
-                Q_ASSERT(test.at(pos).unicode() == 0xd7);
+                QVERIFY(test.at(pos).unicode() == 0xd7);
             ++pos;
             if (pos < test.length()) {
-                Q_ASSERT(pos < test.length() - 4);
+                QVERIFY(pos < test.length() - 4);
                 QString hex = test.mid(pos, 4);
                 bool ok = true;
                 testString.append(QChar(hex.toInt(&ok, 16)));
-                Q_ASSERT(ok);
+                QVERIFY(ok);
                 pos += 4;
             }
             ++strPos;

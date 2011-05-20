@@ -155,7 +155,9 @@ QString QSjisCodec::convertToUnicode(const char* chars, int len, ConverterState 
         uchar ch = chars[i];
         switch (nbuf) {
         case 0:
-            if (ch < 0x80 || IsKana(ch)) {
+            if (ch < 0x80) {
+                result += QValidChar(ch);
+            } else if (IsKana(ch)) {
                 // JIS X 0201 Latin or JIS X 0201 Kana
                 u = conv->jisx0201ToUnicode(ch);
                 result += QValidChar(u);

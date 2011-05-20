@@ -42,7 +42,6 @@
 
 #include <QtTest/QtTest>
 
-
 #include <qfile.h>
 #include <qdir.h>
 #include <qcoreapplication.h>
@@ -726,15 +725,9 @@ void tst_QFileInfo::dir()
     if (absPath) {
         QCOMPARE(fi.absolutePath(), expected);
         QCOMPARE(fi.absoluteDir().path(), expected);
-#ifdef QT3_SUPPORT
-        QCOMPARE(fi.dir(true).path(), expected);
-#endif
     } else {
         QCOMPARE(fi.path(), expected);
         QCOMPARE(fi.dir().path(), expected);
-#ifdef QT3_SUPPORT
-        QCOMPARE(fi.dir(false).path(), expected);
-#endif
     }
 }
 

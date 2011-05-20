@@ -78,7 +78,8 @@ private:
 QTestAlivePinger::QTestAlivePinger(QObject *receiver, QObject *parent)
     : QObject(parent), rec(receiver), currentSequenceId(0), lastSequenceId(0)
 {
-    Q_ASSERT(rec);
+    if (!rec)
+        qFatal("Null receiver object passed to QTestAlivePinger::QTestAlivePinger()");
     timerId = startTimer(850);
 }
 
@@ -147,8 +148,8 @@ bool QTestAlive::event(QEvent *e)
 
 void QTestAlive::run()
 {
-    Q_ASSERT_X(QCoreApplication::instance(), "QTestAlive::run()",
-               "Cannot start QTestAlive without a QCoreApplication instance.");
+    if (!QCoreApplication::instance())
+        qFatal("QTestAlive::run(): Cannot start QTestAlive without a QCoreApplication instance.");
 
     QTestAlivePinger p(this);
     pinger = &p;

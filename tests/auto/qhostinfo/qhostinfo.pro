@@ -2,7 +2,7 @@ load(qttest_p4)
 
 SOURCES  += tst_qhostinfo.cpp
 
-QT = core network
+QT = core-private network-private
 
 wince*: {
   LIBS += ws2.lib

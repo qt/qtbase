@@ -49,13 +49,8 @@
 //! [0]
 
 //! [3]
-    #define QT_USE_FAST_CONCATENATION
+    DEFINES *= QT_USE_QSTRINGBUILDER
 //! [3]
-
-//! [4]
-    #define QT_USE_FAST_CONCATENATION
-    #define QT_USE_FAST_OPERATOR_PLUS
-//! [4]
 
 //! [5]
     #include <QStringBuilder>

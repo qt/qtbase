@@ -127,6 +127,8 @@ public:
     void setScriptingEnabled(bool enabled);
     bool isScriptingEnabled() const;
 
+    QString errorString() const;
+
 protected:
 //
 // load

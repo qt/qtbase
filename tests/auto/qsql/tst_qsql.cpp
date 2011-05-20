@@ -45,9 +45,6 @@
 #include <qsqldatabase.h>
 #include <qsqlerror.h>
 #include <qsqlquery.h>
-#ifdef QT3_SUPPORT
-#include <q3sqlcursor.h>
-#endif
 #include <qsqlrecord.h>
 #include <qsql.h>
 #include <qsqlresult.h>
@@ -143,53 +140,12 @@ void tst_QSql::basicDriverTest()
             continue;
         }
 
-        qDebug( qPrintable( QLatin1String( "Testing: " ) + tst_Databases::dbToString( db ) ) );
+        qDebug("Testing: %s", qPrintable(tst_Databases::dbToString( db )));
 
         QSqlRecord rInf = db.record( tableName );
         QCOMPARE( rInf.count(), 2 );
         QCOMPARE( rInf.fieldName( 0 ).toLower(), QString( "id" ) );
         QCOMPARE( rInf.fieldName( 1 ).toLower(), QString( "name" ) );
-
-#ifdef QT3_SUPPORT
-        QSqlRecord* rec = 0;
-        Q3SqlCursor cur( tableName, true, db );
-        QVERIFY_SQL( cur, select() );
-        QCOMPARE( cur.count(), 2 );
-        QCOMPARE( cur.fieldName( 0 ).lower(), QString( "id" ) );
-        QCOMPARE( cur.fieldName( 1 ).lower(), QString( "name" ) );
-
-        rec = cur.primeDelete();
-        rec->setGenerated( 0, false );
-        rec->setGenerated( 1, false );
-        QVERIFY_SQL( cur, del() );
-        QVERIFY_SQL( cur, select() );
-        QCOMPARE( cur.at(), int( QSql::BeforeFirst ) );
-        QVERIFY( !cur.next() );
-        rec = cur.primeInsert();
-        rec->setValue( 0, 1 );
-        rec->setValue( 1, QString( "Harry" ) );
-        QVERIFY_SQL( cur, insert( false ) );
-        rec = cur.primeInsert();
-        rec->setValue( 0, 2 );
-        rec->setValue( 1, QString( "Trond" ) );
-        QVERIFY_SQL( cur, insert( true ) );
-        QVERIFY_SQL( cur, select( cur.index( QString( "id" ) ) ) );
-        QVERIFY_SQL( cur, next() );
-        QCOMPARE( cur.value( 0 ).toInt(), 1 );
-        QCOMPARE( cur.value( 1 ).toString().stripWhiteSpace(), QString( "Harry" ) );
-        QVERIFY_SQL( cur, next() );
-        QCOMPARE( cur.value( 0 ).toInt(), 2 );
-        QCOMPARE( cur.value( 1 ).toString().stripWhiteSpace(), QString( "Trond" ) );
-        QVERIFY( !cur.next() );
-        QVERIFY_SQL( cur, first() );
-        rec = cur.primeUpdate();
-        rec->setValue( 1, QString( "Vohi" ) );
-        QVERIFY_SQL( cur, update( true ) );
-        QVERIFY_SQL( cur, select( "id = 1" ) );
-        QVERIFY_SQL( cur, next() );
-        QCOMPARE( cur.value( 0 ).toInt(), 1 );
-        QCOMPARE( cur.value( 1 ).toString().stripWhiteSpace(), QString( "Vohi" ) );
-#endif
     }
 
     dbs.close();
@@ -274,8 +230,8 @@ void tst_QSql::openErrorRecovery()
 
 	// force an open error
 	if ( db.open( "dummy130977", "doesnt_exist" ) ) {
-	    qDebug( qPrintable(QLatin1String("Promiscuous database server without access control - test skipped for ") +
-		    tst_Databases::dbToString( db )) );
+            qDebug("Promiscuous database server without access control - test skipped for %s",
+                  qPrintable(tst_Databases::dbToString( db )) );
 	    QVERIFY(1);
 	    continue;
 	}

@@ -4374,7 +4374,9 @@ void tst_QStateMachine::eventClassesExported()
 {
     // make sure this links
     QStateMachine::WrappedEvent *wrappedEvent = new QStateMachine::WrappedEvent(0, 0);
+    Q_UNUSED(wrappedEvent);
     QStateMachine::SignalEvent *signalEvent = new QStateMachine::SignalEvent(0, 0, QList<QVariant>());
+    Q_UNUSED(signalEvent);
 }
 
 void tst_QStateMachine::stopInTransitionToFinalState()

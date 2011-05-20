@@ -244,7 +244,12 @@ public:
     QObject *child;
 
 public slots:
-    void on_child1_destroyed(QObject *obj = 0) { ++invokeCount1; Q_ASSERT(obj && obj == child); }
+    void on_child1_destroyed(QObject *obj = 0)
+    {
+        ++invokeCount1;
+        if (!obj || obj != child)
+            qWarning() << "on_child1_destroyed invoked with wrong child object";
+    }
     void on_child2_destroyed() { ++invokeCount2; }
 };
 
@@ -268,7 +273,12 @@ public:
     }
 
 private slots:
-    void on_child1_destroyed(QObject *obj) { ++invokeCount1; Q_ASSERT(obj && obj == child); }
+    void on_child1_destroyed(QObject *obj)
+    {
+        ++invokeCount1;
+        if (!obj || obj != child)
+            qWarning() << "on_child1_destroyed invoked with wrong child object";
+    }
     void on_child1_destroyed() { ++invokeCount2; }
 };
 

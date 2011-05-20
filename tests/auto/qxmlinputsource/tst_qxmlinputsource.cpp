@@ -181,9 +181,7 @@ private slots:
             {
                 if(bodyLength == -1)
                 {
-                    Q_ASSERT_X(false, Q_FUNC_INFO,
-                               "No length was specified in the header.");
-                    return;
+                    qFatal("No length was specified in the header.");
                 }
 
                 QDomDocument domDoc;

@@ -149,7 +149,7 @@ void ReplayWidget::paintEvent(QPaintEvent *)
     }
 }
 
-void ReplayWidget::resizeEvent(QResizeEvent *event)
+void ReplayWidget::resizeEvent(QResizeEvent * /* event */)
 {
     visibleUpdates.clear();
 

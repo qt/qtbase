@@ -1561,12 +1561,13 @@ protected:
 #else
         bool ret = server.waitForNewConnection(20000);
 #endif
+        Q_UNUSED(ret);
 
         // delayed start of encryption
         QTest::qSleep(100);
         QSslSocket *socket = server.socket;
-        QVERIFY(socket);
-        QVERIFY(socket->isValid());
+        if (!socket || !socket->isValid())
+            return;             // error
         socket->ignoreSslErrors();
         socket->startServerEncryption();
         if (!socket->waitForEncrypted(2000))
@@ -1955,7 +1956,7 @@ void tst_QSslSocket::writeBigChunk()
     QByteArray data;
     data.resize(1024*1024*10); // 10 MB
     // init with garbage. needed so ssl cannot compress it in an efficient way.
-    for (int i = 0; i < data.size() / sizeof(int); i++) {
+    for (size_t i = 0; i < data.size() / sizeof(int); i++) {
         int r = qrand();
         data.data()[i*sizeof(int)] = r;
     }

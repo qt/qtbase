@@ -641,10 +641,10 @@ void tst_QDirModel::filter()
     QDirModel model;
     model.setNameFilters(QStringList() << "*.nada");
     QModelIndex index = model.index(SRCDIR "test");
-    Q_ASSERT(model.rowCount(index) == 0);
+    QCOMPARE(model.rowCount(index), 0);
     QModelIndex index2 = model.index(SRCDIR "test/file01.tst");
-    Q_ASSERT(!index2.isValid());
-    Q_ASSERT(model.rowCount(index) == 0);
+    QVERIFY(!index2.isValid());
+    QCOMPARE(model.rowCount(index), 0);
 }
 
 void tst_QDirModel::task244669_remove()

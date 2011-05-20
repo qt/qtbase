@@ -41,10 +41,7 @@
 
 #include <QtGui>
 #include <QSvgRenderer>
-
-#if (QT_VERSION >= 0x040600)
 #include <QGraphicsEffect>
-#endif
 
 #include "iconitem.h"
 
@@ -52,9 +49,7 @@ IconItem::IconItem(const QString &filename, QGraphicsItem *parent)
   : GvbWidget(parent)
   , m_filename(filename)
   , m_rotation(0.0)
-#if (QT_VERSION >= 0x040600)
   , m_opacityEffect(0)
-#endif
   , m_smoothTransformation(false)
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -140,7 +135,6 @@ void IconItem::setFileName(const QString &filename)
     }
 }
 
-#if (QT_VERSION >= 0x040600)
 void IconItem::setOpacityEffectEnabled(const bool enable)
 {
     if (!m_opacityEffect)
@@ -166,4 +160,3 @@ bool IconItem::isOpacityEffectEnabled() const
 
     return false;
 }
-#endif

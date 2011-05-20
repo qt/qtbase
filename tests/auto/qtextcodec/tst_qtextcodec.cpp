@@ -106,6 +106,8 @@ private slots:
 
     void moreToFromUnicode_data();
     void moreToFromUnicode();
+
+    void shiftJis();
 };
 
 void tst_QTextCodec::toUnicode_data()
@@ -428,7 +430,7 @@ void tst_QTextCodec::flagCodepointFFFF() const
     QString input(ch);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     const QByteArray asDecoded(codec->fromUnicode(input));
     QCOMPARE(asDecoded, QByteArray("?"));
@@ -465,7 +467,7 @@ void tst_QTextCodec::flagF7808080() const
 
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     //QVERIFY(!codec->canEncode(QChar(0x1C0000)));
 
@@ -482,7 +484,7 @@ void tst_QTextCodec::flagEFBFBF() const
     invalidInput[2] = char(0xBF);
 
     const QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     {
         //QVERIFY(!codec->canEncode(QChar(0xFFFF)));
@@ -1627,7 +1629,7 @@ void tst_QTextCodec::utf8bom()
     QFETCH(QString, result);
 
     QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
-    Q_ASSERT(codec);
+    QVERIFY(codec);
 
     QCOMPARE(codec->toUnicode(data.constData(), data.length(), 0), result);
 
@@ -2234,6 +2236,19 @@ void tst_QTextCodec::moreToFromUnicode()
     QString uStr = c->toUnicode(testData);
     QByteArray cStr = c->fromUnicode(uStr);
     QCOMPARE(testData, cStr);
+}
+
+void tst_QTextCodec::shiftJis()
+{
+    QByteArray backslashTilde("\\~");
+    QTextCodec* codec = QTextCodec::codecForName("shift_jis");
+    QString string = codec->toUnicode(backslashTilde);
+    QCOMPARE(string.length(), 2);
+    QCOMPARE(string.at(0), QChar(QLatin1Char('\\')));
+    QCOMPARE(string.at(1), QChar(QLatin1Char('~')));
+
+    QByteArray encoded = codec->fromUnicode(string);
+    QCOMPARE(encoded, backslashTilde);
 }
 
 struct DontCrashAtExit {

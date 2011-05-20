@@ -50,6 +50,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QDirIterator>
 #include <QtCore/QDateTime>
+#include <QtCore/QDebug>
 
 #ifdef Q_OS_SYMBIAN
 #define DEFAULT_MAKESPEC "X:/STLsupport/mkspecs/symbian-abld/"
@@ -342,7 +343,8 @@ namespace QTest {
 
     void QExternalTestPrivate::removeTemporaryDirectory()
     {
-        Q_ASSERT(!temporaryDir.isEmpty());
+        if (temporaryDir.isEmpty())
+            qWarning() << "Temporary directory is expected to be non-empty";
         removeRecursive(temporaryDir);
         temporaryDir.clear();
     }
@@ -369,8 +371,6 @@ namespace QTest {
             sourceCode += "#include <QtOpenGL/QtOpenGL>\n";
         if (qtModules & QExternalTest::QtSql)
             sourceCode += "#include <QtSql/QtSql>\n";
-        if (qtModules & QExternalTest::Qt3Support)
-            sourceCode += "#include <Qt3Support/Qt3Support>\n";
         if (qtModules & QExternalTest::QtSvg)
             sourceCode += "#include <QtSvg/QtSvg>\n";
         if (qtModules & QExternalTest::QtScript)
@@ -487,7 +487,8 @@ namespace QTest {
 
     bool QExternalTestPrivate::createProjectFile()
     {
-        Q_ASSERT(!temporaryDir.isEmpty());
+        if (temporaryDir.isEmpty())
+            qWarning() << "Temporary directory is expected to be non-empty";
 
         QFile projectFile(temporaryDir + QLatin1String("/project.pro"));
         if (!projectFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
@@ -540,8 +541,6 @@ namespace QTest {
             projectFile.write("QT += opengl\n");
         if (qtModules & QExternalTest::QtSql)
             projectFile.write("QT += sql\n");
-        if (qtModules & QExternalTest::Qt3Support)
-            projectFile.write("QT += qt3support\n");
         if (qtModules & QExternalTest::QtSvg)
             projectFile.write("QT += svg\n");
         if (qtModules & QExternalTest::QtScript)
@@ -599,7 +598,9 @@ namespace QTest {
 
     bool QExternalTestPrivate::runQmake()
     {
-        Q_ASSERT(!temporaryDir.isEmpty());
+        if (temporaryDir.isEmpty())
+            qWarning() << "Temporary directory is expected to be non-empty";
+
         if (!createProjectFile())
             return false;
 
@@ -633,7 +634,8 @@ namespace QTest {
 
     bool QExternalTestPrivate::runMake(Target target)
     {
-        Q_ASSERT(!temporaryDir.isEmpty());
+        if (temporaryDir.isEmpty())
+            qWarning() << "Temporary directory is expected to be non-empty";
 
         QExternalProcess make;
         make.setWorkingDirectory(temporaryDir);

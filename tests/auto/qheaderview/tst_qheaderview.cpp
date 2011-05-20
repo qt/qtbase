@@ -1106,7 +1106,7 @@ void tst_QHeaderView::moveAndInsertSection()
 
 void tst_QHeaderView::resizeMode()
 {
-    // Q_ASSERT's when resizeMode is called with an invalid index
+    // resizeMode must not be called with an invalid index
     int last = view->count() - 1;
     view->setResizeMode(QHeaderView::Interactive);
     QCOMPARE(view->resizeMode(last), QHeaderView::Interactive);

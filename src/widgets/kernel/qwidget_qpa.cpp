@@ -96,6 +96,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     win->setWindowFlags(data.window_flags);
     win->setGeometry(q->geometry());
 
+    if (q->testAttribute(Qt::WA_TranslucentBackground)) {
+        QWindowFormat format = win->requestedWindowFormat();
+        format.setAlphaBufferSize(8);
+        win->setWindowFormat(format);
+    }
+
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle())
             win->setParent(nativeParent->windowHandle());
@@ -396,6 +402,7 @@ void QWidgetPrivate::show_sys()
                 surface->resize(geomRect.size());
             }
         }
+
         if (window)
             window->setVisible(true);
     }

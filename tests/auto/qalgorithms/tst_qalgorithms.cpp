@@ -47,7 +47,6 @@
 #include <sstream>
 #include <algorithm>
 #include <qalgorithms.h>
-#include "q3tl.h"
 #include <QStringList>
 #include <QString>
 #include <QVector>
@@ -71,8 +70,6 @@ public slots:
     void cleanup();
 
 private slots:
-    void qBubbleSort();
-    void qHeapSort();
     void test_qLowerBound_data();
     void test_qLowerBound();
     void test_qUpperBound_data();
@@ -100,13 +97,11 @@ private:
 };
 
 tst_QAlgorithms::tst_QAlgorithms()
-
 {
 }
 
 tst_QAlgorithms::~tst_QAlgorithms()
 {
-
 }
 
 void tst_QAlgorithms::init()
@@ -241,7 +236,8 @@ QList<ResultSet> testAlgorithm(Algorithm &algorithm,  QStringList dataSetTypes, 
     foreach(QString dataSetType, dataSetTypes) {
         QVector<DataType> container = generateData<DataType>(dataSetType, size);
         results.append(testRun(container, algorithm, time));
-        Q_ASSERT(isSorted(container));
+        if (!isSorted(container))
+            qWarning("%s: container is not sorted after test", Q_FUNC_INFO);
     }
     return results;
 }
@@ -266,149 +262,6 @@ void testAlgorithm(Algorithm algorithm, QStringList &dataSetTypes)
     }
 }
 #endif
-static bool userFunction1(char ch1, char ch2)
-{
-    return (ch1 ^ 1) < (ch2 ^ 1);
-}
-
-bool userFunction2(const char &ch1, char ch2)
-{
-    return (ch1 ^ 1) < (ch2 ^ 1);
-}
-
-static inline bool userFunction3(char ch1, const char &ch2)
-{
-    return (ch1 ^ 1) < (ch2 ^ 1);
-}
-
-inline bool userFunction4(const char &ch1, const char &ch2)
-{
-    return (ch1 ^ 1) < (ch2 ^ 1);
-}
-
-class UserFunctor1
-{
-public:
-    UserFunctor1(int x = 1) : y(x) {}
-
-    bool operator()(char ch1, char ch2)
-    {
-        return (ch1 ^ y) < (ch2 ^ y);
-    }
-
-    char y;
-};
-
-void tst_QAlgorithms::qHeapSort()
-{
-    char array1[] = "3141592";
-    ::qHeapSort((char *)array1, array1 + strlen(array1));
-    QVERIFY(strcmp(array1, "1123459") == 0);
-
-    ::qHeapSort((char *)array1, array1 + strlen(array1), qGreater<char>());
-    QVERIFY(strcmp(array1, "9543211") == 0);
-
-    ::qHeapSort((char *)array1, array1 + strlen(array1), qLess<char>());
-    QVERIFY(strcmp(array1, "1123459") == 0);
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), userFunction1);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), userFunction2);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), userFunction3);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), userFunction4);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        UserFunctor1 userFunctor1;
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), userFunctor1);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qHeapSort((char *)array2, array2 + strlen(array2), UserFunctor1());
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-        ::qHeapSort((char *)array2, array2 + strlen(array2), UserFunctor1(1));
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-        ::qHeapSort((char *)array2, array2 + strlen(array2), UserFunctor1(3));
-        QVERIFY(strcmp(array2, "3210765498CBA@ED") == 0);
-        ::qHeapSort((char *)array2, array2 + strlen(array2), UserFunctor1(0));
-        QVERIFY(strcmp(array2, "0123456789@ABCDE") == 0);
-    }
-}
-
-void tst_QAlgorithms::qBubbleSort()
-{
-    char array1[] = "3141592";
-    ::qBubbleSort((char *)array1, array1 + strlen(array1));
-    QVERIFY(strcmp(array1, "1123459") == 0);
-
-    ::qBubbleSort((char *)array1, array1 + strlen(array1), qGreater<char>());
-    QVERIFY(strcmp(array1, "9543211") == 0);
-
-    ::qBubbleSort((char *)array1, array1 + strlen(array1), qLess<char>());
-    QVERIFY(strcmp(array1, "1123459") == 0);
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), userFunction1);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), userFunction2);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), userFunction3);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), userFunction4);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        UserFunctor1 userFunctor1;
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), userFunctor1);
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-    }
-
-    {
-        char array2[] = "0123456789@ABCDE";
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), UserFunctor1());
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), UserFunctor1(1));
-        QVERIFY(strcmp(array2, "1032547698A@CBED") == 0);
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), UserFunctor1(3));
-        QVERIFY(strcmp(array2, "3210765498CBA@ED") == 0);
-        ::qBubbleSort((char *)array2, array2 + strlen(array2), UserFunctor1(0));
-        QVERIFY(strcmp(array2, "0123456789@ABCDE") == 0);
-    }
-}
 
 void tst_QAlgorithms::swap()
 {
@@ -557,7 +410,7 @@ void tst_QAlgorithms::sortedList()
     QList<int> list;
     list << 4 << 3 << 6;
 
-    ::qHeapSort(list.begin(), list.end());
+    ::qSort(list.begin(), list.end());
 
     QCOMPARE(list.count(), 3);
     QCOMPARE(list.at(0), 3);
@@ -878,26 +731,6 @@ void tst_QAlgorithms::convenienceAPI()
 }
 
 template <typename DataType>
-class HeapSortHelper
-{
-public:
-    void operator()(QVector<DataType> list)
-    {
-        ::qHeapSort(list);
-    }
-};
-
-template <typename DataType>
-class BubbleSortHelper
-{
-public:
-    void operator()(QVector<DataType> list)
-    {
-        ::qBubbleSort(list);
-    }
-};
-
-template <typename DataType>
 class QuickSortHelper
 {
 public:
@@ -948,22 +781,14 @@ void tst_QAlgorithms::performance()
     testAlgorithm<StlSortHelper<TestInt>, TestInt>(StlSortHelper<TestInt>(), dataSetTypes);
     cout << endl << "std::stable_sort" << endl;
     testAlgorithm<StlStableSortHelper<TestInt>, TestInt>(StlStableSortHelper<TestInt>(), dataSetTypes);
-    cout << "Heap sort" << endl;
-    testAlgorithm<HeapSortHelper<TestInt>, TestInt>(HeapSortHelper<TestInt>(), dataSetTypes);
-    cout << endl << "Bubble sort" << endl;
-    testAlgorithm<BubbleSortHelper<TestInt>, TestInt>(BubbleSortHelper<TestInt>(), dataSetTypes);
 /*
     cout << endl << "Sorting lists of ints" << endl;
-    cout << "Heap sort" << endl;
-    testAlgorithm<HeapSortHelper<int>, int>(HeapSortHelper<int>(), dataSetTypes);
     cout << endl << "Quick sort" << endl;
     testAlgorithm<QuickSortHelper<int>, int>(QuickSortHelper<int>(), dataSetTypes);
     cout << endl << "std::sort" << endl;
     testAlgorithm<StlSortHelper<int>, int>(StlSortHelper<int>(), dataSetTypes);
     cout << endl << "std::stable_sort" << endl;
     testAlgorithm<StlStableSortHelper<int>, int>(StlStableSortHelper<int>(), dataSetTypes);
-    cout << endl << "Bubble sort" << endl;
-    testAlgorithm<BubbleSortHelper<int>, int>(BubbleSortHelper<int>(), dataSetTypes);
 */
 }
 #endif

@@ -43,6 +43,10 @@
 
 #include <QtCore/QVector>
 
+#ifndef QT_NO_XRENDER
+#include <X11/extensions/Xrender.h>
+#endif
+
 enum {
     XFocusOut = FocusOut,
     XFocusIn = FocusIn,
@@ -76,19 +80,25 @@ QVector<int> qglx_buildSpec(const QWindowFormat &format, int drawableBit)
     spec[i++] = GLX_DRAWABLE_TYPE; spec[i++] = drawableBit;
 
     spec[i++] = GLX_RENDER_TYPE; spec[i++] = GLX_RGBA_BIT;
+
     spec[i++] = GLX_RED_SIZE; spec[i++] = (format.redBufferSize() == -1) ? 1 : format.redBufferSize();
     spec[i++] = GLX_GREEN_SIZE; spec[i++] =  (format.greenBufferSize() == -1) ? 1 : format.greenBufferSize();
     spec[i++] = GLX_BLUE_SIZE; spec[i++] = (format.blueBufferSize() == -1) ? 1 : format.blueBufferSize();
     if (format.hasAlpha()) {
-        spec[i++] = GLX_ALPHA_SIZE; spec[i++] = (format.alphaBufferSize() == -1) ? 1 : format.alphaBufferSize();
+        spec[i++] = GLX_ALPHA_SIZE; spec[i++] = format.alphaBufferSize();
     }
 
     spec[i++] = GLX_DOUBLEBUFFER; spec[i++] = format.swapBehavior() != QWindowFormat::SingleBuffer ? True : False;
+
     spec[i++] = GLX_STEREO; spec[i++] =  format.stereo() ? True : False;
 
-    spec[i++] = GLX_DEPTH_SIZE; spec[i++] = (format.depthBufferSize() == -1) ? 1 : format.depthBufferSize();
+    if (format.depthBufferSize() > 0) {
+        spec[i++] = GLX_DEPTH_SIZE; spec[i++] = format.depthBufferSize();
+    }
 
-    spec[i++] = GLX_STENCIL_SIZE; spec[i++] =  (format.stencilBufferSize() == -1) ? 1 : format.stencilBufferSize();
+    if (format.stencilBufferSize() > 0) {
+        spec[i++] = GLX_STENCIL_SIZE; spec[i++] =  (format.stencilBufferSize() == -1) ? 1 : format.stencilBufferSize();
+    }
 
     if (format.samples() > 1) {
         spec[i++] = GLX_SAMPLE_BUFFERS_ARB;
@@ -119,8 +129,17 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QWindowFormat &
                 if (reducedFormat.hasAlpha()) {
                     int alphaSize;
                     glXGetFBConfigAttrib(display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
-                    if (alphaSize > 0)
-                        break;
+                    if (alphaSize > 0) {
+                        XVisualInfo *visual = glXGetVisualFromFBConfig(display, chosenConfig);
+#if !defined(QT_NO_XRENDER)
+                        XRenderPictFormat *pictFormat = XRenderFindVisualFormat(display, visual->visual);
+                        if (pictFormat->direct.alphaMask > 0)
+                            break;
+#else
+                        if (visual->depth == 32)
+                            break;
+#endif
+                    }
                 } else {
                     break; // Just choose the first in the list if there's no alpha requested
                 }

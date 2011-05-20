@@ -116,8 +116,7 @@ tst_QAtomicInt::~tst_QAtomicInt()
 
 void tst_QAtomicInt::warningFreeHelper()
 {
-    Q_ASSERT(false);
-    // The code below is bogus, and shouldn't be run. We're looking for warnings, only.
+    qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
 
     QBasicAtomicInt i = Q_BASIC_ATOMIC_INITIALIZER(0);
 

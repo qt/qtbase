@@ -49,6 +49,7 @@ int main(int argc, char **argv)
     label.show();
 
     int c;
+    Q_UNUSED(c);
     fgetc(stdin); // block until fed
 
     qDebug("Process is running");

@@ -114,11 +114,14 @@ QString tst_QTextOdfWriter::getContentFromXml()
     xmlWriter->writeEndDocument();
     buffer->close();
     QString stringContent = QString::fromUtf8(buffer->data());
+    QString ret;
     int index = stringContent.indexOf("<dummy");
-    Q_ASSERT(index);
-    index = stringContent.indexOf('>', index);
-    stringContent = stringContent.mid(index+1, stringContent.length() - index - 10);
-    return stringContent;
+    if (index > 0) {
+        index = stringContent.indexOf('>', index);
+        if (index > 0)
+            ret = stringContent.mid(index+1, stringContent.length() - index - 10);
+    }
+    return ret;
 }
 
 void tst_QTextOdfWriter::testWriteParagraph_data()

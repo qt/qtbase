@@ -76,7 +76,6 @@ Q_DECLARE_METATYPE(QList<int>);
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
-#undef QT3_SUPPORT
 #endif
 
 
@@ -134,9 +133,6 @@ private slots:
     void mergeCurrentBlockCharFormat();
     void emptyAppend();
     void appendOnEmptyDocumentShouldReuseInitialParagraph();
-#ifdef QT3_SUPPORT
-    void textSemantics();
-#endif
     void cursorPositionChanged();
     void setTextCursor();
 #ifndef QT_NO_CLIPBOARD
@@ -317,7 +313,7 @@ void tst_QTextEdit::getSetCheck()
     // void QTextEdit::setFontPointSize(qreal)
     obj1.setFontPointSize(qreal(1.1));
     QCOMPARE(qreal(1.1), obj1.fontPointSize());
-    // we currently Q_ASSERT_X in QFont::setPointSizeF for that
+    // we currently assert in QFont::setPointSizeF for that
     //obj1.setFontPointSize(0.0);
     //QCOMPARE(1.1, obj1.fontPointSize()); // Should not accept 0.0 => keep old
 
@@ -327,7 +323,7 @@ void tst_QTextEdit::getSetCheck()
     QCOMPARE(1, obj1.fontWeight()); // Range<1, 99>
     obj1.setFontWeight(99);
     QCOMPARE(99, obj1.fontWeight()); // Range<1, 99>
-    /* Q_ASSERT_X in qfont.cpp
+    /* assertion in qfont.cpp
     obj1.setFontWeight(INT_MIN);
     QCOMPARE(1, obj1.fontWeight()); // Range<1, 99>
     obj1.setFontWeight(INT_MAX);
@@ -704,19 +700,6 @@ void tst_QTextEdit::appendOnEmptyDocumentShouldReuseInitialParagraph()
     ed->append("Blah");
     QCOMPARE(blockCount(), 1);
 }
-
-#ifdef QT3_SUPPORT
-void tst_QTextEdit::textSemantics()
-{
-    ed->setTextFormat(Qt::AutoText);
-
-    ed->setPlainText("Hello World");
-    QVERIFY(!Qt::mightBeRichText(ed->text()));
-
-    ed->setHtml("<b>Hey</b>");
-    QVERIFY(Qt::mightBeRichText(ed->text()));
-}
-#endif
 
 class CursorPositionChangedRecorder : public QObject
 {
@@ -2064,7 +2047,7 @@ void tst_QTextEdit::compareWidgetAndImage(QTextEdit &widget, const QString &imag
 
     QCOMPARE(original.isNull(), false);
     QCOMPARE(original.size(), image.size());
-    Q_ASSERT(image.depth() == 32);
+    QCOMPARE(image.depth(), 32);
     QCOMPARE(original.depth(), image.depth());
 
     const int bytesPerLine = image.bytesPerLine();

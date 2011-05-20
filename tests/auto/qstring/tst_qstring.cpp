@@ -151,7 +151,6 @@ private slots:
     void indexOf3_data();
 //  void indexOf3();
     void sprintf();
-    void copy();
     void fill();
     void truncate();
     void constructor();
@@ -902,19 +901,6 @@ void tst_QString::fill()
     QCOMPARE(f,(QString)"fff");
     f.fill('F');
     QCOMPARE(f,(QString)"FFF");
-}
-
-void tst_QString::copy()
-{
-#ifdef QT3_SUPPORT
-    QString e;
-    e = "String E";
-    QString ce = e.copy();
-    QCOMPARE(ce,(QString)"String E");
-    e = "XXX";
-    QCOMPARE(ce,(QString)"String E");
-    QCOMPARE(e,(QString)"XXX");
-#endif
 }
 
 void tst_QString::sprintf()
@@ -3364,7 +3350,7 @@ void tst_QString::local8Bit_data()
 
 /*
     QString::local8Bit() called on a null QString returns an _empty_
-    QByteArray. This is the correct behavior since Qt 3.1.
+    QByteArray.
 */
     QTest::newRow("nullString") << QString() << QByteArray("");
     QTest::newRow("emptyString") << QString("") << QByteArray("");
@@ -3429,9 +3415,9 @@ void tst_QString::fromLatin1Roundtrip()
     QFETCH(QString, unicode);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicode.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicode.isEmpty());
-    Q_ASSERT(latin1.length() == unicode.length());
+    QCOMPARE(latin1.isNull(), unicode.isNull());
+    QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
+    QCOMPARE(latin1.length(), unicode.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {
@@ -3484,12 +3470,12 @@ void tst_QString::toLatin1Roundtrip()
     QFETCH(QString, unicodedst);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicodesrc.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodesrc.isEmpty());
-    Q_ASSERT(latin1.length() == unicodesrc.length());
-    Q_ASSERT(latin1.isNull() == unicodedst.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodedst.isEmpty());
-    Q_ASSERT(latin1.length() == unicodedst.length());
+    QCOMPARE(latin1.isNull(), unicodesrc.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
+    QCOMPARE(latin1.length(), unicodesrc.length());
+    QCOMPARE(latin1.isNull(), unicodedst.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodedst.isEmpty());
+    QCOMPARE(latin1.length(), unicodedst.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {
@@ -3519,12 +3505,12 @@ void tst_QString::stringRef_toLatin1Roundtrip()
     QFETCH(QString, unicodedst);
 
     // QtTest safety check:
-    Q_ASSERT(latin1.isNull() == unicodesrc.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodesrc.isEmpty());
-    Q_ASSERT(latin1.length() == unicodesrc.length());
-    Q_ASSERT(latin1.isNull() == unicodedst.isNull());
-    Q_ASSERT(latin1.isEmpty() == unicodedst.isEmpty());
-    Q_ASSERT(latin1.length() == unicodedst.length());
+    QCOMPARE(latin1.isNull(), unicodesrc.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
+    QCOMPARE(latin1.length(), unicodesrc.length());
+    QCOMPARE(latin1.isNull(), unicodedst.isNull());
+    QCOMPARE(latin1.isEmpty(), unicodedst.isEmpty());
+    QCOMPARE(latin1.length(), unicodedst.length());
 
     if (!latin1.isEmpty())
         while (latin1.length() < 128) {

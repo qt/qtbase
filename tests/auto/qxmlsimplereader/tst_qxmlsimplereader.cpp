@@ -165,7 +165,7 @@ class tst_QXmlSimpleReader : public QObject
         void roundtripWithNamespaces() const;
 
     private:
-        static QDomDocument fromByteArray(const QString &title, const QByteArray &ba);
+        static QDomDocument fromByteArray(const QString &title, const QByteArray &ba, bool *ok);
         XmlServer *server;
 };
 
@@ -730,25 +730,27 @@ void tst_QXmlSimpleReader::reportNamespace_data() const
                                  << QString("http://example.com/");
 }
 
-QDomDocument tst_QXmlSimpleReader::fromByteArray(const QString &title, const QByteArray &ba)
+QDomDocument tst_QXmlSimpleReader::fromByteArray(const QString &title, const QByteArray &ba, bool *ok)
 {
     QDomDocument doc(title);
-    const bool ret = doc.setContent(ba, true);
-    Q_ASSERT(ret);
+    *ok = doc.setContent(ba, true);
     return doc;
 }
 
 void tst_QXmlSimpleReader::roundtripWithNamespaces() const
 {
-    QEXPECT_FAIL("", "Known problem, see 154573. The fix happens to break uic.", Abort);
-
     const char *const expected = "<element b:attr=\"value\" xmlns:a=\"http://www.example.com/A\" xmlns:b=\"http://www.example.com/B\" />\n";
+    bool ok;
 
     {
         const char *const xml = "<element xmlns:b=\"http://www.example.com/B\" b:attr=\"value\" xmlns:a=\"http://www.example.com/A\"/>";
 
-        const QDomDocument one(fromByteArray("document", xml));
-        const QDomDocument two(fromByteArray("document2", one.toByteArray(2)));
+        const QDomDocument one(fromByteArray("document", xml, &ok));
+        QVERIFY(ok);
+        const QDomDocument two(fromByteArray("document2", one.toByteArray(2), &ok));
+        QVERIFY(ok);
+
+        QEXPECT_FAIL("", "Known problem, see 154573. The fix happens to break uic.", Abort);
 
         QCOMPARE(expected, one.toByteArray().constData());
         QCOMPARE(one.toByteArray(2).constData(), two.toByteArray(2).constData());
@@ -758,8 +760,10 @@ void tst_QXmlSimpleReader::roundtripWithNamespaces() const
     {
         const char *const xml = "<element b:attr=\"value\" xmlns:b=\"http://www.example.com/B\" xmlns:a=\"http://www.example.com/A\"/>";
 
-        const QDomDocument one(fromByteArray("document", xml));
-        const QDomDocument two(fromByteArray("document2", one.toByteArray(2)));
+        const QDomDocument one(fromByteArray("document", xml, &ok));
+        QVERIFY(ok);
+        const QDomDocument two(fromByteArray("document2", one.toByteArray(2), &ok));
+        QVERIFY(ok);
 
         QCOMPARE(expected, one.toByteArray().constData());
         QCOMPARE(one.toByteArray(2).constData(), two.toByteArray(2).constData());

@@ -1453,6 +1453,7 @@ void tst_QFuture::exceptions_QTBUG18149()
 
     try {
         MyClass m;
+        Q_UNUSED(m);
         throw 0;
     } catch (int) {}
 

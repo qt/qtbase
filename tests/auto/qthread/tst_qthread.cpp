@@ -209,7 +209,7 @@ public:
             cond.wait(&mutex, five_minutes);
         }
         setTerminationEnabled(true);
-        Q_ASSERT_X(false, "tst_QThread", "test case hung");
+        qFatal("tst_QThread: test case hung");
     }
 };
 

@@ -309,8 +309,7 @@ void tst_QBuffer::seekTest()
     // (see Task 184730)
     {
         char c;
-        const int offset = 1;
-        Q_ASSERT(offset > 0); // any positive integer will do
+        const int offset = 1; // any positive integer will do
         const qint64 pos = buf.size() + offset;
         QVERIFY(buf.seek(pos));
         QCOMPARE(buf.pos(), pos);

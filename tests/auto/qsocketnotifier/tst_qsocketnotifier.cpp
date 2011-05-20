@@ -57,7 +57,7 @@
 #include <private/qnet_unix_p.h>
 #endif
 #include <limits>
-#include <select.h>
+#include <sys/select.h>
 
 class tst_QSocketNotifier : public QObject
 {
@@ -180,7 +180,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
         // we have to wait until sequence value changes
         // as any event can make us jump out processing
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
-        QVERIFY(timer.isActive); //escape if test would hang
+        QVERIFY(timer.isActive()); //escape if test would hang
     }  while(tester.sequence <= 0);
 
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);

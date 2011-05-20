@@ -4009,7 +4009,7 @@ public:
         m_viewHasIMEnabledInFocusInEvent = false;
     }
 
-    void focusInEvent(QFocusEvent *event)
+    void focusInEvent(QFocusEvent * /* event */)
     {
         QGraphicsView *view = scene()->views().first();
         m_viewHasIMEnabledInFocusInEvent = view->testAttribute(Qt::WA_InputMethodEnabled);
@@ -4403,7 +4403,7 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     {
     public:
         CustomScene(const QRectF &rect) : QGraphicsScene(rect) { }
-        void drawBackground(QPainter *painter, const QRectF &rect)
+        void drawBackground(QPainter * /* painter */, const QRectF &rect)
         { lastBackgroundExposedRect = rect; }
         QRectF lastBackgroundExposedRect;
     };
@@ -4413,7 +4413,7 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     public:
         CustomRectItem(const QRectF &rect) : QGraphicsRectItem(rect)
         { setFlag(QGraphicsItem::ItemUsesExtendedStyleOption); }
-        void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+        void paint(QPainter * /* painter */, const QStyleOptionGraphicsItem *option, QWidget * /* widget */ = 0)
         { lastExposedRect = option->exposedRect; }
         QRectF lastExposedRect;
     };
@@ -4528,7 +4528,7 @@ public:
         setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
     }
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const
+    QVariant inputMethodQuery(Qt::InputMethodQuery) const
     {
         return mf;
     }

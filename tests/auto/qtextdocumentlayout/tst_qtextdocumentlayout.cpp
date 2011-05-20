@@ -260,6 +260,7 @@ void tst_QTextDocumentLayout::floatingTablePageBreak()
     QTextTableFormat tableFormat;
     tableFormat.setPosition(QTextFrameFormat::FloatLeft);
     QTextTable *table = cursor.insertTable(50, 1, tableFormat);
+    Q_UNUSED(table);
 
     // Make height of document 2/3 of the table, fitting the table into two pages
     QSizeF documentSize = doc->size();

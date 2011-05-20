@@ -44,6 +44,7 @@
 
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowFormat>
+#include <QtGui/QImage>
 
 #include <xcb/xcb.h>
 #include <xcb/sync.h>
@@ -76,6 +77,8 @@ public:
     QPlatformGLContext *glContext() const;
 
     xcb_window_t xcb_window() const { return m_window; }
+    uint depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
 
     void handleExposeEvent(const xcb_expose_event_t *event);
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
@@ -115,6 +118,9 @@ private:
 
     xcb_window_t m_window;
     QPlatformGLContext *m_context;
+
+    uint m_depth;
+    QImage::Format m_format;
 
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter;

@@ -795,7 +795,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (set && set->outline_drawing)
         load_flags = FT_LOAD_NO_BITMAP;
 
-    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics))
+    if (default_hint_style == HintNone || (flags & HB_ShaperFlag_UseDesignMetrics) || set->outline_drawing)
         load_flags |= FT_LOAD_NO_HINTING;
     else
         load_flags |= load_target;

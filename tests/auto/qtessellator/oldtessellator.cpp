@@ -80,19 +80,6 @@ struct QEdge {
         horizontal = p1.y == p2.y;
     }
 
-    inline qreal xAt(const qreal &y) const
-    {
-        Q_ASSERT(p1.y != p2.y);
-        XFixed yf = XDoubleToFixed(y);
-
-        if (yf == p1.y)
-            return XFixedToDouble(p1.x);
-        else if (yf == p2.y)
-            return XFixedToDouble(p2.x);
-
-        return (!vertical) ? (((y - b)*im)) : pf1.x();
-    }
-
     QPointF     pf1, pf2;
     XPointFixed p1, p2;
     qreal m;
@@ -218,7 +205,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
     qreal ymax(INT_MIN/256);
 
     //painter.begin(pg, pgSize);
-    Q_ASSERT(pg[0] == pg[pgSize-1]);
+    if (pg[0] != pg[pgSize-1])
+        qWarning() << Q_FUNC_INFO << "Malformed polygon (first and last points must be identical)";
     // generate edge table
 //     qDebug() << "POINTS:";
     for (int x = 0; x < pgSize-1; ++x) {
@@ -383,7 +371,8 @@ void old_tesselate_polygon(QVector<XTrapezoid> *traps, const QPointF *pg, int pg
 	    isects[i].edge = edge;
 	}
 
-	Q_ASSERT(isects.size()%2 == 1);
+	if (isects.size()%2 != 1)
+	    qFatal("%s: number of intersection points must be odd", Q_FUNC_INFO);
 
 	// sort intersection points
  	qSort(&isects[0], &isects[isects.size()-1], compareIntersections);

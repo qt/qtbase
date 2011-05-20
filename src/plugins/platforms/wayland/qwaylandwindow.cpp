@@ -47,6 +47,12 @@
 #include "qwaylandscreen.h"
 
 #include <QtGui/QWindow>
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
+#endif
+
+#include <QCoreApplication>
 #include <QtGui/QWindowSystemInterface>
 
 #include <QDebug>
@@ -59,6 +65,10 @@ QWaylandWindow::QWaylandWindow(QWindow *window)
 {
     static WId id = 1;
     mWindowId = id++;
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+        mDisplay->windowManagerIntegration()->mapClientToProcess(qApp->applicationPid());
+#endif
 
     mSurface = mDisplay->createSurface(this);
 }
@@ -119,7 +129,6 @@ void QWaylandWindow::attach(QWaylandBuffer *buffer)
         wl_surface_attach(mSurface, buffer->buffer(),0,0);
     }
 }
-
 
 void QWaylandWindow::damage(const QRegion &region)
 {

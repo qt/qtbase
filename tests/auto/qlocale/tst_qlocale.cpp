@@ -326,7 +326,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("en-GB", English, UnitedKingdom)
     TEST_CTOR("en-GB@bla", English, UnitedKingdom)
 
-    Q_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", Norwegian, Norway)
     TEST_CTOR("nb", Norwegian, Norway)
     TEST_CTOR("nn", NorwegianNynorsk, Norway)
@@ -431,7 +431,7 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("en_GB@bla", "en_GB")
     TEST_CTOR("de", "de_DE")
 
-    Q_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+    QVERIFY(QLocale::Norwegian == QLocale::NorwegianBokmal);
     TEST_CTOR("no", "nb_NO")
     TEST_CTOR("nb", "nb_NO")
     TEST_CTOR("nn", "nn_NO")

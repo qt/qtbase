@@ -4,7 +4,7 @@
 
 load(qttest_p4)
 requires(contains(QT_CONFIG,opengl))
-QT += opengl
+QT += opengl-private gui-private core-private
 
 contains(QT_CONFIG,egl):DEFINES += QGL_EGL
 win32:!wince*: DEFINES += QT_NO_EGL

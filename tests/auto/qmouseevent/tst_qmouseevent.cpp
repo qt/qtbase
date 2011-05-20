@@ -62,17 +62,9 @@ public:
     }
     bool mousePressEventRecieved;
     bool mouseReleaseEventRecieved;
-#ifdef QT3_SUPPORT
-    int mousePressStateBefore;
-    int mousePressStateAfter;
-#endif
     int mousePressButton;
     int mousePressButtons;
     int mousePressModifiers;
-#ifdef QT3_SUPPORT
-    int mouseReleaseStateBefore;
-    int mouseReleaseStateAfter;
-#endif
     int mouseReleaseButton;
     int mouseReleaseButtons;
     int mouseReleaseModifiers;
@@ -80,10 +72,6 @@ protected:
     void mousePressEvent(QMouseEvent *e)
     {
 	QWidget::mousePressEvent(e);
-#ifdef QT3_SUPPORT
-	mousePressStateBefore = e->state();
-	mousePressStateAfter = e->stateAfter();
-#endif
 	mousePressButton = e->button();
 	mousePressButtons = e->buttons();
 	mousePressModifiers = e->modifiers();
@@ -93,10 +81,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e)
     {
 	QWidget::mouseReleaseEvent(e);
-#ifdef QT3_SUPPORT
-	mouseReleaseStateBefore = e->state();
-	mouseReleaseStateAfter = e->stateAfter();
-#endif
 	mouseReleaseButton = e->button();
 	mouseReleaseButtons = e->buttons();
 	mouseReleaseModifiers = e->modifiers();
@@ -124,8 +108,6 @@ private slots:
     void checkMousePressEvent();
     void checkMouseReleaseEvent_data();
     void checkMouseReleaseEvent();
-
-    void qt3supportConstructors();
 
 private:
     MouseEventWidget* testMouseWidget;
@@ -157,12 +139,6 @@ void tst_QMouseEvent::init()
 {
     testMouseWidget->mousePressEventRecieved = FALSE;
     testMouseWidget->mouseReleaseEventRecieved = FALSE;
-#ifdef QT3_SUPPORT
-    testMouseWidget->mousePressStateBefore = 0;
-    testMouseWidget->mousePressStateAfter = 0;
-    testMouseWidget->mouseReleaseStateBefore = 0;
-    testMouseWidget->mouseReleaseStateAfter = 0;
-#endif
     testMouseWidget->mousePressButton = 0;
     testMouseWidget->mousePressButtons = 0;
     testMouseWidget->mousePressModifiers = 0;
@@ -210,13 +186,6 @@ void tst_QMouseEvent::checkMousePressEvent()
     QCOMPARE(testMouseWidget->mousePressButton, button);
     QCOMPARE(testMouseWidget->mousePressButtons, buttons);
     QCOMPARE(testMouseWidget->mousePressModifiers, modifiers);
-#ifdef QT3_SUPPORT
-    int stateAfter = buttons|modifiers;
-    int stateBefore = stateAfter & ~button;
-
-    QCOMPARE(testMouseWidget->mousePressStateBefore, stateBefore);
-    QCOMPARE(testMouseWidget->mousePressStateAfter, stateAfter);
-#endif
 
     QTest::mouseRelease(testMouseWidget, Qt::MouseButton(buttonPressed), Qt::KeyboardModifiers(keyPressed));
 }
@@ -256,35 +225,6 @@ void tst_QMouseEvent::checkMouseReleaseEvent()
     QCOMPARE(testMouseWidget->mouseReleaseButton, button);
     QCOMPARE(testMouseWidget->mouseReleaseButtons, buttons);
     QCOMPARE(testMouseWidget->mouseReleaseModifiers, modifiers);
-#ifdef QT3_SUPPORT
-    int stateAfter = buttons|modifiers;
-    int stateBefore = stateAfter|button;
-
-    QCOMPARE(testMouseWidget->mouseReleaseStateBefore, stateBefore);
-    QCOMPARE(testMouseWidget->mouseReleaseStateAfter, stateAfter);
-#endif
-}
-
-void tst_QMouseEvent::qt3supportConstructors()
-{
-#if !defined(QT3_SUPPORT)
-    QSKIP( "No Qt3Support present", SkipAll);
-#else
-    // make sure the state() and stateAfter() functions return the
-    // same thing they did in Qt 3 when using these constructors
-
-    {
-        QMouseEvent e(QEvent::MouseButtonPress, QPoint(0, 0), Qt::LeftButton, 0);
-        QCOMPARE(e.state(), Qt::ButtonState(Qt::NoButton));
-        QCOMPARE(e.stateAfter(), Qt::ButtonState(Qt::LeftButton));
-    }
-
-    {
-        QMouseEvent e(QEvent::MouseButtonPress, QPoint(0, 0), QPoint(0, 0), Qt::LeftButton, 0);
-        QCOMPARE(e.state(), Qt::ButtonState(Qt::NoButton));
-        QCOMPARE(e.stateAfter(), Qt::ButtonState(Qt::LeftButton));
-    }
-#endif
 }
 
 QTEST_MAIN(tst_QMouseEvent)

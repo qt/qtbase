@@ -1,5 +1,5 @@
 CONFIG += qttest_p4
-#QT = core
+QT += gui-private
 
 include(../src/src.pri)
 win32: CONFIG += console

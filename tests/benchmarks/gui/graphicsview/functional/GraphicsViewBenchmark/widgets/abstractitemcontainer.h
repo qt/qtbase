@@ -74,10 +74,8 @@ public:
     virtual void setTwoColumns(const bool enabled);
     bool twoColumns();
 
-#if (QT_VERSION >= 0x040600)
     void setSubtreeCacheEnabled(const bool enabled);
     virtual void setListItemCaching(const bool enabled, const int index) = 0;
-#endif
 
 protected:
     virtual void adjustVisibleContainerSize(const QSizeF &size) = 0;

@@ -110,7 +110,7 @@ static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::Mous
 }
 
 static void sendMouseMove(QGraphicsScene *scene, const QPointF &point,
-                          Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = 0)
+                          Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons /* buttons */ = 0)
 {
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseMove);
     event.setScenePos(point);
@@ -794,6 +794,7 @@ void tst_QGraphicsItem::deleteChildItem()
     QGraphicsItem *child1 = new QGraphicsRectItem(rect);
     QGraphicsItem *child2 = new QGraphicsRectItem(rect);
     QGraphicsItem *child3 = new QGraphicsRectItem(rect);
+    Q_UNUSED(child3);
     delete child1;
     child2->setParentItem(0);
     delete child2;
@@ -10732,7 +10733,7 @@ void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
     QTRY_VERIFY(view.repaints > 0);
 
     QGraphicsItemCache *itemCache = QGraphicsItemPrivate::get(item)->extraItemCache();
-    Q_ASSERT(itemCache);
+    QVERIFY(itemCache);
     QPixmapCache::Key currentKey = itemCache->deviceData.value(view.viewport()).key;
 
     // Trigger an update and verify that the cache is unchanged.

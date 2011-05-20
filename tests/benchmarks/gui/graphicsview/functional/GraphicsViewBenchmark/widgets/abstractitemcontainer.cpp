@@ -84,10 +84,8 @@ bool AbstractItemContainer::event(QEvent *e)
 bool AbstractItemContainer::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type()==QEvent::GraphicsSceneResize && m_itemView) {
-#if (QT_VERSION >= 0x040600)
         const bool caching = m_itemView->listItemCaching();
         m_itemView->setListItemCaching(false);
-#endif
 
         QSizeF s = m_itemView->size();
         s.setWidth(s.width()-m_itemView->verticalScrollBar()->size().width());
@@ -96,9 +94,7 @@ bool AbstractItemContainer::eventFilter(QObject *obj, QEvent *event)
         m_itemView->updateViewContent();
         updateItemBuffer();
 
-#if (QT_VERSION >= 0x040600)
         m_itemView->setListItemCaching(caching);
-#endif
     }
 
     return QGraphicsWidget::eventFilter(obj, event);
@@ -373,7 +369,6 @@ void AbstractItemContainer::updateContent()
         m_items.at(i)->updateItemContents();
 }
 
-#if (QT_VERSION >= 0x040600)
 void AbstractItemContainer::setSubtreeCacheEnabled(bool enabled)
 {
     for (int i = 0; i <m_items.count(); ++i)
@@ -381,7 +376,6 @@ void AbstractItemContainer::setSubtreeCacheEnabled(bool enabled)
     if (m_prototype)
         m_prototype->setSubtreeCacheEnabled(enabled);
 }
-#endif
 
 void AbstractItemContainer::setTwoColumns(const bool enabled)
 {

@@ -43,9 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtDebug>
 #include <QMetaObject>
-#ifdef QT3_SUPPORT
-#include <Q3ProgressBar>
-#endif
 
 #include <private/qstylesheetstyle_p.h>
 #include "../platformquirks.h"
@@ -1291,9 +1288,6 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
     QWidget w;
     QHBoxLayout layout(&w);
     w.setLayout(&layout);
-#ifdef QT3_SUPPORT
-    layout.addWidget(new Q3ProgressBar(&w)); //task 231137
-#endif
     layout.addWidget(new QPushButton("push", &w));
     layout.addWidget(new QToolButton(&w));
     QLabel label("toto", &w);

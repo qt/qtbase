@@ -132,10 +132,12 @@ void QWaylandXCompositeGLXContext::geometryChanged()
     Colormap cmap = XCreateColormap(mGlxIntegration->xDisplay(),mGlxIntegration->rootWindow(),visualInfo->visual,AllocNone);
 
     XSetWindowAttributes a;
+    a.background_pixel = WhitePixel(mGlxIntegration->xDisplay(), mGlxIntegration->screen());
+    a.border_pixel = BlackPixel(mGlxIntegration->xDisplay(), mGlxIntegration->screen());
     a.colormap = cmap;
     mXWindow = XCreateWindow(mGlxIntegration->xDisplay(), mGlxIntegration->rootWindow(),0, 0, size.width(), size.height(),
                              0, visualInfo->depth, InputOutput, visualInfo->visual,
-                             CWColormap, &a);
+                             CWBackPixel|CWBorderPixel|CWColormap, &a);
 
     XCompositeRedirectWindow(mGlxIntegration->xDisplay(), mXWindow, CompositeRedirectManual);
     XMapWindow(mGlxIntegration->xDisplay(), mXWindow);

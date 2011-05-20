@@ -49,7 +49,11 @@ int main(int argc, char** argv)
 #ifdef Q_WS_QWS
     QApplication app(argc, argv);
     QStringList args = app.arguments();
-    Q_ASSERT(args.count() ==  3 || args.count() == 4);
+    if (args.count() != 3 && args.count() != 4) {
+        fprintf(stdout,qPrintable(QString("Usage: %1 channel message [data]").arg(args.at(0))));
+        fflush(stdout);
+        return 1;
+    }
     QString channelName = args.at(1);
     QString msg = args.at(2);
     QByteArray data;

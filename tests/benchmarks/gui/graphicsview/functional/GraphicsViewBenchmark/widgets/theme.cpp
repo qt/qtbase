@@ -60,9 +60,7 @@ Theme::Theme(QObject *parent)
   , m_listItemBackgroundOpacityOdd()
   , m_listItemBorderPen(QPen())
   , m_listItemRounding()
-#if (QT_VERSION >= 0x040600)
   , m_iconOpacityEffectEnabled()
-#endif
   , m_iconRotation()
   , m_iconSmoothTransformation()
 {
@@ -156,10 +154,9 @@ void Theme::setBlueTheme()
     m_listItemBorderPen = QPen(Qt::NoPen);
     m_listItemRounding = QSize(0.0, 0.0);
 
-#if (QT_VERSION >= 0x040600)
     m_iconOpacityEffectEnabled[ListItem::LeftIcon] = false;
     m_iconOpacityEffectEnabled[ListItem::RightIcon] = false;
-#endif
+
     m_iconRotation[ListItem::LeftIcon] =  0.0;
     m_iconRotation[ListItem::RightIcon] = 0.0;
 
@@ -207,10 +204,9 @@ void Theme::setLimeTheme()
     m_listItemBorderPen = QPen(QColor(0,0,0,55), 3, Qt::SolidLine);
     m_listItemRounding = QSize(12.0, 12.0);
 
-#if (QT_VERSION >= 0x040600)
     m_iconOpacityEffectEnabled[ListItem::LeftIcon] = true;
     m_iconOpacityEffectEnabled[ListItem::RightIcon] = false;
-#endif
+
     m_iconRotation[ListItem::LeftIcon] = -4.0;
     m_iconRotation[ListItem::RightIcon] = 0.0;
 

@@ -42,6 +42,7 @@
 #include <private/qtessellator_p.h>
 
 #include "math.h"
+#include <QtCore/QDebug>
 
 class TestTessellator : public QTessellator
 {
@@ -91,7 +92,8 @@ void test_tessellate_polygon_rect(QVector<XTrapezoid> *traps, const QPointF *poi
                                   bool winding)
 {
     // 5 points per rect
-    Q_ASSERT(nPoints % 5 == 0);
+    if (nPoints % 5 != 0)
+        qWarning() << Q_FUNC_INFO << "multiples of 5 points expected";
 
     TestTessellator t;
     t.traps = traps;

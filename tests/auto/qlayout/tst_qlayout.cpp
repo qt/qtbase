@@ -76,9 +76,6 @@ private slots:
     void geometry();
     void smartMaxSize();
     void setLayoutBugs();
-#ifdef QT3_SUPPORT
-    void task193350_sizeGrip();
-#endif
     void setContentsMargins();
     void layoutItemRect();
     void warnIfWrongParent();
@@ -185,16 +182,16 @@ void tst_QLayout::smartMaxSize()
 
     int expectedIndex = 0;
     int regressionCount = 0;
-    for (int p = 0; p < sizeof(policies)/sizeof(QSizePolicy::Policy); ++p) {
+    for (size_t p = 0; p < sizeof(policies)/sizeof(QSizePolicy::Policy); ++p) {
         QSizePolicy sizePolicy;
         sizePolicy.setHorizontalPolicy(policies[p]);
-        for (int min = 0; min < sizeof(sizeCombinations)/sizeof(int); ++min) {
+        for (size_t min = 0; min < sizeof(sizeCombinations)/sizeof(int); ++min) {
             int minSize = sizeCombinations[min];
-            for (int max = 0; max < sizeof(sizeCombinations)/sizeof(int); ++max) {
+            for (size_t max = 0; max < sizeof(sizeCombinations)/sizeof(int); ++max) {
                 int maxSize = sizeCombinations[max];
-                for (int sh = 0; sh < sizeof(sizeCombinations)/sizeof(int); ++sh) {
+                for (size_t sh = 0; sh < sizeof(sizeCombinations)/sizeof(int); ++sh) {
                     int sizeHint = sizeCombinations[sh];
-                    for (int a = 0; a < sizeof(alignments)/sizeof(int); ++a) {
+                    for (size_t a = 0; a < sizeof(alignments)/sizeof(int); ++a) {
                         Qt::Alignment align = alignments[a];
                         QSize sz = qSmartMaxSize(QSize(sizeHint, 1), QSize(minSize, 1), QSize(maxSize, 1), sizePolicy, align);
                         int width = sz.width();
@@ -234,21 +231,6 @@ void tst_QLayout::setLayoutBugs()
     QVERIFY(widget.layout() == 0);
     QVERIFY(containerWidget.layout() == hBoxLayout);
 }
-
-#ifdef QT3_SUPPORT
-void tst_QLayout::task193350_sizeGrip()
-{
-    QDialog dialog;
-    dialog.setSizeGripEnabled(true);
-
-    QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    layout->setAutoAdd(true);
-    new QLabel("Label", &dialog);
-
-    dialog.show();
-    QCOMPARE(layout->indexOf(qFindChild<QSizeGrip *>(&dialog)),-1);
-}
-#endif
 
 class MyLayout : public QLayout
 {

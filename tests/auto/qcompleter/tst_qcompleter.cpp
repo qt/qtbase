@@ -277,7 +277,9 @@ retry:
         case 'L': row = completer->completionCount() - 1; break;
         case 'F': row = 0; break;
         default:
-            Q_ASSERT(false);
+            QFAIL(qPrintable(QString(
+                "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
+            ).arg(step[i])));
         }
         completer->setCurrentRow(row);
     }
@@ -1248,9 +1250,7 @@ public:
 void tst_QCompleter::task189564_omitNonSelectableItems()
 {
     const QString prefix("a");
-    Q_ASSERT(!prefix.isEmpty());
     const int n = 5;
-    Q_ASSERT(n > 0);
 
     QStringList strings;
     for (int i = 0; i < n; ++i)
@@ -1278,10 +1278,11 @@ public:
     {
         setEditable(true);
         setInsertPolicy(NoInsert);
-        Q_ASSERT(completer());
-        completer()->setCompletionMode(QCompleter::PopupCompletion);
-        completer()->setCompletionRole(Qt::DisplayRole);
-        connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        if (completer()) {
+            completer()->setCompletionMode(QCompleter::PopupCompletion);
+            completer()->setCompletionRole(Qt::DisplayRole);
+            connect(lineEdit(), SIGNAL(editingFinished()), SLOT(setCompletionPrefix()));
+        }
     }
 private slots:
     void setCompletionPrefix() { completer()->setCompletionPrefix(lineEdit()->text()); }
@@ -1290,6 +1291,7 @@ private slots:
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
     task246056_ComboBox *comboBox = new task246056_ComboBox;
+    QVERIFY(comboBox->completer());
     comboBox->addItem("");
     comboBox->addItem("a1");
     comboBox->addItem("a2");

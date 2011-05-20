@@ -415,10 +415,8 @@ void AbstractItemView::scrollContentsBy(qreal dx, qreal dy)
 
         for (int i = 0; i<itemsInContainer; ++i) {
             AbstractViewItem *changedItem = m_container->itemAt(i);
-            changedItem->setModelIndex(m_model->index(startRow+i,0));            
-#if (QT_VERSION >= 0x040600)
+            changedItem->setModelIndex(m_model->index(startRow+i,0));
             m_container->setListItemCaching(listItemCaching(), i);
-#endif
         }
 
         qreal diff = vPos-startRow*itemH;

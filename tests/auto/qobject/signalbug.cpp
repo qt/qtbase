@@ -69,7 +69,8 @@ void Receiver::received ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Receiver::received()");
-	Q_ASSERT (::Step == 2 || ::Step == 4);
+	if (::Step != 2 && ::Step != 4)
+		qFatal("%s: Incorrect Step: %d (should be 2 or 4)", Q_FUNC_INFO, ::Step);
 
 	if (::Step == 2)
 		s->fire ();
@@ -91,7 +92,8 @@ void Disconnector::received ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Disconnector::received()");
-	Q_ASSERT (::Step == 5 || ::Step == 6);
+	if (::Step != 5 && ::Step != 6)
+		qFatal("%s: Incorrect Step: %d (should be 5 or 6)", Q_FUNC_INFO, ::Step);
 
 	fprintf (stderr, "Disconnector<%s>::received() sender=%s\n",
 		(const char *) objectName ().toAscii (), sender ()->metaObject()->className());
@@ -124,7 +126,8 @@ void Sender::fire ()
 	::Step++;
 	const int stepCopy = ::Step;
 	TRACE (stepCopy, "Sender::fire()");
-	Q_ASSERT (::Step == 1 || ::Step == 3);
+	if (::Step != 1 && ::Step != 3)
+		qFatal("%s: Incorrect Step: %d (should be 1 or 3)", Q_FUNC_INFO, ::Step);
 
 	emit fired ();
 	TRACE (stepCopy, "ends Sender::fire()");

@@ -141,7 +141,6 @@ QAbstractItemView *ViewsToTest::createView(const QString &viewType)
         view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
         view->setSelectionBehavior(QAbstractItemView::SelectItems);
     }
-    Q_ASSERT(view);
     return view;
 }
 

@@ -198,10 +198,6 @@ private slots:
     void task_240612();
     void taskQTBUG_6962();
     void taskQTBUG_8701();
-
-#ifdef QT3_SUPPORT
-    void dirPath();
-#endif
 };
 
 // Testing get/set functions
@@ -3932,13 +3928,6 @@ void tst_QUrl::task_240612()
     url.path();
     QCOMPARE(url.toEncoded().constData(), "//example.com/test.txt");
 }
-
-#ifdef QT3_SUPPORT
-void tst_QUrl::dirPath()
-{
-    QCOMPARE(QUrl("http://www.vg.no/test/file.txt").dirPath(), QString("/test"));
-}
-#endif
 
 void tst_QUrl::resolvedWithAbsoluteSchemes() const
 {

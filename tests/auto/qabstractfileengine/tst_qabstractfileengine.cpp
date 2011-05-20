@@ -83,8 +83,12 @@ public:
 
     bool open(QIODevice::OpenMode openMode)
     {
-        Q_ASSERT(!openForRead_);
-        Q_ASSERT(!openForWrite_);
+        if (openForRead_ || openForWrite_) {
+            qWarning("%s: file is already open for %s",
+                     Q_FUNC_INFO,
+                     (openForRead_ ? "reading" : "writing"));
+            return false;
+        }
 
         openFile_ = resolveFile(openMode & QIODevice::WriteOnly);
         if (!openFile_)
@@ -132,13 +136,19 @@ public:
 
     qint64 pos() const
     {
-        Q_ASSERT(openForRead_ || openForWrite_);
+        if (!openForRead_ && !openForWrite_) {
+            qWarning("%s: file is not open", Q_FUNC_INFO);
+            return -1;
+        }
         return position_;
     }
 
     bool seek(qint64 pos)
     {
-        Q_ASSERT(openForRead_ || openForWrite_);
+        if (!openForRead_ && !openForWrite_) {
+            qWarning("%s: file is not open", Q_FUNC_INFO);
+            return false;
+        }
 
         if (pos >= 0) {
             position_ = pos;
@@ -150,7 +160,11 @@ public:
 
     bool flush()
     {
-        Q_ASSERT(openForRead_ || openForWrite_);
+        if (!openForRead_ && !openForWrite_) {
+            qWarning("%s: file is not open", Q_FUNC_INFO);
+            return false;
+        }
+
         return true;
     }
 
@@ -346,10 +360,10 @@ public:
 
     void setFileName(const QString &file)
     {
-        Q_ASSERT(!openForRead_);
-        Q_ASSERT(!openForWrite_);
-
-        fileName_ = file;
+        if (openForRead_ || openForWrite_)
+            qWarning("%s: Can't set file name while file is open", Q_FUNC_INFO);
+        else
+            fileName_ = file;
     }
 
     //  typedef QAbstractFileEngineIterator Iterator;
@@ -368,9 +382,16 @@ public:
 
     qint64 read(char *data, qint64 maxLen)
     {
-        Q_ASSERT(openForRead_);
+        if (!openForRead_) {
+            qWarning("%s: file must be open for reading", Q_FUNC_INFO);
+            return -1;
+        }
 
-        Q_ASSERT(!openFile_.isNull());
+        if (openFile_.isNull()) {
+            qWarning("%s: file must not be null", Q_FUNC_INFO);
+            return -1;
+        }
+
         QMutexLocker lock(&openFile_->mutex);
         qint64 readSize = qMin(openFile_->content.size() - position_, maxLen);
         if (readSize < 0)
@@ -384,12 +405,19 @@ public:
 
     qint64 write(const char *data, qint64 length)
     {
-        Q_ASSERT(openForWrite_);
+        if (!openForWrite_) {
+            qWarning("%s: file must be open for writing", Q_FUNC_INFO);
+            return -1;
+        }
+
+        if (openFile_.isNull()) {
+            qWarning("%s: file must not be null", Q_FUNC_INFO);
+            return -1;
+        }
 
         if (length < 0)
             return -1;
 
-        Q_ASSERT(!openFile_.isNull());
         QMutexLocker lock(&openFile_->mutex);
         if (openFile_->content.size() == position_)
             openFile_->content.append(data, length);
@@ -434,7 +462,8 @@ protected:
     QSharedPointer<File> resolveFile(bool create) const
     {
         if (openForRead_ || openForWrite_) {
-            Q_ASSERT(openFile_);
+            if (!openFile_)
+                qWarning("%s: file should not be null", Q_FUNC_INFO);
             return openFile_;
         }
 

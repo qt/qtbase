@@ -158,9 +158,6 @@ private slots:
     void operator_eq();
 
     void dotAndDotDot();
-#ifdef QT3_SUPPORT
-    void matchAllDirs();
-#endif
     void homePath();
     void tempPath();
     void rootPath();
@@ -192,10 +189,6 @@ private slots:
     void drives();
 
     void arrayOperator();
-
-#ifdef QT3_SUPPORT
-    void setNameFilter();
-#endif
 
     void equalityOperator_data();
     void equalityOperator();
@@ -553,17 +546,6 @@ void tst_QDir::entryList_data()
     QTest::newRow("QDir::AllDirs | QDir::NoSymLinks") << SRCDIR "entrylist/" << QStringList("*")
                                                       << int(QDir::AllDirs | QDir::NoSymLinks) << int(QDir::Name)
                                                       << filterLinks(QString(".,..,directory").split(','));
-#ifdef QT3_SUPPORT
-    QTest::newRow("QDir::All | QDir::Hidden | QDir::System") << SRCDIR "entrylist/" << QStringList("*")
-                                  << int(QDir::All | QDir::Hidden | QDir::System) << int(QDir::Name)
-                                  << filterLinks(QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
-    QTest::newRow("QDir::All | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
-                                  << int(QDir::All | QDir::Readable) << int(QDir::Name)
-                                                << filterLinks(QString(".,..,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
-    QTest::newRow("QDir::All | QDir::Writable") << SRCDIR "entrylist/" << QStringList("*")
-                                  << int(QDir::All | QDir::Writable) << int(QDir::Name)
-                                  << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
-#else
     QTest::newRow("QDir::AllEntries | QDir::Hidden | QDir::System") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::AllEntries | QDir::Hidden | QDir::System) << int(QDir::Name)
                                   << filterLinks(QString(".,..,brokenlink.lnk,directory,file,linktodirectory.lnk,linktofile.lnk,writable").split(','));
@@ -573,7 +555,6 @@ void tst_QDir::entryList_data()
     QTest::newRow("QDir::AllEntries | QDir::Writable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::AllEntries | QDir::Writable) << int(QDir::Name)
                                   << filterLinks(QString(".,..,directory,linktodirectory.lnk,writable").split(','));
-#endif
     QTest::newRow("QDir::Files | QDir::Readable") << SRCDIR "entrylist/" << QStringList("*")
                                   << int(QDir::Files | QDir::Readable) << int(QDir::Name)
                                   << filterLinks(QString("file,linktofile.lnk,writable").split(','));
@@ -993,6 +974,7 @@ void tst_QDir::cd()
 
     QDir d = startDir;
     bool notUsed = d.exists(); // make sure we cache this before so we can see if 'cd' fails to flush this
+    Q_UNUSED(notUsed);
     QCOMPARE(d.cd(cdDir), successExpected);
     if (successExpected)
         QCOMPARE(d.absolutePath(), newDir);
@@ -1345,26 +1327,6 @@ void tst_QDir::dotAndDotDot()
     QCOMPARE(entryList, QStringList() << QString("dir") << QString("spaces"));
 #endif
 }
-
-#ifdef QT3_SUPPORT
-/*
-    Tets that the setMatchAllDirs setting survies a call to setFilter.
-*/
-void tst_QDir::matchAllDirs()
-{
-    QDir dir("/");
-    dir.setMatchAllDirs(true);
-    dir.setNameFilters(QStringList() << "*.foo");
-    dir.setFilter(QDir::Hidden);
-    QVERIFY(dir.matchAllDirs());
-    QVERIFY(dir.entryList().count() > 0);
-    dir.setMatchAllDirs(false);
-    dir.setFilter(QDir::Hidden);
-    QVERIFY(dir.matchAllDirs() == false);
-    QCOMPARE(dir.entryList().count(), 0);
-
-}
-#endif
 
 void tst_QDir::homePath()
 {
@@ -1889,32 +1851,6 @@ void tst_QDir::arrayOperator()
         QCOMPARE(dir2[i], entries.at(i));
     }
 }
-
-#ifdef QT3_SUPPORT
-void tst_QDir::setNameFilter()
-{
-    QStringList filters;
-    filters << "*.jpg" << "*.png" << "*.gif";
-    QStringList filters2;
-    filters2 << "*.cpp" << "*.h" << "*.c";
-
-    QDir dir(SRCDIR "entrylist/");
-
-    dir.setNameFilter(filters.join(";"));
-    QCOMPARE(filters, dir.nameFilters());
-    QCOMPARE(filters, dir.nameFilter().split(';'));
-
-    dir.setNameFilters(filters2);
-    QCOMPARE(filters2, dir.nameFilter().split(';'));
-
-    dir.setNameFilter(filters.join(" "));
-    QCOMPARE(filters, dir.nameFilters());
-    QCOMPARE(filters, dir.nameFilter().split(' '));
-
-    dir.setNameFilters(filters2);
-    QCOMPARE(filters2, dir.nameFilter().split(' '));
-}
-#endif
 
 void tst_QDir::equalityOperator_data()
 {

@@ -812,7 +812,7 @@ void tst_QFileDialog2::task239706_editableFilterCombo()
             break;
         }
     }
-    Q_ASSERT(filterCombo);
+    QVERIFY(filterCombo);
     filterCombo->setEditable(true);
     QTest::mouseClick(filterCombo, Qt::LeftButton);
     QTest::keyPress(filterCombo, Qt::Key_X);

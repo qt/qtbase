@@ -70,12 +70,6 @@ public slots:
     void cleanup();
 private slots:
     void value();
-#ifdef QT3_SUPPORT
-    void toStringList_data();
-    void toStringList();
-    void toString_data();
-    void toString();
-#endif // QT3_SUPPORT
     void setValue_data();
     void setValue();
     void setNull();
@@ -166,12 +160,6 @@ void tst_QSqlRecord::append()
     QCOMPARE( rec->indexOf( "int" ), 1 );
     QCOMPARE( rec->indexOf( "double" ), 2 );
     QCOMPARE( rec->indexOf( "bool" ), 3 );
-#ifdef QT3_SUPPORT
-    QCOMPARE( rec->position( "string" ), 0 );
-    QCOMPARE( rec->position( "int" ), 1 );
-    QCOMPARE( rec->position( "double" ), 2 );
-    QCOMPARE( rec->position( "bool" ), 3 );
-#endif
 }
 
 void tst_QSqlRecord::clear()
@@ -181,10 +169,6 @@ void tst_QSqlRecord::clear()
     rec->clear();
     QCOMPARE( (int)rec->count(), 0 );
     QVERIFY( rec->isEmpty() );
-#ifdef QT3_SUPPORT
-    QVERIFY( rec->fieldPtr( 0 ) == 0 );
-    QVERIFY( rec->fieldPtr( "_This should give a warning!_" ) == 0 );
-#endif
     QVERIFY( !rec->contains( fields[0]->name() ) );
 }
 
@@ -236,12 +220,6 @@ void tst_QSqlRecord::clearValues()
     QCOMPARE( rec->indexOf( "int" ), 1 );
     QCOMPARE( rec->indexOf( "double" ), 2 );
     QCOMPARE( rec->indexOf( "bool" ), 3 );
-#ifdef QT3_SUPPORT
-    QCOMPARE( rec->position( "string" ), 0 );
-    QCOMPARE( rec->position( "int" ), 1 );
-    QCOMPARE( rec->position( "double" ), 2 );
-    QCOMPARE( rec->position( "bool" ), 3 );
-#endif
     for ( i = 0; i < 4; ++i )
         rec->setNull( i );
 
@@ -287,9 +265,6 @@ void tst_QSqlRecord::field()
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i )
 	QVERIFY( rec->field( i ) == *fields[ i ] );
-#ifdef QT3_SUPPORT
-    QVERIFY( rec->fieldPtr( NUM_FIELDS ) == 0 );
-#endif
 
     for ( i = 0; i < NUM_FIELDS; ++i )
 	QVERIFY( rec->field( (fields[ i ] )->name() ) == *( fields[ i ] ) );
@@ -438,9 +413,6 @@ void tst_QSqlRecord::position()
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
 	QCOMPARE( rec->indexOf( fields[ i ]->name() ), i );
-#ifdef QT3_SUPPORT
-	QCOMPARE( rec->position( fields[ i ]->name() ), i );
-#endif
     }
 }
 
@@ -499,12 +471,6 @@ void tst_QSqlRecord::setValue()
     QCOMPARE( rec->indexOf( "int" ), 1 );
     QCOMPARE( rec->indexOf( "double" ), 2 );
     QCOMPARE( rec->indexOf( "bool" ), 3 );
-#ifdef QT3_SUPPORT
-    QCOMPARE( rec->position( "string" ), 0 );
-    QCOMPARE( rec->position( "int" ), 1 );
-    QCOMPARE( rec->position( "double" ), 2 );
-    QCOMPARE( rec->position( "bool" ), 3 );
-#endif
 
     QFETCH( int, ival );
     QFETCH( QString, sval );
@@ -542,58 +508,6 @@ void tst_QSqlRecord::setValue()
     QCOMPARE( rec->value( 2 ).toDouble(), dval );
     QCOMPARE( rec->value( 3 ), QVariant(bval) );
 }
-
-#ifdef QT3_SUPPORT
-void tst_QSqlRecord::toString_data()
-{
-    clearValues_data( t );
-}
-
-void tst_QSqlRecord::toString()
-{
-    createTestRecord();
-    QString result;
-    QFETCH( QString, prefix );
-    QFETCH( QString, sep );
-    rec->setGenerated( 1, false );
-    for (int i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i == 1 )
-	    continue;
-	if ( prefix.isEmpty() ) {
-	    result += fields[ i ]->name();
-	} else {
-	    result += prefix + '.' + fields[ i ]->name();
-	}
-	if ( i != NUM_FIELDS - 1 )
-	    result += sep + ' ';
-    }
-    QCOMPARE( rec->toString( prefix, sep ), result );
-}
-
-void tst_QSqlRecord::toStringList_data()
-{
-    clearValues_data( t );
-}
-
-void tst_QSqlRecord::toStringList()
-{
-    createTestRecord();
-    QStringList result;
-    QFETCH( QString, prefix );
-    rec->setGenerated( 1, false );
-    for (int i = 0; i < NUM_FIELDS; ++i ) {
-	if ( i == 1 )
-	    continue;
-	if ( prefix.isEmpty() ) {
-	    result << fields[ i ]->name();
-	} else {
-	    result << ( prefix + '.' + fields[ i ]->name() );
-	}
-    }
-    QCOMPARE(rec->toStringList( prefix ), result);
-}
-
-#endif // QT3_SUPPORT
 
 void tst_QSqlRecord::value()
 {

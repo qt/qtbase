@@ -485,19 +485,30 @@ void QGLWindowSurface::beginPaint(const QRegion &)
     d_ptr->did_paint = true;
     updateGeometry();
 
-    if (!context())
-        return;
-
     int clearFlags = 0;
 
-    if (context()->d_func()->workaround_needsFullClearOnEveryFrame)
+#if 0
+    QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
+#endif
+    const QGLContext *ctx = QGLContext::currentContext();
+
+    if (!ctx)
+        return;
+
+    if (ctx->d_func()->workaround_needsFullClearOnEveryFrame)
         clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-    else if (context()->format().alpha())
+    else if (ctx->format().alpha())
         clearFlags = GL_COLOR_BUFFER_BIT;
 
     if (clearFlags) {
+        if (d_ptr->fbo)
+            d_ptr->fbo->bind();
+
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
+
+        if (d_ptr->fbo)
+            d_ptr->fbo->release();
     }
 }
 

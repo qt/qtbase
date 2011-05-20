@@ -2585,15 +2585,11 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution_data()
         sizeHints1.insert( Qt::MinimumSize, 30 );
         sizeHints1.insert( Qt::PreferredSize, 35 );
         sizeHints1.insert( Qt::MaximumSize, 40 );
-        Q_ASSERT( sizeHints1.value( Qt::MinimumSize ) <= sizeHints1.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints1.value( Qt::PreferredSize ) <= sizeHints1.value( Qt::MaximumSize ) );
 
         SizeHintArray sizeHints2;
         sizeHints2.insert( Qt::MinimumSize, 5 );
         sizeHints2.insert( Qt::PreferredSize, 35 );
         sizeHints2.insert( Qt::MaximumSize, 300 );
-        Q_ASSERT( sizeHints2.value( Qt::MinimumSize ) <= sizeHints2.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints2.value( Qt::PreferredSize ) <= sizeHints2.value( Qt::MaximumSize ) );
 
         const qreal width1 = 35;
         const qreal width2 = 100-10-10-10-width1;
@@ -2605,15 +2601,11 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution_data()
         sizeHints1.insert( Qt::MinimumSize, 0 );
         sizeHints1.insert( Qt::PreferredSize, 20 );
         sizeHints1.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints1.value( Qt::MinimumSize ) <= sizeHints1.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints1.value( Qt::PreferredSize ) <= sizeHints1.value( Qt::MaximumSize ) );
 
         SizeHintArray sizeHints2;
         sizeHints2.insert( Qt::MinimumSize, 0 );
         sizeHints2.insert( Qt::PreferredSize, 50 );
         sizeHints2.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints2.value( Qt::MinimumSize ) <= sizeHints2.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints2.value( Qt::PreferredSize ) <= sizeHints2.value( Qt::MaximumSize ) );
 
         const qreal width1 = 20;
         const qreal width2 = 100-10-10-10-width1;
@@ -2625,15 +2617,11 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution_data()
         sizeHints1.insert( Qt::MinimumSize, 0 );
         sizeHints1.insert( Qt::PreferredSize, 40 );
         sizeHints1.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints1.value( Qt::MinimumSize ) <= sizeHints1.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints1.value( Qt::PreferredSize ) <= sizeHints1.value( Qt::MaximumSize ) );
 
         SizeHintArray sizeHints2;
         sizeHints2.insert( Qt::MinimumSize, 0 );
         sizeHints2.insert( Qt::PreferredSize, 60 );
         sizeHints2.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints2.value( Qt::MinimumSize ) <= sizeHints2.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints2.value( Qt::PreferredSize ) <= sizeHints2.value( Qt::MaximumSize ) );
 
         const qreal width1 = 28; // got from manual calculation
         const qreal width2 = 100-10-10-10-width1;
@@ -2645,15 +2633,11 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution_data()
         sizeHints1.insert( Qt::MinimumSize, 0 );
         sizeHints1.insert( Qt::PreferredSize, 10 );
         sizeHints1.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints1.value( Qt::MinimumSize ) <= sizeHints1.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints1.value( Qt::PreferredSize ) <= sizeHints1.value( Qt::MaximumSize ) );
 
         SizeHintArray sizeHints2;
         sizeHints2.insert( Qt::MinimumSize, 0 );
         sizeHints2.insert( Qt::PreferredSize, 40 );
         sizeHints2.insert( Qt::MaximumSize, 100 );
-        Q_ASSERT( sizeHints2.value( Qt::MinimumSize ) <= sizeHints2.value( Qt::PreferredSize ) );
-        Q_ASSERT( sizeHints2.value( Qt::PreferredSize ) <= sizeHints2.value( Qt::MaximumSize ) );
 
         const qreal width1 = 22; // got from manual calculation
         const qreal width2 = 100-10-10-10-width1;
@@ -2668,6 +2652,12 @@ void tst_QGraphicsAnchorLayout1::testSizeDistribution()
     QFETCH(SizeHintArray, sizeHints2);
     QFETCH(qreal, width1);
     QFETCH(qreal, width2);
+
+    // sanity-check the test data - MinimumSize <= PreferredSize <= MaximumSize
+    QVERIFY( sizeHints1.value( Qt::MinimumSize ) <= sizeHints1.value( Qt::PreferredSize ) );
+    QVERIFY( sizeHints1.value( Qt::PreferredSize ) <= sizeHints1.value( Qt::MaximumSize ) );
+    QVERIFY( sizeHints2.value( Qt::MinimumSize ) <= sizeHints2.value( Qt::PreferredSize ) );
+    QVERIFY( sizeHints2.value( Qt::PreferredSize ) <= sizeHints2.value( Qt::MaximumSize ) );
 
     // create objects
     QGraphicsWidget widget;
