@@ -428,7 +428,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE
-//  MSCV has std::initilizer_list, but do not support the braces initilization
+//  MSCV has std::initilizer_list, but do not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
 #  endif
 
