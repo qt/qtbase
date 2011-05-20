@@ -720,7 +720,8 @@ Q_IPV6ADDR QHostAddress::toIPv6Address() const
     Returns the address as a string.
 
     For example, if the address is the IPv4 address 127.0.0.1, the
-    returned string is "127.0.0.1".
+    returned string is "127.0.0.1". For IPv6 the string format will 
+    follow the RFC5952 recommendation.
 
     \sa toIPv4Address()
 */
@@ -741,8 +742,32 @@ QString QHostAddress::toString() const
             ugle[i] = (quint16(d->a6[2*i]) << 8) | quint16(d->a6[2*i+1]);
         }
         QString s;
-        s.sprintf("%X:%X:%X:%X:%X:%X:%X:%X",
-                  ugle[0], ugle[1], ugle[2], ugle[3], ugle[4], ugle[5], ugle[6], ugle[7]);
+        QString temp;
+        bool zeroDetected = false;
+        bool zeroShortened = false;
+        for (int i = 0; i < 8; i++) {
+            if ((ugle[i] != 0) || zeroShortened) {
+                temp.sprintf("%X", ugle[i]);
+                s.append(temp);
+                if (zeroDetected)
+                    zeroShortened = true;
+            } else {
+                if (!zeroDetected) {
+                    if (i<7 && (ugle[i+1] == 0)) {
+                        s.append(QLatin1Char(':'));
+                        zeroDetected = true;
+                    } else {
+                        temp.sprintf("%X", ugle[i]);
+                        s.append(temp);
+                        if (i<7)
+                            s.append(QLatin1Char(':'));
+                    }
+                }
+            }
+            if (i<7 && ((ugle[i] != 0) || zeroShortened || (i==0 && zeroDetected)))
+                s.append(QLatin1Char(':'));
+        }
+
         if (!d->scopeId.isEmpty())
             s.append(QLatin1Char('%') + d->scopeId);
         return s;
