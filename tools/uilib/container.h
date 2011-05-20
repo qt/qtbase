@@ -65,6 +65,13 @@ public:
     virtual void addWidget(QWidget *widget) = 0;
     virtual void insertWidget(int index, QWidget *widget) = 0;
     virtual void remove(int index) = 0;
+
+    virtual bool canAddWidget() const
+    // ### Qt6 remove body, provided in Qt5 for source compatibility to Qt4.
+         { return true; }
+    virtual bool canRemove(int index) const
+    // ### Qt6 remove body, provided in Qt5 for source compatibility to Qt4.
+         { Q_UNUSED(index); return true; }
 };
 Q_DECLARE_EXTENSION_INTERFACE(QDesignerContainerExtension, "com.trolltech.Qt.Designer.Container")
 
