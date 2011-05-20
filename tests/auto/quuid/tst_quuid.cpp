@@ -60,7 +60,10 @@ public:
     tst_QUuid();
 
 private slots:
+    void fromChar();
     void toString();
+    void fromString();
+    void check_QDataStream();
     void isNull();
     void equal();
     void notEqual();
@@ -83,16 +86,74 @@ public:
 
 tst_QUuid::tst_QUuid()
 {
-    uuidA = "{fc69b59e-cc34-4436-a43c-ee95d128b8c5}";
-    uuidB = "{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
+    //"{fc69b59e-cc34-4436-a43c-ee95d128b8c5}";
+    uuidA = QUuid(0xfc69b59e, 0xcc34 ,0x4436 ,0xa4 ,0x3c ,0xee ,0x95 ,0xd1 ,0x28 ,0xb8 ,0xc5);
+
+    //"{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}";
+    uuidB = QUuid(0x1ab6e93a ,0xb1cb ,0x4a87 ,0xba ,0x47 ,0xec ,0x7e ,0x99 ,0x03 ,0x9a ,0x7b);
 }
 
+void tst_QUuid::fromChar()
+{
+    QCOMPARE(uuidA, QUuid("{fc69b59e-cc34-4436-a43c-ee95d128b8c5}"));
+    QCOMPARE(uuidA, QUuid("fc69b59e-cc34-4436-a43c-ee95d128b8c5}"));
+    QCOMPARE(uuidA, QUuid("{fc69b59e-cc34-4436-a43c-ee95d128b8c5"));
+    QCOMPARE(uuidA, QUuid("fc69b59e-cc34-4436-a43c-ee95d128b8c5"));
+    QCOMPARE(QUuid(), QUuid("{fc69b59e-cc34-4436-a43c-ee95d128b8c"));
+    QCOMPARE(QUuid(), QUuid("{fc69b59e-cc34"));
+    QCOMPARE(QUuid(), QUuid("fc69b59e-cc34-"));
+    QCOMPARE(QUuid(), QUuid("fc69b59e-cc34"));
+    QCOMPARE(QUuid(), QUuid("cc34"));
+    QCOMPARE(QUuid(), QUuid(NULL));
+
+    QCOMPARE(uuidB, QUuid(QString("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}")));
+}
 
 void tst_QUuid::toString()
 {
     QCOMPARE(uuidA.toString(), QString("{fc69b59e-cc34-4436-a43c-ee95d128b8c5}"));
+
+    QCOMPARE(uuidB.toString(), QString("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}"));
 }
 
+void tst_QUuid::fromString()
+{
+    QCOMPARE(uuidA, QUuid(QString("{fc69b59e-cc34-4436-a43c-ee95d128b8c5}")));
+    QCOMPARE(uuidA, QUuid(QString("fc69b59e-cc34-4436-a43c-ee95d128b8c5}")));
+    QCOMPARE(uuidA, QUuid(QString("{fc69b59e-cc34-4436-a43c-ee95d128b8c5")));
+    QCOMPARE(uuidA, QUuid(QString("fc69b59e-cc34-4436-a43c-ee95d128b8c5")));
+    QCOMPARE(QUuid(), QUuid(QString("{fc69b59e-cc34-4436-a43c-ee95d128b8c")));
+
+    QCOMPARE(uuidB, QUuid(QString("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}")));
+}
+
+void tst_QUuid::check_QDataStream()
+{
+    QUuid tmp;
+    QByteArray ar;
+    {
+        QDataStream out(&ar,QIODevice::WriteOnly);
+        out.setByteOrder(QDataStream::BigEndian);
+        out << uuidA;
+    }
+    {
+        QDataStream in(&ar,QIODevice::ReadOnly);
+        in.setByteOrder(QDataStream::BigEndian);
+        in >> tmp;
+        QCOMPARE(uuidA, tmp);
+    }
+    {
+        QDataStream out(&ar,QIODevice::WriteOnly);
+        out.setByteOrder(QDataStream::LittleEndian);
+        out << uuidA;
+    }
+    {
+        QDataStream in(&ar,QIODevice::ReadOnly);
+        in.setByteOrder(QDataStream::LittleEndian);
+        in >> tmp;
+        QCOMPARE(uuidA, tmp);
+    }
+}
 
 void tst_QUuid::isNull()
 {
