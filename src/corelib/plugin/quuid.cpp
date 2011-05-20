@@ -42,8 +42,96 @@
 #include "quuid.h"
 
 #include "qdatastream.h"
+#include "qendian.h"
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_QUUID_STRING
+template <class Char, class Integral>
+void _q_toHex(Char *&dst, Integral value)
+{
+    static const char digits[] = "0123456789abcdef";
+
+    if (sizeof(Integral) > 1)
+        value = qToBigEndian(value);
+
+    const char* p = reinterpret_cast<const char*>(&value);
+
+    for (uint i = 0; i < sizeof(Integral); ++i, dst += 2) {
+        uint j = (p[i] >> 4) & 0xf;
+        dst[0] = Char(digits[j]);
+        j = p[i] & 0xf;
+        dst[1] = Char(digits[j]);
+    }
+}
+
+template <class Char, class Integral>
+bool _q_fromHex(const Char *&src, Integral &value)
+{
+    value = 0;
+
+    for (uint i = 0; i < sizeof(Integral) * 2; ++i) {
+        int ch = *src++;
+        int tmp;
+        if (ch >= '0' && ch <= '9')
+            tmp = ch - '0';
+        else if (ch >= 'a' && ch <= 'f')
+            tmp = ch - 'a' + 10;
+        else if (ch >= 'A' && ch <= 'F')
+            tmp = ch - 'A' + 10;
+        else
+            return false;
+
+        value = value * 16 + tmp;
+    }
+
+    return true;
+}
+
+template <class Char>
+void _q_uuidToHex(Char *&dst, const uint &d1, const ushort &d2, const ushort &d3, const uchar (&d4)[8])
+{
+    *dst++ = Char('{');
+    _q_toHex(dst, d1);
+    *dst++ = Char('-');
+    _q_toHex(dst, d2);
+    *dst++ = Char('-');
+    _q_toHex(dst, d3);
+    *dst++ = Char('-');
+    for (int i = 0; i < 2; i++)
+        _q_toHex(dst, d4[i]);
+    *dst++ = Char('-');
+    for (int i = 2; i < 8; i++)
+        _q_toHex(dst, d4[i]);
+    *dst = Char('}');
+}
+
+template <class Char>
+bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&d4)[8])
+{
+    if (*src == Char('{'))
+        src++;
+    if (!_q_fromHex(src, d1)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d2)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d3)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d4[0])
+            || !_q_fromHex(src, d4[1])
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d4[2])
+            || !_q_fromHex(src, d4[3])
+            || !_q_fromHex(src, d4[4])
+            || !_q_fromHex(src, d4[5])
+            || !_q_fromHex(src, d4[6])
+            || !_q_fromHex(src, d4[7])) {
+        return false;
+    }
+
+    return true;
+}
+#endif
 
 /*!
     \class QUuid
@@ -231,49 +319,21 @@ QT_BEGIN_NAMESPACE
 */
 QUuid::QUuid(const QString &text)
 {
-    bool ok;
-    if (text.isEmpty()) {
-        *this = QUuid();
-        return;
-    }
-    QString temp = text.toUpper();
-    if (temp[0] != QLatin1Char('{'))
-        temp = QLatin1Char('{') + text;
-    if (text[(int)text.length()-1] != QLatin1Char('}'))
-        temp += QLatin1Char('}');
-
-    data1 = temp.mid(1, 8).toULongLong(&ok, 16);
-    if (!ok) {
+    if (text.length() < 36) {
         *this = QUuid();
         return;
     }
 
-    data2 = temp.mid(10, 4).toUInt(&ok, 16);
-    if (!ok) {
+    const ushort *data = reinterpret_cast<const ushort *>(text.unicode());
+
+    if (*data == '{' && text.length() < 37) {
         *this = QUuid();
         return;
     }
-    data3 = temp.mid(15, 4).toUInt(&ok, 16);
-    if (!ok) {
+
+    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
         *this = QUuid();
         return;
-    }
-    data4[0] = temp.mid(20, 2).toUInt(&ok, 16);
-    if (!ok) {
-        *this = QUuid();
-        return;
-    }
-    data4[1] = temp.mid(22, 2).toUInt(&ok, 16);
-    if (!ok) {
-        *this = QUuid();
-        return;
-    }
-    for (int i = 2; i<8; i++) {
-        data4[i] = temp.mid(25 + (i-2)*2, 2).toUShort(&ok, 16);
-        if (!ok) {
-            *this = QUuid();
-            return;
-        }
     }
 }
 
@@ -307,11 +367,6 @@ QUuid::QUuid(const char *text)
 
     \sa toString()
 */
-
-static QString uuidhex(uint data, int digits)
-{
-    return QString::number(data, 16).rightJustified(digits, QLatin1Char('0'));
-}
 
 /*!
     Returns the string representation of this QUuid. The string is
@@ -349,22 +404,12 @@ static QString uuidhex(uint data, int digits)
 */
 QString QUuid::toString() const
 {
-    QString result;
+    QString result(38, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
 
-    QChar dash = QLatin1Char('-');
-    result = QLatin1Char('{') + uuidhex(data1,8);
-    result += dash;
-    result += uuidhex(data2,4);
-    result += dash;
-    result += uuidhex(data3,4);
-    result += dash;
-    result += uuidhex(data4[0],2);
-    result += uuidhex(data4[1],2);
-    result += dash;
-    for (int i = 2; i < 8; i++)
-        result += uuidhex(data4[i],2);
+    _q_uuidToHex(data, data1, data2, data3, data4);
 
-    return result + QLatin1Char('}');
+    return result;
 }
 #endif
 
