@@ -150,6 +150,7 @@ public:
     static QPalette *app_pal;
 
     static QWindowList window_list;
+    static QWindow *active_window;
 
 #ifndef QT_NO_CURSOR
     QList<QCursor> cursor_list;

@@ -62,6 +62,8 @@ QWindow::QWindow(QWindow *parent)
 
 QWindow::~QWindow()
 {
+    if (QGuiApplicationPrivate::active_window == this)
+        QGuiApplicationPrivate::active_window = 0;
     destroy();
 }
 
@@ -259,6 +261,7 @@ void QWindow::setOpacity(qreal level)
 void QWindow::requestActivateWindow()
 {
     Q_D(QWindow);
+    QGuiApplicationPrivate::active_window = this;
     if (d->platformWindow) {
         d->platformWindow->requestActivateWindow();
     }

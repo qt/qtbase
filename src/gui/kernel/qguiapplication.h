@@ -81,6 +81,8 @@ public:
 
     static QWindowList topLevelWindows();
 
+    static QWindow *activeWindow();
+
 #ifndef QT_NO_CURSOR
     static QCursor *overrideCursor();
     static void setOverrideCursor(const QCursor &);

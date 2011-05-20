@@ -108,6 +108,7 @@ QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 #endif
 
 QWindowList QGuiApplicationPrivate::window_list;
+QWindow *QGuiApplicationPrivate::active_window = 0;
 
 Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QGuiApplicationPrivate::app_font = 0;
@@ -170,6 +171,11 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
     : QCoreApplicationPrivate(argc, argv, flags)
 {
     self = this;
+}
+
+QWindow *QGuiApplication::activeWindow()
+{
+    return QGuiApplicationPrivate::active_window;
 }
 
 QWindowList QGuiApplication::topLevelWindows()
@@ -553,9 +559,9 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
     QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);
 }
 
-void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *)
+void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
-//    QGuiApplication::setActiveWindow(e->activated.data());
+    QGuiApplicationPrivate::active_window = e->activated.data();
 }
 
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
