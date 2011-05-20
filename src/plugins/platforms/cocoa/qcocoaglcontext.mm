@@ -76,3 +76,8 @@ NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat()
     return pixelFormat;
 }
 
+NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
+{
+    return [m_glView openGLContext];
+}
+

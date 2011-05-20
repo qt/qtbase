@@ -39,61 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_COCOA_H
-#define QPLATFORMINTEGRATION_COCOA_H
+#include "qcocoanativeinterface.h"
+#include "qcocoaglcontext.h"
+#include <qbytearray.h>
+#include <qwindow.h>
+#include "qplatformwindow_qpa.h"
+#include "qwindowformat_qpa.h"
+#include "qplatformglcontext_qpa.h"
+#include "qwindowcontext_qpa.h"
+#include <qdebug.h>
 
-#include <Cocoa/Cocoa.h>
-
-#include "qcocoaautoreleasepool.h"
-
-#include <QtGui/QPlatformIntegration>
-
-QT_BEGIN_NAMESPACE
-
-class QCocoaScreen : public QPlatformScreen
+void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
-public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    NSScreen *m_screen;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
-};
-
-class QCocoaIntegration : public QPlatformIntegration
-{
-public:
-    QCocoaIntegration();
-    ~QCocoaIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformEventLoopIntegration *createEventLoopIntegration() const;
-    QPlatformNativeInterface *nativeInterface() const;
-private:
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
-
-    QCocoaAutoReleasePool *mPool;
-};
-
-QT_END_NAMESPACE
-
-#endif
-
+    if (resourceString == "nsopenglcontext") {
+        QPlatformGLContext *platformContext = window->glContext()->handle();
+        return static_cast<QCocoaGLContext *>(platformContext)->nsOpenGLContext();
+    }
+    return 0;
+}

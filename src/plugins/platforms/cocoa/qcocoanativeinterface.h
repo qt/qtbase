@@ -39,61 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_COCOA_H
-#define QPLATFORMINTEGRATION_COCOA_H
+#ifndef QCOCOANATIVEINTERFACE_H
+#define QCOCOANATIVEINTERFACE_H
 
-#include <Cocoa/Cocoa.h>
+#include <QtGui/QPlatformNativeInterface>
 
-#include "qcocoaautoreleasepool.h"
+class QWidget;
 
-#include <QtGui/QPlatformIntegration>
-
-QT_BEGIN_NAMESPACE
-
-class QCocoaScreen : public QPlatformScreen
+class QCocoaNativeInterface : public QPlatformNativeInterface
 {
 public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    NSScreen *m_screen;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
+    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 };
 
-class QCocoaIntegration : public QPlatformIntegration
-{
-public:
-    QCocoaIntegration();
-    ~QCocoaIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformEventLoopIntegration *createEventLoopIntegration() const;
-    QPlatformNativeInterface *nativeInterface() const;
-private:
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
-
-    QCocoaAutoReleasePool *mPool;
-};
-
-QT_END_NAMESPACE
-
-#endif
-
+#endif // QCOCOANATIVEINTERFACE_H

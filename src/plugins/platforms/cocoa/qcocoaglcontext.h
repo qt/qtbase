@@ -18,6 +18,7 @@ public:
     void* getProcAddress(const QString& procName);
     QWindowFormat windowFormat() const;
     static NSOpenGLPixelFormat *createNSOpenGLPixelFormat();
+    NSOpenGLContext *nsOpenGLContext() const;
 private:
     NSOpenGLView *m_glView;
 };

@@ -44,6 +44,7 @@
 #include "qcocoawindow.h"
 #include "qcocoawindowsurface.h"
 #include "qcocoaeventloopintegration.h"
+#include "qcocoanativeinterface.h"
 
 #include "qbasicunixfontdatabase.h"
 
@@ -127,4 +128,10 @@ QPlatformEventLoopIntegration *QCocoaIntegration::createEventLoopIntegration() c
 {
     return new QCocoaEventLoopIntegration();
 }
+
+QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
+{
+    return new QCocoaNativeInterface();
+}
+
 QT_END_NAMESPACE
