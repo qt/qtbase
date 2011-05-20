@@ -17,6 +17,6 @@ symbian*: {
     DEPLOYMENT += testData
 }
 
-QT += xml svg 
+QT += xml svg core-private gui-private
 
 
