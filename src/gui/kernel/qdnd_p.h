@@ -251,6 +251,7 @@ public:
 
     void setCurrentTarget(QObject *target, bool dropped = false);
     QObject *currentTarget();
+    QWindow *currentWindow;
 
 #ifdef Q_WS_X11
     QPixmap xdndMimeTransferedPixmap[2];

@@ -44,6 +44,8 @@
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
 
+#include <qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 QWidget *qt_button_down = 0; // widget got last button-down
@@ -93,6 +95,12 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::Wheel:
         handleWheelEvent(static_cast<QWheelEvent *>(event));
         return true;
+
+    case QEvent::DragEnter:
+    case QEvent::DragLeave:
+    case QEvent::DragMove:
+    case QEvent::Drop:
+        handleDragEvent(event);
 
     default:
         break;
@@ -269,5 +277,64 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QWheelEvent translated(mapped, event->globalPos(), event->delta(), event->buttons(), event->modifiers(), event->orientation());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
+
+void QWidgetWindow::handleDragEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::DragEnter:
+        Q_ASSERT(!m_dragTarget);
+        // fall through
+    case QEvent::DragMove:
+    {
+        QDragMoveEvent *de = static_cast<QDragMoveEvent *>(event);
+        QWidget *widget = m_widget->childAt(de->pos());
+        if (!widget)
+            widget = m_widget;
+
+        if (widget != m_dragTarget.data()) {
+            if (m_dragTarget.data()) {
+                QDragLeaveEvent le;
+                QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), &le);
+            }
+            m_dragTarget = widget;
+            QPoint mapped = widget->mapFrom(m_widget, de->pos());
+            QDragEnterEvent translated(mapped, de->possibleActions(), de->mimeData(), de->mouseButtons(), de->keyboardModifiers());
+            QGuiApplication::sendSpontaneousEvent(widget, &translated);
+            if (translated.isAccepted())
+                event->accept();
+            de->setDropAction(translated.dropAction());
+        } else {
+            Q_ASSERT(event->type() == QEvent::DragMove);
+            QPoint mapped = widget->mapFrom(m_widget, de->pos());
+            QDragMoveEvent translated(mapped, de->possibleActions(), de->mimeData(), de->mouseButtons(), de->keyboardModifiers());
+            translated.setDropAction(de->dropAction());
+            QGuiApplication::sendSpontaneousEvent(widget, &translated);
+            if (translated.isAccepted())
+                event->accept();
+            de->setDropAction(translated.dropAction());
+        }
+        break;
+    }
+    case QEvent::DragLeave:
+        if (m_dragTarget)
+            QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), event);
+        m_dragTarget = (QWidget *)0;
+        break;
+    case QEvent::Drop:
+    {
+        QDropEvent *de = static_cast<QDropEvent *>(event);
+        QPoint mapped = m_dragTarget.data()->mapFrom(m_widget, de->pos());
+        QDropEvent translated(mapped, de->possibleActions(), de->mimeData(), de->mouseButtons(), de->keyboardModifiers());
+        QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), &translated);
+        if (translated.isAccepted())
+            event->accept();
+        de->setDropAction(translated.dropAction());
+        m_dragTarget = (QWidget *)0;
+    }
+    default:
+        break;
+    }
+}
+
 
 QT_END_NAMESPACE

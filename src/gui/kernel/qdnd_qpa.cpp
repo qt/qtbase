@@ -112,7 +112,7 @@ public:
 //        } else {
 //            clearMask();
 //        }
-//        resize(pm.width(),pm.height());
+        setGeometry(QRect(geometry().topLeft(), pm.size()));
     }
 
     // ### Get it painted again!
@@ -181,10 +181,8 @@ void QDragManager::updateCursor()
 
 bool QDragManager::eventFilter(QObject *o, QEvent *e)
 {
-#if 0
-    // ###
- if (beingCancelled) {
-     if (e->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape) {
+    if (beingCancelled) {
+        if (e->type() == QEvent::KeyRelease && static_cast<QKeyEvent*>(e)->key() == Qt::Key_Escape) {
             qApp->removeEventFilter(this);
             Q_ASSERT(object == 0);
             beingCancelled = false;
@@ -195,8 +193,8 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
     }
 
 
-
-    if (!o->isWidgetType())
+    QWindow *window = qobject_cast<QWindow *>(o);
+    if (!window)
         return false;
 
     switch(e->type()) {
@@ -220,61 +218,57 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
             return true; // Eat all key events
         }
 
+        case QEvent::Enter:
+        {
+            // don't do anything here, it's the first move event inside the window that
+            // will be used
+            break;
+        }
+        case QEvent::Leave:
+        {
+            currentWindow = 0;
+            QDragLeaveEvent dle;
+            QCoreApplication::sendEvent(o, &dle);
+            break;
+        }
+
         case QEvent::MouseButtonPress:
         case QEvent::MouseMove:
         {
-            if (!object) { //#### this should not happen
-                qWarning("QDragManager::eventFilter: No object");
-                return true;
-            }
-
-            QDragManager *manager = QDragManager::self();
-            QMimeData *dropData = manager->object ? manager->dragPrivate()->data : manager->dropData;
-            if (manager->object)
-                possible_actions =  manager->dragPrivate()->possible_actions;
+            QMimeData *dropData = object ? dragPrivate()->data : this->dropData;
+            if (object)
+                possible_actions =  dragPrivate()->possible_actions;
             else
                 possible_actions = Qt::IgnoreAction;
 
             QMouseEvent *me = (QMouseEvent *)e;
             if (me->buttons()) {
                 Qt::DropAction prevAction = global_accepted_action;
-                QWidget *cw = QApplication::widgetAt(me->globalPos());
 
-                // Fix for when we move mouse on to the deco widget
-                if (qt_qws_dnd_deco && cw == qt_qws_dnd_deco)
-                    cw = object->target();
-
-                while (cw && !cw->acceptDrops() && !cw->isWindow())
-                    cw = cw->parentWidget();
-
-                if (object->target() != cw) {
-                    if (object->target()) {
+                if (currentWindow != window) {
+                    if (currentWindow) {
                         QDragLeaveEvent dle;
-                        QCoreApplication::sendEvent(object->target(), &dle);
+                        QCoreApplication::sendEvent(currentWindow, &dle);
                         willDrop = false;
                         global_accepted_action = Qt::IgnoreAction;
                         updateCursor();
                         restoreCursor = true;
-                        object->d_func()->target = 0;
                     }
-                    if (cw && cw->acceptDrops()) {
-                        object->d_func()->target = cw;
-                        QDragEnterEvent dee(cw->mapFromGlobal(me->globalPos()), possible_actions, dropData,
-                                            me->buttons(), me->modifiers());
-                        QCoreApplication::sendEvent(object->target(), &dee);
-                        willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
-                        global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
-                        updateCursor();
-                        restoreCursor = true;
-                    }
-                } else if (cw) {
-                    QDragMoveEvent dme(cw->mapFromGlobal(me->globalPos()), possible_actions, dropData,
-                                       me->buttons(), me->modifiers());
+                    currentWindow = window;
+                    QDragEnterEvent dee(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
+                    QCoreApplication::sendEvent(currentWindow, &dee);
+                    willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
+                    global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
+                    updateCursor();
+                    restoreCursor = true;
+                } else {
+                    Q_ASSERT(currentWindow);
+                    QDragMoveEvent dme(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
                     if (global_accepted_action != Qt::IgnoreAction) {
                         dme.setDropAction(global_accepted_action);
                         dme.accept();
                     }
-                    QCoreApplication::sendEvent(cw, &dme);
+                    QCoreApplication::sendEvent(currentWindow, &dme);
                     willDrop = dme.isAccepted();
                     global_accepted_action = willDrop ? dme.dropAction() : Qt::IgnoreAction;
                     updatePixmap();
@@ -296,15 +290,13 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
 #endif
                 restoreCursor = false;
             }
-            if (object && object->target()) {
+            if (currentWindow) {
                 QMouseEvent *me = (QMouseEvent *)e;
 
-                QDragManager *manager = QDragManager::self();
-                QMimeData *dropData = manager->object ? manager->dragPrivate()->data : manager->dropData;
+                QMimeData *dropData = object ? dragPrivate()->data : this->dropData;
 
-                QDropEvent de(object->target()->mapFromGlobal(me->globalPos()), possible_actions, dropData,
-                              me->buttons(), me->modifiers());
-                QCoreApplication::sendEvent(object->target(), &de);
+                QDropEvent de(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
+                QCoreApplication::sendEvent(currentWindow, &de);
                 if (de.isAccepted())
                     global_accepted_action = de.dropAction();
                 else
@@ -314,6 +306,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                     object->deleteLater();
                 drag_object = object = 0;
             }
+            currentWindow = 0;
             eventLoop->exit();
             return true; // Eat all mouse events
         }
@@ -321,7 +314,6 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
         default:
              break;
     }
-#endif
     return false;
 }
 
@@ -337,7 +329,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     }
 
     object = drag_object = o;
-    qt_qws_dnd_deco = new QShapedPixmapWindow();
+    if (!qt_qws_dnd_deco)
+        qt_qws_dnd_deco = new QShapedPixmapWindow();
     oldstate = Qt::NoModifier; // #### Should use state that caused the drag
 //    drag_mode = mode;
 

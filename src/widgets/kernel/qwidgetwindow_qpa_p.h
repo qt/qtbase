@@ -70,10 +70,12 @@ protected:
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
     void handleWheelEvent(QWheelEvent *);
+    void handleDragEvent(QEvent *);
 
 private:
     QWidget *m_widget;
     QWeakPointer<QWidget> m_implicit_mouse_grabber;
+    QWeakPointer<QWidget> m_dragTarget;
 };
 
 QT_END_NAMESPACE
