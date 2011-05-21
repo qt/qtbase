@@ -183,6 +183,27 @@ QWindowList QGuiApplication::topLevelWindows()
     return QGuiApplicationPrivate::window_list;
 }
 
+QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
+{
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
+
+    QList<QPlatformScreen *> screens = pi->screens();
+    QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
+    QList<QPlatformScreen *>::const_iterator end = screens.constEnd();
+
+    // The first screen in a virtual environment should know about all top levels
+    if (pi->isVirtualDesktop())
+        return (*screen)->topLevelAt(pos);
+
+    while (screen != end) {
+        if ((*screen)->geometry().contains(pos))
+            return (*screen)->topLevelAt(pos);
+        ++screen;
+    }
+    return 0;
+}
+
+
 static void init_platform(const QString &name, const QString &platformPluginPath)
 {
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);

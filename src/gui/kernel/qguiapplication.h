@@ -80,6 +80,7 @@ public:
     virtual ~QGuiApplication();
 
     static QWindowList topLevelWindows();
+    static QWindow *topLevelAt(const QPoint &pos);
 
     static QWindow *activeWindow();
 

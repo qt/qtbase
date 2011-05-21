@@ -58,21 +58,27 @@ QWindow::QWindow(QWindow *parent)
 {
     Q_D(QWindow);
     d->parentWindow = parent;
+    QGuiApplicationPrivate::window_list.prepend(this);
 }
 
 QWindow::~QWindow()
 {
     if (QGuiApplicationPrivate::active_window == this)
         QGuiApplicationPrivate::active_window = 0;
+    QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
 }
 
 void QWindow::setVisible(bool visible)
 {
     Q_D(QWindow);
-    if (!d->platformWindow) {
+
+    if (d->visible == visible)
+        return;
+    d->visible = visible;
+
+    if (!d->platformWindow)
         create();
-    }
     d->platformWindow->setVisible(visible);
 }
 
