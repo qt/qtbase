@@ -44,8 +44,6 @@
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
 
-#include <qdebug.h>
-
 QT_BEGIN_NAMESPACE
 
 QWidget *qt_button_down = 0; // widget got last button-down

@@ -50,6 +50,7 @@
 #include "qpainter.h"
 #include "qdnd_p.h"
 #include "qwindow.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -193,8 +194,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
     }
 
 
-    QWindow *window = qobject_cast<QWindow *>(o);
-    if (!window)
+    if (!qobject_cast<QWindow *>(o))
         return false;
 
     switch(e->type()) {
@@ -218,30 +218,23 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
             return true; // Eat all key events
         }
 
-        case QEvent::Enter:
-        {
-            // don't do anything here, it's the first move event inside the window that
-            // will be used
-            break;
-        }
-        case QEvent::Leave:
-        {
-            currentWindow = 0;
-            QDragLeaveEvent dle;
-            QCoreApplication::sendEvent(o, &dle);
-            break;
-        }
 
         case QEvent::MouseButtonPress:
         case QEvent::MouseMove:
         {
+            QMouseEvent *me = (QMouseEvent *)e;
+            QWindow *window = QGuiApplication::topLevelAt(me->globalPos());
+            QPoint pos;
+            if (window)
+                pos = me->globalPos() - window->geometry().topLeft();
+            qDebug() << window << o;
+
             QMimeData *dropData = object ? dragPrivate()->data : this->dropData;
             if (object)
                 possible_actions =  dragPrivate()->possible_actions;
             else
                 possible_actions = Qt::IgnoreAction;
 
-            QMouseEvent *me = (QMouseEvent *)e;
             if (me->buttons()) {
                 Qt::DropAction prevAction = global_accepted_action;
 
@@ -251,19 +244,19 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                         QCoreApplication::sendEvent(currentWindow, &dle);
                         willDrop = false;
                         global_accepted_action = Qt::IgnoreAction;
-                        updateCursor();
-                        restoreCursor = true;
                     }
                     currentWindow = window;
-                    QDragEnterEvent dee(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
-                    QCoreApplication::sendEvent(currentWindow, &dee);
-                    willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
-                    global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
+                    if (currentWindow) {
+                        QDragEnterEvent dee(pos, possible_actions, dropData, me->buttons(), me->modifiers());
+                        QCoreApplication::sendEvent(currentWindow, &dee);
+                        willDrop = dee.isAccepted() && dee.dropAction() != Qt::IgnoreAction;
+                        global_accepted_action = willDrop ? dee.dropAction() : Qt::IgnoreAction;
+                    }
                     updateCursor();
                     restoreCursor = true;
-                } else {
+                } else if (window) {
                     Q_ASSERT(currentWindow);
-                    QDragMoveEvent dme(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
+                    QDragMoveEvent dme(pos, possible_actions, dropData, me->buttons(), me->modifiers());
                     if (global_accepted_action != Qt::IgnoreAction) {
                         dme.setDropAction(global_accepted_action);
                         dme.accept();
@@ -290,13 +283,15 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
 #endif
                 restoreCursor = false;
             }
-            if (currentWindow) {
-                QMouseEvent *me = (QMouseEvent *)e;
+            QMouseEvent *me = (QMouseEvent *)e;
+            QWindow *window = QGuiApplication::topLevelAt(me->globalPos());
 
+            if (window) {
+                QPoint pos = me->globalPos() - window->geometry().topLeft();
                 QMimeData *dropData = object ? dragPrivate()->data : this->dropData;
 
-                QDropEvent de(me->pos(), possible_actions, dropData, me->buttons(), me->modifiers());
-                QCoreApplication::sendEvent(currentWindow, &de);
+                QDropEvent de(pos, possible_actions, dropData, me->buttons(), me->modifiers());
+                QCoreApplication::sendEvent(window, &de);
                 if (de.isAccepted())
                     global_accepted_action = de.dropAction();
                 else
