@@ -57,6 +57,7 @@
 #include "qdbusabstractadaptor.h"
 #include "qdbusabstractadaptor_p.h"
 #include "qdbusutil_p.h"
+#include "qdbusvirtualobject.h"
 #include "qdbusmessage_p.h"
 #include "qdbuscontext_p.h"
 #include "qdbuspendingcall_p.h"
@@ -442,7 +443,11 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
 
     // walk the object tree
     const QDBusConnectionPrivate::ObjectTreeNode *node = root;
-    while (start < length && node && !(node->flags & QDBusConnection::ExportChildObjects)) {
+    while (start < length && node) {
+        if (node->flags & QDBusConnection::ExportChildObjects)
+            break;
+        if ((node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath))
+            break;
         int end = fullpath.indexOf(QLatin1Char('/'), start);
         end = (end == -1 ? length : end);
         QStringRef pathComponent(&fullpath, start, end - start);
@@ -1328,7 +1333,7 @@ bool QDBusConnectionPrivate::activateInternalFilters(const ObjectTreeNode &node,
     if (interface.isEmpty() || interface == QLatin1String(DBUS_INTERFACE_INTROSPECTABLE)) {
         if (msg.member() == QLatin1String("Introspect") && msg.signature().isEmpty()) {
             //qDebug() << "QDBusConnectionPrivate::activateInternalFilters introspect" << msg.d_ptr->msg;
-            QDBusMessage reply = msg.createReply(qDBusIntrospectObject(node));
+            QDBusMessage reply = msg.createReply(qDBusIntrospectObject(node, msg.path()));
             send(reply);
             return true;
         }
@@ -1374,6 +1379,15 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
     // The call is routed through the adaptor sub-objects if we have any
 
     // object may be null
+
+    if (node.flags & QDBusConnectionPrivate::VirtualObject) {
+        if (node.treeNode->handleMessage(msg, q(this))) {
+            return;
+        } else {
+            if (activateInternalFilters(node, msg))
+                return;
+        }
+    }
 
     if (pathStartPos != msg.path().length()) {
         node.flags &= ~QDBusConnection::ExportAllSignals;

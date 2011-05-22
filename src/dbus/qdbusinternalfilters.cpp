@@ -56,6 +56,7 @@
 #include "qdbusmetatype_p.h"
 #include "qdbusmessage_p.h"
 #include "qdbusutil_p.h"
+#include "qdbusvirtualobject.h"
 
 #ifndef QT_NO_DBUS
 
@@ -108,7 +109,7 @@ static QString generateSubObjectXml(QObject *object)
 
 // declared as extern in qdbusconnection_p.h
 
-QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node)
+QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node, const QString &path)
 {
     // object may be null
 
@@ -153,6 +154,11 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
 
                 xml_data += ifaceXml;
             }
+        }
+
+        // is it a virtual node that handles introspection itself?
+        if (node.flags & QDBusConnectionPrivate::VirtualObject) {
+            xml_data += node.treeNode->introspect(path);
         }
 
         xml_data += QLatin1String( propertiesInterfaceXml );

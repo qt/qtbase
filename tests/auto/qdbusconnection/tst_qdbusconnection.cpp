@@ -113,6 +113,10 @@ private slots:
 
     void serviceRegistrationRaceCondition();
 
+    void registerVirtualObject();
+    void callVirtualObject();
+    void callVirtualObjectLocal();
+
 public:
     QString serviceName() const { return "com.trolltech.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);
@@ -823,7 +827,6 @@ bool tst_QDBusConnection::callMethod(const QDBusConnection &conn, const QString 
 {
     QDBusMessage msg = QDBusMessage::createMethodCall(conn.baseService(), path, "", "method");
     QDBusMessage reply = conn.call(msg, QDBus::Block/*WithGui*/);
-
     if (reply.type() != QDBusMessage::ReplyMessage)
         return false;
     if (MyObject::path == path) {
@@ -1096,6 +1099,203 @@ void tst_QDBusConnection::serviceRegistrationRaceCondition()
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recv.count, 1);
+}
+
+class VirtualObject: public QDBusVirtualObject
+{
+    Q_OBJECT
+public:
+    VirtualObject() :success(true) {}
+
+    QString introspect(const QString &path) const
+    {
+        return QString();
+    }
+
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+        ++callCount;
+        lastMessage = message;
+
+        if (success) {
+            QDBusMessage reply = message.createReply(replyArguments);
+            connection.send(reply);
+        }
+        emit messageReceived(message);
+        return success;
+    }
+signals:
+    void messageReceived(const QDBusMessage &message) const;
+
+public:
+    mutable QDBusMessage lastMessage;
+    QVariantList replyArguments;
+    mutable int callCount;
+    bool success;
+};
+
+
+void tst_QDBusConnection::registerVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+    QString childChildPath = "/tree/node/child/another";
+
+    {
+        // Register VirtualObject that handles child paths. Unregister by going out of scope.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&obj));
+    }
+    QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+
+    {
+        // Register VirtualObject that handles child paths. Unregister by calling unregister.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&obj));
+        con.unregisterObject(path);
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    }
+
+    {
+        // Single node has no sub path handling.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SingleNode));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    }
+
+    {
+        // Register VirtualObject that handles child paths. Try to register an object on a child path of that.
+        VirtualObject obj;
+        QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
+
+        QObject objectAtSubPath;
+        QVERIFY(!con.registerObject(path, &objectAtSubPath));
+        QVERIFY(!con.registerObject(childPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&obj));
+    }
+
+    {
+        // Register object, make sure no SubPath handling object can be registered on a parent path.
+        QObject objectAtSubPath;
+        QVERIFY(con.registerObject(childPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(&objectAtSubPath));
+
+        VirtualObject obj;
+        QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    }
+    QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
+    QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(0));
+}
+
+void tst_QDBusConnection::callVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QDBusConnection con2 = QDBusConnection::connectToBus(QDBusConnection::SessionBus, "con2");
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+
+    // register one object at root:
+    VirtualObject obj;
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+    obj.callCount = 0;
+    obj.replyArguments << 42 << 47u;
+
+    QObject::connect(&obj, SIGNAL(messageReceived(QDBusMessage)), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, QString(), "hello");
+    QDBusPendingCall reply = con2.asyncCall(message);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(obj.callCount, 1);
+    QCOMPARE(obj.lastMessage.service(), con2.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), path);
+    reply.waitForFinished();
+    QVERIFY(reply.isValid());
+    QCOMPARE(reply.reply().arguments(), obj.replyArguments);
+
+    // call sub path
+    QDBusMessage childMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "helloChild");
+    obj.replyArguments.clear();
+    obj.replyArguments << 99;
+    QDBusPendingCall childReply = con2.asyncCall(childMessage);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(obj.callCount, 2);
+    QCOMPARE(obj.lastMessage.service(), con2.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), childPath);
+
+    childReply.waitForFinished();
+    QVERIFY(childReply.isValid());
+    QCOMPARE(childReply.reply().arguments(), obj.replyArguments);
+
+    // let the call fail by having the virtual object return false
+    obj.success = false;
+    QDBusMessage errorMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "someFunc");
+    QDBusPendingCall errorReply = con2.asyncCall(errorMessage);
+
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QTest::qWait(100);
+    QVERIFY(errorReply.isError());
+    qDebug() << errorReply.reply().arguments();
+    QCOMPARE(errorReply.reply().errorName(), QString("org.freedesktop.DBus.Error.UnknownObject"));
+
+    QDBusConnection::disconnectFromBus("con2");
+}
+
+void tst_QDBusConnection::callVirtualObjectLocal()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    QString path = "/tree/node";
+    QString childPath = "/tree/node/child";
+
+    // register one object at root:
+    VirtualObject obj;
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+    obj.callCount = 0;
+    obj.replyArguments << 42 << 47u;
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, QString(), "hello");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    QCOMPARE(obj.callCount, 1);
+    QCOMPARE(obj.lastMessage.service(), con.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), path);
+    QCOMPARE(obj.replyArguments, reply.arguments());
+
+    obj.replyArguments << QString("alien abduction");
+    QDBusMessage subPathMessage = QDBusMessage::createMethodCall(con.baseService(), childPath, QString(), "hello");
+    QDBusMessage subPathReply = con.call(subPathMessage , QDBus::Block, 5000);
+    QCOMPARE(obj.callCount, 2);
+    QCOMPARE(obj.lastMessage.service(), con.baseService());
+    QCOMPARE(obj.lastMessage.interface(), QString());
+    QCOMPARE(obj.lastMessage.path(), childPath);
+    QCOMPARE(obj.replyArguments, subPathReply.arguments());
 }
 
 QString MyObject::path;

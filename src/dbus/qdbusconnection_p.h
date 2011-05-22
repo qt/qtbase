@@ -129,6 +129,11 @@ public:
         QByteArray matchRule;
     };
 
+    enum TreeNodeType {
+        Object = 0x0,
+        VirtualObject = 0x01000000
+    };
+
     struct ObjectTreeNode
     {
         typedef QVector<ObjectTreeNode> DataList;
@@ -143,8 +148,12 @@ public:
             { return QStringRef(&name) < other; }
 
         QString name;
-        QObject* obj;
+        union {
+            QObject *obj;
+            QDBusVirtualObject *treeNode;
+        };
         int flags;
+
         DataList children;
     };
 
@@ -333,7 +342,7 @@ extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
 extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);
 
 // in qdbusinternalfilters.cpp
-extern QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node);
+extern QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node, const QString &path);
 extern QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node,
                                      const QDBusMessage &msg);
 extern QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node,
