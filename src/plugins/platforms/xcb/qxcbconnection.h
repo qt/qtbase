@@ -164,9 +164,12 @@ namespace QXcbAtom {
         _NET_ACTIVE_WINDOW,
 
         // Property formats
+        XA_STRING,
         COMPOUND_TEXT,
         TEXT,
         UTF8_STRING,
+        XA_PIXMAP,
+        XA_BITMAP,
 
         // Xdnd
         XdndEnter,
@@ -234,6 +237,8 @@ public:
     int primaryScreen() const { return m_primaryScreen; }
 
     xcb_atom_t atom(QXcbAtom::Atom atom);
+    xcb_atom_t internAtom(const char *name);
+    QByteArray atomName(xcb_atom_t atom);
 
     const char *displayName() const { return m_displayName.constData(); }
 

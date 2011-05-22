@@ -583,9 +583,12 @@ static const char * xcb_atomnames = {
     "_NET_ACTIVE_WINDOW\0"
 
     // Property formats
+    "XA_STRING\0"
     "COMPOUND_TEXT\0"
     "TEXT\0"
     "UTF8_STRING\0"
+    "XA_PIXMAP\0"
+    "XA_BITMAP\0"
 
     // xdnd
     "XdndEnter\0"
@@ -663,8 +666,32 @@ void QXcbConnection::initializeAllAtoms() {
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
         cookies[i] = xcb_intern_atom(xcb_connection(), false, strlen(names[i]), names[i]);
 
-    for (i = 0; i < QXcbAtom::NAtoms; ++i)
-        m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
+    for (i = 0; i < QXcbAtom::NAtoms; ++i) {
+        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0);
+        m_allAtoms[i] = reply->atom;
+        free(reply);
+    }
+}
+
+xcb_atom_t QXcbConnection::internAtom(const char *name)
+{
+    if (!name || *name == 0)
+        return XCB_NONE;
+
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(xcb_connection(), false, strlen(name), name);
+    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(xcb_connection(), cookie, 0);
+    int atom = reply->atom;
+    free(reply);
+    return atom;
+}
+
+QByteArray QXcbConnection::atomName(xcb_atom_t atom)
+{
+    xcb_get_atom_name_cookie_t cookie = xcb_get_atom_name_unchecked(xcb_connection(), atom);
+    xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, 0);
+    QByteArray result(xcb_get_atom_name_name(reply));
+    free(reply);
+    return result;
 }
 
 void QXcbConnection::sync()

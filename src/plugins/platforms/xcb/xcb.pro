@@ -9,6 +9,7 @@ SOURCES = \
         qxcbconnection.cpp \
         qxcbintegration.cpp \
         qxcbkeyboard.cpp \
+        qxcbmime.cpp \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
         qxcbwindowsurface.cpp \
@@ -19,6 +20,7 @@ HEADERS = \
         qxcbconnection.h \
         qxcbintegration.h \
         qxcbkeyboard.h \
+        qxcbmime.h \
         qxcbobject.h \
         qxcbscreen.h \
         qxcbwindow.h \
