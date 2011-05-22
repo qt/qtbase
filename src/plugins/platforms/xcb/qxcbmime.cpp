@@ -66,14 +66,14 @@ QString QXcbMime::mimeAtomToString(QXcbConnection *connection, xcb_atom_t a)
         return 0;
 
     // special cases for string type
-    if (a == connection->atom(QXcbAtom::XA_STRING)
-            || a == connection->atom(QXcbAtom::UTF8_STRING)
-            || a == connection->atom(QXcbAtom::TEXT)
-            || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
+    if (a == QXcbAtom::XA_STRING
+        || a == connection->atom(QXcbAtom::UTF8_STRING)
+        || a == connection->atom(QXcbAtom::TEXT)
+        || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
         return QLatin1String("text/plain");
 
     // special case for images
-    if (a == connection->atom(QXcbAtom::XA_PIXMAP))
+    if (a == QXcbAtom::XA_PIXMAP)
         return QLatin1String("image/ppm");
 
     QByteArray atomName = connection->atomName(a);
@@ -96,14 +96,14 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
     *dataFormat = 8;
 
     if ((a == connection->atom(QXcbAtom::UTF8_STRING)
-         || a == connection->atom(QXcbAtom::XA_STRING)
+         || a == QXcbAtom::XA_STRING
          || a == connection->atom(QXcbAtom::TEXT)
          || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
         && QInternalMimeData::hasFormatHelper(QLatin1String("text/plain"), mimeData)) {
         if (a == connection->atom(QXcbAtom::UTF8_STRING)){
             *data = QInternalMimeData::renderDataHelper(QLatin1String("text/plain"), mimeData);
             ret = true;
-        } else if (a == connection->atom(QXcbAtom::XA_STRING)) {
+        } else if (a == QXcbAtom::XA_STRING) {
             *data = QString::fromUtf8(QInternalMimeData::renderDataHelper(
                         QLatin1String("text/plain"), mimeData)).toLocal8Bit();
             ret = true;
@@ -145,7 +145,7 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
         mozUri += QLatin1Char('\n');
         *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()), mozUri.length() * 2);
         ret = true;
-    } else if ((a == connection->atom(QXcbAtom::XA_PIXMAP) || a == connection->atom(QXcbAtom::XA_BITMAP)) && mimeData->hasImage()) {
+    } else if ((a == QXcbAtom::XA_PIXMAP || a == QXcbAtom::XA_BITMAP) && mimeData->hasImage()) {
         ret = true;
     }
     return ret;
@@ -159,7 +159,7 @@ QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const
     // special cases for strings
     if (format == QLatin1String("text/plain")) {
         atoms.append(connection->atom(QXcbAtom::UTF8_STRING));
-        atoms.append(connection->atom(QXcbAtom::XA_STRING));
+        atoms.append(QXcbAtom::XA_STRING);
         atoms.append(connection->atom(QXcbAtom::TEXT));
         atoms.append(connection->atom(QXcbAtom::COMPOUND_TEXT));
     }
@@ -170,9 +170,9 @@ QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const
 
     //special cases for images
     if (format == QLatin1String("image/ppm"))
-        atoms.append(connection->atom(QXcbAtom::XA_PIXMAP));
+        atoms.append(QXcbAtom::XA_PIXMAP);
     if (format == QLatin1String("image/pbm"))
-        atoms.append(connection->atom(QXcbAtom::XA_BITMAP));
+        atoms.append(QXcbAtom::XA_BITMAP);
 
     return atoms;
 }
@@ -200,7 +200,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     if (format == QLatin1String("text/plain")) {
         if (a == connection->atom(QXcbAtom::UTF8_STRING))
             return QString::fromUtf8(data);
-        if (a == connection->atom(QXcbAtom::XA_STRING))
+        if (a == QXcbAtom::XA_STRING)
             return QString::fromLatin1(data);
         if (a == connection->atom(QXcbAtom::TEXT)
                 || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
@@ -267,8 +267,8 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
             return connection->atom(QXcbAtom::COMPOUND_TEXT);
         if (atoms.contains(connection->atom(QXcbAtom::TEXT)))
             return connection->atom(QXcbAtom::TEXT);
-        if (atoms.contains(connection->atom(QXcbAtom::XA_STRING)))
-            return connection->atom(QXcbAtom::XA_STRING);
+        if (atoms.contains(QXcbAtom::XA_STRING))
+            return QXcbAtom::XA_STRING;
     }
 
     // find matches for uri types
@@ -283,8 +283,8 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
 
     // find match for image
     if (format == QLatin1String("image/ppm")) {
-        if (atoms.contains(connection->atom(QXcbAtom::XA_PIXMAP)))
-            return connection->atom(QXcbAtom::XA_PIXMAP);
+        if (atoms.contains(QXcbAtom::XA_PIXMAP))
+            return QXcbAtom::XA_PIXMAP;
     }
 
     // for string/text requests try to use a format with a well-defined charset

@@ -6,6 +6,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 QT += core-private gui-private
 
 SOURCES = \
+#        qxcbclipboard.cpp \
         qxcbconnection.cpp \
         qxcbintegration.cpp \
         qxcbkeyboard.cpp \
@@ -17,6 +18,7 @@ SOURCES = \
         qxcbnativeinterface.cpp
 
 HEADERS = \
+#        qxcbclipboard.h \
         qxcbconnection.h \
         qxcbintegration.h \
         qxcbkeyboard.h \

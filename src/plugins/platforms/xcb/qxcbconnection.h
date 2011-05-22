@@ -57,6 +57,12 @@ class QXcbWindow;
 typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
 namespace QXcbAtom {
+    static const xcb_atom_t XA_PRIMARY = 1;
+    static const xcb_atom_t XA_SECONDARY = 2;
+    static const xcb_atom_t XA_PIXMAP = 20;
+    static const xcb_atom_t XA_BITMAP = 5;
+    static const xcb_atom_t XA_STRING = 32;
+
     enum Atom {
         // window-manager <-> client protocols
         WM_PROTOCOLS,
@@ -164,12 +170,9 @@ namespace QXcbAtom {
         _NET_ACTIVE_WINDOW,
 
         // Property formats
-        XA_STRING,
         COMPOUND_TEXT,
         TEXT,
         UTF8_STRING,
-        XA_PIXMAP,
-        XA_BITMAP,
 
         // Xdnd
         XdndEnter,
