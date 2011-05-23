@@ -82,7 +82,7 @@ static inline QString moduleHeader(const QString &module, const QString &header)
 namespace CPP {
 
 WriteIncludes::WriteIncludes(Uic *uic)
-  : m_uic(uic), m_output(uic->output()), m_scriptsActivated(false)
+    : m_uic(uic), m_output(uic->output()), m_scriptsActivated(false), m_laidOut(false)
 {
     // When possible (no namespace) use the "QtModule/QClass" convention
     // and create a re-mapping of the old header "qclass.h" to it. Do not do this
@@ -106,6 +106,7 @@ WriteIncludes::WriteIncludes(Uic *uic)
 void WriteIncludes::acceptUI(DomUI *node)
 {
     m_scriptsActivated = false;
+    m_laidOut = false;
     m_localIncludes.clear();
     m_globalIncludes.clear();
     m_knownClasses.clear();
@@ -144,6 +145,7 @@ void WriteIncludes::acceptWidget(DomWidget *node)
 void WriteIncludes::acceptLayout(DomLayout *node)
 {
     add(node->attributeClass());
+    m_laidOut = true;
     TreeWalker::acceptLayout(node);
 }
 
@@ -219,6 +221,9 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
         return;
 
     m_knownClasses.insert(className);
+
+    if (!m_laidOut && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBox")))
+        add(QLatin1String("QLayout")); // spacing property of QToolBox)
 
     if (className == QLatin1String("Line")) { // ### hmm, deprecate me!
         add(QLatin1String("QFrame"));
