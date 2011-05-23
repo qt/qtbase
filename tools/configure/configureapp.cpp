@@ -1077,6 +1077,8 @@ void Configure::parseCmdLine()
             sybase = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
             sybaseLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i) == "-qpa") {
+            dictionary["QPA"] = "yes";
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -1686,7 +1688,7 @@ bool Configure::displayHelp()
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
                     "[-graphicssystem raster|opengl|openvg]\n"
-                    "[-no-directwrite] [-directwrite]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-qpa]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -3035,6 +3037,8 @@ void Configure::generateCachefile()
             configStream << " incredibuild_xge";
         if (dictionary["PLUGIN_MANIFESTS"] == "no")
             configStream << " no_plugin_manifest";
+        if (dictionary["QPA"] == "yes")
+            configStream << " qpa";
 
         if (dictionary.contains("SYMBIAN_DEFFILES")) {
             if (dictionary["SYMBIAN_DEFFILES"] == "yes") {
@@ -3153,6 +3157,9 @@ void Configure::generateConfigfiles()
         tmpStream << "#define Q_BIG_ENDIAN 4321" << endl;
         tmpStream << "#define Q_LITTLE_ENDIAN 1234" << endl;
         tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
+
+        if (dictionary[ "QPA" ] == "yes")
+            tmpStream << endl << "#define Q_WS_QPA" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
