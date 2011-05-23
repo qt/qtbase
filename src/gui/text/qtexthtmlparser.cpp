@@ -46,6 +46,7 @@
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
+#include <qcoreapplication.h>
 
 #include "qtextdocument.h"
 #include "qtextformat_p.h"

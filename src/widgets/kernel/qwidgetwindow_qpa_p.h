@@ -52,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QCloseEvent;
+class QMoveEvent;
+
 class QWidgetWindow : public QWindow
 {
     Q_OBJECT

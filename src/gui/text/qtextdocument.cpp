@@ -51,6 +51,8 @@
 #include <qvarlengtharray.h>
 #include <qtextcodec.h>
 #include <qthread.h>
+#include <qcoreapplication.h>
+
 #include "qtexthtmlparser_p.h"
 #include "qpainter.h"
 #include "qprinter.h"

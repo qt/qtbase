@@ -44,6 +44,7 @@
 #include "private/qguiapplication_p.h"
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include "private/qevent_p.h"
+#include "qfont.h"
 
 #if !defined(QT_NO_GLIB)
 #include "qeventdispatcher_glib_qpa_p.h"

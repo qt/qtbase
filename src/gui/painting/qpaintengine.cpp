@@ -45,6 +45,7 @@
 #include "qbitmap.h"
 #include <qdebug.h>
 #include <qmath.h>
+#include <qguiapplication.h>
 #include <private/qtextengine_p.h>
 #include <qvarlengtharray.h>
 #include <private/qfontengine_p.h>

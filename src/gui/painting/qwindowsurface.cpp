@@ -41,6 +41,7 @@
 
 #include <private/qwindowsurface_p.h>
 #include <qwindow.h>
+#include <qpixmap.h>
 #include <private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE

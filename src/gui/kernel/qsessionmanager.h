@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QGuiApplication;
+
 class QSessionManagerPrivate;
 
 class Q_GUI_EXPORT  QSessionManager : public QObject

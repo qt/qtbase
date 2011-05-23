@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qsessionmanager.h>
+#include <qguiapplication.h>
 
 #include <private/qobject_p.h>
 
