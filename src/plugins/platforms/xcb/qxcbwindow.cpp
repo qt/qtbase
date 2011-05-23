@@ -136,7 +136,7 @@ void QXcbWindow::create()
     QRect rect = window()->geometry();
 
     xcb_window_t xcb_parent_id = m_screen->root();
-    if (parent() && !window()->isTopLevel())
+    if (parent())
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
@@ -322,14 +322,17 @@ void QXcbWindow::show()
         propagateSizeHints();
 
         // update WM_TRANSIENT_FOR
-        if (isTransient(window()) && parent()) {
-            // ICCCM 4.1.2.6
-            xcb_window_t parentWindow = static_cast<QXcbWindow *>(parent())->xcb_window();
+        if (window()->transientParent() && isTransient(window())) {
+            QXcbWindow *transientXcbParent = static_cast<QXcbWindow *>(window()->transientParent()->handle());
+            if (transientXcbParent) {
+                // ICCCM 4.1.2.6
+                xcb_window_t parentWindow = transientXcbParent->xcb_window();
 
-            // todo: set transient for group (wm_client_leader) if no parent, a la qwidget_x11.cpp
-            Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
-                                           XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                           1, &parentWindow));
+                // todo: set transient for group (wm_client_leader) if no parent, a la qwidget_x11.cpp
+                Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
+                                               XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
+                                               1, &parentWindow));
+            }
         }
 
         // update _MOTIF_WM_HINTS

@@ -119,6 +119,9 @@ public:
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);
 
+    void setTransientParent(QWindow *parent);
+    QWindow *transientParent() const;
+
     QSize minimumSize() const;
     QSize maximumSize() const;
     QSize baseSize() const;

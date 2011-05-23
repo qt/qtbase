@@ -105,7 +105,7 @@ void QWindow::create()
             QObject *object = childObjects.at(i);
             if(object->isWindowType()) {
                 QWindow *window = static_cast<QWindow *>(object);
-                if (window->d_func()->platformWindow && !window->isTopLevel())
+                if (window->d_func()->platformWindow)
                     window->d_func()->platformWindow->setParent(d->platformWindow);
             }
         }
@@ -138,7 +138,7 @@ void QWindow::setParent(QWindow *parent)
     QObject::setParent(parent);
 
     if (d->platformWindow) {
-        if (parent && parent->d_func()->platformWindow && !isTopLevel()) {
+        if (parent && parent->d_func()->platformWindow) {
             d->platformWindow->setParent(parent->d_func()->platformWindow);
         } else {
             d->platformWindow->setParent(0);
@@ -149,12 +149,12 @@ void QWindow::setParent(QWindow *parent)
 }
 
 /*!
-   Returns whether the window is top level.
+   Returns whether the window is top level, i.e. has no parent window.
  */
 bool QWindow::isTopLevel() const
 {
     Q_D(const QWindow);
-    return d->windowFlags & Qt::Window;
+    return d->parentWindow != 0;
 }
 
 bool QWindow::isModal() const
@@ -291,6 +291,21 @@ void QWindow::setWindowState(Qt::WindowState state)
         d->windowState = d->platformWindow->setWindowState(state);
     else
         d->windowState = state;
+}
+
+/*!
+  Sets the transient parent, which is a hint to the window manager that this window is a dialog or pop-up on behalf of the given window.
+*/
+void QWindow::setTransientParent(QWindow *parent)
+{
+    Q_D(QWindow);
+    d->transientParent = parent;
+}
+
+QWindow *QWindow::transientParent() const
+{
+    Q_D(const QWindow);
+    return d->transientParent.data();
 }
 
 QSize QWindow::minimumSize() const

@@ -65,8 +65,12 @@ void q_createNativeChildrenAndSetParent(QWindow *parentWindow, const QWidget *pa
                 if (childWidget->testAttribute(Qt::WA_NativeWindow)) {
                     if (!childWidget->windowHandle())
                         childWidget->winId();
-                    if (childWidget->windowHandle())
-                        childWidget->windowHandle()->setParent(parentWindow);
+                    if (childWidget->windowHandle()) {
+                        if (childWidget->isTopLevel())
+                            childWidget->windowHandle()->setTransientParent(parentWindow);
+                        else
+                            childWidget->windowHandle()->setParent(parentWindow);
+                    }
                 } else {
                     q_createNativeChildrenAndSetParent(parentWindow,childWidget);
                 }
@@ -103,8 +107,15 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     if (QWidget *nativeParent = q->nativeParentWidget()) {
-        if (nativeParent->windowHandle())
-            win->setParent(nativeParent->windowHandle());
+        if (nativeParent->windowHandle()) {
+            if (flags & Qt::Window) {
+                win->setTransientParent(nativeParent->windowHandle());
+                win->setParent(0);
+            } else {
+                win->setTransientParent(0);
+                win->setParent(nativeParent->windowHandle());
+            }
+        }
     }
 
     win->create();
@@ -185,7 +196,18 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             q->windowHandle()->setWindowFlags(f);
             QWidget *parentWithWindow =
                 newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
-            q->windowHandle()->setParent(parentWithWindow ? parentWithWindow->windowHandle() : 0);
+            if (parentWithWindow) {
+                if (f & Qt::Window) {
+                    q->windowHandle()->setTransientParent(parentWithWindow->windowHandle());
+                    q->windowHandle()->setParent(0);
+                } else {
+                    q->windowHandle()->setTransientParent(0);
+                    q->windowHandle()->setParent(parentWithWindow->windowHandle());
+                }
+            } else {
+                q->windowHandle()->setTransientParent(0);
+                q->windowHandle()->setParent(0);
+            }
         }
     }
 
