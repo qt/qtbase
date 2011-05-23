@@ -302,6 +302,8 @@ public:
     void setCursorBlinkPeriod(int msec);
     void resetCursorBlinkTimer();
 
+    bool cursorBlinkStatus() const { return m_blinkStatus; }
+
     QString cancelText() const { return m_cancelText; }
     void setCancelText(const QString &text) { m_cancelText = text; }
 
@@ -317,6 +319,11 @@ public:
     void draw(QPainter *, const QPoint &, const QRect &, int flags = DrawAll);
 
     bool processEvent(QEvent *ev);
+
+    QTextLayout *textLayout()
+    {
+        return &m_textLayout;
+    }
 
 private:
     void init(const QString &txt);

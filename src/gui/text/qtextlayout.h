@@ -174,7 +174,7 @@ public:
     qreal maximumWidth() const;
 
 #if !defined(QT_NO_RAWFONT)
-    QList<QGlyphRun> glyphRuns() const;
+    QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
 #endif
 
     QTextEngine *engine() const { return d; }
@@ -244,13 +244,13 @@ public:
 
     void draw(QPainter *p, const QPointF &point, const QTextLayout::FormatRange *selection = 0) const;
 
+#if !defined(QT_NO_RAWFONT)
+    QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
+#endif
+
 private:
     QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
     void layout_helper(int numGlyphs);
-
-#if !defined(QT_NO_RAWFONT)
-    QList<QGlyphRun> glyphs(int from, int length) const;
-#endif
 
     friend class QTextLayout;
     friend class QTextFragment;

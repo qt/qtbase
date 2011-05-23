@@ -97,6 +97,7 @@ public:
                             AntialiasingType antialiasingType = SubPixelAntialiasing,
                             const QTransform &transform = QTransform()) const;
     QPainterPath pathForGlyph(quint32 glyphIndex) const;
+    QRectF boundingRect(quint32 glyphIndex) const;
 
     void setPixelSize(qreal pixelSize);
     qreal pixelSize() const;
