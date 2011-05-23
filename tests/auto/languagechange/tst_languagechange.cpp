@@ -46,10 +46,10 @@
 #include <QtCore/QSet>
 #include <QtCore/QTranslator>
 #include <private/qthread_p.h>
-#include <QtGui/QInputDialog>
-#include <QtGui/QColorDialog>
-#include <QtGui/QFileDialog>
-#include <QtGui/QDesktopWidget>
+#include <QtWidgets/QInputDialog>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QDesktopWidget>
 
 
 //TESTED_CLASS=

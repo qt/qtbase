@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
 

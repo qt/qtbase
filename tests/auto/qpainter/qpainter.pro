@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += gui-private
+QT += widgets widgets-private
 
 SOURCES  += tst_qpainter.cpp
 wince*|symbian: {

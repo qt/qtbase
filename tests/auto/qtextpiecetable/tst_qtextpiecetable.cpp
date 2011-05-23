@@ -42,9 +42,10 @@
 
 #include <QtTest/QtTest>
 
-#define private public
+#define protected public
 
 #include <qtextdocument.h>
+#undef protected
 #include <private/qtextdocument_p.h>
 #include <qabstracttextdocumentlayout.h>
 #include <qtextobject.h>
@@ -124,7 +125,7 @@ tst_QTextPieceTable::tst_QTextPieceTable()
 void tst_QTextPieceTable::init()
 {
     doc = new QTextDocument(0);
-    table = doc->d_func();
+    table = doc->docHandle();
     blockFormatIndex = table->formatCollection()->indexForFormat(QTextBlockFormat());
     charFormatIndex = table->formatCollection()->indexForFormat(QTextCharFormat());
 }

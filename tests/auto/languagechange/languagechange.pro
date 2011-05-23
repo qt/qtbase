@@ -1,4 +1,4 @@
 load(qttest_p4)
-QT += core-private
+QT += widgets core-private
 SOURCES += tst_languagechange.cpp
 

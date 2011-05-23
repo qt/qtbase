@@ -1,5 +1,6 @@
 load(qttest_p4)
 
+QT += widgets
 SOURCES += tst_qicon.cpp
 RESOURCES = tst_qicon.qrc
 

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets/QTreeView>
 #include <qtest.h>
 #include "object.h"
 #include <qcoreapplication.h>

@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += widgets
 SOURCES  += tst_qtranslator.cpp
 RESOURCES += qtranslator.qrc
 

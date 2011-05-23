@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = qfileopeneventexternal
-QT += core gui
+QT += core gui widgets
 SOURCES += qfileopeneventexternal.cpp
 symbian: {
     RSS_RULES += "embeddability=KAppEmbeddable;"

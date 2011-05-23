@@ -41,10 +41,10 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
-#include <QtGui/QPushButton>
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsSceneEvent>
-#include <QtGui/QGraphicsTextItem>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsSceneEvent>
+#include <QtWidgets/QGraphicsTextItem>
 
 #include "qstatemachine.h"
 #include "qstate.h"

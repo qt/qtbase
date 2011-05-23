@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui/QDesktopWidget>
+#include <QtWidgets/QDesktopWidget>
 #include <QDebug>
 
 //TESTED_CLASS=

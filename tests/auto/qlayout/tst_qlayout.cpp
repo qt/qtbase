@@ -49,9 +49,9 @@
 #include <qdialog.h>
 #include <qsizegrip.h>
 #include <qlabel.h>
-#include <QtGui/QFrame>
-#include <QtGui/QWindowsStyle>
-#include <QtGui/QSizePolicy>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QWindowsStyle>
+#include <QtWidgets/QSizePolicy>
 #include <QPushButton>
 #include <QRadioButton>
 #include <private/qlayoutengine_p.h>

@@ -42,7 +42,9 @@
 #ifndef CHIPTESTER_H
 #define CHIPTESTER_H
 
-#include <QtGui>
+#include <QtWidgets/QGraphicsView>
+#include <QtCore/QEventLoop>
+#include <QtCore/QTime>
 
 QT_FORWARD_DECLARE_CLASS(QGraphicsScene)
 QT_FORWARD_DECLARE_CLASS(QGraphicsView)

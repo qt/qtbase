@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 #include <QtTest/QtTest>
-#include <QtGui/QPushButton>
-#include <QtGui/QStyle>
-#include <QtGui/QLayout>
-#include <QtGui/QDialog>
-#include <QtGui/QAction>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QLayout>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QAction>
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 

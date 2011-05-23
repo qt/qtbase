@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QtGui>
+
+#include <QtWidgets/QLayout>
+#include <QtGui/QPainter>
 
 static void processEvents()
 {

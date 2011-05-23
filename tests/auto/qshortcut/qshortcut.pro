@@ -4,6 +4,7 @@ load(qttest_p4)
 INCLUDEPATH  += ../
 
 # Normal Test Files --------------------------------------------------
+QT += widgets
 HEADERS      += 
 SOURCES      += tst_qshortcut.cpp
 

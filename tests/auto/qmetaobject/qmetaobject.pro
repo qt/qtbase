@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT = core gui
+QT = core gui widgets
 
 SOURCES  += tst_qmetaobject.cpp
 

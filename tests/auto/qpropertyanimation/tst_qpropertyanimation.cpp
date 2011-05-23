@@ -44,7 +44,7 @@
 
 #include <QtCore/qpropertyanimation.h>
 #include <QtCore/qvariantanimation.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include "../../shared/util.h"
 
 //TESTED_CLASS=QPropertyAnimation

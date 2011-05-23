@@ -6,7 +6,7 @@ TEMPLATE = app
 TARGET = tst_qerrormessage
 DEPENDPATH += .
 INCLUDEPATH += . 
-
+QT += widgets
 CONFIG += console qtestlib
 # Input
 SOURCES += tst_qerrormessage.cpp

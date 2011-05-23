@@ -533,11 +533,13 @@ void tst_QPrinter::testMulitpleSets()
 
 void tst_QPrinter::changingOutputFormat()
 {
+#if QT_VERSION < 0x050000
     QPrinter p;
     p.setOutputFormat(QPrinter::PostScriptFormat);
     p.setPageSize(QPrinter::A8);
     p.setOutputFormat(QPrinter::PdfFormat);
     QCOMPARE(p.pageSize(), QPrinter::A8);
+#endif
 }
 
 void tst_QPrinter::outputFormatFromSuffix()
@@ -546,8 +548,6 @@ void tst_QPrinter::outputFormatFromSuffix()
         QSKIP("No printers available.", SkipAll);
     QPrinter p;
     QVERIFY(p.outputFormat() == QPrinter::NativeFormat);
-    p.setOutputFileName("test.ps");
-    QVERIFY(p.outputFormat() == QPrinter::PostScriptFormat);
     p.setOutputFileName("test.pdf");
     QVERIFY(p.outputFormat() == QPrinter::PdfFormat);
     p.setOutputFileName(QString());
@@ -647,7 +647,7 @@ void tst_QPrinter::testPageMargins()
 void tst_QPrinter::valuePreservation()
 {
     QPrinter::OutputFormat oldFormat = QPrinter::PdfFormat;
-    QPrinter::OutputFormat newFormat = QPrinter::PostScriptFormat;
+    QPrinter::OutputFormat newFormat = QPrinter::NativeFormat; // TODO: Correct?
 
     {
         QPrinter printer;

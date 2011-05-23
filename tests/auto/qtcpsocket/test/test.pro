@@ -1,5 +1,6 @@
 load(qttest_p4)
 
+QT += widgets
 QT += core-private network-private
 SOURCES += ../tst_qtcpsocket.cpp
 win32: {

@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += gui-private
+QT += widgets widgets-private gui-private
 INCLUDEPATH += ../
 
 HEADERS +=  

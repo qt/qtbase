@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += widgets widgets-private
 QT += gui-private
 # Input
 SOURCES += tst_qstylesheetstyle.cpp

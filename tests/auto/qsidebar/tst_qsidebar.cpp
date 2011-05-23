@@ -41,8 +41,8 @@
 
 
 #include <QtTest/QtTest>
-#include "../../../src/gui/dialogs/qsidebar_p.h"
-#include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
+#include "../../../src/widgets/dialogs/qsidebar_p.h"
+#include "../../../src/widgets/dialogs/qfilesystemmodel_p.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

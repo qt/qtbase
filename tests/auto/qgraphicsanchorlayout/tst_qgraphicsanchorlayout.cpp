@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicsanchorlayout.h>
+#include <QtWidgets/qgraphicsanchorlayout.h>
 #include <private/qgraphicsanchorlayout_p.h>
-#include <QtGui/qgraphicswidget.h>
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qwindowsstyle.h>
+#include <QtWidgets/qgraphicswidget.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qwindowsstyle.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT

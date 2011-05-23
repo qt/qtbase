@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicseffect.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qstyleoption.h>
+#include <QtWidgets/qgraphicseffect.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qgraphicsscene.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <QtWidgets/qstyleoption.h>
 
 #include <private/qgraphicseffect_p.h>
 

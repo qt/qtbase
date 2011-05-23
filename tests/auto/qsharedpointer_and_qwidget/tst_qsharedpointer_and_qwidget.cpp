@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QWidget>
-#include <QtGui/QPushButton>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QPushButton>
 #include <QtTest/QtTest>
 
 QT_BEGIN_NAMESPACE

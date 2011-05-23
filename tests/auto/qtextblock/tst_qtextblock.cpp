@@ -43,8 +43,9 @@
 #include <QtTest/QtTest>
 
 
-#define private public
+#define protected public
 #include <qtextdocument.h>
+#undef protected
 #include <qdebug.h>
 #ifndef Q_WS_WIN
 #include <private/qtextdocument_p.h>
@@ -118,9 +119,8 @@ void tst_QTextBlock::fragmentOverBlockBoundaries()
     // Block separators are always a fragment of their self. Thus:
     // |Hello|\b|World|\b|
 #if !defined(Q_WS_WIN) && !defined(Q_WS_S60)
-    QVERIFY(doc->d_func()->fragmentMap().numNodes() == 4);
+    QVERIFY(doc->docHandle()->fragmentMap().numNodes() == 4);
 #endif
-
     QCOMPARE(cursor.block().text(), QString("Hello"));
     cursor.movePosition(QTextCursor::NextBlock);
     QCOMPARE(cursor.block().text(), QString("World"));

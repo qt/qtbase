@@ -1,5 +1,6 @@
 load(qttest_p4)
 
+QT += widgets widgets-private
 QT += core-private gui-private
 
 SOURCES += ../tst_qapplication.cpp
@@ -8,7 +9,7 @@ TARGET = ../tst_qapplication
 wince* {
   additional.files = ../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
-  someTest.files = test.pro
+  someTest.files e= test.pro
   someTest.path = test
   DEPLOYMENT += additional deploy someTest
 }

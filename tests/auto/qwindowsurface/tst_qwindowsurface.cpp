@@ -45,7 +45,7 @@
 #include <QPalette>
 #include <QWindowsStyle>
 
-#ifndef Q_WS_MAC
+#if !defined(Q_WS_MAC) && QT_VERSION < 0x050000 // Fixme Qt 5
 
 #include <private/qwindowsurface_p.h>
 #include <QDesktopWidget>

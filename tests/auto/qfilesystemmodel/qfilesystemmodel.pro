@@ -1,6 +1,7 @@
 CONFIG += qttest_p4
 
-QT = core-private gui
+QT += widgets widgets-private
+QT += core-private gui
 
 SOURCES		+= tst_qfilesystemmodel.cpp
 TARGET		= tst_qfilesystemmodel

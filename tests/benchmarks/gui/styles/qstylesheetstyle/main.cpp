@@ -40,7 +40,16 @@
 ****************************************************************************/
 // This file contains benchmarks for QRect/QRectF functions.
 
-#include <QtGui>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QRadioButton>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QLineEdit>
 #include <qtest.h>
 
 class tst_qstylesheetstyle : public QObject

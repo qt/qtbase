@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += core-private gui-private
+QT += core-private gui-private widgets widgets-private
 
 SOURCES  += tst_qpixmap.cpp
 wince*|symbian: {

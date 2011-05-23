@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <qapplication.h>
+#include <qguiapplication.h>
 #include <qsqldatabase.h>
 #include <qsqlerror.h>
 #include <qsqlquery.h>
@@ -117,7 +117,7 @@ void tst_QSql::cleanup()
 void tst_QSql::basicDriverTest()
 {
     int argc = 0;
-    QApplication app( argc, 0, false );
+    QGuiApplication app( argc, 0, false );
     tst_Databases dbs;
     dbs.open();
 
@@ -187,7 +187,7 @@ void tst_QSql::openInvalid()
 void tst_QSql::concurrentAccess()
 {
     int argc = 0;
-    QApplication app( argc, 0, false );
+    QGuiApplication app( argc, 0, false );
     tst_Databases dbs;
 
     dbs.open();
@@ -215,7 +215,7 @@ void tst_QSql::concurrentAccess()
 void tst_QSql::openErrorRecovery()
 {
     int argc = 0;
-    QApplication app( argc, 0, false );
+    QGuiApplication app( argc, 0, false );
     tst_Databases dbs;
 
     dbs.addDbs();
@@ -262,7 +262,7 @@ void tst_QSql::openErrorRecovery()
 void tst_QSql::registerSqlDriver()
 {
     int argc = 0;
-    QApplication app( argc, 0, false );
+    QGuiApplication app( argc, 0, false );
 
     QSqlDatabase::registerSqlDriver( "QSQLTESTDRIVER", new QSqlDriverCreator<QSqlNullDriver> );
     QVERIFY( QSqlDatabase::drivers().contains( "QSQLTESTDRIVER" ) );

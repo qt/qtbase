@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += widgets
 SOURCES += tst_qimagewriter.cpp
 MOC_DIR=tmp
 !contains(QT_CONFIG, no-tiff):DEFINES += QTEST_HAVE_TIFF

@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtGui/QClipboard>
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>

@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES         += tst_qitemmodel.cpp
 
-QT += sql
+QT += widgets sql
 
 # NOTE: The deployment of the sqldrivers is disabled on purpose.
 #       If we deploy the plugins, they are loaded twice when running

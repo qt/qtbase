@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 #include <QtSql/QtSql>
-#include <QtGui/QtGui>
 #include <QSortFilterProxyModel>
 
 /*

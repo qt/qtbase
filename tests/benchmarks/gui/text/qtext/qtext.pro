@@ -1,6 +1,7 @@
 load(qttest_p4)
 
-QT += gui-private
+QT += widgets
+QT += gui-private widgets-private
 
 TEMPLATE = app
 TARGET = tst_bench_QText

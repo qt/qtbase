@@ -11,6 +11,7 @@ wince*:TARGET = ../desktopsettingsaware
 symbian:TARGET = desktopsettingsaware
 
 # Input
+QT += widgets
 SOURCES += main.cpp
 CONFIG += qt warn_on create_prl link_prl
 CONFIG -= app_bundle

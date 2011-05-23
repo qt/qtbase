@@ -38,7 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QLabel>
 #include <stdio.h>
 
 int main(int argc, char **argv)

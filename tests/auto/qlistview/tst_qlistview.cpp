@@ -53,9 +53,9 @@
 #include <cmath>
 #endif
 #include <math.h>
-#include <QtGui/QScrollBar>
-#include <QtGui/QDialog>
-#include <QtGui/QStyledItemDelegate>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QStyledItemDelegate>
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #include <windows.h>
 #endif
