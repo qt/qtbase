@@ -3647,7 +3647,7 @@ void Configure::buildQmake()
                     << "BUILD_PATH = " << QDir::convertSeparators(buildPath) << endl
                     << "SOURCE_PATH = " << QDir::convertSeparators(sourcePath) << endl;
                 stream << "QMAKESPEC = " << dictionary["QMAKESPEC"] << endl
-                       << "QT_VERSION = " << QT_VERSION_STR << endl;
+                       << "QT_VERSION = " << dictionary["VERSION"] << endl;
 
                 if (dictionary["EDITION"] == "OpenSource" ||
                     dictionary["QT_EDITION"].contains("OPENSOURCE"))
