@@ -7,6 +7,6 @@ SUBDIRS=\
            uic \
            qmake \
            rcc \
-           #atwrapper \     # These tests need significant updating,
-           #uiloader \      # they have hardcoded machine names etc.
+           #atwrapper \     # QTBUG-19452: This test needs to be reworked or discarded
+           #uiloader \      # QTBUG-19453: this test has hardcoded machine names etc.
 
