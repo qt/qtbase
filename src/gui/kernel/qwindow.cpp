@@ -388,17 +388,6 @@ QWindowContext * QWindow::glContext() const
     return d->glContext;
 }
 
-void QWindow::setRequestFormat(const QWindowFormat &format)
-{
-    Q_D(QWindow);
-    d->requestedFormat = format;
-}
-
-QWindowFormat QWindow::format() const
-{
-    return QWindowFormat();
-}
-
 void QWindow::destroy()
 {
     Q_D(QWindow);

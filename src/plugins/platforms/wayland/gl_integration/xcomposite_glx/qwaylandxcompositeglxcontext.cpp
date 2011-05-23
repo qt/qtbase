@@ -56,7 +56,7 @@ QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(QWaylandXCompositeGLX
     , mWindow(window)
     , mBuffer(0)
     , mXWindow(0)
-    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->window()->format()))
+    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->window()->requestedWindowFormat()))
     , mWaitingForSyncCallback(false)
 {
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);

@@ -136,9 +136,6 @@ public:
 
     QWindowContext *glContext() const;
 
-    void setRequestFormat(const QWindowFormat &format);
-    QWindowFormat format() const;
-
     void destroy();
 
     QPlatformWindow *handle() const;
