@@ -52,8 +52,7 @@ void _q_toHex(Char *&dst, Integral value)
 {
     static const char digits[] = "0123456789abcdef";
 
-    if (sizeof(Integral) > 1)
-        value = qToBigEndian(value);
+    value = qToBigEndian(value);
 
     const char* p = reinterpret_cast<const char*>(&value);
 
