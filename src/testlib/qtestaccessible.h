@@ -55,8 +55,8 @@
     QVERIFY(QTestAccessibility::verifyEvent(object, child, (int)event))
 
 #include <QtCore/qlist.h>
-#include <QtGui/qaccessible.h>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qaccessible.h>
+#include <QtWidgets/qapplication.h>
 
 QT_BEGIN_HEADER
 
