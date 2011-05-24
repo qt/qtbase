@@ -49,6 +49,7 @@
 #include <qurl.h>
 #include <qtextcodec.h>
 #include <qmap.h>
+#include "private/qtldurl_p.h"
 
 // For testsuites
 #define IDNA_ACE_PREFIX "xn--"
@@ -88,6 +89,8 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void effectiveTLDs_data();
+    void effectiveTLDs();
     void getSetCheck();
     void constructing();
     void assignment();
@@ -3992,6 +3995,29 @@ void tst_QUrl::taskQTBUG_8701()
 
     QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString()); // fails
     QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar, QUrl::StrictMode).toString());
+}
+
+void tst_QUrl::effectiveTLDs_data()
+{
+    QTest::addColumn<QUrl>("domain");
+    QTest::addColumn<QString>("TLD");
+
+    QTest::newRow("yes0") << QUrl::fromEncoded("http://test.co.uk") << ".co.uk";
+    QTest::newRow("yes1") << QUrl::fromEncoded("http://test.com") << ".com";
+    QTest::newRow("yes2") << QUrl::fromEncoded("http://www.test.de") << ".de";
+    QTest::newRow("yes3") << QUrl::fromEncoded("http://test.ulm.museum") << ".ulm.museum";
+    QTest::newRow("yes4") << QUrl::fromEncoded("http://www.com.krodsherad.no") << ".krodsherad.no";
+    QTest::newRow("yes5") << QUrl::fromEncoded("http://www.co.uk.1.bg") << ".1.bg";
+    QTest::newRow("yes6") << QUrl::fromEncoded("http://www.com.com.cn") << ".com.cn";
+    QTest::newRow("yes7") << QUrl::fromEncoded("http://www.test.org.ws") << ".org.ws";
+    QTest::newRow("yes9") << QUrl::fromEncoded("http://www.com.co.uk.wallonie.museum") << ".wallonie.museum";
+}
+
+void tst_QUrl::effectiveTLDs()
+{
+    QFETCH(QUrl, domain);
+    QFETCH(QString, TLD);
+    QCOMPARE(domain.topLevelDomain(), TLD);
 }
 
 QTEST_MAIN(tst_QUrl)

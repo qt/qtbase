@@ -21,7 +21,6 @@ HEADERS += \
     access/qnetworkcookie_p.h \
     access/qnetworkcookiejar.h \
     access/qnetworkcookiejar_p.h \
-    access/qnetworkcookiejartlds_p.h \
     access/qnetworkrequest.h \
     access/qnetworkrequest_p.h \
     access/qnetworkreply.h \

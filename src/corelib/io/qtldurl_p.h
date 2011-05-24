@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKCOOKIEJAR_P_H
-#define QNETWORKCOOKIEJAR_P_H
+#ifndef QTLDURL_P_H
+#define QTLDURL_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access framework.  This header file may change from
-// version to version without notice, or even be removed.
+// of qDecodeDataUrl. This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include "private/qobject_p.h"
-#include "qnetworkcookie.h"
+#include "QtCore/qurl.h"
+#include "QtCore/qstring.h"
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkCookieJarPrivate: public QObjectPrivate
-{
-public:
-    QList<QNetworkCookie> allCookies;
-
-    Q_DECLARE_PUBLIC(QNetworkCookieJar)
-};
+Q_CORE_EXPORT QString qTopLevelDomain(const QString &domain);
+Q_CORE_EXPORT bool qIsEffectiveTLD(const QString &domain);
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QDATAURL_P_H
