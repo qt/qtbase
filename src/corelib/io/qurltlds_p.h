@@ -38,15 +38,15 @@
 // the terms of any one of the MPL, the GPL or the LGPL.
 //
 
-#ifndef QNETWORKCOOKIEJARTLD_P_H
-#define QNETWORKCOOKIEJARTLD_P_H
+#ifndef QURLTLD_P_H
+#define QURLTLD_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the Network Access framework.  This header file may change from
+// of the Network Access and Core framework.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 // note to maintainer:
 // this file should be updated before each release ->
 // for instructions see the program at
-// util/network/cookiejar-generateTLDs
+// util/corelib/qurl-generateTLDs
 
 static const quint16 tldCount = 3949;
 static const quint16 tldIndices[] = {
@@ -6478,4 +6478,4 @@ static const char tldData[] = {
 
 QT_END_NAMESPACE
 
-#endif // QNETWORKCOOKIEJARTLD_P_H
+#endif // QURLTLD_P_H

@@ -192,7 +192,9 @@
 #if defined QT3_SUPPORT
 #include "qfileinfo.h"
 #endif
-
+#ifndef QT_BOOTSTRAPPED
+#include "qtldurl_p.h"
+#endif
 #if defined(Q_OS_WINCE_WM)
 #pragma optimize("g", off)
 #endif
@@ -5591,6 +5593,21 @@ bool QUrl::hasFragment() const
 
     return d->hasFragment;
 }
+
+/*!
+    \since 4.8
+
+    Returns the TLD (Top-Level Domain) of the URL, (e.g. .co.uk, .net).
+    Note that the return value is prefixed with a '.' unless the
+    URL does not contain a valid TLD, in which case the function returns
+    an empty string.
+*/
+#ifndef QT_BOOTSTRAPPED
+QString QUrl::topLevelDomain() const
+{
+    return qTopLevelDomain(host());
+}
+#endif
 
 /*!
     Returns the result of the merge of this URL with \a relative. This
