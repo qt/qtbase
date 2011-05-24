@@ -52,16 +52,23 @@ void initializeModel(QSqlQueryModel *model)
     model->setHeaderData(2, Qt::Horizontal, QObject::tr("Last name"));
 }
 
-void createView(const QString &title, QSqlQueryModel *model)
+QTableView* createView(QSqlQueryModel *model, const QString &title = "")
 {
-    static int offset = 0;
-
     QTableView *view = new QTableView;
     view->setModel(model);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    Q_UNUSED(title);
+    view->resizeColumnsToContents();
+#else
+    static int offset = 0;
+
     view->setWindowTitle(title);
     view->move(100 + offset, 100 + offset);
     offset += 20;
     view->show();
+#endif
+
+    return view;
 }
 
 int main(int argc, char *argv[])
@@ -78,9 +85,17 @@ int main(int argc, char *argv[])
     initializeModel(&editableModel);
     initializeModel(&customModel);
 
-    createView(QObject::tr("Plain Query Model"), &plainModel);
-    createView(QObject::tr("Editable Query Model"), &editableModel);
-    createView(QObject::tr("Custom Query Model"), &customModel);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab(createView(&plainModel), QObject::tr("Plain"));
+    tabWidget->addTab(createView(&editableModel), QObject::tr("Editable"));
+    tabWidget->addTab(createView(&customModel), QObject::tr("Custom"));
+    tabWidget->showMaximized();
+#else
+    createView(&plainModel, QObject::tr("Plain Query Model"));
+    createView(&editableModel, QObject::tr("Editable Query Model"));
+    createView(&customModel, QObject::tr("Custom Query Model"));
+#endif
 
     return app.exec();
 }

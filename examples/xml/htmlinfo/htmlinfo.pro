@@ -1,6 +1,10 @@
 SOURCES += main.cpp
 QT -= gui
 
+RESOURCES   = resources.qrc
+
+win32: CONFIG += console
+
 wince*|symbian:{
    htmlfiles.files = *.html
    htmlfiles.path = .
@@ -17,3 +21,6 @@ symbian {
     TARGET.UID3 = 0xA000C609
     CONFIG += qt_example
 }
+maemo5: CONFIG += qt_example
+
+symbian: warning(This example does not work on Symbian platform)

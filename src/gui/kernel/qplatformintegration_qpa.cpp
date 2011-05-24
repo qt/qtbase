@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -132,20 +132,20 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     the recommended approach for making new platform plugin is to copy an existing plugin inside
     the QTSRCTREE/src/plugins/platform and develop the plugin inside the source tree.
 
-    The minimal platformintegration is the smallest platform integration it is possible to make,
+    The minimal platform integration is the smallest platform integration it is possible to make,
     which makes it an ideal starting point for new plugins. For a slightly more advanced plugin,
     consider reviewing the directfb plugin, or the testlite plugin.
 */
 
 /*!
-    \fn QPixmapData *createPixmapData(QPixmapData::PixelType type) const
+    \fn QPixmapData *QPlatformIntegration::createPixmapData(QPixmapData::PixelType type) const
 
     Factory function for QPixmapData. PixelType can be either PixmapType or BitmapType.
     \sa QPixmapData
 */
 
 /*!
-    \fn QPlatformWindow *createPlatformWindow(QWindow *window, WId winId = 0) const
+    \fn QPlatformWindow *QPlatformIntegration::createPlatformWindow(QWindow *window, WId winId = 0) const
 
     Factory function for QPlatformWindow. The widget parameter is a pointer to the top level
     widget(tlw) which the QPlatformWindow is suppose to be created for. The WId handle is actually
@@ -162,7 +162,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QWindowSurface *createWindowSurface(QWindow *window, WId winId) const
+    \fn QWindowSurface *QPlatformIntegration::createWindowSurface(QWindow *window, WId winId) const
 
     Factory function for QWindowSurface. The QWindow parameter is a pointer to the
     top level widget(tlw) the window surface is created for. A QPlatformWindow is always created
@@ -175,7 +175,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn void moveToScreen(QWindow *window, int screen)
+    \fn void QPlatformIntegration::moveToScreen(QWindow *window, int screen)
 
     This function is called when a QWindow is displayed on screen, or the QWindow is to be
     displayed on a new screen. The QWindow parameter is a pointer to the top level widget and
@@ -187,14 +187,14 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QList<QPlatformScreen *> screens() const
+    \fn QList<QPlatformScreen *> QPlatformIntegration::screens() const
 
     Accessor function to a list of all the screens on the current system. The screen with the
     index == 0 is the default/main screen.
 */
 
 /*!
-    \fn bool isVirtualDesktop()
+    \fn bool QPlatformIntegration::isVirtualDesktop()
 
     Returns if the current windowing system configuration defines all the screens to be one
     desktop(virtual desktop), or if each screen is a desktop of its own.
@@ -203,7 +203,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QPixmap grabWindow(WId window, int x, int y, int width, int height) const
+    \fn QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 
     This function is called when Qt needs to be able to grab the content of a window.
 

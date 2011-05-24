@@ -2,13 +2,15 @@ HEADERS += stickman.h \
            animation.h \
            node.h \
            lifecycle.h \
-           graphicsview.h
+           graphicsview.h \
+           rectbutton.h
 SOURCES += main.cpp \
            stickman.cpp \
            animation.cpp \
            node.cpp \
            lifecycle.cpp \
-           graphicsview.cpp
+           graphicsview.cpp \
+           rectbutton.cpp
 
 RESOURCES += stickman.qrc
 
@@ -23,3 +25,4 @@ symbian {
     CONFIG += qt_example
 }
 QT += widgets
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)

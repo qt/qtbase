@@ -55,8 +55,12 @@ int main(int argc, char *argv[])
     tree.setSortingEnabled(true);
 
     tree.setWindowTitle(QObject::tr("Dir View"));
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+    tree.showMaximized();
+#else
     tree.resize(640, 480);
     tree.show();
+#endif
 
     return app.exec();
 }

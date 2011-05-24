@@ -1,15 +1,18 @@
 TEMPLATE      = subdirs
 SUBDIRS       = analogclock \
+                applicationicon \
                 calculator \
                 calendarwidget \
                 charactermap \
                 codeeditor \
                 digitalclock \
+                elidedlabel \
                 groupbox \
                 icons \
                 imageviewer \
                 lineedits \
                 movie \
+                orientation \
                 scribble \
                 shapedclock \
                 sliders \
@@ -20,7 +23,7 @@ SUBDIRS       = analogclock \
                 tooltips \
                 validators \
                 wiggly \
-                windowflags
+                windowflags \
 
 symbian: SUBDIRS = \
                 analogclock \
@@ -28,9 +31,12 @@ symbian: SUBDIRS = \
                 calendarwidget \
                 lineedits \
                 shapedclock \
+		symbianvibration \
                 tetrix \
                 wiggly \
                 softkeys
+
+MAEMO5: SUBDIRS += maemovibration
 
 contains(styles, motif): SUBDIRS += styles
 
@@ -42,3 +48,4 @@ INSTALLS += target sources
 
 symbian: CONFIG += qt_example
 QT += widgets
+maemo5: CONFIG += qt_example

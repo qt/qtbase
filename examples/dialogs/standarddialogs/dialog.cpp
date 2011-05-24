@@ -49,7 +49,7 @@
                "will activate the detected escape button (if any).")
 
 Dialog::Dialog(QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
 {
     errorMessageDialog = new QErrorMessage(this);
 
@@ -149,6 +149,7 @@ Dialog::Dialog(QWidget *parent)
     native = new QCheckBox(this);
     native->setText("Use native file dialog.");
     native->setChecked(true);
+
     QGridLayout *layout = new QGridLayout;
     layout->setColumnStretch(1, 1);
     layout->setColumnMinimumWidth(1, 250);
@@ -183,7 +184,19 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(errorButton, 14, 0);
     layout->addWidget(errorLabel, 14, 1);
     layout->addWidget(native, 15, 0);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QWidget *widget = new QWidget;
+    widget->setLayout(layout);
+
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidget(widget);
+
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->addWidget(scrollArea);
+    setLayout(mainLayout);
+#else
     setLayout(layout);
+#endif
 
     setWindowTitle(tr("Standard Dialogs"));
 }

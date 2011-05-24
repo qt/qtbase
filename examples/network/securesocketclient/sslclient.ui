@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Form</class>
- <widget class="QWidget" name="Form" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,146 +10,148 @@
     <height>320</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Secure Socket Client</string>
   </property>
-  <layout class="QVBoxLayout" >
-   <item>
-    <layout class="QGridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="hostNameLabel" >
-       <property name="text" >
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="2">
+    <layout class="QGridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="hostNameLabel">
+       <property name="text">
         <string>Host name:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1" >
-      <widget class="QLineEdit" name="hostNameEdit" >
-       <property name="text" >
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="hostNameEdit">
+       <property name="text">
         <string>imap.example.com</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="portLabel" >
-       <property name="text" >
+     <item row="1" column="0">
+      <widget class="QLabel" name="portLabel">
+       <property name="text">
         <string>Port:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1" >
-      <widget class="QSpinBox" name="portBox" >
-       <property name="minimum" >
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="portBox">
+       <property name="minimum">
         <number>1</number>
        </property>
-       <property name="maximum" >
+       <property name="maximum">
         <number>65535</number>
        </property>
-       <property name="value" >
+       <property name="value">
         <number>993</number>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QPushButton" name="connectButton" >
-     <property name="enabled" >
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Active session</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="connectButton">
+     <property name="enabled">
       <bool>true</bool>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Connect to host</string>
      </property>
-     <property name="default" >
+     <property name="default">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QGroupBox" name="sessionBox" >
-     <property name="enabled" >
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QLabel" name="cipherText">
+       <property name="text">
+        <string>Cryptographic Cipher:</string>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="cipherLabel">
+       <property name="text">
+        <string>&lt;none&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QTextEdit" name="sessionOutput">
+     <property name="enabled">
       <bool>false</bool>
      </property>
-     <property name="title" >
-      <string>Active session</string>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
      </property>
-     <layout class="QVBoxLayout" >
-      <item>
-       <layout class="QHBoxLayout" >
-        <item>
-         <widget class="QLabel" name="cipherText" >
-          <property name="text" >
-           <string>Cryptographic Cipher:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="cipherLabel" >
-          <property name="text" >
-           <string>&lt;none></string>
-          </property>
-          <property name="alignment" >
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QTextEdit" name="sessionOutput" >
-        <property name="enabled" >
-         <bool>false</bool>
-        </property>
-        <property name="focusPolicy" >
-         <enum>Qt::NoFocus</enum>
-        </property>
-        <property name="readOnly" >
-         <bool>true</bool>
-        </property>
-        <property name="html" >
-         <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;">
-&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>&lt;/body>&lt;/html></string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" >
-        <item>
-         <widget class="QLabel" name="sessionInputLabel" >
-          <property name="text" >
-           <string>Input:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="sessionInput" >
-          <property name="enabled" >
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="sendButton" >
-          <property name="enabled" >
-           <bool>false</bool>
-          </property>
-          <property name="focusPolicy" >
-           <enum>Qt::TabFocus</enum>
-          </property>
-          <property name="text" >
-           <string>&amp;Send</string>
-          </property>
-          <property name="default" >
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
     </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QLabel" name="sessionInputLabel">
+       <property name="text">
+        <string>Input:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="sessionInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="sendButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::TabFocus</enum>
+       </property>
+       <property name="text">
+        <string>&amp;Send</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -160,11 +163,11 @@ p, li { white-space: pre-wrap; }
    <receiver>connectButton</receiver>
    <slot>animateClick()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>126</x>
      <y>20</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>142</x>
      <y>78</y>
     </hint>
@@ -176,11 +179,11 @@ p, li { white-space: pre-wrap; }
    <receiver>sendButton</receiver>
    <slot>animateClick()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>142</x>
      <y>241</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>297</x>
      <y>234</y>
     </hint>

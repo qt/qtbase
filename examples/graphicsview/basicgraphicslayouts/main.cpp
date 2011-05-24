@@ -51,8 +51,12 @@ int main(int argc, char **argv)
     Window *window = new Window;
     scene.addItem(window);
     QGraphicsView view(&scene);
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    view.showMaximized();
+#else
     view.resize(600, 600);
     view.show();
+#endif
 
     return app.exec();
 }

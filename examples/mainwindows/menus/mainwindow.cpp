@@ -53,8 +53,12 @@ MainWindow::MainWindow()
     QWidget *topFiller = new QWidget;
     topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+#ifdef Q_OS_SYMBIAN
+    infoLabel = new QLabel(tr("<i>Choose a menu option</i>"));
+#else
     infoLabel = new QLabel(tr("<i>Choose a menu option, or right-click to "
                               "invoke a context menu</i>"));
+#endif
     infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     infoLabel->setAlignment(Qt::AlignCenter);
 
@@ -73,8 +77,10 @@ MainWindow::MainWindow()
     createActions();
     createMenus();
 
+#ifndef Q_OS_SYMBIAN
     QString message = tr("A context menu is available by right-clicking");
     statusBar()->showMessage(message);
+#endif
 
     setWindowTitle(tr("Menus"));
     setMinimumSize(160, 160);

@@ -131,8 +131,34 @@ void BlurPicker::keyPressEvent(QKeyEvent *event)
         break;
     }
     if (m_animation.state() == QAbstractAnimation::Stopped && delta) {
-            m_animation.setEndValue(m_index + delta);
-            m_animation.start();
-            event->accept();
+        m_animation.setEndValue(m_index + delta);
+        m_animation.start();
+        event->accept();
+    }
+}
+
+void BlurPicker::resizeEvent(QResizeEvent */*event*/)
+{
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    fitInView(sceneRect(), Qt::KeepAspectRatio);
+#endif
+}
+
+void BlurPicker::mousePressEvent(QMouseEvent *event)
+{
+    int delta = 0;
+    if(event->x() > (width() / 2))
+    {
+        delta = 1;
+    }
+    else
+    {
+        delta = -1;
+    }
+
+    if (m_animation.state() == QAbstractAnimation::Stopped && delta) {
+        m_animation.setEndValue(m_index + delta);
+        m_animation.start();
+        event->accept();
     }
 }

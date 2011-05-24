@@ -47,8 +47,13 @@ int main(int argc, char **argv)
 
     Lighting lighting;
     lighting.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Lighting and Shadows"));
+
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    lighting.showMaximized();
+#else
     lighting.resize(640, 480);
     lighting.show();
+#endif
 
     return app.exec();
 }

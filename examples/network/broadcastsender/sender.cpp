@@ -44,9 +44,10 @@
 #include "sender.h"
 
 Sender::Sender(QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
 {
     statusLabel = new QLabel(tr("Ready to broadcast datagrams on port 45454"));
+    statusLabel->setWordWrap(true);
 
     startButton = new QPushButton(tr("&Start"));
     quitButton = new QPushButton(tr("&Quit"));

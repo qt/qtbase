@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=Maemo Vibration
+Exec=/usr/bin/maemovibration
+Icon=maemovibration
+X-HildonDesk-ShowInToolbar=true
+X-Window-Icon=maemovibration
+X-Window-Icon-Dimmed=maemovibration
+X-Osso-Type=application/x-executable
+X-Osso-Service=com.nokia.maemovibration

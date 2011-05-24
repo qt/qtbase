@@ -26,3 +26,5 @@ symbian: {
      addFiles.path = /data/qt/saxbookmarks
      DEPLOYMENT += addFiles
 }
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

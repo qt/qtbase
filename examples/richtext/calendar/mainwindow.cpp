@@ -70,7 +70,6 @@ MainWindow::MainWindow()
     QLabel *fontSizeLabel = new QLabel(tr("Font size:"));
     QSpinBox *fontSizeSpinBox = new QSpinBox;
     fontSizeSpinBox->setRange(1, 64);
-    fontSizeSpinBox->setValue(10);
 
     editor = new QTextBrowser;
     insertCalendar();
@@ -82,6 +81,12 @@ MainWindow::MainWindow()
     connect(fontSizeSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(setFontSize(int)));
 //! [3]
+
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
+    fontSizeSpinBox->setValue(4);
+#else
+    fontSizeSpinBox->setValue(10);
+#endif
 
 //! [4]
     QHBoxLayout *controlsLayout = new QHBoxLayout;

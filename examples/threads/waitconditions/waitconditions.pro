@@ -3,8 +3,8 @@
 ######################################################################
 
 TEMPLATE = app
+QT = core gui
 CONFIG -= moc app_bundle
-QT -= gui
 DEPENDPATH += .
 INCLUDEPATH += .
 
@@ -19,3 +19,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/threads/waitconditions
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example
+
+simulator: warning(This example might not fully work on Simulator platform)

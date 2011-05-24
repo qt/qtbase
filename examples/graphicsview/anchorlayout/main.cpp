@@ -122,7 +122,12 @@ int main(int argc, char **argv)
     scene.addItem(w);
     scene.setBackgroundBrush(Qt::darkGreen);
     QGraphicsView view(&scene);
+
+#if defined(Q_WS_S60)
+    view.showMaximized();
+#else
     view.show();
+#endif
 
     return app.exec();
 }

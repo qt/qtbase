@@ -45,6 +45,22 @@
 
 #include <math.h>
 
+class GraphicsView : public QGraphicsView
+{
+public:
+    GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene)
+    {
+    }
+
+protected:
+    virtual void resizeEvent(QResizeEvent *event)
+    {
+#if defined(Q_OS_SYMBIAN)
+        fitInView(sceneRect(), Qt::KeepAspectRatio);
+#endif
+    }
+};
+
 //! [0]
 int main(int argc, char **argv)
 {
@@ -69,12 +85,16 @@ int main(int argc, char **argv)
     scene.addItem(robot);
 //! [1]
 //! [2]
-    QGraphicsView view(&scene);
+    GraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setBackgroundBrush(QColor(230, 200, 167));
     view.setWindowTitle("Drag and Drop Robot");
-    view.show();
+#if defined(Q_OS_SYMBIAN)
+    view.showMaximized();
+#else
+     view.show();
+#endif
 
     return app.exec();
 }

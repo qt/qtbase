@@ -126,8 +126,15 @@ int main(int argc, char *argv[])
     QGraphicsView *view = new QGraphicsView();
     view->setScene(scene);
     view->setWindowTitle(QApplication::translate("simpleanchorlayout", "Simple Anchor Layout"));
+
+#if defined(Q_OS_SYMBIAN)
+    view->showMaximized();
+#elif defined(Q_WS_MAEMO_5)
+    view-show();
+#else
     view->resize(360, 320);
     view->show();
+#endif
 
     return app.exec();
 }

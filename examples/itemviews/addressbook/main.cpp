@@ -46,7 +46,11 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow mw;
+#if defined(Q_OS_SYMBIAN)
+    mw.showMaximized();
+#else
     mw.show();
+#endif
     return app.exec();
 }
 //! [0]

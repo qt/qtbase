@@ -47,7 +47,11 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MandelbrotWidget widget;
+#if defined(Q_WS_S60)
+    widget.showMaximized();
+#else
     widget.show();
+#endif
     return app.exec();
 }
 //! [0]

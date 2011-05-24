@@ -73,6 +73,4 @@ private:
     PixmapItem *m_item;
     Animation *m_anim;
     QSize m_iconSize;
-
-
 };

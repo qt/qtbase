@@ -62,16 +62,18 @@ DragWidget::DragWidget(QWidget *parent)
             wordLabel->show();
             wordLabel->setAttribute(Qt::WA_DeleteOnClose);
             x += wordLabel->width() + 2;
-            if (x >= 195) {
+            if (x >= 245) {
                 x = 5;
                 y += wordLabel->height() + 2;
             }
         }
     }
 
+    /*
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
     setPalette(newPalette);
+    */
 
     setAcceptDrops(true);
     setMinimumSize(400, qMax(200, y));

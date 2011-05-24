@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -212,42 +212,101 @@ QT_BEGIN_NAMESPACE
 
     This enum type defines accessible event types.
 
-    \value AcceleratorChanged
-    \value Alert                 A system alert (e.g., a message from a QMessageBox)
-    \value ContextHelpEnd        Context help (QWhatsThis) for an object is finished.
-    \value ContextHelpStart      Context help (QWhatsThis) for an object is initiated.
-    \value DefaultActionChanged  The default QAccessible::Action for the accessible object changed
-    \value DescriptionChanged    The objects QAccessible::Description changed.
-    \value DialogEnd             A dialog (QDialog) is been hidden
-    \value DialogStart           A dialog (QDialog) has been set visible.
-    \value DragDropEnd           A Drag & Drop operation is about to finished.
-    \value DragDropStart         A Drag & Drop operation is about to be initiated.
-    \value Focus                 An object has gained keyboard focus.
-    \value ForegroundChanged     A window has been activated (i.e., a new window has gained focus on the desktop)
-    \value HelpChanged           The QAccessible::Help text property of an object has changed
-    \value LocationChanged       An objects location on the screen changed
-    \value MenuCommand           A menu item is triggered.
-    \value MenuEnd               A menu has been closed (Qt uses PopupMenuEnd for all menus)
-    \value MenuStart             A menu has been opened on the menubar (Qt uses PopupMenuStart for all menus)
-    \value NameChanged           The QAccessible::Name property of an object has changed
-    \value ObjectCreated         A new object is created.
-    \value ObjectDestroyed       An object is deleted.
-    \value ObjectHide            An object is hidden (i.e., with QWidget::hide()). Any children the object that is hidden has do not send this event.
-                                 It is not send when an object is hidden as it is being obcured by others.
-    \value ObjectReorder         A layout or item view  has added, removed, or moved an object (Qt does not use this event).
-    \value ObjectShow            An object is displayed (i.e., with QWidget::show()).
-    \value ParentChanged         An objects parent object changed.
-    \value PopupMenuEnd          A popup menu has closed.
-    \value PopupMenuStart        A popupmenu has opened.
-    \value ScrollingEnd          A scrollbar scroll operation has ended (the mouse has released the slider handle)
-    \value ScrollingStart        A scrollbar scroll operation is about to start (i.e., the mouse has pressed on the slider handle)
-    \value Selection             The selection has changed in a menu or item view.
-    \value SelectionAdd          An item has been added to the selection in an item view.
-    \value SelectionRemove       An item has been removed from an item view selection.
-    \value SelectionWithin       Several changes to a selection has occurred in an item view.
-    \value SoundPlayed           A sound has been played by an object
-    \value StateChanged          The QAccessible::State of an object has changed.
-    \value ValueChanged          The QAccessible::Value of an object has changed.
+    \value AcceleratorChanged               The keyboard accelerator for an action has been changed.
+    \value ActionChanged                    An action has been changed.
+    \value ActiveDescendantChanged
+    \value Alert                            A system alert (e.g., a message from a QMessageBox)
+    \value AttributeChanged
+    \value ContextHelpEnd                   Context help (QWhatsThis) for an object is finished.
+    \value ContextHelpStart                 Context help (QWhatsThis) for an object is initiated.
+    \value DefaultActionChanged             The default QAccessible::Action for the accessible
+                                            object has changed.
+    \value DescriptionChanged               The object's QAccessible::Description changed.
+    \value DialogEnd                        A dialog (QDialog) has been hidden
+    \value DialogStart                      A dialog (QDialog) has been set visible.
+    \value DocumentContentChanged           The contents of a text document have changed.
+    \value DocumentLoadComplete             A document has been loaded.
+    \value DocumentLoadStopped              A document load has been stopped.
+    \value DocumentReload                   A document reload has been initiated.
+    \value DragDropEnd                      A drag and drop operation is about to finished.
+    \value DragDropStart                    A drag and drop operation is about to be initiated.
+    \value Focus                            An object has gained keyboard focus.
+    \value ForegroundChanged                A window has been activated (i.e., a new window has
+                                            gained focus on the desktop).
+    \value HelpChanged                      The QAccessible::Help text property of an object has
+                                            changed.
+    \value HyperlinkEndIndexChanged         The end position of the display text for a hypertext
+                                            link has changed.
+    \value HyperlinkNumberOfAnchorsChanged  The number of anchors in a hypertext link has changed,
+                                            perhaps because the display text has been split to
+                                            provide more than one link.
+    \value HyperlinkSelectedLinkChanged     The link for the selected hypertext link has changed.
+    \value HyperlinkStartIndexChanged       The start position of the display text for a hypertext
+                                            link has changed.
+    \value HypertextChanged                 The display text for a hypertext link has changed.
+    \value HypertextLinkActivated           A hypertext link has been activated, perhaps by being
+                                            clicked or via a key press.
+    \value HypertextLinkSelected            A hypertext link has been selected.
+    \value HypertextNLinksChanged
+    \value LocationChanged                  An object's location on the screen has changed.
+    \value MenuCommand                      A menu item is triggered.
+    \value MenuEnd                          A menu has been closed (Qt uses PopupMenuEnd for all
+                                            menus).
+    \value MenuStart                        A menu has been opened on the menubar (Qt uses
+                                            PopupMenuStart for all menus).
+    \value NameChanged                      The QAccessible::Name property of an object has changed.
+    \value ObjectAttributeChanged
+    \value ObjectCreated                    A new object is created.
+    \value ObjectDestroyed                  An object is deleted.
+    \value ObjectHide                       An object is hidden; for example, with QWidget::hide().
+                                            Any children the object that is hidden has do not send
+                                            this event. It is not sent when an object is hidden as
+                                            it is being obcured by others.
+    \value ObjectReorder                    A layout or item view  has added, removed, or moved an
+                                            object (Qt does not use this event).
+    \value ObjectShow                       An object is displayed; for example, with
+                                            QWidget::show().
+    \value PageChanged
+    \value ParentChanged                    An object's parent object changed.
+    \value PopupMenuEnd                     A pop-up menu has closed.
+    \value PopupMenuStart                   A pop-up menu has opened.
+    \value ScrollingEnd                     A scrollbar scroll operation has ended (the mouse has
+                                            released the slider handle).
+    \value ScrollingStart                   A scrollbar scroll operation is about to start; this may
+                                            be caused by a mouse press on the slider handle, for
+                                            example.
+    \value SectionChanged
+    \value SelectionAdd                     An item has been added to the selection in an item view.
+    \value SelectionRemove                  An item has been removed from an item view selection.
+    \value Selection                        The selection has changed in a menu or item view.
+    \value SelectionWithin                  Several changes to a selection has occurred in an item
+                                            view.
+    \value SoundPlayed                      A sound has been played by an object
+    \value StateChanged                     The QAccessible::State of an object has changed.
+    \value TableCaptionChanged              A table caption has been changed.
+    \value TableColumnDescriptionChanged    The description of a table column, typically found in
+                                            the column's header, has been changed.
+    \value TableColumnHeaderChanged         A table column header has been changed.
+    \value TableModelChanged                The model providing data for a table has been changed.
+    \value TableRowDescriptionChanged       The description of a table row, typically found in the
+                                            row's header, has been changed.
+    \value TableRowHeaderChanged            A table row header has been changed.
+    \value TableSummaryChanged              The summary of a table has been changed.
+    \value TextAttributeChanged
+    \value TextCaretMoved                   The caret has moved in an editable widget.
+                                            The caret represents the cursor position in an editable
+                                            widget with the input focus.
+    \value TextColumnChanged                A text column has been changed.
+    \value TextInserted                     Text has been inserted into an editable widget.
+    \value TextRemoved                      Text has been removed from an editable widget.
+    \value TextSelectionChanged             The selected text has changed in an editable widget.
+    \value TextUpdated                      The text has been update in an editable widget.
+    \value ValueChanged                     The QAccessible::Value of an object has changed.
+    \value VisibleDataChanged
+
+    The values for this enum are defined to be the same as those defined in the
+    \l{AccessibleEventID.idl File Reference}{IAccessible2} and
+    \l{Microsoft Active Accessibility Event Constants}{MSAA} specifications.
 */
 
 /*!

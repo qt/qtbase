@@ -82,7 +82,6 @@ void SslClient::updateEnabledState()
     form->connectButton->setEnabled(unconnected && !form->hostNameEdit->text().isEmpty());
 
     bool connected = socket && socket->state() == QAbstractSocket::ConnectedState;
-    form->sessionBox->setEnabled(connected);
     form->sessionOutput->setEnabled(connected);
     form->sessionInput->setEnabled(connected);
     form->sessionInputLabel->setEnabled(connected);
@@ -193,6 +192,9 @@ void SslClient::sslErrors(const QList<QSslError> &errors)
         ui.sslErrorList->addItem(error.errorString());
 
     executingDialog = true;
+#ifdef Q_OS_SYMBIAN
+    errorDialog.showMaximized();
+#endif
     if (errorDialog.exec() == QDialog::Accepted)
         socket->ignoreSslErrors();
     executingDialog = false;
@@ -206,6 +208,9 @@ void SslClient::displayCertificateInfo()
 {
     CertificateInfo *info = new CertificateInfo(this);
     info->setCertificateChain(socket->peerCertificateChain());
+#ifdef Q_OS_SYMBIAN
+    info->showMaximized();
+#endif
     info->exec();
     info->deleteLater();
 }

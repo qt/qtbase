@@ -7,29 +7,29 @@
 ** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -99,7 +99,17 @@ QT_BEGIN_NAMESPACE
     invalid state and QDBusUnixFileDescriptor::isSupported() will return
     false.
 
-    \sa QDBusConnection::ConnectionCapabilities, QDBusConnection::connectionCapabilities
+    \sa QDBusConnection::ConnectionCapabilities, QDBusConnection::connectionCapabilities()
+*/
+
+/*!
+    \typedef QDBusUnixFileDescriptor::Data
+    \internal
+*/
+
+/*!
+    \variable QDBusUnixFileDescriptor::d
+    \internal
 */
 
 class QDBusUnixFileDescriptorPrivate : public QSharedData {
@@ -122,7 +132,7 @@ QExplicitlySharedDataPointer<QDBusUnixFileDescriptorPrivate>::~QExplicitlyShared
     This is equivalent to constructing the object with an invalid file
     descriptor (like -1).
 
-    \sa fileDescriptor, isValid
+    \sa fileDescriptor(), isValid()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
     : d(0)
@@ -140,7 +150,7 @@ QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
     If the \a fileDescriptor parameter is not valid, isValid() will return
     false and fileDescriptor() will return -1.
 
-    \sa setFileDescriptor, fileDescriptor
+    \sa setFileDescriptor(), fileDescriptor()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor(int fileDescriptor)
     : d(0)
@@ -227,7 +237,7 @@ bool QDBusUnixFileDescriptor::isSupported()
 
 /*!
     Sets the file descriptor that this QDBusUnixFileDescriptor object holds
-    to a copy of \a fileDescriptor.T he original file descriptor is not
+    to a copy of \a fileDescriptor. The original file descriptor is not
     touched and must be closed by the user.
 
     Note that the value returned by fileDescriptor() will be different from

@@ -62,6 +62,19 @@ private:
     QPixmap p;
 };
 
+class GraphicsView : public QGraphicsView
+{
+public:
+    GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene)
+    {
+    }
+
+    virtual void resizeEvent(QResizeEvent *event)
+    {
+        fitInView(sceneRect(), Qt::KeepAspectRatio);
+    }
+};
+
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(states);
@@ -130,12 +143,12 @@ int main(int argc, char *argv[])
     state1->assignProperty(button, "text", "Switch to state 2");
     state1->assignProperty(widget, "geometry", QRectF(0, 0, 400, 150));
     state1->assignProperty(box, "geometry", QRect(-200, 150, 200, 150));
-    state1->assignProperty(p1, "pos", QPointF(68, 185));
-    state1->assignProperty(p2, "pos", QPointF(168, 185));
-    state1->assignProperty(p3, "pos", QPointF(268, 185));
-    state1->assignProperty(p4, "pos", QPointF(68-150, 48-150));
-    state1->assignProperty(p5, "pos", QPointF(168, 48-150));
-    state1->assignProperty(p6, "pos", QPointF(268+150, 48-150));
+    state1->assignProperty(p1, "pos", QPointF(68, 200)); // 185));
+    state1->assignProperty(p2, "pos", QPointF(168, 200)); // 185));
+    state1->assignProperty(p3, "pos", QPointF(268, 200)); // 185));
+    state1->assignProperty(p4, "pos", QPointF(68 - 150, 48 - 150));
+    state1->assignProperty(p5, "pos", QPointF(168, 48 - 150));
+    state1->assignProperty(p6, "pos", QPointF(268 + 150, 48 - 150));
     state1->assignProperty(p1, "rotation", qreal(0));
     state1->assignProperty(p2, "rotation", qreal(0));
     state1->assignProperty(p3, "rotation", qreal(0));
@@ -154,9 +167,9 @@ int main(int argc, char *argv[])
     state2->assignProperty(button, "text", "Switch to state 3");
     state2->assignProperty(widget, "geometry", QRectF(200, 150, 200, 150));
     state2->assignProperty(box, "geometry", QRect(9, 150, 190, 150));
-    state2->assignProperty(p1, "pos", QPointF(68-150, 185+150));
-    state2->assignProperty(p2, "pos", QPointF(168, 185+150));
-    state2->assignProperty(p3, "pos", QPointF(268+150, 185+150));
+    state2->assignProperty(p1, "pos", QPointF(68 - 150, 185 + 150));
+    state2->assignProperty(p2, "pos", QPointF(168, 185 + 150));
+    state2->assignProperty(p3, "pos", QPointF(268 + 150, 185 + 150));
     state2->assignProperty(p4, "pos", QPointF(64, 48));
     state2->assignProperty(p5, "pos", QPointF(168, 48));
     state2->assignProperty(p6, "pos", QPointF(268, 48));
@@ -262,8 +275,13 @@ int main(int argc, char *argv[])
 
     machine.start();
 
-    QGraphicsView view(&scene);
+    GraphicsView view(&scene);
+
+#if defined(Q_OS_SYMBIAN)
+    view.showMaximized();
+#else
     view.show();
+#endif
 
     return app.exec();
 }

@@ -128,7 +128,11 @@ int main(int argc, char *argv[])
     wizard.addPage(createConclusionPage());
 
     wizard.setWindowTitle("Trivial Wizard");
+#ifdef Q_OS_SYMBIAN
+    wizard.showMaximized();
+#else
     wizard.show();
+#endif
 
     return app.exec();
 }

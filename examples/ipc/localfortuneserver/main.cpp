@@ -49,7 +49,11 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Server server;
+#if defined(Q_WS_S60)
+    server.showMaximized();
+#else
     server.show();
+#endif
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-    return server.exec();
+    return app.exec();
 }

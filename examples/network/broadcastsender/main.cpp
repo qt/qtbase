@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Sender sender;
+#ifdef Q_OS_SYMBIAN
+    sender.showMaximized();
+#else
     sender.show();
-    return sender.exec();
+#endif
+    return app.exec();
 }

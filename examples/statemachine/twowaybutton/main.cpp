@@ -74,8 +74,14 @@ int main(int argc, char **argv)
 //! [4]
 
 //! [5]
+#if defined(Q_OS_SYMBIAN)
+    button.showMaximized();
+#elif defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    button.show();
+#else
     button.resize(100, 50);
     button.show();
+#endif
     return app.exec();
 }
 //! [5]

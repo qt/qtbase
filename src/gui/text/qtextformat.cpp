@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -571,6 +571,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value FontStyleHint        Corresponds to the QFont::StyleHint property
     \value FontStyleStrategy    Corresponds to the QFont::StyleStrategy property
     \value FontKerning          Specifies whether the font has kerning turned on.
+    \value FontHintingPreference Controls the use of hinting according to values
+                                 of the QFont::HintingPreference enum.
 
     \omitvalue FirstFontProperty
     \omitvalue LastFontProperty
@@ -588,8 +590,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     List properties
 
-    \value ListStyle
-    \value ListIndent
+    \value ListStyle        Specifies the style used for the items in a list,
+                            described by values of the QTextListFormat::Style enum.
+    \value ListIndent       Specifies the amount of indentation used for a list.
+    \value ListNumberPrefix Defines the text which is prepended to item numbers in
+                            numeric lists.
+    \value ListNumberSuffix Defines the text which is appended to item numbers in
+                            numeric lists.
 
     Table and frame properties
 
@@ -1263,16 +1270,18 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
 
     \value AlignNormal  Adjacent characters are positioned in the standard
                         way for text in the writing system in use.
-    \value AlignSuperScript Characters are placed above the baseline for
+    \value AlignSuperScript Characters are placed above the base line for
                             normal text.
-    \value AlignSubScript   Characters are placed below the baseline for
+    \value AlignSubScript   Characters are placed below the base line for
                             normal text.
-    \value AlignMiddle The center of the object is vertically aligned with the base line.
-                       Currently, this is only implemented for inline objects.
+    \value AlignMiddle The center of the object is vertically aligned with the
+                       base line. Currently, this is only implemented for
+                       inline objects.
     \value AlignBottom The bottom edge of the object is vertically aligned with
                        the base line.
     \value AlignTop    The top edge of the object is vertically aligned with
                        the base line.
+    \value AlignBaseline The base lines of the characters are aligned.
 */
 
 /*!
@@ -2136,8 +2145,9 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \fn void QTextBlockFormat::setLineHeight(qreal height, int heightType)
     \since 4.8
 
-    This sets the line height for the paragraph to the value in height
-    which is dependant on heightType, described by the LineHeightTypes enum.
+    Sets the line height for the paragraph to the value given by \a height
+    which is dependent on \a heightType in the way described by the
+    LineHeightTypes enum.
 
     \sa LineHeightTypes, lineHeight(), lineHeightType()
 */
@@ -2147,11 +2157,16 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \fn qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling) const
     \since 4.8
 
-    This returns what the height of the lines in the paragraph will be depending
-    on the given height of the script line and the scaling. The value that is returned
-    is also dependant on the given LineHeightType of the paragraph as well as the LineHeight
-    setting that has been set for the paragraph. The scaling is needed for the heights
-    that include a fixed number of pixels, to scale them appropriately for printing.
+    Returns the height of the lines in the paragraph based on the height of the
+    script line given by \a scriptLineHeight and the specified \a scaling
+    factor.
+
+    The value that is returned is also dependent on the given LineHeightType of
+    the paragraph as well as the LineHeight setting that has been set for the
+    paragraph.
+
+    The scaling is needed for heights that include a fixed number of pixels, to
+    scale them appropriately for printing.
 
     \sa LineHeightTypes, setLineHeight(), lineHeightType()
 */
@@ -2236,6 +2251,13 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     with the style() function. The style controls the type of bullet points and
     numbering scheme used for items in the list. Note that lists that use the
     decimal numbering scheme begin counting at 1 rather than 0.
+
+    Style properties can be set to further configure the appearance of list
+    items; for example, the ListNumberPrefix and ListNumberSuffix properties
+    can be used to customize the numbers used in an ordered list so that they
+    appear as (1), (2), (3), etc.:
+
+    \snippet doc/src/snippets/textdocument-listitemstyles/mainwindow.cpp add a styled, ordered list
 
     \sa QTextList
 */
@@ -2328,8 +2350,11 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \fn void QTextListFormat::setNumberPrefix(const QString &numberPrefix)
     \since 4.8
 
-    Sets the list format's number prefix. This can be used with all
-    sorted list types. It does not have any effect on unsorted list types.
+    Sets the list format's number prefix to the string specified by
+    \a numberPrefix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
+    The default prefix is an empty string.
 
     \sa numberPrefix()
 */
@@ -2347,8 +2372,10 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \fn void QTextListFormat::setNumberSuffix(const QString &numberSuffix)
     \since 4.8
 
-    Sets the list format's number suffix. This can be used with all
-    sorted list types. It does not have any effect on unsorted list types.
+    Sets the list format's number suffix to the string specified by
+    \a numberSuffix. This can be used with all sorted list types. It does not
+    have any effect on unsorted list types.
+
     The default suffix is ".".
 
     \sa numberSuffix()

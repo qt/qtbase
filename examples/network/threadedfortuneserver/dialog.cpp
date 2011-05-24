@@ -47,11 +47,18 @@
 #include "fortuneserver.h"
 
 Dialog::Dialog(QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
 {
     statusLabel = new QLabel;
+    statusLabel->setWordWrap(true);
+#ifdef Q_OS_SYMBIAN
+    QAction *quitAction = new QAction(tr("Exit"), this);
+    quitAction->setSoftKeyRole(QAction::NegativeSoftKey);
+    addAction(quitAction);
+#else
     quitButton = new QPushButton(tr("Quit"));
     quitButton->setAutoDefault(false);
+#endif
 
     if (!server.listen()) {
         QMessageBox::critical(this, tr("Threaded Fortune Server"),
@@ -78,6 +85,13 @@ Dialog::Dialog(QWidget *parent)
                             "Run the Fortune Client example now.")
                          .arg(ipAddress).arg(server.serverPort()));
 
+#ifdef Q_OS_SYMBIAN
+    connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(statusLabel);
+    setLayout(mainLayout);
+#else
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -89,6 +103,6 @@ Dialog::Dialog(QWidget *parent)
     mainLayout->addWidget(statusLabel);
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
-
+#endif
     setWindowTitle(tr("Threaded Fortune Server"));
 }

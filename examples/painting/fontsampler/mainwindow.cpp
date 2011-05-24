@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
+#if defined(Q_OS_SYMBIAN)
+    addDockWidget(Qt::BottomDockWidgetArea, dockWidget);
+#endif
+
     sampleSizes << 32 << 24 << 16 << 14 << 12 << 8 << 4 << 2 << 1;
     markedCount = 0;
     setupFontTree();
@@ -140,7 +144,11 @@ void MainWindow::showFont(QTreeWidgetItem *item)
     QString oldText = textEdit->toPlainText().trimmed();
     bool modified = textEdit->document()->isModified();
     textEdit->clear();
+#if defined(Q_OS_SYMBIAN)
+    textEdit->document()->setDefaultFont(QFont(family, 10, weight, italic));
+#else
     textEdit->document()->setDefaultFont(QFont(family, 32, weight, italic));
+#endif
 
     QTextCursor cursor = textEdit->textCursor();
     QTextBlockFormat blockFormat;
@@ -217,6 +225,30 @@ void MainWindow::updateStyles(QTreeWidgetItem *item, int column)
     printPreviewAction->setEnabled(markedCount > 0);
 }
 
+QMap<QString, StyleItems> MainWindow::currentPageMap()
+{
+    QMap<QString, StyleItems> pageMap;
+
+    for (int row = 0; row < fontTree->topLevelItemCount(); ++row) {
+        QTreeWidgetItem *familyItem = fontTree->topLevelItem(row);
+        QString family;
+
+        if (familyItem->checkState(0) == Qt::Checked) {
+            family = familyItem->text(0);
+            pageMap[family] = StyleItems();
+        }
+
+        for (int childRow = 0; childRow < familyItem->childCount(); ++childRow) {
+            QTreeWidgetItem *styleItem = familyItem->child(childRow);
+            if (styleItem->checkState(0) == Qt::Checked)
+                pageMap[family].append(styleItem);
+        }
+    }
+
+    return pageMap;
+}
+
+#ifndef QT_NO_PRINTER
 void MainWindow::on_printAction_triggered()
 {
     pageMap = currentPageMap();
@@ -283,29 +315,6 @@ void MainWindow::on_printPreviewAction_triggered()
     preview.exec();
 }
 
-QMap<QString, StyleItems> MainWindow::currentPageMap()
-{
-    QMap<QString, StyleItems> pageMap;
-
-    for (int row = 0; row < fontTree->topLevelItemCount(); ++row) {
-        QTreeWidgetItem *familyItem = fontTree->topLevelItem(row);
-        QString family;
-
-        if (familyItem->checkState(0) == Qt::Checked) {
-            family = familyItem->text(0);
-            pageMap[family] = StyleItems();
-        }
-
-        for (int childRow = 0; childRow < familyItem->childCount(); ++childRow) {
-            QTreeWidgetItem *styleItem = familyItem->child(childRow);
-            if (styleItem->checkState(0) == Qt::Checked)
-                pageMap[family].append(styleItem);
-        }
-    }
-
-    return pageMap;
-}
-
 void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 {
     QString family = pageMap.keys()[index];
@@ -370,3 +379,4 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 
     painter->restore();
 }
+#endif

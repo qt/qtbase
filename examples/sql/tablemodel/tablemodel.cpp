@@ -54,11 +54,15 @@ void initializeModel(QSqlTableModel *model)
     model->setHeaderData(2, Qt::Horizontal, QObject::tr("Last name"));
 }
 
-QTableView *createView(const QString &title, QSqlTableModel *model)
+QTableView *createView(QSqlTableModel *model, const QString &title = "")
 {
     QTableView *view = new QTableView;
     view->setModel(model);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    Q_UNUSED(title)
+#else
     view->setWindowTitle(title);
+#endif
     return view;
 }
 
@@ -72,12 +76,20 @@ int main(int argc, char *argv[])
 
     initializeModel(&model);
 
-    QTableView *view1 = createView(QObject::tr("Table Model (View 1)"), &model);
-    QTableView *view2 = createView(QObject::tr("Table Model (View 2)"), &model);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab(createView(&model), "View 1");
+    tabWidget->addTab(createView(&model), "View 2");
+
+    tabWidget->showMaximized();
+#else
+    QTableView *view1 = createView(&model, QObject::tr("Table Model (View 1)"));
+    QTableView *view2 = createView(&model, QObject::tr("Table Model (View 2)"));
 
     view1->show();
     view2->move(view1->x() + view1->width() + 20, view1->y());
     view2->show();
+#endif
 
     return app.exec();
 }

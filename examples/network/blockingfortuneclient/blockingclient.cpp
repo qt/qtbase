@@ -44,7 +44,7 @@
 #include "blockingclient.h"
 
 BlockingClient::BlockingClient(QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
 {
     hostLabel = new QLabel(tr("&Server name:"));
     portLabel = new QLabel(tr("S&erver port:"));
@@ -68,12 +68,35 @@ BlockingClient::BlockingClient(QWidget *parent)
     portLineEdit = new QLineEdit;
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    Qt::InputMethodHint hints = Qt::ImhDigitsOnly;
+    portLineEdit->setInputMethodHints(hints);
+#endif
+
     hostLabel->setBuddy(hostLineEdit);
     portLabel->setBuddy(portLineEdit);
 
     statusLabel = new QLabel(tr("This examples requires that you run the "
                                 "Fortune Server example as well."));
+    statusLabel->setWordWrap(true);
 
+#ifdef Q_OS_SYMBIAN
+    QMenu *menu = new QMenu(this);
+    fortuneAction = menu->addAction(tr("Get Fortune"));
+    fortuneAction->setVisible(false);
+
+    QAction *optionsAction = new QAction(tr("Options"), this);
+    optionsAction->setMenu(menu);
+    optionsAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    addAction(optionsAction);
+
+    exitAction = new QAction(tr("Exit"), this);
+    exitAction->setSoftKeyRole(QAction::NegativeSoftKey);
+    addAction(exitAction);
+
+    connect(fortuneAction, SIGNAL(triggered()), this, SLOT(requestNewFortune()));
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+#else
     getFortuneButton = new QPushButton(tr("Get Fortune"));
     getFortuneButton->setDefault(true);
     getFortuneButton->setEnabled(false);
@@ -84,13 +107,14 @@ BlockingClient::BlockingClient(QWidget *parent)
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
+    connect(getFortuneButton, SIGNAL(clicked()), this, SLOT(requestNewFortune()));
+    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+#endif
+
     connect(hostLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
     connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableGetFortuneButton()));
-    connect(getFortuneButton, SIGNAL(clicked()),
-            this, SLOT(requestNewFortune()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 //! [0]
     connect(&thread, SIGNAL(newFortune(QString)),
             this, SLOT(showFortune(QString)));
@@ -105,7 +129,9 @@ BlockingClient::BlockingClient(QWidget *parent)
     mainLayout->addWidget(portLabel, 1, 0);
     mainLayout->addWidget(portLineEdit, 1, 1);
     mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
+#ifndef Q_OS_SYMBIAN
     mainLayout->addWidget(buttonBox, 3, 0, 1, 2);
+#endif
     setLayout(mainLayout);
 
     setWindowTitle(tr("Blocking Fortune Client"));
@@ -115,7 +141,11 @@ BlockingClient::BlockingClient(QWidget *parent)
 //! [2]
 void BlockingClient::requestNewFortune()
 {
+#ifdef Q_OS_SYMBIAN
+    fortuneAction->setVisible(false);
+#else
     getFortuneButton->setEnabled(false);
+#endif
     thread.requestNewFortune(hostLineEdit->text(),
                              portLineEdit->text().toInt());
 }
@@ -133,7 +163,11 @@ void BlockingClient::showFortune(const QString &nextFortune)
 //! [4]
     currentFortune = nextFortune;
     statusLabel->setText(currentFortune);
+#ifdef Q_OS_SYMBIAN
+    fortuneAction->setVisible(true);
+#else
     getFortuneButton->setEnabled(true);
+#endif
 }
 //! [4]
 
@@ -158,11 +192,19 @@ void BlockingClient::displayError(int socketError, const QString &message)
                                  .arg(message));
     }
 
+#ifdef Q_OS_SYMBIAN
+    fortuneAction->setVisible(true);
+#else
     getFortuneButton->setEnabled(true);
+#endif
 }
 
 void BlockingClient::enableGetFortuneButton()
 {
-    getFortuneButton->setEnabled(!hostLineEdit->text().isEmpty()
-                                 && !portLineEdit->text().isEmpty());
+    bool enable(!hostLineEdit->text().isEmpty() && !portLineEdit->text().isEmpty());
+#ifdef Q_OS_SYMBIAN
+    fortuneAction->setVisible(enable);
+#else
+    getFortuneButton->setEnabled(enable);
+#endif
 }

@@ -18,4 +18,7 @@ INSTALLS += target sources
 symbian {
     TARGET.UID3 = 0xA000CF67
     CONFIG += qt_example
+    TARGET.CAPABILITY = NetworkServices
 }
+maemo5: CONFIG += qt_example
+

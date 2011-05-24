@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     DragWidget window;
+#ifdef Q_OS_SYMBIAN
+    window.showMaximized();
+#else
     window.show();
+#endif
     return app.exec();
 }

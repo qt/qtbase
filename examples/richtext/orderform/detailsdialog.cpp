@@ -53,8 +53,13 @@ DetailsDialog::DetailsDialog(const QString &title, QWidget *parent)
     nameEdit = new QLineEdit;
     addressEdit = new QTextEdit;
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
+    offersCheckBox = new QCheckBox(tr("Send information about\n"
+                                      "products and special offers"));
+#else
     offersCheckBox = new QCheckBox(tr("Send information about products and "
                                       "special offers"));
+#endif
 
     setupItemsTable();
 
@@ -66,6 +71,30 @@ DetailsDialog::DetailsDialog(const QString &title, QWidget *parent)
 //! [0]
 
 //! [1]
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    QWidget *widgetSubscriber = new QWidget;
+    QGridLayout *subscriberLayout = new QGridLayout;
+    subscriberLayout->addWidget(nameLabel, 0, 0);
+    subscriberLayout->addWidget(nameEdit, 0, 1);
+    subscriberLayout->addWidget(addressLabel, 1, 0);
+    subscriberLayout->addWidget(addressEdit, 1, 1);
+    subscriberLayout->addWidget(offersCheckBox, 2, 0, 1, 2);
+    widgetSubscriber->setLayout(subscriberLayout);
+
+    QWidget *widgetOrder = new QWidget;
+    QVBoxLayout *orderLayout = new QVBoxLayout;
+    orderLayout->addWidget(itemsTable);
+    widgetOrder->setLayout(orderLayout);
+
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab(widgetSubscriber, "Subscriber");
+    tabWidget->addTab(widgetOrder, "Order");
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(tabWidget);
+    mainLayout->addWidget(buttonBox);
+    setLayout(mainLayout);
+#else
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(nameLabel, 0, 0);
     mainLayout->addWidget(nameEdit, 0, 1);
@@ -75,6 +104,7 @@ DetailsDialog::DetailsDialog(const QString &title, QWidget *parent)
     mainLayout->addWidget(offersCheckBox, 2, 1, 1, 2);
     mainLayout->addWidget(buttonBox, 3, 0, 1, 3);
     setLayout(mainLayout);
+#endif
 
     setWindowTitle(title);
 }

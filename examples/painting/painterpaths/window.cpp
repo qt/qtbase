@@ -130,16 +130,17 @@ Window::Window()
 //! [9]
 
 //! [10]
-    renderAreas[0] = new RenderArea(rectPath);
-    renderAreas[1] = new RenderArea(roundRectPath);
-    renderAreas[2] = new RenderArea(ellipsePath);
-    renderAreas[3] = new RenderArea(piePath);
-    renderAreas[4] = new RenderArea(polygonPath);
-    renderAreas[5] = new RenderArea(groupPath);
-    renderAreas[6] = new RenderArea(textPath);
-    renderAreas[7] = new RenderArea(bezierPath);
-    renderAreas[8] = new RenderArea(starPath);
-    Q_ASSERT(NumRenderAreas == 9);
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
+    renderAreas.push_back(new RenderArea(rectPath));
+    renderAreas.push_back(new RenderArea(roundRectPath));
+    renderAreas.push_back(new RenderArea(ellipsePath));
+    renderAreas.push_back(new RenderArea(piePath));
+    renderAreas.push_back(new RenderArea(polygonPath));
+    renderAreas.push_back(new RenderArea(groupPath));
+#endif
+    renderAreas.push_back(new RenderArea(textPath));
+    renderAreas.push_back(new RenderArea(bezierPath));
+    renderAreas.push_back(new RenderArea(starPath));
 //! [10]
 
 //! [11]
@@ -201,19 +202,27 @@ Window::Window()
     connect(penColorComboBox, SIGNAL(activated(int)),
             this, SLOT(penColorChanged()));
 
-    for (int i = 0; i < NumRenderAreas; ++i) {
+    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++) {
         connect(penWidthSpinBox, SIGNAL(valueChanged(int)),
-                renderAreas[i], SLOT(setPenWidth(int)));
+                *it, SLOT(setPenWidth(int)));
         connect(rotationAngleSpinBox, SIGNAL(valueChanged(int)),
-                renderAreas[i], SLOT(setRotationAngle(int)));
+                *it, SLOT(setRotationAngle(int)));
     }
 
 //! [16] //! [17]
     QGridLayout *topLayout = new QGridLayout;
-    for (int i = 0; i < NumRenderAreas; ++i)
-        topLayout->addWidget(renderAreas[i], i / 3, i % 3);
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    topLayout->setSizeConstraint(QLayout::SetNoConstraint);
+#endif
+
+    int i=0;
+    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++, i++)
+        topLayout->addWidget(*it, i / 3, i % 3);
 
     QGridLayout *mainLayout = new QGridLayout;
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
+#endif
     mainLayout->addLayout(topLayout, 0, 0, 1, 4);
     mainLayout->addWidget(fillRuleLabel, 1, 0);
     mainLayout->addWidget(fillRuleComboBox, 1, 1, 1, 3);
@@ -225,8 +234,10 @@ Window::Window()
     mainLayout->addWidget(penWidthSpinBox, 3, 1, 1, 3);
     mainLayout->addWidget(penColorLabel, 4, 0);
     mainLayout->addWidget(penColorComboBox, 4, 1, 1, 3);
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5) && !defined(Q_WS_SIMULATOR)
     mainLayout->addWidget(rotationAngleLabel, 5, 0);
     mainLayout->addWidget(rotationAngleSpinBox, 5, 1, 1, 3);
+#endif
     setLayout(mainLayout);
 //! [17]
 
@@ -245,8 +256,8 @@ void Window::fillRuleChanged()
 {
     Qt::FillRule rule = (Qt::FillRule)currentItemData(fillRuleComboBox).toInt();
 
-    for (int i = 0; i < NumRenderAreas; ++i)
-        renderAreas[i]->setFillRule(rule);
+    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+        (*it)->setFillRule(rule);
 }
 //! [19]
 
@@ -256,8 +267,8 @@ void Window::fillGradientChanged()
     QColor color1 = qvariant_cast<QColor>(currentItemData(fillColor1ComboBox));
     QColor color2 = qvariant_cast<QColor>(currentItemData(fillColor2ComboBox));
 
-    for (int i = 0; i < NumRenderAreas; ++i)
-        renderAreas[i]->setFillGradient(color1, color2);
+    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+        (*it)->setFillGradient(color1, color2);
 }
 //! [20]
 
@@ -266,8 +277,8 @@ void Window::penColorChanged()
 {
     QColor color = qvariant_cast<QColor>(currentItemData(penColorComboBox));
 
-    for (int i = 0; i < NumRenderAreas; ++i)
-        renderAreas[i]->setPenColor(color);
+    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+        (*it)->setPenColor(color);
 }
 //! [21]
 

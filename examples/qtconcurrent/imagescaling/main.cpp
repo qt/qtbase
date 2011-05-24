@@ -48,16 +48,33 @@ int main(int argc, char *argv[])
     QApplication app(argc,argv);
 
     Images imageView;
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    imageView.showMaximized();
+#else
     imageView.show();
+#endif
 
     return app.exec();
 }
 
 #else
 
-int main()
+int main(int argc, char *argv[])
 {
-    qDebug() << "Qt Concurrent is not supported on this platform";
+    QApplication app(argc, argv);
+    QString text("Qt Concurrent is not supported on this platform");
+
+    QLabel *label = new QLabel(text);
+    label->setWordWrap(true);
+
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    label->showMaximized();
+#else
+    label->show();
+#endif
+    qDebug() << text;
+
+    app.exec();
 }
 
 #endif

@@ -46,25 +46,28 @@
 DragWidget::DragWidget(QWidget *parent)
     : QFrame(parent)
 {
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+#else
     setMinimumSize(200, 200);
+#endif
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
     setAcceptDrops(true);
 
     QLabel *boatIcon = new QLabel(this);
     boatIcon->setPixmap(QPixmap(":/images/boat.png"));
-    boatIcon->move(20, 20);
+    boatIcon->move(10, 10);
     boatIcon->show();
     boatIcon->setAttribute(Qt::WA_DeleteOnClose);
 
     QLabel *carIcon = new QLabel(this);
     carIcon->setPixmap(QPixmap(":/images/car.png"));
-    carIcon->move(120, 20);
+    carIcon->move(100, 10);
     carIcon->show();
     carIcon->setAttribute(Qt::WA_DeleteOnClose);
 
     QLabel *houseIcon = new QLabel(this);
     houseIcon->setPixmap(QPixmap(":/images/house.png"));
-    houseIcon->move(20, 120);
+    houseIcon->move(10, 80);
     houseIcon->show();
     houseIcon->setAttribute(Qt::WA_DeleteOnClose);
 }

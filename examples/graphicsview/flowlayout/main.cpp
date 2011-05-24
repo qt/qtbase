@@ -49,7 +49,13 @@ int main(int argc, char **argv)
     QGraphicsView *view = new QGraphicsView(&scene);
     Window *w = new Window;
     scene.addItem(w);
+
+#if defined(Q_OS_SYMBIAN)
+    view->showMaximized();
+#else
     view->resize(400, 300);
     view->show();
+#endif
+
     return app.exec();
 }

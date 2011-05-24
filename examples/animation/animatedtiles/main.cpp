@@ -210,7 +210,11 @@ int main(int argc, char **argv)
     view->setBackgroundBrush(bgPix);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+#ifdef Q_OS_SYMBIAN
+    view->showMaximized();
+#else
     view->show();
+#endif
 
     QStateMachine states;
     states.addState(rootState);

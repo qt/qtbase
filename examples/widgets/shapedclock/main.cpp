@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     ShapedClock clock;
+#if defined(Q_OS_SYMBIAN)
+    clock.showMaximized();
+#else
     clock.show();
+#endif
     return app.exec();
 }

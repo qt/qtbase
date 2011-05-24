@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -51,6 +51,13 @@ extern void qt_registerFont(const QString &familyname, const QString &foundrynam
                                          QFont::Style style, int stretch, bool antialiased,bool scalable, int pixelSize,
                                          const QSupportedWritingSystems &writingSystems, void *hanlde);
 
+/*!
+    \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *)
+
+    Registers the pre-rendered QPF2 font contained in the given \a dataArray.
+
+    \sa registerFont()
+*/
 void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
 {
     if (dataArray.size() == 0)
@@ -88,6 +95,32 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
     }
 }
 
+/*!
+    \fn void QPlatformFontDatabase::registerFont(const QString &familyName,
+        const QString &foundryName, QFont::Weight weight, QFont::Style style,
+        QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
+        const QSupportedWritingSystems &writingSystems, void *usrPtr)
+
+    Registers a font with the given set of attributes describing the font's
+    foundry, family name, style and stretch information, pixel size, and
+    supported writing systems. Additional information about whether the font
+    can be scaled and antialiased can also be provided.
+
+    The foundry name and font family are described by \a foundryName and
+    \a familyName. The font weight (light, normal, bold, etc.), style (normal,
+    oblique, italic) and stretch information (condensed, expanded, unstretched,
+    etc.) are specified by \a weight, \a style and \a stretch.
+
+    Some fonts can be antialiased and scaled; \a scalable and \a antialiased
+    can be set to true for fonts with these attributes. The intended pixel
+    size of non-scalable fonts is specified by \a pixelSize; this value will be
+    ignored for scalable fonts.
+
+    The writing systems supported by the font are specified by the
+    \a writingSystems argument.
+
+    \sa registerQPF2Font()
+*/
 void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &foundryname, QFont::Weight weight,
                                          QFont::Style style, QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
                                          const QSupportedWritingSystems &writingSystems, void *usrPtr)
@@ -206,7 +239,8 @@ void QPlatformFontDatabase::populateFontDatabase()
 }
 
 /*!
-
+    Returns the font engine that can be used to render the font described by
+    the font definition, \a fontDef, in the specified \a script.
 */
 QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle)
 {
@@ -229,7 +263,8 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
 }
 
 /*!
-
+    Returns a list of alternative fonts for the specified \a family and
+    \a style and \a script using the \a styleHint given.
 */
 QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
@@ -241,8 +276,13 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, cons
 }
 
 /*!
-    Adds an application font. Returns a list of family names, or an empty list if the font could
-    not be added
+    Adds an application font described by the font contained supplied \a fontData
+    or using the font contained in the file referenced by \a fileName. Returns
+    a list of family names, or an empty list if the font could not be added.
+
+    \note The default implementation of this function does not add an application
+    font. Subclasses should reimplement this function to perform the necessary
+    loading and registration of fonts.
 */
 QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
@@ -280,21 +320,23 @@ QString QPlatformFontDatabase::fontDir() const
 
 /*!
     \class QPlatformFontDatabase
-    \brief The QPlatformFontDatabase makes it possible to customize how fonts are picked up, and
-    and how they are rendered
+    \brief The QPlatformFontDatabase class makes it possible to customize how fonts
+    are discovered and how they are rendered
 
     \ingroup painting
 
     QPlatformFontDatabase is the superclass which is intended to let platform implementations use
     native font handling.
 
-    Qt has its internal fontdatabase which it uses to pick up available fonts. To be able
-    to populate this database subclass this class, and reimplement populateFontDatabase().
+    Qt has its internal font database which it uses to discover available fonts on the
+    user's system. To be able to populate this database subclass this class, and
+    reimplement populateFontDatabase().
 
-    Use the function registerFont to populate the internal fontdatabase.
+    Use the function registerFont() to populate the internal font database.
 
-    Sometimes a specified font does not have the required glyphs, then the fallbackForFamily
-    function is called.
+    Sometimes a specified font does not have the required glyphs; in such a case, the
+    fallbackForFamily() function is called automatically to find alternative font
+    families that can supply alternatives to the missing glyphs.
 
     \sa QSupportedWritingSystems
 */

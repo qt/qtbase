@@ -2,7 +2,6 @@ TEMPLATE      = subdirs
 SUBDIRS       = addressbook \
                 basicsortfiltermodel \
                 chart \
-                coloreditorfactory \
                 combowidgetmapper \
                 customsortfiltermodel \
                 dirview \
@@ -14,12 +13,7 @@ SUBDIRS       = addressbook \
                 simpledommodel \
                 simpletreemodel \
                 simplewidgetmapper \
-                spinboxdelegate \
-                stardelegate
-
-symbian: SUBDIRS = \
-                addressbook \
-                chart
+                spinboxdelegate
 
 # install
 sources.files = README *.pro
@@ -28,3 +22,4 @@ INSTALLS += sources
 
 symbian: CONFIG += qt_example
 QT += widgets
+maemo5: CONFIG += qt_example

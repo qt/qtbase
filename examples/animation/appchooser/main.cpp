@@ -80,6 +80,21 @@ private:
     QPixmap p;
 };
 
+class GraphicsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = 0) : QGraphicsView(scene, parent)
+    {
+    }
+
+    virtual void resizeEvent(QResizeEvent *event)
+    {
+        fitInView(sceneRect(), Qt::KeepAspectRatio);
+    }
+};
+
+
 void createStates(const QObjectList &objects,
                   const QRect &selectedRect, QState *parent)
 {
@@ -112,10 +127,10 @@ int main(int argc, char **argv)
     p3->setObjectName("p3");
     p4->setObjectName("p4");
 
-    p1->setGeometry(QRectF(0.0, 0.0, 64.0, 64.0));
-    p2->setGeometry(QRectF(236.0, 0.0, 64.0, 64.0));
+    p1->setGeometry(QRectF(  0.0,   0.0, 64.0, 64.0));
+    p2->setGeometry(QRectF(236.0,   0.0, 64.0, 64.0));
     p3->setGeometry(QRectF(236.0, 236.0, 64.0, 64.0));
-    p4->setGeometry(QRectF(0.0, 236.0, 64.0, 64.0));
+    p4->setGeometry(QRectF(  0.0, 236.0, 64.0, 64.0));
 
     QGraphicsScene scene(0, 0, 300, 300);
     scene.setBackgroundBrush(Qt::white);
@@ -124,7 +139,7 @@ int main(int argc, char **argv)
     scene.addItem(p3);
     scene.addItem(p4);
 
-    QGraphicsView window(&scene);
+    GraphicsView window(&scene);
     window.setFrameStyle(0);
     window.setAlignment(Qt::AlignLeft | Qt::AlignTop);
     window.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -135,12 +150,13 @@ int main(int argc, char **argv)
 
     QState *group = new QState(&machine);
     group->setObjectName("group");
+
     QRect selectedRect(86, 86, 128, 128);
 
     QState *idleState = new QState(group);
     group->setInitialState(idleState);
 
-    QObjectList objects; 
+    QObjectList objects;
     objects << p1 << p2 << p3 << p4;
     createStates(objects, selectedRect, group);
     createAnimations(objects, &machine);
@@ -148,8 +164,12 @@ int main(int argc, char **argv)
     machine.setInitialState(group);
     machine.start();
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    window.showMaximized();
+#else
     window.resize(300, 300);
     window.show();
+#endif
 
     return app.exec();
 }

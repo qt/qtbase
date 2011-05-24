@@ -7,29 +7,29 @@
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -80,17 +80,17 @@ struct wl_buffer *QWaylandDisplay::createShmBuffer(int fd,
 
 struct wl_visual *QWaylandDisplay::rgbVisual()
 {
-    return wl_display_get_rgb_visual(mDisplay);
+    return rgb_visual;
 }
 
 struct wl_visual *QWaylandDisplay::argbVisual()
 {
-    return wl_display_get_argb_visual(mDisplay);
+    return argb_visual;
 }
 
 struct wl_visual *QWaylandDisplay::argbPremultipliedVisual()
 {
-    return wl_display_get_premultiplied_argb_visual(mDisplay);
+    return premultiplied_argb_visual;
 }
 
 #ifdef QT_WAYLAND_GL_SUPPORT
@@ -126,6 +126,7 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
 };
 
 QWaylandDisplay::QWaylandDisplay(void)
+    : argb_visual(0), premultiplied_argb_visual(0), rgb_visual(0)
 {
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
@@ -242,6 +243,11 @@ const struct wl_output_listener QWaylandDisplay::outputListener = {
     QWaylandDisplay::outputHandleGeometry
 };
 
+const struct wl_compositor_listener QWaylandDisplay::compositorListener = {
+    QWaylandDisplay::handleVisual,
+};
+
+
 void QWaylandDisplay::waitForScreens()
 {
     flushRequests();
@@ -270,6 +276,8 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         wl_output_add_listener(output, &outputListener, this);
     } else if (interface == "wl_compositor") {
         mCompositor = wl_compositor_create(mDisplay, id, 1);
+        wl_compositor_add_listener(mCompositor,
+                                   &compositorListener, this);
     } else if (interface == "wl_shm") {
         mShm = wl_shm_create(mDisplay, id, 1);
     } else if (interface == "wl_shell"){
@@ -283,5 +291,25 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         QPlatformIntegration *plat = QGuiApplicationPrivate::platformIntegration();
         QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
         clipboard->createSelectionOffer(id);
+    }
+}
+
+void QWaylandDisplay::handleVisual(void *data,
+                                   struct wl_compositor *compositor,
+                                   uint32_t id, uint32_t token)
+{
+    QWaylandDisplay *self = static_cast<QWaylandDisplay *>(data);
+
+    switch (token) {
+    case WL_COMPOSITOR_VISUAL_ARGB32:
+        self->argb_visual = wl_visual_create(self->mDisplay, id, 1);
+        break;
+    case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
+        self->premultiplied_argb_visual =
+            wl_visual_create(self->mDisplay, id, 1);
+        break;
+    case WL_COMPOSITOR_VISUAL_XRGB32:
+        self->rgb_visual = wl_visual_create(self->mDisplay, id, 1);
+        break;
     }
 }

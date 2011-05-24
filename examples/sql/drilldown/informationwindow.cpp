@@ -96,7 +96,11 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *offices,
     locationId = id;
     displayedImage = imageFileEditor->currentText();
 
-    setWindowFlags(Qt::Window);
+    // Commented the following line. Now the window will look like dialog and the Qt will place the QDialogBox buttons to menu area in Symbian.
+    // Too bad that the revert button is missing, Should the Qt place the buttons under Option menu in the menu area?!
+    // If the Qt::Window flag was used, the background of window is white in symbian and the QLabels can't be regognized from the background.
+
+    //setWindowFlags(Qt::Window);
     enableButtons(false);
     setWindowTitle(tr("Office: %1").arg(locationText->text()));
 }

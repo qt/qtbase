@@ -77,8 +77,10 @@ MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
     layout->addWidget(artists, 0, 0);
     layout->addWidget(albums, 1, 0);
     layout->addWidget(details, 0, 1, 2, 1);
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     layout->setColumnStretch(1, 1);
     layout->setColumnMinimumWidth(0, 500);
+#endif
 
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
@@ -86,7 +88,9 @@ MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
     createMenuBar();
 
     showImageLabel();
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     resize(850, 400);
+#endif
     setWindowTitle(tr("Music Archive"));
 }
 

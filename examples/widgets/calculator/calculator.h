@@ -41,7 +41,7 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include <QDialog>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -49,7 +49,7 @@ QT_END_NAMESPACE
 class Button;
 
 //! [0]
-class Calculator : public QDialog
+class Calculator : public QWidget
 {
     Q_OBJECT
 

@@ -1,0 +1,4 @@
+Calculator
+=============
+
+Compared to the original example in the Qt SDK, the Calculator class (calculator.h) has been derived from QWidget instead of QDialog because in Maemo you cannot have any additional controls with dialogs. The mainLayout size constraint has been changed to SetNoConstraint to enable immediate scaling of the grid in Symbian. Screen definition for Symbian has been changed to showMaximized() to enable correct scaling of the application (see main.cpp).

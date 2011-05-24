@@ -51,7 +51,7 @@ FtpWindow::FtpWindow(QWidget *parent)
     ftpServerLabel->setBuddy(ftpServerLineEdit);
 
     statusLabel = new QLabel(tr("Please enter the name of an FTP server."));
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
     // Use word wrapping to fit the text on screen
     statusLabel->setWordWrap( true );
 #endif
@@ -243,6 +243,12 @@ void FtpWindow::downloadFile()
 void FtpWindow::cancelDownload()
 {
     ftp->abort();
+
+    if (file->exists()) {
+        file->close();
+        file->remove();
+    }
+    delete file;
 }
 //![5]
 

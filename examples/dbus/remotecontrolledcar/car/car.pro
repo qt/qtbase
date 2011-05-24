@@ -3,7 +3,6 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
 DEPENDPATH += .
 INCLUDEPATH += .
 CONFIG += qdbus
@@ -21,3 +20,6 @@ INSTALLS += target sources
 
 symbian: CONFIG += qt_example
 QT += widgets
+maemo5: CONFIG += qt_example
+symbian: warning(This example does not work on Symbian platform)
+simulator: warning(This example does not work on Simulator platform)

@@ -51,6 +51,7 @@ public:
     GraphicsView(QWidget *parent = 0);
 
 protected:
+    virtual void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *);
 
 signals:

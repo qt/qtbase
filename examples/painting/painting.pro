@@ -3,9 +3,8 @@ SUBDIRS       = basicdrawing \
                 concentriccircles \
                 imagecomposition \
                 painterpaths \
-                transformations
-
-!wince*:!symbian: SUBDIRS += fontsampler
+                transformations \
+                fontsampler
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting
@@ -15,3 +14,4 @@ INSTALLS += target sources
 
 symbian: CONFIG += qt_example
 QT += widgets
+maemo5: CONFIG += qt_example
