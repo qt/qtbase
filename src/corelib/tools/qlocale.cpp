@@ -66,7 +66,7 @@ QT_END_NAMESPACE
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qstringbuilder.h"
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
 #endif

@@ -52,7 +52,7 @@
 #include <qglobal.h>
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 # define _POSIX_
 # include <limits.h>
 # undef _POSIX_

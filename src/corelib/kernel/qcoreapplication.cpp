@@ -171,7 +171,7 @@ CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
 
 #endif
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
 #endif
 
@@ -1285,7 +1285,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 */
 bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     Q_ASSERT(event);
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
@@ -1991,7 +1991,7 @@ QString QCoreApplication::applicationFilePath()
     if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
 #elif defined(Q_WS_MAC)

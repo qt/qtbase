@@ -856,7 +856,9 @@ namespace QT_NAMESPACE {}
      WIN16    - unsupported
 */
 
-#if defined(Q_OS_MSDOS)
+#if defined (Q_WS_QPA)
+
+#elif defined(Q_OS_MSDOS)
 #  define Q_WS_WIN16
 #  error "Qt requires Win32 and does not work with Windows 3.x"
 #elif defined(_WIN32_X11_)
@@ -1139,7 +1141,7 @@ redefine to built-in booleans to make autotests work properly */
 
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #  if defined(Q_CC_MINGW)
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE __attribute__ ((force_align_arg_pointer))
 #  else
@@ -1560,7 +1562,7 @@ public:
 #else
 #  error "Qt not configured correctly, please run configure"
 #endif
-#if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     enum WinVersion {
         WV_32s      = 0x0001,
         WV_95       = 0x0002,
@@ -1669,7 +1671,7 @@ inline QT3_SUPPORT bool qSysInfo(int *wordSize, bool *bigEndian)
 }
 #endif
 
-#if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
 #if defined(QT3_SUPPORT)
 inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
@@ -1679,7 +1681,7 @@ inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #define QT_WA(unicode, ansi) unicode
 #define QT_WA_INLINE(unicode, ansi) (unicode)
 
-#endif /* Q_WS_WIN */
+#endif /* Q_OS_WIN */
 
 #ifndef Q_OUTOFLINE_TEMPLATE
 #  define Q_OUTOFLINE_TEMPLATE

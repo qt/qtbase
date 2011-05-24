@@ -50,7 +50,7 @@
 #include <QtCore/qstringlist.h>
 #endif
 
-#if defined(Q_WS_WIN) && !defined(tagMSG)
+#if defined(Q_OS_WIN) && !defined(tagMSG)
 typedef struct tagMSG MSG;
 #endif
 
@@ -168,7 +168,7 @@ public:
     static QT3_SUPPORT int loopLevel();
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     virtual bool winEventFilter(MSG *message, long *result);
 #endif
 
@@ -280,7 +280,7 @@ Q_CORE_EXPORT void qAddPostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT void qRemovePostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT QString qAppName();                // get application name
 
-#if defined(Q_WS_WIN) && !defined(QT_NO_DEBUG_STREAM)
+#if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
 #endif
