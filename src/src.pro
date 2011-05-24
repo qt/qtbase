@@ -4,12 +4,11 @@ TEMPLATE = subdirs
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 symbian:SRC_SUBDIRS += src_s60main
-SRC_SUBDIRS += src_corelib src_network src_sql src_testlib src_xml src_uitools src_widgets
+!wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+SRC_SUBDIRS += src_corelib src_network src_sql src_gui src_xml src_uitools src_widgets src_testlib
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
-!contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
-
-!wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
+contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
@@ -35,8 +34,6 @@ src_dbus.subdir = $$QT_SOURCE_TREE/src/dbus
 src_dbus.target = sub-dbus
 src_gui.subdir = $$QT_SOURCE_TREE/src/gui
 src_gui.target = sub-gui
-src_widgets.subdir = $$QT_SOURCE_TREE/src/widgets
-src_widgets.target = sub-widgets
 src_sql.subdir = $$QT_SOURCE_TREE/src/sql
 src_sql.target = sub-sql
 src_network.subdir = $$QT_SOURCE_TREE/src/network
@@ -59,16 +56,14 @@ src_testlib.target = sub-testlib
    src_widgets.depends = src_corelib src_gui src_tools_uic
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
-   src_uitools.depends = src_corelib src_xml src_widgets
+   src_uitools.depends = src_corelib src_widgets
    src_dbus.depends = src_corelib src_xml
-   src_widgets.depends = src_corelib src_gui
    src_network.depends = src_corelib
    src_opengl.depends = src_gui src_widgets
    src_openvg.depends = src_gui
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib src_gui src_widgets
    src_tools_idc.depends = src_corelib             # target defined in tools.pro
-   src_tools_uic3.depends = src_qt3support src_xml # target defined in tools.pro
    src_plugins.depends = src_gui src_sql src_xml
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_s60installs.depends -= src_s60installs

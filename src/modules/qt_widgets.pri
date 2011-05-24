@@ -1,6 +1,6 @@
-QT.widgets.VERSION = 4.8.0
-QT.widgets.MAJOR_VERSION = 4
-QT.widgets.MINOR_VERSION = 8
+QT.widgets.VERSION = 5.0.0
+QT.widgets.MAJOR_VERSION = 5
+QT.widgets.MINOR_VERSION = 0
 QT.widgets.PATCH_VERSION = 0
 
 QT.widgets.name = QtWidgets

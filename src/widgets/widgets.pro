@@ -1,6 +1,6 @@
 TARGET     = QtWidgets
 QPRO_PWD   = $$PWD
-QT = core-private gui-private
+QT = core core-private gui gui-private
 
 CONFIG += module
 MODULE_PRI = ../modules/qt_widgets.pri
