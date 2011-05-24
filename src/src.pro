@@ -5,7 +5,12 @@ unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 symbian:SRC_SUBDIRS += src_s60main
 !wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
-SRC_SUBDIRS += src_corelib src_network src_sql src_gui src_xml src_uitools src_widgets src_testlib
+SRC_SUBDIRS += src_corelib
+# TODO: Move idc to ActiveQt
+!cross_compile {
+    win32:!wince*: SRC_SUBDIRS += src_tools_idc
+}
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_testlib
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
