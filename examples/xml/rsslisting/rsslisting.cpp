@@ -74,6 +74,24 @@ its operation, and also allows very large data sources to be read.
 RSSListing::RSSListing(QWidget *parent)
     : QWidget(parent), currentReply(0)
 {
+#ifdef Q_OS_SYMBIAN
+    // Set Internet Access Point
+    QNetworkConfigurationManager manager;
+    const bool canStartIAP = manager.capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces;
+
+    // Is there default access point, use it
+    QNetworkConfiguration cfg = manager.defaultConfiguration();
+    if (!cfg.isValid() || !canStartIAP) {
+        // Available Access Points not found
+        QMessageBox::warning(this, "Error", "No access point");
+        return;
+    }
+
+    m_session = new QNetworkSession(cfg);
+    m_session->open();
+    m_session->waitForOpened();
+#endif
+
     lineEdit = new QLineEdit(this);
     lineEdit->setText("http://labs.qt.nokia.com/blogs/feed");
 
@@ -104,7 +122,9 @@ RSSListing::RSSListing(QWidget *parent)
     layout->addWidget(treeWidget);
 
     setWindowTitle(tr("RSS listing example"));
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     resize(640,480);
+#endif
 }
 
 /*

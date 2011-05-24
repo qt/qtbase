@@ -134,3 +134,9 @@ void Lighting::animate()
     m_scene.update();
 }
 
+void Lighting::resizeEvent(QResizeEvent */*event*/)
+{
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    fitInView(sceneRect(), Qt::KeepAspectRatio);
+#endif
+}

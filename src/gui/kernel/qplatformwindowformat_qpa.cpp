@@ -7,29 +7,29 @@
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -122,8 +122,6 @@ public:
     \i \link setStencil() Stencil buffer.\endlink
     \i \link setStereo() Stereo buffers.\endlink
     \i \link setDirectRendering() Direct rendering.\endlink
-    \i \link setOverlay() Presence of an overlay.\endlink
-    \i \link setPlane() Plane of an overlay.\endlink
     \i \link setSampleBuffers() Multisample buffers.\endlink
     \endlist
 
@@ -168,7 +166,7 @@ public:
         United States and other countries.
     \endlegalese
 
-    \sa QPlatformContext, QWidget
+    \sa QPlatformGLContext, QWidget
 */
 
 /*!
@@ -182,8 +180,6 @@ public:
     \i \link setStencil() Stencil buffer:\endlink Enabled.
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
     \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \endlist
 */
@@ -207,14 +203,10 @@ QPlatformWindowFormat::QPlatformWindowFormat()
     \snippet doc/src/snippets/code/src_opengl_qgl.cpp 3
 
     Note that there are QGL::FormatOption values to turn format settings
-    both on and off, e.g. QGL::DepthBuffer and QGL::NoDepthBuffer,
+    both on and off; e.g., QGL::DepthBuffer and QGL::NoDepthBuffer,
     QGL::DirectRendering and QGL::IndirectRendering, etc.
 
-    The \a plane parameter defaults to 0 and is the plane which this
-    format should be associated with. Not all OpenGL implementations
-    supports overlay/underlay rendering planes.
-
-    \sa defaultFormat(), setOption(), setPlane()
+    \sa defaultFormat(), setOption()
 */
 
 QPlatformWindowFormat::QPlatformWindowFormat(QPlatformWindowFormat::FormatOptions options)
@@ -619,8 +611,6 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
     Otherwise returns false.
 
     WindowSurface is enabled by default.
-
-    \sa setOverlay()
 */
 
 /*!
@@ -628,9 +618,7 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
 
     otherwise the QWidget will only have a QPlatformWindow.
 
-    This is useful for ie. QGLWidget where the QPlatformGLContext controls the surface.
-
-    \sa hasOverlay()
+    This is useful for QGLWidget where the QPlatformGLContext controls the surface.
 */
 
 void QPlatformWindowFormat::setWindowSurface(bool enable)
@@ -894,7 +882,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 }
 
 
-/*!
+/*
     Returns the default QPlatformWindowFormat for overlay contexts.
 
     The default overlay format is:
@@ -907,9 +895,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
     \i \link setStencil() Stencil buffer:\endlink Disabled.
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
-    \i \link setOverlay() Overlay:\endlink Disabled.
     \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
-    \i \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
     \endlist
 
     \sa setDefaultFormat()

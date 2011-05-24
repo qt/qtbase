@@ -57,8 +57,11 @@ class PuzzleWidget : public QWidget
     Q_OBJECT
 
 public:
-    PuzzleWidget(QWidget *parent = 0);
+    PuzzleWidget(int imageSize, QWidget *parent = 0);
     void clear();
+
+    int pieceSize() const;
+    int imageSize() const;
 
 signals:
     void puzzleCompleted();
@@ -80,6 +83,7 @@ private:
     QList<QPoint> pieceLocations;
     QRect highlightedRect;
     int inPlace;
+    int m_ImageSize;
 };
 
 #endif

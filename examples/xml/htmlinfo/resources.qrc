@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>apache_org.html</file>
+        <file>nokia_com.html</file>
+        <file>simpleexample.html</file>
+        <file>trolltech_com.html</file>
+        <file>w3c_org.html</file>
+        <file>youtube_com.html</file>
+    </qresource>
+</RCC>
+

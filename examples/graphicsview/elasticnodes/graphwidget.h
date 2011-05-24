@@ -55,6 +55,11 @@ public:
 
     void itemMoved();
 
+public slots:
+    void shuffle();
+    void zoomIn();
+    void zoomOut();
+
 protected:
     void keyPressEvent(QKeyEvent *event);
     void timerEvent(QTimerEvent *event);

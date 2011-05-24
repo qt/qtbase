@@ -60,6 +60,8 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void mousePressEvent(QMouseEvent *event);
 
 private:
     void setupScene();

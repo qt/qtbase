@@ -47,7 +47,7 @@ CertificateInfo::CertificateInfo(QWidget *parent)
     form = new Ui_CertificateInfo;
     form->setupUi(this);
 
-    connect(form->certificationPathView, SIGNAL(currentRowChanged(int)),
+    connect(form->certificationPathView, SIGNAL(currentIndexChanged(int)),
             this, SLOT(updateCertificateInfo(int)));
 }
 
@@ -69,7 +69,7 @@ void CertificateInfo::setCertificateChain(const QList<QSslCertificate> &chain)
                                              .arg(cert.subjectInfo(QSslCertificate::CommonName)));
     }
 
-    form->certificationPathView->setCurrentRow(0);
+    form->certificationPathView->setCurrentIndex(0);
 }
 
 void CertificateInfo::updateCertificateInfo(int index)

@@ -57,6 +57,9 @@ private slots:
 private:
     void setupScene();
 
+protected:
+    void resizeEvent(QResizeEvent *event);
+
 private:
     qreal angle;
     QGraphicsScene m_scene;

@@ -7,29 +7,29 @@
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
+** rights. These rights are described in the Nokia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
 **
-**
-**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
 **
 **
 **
@@ -1790,6 +1790,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
+    \overload qFindChildren()
     \obsolete
 
     This function is equivalent to
@@ -1805,6 +1806,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
+    \overload qFindChildren()
     \obsolete
 
     This function is equivalent to
@@ -1824,38 +1826,6 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChildren()
-*/
-
-/*!
-    \internal
-    \fn T qFindChild(const QObject *obj, const QString &name = QString(), T dummy = 0)
-    \relates QObject
-    \overload qFindChildren()
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
-
-    \note This function was provided as a workaround for MSVC 6
-    which did not support member template functions. It is advised
-    to use the other form in new code.
-
-    \sa QObject::findChild()
-*/
-
-/*!
-    \internal
-    \fn QList<T> qFindChildren(const QObject *obj, const QString &name = QString(), T dummy = 0)
-    \relates QObject
-    \overload qFindChildren()
-
-    This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
 
     \note This function was provided as a workaround for MSVC 6
     which did not support member template functions. It is advised
@@ -2419,20 +2389,22 @@ int QObject::receivers(const char *signal) const
     This helper function calculates signal and method index for the given
     member in the specified class.
 
-    \li If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
+    \list
+    \o If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
 
-    \li If specified member is not a member of obj instance class (or one of
+    \o If specified member is not a member of obj instance class (or one of
     its parent classes) then both signalIndex and methodIndex are set to -1.
+    \endlist
 
     This function is used by QObject::connect and QObject::disconnect which
     are working with QMetaMethod.
 
-    \param[out] signalIndex is set to the signal index of member. If the member
+    \a signalIndex is set to the signal index of member. If the member
     specified is not signal this variable is set to -1.
 
-    \param[out] methodIndex is set to the method index of the member. If the
-    member is not a method of the object specified by obj param this variable
-    is set to -1.
+    \a methodIndex is set to the method index of the member. If the
+    member is not a method of the object specified by the \a obj argument this
+    variable is set to -1.
 */
 void QMetaObjectPrivate::memberIndexes(const QObject *obj,
                                        const QMetaMethod &member,
@@ -2689,9 +2661,9 @@ bool QObject::connect(const QObject *sender, const char *signal,
             Qt::ConnectionType type)
     but it uses QMetaMethod to specify signal and method.
 
-    \see connect(const QObject *sender, const char *signal,
-                 const QObject *receiver, const char *method,
-                 Qt::ConnectionType type)
+    \sa connect(const QObject *sender, const char *signal,
+                const QObject *receiver, const char *method,
+                Qt::ConnectionType type)
  */
 bool QObject::connect(const QObject *sender, const QMetaMethod &signal,
                       const QObject *receiver, const QMetaMethod &method,
@@ -2987,7 +2959,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     In the same way 0 can be used for \a receiver in the meaning "any receiving object". In this case
     method shoud also be QMetaMethod(). \a sender parameter should be never 0.
 
-    \see disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
+    \sa disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
  */
 bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
                          const QObject *receiver, const QMetaMethod &method)

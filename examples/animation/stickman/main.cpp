@@ -43,6 +43,7 @@
 #include "lifecycle.h"
 #include "stickman.h"
 #include "graphicsview.h"
+#include "rectbutton.h"
 
 #include <QtCore>
 #include <QtGui>
@@ -55,6 +56,11 @@ int main(int argc, char **argv)
     StickMan *stickMan = new StickMan;
     stickMan->setDrawSticks(false);
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    RectButton *buttonJump = new RectButton("Jump"); buttonJump->setPos(100, 125);
+    RectButton *buttonDance = new RectButton("Dance"); buttonDance->setPos(100, 200);
+    RectButton *buttonChill = new RectButton("Chill"); buttonChill->setPos(100, 275);
+#else
     QGraphicsTextItem *textItem = new QGraphicsTextItem();
     textItem->setHtml("<font color=\"white\"><b>Stickman</b>"
         "<p>"
@@ -71,31 +77,55 @@ int main(int argc, char **argv)
     qreal w = textItem->boundingRect().width();
     QRectF stickManBoundingRect = stickMan->mapToScene(stickMan->boundingRect()).boundingRect();
     textItem->setPos(-w / 2.0, stickManBoundingRect.bottom() + 25.0);
+#endif
 
     QGraphicsScene scene;
     scene.addItem(stickMan);
+
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    scene.addItem(buttonJump);
+    scene.addItem(buttonDance);
+    scene.addItem(buttonChill);
+#else
     scene.addItem(textItem);
+#endif
     scene.setBackgroundBrush(Qt::black);
 
     GraphicsView view;
     view.setRenderHints(QPainter::Antialiasing);
     view.setTransformationAnchor(QGraphicsView::NoAnchor);
     view.setScene(&scene);
-    view.show();
-    view.setFocus();
 
     QRectF sceneRect = scene.sceneRect();
     // making enough room in the scene for stickman to jump and die
     view.resize(sceneRect.width() + 100, sceneRect.height() + 100);
     view.setSceneRect(sceneRect);
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.showMaximized();
+    view.fitInView(scene.sceneRect(), Qt::KeepAspectRatio);
+#else
+    view.show();
+    view.setFocus();
+#endif
+
     LifeCycle cycle(stickMan, &view);
     cycle.setDeathAnimation(":/animations/dead");
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    cycle.addActivity(":/animations/jumping", Qt::Key_J, buttonJump, SIGNAL(clicked()));
+    cycle.addActivity(":/animations/dancing", Qt::Key_D, buttonDance, SIGNAL(clicked()));
+    cycle.addActivity(":/animations/chilling", Qt::Key_C, buttonChill, SIGNAL(clicked()));
+#else
     cycle.addActivity(":/animations/jumping", Qt::Key_J);
     cycle.addActivity(":/animations/dancing", Qt::Key_D);
     cycle.addActivity(":/animations/chilling", Qt::Key_C);
+#endif
+
     cycle.start();
+
 
     return app.exec();
 }

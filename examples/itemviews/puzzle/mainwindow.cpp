@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupMenus();
     setupWidgets();
-    model = new PiecesModel(this);
+    model = new PiecesModel(puzzleWidget->pieceSize(), this);
     piecesList->setModel(model);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
@@ -92,8 +92,8 @@ void MainWindow::setupPuzzle()
 {
     int size = qMin(puzzleImage.width(), puzzleImage.height());
     puzzleImage = puzzleImage.copy((puzzleImage.width() - size)/2,
-        (puzzleImage.height() - size)/2, size, size).scaled(400,
-            400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        (puzzleImage.height() - size)/2, size, size).scaled(puzzleWidget->imageSize(),
+            puzzleWidget->imageSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     qsrand(QCursor::pos().x() ^ QCursor::pos().y());
 
@@ -125,20 +125,24 @@ void MainWindow::setupWidgets()
     QFrame *frame = new QFrame;
     QHBoxLayout *frameLayout = new QHBoxLayout(frame);
 
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_SIMULATOR)
+    puzzleWidget = new PuzzleWidget(260);
+#else
+    puzzleWidget = new PuzzleWidget(400);
+#endif
+
     piecesList = new QListView;
     piecesList->setDragEnabled(true);
     piecesList->setViewMode(QListView::IconMode);
-    piecesList->setIconSize(QSize(60, 60));
-    piecesList->setGridSize(QSize(80, 80));
+    piecesList->setIconSize(QSize(puzzleWidget->pieceSize() - 20, puzzleWidget->pieceSize() - 20));
+    piecesList->setGridSize(QSize(puzzleWidget->pieceSize(), puzzleWidget->pieceSize()));
     piecesList->setSpacing(10);
     piecesList->setMovement(QListView::Snap);
     piecesList->setAcceptDrops(true);
     piecesList->setDropIndicatorShown(true);
 
-    PiecesModel *model = new PiecesModel(this);
+    PiecesModel *model = new PiecesModel(puzzleWidget->pieceSize(), this);
     piecesList->setModel(model);
-
-    puzzleWidget = new PuzzleWidget;
 
     connect(puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(setCompleted()), Qt::QueuedConnection);

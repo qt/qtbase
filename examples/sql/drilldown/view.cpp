@@ -62,7 +62,7 @@ View::View(const QString &offices, const QString &images, QWidget *parent)
     QGraphicsPixmapItem *logo = scene->addPixmap(QPixmap(":/logo.png"));
     logo->setPos(30, 515);
 
-#ifndef Q_OS_SYMBIAN
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_WS_MAEMO_5)
     setMinimumSize(470, 620);
     setMaximumSize(470, 620);
 #else

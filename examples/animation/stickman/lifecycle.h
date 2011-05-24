@@ -50,6 +50,7 @@ class QAnimationGroup;
 class QState;
 class QAbstractState;
 class QAbstractTransition;
+class QObject;
 QT_END_NAMESPACE
 class GraphicsView;
 class LifeCycle
@@ -59,7 +60,7 @@ public:
     ~LifeCycle();
 
     void setDeathAnimation(const QString &fileName);
-    void addActivity(const QString &fileName, Qt::Key key);    
+    void addActivity(const QString &fileName, Qt::Key key, QObject *sender = NULL, const char *signal = NULL);
 
     void start();
 

@@ -56,5 +56,11 @@ int main(int argc, char *argv[])
         app.installTranslator(translator);
 
     Dialog dialog;
-    return dialog.exec();
+#ifdef Q_OS_SYMBIAN
+    dialog.showMaximized();
+#else
+    dialog.show();
+#endif
+
+    return app.exec();
 }

@@ -13,8 +13,17 @@ INSTALLS += target sources
 
 symbian: CONFIG += qt_example
 
-wince*: {
-     addFiles.files = frank.xbel jennifer.xbel
-     addFiles.path = "\\My Documents"
-     DEPLOYMENT += addFiles
+symbian: {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    addFiles.sources = frank.xbel jennifer.xbel
+    addFiles.path = files
+    DEPLOYMENT += addFiles
 }
+
+wince*: {
+    addFiles.files = frank.xbel jennifer.xbel
+    addFiles.path = "\\My Documents"
+    DEPLOYMENT += addFiles
+}
+maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+

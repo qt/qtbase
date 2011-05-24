@@ -56,7 +56,11 @@ int main(int argc, char **argv)
     }
 
     SslClient client;
+#ifdef Q_OS_SYMBIAN
+    client.showMaximized();
+#else
     client.show();
+#endif
 
     return app.exec();
 }

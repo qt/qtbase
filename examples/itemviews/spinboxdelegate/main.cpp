@@ -80,7 +80,11 @@ int main(int argc, char *argv[])
 
 //! [3]
     tableView.setWindowTitle(QObject::tr("Spin Box Delegate"));
+#if defined(Q_OS_SYMBIAN)
+    tableView.showMaximized();
+#else
     tableView.show();
+#endif
     return app.exec();
 }
 //! [3]

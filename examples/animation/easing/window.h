@@ -39,7 +39,6 @@
 ****************************************************************************/
 
 #include <QtGui>
-
 #include "ui_form.h"
 #include "animation.h"
 
@@ -73,6 +72,4 @@ private:
     PixmapItem *m_item;
     Animation *m_anim;
     QSize m_iconSize;
-
-
 };

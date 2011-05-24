@@ -41,15 +41,16 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
-#include <QDialog>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QPushButton;
 class QUdpSocket;
+class QAction;
 QT_END_NAMESPACE
 
-class Receiver : public QDialog
+class Receiver : public QWidget
 {
     Q_OBJECT
 
@@ -61,7 +62,11 @@ private slots:
 
 private:
     QLabel *statusLabel;
+#ifdef Q_OS_SYMBIAN
+    QAction *quitAction;
+#else
     QPushButton *quitButton;
+#endif
     QUdpSocket *udpSocket;
 };
 

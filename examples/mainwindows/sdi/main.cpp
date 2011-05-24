@@ -49,6 +49,10 @@ int main(int argc, char *argv[])
     app.setApplicationName("SDI Example");
     app.setOrganizationName("Trolltech");
     MainWindow *mainWin = new MainWindow;
+#if defined(Q_OS_SYMBIAN)
+    mainWin->showMaximized();
+#else
     mainWin->show();
+#endif
     return app.exec();
 }

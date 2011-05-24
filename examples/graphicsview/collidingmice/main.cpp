@@ -79,8 +79,12 @@ int main(int argc, char **argv)
     view.setDragMode(QGraphicsView::ScrollHandDrag);
 //! [5] //! [6]
     view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Colliding Mice"));
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    view.showMaximized();
+#else
     view.resize(400, 300);
     view.show();
+#endif
 
     QTimer timer;
     QObject::connect(&timer, SIGNAL(timeout()), &scene, SLOT(advance()));

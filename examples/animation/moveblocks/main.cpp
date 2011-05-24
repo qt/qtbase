@@ -154,25 +154,28 @@ QState *createGeometryState(QObject *w1, const QRect &rect1,
 }
 //![13]
 
+
+class GraphicsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = NULL) : QGraphicsView(scene, parent)
+    {
+    }
+
+protected:
+    virtual void resizeEvent(QResizeEvent *event)
+    {
+        fitInView(scene()->sceneRect());
+        QGraphicsView::resizeEvent(event);
+    }
+};
+
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-#if 0
-    QWidget window;
-    QPalette palette;
-    palette.setBrush(QPalette::Window, Qt::black);
-    window.setPalette(palette);
-    QPushButton *button1 = new QPushButton("A", &window);
-    QPushButton *button2 = new QPushButton("B", &window);
-    QPushButton *button3 = new QPushButton("C", &window);
-    QPushButton *button4 = new QPushButton("D", &window);
-
-    button1->setObjectName("button1");
-    button2->setObjectName("button2");
-    button3->setObjectName("button3");
-    button4->setObjectName("button4");
-#else
 //![1]
     QGraphicsRectWidget *button1 = new QGraphicsRectWidget;
     QGraphicsRectWidget *button2 = new QGraphicsRectWidget;
@@ -188,12 +191,11 @@ int main(int argc, char **argv)
     scene.addItem(button3);
     scene.addItem(button4);
 //![1]
-    QGraphicsView window(&scene);
+    GraphicsView window(&scene);
     window.setFrameStyle(0);
     window.setAlignment(Qt::AlignLeft | Qt::AlignTop);
     window.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     window.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-#endif
 //![2]
     QStateMachine machine;
 
@@ -308,8 +310,13 @@ int main(int argc, char **argv)
     machine.start();
 //![9]
 
+#if defined(Q_WS_S60) || defined(Q_WS_MAEMO_5)
+    window.showMaximized();
+    window.fitInView(scene.sceneRect() );
+#else
     window.resize(300, 300);
     window.show();
+#endif
 
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 

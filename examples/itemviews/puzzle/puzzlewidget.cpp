@@ -42,12 +42,12 @@
 
 #include "puzzlewidget.h"
 
-PuzzleWidget::PuzzleWidget(QWidget *parent)
-    : QWidget(parent)
+PuzzleWidget::PuzzleWidget(int imageSize, QWidget *parent)
+    : QWidget(parent), m_ImageSize(imageSize)
 {
     setAcceptDrops(true);
-    setMinimumSize(400, 400);
-    setMaximumSize(400, 400);
+    setMinimumSize(m_ImageSize, m_ImageSize);
+    setMaximumSize(m_ImageSize, m_ImageSize);
 }
 
 void PuzzleWidget::clear()
@@ -116,7 +116,7 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::MoveAction);
         event->accept();
 
-        if (location == QPoint(square.x()/80, square.y()/80)) {
+        if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize())) {
             inPlace++;
             if (inPlace == 25)
                 emit puzzleCompleted();
@@ -151,7 +151,7 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
     piecePixmaps.removeAt(found);
     pieceRects.removeAt(found);
 
-    if (location == QPoint(square.x()/80, square.y()/80))
+    if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize()))
         inPlace--;
 
     update(square);
@@ -175,7 +175,7 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
         pieceRects.insert(found, square);
         update(targetSquare(event->pos()));
 
-        if (location == QPoint(square.x()/80, square.y()/80))
+        if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize()))
             inPlace++;
     }
 }
@@ -200,5 +200,15 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
 
 const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 {
-    return QRect(position.x()/80 * 80, position.y()/80 * 80, 80, 80);
+    return QRect(position.x()/pieceSize() * pieceSize(), position.y()/pieceSize() * pieceSize(), pieceSize(), pieceSize());
+}
+
+int PuzzleWidget::pieceSize() const
+{
+    return m_ImageSize / 5;
+}
+
+int PuzzleWidget::imageSize() const
+{
+    return m_ImageSize;
 }

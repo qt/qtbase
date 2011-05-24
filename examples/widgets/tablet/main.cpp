@@ -52,9 +52,14 @@ int main(int argv, char *args[])
     app.setCanvas(canvas);
 
     MainWindow mainWindow(canvas);
+#if defined(Q_OS_SYMBIAN)
+    mainWindow.showMaximized();
+#elif defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    mainWindow.show();
+#else
     mainWindow.resize(500, 500);
     mainWindow.show();
-
+#endif
     return app.exec();
 }
 //! [0]

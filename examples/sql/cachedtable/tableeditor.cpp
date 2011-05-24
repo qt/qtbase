@@ -45,7 +45,7 @@
 
 //! [0]
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
 {
     model = new QSqlTableModel(this);
     model->setTable(tableName);
@@ -59,6 +59,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
 //! [0] //! [1]
     QTableView *view = new QTableView;
     view->setModel(model);
+    view->resizeColumnsToContents();
 //! [1]
 
 //! [2]

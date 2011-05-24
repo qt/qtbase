@@ -41,7 +41,7 @@
 #ifndef BLOCKINGCLIENT_H
 #define BLOCKINGCLIENT_H
 
-#include <QDialog>
+#include <QWidget>
 
 #include "fortunethread.h"
 
@@ -50,10 +50,11 @@ class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QAction;
 QT_END_NAMESPACE
 
 //! [0]
-class BlockingClient : public QDialog
+class BlockingClient : public QWidget
 {
     Q_OBJECT
 
@@ -72,9 +73,14 @@ private:
     QLineEdit *hostLineEdit;
     QLineEdit *portLineEdit;
     QLabel *statusLabel;
+#ifdef Q_OS_SYMBIAN
+    QAction *fortuneAction;
+    QAction *exitAction;
+#else
     QPushButton *getFortuneButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
+#endif
 
     FortuneThread thread;
     QString currentFortune;

@@ -49,6 +49,10 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     SortingBox sortingBox;
+#if defined(Q_OS_SYMBIAN)
+    sortingBox.showMaximized();
+#else
     sortingBox.show();
+#endif
     return app.exec();
 }

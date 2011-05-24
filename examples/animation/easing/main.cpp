@@ -46,7 +46,15 @@ int main(int argc, char **argv)
     Q_INIT_RESOURCE(easing);
     QApplication app(argc, argv);
     Window w;
+
+#if defined(Q_OS_SYMBIAN)
+    w.showMaximized();
+#elif defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    w.show();
+#else
     w.resize(400, 400);
     w.show();
+#endif
+
     return app.exec();
 }

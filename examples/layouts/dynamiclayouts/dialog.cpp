@@ -43,7 +43,11 @@
 #include "dialog.h"
 
 Dialog::Dialog(QWidget *parent)
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5) || defined(Q_WS_SIMULATOR)
+    : QWidget(parent)
+#else
     : QDialog(parent)
+#endif
 {
     createRotableGroupBox();
     createOptionsGroupBox();

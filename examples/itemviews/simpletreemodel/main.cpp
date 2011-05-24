@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
     QTreeView view;
     view.setModel(&model);
     view.setWindowTitle(QObject::tr("Simple Tree Model"));
+#if defined(Q_OS_SYMBIAN)
+    view.showMaximized();
+#else
     view.show();
+#endif
     return app.exec();
 }

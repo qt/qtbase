@@ -80,7 +80,7 @@ void PixelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
         painter->setBrush(option.palette.highlightedText());
     else
 //! [2]
-        painter->setBrush(QBrush(Qt::black));
+        painter->setBrush(option.palette.text());
 //! [9]
 
 //! [10]
