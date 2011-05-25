@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QLabel>
 
 #ifndef QT_NO_OPENGL
