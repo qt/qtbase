@@ -1,7 +1,6 @@
-QT += xml
-contains(QT_CONFIG, script): QT += script
+QT += xml uilib
+!isEmpty(QT.script.name): QT += script
+!isEmpty(QT.designer.name): QT += designer
 qt:load(qt)
 
 plugin:DEFINES += QDESIGNER_EXPORT_WIDGETS
-
-qtAddLibrary(QtDesigner, true)
