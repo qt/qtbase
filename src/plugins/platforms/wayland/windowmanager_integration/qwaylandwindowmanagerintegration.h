@@ -56,6 +56,7 @@ public:
 
     void mapSurfaceToProcess(struct wl_surface *surface, long long processId);
     void mapClientToProcess(long long processId);
+    void authenticateWithToken(const QByteArray &token = QByteArray());
 
 private:
     static void wlHandleListenerGlobal(wl_display *display, uint32_t id,

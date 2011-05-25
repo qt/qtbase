@@ -67,6 +67,7 @@ QWaylandWindow::QWaylandWindow(QWidget *window)
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
         mDisplay->windowManagerIntegration()->mapClientToProcess(qApp->applicationPid());
+        mDisplay->windowManagerIntegration()->authenticateWithToken();
 #endif
 
     mSurface = mDisplay->createSurface(this);

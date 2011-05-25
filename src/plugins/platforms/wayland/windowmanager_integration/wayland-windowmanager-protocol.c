@@ -26,7 +26,8 @@
 #include "wayland-util.h"
 
 static const struct wl_message wl_windowmanager_requests[] = {
-        { "map_client_to_process", "u", NULL },
+        { "map_client_to_process", "u" },
+        { "authenticate_with_token", "s" },
 };
 
 WL_EXPORT const struct wl_interface wl_windowmanager_interface = {

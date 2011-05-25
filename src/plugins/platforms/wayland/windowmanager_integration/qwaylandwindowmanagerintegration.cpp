@@ -68,12 +68,11 @@ struct wl_windowmanager *QWaylandWindowManagerIntegration::windowManager() const
     return mWaylandWindowManager;
 }
 
-void QWaylandWindowManagerIntegration::wlHandleListenerGlobal(wl_display *display, uint32_t id, const char *interface,
-                                                              uint32_t version, void *data)
+void QWaylandWindowManagerIntegration::wlHandleListenerGlobal(wl_display *display, uint32_t id, const char *interface, uint32_t version, void *data)
 {
     if (strcmp(interface, "wl_windowmanager") == 0) {
         QWaylandWindowManagerIntegration *integration = static_cast<QWaylandWindowManagerIntegration *>(data);
-        integration->mWaylandWindowManager = wl_windowmanager_create(display,id, version);
+        integration->mWaylandWindowManager = wl_windowmanager_create(display, id);
     }
 }
 
@@ -83,3 +82,11 @@ void QWaylandWindowManagerIntegration::mapClientToProcess(long long processId)
         wl_windowmanager_map_client_to_process(mWaylandWindowManager, (uint32_t) processId);
 }
 
+void QWaylandWindowManagerIntegration::authenticateWithToken(const QByteArray &token)
+{
+    QByteArray authToken = token;
+    if (authToken.isEmpty())
+        authToken = qgetenv("WL_AUTHENTICATION_TOKEN");
+    if (mWaylandWindowManager)
+        wl_windowmanager_authenticate_with_token(mWaylandWindowManager, authToken.constData());
+}
