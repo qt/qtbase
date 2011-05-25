@@ -70,6 +70,7 @@ public:
     QPlatformNativeInterface *nativeInterface()const;
 
     QPlatformPrinterSupport *printerSupport() const;
+    QPlatformClipboard *clipboard() const;
 
 private:
     bool hasOpenGL() const;

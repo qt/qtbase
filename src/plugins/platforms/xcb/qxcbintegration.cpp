@@ -45,6 +45,7 @@
 #include "qxcbwindow.h"
 #include "qxcbwindowsurface.h"
 #include "qxcbnativeinterface.h"
+#include "qxcbclipboard.h"
 
 #include <qgenericunixprintersupport.h>
 
@@ -154,4 +155,9 @@ QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
 QPlatformPrinterSupport *QXcbIntegration::printerSupport() const
 {
     return m_printerSupport;
+}
+
+QPlatformClipboard *QXcbIntegration::clipboard() const
+{
+    return m_connection->clipboard();
 }

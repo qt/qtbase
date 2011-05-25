@@ -43,6 +43,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
+#include "qxcbclipboard.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
@@ -116,6 +117,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     }
 
     m_keyboard = new QXcbKeyboard(this);
+    m_clipboard = new QXcbClipboard(this);
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -141,6 +143,7 @@ QXcbConnection::~QXcbConnection()
 #endif
 
     delete m_keyboard;
+    delete m_clipboard;
 }
 
 void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
@@ -413,69 +416,102 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 #endif
 }
 
+void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
+{
+#ifdef Q_XCB_DEBUG
+    {
+        int i = 0;
+        for (; i < m_callLog.size(); ++i)
+            if (m_callLog.at(i).sequence >= event->sequence)
+                break;
+        m_callLog.remove(0, i);
+    }
+#endif
+    bool handled = true;
+
+    uint response_type = event->response_type & ~0x80;
+
+    switch (response_type) {
+    case XCB_EXPOSE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+    case XCB_BUTTON_PRESS:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
+    case XCB_BUTTON_RELEASE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
+    case XCB_MOTION_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+    case XCB_CONFIGURE_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+    case XCB_CLIENT_MESSAGE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
+    case XCB_ENTER_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+    case XCB_LEAVE_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+    case XCB_FOCUS_IN:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+    case XCB_FOCUS_OUT:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+    case XCB_KEY_PRESS:
+        HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+    case XCB_KEY_RELEASE:
+        HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+    case XCB_MAPPING_NOTIFY:
+        m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+        break;
+    case XCB_SELECTION_REQUEST:
+        m_clipboard->handleSelectionRequest((xcb_selection_request_event_t *)event);
+    case XCB_SELECTION_CLEAR:
+    case XCB_SELECTION_NOTIFY:
+    default:
+        handled = false;
+        break;
+    }
+    if (handled)
+        printXcbEvent("Handled XCB event", event);
+    else
+        printXcbEvent("Unhandled XCB event", event);
+}
+
 void QXcbConnection::processXcbEvents()
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
-        bool handled = true;
+    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
+        eventqueue.append(event);
+
+    for(int i = 0; i < eventqueue.size(); ++i) {
+        xcb_generic_event_t *event = eventqueue.at(i);
+        if (!event)
+            continue;
 
         uint response_type = event->response_type & ~0x80;
 
         if (!response_type) {
             handleXcbError((xcb_generic_error_t *)event);
-            continue;
+        } else {
+            handleXcbEvent(event);
         }
-
-#ifdef Q_XCB_DEBUG
-        {
-            int i = 0;
-            for (; i < m_callLog.size(); ++i)
-                if (m_callLog.at(i).sequence >= event->sequence)
-                    break;
-            m_callLog.remove(0, i);
-        }
-#endif
-
-        switch (response_type) {
-        case XCB_EXPOSE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-        case XCB_BUTTON_PRESS:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-        case XCB_BUTTON_RELEASE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-        case XCB_MOTION_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
-        case XCB_CONFIGURE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
-        case XCB_CLIENT_MESSAGE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
-        case XCB_ENTER_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
-        case XCB_LEAVE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
-        case XCB_FOCUS_IN:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
-        case XCB_FOCUS_OUT:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
-        case XCB_KEY_PRESS:
-            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
-        case XCB_KEY_RELEASE:
-            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-        case XCB_MAPPING_NOTIFY:
-            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
-            break;
-        default:
-            handled = false;
-            break;
-        }
-        if (handled)
-            printXcbEvent("Handled XCB event", event);
-        else
-            printXcbEvent("Unhandled XCB event", event);
 
         free(event);
     }
 
+    eventqueue.clear();
+
     xcb_flush(xcb_connection());
+}
+
+xcb_generic_event_t *QXcbConnection::checkEvent(int type)
+{
+    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
+        eventqueue.append(event);
+
+    for (int i = 0; i < eventqueue.size(); ++i) {
+        xcb_generic_event_t *event = eventqueue.at(i);
+        if (event->response_type == type) {
+            eventqueue[i] = 0;
+            return event;
+        }
+    }
+    return 0;
 }
 
 static const char * xcb_atomnames = {

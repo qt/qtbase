@@ -59,6 +59,7 @@ typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 namespace QXcbAtom {
     static const xcb_atom_t XA_PRIMARY = 1;
     static const xcb_atom_t XA_SECONDARY = 2;
+    static const xcb_atom_t XA_ATOM = 4;
     static const xcb_atom_t XA_PIXMAP = 20;
     static const xcb_atom_t XA_BITMAP = 5;
     static const xcb_atom_t XA_STRING = 32;
@@ -226,6 +227,7 @@ namespace QXcbAtom {
 }
 
 class QXcbKeyboard;
+class QXcbClipboard;
 
 class QXcbConnection : public QObject
 {
@@ -249,6 +251,8 @@ public:
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
+    QXcbClipboard *clipboard() const { return m_clipboard; }
+
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -265,10 +269,17 @@ public:
 #endif
 
     void sync();
+    void flush() { xcb_flush(m_connection); }
+
     void handleXcbError(xcb_generic_error_t *error);
+    void handleXcbEvent(xcb_generic_event_t *event);
 
     void addWindow(xcb_window_t id, QXcbWindow *window);
     void removeWindow(xcb_window_t id);
+
+    xcb_generic_event_t *checkEvent(int type);
+    template<typename T>
+    inline xcb_generic_event_t *checkEvent(const T &checker);
 
 private slots:
     void processXcbEvents();
@@ -292,6 +303,7 @@ private:
     QByteArray m_displayName;
 
     QXcbKeyboard *m_keyboard;
+    QXcbClipboard *m_clipboard;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;
@@ -319,11 +331,29 @@ private:
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
 #endif
+    QVector<xcb_generic_event_t *> eventqueue;
 
     WindowMapper m_mapper;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+
+template<typename T>
+xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
+{
+    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
+        eventqueue.append(event);
+
+    for (int i = 0; i < eventqueue.size(); ++i) {
+        xcb_generic_event_t *event = eventqueue.at(i);
+        if (checker.check(event)) {
+            eventqueue[i] = 0;
+            return event;
+        }
+    }
+    return 0;
+}
+
 
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>
