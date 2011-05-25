@@ -2,6 +2,7 @@
 #define MAINWIDGET_H
 
 #include <QtOpenGL/QGLWidget>
+#include <QtOpenGL/QGLFunctions>
 
 #include <QMatrix4x4>
 #include <QQuaternion>
@@ -12,7 +13,7 @@ class QGLShaderProgram;
 
 class GeometryEngine;
 
-class MainWidget : public QGLWidget
+class MainWidget : public QGLWidget, protected QGLFunctions
 {
     Q_OBJECT
 public:
