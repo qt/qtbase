@@ -471,6 +471,8 @@ void QXcbConnection::processXcbEvents()
             printXcbEvent("Handled XCB event", event);
         else
             printXcbEvent("Unhandled XCB event", event);
+
+        free(event);
     }
 
     xcb_flush(xcb_connection());
