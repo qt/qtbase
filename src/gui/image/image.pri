@@ -48,11 +48,11 @@ SOURCES += \
         image/qimagepixmapcleanuphooks.cpp \
         image/qvolatileimage.cpp
 
-win32 {
-    SOURCES += image/qpixmap_win.cpp
-}
-else:qpa {
+qpa: {
     SOURCES += image/qpixmap_qpa.cpp
+}
+else:win32 {
+    SOURCES += image/qpixmap_win.cpp
 }
 else:x11 {
     HEADERS += image/qpixmap_x11_p.h

@@ -41,6 +41,7 @@
 
 #include <qcoreapplication.h>
 #include <qdir.h>
+#include <qurl.h>
 
 QT_BEGIN_NAMESPACE
 

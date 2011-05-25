@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 #endif
 #endif
 
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA) && defined(Q_OS_WIN)
 #define Q_GUI_QWS_EXPORT Q_GUI_EXPORT
 #else
 #define Q_GUI_QWS_EXPORT

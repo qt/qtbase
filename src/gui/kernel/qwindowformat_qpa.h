@@ -133,7 +133,7 @@ Q_GUI_EXPORT bool operator==(const QWindowFormat&, const QWindowFormat&);
 Q_GUI_EXPORT bool operator!=(const QWindowFormat&, const QWindowFormat&);
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QWindowFormat &);
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QWindowFormat &);
 #endif
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWindowFormat::FormatOptions)

@@ -94,7 +94,7 @@ SOURCES += \
                 painting/qpaintengine_blitter_p.h       \
                 painting/qblittable_p.h                 \
 
-win32 {
+win32:!qpa {
         HEADERS += painting/qprintengine_win_p.h
 
         SOURCES += \
@@ -131,7 +131,7 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac:!symbian|qpa {
+unix:!mac:!symbian {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
@@ -154,7 +154,7 @@ symbian {
                 painting/qpaintengine_s60_p.h
 }
 
-x11|qpa {
+x11|qpa:!win32 {
         contains(QT_CONFIG,qtopia) {
             DEFINES += QT_NO_CUPS QT_NO_LPR
         } else {

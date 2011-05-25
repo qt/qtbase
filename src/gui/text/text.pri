@@ -74,7 +74,7 @@ SOURCES += \
         text/qrawfont.cpp \
     text/qglyphrun.cpp
 
-win32 {
+win32:!qpa {
 	SOURCES += \
 		text/qfont_win.cpp \
                 text/qfontengine_win.cpp \

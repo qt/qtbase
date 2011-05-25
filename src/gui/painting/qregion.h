@@ -184,6 +184,9 @@ private:
     static OSStatus shape2QRegionHelper(int inMessage, HIShapeRef inShape,
                                         const CGRect *inRect, void *inRefcon);
 #endif
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+Q_GUI_EXPORT
+#endif
     friend bool qt_region_strictContains(const QRegion &region,
                                          const QRect &rect);
     friend struct QRegionPrivate;

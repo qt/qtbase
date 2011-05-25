@@ -240,7 +240,7 @@ static void init_plugins(const QList<QByteArray> pluginList)
 void QGuiApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QGuiApplication);
-#if !defined(QT_NO_GLIB)
+#if !defined(QT_NO_GLIB) && !defined(Q_OS_WIN)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QPAEventDispatcherGlib(q);
     else

@@ -53,13 +53,21 @@
 // We mean it.
 //
 
+#if defined(Q_OS_UNIX)
 #include "private/qeventdispatcher_unix_p.h"
+#define EVENTDISPATCHERBASE QEventDispatcherUNIX
+#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherUNIXPrivate
+#elif defined(Q_OS_WIN)
+#include "private/qeventdispatcher_win_p.h"
+#define EVENTDISPATCHERBASE QEventDispatcherWin32
+#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherWin32Private
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QEventDispatcherQPAPrivate;
 
-class QEventDispatcherQPA : public QEventDispatcherUNIX
+class QEventDispatcherQPA : public EVENTDISPATCHERBASE
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventDispatcherQPA)

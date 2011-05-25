@@ -42,7 +42,6 @@
 #include "qplatformdefs.h"
 #include "qcoreapplication.h"
 #include "qeventdispatcher_qpa_p.h"
-#include "private/qeventdispatcher_unix_p.h"
 #include "private/qguiapplication_p.h"
 #include "qplatformeventloopintegration_qpa.h"
 
@@ -112,7 +111,7 @@ private:
     fd_set *m_readfds, *m_writefds, *m_exceptfds;
 };
 
-class QEventDispatcherQPAPrivate : public QEventDispatcherUNIXPrivate
+class QEventDispatcherQPAPrivate : public EVENTDISPATCHERBASEPRIVATE
 {
     Q_DECLARE_PUBLIC(QEventDispatcherQPA)
 public:
@@ -192,7 +191,7 @@ private:
 };
 
 QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
-    : QEventDispatcherUNIX(*new QEventDispatcherQPAPrivate, parent)
+    : EVENTDISPATCHERBASE(*new QEventDispatcherQPAPrivate, parent)
 { }
 
 QEventDispatcherQPA::~QEventDispatcherQPA()
@@ -241,8 +240,8 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     if (!d->interrupt) {
-        if (QEventDispatcherUNIX::processEvents(flags)) {
-            QEventDispatcherUNIX::processEvents(flags);
+        if (EVENTDISPATCHERBASE::processEvents(flags)) {
+            EVENTDISPATCHERBASE::processEvents(flags);
             return true;
         }
     }
@@ -258,7 +257,7 @@ bool QEventDispatcherQPA::hasPendingEvents()
 void QEventDispatcherQPA::registerSocketNotifier(QSocketNotifier *notifier)
 {
     Q_D(QEventDispatcherQPA);
-    QEventDispatcherUNIX::registerSocketNotifier(notifier);
+    EVENTDISPATCHERBASE::registerSocketNotifier(notifier);
     if (d->hasIntegration())
         wakeUp();
 
@@ -267,7 +266,7 @@ void QEventDispatcherQPA::registerSocketNotifier(QSocketNotifier *notifier)
 void QEventDispatcherQPA::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     Q_D(QEventDispatcherQPA);
-    QEventDispatcherUNIX::unregisterSocketNotifier(notifier);
+    EVENTDISPATCHERBASE::unregisterSocketNotifier(notifier);
     if (d->hasIntegration())
         wakeUp();
 }
@@ -307,7 +306,11 @@ int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_
         d->eventLoopIntegration->setNextTimerEvent(timeoutmsec);
         retVal = 0; //is 0 if select has not returned
     } else {
-        retVal = QEventDispatcherUNIX::select(nfds, readfds, writefds, exceptfds, timeout);
+#if defined(Q_OS_UNIX)
+        retVal = EVENTDISPATCHERBASE::select(nfds, readfds, writefds, exceptfds, timeout);
+#elif defined(Q_OS_WIN)
+        // ### TODO
+#endif
     }
     return retVal;
 }
@@ -319,7 +322,12 @@ void SelectWorker::run()
     while(true) {
         m_retVal = 0;
         m_edPrivate->barrierBeforeBlocking->checkpoint(); // wait for mainthread
+#if defined(Q_OS_UNIX)
         int tmpRet = qt_safe_select(m_nfds,m_readfds,m_writefds,m_exceptfds,0);
+#elif defined(Q_OS_WIN)
+        // ### TODO
+        int tmpRet = 0;
+#endif
         m_edPrivate->selectReturnMutex->lock();
         m_edPrivate->eventLoopIntegration->qtNeedsToProcessEvents();
 
