@@ -1121,7 +1121,7 @@
     \value WA_X11NetWmWindowTypeToolBar Adds _NET_WM_WINDOW_TYPE_TOOLBAR to the
     window's _NET_WM_WINDOW_TYPE X11 window property. See
     http://standards.freedesktop.org/wm-spec/ for more details. This attribute
-    has no effect on non-X11 platforms. \note Qt automaticaly sets this
+    has no effect on non-X11 platforms. \note Qt automatically sets this
     attribute for QToolBar.
 
     \value WA_X11NetWmWindowTypeMenu Adds _NET_WM_WINDOW_TYPE_MENU to the
@@ -2593,7 +2593,7 @@
     \value ImhFormattedNumbersOnly   Only number input is allowed. This includes decimal point and minus sign.
     \value ImhUppercaseOnly          Only upper case letter input is allowed.
     \value ImhLowercaseOnly          Only lower case letter input is allowed.
-    \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
+    \value ImhDialableCharactersOnly Only characters suitable for phone dialing are allowed.
     \value ImhEmailCharactersOnly    Only characters suitable for email addresses are allowed.
     \value ImhUrlCharactersOnly      Only characters suitable for URLs are allowed.
 
