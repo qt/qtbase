@@ -261,7 +261,17 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
     // set the host
     value = request.headerField("host");
     if (value.isEmpty()) {
-        QByteArray host = QUrl::toAce(hostName);
+        QHostAddress add;
+        QByteArray host;
+        if (add.setAddress(hostName)) {
+            if (add.protocol() == QAbstractSocket::IPv6Protocol)
+                host = "[" + hostName.toAscii() + "]";//format the ipv6 in the standard way
+            else
+                host = hostName.toAscii();
+
+        } else {
+            host = QUrl::toAce(hostName);
+        }
 
         int port = request.url().port();
         if (port != -1) {
