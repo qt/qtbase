@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
 #if defined(Q_OS_UNIX)
 #include "private/qeventdispatcher_unix_p.h"
 #define EVENTDISPATCHERBASE QEventDispatcherUNIX
