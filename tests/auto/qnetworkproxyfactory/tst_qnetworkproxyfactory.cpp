@@ -118,7 +118,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery() const
     QNetworkProxy proxy;
 
     QList<QNetworkProxy> nativeProxyList;
-    nativeProxyList << QNetworkProxy(QNetworkProxy::HttpProxy, QString("http://test.proxy.com"), 8080) << QNetworkProxy::NoProxy;
+    nativeProxyList << QNetworkProxy(QNetworkProxy::HttpProxy, QString("test.proxy.com"), 8080) << QNetworkProxy::NoProxy;
 
     foreach (proxy, systemProxyList) {
         if (!nativeProxyList.contains(proxy)) {
