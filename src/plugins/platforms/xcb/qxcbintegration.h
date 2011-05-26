@@ -61,7 +61,7 @@ public:
     QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
 
     QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWidget *window, int screen);
+    void moveToScreen(QWindow *window, int screen);
     bool isVirtualDesktop();
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 

@@ -103,7 +103,7 @@ QList<QPlatformScreen *> QXcbIntegration::screens() const
     return m_screens;
 }
 
-void QXcbIntegration::moveToScreen(QWidget *window, int screen)
+void QXcbIntegration::moveToScreen(QWindow *window, int screen)
 {
     Q_UNUSED(window);
     Q_UNUSED(screen);
