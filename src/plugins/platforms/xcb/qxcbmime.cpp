@@ -44,6 +44,7 @@
 #include <QtCore/QTextCodec>
 #include <QtGui/QImageWriter>
 #include <QtCore/QBuffer>
+#include <qdebug.h>
 
 #include <X11/Xutil.h>
 
@@ -181,8 +182,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                                        QVariant::Type requestedType, const QByteArray &encoding)
 {
     QString atomName = mimeAtomToString(connection, a);
-    if (atomName == format)
-        return data;
+//    qDebug() << "mimeConvertDataToFormat" << format << atomName << data;
 
     if (!encoding.isEmpty()
         && atomName == format + QLatin1String(";charset=") + QString::fromLatin1(encoding)) {
@@ -198,8 +198,10 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 
     // special cases for string types
     if (format == QLatin1String("text/plain")) {
-        if (a == connection->atom(QXcbAtom::UTF8_STRING))
+        if (a == connection->atom(QXcbAtom::UTF8_STRING)) {
+            qDebug() << data;
             return QString::fromUtf8(data);
+        }
         if (a == QXcbAtom::XA_STRING)
             return QString::fromLatin1(data);
         if (a == connection->atom(QXcbAtom::TEXT)
@@ -220,6 +222,9 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
                                 data.size() / 2).split(QLatin1Char('\n')).first().toLatin1();
         }
     }
+
+    if (atomName == format)
+        return data;
 
 #if 0 // ###
     // special case for images

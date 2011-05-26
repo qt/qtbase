@@ -489,14 +489,13 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
 static inline int maxSelectionIncr(xcb_connection_t *c)
 {
     int l = xcb_get_maximum_request_length(c);
-    return l > 65536 ? 65536*4 : l*4 - 100;
+    return (l > 65536 ? 65536*4 : l*4) - 100;
 }
 
 bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const
 {
     int    maxsize = maxSelectionIncr(m_connection->xcb_connection());
     ulong  bytes_left; // bytes_after
-    ulong  length;     // nitems
     xcb_atom_t   dummy_type;
     int    dummy_format;
     int    r;
@@ -514,7 +513,6 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         return false;
     }
     *type = reply->type;
-    length = reply->length;
     *format = reply->format;
     bytes_left = reply->bytes_after;
     free(reply);
@@ -550,14 +548,16 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
             // more to read...
 
             xcb_get_property_cookie_t cookie = xcb_get_property(m_connection->xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4);
-            xcb_get_property_reply_t *reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
-            if (!reply || reply->type == XCB_NONE)
+            reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
+            if (!reply || reply->type == XCB_NONE) {
+                free(reply);
                 break;
+            }
             *type = reply->type;
-            length = reply->length;
             *format = reply->format;
             bytes_left = reply->bytes_after;
             char *data = (char *)xcb_get_property_value(reply);
+            int length = xcb_get_property_value_length(reply);
 
             offset += length / (32 / *format);
             length *= format_inc * (*format) / 8;
@@ -780,6 +780,7 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     xcb_atom_t type;
     if (clipboardReadProperty(win, m_connection->atom(QXcbAtom::_QT_SELECTION), true, &buf, 0, &type, 0)) {
         if (type == m_connection->atom(QXcbAtom::INCR)) {
+            qDebug() << "INCR";
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
             buf = clipboardReadIncrementalProperty(win, m_connection->atom(QXcbAtom::_QT_SELECTION), nbytes, false);
         }
