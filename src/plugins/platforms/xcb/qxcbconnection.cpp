@@ -85,11 +85,11 @@ QXcbConnection::QXcbConnection(const char *displayName)
     , m_has_support_for_dri2(false)
 #endif
 {
-    int primaryScreen = 0;
+    m_primaryScreen = 0;
 
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
-    primaryScreen = DefaultScreen(dpy);
+    m_primaryScreen = DefaultScreen(dpy);
     m_connection = XGetXCBConnection(dpy);
     XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
     m_xlib_display = dpy;
@@ -461,8 +461,15 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         break;
     case XCB_SELECTION_REQUEST:
         m_clipboard->handleSelectionRequest((xcb_selection_request_event_t *)event);
+        break;
     case XCB_SELECTION_CLEAR:
+        qDebug() << "XCB_SELECTION_CLEAR";
+        handled = false;
+        break;
     case XCB_SELECTION_NOTIFY:
+        qDebug() << "XCB_SELECTION_NOTIFY";
+        handled = false;
+        break;
     default:
         handled = false;
         break;
@@ -724,7 +731,7 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
 {
     xcb_get_atom_name_cookie_t cookie = xcb_get_atom_name_unchecked(xcb_connection(), atom);
     xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, 0);
-    QByteArray result(xcb_get_atom_name_name(reply));
+    QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
     free(reply);
     return result;
 }

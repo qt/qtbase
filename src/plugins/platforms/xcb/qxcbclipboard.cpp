@@ -623,13 +623,16 @@ namespace
         xcb_window_t window;
         int type;
         bool check(xcb_generic_event_t *event) const {
-            if (event->response_type != type)
+            if (!event)
                 return false;
-            if (event->response_type == XCB_PROPERTY_NOTIFY) {
+            int t = event->response_type & 0x7f;
+            if (t != type)
+                return false;
+            if (t == XCB_PROPERTY_NOTIFY) {
                 xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
                 if (pn->window == window)
                     return true;
-            } else if (event->response_type == XCB_SELECTION_NOTIFY) {
+            } else if (t == XCB_SELECTION_NOTIFY) {
                 xcb_selection_notify_event_t *sn = (xcb_selection_notify_event_t *)event;
                 if (sn->requestor == window)
                     return true;
@@ -643,10 +646,13 @@ namespace
         { clipboard = c->internAtom("CLIPBOARD"); }
         xcb_atom_t clipboard;
         bool check(xcb_generic_event_t *e) const {
-            if (e->response_type == XCB_SELECTION_REQUEST) {
+            if (!e)
+                return false;
+            int type = e->response_type & 0x7f;
+            if (type == XCB_SELECTION_REQUEST) {
                 xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)e;
                 return sr->selection == QXcbAtom::XA_PRIMARY || sr->selection == clipboard;
-            } else if (e->response_type == XCB_SELECTION_CLEAR) {
+            } else if (type == XCB_SELECTION_CLEAR) {
                 xcb_selection_clear_event_t *sc = (xcb_selection_clear_event_t *)e;
                 return sc->selection == QXcbAtom::XA_PRIMARY || sc->selection == clipboard;
             }
@@ -734,6 +740,8 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         } else {
             break;
         }
+
+        free(ge);
     }
 
     // timed out ... create a new requestor window, otherwise the requestor
@@ -748,6 +756,7 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     QByteArray buf;
 
     xcb_window_t win = requestor();
+//    qDebug() << "getDataInFormat" << m_connection->atomName(modeAtom) << m_connection->atomName(fmtAtom) << win;
 
     uint32_t mask = XCB_EVENT_MASK_NO_EVENT;
     xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
@@ -759,7 +768,10 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     m_connection->sync();
 
     xcb_generic_event_t *ge = waitForClipboardEvent(m_connection, win, XCB_SELECTION_NOTIFY, clipboard_timeout);
-    if (!ge || ((xcb_selection_notify_event_t *)ge)->property == XCB_NONE)
+    bool no_selection = !ge || ((xcb_selection_notify_event_t *)ge)->property == XCB_NONE;
+    free(ge);
+
+    if (no_selection)
         return buf;
 
     mask = XCB_EVENT_MASK_PROPERTY_CHANGE;
