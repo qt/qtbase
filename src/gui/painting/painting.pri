@@ -130,7 +130,7 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac:!symbian {
+unix:!symbian {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
