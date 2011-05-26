@@ -16,7 +16,6 @@ nacl: SRC_SUBDIRS -= src_network src_testlib
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
-contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 SRC_SUBDIRS += src_plugins
 
 # s60installs need to be at the end, because qtbase.pro does an ordered build,
@@ -45,8 +44,6 @@ src_network.subdir = $$QT_SOURCE_TREE/src/network
 src_network.target = sub-network
 src_opengl.subdir = $$QT_SOURCE_TREE/src/opengl
 src_opengl.target = sub-opengl
-src_openvg.subdir = $$QT_SOURCE_TREE/src/openvg
-src_openvg.target = sub-openvg
 src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
 src_plugins.target = sub-plugins
 src_widgets.subdir = $$QT_SOURCE_TREE/src/widgets
@@ -65,7 +62,6 @@ src_testlib.target = sub-testlib
    src_dbus.depends = src_corelib src_xml
    src_network.depends = src_corelib
    src_opengl.depends = src_gui src_widgets
-   src_openvg.depends = src_gui
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib src_gui src_widgets
    src_tools_idc.depends = src_corelib             # target defined in tools.pro

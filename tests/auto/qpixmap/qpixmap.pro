@@ -25,10 +25,6 @@ wince*: {
    DEPLOYMENT_PLUGIN += qico
 } else:symbian {
    LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
-   contains(QT_CONFIG, openvg) {
-       LIBS += $$QMAKE_LIBS_OPENVG
-       QT *= openvg
-   }
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
    win32:LIBS += -lgdi32 -luser32

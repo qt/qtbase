@@ -64,10 +64,6 @@
 #include <QtDBus/QtDBus>
 #endif
 
-#ifndef QT_NO_OPENVG
-#include <QtOpenVG/QtOpenVG>
-#endif
-
 class tst_HeadersClean: public QObject
 {
     Q_OBJECT

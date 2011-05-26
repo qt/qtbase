@@ -5,5 +5,3 @@ CONFIG += uitools
 
 contains(QT_CONFIG,dbus): QT += dbus
 contains(QT_CONFIG,opengl): QT += opengl
-contains(QT_CONFIG,openvg): QT += openvg
-
