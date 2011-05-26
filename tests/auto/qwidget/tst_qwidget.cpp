@@ -67,6 +67,7 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 #include <qmenubar.h>
+#include <qtableview.h>
 
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsProxyWidget>
@@ -403,6 +404,7 @@ private slots:
     void taskQTBUG_11373();
 #endif // QT_MAC_USE_COCOA
 #endif
+    void taskQTBUG_17333_ResizeInfiniteRecursion();
 
     void nativeChildFocus();
 
@@ -10463,6 +10465,18 @@ void tst_QWidget::taskQTBUG_11373()
 }
 #endif // QT_MAC_USE_COCOA
 #endif
+
+void tst_QWidget::taskQTBUG_17333_ResizeInfiniteRecursion()
+{
+    QTableView tb;
+    const char *s = "border: 1px solid;";
+    tb.setStyleSheet(s);
+    tb.show();
+
+    QTest::qWaitForWindowShown(&tb);
+    tb.setGeometry(QRect(100, 100, 0, 100));
+    // No crash, it works.
+}
 
 void tst_QWidget::nativeChildFocus()
 {
