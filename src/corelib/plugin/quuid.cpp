@@ -387,6 +387,45 @@ QUuid::QUuid(const QByteArray &text)
 #endif
 
 /*!
+  Creates a QUuid object from the binary representation of the UUID, as
+  specified by RFC 4122 section 4.1.2. See toRfc4122() for a further
+  explanation of the order of bytes required.
+
+  The byte array accepted is NOT a human readable format.
+
+  If the conversion fails, a null UUID is created.
+
+    \since 4.8
+
+    \sa toRfc4122(), QUuid()
+*/
+QUuid QUuid::fromRfc4122(const QByteArray &bytes)
+{
+    if (bytes.isEmpty() || bytes.length() != 16)
+        return QUuid();
+
+    uint d1;
+    ushort d2, d3;
+    uchar d4[8];
+
+    const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+
+    d1 = qFromBigEndian<quint32>(data);
+    data += sizeof(quint32);
+    d2 = qFromBigEndian<quint16>(data);
+    data += sizeof(quint16);
+    d3 = qFromBigEndian<quint16>(data);
+    data += sizeof(quint16);
+
+    for (int i = 0; i < 8; ++i) {
+        d4[i] = *(data);
+        data++;
+    }
+
+    return QUuid(d1, d2, d3, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]);
+}
+
+/*!
     \fn bool QUuid::operator==(const QUuid &other) const
 
     Returns true if this QUuid and the \a other QUuid are identical;
@@ -498,6 +537,59 @@ QByteArray QUuid::toByteArray() const
     return result;
 }
 #endif
+
+/*!
+    Returns the binary representation of this QUuid. The byte array is in big
+    endian format, and formatted according to RFC 4122, section 4.1.2 -
+    "Layout and byte order".
+
+    The order is as follows:
+
+    \table
+    \header
+    \o Field #
+    \o Source
+
+    \row
+    \o 1
+    \o data1
+
+    \row
+    \o 2
+    \o data2
+
+    \row
+    \o 3
+    \o data3
+
+    \row
+    \o 4
+    \o data4[0] .. data4[7]
+
+    \endtable
+
+    \since 4.8
+*/
+QByteArray QUuid::toRfc4122() const
+{
+    // we know how many bytes a UUID has, I hope :)
+    QByteArray bytes(16, Qt::Uninitialized);
+    uchar *data = reinterpret_cast<uchar*>(bytes.data());
+
+    qToBigEndian(data1, data);
+    data += sizeof(quint32);
+    qToBigEndian(data2, data);
+    data += sizeof(quint16);
+    qToBigEndian(data3, data);
+    data += sizeof(quint16);
+
+    for (int i = 0; i < 8; ++i) {
+        *(data) = data4[i];
+        data++;
+    }
+
+    return bytes;
+}
 
 #ifndef QT_NO_DATASTREAM
 /*!

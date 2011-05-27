@@ -112,6 +112,8 @@ struct Q_CORE_EXPORT QUuid
     QUuid(const QByteArray &);
     QByteArray toByteArray() const;
 #endif
+    QByteArray toRfc4122() const;
+    static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const;
 
     bool operator==(const QUuid &orig) const

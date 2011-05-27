@@ -65,6 +65,8 @@ private slots:
     void fromString();
     void toByteArray();
     void fromByteArray();
+    void toRfc4122();
+    void fromRfc4122();
     void check_QDataStream();
     void isNull();
     void equal();
@@ -145,6 +147,20 @@ void tst_QUuid::fromByteArray()
     QCOMPARE(QUuid(), QUuid(QByteArray("{fc69b59e-cc34-4436-a43c-ee95d128b8c")));
 
     QCOMPARE(uuidB, QUuid(QByteArray("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}")));
+}
+
+void tst_QUuid::toRfc4122()
+{
+    QCOMPARE(uuidA.toRfc4122(), QByteArray::fromHex("fc69b59ecc344436a43cee95d128b8c5"));
+
+    QCOMPARE(uuidB.toRfc4122(), QByteArray::fromHex("1ab6e93ab1cb4a87ba47ec7e99039a7b"));
+}
+
+void tst_QUuid::fromRfc4122()
+{
+    QCOMPARE(uuidA, QUuid::fromRfc4122(QByteArray::fromHex("fc69b59ecc344436a43cee95d128b8c5")));
+
+    QCOMPARE(uuidB, QUuid::fromRfc4122(QByteArray::fromHex("1ab6e93ab1cb4a87ba47ec7e99039a7b")));
 }
 
 void tst_QUuid::check_QDataStream()
