@@ -278,7 +278,7 @@ public:
         ToolTip = Popup | Sheet,
         SplashScreen = ToolTip | Dialog,
         Desktop = 0x00000010 | Window,
-        SubWindow = Desktop | Dialog,
+        SubWindow = 0x00000012,
 
         WindowType_Mask = 0x000000ff,
         MSWindowsFixedSizeDialogHint = 0x00000100,

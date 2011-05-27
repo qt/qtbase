@@ -96,6 +96,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QWindowSurface *surface = q->windowSurface();
 
     QWindow *win = topData()->window;
+    // topData() ensures the extra is created but does not ensure 'window' is non-null
+    // in case the extra was already valid.
+    if (!win) {
+        createTLSysExtra();
+        win = topData()->window;
+    }
 
     win->setWindowFlags(data.window_flags);
     win->setGeometry(q->geometry());
@@ -250,8 +256,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
-    int           x=pos.x(), y=pos.y();
-    const QWidget* w = this;
+    int x = pos.x(), y = pos.y();
+    const QWidget *w = this;
     while (w) {
         x += w->data->crect.x();
         y += w->data->crect.y();
@@ -262,8 +268,8 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
-    int           x=pos.x(), y=pos.y();
-    const QWidget* w = this;
+    int x = pos.x(), y = pos.y();
+    const QWidget *w = this;
     while (w) {
         x -= w->data->crect.x();
         y -= w->data->crect.y();
