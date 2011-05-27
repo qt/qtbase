@@ -115,8 +115,15 @@ void *QWaylandGLContext::getProcAddress(const QString &string)
 
 void QWaylandGLContext::setEglSurface(EGLSurface surface)
 {
-    doneCurrent();
+    bool wasCurrent = false;
+    if (QPlatformGLContext::currentContext() == this) {
+        wasCurrent = true;
+        doneCurrent();
+    }
     mSurface = surface;
+    if (wasCurrent) {
+        makeCurrent();
+    }
 }
 
 EGLConfig QWaylandGLContext::eglConfig() const
