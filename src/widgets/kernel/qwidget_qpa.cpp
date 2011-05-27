@@ -96,12 +96,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QWindowSurface *surface = q->windowSurface();
 
     QWindow *win = topData()->window;
-    // topData() ensures the extra is created but does not ensure 'window' is non-null
-    // in case the extra was already valid.
-    if (!win) {
-        createTLSysExtra();
-        win = topData()->window;
-    }
 
     win->setWindowFlags(data.window_flags);
     win->setGeometry(q->geometry());
@@ -114,7 +108,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle()) {
-            if (flags.testFlag(Qt::Window) && !flags.testFlag(Qt::SubWindow)) {
+            if (flags & Qt::Window) {
                 win->setTransientParent(nativeParent->windowHandle());
                 win->setParent(0);
             } else {
@@ -196,16 +190,14 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         newparent = 0;
     }
 
-    bool subWinChange =  f.testFlag(Qt::SubWindow) != oldFlags.testFlag(Qt::SubWindow);
-    if (parent != newparent || subWinChange) {
+    if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
-        createTLExtra();
         if (q->windowHandle()) {
             q->windowHandle()->setWindowFlags(f);
             QWidget *parentWithWindow =
                 newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
             if (parentWithWindow) {
-                if (f.testFlag(Qt::Window) && !f.testFlag(Qt::SubWindow)) {
+                if (f & Qt::Window) {
                     q->windowHandle()->setTransientParent(parentWithWindow->windowHandle());
                     q->windowHandle()->setParent(0);
                 } else {
@@ -230,9 +222,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
 
     // Reparenting toplevel to child
-    bool changedFromWin = !f.testFlag(Qt::Window) && oldFlags.testFlag(Qt::Window);
-    bool changedToSubWin = subWinChange && f.testFlag(Qt::SubWindow);
-    if ((changedFromWin || changedToSubWin) && !q->testAttribute(Qt::WA_NativeWindow)) {
+    if (!(f&Qt::Window) && (oldFlags&Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         //qDebug() << "setParent_sys() change from toplevel";
         q->destroy();
     }
@@ -260,26 +250,24 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
-    int x = pos.x();
-    int y = pos.y();
-    const QWidget *w = this;
+    int           x=pos.x(), y=pos.y();
+    const QWidget* w = this;
     while (w) {
         x += w->data->crect.x();
         y += w->data->crect.y();
-        w = w->parentWidget();
+        w = w->isWindow() ? 0 : w->parentWidget();
     }
     return QPoint(x, y);
 }
 
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
-    int x = pos.x();
-    int y = pos.y();
-    const QWidget *w = this;
+    int           x=pos.x(), y=pos.y();
+    const QWidget* w = this;
     while (w) {
         x -= w->data->crect.x();
         y -= w->data->crect.y();
-        w = w->parentWidget();
+        w = w->isWindow() ? 0 : w->parentWidget();
     }
     return QPoint(x, y);
 }
