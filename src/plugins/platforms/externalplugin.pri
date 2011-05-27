@@ -26,4 +26,4 @@
 QT_SOURCE_TREE = $$fromfile($$(QTDIR)/.qmake.cache,QT_SOURCE_TREE)
 QT_BUILD_TREE = $$fromfile($$(QTDIR)/.qmake.cache,QT_BUILD_TREE)
 
-include($$QT_SOURCE_TREE/src/plugins/qpluginbase.pri)
+load(qt_plugin)

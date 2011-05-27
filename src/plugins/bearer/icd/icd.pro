@@ -1,5 +1,5 @@
 TARGET = qicdbearer
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT = core network dbus
 

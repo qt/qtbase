@@ -1,5 +1,5 @@
 TARGET = qlinuxinputkbddriver
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/kbddrivers
 target.path = $$[QT_INSTALL_PLUGINS]/kbddrivers

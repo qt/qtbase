@@ -1,5 +1,5 @@
 TARGET = qminimal
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT = core-private gui-private
 DESTDIR = $$QT.gui.plugins/platforms

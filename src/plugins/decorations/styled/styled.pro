@@ -1,5 +1,5 @@
 TARGET = qdecorationstyled
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/decorations
 target.path += $$[QT_INSTALL_PLUGINS]/decorations

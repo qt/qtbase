@@ -1,5 +1,5 @@
 TARGET = qdirectfb
-include(../../qpluginbase.pri)
+load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
 isEmpty(DIRECTFB_LIBS) {

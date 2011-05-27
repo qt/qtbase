@@ -1,5 +1,5 @@
 TARGET = qtracegraphicssystem
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += core-private gui-private network
 

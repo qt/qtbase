@@ -1,5 +1,5 @@
 TARGET = qscreenvfb
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DEFINES	+= QT_QWS_QVFB QT_QWS_MOUSE_QVFB QT_QWS_KBD_QVFB
 

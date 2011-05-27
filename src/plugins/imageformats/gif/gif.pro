@@ -1,5 +1,5 @@
 TARGET  = qgif
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 include(../../../gui/image/qgifhandler.pri)
 SOURCES += $$PWD/main.cpp

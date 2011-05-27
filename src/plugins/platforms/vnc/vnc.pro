@@ -1,5 +1,5 @@
 TARGET = qvncgraphicssystem
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += network
 

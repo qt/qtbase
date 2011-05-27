@@ -1,5 +1,5 @@
 TARGET = qdirectfbscreen
-include(../../qpluginbase.pri)
+load(qt_plugin)
 include($$QT_SOURCE_TREE/src/gui/embedded/directfb.pri)
 
 DESTDIR = $$QT.gui.plugins/gfxdrivers

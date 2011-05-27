@@ -1,5 +1,5 @@
 TARGET = qopenkodeintegration
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += opengl
 

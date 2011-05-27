@@ -1,5 +1,5 @@
 TARGET = qglgraphicssystem
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += core-private gui-private opengl-private
 

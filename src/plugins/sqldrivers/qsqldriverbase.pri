@@ -1,4 +1,4 @@
-include(../qpluginbase.pri)
+load(qt_plugin)
 QT  = core sql-private
 DESTDIR = $$QT.sql.plugins/sqldrivers
 

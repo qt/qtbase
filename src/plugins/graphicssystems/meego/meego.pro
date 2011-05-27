@@ -1,5 +1,5 @@
 TARGET = qmeegographicssystem
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += gui opengl
 

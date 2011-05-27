@@ -1,5 +1,5 @@
 TARGET	 = qtslibmousedriver
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/mousedrivers
 

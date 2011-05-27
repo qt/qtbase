@@ -1,5 +1,5 @@
 TARGET	 = qdecorationdefault
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 HEADERS	= $$QT_SOURCE_TREE/src/gui/embedded/qdecorationdefault_qws.h
 SOURCES	= main.cpp \

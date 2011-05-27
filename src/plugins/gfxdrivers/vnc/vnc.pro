@@ -1,5 +1,5 @@
 TARGET = qgfxvnc
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DEFINES	+= QT_QWS_VNC
 

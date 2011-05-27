@@ -1,5 +1,5 @@
 TARGET = qgenericbearer
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT = core-private network-private
 

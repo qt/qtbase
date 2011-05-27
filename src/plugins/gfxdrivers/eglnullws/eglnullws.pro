@@ -1,5 +1,5 @@
 TARGET = qeglnullws
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 CONFIG += warn_on
 QT += opengl

@@ -1,5 +1,5 @@
 TARGET = quikit
-include(../../qpluginbase.pri)
+load(qt_plugin)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 QT += opengl

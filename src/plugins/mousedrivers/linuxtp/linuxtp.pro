@@ -1,5 +1,5 @@
 TARGET = qlinuxtpmousedriver
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/mousedrivers
 target.path = $$[QT_INSTALL_PLUGINS]/mousedrivers

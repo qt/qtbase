@@ -1,5 +1,5 @@
 TARGET = qahiscreen
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/gfxdrivers
 
