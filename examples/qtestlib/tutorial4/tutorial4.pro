@@ -1,5 +1,5 @@
 SOURCES = testgui.cpp
-CONFIG  += qtestlib
+QT += testlib
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib/tutorial4
