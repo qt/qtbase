@@ -628,7 +628,6 @@ static const char * xcb_atomnames = {
     "_NET_ACTIVE_WINDOW\0"
 
     // Property formats
-    "COMPOUND_TEXT\0"
     "TEXT\0"
     "UTF8_STRING\0"
 

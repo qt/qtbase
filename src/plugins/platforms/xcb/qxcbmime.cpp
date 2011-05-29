@@ -69,8 +69,7 @@ QString QXcbMime::mimeAtomToString(QXcbConnection *connection, xcb_atom_t a)
     // special cases for string type
     if (a == QXcbAtom::XA_STRING
         || a == connection->atom(QXcbAtom::UTF8_STRING)
-        || a == connection->atom(QXcbAtom::TEXT)
-        || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
+        || a == connection->atom(QXcbAtom::TEXT))
         return QLatin1String("text/plain");
 
     // special case for images
@@ -98,36 +97,17 @@ bool QXcbMime::mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeDa
 
     if ((a == connection->atom(QXcbAtom::UTF8_STRING)
          || a == QXcbAtom::XA_STRING
-         || a == connection->atom(QXcbAtom::TEXT)
-         || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
+         || a == connection->atom(QXcbAtom::TEXT))
         && QInternalMimeData::hasFormatHelper(QLatin1String("text/plain"), mimeData)) {
-        if (a == connection->atom(QXcbAtom::UTF8_STRING)){
+        if (a == connection->atom(QXcbAtom::UTF8_STRING)) {
             *data = QInternalMimeData::renderDataHelper(QLatin1String("text/plain"), mimeData);
             ret = true;
-        } else if (a == QXcbAtom::XA_STRING) {
+        } else if (a == QXcbAtom::XA_STRING ||
+                   a == connection->atom(QXcbAtom::TEXT)) {
+            // ICCCM says STRING is latin1
             *data = QString::fromUtf8(QInternalMimeData::renderDataHelper(
-                        QLatin1String("text/plain"), mimeData)).toLocal8Bit();
+                        QLatin1String("text/plain"), mimeData)).toLatin1();
             ret = true;
-        } else if (a == connection->atom(QXcbAtom::TEXT)
-                   || a == connection->atom(QXcbAtom::COMPOUND_TEXT)) {
-            // the ICCCM states that TEXT and COMPOUND_TEXT are in the
-            // encoding of choice, so we choose the encoding of the locale
-            QByteArray strData = QString::fromUtf8(QInternalMimeData::renderDataHelper(
-                                 QLatin1String("text/plain"), mimeData)).toLocal8Bit();
-            char *list[] = { strData.data(), NULL };
-
-            XICCEncodingStyle style = (a == connection->atom(QXcbAtom::COMPOUND_TEXT))
-                                    ? XCompoundTextStyle : XStdICCTextStyle;
-            XTextProperty textprop;
-            if (list[0] != NULL
-                && XmbTextListToTextProperty(DISPLAY_FROM_XCB(connection), list, 1, style, &textprop) == Success) {
-                *atomFormat = textprop.encoding;
-                *dataFormat = textprop.format;
-                *data = QByteArray((const char *) textprop.value, textprop.nitems * textprop.format / 8);
-                ret = true;
-
-                XFree(textprop.value);
-            }
         }
         return ret;
     }
@@ -162,7 +142,6 @@ QList<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, const
         atoms.append(connection->atom(QXcbAtom::UTF8_STRING));
         atoms.append(QXcbAtom::XA_STRING);
         atoms.append(connection->atom(QXcbAtom::TEXT));
-        atoms.append(connection->atom(QXcbAtom::COMPOUND_TEXT));
     }
 
     // special cases for uris
@@ -198,16 +177,11 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
 
     // special cases for string types
     if (format == QLatin1String("text/plain")) {
-        if (a == connection->atom(QXcbAtom::UTF8_STRING)) {
-            qDebug() << data;
+        if (a == connection->atom(QXcbAtom::UTF8_STRING))
             return QString::fromUtf8(data);
-        }
-        if (a == QXcbAtom::XA_STRING)
+        if (a == QXcbAtom::XA_STRING ||
+            a == connection->atom(QXcbAtom::TEXT))
             return QString::fromLatin1(data);
-        if (a == connection->atom(QXcbAtom::TEXT)
-                || a == connection->atom(QXcbAtom::COMPOUND_TEXT))
-            // #### might be wrong for COMPOUND_TEXT
-            return QString::fromLocal8Bit(data, data.size());
     }
 
     // special case for uri types
@@ -268,12 +242,10 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
     if (format == QLatin1String("text/plain")) {
         if (atoms.contains(connection->atom(QXcbAtom::UTF8_STRING)))
             return connection->atom(QXcbAtom::UTF8_STRING);
-        if (atoms.contains(connection->atom(QXcbAtom::COMPOUND_TEXT)))
-            return connection->atom(QXcbAtom::COMPOUND_TEXT);
-        if (atoms.contains(connection->atom(QXcbAtom::TEXT)))
-            return connection->atom(QXcbAtom::TEXT);
         if (atoms.contains(QXcbAtom::XA_STRING))
             return QXcbAtom::XA_STRING;
+        if (atoms.contains(connection->atom(QXcbAtom::TEXT)))
+            return connection->atom(QXcbAtom::TEXT);
     }
 
     // find matches for uri types

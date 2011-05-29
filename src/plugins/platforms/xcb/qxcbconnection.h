@@ -171,7 +171,6 @@ namespace QXcbAtom {
         _NET_ACTIVE_WINDOW,
 
         // Property formats
-        COMPOUND_TEXT,
         TEXT,
         UTF8_STRING,
 
