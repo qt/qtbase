@@ -114,7 +114,7 @@ QWSLock::~QWSLock()
     QWSSignalHandler::instance()->removeSemaphore(semId);
 }
 
-static bool forceLock(int semId, int semNum, int)
+static bool forceLock(int semId, unsigned short semNum, int)
 {
     int ret;
     do {
@@ -135,7 +135,7 @@ static bool forceLock(int semId, int semNum, int)
     return (ret != -1);
 }
 
-static bool up(int semId, int semNum)
+static bool up(int semId, unsigned short semNum)
 {
     int ret;
     do {
@@ -148,7 +148,7 @@ static bool up(int semId, int semNum)
     return (ret != -1);
 }
 
-static bool down(int semId, int semNum)
+static bool down(int semId, unsigned short semNum)
 {
     int ret;
     do {
@@ -161,7 +161,7 @@ static bool down(int semId, int semNum)
     return (ret != -1);
 }
 
-static int getValue(int semId, int semNum)
+static int getValue(int semId, unsigned short semNum)
 {
     int ret;
     do {
@@ -210,7 +210,7 @@ void QWSLock::unlock(LockType type)
             return;
     }
 
-    const int semNum = type;
+    const unsigned short semNum = type;
     int ret;
     do {
         sembuf sops = {semNum, 1, 0};

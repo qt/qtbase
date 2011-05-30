@@ -261,7 +261,7 @@ public:
         usleep(50000);
         QT_WRITE(fd,"@EeI!",5);
         usleep(10000);
-        static const char ibuf[] = { 246, 244 };
+        static const unsigned char ibuf[] = { 246, 244 };
         QT_WRITE(fd,ibuf,1);
         QT_WRITE(fd,ibuf+1,1);
         if (tcflush(fd,TCIOFLUSH) == -1) {
