@@ -258,7 +258,7 @@ extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &o
 
 bool QXcbWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
-    if (m_image->image()->isNull())
+    if (!m_image || m_image->image()->isNull())
         return false;
 
     m_image->preparePaint(area);
