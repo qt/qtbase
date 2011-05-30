@@ -21,12 +21,14 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
         QTFWD += -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
     }
 
-    message("Running syncqt for $$PRO_BASENAME in $$OUT_PWD")
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    system("$$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_") {
+
+    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_)
+    !silent:message($$MSG)
+    system($$MSG) {
         # success! Nothing to do
     } else {
-        error("Failed to run: $$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_")
+        error("Failed to run: $$MSG")
     }
     unset(QTFWD)
     unset(PRO_BASENAME)
