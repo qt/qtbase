@@ -113,7 +113,7 @@ extern void qgl_cleanup_glyph_cache(QGLContext *);
 void qgl_cleanup_glyph_cache(QGLContext *) {}
 #endif
 
-extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 
 QGLContext* QGLPBufferGLPaintDevice::context() const
