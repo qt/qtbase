@@ -26,7 +26,6 @@ SOURCES += \
         kernel/qcursor.cpp \
         kernel/qdrag.cpp \
         kernel/qdnd.cpp \
-        kernel/qdnd_qpa.cpp \
         kernel/qevent.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \

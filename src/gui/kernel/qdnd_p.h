@@ -65,6 +65,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEventLoop;
+class QMouseEvent;
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -106,24 +107,9 @@ public:
     Qt::DropAction defaultDropAction;
 };
 
-class QDropData : public QInternalMimeData
-{
-    Q_OBJECT
-public:
-    QDropData();
-    ~QDropData();
-
-protected:
-    bool hasFormat_sys(const QString &mimeType) const;
-    QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
-};
-
-class Q_GUI_EXPORT QDragManager: public QObject {
+class Q_GUI_EXPORT QDragManager : public QObject {
     Q_OBJECT
 
-    QDragManager();
-    ~QDragManager();
     // only friend classes can use QDragManager.
     friend class QDrag;
     friend class QDragMoveEvent;
@@ -131,43 +117,46 @@ class Q_GUI_EXPORT QDragManager: public QObject {
     friend class QApplication;
 
     bool eventFilter(QObject *, QEvent *);
-    void timerEvent(QTimerEvent*);
 
 public:
-    Qt::DropAction drag(QDrag *);
-
-    void cancel(bool deleteSource = true);
-    void move(const QPoint &);
-    void drop();
-    void updatePixmap();
-    QObject *source() const { return object ? object->d_func()->source : 0; }
-    QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
-    static QDragPrivate *dragPrivate(QDrag *drag) { return drag ? drag->d_func() : 0; }
-
+    QDragManager();
+    ~QDragManager();
     static QDragManager *self();
+
+    virtual Qt::DropAction drag(QDrag *);
+
+    virtual void cancel(bool deleteSource = true);
+    virtual void move(const QMouseEvent *me);
+    virtual void drop(const QMouseEvent *me);
+
+    void updatePixmap();
+    void updateCursor();
+
     Qt::DropAction defaultAction(Qt::DropActions possibleActions,
                                  Qt::KeyboardModifiers modifiers) const;
 
-    QDrag *object;
+    QPixmap dragCursor(Qt::DropAction action) const;
 
-    void updateCursor();
+    QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
+
+    inline QMimeData *dropData()
+    { return object ? dragPrivate()->data : platformDropData; }
+
+    QDrag *object;
+    QMimeData *platformDropData;
 
     bool beingCancelled;
     bool restoreCursor;
     bool willDrop;
     QEventLoop *eventLoop;
 
-    QPixmap dragCursor(Qt::DropAction action) const;
-
-    bool hasCustomDragCursors() const;
-
-    QDropData *dropData;
-
     void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
 
     void setCurrentTarget(QObject *target, bool dropped = false);
     QObject *currentTarget();
     QWindow *currentWindow;
+
+    Qt::DropActions possible_actions;
 
 private:
     Qt::DropAction currentActionForOverrideCursor;
