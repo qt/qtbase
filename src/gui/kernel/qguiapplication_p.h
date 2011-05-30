@@ -70,6 +70,7 @@ public:
     void createEventDispatcher();
 
     virtual void notifyLayoutDirectionChange();
+    virtual void notifyActiveWindowChange(QWindow *previous);
 
     static int keyboard_input_time;
     static int mouse_double_click_time;

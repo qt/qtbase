@@ -583,7 +583,10 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
+    QWindow *previous = QGuiApplicationPrivate::active_window;
     QGuiApplicationPrivate::active_window = e->activated.data();
+    if (self)
+        self->notifyActiveWindowChange(previous);
 }
 
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
@@ -718,6 +721,10 @@ void QGuiApplication::setFont(const QFont &font)
 */
 
 void QGuiApplicationPrivate::notifyLayoutDirectionChange()
+{
+}
+
+void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
 {
 }
 

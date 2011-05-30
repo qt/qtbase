@@ -536,7 +536,8 @@ QDesktopWidget *qt_desktopWidget = 0;                // root window widgets
 #if !defined(Q_WS_QPA) && !defined(QT_NO_CLIPBOARD)
 QClipboard              *qt_clipboard = 0;        // global clipboard object
 #endif
-QWidgetList * qt_modal_stack=0;                // stack of modal widgets
+QWidgetList * qt_modal_stack = 0;                // stack of modal widgets
+bool app_do_modal = false;
 
 /*!
     \internal
@@ -2422,7 +2423,6 @@ void QApplicationPrivate::notifyLayoutDirectionChange()
     }
 }
 
-
 /*!
     \fn Qt::WindowsVersion QApplication::winVersion()
 
@@ -2790,7 +2790,6 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
     if (QApplication::activePopupWidget() == widget)
         return false;
 
-#if 0
     for (int i = 0; i < qt_modal_stack->size(); ++i) {
         QWidget *modalWidget = qt_modal_stack->at(i);
 
@@ -2869,7 +2868,6 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
             break;
         }
     }
-#endif
     return false;
 }
 

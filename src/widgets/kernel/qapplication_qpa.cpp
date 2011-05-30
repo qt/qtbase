@@ -71,6 +71,8 @@ QT_BEGIN_NAMESPACE
 
 static QString appName;
 static QString appFont;
+extern bool app_do_modal;
+extern QWidgetList *qt_modal_stack;
 
 QString QApplicationPrivate::appName() const
 {
@@ -82,7 +84,7 @@ void QApplicationPrivate::createEventDispatcher()
     QGuiApplicationPrivate::createEventDispatcher();
 }
 
-static bool qt_try_modal(QWidget *widget, QEvent::Type type)
+bool qt_try_modal(QWidget *widget, QEvent::Type type)
 {
     QWidget * top = 0;
 
@@ -116,21 +118,16 @@ static bool qt_try_modal(QWidget *widget, QEvent::Type type)
     return !block_event;
 }
 
-
-
-void QApplicationPrivate::enterModal_sys(QWidget *)
+void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
-#if 0
     if (!qt_modal_stack)
         qt_modal_stack = new QWidgetList;
     qt_modal_stack->insert(0, widget);
     app_do_modal = true;
-#endif
 }
 
-void QApplicationPrivate::leaveModal_sys(QWidget *)
+void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
-#if 0
     if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
         if (qt_modal_stack->isEmpty()) {
             delete qt_modal_stack;
@@ -138,15 +135,36 @@ void QApplicationPrivate::leaveModal_sys(QWidget *)
         }
     }
     app_do_modal = qt_modal_stack != 0;
-#endif
 }
 
 bool QApplicationPrivate::modalState()
 {
-    return false;
-#if 0
     return app_do_modal;
-#endif
+}
+
+QWidget *qt_tlw_for_window(QWindow *wnd)
+{
+    if (wnd)
+        foreach (QWidget *tlw, qApp->topLevelWidgets())
+            if (tlw->windowHandle() == wnd)
+                return tlw;
+    return 0;
+}
+
+void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
+{
+    Q_UNUSED(previous);
+    Q_Q(QApplication);
+    QWindow *wnd = QGuiApplicationPrivate::active_window;
+    QWidget *tlw = qt_tlw_for_window(wnd);
+    if (!tlw)
+        return;
+    if (modalState()
+        && !qt_try_modal(tlw, QEvent::MouseButtonRelease)
+        && q->activeWindow())
+        q->activeWindow()->activateWindow();
+    else
+        q->setActiveWindow(tlw);
 }
 
 void QApplicationPrivate::closePopup(QWidget *popup)

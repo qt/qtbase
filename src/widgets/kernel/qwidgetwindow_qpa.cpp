@@ -52,6 +52,7 @@ QWidget *qt_button_down = 0; // widget got last button-down
 static QWidget *qt_popup_down = 0; // popup that contains the pressed widget
 extern int openPopupCount;
 static bool replayPopupMouseEvent = false;
+extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : m_widget(widget)
@@ -203,6 +204,10 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         return;
     }
 
+    // modal event handling
+    if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
+        return;
+
     // which child should have it?
     QWidget *widget = m_widget->childAt(event->pos());
     QPoint mapped = event->pos();
@@ -237,6 +242,9 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
 void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
 {
+    if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
+        return;
+
     QWidget *widget = m_widget->focusWidget();
 
     if (!widget)
@@ -264,6 +272,9 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *)
 
 void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 {
+    if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
+        return;
+
     // which child should have it?
     QWidget *widget = m_widget->childAt(event->pos());
 
