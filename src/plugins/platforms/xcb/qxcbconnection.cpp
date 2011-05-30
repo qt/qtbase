@@ -730,9 +730,12 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
 {
     xcb_get_atom_name_cookie_t cookie = xcb_get_atom_name_unchecked(xcb_connection(), atom);
     xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, 0);
-    QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
-    free(reply);
-    return result;
+    if (reply) {
+        QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
+        free(reply);
+        return result;
+    }
+    return QByteArray();
 }
 
 void QXcbConnection::sync()
