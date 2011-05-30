@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include <qdebug.h>
 #include "qcups_p.h"
+#include "qprinterinfo_unix_p.h"
 
 #ifndef QT_NO_CUPS
 
@@ -394,6 +395,50 @@ int QCUPSSupport::printFile(const char * printerName, const char * filename, con
                             int num_options, cups_option_t * options)
 {
     return _cupsPrintFile(printerName, filename, title, num_options, options);
+}
+
+QCUPSSupport::Printer::Printer(const QString &n) : name(n), isDefault(false), cupsPrinterIndex(-1)
+{
+}
+
+QList<QCUPSSupport::Printer> QCUPSSupport::availableUnixPrinters()
+{
+    QList<Printer> printers;
+
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (QCUPSSupport::isAvailable()) {
+        QCUPSSupport cups;
+        int cupsPrinterCount = cups.availablePrintersCount();
+        const cups_dest_t* cupsPrinters = cups.availablePrinters();
+        for (int i = 0; i < cupsPrinterCount; ++i) {
+            QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
+            if (cupsPrinters[i].instance)
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
+
+            Printer p(printerName);
+            if (cupsPrinters[i].is_default)
+                p.isDefault = true;
+            p.cupsPrinterIndex = i;
+            printers.append(p);
+        }
+    } else
+#endif
+           {
+        QList<QPrinterDescription> lprPrinters;
+        int defprn = qt_getLprPrinters(lprPrinters);
+        // populating printer combo
+        foreach (const QPrinterDescription &description, lprPrinters)
+            printers.append(Printer(description.name));
+        if (defprn >= 0 && defprn < printers.size())
+            printers[defprn].isDefault = true;
+    }
+
+    return printers;
+}
+
+QList<QPrinter::PaperSize> QCUPSSupport::getCupsPrinterPaperSizes(int cupsPrinterIndex)
+{
+    return qt_getCupsPrinterPaperSizes(cupsPrinterIndex);
 }
 
 QT_END_NAMESPACE

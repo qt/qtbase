@@ -835,78 +835,20 @@ Q_GUI_EXPORT int qt_getLprPrinters(QList<QPrinterDescription>& printers)
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-QList<QPrinterInfo> QPrinterInfo::availablePrinters()
+QList<QPrinter::PaperSize> qt_getCupsPrinterPaperSizes(int cupsPrinterIndex)
 {
-    QList<QPrinterInfo> printers;
-
+    QList<QPrinter::PaperSize> result;
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    if (QCUPSSupport::isAvailable()) {
-        QCUPSSupport cups;
-        int cupsPrinterCount = cups.availablePrintersCount();
-        const cups_dest_t* cupsPrinters = cups.availablePrinters();
-        for (int i = 0; i < cupsPrinterCount; ++i) {
-            QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
-            if (cupsPrinters[i].instance)
-                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
-
-            QPrinterInfo printerInfo(printerName);
-            if (cupsPrinters[i].is_default)
-                printerInfo.d_ptr->isDefault = true;
-            printerInfo.d_ptr->cupsPrinterIndex = i;
-            printers.append(printerInfo);
-        }
-    } else
-#endif
-           {
-        QList<QPrinterDescription> lprPrinters;
-        int defprn = qt_getLprPrinters(lprPrinters);
-        // populating printer combo
-        foreach (const QPrinterDescription &description, lprPrinters)
-            printers.append(QPrinterInfo(description.name));
-        if (defprn >= 0 && defprn < printers.size())
-            printers[defprn].d_ptr->isDefault = true;
+    if (!QCUPSSupport::isAvailable() || cupsPrinterIndex < 0)
+        return result;
+    // Find paper sizes from CUPS.
+    QCUPSSupport cups;
+    cups.setCurrentPrinter(cupsPrinterIndex);
+    if (const ppd_option_t* size = cups.pageSizes()) {
+        for (int j = 0; j < size->num_choices; ++j)
+            result.append(string2PaperSize(size->choices[j].choice));
     }
-
-    return printers;
-}
-
-QPrinterInfo QPrinterInfo::defaultPrinter()
-{
-    QList<QPrinterInfo> printers = availablePrinters();
-    foreach (const QPrinterInfo &printerInfo, printers) {
-        if (printerInfo.isDefault())
-            return printerInfo;
-    }
-
-    return printers.value(0);
-}
-
-QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
-{
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    const Q_D(QPrinterInfo);
-
-    if (isNull())
-        return d->paperSizes;
-
-    if (!d->hasPaperSizes) {
-        d->hasPaperSizes = true;
-
-        if (QCUPSSupport::isAvailable()) {
-            // Find paper sizes from CUPS.
-            QCUPSSupport cups;
-            cups.setCurrentPrinter(d->cupsPrinterIndex);
-            const ppd_option_t* sizes = cups.pageSizes();
-            if (sizes) {
-                for (int j = 0; j < sizes->num_choices; ++j)
-                    d->paperSizes.append(string2PaperSize(sizes->choices[j].choice));
-            }
-        }
-    }
-
-    return d->paperSizes;
-#else
-    return QList<QPrinter::PaperSize>();
+    return result;
 #endif
 }
 

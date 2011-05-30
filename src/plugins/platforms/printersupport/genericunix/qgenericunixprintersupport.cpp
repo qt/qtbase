@@ -39,48 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#include <qgenericunixprintersupport.h>
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtGui/QPrinterInfo>
+#include <private/qcups_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
-
-class QXcbIntegration : public QPlatformIntegration
+QList<QPrinter::PaperSize> QGenericUnixPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
-public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    return QCUPSSupport::getCupsPrinterPaperSizes(QPlatformPrinterSupport::printerInfoCupsPrinterIndex(printerInfo));
+}
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-
-private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
-
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
-};
+QList<QPrinterInfo> QGenericUnixPrinterSupport::availablePrinters()
+{
+    QList<QPrinterInfo> printers;
+    foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
+        QPrinterInfo printer(QPlatformPrinterSupport::printerInfo(p.name, p.isDefault));
+        QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
+        printers.append(printer);
+    }
+    return printers;
+}
 
 QT_END_NAMESPACE
-
-#endif

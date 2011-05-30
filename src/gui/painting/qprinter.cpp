@@ -52,6 +52,9 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <private/qguiapplication_p.h>
+#include <QtGui/QPlatformPrinterSupport>
+
 #if defined (Q_WS_WIN)
 #include <private/qprintengine_win_p.h>
 #elif defined (Q_WS_MAC)
@@ -165,7 +168,10 @@ void QPrinterPrivate::createDefaultEngines()
 
     switch (realOutputFormat) {
     case QPrinter::NativeFormat: {
-#if defined (Q_WS_WIN)
+#if defined (Q_WS_QPA)
+        printEngine = QGuiApplicationPrivate::platformIntegration()->printerSupport()->createNativePrintEngine(printerMode);
+        paintEngine = QGuiApplicationPrivate::platformIntegration()->printerSupport()->createPaintEngine(printEngine, printerMode);
+#elif defined (Q_WS_WIN)
         QWin32PrintEngine *winEngine = new QWin32PrintEngine(printerMode);
         paintEngine = winEngine;
         printEngine = winEngine;

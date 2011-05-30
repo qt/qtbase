@@ -54,6 +54,7 @@
 //
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qpair.h"
 #include "QtGui/qprinter.h"
 
 #ifndef QT_NO_CUPS
@@ -68,6 +69,14 @@ Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
 class Q_GUI_EXPORT QCUPSSupport
 {
 public:
+    struct Printer
+    {
+        Printer(const QString &name = QString());
+
+        QString name;
+        bool isDefault;
+        int cupsPrinterIndex;
+    };
     QCUPSSupport();
     ~QCUPSSupport();
 
@@ -99,6 +108,9 @@ public:
     QPair<int, QString> tempFd();
     int printFile(const char * printerName, const char * filename, const char * title,
                   int num_options, cups_option_t * options);
+
+    static QList<Printer> availableUnixPrinters();
+    static QList<QPrinter::PaperSize> getCupsPrinterPaperSizes(int cupsPrinterIndex);
 
 private:
     void collectMarkedOptions(QStringList& list, const ppd_group_t* group = 0) const;

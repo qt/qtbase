@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#ifndef QPLATFORMPRINTINGSUPPORT_H
+#define QPLATFORMPRINTINGSUPPORT_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtGui/qprinter.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
+QT_MODULE(Gui)
 
-class QXcbIntegration : public QPlatformIntegration
+#ifndef QT_NO_PRINTER
+
+class QPrintEngine;
+
+class Q_GUI_EXPORT QPlatformPrinterSupport
 {
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    QPlatformPrinterSupport();
+    virtual ~QPlatformPrinterSupport();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
+    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
+    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
+    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    virtual QList<QPrinterInfo> availablePrinters();
+    virtual QPrinterInfo defaultPrinter();
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-
-private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
-
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
+protected:
+     static QPrinterInfo printerInfo(const QString &printerName, bool isDefault = false);
+     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
+     static bool printerInfoIsDefault(const QPrinterInfo &p);
+     static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
+     static void setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index);
 };
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QPLATFORMPRINTINGSUPPORT_H

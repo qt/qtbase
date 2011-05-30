@@ -39,48 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#ifndef QWINDOWSPRINTERSUPPORT_H
+#define QWINDOWSPRINTERSUPPORT_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <QtGui/QPlatformPrinterSupport>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
-
-class QXcbIntegration : public QPlatformIntegration
+class QWindowsPrinterSupport : public QPlatformPrinterSupport
 {
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode);
+    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode);
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-
-private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
-
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
+    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    virtual QPrinterInfo defaultPrinter();
+    virtual QList<QPrinterInfo> availablePrinters();
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QWINDOWSPRINTERSUPPORT_H

@@ -100,8 +100,7 @@ win32:!qpa {
         SOURCES += \
                 painting/qcolormap_win.cpp \
                 painting/qpaintdevice_win.cpp \
-                painting/qprintengine_win.cpp \
-                painting/qprinterinfo_win.cpp
+                painting/qprintengine_win.cpp
 
         !win32-borland:!wince*:LIBS += -lmsimg32
 }
@@ -139,9 +138,11 @@ unix:!mac:!symbian {
 }
 
 qpa {
+        HEADERS += painting/qplatformprintersupport_qpa.h
         SOURCES += \
                 painting/qcolormap_qpa.cpp \
-                painting/qpaintdevice_qpa.cpp
+                painting/qpaintdevice_qpa.cpp \
+                painting/qplatformprintersupport_qpa.cpp
 }
 
 symbian {

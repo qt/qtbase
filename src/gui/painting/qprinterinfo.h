@@ -77,6 +77,7 @@ private:
     QPrinterInfo(const QString &name);
 
 private:
+    friend class QPlatformPrinterSupport;
     Q_DECLARE_PRIVATE(QPrinterInfo)
     QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
 };

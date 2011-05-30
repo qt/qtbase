@@ -42,6 +42,9 @@
 #ifndef QPRINTERINFO_UNIX_P_H
 #define QPRINTERINFO_UNIX_P_H
 
+#include <QtGui/qprinter.h>
+#include <QtCore/qstringlist.h>
+
 #ifndef QT_NO_NIS
 #  ifndef BOOL_DEFINED
 #    define BOOL_DEFINED
@@ -117,6 +120,8 @@ void qt_parseEtcLpMember(QList<QPrinterDescription> *printers);
 void qt_parseSpoolInterface(QList<QPrinterDescription> *printers);
 void qt_parseQconfig(QList<QPrinterDescription> *printers);
 int qt_getLprPrinters(QList<QPrinterDescription>& printers);
+
+QList<QPrinter::PaperSize> qt_getCupsPrinterPaperSizes(int cupsPrinterIndex);
 
 #endif // QT_NO_PRINTER
 

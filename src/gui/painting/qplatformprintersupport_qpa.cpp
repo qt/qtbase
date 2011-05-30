@@ -1,0 +1,133 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qplatformprintersupport_qpa.h"
+
+#include <QtGui/qprinterinfo.h>
+
+#include <private/qprinterinfo_p.h>
+
+#ifndef QT_NO_PRINTER
+
+QT_BEGIN_NAMESPACE
+
+QPlatformPrinterSupport::QPlatformPrinterSupport()
+{
+}
+
+QPlatformPrinterSupport::~QPlatformPrinterSupport()
+{
+}
+
+QPrintEngine *QPlatformPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode)
+{
+    return 0;
+}
+
+QPaintEngine *QPlatformPrinterSupport::createPaintEngine(QPrintEngine *, QPrinter::PrinterMode)
+{
+    return 0;
+}
+
+QList<QPrinter::PaperSize> QPlatformPrinterSupport::supportedPaperSizes(const QPrinterInfo &) const
+{
+    return QList<QPrinter::PaperSize>();
+}
+
+QList<QPrinterInfo> QPlatformPrinterSupport::availablePrinters()
+{
+    return QList<QPrinterInfo>();
+}
+
+QPrinterInfo QPlatformPrinterSupport::defaultPrinter()
+{
+    const QList<QPrinterInfo> printers = availablePrinters();
+    foreach (const QPrinterInfo &printerInfo, printers) {
+        if (printerInfo.isDefault())
+            return printerInfo;
+    }
+    return printers.isEmpty() ? QPrinterInfo() : printers.front();
+}
+
+QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName, bool isDefault)
+{
+    QPrinterInfo pi = QPrinterInfo(printerName);
+    pi.d_func()->isDefault = isDefault;
+    return pi;
+}
+
+void QPlatformPrinterSupport::setPrinterInfoDefault(QPrinterInfo *p, bool isDefault)
+{
+    p->d_func()->isDefault = isDefault;
+}
+
+bool QPlatformPrinterSupport::printerInfoIsDefault(const QPrinterInfo &p)
+{
+    return p.d_func()->isDefault;
+}
+
+int QPlatformPrinterSupport::printerInfoCupsPrinterIndex(const QPrinterInfo &p)
+{
+    int i = -1;
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (!p.isNull())
+        return i = p.d_func()->cupsPrinterIndex;
+#endif
+#endif
+    Q_UNUSED(p)
+    return i;
+}
+
+void QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index)
+{
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    p->d_func()->cupsPrinterIndex = index;
+#endif
+#endif
+    Q_UNUSED(p)
+    Q_UNUSED(index)
+}
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER

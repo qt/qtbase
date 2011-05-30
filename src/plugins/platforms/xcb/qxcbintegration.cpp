@@ -46,6 +46,8 @@
 #include "qxcbwindowsurface.h"
 #include "qxcbnativeinterface.h"
 
+#include <qgenericunixprintersupport.h>
+
 #include <xcb/xcb.h>
 
 #include <private/qpixmap_raster_p.h>
@@ -59,7 +61,7 @@
 #endif
 
 QXcbIntegration::QXcbIntegration()
-    : m_connection(new QXcbConnection)
+    : m_connection(new QXcbConnection), m_printerSupport(new QGenericUnixPrinterSupport)
 {
     foreach (QXcbScreen *screen, m_connection->screens())
         m_screens << screen;
@@ -147,4 +149,9 @@ bool QXcbIntegration::hasOpenGL() const
 QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
 {
     return m_nativeInterface;
+}
+
+QPlatformPrinterSupport *QXcbIntegration::printerSupport() const
+{
+    return m_printerSupport;
 }

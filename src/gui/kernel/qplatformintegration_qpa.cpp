@@ -43,6 +43,7 @@
 
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
+#include <QtGui/QPlatformPrinterSupport>
 
 QT_BEGIN_NAMESPACE
 
@@ -218,8 +219,19 @@ bool QPlatformIntegration::hasCapability(Capability cap) const
     return false;
 }
 
+/*!
 
+    Returns the platform's printing support.
 
+    \since 5.0
+*/
 
+QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
+{
+    static QPlatformPrinterSupport *ps = 0;
+    if (!ps)
+        ps = new QPlatformPrinterSupport;
+    return ps;
+}
 
 QT_END_NAMESPACE

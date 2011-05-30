@@ -60,7 +60,7 @@ class QPlatformEventLoopIntegration;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
-
+class QPlatformPrinterSupport;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -98,6 +98,8 @@ public:
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
+
+    virtual QPlatformPrinterSupport *printerSupport() const;
 };
 
 QT_END_NAMESPACE

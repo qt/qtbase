@@ -30,6 +30,9 @@
 
 #ifndef QT_NO_PRINTER
 
+#include <private/qguiapplication_p.h>
+#include <QtGui/QPlatformPrinterSupport>
+
 QT_BEGIN_NAMESPACE
 
 QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
@@ -167,6 +170,29 @@ bool QPrinterInfo::isDefault() const
     Not all printer drivers support this query, so the list may be empty.
     On Mac OS X 10.3, this function always returns an empty list.
 */
+
+#ifdef Q_WS_QPA
+QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
+{
+    const Q_D(QPrinterInfo);
+    if (!isNull() && !d->hasPaperSizes) {
+        d->paperSizes = QGuiApplicationPrivate::platformIntegration()->printerSupport()->supportedPaperSizes(*this);
+        d->hasPaperSizes = true;
+    }
+    return d->paperSizes;
+}
+
+QList<QPrinterInfo> QPrinterInfo::availablePrinters()
+{
+    return QGuiApplicationPrivate::platformIntegration()->printerSupport()->availablePrinters();
+}
+
+QPrinterInfo QPrinterInfo::defaultPrinter()
+{
+    return QGuiApplicationPrivate::platformIntegration()->printerSupport()->defaultPrinter();
+}
+
+#endif //Q_WS_QPA
 
 QT_END_NAMESPACE
 
