@@ -52,6 +52,7 @@
 #include <sys/shm.h>
 
 #include <stdio.h>
+#include <errno.h>
 
 #include <qdebug.h>
 #include <qpainter.h>
@@ -97,9 +98,13 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
                                           ~0,
                                           0);
 
-    m_shm_info.shmid = shmget (IPC_PRIVATE,
-          m_xcb_image->stride * m_xcb_image->height, IPC_CREAT|0777);
-
+    int segmentSize = m_xcb_image->stride * m_xcb_image->height;
+    int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0777);
+    if (id == -1)
+        qWarning("QXcbShmImage: shmget() failed (%d) for size %d (%dx%d)",
+                 errno, segmentSize, size.width(), size.height());
+    else
+        m_shm_info.shmid = id;
     m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat (m_shm_info.shmid, 0, 0);
     m_shm_info.shmseg = xcb_generate_id(xcb_connection());
 
