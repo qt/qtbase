@@ -160,6 +160,10 @@ enum LineDrawMode {
     LineDrawIncludeLastPixel
 };
 
+static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
+                                   ProcessSpans pen_func, ProcessSpans brush_func,
+                                   QSpanData *pen_data, QSpanData *brush_data);
+
 struct QRasterFloatPoint {
     qreal x;
     qreal y;
@@ -3030,6 +3034,19 @@ QRasterPaintEnginePrivate::getBrushFunc(const QRectF &rect,
     return isUnclipped(rect, 0) ? data->unclipped_blend : data->blend;
 }
 
+inline ProcessSpans
+QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
+                                      const QSpanData *data) const
+{
+    Q_Q(const QRasterPaintEngine);
+    const QRasterPaintEngineState *s = q->state();
+
+    if (!s->flags.fast_pen && s->matrix.type() > QTransform::TxTranslate)
+        return data->blend;
+    const int penWidth = s->flags.fast_pen ? 1 : qCeil(s->lastPen.widthF());
+    return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
+}
+
 /*!
    \reimp
 */
@@ -3314,6 +3331,30 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
 */
 void QRasterPaintEngine::drawEllipse(const QRectF &rect)
 {
+    Q_D(QRasterPaintEngine);
+    QRasterPaintEngineState *s = state();
+
+    ensurePen();
+    if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
+           || (qpen_style(s->lastPen) == Qt::NoPen))
+        && !s->flags.antialiased
+        && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
+        && !rect.isEmpty()
+        && s->matrix.type() <= QTransform::TxScale) // no shear
+    {
+        ensureBrush();
+        const QRectF r = s->matrix.mapRect(rect);
+        ProcessSpans penBlend = d->getPenFunc(r, &s->penData);
+        ProcessSpans brushBlend = d->getBrushFunc(r, &s->brushData);
+        const QRect brect = QRect(int(r.x()), int(r.y()),
+                                  int_dim(r.x(), r.width()),
+                                  int_dim(r.y(), r.height()));
+        if (brect == r) {
+            drawEllipse_midpoint_i(brect, d->deviceRect, penBlend, brushBlend,
+                                   &s->penData, &s->brushData);
+            return;
+        }
+    }
     QPaintEngineEx::drawEllipse(rect);
 }
 
@@ -4998,6 +5039,125 @@ void QSpanData::initTexture(const QImage *image, int alpha, QTextureData::Type _
     adjustSpanMethods();
 }
 
+/*!
+    \internal
+    \a x and \a y is relative to the midpoint of \a rect.
+*/
+static inline void drawEllipsePoints(int x, int y, int length,
+                                     const QRect &rect,
+                                     const QRect &clip,
+                                     ProcessSpans pen_func, ProcessSpans brush_func,
+                                     QSpanData *pen_data, QSpanData *brush_data)
+{
+    if (length == 0)
+        return;
+
+    QT_FT_Span outline[4];
+    const int midx = rect.x() + (rect.width() + 1) / 2;
+    const int midy = rect.y() + (rect.height() + 1) / 2;
+
+    x = x + midx;
+    y = midy - y;
+
+    // topleft
+    outline[0].x = midx + (midx - x) - (length - 1) - (rect.width() & 0x1);
+    outline[0].len = qMin(length, x - outline[0].x);
+    outline[0].y = y;
+    outline[0].coverage = 255;
+
+    // topright
+    outline[1].x = x;
+    outline[1].len = length;
+    outline[1].y = y;
+    outline[1].coverage = 255;
+
+    // bottomleft
+    outline[2].x = outline[0].x;
+    outline[2].len = outline[0].len;
+    outline[2].y = midy + (midy - y) - (rect.height() & 0x1);
+    outline[2].coverage = 255;
+
+    // bottomright
+    outline[3].x = x;
+    outline[3].len = length;
+    outline[3].y = outline[2].y;
+    outline[3].coverage = 255;
+
+    if (brush_func && outline[0].x + outline[0].len < outline[1].x) {
+        QT_FT_Span fill[2];
+
+        // top fill
+        fill[0].x = outline[0].x + outline[0].len - 1;
+        fill[0].len = qMax(0, outline[1].x - fill[0].x);
+        fill[0].y = outline[1].y;
+        fill[0].coverage = 255;
+
+        // bottom fill
+        fill[1].x = outline[2].x + outline[2].len - 1;
+        fill[1].len = qMax(0, outline[3].x - fill[1].x);
+        fill[1].y = outline[3].y;
+        fill[1].coverage = 255;
+
+        int n = (fill[0].y >= fill[1].y ? 1 : 2);
+        n = qt_intersect_spans(fill, n, clip);
+        if (n > 0)
+            brush_func(n, fill, brush_data);
+    }
+    if (pen_func) {
+        int n = (outline[1].y >= outline[2].y ? 2 : 4);
+        n = qt_intersect_spans(outline, n, clip);
+        if (n > 0)
+            pen_func(n, outline, pen_data);
+    }
+}
+
+/*!
+    \internal
+    Draws an ellipse using the integer point midpoint algorithm.
+*/
+static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
+                                   ProcessSpans pen_func, ProcessSpans brush_func,
+                                   QSpanData *pen_data, QSpanData *brush_data)
+{
+    const qreal a = qreal(rect.width()) / 2;
+    const qreal b = qreal(rect.height()) / 2;
+    qreal d = b*b - (a*a*b) + 0.25*a*a;
+
+    int x = 0;
+    int y = (rect.height() + 1) / 2;
+    int startx = x;
+
+    // region 1
+    while (a*a*(2*y - 1) > 2*b*b*(x + 1)) {
+        if (d < 0) { // select E
+            d += b*b*(2*x + 3);
+            ++x;
+        } else {     // select SE
+            d += b*b*(2*x + 3) + a*a*(-2*y + 2);
+            drawEllipsePoints(startx, y, x - startx + 1, rect, clip,
+                              pen_func, brush_func, pen_data, brush_data);
+            startx = ++x;
+            --y;
+        }
+    }
+    drawEllipsePoints(startx, y, x - startx + 1, rect, clip,
+                      pen_func, brush_func, pen_data, brush_data);
+
+    // region 2
+    d = b*b*(x + 0.5)*(x + 0.5) + a*a*((y - 1)*(y - 1) - b*b);
+    const int miny = rect.height() & 0x1;
+    while (y > miny) {
+        if (d < 0) { // select SE
+            d += b*b*(2*x + 2) + a*a*(-2*y + 3);
+            ++x;
+        } else {     // select S
+            d += a*a*(-2*y + 3);
+        }
+        --y;
+        drawEllipsePoints(x, y, 1, rect, clip,
+                          pen_func, brush_func, pen_data, brush_data);
+    }
+}
 
 /*!
     \fn void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)

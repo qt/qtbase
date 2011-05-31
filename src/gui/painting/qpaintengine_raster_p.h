@@ -327,6 +327,7 @@ public:
     bool isUnclipped_normalized(const QRect &rect) const;
     bool isUnclipped(const QRect &rect, int penWidth) const;
     bool isUnclipped(const QRectF &rect, int penWidth) const;
+    ProcessSpans getPenFunc(const QRectF &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRect &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRectF &rect, const QSpanData *data) const;
 
