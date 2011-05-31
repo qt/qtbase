@@ -80,8 +80,8 @@ Q_GUI_EXPORT bool qt_is_gui_used = true;
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
-int QGuiApplicationPrivate::keyboard_input_time = 0;
-int QGuiApplicationPrivate::mouse_double_click_time = 0;
+int QGuiApplicationPrivate::keyboard_input_time = 400;
+int QGuiApplicationPrivate::mouse_double_click_time = 400;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 
