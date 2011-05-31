@@ -74,6 +74,7 @@ LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync
 
 include (../fontdatabases/genericunix/genericunix.pri)
 include (../printersupport/genericunix/genericunix.pri)
+include (../dnd/dnd.pri)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

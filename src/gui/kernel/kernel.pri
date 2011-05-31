@@ -42,6 +42,7 @@ qpa {
                 kernel/qwindowsysteminterface_qpa.h \
                 kernel/qwindowsysteminterface_qpa_p.h \
                 kernel/qplatformintegration_qpa.h \
+                kernel/qplatformdrag_qpa.h \
                 kernel/qplatformscreen_qpa.h \
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \

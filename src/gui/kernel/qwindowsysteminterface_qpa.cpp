@@ -42,6 +42,7 @@
 #include "qwindowsysteminterface_qpa_p.h"
 #include "private/qguiapplication_p.h"
 #include <QAbstractEventDispatcher>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

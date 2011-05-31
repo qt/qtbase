@@ -61,6 +61,7 @@ class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
 class QPlatformPrinterSupport;
+class QPlatformDrag;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -89,6 +90,9 @@ public:
     virtual QPlatformFontDatabase *fontDatabase() const;
 #ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
+#endif
+#ifndef QT_NO_DRAGANDDROP
+    virtual QPlatformDrag *drag() const;
 #endif
 
 // Experimental in mainthread eventloop integration

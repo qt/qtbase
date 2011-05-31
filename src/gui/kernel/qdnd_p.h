@@ -66,6 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QEventLoop;
 class QMouseEvent;
+class QPlatformDrag;
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -142,30 +143,33 @@ public:
     inline QMimeData *dropData()
     { return object ? dragPrivate()->data : platformDropData; }
 
+    void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
+
+    void setCurrentTarget(QObject *target, bool dropped = false);
+    QObject *currentTarget();
+
     QDrag *object;
-    QMimeData *platformDropData;
 
     bool beingCancelled;
     bool restoreCursor;
     bool willDrop;
     QEventLoop *eventLoop;
 
-    void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
-
-    void setCurrentTarget(QObject *target, bool dropped = false);
-    QObject *currentTarget();
-    QWindow *currentWindow;
-
     Qt::DropActions possible_actions;
+    // Shift/Ctrl handling, and final drop status
+    Qt::DropAction global_accepted_action;
 
 private:
+    QMimeData *platformDropData;
+
     Qt::DropAction currentActionForOverrideCursor;
     QObject *currentDropTarget;
+
+    QPlatformDrag *platformDrag;
 
     static QDragManager *instance;
     Q_DISABLE_COPY(QDragManager)
 };
-
 
 
 #endif // !QT_NO_DRAGANDDROP

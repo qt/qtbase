@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,50 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#ifndef QSIMPLEDRAG_H
+#define QSIMPLEDRAG_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#include <qplatformdrag_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
-class QXcbConnection;
-class QSimpleDrag;
+class QMouseEvent;
+class QWindow;
 
-class QXcbIntegration : public QPlatformIntegration
+class QDropData;
+
+class QSimpleDrag : public QPlatformDrag
 {
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    QSimpleDrag();
+    ~QSimpleDrag();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
+    virtual QMimeData *platformDropData();
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+//    virtual Qt::DropAction drag(QDrag *);
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformDrag *drag() const;
-
+    virtual void cancel();
+    virtual void move(const QMouseEvent *me);
+    virtual void drop(const QMouseEvent *me);
 private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
+    QDropData *m_dropData;
 
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
-    QSimpleDrag *m_drag;
+    QWindow *currentWindow;
 };
 
 QT_END_NAMESPACE

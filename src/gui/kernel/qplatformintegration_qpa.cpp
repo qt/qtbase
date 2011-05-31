@@ -44,6 +44,7 @@
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
 #include <QtGui/QPlatformPrinterSupport>
+#include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -105,6 +106,13 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
     return clipboard;
 }
 
+#endif
+
+#ifndef QT_NO_DRAGANDDROP
+QPlatformDrag *QPlatformIntegration::drag() const
+{
+    return 0;
+}
 #endif
 
 QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
