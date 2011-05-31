@@ -73,6 +73,8 @@
 #include "../eglconvenience/qxlibeglintegration.h"
 #endif
 
+#define XCOORD_MAX 16383
+
 //#ifdef NET_WM_STATE_DEBUG
 
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
@@ -840,6 +842,7 @@ void QXcbWindow::propagateSizeHints()
 {
     // update WM_NORMAL_HINTS
     xcb_size_hints_t hints;
+    memset(&hints, 0, sizeof(hints));
 
     QRect rect = geometry();
 
@@ -857,7 +860,9 @@ void QXcbWindow::propagateSizeHints()
         xcb_size_hints_set_min_size(&hints, minimumSize.width(), minimumSize.height());
 
     if (maximumSize.width() < QWINDOWSIZE_MAX || maximumSize.height() < QWINDOWSIZE_MAX)
-        xcb_size_hints_set_max_size(&hints, maximumSize.width(), maximumSize.height());
+        xcb_size_hints_set_max_size(&hints,
+                                    qMin(XCOORD_MAX, maximumSize.width()),
+                                    qMin(XCOORD_MAX, maximumSize.height()));
 
     if (sizeIncrement.width() > 0 || sizeIncrement.height() > 0) {
         xcb_size_hints_set_base_size(&hints, baseSize.width(), baseSize.height());
