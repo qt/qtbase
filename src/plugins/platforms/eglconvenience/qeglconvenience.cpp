@@ -195,7 +195,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QWindowFormat &format, bool highestPixelFormat, int surfaceType)
+EGLConfig q_configFromQWindowFormat(EGLDisplay display, const QWindowFormat &format, bool highestPixelFormat, int surfaceType)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);

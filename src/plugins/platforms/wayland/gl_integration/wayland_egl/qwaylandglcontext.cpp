@@ -47,22 +47,17 @@
 #include "../../../eglconvenience/qeglconvenience.h"
 
 #include <QtGui/QPlatformGLContext>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QWindowFormat>
 #include <QtCore/QMutex>
 
-QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format)
+QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QWindowFormat &format)
     : QPlatformGLContext()
     , mEglDisplay(eglDisplay)
     , mSurface(EGL_NO_SURFACE)
-    , mConfig(q_configFromQPlatformWindowFormat(mEglDisplay,format,true))
+    , mConfig(q_configFromQWindowFormat(mEglDisplay,format,true))
     , mFormat(q_windowFormatFromConfig(mEglDisplay,mConfig))
 {
-    QPlatformGLContext *sharePlatformContext = 0;
-    sharePlatformContext = format.sharedGLContext();
-    mFormat.setSharedContext(sharePlatformContext);
     EGLContext shareEGLContext = EGL_NO_CONTEXT;
-    if (sharePlatformContext)
-        shareEGLContext = static_cast<const QWaylandGLContext*>(sharePlatformContext)->mContext;
 
     eglBindAPI(EGL_OPENGL_ES_API);
 

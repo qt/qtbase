@@ -150,7 +150,7 @@ void QXcbWindow::create()
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->requestedWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,window()->requestedWindowFormat(),true);
+        EGLConfig eglConfig = q_configFromQWindowFormat(eglDisplay,window()->requestedWindowFormat(),true);
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -890,7 +890,7 @@ QPlatformGLContext *QXcbWindow::glContext() const
         that->m_context = new QGLXContext(m_window, m_screen, window()->requestedWindowFormat());
 #elif defined(XCB_USE_EGL)
         EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromQPlatformWindowFormat(display,window()->requestedWindowFormat(),true);
+        EGLConfig config = q_configFromQWindowFormat(display,window()->requestedWindowFormat(),true);
         QVector<EGLint> eglContextAttrs;
         eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
         eglContextAttrs.append(2);

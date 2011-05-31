@@ -43,12 +43,14 @@
 
 #include "../../../eglconvenience/qeglconvenience.h"
 
+#include <QtCore/QDebug>
+#include <QtGui/QWindowContext>
+
 #include <QtOpenGL/QGLContext>
 #include <QtOpenGL/private/qglextensions_p.h>
 
 #include "qwaylandshmsurface.h"
 
-#include <QtCore/QDebug>
 
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
 {
@@ -77,7 +79,7 @@ QWaylandReadbackEglContext::QWaylandReadbackEglContext(QWaylandReadbackEglIntegr
     , mWindow(window)
     , mBuffer(0)
     , mPixmap(0)
-    , mConfig(q_configFromQPlatformWindowFormat(eglIntegration->eglDisplay(),window->widget()->platformWindowFormat(),true,EGL_PIXMAP_BIT))
+    , mConfig(q_configFromQWindowFormat(eglIntegration->eglDisplay(),window->window()->requestedWindowFormat(),true,EGL_PIXMAP_BIT))
     , mPixmapSurface(EGL_NO_SURFACE)
 {
     QVector<EGLint> eglContextAttrs;
@@ -112,7 +114,7 @@ void QWaylandReadbackEglContext::swapBuffers()
 {
     eglSwapBuffers(mEglIntegration->eglDisplay(),mPixmapSurface);
 
-    if (QWindowContext::currentContext().handle() != this) {
+    if (QWindowContext::currentContext()->handle() != this) {
         makeCurrent();
     }
 
@@ -141,7 +143,7 @@ void * QWaylandReadbackEglContext::getProcAddress(const QString &procName)
     return (void *) eglGetProcAddress(procName.toLatin1().data());
 }
 
-QPlatformWindowFormat QWaylandReadbackEglContext::platformWindowFormat() const
+QWindowFormat QWaylandReadbackEglContext::windowFormat() const
 {
     return q_windowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }

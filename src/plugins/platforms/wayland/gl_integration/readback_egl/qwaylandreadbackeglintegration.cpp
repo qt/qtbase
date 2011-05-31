@@ -83,7 +83,7 @@ void QWaylandReadbackEglIntegration::initialize()
 
 QWaylandWindow * QWaylandReadbackEglIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandReadbackEglWindow(widget,this);
+    return new QWaylandReadbackEglWindow(window,this);
 }
 
 EGLDisplay QWaylandReadbackEglIntegration::eglDisplay()

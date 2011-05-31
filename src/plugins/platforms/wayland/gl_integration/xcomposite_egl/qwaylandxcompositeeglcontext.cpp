@@ -46,6 +46,7 @@
 
 #include "wayland-xcomposite-client-protocol.h"
 #include <QtCore/QDebug>
+#include <QtGui/QRegion>
 
 #include "qeglconvenience.h"
 #include "qxlibeglintegration.h"
@@ -58,7 +59,7 @@ QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(QWaylandXCompositeEGL
     , mWindow(window)
     , mBuffer(0)
     , mXWindow(0)
-    , mConfig(q_configFromQPlatformWindowFormat(glxIntegration->eglDisplay(),window->widget()->platformWindowFormat(),true,EGL_WINDOW_BIT))
+    , mConfig(q_configFromQWindowFormat(glxIntegration->eglDisplay(),window->window()->requestedWindowFormat(),true,EGL_WINDOW_BIT))
     , mWaitingForSync(false)
 {
     QVector<EGLint> eglContextAttrs;
@@ -98,7 +99,7 @@ void * QWaylandXCompositeEGLContext::getProcAddress(const QString &procName)
     return (void *)eglGetProcAddress(qPrintable(procName));
 }
 
-QPlatformWindowFormat QWaylandXCompositeEGLContext::platformWindowFormat() const
+QWindowFormat QWaylandXCompositeEGLContext::windowFormat() const
 {
     return q_windowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }

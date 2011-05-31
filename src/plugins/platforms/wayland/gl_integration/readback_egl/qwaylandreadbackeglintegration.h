@@ -48,6 +48,8 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
+#include <QtCore/QEvent>
+#include <QtGui/QCursor>
 
 #include <X11/Xlib.h>
 

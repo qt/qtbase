@@ -44,6 +44,8 @@
 #include "qwaylandscreen.h"
 #include "qwaylandglcontext.h"
 
+#include <QtGui/QWindow>
+
 QWaylandEglWindow::QWaylandEglWindow(QWindow *window)
     : QWaylandWindow(window)
     , mGLContext(0)
@@ -83,7 +85,7 @@ QPlatformGLContext * QWaylandEglWindow::glContext() const
 {
     if (!mGLContext) {
         QWaylandEglWindow *that = const_cast<QWaylandEglWindow *>(this);
-        that->mGLContext = new QWaylandGLContext(mEglIntegration->eglDisplay(),widget()->platformWindowFormat());
+        that->mGLContext = new QWaylandGLContext(mEglIntegration->eglDisplay(),this->window()->requestedWindowFormat());
 
         EGLNativeWindowType window(reinterpret_cast<EGLNativeWindowType>(mWaylandEglWindow));
         EGLSurface surface = eglCreateWindowSurface(mEglIntegration->eglDisplay(),mGLContext->eglConfig(),window,NULL);
@@ -98,7 +100,7 @@ void QWaylandEglWindow::newSurfaceCreated()
     if (mWaylandEglWindow) {
         wl_egl_window_destroy(mWaylandEglWindow);
     }
-    wl_visual *visual = QWaylandScreen::waylandScreenFromWidget(widget())->visual();
+    wl_visual *visual = QWaylandScreen::waylandScreenFromWindow(window())->visual();
     QSize size = geometry().size();
     if (!size.isValid())
         size = QSize(0,0);
