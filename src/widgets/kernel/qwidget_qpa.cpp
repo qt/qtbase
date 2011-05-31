@@ -760,7 +760,9 @@ void QWidgetPrivate::createTLSysExtra()
 {
     Q_Q(QWidget);
     extra->topextra->screenIndex = 0;
-    extra->topextra->window = new QWidgetWindow(q);
+    extra->topextra->window = 0;
+    if ((q->testAttribute(Qt::WA_NativeWindow) || q->isWindow()) && q->windowType() != Qt::Desktop)
+        extra->topextra->window = new QWidgetWindow(q);
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
