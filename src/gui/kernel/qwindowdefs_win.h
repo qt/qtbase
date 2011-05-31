@@ -115,8 +115,6 @@ typedef long HRESULT;
 #endif
 
 typedef struct tagMSG MSG;
-typedef HWND WId;
-
 
 QT_BEGIN_NAMESPACE
 

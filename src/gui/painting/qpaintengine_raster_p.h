@@ -224,10 +224,11 @@ public:
     CGContextRef getCGContext() const;
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     void setDC(HDC hdc);
     HDC getDC() const;
     void releaseDC(HDC hdc) const;
+    static bool clearTypeFontsEnabled();
 #endif
 
     void alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h);
@@ -324,7 +325,7 @@ public:
     QScopedPointer<QOutlineMapper> outlineMapper;
     QScopedPointer<QRasterBuffer>  rasterBuffer;
 
-#if defined (Q_WS_WIN)
+#if defined (Q_OS_WIN)
     HDC hdc;
 #elif defined(Q_WS_MAC)
     CGContextRef cgContext;
@@ -352,7 +353,7 @@ public:
     uint mono_surface : 1;
     uint outlinemapper_xform_dirty : 1;
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     uint isPlain45DegreeRotation : 1;
 #endif
 

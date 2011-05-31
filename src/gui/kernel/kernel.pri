@@ -91,3 +91,5 @@ qpa {
             LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
 }
+
+win32:HEADERS+=kernel/qwindowdefs_win.h

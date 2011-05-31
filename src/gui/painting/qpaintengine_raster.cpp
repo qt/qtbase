@@ -75,7 +75,7 @@
 //   #include "qbezier_p.h"
 #include "qoutlinemapper_p.h"
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #  include <qt_windows.h>
 #  include <qvarlengtharray.h>
 #  include <private/qfontengine_p.h>
@@ -92,7 +92,7 @@
 #  include <private/qfontengine_ft_p.h>
 #endif
 
-#if defined(Q_WS_WIN64)
+#if defined(Q_OS_WIN64)
 #  include <malloc.h>
 #endif
 #include <limits.h>
@@ -118,9 +118,22 @@ void dumpClip(int width, int height, const QClipData *clip);
 // 4 pixels.
 #define int_dim(pos, dim) (int(pos+dim) - int(pos))
 
-#ifdef Q_WS_WIN
-extern bool qt_cleartype_enabled;
-#endif
+#ifdef Q_OS_WIN
+
+static inline bool winClearTypeFontsEnabled()
+{
+    UINT result = 0;
+    SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0);
+    return result == FE_FONTSMOOTHINGCLEARTYPE;
+}
+
+bool QRasterPaintEngine::clearTypeFontsEnabled()
+{
+    static const bool result = winClearTypeFontsEnabled();
+    return result;
+}
+
+#endif // Q_OS_WIN
 
 #ifdef Q_WS_MAC
 extern bool qt_applefontsmoothing_enabled;
@@ -316,7 +329,7 @@ void QRasterPaintEngine::init()
     Q_D(QRasterPaintEngine);
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     d->hdc = 0;
 #endif
 
@@ -462,14 +475,14 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     }
 #endif
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     d->isPlain45DegreeRotation = true;
 #endif
 
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
-#if defined(Q_WS_WIN)
-    else if (qt_cleartype_enabled)
+#if defined(Q_OS_WIN)
+    else if (clearTypeFontsEnabled())
 #elif defined (Q_WS_MAC)
     else if (qt_applefontsmoothing_enabled)
 #else
@@ -570,7 +583,7 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
 
     ensureOutlineMapper();
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     Q_D(QRasterPaintEngine);
     d->isPlain45DegreeRotation = false;
     if (txop >= QTransform::TxRotate) {
@@ -3038,7 +3051,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_OS_WIN) || defined(Q_WS_MAC)
 
     bool drawCached = true;
 
@@ -3054,8 +3067,9 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    QFontEngine::Type fontEngineType = ti.fontEngine->type();
+/*
+    #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    conQFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
         || (s->matrix.type() <= QTransform::TxTranslate
@@ -3064,9 +3078,10 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
             drawCached = false;
     }
 #else
+*/
     if (s->matrix.type() > QTransform::TxTranslate)
         drawCached = false;
-#endif
+// #endif
     if (drawCached) {
         QRasterPaintEngineState *s = state();
 
@@ -3082,14 +3097,14 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_WS_WIN || Q_WS_MAC
+#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_OS_WIN || Q_WS_MAC
     if (s->matrix.type() <= QTransform::TxTranslate
         || (s->matrix.type() == QTransform::TxScale
                 && (qFuzzyCompare(s->matrix.m11(), s->matrix.m22())))) {
         drawGlyphsS60(p, ti);
         return;
     }
-#else // Q_WS_WIN || Q_WS_MAC
+#else // Q_OS_WIN || Q_WS_MAC
 
     QFontEngine *fontEngine = ti.fontEngine;
 
@@ -3314,7 +3329,7 @@ CGContextRef QRasterPaintEngine::getCGContext() const
 }
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 /*!
     \internal
 */
@@ -3630,7 +3645,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     const int rasterPoolInitialSize = MINIMUM_POOL_SIZE;
     int rasterPoolSize = rasterPoolInitialSize;
     unsigned char *rasterPoolBase;
-#if defined(Q_WS_WIN64)
+#if defined(Q_OS_WIN64)
     rasterPoolBase =
         // We make use of setjmp and longjmp in qgrayraster.c which requires
         // 16-byte alignment, hence we hardcode this requirement here..
@@ -3683,7 +3698,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
             rendered_spans += q_gray_rendered_spans(*grayRaster.data());
 
-#if defined(Q_WS_WIN64)
+#if defined(Q_OS_WIN64)
             _aligned_free(rasterPoolBase);
 #else
             if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
@@ -3692,7 +3707,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
             rasterPoolSize = new_size;
             rasterPoolBase =
-#if defined(Q_WS_WIN64)
+#if defined(Q_OS_WIN64)
                 // We make use of setjmp and longjmp in qgrayraster.c which requires
                 // 16-byte alignment, hence we hardcode this requirement here..
                 (unsigned char *) _aligned_malloc(rasterPoolSize, sizeof(void*) * 2);
@@ -3709,7 +3724,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         }
     }
 
-#if defined(Q_WS_WIN64)
+#if defined(Q_OS_WIN64)
     _aligned_free(rasterPoolBase);
 #else
     if (rasterPoolBase != rasterPoolOnStack) // initially on the stack

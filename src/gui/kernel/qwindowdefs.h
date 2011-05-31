@@ -105,9 +105,9 @@ typedef long WId;
 
 #endif // Q_WS_MAC
 
-#if defined(Q_WS_WIN)
-#include <QtGui/qwindowdefs_win.h>
-#endif // Q_WS_WIN
+#if defined(Q_OS_WIN)
+#  include <QtGui/qwindowdefs_win.h>
+#endif // Q_OS_WIN
 
 #if defined(Q_WS_X11)
 
