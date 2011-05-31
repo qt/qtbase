@@ -6414,6 +6414,7 @@ void tst_QGraphicsItem::boundingRegion_data()
 
     QTest::newRow("(0, 0, 10, 10) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(0.0) << QTransform()
                                                                         << QRegion(QRect(0, 0, 10, 10));
+#if 0
     {
         QRegion r;
         r += QRect(0, 0, 6, 2);
@@ -6431,6 +6432,7 @@ void tst_QGraphicsItem::boundingRegion_data()
         r += QRect(6, 9, 4, 1);
         QTest::newRow("(0, 0, 10, 10) | 1.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 10) << qreal(1.0) << QTransform() << r;
     }
+#endif
     QTest::newRow("(0, 0, 10, 0) | 0.0 | identity | {(0, 0, 10, 10)}") << QLineF(0, 0, 10, 0) << qreal(0.0) << QTransform()
                                                                        << QRegion(QRect(0, 0, 10, 1));
     QTest::newRow("(0, 0, 10, 0) | 0.5 | identity | {(0, 0, 10, 1)}") << QLineF(0, 0, 10, 0) << qreal(0.5) << QTransform()
