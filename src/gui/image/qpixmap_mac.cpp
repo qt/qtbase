@@ -648,7 +648,7 @@ void QMacPixmapData::macCreatePixels()
     }
 
     if (pixels)
-        memcpy(base_pixels, pixels, pixelsSize);
+        memcpy(base_pixels, pixels, qMin(pixelsSize, (uint) numBytes));
     pixels = base_pixels;
     pixelsSize = numBytes;
 }
