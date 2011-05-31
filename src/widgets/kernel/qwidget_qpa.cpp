@@ -741,11 +741,8 @@ QWindow *QWidget::windowHandle() const
 {
     Q_D(const QWidget);
     QTLWExtra *extra = d->maybeTopData();
-    if (extra) {
-        if (!extra->window)
-            const_cast<QWidgetPrivate *>(d)->createTLSysExtra();
+    if (extra)
         return extra->window;
-    }
 
     return 0;
 }
