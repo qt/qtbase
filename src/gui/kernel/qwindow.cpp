@@ -154,7 +154,7 @@ void QWindow::setParent(QWindow *parent)
 bool QWindow::isTopLevel() const
 {
     Q_D(const QWindow);
-    return d->parentWindow != 0;
+    return d->parentWindow == 0;
 }
 
 bool QWindow::isModal() const

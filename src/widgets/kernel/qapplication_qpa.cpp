@@ -157,14 +157,7 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
     Q_Q(QApplication);
     QWindow *wnd = QGuiApplicationPrivate::active_window;
     QWidget *tlw = qt_tlw_for_window(wnd);
-    if (!tlw)
-        return;
-    if (modalState()
-        && !qt_try_modal(tlw, QEvent::MouseButtonRelease)
-        && q->activeWindow())
-        q->activeWindow()->activateWindow();
-    else
-        q->setActiveWindow(tlw);
+    q->setActiveWindow(tlw);
 }
 
 void QApplicationPrivate::closePopup(QWidget *popup)
