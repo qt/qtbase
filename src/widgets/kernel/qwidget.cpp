@@ -1446,7 +1446,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         flags |= Qt::Window;
     }
 
-#ifndef Q_WS_QPA
     if (QWidget *parent = parentWidget()) {
         if (type & Qt::Window) {
             if (!parent->testAttribute(Qt::WA_WState_Created))
@@ -1463,7 +1462,6 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
             return;
         }
     }
-#endif //Q_WS_QPA
 
 #ifdef QT3_SUPPORT
     if (flags & Qt::WStaticContents)
@@ -2495,7 +2493,6 @@ void QWidgetPrivate::createWinId(WId winid)
 #endif
     const bool forceNativeWindow = q->testAttribute(Qt::WA_NativeWindow);
     if (!q->testAttribute(Qt::WA_WState_Created) || (forceNativeWindow && !q->internalWinId())) {
-#ifndef Q_WS_QPA
         if (!q->isWindow()) {
             QWidget *parent = q->parentWidget();
             QWidgetPrivate *pd = parent->d_func();
@@ -2523,11 +2520,6 @@ void QWidgetPrivate::createWinId(WId winid)
         } else {
             q->create();
         }
-#else
-        Q_UNUSED(winid);
-        q->create();
-#endif //Q_WS_QPA
-
     }
 }
 
