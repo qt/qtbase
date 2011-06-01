@@ -1,6 +1,6 @@
 #include "testwidget.h"
 
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 
 //! [0]
 int main( int argc, char *argv[] )

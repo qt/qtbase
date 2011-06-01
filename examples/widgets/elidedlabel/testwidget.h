@@ -1,10 +1,10 @@
 #ifndef TESTWIDGET_H
 #define TESTWIDGET_H
 
-#include <QWidget>
-#include <QStringList>
-#include <QSlider>
-#include <QComboBox>
+#include <QtWidgets/QWidget>
+#include <QtCore/QStringList>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QComboBox>
 
 class ElidedLabel;
 

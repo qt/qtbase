@@ -1,6 +1,6 @@
 # Nokia Qt Examples: elided label example
 
-QT += core gui
+QT += core gui widgets
 
 TARGET = elidedlabel
 TEMPLATE = app
