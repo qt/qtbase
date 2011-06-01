@@ -457,9 +457,9 @@ public:
         : client(0), dataToTransmit(data), doClose(true), doSsl(ssl), ipv6(useipv6),
           multiple(false), totalConnections(0)
     {
-        if( useipv6 ){
+        if (useipv6) {
             listen(QHostAddress::AnyIPv6);
-	}else{
+        } else {
             listen();
         }
         if (thread) {
@@ -2338,8 +2338,9 @@ void tst_QNetworkReply::connectToIPv6Address_data()
     QTest::addColumn<QUrl>("url");
     QTest::addColumn<QNetworkReply::NetworkError>("error");
     QTest::addColumn<QByteArray>("dataToSend");
-    QTest::addColumn<QByteArray>("serverVerifyData");
-    QTest::newRow("localhost") << QUrl(QByteArray("http://[::1]")) << QNetworkReply::NoError<< QByteArray("localhost") << QByteArray("\r\nHost: [::1]\r\n");
+    QTest::addColumn<QByteArray>("hostfield");
+    QTest::newRow("localhost") << QUrl(QByteArray("http://[::1]")) << QNetworkReply::NoError<< QByteArray("localhost") << QByteArray("[::1]");
+    //QTest::newRow("ipv4localhost") << QUrl(QByteArray("http://127.0.0.1")) << QNetworkReply::NoError<< QByteArray("ipv4localhost") << QByteArray("127.0.0.1");
     //to add more test data here
 }
 
@@ -2348,7 +2349,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QFETCH(QUrl, url);
     QFETCH(QNetworkReply::NetworkError, error);
     QFETCH(QByteArray, dataToSend);
-    QFETCH(QByteArray, serverVerifyData);
+    QFETCH(QByteArray, hostfield);
 
     QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
     httpResponse += QByteArray::number(dataToSend.size());
@@ -2366,10 +2367,9 @@ void tst_QNetworkReply::connectToIPv6Address()
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QByteArray content = reply->readAll();
-    if( !serverVerifyData.isEmpty()){
-        //qDebug() << server.receivedData;
-        //QVERIFY(server.receivedData.contains(serverVerifyData)); //got a bug here
-    }
+    //qDebug() << server.receivedData;
+    QByteArray hostinfo = "\r\nHost: " + hostfield + ":" + QByteArray::number(server.serverPort()) + "\r\n";
+    QVERIFY(server.receivedData.contains(hostinfo));
     QVERIFY(content == dataToSend);
     QCOMPARE(reply->url(), request.url());
     QVERIFY(reply->error() == error);

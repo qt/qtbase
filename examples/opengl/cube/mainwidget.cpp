@@ -78,6 +78,8 @@ void MainWidget::timerEvent(QTimerEvent *e)
 
 void MainWidget::initializeGL()
 {
+    initializeGLFunctions();
+
     qglClearColor(Qt::black);
 
     qDebug() << "Initializing shaders...";

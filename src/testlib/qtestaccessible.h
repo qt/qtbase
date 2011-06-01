@@ -49,8 +49,6 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#define QTEST_ACCESSIBILITY
-
 #define QVERIFY_EVENT(object, child, event) \
     QVERIFY(QTestAccessibility::verifyEvent(object, child, (int)event))
 
@@ -131,9 +129,9 @@ private:
         if (object) {
             QApplication* app = qobject_cast<QApplication*>(object);
             if ( !app )
-                qWarning("QTEST_ACCESSIBILITY: root Object is not a QApplication!");
+                qWarning("%s: root Object is not a QApplication!", Q_FUNC_INFO);
         } else {
-            qWarning("QTEST_ACCESSIBILITY: root Object called with 0 pointer");
+            qWarning("%s: root Object called with 0 pointer", Q_FUNC_INFO);
         }
     }
 

@@ -1996,6 +1996,11 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     QFontCache::instance()->insertEngine(key, fe);
 }
 
+// Needed for fontconfig version < 2.2.97
+#ifndef FC_FAMILYLANG
+#define FC_FAMILYLANG "familylang"
+#endif
+
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
 #if defined(QT_NO_FONTCONFIG)

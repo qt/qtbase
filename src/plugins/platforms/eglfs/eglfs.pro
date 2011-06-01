@@ -2,7 +2,7 @@ TARGET = qeglfs
 TEMPLATE = lib
 CONFIG += plugin
 
-QT += opengl
+QT += opengl core-private gui-private opengl-private
 
 DESTDIR = $$QT.gui.plugins/platforms
 

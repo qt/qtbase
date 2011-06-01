@@ -1,5 +1,5 @@
 TARGET  = qjpeg
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT += core-private
 

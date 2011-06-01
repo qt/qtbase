@@ -21,6 +21,8 @@ GeometryEngine::~GeometryEngine()
 
 void GeometryEngine::init()
 {
+    initializeGLFunctions();
+
 //! [0]
     // Generate 2 VBOs
     glGenBuffers(2, vboIds);

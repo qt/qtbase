@@ -363,6 +363,11 @@ template <typename T> inline void qToLittleEndian(T src, uchar *dest)
 
 #endif // Q_BYTE_ORDER == Q_BIG_ENDIAN
 
+template <> inline quint8 qbswap<quint8>(quint8 source)
+{
+    return source;
+}
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

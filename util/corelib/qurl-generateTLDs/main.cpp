@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         printf("       wget http://mxr.mozilla.org/mozilla-central/source/netwerk/dns/effective_tld_names.dat?raw=1 -O effective_tld_names.dat\n");
         printf("       grep '^[^\\/\\/]' effective_tld_names.dat > effective_tld_names.dat.trimmed\n");
         printf("       %s effective_tld_names.dat.trimmed effective_tld_names.dat.qt\n\n", argv[0]);
-        printf("Now copy the data from effective_tld_names.dat.qt to the file src/network/access/qnetworkcookiejartlds_p.h in your Qt repo\n\n");
+        printf("Now copy the data from effective_tld_names.dat.qt to the file src/corelib/io/qurltlds_p.h in your Qt repo\n\n");
         exit(1);
     }
     QFile file(argv[1]);
@@ -156,6 +156,6 @@ int main(int argc, char **argv) {
     outFile.write(outDataBufferBA);
     outFile.write("};\n");
     outFile.close();
-    printf("data generated to %s . Now copy the data from this file to src/network/access/qnetworkcookiejartlds_p.h in your Qt repo\n", argv[2]);
+    printf("data generated to %s . Now copy the data from this file to src/corelib/io/qurltlds_p.h in your Qt repo\n", argv[2]);
     exit(0);
 }

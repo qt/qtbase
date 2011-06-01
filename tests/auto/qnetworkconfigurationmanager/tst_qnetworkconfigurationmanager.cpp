@@ -357,7 +357,7 @@ void tst_QNetworkConfigurationManager::usedInThread()
     connect(&thread, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     thread.start();
     QTestEventLoop::instance().enterLoop(100); //QTRY_VERIFY could take ~90 seconds to time out in the thread
-    QVERIFY(thread.isFinished());
+    QVERIFY(!QTestEventLoop::instance().timeout());
     qDebug() << "prescan:" << thread.preScanConfigs.count();
     qDebug() << "postscan:" << thread.configs.count();
 
@@ -368,7 +368,9 @@ void tst_QNetworkConfigurationManager::usedInThread()
     QTRY_VERIFY(spy.count() == 1); //wait for scan to complete
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
     QCOMPARE(thread.configs, configs);
-    QCOMPARE(thread.preScanConfigs, preScanConfigs);
+    //Don't compare pre scan configs, because these may be cached and therefore give different results
+    //which makes the test unstable.  The post scan results should have all configurations every time
+    //QCOMPARE(thread.preScanConfigs, preScanConfigs);
 #endif
 }
 

@@ -1,5 +1,5 @@
 TARGET  = qtaccessiblewidgets
-include(../../qpluginbase.pri)
+load(qt_plugin)
 include (../qaccessiblebase.pri)
 
 QT += core-private gui-private widgets-private

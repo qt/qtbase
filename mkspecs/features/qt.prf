@@ -160,7 +160,7 @@ for(QTLIB, $$list($$lower($$unique(QT)))) {
 
 # add include paths for all .depends, since module/application might need f.ex. template specializations etc.
 QT_DEPENDS -= $$QT
-for(QTLIB, $$list($$lower($$unique(QT_DEPENDS)))):INCLUDEPATH += $$INCLUDEPATH $$eval(QT.$${QTLIB}.includes)
+for(QTLIB, $$list($$lower($$unique(QT_DEPENDS)))):INCLUDEPATH *= $$INCLUDEPATH $$eval(QT.$${QTLIB}.includes)
 
 !isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")

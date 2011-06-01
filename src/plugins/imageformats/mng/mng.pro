@@ -1,5 +1,5 @@
 TARGET  = qmng
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QTDIR_build:REQUIRES = "!contains(QT_CONFIG, no-mng)"
 

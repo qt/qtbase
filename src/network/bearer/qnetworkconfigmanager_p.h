@@ -107,7 +107,7 @@ private Q_SLOTS:
     void pollEngines();
 
 private:
-    void startPolling();
+    Q_INVOKABLE void startPolling();
     QTimer *pollTimer;
 
 private:

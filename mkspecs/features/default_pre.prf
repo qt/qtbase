@@ -26,7 +26,11 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
 
     message("Running syncqt for $$PRO_BASENAME in $$OUT_PWD")
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    system("$$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_")
+    system("$$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_") {
+        # success! Nothing to do
+    } else {
+        error("Failed to run: $$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_")
+    }
     unset(QTFWD)
     unset(PRO_BASENAME)
 }

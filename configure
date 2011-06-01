@@ -8471,22 +8471,6 @@ fi
 #-------------------------------------------------------------------------------
 QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-cat >>"$QTMODULE.tmp" <<EOF
-#paths
-QT_SOURCE_TREE = \$\$quote($relpath)
-QT_BUILD_TREE = \$\$quote($outpath)
-QT_BUILD_PARTS = $CFG_BUILD_PARTS
-
-#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
-QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
-QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
-QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
-QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
-
-EOF
-
 # Ensure we can link to uninistalled libraries
 if [ "$XPLATFORM_MINGW" != "yes" ] && [ "$CFG_EMBEDDED" != "nacl" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
     echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$QTMODULE.tmp"
@@ -8537,13 +8521,6 @@ if [ "$CFG_MAC_XARCH" = "no" ]; then
    echo "QMAKE_MAC_XARCH = no" >> "$QTMODULE.tmp"
 fi
 
-#dump the qmake spec
-if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
-   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$QTMODULE.tmp"
-else
-   echo "QMAKESPEC = $XPLATFORM" >> "$QTMODULE.tmp"
-fi
-
 # cmdline args
 cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
 rm -f "$QMAKE_VARS_FILE" 2>/dev/null
@@ -8562,12 +8539,32 @@ fi
 CACHEFILE="$outpath/.qmake.cache"
 [ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
 cat >>"$CACHEFILE.tmp" <<EOF
+#paths
+QT_SOURCE_TREE = \$\$quote($relpath)
+QT_BUILD_TREE = \$\$quote($outpath)
+QT_BUILD_PARTS = $CFG_BUILD_PARTS
+
+#local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
+QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
+QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
+QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
+QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
+QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
+QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
+
 include(\$\$PWD/mkspecs/qmodule.pri)
 CONFIG += $QMAKE_CONFIG dylib create_prl link_prl depend_includepath fix_output_dirs no_private_qt_headers_warning QTDIR_build
 QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
 QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 EOF
+
+#dump the qmake spec
+if [ -d "$outpath/mkspecs/$XPLATFORM" ]; then
+   echo "QMAKESPEC = \$\$QT_BUILD_TREE/mkspecs/$XPLATFORM" >> "$CACHEFILE.tmp"
+else
+   echo "QMAKESPEC = $XPLATFORM" >> "$CACHEFILE.tmp"
+fi
 
 # incrementals
 INCREMENTAL=""

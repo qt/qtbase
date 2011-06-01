@@ -1,6 +1,5 @@
 load(qttest_p4)
 
-CONFIG += qtestlib
 SOURCES += tst_uic.cpp
 TARGET = tst_uic
 

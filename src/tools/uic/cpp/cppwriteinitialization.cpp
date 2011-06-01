@@ -1452,7 +1452,7 @@ void WriteInitialization::writeProperties(const QString &varName,
 
         case DomProperty::Url: {
             const DomUrl* u = p->elementUrl();
-            propertyValue = QString::fromLatin1("QUrl(%1)")
+            propertyValue = QString::fromLatin1("QUrl(QString::fromUtf8(%1))")
                             .arg(fixString(u->elementString()->text(), m_dindent));
             break;
         }

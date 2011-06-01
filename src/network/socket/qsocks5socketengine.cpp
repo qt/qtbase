@@ -1126,6 +1126,8 @@ bool QSocks5SocketEngine::connectInternal()
     if (d->socks5State == QSocks5SocketEnginePrivate::Uninitialized
         && d->socketState != QAbstractSocket::ConnectingState) {
         setState(QAbstractSocket::ConnectingState);
+        //limit buffer in internal socket, data is buffered in the external socket under application control
+        d->data->controlSocket->setReadBufferSize(65536);
         d->data->controlSocket->connectToHost(d->proxyInfo.hostName(), d->proxyInfo.port());
         return false;
     }

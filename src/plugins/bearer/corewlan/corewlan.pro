@@ -1,5 +1,5 @@
 TARGET = qcorewlanbearer
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT = core-private network-private
 LIBS += -framework Foundation -framework SystemConfiguration

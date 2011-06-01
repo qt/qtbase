@@ -108,8 +108,12 @@ struct Q_CORE_EXPORT QUuid
     QUuid(const QString &);
     QUuid(const char *);
     QString toString() const;
-    operator QString() const { return toString(); }
+    operator QString() const { return toString(); } // ### Qt5 remove
+    QUuid(const QByteArray &);
+    QByteArray toByteArray() const;
 #endif
+    QByteArray toRfc4122() const;
+    static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const;
 
     bool operator==(const QUuid &orig) const

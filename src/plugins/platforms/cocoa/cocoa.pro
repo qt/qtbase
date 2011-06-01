@@ -1,5 +1,5 @@
 TARGET = qcocoa
-include(../../qpluginbase.pri)
+load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
 OBJECTIVE_SOURCES = main.mm \

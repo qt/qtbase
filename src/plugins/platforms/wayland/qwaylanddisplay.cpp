@@ -139,16 +139,17 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
+
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    mWindowManagerIntegration = QWaylandWindowManagerIntegration::createIntegration(this);
+#endif
+
     blockingReadEvents();
 
     qRegisterMetaType<uint32_t>("uint32_t");
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
-#endif
-
-#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
-    mWindowManagerIntegration = QWaylandWindowManagerIntegration::createIntegration(this);
 #endif
 
     connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));

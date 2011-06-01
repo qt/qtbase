@@ -1,6 +1,6 @@
 TARGET = qxlib
 
-include(../../qpluginbase.pri)
+load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
 QT += core-private gui-private opengl-private

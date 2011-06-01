@@ -39,12 +39,29 @@ QtCore
  - Removed support for QT_NO_THREAD define for QHostInfo.
  - Optimized plugin loading on ELF platforms.
    Print failure reason at runtime with QT_DEBUG_PLUGINS=1 in environment.
+ - QMutexLocker: improved performence of the non contended case by inlining some function
+ - QThreadStorage: Added possibility to store object by value instead of by pointer [QTBUG-15033]
+ - QThread: fixed few race conditions [QTBUG-17257, QTBUG-15030]
+ - QtConcurrent: added support for c++0x lambda in few functions
+ - QObject: Improved performence of the signal activation
+ - QObject: added ways to connect signals using QMetaMethod
+ - QObject: deprecated qFindChild and qFindChildren
+ - QObject: optimize constructions and destruction of objects
+ - QObject: Qt::BlockingQueuedConnection can handle the return value [QTBUG-10440]
+ - QList/QVector/QStringList: added C++0x initilizer lists constructors.
+ - QVarLenghtArray: added method for consistency with QVector
+ - QStringBuilder: added support for QByteArray
+ - qSwap now uses std::swap, specialized std::swap for our container to work better with stl algoritms
+ - QVariant: deprecated global function qVariantSetValue, qVariantValue, qVariantCanConvert, qVariantFromValue
 
 QtGui
 -----
 
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
  - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
+ - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
+ - QListView diverses optimisations [QTBUG-11438]
+ - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
 
  QtOpenGL
  --------
@@ -53,6 +70,10 @@ QtGui
    OpenGL/ES 2.0 API.
  - Including <QtOpenGL> will not work in combination with GLEW, as
    QGLFunctions will undefine GLEW's defines.
+
+QtScript
+--------
+ - Deprecated qScriptValueFromQMetaObject, qScriptValueToValue, qScriptValueFromValue
 
 
 ****************************************************************************
@@ -136,6 +157,7 @@ Qt for Windows CE
 
 
 - qtconfig
+  * removed Qt3support dependency
 
 
 - qt3to4

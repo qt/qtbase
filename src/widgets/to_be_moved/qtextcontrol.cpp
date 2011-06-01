@@ -677,7 +677,7 @@ void QTextControlPrivate::extendWordwiseSelection(int suggestedNewPosition, qrea
 
     const qreal wordEndX = line.cursorToX(curs.position() - blockPos) + blockCoordinates.x();
 
-    if (mouseXPosition < wordStartX || mouseXPosition > wordEndX)
+    if (!wordSelectionEnabled && (mouseXPosition < wordStartX || mouseXPosition > wordEndX))
         return;
 
     // keep the already selected word even when moving to the left
@@ -1579,8 +1579,10 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
     } else {
-        if (cursor.position() != oldCursorPos)
+        if (cursor.position() != oldCursorPos) {
             emit q->cursorPositionChanged();
+            emit q->microFocusChanged();
+        }
         selectionChanged();
     }
     repaintOldAndNewSelection(oldSelection);

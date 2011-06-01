@@ -1,5 +1,5 @@
 TARGET = qconnmanbearer
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT = core network-private dbus
 

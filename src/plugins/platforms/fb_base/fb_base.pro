@@ -6,7 +6,7 @@
 
 #QT       -= core gui
 TARGET = fb_base
-#include(../../qpluginbase.pri)
+#load(qt_plugin)
 
 DESTDIR = $$QT.gui.plugins/graphicssystems
 

@@ -425,14 +425,11 @@ namespace QT_NAMESPACE {}
 
 #if defined(Q_CC_MSVC) && _MSC_VER >= 1600
 #      define Q_COMPILER_RVALUE_REFS
-#      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
-//#      define Q_COMPILER_VARIADIC_TEMPLATES
-//#      define Q_COMPILER_CLASS_ENUM
-//#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
-//#      define Q_COMPILER_UNICODE_STRINGS
-//#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
+//  MSCV has std::initilizer_list, but do not support the braces initialization
+//#      define Q_COMPILER_INITIALIZER_LISTS
 #  endif
 
 
@@ -524,6 +521,7 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++0x features supported in GCC 4.3: */
 #      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_DECLTYPE
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
@@ -791,6 +789,7 @@ namespace QT_NAMESPACE {}
 #    if __INTEL_COMPILER >= 1100
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DECLTYPE
 #    elif __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
@@ -2791,6 +2790,12 @@ QT_LICENSED_MODULE(Sensors)
     && !(defined(Q_WS_QPA))
 #  define QT_NO_RAWFONT
 #endif
+
+namespace QtPrivate {
+//like std::enable_if
+template <bool B, typename T = void> struct QEnableIf;
+template <typename T> struct QEnableIf<true, T> { typedef T Type; };
+}
 
 QT_END_NAMESPACE
 QT_END_HEADER

@@ -641,6 +641,8 @@ Q_OUTOFLINE_TEMPLATE QList<T> QList<T>::mid(int pos, int alength) const
     if (pos == 0 && alength == size())
         return *this;
     QList<T> cpy;
+    if (alength <= 0)
+        return cpy;
     cpy.reserve(alength);
     cpy.d->end = alength;
     QT_TRY {

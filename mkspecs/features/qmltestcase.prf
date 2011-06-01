@@ -1,20 +1,6 @@
 CONFIG += testcase
 
-!symbian {
-    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtQuickTest
-} else {
-    load(data_caging_paths)
-
-    INCLUDEPATH+=$$MW_LAYER_PUBLIC_EXPORT_PATH(QtQuickTest)
-}
-
-QT += declarative
-
-win32:CONFIG(debug, debug|release) {
-    LIBS += -lQtQuickTest$${QT_LIBINFIX}d
-} else {
-    LIBS += -lQtQuickTest$${QT_LIBINFIX}
-}
+QT += declarative qmltest
 
 # If the .pro file specified an IMPORTPATH, then add that to
 # the command-line when the test is run.

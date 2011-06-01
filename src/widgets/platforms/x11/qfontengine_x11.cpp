@@ -1205,7 +1205,9 @@ QFontEngine *QFontEngineX11FT::cloneWithSize(qreal pixelSize) const
         delete fe;
         return 0;
     } else {
+#ifndef QT_NO_XRENDER
         fe->xglyph_format = xglyph_format;
+#endif
         return fe;
     }
 }

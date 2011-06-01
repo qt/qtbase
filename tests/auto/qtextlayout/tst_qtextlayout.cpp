@@ -127,6 +127,8 @@ private slots:
     void textWithSurrogates_qtbug15679();
     void textWidthWithStackedTextEngine();
     void textWidthWithLineSeparator();
+    void cursorInLigatureWithMultipleLines();
+    void xToCursorForLigatures();
 
 private:
     QFont testFont;
@@ -1458,6 +1460,46 @@ void tst_QTextLayout::textWidthWithLineSeparator()
     line1.setLineWidth(0x1000);
     line2.setLineWidth(0x1000);
     QCOMPARE(line1.naturalTextWidth(), line2.naturalTextWidth());
+}
+
+void tst_QTextLayout::cursorInLigatureWithMultipleLines()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("This test can not be run on Mac", SkipAll);
+#endif
+    QTextLayout layout("first line finish", QFont("Times", 20));
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(70);
+    line = layout.createLine();
+    layout.endLayout();
+
+    // The second line will be "finish", with "fi" as a ligature
+    QVERIFY(line.cursorToX(0) != line.cursorToX(1));
+}
+
+void tst_QTextLayout::xToCursorForLigatures()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("This test can not be run on Mac", SkipAll);
+#endif
+    QTextLayout layout("fi", QFont("Times", 20));
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    QVERIFY(line.xToCursor(0) != line.xToCursor(line.naturalTextWidth() / 2));
+
+    // U+0061 U+0308
+    QTextLayout layout2(QString::fromUtf8("\x61\xCC\x88"), QFont("Times", 20));
+
+    layout2.beginLayout();
+    line = layout2.createLine();
+    layout2.endLayout();
+
+    qreal width = line.naturalTextWidth();
+    QVERIFY(line.xToCursor(0) == line.xToCursor(width / 2) ||
+            line.xToCursor(width) == line.xToCursor(width / 2));
 }
 
 QTEST_MAIN(tst_QTextLayout)

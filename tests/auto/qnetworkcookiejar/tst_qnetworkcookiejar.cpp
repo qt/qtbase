@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QNetworkCookieJar>
-#include "private/qnetworkcookiejar_p.h"
+#include "private/qtldurl_p.h"
 
 class tst_QNetworkCookieJar: public QObject
 {
@@ -438,7 +438,7 @@ void tst_QNetworkCookieJar::effectiveTLDs()
 #endif
     QFETCH(QString, domain);
     QFETCH(bool, isTLD);
-    QCOMPARE(QNetworkCookieJarPrivate::isEffectiveTLD(domain), isTLD);
+    QCOMPARE(qIsEffectiveTLD(domain), isTLD);
 }
 
 QTEST_MAIN(tst_QNetworkCookieJar)

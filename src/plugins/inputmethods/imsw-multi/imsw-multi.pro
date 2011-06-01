@@ -1,5 +1,5 @@
 TARGET   = qimsw-multi
-include(../../qpluginbase.pri)
+load(qt_plugin)
 CONFIG      += warn_on
 QT += widgets
 

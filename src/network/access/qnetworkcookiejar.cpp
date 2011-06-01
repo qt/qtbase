@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include "qnetworkcookiejar.h"
-#include "qnetworkcookiejartlds_p.h"
 #include "qnetworkcookiejar_p.h"
 
 #include "QtNetwork/qnetworkcookie.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qdatetime.h"
+#include "private/qtldurl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -216,7 +216,7 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
             // the check for effective TLDs makes the "embedded dot" rule from RFC 2109 section 4.3.2
             // redundant; the "leading dot" rule has been relaxed anyway, see above
             // we remove the leading dot for this check
-            if (QNetworkCookieJarPrivate::isEffectiveTLD(domain.remove(0, 1)))
+            if (qIsEffectiveTLD(domain.remove(0, 1)))
                 continue; // not accepted
         }
 
@@ -302,45 +302,6 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     }
 
     return result;
-}
-
-bool QNetworkCookieJarPrivate::isEffectiveTLD(const QString &domain)
-{
-    // for domain 'foo.bar.com':
-    // 1. return if TLD table contains 'foo.bar.com'
-    if (containsTLDEntry(domain))
-        return true;
-
-    if (domain.contains(QLatin1Char('.'))) {
-        int count = domain.size() - domain.indexOf(QLatin1Char('.'));
-        QString wildCardDomain;
-        wildCardDomain.reserve(count + 1);
-        wildCardDomain.append(QLatin1Char('*'));
-        wildCardDomain.append(domain.right(count));
-        // 2. if table contains '*.bar.com',
-        // test if table contains '!foo.bar.com'
-        if (containsTLDEntry(wildCardDomain)) {
-            QString exceptionDomain;
-            exceptionDomain.reserve(domain.size() + 1);
-            exceptionDomain.append(QLatin1Char('!'));
-            exceptionDomain.append(domain);
-            return (! containsTLDEntry(exceptionDomain));
-        }
-    }
-    return false;
-}
-
-bool QNetworkCookieJarPrivate::containsTLDEntry(const QString &entry)
-{
-    int index = qHash(entry) % tldCount;
-    int currentDomainIndex = tldIndices[index];
-    while (currentDomainIndex < tldIndices[index+1]) {
-        QString currentEntry = QString::fromUtf8(tldData + currentDomainIndex);
-        if (currentEntry == entry)
-            return true;
-        currentDomainIndex += qstrlen(tldData + currentDomainIndex) + 1; // +1 for the ending \0
-    }
-    return false;
 }
 
 QT_END_NAMESPACE

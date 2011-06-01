@@ -947,21 +947,16 @@ void tst_QAccessibility::doAction()
 
 void tst_QAccessibility::applicationTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QLatin1String name = QLatin1String("My Name");
     qApp->setApplicationName(name);
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(qApp);
     QCOMPARE(interface->text(QAccessible::Name, 0), name);
     QCOMPARE(interface->role(0), QAccessible::Application);
     delete interface;
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::mainWindowTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QMainWindow mw;
     mw.resize(300, 200);
     mw.show(); // triggers layout
@@ -974,10 +969,6 @@ void tst_QAccessibility::mainWindowTest()
     QCOMPARE(interface->text(QAccessible::Name, 0), name);
     QCOMPARE(interface->role(0), QAccessible::Window);
     delete interface;
-
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 class CounterButton : public QPushButton {
@@ -1295,7 +1286,6 @@ void tst_QAccessibility::tabTest()
 
 void tst_QAccessibility::tabWidgetTest()
 {
-#ifdef QTEST_ACCESSIBILITY
     QTabWidget *tabWidget = new QTabWidget();
     tabWidget->show();
 
@@ -1381,9 +1371,6 @@ void tst_QAccessibility::tabWidgetTest()
     delete interface;
     delete tabWidget;
     QTestAccessibility::clearEvents();
-#else
-    QSKIP("Test needs accessibility support.", SkipAll);
-#endif
 }
 
 void tst_QAccessibility::menuTest()

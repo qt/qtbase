@@ -1,5 +1,5 @@
 TARGET = qwayland
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 QT+=gui-private core-private opengl-private
 

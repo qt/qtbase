@@ -54,6 +54,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qapplication_p.h>
 
 #include <limits.h>
 #include <string.h>
@@ -73,12 +74,18 @@ static int qt_pixmap_serial = 0;
 
 Q_GUI_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
+    if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+        return reinterpret_cast<quint32 *>(static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bits());
+    else
+        return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
 }
 
 Q_GUI_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
+    if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
+        return static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bytesPerLine();
+    else
+        return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
 }
 
 void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)

@@ -24,6 +24,8 @@ HEADERS +=  \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
         io/qurl.h \
+        io/qurltlds_p.h \
+        io/qtldurl_p.h \
         io/qsettings.h \
         io/qsettings_p.h \
         io/qfsfileengine.h \
@@ -41,6 +43,7 @@ SOURCES += \
         io/qbuffer.cpp \
         io/qdatastream.cpp \
         io/qdataurl.cpp \
+        io/qtldurl.cpp \
         io/qdebug.cpp \
         io/qdir.cpp \
         io/qdiriterator.cpp \

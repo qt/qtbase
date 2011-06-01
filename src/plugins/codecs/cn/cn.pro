@@ -1,5 +1,5 @@
 TARGET	 = qcncodecs
-include(../../qpluginbase.pri)
+load(qt_plugin)
 
 CONFIG	+= warn_on
 DESTDIR = $$QT.core.plugins/codecs

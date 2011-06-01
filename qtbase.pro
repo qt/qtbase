@@ -10,26 +10,34 @@ cross_compile: CONFIG += nostrip
 module_qtbase_tests.subdir = tests
 module_qtbase_tests.target = module-qtbase-tests
 module_qtbase_tests.depends = module_qtbase_src
-module_qtbase_tests.CONFIG = no_default_target no_default_install
+module_qtbase_tests.CONFIG = no_default_install
 
 #process the projects
-for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
-    isEqual(PROJECT, examples) {
-       SUBDIRS += examples
-    } else:isEqual(PROJECT, demos) {
-       SUBDIRS += demos
-    } else:isEqual(PROJECT, tests) {
-       module_qtbase_tests.CONFIG -= no_default_target
-    } else:isEqual(PROJECT, libs) {
-       include(src/src.pro)
-    } else:isEqual(PROJECT, qmake) {
-#      SUBDIRS += qmake
-    } else {
-       message(Unknown PROJECT: $$PROJECT)
-    }
+PROJECTS=$$eval($$list($$lower($$unique(QT_BUILD_PARTS))))
+# note that the order matters for these blocks!
+contains(PROJECTS, qmake) {
+    PROJECTS -= qmake
+    # nothing to be done
 }
-
-SUBDIRS += module_qtbase_tests
+contains(PROJECTS, libs) {
+    PROJECTS -= libs
+    include(src/src.pro)
+}
+contains(PROJECTS, examples) {
+    PROJECTS -= examples
+    SUBDIRS += examples
+}
+contains(PROJECTS, demos) {
+    PROJECTS -= demos
+    SUBDIRS += demos
+}
+contains(PROJECTS, tests) {
+    PROJECTS -= tests
+    SUBDIRS += module_qtbase_tests
+}
+!isEmpty(PROJECTS) {
+    message(Unknown PROJECTS: $$PROJECTS)
+}
 
 !symbian: confclean.depends += clean
 confclean.commands =

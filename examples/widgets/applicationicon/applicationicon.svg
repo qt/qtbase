@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" baseProfile="tiny" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 44 44">
+ <defs>
+  <linearGradient id="linearGradient2824" y2="1051.4" gradientUnits="userSpaceOnUse" x2="30.217" y1="1009.4" x1="15.109">
+   <stop stop-color="#41a200" offset="0"/>
+   <stop stop-color="#9be948" offset="0.63897"/>
+   <stop stop-color="#beff61" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient2848" y2="1009.4" gradientUnits="userSpaceOnUse" y1="1053.7" gradientTransform="matrix(0.85714286,0,0,0.85714286,2.1428572,146.19467)" x2="15.085" x1="31.027">
+   <stop stop-color="#41a200" offset="0"/>
+   <stop stop-color="#9be948" offset="0.88602"/>
+   <stop stop-color="#beff61" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g id="layer1" transform="translate(0,-1008.3622)">
+  <path id="rect2816" d="m8.412,1009h27.18c4.106,0,7.412,3.306,7.412,7.412v27.18c0,4.106-3.306,7.412-7.412,7.412h-27.18c-4.106,0-7.412-3-7.412-7v-27.18c0-4.106,3.306-7.412,7.412-7.412z" stroke-linecap="round" stroke-miterlimit="4" stroke-width="0.64300001" fill="url(#linearGradient2824)"/>
+  <path id="rect2816-4" d="m9.353,1011h25.29c3.52,0,6.353,2.833,6.353,6.353v25.29c0,3.519-2.833,6.353-6.353,6.353h-25.29c-3.52-0.1-6.353-2.1-6.353-6.1v-25.29c0-3.519,2.833-6.353,6.353-6.353z" stroke-linecap="round" stroke-miterlimit="4" stroke-width="0.64300001" fill="url(#linearGradient2848)"/>
+  <g id="text2893" font-weight="normal" transform="translate(-1.100281,1010.3622)" font-style="normal" font-stretch="normal" font-size="48px" font-variant="normal" font-family="Cambria Math" fill="#e5ffd5">
+   <path id="path2908" fill="#e5ffd5" d="m11.92,35.44c1.359-1.719,2.672-3.828,3.938-6.328l7.522-14.742c-0.8-3.13-1.54-5.321-2.24-6.586-0.69-1.266-1.76-1.899-3.2-1.899-1.328,0.0000307-2.594,0.6563-3.797,1.969l-1.148-1.266c2.156-2.359,4.289-3.539,6.398-3.539,1.469,0.0000335,2.609,0.418,3.422,1.254,0.8125,0.836,1.492,2.168,2.039,3.996,0.5469,1.828,1.32,5.359,2.32,10.59,1.297,6.828,2.309,11.14,3.035,12.93,0.7265,1.789,1.59,2.684,2.59,2.684,0.7187,0.000002,1.383-0.25,1.992-0.75l0.8906,1.406c-1.547,1.203-2.938,1.805-4.172,1.805-1.75,0-3-0.8984-3.75-2.695-0.75-1.797-1.797-6.633-3.141-14.51h-0.1406c-2.658,5.391-5.258,11.001-7.798,16.831h-4.758z"/>
+  </g>
+ </g>
+</svg>

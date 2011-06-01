@@ -63,9 +63,6 @@ class QNetworkCookieJarPrivate: public QObjectPrivate
 public:
     QList<QNetworkCookie> allCookies;
 
-    static bool Q_AUTOTEST_EXPORT isEffectiveTLD(const QString &domain);
-    static bool containsTLDEntry(const QString &entry);
-
     Q_DECLARE_PUBLIC(QNetworkCookieJar)
 };
 

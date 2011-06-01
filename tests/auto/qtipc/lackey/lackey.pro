@@ -1,16 +1,11 @@
 include(../qsharedmemory/src/src.pri)
 
-QT = core script
-QT += core-private
-
-CONFIG += qtestlib
+QT = core-private script testlib
 
 DESTDIR = ./
 
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
-
-requires(contains(QT_CONFIG,script))
 
 DEFINES	+= QSHAREDMEMORY_DEBUG
 DEFINES	+= QSYSTEMSEMAPHORE_DEBUG

@@ -42,8 +42,95 @@
 #include "quuid.h"
 
 #include "qdatastream.h"
+#include "qendian.h"
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_QUUID_STRING
+template <class Char, class Integral>
+void _q_toHex(Char *&dst, Integral value)
+{
+    static const char digits[] = "0123456789abcdef";
+
+    value = qToBigEndian(value);
+
+    const char* p = reinterpret_cast<const char*>(&value);
+
+    for (uint i = 0; i < sizeof(Integral); ++i, dst += 2) {
+        uint j = (p[i] >> 4) & 0xf;
+        dst[0] = Char(digits[j]);
+        j = p[i] & 0xf;
+        dst[1] = Char(digits[j]);
+    }
+}
+
+template <class Char, class Integral>
+bool _q_fromHex(const Char *&src, Integral &value)
+{
+    value = 0;
+
+    for (uint i = 0; i < sizeof(Integral) * 2; ++i) {
+        int ch = *src++;
+        int tmp;
+        if (ch >= '0' && ch <= '9')
+            tmp = ch - '0';
+        else if (ch >= 'a' && ch <= 'f')
+            tmp = ch - 'a' + 10;
+        else if (ch >= 'A' && ch <= 'F')
+            tmp = ch - 'A' + 10;
+        else
+            return false;
+
+        value = value * 16 + tmp;
+    }
+
+    return true;
+}
+
+template <class Char>
+void _q_uuidToHex(Char *&dst, const uint &d1, const ushort &d2, const ushort &d3, const uchar (&d4)[8])
+{
+    *dst++ = Char('{');
+    _q_toHex(dst, d1);
+    *dst++ = Char('-');
+    _q_toHex(dst, d2);
+    *dst++ = Char('-');
+    _q_toHex(dst, d3);
+    *dst++ = Char('-');
+    for (int i = 0; i < 2; i++)
+        _q_toHex(dst, d4[i]);
+    *dst++ = Char('-');
+    for (int i = 2; i < 8; i++)
+        _q_toHex(dst, d4[i]);
+    *dst = Char('}');
+}
+
+template <class Char>
+bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&d4)[8])
+{
+    if (*src == Char('{'))
+        src++;
+    if (!_q_fromHex(src, d1)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d2)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d3)
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d4[0])
+            || !_q_fromHex(src, d4[1])
+            || *src++ != Char('-')
+            || !_q_fromHex(src, d4[2])
+            || !_q_fromHex(src, d4[3])
+            || !_q_fromHex(src, d4[4])
+            || !_q_fromHex(src, d4[5])
+            || !_q_fromHex(src, d4[6])
+            || !_q_fromHex(src, d4[7])) {
+        return false;
+    }
+
+    return true;
+}
+#endif
 
 /*!
     \class QUuid
@@ -231,49 +318,21 @@ QT_BEGIN_NAMESPACE
 */
 QUuid::QUuid(const QString &text)
 {
-    bool ok;
-    if (text.isEmpty()) {
-        *this = QUuid();
-        return;
-    }
-    QString temp = text.toUpper();
-    if (temp[0] != QLatin1Char('{'))
-        temp = QLatin1Char('{') + text;
-    if (text[(int)text.length()-1] != QLatin1Char('}'))
-        temp += QLatin1Char('}');
-
-    data1 = temp.mid(1, 8).toULongLong(&ok, 16);
-    if (!ok) {
+    if (text.length() < 36) {
         *this = QUuid();
         return;
     }
 
-    data2 = temp.mid(10, 4).toUInt(&ok, 16);
-    if (!ok) {
+    const ushort *data = reinterpret_cast<const ushort *>(text.unicode());
+
+    if (*data == '{' && text.length() < 37) {
         *this = QUuid();
         return;
     }
-    data3 = temp.mid(15, 4).toUInt(&ok, 16);
-    if (!ok) {
+
+    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
         *this = QUuid();
         return;
-    }
-    data4[0] = temp.mid(20, 2).toUInt(&ok, 16);
-    if (!ok) {
-        *this = QUuid();
-        return;
-    }
-    data4[1] = temp.mid(22, 2).toUInt(&ok, 16);
-    if (!ok) {
-        *this = QUuid();
-        return;
-    }
-    for (int i = 2; i<8; i++) {
-        data4[i] = temp.mid(25 + (i-2)*2, 2).toUShort(&ok, 16);
-        if (!ok) {
-            *this = QUuid();
-            return;
-        }
     }
 }
 
@@ -282,9 +341,89 @@ QUuid::QUuid(const QString &text)
 */
 QUuid::QUuid(const char *text)
 {
-    *this = QUuid(QString::fromLatin1(text));
+    if (!text) {
+        *this = QUuid();
+        return;
+    }
+
+    if (!_q_uuidFromHex(text, data1, data2, data3, data4)) {
+        *this = QUuid();
+        return;
+    }
+}
+
+/*!
+  Creates a QUuid object from the QByteArray \a text, which must be
+  formatted as five hex fields separated by '-', e.g.,
+  "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where 'x' is a hex
+  digit. The curly braces shown here are optional, but it is normal to
+  include them. If the conversion fails, a null UUID is created.  See
+  toByteArray() for an explanation of how the five hex fields map to the
+  public data members in QUuid.
+
+    \since 4.8
+
+    \sa toByteArray(), QUuid()
+*/
+QUuid::QUuid(const QByteArray &text)
+{
+    if (text.length() < 36) {
+        *this = QUuid();
+        return;
+    }
+
+    const char *data = text.constData();
+
+    if (*data == '{' && text.length() < 37) {
+        *this = QUuid();
+        return;
+    }
+
+    if (!_q_uuidFromHex(data, data1, data2, data3, data4)) {
+        *this = QUuid();
+        return;
+    }
 }
 #endif
+
+/*!
+  Creates a QUuid object from the binary representation of the UUID, as
+  specified by RFC 4122 section 4.1.2. See toRfc4122() for a further
+  explanation of the order of bytes required.
+
+  The byte array accepted is NOT a human readable format.
+
+  If the conversion fails, a null UUID is created.
+
+    \since 4.8
+
+    \sa toRfc4122(), QUuid()
+*/
+QUuid QUuid::fromRfc4122(const QByteArray &bytes)
+{
+    if (bytes.isEmpty() || bytes.length() != 16)
+        return QUuid();
+
+    uint d1;
+    ushort d2, d3;
+    uchar d4[8];
+
+    const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+
+    d1 = qFromBigEndian<quint32>(data);
+    data += sizeof(quint32);
+    d2 = qFromBigEndian<quint16>(data);
+    data += sizeof(quint16);
+    d3 = qFromBigEndian<quint16>(data);
+    data += sizeof(quint16);
+
+    for (int i = 0; i < 8; ++i) {
+        d4[i] = *(data);
+        data++;
+    }
+
+    return QUuid(d1, d2, d3, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]);
+}
 
 /*!
     \fn bool QUuid::operator==(const QUuid &other) const
@@ -307,11 +446,6 @@ QUuid::QUuid(const char *text)
 
     \sa toString()
 */
-
-static QString uuidhex(uint data, int digits)
-{
-    return QString::number(data, 16).rightJustified(digits, QLatin1Char('0'));
-}
 
 /*!
     Returns the string representation of this QUuid. The string is
@@ -349,24 +483,113 @@ static QString uuidhex(uint data, int digits)
 */
 QString QUuid::toString() const
 {
-    QString result;
+    QString result(38, Qt::Uninitialized);
+    ushort *data = (ushort *)result.unicode();
 
-    QChar dash = QLatin1Char('-');
-    result = QLatin1Char('{') + uuidhex(data1,8);
-    result += dash;
-    result += uuidhex(data2,4);
-    result += dash;
-    result += uuidhex(data3,4);
-    result += dash;
-    result += uuidhex(data4[0],2);
-    result += uuidhex(data4[1],2);
-    result += dash;
-    for (int i = 2; i < 8; i++)
-        result += uuidhex(data4[i],2);
+    _q_uuidToHex(data, data1, data2, data3, data4);
 
-    return result + QLatin1Char('}');
+    return result;
+}
+
+/*!
+    Returns the binary representation of this QUuid. The byte array is
+    formatted as five hex fields separated by '-' and enclosed in
+    curly braces, i.e., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where
+    'x' is a hex digit.  From left to right, the five hex fields are
+    obtained from the four public data members in QUuid as follows:
+
+    \table
+    \header
+    \o Field #
+    \o Source
+
+    \row
+    \o 1
+    \o data1
+
+    \row
+    \o 2
+    \o data2
+
+    \row
+    \o 3
+    \o data3
+
+    \row
+    \o 4
+    \o data4[0] .. data4[1]
+
+    \row
+    \o 5
+    \o data4[2] .. data4[7]
+
+    \endtable
+
+    \since 4.8
+*/
+QByteArray QUuid::toByteArray() const
+{
+    QByteArray result(38, Qt::Uninitialized);
+    char *data = result.data();
+
+    _q_uuidToHex(data, data1, data2, data3, data4);
+
+    return result;
 }
 #endif
+
+/*!
+    Returns the binary representation of this QUuid. The byte array is in big
+    endian format, and formatted according to RFC 4122, section 4.1.2 -
+    "Layout and byte order".
+
+    The order is as follows:
+
+    \table
+    \header
+    \o Field #
+    \o Source
+
+    \row
+    \o 1
+    \o data1
+
+    \row
+    \o 2
+    \o data2
+
+    \row
+    \o 3
+    \o data3
+
+    \row
+    \o 4
+    \o data4[0] .. data4[7]
+
+    \endtable
+
+    \since 4.8
+*/
+QByteArray QUuid::toRfc4122() const
+{
+    // we know how many bytes a UUID has, I hope :)
+    QByteArray bytes(16, Qt::Uninitialized);
+    uchar *data = reinterpret_cast<uchar*>(bytes.data());
+
+    qToBigEndian(data1, data);
+    data += sizeof(quint32);
+    qToBigEndian(data2, data);
+    data += sizeof(quint16);
+    qToBigEndian(data3, data);
+    data += sizeof(quint16);
+
+    for (int i = 0; i < 8; ++i) {
+        *(data) = data4[i];
+        data++;
+    }
+
+    return bytes;
+}
 
 #ifndef QT_NO_DATASTREAM
 /*!
@@ -375,11 +598,30 @@ QString QUuid::toString() const
 */
 QDataStream &operator<<(QDataStream &s, const QUuid &id)
 {
-    s << (quint32)id.data1;
-    s << (quint16)id.data2;
-    s << (quint16)id.data3;
-    for (int i = 0; i < 8; i++)
-        s << (quint8)id.data4[i];
+    QByteArray bytes;
+    if (s.byteOrder() == QDataStream::BigEndian) {
+        bytes = id.toRfc4122();
+    } else {
+        // we know how many bytes a UUID has, I hope :)
+        bytes = QByteArray(16, Qt::Uninitialized);
+        uchar *data = reinterpret_cast<uchar*>(bytes.data());
+
+        qToLittleEndian(id.data1, data);
+        data += sizeof(quint32);
+        qToLittleEndian(id.data2, data);
+        data += sizeof(quint16);
+        qToLittleEndian(id.data3, data);
+        data += sizeof(quint16);
+
+        for (int i = 0; i < 8; ++i) {
+            *(data) = id.data4[i];
+            data++;
+        }
+    }
+
+    if (s.writeRawData(bytes.data(), 16) != 16) {
+        s.setStatus(QDataStream::WriteFailed);
+    }
     return s;
 }
 
@@ -389,19 +631,30 @@ QDataStream &operator<<(QDataStream &s, const QUuid &id)
 */
 QDataStream &operator>>(QDataStream &s, QUuid &id)
 {
-    quint32 u32;
-    quint16 u16;
-    quint8 u8;
-    s >> u32;
-    id.data1 = u32;
-    s >> u16;
-    id.data2 = u16;
-    s >> u16;
-    id.data3 = u16;
-    for (int i = 0; i < 8; i++) {
-        s >> u8;
-        id.data4[i] = u8;
+    QByteArray bytes(16, Qt::Uninitialized);
+    if (s.readRawData(bytes.data(), 16) != 16) {
+        s.setStatus(QDataStream::ReadPastEnd);
+        return s;
     }
+
+    if (s.byteOrder() == QDataStream::BigEndian) {
+        id = QUuid::fromRfc4122(bytes);
+    } else {
+        const uchar *data = reinterpret_cast<const uchar *>(bytes.constData());
+
+        id.data1 = qFromLittleEndian<quint32>(data);
+        data += sizeof(quint32);
+        id.data2 = qFromLittleEndian<quint16>(data);
+        data += sizeof(quint16);
+        id.data3 = qFromLittleEndian<quint16>(data);
+        data += sizeof(quint16);
+
+        for (int i = 0; i < 8; ++i) {
+            id.data4[i] = *(data);
+            data++;
+        }
+    }
+
     return s;
 }
 #endif // QT_NO_DATASTREAM

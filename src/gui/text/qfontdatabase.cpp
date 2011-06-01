@@ -879,10 +879,10 @@ QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteA
             TT_OS2 *os2 = (TT_OS2 *)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
             if (os2) {
                 quint32 unicodeRange[4] = {
-                    os2->ulUnicodeRange1, os2->ulUnicodeRange2, os2->ulUnicodeRange3, os2->ulUnicodeRange4
+                    static_cast<quint32>(os2->ulUnicodeRange1), static_cast<quint32>(os2->ulUnicodeRange2), static_cast<quint32>(os2->ulUnicodeRange3), static_cast<quint32>(os2->ulUnicodeRange4)
                 };
                 quint32 codePageRange[2] = {
-                    os2->ulCodePageRange1, os2->ulCodePageRange2
+                    static_cast<quint32>(os2->ulCodePageRange1), static_cast<quint32>(os2->ulCodePageRange2)
                 };
 
                 writingSystems = qt_determine_writing_systems_from_truetype_bits(unicodeRange, codePageRange);

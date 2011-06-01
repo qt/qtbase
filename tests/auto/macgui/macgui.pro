@@ -7,5 +7,7 @@ INCLUDEPATH += .
 SOURCES += tst_macgui.cpp guitest.cpp
 HEADERS += guitest.h
 
+QT = core-private gui-private
+
 requires(mac)
 

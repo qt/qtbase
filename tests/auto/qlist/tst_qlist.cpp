@@ -200,6 +200,9 @@ void tst_QList::mid() const
 
     QCOMPARE(list.mid(3, 3),
              QList<QString>() << "bak" << "buck" << "hello");
+
+    QList<int> list1;
+    QCOMPARE(list1.mid(1, 1).length(), 0);
 }
 
 void tst_QList::at() const
