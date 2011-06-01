@@ -45,6 +45,11 @@
 
 #include <X11/keysym.h>
 
+#ifndef QT_NO_XCB_XKB
+typedef unsigned char KeyCode;
+#include <X11/extensions/XKBcommon.h>
+#endif
+
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QTextCodec>
 
@@ -904,11 +909,79 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     , m_meta_mask(0)
 {
     m_key_symbols = xcb_key_symbols_alloc(xcb_connection());
+    initXkb();
 }
 
 QXcbKeyboard::~QXcbKeyboard()
 {
     xcb_key_symbols_free(m_key_symbols);
+}
+
+void QXcbKeyboard::initXkb()
+{
+#ifndef QT_NO_XCB_XKB
+    struct xkb_rule_names names;
+    names.rules = "evdev";
+    names.model = "pc105";
+    names.layout = "us";
+    names.variant = "";
+    names.options = "";
+    m_xkb = xkb_compile_keymap_from_rules(&names);
+    for (int i = m_xkb->min_key_code; i < m_xkb->max_key_code; ++i) {
+        const uint mask = m_xkb->map->modmap ? m_xkb->map->modmap[i] : 0;
+        if (!mask)
+            continue;
+        for (int j = 0; j < XkbKeyGroupsWidth(m_xkb, i); ++j) {
+            uint32_t keySym = XkbKeySym(m_xkb, i, j);
+            if (keySym)
+                setMask(keySym, mask);
+        }
+    }
+#endif
+}
+
+void QXcbKeyboard::setMask(uint sym, uint mask)
+{
+    if (m_alt_mask == 0
+        && m_meta_mask != mask
+        && m_super_mask != mask
+        && m_hyper_mask != mask
+        && (sym == XK_Alt_L || sym == XK_Alt_R)) {
+        m_alt_mask = mask;
+    }
+    if (m_meta_mask == 0
+        && m_alt_mask != mask
+        && m_super_mask != mask
+        && m_hyper_mask != mask
+        && (sym == XK_Meta_L || sym == XK_Meta_R)) {
+        m_meta_mask = mask;
+    }
+    if (m_super_mask == 0
+        && m_alt_mask != mask
+        && m_meta_mask != mask
+        && m_hyper_mask != mask
+        && (sym == XK_Super_L || sym == XK_Super_R)) {
+        m_super_mask = mask;
+    }
+    if (m_hyper_mask == 0
+        && m_alt_mask != mask
+        && m_meta_mask != mask
+        && m_super_mask != mask
+        && (sym == XK_Hyper_L || sym == XK_Hyper_R)) {
+        m_hyper_mask = mask;
+    }
+    if (m_mode_switch_mask == 0
+        && m_alt_mask != mask
+        && m_meta_mask != mask
+        && m_super_mask != mask
+        && m_hyper_mask != mask
+        && sym == XK_Mode_switch) {
+        m_mode_switch_mask = mask;
+    }
+    if (m_num_lock_mask == 0
+        && sym == XK_Num_Lock) {
+        m_num_lock_mask = mask;
+    }
 }
 
 // #define XCB_KEYBOARD_DEBUG

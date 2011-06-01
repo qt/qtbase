@@ -72,6 +72,10 @@ contains(QT_CONFIG, opengl) {
 
 LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync
 
+DEFINES += $$QMAKE_DEFINES_XCB
+LIBS += $$QMAKE_LIBS_XCB
+QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
+
 include (../fontdatabases/genericunix/genericunix.pri)
 include (../printersupport/genericunix/genericunix.pri)
 include (../dnd/dnd.pri)

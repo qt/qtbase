@@ -70,6 +70,8 @@ private:
     QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
                             int &code, Qt::KeyboardModifiers &modifiers,
                             QByteArray &chars, int &count);
+    void initXkb();
+    void setMask(uint sym, uint mask);
 
     uint m_alt_mask;
     uint m_super_mask;
@@ -79,6 +81,9 @@ private:
     uint m_num_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
+#ifndef QT_NO_XCB_XKB
+    struct xkb_desc *m_xkb;
+#endif
 };
 
 #endif
