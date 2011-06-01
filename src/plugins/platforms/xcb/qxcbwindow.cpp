@@ -118,7 +118,7 @@ void QXcbWindow::create()
         // XCB_CW_BACK_PIXMAP
         XCB_NONE,
         // XCB_CW_OVERRIDE_REDIRECT
-        type == Qt::Popup,
+        type == Qt::Popup || type == Qt::ToolTip,
         // XCB_CW_SAVE_UNDER
         type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
         // XCB_CW_EVENT_MASK
