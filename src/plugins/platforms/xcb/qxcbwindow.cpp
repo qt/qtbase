@@ -94,6 +94,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_window(0)
     , m_context(0)
     , m_syncCounter(0)
+    , m_mapped(false)
 {
     m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
 
@@ -278,6 +279,7 @@ void QXcbWindow::destroy()
         connection()->removeWindow(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
     }
+    m_mapped = false;
 }
 
 void QXcbWindow::setGeometry(const QRect &rect)
@@ -367,6 +369,8 @@ void QXcbWindow::hide()
                               XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&event));
 
     xcb_flush(xcb_connection());
+
+    m_mapped = false;
 }
 
 struct QtMotifWmHints {
@@ -877,8 +881,10 @@ void QXcbWindow::propagateSizeHints()
 
 void QXcbWindow::requestActivateWindow()
 {
-    Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, XCB_TIME_CURRENT_TIME));
-    connection()->sync();
+    if (m_mapped){
+        Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, XCB_TIME_CURRENT_TIME));
+        connection()->sync();
+    }
 }
 
 QPlatformGLContext *QXcbWindow::glContext() const
@@ -966,6 +972,12 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     if (m_context)
         static_cast<QDri2Context *>(m_context)->resize(rect.size());
 #endif
+}
+
+void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
+{
+    if (event->window == m_window)
+        m_mapped = true;
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)

@@ -10226,18 +10226,26 @@ void tst_QWidget::nativeChildFocus()
     QLineEdit *p2 = new QLineEdit;
     layout->addWidget(p1);
     layout->addWidget(p2);
+#if 1
     p1->setObjectName("p1");
     p2->setObjectName("p2");
+#endif
     w.show();
+#if 1
     w.activateWindow();
     p1->setFocus();
     p1->setAttribute(Qt::WA_NativeWindow);
     p2->setAttribute(Qt::WA_NativeWindow);
     QApplication::processEvents();
     QTest::qWaitForWindowShown(&w);
+    QTest::qWait(10);
 
+    qDebug() << "checking active window:" << QApplication::activeWindow();
     QCOMPARE(QApplication::activeWindow(), &w);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget*>(p1));
+#endif
+
+    QTest::qWait(1000);
 }
 
 QTEST_MAIN(tst_QWidget)

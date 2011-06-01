@@ -83,6 +83,7 @@ public:
     void handleExposeEvent(const xcb_expose_event_t *event);
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event);
+    void handleMapNotifyEvent(const xcb_map_notify_event_t *event);
     void handleButtonPressEvent(const xcb_button_press_event_t *event);
     void handleButtonReleaseEvent(const xcb_button_release_event_t *event);
     void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event);
@@ -127,6 +128,8 @@ private:
 
     bool m_hasReceivedSyncRequest;
     Qt::WindowState m_windowState;
+
+    bool m_mapped;
 };
 
 #endif
