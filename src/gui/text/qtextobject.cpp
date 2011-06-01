@@ -1667,20 +1667,23 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
     \sa QGlyphRun, QTextBlock::layout(), QTextLayout::position(), QPainter::drawGlyphRun()
 */
 #if !defined(QT_NO_RAWFONT)
-QList<QGlyphRun> QTextFragment::glyphRuns() const
+QList<QGlyphRun> QTextFragment::glyphRuns(int pos, int len) const
 {
     if (!p || !n)
         return QList<QGlyphRun>();
 
-    int pos = position();
-    int len = length();
-    if (len == 0)
-        return QList<QGlyphRun>();
-
-    int blockNode = p->blockMap().findNode(pos);
+    int blockNode = p->blockMap().findNode(position());
 
     const QTextBlockData *blockData = p->blockMap().fragment(blockNode);
     QTextLayout *layout = blockData->layout;
+
+    int blockPosition = p->blockMap().position(blockNode);
+    if (pos < 0)
+        pos = position() - blockPosition;
+    if (len < 0)
+        len = length();
+    if (len == 0)
+        return QList<QGlyphRun>();
 
     QList<QGlyphRun> ret;
     for (int i=0; i<layout->lineCount(); ++i) {

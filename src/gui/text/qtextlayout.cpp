@@ -42,6 +42,7 @@
 #include "qtextlayout.h"
 #include "qtextengine_p.h"
 
+#include <qthread.h>
 #include <qfont.h>
 #include <qapplication.h>
 #include <qpainter.h>
@@ -2108,8 +2109,10 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 
 }
 
+#if !defined(QT_NO_RAWFONT)
 static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &glyphLayout,
-                                  const QPointF &pos, const QTextItem::RenderFlags &flags)
+                                  const QPointF &pos, const QTextItem::RenderFlags &flags,
+                                  const QFixed &selectionX, const QFixed &selectionWidth)
 {
     QGlyphRun glyphRun;
 
@@ -2117,6 +2120,7 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     QRawFont font;
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
     fontD->fontEngine = fontEngine;
+    fontD->thread = QThread::currentThread();
     fontD->fontEngine->ref.ref();
 
 #if defined(Q_WS_WIN)
@@ -2151,12 +2155,26 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
                                   positionsArray);
     Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
+    qreal fontHeight = font.ascent() + font.descent();
+    qreal minY;
+    qreal maxY;
     QVector<quint32> glyphs;
     QVector<QPointF> positions;
     for (int i=0; i<glyphsArray.size(); ++i) {
         glyphs.append(glyphsArray.at(i) & 0xffffff);
-        positions.append(positionsArray.at(i).toPointF() + pos);
+
+        QPointF position = positionsArray.at(i).toPointF() + pos;
+        positions.append(position);
+
+        if (i == 0) {
+            maxY = minY = position.y();
+        } else {
+            minY = qMin(minY, position.y());
+            maxY = qMax(maxY, position.y());
+        }
     }
+
+    qreal height = maxY + fontHeight - minY;
 
     glyphRun.setGlyphIndexes(glyphs);
     glyphRun.setPositions(positions);
@@ -2165,6 +2183,8 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
     glyphRun.setUnderline(flags.testFlag(QTextItem::Underline));
     glyphRun.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
     glyphRun.setRawFont(font);
+
+    glyphRun.setBoundingRect(QRectF(selectionX.toReal(), minY, selectionWidth.toReal(), height));
 
     return glyphRun;
 }
@@ -2182,7 +2202,6 @@ static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &g
 
     \sa QTextLayout::glyphRuns()
 */
-#if !defined(QT_NO_RAWFONT)
 QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 {
     const QScriptLine &line = eng->lines[i];
@@ -2196,7 +2215,14 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
     if (length < 0)
         length = textLength();
 
-    QTextLineItemIterator iterator(eng, i);
+    if (length == 0)
+        return QList<QGlyphRun>();
+
+    QTextLayout::FormatRange selection;
+    selection.start = from;
+    selection.length = length;
+
+    QTextLineItemIterator iterator(eng, i, QPointF(), &selection);
     qreal y = line.y.toReal() + line.base().toReal();
     QList<QGlyphRun> glyphRuns;
     while (!iterator.atEnd()) {
@@ -2206,7 +2232,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
         QPointF pos(iterator.x.toReal(), y);
         if (from >= 0 && length >= 0 &&
-            (from >= si.position + eng->length(&si) || from + length <= si.position)) {
+            (from >= si.position + eng->length(&si)
+             || from + length <= si.position
+             || from + length <= iterator.itemStart
+             || from >= iterator.itemEnd)) {
             continue;
         }
 
@@ -2235,19 +2264,22 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                          ? si.num_glyphs - 1
                          : logClusters[relativeTo];
 
+        int itemGlyphsStart = logClusters[iterator.itemStart - si.position];
+        int itemGlyphsEnd = logClusters[iterator.itemEnd - 1 - si.position];
+
         QGlyphLayout glyphLayout = eng->shapedGlyphs(&si);
 
         // Calculate new x position of glyph layout for a subset. This becomes somewhat complex
         // when we're breaking a RTL script item, since the expected position passed into
         // getGlyphPositions() is the left-most edge of the left-most glyph in an RTL run.
         if (relativeFrom != (iterator.itemStart - si.position) && !rtl) {
-            for (int i=0; i<glyphsStart; ++i) {
+            for (int i=itemGlyphsStart; i<glyphsStart; ++i) {
                 QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
                 pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
                                glyphLayout.advances_y[i].toReal());
             }
         } else if (relativeTo != (iterator.itemEnd - si.position - 1) && rtl) {
-            for (int i=glyphLayout.numGlyphs - 1; i>glyphsEnd; --i) {
+            for (int i=itemGlyphsEnd; i>glyphsEnd; --i) {
                 QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
                 pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
                                glyphLayout.advances_y[i].toReal());
@@ -2255,6 +2287,10 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         }
 
         glyphLayout = glyphLayout.mid(glyphsStart, glyphsEnd - glyphsStart + 1);
+
+        QFixed x;
+        QFixed width;
+        iterator.getSelectionBounds(&x, &width);
 
         if (glyphLayout.numGlyphs > 0) {
             QFontEngine *mainFontEngine = font.d->engineForScript(si.analysis.script);
@@ -2270,7 +2306,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
 
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
-                                                      subLayout, pos, flags));
+                                                      subLayout, pos, flags, x, width));
                     for (int i = 0; i < subLayout.numGlyphs; i++) {
                         pos += QPointF(subLayout.advances_x[i].toReal(),
                                        subLayout.advances_y[i].toReal());
@@ -2281,10 +2317,15 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                 }
 
                 QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
-                glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
-                                                  subLayout, pos, flags));
+                QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
+                                                      subLayout, pos, flags, x, width);
+                if (!glyphRun.isEmpty())
+                    glyphRuns.append(glyphRun);
             } else {
-                glyphRuns.append(glyphRunWithInfo(mainFontEngine, glyphLayout, pos, flags));
+                QGlyphRun glyphRun = glyphRunWithInfo(mainFontEngine, glyphLayout, pos, flags, x,
+                                                      width);
+                if (!glyphRun.isEmpty())
+                    glyphRuns.append(glyphRun);
             }
         }
     }

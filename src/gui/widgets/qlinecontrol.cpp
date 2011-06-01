@@ -76,6 +76,28 @@ static int qt_passwordEchoDelay = QT_GUI_PASSWORD_ECHO_DELAY;
 */
 
 /*!
+   \internal
+
+   Updates the internal text layout. Returns the ascent of the
+   created QTextLine.
+*/
+int QLineControl::redoTextLayout() const
+{
+    m_textLayout.clearLayout();
+
+    m_textLayout.beginLayout();
+    QTextLine l = m_textLayout.createLine();
+    m_textLayout.endLayout();
+
+#if defined(Q_WS_MAC)
+    if (m_threadChecks)
+        m_textLayoutThread = QThread::currentThread();
+#endif
+
+    return qRound(l.ascent());
+}
+
+/*!
     \internal
 
     Updates the display text based of the current edit text
@@ -124,15 +146,12 @@ void QLineControl::updateDisplayText(bool forceUpdate)
 
     m_textLayout.setText(str);
 
-    QTextOption option;
+    QTextOption option = m_textLayout.textOption();
     option.setTextDirection(m_layoutDirection);
     option.setFlags(QTextOption::IncludeTrailingSpaces);
     m_textLayout.setTextOption(option);
 
-    m_textLayout.beginLayout();
-    QTextLine l = m_textLayout.createLine();
-    m_textLayout.endLayout();
-    m_ascent = qRound(l.ascent());
+    m_ascent = redoTextLayout();
 
     if (str != orig || forceUpdate)
         emit displayTextChanged(str);
@@ -228,7 +247,7 @@ void QLineControl::del()
     if (hasSelectedText()) {
         removeSelectedText();
     } else {
-        int n = m_textLayout.nextCursorPosition(m_cursor) - m_cursor;
+        int n = textLayout()->nextCursorPosition(m_cursor) - m_cursor;
         while (n--)
             internalDelete();
     }
@@ -357,7 +376,7 @@ void QLineControl::updatePasswordEchoEditing(bool editing)
 */
 int QLineControl::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
 {
-    return m_textLayout.lineAt(0).xToCursor(x, betweenOrOn);
+    return textLayout()->lineAt(0).xToCursor(x, betweenOrOn);
 }
 
 /*!
@@ -368,7 +387,7 @@ int QLineControl::xToPos(int x, QTextLine::CursorPosition betweenOrOn) const
 */
 QRect QLineControl::cursorRect() const
 {
-    QTextLine l = m_textLayout.lineAt(0);
+    QTextLine l = textLayout()->lineAt(0);
     int c = m_cursor;
     if (m_preeditCursor != -1)
         c += m_preeditCursor;
@@ -578,14 +597,14 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
     }
 
     if (flags & DrawText)
-        m_textLayout.draw(painter, offset, selections, clip);
+        textLayout()->draw(painter, offset, selections, clip);
 
     if (flags & DrawCursor){
         int cursor = m_cursor;
         if (m_preeditCursor != -1)
             cursor += m_preeditCursor;
         if (!m_hideCursor && (!m_blinkPeriod || m_blinkStatus))
-            m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
+            textLayout()->drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
 
@@ -601,10 +620,10 @@ void QLineControl::selectWordAtPos(int cursor)
     int next = cursor + 1;
     if(next > end())
         --next;
-    int c = m_textLayout.previousCursorPosition(next, QTextLayout::SkipWords);
+    int c = textLayout()->previousCursorPosition(next, QTextLayout::SkipWords);
     moveCursor(c, false);
     // ## text layout should support end of words.
-    int end = m_textLayout.nextCursorPosition(c, QTextLayout::SkipWords);
+    int end = textLayout()->nextCursorPosition(c, QTextLayout::SkipWords);
     while (end > cursor && m_text[end-1].isSpace())
         --end;
     moveCursor(end, true);

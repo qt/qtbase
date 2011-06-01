@@ -409,6 +409,8 @@ void QTextControlPrivate::init(Qt::TextFormat format, const QString &text, QText
 
     doc->setUndoRedoEnabled(interactionFlags & Qt::TextEditable);
     q->setCursorWidth(-1);
+
+    QObject::connect(q, SIGNAL(updateCursorRequest(QRectF)), q, SIGNAL(updateRequest(QRectF)));
 }
 
 void QTextControlPrivate::setContent(Qt::TextFormat format, const QString &text, QTextDocument *document)
@@ -547,7 +549,7 @@ void QTextControlPrivate::setCursorPosition(int pos, QTextCursor::MoveMode mode)
 void QTextControlPrivate::repaintCursor()
 {
     Q_Q(QTextControl);
-    emit q->updateRequest(cursorRectPlusUnicodeDirectionMarkers(cursor));
+    emit q->updateCursorRequest(cursorRectPlusUnicodeDirectionMarkers(cursor));
 }
 
 void QTextControlPrivate::repaintOldAndNewSelection(const QTextCursor &oldSelection)
@@ -565,9 +567,16 @@ void QTextControlPrivate::repaintOldAndNewSelection(const QTextCursor &oldSelect
         differenceSelection.setPosition(cursor.position(), QTextCursor::KeepAnchor);
         emit q->updateRequest(q->selectionRect(differenceSelection));
     } else {
-        if (!oldSelection.isNull())
-            emit q->updateRequest(q->selectionRect(oldSelection) | cursorRectPlusUnicodeDirectionMarkers(oldSelection));
-        emit q->updateRequest(q->selectionRect() | cursorRectPlusUnicodeDirectionMarkers(cursor));
+        if (!oldSelection.hasSelection() && !cursor.hasSelection()) {
+            if (!oldSelection.isNull())
+                emit q->updateCursorRequest(q->selectionRect(oldSelection) | cursorRectPlusUnicodeDirectionMarkers(oldSelection));
+            emit q->updateCursorRequest(q->selectionRect() | cursorRectPlusUnicodeDirectionMarkers(cursor));
+
+        } else {
+            if (!oldSelection.isNull())
+                emit q->updateRequest(q->selectionRect(oldSelection) | cursorRectPlusUnicodeDirectionMarkers(oldSelection));
+            emit q->updateRequest(q->selectionRect() | cursorRectPlusUnicodeDirectionMarkers(cursor));
+        }
     }
 }
 
@@ -2959,6 +2968,12 @@ void QTextControl::setPalette(const QPalette &pal)
     d->palette = pal;
 }
 
+bool QTextControl::cursorOn() const
+{
+    Q_D(const QTextControl);
+    return d->cursorOn;
+}
+
 QAbstractTextDocumentLayout::PaintContext QTextControl::getPaintContext(QWidget *widget) const
 {
     Q_D(const QTextControl);
@@ -3145,6 +3160,7 @@ void QTextEditMimeData::setup() const
     that->setText(fragment.toPlainText());
     fragment = QTextDocumentFragment();
 }
+
 
 QT_END_NAMESPACE
 

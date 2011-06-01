@@ -45,6 +45,7 @@
 
 #include "qglyphrun.h"
 #include "qglyphrun_p.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -343,12 +344,44 @@ void QGlyphRun::setStrikeOut(bool strikeOut)
 }
 
 /*!
-  Returns the smallest rectangle that contains all glyphs in this QGlyphRun.
+  Sets the bounding rect of the glyphs in this QGlyphRun to be \a boundingRect. This rectangle
+  will be returned by boundingRect() unless it is empty, in which case the bounding rectangle of the
+  glyphs in the glyph run will be returned instead.
+
+  \note Unless you are implementing text shaping, you should not have to use this function.
+  It is used specifically when the QGlyphRun should represent an area which is smaller than the
+  area of the glyphs it contains. This could happen e.g. if the glyph run is retrieved by calling
+  QTextLayout::glyphRuns() and the specified range only includes part of a ligature (where two or
+  more characters are combined to a single glyph.) When this is the case, the bounding rect should
+  only include the appropriate part of the ligature glyph, based on a calculation of the average
+  width of the characters in the ligature.
+
+  In order to support such a case (an example is selections which should be drawn with a different
+  color than the main text color), it is necessary to clip the painting mechanism to the rectangle
+  returned from boundingRect() to avoid drawing the entire ligature glyph.
+
+  \sa boundingRect()
+
+  \since 5.0
+*/
+void QGlyphRun::setBoundingRect(const QRectF &boundingRect)
+{
+    detach();
+    d->boundingRect = boundingRect;
+}
+
+/*!
+  Returns the smallest rectangle that contains all glyphs in this QGlyphRun. If a bounding rect
+  has been set using setBoundingRect(), then this will be returned. Otherwise the bounding rect
+  will be calculated based on the font metrics of the glyphs in the glyph run.
 
   \since 5.0
 */
 QRectF QGlyphRun::boundingRect() const
 {
+    if (!d->boundingRect.isEmpty())
+        return d->boundingRect;
+
     qreal minX, minY, maxX, maxY;
 
     for (int i=0; i<qMin(d->glyphPositions.size(), d->glyphIndexes.size()); ++i) {
@@ -369,6 +402,16 @@ QRectF QGlyphRun::boundingRect() const
     }
 
     return QRectF(QPointF(minX, minY), QPointF(maxX, maxY));
+}
+
+/*!
+  Returns true if the QGlyphRun does not contain any glyphs.
+
+  \since 5.0
+*/
+bool QGlyphRun::isEmpty() const
+{
+    return d->glyphIndexes.isEmpty();
 }
 
 QT_END_NAMESPACE
