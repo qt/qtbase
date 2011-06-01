@@ -159,6 +159,7 @@ public:
     QVGPaintEnginePrivate *vgPrivate() { Q_D(QVGPaintEngine); return d; }
 
     void fillRegion(const QRegion& region, const QColor& color, const QSize& surfaceSize);
+    bool supportsTransformations(qreal, const QTransform &) const { return true; }
 
 protected:
     QVGPaintEngine(QVGPaintEnginePrivate &data);

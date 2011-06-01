@@ -246,6 +246,8 @@ public:
     virtual void drawBufferSpan(const uint *buffer, int bufsize,
                                 int x, int y, int length, uint const_alpha);
 #endif
+    bool supportsTransformations(const QFontEngine *fontEngine) const;
+    bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
 protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);

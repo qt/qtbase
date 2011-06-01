@@ -1093,4 +1093,14 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 }
 
+bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &m) const
+{
+    Q_UNUSED(pixelSize);
+
+    if (!m.isAffine())
+        return true;
+
+    return false;
+}
+
 QT_END_NAMESPACE

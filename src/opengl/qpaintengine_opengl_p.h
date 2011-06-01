@@ -143,6 +143,7 @@ public:
     Qt::HANDLE handle() const;
 #endif
     inline Type type() const { return QPaintEngine::OpenGL; }
+    bool supportsTransformations(qreal, const QTransform &) const { return true; }
 
 private:
     void drawPolyInternal(const QPolygonF &pa, bool close = true);

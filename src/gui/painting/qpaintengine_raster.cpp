@@ -3029,11 +3029,8 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensurePen();
     ensureState();
 
-    QRasterPaintEngineState *s = state();
-
     QFontEngine *fontEngine = textItem->fontEngine();
-    const qreal pixelSize = fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) < 64 * 64) {
+    if (!supportsTransformations(fontEngine)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
     } else {
@@ -3061,36 +3058,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
 #if defined (Q_WS_WIN) || defined(Q_WS_MAC)
 
-    bool drawCached = true;
-
-    if (s->matrix.type() >= QTransform::TxProject)
-        drawCached = false;
-
-    // don't try to cache huge fonts
-    const qreal pixelSize = ti.fontEngine->fontDef.pixelSize;
-    if (pixelSize * pixelSize * qAbs(s->matrix.determinant()) >= 64 * 64)
-        drawCached = false;
-
-    // ### Remove the TestFontEngine and Box engine crap, in these
-    // ### cases we should delegate painting to the font engine
-    // ### directly...
-
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-    QFontEngine::Type fontEngineType = ti.fontEngine->type();
-    // qDebug() << "type" << fontEngineType << s->matrix.type();
-    if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)
-        || (s->matrix.type() <= QTransform::TxTranslate
-            && (fontEngineType == QFontEngine::TestFontEngine
-                || fontEngineType == QFontEngine::Box))) {
-            drawCached = false;
-    }
-#else
-    if (s->matrix.type() > QTransform::TxTranslate)
-        drawCached = false;
-#endif
-    if (drawCached) {
-        QRasterPaintEngineState *s = state();
-
+    if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
 
@@ -3385,6 +3353,37 @@ void QRasterPaintEngine::releaseDC(HDC) const
 }
 
 #endif
+
+bool QRasterPaintEngine::supportsTransformations(const QFontEngine *fontEngine) const
+{
+    const QTransform &m = state()->matrix;
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
+    QFontEngine::Type fontEngineType = ti.fontEngine->type();
+    if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && m.type() > QTransform::TxTranslate)
+        || (m.type() <= QTransform::TxTranslate
+            && (fontEngineType == QFontEngine::TestFontEngine
+                || fontEngineType == QFontEngine::Box))) {
+            return true;
+    }
+#endif
+    return supportsTransformations(fontEngine->fontDef.pixelSize, m);
+}
+
+bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransform &m) const
+{
+#if defined(Q_WS_MAC)
+    // Mac font engines don't support scaling and rotation
+    if (m.type() > QTransform::TxTranslate)
+#else
+    if (m.type() >= QTransform::TxProject)
+#endif
+        return true;
+
+    if (pixelSize * pixelSize * qAbs(m.determinant()) >= 64 * 64)
+        return true;
+
+    return false;
+}
 
 /*!
     \internal
