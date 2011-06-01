@@ -285,7 +285,10 @@ void QXcbWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 
     const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-    const quint32 values[] = { rect.x(), rect.y(), rect.width(), rect.height() };
+    const quint32 values[] = { rect.x(),
+                               rect.y(),
+                               qBound(1, rect.width(), XCOORD_MAX),
+                               qBound(1, rect.height(), XCOORD_MAX) };
 
     Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
 }
