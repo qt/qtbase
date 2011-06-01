@@ -60,8 +60,9 @@ Q_GLOBAL_STATIC(QMutex, connManager_mutex)
 static void connManager_cleanup()
 {
     // this is not atomic or thread-safe!
-    delete connManager_ptr.load();
-    connManager_ptr.store(0);
+    QNetworkConfigurationManagerPrivate *cmp = connManager_ptr.fetchAndStoreAcquire(0);
+    if (cmp)
+        cmp->cleanup();
 }
 
 void QNetworkConfigurationManagerPrivate::addPostRoutine()
@@ -80,12 +81,12 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
             if (QCoreApplicationPrivate::mainThread() == QThread::currentThread()) {
                 // right thread or no main thread yet
                 ptr->addPostRoutine();
-                ptr->updateConfigurations();
+                ptr->initialize();
             } else {
                 // wrong thread, we need to make the main thread do this
                 QObject *obj = new QObject;
                 QObject::connect(obj, SIGNAL(destroyed()), ptr, SLOT(addPostRoutine()), Qt::DirectConnection);
-                ptr->updateConfigurations(); // this moves us to the main thread
+                ptr->initialize(); // this moves us to the right thread
                 obj->moveToThread(QCoreApplicationPrivate::mainThread());
                 obj->deleteLater();
             }
