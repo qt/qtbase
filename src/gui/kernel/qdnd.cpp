@@ -473,7 +473,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     oldstate = Qt::NoModifier; // #### Should use state that caused the drag
 //    drag_mode = mode;
 
-    possible_actions =  dragPrivate()->possible_actions;
+    possible_actions = dragPrivate()->possible_actions;
 
     willDrop = false;
     object->d_func()->target = 0;
@@ -486,6 +486,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     updateCursor();
 #endif
     updatePixmap();
+
+    platformDrag->startDrag();
 
     eventLoop = new QEventLoop;
     (void) eventLoop->exec();

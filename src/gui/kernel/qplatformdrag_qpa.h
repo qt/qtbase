@@ -56,6 +56,7 @@ public:
 
     virtual QMimeData *platformDropData() = 0;
 
+    virtual void startDrag() {};
     virtual void move(const QMouseEvent *me) = 0;
     virtual void drop(const QMouseEvent *me) = 0;
     virtual void cancel() = 0;
