@@ -46,7 +46,7 @@
 #include "qxcbwindowsurface.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
-#include <qsimpledrag.h>
+#include "qxcbdrag.h"
 
 #include <qgenericunixprintersupport.h>
 
@@ -70,13 +70,11 @@ QXcbIntegration::QXcbIntegration()
 
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
-    m_drag = new QSimpleDrag;
 }
 
 QXcbIntegration::~QXcbIntegration()
 {
     delete m_connection;
-    delete m_drag;
 }
 
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -371,5 +369,5 @@ QPlatformClipboard *QXcbIntegration::clipboard() const
 
 QPlatformDrag *QXcbIntegration::drag() const
 {
-    return m_drag;
+    return m_connection->drag();
 }

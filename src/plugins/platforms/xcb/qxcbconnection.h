@@ -53,6 +53,9 @@
 
 class QXcbScreen;
 class QXcbWindow;
+class QXcbDrag;
+class QXcbKeyboard;
+class QXcbClipboard;
 
 typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
@@ -63,6 +66,7 @@ namespace QXcbAtom {
     static const xcb_atom_t XA_PIXMAP = 20;
     static const xcb_atom_t XA_BITMAP = 5;
     static const xcb_atom_t XA_STRING = 32;
+    static const xcb_atom_t XA_WINDOW = 33;
 
     enum Atom {
         // window-manager <-> client protocols
@@ -225,9 +229,6 @@ namespace QXcbAtom {
     };
 }
 
-class QXcbKeyboard;
-class QXcbClipboard;
-
 class QXcbConnection : public QObject
 {
     Q_OBJECT
@@ -253,6 +254,7 @@ public:
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
     QXcbClipboard *clipboard() const { return m_clipboard; }
+    QXcbDrag *drag() const { return m_drag; }
 
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
@@ -277,6 +279,7 @@ public:
 
     void addWindow(xcb_window_t id, QXcbWindow *window);
     void removeWindow(xcb_window_t id);
+    QXcbWindow *platformWindowFromId(xcb_window_t id);
 
     xcb_generic_event_t *checkEvent(int type);
     template<typename T>
@@ -296,6 +299,7 @@ private:
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
+
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
 
@@ -308,6 +312,7 @@ private:
 
     QXcbKeyboard *m_keyboard;
     QXcbClipboard *m_clipboard;
+    QXcbDrag *m_drag;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;

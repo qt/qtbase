@@ -498,7 +498,6 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     ulong  bytes_left; // bytes_after
     xcb_atom_t   dummy_type;
     int    dummy_format;
-    int    r;
 
     if (!type)                                // allow null args
         type = &dummy_type;
@@ -640,25 +639,25 @@ namespace
     };
 }
 
-static xcb_generic_event_t *waitForClipboardEvent(QXcbConnection *connection, xcb_window_t win, int type, int timeout)
+xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t win, int type, int timeout)
 {
     QElapsedTimer timer;
     timer.start();
     do {
         Notify notify(win, type);
-        xcb_generic_event_t *e = connection->checkEvent(notify);
+        xcb_generic_event_t *e = m_connection->checkEvent(notify);
         if (e)
             return e;
 
         // process other clipboard events, since someone is probably requesting data from us
-        ClipboardEvent clipboard(connection);
-        e = connection->checkEvent(clipboard);
+        ClipboardEvent clipboard(m_connection);
+        e = m_connection->checkEvent(clipboard);
         if (e) {
-            connection->handleXcbEvent(e);
+            m_connection->handleXcbEvent(e);
             free(e);
         }
 
-        connection->flush();
+        m_connection->flush();
 
         // sleep 50 ms, so we don't use up CPU cycles all the time.
         struct timeval usleep_tv;
@@ -688,7 +687,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
 
     for (;;) {
         m_connection->flush();
-        xcb_generic_event_t *ge = ::waitForClipboardEvent(m_connection, win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
+        xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
         if (!ge)
             break;
 
@@ -737,16 +736,22 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     xcb_window_t win = requestor();
 //    qDebug() << "getDataInFormat" << m_connection->atomName(modeAtom) << m_connection->atomName(fmtAtom) << win;
 
+    return getSelection(win, modeAtom, fmtAtom, m_connection->atom(QXcbAtom::_QT_SELECTION));
+}
+
+QByteArray QXcbClipboard::getSelection(xcb_window_t win, xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property)
+{
+    QByteArray buf;
+
     uint32_t mask = XCB_EVENT_MASK_NO_EVENT;
     xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
 
-    xcb_delete_property(m_connection->xcb_connection(), win, m_connection->atom(QXcbAtom::_QT_SELECTION));
-    xcb_convert_selection(m_connection->xcb_connection(), win, modeAtom, fmtAtom,
-                          m_connection->atom(QXcbAtom::_QT_SELECTION), XCB_CURRENT_TIME);
+    xcb_delete_property(m_connection->xcb_connection(), win, property);
+    xcb_convert_selection(m_connection->xcb_connection(), win, selection, target, property, XCB_CURRENT_TIME);
 
     m_connection->sync();
 
-    xcb_generic_event_t *ge = waitForClipboardEvent(m_connection, win, XCB_SELECTION_NOTIFY, clipboard_timeout);
+    xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_SELECTION_NOTIFY, clipboard_timeout);
     bool no_selection = !ge || ((xcb_selection_notify_event_t *)ge)->property == XCB_NONE;
     free(ge);
 
@@ -757,11 +762,11 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
 
     xcb_atom_t type;
-    if (clipboardReadProperty(win, m_connection->atom(QXcbAtom::_QT_SELECTION), true, &buf, 0, &type, 0)) {
+    if (clipboardReadProperty(win, property, true, &buf, 0, &type, 0)) {
         if (type == m_connection->atom(QXcbAtom::INCR)) {
             qDebug() << "INCR";
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
-            buf = clipboardReadIncrementalProperty(win, m_connection->atom(QXcbAtom::_QT_SELECTION), nbytes, false);
+            buf = clipboardReadIncrementalProperty(win, property, nbytes, false);
         }
     }
 

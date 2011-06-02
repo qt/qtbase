@@ -11,6 +11,7 @@ SOURCES = \
         qxcbintegration.cpp \
         qxcbkeyboard.cpp \
         qxcbmime.cpp \
+        qxcbdrag.cpp \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
         qxcbwindowsurface.cpp \
@@ -22,6 +23,7 @@ HEADERS = \
         qxcbconnection.h \
         qxcbintegration.h \
         qxcbkeyboard.h \
+        qxcbdrag.h \
         qxcbmime.h \
         qxcbobject.h \
         qxcbscreen.h \
@@ -72,7 +74,6 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
 
 load(qpa/fontdatabases/genericunix)
 load(qpa/printersupport/genericunix)
-load(qpa/dnd/simple)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

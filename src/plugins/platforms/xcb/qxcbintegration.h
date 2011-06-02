@@ -48,7 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
-class QSimpleDrag;
 
 class QXcbIntegration : public QPlatformIntegration
 {
@@ -82,7 +81,6 @@ private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;
     QPlatformPrinterSupport *m_printerSupport;
-    QSimpleDrag *m_drag;
 };
 
 QT_END_NAMESPACE

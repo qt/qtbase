@@ -45,6 +45,9 @@
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
+#include "qxcbdrag.h"
+
+
 #ifdef XCB_USE_DRI2
 #include "qdri2context.h"
 #endif
@@ -268,6 +271,8 @@ void QXcbWindow::create()
 
     if (wasCreated)
         setWindowFlags(window()->windowFlags());
+
+    connection()->drag()->dndEnable(this, true);
 }
 
 QXcbWindow::~QXcbWindow()
@@ -933,7 +938,10 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 
 void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)
 {
-    if (event->format == 32 && event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
+    if (event->format != 32)
+        return;
+
+    if (event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
@@ -952,6 +960,14 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
         }
+    } else if (event->type == atom(QXcbAtom::XdndEnter)) {
+        connection()->drag()->handleEnter(window(), event);
+    } else if (event->type == atom(QXcbAtom::XdndPosition)) {
+        connection()->drag()->handlePosition(window(), event, false);
+    } else if (event->type == atom(QXcbAtom::XdndLeave)) {
+        connection()->drag()->handleLeave(window(), event, false);
+    } else if (event->type == atom(QXcbAtom::XdndDrop)) {
+        connection()->drag()->handleDrop(window(), event, false);
     }
 }
 

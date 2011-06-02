@@ -44,6 +44,7 @@
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
 #include "qxcbclipboard.h"
+#include "qxcbdrag.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
@@ -118,6 +119,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
     m_keyboard = new QXcbKeyboard(this);
     m_clipboard = new QXcbClipboard(this);
+    m_drag = new QXcbDrag(this);
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -753,7 +755,7 @@ xcb_atom_t QXcbConnection::internAtom(const char *name)
 
 QByteArray QXcbConnection::atomName(xcb_atom_t atom)
 {
-    xcb_get_atom_name_cookie_t cookie = xcb_get_atom_name_unchecked(xcb_connection(), atom);
+    xcb_get_atom_name_cookie_t cookie = Q_XCB_CALL(xcb_get_atom_name_unchecked(xcb_connection(), atom));
     xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, 0);
     if (reply) {
         QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
