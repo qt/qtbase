@@ -663,8 +663,8 @@ void QCosmeticStroker::renderCubicSubdivision(QCosmeticStroker::PointF *points, 
         qreal dy = points[3].y - points[0].y;
         qreal len = ((qreal).25) * (qAbs(dx) + qAbs(dy));
 
-        if (qAbs(dx * (points[0].y - points[2].y) - dy * (points[0].x - points[2].x)) > len ||
-            qAbs(dx * (points[0].y - points[1].y) - dy * (points[0].x - points[1].x)) > len) {
+        if (qAbs(dx * (points[0].y - points[2].y) - dy * (points[0].x - points[2].x)) >= len ||
+            qAbs(dx * (points[0].y - points[1].y) - dy * (points[0].x - points[1].x)) >= len) {
             splitCubic(points);
 
             --level;
