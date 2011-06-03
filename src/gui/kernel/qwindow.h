@@ -144,6 +144,9 @@ public:
     QPlatformWindow *handle() const;
     QWindowSurface *surface() const;
 
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
+
 public Q_SLOTS:
     inline void show() { setVisible(true); }
     inline void hide() { setVisible(false); }

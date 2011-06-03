@@ -212,6 +212,20 @@ QPlatformGLContext *QPlatformWindow::glContext() const
     return 0;
 }
 
+bool QPlatformWindow::setKeyboardGrabEnabled(bool grab)
+{
+    Q_UNUSED(grab);
+    qWarning("This plugin does not support grabbing the keyboard");
+    return false;
+}
+
+bool QPlatformWindow::setMouseGrabEnabled(bool grab)
+{
+    Q_UNUSED(grab);
+    qWarning("This plugin does not support grabbing the mouse");
+    return false;
+}
+
 /*!
     \class QPlatformWindow
     \since 4.8

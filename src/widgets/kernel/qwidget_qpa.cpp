@@ -338,8 +338,8 @@ void QWidget::grabMouse()
     if (qt_mouseGrb)
         qt_mouseGrb->releaseMouse();
 
-    // XXX
-    //qwsDisplay()->grabMouse(this,true);
+    if (windowHandle())
+        windowHandle()->setMouseGrabEnabled(true);
 
     qt_mouseGrb = this;
     qt_pressGrab = 0;
@@ -353,19 +353,27 @@ void QWidget::grabMouse(const QCursor &cursor)
     if (qt_mouseGrb)
         qt_mouseGrb->releaseMouse();
 
-    // XXX
-    //qwsDisplay()->grabMouse(this,true);
-    //qwsDisplay()->selectCursor(this, cursor.handle());
+    if (windowHandle())
+        windowHandle()->setMouseGrabEnabled(true);
+
     qt_mouseGrb = this;
     qt_pressGrab = 0;
 }
 #endif
 
+bool QWidgetPrivate::stealMouseGrab(bool grab)
+{
+    // This is like a combination of grab/releaseMouse() but with error checking
+    // and it has no effect on the result of mouseGrabber().
+    Q_Q(QWidget);
+    return q->windowHandle() ? q->windowHandle()->setMouseGrabEnabled(grab) : false;
+}
+
 void QWidget::releaseMouse()
 {
     if (qt_mouseGrb == this) {
-        // XXX
-        //qwsDisplay()->grabMouse(this,false);
+        if (windowHandle())
+            windowHandle()->setMouseGrabEnabled(false);
         qt_mouseGrb = 0;
     }
 }
@@ -374,16 +382,24 @@ void QWidget::grabKeyboard()
 {
     if (keyboardGrb)
         keyboardGrb->releaseKeyboard();
-    // XXX
-    //qwsDisplay()->grabKeyboard(this, true);
+    if (windowHandle())
+        windowHandle()->setKeyboardGrabEnabled(true);
     keyboardGrb = this;
+}
+
+bool QWidgetPrivate::stealKeyboardGrab(bool grab)
+{
+    // This is like a combination of grab/releaseKeyboard() but with error
+    // checking and it has no effect on the result of keyboardGrabber().
+    Q_Q(QWidget);
+    return q->windowHandle() ? q->windowHandle()->setKeyboardGrabEnabled(grab) : false;
 }
 
 void QWidget::releaseKeyboard()
 {
     if (keyboardGrb == this) {
-        // XXX
-        //qwsDisplay()->grabKeyboard(this, false);
+        if (windowHandle())
+            windowHandle()->setKeyboardGrabEnabled(false);
         keyboardGrb = 0;
     }
 }

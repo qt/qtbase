@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 QWidget *qt_button_down = 0; // widget got last button-down
 
 // popup control
-static QWidget *qt_popup_down = 0; // popup that contains the pressed widget
+QWidget *qt_popup_down = 0; // popup that contains the pressed widget
 extern int openPopupCount;
-static bool replayPopupMouseEvent = false;
+bool qt_replay_popup_mouse_event = false;
 extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
@@ -155,7 +155,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
         if (popup->isEnabled()) {
             // deliver event
-            replayPopupMouseEvent = false;
+            qt_replay_popup_mouse_event = false;
             QWidget *receiver = popup;
             QPoint widgetPos = mapped;
             if (qt_button_down)
@@ -181,10 +181,10 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         }
 
         if (qApp->activePopupWidget() != activePopupWidget
-            && replayPopupMouseEvent) {
+            && qt_replay_popup_mouse_event) {
             if (m_widget->windowType() != Qt::Popup)
                 qt_button_down = 0;
-            replayPopupMouseEvent = false;
+            qt_replay_popup_mouse_event = false;
         } else if (event->type() == QEvent::MouseButtonPress
                    && event->button() == Qt::RightButton
                    && (openPopupCount == oldOpenPopupCount)) {

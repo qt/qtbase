@@ -71,8 +71,13 @@ QT_BEGIN_NAMESPACE
 
 static QString appName;
 static QString appFont;
+static bool popupGrabOk;
 extern bool app_do_modal;
 extern QWidgetList *qt_modal_stack;
+extern QWidget *qt_button_down;
+extern QWidget *qt_popup_down;
+extern bool qt_replay_popup_mouse_event;
+int openPopupCount = 0;
 
 QString QApplicationPrivate::appName() const
 {
@@ -160,6 +165,35 @@ void QApplicationPrivate::notifyActiveWindowChange(QWindow *previous)
     q->setActiveWindow(tlw);
 }
 
+static void ungrabKeyboardForPopup(QWidget *popup)
+{
+    if (QWidget::keyboardGrabber())
+        qt_widget_private(QWidget::keyboardGrabber())->stealKeyboardGrab(true);
+    else
+        qt_widget_private(popup)->stealKeyboardGrab(false);
+}
+
+static void ungrabMouseForPopup(QWidget *popup)
+{
+    if (QWidget::mouseGrabber())
+        qt_widget_private(QWidget::mouseGrabber())->stealMouseGrab(true);
+    else
+        qt_widget_private(popup)->stealMouseGrab(false);
+}
+
+static void grabForPopup(QWidget *popup)
+{
+    Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
+    popupGrabOk = qt_widget_private(popup)->stealKeyboardGrab(true);
+    if (popupGrabOk) {
+        popupGrabOk = qt_widget_private(popup)->stealMouseGrab(true);
+        if (!popupGrabOk) {
+            // transfer grab back to the keyboard grabber if any
+            ungrabKeyboardForPopup(popup);
+        }
+    }
+}
+
 void QApplicationPrivate::closePopup(QWidget *popup)
 {
     Q_Q(QApplication);
@@ -167,23 +201,34 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         return;
     popupWidgets->removeAll(popup);
 
-//###
-//     if (popup == qt_popup_down) {
-//         qt_button_down = 0;
-//         qt_popup_down = 0;
-//     }
+     if (popup == qt_popup_down) {
+         qt_button_down = 0;
+         qt_popup_down = 0;
+     }
 
-    if (QApplicationPrivate::popupWidgets->count() == 0) {                // this was the last popup
+    if (QApplicationPrivate::popupWidgets->count() == 0) { // this was the last popup
         delete QApplicationPrivate::popupWidgets;
         QApplicationPrivate::popupWidgets = 0;
 
-        //### replay mouse event?
+        if (popupGrabOk) {
+            popupGrabOk = false;
 
-        //### transfer/release mouse grab
+            if (popup->geometry().contains(QPoint(QGuiApplicationPrivate::mousePressX,
+                                                  QGuiApplicationPrivate::mousePressY))
+                || popup->testAttribute(Qt::WA_NoMouseReplay)) {
+                // mouse release event or inside
+                qt_replay_popup_mouse_event = false;
+            } else { // mouse press event
+                QGuiApplicationPrivate::mousePressTime -= 10000; // avoid double click
+                qt_replay_popup_mouse_event = true;
+            }
 
-        //### transfer/release keyboard grab
+            // transfer grab back to mouse grabber if any, otherwise release the grab
+            ungrabMouseForPopup(popup);
 
-        //give back focus
+            // transfer grab back to keyboard grabber if any, otherwise release the grab
+            ungrabKeyboardForPopup(popup);
+        }
 
         if (active_window) {
             if (QWidget *fw = active_window->focusWidget()) {
@@ -198,31 +243,25 @@ void QApplicationPrivate::closePopup(QWidget *popup)
 
     } else {
         // A popup was closed, so the previous popup gets the focus.
-
         QWidget* aw = QApplicationPrivate::popupWidgets->last();
         if (QWidget *fw = aw->focusWidget())
             fw->setFocus(Qt::PopupFocusReason);
 
-        //### regrab the keyboard and mouse in case 'popup' lost the grab
-
-
+        if (QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
+            grabForPopup(aw);
     }
 
 }
 
-int openPopupCount = 0;
 void QApplicationPrivate::openPopup(QWidget *popup)
 {
     openPopupCount++;
-    if (!popupWidgets) {                        // create list
+    if (!popupWidgets) // create list
         popupWidgets = new QWidgetList;
+    popupWidgets->append(popup); // add to end of list
 
-        /* only grab if you are the first/parent popup */
-        //####   ->grabMouse(popup,true);
-        //####   ->grabKeyboard(popup,true);
-        //### popupGrabOk = true;
-    }
-    popupWidgets->append(popup);                // add to end of list
+    if (QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
+        grabForPopup(popup);
 
     // popups are not focus-handled by the window system (the first
     // popup grabbed the keyboard), so we have to do that manually: A

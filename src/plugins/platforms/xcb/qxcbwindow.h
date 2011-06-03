@@ -76,6 +76,9 @@ public:
 
     QPlatformGLContext *glContext() const;
 
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
+
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }

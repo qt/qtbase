@@ -88,6 +88,10 @@ public:
     virtual void requestActivateWindow();
 
     virtual QPlatformGLContext *glContext() const;
+
+    virtual bool setKeyboardGrabEnabled(bool grab);
+    virtual bool setMouseGrabEnabled(bool grab);
+
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:

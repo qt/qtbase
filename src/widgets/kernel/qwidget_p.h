@@ -901,6 +901,8 @@ public:
 #elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
+    bool stealKeyboardGrab(bool grab);
+    bool stealMouseGrab(bool grab);
 #ifndef QT_NO_CURSOR
     void updateCursor() const;
 #endif

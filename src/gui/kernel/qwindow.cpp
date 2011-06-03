@@ -427,6 +427,22 @@ QWindowSurface *QWindow::surface() const
     return d->surface;
 }
 
+bool QWindow::setKeyboardGrabEnabled(bool grab)
+{
+    Q_D(QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->setKeyboardGrabEnabled(grab);
+    return false;
+}
+
+bool QWindow::setMouseGrabEnabled(bool grab)
+{
+    Q_D(QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->setMouseGrabEnabled(grab);
+    return false;
+}
+
 void QWindow::showMinimized()
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;

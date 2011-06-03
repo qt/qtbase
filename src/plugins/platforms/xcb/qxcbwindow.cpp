@@ -1094,3 +1094,40 @@ void QXcbWindow::updateSyncRequestCounter()
         m_syncValue.hi = 0;
     }
 }
+
+bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
+{
+    if (!grab) {
+        xcb_ungrab_keyboard(xcb_connection(), XCB_TIME_CURRENT_TIME);
+        return true;
+    }
+    xcb_grab_keyboard_cookie_t cookie = xcb_grab_keyboard(xcb_connection(), false,
+                                                          m_window, XCB_TIME_CURRENT_TIME,
+                                                          GrabModeAsync, GrabModeAsync);
+    xcb_generic_error_t *err;
+    xcb_grab_keyboard_reply_t *reply = xcb_grab_keyboard_reply(xcb_connection(), cookie, &err);
+    bool result = !(err || !reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
+    free(reply);
+    free(err);
+    return result;
+}
+
+bool QXcbWindow::setMouseGrabEnabled(bool grab)
+{
+    if (!grab) {
+        xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
+        return true;
+    }
+    xcb_grab_pointer_cookie_t cookie = xcb_grab_pointer(xcb_connection(), false, m_window,
+                                                        (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
+                                                         | EnterWindowMask | LeaveWindowMask | PointerMotionMask),
+                                                        GrabModeAsync, GrabModeAsync,
+                                                        XCB_WINDOW_NONE, XCB_CURSOR_NONE,
+                                                        XCB_TIME_CURRENT_TIME);
+    xcb_generic_error_t *err;
+    xcb_grab_pointer_reply_t *reply = xcb_grab_pointer_reply(xcb_connection(), cookie, &err);
+    bool result = !(err || !reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
+    free(reply);
+    free(err);
+    return result;
+}
