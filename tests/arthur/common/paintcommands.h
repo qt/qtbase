@@ -201,6 +201,7 @@ private:
     void command_drawRoundedRect(QRegExp re);
     void command_drawRoundRect(QRegExp re);
     void command_drawText(QRegExp re);
+    void command_drawStaticText(QRegExp re);
     void command_drawTiledPixmap(QRegExp re);
     void command_path_addEllipse(QRegExp re);
     void command_path_addPolygon(QRegExp re);
