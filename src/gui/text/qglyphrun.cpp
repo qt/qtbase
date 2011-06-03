@@ -175,7 +175,8 @@ QRawFont QGlyphRun::rawFont() const
 }
 
 /*!
-    Sets the font in which to look up the glyph indexes to \a font.
+    Sets the font in which to look up the glyph indexes to the \a rawFont
+    specified.
 
     \sa rawFont(), setGlyphIndexes()
 */

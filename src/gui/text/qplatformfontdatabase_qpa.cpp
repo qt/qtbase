@@ -52,7 +52,7 @@ extern void qt_registerFont(const QString &familyname, const QString &foundrynam
                                          const QSupportedWritingSystems &writingSystems, void *hanlde);
 
 /*!
-    \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *)
+    \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
 
     Registers the pre-rendered QPF2 font contained in the given \a dataArray.
 
@@ -149,17 +149,26 @@ public:
     QVector<bool> vector;
 };
 
+/*!
+    Constructs a new object to handle supported writing systems.
+*/
 QSupportedWritingSystems::QSupportedWritingSystems()
 {
     d = new QWritingSystemsPrivate;
 }
 
+/*!
+    Constructs a copy of the \a other writing systems object.
+*/
 QSupportedWritingSystems::QSupportedWritingSystems(const QSupportedWritingSystems &other)
 {
     d = other.d;
     d->ref.ref();
 }
 
+/*!
+    Constructs a copy of the \a other writing systems object.
+*/
 QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWritingSystems &other)
 {
     if (d != other.d) {
@@ -171,12 +180,18 @@ QSupportedWritingSystems &QSupportedWritingSystems::operator=(const QSupportedWr
     return *this;
 }
 
+/*!
+    Destroys the supported writing systems object.
+*/
 QSupportedWritingSystems::~QSupportedWritingSystems()
 {
     if (!d->ref.deref())
         delete d;
 }
 
+/*!
+    \internal
+*/
 void QSupportedWritingSystems::detach()
 {
     if (d->ref != 1) {
@@ -187,12 +202,20 @@ void QSupportedWritingSystems::detach()
     }
 }
 
+/*!
+    Sets or clears support for the specified \a writingSystem based on the
+    value given by \a support.
+*/
 void QSupportedWritingSystems::setSupported(QFontDatabase::WritingSystem writingSystem, bool support)
 {
     detach();
     d->vector[writingSystem] = support;
 }
 
+/*!
+    Returns true if the writing system specified by \a writingSystem is
+    supported; otherwise returns false.
+*/
 bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSystem) const
 {
     return d->vector.at(writingSystem);
@@ -210,10 +233,12 @@ bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSys
 */
 
 /*!
-  This function is called once at startup by Qts internal fontdatabase. Reimplement this function
-  in a subclass for a convenient place to initialise the internal fontdatabase.
+  This function is called once at startup by Qt's internal font database.
+  Reimplement this function in a subclass for a convenient place to initialize
+  the internal font database.
 
-  The default implementation looks in the fontDir() location and registers all qpf2 fonts.
+  The default implementation looks in the fontDir() location and registers all
+  QPF2 fonts.
 */
 void QPlatformFontDatabase::populateFontDatabase()
 {
@@ -294,7 +319,7 @@ QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData
 }
 
 /*!
-
+    Releases the specified font \a handle.
 */
 void QPlatformFontDatabase::releaseHandle(void *handle)
 {
@@ -303,7 +328,7 @@ void QPlatformFontDatabase::releaseHandle(void *handle)
 }
 
 /*!
-
+    Returns the directory containing the fonts used by the database.
 */
 QString QPlatformFontDatabase::fontDir() const
 {

@@ -5773,6 +5773,8 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 }
 
 /*!
+    \fn void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphs)
+
     Draws the glyphs represented by \a glyphs at \a position. The \a position gives the
     edge of the baseline for the string of glyphs. The glyphs will be retrieved from the font
     selected on \a glyphs and at offsets given by the positions in \a glyphs.
