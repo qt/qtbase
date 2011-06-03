@@ -174,8 +174,6 @@ void QXcbWindow::create()
             m_window = XCreateWindow(DISPLAY_FROM_XCB(this), xcb_parent_id, rect.x(), rect.y(), rect.width(), rect.height(),
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWBackPixel|CWBorderPixel|CWColormap, &a);
-
-            printf("created GL window: %x\n", m_window);
         } else {
             qFatal("no window!");
         }
@@ -199,8 +197,6 @@ void QXcbWindow::create()
                                      m_screen->screen()->root_visual, // visual
                                      0,                               // value mask
                                      0));                             // value list
-
-        printf("created regular window: %x\n", m_window);
     }
 
     connection()->addWindow(m_window, this);
