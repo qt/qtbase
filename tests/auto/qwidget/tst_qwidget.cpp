@@ -318,7 +318,6 @@ private slots:
     void updateGeometry();
     void updateGeometry_data();
     void sendUpdateRequestImmediately();
-    void painterRedirection();
     void doubleRepaint();
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
@@ -7798,64 +7797,6 @@ void tst_QWidget::sendUpdateRequestImmediately()
     updateWidget.repaint();
     QCOMPARE(updateWidget.numUpdateRequestEvents, 1);
 }
-
-class RedirectedWidget : public QWidget
-{
-protected:
-    void paintEvent(QPaintEvent *)
-    {
-        // Verify that the widget has a redirection set. The widget is redirected to
-        // the backing store on all platforms using it; otherwise to itself if the wrect
-        // does not start in (0, 0) or it has a mask set.
-        QPaintDevice *oldRedirection = QPainter::redirected(this);
-#ifndef Q_WS_MAC
-        QVERIFY(oldRedirection);
-#endif
-
-        QImage image(size(), QImage::Format_RGB32);
-        image.fill(Qt::blue);
-
-        {
-        QPainter painter(this);
-        QCOMPARE(painter.device(), static_cast<QPaintDevice *>(this));
-        }
-
-        QPainter::setRedirected(this, &image);
-        QCOMPARE(QPainter::redirected(this), static_cast<QPaintDevice *>(&image));
-
-        QPainter painter(this);
-        painter.fillRect(rect(), Qt::red);
-
-        QPainter::restoreRedirected(this);
-        QCOMPARE(QPainter::redirected(this), oldRedirection);
-
-        for (int i = 0; i < image.height(); ++i)
-            for (int j = 0; j < image.width(); ++j)
-                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
-    }
-
-};
-
-// Test to make sure we're compatible in the particular case where QPainter::setRedirected
-// actually works. It has been broken for all other cases since Qt 4.1.4 (backing store).
-// QWidget::render is the modern and more powerful way of doing the same.
-void tst_QWidget::painterRedirection()
-{
-    RedirectedWidget widget;
-    // Set FramelessWindowHint and mask to trigger internal painter redirection on the Mac.
-    widget.setWindowFlags(widget.windowFlags() | Qt::FramelessWindowHint);
-    widget.setMask(QRect(10, 10, 50, 50));
-    widget.setFixedSize(100, 200);
-    widget.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-#endif
-    QPixmap pixmap(widget.size());
-    QPainter::setRedirected(&widget, &pixmap, QPoint());
-    widget.repaint();
-    QCOMPARE(QPainter::redirected(&widget), static_cast<QPaintDevice *>(&pixmap));
-}
-
 
 void tst_QWidget::doubleRepaint()
 {
