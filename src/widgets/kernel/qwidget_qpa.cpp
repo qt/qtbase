@@ -234,7 +234,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (!(f&Qt::Window) && (oldFlags&Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         //qDebug() << "setParent_sys() change from toplevel";
         q->destroy();
-    } else if (wasCreated) {
+    } else if (newparent && wasCreated) {
         q->createWinId();
     }
 
