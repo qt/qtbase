@@ -90,7 +90,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     Qt::WindowFlags flags = data.window_flags;
 
-    if ((!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow()) || q->windowType() == Qt::Desktop )
+    if (!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow())
         return; // we only care about real toplevels
 
     QWindowSurface *surface = q->windowSurface();
@@ -776,7 +776,7 @@ void QWidgetPrivate::createTLSysExtra()
     Q_Q(QWidget);
     extra->topextra->screenIndex = 0;
     extra->topextra->window = 0;
-    if ((q->testAttribute(Qt::WA_NativeWindow) || q->isWindow()) && q->windowType() != Qt::Desktop)
+    if (q->testAttribute(Qt::WA_NativeWindow) || q->isWindow())
         extra->topextra->window = new QWidgetWindow(q);
 }
 

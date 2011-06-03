@@ -113,6 +113,14 @@ void QXcbWindow::create()
 
     Qt::WindowType type = window()->windowType();
 
+    if (type == Qt::Desktop) {
+        m_window = m_screen->root();
+        m_depth = m_screen->screen()->root_depth;
+        m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        connection()->addWindow(m_window, this);
+        return;
+    }
+
     const quint32 mask = XCB_CW_BACK_PIXMAP | XCB_CW_OVERRIDE_REDIRECT | XCB_CW_SAVE_UNDER | XCB_CW_EVENT_MASK;
     const quint32 values[] = {
         // XCB_CW_BACK_PIXMAP
@@ -149,6 +157,7 @@ void QXcbWindow::create()
     {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->requestedWindowFormat());
+
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromQWindowFormat(eglDisplay,window()->requestedWindowFormat(),true);
