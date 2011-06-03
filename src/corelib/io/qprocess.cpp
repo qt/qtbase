@@ -1673,13 +1673,10 @@ QProcessEnvironment QProcess::processEnvironment() const
 bool QProcess::waitForStarted(int msecs)
 {
     Q_D(QProcess);
-    if (d->processState == QProcess::Starting) {
-        if (!d->waitForStarted(msecs))
-            return false;
-        setProcessState(QProcess::Running);
-        emit started();
-    }
-    return d->processState == QProcess::Running;
+    if (d->processState == QProcess::Running)
+        return true;
+
+    return d->waitForStarted(msecs);
 }
 
 /*! \reimp

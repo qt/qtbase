@@ -73,7 +73,7 @@ Q_DECLARE_METATYPE(QProcess::ProcessState);
 { \
 const bool ret = Process.Fn; \
 if (ret == false) \
-	qWarning("QProcess error: %d: %s", Process.error(), qPrintable(Process.errorString())); \
+    qWarning("QProcess error: %d: %s", Process.error(), qPrintable(Process.errorString())); \
 QVERIFY(ret); \
 }
 
@@ -157,6 +157,7 @@ private slots:
     void startFinishStartFinish();
     void invalidProgramString_data();
     void invalidProgramString();
+    void onlyOneStartedSignal();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2089,7 +2090,7 @@ void tst_QProcess::setStandardInputFile()
 #endif
 
     QPROCESS_VERIFY(process, waitForFinished());
-	QByteArray all = process.readAll();
+        QByteArray all = process.readAll();
     QCOMPARE(all.size(), int(sizeof data) - 1); // testProcessEcho drops the ending \0
     QVERIFY(all == data);
 }
@@ -2440,6 +2441,29 @@ void tst_QProcess::invalidProgramString()
     QCOMPARE(spy.count(), 1);
 
     QVERIFY(!QProcess::startDetached(programString));
+}
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::onlyOneStartedSignal()
+{
+    QProcess process;
+
+    QSignalSpy spyStarted(&process,  SIGNAL(started()));
+    QSignalSpy spyFinished(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+
+    process.start("testProcessNormal/testProcessNormal");
+    QVERIFY(process.waitForStarted(5000));
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(spyStarted.count(), 1);
+    QCOMPARE(spyFinished.count(), 1);
+
+    spyStarted.clear();
+    spyFinished.clear();
+
+    process.start("testProcessNormal/testProcessNormal");
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(spyStarted.count(), 1);
+    QCOMPARE(spyFinished.count(), 1);
 }
 
 QTEST_MAIN(tst_QProcess)
