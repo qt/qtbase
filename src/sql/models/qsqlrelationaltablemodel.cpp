@@ -119,6 +119,8 @@ QT_BEGIN_NAMESPACE
     returns false.
 */
 
+class QRelatedTableModel;
+
 struct QRelation
 {
     public:
@@ -135,7 +137,7 @@ struct QRelation
         bool isValid();
 
         QSqlRelation rel;
-        QSqlTableModel *model;
+        QRelatedTableModel *model;
         QHash<QString, QVariant> dictionary;//maps keys to display values
 
     private:
@@ -143,6 +145,15 @@ struct QRelation
         bool m_dictInitialized;
 };
 
+class QRelatedTableModel : public QSqlTableModel
+{
+public:
+    QRelatedTableModel(QRelation *rel, QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
+    bool select();
+private:
+    bool firstSelect;
+    QRelation *relation;
+};
 /*
     A QRelation must be initialized before it is considered valid.
     Note: population of the model and dictionary are kept separate
@@ -162,7 +173,7 @@ void QRelation::populateModel()
     Q_ASSERT(m_parent != NULL);
 
     if (!model) {
-        model = new QSqlTableModel(m_parent, m_parent->database());
+        model = new QRelatedTableModel(this, m_parent, m_parent->database());
         model->setTable(rel.tableName());
         model->select();
     }
@@ -218,6 +229,27 @@ bool QRelation::isValid()
 {
     return (rel.isValid() && m_parent != NULL);
 }
+
+
+
+QRelatedTableModel::QRelatedTableModel(QRelation *rel, QObject *parent, QSqlDatabase db) : 
+    QSqlTableModel(parent, db), firstSelect(true), relation(rel)
+{
+}
+
+bool QRelatedTableModel::select()
+{
+    if (firstSelect) {
+        firstSelect = false;
+        return QSqlTableModel::select();
+    }
+    relation->clearDictionary();
+    bool res = QSqlTableModel::select();
+    if (res)
+        relation->populateDictionary();
+    return res;
+}
+
 
 class QSqlRelationalTableModelPrivate: public QSqlTableModelPrivate
 {
