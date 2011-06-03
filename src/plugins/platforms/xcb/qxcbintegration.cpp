@@ -330,8 +330,7 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
             }
         }
 
-        image.detach();
-        result = QPixmap::fromImage(image);
+        result = QPixmap::fromImage(image.copy());
     }
 
     free(image_reply);
