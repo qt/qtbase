@@ -184,6 +184,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     Q_Q(QWidget);
 
     Qt::WindowFlags oldFlags = data.window_flags;
+    bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
 
     int targetScreen = -1;
     // Handle a request to move the widget to a particular screen
@@ -195,6 +196,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         targetScreen = newparent->window()->d_func()->topData()->screenIndex;
         newparent = 0;
     }
+
+    setWinId(0);
 
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
@@ -231,6 +234,8 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (!(f&Qt::Window) && (oldFlags&Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
         //qDebug() << "setParent_sys() change from toplevel";
         q->destroy();
+    } else if (wasCreated) {
+        q->createWinId();
     }
 
     adjustFlags(f, q);
