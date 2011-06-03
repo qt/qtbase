@@ -122,10 +122,35 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
                                     32,
                                     1,
                                     &m_clientLeader), connection);
+
+    xcb_depth_iterator_t depth_iterator =
+        xcb_screen_allowed_depths_iterator(screen);
+
+    while (depth_iterator.rem) {
+        xcb_depth_t *depth = depth_iterator.data;
+        xcb_visualtype_iterator_t visualtype_iterator =
+            xcb_depth_visuals_iterator(depth);
+
+        while (visualtype_iterator.rem) {
+            xcb_visualtype_t *visualtype = visualtype_iterator.data;
+            m_visuals.insert(visualtype->visual_id, *visualtype);
+            xcb_visualtype_next(&visualtype_iterator);
+        }
+
+        xcb_depth_next(&depth_iterator);
+    }
 }
 
 QXcbScreen::~QXcbScreen()
 {
+}
+
+const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
+{
+    QMap<xcb_visualid_t, xcb_visualtype_t>::const_iterator it = m_visuals.find(visualid);
+    if (it == m_visuals.constEnd())
+        return 0;
+    return &*it;
 }
 
 QRect QXcbScreen::geometry() const

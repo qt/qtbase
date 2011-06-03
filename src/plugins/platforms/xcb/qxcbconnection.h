@@ -247,6 +247,8 @@ public:
     const char *displayName() const { return m_displayName.constData(); }
 
     xcb_connection_t *xcb_connection() const { return m_connection; }
+    const xcb_setup_t *setup() const { return m_setup; }
+    const xcb_format_t *formatForDepth(uint8_t depth) const;
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 

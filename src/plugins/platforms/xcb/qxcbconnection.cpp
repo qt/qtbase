@@ -740,6 +740,21 @@ QByteArray QXcbConnection::atomName(xcb_atom_t atom)
     return QByteArray();
 }
 
+const xcb_format_t *QXcbConnection::formatForDepth(uint8_t depth) const
+{
+    xcb_format_iterator_t iterator =
+        xcb_setup_pixmap_formats_iterator(m_setup);
+
+    while (iterator.rem) {
+        xcb_format_t *format = iterator.data;
+        if (format->depth == depth)
+            return format;
+        xcb_format_next(&iterator);
+    }
+
+    return 0;
+}
+
 void QXcbConnection::sync()
 {
     // from xcb_aux_sync

@@ -72,12 +72,15 @@ public:
     QString windowManagerName() const { return m_windowManagerName; }
     bool syncRequestSupported() const { return m_syncRequestSupported; }
 
+    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+
 private:
     xcb_screen_t *m_screen;
     int m_number;
     QString m_windowManagerName;
     bool m_syncRequestSupported;
     xcb_window_t m_clientLeader;
+    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
 };
 
 #endif
