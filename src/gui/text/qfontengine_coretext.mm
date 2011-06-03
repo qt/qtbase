@@ -745,9 +745,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, aa ||
-                                (fontDef.pointSize > qt_antialiasing_threshold
-                                 && !(fontDef.styleStrategy & QFont::NoAntialias)));
+    CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > qt_antialiasing_threshold)
+                                 && !(fontDef.styleStrategy & QFont::NoAntialias));
     CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
