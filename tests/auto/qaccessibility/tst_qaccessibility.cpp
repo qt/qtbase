@@ -2098,6 +2098,12 @@ void tst_QAccessibility::lineEditTest()
     QTestAccessibility::clearEvents();
     le2->setFocus(Qt::TabFocusReason);
     QTRY_VERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(le2, 0, QAccessible::Focus)));
+
+    le->setText(QLatin1String("500"));
+    le->setValidator(new QIntValidator());
+    iface->setText(QAccessible::Value, 0, QLatin1String("This text is not a number"));
+    QCOMPARE(le->text(), QLatin1String("500"));
+
     delete iface;
     delete le;
     delete le2;
