@@ -404,6 +404,19 @@ QString QRawFont::familyName() const
 }
 
 /*!
+   Returns the style name of this QRawFont.
+
+   \sa QFont::styleName()
+*/
+QString QRawFont::styleName() const
+{
+    if (!isValid())
+        return QString();
+
+    return d->fontEngine->fontDef.styleName;
+}
+
+/*!
    Returns the style of this QRawFont.
 
    \sa QFont::style()

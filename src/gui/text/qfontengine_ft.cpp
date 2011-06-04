@@ -758,6 +758,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     }
 #endif
 
+    fontDef.styleName = QString::fromUtf8(face->style_name);
+
     unlockFace();
 
     fsType = freetype->fsType();

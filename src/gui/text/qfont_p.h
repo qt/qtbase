@@ -80,6 +80,7 @@ struct QFontDef
     }
 
     QString family;
+    QString styleName;
 
 #ifdef Q_WS_X11
     QString addStyle;

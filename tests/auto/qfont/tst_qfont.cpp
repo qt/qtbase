@@ -77,6 +77,7 @@ private slots:
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
     void lastResortFont();
+    void styleName();
 };
 
 // Testing get/set functions
@@ -610,6 +611,18 @@ void tst_QFont::lastResortFont()
 #endif
     QFont font;
     QVERIFY(!font.lastResortFont().isEmpty());
+}
+
+void tst_QFont::styleName()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("Only tested on Mac", SkipAll);
+#else
+    QFont font("Helvetica Neue");
+    font.setStyleName("UltraLight");
+
+    QCOMPARE(QFontInfo(font).styleName(), QString("UltraLight"));
+#endif
 }
 
 QTEST_MAIN(tst_QFont)
