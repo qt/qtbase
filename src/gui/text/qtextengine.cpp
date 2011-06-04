@@ -856,7 +856,7 @@ void QTextEngine::shapeLine(const QScriptLine &line)
     }
 }
 
-#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC)
+#if !defined(QT_ENABLE_HARFBUZZ_FOR_MAC) && defined(Q_WS_MAC)
 static bool enableHarfBuzz()
 {
     static enum { Yes, No, Unknown } status = Unknown;
