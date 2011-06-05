@@ -59,6 +59,7 @@
 #include "QtGui/qdrag.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qcursor.h"
+#include "QtGui/qwindow.h"
 #include "QtCore/qpoint.h"
 #include "private/qobject_p.h"
 
@@ -107,6 +108,44 @@ public:
     QMap<Qt::DropAction, QPixmap> customCursors;
     Qt::DropAction defaultDropAction;
 };
+
+class QShapedPixmapWindow : public QWindow {
+    QPixmap pixmap;
+public:
+    QShapedPixmapWindow() :
+        QWindow(0)
+    {
+        setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
+        // ### Should we set the surface type to raster?
+        // ### FIXME
+//            setAttribute(Qt::WA_TransparentForMouseEvents);
+    }
+
+    void move(const QPoint &p) {
+        QRect g = geometry();
+        g.setTopLeft(p);
+        setGeometry(g);
+    }
+    void setPixmap(QPixmap pm)
+    {
+        pixmap = pm;
+        // ###
+//        if (!pixmap.mask().isNull()) {
+//            setMask(pixmap.mask());
+//        } else {
+//            clearMask();
+//        }
+        setGeometry(QRect(geometry().topLeft(), pm.size()));
+    }
+
+    // ### Get it painted again!
+//    void paintEvent(QPaintEvent*)
+//    {
+//        QPainter p(this);
+//        p.drawPixmap(0,0,pixmap);
+//    }
+};
+
 
 class Q_GUI_EXPORT QDragManager : public QObject {
     Q_OBJECT
@@ -158,6 +197,8 @@ public:
     Qt::DropActions possible_actions;
     // Shift/Ctrl handling, and final drop status
     Qt::DropAction global_accepted_action;
+
+    QShapedPixmapWindow *shapedPixmapWindow;
 
 private:
     QMimeData *platformDropData;

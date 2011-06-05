@@ -109,6 +109,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
     initializeAllAtoms();
 
+    m_time = XCB_CURRENT_TIME;
+
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
     int screenNumber = 0;
@@ -450,7 +452,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     case XCB_UNMAP_NOTIFY:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
     case XCB_CLIENT_MESSAGE:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
+        handleClientMessageEvent((xcb_client_message_event_t *)event);
     case XCB_ENTER_NOTIFY:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
     case XCB_LEAVE_NOTIFY:
@@ -467,14 +469,26 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
         break;
     case XCB_SELECTION_REQUEST:
-        m_clipboard->handleSelectionRequest((xcb_selection_request_event_t *)event);
+    {
+        xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
+        if (sr->selection == atom(QXcbAtom::XdndSelection))
+            m_drag->handleSelectionRequest(sr);
+        else
+            m_clipboard->handleSelectionRequest(sr);
         break;
+    }
     case XCB_SELECTION_CLEAR:
+        setTime(((xcb_selection_clear_event_t *)event)->time);
         qDebug() << "XCB_SELECTION_CLEAR";
         handled = false;
         break;
     case XCB_SELECTION_NOTIFY:
         qDebug() << "XCB_SELECTION_NOTIFY";
+        handled = false;
+        break;
+    case XCB_PROPERTY_NOTIFY:
+        setTime(((xcb_property_notify_event_t *)event)->time);
+//        qDebug() << "XCB_PROPERTY_NOTIFY";
         handled = false;
         break;
     default:
@@ -532,6 +546,25 @@ void QXcbConnection::processXcbEvents()
 
     xcb_flush(xcb_connection());
 }
+
+void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *event)
+{
+    if (event->format != 32)
+        return;
+
+    if (event->type == atom(QXcbAtom::XdndStatus)) {
+        drag()->handleStatus(event, false);
+    } else if (event->type == atom(QXcbAtom::XdndFinished)) {
+        drag()->handleFinished(event, false);
+    }
+
+    QXcbWindow *window = platformWindowFromId(event->window);
+    if (!window)
+        return;
+
+    window->handleClientMessageEvent(event);
+}
+
 
 xcb_generic_event_t *QXcbConnection::checkEvent(int type)
 {

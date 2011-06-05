@@ -49,6 +49,7 @@
 #include <qpoint.h>
 #include <qrect.h>
 #include <qsharedpointer.h>
+#include <qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,8 +58,10 @@ class QWindow;
 class QXcbConnection;
 class QXcbWindow;
 class QDropData;
+class QXcbScreen;
+class QDrag;
 
-class QXcbDrag : public QPlatformDrag
+class QXcbDrag : public QObject, public QPlatformDrag
 {
 public:
     QXcbDrag(QXcbConnection *c);
@@ -72,22 +75,32 @@ public:
     virtual void cancel();
     virtual void move(const QMouseEvent *me);
     virtual void drop(const QMouseEvent *me);
+    void endDrag();
 
     void handleEnter(QWindow *window, const xcb_client_message_event_t *event);
     void handlePosition(QWindow *w, const xcb_client_message_event_t *event, bool passive);
-    void handleStatus(QWindow *w, const xcb_client_message_event_t *event, bool passive);
     void handleLeave(QWindow *w, const xcb_client_message_event_t *event, bool /*passive*/);
     void handleDrop(QWindow *, const xcb_client_message_event_t *event, bool passive);
+
+    void handleStatus(const xcb_client_message_event_t *event, bool passive);
+    void handleSelectionRequest(const xcb_selection_request_event_t *event);
+    void handleFinished(const xcb_client_message_event_t *event, bool passive);
 
     bool dndEnable(QXcbWindow *win, bool on);
 
     QXcbConnection *connection() const { return m_connection; }
 
+protected:
+    void timerEvent(QTimerEvent* e);
+
 private:
     friend class QDropData;
 
+    void init();
+
     void handle_xdnd_position(QWindow *w, const xcb_client_message_event_t *event, bool passive);
-    void handle_xdnd_status(QWindow *, const xcb_client_message_event_t *event, bool);
+    void handle_xdnd_status(const xcb_client_message_event_t *event, bool);
+    void send_leave();
 
     Qt::DropAction toDropAction(xcb_atom_t atom) const;
     xcb_atom_t toXdndAction(Qt::DropAction a) const;
@@ -107,14 +120,40 @@ private:
     QList<xcb_atom_t> xdnd_types;
 
     xcb_timestamp_t target_time;
+    xcb_timestamp_t source_time;
     Qt::DropAction last_target_accepted_action;
 
     // rectangle in which the answer will be the same
     QRect source_sameanswer;
     bool waiting_for_status;
 
+    // top-level window we sent position to last.
+    xcb_window_t current_target;
     // window to send events to (always valid if current_target)
     xcb_window_t current_proxy_target;
+
+    QXcbScreen *current_screen;
+
+    int heartbeat;
+    bool xdnd_dragging;
+
+    QVector<xcb_atom_t> drag_types;
+
+    struct Transaction
+    {
+        xcb_timestamp_t timestamp;
+        xcb_window_t target;
+        xcb_window_t proxy_target;
+        QWindow *targetWindow;
+//        QWidget *embedding_widget;
+        QDrag *object;
+    };
+    QList<Transaction> transactions;
+
+    int transaction_expiry_timer;
+    void restartDropExpiryTimer();
+    int findTransactionByWindow(xcb_window_t window);
+    int findTransactionByTime(xcb_timestamp_t timestamp);
 };
 
 QT_END_NAMESPACE

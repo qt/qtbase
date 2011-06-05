@@ -238,7 +238,7 @@ public:
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
 
-    QList<QXcbScreen *> screens() const { return m_screens; }
+    const QList<QXcbScreen *> &screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
     xcb_atom_t atom(QXcbAtom::Atom atom);
@@ -290,6 +290,9 @@ public:
     typedef bool (*PeekFunc)(xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
 
+    inline xcb_timestamp_t time() const { return m_time; }
+    inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
+
 private slots:
     void processXcbEvents();
 
@@ -299,6 +302,7 @@ private:
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
+    void handleClientMessageEvent(const xcb_client_message_event_t *event);
 
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
@@ -307,6 +311,8 @@ private:
     int m_primaryScreen;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
+
+    xcb_timestamp_t m_time;
 
     QByteArray m_displayName;
 

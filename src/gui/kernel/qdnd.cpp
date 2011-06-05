@@ -143,6 +143,7 @@ QDragManager::QDragManager()
 #ifdef Q_WS_X11
     xdndMimeTransferedPixmapIndex = 0;
 #endif
+    shapedPixmapWindow = 0;
 
     possible_actions = Qt::IgnoreAction;
 
@@ -298,50 +299,9 @@ static const char *const default_pm[] = {
 
 static Qt::KeyboardModifiers oldstate;
 
-class QShapedPixmapWindow : public QWindow {
-    QPixmap pixmap;
-public:
-    QShapedPixmapWindow() :
-        QWindow(0)
-    {
-        setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
-        // ### Should we set the surface type to raster?
-        // ### FIXME
-//            setAttribute(Qt::WA_TransparentForMouseEvents);
-    }
-
-    void move(const QPoint &p) {
-        QRect g = geometry();
-        g.setTopLeft(p);
-        setGeometry(g);
-    }
-    void setPixmap(QPixmap pm)
-    {
-        pixmap = pm;
-        // ###
-//        if (!pixmap.mask().isNull()) {
-//            setMask(pixmap.mask());
-//        } else {
-//            clearMask();
-//        }
-        setGeometry(QRect(geometry().topLeft(), pm.size()));
-    }
-
-    // ### Get it painted again!
-//    void paintEvent(QPaintEvent*)
-//    {
-//        QPainter p(this);
-//        p.drawPixmap(0,0,pixmap);
-//    }
-};
-
-
-static QShapedPixmapWindow *qt_qws_dnd_deco = 0;
-
-
 void QDragManager::updatePixmap()
 {
-    if (qt_qws_dnd_deco) {
+    if (shapedPixmapWindow) {
         QPixmap pm;
         QPoint pm_hot(default_pm_hotx,default_pm_hoty);
         if (object) {
@@ -354,12 +314,12 @@ void QDragManager::updatePixmap()
                 defaultPm = new QPixmap(default_pm);
             pm = *defaultPm;
         }
-        qt_qws_dnd_deco->setPixmap(pm);
-        qt_qws_dnd_deco->move(QCursor::pos()-pm_hot);
+        shapedPixmapWindow->setPixmap(pm);
+        shapedPixmapWindow->move(QCursor::pos()-pm_hot);
         if (willDrop) {
-            qt_qws_dnd_deco->show();
+            shapedPixmapWindow->show();
         } else {
-            qt_qws_dnd_deco->hide();
+            shapedPixmapWindow->hide();
         }
     }
 }
@@ -368,8 +328,8 @@ void QDragManager::updateCursor()
 {
 #ifndef QT_NO_CURSOR
     if (willDrop) {
-        if (qt_qws_dnd_deco)
-            qt_qws_dnd_deco->show();
+        if (shapedPixmapWindow)
+            shapedPixmapWindow->show();
         if (currentActionForOverrideCursor != global_accepted_action) {
             QGuiApplication::changeOverrideCursor(QCursor(dragCursor(global_accepted_action), 0, 0));
             currentActionForOverrideCursor = global_accepted_action;
@@ -380,8 +340,8 @@ void QDragManager::updateCursor()
             QGuiApplication::changeOverrideCursor(QCursor(Qt::ForbiddenCursor));
             currentActionForOverrideCursor = Qt::IgnoreAction;
         }
-        if (qt_qws_dnd_deco)
-            qt_qws_dnd_deco->hide();
+        if (shapedPixmapWindow)
+            shapedPixmapWindow->hide();
     }
 #endif
 }
@@ -468,8 +428,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     }
 
     object = o;
-    if (!qt_qws_dnd_deco)
-        qt_qws_dnd_deco = new QShapedPixmapWindow();
+    if (!shapedPixmapWindow)
+        shapedPixmapWindow = new QShapedPixmapWindow();
     oldstate = Qt::NoModifier; // #### Should use state that caused the drag
 //    drag_mode = mode;
 
@@ -494,8 +454,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     delete eventLoop;
     eventLoop = 0;
 
-    delete qt_qws_dnd_deco;
-    qt_qws_dnd_deco = 0;
+    delete shapedPixmapWindow;
+    shapedPixmapWindow = 0;
 
     return global_accepted_action;
 }

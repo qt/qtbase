@@ -944,6 +944,9 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
     if (event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(window());
+        } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
+            connection()->setTime(event->data.data32[1]);
+            // ### handle take focus!
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             xcb_client_message_event_t reply = *event;
 
@@ -953,6 +956,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             xcb_send_event(xcb_connection(), 0, m_screen->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
             xcb_flush(xcb_connection());
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_SYNC_REQUEST)) {
+            connection()->setTime(event->data.data32[1]);
             if (!m_hasReceivedSyncRequest) {
                 m_hasReceivedSyncRequest = true;
                 printf("Window manager supports _NET_WM_SYNC_REQUEST, syncing resizes\n");
@@ -1077,6 +1081,8 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 
 void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global)
 {
+    connection()->setTime(time);
+
     Qt::MouseButtons buttons = translateMouseButtons(state);
     Qt::MouseButton button = translateMouseButton(detail);
 
@@ -1087,6 +1093,8 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
 
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
+    connection()->setTime(event->time);
+
     if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
         || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
         || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
@@ -1099,6 +1107,8 @@ void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 
 void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
 {
+    connection()->setTime(event->time);
+
     if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
         || event->detail == XCB_NOTIFY_DETAIL_INFERIOR)
     {

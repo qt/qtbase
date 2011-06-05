@@ -45,6 +45,7 @@
 #include "qxcbclipboard.h"
 #include "qxcbmime.h"
 #include "qxcbwindow.h"
+#include "qxcbscreen.h"
 #include "qwindow.h"
 #include <private/qdnd_p.h>
 #include <qdebug.h>
@@ -74,6 +75,41 @@ static inline xcb_window_t xcb_window(QWindow *w)
     return static_cast<QXcbWindow *>(w->handle())->xcb_window();
 }
 
+
+static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
+{
+    xcb_window_t proxy = XCB_NONE;
+
+    xcb_get_property_cookie_t cookie = Q_XCB_CALL2(xcb_get_property(c->xcb_connection(), false, w, c->atom(QXcbAtom::XdndProxy),
+                                                        QXcbAtom::XA_WINDOW, 0, 1), c);
+    xcb_get_property_reply_t *reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
+
+    if (reply && reply->type == QXcbAtom::XA_WINDOW)
+        proxy = *((xcb_window_t *)xcb_get_property_value(reply));
+    free(reply);
+
+    if (proxy == XCB_NONE)
+        return proxy;
+
+    // exists and is real?
+    cookie = Q_XCB_CALL2(xcb_get_property(c->xcb_connection(), false, proxy, c->atom(QXcbAtom::XdndProxy),
+                                                        QXcbAtom::XA_WINDOW, 0, 1), c);
+    reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
+
+    if (reply && reply->type == QXcbAtom::XA_WINDOW) {
+        xcb_window_t p = *((xcb_window_t *)xcb_get_property_value(reply));
+        if (proxy != p)
+            proxy = 0;
+    } else {
+        proxy = 0;
+    }
+
+    free(reply);
+
+    return proxy;
+}
+
+
 class QDropData : public QXcbMime
 {
 public:
@@ -96,7 +132,10 @@ QXcbDrag::QXcbDrag(QXcbConnection *c)
     m_connection = c;
     dropData = new QDropData(this);
 
-    startDrag(); // init variables
+    init();
+    heartbeat = -1;
+
+    transaction_expiry_timer = -1;
 }
 
 QXcbDrag::~QXcbDrag()
@@ -104,6 +143,24 @@ QXcbDrag::~QXcbDrag()
     delete dropData;
 }
 
+void QXcbDrag::init()
+{
+    currentWindow.clear();
+
+    xdnd_dragsource = XCB_NONE;
+    last_target_accepted_action = Qt::IgnoreAction;
+
+    waiting_for_status = false;
+    current_target = XCB_NONE;
+    current_proxy_target = XCB_NONE;
+    xdnd_dragging = false;
+
+    source_time = XCB_CURRENT_TIME;
+    target_time = XCB_CURRENT_TIME;
+
+    current_screen = 0;
+    drag_types.clear();
+}
 
 QMimeData *QXcbDrag::platformDropData()
 {
@@ -112,28 +169,317 @@ QMimeData *QXcbDrag::platformDropData()
 
 void QXcbDrag::startDrag()
 {
-    currentWindow.clear();
+    // ####
+//    if (object) {
+//        // the last drag and drop operation hasn't finished, so we are going to wait
+//        // for one second to see if it does... if the finish message comes after this,
+//        // then we could still have problems, but this is highly unlikely
+//        QGuiApplication::flush();
 
-    xdnd_dragsource = XCB_NONE;
-    last_target_accepted_action = Qt::IgnoreAction;
+//        QElapsedTimer timer;
+//        timer.start();
+//        do {
+//            XEvent event;
+//            if (XCheckTypedEvent(X11->display, ClientMessage, &event))
+//                qApp->x11ProcessEvent(&event);
 
-    waiting_for_status = false;
-    current_proxy_target = XCB_NONE;
+//            // sleep 50 ms, so we don't use up CPU cycles all the time.
+//            struct timeval usleep_tv;
+//            usleep_tv.tv_sec = 0;
+//            usleep_tv.tv_usec = 50000;
+//            select(0, 0, 0, 0, &usleep_tv);
+//        } while (object && timer.hasExpired(1000));
+//    }
+
+    init();
+
+    heartbeat = startTimer(200);
+    xdnd_dragging = true;
+
+    xcb_set_selection_owner(connection()->xcb_connection(), connection()->clipboard()->owner(),
+                            connection()->atom(QXcbAtom::XdndSelection), connection()->time());
+
+    QDragManager *manager = QDragManager::self();
+    QStringList fmts = QXcbMime::formatsHelper(manager->dropData());
+    for (int i = 0; i < fmts.size(); ++i) {
+        QList<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
+        for (int j = 0; j < atoms.size(); ++j) {
+            if (!drag_types.contains(atoms.at(j)))
+                drag_types.append(atoms.at(j));
+        }
+    }
+    if (drag_types.size() > 3)
+        xcb_change_property(connection()->xcb_connection(), XCB_PROP_MODE_REPLACE, connection()->clipboard()->owner(),
+                            connection()->atom(QXcbAtom::XdndTypelist),
+                            QXcbAtom::XA_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
+
+    QMouseEvent me(QEvent::MouseMove, QCursor::pos(), QCursor::pos(), Qt::LeftButton,
+                   QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+    move(&me);
+
+//    if (!QWidget::mouseGrabber())
+//        manager->shapedPixmapWindow->grabMouse();
 }
 
-void QXcbDrag::cancel()
+void QXcbDrag::endDrag()
 {
-    //###
+    Q_ASSERT(heartbeat != -1);
+    killTimer(heartbeat);
+    heartbeat = -1;
+
+    xdnd_dragging = false;
+}
+
+static xcb_translate_coordinates_reply_t *
+translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int x, int y)
+{
+    xcb_translate_coordinates_cookie_t cookie =
+            xcb_translate_coordinates(c->xcb_connection(), from, to, x, y);
+    return xcb_translate_coordinates_reply(c->xcb_connection(), cookie, 0);
 }
 
 void QXcbDrag::move(const QMouseEvent *me)
 {
+    DEBUG() << "QDragManager::move enter";
+
     // ###
+    QPoint globalPos = me->globalPos();
+
+    if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
+        return;
+
+    const QList<QXcbScreen *> &screens = connection()->screens();
+    QXcbScreen *screen = screens.at(connection()->primaryScreen());
+    for (int i = 0; i < screens.size(); ++i) {
+        if (screens.at(i)->geometry().contains(globalPos)) {
+            screen = screens.at(i);
+            break;
+        }
+    }
+    if (screen != current_screen) {
+        // ### need to recreate the shaped pixmap window?
+//    int screen = QCursor::x11Screen();
+//    if ((qt_xdnd_current_screen == -1 && screen != X11->defaultScreen) || (screen != qt_xdnd_current_screen)) {
+//        // recreate the pixmap on the new screen...
+//        delete xdnd_data.deco;
+//        QWidget* parent = object->source()->window()->x11Info().screen() == screen
+//            ? object->source()->window() : QApplication::desktop()->screen(screen);
+//        xdnd_data.deco = new QShapedPixmapWidget(parent);
+//        if (!QWidget::mouseGrabber()) {
+//            updatePixmap();
+//            xdnd_data.deco->grabMouse();
+//        }
+//    }
+//    xdnd_data.deco->move(QCursor::pos() - xdnd_data.deco->pm_hot);
+        current_screen = screen;
+    }
+
+
+//    qt_xdnd_current_screen = screen;
+    xcb_window_t rootwin = current_screen->root();
+    xcb_translate_coordinates_reply_t *translate =
+            ::translateCoordinates(connection(), rootwin, rootwin, globalPos.x(), globalPos.y());
+    if (!translate)
+        return;
+    xcb_window_t target = translate->child;
+    int lx = translate->dst_x;
+    int ly = translate->dst_y;
+    free (translate);
+
+    if (target == rootwin) {
+        // Ok.
+    } else if (target) {
+        //me
+        xcb_window_t src = rootwin;
+        while (target != 0) {
+            DNDDEBUG << "checking target for XdndAware" << target;
+
+            // translate coordinates
+            translate = ::translateCoordinates(connection(), src, target, lx, ly);
+            if (!translate) {
+                target = 0;
+                break;
+            }
+            lx = translate->dst_x;
+            ly = translate->dst_y;
+            src = translate->child;
+            free(translate);
+
+            // check if it has XdndAware
+            xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(connection()->xcb_connection(), false, target,
+                                                                connection()->atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
+            xcb_get_property_reply_t *reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
+            bool aware = reply && reply->type != XCB_NONE;
+            free(reply);
+            if (aware) {
+                DNDDEBUG << "Found XdndAware on " << target;
+                break;
+            }
+
+            // find child at the coordinates
+            translate = ::translateCoordinates(connection(), src, src, lx, ly);
+            if (!translate) {
+                target = 0;
+                break;
+            }
+            target = translate->child;
+            free(translate);
+        }
+        // ####
+//        if (xdnd_data.deco && (!target || target == xdnd_data.deco->effectiveWinId())) {
+//            DNDDEBUG << "need to find real window";
+//            target = findRealWindow(globalPos, rootwin, 6);
+//            DNDDEBUG << "real window found" << QWidget::find(target) << target;
+//        }
+    }
+
+    QXcbWindow *w = 0;
+    if (target) {
+        w = connection()->platformWindowFromId(target);
+        if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
+            w = 0;
+    } else {
+        w = 0;
+        target = rootwin;
+    }
+
+    DNDDEBUG << "and the final target is " << target;
+    DNDDEBUG << "the widget w is" << (w ? w->window() : 0);
+
+    xcb_window_t proxy_target = xdndProxy(connection(), target);
+    if (!proxy_target)
+        proxy_target = target;
+    int target_version = 1;
+
+    if (proxy_target) {
+        xcb_get_property_cookie_t cookie = xcb_get_property(connection()->xcb_connection(), false, target,
+                                                            connection()->atom(QXcbAtom::XdndAware), XCB_GET_PROPERTY_TYPE_ANY, 0, 1);
+        xcb_get_property_reply_t *reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
+        if (!reply || reply->type == XCB_NONE)
+            target = 0;
+        target_version = xcb_get_property_value_length(reply) == 1 ? *(uint32_t *)xcb_get_property_value(reply) : 1;
+        if (target_version > xdnd_version)
+            target_version = xdnd_version;
+
+        free(reply);
+    }
+
+    DEBUG() << "target=" << target << "current_target=" << current_target;
+    if (target != current_target) {
+        if (current_target)
+            send_leave();
+
+        current_target = target;
+        current_proxy_target = proxy_target;
+        if (target) {
+            int flags = target_version << 24;
+            if (drag_types.size() > 3)
+                flags |= 0x0001;
+
+            xcb_client_message_event_t enter;
+            enter.response_type = XCB_CLIENT_MESSAGE;
+            enter.window = target;
+            enter.format = 32;
+            enter.type = connection()->atom(QXcbAtom::XdndEnter);
+            enter.data.data32[0] = connection()->clipboard()->owner();
+            enter.data.data32[1] = flags;
+            enter.data.data32[2] = drag_types.size()>0 ? drag_types.at(0) : 0;
+            enter.data.data32[3] = drag_types.size()>1 ? drag_types.at(1) : 0;
+            enter.data.data32[4] = drag_types.size()>2 ? drag_types.at(2) : 0;
+            // provisionally set the rectangle to 5x5 pixels...
+            source_sameanswer = QRect(globalPos.x() - 2, globalPos.y() -2 , 5, 5);
+
+            DEBUG() << "sending Xdnd enter source=" << enter.data.data32[0];
+            if (w)
+                handleEnter(w->window(), &enter);
+            else if (target)
+                xcb_send_event(connection()->xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&enter);
+            waiting_for_status = false;
+        }
+    }
+    if (waiting_for_status)
+        return;
+
+    QDragManager *m = QDragManager::self();
+
+    if (target) {
+        waiting_for_status = true;
+
+        xcb_client_message_event_t move;
+        move.response_type = XCB_CLIENT_MESSAGE;
+        move.window = target;
+        move.format = 32;
+        move.type = connection()->atom(QXcbAtom::XdndPosition);
+        move.window = target;
+        move.data.data32[0] = connection()->clipboard()->owner();
+        move.data.data32[1] = 0; // flags
+        move.data.data32[2] = (globalPos.x() << 16) + globalPos.y();
+        move.data.data32[3] = connection()->time();
+        move.data.data32[4] = toXdndAction(m->defaultAction(m->dragPrivate()->possible_actions, QGuiApplication::keyboardModifiers()));
+        DEBUG() << "sending Xdnd position source=" << move.data.data32[0] << "target=" << move.window;
+
+        source_time = connection()->time();
+
+        if (w)
+            handle_xdnd_position(w->window(), &move, false);
+        else
+            xcb_send_event(connection()->xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&move);
+    } else {
+        if (m->willDrop) {
+            m->willDrop = false;
+            m->updateCursor();
+        }
+    }
+    DEBUG() << "QDragManager::move leave";
 }
 
-void QXcbDrag::drop(const QMouseEvent *me)
+void QXcbDrag::drop(const QMouseEvent *)
 {
-    // ###
+    endDrag();
+
+    if (!current_target)
+        return;
+
+    xcb_client_message_event_t drop;
+    drop.response_type = XCB_CLIENT_MESSAGE;
+    drop.window = current_target;
+    drop.format = 32;
+    drop.type = connection()->atom(QXcbAtom::XdndDrop);
+    drop.data.data32[0] = connection()->clipboard()->owner();
+    drop.data.data32[1] = 0; // flags
+    drop.data.data32[2] = connection()->time();
+
+    drop.data.data32[3] = 0;
+    drop.data.data32[4] = 0;
+
+    QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
+
+    if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
+        w = 0;
+
+    QDragManager *manager = QDragManager::self();
+
+    Transaction t = {
+        connection()->time(),
+        current_target,
+        current_proxy_target,
+        (w ? w->window() : 0),
+//        current_embedding_widget,
+        manager->object
+    };
+    transactions.append(t);
+    restartDropExpiryTimer();
+
+    if (w)
+        handleDrop(w->window(), &drop, false);
+    else
+        xcb_send_event(connection()->xcb_connection(), false, current_proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&drop);
+
+    current_target = 0;
+    current_proxy_target = 0;
+    source_time = 0;
+//    current_embedding_widget = 0;
+    manager->object = 0;
 }
 
 #define ATOM(x) connection()->atom(QXcbAtom::x)
@@ -168,12 +514,21 @@ xcb_atom_t QXcbDrag::toXdndAction(Qt::DropAction a) const
 
 #undef ATOM
 
-#if 0
-static int findXdndDropTransactionByWindow(Window window)
+// timer used to discard old XdndDrop transactions
+enum { XdndDropTransactionTimeout = 5000 }; // 5 seconds
+
+void QXcbDrag::restartDropExpiryTimer()
+{
+    if (transaction_expiry_timer != -1)
+        killTimer(transaction_expiry_timer);
+    transaction_expiry_timer = startTimer(XdndDropTransactionTimeout);
+}
+
+int QXcbDrag::findTransactionByWindow(xcb_window_t window)
 {
     int at = -1;
-    for (int i = 0; i < X11->dndDropTransactions.count(); ++i) {
-        const QXdndDropTransaction &t = X11->dndDropTransactions.at(i);
+    for (int i = 0; i < transactions.count(); ++i) {
+        const Transaction &t = transactions.at(i);
         if (t.target == window || t.proxy_target == window) {
             at = i;
             break;
@@ -182,11 +537,11 @@ static int findXdndDropTransactionByWindow(Window window)
     return at;
 }
 
-static int findXdndDropTransactionByTime(Time timestamp)
+int QXcbDrag::findTransactionByTime(xcb_timestamp_t timestamp)
 {
     int at = -1;
-    for (int i = 0; i < X11->dndDropTransactions.count(); ++i) {
-        const QXdndDropTransaction &t = X11->dndDropTransactions.at(i);
+    for (int i = 0; i < transactions.count(); ++i) {
+        const Transaction &t = transactions.at(i);
         if (t.timestamp == timestamp) {
             at = i;
             break;
@@ -195,17 +550,7 @@ static int findXdndDropTransactionByTime(Time timestamp)
     return at;
 }
 
-// timer used to discard old XdndDrop transactions
-static int transaction_expiry_timer = -1;
-enum { XdndDropTransactionTimeout = 5000 }; // 5 seconds
-
-static void restartXdndDropExpiryTimer()
-{
-    if (transaction_expiry_timer != -1)
-        QDragManager::self()->killTimer(transaction_expiry_timer);
-    transaction_expiry_timer = QDragManager::self()->startTimer(XdndDropTransactionTimeout);
-}
-
+#if 0
 
 // find an ancestor with XdndAware on it
 static Window findXdndAwareParent(Window window)
@@ -244,48 +589,14 @@ static Window findXdndAwareParent(Window window)
 }
 
 
-
-
-// clean up the stuff used.
-static void qt_xdnd_cleanup();
-
-static void qt_xdnd_send_leave();
-
-
-// timer used when target wants "continuous" move messages (eg. scroll)
-static int heartbeat = -1;
-// top-level window we sent position to last.
-static Window qt_xdnd_current_target;
-// window to send events to (always valid if qt_xdnd_current_target)
-static Window current_proxy_target;
-
-// widget we forwarded position to last, and local position
-static QPointer<QWidget> currentWindow;
-static QPoint currentPosition;
-// timestamp from the XdndPosition and XdndDrop
-static Time target_time;
-// screen number containing the pointer... -1 means default
-static int qt_xdnd_current_screen = -1;
-// state of dragging... true if dragging, false if not
-bool qt_xdnd_dragging = false;
-
 static bool waiting_for_status = false;
 
 // used to preset each new QDragMoveEvent
 
-// Shift/Ctrl handling, and final drop status
-static Qt::DropAction global_accepted_action = Qt::CopyAction;
-static Qt::DropActions possible_actions = Qt::IgnoreAction;
 
 // for embedding only
 static QWidget* current_embedding_widget  = 0;
 static xcb_client_message_event_t last_enter_event;
-
-// cursors
-static QCursor *noDropCursor = 0;
-static QCursor *moveCursor = 0;
-static QCursor *copyCursor = 0;
-static QCursor *linkCursor = 0;
 
 
 class QExtraWidget : public QWidget
@@ -298,32 +609,6 @@ public:
 
 inline QWExtra* QExtraWidget::extraData() { return d_func()->extraData(); }
 inline QTLWExtra* QExtraWidget::topData() { return d_func()->topData(); }
-
-
-
-void QX11Data::xdndSetup() {
-    QCursorData::initialize();
-    qAddPostRoutine(qt_xdnd_cleanup);
-}
-
-
-void qt_xdnd_cleanup()
-{
-    delete noDropCursor;
-    noDropCursor = 0;
-    delete copyCursor;
-    copyCursor = 0;
-    delete moveCursor;
-    moveCursor = 0;
-    delete linkCursor;
-    linkCursor = 0;
-    delete defaultPm;
-    defaultPm = 0;
-    delete xdnd_data.desktop_proxy;
-    xdnd_data.desktop_proxy = 0;
-    delete xdnd_data.deco;
-    xdnd_data.deco = 0;
-}
 
 
 static QWidget *find_child(QWidget *tlw, QPoint & p)
@@ -367,10 +652,10 @@ static bool checkEmbedded(QWidget* w, const XEvent* xe)
         return false;
 
     if (current_embedding_widget != 0 && current_embedding_widget != w) {
-        qt_xdnd_current_target = ((QExtraWidget*)current_embedding_widget)->extraData()->xDndProxy;
-        current_proxy_target = qt_xdnd_current_target;
+        current_target = ((QExtraWidget*)current_embedding_widget)->extraData()->xDndProxy;
+        current_proxy_target = current_target;
         qt_xdnd_send_leave();
-        qt_xdnd_current_target = 0;
+        current_target = 0;
         current_proxy_target = 0;
         current_embedding_widget = 0;
     }
@@ -403,6 +688,7 @@ void QXcbDrag::handleEnter(QWindow *window, const xcb_client_message_event_t *ev
     Q_UNUSED(window);
     DEBUG() << "handleEnter" << window;
 
+    xdnd_types.clear();
 //    motifdnd_active = false;
 //    last_enter_event.xclient = xe->xclient;
 
@@ -447,6 +733,8 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
 
     p -= geometry.topLeft();
 
+    qDebug() << "handle_xdnd_position" << p;
+
     // ####
 //    if (!passive && checkEmbedded(w, e))
 //        return;
@@ -460,7 +748,7 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
     }
 
     // timestamp from the source
-    if (e->data.data32[3] != 0)
+    if (e->data.data32[3] != XCB_NONE)
         target_time /*= X11->userTime*/ = e->data.data32[3];
 
     QDragManager *manager = QDragManager::self();
@@ -538,21 +826,18 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
         if (answerRect.height() < 0)
             answerRect.setHeight(0);
 
-        response.data.data32[2] = (answerRect.x() << 16) + answerRect.y();
-        response.data.data32[3] = (answerRect.width() << 16) + answerRect.height();
+//        response.data.data32[2] = (answerRect.x() << 16) + answerRect.y();
+//        response.data.data32[3] = (answerRect.width() << 16) + answerRect.height();
         response.data.data32[4] = toXdndAction(accepted_action);
     }
 
     // reset
     target_time = XCB_CURRENT_TIME;
 
-    QXcbWindow *source = connection()->platformWindowFromId(xdnd_dragsource);
-    if (source && (source->window()->windowType() == Qt::Desktop) /*&& !source->acceptDrops()*/)
-        source = 0;
-
-    DEBUG() << "sending XdndStatus";
-    if (source)
-        handle_xdnd_status(source->window(), &response, passive);
+    DEBUG() << "sending XdndStatus" << (xdnd_dragsource == connection()->clipboard()->owner()) << xdnd_dragsource
+            << response.data.data32[1] << connection()->atomName(response.data.data32[4]);
+    if (xdnd_dragsource == connection()->clipboard()->owner())
+        handle_xdnd_status(&response, passive);
     else
         Q_XCB_CALL(xcb_send_event(connection()->xcb_connection(), false, xdnd_dragsource,
                                   XCB_EVENT_MASK_NO_EVENT, (const char *)&response));
@@ -590,8 +875,9 @@ void QXcbDrag::handlePosition(QWindow * w, const xcb_client_message_event_t *eve
         free(lastEvent);
 }
 
-void QXcbDrag::handle_xdnd_status(QWindow *, const xcb_client_message_event_t *event, bool)
+void QXcbDrag::handle_xdnd_status(const xcb_client_message_event_t *event, bool)
 {
+    DEBUG("xdndHandleStatus");
     // ignore late status messages
     if (event->data.data32[0] && event->data.data32[0] != current_proxy_target)
         return;
@@ -611,14 +897,18 @@ void QXcbDrag::handle_xdnd_status(QWindow *, const xcb_client_message_event_t *e
         manager->global_accepted_action = newAction;
         manager->emitActionChanged(newAction);
     }
+    DEBUG() << "willDrop=" << manager->willDrop << "action=" << newAction;
     manager->updateCursor();
     waiting_for_status = false;
 }
 
-void QXcbDrag::handleStatus(QWindow *w, const xcb_client_message_event_t *event, bool passive)
+void QXcbDrag::handleStatus(const xcb_client_message_event_t *event, bool passive)
 {
-    DEBUG("xdndHandleStatus");
+    if (event->window != connection()->clipboard()->owner())
+        return;
+
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
+    qDebug() << "handleStatus" << lastEvent->window << lastEvent->data.data32[0];
     xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(connection()->atom(QXcbAtom::XdndStatus));
     while ((nextEvent = connection()->checkEvent(scanner))) {
@@ -627,7 +917,7 @@ void QXcbDrag::handleStatus(QWindow *w, const xcb_client_message_event_t *event,
         lastEvent = (xcb_client_message_event_t *)nextEvent;
     }
 
-    handle_xdnd_status(w, lastEvent, passive);
+    handle_xdnd_status(lastEvent, passive);
     if (lastEvent != event)
         free(lastEvent);
     DEBUG("xdndHandleStatus end");
@@ -659,47 +949,47 @@ void QXcbDrag::handleLeave(QWindow *w, const xcb_client_message_event_t *event, 
     currentWindow.clear();
 }
 
-#if 0
-void qt_xdnd_send_leave()
+void QXcbDrag::send_leave()
 {
-    if (!qt_xdnd_current_target)
+    if (!current_target)
         return;
 
     QDragManager *manager = QDragManager::self();
 
-    XClientMessageEvent leave;
-    leave.type = ClientMessage;
-    leave.window = qt_xdnd_current_target;
+    xcb_client_message_event_t leave;
+    leave.response_type = XCB_CLIENT_MESSAGE;
+    leave.window = current_target;
     leave.format = 32;
-    leave.message_type = ATOM(XdndLeave);
-    leave.data.l[0] = manager->dragPrivate()->source->effectiveWinId();
-    leave.data.l[1] = 0; // flags
-    leave.data.l[2] = 0; // x, y
-    leave.data.l[3] = 0; // w, h
-    leave.data.l[4] = 0; // just null
+    leave.type = connection()->atom(QXcbAtom::XdndLeave);
+    leave.data.data32[0] = connection()->clipboard()->owner();
+    leave.data.data32[1] = 0; // flags
+    leave.data.data32[2] = 0; // x, y
+    leave.data.data32[3] = 0; // w, h
+    leave.data.data32[4] = 0; // just null
 
-    QWidget * w = QWidget::find(current_proxy_target);
+    QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
 
-    if (w && (w->windowType() == Qt::Desktop) && !w->acceptDrops())
+    if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
 
     if (w)
-        X11->xdndHandleLeave(w, (const XEvent *)&leave, false);
+        handleLeave(w->window(), (const xcb_client_message_event_t *)&leave, false);
     else
-        XSendEvent(X11->display, current_proxy_target, False,
-                    NoEventMask, (XEvent*)&leave);
+        xcb_send_event(connection()->xcb_connection(), false,current_proxy_target,
+                       XCB_EVENT_MASK_NO_EVENT, (const char *)&leave);
 
     // reset the drag manager state
     manager->willDrop = false;
-    if (global_accepted_action != Qt::IgnoreAction)
+    if (manager->global_accepted_action != Qt::IgnoreAction)
         manager->emitActionChanged(Qt::IgnoreAction);
-    global_accepted_action = Qt::IgnoreAction;
+    manager->global_accepted_action = Qt::IgnoreAction;
     manager->updateCursor();
-    qt_xdnd_current_target = 0;
+    current_target = 0;
     current_proxy_target = 0;
-    qt_xdnd_source_current_time = 0;
+    source_time = XCB_CURRENT_TIME;
     waiting_for_status = false;
 }
+#if 0
 
 // TODO: remove and use QApplication::currentKeyboardModifiers() in Qt 4.8.
 static Qt::KeyboardModifiers currentKeyboardModifiers()
@@ -774,12 +1064,12 @@ void QXcbDrag::handleDrop(QWindow *, const xcb_client_message_event_t *event, bo
             manager->global_accepted_action = de.dropAction();
         }
         xcb_client_message_event_t finished;
-        finished.type = XCB_CLIENT_MESSAGE;
+        finished.response_type = XCB_CLIENT_MESSAGE;
         finished.window = xdnd_dragsource;
         finished.format = 32;
         finished.type = connection()->atom(QXcbAtom::XdndFinished);
         DNDDEBUG << "xdndHandleDrop"
-             << "currentWindow" << currentWindow
+             << "currentWindow" << currentWindow.data()
              << (currentWindow ? xcb_window(currentWindow.data()) : 0);
         finished.data.data32[0] = currentWindow ? xcb_window(currentWindow.data()) : XCB_NONE;
         finished.data.data32[1] = de.isAccepted() ? 1 : 0; // flags
@@ -798,68 +1088,72 @@ void QXcbDrag::handleDrop(QWindow *, const xcb_client_message_event_t *event, bo
     target_time = XCB_CURRENT_TIME;
 }
 
-#if 0
 
-void QX11Data::xdndHandleFinished(QWidget *, const XEvent * xe, bool passive)
+void QXcbDrag::handleFinished(const xcb_client_message_event_t *event, bool)
 {
     DEBUG("xdndHandleFinished");
-    const unsigned long *l = (const unsigned long *)xe->xclient.data.l;
+    if (event->window != connection()->clipboard()->owner())
+        return;
+
+    const unsigned long *l = (const unsigned long *)event->data.data32;
 
     DNDDEBUG << "xdndHandleFinished, l[0]" << l[0]
-             << "qt_xdnd_current_target" << qt_xdnd_current_target
+             << "current_target" << current_target
              << "qt_xdnd_current_proxy_targe" << current_proxy_target;
 
     if (l[0]) {
-        int at = findXdndDropTransactionByWindow(l[0]);
+        int at = findTransactionByWindow(l[0]);
         if (at != -1) {
-            restartXdndDropExpiryTimer();
+            restartDropExpiryTimer();
 
-            QXdndDropTransaction t = X11->dndDropTransactions.takeAt(at);
-            QDragManager *manager = QDragManager::self();
+            Transaction t = transactions.takeAt(at);
+//            QDragManager *manager = QDragManager::self();
 
-            Window target = qt_xdnd_current_target;
-            Window proxy_target = current_proxy_target;
-            QWidget *embedding_widget = current_embedding_widget;
-            QDrag *currentObject = manager->object;
+//            Window target = current_target;
+//            Window proxy_target = current_proxy_target;
+//            QWidget *embedding_widget = current_embedding_widget;
+//            QDrag *currentObject = manager->object;
 
-            qt_xdnd_current_target = t.target;
-            current_proxy_target = t.proxy_target;
-            current_embedding_widget = t.embedding_widget;
-            manager->object = t.object;
+//            current_target = t.target;
+//            current_proxy_target = t.proxy_target;
+//            current_embedding_widget = t.embedding_widget;
+//            manager->object = t.object;
 
-            if (!passive)
-                (void) checkEmbedded(currentWindow, xe);
+//            if (!passive)
+//                (void) checkEmbedded(currentWindow, xe);
 
-            current_embedding_widget = 0;
-            qt_xdnd_current_target = 0;
-            current_proxy_target = 0;
+//            current_embedding_widget = 0;
+//            current_target = 0;
+//            current_proxy_target = 0;
 
             if (t.object)
                 t.object->deleteLater();
 
-            qt_xdnd_current_target = target;
-            current_proxy_target = proxy_target;
-            current_embedding_widget = embedding_widget;
-            manager->object = currentObject;
+//            current_target = target;
+//            current_proxy_target = proxy_target;
+//            current_embedding_widget = embedding_widget;
+//            manager->object = currentObject;
         }
     }
     waiting_for_status = false;
 }
 
 
-void QDragManager::timerEvent(QTimerEvent* e)
+void QXcbDrag::timerEvent(QTimerEvent* e)
 {
     if (e->timerId() == heartbeat && source_sameanswer.isNull()) {
-        move(QCursor::pos());
+        QMouseEvent me(QEvent::MouseMove, QCursor::pos(), QCursor::pos(), Qt::LeftButton,
+                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
+        move(&me);
     } else if (e->timerId() == transaction_expiry_timer) {
-        for (int i = 0; i < X11->dndDropTransactions.count(); ++i) {
-            const QXdndDropTransaction &t = X11->dndDropTransactions.at(i);
-            if (t.targetWidget) {
+        for (int i = 0; i < transactions.count(); ++i) {
+            const Transaction &t = transactions.at(i);
+            if (t.targetWindow) {
                 // dnd within the same process, don't delete these
                 continue;
             }
             t.object->deleteLater();
-            X11->dndDropTransactions.removeAt(i--);
+            transactions.removeAt(i--);
         }
 
         killTimer(transaction_expiry_timer);
@@ -867,142 +1161,18 @@ void QDragManager::timerEvent(QTimerEvent* e)
     }
 }
 
-bool QDragManager::eventFilter(QObject * o, QEvent * e)
+void QXcbDrag::cancel()
 {
-    if (beingCancelled) {
-        if (e->type() == QEvent::KeyRelease && ((QKeyEvent*)e)->key() == Qt::Key_Escape) {
-            qApp->removeEventFilter(this);
-            Q_ASSERT(object == 0);
-            beingCancelled = false;
-            eventLoop->exit();
-            return true; // block the key release
-        }
-        return false;
-    }
+    DEBUG("QXcbDrag::cancel");
+    endDrag();
 
-    Q_ASSERT(object != 0);
+    if (current_target)
+        send_leave();
 
-    if (!o->isWidgetType())
-        return false;
-
-    if (e->type() == QEvent::MouseMove) {
-        QMouseEvent* me = (QMouseEvent *)e;
-        move(me->globalPos());
-        return true;
-    } else if (e->type() == QEvent::MouseButtonRelease) {
-        DEBUG("pre drop");
-        qApp->removeEventFilter(this);
-        if (willDrop)
-            drop();
-        else
-            cancel();
-        DEBUG("drop, resetting object");
-        beingCancelled = false;
-        eventLoop->exit();
-        return true;
-    }
-
-    if (e->type() == QEvent::ShortcutOverride) {
-        // prevent accelerators from firing while dragging
-        e->accept();
-        return true;
-    }
-
-    if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
-        QKeyEvent *ke = ((QKeyEvent*)e);
-        if (ke->key() == Qt::Key_Escape && e->type() == QEvent::KeyPress) {
-            cancel();
-            qApp->removeEventFilter(this);
-            beingCancelled = false;
-            eventLoop->exit();
-        } else {
-            source_sameanswer = QRect(); // force move
-            move(QCursor::pos());
-        }
-        return true; // Eat all key events
-    }
-
-    // ### We bind modality to widgets, so we have to do this
-    // ###  "manually".
-    // DnD is modal - eat all other interactive events
-    switch (e->type()) {
-      case QEvent::MouseButtonPress:
-      case QEvent::MouseButtonRelease:
-      case QEvent::MouseButtonDblClick:
-      case QEvent::MouseMove:
-      case QEvent::KeyPress:
-      case QEvent::KeyRelease:
-      case QEvent::Wheel:
-      case QEvent::ShortcutOverride:
-        return true;
-      default:
-        return false;
-    }
+    current_target = 0;
 }
 
-void QDragManager::updateCursor()
-{
-    if (!noDropCursor) {
-#ifndef QT_NO_CURSOR
-        noDropCursor = new QCursor(Qt::ForbiddenCursor);
-        moveCursor = new QCursor(Qt::DragMoveCursor);
-        copyCursor = new QCursor(Qt::DragCopyCursor);
-        linkCursor = new QCursor(Qt::DragLinkCursor);
-#endif
-    }
-
-    QCursor *c;
-    if (willDrop) {
-        if (global_accepted_action == Qt::CopyAction) {
-            c = copyCursor;
-        } else if (global_accepted_action == Qt::LinkAction) {
-            c = linkCursor;
-        } else {
-            c = moveCursor;
-        }
-        if (xdnd_data.deco) {
-            xdnd_data.deco->show();
-            xdnd_data.deco->raise();
-        }
-    } else {
-        c = noDropCursor;
-        //if (qt_xdnd_deco)
-        //    qt_xdnd_deco->hide();
-    }
-#ifndef QT_NO_CURSOR
-    if (c)
-        qApp->changeOverrideCursor(*c);
-#endif
-}
-
-
-void QDragManager::cancel(bool deleteSource)
-{
-    DEBUG("QDragManager::cancel");
-    Q_ASSERT(heartbeat != -1);
-    killTimer(heartbeat);
-    heartbeat = -1;
-    beingCancelled = true;
-    qt_xdnd_dragging = false;
-
-    if (qt_xdnd_current_target)
-        qt_xdnd_send_leave();
-
-#ifndef QT_NO_CURSOR
-    if (restoreCursor) {
-        QApplication::restoreOverrideCursor();
-        restoreCursor = false;
-    }
-#endif
-
-    if (deleteSource && object)
-        object->deleteLater();
-    object = 0;
-    qDeleteInEventHandler(xdnd_data.deco);
-    xdnd_data.deco = 0;
-
-    global_accepted_action = Qt::IgnoreAction;
-}
+#if 0
 
 static
 Window findRealWindow(const QPoint & pos, Window w, int md)
@@ -1056,218 +1226,11 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
     return 0;
 }
 
-void QDragManager::move(const QPoint & globalPos)
-{
-#ifdef QT_NO_CURSOR
-    Q_UNUSED(globalPos);
-    return;
-#else
-    DEBUG() << "QDragManager::move enter";
-    if (!object) {
-        // perhaps the target crashed?
-        return;
-    }
-
-    int screen = QCursor::x11Screen();
-    if ((qt_xdnd_current_screen == -1 && screen != X11->defaultScreen) || (screen != qt_xdnd_current_screen)) {
-        // recreate the pixmap on the new screen...
-        delete xdnd_data.deco;
-        QWidget* parent = object->source()->window()->x11Info().screen() == screen
-            ? object->source()->window() : QApplication::desktop()->screen(screen);
-        xdnd_data.deco = new QShapedPixmapWidget(parent);
-        if (!QWidget::mouseGrabber()) {
-            updatePixmap();
-            xdnd_data.deco->grabMouse();
-        }
-    }
-    xdnd_data.deco->move(QCursor::pos() - xdnd_data.deco->pm_hot);
-
-    if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
-        return;
-
-    qt_xdnd_current_screen = screen;
-    Window rootwin = QX11Info::appRootWindow(qt_xdnd_current_screen);
-    Window target = 0;
-    int lx = 0, ly = 0;
-    if (!XTranslateCoordinates(X11->display, rootwin, rootwin, globalPos.x(), globalPos.y(), &lx, &ly, &target))
-        // some weird error...
-        return;
-
-    if (target == rootwin) {
-        // Ok.
-    } else if (target) {
-        //me
-        Window src = rootwin;
-        while (target != 0) {
-            DNDDEBUG << "checking target for XdndAware" << QWidget::find(target) << target;
-            int lx2, ly2;
-            Window t;
-            // translate coordinates
-            if (!XTranslateCoordinates(X11->display, src, target, lx, ly, &lx2, &ly2, &t)) {
-                target = 0;
-                break;
-            }
-            lx = lx2;
-            ly = ly2;
-            src = target;
-
-	    // check if it has XdndAware
-	    Atom type = 0;
-	    int f;
-	    unsigned long n, a;
-	    unsigned char *data = 0;
-	    XGetWindowProperty(X11->display, target, ATOM(XdndAware), 0, 0, False,
-                               AnyPropertyType, &type, &f,&n,&a,&data);
-	    if (data)
-                XFree(data);
-	    if (type) {
-                DNDDEBUG << "Found XdndAware on " << QWidget::find(target) << target;
-                break;
-            }
-
-            // find child at the coordinates
-            if (!XTranslateCoordinates(X11->display, src, src, lx, ly, &lx2, &ly2, &target)) {
-                target = 0;
-                break;
-            }
-        }
-        if (xdnd_data.deco && (!target || target == xdnd_data.deco->effectiveWinId())) {
-            DNDDEBUG << "need to find real window";
-            target = findRealWindow(globalPos, rootwin, 6);
-            DNDDEBUG << "real window found" << QWidget::find(target) << target;
-        }
-    }
-
-    QWidget* w;
-    if (target) {
-        w = QWidget::find((WId)target);
-        if (w && (w->windowType() == Qt::Desktop) && !w->acceptDrops())
-            w = 0;
-    } else {
-        w = 0;
-        target = rootwin;
-    }
-
-    DNDDEBUG << "and the final target is " << QWidget::find(target) << target;
-    DNDDEBUG << "the widget w is" << w;
-
-    WId proxy_target = xdndProxy(target);
-    if (!proxy_target)
-        proxy_target = target;
-    int target_version = 1;
-
-    if (proxy_target) {
-        Atom   type = XNone;
-        int r, f;
-        unsigned long n, a;
-        unsigned char *retval;
-        X11->ignoreBadwindow();
-        r = XGetWindowProperty(X11->display, proxy_target, ATOM(XdndAware), 0,
-                               1, False, AnyPropertyType, &type, &f,&n,&a,&retval);
-        int *tv = (int *)retval;
-        if (r != Success || X11->badwindow()) {
-            target = 0;
-        } else {
-            target_version = qMin(xdnd_version,tv ? *tv : 1);
-            if (tv)
-                XFree(tv);
-//             if (!(!X11->badwindow() && type))
-//                 target = 0;
-        }
-    }
-
-    if (target != qt_xdnd_current_target) {
-        if (qt_xdnd_current_target)
-            qt_xdnd_send_leave();
-
-        qt_xdnd_current_target = target;
-        current_proxy_target = proxy_target;
-        if (target) {
-            QVector<Atom> types;
-            int flags = target_version << 24;
-            QStringList fmts = QInternalMimeData::formatsHelper(dragPrivate()->data);
-            for (int i = 0; i < fmts.size(); ++i) {
-                QList<Atom> atoms = X11->xdndMimeAtomsForFormat(fmts.at(i));
-                for (int j = 0; j < atoms.size(); ++j) {
-                    if (!types.contains(atoms.at(j)))
-                        types.append(atoms.at(j));
-                }
-            }
-            if (types.size() > 3) {
-                XChangeProperty(X11->display,
-                                dragPrivate()->source->effectiveWinId(), ATOM(XdndTypelist),
-                                XA_ATOM, 32, PropModeReplace,
-                                (unsigned char *)types.data(),
-                                types.size());
-                flags |= 0x0001;
-            }
-            XClientMessageEvent enter;
-            enter.type = ClientMessage;
-            enter.window = target;
-            enter.format = 32;
-            enter.message_type = ATOM(XdndEnter);
-            enter.data.l[0] = dragPrivate()->source->effectiveWinId();
-            enter.data.l[1] = flags;
-            enter.data.l[2] = types.size()>0 ? types.at(0) : 0;
-            enter.data.l[3] = types.size()>1 ? types.at(1) : 0;
-            enter.data.l[4] = types.size()>2 ? types.at(2) : 0;
-            // provisionally set the rectangle to 5x5 pixels...
-            source_sameanswer = QRect(globalPos.x() - 2,
-                                              globalPos.y() -2 , 5, 5);
-
-            DEBUG("sending Xdnd enter");
-            if (w)
-                X11->xdndHandleEnter(w, (const XEvent *)&enter, false);
-            else if (target)
-                XSendEvent(X11->display, proxy_target, False, NoEventMask, (XEvent*)&enter);
-            waiting_for_status = false;
-        }
-    }
-    if (waiting_for_status)
-        return;
-
-    if (target) {
-        waiting_for_status = true;
-
-        XClientMessageEvent move;
-        move.type = ClientMessage;
-        move.window = target;
-        move.format = 32;
-        move.message_type = ATOM(XdndPosition);
-        move.window = target;
-        move.data.l[0] = dragPrivate()->source->effectiveWinId();
-        move.data.l[1] = 0; // flags
-        move.data.l[2] = (globalPos.x() << 16) + globalPos.y();
-        move.data.l[3] = X11->time;
-        move.data.l[4] = qtaction_to_xdndaction(defaultAction(dragPrivate()->possible_actions, QApplication::keyboardModifiers()));
-        DEBUG("sending Xdnd position");
-
-        qt_xdnd_source_current_time = X11->time;
-
-        if (w)
-            handle_xdnd_position(w, (const XEvent *)&move, false);
-        else
-            XSendEvent(X11->display, proxy_target, False, NoEventMask,
-                       (XEvent*)&move);
-    } else {
-        if (willDrop) {
-            willDrop = false;
-            updateCursor();
-        }
-    }
-    DEBUG() << "QDragManager::move leave";
-#endif
-}
-
-
 void QDragManager::drop()
 {
-    Q_ASSERT(heartbeat != -1);
-    killTimer(heartbeat);
-    heartbeat = -1;
-    qt_xdnd_dragging = false;
+    endDrag();
 
-    if (!qt_xdnd_current_target)
+    if (!current_target)
         return;
 
     qDeleteInEventHandler(xdnd_data.deco);
@@ -1275,12 +1238,12 @@ void QDragManager::drop()
 
     XClientMessageEvent drop;
     drop.type = ClientMessage;
-    drop.window = qt_xdnd_current_target;
+    drop.window = current_target;
     drop.format = 32;
     drop.message_type = ATOM(XdndDrop);
     drop.data.l[0] = dragPrivate()->source->effectiveWinId();
     drop.data.l[1] = 0; // flags
-    drop.data.l[2] = X11->time;
+    drop.data.l[2] = connection()->time();
 
     drop.data.l[3] = 0;
     drop.data.l[4] = 0;
@@ -1291,8 +1254,8 @@ void QDragManager::drop()
         w = 0;
 
     QXdndDropTransaction t = {
-        X11->time,
-        qt_xdnd_current_target,
+        connection()->time(),
+        current_target,
         current_proxy_target,
         w,
         current_embedding_widget,
@@ -1307,9 +1270,9 @@ void QDragManager::drop()
         XSendEvent(X11->display, current_proxy_target, False,
                    NoEventMask, (XEvent*)&drop);
 
-    qt_xdnd_current_target = 0;
+    current_target = 0;
     current_proxy_target = 0;
-    qt_xdnd_source_current_time = 0;
+    source_time = 0;
     current_embedding_widget = 0;
     object = 0;
 
@@ -1325,10 +1288,10 @@ void QDragManager::drop()
 
 bool QX11Data::xdndHandleBadwindow()
 {
-    if (qt_xdnd_current_target) {
+    if (current_target) {
         QDragManager *manager = QDragManager::self();
         if (manager->object) {
-            qt_xdnd_current_target = 0;
+            current_target = 0;
             current_proxy_target = 0;
             manager->object->deleteLater();
             manager->object = 0;
@@ -1347,19 +1310,17 @@ bool QX11Data::xdndHandleBadwindow()
     }
     return false;
 }
+#endif
 
-void QX11Data::xdndHandleSelectionRequest(const XSelectionRequestEvent * req)
+void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event)
 {
-    if (!req)
-        return;
-    XEvent evt;
-    evt.xselection.type = SelectionNotify;
-    evt.xselection.display = req->display;
-    evt.xselection.requestor = req->requestor;
-    evt.xselection.selection = req->selection;
-    evt.xselection.target = XNone;
-    evt.xselection.property = XNone;
-    evt.xselection.time = req->time;
+    xcb_selection_notify_event_t notify;
+    notify.response_type = XCB_SELECTION_NOTIFY;
+    notify.requestor = event->requestor;
+    notify.selection = event->selection;
+    notify.target = XCB_NONE;
+    notify.property = XCB_NONE;
+    notify.time = event->time;
 
     QDragManager *manager = QDragManager::self();
     QDrag *currentObject = manager->object;
@@ -1368,207 +1329,61 @@ void QX11Data::xdndHandleSelectionRequest(const XSelectionRequestEvent * req)
     int at = -1;
 
     // figure out which data the requestor is really interested in
-    if (manager->object && req->time == qt_xdnd_source_current_time) {
+    if (manager->object && event->time == source_time) {
         // requestor wants the current drag data
         at = -2;
     } else {
         // if someone has requested data in response to XdndDrop, find the corresponding transaction. the
         // spec says to call XConvertSelection() using the timestamp from the XdndDrop
-        at = findXdndDropTransactionByTime(req->time);
+        at = findTransactionByTime(event->time);
         if (at == -1) {
             // no dice, perhaps the client was nice enough to use the same window id in XConvertSelection()
             // that we sent the XdndDrop event to.
-            at = findXdndDropTransactionByWindow(req->requestor);
+            at = findTransactionByWindow(event->requestor);
         }
-        if (at == -1 && req->time == CurrentTime) {
-            // previous Qt versions always requested the data on a child of the target window
-            // using CurrentTime... but it could be asking for either drop data or the current drag's data
-            Window target = findXdndAwareParent(req->requestor);
-            if (target) {
-                if (qt_xdnd_current_target && qt_xdnd_current_target == target)
-                    at = -2;
-                else
-                    at = findXdndDropTransactionByWindow(target);
-            }
-        }
+//        if (at == -1 && event->time == XCB_CURRENT_TIME) {
+//            // previous Qt versions always requested the data on a child of the target window
+//            // using CurrentTime... but it could be asking for either drop data or the current drag's data
+//            Window target = findXdndAwareParent(event->requestor);
+//            if (target) {
+//                if (current_target && current_target == target)
+//                    at = -2;
+//                else
+//                    at = findXdndDropTransactionByWindow(target);
+//            }
+//        }
     }
     if (at >= 0) {
-        restartXdndDropExpiryTimer();
+        restartDropExpiryTimer();
 
         // use the drag object from an XdndDrop tansaction
-        manager->object = X11->dndDropTransactions.at(at).object;
+        manager->object = transactions.at(at).object;
     } else if (at != -2) {
         // no transaction found, we'll have to reject the request
         manager->object = 0;
     }
     if (manager->object) {
-        Atom atomFormat = req->target;
+        xcb_atom_t atomFormat = event->target;
         int dataFormat = 0;
         QByteArray data;
-        if (X11->xdndMimeDataForAtom(req->target, manager->dragPrivate()->data,
+        if (QXcbMime::mimeDataForAtom(connection(), event->target, manager->dragPrivate()->data,
                                      &data, &atomFormat, &dataFormat)) {
             int dataSize = data.size() / (dataFormat / 8);
-            XChangeProperty (X11->display, req->requestor, req->property,
-                             atomFormat, dataFormat, PropModeReplace,
-                             (unsigned char *)data.data(), dataSize);
-            evt.xselection.property = req->property;
-            evt.xselection.target = atomFormat;
+            xcb_change_property(connection()->xcb_connection(), XCB_PROP_MODE_REPLACE, event->requestor, event->property,
+                                atomFormat, dataFormat, dataSize, (const void *)data.constData());
+            notify.property = event->property;
+            notify.target = atomFormat;
         }
     }
 
     // reset manager->object in case we modified it above
     manager->object = currentObject;
 
-    // ### this can die if req->requestor crashes at the wrong
+    // ### this can die if event->requestor crashes at the wrong
     // ### moment
-    XSendEvent(X11->display, req->requestor, False, 0, &evt);
+    xcb_send_event(connection()->xcb_connection(), false, event->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
 }
 
-
-
-/*
-  Enable drag and drop for widget w by installing the proper
-  properties on w's toplevel widget.
-*/
-bool QX11Data::dndEnable(QWidget* w, bool on)
-{
-    w = w->window();
-
-    if (bool(((QExtraWidget*)w)->topData()->dnd) == on)
-        return true; // been there, done that
-    ((QExtraWidget*)w)->topData()->dnd = on ? 1 : 0;
-
-    motifdndEnable(w, on);
-    return xdndEnable(w, on);
-}
-
-Qt::DropAction QDragManager::drag(QDrag * o)
-{
-    if (object == o || !o || !o->d_func()->source)
-        return Qt::IgnoreAction;
-
-    if (object) {
-        cancel();
-        qApp->removeEventFilter(this);
-        beingCancelled = false;
-    }
-
-    if (object) {
-        // the last drag and drop operation hasn't finished, so we are going to wait
-        // for one second to see if it does... if the finish message comes after this,
-        // then we could still have problems, but this is highly unlikely
-        QApplication::flush();
-
-        QElapsedTimer timer;
-        timer.start();
-        do {
-            XEvent event;
-            if (XCheckTypedEvent(X11->display, ClientMessage, &event))
-                qApp->x11ProcessEvent(&event);
-
-            // sleep 50 ms, so we don't use up CPU cycles all the time.
-            struct timeval usleep_tv;
-            usleep_tv.tv_sec = 0;
-            usleep_tv.tv_usec = 50000;
-            select(0, 0, 0, 0, &usleep_tv);
-        } while (object && timer.hasExpired(1000));
-    }
-
-    object = o;
-    object->d_func()->target = 0;
-    xdnd_data.deco = new QShapedPixmapWidget(object->source()->window());
-
-    willDrop = false;
-
-    updatePixmap();
-
-    qApp->installEventFilter(this);
-    XSetSelectionOwner(X11->display, ATOM(XdndSelection), dragPrivate()->source->window()->internalWinId(), X11->time);
-    global_accepted_action = Qt::CopyAction;
-    source_sameanswer = QRect();
-#ifndef QT_NO_CURSOR
-    // set the override cursor (must be done here, since it is updated
-    // in the call to move() below)
-    qApp->setOverrideCursor(Qt::ArrowCursor);
-    restoreCursor = true;
-#endif
-    move(QCursor::pos());
-    heartbeat = startTimer(200);
-
-    qt_xdnd_dragging = true;
-
-    if (!QWidget::mouseGrabber())
-        xdnd_data.deco->grabMouse();
-
-    eventLoop = new QEventLoop;
-    (void) eventLoop->exec();
-    delete eventLoop;
-    eventLoop = 0;
-
-#ifndef QT_NO_CURSOR
-    if (restoreCursor) {
-        qApp->restoreOverrideCursor();
-        restoreCursor = false;
-    }
-#endif
-
-    // delete cursors as they may be different next drag.
-    delete noDropCursor;
-    noDropCursor = 0;
-    delete copyCursor;
-    copyCursor = 0;
-    delete moveCursor;
-    moveCursor = 0;
-    delete linkCursor;
-    linkCursor = 0;
-
-    delete xdnd_data.deco;
-    xdnd_data.deco = 0;
-    if (heartbeat != -1)
-        killTimer(heartbeat);
-    heartbeat = -1;
-    qt_xdnd_current_screen = -1;
-    qt_xdnd_dragging = false;
-
-    return global_accepted_action;
-    // object persists until we get an xdnd_finish message
-}
-
-#endif
-
-
-static xcb_window_t xdndProxy(QXcbConnection *c, xcb_window_t w)
-{
-    xcb_window_t proxy = XCB_NONE;
-
-    xcb_get_property_cookie_t cookie = xcb_get_property(c->xcb_connection(), false, w, c->atom(QXcbAtom::XdndProxy),
-                                                        QXcbAtom::XA_WINDOW, 0, 1);
-    xcb_get_property_reply_t *reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
-
-    if (reply && reply->type == QXcbAtom::XA_WINDOW)
-        proxy = *((xcb_window_t *)xcb_get_property_value(reply));
-    free(reply);
-
-    if (proxy == XCB_NONE)
-        return proxy;
-
-    // exists and is real?
-    cookie = xcb_get_property(c->xcb_connection(), false, proxy, c->atom(QXcbAtom::XdndProxy),
-                                                        QXcbAtom::XA_WINDOW, 0, 1);
-    reply = xcb_get_property_reply(c->xcb_connection(), cookie, 0);
-
-    if (reply && reply->type == QXcbAtom::XA_WINDOW) {
-        xcb_window_t p = *((xcb_window_t *)xcb_get_property_value(reply));
-        if (proxy != p)
-            proxy = 0;
-    } else {
-        proxy = 0;
-    }
-
-    free(reply);
-
-    return proxy;
-}
 
 bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
 {

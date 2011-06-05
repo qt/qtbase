@@ -228,7 +228,7 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         *d = data;
     }
 
-    xcb_set_selection_owner(m_connection->xcb_connection(), newOwner, modeAtom, XCB_CURRENT_TIME);
+    xcb_set_selection_owner(m_connection->xcb_connection(), newOwner, modeAtom, m_connection->time());
 
     if (getSelectionOwner(modeAtom) != newOwner) {
         qWarning("QClipboard::setData: Cannot set X11 selection owner");
@@ -390,7 +390,7 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
     } else if (req->selection == m_connection->atom(QXcbAtom::CLIPBOARD)) {
         d = m_clientClipboard;
     } else {
-        qWarning("QClipboard: Unknown selection '%lx'", (long)req->selection);
+        qWarning() << "QClipboard: Unknown selection" << m_connection->atomName(req->selection);
         xcb_send_event(m_connection->xcb_connection(), false, req->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
         return;
     }
@@ -505,7 +505,7 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         format = &dummy_format;
 
     // Don't read anything, just get the size of the property data
-    xcb_get_property_cookie_t cookie = xcb_get_property(m_connection->xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0);
+    xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(m_connection->xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
     xcb_get_property_reply_t *reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
     if (!reply || reply->type == XCB_NONE) {
         buffer->resize(0);
@@ -546,7 +546,7 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
         while (bytes_left) {
             // more to read...
 
-            xcb_get_property_cookie_t cookie = xcb_get_property(m_connection->xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4);
+            xcb_get_property_cookie_t cookie = Q_XCB_CALL(xcb_get_property(m_connection->xcb_connection(), false, win, property, XCB_GET_PROPERTY_TYPE_ANY, offset, maxsize/4));
             reply = xcb_get_property_reply(m_connection->xcb_connection(), cookie, 0);
             if (!reply || reply->type == XCB_NONE) {
                 free(reply);
