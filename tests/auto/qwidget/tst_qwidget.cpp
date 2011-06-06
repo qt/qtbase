@@ -5170,6 +5170,7 @@ void tst_QWidget::showAndMoveChild()
 
     QDesktopWidget desktop;
     QRect desktopDimensions = desktop.availableGeometry(&parent);
+    desktopDimensions = desktopDimensions.adjusted(64, 64, -64, -64);
 
     parent.setGeometry(desktopDimensions);
     parent.setPalette(Qt::red);
