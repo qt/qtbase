@@ -1,0 +1,9 @@
+contains(QT_CONFIG, fontconfig) {
+    load(qpa/fontdatabases/fontconfig)
+    DEFINES += Q_FONTCONFIGDATABASE
+} else {
+    load(qpa/fontdatabases/basicunix.prf)
+}
+
+INCLUDEPATH += $$QT_PLATFORMS_DIR/fontdatabases/genericunix
+HEADERS += $$QT_PLATFORMS_DIR/fontdatabases/genericunix/qgenericunixfontdatabase.h

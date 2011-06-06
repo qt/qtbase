@@ -1,0 +1,12 @@
+load(qpa/fontdatabases/basicunix)
+
+HEADERS += \
+        $$QT_PLATFORMS_DIR/fontdatabases/fontconfig/qfontconfigdatabase.h
+
+SOURCES += \
+        $$QT_PLATFORMS_DIR/fontdatabases/fontconfig/qfontconfigdatabase.cpp
+
+INCLUDEPATH += $$QT_PLATFORMS_DIR/fontdatabases/fontconfig
+LIBS_PRIVATE += -lfontconfig
+
+

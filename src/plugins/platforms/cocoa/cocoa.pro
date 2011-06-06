@@ -1,5 +1,5 @@
 TARGET = qcocoa
-load(qt_plugin)
+load(qpa/plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
 OBJECTIVE_SOURCES = main.mm \
@@ -32,6 +32,6 @@ LIBS += -framework cocoa
 
 QT += core-private gui-private
 
-include(../fontdatabases/basicunix/basicunix.pri)
+load(qpa/fontdatabases/basicunix)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

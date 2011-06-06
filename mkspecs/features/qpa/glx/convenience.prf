@@ -1,0 +1,16 @@
+load(qpa/platforms_dir)
+INCLUDEPATH += $$QT_PLATFORMS_DIR/glxconvenience
+
+HEADERS += \
+    $$QT_PLATFORMS_DIR/glxconvenience/qglxconvenience.h
+
+SOURCES += \
+    $$QT_PLATFORMS_DIR/glxconvenience/qglxconvenience.cpp
+
+CONFIG += xrender
+
+xrender {
+	LIBS += -lXrender
+} else {
+	DEFINES += QT_NO_XRENDER
+}

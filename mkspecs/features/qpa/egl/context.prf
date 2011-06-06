@@ -1,0 +1,9 @@
+load(qpa/platforms_dir)
+
+INCLUDEPATH += $$QT_PLATFORMS_DIR/eglconvenience
+
+SOURCES += \
+    $$QT_PLATFORMS_DIR/eglconvenience/qeglplatformcontext.cpp
+
+HEADERS += \
+    $$QT_PLATFORMS_DIR/eglconvenience/qeglplatformcontext.h

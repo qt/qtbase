@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "qfontengine_p.h"
+#include "private/qfontengine_p.h"
 
 #ifndef QT_NO_FREETYPE
 

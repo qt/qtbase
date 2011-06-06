@@ -1,0 +1,5 @@
+load(qpa/platforms_dir)
+INCLUDEPATH += $$QT_PLATFORMS_DIR/dnd
+HEADERS += $$QT_PLATFORMS_DIR/dnd/qsimpledrag.h
+SOURCES += $$QT_PLATFORMS_DIR/dnd/qsimpledrag.cpp
+QT += gui-private

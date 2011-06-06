@@ -1,6 +1,6 @@
 TARGET = qxlib
 
-load(qt_plugin)
+load(qpa/plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
 QT += core-private gui-private opengl-private
@@ -43,19 +43,13 @@ include (../fontdatabases/genericunix/genericunix.pri)
 contains(QT_CONFIG, opengl) {
     QT += opengl
     !contains(QT_CONFIG, opengles2) {
-        include (../glxconvenience/glxconvenience.pri)
+        load(qpa/glx/convenience)
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
     } else { # There is no easy way to detect if we'r suppose to use glx or not
-        HEADERS += \
-            ../eglconvenience/qeglplatformcontext.h \
-            ../eglconvenience/qeglconvenience.h \
-            ../eglconvenience/qxlibeglintegration.h
-
-        SOURCES += \
-            ../eglconvenience/qeglplatformcontext.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            ../eglconvenience/qxlibeglintegration.cpp
+        load(qpa/egl/context)
+        load(qpa/egl/convenience)
+        load(qpa/egl/xlibintegration)
         LIBS += -lEGL
     }
 }

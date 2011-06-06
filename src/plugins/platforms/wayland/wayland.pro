@@ -1,5 +1,5 @@
 TARGET = qwayland
-load(qt_plugin)
+load(qpa/plugin)
 
 QT+=gui-private core-private opengl-private
 
@@ -45,9 +45,10 @@ QT += core-private
 QT += widgets-private
 
 include ($$PWD/gl_integration/gl_integration.pri)
+
 include ($$PWD/windowmanager_integration/windowmanager_integration.pri)
 
-include (../fontdatabases/genericunix/genericunix.pri)
+load(qpa/fontdatabases/genericunix)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

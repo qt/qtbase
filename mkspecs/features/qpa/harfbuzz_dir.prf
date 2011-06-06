@@ -1,0 +1,9 @@
+load(qpa/platforms_dir)
+
+QT_HARFBUZZ_DIR = ""
+isEmpty(QT_SOURCE_TREE) {
+    QT_HARFBUZZ_DIR = $$QT_PLATFORMS_DIR/fontdatabases/harfbuzz
+} else {
+    QT_HARFBUZZ_DIR = $$QT_SOURCE_TREE/src/3rdparty/harfbuzz
+}
+

@@ -1,4 +1,4 @@
-include (../../../eglconvenience/eglconvenience.pri)
+load(qpa/egl/convenience)
 
 LIBS += -lwayland-egl -lEGL
 INCLUDEPATH += $$PWD

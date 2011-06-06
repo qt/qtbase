@@ -1,5 +1,5 @@
 include (../xcomposite_share/xcomposite_share.pri)
-include (../../../glxconvenience/glxconvenience.pri)
+load(qpa/glx/convenience)
 
 LIBS += -lXcomposite
 SOURCES += \

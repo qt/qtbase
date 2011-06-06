@@ -1,0 +1,5 @@
+TEMPLATE = lib
+
+CONFIG += qt plugin
+
+TARGET = $$qtLibraryTarget($$TARGET)

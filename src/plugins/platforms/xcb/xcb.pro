@@ -1,6 +1,6 @@
 TARGET = xcb
 
-load(qt_plugin)
+load(qpa/plugin)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 QT += core-private gui-private
@@ -50,20 +50,14 @@ contains(QT_CONFIG, opengl) {
 
         contains(QT_CONFIG, opengles2) {
             DEFINES += XCB_USE_EGL
-            HEADERS += \
-                ../eglconvenience/qeglplatformcontext.h \
-                ../eglconvenience/qeglconvenience.h \
-                ../eglconvenience/qxlibeglintegration.h
-
-            SOURCES += \
-                ../eglconvenience/qeglplatformcontext.cpp \
-                ../eglconvenience/qeglconvenience.cpp \
-                ../eglconvenience/qxlibeglintegration.cpp
+            load(qpa/egl/convenience)
+            load(qpa/egl/context)
+            load(qpa/egl/xlibintegration)
 
             LIBS += -lEGL
         } else {
             DEFINES += XCB_USE_GLX
-            include (../glxconvenience/glxconvenience.pri)
+            load(qpa/glx/convenience)
             HEADERS += qglxintegration.h
             SOURCES += qglxintegration.cpp
         }
@@ -76,9 +70,9 @@ DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
 
-include (../fontdatabases/genericunix/genericunix.pri)
-include (../printersupport/genericunix/genericunix.pri)
-include (../dnd/dnd.pri)
+load(qpa/fontdatabases/genericunix)
+load(qpa/printersupport/genericunix)
+load(qpa/dnd/simple)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

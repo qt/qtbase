@@ -1,0 +1,6 @@
+load(qpa/platforms_dir)
+
+INCLUDEPATH += $$QT_PLATFORMS_DIR/printersupport/genericunix
+HEADERS += $$QT_PLATFORMS_DIR/printersupport/genericunix/qgenericunixprintersupport.h
+SOURCES += $$QT_PLATFORMS_DIR/printersupport/genericunix/qgenericunixprintersupport.cpp
+QT += gui-private

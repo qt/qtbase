@@ -1,0 +1,7 @@
+QT_PLATFORMS_DIR = ""
+
+isEmpty(QT_SOURCE_TREE) {
+    QT_PLATFORMS_DIR = $$[QT_INSTALL_DATA]/platforms
+} else {
+    QT_PLATFORMS_DIR = $$QT_SOURCE_TREE/src/plugins/platforms
+}
