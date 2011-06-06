@@ -445,6 +445,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
     case XCB_MAP_NOTIFY:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
+    case XCB_UNMAP_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
     case XCB_CLIENT_MESSAGE:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
     case XCB_ENTER_NOTIFY:

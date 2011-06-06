@@ -100,6 +100,19 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::DragMove:
     case QEvent::Drop:
         handleDragEvent(event);
+        break;
+
+    case QEvent::Map:
+        m_widget->setAttribute(Qt::WA_Mapped);
+        return true;
+
+    case QEvent::Unmap:
+        m_widget->setAttribute(Qt::WA_Mapped, false);
+        return true;
+
+    case QEvent::Expose:
+        handleExposeEvent(static_cast<QExposeEvent *>(event));
+        return true;
 
     default:
         break;
@@ -261,8 +274,19 @@ void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 
 void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
+    QSize oldSize = m_widget->data->crect.size();
+
     m_widget->data->crect = geometry();
     QGuiApplication::sendSpontaneousEvent(m_widget, event);
+
+    if (m_widget->d_func()->paintOnScreen()) {
+        QRegion updateRegion(geometry());
+        if (m_widget->testAttribute(Qt::WA_StaticContents))
+            updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());
+        m_widget->d_func()->syncBackingStore(updateRegion);
+    } else {
+        m_widget->d_func()->syncBackingStore();
+    }
 }
 
 void QWidgetWindow::handleCloseEvent(QCloseEvent *)
@@ -345,5 +369,9 @@ void QWidgetWindow::handleDragEvent(QEvent *event)
     }
 }
 
+void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
+{
+    m_widget->d_func()->syncBackingStore(event->region);
+}
 
 QT_END_NAMESPACE

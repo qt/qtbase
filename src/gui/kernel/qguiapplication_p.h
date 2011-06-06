@@ -119,6 +119,11 @@ public:
     static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
     static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
 
+    static void processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e);
+    static void processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e);
+
+    static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
+
     static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
     {
         if (!(alignment & Qt::AlignHorizontal_Mask))

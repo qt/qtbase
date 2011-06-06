@@ -49,6 +49,8 @@
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
 
+#include <private/qevent_p.h>
+
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -486,6 +488,7 @@ void QWindow::hideEvent(QHideEvent *)
 
 bool QWindow::event(QEvent *event)
 {
+    Q_D(QWindow);
     switch (event->type()) {
     case QEvent::MouseMove:
         mouseMoveEvent(static_cast<QMouseEvent*>(event));
@@ -523,6 +526,11 @@ bool QWindow::event(QEvent *event)
 
     case QEvent::Close:
         destroy();
+        break;
+
+    case QEvent::Expose:
+        if (d->surface)
+            d->surface->flush(this, static_cast<QExposeEvent *>(event)->region, QPoint());
         break;
 
     default:

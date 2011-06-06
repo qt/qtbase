@@ -455,6 +455,15 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::reportAvailableGeometryChange(
                 static_cast<QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::Map:
+        QGuiApplicationPrivate::processMapEvent(static_cast<QWindowSystemInterfacePrivate::MapEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::Unmap:
+        QGuiApplicationPrivate::processUnmapEvent(static_cast<QWindowSystemInterfacePrivate::UnmapEvent *>(e));
+        break;
+    case QWindowSystemInterfacePrivate::Expose:
+        QGuiApplicationPrivate::processExposeEvent(static_cast<QWindowSystemInterfacePrivate::ExposeEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -657,6 +666,24 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
     // This operation only makes sense after the QGuiApplication constructor runs
     if (QCoreApplication::startingUp())
         return;
+}
+
+void QGuiApplicationPrivate::processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e)
+{
+    QEvent event(QEvent::Map);
+    QCoreApplication::sendSpontaneousEvent(e->mapped.data(), &event);
+}
+
+void QGuiApplicationPrivate::processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e)
+{
+    QEvent event(QEvent::Unmap);
+    QCoreApplication::sendSpontaneousEvent(e->unmapped.data(), &event);
+}
+
+void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)
+{
+    QExposeEvent event(e->region);
+    QCoreApplication::sendSpontaneousEvent(e->exposed.data(), &event);
 }
 
 #ifndef QT_NO_CLIPBOARD

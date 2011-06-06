@@ -45,6 +45,7 @@
 #include <QtGui/qwindow.h>
 
 #include <QtCore/private/qobject_p.h>
+#include <QtGui/private/qevent_p.h>
 
 QT_BEGIN_HEADER
 
@@ -74,6 +75,7 @@ protected:
     void handleResizeEvent(QResizeEvent *);
     void handleWheelEvent(QWheelEvent *);
     void handleDragEvent(QEvent *);
+    void handleExposeEvent(QExposeEvent *);
 
 private:
     QWidget *m_widget;

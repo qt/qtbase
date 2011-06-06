@@ -96,6 +96,11 @@ public:
     static void handleLeaveEvent(QWindow *w);
     static void handleWindowActivated(QWindow *w);
 
+    static void handleMapEvent(QWindow *w);
+    static void handleUnmapEvent(QWindow *w);
+
+    static void handleExposeEvent(QWindow *w, const QRegion &region);
+
     // Changes to the screen
     static void handleScreenGeometryChange(int screenIndex);
     static void handleScreenAvailableGeometryChange(int screenIndex);

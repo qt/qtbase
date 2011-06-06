@@ -87,6 +87,7 @@ public:
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event);
     void handleMapNotifyEvent(const xcb_map_notify_event_t *event);
+    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event);
     void handleButtonPressEvent(const xcb_button_press_event_t *event);
     void handleButtonReleaseEvent(const xcb_button_release_event_t *event);
     void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event);

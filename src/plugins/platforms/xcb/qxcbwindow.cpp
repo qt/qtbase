@@ -927,7 +927,7 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
     if (surface) {
         QRect rect(event->x, event->y, event->width, event->height);
 
-        surface->flush(window(), rect, QPoint());
+        QWindowSystemInterface::handleExposeEvent(window(), rect);
     }
 }
 
@@ -981,8 +981,18 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
 void QXcbWindow::handleMapNotifyEvent(const xcb_map_notify_event_t *event)
 {
-    if (event->window == m_window)
+    if (event->window == m_window) {
         m_mapped = true;
+        QWindowSystemInterface::handleMapEvent(window());
+    }
+}
+
+void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
+{
+    if (event->window == m_window) {
+        m_mapped = false;
+        QWindowSystemInterface::handleUnmapEvent(window());
+    }
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)

@@ -252,4 +252,22 @@ void QWindowSystemInterface::handleScreenCountChange(int count)
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::UnmapEvent *e = new QWindowSystemInterfacePrivate::UnmapEvent(tlw);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
+{
+    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 QT_END_NAMESPACE

@@ -291,6 +291,11 @@ public:
         ScrollPrepare = 204,
         Scroll = 205,
 
+        Map = 206,
+        Unmap = 207,
+
+        Expose = 208,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

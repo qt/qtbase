@@ -61,7 +61,10 @@ public:
         Touch,
         ScreenGeometry,
         ScreenAvailableGeometry,
-        ScreenCountChange
+        ScreenCountChange,
+        Map,
+        Unmap,
+        Expose
     };
 
     class WindowSystemEvent {
@@ -190,6 +193,31 @@ public:
         ScreenAvailableGeometryEvent(int index)
             : WindowSystemEvent(ScreenAvailableGeometry), index(index) { }
         int index;
+    };
+
+    class MapEvent : public WindowSystemEvent {
+    public:
+        MapEvent(QWindow *mapped)
+            : WindowSystemEvent(Map), mapped(mapped)
+        { }
+        QWeakPointer<QWindow> mapped;
+    };
+
+    class UnmapEvent : public WindowSystemEvent {
+    public:
+        UnmapEvent(QWindow *unmapped)
+            : WindowSystemEvent(Unmap), unmapped(unmapped)
+        { }
+        QWeakPointer<QWindow> unmapped;
+    };
+
+    class ExposeEvent : public WindowSystemEvent {
+    public:
+        ExposeEvent(QWindow *exposed, const QRegion &region)
+            : WindowSystemEvent(Expose), exposed(exposed), region(region)
+        { }
+        QWeakPointer<QWindow> exposed;
+        QRegion region;
     };
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;
