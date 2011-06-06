@@ -1855,6 +1855,8 @@ static QMessageBox::StandardButton newButton(int button)
     default:
         return QMessageBox::NoButton;
     }
+#else
+    return QMessageBox::NoButton;
 #endif
 }
 
