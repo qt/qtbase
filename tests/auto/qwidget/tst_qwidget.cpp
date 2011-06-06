@@ -3229,28 +3229,22 @@ void tst_QWidget::widgetAt()
 
     w2->lower();
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    const bool match = (wr->objectName() == QString("w1"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w1"));
     w2->raise();
-    QVERIFY(match);
 
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w2"));
-
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w2"));
 
     QWidget *w3 = new QWidget(w2);
     w3->setGeometry(10,10,50,50);
     w3->setObjectName("w3");
     w3->show();
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100,100)));
-    QCOMPARE(wr->objectName(), QString("w3"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100,100)) && wr->objectName() == QString("w3"));
 
     w3->setAttribute(Qt::WA_TransparentForMouseEvents);
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w2"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w2"));
 
     QRegion rgn = QRect(QPoint(0,0), w2->size());
     QPoint point = w2->mapFromGlobal(QPoint(100,100));
