@@ -57,6 +57,8 @@ public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
     ~QXcbScreen();
 
+    QWindow *topLevelAt(const QPoint &point) const;
+
     QRect geometry() const;
     int depth() const;
     QImage::Format format() const;

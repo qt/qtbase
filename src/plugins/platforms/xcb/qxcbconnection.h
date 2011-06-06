@@ -282,6 +282,8 @@ public:
     template<typename T>
     inline xcb_generic_event_t *checkEvent(const T &checker);
 
+    QXcbWindow *platformWindowFromId(xcb_window_t id);
+
 private slots:
     void processXcbEvents();
 
@@ -291,8 +293,6 @@ private:
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
-    QXcbWindow *platformWindowFromId(xcb_window_t id);
-
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
 

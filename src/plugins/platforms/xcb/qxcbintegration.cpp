@@ -215,6 +215,8 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
         y = translate_reply->dst_y;
 
         window = root;
+
+        free(translate_reply);
         free(reply);
         reply = root_reply;
     } else {
@@ -337,7 +339,6 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
 
     return result;
 }
-
 
 bool QXcbIntegration::hasOpenGL() const
 {

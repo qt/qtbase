@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qxcbscreen.h"
+#include "qxcbwindow.h"
 
 #include <stdio.h>
 
@@ -143,6 +144,51 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
 
 QXcbScreen::~QXcbScreen()
 {
+}
+
+QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
+{
+    xcb_window_t root = m_screen->root;
+
+    int x = p.x();
+    int y = p.y();
+
+    xcb_generic_error_t *error;
+
+    xcb_window_t parent = root;
+    xcb_window_t child = root;
+
+    do {
+        xcb_translate_coordinates_cookie_t translate_cookie =
+            xcb_translate_coordinates(xcb_connection(), parent, child, x, y);
+
+        xcb_translate_coordinates_reply_t *translate_reply =
+            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, &error);
+
+        if (!translate_reply) {
+            if (error) {
+                connection()->handleXcbError(error);
+                free(error);
+            }
+            return 0;
+        }
+
+        parent = child;
+        child = translate_reply->child;
+        x = translate_reply->dst_x;
+        y = translate_reply->dst_y;
+
+        free(translate_reply);
+
+        if (!child || child == root)
+            return 0;
+
+        QPlatformWindow *platformWindow = connection()->platformWindowFromId(child);
+        if (platformWindow)
+            return platformWindow->window();
+    } while (parent != child);
+
+    return 0;
 }
 
 const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
