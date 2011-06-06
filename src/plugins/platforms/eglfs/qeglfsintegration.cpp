@@ -48,7 +48,7 @@
 
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QPlatformWindowFormat>
-#include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#include <QtGui/private/qpixmap_raster_p.h>
 
 #include <EGL/egl.h>
 
@@ -78,7 +78,7 @@ QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) co
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createPixmapData %d\n", type);
 #endif
-    return new QGLPixmapData(type);
+    return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const
