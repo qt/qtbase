@@ -1435,9 +1435,9 @@ QString QAccessibleTextEdit::textAtOffset(int offset, BoundaryType boundaryType,
     if (offset >= characterCount())
         return QString();
 
+    cursor.setPosition(offset);
     switch (boundaryType) {
     case CharBoundary:
-        cursor.setPosition(offset);
         *startOffset = cursor.position();
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
         *endOffset = cursor.position();

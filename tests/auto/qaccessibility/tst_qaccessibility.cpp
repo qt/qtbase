@@ -1679,6 +1679,8 @@ void tst_QAccessibility::textEditTest()
 {
     {
     QTextEdit edit;
+    int startOffset;
+    int endOffset;
     QString text = "hello world\nhow are you today?\n";
     edit.setText(text);
     edit.show();
@@ -1688,6 +1690,12 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->childCount(), 6);
     QCOMPARE(iface->text(QAccessible::Value, 4), QString("hello world"));
     QCOMPARE(iface->text(QAccessible::Value, 5), QString("how are you today?"));
+    QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible2::WordBoundary, &startOffset, &endOffset), QString("world"));
+    QCOMPARE(startOffset, 6);
+    QCOMPARE(endOffset, 11);
+    QCOMPARE(iface->textInterface()->textAtOffset(14, QAccessible2::LineBoundary, &startOffset, &endOffset), QString("how are you today?"));
+    QCOMPARE(startOffset, 12);
+    QCOMPARE(endOffset, 30);
     QCOMPARE(iface->text(QAccessible::Value, 6), QString());
     QCOMPARE(iface->textInterface()->characterCount(), 31);
     QFontMetrics fm(edit.font());
