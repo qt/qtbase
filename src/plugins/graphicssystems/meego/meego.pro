@@ -1,7 +1,7 @@
 TARGET = qmeegographicssystem
 load(qt_plugin)
 
-QT += gui opengl
+QT += core-private gui-private opengl-private
 
 DESTDIR = $$QT.gui.plugins/graphicssystems
 
