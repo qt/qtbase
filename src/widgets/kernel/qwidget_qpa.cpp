@@ -150,11 +150,17 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
 
+    d->aboutToDestroy();
+    if (!isWindow() && parentWidget())
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
+
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
 
     if (this == QApplicationPrivate::active_window)
         QApplication::setActiveWindow(0);
+
+    setAttribute(Qt::WA_WState_Created, false);
 
     if (windowType() != Qt::Desktop) {
         if (destroySubWindows) {
@@ -175,6 +181,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 d->hide_sys();
             }
         }
+
+        d->setWinId(0);
     }
 }
 
