@@ -64,7 +64,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     QNSWindowDelegate *delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
     [m_nsWindow setDelegate:delegate];
 
-    [m_nsWindow makeKeyAndOrderFront:nil];
     [m_nsWindow setAcceptsMouseMovedEvents:YES];
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
@@ -96,7 +95,11 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 
 void QCocoaWindow::setVisible(bool visible)
 {
-    Q_UNUSED(visible);
+    if (visible) {
+        [m_nsWindow makeKeyAndOrderFront:nil];
+    } else {
+        [m_nsWindow orderOut:nil];
+    }
 }
 
 WId QCocoaWindow::winId() const
