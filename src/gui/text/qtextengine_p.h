@@ -422,7 +422,7 @@ public:
         InLayout,
         LayoutFailed,
     };
-    struct LayoutData {
+    struct Q_GUI_EXPORT LayoutData {
         LayoutData(const QString &str, void **stack_memory, int mem_size);
         LayoutData();
         ~LayoutData();
