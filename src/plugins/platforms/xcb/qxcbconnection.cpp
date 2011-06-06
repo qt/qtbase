@@ -483,6 +483,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         printXcbEvent("Unhandled XCB event", event);
 }
 
+void QXcbConnection::addPeekFunc(PeekFunc f)
+{
+    m_peekFuncs.append(f);
+}
+
 void QXcbConnection::processXcbEvents()
 {
     while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
@@ -498,6 +503,15 @@ void QXcbConnection::processXcbEvents()
         if (!response_type) {
             handleXcbError((xcb_generic_error_t *)event);
         } else {
+            QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
+            while (it != m_peekFuncs.end()) {
+                // These callbacks return true if the event is what they were
+                // waiting for, remove them from the list in that case.
+                if ((*it)(event))
+                    it = m_peekFuncs.erase(it);
+                else
+                    ++it;
+            }
             handleXcbEvent(event);
         }
 
@@ -505,6 +519,12 @@ void QXcbConnection::processXcbEvents()
     }
 
     eventqueue.clear();
+
+    // Indicate with a null event that the event the callbacks are waiting for
+    // is not in the queue currently.
+    Q_FOREACH (PeekFunc f, m_peekFuncs)
+        f(0);
+    m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());
 }

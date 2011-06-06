@@ -284,6 +284,9 @@ public:
 
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
+    typedef bool (*PeekFunc)(xcb_generic_event_t *);
+    void addPeekFunc(PeekFunc f);
+
 private slots:
     void processXcbEvents();
 
@@ -335,6 +338,8 @@ private:
     QVector<xcb_generic_event_t *> eventqueue;
 
     WindowMapper m_mapper;
+
+    QVector<PeekFunc> m_peekFuncs;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

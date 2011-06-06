@@ -1087,9 +1087,23 @@ void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
     QWindowSystemInterface::handleWindowActivated(window());
 }
 
+static bool focusInPeeker(xcb_generic_event_t *event)
+{
+    if (!event) {
+        // FocusIn event is not in the queue, proceed with FocusOut normally.
+        QWindowSystemInterface::handleWindowActivated(0);
+        return true;
+    }
+    uint response_type = event->response_type & ~0x80;
+    return response_type == XCB_FOCUS_IN;
+}
+
 void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 {
-    QWindowSystemInterface::handleWindowActivated(0);
+    // Do not set the active window to 0 if there is a FocusIn coming.
+    // There is however no equivalent for XPutBackEvent so register a
+    // callback for QXcbConnection instead.
+    connection()->addPeekFunc(focusInPeeker);
 }
 
 void QXcbWindow::updateSyncRequestCounter()
