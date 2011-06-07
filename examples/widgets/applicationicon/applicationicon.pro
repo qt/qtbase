@@ -11,7 +11,7 @@ OTHER_FILES += applicationicon.svg \
                applicationicon.desktop
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    CONFIG += qt_example
     # override icon
     ICON = applicationicon.svg
     TARGET.UID3 = 0xe9f919ee
@@ -20,7 +20,7 @@ symbian {
 }
 
 maemo5 {
-    include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+    CONFIG += qt_example
 
     # override icon from maemo5pkgrules.pri
     icon.files = $${TARGET}.png

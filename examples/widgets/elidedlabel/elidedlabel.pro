@@ -21,10 +21,10 @@ symbian {
     TARGET.UID3 = 0xE2728354 # randomly generated
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    CONFIG += qt_example
 }
 
-maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)
 maemo5: warning(This example might not fully work on Maemo platform)

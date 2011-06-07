@@ -15,6 +15,6 @@ INSTALLS += target sources
 symbian: CONFIG += qt_example
 
 wince*: DEPLOYMENT_PLUGIN += qgif qjpeg qtiff
-maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+maemo5: CONFIG += qt_example
 
 simulator: warning(This example does not work on Simulator platform)

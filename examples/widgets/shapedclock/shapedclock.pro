@@ -12,7 +12,7 @@ symbian {
     TARGET.UID3 = 0xA000C605
     CONFIG += qt_example
 }
-maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)
 maemo5: warning(This example might not fully work on Maemo platform)
