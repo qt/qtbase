@@ -137,14 +137,14 @@
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 {
-    NSPoint point = [self convertPoint: [theEvent locationInWindow] fromView: nil];
-    QPoint qt_localPoint(point.x,point.y);
+    NSPoint windowPoint = [self convertPoint: [theEvent locationInWindow] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
 
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    QWindowSystemInterface::handleMouseEvent(m_window,qt_timestamp,qt_localPoint,QPoint(),m_buttons);
-
+    // ### Should the points be windowPoint and screenPoint?
+    QWindowSystemInterface::handleMouseEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, m_buttons);
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
