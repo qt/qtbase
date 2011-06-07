@@ -55,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define DND_DEBUG
+//#define DND_DEBUG
 #ifdef DND_DEBUG
 #define DEBUG qDebug
 #else
@@ -733,8 +733,6 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
 
     p -= geometry.topLeft();
 
-    qDebug() << "handle_xdnd_position" << p;
-
     // ####
 //    if (!passive && checkEmbedded(w, e))
 //        return;
@@ -772,7 +770,6 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
             manager->possible_actions = manager->dragPrivate()->possible_actions;
         } else {
             manager->possible_actions = Qt::DropActions(toDropAction(e->data.data32[4]));
-//             possible_actions |= Qt::CopyAction;
         }
         QDragMoveEvent me(p, manager->possible_actions, dropData,
                           QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
@@ -1226,66 +1223,6 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
     return 0;
 }
 
-void QDragManager::drop()
-{
-    endDrag();
-
-    if (!current_target)
-        return;
-
-    qDeleteInEventHandler(xdnd_data.deco);
-    xdnd_data.deco = 0;
-
-    XClientMessageEvent drop;
-    drop.type = ClientMessage;
-    drop.window = current_target;
-    drop.format = 32;
-    drop.message_type = ATOM(XdndDrop);
-    drop.data.l[0] = dragPrivate()->source->effectiveWinId();
-    drop.data.l[1] = 0; // flags
-    drop.data.l[2] = connection()->time();
-
-    drop.data.l[3] = 0;
-    drop.data.l[4] = 0;
-
-    QWidget * w = QWidget::find(current_proxy_target);
-
-    if (w && (w->windowType() == Qt::Desktop) && !w->acceptDrops())
-        w = 0;
-
-    QXdndDropTransaction t = {
-        connection()->time(),
-        current_target,
-        current_proxy_target,
-        w,
-        current_embedding_widget,
-        object
-    };
-    X11->dndDropTransactions.append(t);
-    restartXdndDropExpiryTimer();
-
-    if (w)
-        X11->xdndHandleDrop(w, (const XEvent *)&drop, false);
-    else
-        XSendEvent(X11->display, current_proxy_target, False,
-                   NoEventMask, (XEvent*)&drop);
-
-    current_target = 0;
-    current_proxy_target = 0;
-    source_time = 0;
-    current_embedding_widget = 0;
-    object = 0;
-
-#ifndef QT_NO_CURSOR
-    if (restoreCursor) {
-        QApplication::restoreOverrideCursor();
-        restoreCursor = false;
-    }
-#endif
-}
-
-
-
 bool QX11Data::xdndHandleBadwindow()
 {
     if (current_target) {
@@ -1480,16 +1417,8 @@ QVariant QDropData::xdndObtainData(const QByteArray &format, QVariant::Type requ
     if (c->clipboard()->getSelectionOwner(drag->connection()->atom(QXcbAtom::XdndSelection)) == XCB_NONE)
         return result; // should never happen?
 
-    QWindow* tw = drag->currentWindow.data();
-    if (!drag->currentWindow || (drag->currentWindow.data()->windowType() == Qt::Desktop))
-        tw = new QWindow;
-    xcb_window_t win = ::xcb_window(tw);
-
     xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);
-    result = c->clipboard()->getSelection(win, xdnd_selection, a, xdnd_selection);
-
-    if (!drag->currentWindow || (drag->currentWindow.data()->windowType() == Qt::Desktop))
-        delete tw;
+    result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection);
 
     return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, encoding);
 }

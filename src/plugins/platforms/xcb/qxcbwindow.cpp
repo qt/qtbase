@@ -981,7 +981,6 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         return;
 
     if (event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
-        qDebug() << "WM_PROTO" << m_window << connection()->atomName(event->data.data32[0]);
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {

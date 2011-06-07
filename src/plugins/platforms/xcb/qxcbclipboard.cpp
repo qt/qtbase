@@ -261,6 +261,9 @@ xcb_window_t QXcbClipboard::requestor() const
                                      0,                               // value mask
                                      0));                             // value list
 
+        uint32_t mask = XCB_EVENT_MASK_PROPERTY_CHANGE;
+        xcb_change_window_attributes(m_connection->xcb_connection(), window, XCB_CW_EVENT_MASK, &mask);
+
         that->setRequestor(window);
     }
     return m_requestor;
@@ -731,23 +734,16 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
 
 QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAtom)
 {
-    QByteArray buf;
-
-    xcb_window_t win = requestor();
-//    qDebug() << "getDataInFormat" << m_connection->atomName(modeAtom) << m_connection->atomName(fmtAtom) << win;
-
-    return getSelection(win, modeAtom, fmtAtom, m_connection->atom(QXcbAtom::_QT_SELECTION));
+    return getSelection(modeAtom, fmtAtom, m_connection->atom(QXcbAtom::_QT_SELECTION));
 }
 
-QByteArray QXcbClipboard::getSelection(xcb_window_t win, xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property)
+QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property)
 {
     QByteArray buf;
-
-    uint32_t mask = XCB_EVENT_MASK_NO_EVENT;
-    xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
+    xcb_window_t win = requestor();
 
     xcb_delete_property(m_connection->xcb_connection(), win, property);
-    xcb_convert_selection(m_connection->xcb_connection(), win, selection, target, property, XCB_CURRENT_TIME);
+    xcb_convert_selection(m_connection->xcb_connection(), win, selection, target, property, m_connection->time());
 
     m_connection->sync();
 
@@ -758,20 +754,13 @@ QByteArray QXcbClipboard::getSelection(xcb_window_t win, xcb_atom_t selection, x
     if (no_selection)
         return buf;
 
-    mask = XCB_EVENT_MASK_PROPERTY_CHANGE;
-    xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
-
     xcb_atom_t type;
     if (clipboardReadProperty(win, property, true, &buf, 0, &type, 0)) {
         if (type == m_connection->atom(QXcbAtom::INCR)) {
-            qDebug() << "INCR";
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
             buf = clipboardReadIncrementalProperty(win, property, nbytes, false);
         }
     }
-
-    mask = XCB_EVENT_MASK_NO_EVENT;
-    xcb_change_window_attributes(m_connection->xcb_connection(), win, XCB_CW_EVENT_MASK, &mask);
 
     return buf;
 }
