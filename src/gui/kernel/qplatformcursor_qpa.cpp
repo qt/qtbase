@@ -98,6 +98,21 @@ QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
     QPlatformCursorPrivate::instances.append(this);
 }
 
+extern int qt_last_x;
+extern int qt_last_y;
+
+QPoint QPlatformCursor::pos() const
+{
+    // As a fallback return the last mouse position seen by QGuiApplication.
+    return QPoint(qt_last_x, qt_last_y);
+}
+
+void QPlatformCursor::setPos(const QPoint &pos)
+{
+    Q_UNUSED(pos);
+    qWarning("This plugin does not support QCursor::setPos()");
+}
+
 // End of display and pointer event handling code
 // Beginning of built-in cursor graphics
 // from src/gui/embedded/QGraphicsSystemCursorImage_qws.cpp

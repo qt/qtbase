@@ -41,6 +41,7 @@
 
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
+#include "qxcbcursor.h"
 
 #include <stdio.h>
 
@@ -140,10 +141,13 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
 
         xcb_depth_next(&depth_iterator);
     }
+
+    m_cursor = new QXcbCursor(connection, this);
 }
 
 QXcbScreen::~QXcbScreen()
 {
+    delete m_cursor;
 }
 
 QWindow *QXcbScreen::topLevelAt(const QPoint &p) const

@@ -903,9 +903,6 @@ public:
     void setFullScreenSize_helper();
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
-#ifndef QT_NO_CURSOR
-    void updateCursor() const;
-#endif
 #elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;

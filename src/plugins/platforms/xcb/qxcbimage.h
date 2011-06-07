@@ -39,52 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBSCREEN_H
-#define QXCBSCREEN_H
+#ifndef QXCBIMAGE_H
+#define QXCBIMAGE_H
 
-#include <QtGui/QPlatformScreen>
-#include <QtCore/QString>
+#include "qxcbscreen.h"
+#include <QtCore/QPair>
+#include <QtGui/QImage>
+#include <QtGui/QPixmap>
+#include <xcb/xcb_image.h>
 
-#include <xcb/xcb.h>
+QT_BEGIN_NAMESPACE
 
-#include "qxcbobject.h"
+QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection,
+                                           uint8_t depth, const xcb_visualtype_t *visual);
+QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap,
+                                 int width, int height, int depth,
+                                 const xcb_visualtype_t *visual);
+xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image);
 
-class QXcbConnection;
-class QXcbCursor;
-
-class QXcbScreen : public QXcbObject, public QPlatformScreen
-{
-public:
-    QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
-    ~QXcbScreen();
-
-    QWindow *topLevelAt(const QPoint &point) const;
-
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
-    QSize physicalSize() const;
-
-    int screenNumber() const;
-
-    xcb_screen_t *screen() const { return m_screen; }
-    xcb_window_t root() const { return m_screen->root; }
-
-    xcb_window_t clientLeader() const { return m_clientLeader; }
-
-    QString windowManagerName() const { return m_windowManagerName; }
-    bool syncRequestSupported() const { return m_syncRequestSupported; }
-
-    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
-
-private:
-    xcb_screen_t *m_screen;
-    int m_number;
-    QString m_windowManagerName;
-    bool m_syncRequestSupported;
-    xcb_window_t m_clientLeader;
-    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
-    QXcbCursor *m_cursor;
-};
+QT_END_NAMESPACE
 
 #endif

@@ -47,6 +47,7 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
+#include "qxcbimage.h"
 
 #include <qgenericunixprintersupport.h>
 
@@ -121,28 +122,6 @@ bool QXcbIntegration::isVirtualDesktop()
 QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
 {
     return m_fontDatabase;
-}
-
-static QImage::Format imageFormatForVisual(QXcbConnection *connection, uint8_t depth, const xcb_visualtype_t *visual)
-{
-    const xcb_format_t *format = connection->formatForDepth(depth);
-
-    if (!visual || !format)
-        return QImage::Format_Invalid;
-
-    if (depth == 32 && format->bits_per_pixel == 32 && visual->red_mask == 0xff0000
-        && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
-        return QImage::Format_ARGB32_Premultiplied;
-
-    if (depth == 24 && format->bits_per_pixel == 32 && visual->red_mask == 0xff0000
-        && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
-        return QImage::Format_RGB32;
-
-    if (depth == 16 && format->bits_per_pixel == 16 && visual->red_mask == 0xf800
-        && visual->green_mask == 0x7e0 && visual->blue_mask == 0x1f)
-        return QImage::Format_RGB16;
-
-    return QImage::Format_Invalid;
 }
 
 QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int height) const
@@ -256,84 +235,11 @@ QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int hei
         free(error);
     }
 
-    xcb_get_image_cookie_t get_image_cookie =
-        xcb_get_image(connection, XCB_IMAGE_FORMAT_Z_PIXMAP, pixmap, 0, 0, width, height, 0xffffffff);
-
-    xcb_get_image_reply_t *image_reply =
-    xcb_get_image_reply(connection, get_image_cookie, &error);
-
-    xcb_free_gc(connection, gc);
-    xcb_free_pixmap(connection, pixmap);
-
-    uint8_t depth = reply->depth;
+    QPixmap result = qt_xcb_pixmapFromXPixmap(m_connection, pixmap, width, height, reply->depth, visual);
 
     free(reply);
-
-    if (!image_reply) {
-        if (error) {
-            m_connection->handleXcbError(error);
-            free(error);
-        }
-        return QPixmap();
-    }
-
-    uint8_t *data = xcb_get_image_data(image_reply);
-    uint32_t length = xcb_get_image_data_length(image_reply);
-
-    QPixmap result;
-
-    QImage::Format format = imageFormatForVisual(m_connection, depth, visual);
-    if (format != QImage::Format_Invalid) {
-        uint32_t bytes_per_line = length / height;
-        QImage image(const_cast<uint8_t *>(data), width, height, bytes_per_line, format);
-        uint8_t image_byte_order = m_connection->setup()->image_byte_order;
-
-        // we may have to swap the byte order
-        if ((QSysInfo::ByteOrder == QSysInfo::LittleEndian && image_byte_order == XCB_IMAGE_ORDER_MSB_FIRST)
-            || (QSysInfo::ByteOrder == QSysInfo::BigEndian && image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST))
-        {
-            for (int i=0; i < image.height(); i++) {
-                switch (format) {
-                case QImage::Format_RGB16: {
-                    ushort *p = (ushort*)image.scanLine(i);
-                    ushort *end = p + image.width();
-                    while (p < end) {
-                        *p = ((*p << 8) & 0xff00) | ((*p >> 8) & 0x00ff);
-                        p++;
-                    }
-                    break;
-                }
-                case QImage::Format_RGB32: // fall-through
-                case QImage::Format_ARGB32_Premultiplied: {
-                    uint *p = (uint*)image.scanLine(i);
-                    uint *end = p + image.width();
-                    while (p < end) {
-                        *p = ((*p << 24) & 0xff000000) | ((*p << 8) & 0x00ff0000)
-                             | ((*p >> 8) & 0x0000ff00) | ((*p >> 24) & 0x000000ff);
-                        p++;
-                    }
-                    break;
-                }
-                default:
-                    Q_ASSERT(false);
-                }
-            }
-        }
-
-        // fix-up alpha channel
-        if (format == QImage::Format_RGB32) {
-            QRgb *p = (QRgb *)image.bits();
-            for (int y = 0; y < height; ++y) {
-                for (int x = 0; x < width; ++x)
-                    p[x] |= 0xff000000;
-                p += bytes_per_line / 4;
-            }
-        }
-
-        result = QPixmap::fromImage(image.copy());
-    }
-
-    free(image_reply);
+    xcb_free_gc(connection, gc);
+    xcb_free_pixmap(connection, pixmap);
 
     return result;
 }

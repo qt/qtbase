@@ -56,6 +56,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <xcb/xfixes.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
@@ -68,7 +69,6 @@
 
 #ifdef XCB_USE_DRI2
 #include <xcb/dri2.h>
-#include <xcb/xfixes.h>
 extern "C" {
 #include <xf86drm.h>
 }
@@ -124,6 +124,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_keyboard = new QXcbKeyboard(this);
     m_clipboard = new QXcbClipboard(this);
     m_drag = new QXcbDrag(this);
+
+    initializeXFixes();
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -830,6 +832,22 @@ void QXcbConnection::sync()
     free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
 }
 
+void QXcbConnection::initializeXFixes()
+{
+    xcb_generic_error_t *error = 0;
+    xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+    xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
+                                                                                     XCB_XFIXES_MAJOR_VERSION,
+                                                                                     XCB_XFIXES_MINOR_VERSION);
+    xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
+                                                                                     xfixes_query_cookie, &error);
+    if (!xfixes_query || error || xfixes_query->major_version < 2) {
+        qWarning("Failed to initialize XFixes");
+        free(error);
+    }
+    free(xfixes_query);
+}
+
 #if defined(XCB_USE_EGL)
 bool QXcbConnection::hasEgl() const
 {
@@ -900,25 +918,11 @@ bool QXcbConnection::hasSupportForDri2() const
     if (!m_dri2_support_probed) {
         xcb_generic_error_t *error = 0;
 
-        xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
         xcb_prefetch_extension_data (m_connection, &xcb_dri2_id);
-
-        xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
-                                                                                         XCB_XFIXES_MAJOR_VERSION,
-                                                                                         XCB_XFIXES_MINOR_VERSION);
 
         xcb_dri2_query_version_cookie_t dri2_query_cookie = xcb_dri2_query_version (m_connection,
                                                                                     XCB_DRI2_MAJOR_VERSION,
                                                                                     XCB_DRI2_MINOR_VERSION);
-
-        xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
-                                                                                         xfixes_query_cookie, &error);
-        if (!xfixes_query || error || xfixes_query->major_version < 2) {
-            delete error;
-            delete xfixes_query;
-            return false;
-        }
-        delete xfixes_query;
 
         xcb_dri2_query_version_reply_t *dri2_query = xcb_dri2_query_version_reply (m_connection,
                                                                                    dri2_query_cookie, &error);

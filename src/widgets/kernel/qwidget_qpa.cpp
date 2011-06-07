@@ -299,20 +299,13 @@ void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
 {
     Q_UNUSED(cursor);
     Q_Q(QWidget);
-    if (q->isVisible())
-        qt_qpa_set_cursor(q, false);
+    qt_qpa_set_cursor(q, false);
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
     Q_Q(QWidget);
-    if (q->isVisible())
-        qt_qpa_set_cursor(q, false);
-}
-
-void QWidgetPrivate::updateCursor() const
-{
-    // XXX
+    qt_qpa_set_cursor(q, false);
 }
 
 #endif //QT_NO_CURSOR
@@ -858,56 +851,55 @@ void QWidgetPrivate::setModal_sys()
 }
 
 #ifndef QT_NO_CURSOR
-void qt_qpa_set_cursor(QWidget * w, bool force)
+static void applyCursor(QWidget *w, const QCursor &c)
 {
-    static QCursor arrowCursor(Qt::ArrowCursor);
-    static QPointer<QWidget> lastUnderMouse = 0;
+    QCursor cc = c;
+    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
+    int cursorCount = cursors.count();
+    for (int i = 0; i < cursorCount; ++i) {
+        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
+        if (cursor)
+            cursor.data()->changeCursor(&cc, w->window()->windowHandle());
+    }
+}
 
-    QCursor * override = QApplication::overrideCursor();
-
-    if (override && w != 0)
+void qt_qpa_set_cursor(QWidget *w, bool force)
+{
+    if (!w->testAttribute(Qt::WA_WState_Created))
         return;
 
-    QWidget *cursorWidget;
-    QCursor cursorCursor;
+    static QPointer<QWidget> lastUnderMouse = 0;
+    if (force) {
+        lastUnderMouse = w;
+    } else if (lastUnderMouse && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
+        w = lastUnderMouse;
+    } else if (!w->internalWinId()) {
+        return; // The mouse is not under this widget, and it's not native, so don't change it.
+    }
 
-    do {
-        if (w == 0) {
-            if (override) {
-                cursorCursor = *override;
-                cursorWidget = QApplication::topLevelAt(QCursor::pos());
-                break;
-            }
-            w = QApplication::widgetAt(QCursor::pos());
-            if (w == 0) // clear the override cursor while over empty space
-                w = QApplication::desktop();
-        } else if (force) {
-            lastUnderMouse = w;
-        } else if (w->testAttribute(Qt::WA_WState_Created) && lastUnderMouse
-                   && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
-            w = lastUnderMouse;
-        }
-        if (w == QApplication::desktop() && !override) {
-            cursorCursor = arrowCursor;
-            cursorWidget = w;
-            break;
-        }
+    while (!w->internalWinId() && w->parentWidget() && !w->isWindow()
+           && !w->testAttribute(Qt::WA_SetCursor))
+        w = w->parentWidget();
 
-        QWidget * curWin = QApplication::activeWindow();
-        if (!curWin && w && w->internalWinId())
-            return;
-        QWidget* cW = w && !w->internalWinId() ? w : curWin;
+    QWidget *nativeParent = w;
+    if (!w->internalWinId())
+        nativeParent = w->nativeParentWidget();
+    if (!nativeParent || !nativeParent->internalWinId())
+        return;
 
-        if (!cW || cW->window() != w->window() ||
-            !cW->isVisible() || !cW->underMouse() || override)
-            return;
-
-        cursorCursor = w->cursor();
-        cursorWidget = w;
-    } while (0);
-    foreach (QWeakPointer<QPlatformCursor> cursor, QPlatformCursorPrivate::getInstances())
-        if (cursor)
-            cursor.data()->changeCursor(&cursorCursor, cursorWidget->windowHandle());
+    if (w->isWindow() || w->testAttribute(Qt::WA_SetCursor)) {
+        QCursor *oc = QApplication::overrideCursor();
+        if (oc)
+            applyCursor(nativeParent, *oc);
+        else if (w->isEnabled())
+            applyCursor(nativeParent, w->cursor());
+        else
+            // Enforce the windows behavior of clearing the cursor on
+            // disabled widgets.
+            applyCursor(nativeParent, Qt::ArrowCursor);
+    } else {
+        applyCursor(nativeParent, Qt::ArrowCursor);
+    }
 }
 #endif //QT_NO_CURSOR 
 

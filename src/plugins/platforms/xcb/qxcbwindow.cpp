@@ -1234,3 +1234,9 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     free(err);
     return result;
 }
+
+void QXcbWindow::setCursor(xcb_cursor_t cursor)
+{
+    xcb_change_window_attributes(xcb_connection(), m_window, XCB_CW_CURSOR, &cursor);
+    xcb_flush(xcb_connection());
+}

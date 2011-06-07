@@ -212,7 +212,7 @@ static void init_platform(const QString &name, const QString &platformPluginPath
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
-        foreach(QString key, keys) {
+        foreach(const QString &key, keys) {
             fatalMessage.append(key + QString::fromLatin1("\n"));
         }
         qFatal("%s", fatalMessage.toLocal8Bit().constData());
@@ -221,7 +221,7 @@ static void init_platform(const QString &name, const QString &platformPluginPath
 
 }
 
-static void init_plugins(const QList<QByteArray> pluginList)
+static void init_plugins(const QList<QByteArray> &pluginList)
 {
     for (int i = 0; i < pluginList.count(); ++i) {
         QByteArray pluginSpec = pluginList.at(i);

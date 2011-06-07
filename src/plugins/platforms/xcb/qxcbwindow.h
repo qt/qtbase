@@ -79,6 +79,8 @@ public:
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
 
+    void setCursor(xcb_cursor_t cursor);
+
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }

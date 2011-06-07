@@ -39,52 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBSCREEN_H
-#define QXCBSCREEN_H
+#ifndef QXCBCURSOR_H
+#define QXCBCURSOR_H
 
-#include <QtGui/QPlatformScreen>
-#include <QtCore/QString>
+#include <QtGui/QPlatformCursor>
+#include "qxcbscreen.h"
 
-#include <xcb/xcb.h>
+QT_BEGIN_NAMESPACE
 
-#include "qxcbobject.h"
-
-class QXcbConnection;
-class QXcbCursor;
-
-class QXcbScreen : public QXcbObject, public QPlatformScreen
+class QXcbCursor : public QXcbObject, public QPlatformCursor
 {
 public:
-    QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
-    ~QXcbScreen();
-
-    QWindow *topLevelAt(const QPoint &point) const;
-
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
-    QSize physicalSize() const;
-
-    int screenNumber() const;
-
-    xcb_screen_t *screen() const { return m_screen; }
-    xcb_window_t root() const { return m_screen->root; }
-
-    xcb_window_t clientLeader() const { return m_clientLeader; }
-
-    QString windowManagerName() const { return m_windowManagerName; }
-    bool syncRequestSupported() const { return m_syncRequestSupported; }
-
-    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+    QXcbCursor(QXcbConnection *conn, QXcbScreen *screen);
+    ~QXcbCursor();
+    void changeCursor(QCursor *cursor, QWindow *widget);
+    QPoint pos() const;
+    void setPos(const QPoint &pos);
 
 private:
-    xcb_screen_t *m_screen;
-    int m_number;
-    QString m_windowManagerName;
-    bool m_syncRequestSupported;
-    xcb_window_t m_clientLeader;
-    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
-    QXcbCursor *m_cursor;
+    xcb_cursor_t createFontCursor(int cshape);
+    xcb_cursor_t createBitmapCursor(QCursor *cursor);
+    xcb_cursor_t createNonStandardCursor(int cshape);
+
+    QXcbScreen *m_screen;
+    QMap<int, xcb_cursor_t> m_shapeCursorMap;
+    QMap<qint64, xcb_cursor_t> m_bitmapCursorMap;
 };
+
+QT_END_NAMESPACE
 
 #endif

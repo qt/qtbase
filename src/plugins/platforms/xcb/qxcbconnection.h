@@ -292,6 +292,7 @@ private slots:
 private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
+    void initializeXFixes();
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
