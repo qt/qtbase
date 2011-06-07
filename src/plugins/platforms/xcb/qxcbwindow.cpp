@@ -985,7 +985,6 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
             connection()->setTime(event->data.data32[1]);
-            requestActivateWindow();
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             xcb_client_message_event_t reply = *event;
 
