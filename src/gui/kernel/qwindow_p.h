@@ -68,6 +68,7 @@ public:
         , surface(0)
         , windowState(Qt::WindowNoState)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
+        , modality(Qt::NonModal)
         , transientParent(0)
     {
         isWindow = true;
