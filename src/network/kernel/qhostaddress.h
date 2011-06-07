@@ -76,7 +76,8 @@ public:
         LocalHost,
         LocalHostIPv6,
         Any,
-        AnyIPv6
+        AnyIPv6,
+        AnyIPv4
     };
 
     QHostAddress();

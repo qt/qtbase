@@ -163,7 +163,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
                                          QAbstractSocket::NetworkLayerProtocol socketProtocol)
 {
 #ifndef QT_NO_IPV6
-    int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol) ? AF_INET6 : AF_INET;
+    int protocol = (socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) ? AF_INET6 : AF_INET;
 #else
     Q_UNUSED(socketProtocol);
     int protocol = AF_INET;
@@ -495,7 +495,14 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 #if !defined(QT_NO_IPV6)
     struct sockaddr_in6 sockAddrIPv6;
 
-    if (address.protocol() == QAbstractSocket::IPv6Protocol) {
+    if (address.protocol() == QAbstractSocket::IPv6Protocol || address.protocol() == QAbstractSocket::AnyIPProtocol) {
+#ifdef IPV6_V6ONLY
+        int ipv6only = 0;
+        if (address.protocol() == QAbstractSocket::IPv6Protocol)
+            ipv6only = 1;
+        //default value of this socket option varies depending on unix variant (or system configuration on BSD), so always set it explicitly
+        ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
+#endif
         memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
         sockAddrIPv6.sin6_family = AF_INET6;
         sockAddrIPv6.sin6_port = htons(port);
@@ -866,7 +873,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
 #if !defined(QT_NO_IPV6)
     struct sockaddr_in6 sockAddrIPv6;
-    if (host.protocol() == QAbstractSocket::IPv6Protocol) {
+    if (host.protocol() == QAbstractSocket::IPv6Protocol
+        || socketProtocol == QAbstractSocket::IPv6Protocol) {
     memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
     sockAddrIPv6.sin6_family = AF_INET6;
     sockAddrIPv6.sin6_port = htons(port);

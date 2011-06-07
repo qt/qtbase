@@ -74,6 +74,11 @@ struct qt_sockaddr_storage {
       char __ss_pad2[QT_SS_PAD2SIZE];
 };
 
+#ifdef Q_OS_WIN
+#define QT_SOCKLEN_T int
+#define QT_SOCKOPTLEN_T int
+#endif
+
 // sockaddr_in6 size changed between old and new SDK
 // Only the new version is the correct one, so always
 // use this structure.
@@ -265,6 +270,10 @@ public:
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
 		     bool *selectForRead, bool *selectForWrite) const;
+#ifdef Q_OS_WIN
+    void setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
+                           quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize);
+#endif
 
     void nativeClose();
 

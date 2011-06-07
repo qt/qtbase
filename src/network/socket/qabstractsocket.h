@@ -74,6 +74,7 @@ public:
     enum NetworkLayerProtocol {
         IPv4Protocol,
         IPv6Protocol,
+        AnyIPProtocol,
         UnknownNetworkLayerProtocol = -1
     };
     enum SocketError {
