@@ -43,6 +43,7 @@
 #include "qcocoaautoreleasepool.h"
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
+#include <QtCore/private/qcore_mac_p.h>
 
 #include <QWindowSystemInterface>
 
@@ -100,6 +101,13 @@ void QCocoaWindow::setVisible(bool visible)
     } else {
         [m_nsWindow orderOut:nil];
     }
+}
+
+void QCocoaWindow::setWindowTitle(const QString &title)
+{
+    CFStringRef windowTitle = QCFString::toCFStringRef(title);
+    [m_nsWindow setTitle: reinterpret_cast<const NSString *>(windowTitle)];
+    CFRelease(windowTitle);
 }
 
 WId QCocoaWindow::winId() const
