@@ -169,28 +169,6 @@ QMimeData *QXcbDrag::platformDropData()
 
 void QXcbDrag::startDrag()
 {
-    // ####
-//    if (object) {
-//        // the last drag and drop operation hasn't finished, so we are going to wait
-//        // for one second to see if it does... if the finish message comes after this,
-//        // then we could still have problems, but this is highly unlikely
-//        QGuiApplication::flush();
-
-//        QElapsedTimer timer;
-//        timer.start();
-//        do {
-//            XEvent event;
-//            if (XCheckTypedEvent(X11->display, ClientMessage, &event))
-//                qApp->x11ProcessEvent(&event);
-
-//            // sleep 50 ms, so we don't use up CPU cycles all the time.
-//            struct timeval usleep_tv;
-//            usleep_tv.tv_sec = 0;
-//            usleep_tv.tv_usec = 50000;
-//            select(0, 0, 0, 0, &usleep_tv);
-//        } while (object && timer.hasExpired(1000));
-//    }
-
     init();
 
     heartbeat = startTimer(200);
@@ -585,61 +563,9 @@ static Window findXdndAwareParent(Window window)
 }
 
 
-static bool waiting_for_status = false;
-
-// used to preset each new QDragMoveEvent
-
-
 // for embedding only
 static QWidget* current_embedding_widget  = 0;
 static xcb_client_message_event_t last_enter_event;
-
-
-class QExtraWidget : public QWidget
-{
-    Q_DECLARE_PRIVATE(QWidget)
-public:
-    inline QWExtra* extraData();
-    inline QTLWExtra* topData();
-};
-
-inline QWExtra* QExtraWidget::extraData() { return d_func()->extraData(); }
-inline QTLWExtra* QExtraWidget::topData() { return d_func()->topData(); }
-
-
-static QWidget *find_child(QWidget *tlw, QPoint & p)
-{
-    QWidget *widget = tlw;
-
-    p = widget->mapFromGlobal(p);
-    bool done = false;
-    while (!done) {
-        done = true;
-        if (((QExtraWidget*)widget)->extraData() &&
-             ((QExtraWidget*)widget)->extraData()->xDndProxy != 0)
-            break; // stop searching for widgets under the mouse cursor if found widget is a proxy.
-        QObjectList children = widget->children();
-        if (!children.isEmpty()) {
-            for(int i = children.size(); i > 0;) {
-                --i;
-                QWidget *w = qobject_cast<QWidget *>(children.at(i));
-                if (!w)
-                    continue;
-                if (w->testAttribute(Qt::WA_TransparentForMouseEvents))
-                    continue;
-                if (w->isVisible() &&
-                     w->geometry().contains(p) &&
-                     !w->isWindow()) {
-                    widget = w;
-                    done = false;
-                    p = widget->mapFromParent(p);
-                    break;
-                }
-            }
-        }
-    }
-    return widget;
-}
 
 
 static bool checkEmbedded(QWidget* w, const XEvent* xe)
@@ -982,23 +908,6 @@ void QXcbDrag::send_leave()
     source_time = XCB_CURRENT_TIME;
     waiting_for_status = false;
 }
-#if 0
-
-// TODO: remove and use QApplication::currentKeyboardModifiers() in Qt 4.8.
-static Qt::KeyboardModifiers currentKeyboardModifiers()
-{
-    Window root;
-    Window child;
-    int root_x, root_y, win_x, win_y;
-    uint keybstate;
-    for (int i = 0; i < ScreenCount(X11->display); ++i) {
-        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
-                          &root_x, &root_y, &win_x, &win_y, &keybstate))
-            return X11->translateModifiers(keybstate & 0x00ff);
-    }
-    return 0;
-}
-#endif
 
 void QXcbDrag::handleDrop(QWindow *, const xcb_client_message_event_t *event, bool passive)
 {
@@ -1218,31 +1127,6 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
     }
     return 0;
 }
-
-bool QX11Data::xdndHandleBadwindow()
-{
-    if (current_target) {
-        QDragManager *manager = QDragManager::self();
-        if (manager->object) {
-            current_target = 0;
-            current_proxy_target = 0;
-            manager->object->deleteLater();
-            manager->object = 0;
-            delete xdnd_data.deco;
-            xdnd_data.deco = 0;
-            return true;
-        }
-    }
-    if (xdnd_dragsource) {
-        xdnd_dragsource = 0;
-        if (currentWindow) {
-            QApplication::postEvent(currentWindow, new QDragLeaveEvent);
-            currentWindow = 0;
-        }
-        return true;
-    }
-    return false;
-}
 #endif
 
 void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event)
@@ -1312,8 +1196,6 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
     // reset manager->object in case we modified it above
     manager->object = currentObject;
 
-    // ### this can die if event->requestor crashes at the wrong
-    // ### moment
     xcb_send_event(xcb_connection(), false, event->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&notify);
 }
 
