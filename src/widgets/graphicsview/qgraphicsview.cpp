@@ -780,7 +780,7 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
     dest->setDropAction(source->dropAction());
     dest->setMimeData(source->mimeData());
     dest->setWidget(viewport);
-    dest->setSource(source->source());
+    dest->setSource(qobject_cast<QWidget *>(source->source()));
 #else
     Q_UNUSED(dest)
     Q_UNUSED(source)

@@ -46,7 +46,7 @@
 #include "private/qkeysequence_p.h"
 #include "qdebug.h"
 #include "qmime.h"
-//#include "private/qdnd_p.h"
+#include "private/qdnd_p.h"
 #include "qevent_p.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -2265,12 +2265,10 @@ bool QDropEvent::provides(const char *mimeType) const
 
     \sa QDrag::QDrag()
 */
-QWidget* QDropEvent::source() const
+QObject* QDropEvent::source() const
 {
-    return 0;
-    // ### Qt5
-//    QDragManager *manager = QDragManager::self();
-//    return manager ? manager->source() : 0;
+    QDragManager *manager = QDragManager::self();
+    return (manager && manager->object) ? manager->object->source() : 0;
 }
 
 

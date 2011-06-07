@@ -443,7 +443,7 @@ public:
     inline Qt::DropAction dropAction() const { return drop_action; }
     void setDropAction(Qt::DropAction action);
 
-    QWidget* source() const;
+    QObject* source() const;
     inline const QMimeData *mimeData() const { return mdata; }
 
 // QT3_SUPPORT
