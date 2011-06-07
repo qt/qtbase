@@ -833,7 +833,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
                                          0));                             // value list
             wid = m_netWmUserTimeWindow;
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
-                                QXcbAtom::XA_WINDOW, 32, 1, &m_netWmUserTimeWindow);
+                                XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
             xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME));
         } else if (!isSupportedByWM) {
             // WM no longer supports it, then we should remove the
@@ -846,7 +846,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
         }
     }
     xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, wid, atom(QXcbAtom::_NET_WM_USER_TIME),
-                        QXcbAtom::XA_CARDINAL, 32, 1, &timestamp);
+                        XCB_ATOM_CARDINAL, 32, 1, &timestamp);
 }
 
 

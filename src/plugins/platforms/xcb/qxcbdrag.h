@@ -42,10 +42,10 @@
 #ifndef QXCBDRAG_H
 #define QXCBDRAG_H
 
-#include <qlist.h>
 #include <qplatformdrag_qpa.h>
-#include <qnamespace.h>
+#include <qxcbobject.h>
 #include <xcb/xcb.h>
+#include <qlist.h>
 #include <qpoint.h>
 #include <qrect.h>
 #include <qsharedpointer.h>
@@ -61,7 +61,7 @@ class QDropData;
 class QXcbScreen;
 class QDrag;
 
-class QXcbDrag : public QObject, public QPlatformDrag
+class QXcbDrag : public QObject, public QXcbObject, public QPlatformDrag
 {
 public:
     QXcbDrag(QXcbConnection *c);
@@ -88,8 +88,6 @@ public:
 
     bool dndEnable(QXcbWindow *win, bool on);
 
-    QXcbConnection *connection() const { return m_connection; }
-
 protected:
     void timerEvent(QTimerEvent* e);
 
@@ -108,7 +106,6 @@ private:
     QWeakPointer<QWindow> currentWindow;
     QPoint currentPosition;
 
-    QXcbConnection *m_connection;
     QDropData *dropData;
 
     QWindow *desktop_proxy;

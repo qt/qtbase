@@ -70,7 +70,7 @@ contains(QT_CONFIG, opengl) {
 
 LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync
 
-DEFINES += $$QMAKE_DEFINES_XCB
+DEFINES += $$QMAKE_DEFINES_XCB QT_NO_XCB_XKB
 LIBS += $$QMAKE_LIBS_XCB
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
 

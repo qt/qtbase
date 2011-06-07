@@ -67,14 +67,14 @@ void QXcbWMSupport::updateNetWMAtoms()
     int remaining = 0;
     do {
         xcb_generic_error_t *error = 0;
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), QXcbAtom::XA_ATOM, offset, 1024);
+        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_SUPPORTED), XCB_ATOM_ATOM, offset, 1024);
         xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, &error);
         if (!reply || error)
             break;
 
         remaining = 0;
 
-        if (reply->type == QXcbAtom::XA_ATOM && reply->format == 32) {
+        if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
             int len = xcb_get_property_value_length(reply)/4;
             xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
             int s = net_wm_atoms.size();
@@ -107,14 +107,14 @@ void QXcbWMSupport::updateVirtualRoots()
     int remaining = 0;
     do {
         xcb_generic_error_t *error = 0;
-        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), QXcbAtom::XA_ATOM, offset, 1024);
+        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, root, atom(QXcbAtom::_NET_VIRTUAL_ROOTS), XCB_ATOM_ATOM, offset, 1024);
         xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, &error);
         if (!reply || error)
             break;
 
         remaining = 0;
 
-        if (reply->type == QXcbAtom::XA_ATOM && reply->format == 32) {
+        if (reply->type == XCB_ATOM_ATOM && reply->format == 32) {
             int len = xcb_get_property_value_length(reply)/4;
             xcb_atom_t *atoms = (xcb_atom_t *)xcb_get_property_value(reply);
             int s = net_wm_atoms.size();

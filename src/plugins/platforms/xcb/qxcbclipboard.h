@@ -43,13 +43,13 @@
 #define QXCBCLIPBOARD_H
 
 #include <QPlatformClipboard>
-
+#include <qxcbobject.h>
 #include <xcb/xcb.h>
 
 class QXcbConnection;
 class QXcbScreen;
 
-class QXcbClipboard : public QPlatformClipboard
+class QXcbClipboard : public QXcbObject, public QPlatformClipboard
 {
 public:
     QXcbClipboard(QXcbConnection *connection);
@@ -59,7 +59,6 @@ public:
 
     bool supportsMode(QClipboard::Mode mode) const;
 
-    QXcbConnection *connection() const { return m_connection; }
     QXcbScreen *screen() const { return m_screen; }
 
     xcb_window_t requestor() const;
@@ -85,7 +84,6 @@ private:
     xcb_atom_t sendTargetsSelection(QMimeData *d, xcb_window_t window, xcb_atom_t property);
     xcb_atom_t sendSelection(QMimeData *d, xcb_atom_t target, xcb_window_t window, xcb_atom_t property);
 
-    QXcbConnection *m_connection;
     QXcbScreen *m_screen;
 
     QMimeData *m_xClipboard;
