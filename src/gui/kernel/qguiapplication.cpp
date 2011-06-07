@@ -472,6 +472,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
 
 void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
+    if (!e->window)
+        return;
+
     QEvent::Type type;
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
@@ -541,6 +544,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
 void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
+    if (!e->window)
+        return;
+
     QPoint globalPoint = e->globalPos;
 
     qt_last_x = globalPoint.x();
@@ -580,18 +586,27 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
 
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
 {
+    if (!e->enter)
+        return;
+
     QEvent event(QEvent::Enter);
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
 
 void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e)
 {
+    if (!e->leave)
+        return;
+
     QEvent event(QEvent::Leave);
     QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);
 }
 
 void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
+    if (!e->activated)
+        return;
+
     QWindow *previous = QGuiApplicationPrivate::active_window;
     QGuiApplicationPrivate::active_window = e->activated.data();
     if (self)
@@ -670,18 +685,27 @@ void QGuiApplicationPrivate::reportAvailableGeometryChange(
 
 void QGuiApplicationPrivate::processMapEvent(QWindowSystemInterfacePrivate::MapEvent *e)
 {
+    if (!e->mapped)
+        return;
+
     QEvent event(QEvent::Map);
     QCoreApplication::sendSpontaneousEvent(e->mapped.data(), &event);
 }
 
 void QGuiApplicationPrivate::processUnmapEvent(QWindowSystemInterfacePrivate::UnmapEvent *e)
 {
+    if (!e->unmapped)
+        return;
+
     QEvent event(QEvent::Unmap);
     QCoreApplication::sendSpontaneousEvent(e->unmapped.data(), &event);
 }
 
 void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e)
 {
+    if (!e->exposed)
+        return;
+
     QExposeEvent event(e->region);
     QCoreApplication::sendSpontaneousEvent(e->exposed.data(), &event);
 }
