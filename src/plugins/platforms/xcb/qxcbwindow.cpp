@@ -95,7 +95,6 @@ static inline bool isTransient(const QWindow *w)
 QXcbWindow::QXcbWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_window(0)
-    , m_context(0)
     , m_syncCounter(0)
     , m_mapped(false)
     , m_netWmUserTimeWindow(XCB_NONE)
@@ -157,14 +156,14 @@ void QXcbWindow::create()
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
     if ((window()->surfaceType() == QWindow::OpenGLSurface
         && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
-        || window()->requestedWindowFormat().hasAlpha())
+        || window()->glFormat().hasAlpha())
     {
 #if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->requestedWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->glFormat());
 
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromQWindowFormat(eglDisplay,window()->requestedWindowFormat(),true);
+        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->glFormat(), true);
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -283,7 +282,6 @@ QXcbWindow::~QXcbWindow()
 
 void QXcbWindow::destroy()
 {
-    delete m_context;
     if (m_syncCounter && m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     if (m_window) {
@@ -936,33 +934,27 @@ void QXcbWindow::requestActivateWindow()
     connection()->sync();
 }
 
-QPlatformGLContext *QXcbWindow::glContext() const
+QPlatformGLSurface *QXcbWindow::createGLSurface() const
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
-        printf("no opengl\n");
+        qWarning() << "QXcb::createGLSurface() called without OpenGL support";
         return 0;
     }
-    if (!m_context) {
-#if defined(XCB_USE_GLX)
-        QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_context = new QGLXContext(m_window, m_screen, window()->requestedWindowFormat());
-#elif defined(XCB_USE_EGL)
-        EGLDisplay display = connection()->egl_display();
-        EGLConfig config = q_configFromQWindowFormat(display,window()->requestedWindowFormat(),true);
-        QVector<EGLint> eglContextAttrs;
-        eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-        eglContextAttrs.append(2);
-        eglContextAttrs.append(EGL_NONE);
 
-        EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)m_window,0);
-        QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_context = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
-#elif defined(XCB_USE_DRI2)
-        QXcbWindow *that = const_cast<QXcbWindow *>(this);
-        that->m_context = new QDri2Context(that);
+    QGuiGLFormat format = window()->glFormat();
+
+#if defined(XCB_USE_GLX)
+    return new QGLXSurface(m_window, format);
+#elif defined(XCB_USE_EGL)
+    EGLDisplay display = connection()->egl_display();
+    EGLConfig config = q_configFromGLFormat(display, format, true);
+
+    EGLSurface eglSurface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
+
+    return new QEGLSurface(eglSurface, window()->glFormat());
+#else
+    return 0;
 #endif
-    }
-    return m_context;
 }
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)

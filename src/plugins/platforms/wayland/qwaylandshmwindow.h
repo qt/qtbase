@@ -52,7 +52,7 @@ public:
     ~QWaylandShmWindow();
 
     WindowType windowType() const;
-    QPlatformGLContext *glContext() const;
+    QPlatformGLSurface *glSurface() const;
 };
 
 #endif // QWAYLANDSHMWINDOW_H

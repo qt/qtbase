@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QPlatformWindowPrivate;
 class QWindow;
-class QPlatformGLContext;
+class QPlatformGLSurface;
 
 class Q_GUI_EXPORT QPlatformWindow
 {
@@ -87,7 +87,7 @@ public:
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
 
-    virtual QPlatformGLContext *glContext() const;
+    virtual QPlatformGLSurface *createGLSurface() const;
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);

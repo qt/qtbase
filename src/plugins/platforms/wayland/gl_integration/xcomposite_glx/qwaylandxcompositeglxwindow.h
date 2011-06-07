@@ -46,20 +46,36 @@
 #include "qwaylandxcompositeglxintegration.h"
 #include "qwaylandxcompositeglxcontext.h"
 
+#include <QtCore/QWaitCondition>
+
+#include "qwaylandbuffer.h"
+
 class QWaylandXCompositeGLXWindow : public QWaylandWindow
 {
 public:
     QWaylandXCompositeGLXWindow(QWindow *window, QWaylandXCompositeGLXIntegration *glxIntegration);
     WindowType windowType() const;
 
-    QPlatformGLContext *glContext() const;
+    QPlatformGLSurface *createGLSurface() const;
 
     void setGeometry(const QRect &rect);
 
-private:
-    QWaylandXCompositeGLXIntegration *mGlxIntegration;
-    QWaylandXCompositeGLXContext *mContext;
+    Window xWindow() const;
 
+private:
+    void createSurface();
+
+    QWaylandXCompositeGLXIntegration *m_glxIntegration;
+
+    Window m_xWindow;
+    GLXFBConfig m_config;
+
+    QWaylandBuffer *m_buffer;
+
+    void waitForSync();
+    bool m_waitingForSync;
+
+    static void sync_function(void *data);
 };
 
 #endif // QWAYLANDXCOMPOSITEGLXWINDOW_H

@@ -6,8 +6,13 @@ int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
 
-    HelloWindow window;
-    window.setVisible(true);
+    Renderer renderer;
+
+    HelloWindow windowA(&renderer);
+    windowA.setVisible(true);
+
+    HelloWindow windowB(&renderer);
+    windowB.setVisible(true);
 
     return app.exec();
 }

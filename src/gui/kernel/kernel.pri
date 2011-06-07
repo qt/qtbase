@@ -48,11 +48,11 @@ qpa {
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
-                kernel/qwindowcontext_qpa.h \
+                kernel/qguiglcontext_qpa.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
-                kernel/qwindowformat_qpa.h \
+                kernel/qguiglformat_qpa.h \
                 kernel/qguiapplication.h \
                 kernel/qguiapplication_p.h \
                 kernel/qwindow_p.h \
@@ -71,12 +71,12 @@ qpa {
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
-                kernel/qwindowcontext_qpa.cpp \
+                kernel/qguiglcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \
                 kernel/qsessionmanager_qpa.cpp \
-                kernel/qwindowformat_qpa.cpp \
+                kernel/qguiglformat_qpa.cpp \
                 kernel/qguiapplication.cpp \
                 kernel/qwindow.cpp
 

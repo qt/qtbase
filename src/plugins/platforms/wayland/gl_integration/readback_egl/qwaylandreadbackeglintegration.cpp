@@ -83,7 +83,12 @@ void QWaylandReadbackEglIntegration::initialize()
 
 QWaylandWindow * QWaylandReadbackEglIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandReadbackEglWindow(window,this);
+    return new QWaylandReadbackEglWindow(window, this);
+}
+
+QPlatformGLContext *QWaylandReadbackEglWindow::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+{
+    return new QWaylandReadbackEglContext(glFormat, share, this);
 }
 
 EGLDisplay QWaylandReadbackEglIntegration::eglDisplay()

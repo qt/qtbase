@@ -5,22 +5,19 @@
 
 #include <QTime>
 
-class HelloWindow : public QWindow
+class QGuiGLContext;
+
+class Renderer : public QObject
 {
-    Q_OBJECT
 public:
-    HelloWindow();
+    Renderer();
 
-protected:
-    void mousePressEvent(QMouseEvent *);
-    void resizeEvent(QResizeEvent *);
+    QGuiGLFormat format() const;
 
-private slots:
-    void render();
+    void render(QPlatformGLSurface *surface, const QColor &color, const QSize &viewSize);
 
 private:
     void initialize();
-    void updateColor();
 
     qreal m_fAngle;
     bool m_showBubbles;
@@ -36,5 +33,28 @@ private:
     int normalAttr;
     int matrixUniform;
     int colorUniform;
-    uint colorIndex;
+
+    bool m_initialized;
+    QGuiGLFormat m_format;
+    QGuiGLContext *m_context;
+};
+
+class HelloWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    HelloWindow(Renderer *renderer);
+
+private slots:
+    void render();
+
+protected:
+    void mousePressEvent(QMouseEvent *);
+
+private:
+    void updateColor();
+
+    int m_colorIndex;
+    QColor m_color;
+    Renderer *m_renderer;
 };

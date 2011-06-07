@@ -61,9 +61,12 @@ public:
 
     void resize(const QSize &size);
 
+    QGuiGLContext *context() const;
+
 private:
     QWaylandDisplay *mDisplay;
     QGLFramebufferObject *mPaintDevice;
+    QGuiGLContext *mContext;
 };
 
 #endif // QWAYLANDDRMSURFACE_H

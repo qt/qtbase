@@ -334,7 +334,7 @@ Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     : QObjectPrivate(), argc(aargc), argv(aargv), application_type(0), eventFilter(0),
-      in_exec(false), aboutToQuitEmitted(false)
+      in_exec(false), aboutToQuitEmitted(false), threadData_clean(false)
 {
     app_compile_version = flags & 0xffffff;
 #if defined(QT3_SUPPORT)
@@ -362,7 +362,12 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
-    if (threadData) {
+    cleanupThreadData();
+}
+
+void QCoreApplicationPrivate::cleanupThreadData()
+{
+    if (threadData && !threadData_clean) {
 #ifndef QT_NO_THREAD
         void *data = &threadData->tls;
         QThreadStorageData::finish((void **)data);
@@ -381,6 +386,7 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
         threadData->postEventList.clear();
         threadData->postEventList.recursion = 0;
         threadData->quitNow = false;
+        threadData_clean = true;
     }
 }
 

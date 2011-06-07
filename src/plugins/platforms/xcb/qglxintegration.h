@@ -45,34 +45,38 @@
 #include "qxcbwindow.h"
 
 #include <QtGui/QPlatformGLContext>
-#include <QtGui/QWindowFormat>
+#include <QtGui/QGuiGLFormat>
 
 #include <QtCore/QMutex>
 
 #include <GL/glx.h>
 
+class QGLXSurface : public QPlatformGLSurface
+{
+public:
+    QGLXSurface(GLXDrawable drawable, const QGuiGLFormat &format);
+    GLXDrawable glxDrawable;
+};
+
 class QGLXContext : public QPlatformGLContext
 {
 public:
-    QGLXContext(Window window, QXcbScreen *xd, const QWindowFormat &format);
+    QGLXContext(QXcbScreen *xd, const QGuiGLFormat &format, QPlatformGLContext *share);
     ~QGLXContext();
 
-    virtual void makeCurrent();
-    virtual void doneCurrent();
-    virtual void swapBuffers();
-    virtual void* getProcAddress(const QString& procName);
+    bool makeCurrent(const QPlatformGLSurface &surface);
+    void doneCurrent();
+    void swapBuffers(const QPlatformGLSurface &surface);
+    void (*getProcAddress(const QByteArray &procName)) ();
+
+    QGuiGLFormat format() const;
 
     GLXContext glxContext() const { return m_context; }
 
-    QWindowFormat windowFormat() const;
-
 private:
     QXcbScreen *m_screen;
-    Drawable m_drawable;
     GLXContext m_context;
-    QWindowFormat m_windowFormat;
-
-    QGLXContext (QXcbScreen *screen, Drawable drawable, GLXContext context);
+    QGuiGLFormat m_format;
 };
 
 #endif

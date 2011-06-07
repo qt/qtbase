@@ -40,15 +40,24 @@
 ****************************************************************************/
 
 #include "qwaylandxcompositeglxwindow.h"
+#include "qwaylandxcompositebuffer.h"
 
 #include <QtCore/QDebug>
 
+#include "wayland-xcomposite-client-protocol.h"
+#include <QtGui/QRegion>
+
+#include <X11/extensions/Xcomposite.h>
+
+
 QWaylandXCompositeGLXWindow::QWaylandXCompositeGLXWindow(QWindow *window, QWaylandXCompositeGLXIntegration *glxIntegration)
     : QWaylandWindow(window)
-    , mGlxIntegration(glxIntegration)
-    , mContext(0)
+    , m_glxIntegration(glxIntegration)
+    , m_xWindow(0)
+    , m_config(qglx_findConfig(glxIntegration->xDisplay(), glxIntegration->screen(), window->glFormat()))
+    , m_buffer(0)
+    , m_waitingForSync(false)
 {
-
 }
 
 QWaylandWindow::WindowType QWaylandXCompositeGLXWindow::windowType() const
@@ -57,21 +66,79 @@ QWaylandWindow::WindowType QWaylandXCompositeGLXWindow::windowType() const
     return QWaylandWindow::Egl;
 }
 
-QPlatformGLContext * QWaylandXCompositeGLXWindow::glContext() const
+QPlatformGLSurface *QWaylandXCompositeGLXWindow::createGLSurface() const
 {
-    if (!mContext) {
-        qDebug() << "creating glcontext;";
-        QWaylandXCompositeGLXWindow *that = const_cast<QWaylandXCompositeGLXWindow *>(this);
-        that->mContext = new QWaylandXCompositeGLXContext(mGlxIntegration,that);
-    }
-    return mContext;
+    return new QWaylandXCompositeGLXSurface(const_cast<QWaylandXCompositeGLXWindow *>(this));
 }
 
 void QWaylandXCompositeGLXWindow::setGeometry(const QRect &rect)
 {
     QWaylandWindow::setGeometry(rect);
 
-    if (mContext) {
-        mContext->geometryChanged();
+    if (m_xWindow) {
+        delete m_buffer;
+
+        XDestroyWindow(m_glxIntegration->xDisplay(), m_xWindow);
+        m_xWindow = 0;
     }
 }
+
+Window QWaylandXCompositeGLXWindow::xWindow() const
+{
+    if (!m_xWindow)
+        const_cast<QWaylandXCompositeGLXWindow *>(this)->createSurface();
+
+    return m_xWindow;
+}
+
+void QWaylandXCompositeGLXWindow::waitForSync()
+{
+    wl_display_sync_callback(m_glxIntegration->waylandDisplay()->wl_display(),
+                             QWaylandXCompositeGLXWindow::sync_function,
+                             this);
+    m_waitingForSync= true;
+    wl_display_sync(m_glxIntegration->waylandDisplay()->wl_display(), 0);
+    m_glxIntegration->waylandDisplay()->flushRequests();
+    while (m_waitingForSync)
+        m_glxIntegration->waylandDisplay()->readEvents();
+}
+
+
+void QWaylandXCompositeGLXWindow::createSurface()
+{
+    QSize size(geometry().size());
+    if (size.isEmpty()) {
+        //QGLWidget wants a context for a window without geometry
+        size = QSize(1,1);
+    }
+
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(m_glxIntegration->xDisplay(), m_config);
+    Colormap cmap = XCreateColormap(m_glxIntegration->xDisplay(), m_glxIntegration->rootWindow(),
+            visualInfo->visual, AllocNone);
+
+    XSetWindowAttributes a;
+    a.background_pixel = WhitePixel(m_glxIntegration->xDisplay(), m_glxIntegration->screen());
+    a.border_pixel = BlackPixel(m_glxIntegration->xDisplay(), m_glxIntegration->screen());
+    a.colormap = cmap;
+    m_xWindow = XCreateWindow(m_glxIntegration->xDisplay(), m_glxIntegration->rootWindow(),0, 0, size.width(), size.height(),
+                              0, visualInfo->depth, InputOutput, visualInfo->visual,
+                              CWBackPixel|CWBorderPixel|CWColormap, &a);
+
+    XCompositeRedirectWindow(m_glxIntegration->xDisplay(), m_xWindow, CompositeRedirectManual);
+    XMapWindow(m_glxIntegration->xDisplay(), m_xWindow);
+
+    XSync(m_glxIntegration->xDisplay(), False);
+    m_buffer = new QWaylandXCompositeBuffer(m_glxIntegration->waylandXComposite(),
+                                            (uint32_t)m_xWindow,
+                                            size,
+                                            m_glxIntegration->waylandDisplay()->argbVisual());
+    attach(m_buffer);
+    waitForSync();
+}
+
+void QWaylandXCompositeGLXWindow::sync_function(void *data)
+{
+    QWaylandXCompositeGLXWindow *that = static_cast<QWaylandXCompositeGLXWindow *>(data);
+    that->m_waitingForSync = false;
+}
+

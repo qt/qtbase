@@ -51,6 +51,8 @@
 #include <QtCore/QVariant>
 #include <QtGui/QWindow>
 
+#include <QPlatformGLContext>
+
 #include <QWaitCondition>
 
 #include <X11/Xlib.h>
@@ -67,6 +69,7 @@ public:
     void initialize();
 
     QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
 
     QWaylandDisplay *waylandDisplay() const;
     struct wl_xcomposite *waylandXComposite() const;

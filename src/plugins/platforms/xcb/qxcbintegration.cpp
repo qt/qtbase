@@ -63,6 +63,12 @@
 #include <EGL/egl.h>
 #endif
 
+#if defined(XCB_USE_GLX)
+#include "qglxintegration.h"
+#elif defined(XCB_USE_EGL)
+#include "../eglconvenience/qeglplatformcontext.h"
+#endif
+
 QXcbIntegration::QXcbIntegration()
     : m_connection(new QXcbConnection), m_printerSupport(new QGenericUnixPrinterSupport)
 {
@@ -95,6 +101,17 @@ QPixmapData *QXcbIntegration::createPixmapData(QPixmapData::PixelType type) cons
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     return new QXcbWindow(window);
+}
+
+QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+{
+#if defined(XCB_USE_GLX)
+    return new QGLXContext(static_cast<QXcbScreen *>(m_screens.at(0)), glFormat, share);
+#elif defined(XCB_USE_EGL)
+    return new QEGLPlatformContext(glFormat, share, m_connection->egl_display());
+#elif defined(XCB_USE_DRI2)
+    return new QDri2Context(glFormat, share);
+#endif
 }
 
 QWindowSurface *QXcbIntegration::createWindowSurface(QWindow *window, WId winId) const

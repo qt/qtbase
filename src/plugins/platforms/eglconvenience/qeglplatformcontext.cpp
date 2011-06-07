@@ -48,51 +48,47 @@
 
 #include <EGL/egl.h>
 
-QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
-    : QPlatformGLContext()
-    , m_eglDisplay(display)
+QEGLSurface::QEGLSurface(EGLSurface surface, const QGuiGLFormat &format)
+    : QPlatformGLSurface(format)
     , m_eglSurface(surface)
-    , m_eglApi(eglApi)
 {
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        qWarning("Createing QEGLPlatformContext with no surface");
-    }
+}
+
+QEGLPlatformContext::QEGLPlatformContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display,
+                                         EGLint eglClientVersion, EGLenum eglApi)
+    : m_eglDisplay(display)
+    , m_eglApi(eglApi)
+    , m_format(format)
+{
+    EGLConfig config = q_configFromGLFormat(display, format, true);
+    m_format = q_glFormatFromConfig(display, config);
+
+    EGLContext shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
+
+    QVector<EGLint> contextAttrs;
+    contextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+    contextAttrs.append(eglClientVersion);
+    contextAttrs.append(EGL_NONE);
 
     eglBindAPI(m_eglApi);
-    m_eglContext = eglCreateContext(m_eglDisplay,config, 0,contextAttrs);
+    m_eglContext = eglCreateContext(m_eglDisplay, config, shareContext, contextAttrs.constData());
     if (m_eglContext == EGL_NO_CONTEXT) {
         qWarning("Could not create the egl context\n");
         eglTerminate(m_eglDisplay);
         qFatal("EGL error");
     }
-
-    m_windowFormat = q_windowFormatFromConfig(display,config);
 }
 
-QEGLPlatformContext::~QEGLPlatformContext()
-{
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglContext::~QEglContext(): %p\n",this);
-#endif
-    if (m_eglSurface != EGL_NO_SURFACE) {
-        doneCurrent();
-        eglDestroySurface(m_eglDisplay, m_eglSurface);
-        m_eglSurface = EGL_NO_SURFACE;
-    }
-
-    if (m_eglContext != EGL_NO_CONTEXT) {
-        eglDestroyContext(m_eglDisplay, m_eglContext);
-        m_eglContext = EGL_NO_CONTEXT;
-    }
-}
-
-void QEGLPlatformContext::makeCurrent()
+bool QEGLPlatformContext::makeCurrent(const QPlatformGLSurface &surface)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif
     eglBindAPI(m_eglApi);
-    bool ok = eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext);
+
+    EGLSurface eglSurface = static_cast<const QEGLSurface &>(surface).eglSurface();
+
+    bool ok = eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_eglContext);
     if (!ok)
         qWarning("QEGLPlatformContext::makeCurrent: eglError: %d, this: %p \n", eglGetError(), this);
 #ifdef QEGL_EXTRA_DEBUG
@@ -114,7 +110,20 @@ void QEGLPlatformContext::makeCurrent()
 
     }
 #endif
+    return ok;
 }
+
+QEGLPlatformContext::~QEGLPlatformContext()
+{
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglContext::~QEglContext(): %p\n",this);
+#endif
+    if (m_eglContext != EGL_NO_CONTEXT) {
+        eglDestroyContext(m_eglDisplay, m_eglContext);
+        m_eglContext = EGL_NO_CONTEXT;
+    }
+}
+
 void QEGLPlatformContext::doneCurrent()
 {
 #ifdef QEGL_EXTRA_DEBUG
@@ -125,28 +134,30 @@ void QEGLPlatformContext::doneCurrent()
     if (!ok)
         qWarning("QEGLPlatformContext::doneCurrent(): eglError: %d, this: %p \n", eglGetError(), this);
 }
-void QEGLPlatformContext::swapBuffers()
+
+void QEGLPlatformContext::swapBuffers(const QPlatformGLSurface &surface)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::swapBuffers:%p\n",this);
 #endif
     eglBindAPI(m_eglApi);
-    bool ok = eglSwapBuffers(m_eglDisplay, m_eglSurface);
+    bool ok = eglSwapBuffers(m_eglDisplay, static_cast<const QEGLSurface &>(surface).eglSurface());
     if (!ok)
         qWarning("QEGLPlatformContext::swapBuffers(): eglError: %d, this: %p \n", eglGetError(), this);
 }
-void* QEGLPlatformContext::getProcAddress(const QString& procName)
+
+void (*QEGLPlatformContext::getProcAddress(const QByteArray &procName)) ()
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::getProcAddress%p\n",this);
 #endif
     eglBindAPI(m_eglApi);
-    return (void *)eglGetProcAddress(qPrintable(procName));
+    return eglGetProcAddress(procName.constData());
 }
 
-QWindowFormat QEGLPlatformContext::windowFormat() const
+QGuiGLFormat QEGLPlatformContext::format() const
 {
-    return m_windowFormat;
+    return m_format;
 }
 
 EGLContext QEGLPlatformContext::eglContext() const

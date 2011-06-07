@@ -138,13 +138,14 @@ QWaylandGLWindowSurface::QWaylandGLWindowSurface(QWindow *window)
     : QWindowSurface(window)
     , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
     , mPaintDevice(0)
+    , mContext(0)
 {
-
 }
 
 QWaylandGLWindowSurface::~QWaylandGLWindowSurface()
 {
     delete mPaintDevice;
+    delete mContext;
 }
 
 QPaintDevice *QWaylandGLWindowSurface::paintDevice()
@@ -152,31 +153,38 @@ QPaintDevice *QWaylandGLWindowSurface::paintDevice()
     return mPaintDevice;
 }
 
+QGuiGLContext *QWaylandGLWindowSurface::context() const
+{
+    if (!mContext)
+        const_cast<QGuiGLContext *&>(mContext) = new QGuiGLContext(window()->glFormat());
+    return mContext;
+}
+
 void QWaylandGLWindowSurface::beginPaint(const QRegion &)
 {
-    window()->handle()->glContext()->makeCurrent();
-    glClearColor(0,0,0,0xff);
+    context()->makeCurrent(window()->glSurface());
+    glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void QWaylandGLWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QWaylandGLWindowSurface::flush(QWindow *, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(offset);
     Q_UNUSED(region);
-    
+
     if (mPaintDevice->isBound())
         mPaintDevice->release();
 
     QRect rect(0,0,size().width(),size().height());
-    QGLContext *ctx = QGLContext::fromWindowContext(window->glContext());
+    QGLContext *ctx = QGLContext::fromGuiGLContext(context());
     blitTexture(ctx,mPaintDevice->texture(),size(),mPaintDevice->size(),rect,rect);
-    window->glContext()->swapBuffers();
+    context()->swapBuffers(window()->glSurface());
 }
 
 void QWaylandGLWindowSurface::resize(const QSize &size)
 {
     QWindowSurface::resize(size);
-    window()->glContext()->makeCurrent();
+    context()->makeCurrent(window()->glSurface());
     delete mPaintDevice;
     mPaintDevice = new QGLFramebufferObject(size);
 }

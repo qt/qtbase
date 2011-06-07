@@ -64,6 +64,7 @@ public:
     void initialize();
 
     QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
 
     QWaylandDisplay *waylandDisplay() const;
     struct wl_xcomposite *waylandXComposite() const;

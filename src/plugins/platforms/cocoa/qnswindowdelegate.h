@@ -53,7 +53,7 @@
 - (void)windowDidResize:(NSNotification *)notification;
 - (void)windowWillClose:(NSNotification *)notification;
 //- (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)defaultFrame;
-//- (void)windowDidMove:(NSNotification *)notification;
+- (void)windowDidMove:(NSNotification *)notification;
 //- (BOOL)windowShouldClose:(id)window;
 //- (void)windowDidDeminiaturize:(NSNotification *)notification;
 //- (void)windowDidBecomeMain:(NSNotification*)notification;
@@ -74,6 +74,7 @@
 - (id)initWithQCocoaWindow: (QCocoaWindow *) cocoaWindow;
 
 - (void)windowDidResize:(NSNotification *)notification;
+- (void)windowDidMove:(NSNotification *)notification;
 - (void)windowWillClose:(NSNotification *)notification;
 
 @end

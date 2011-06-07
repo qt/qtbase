@@ -1,33 +1,44 @@
 #include "hellowindow.h"
 
-#include <QWindowContext>
+#include <QGuiGLContext>
 
 #include <QTimer>
 
 #include <qmath.h>
 
-HelloWindow::HelloWindow()
-    : colorIndex(0)
+Renderer::Renderer()
+    : m_initialized(false)
+{
+    m_format.setDepthBufferSize(16);
+    m_format.setSamples(4);
+
+    m_context = new QGuiGLContext(m_format);
+}
+
+QGuiGLFormat Renderer::format() const
+{
+    return m_format;
+}
+
+HelloWindow::HelloWindow(Renderer *renderer)
+    : m_colorIndex(0)
+    , m_renderer(renderer)
 {
     setSurfaceType(OpenGLSurface);
     setWindowTitle(QLatin1String("Hello Window"));
 
-    QWindowFormat format;
-    format.setDepthBufferSize(16);
-    format.setSamples(4);
-
-    setWindowFormat(format);
+    setGLFormat(renderer->format());
 
     setGeometry(QRect(10, 10, 640, 480));
 
     create();
 
-    initialize();
-
     QTimer *timer = new QTimer(this);
     timer->start(10);
 
     connect(timer, SIGNAL(timeout()), this, SLOT(render()));
+
+    updateColor();
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)
@@ -35,38 +46,37 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
     updateColor();
 }
 
-void HelloWindow::resizeEvent(QResizeEvent *)
-{
-    glContext()->makeCurrent();
-
-    glViewport(0, 0, geometry().width(), geometry().height());
-}
-
 void HelloWindow::updateColor()
 {
-    float colors[][4] =
+    QColor colors[] =
     {
-        { 0.4, 1.0, 0.0, 0.0 },
-        { 0.0, 0.4, 1.0, 0.0 }
+        QColor(100, 255, 0),
+        QColor(0, 100, 255)
     };
 
-    glContext()->makeCurrent();
+    m_color = colors[m_colorIndex];
 
-    program.bind();
-    program.setUniformValue(colorUniform, colors[colorIndex][0], colors[colorIndex][1], colors[colorIndex][2], colors[colorIndex][3]);
-    program.release();
-
-    colorIndex++;
-    if (colorIndex >= sizeof(colors) / sizeof(colors[0]))
-        colorIndex = 0;
+    m_colorIndex++;
+    if (m_colorIndex >= int(sizeof(colors) / sizeof(colors[0])))
+        m_colorIndex = 0;
 }
 
 void HelloWindow::render()
 {
-    if (!glContext())
-        return;
+    if (glSurface())
+        m_renderer->render(glSurface(), m_color, geometry().size());
+}
 
-    glContext()->makeCurrent();
+void Renderer::render(QPlatformGLSurface *surface, const QColor &color, const QSize &viewSize)
+{
+    m_context->makeCurrent(surface);
+
+    if (!m_initialized) {
+        initialize();
+        m_initialized = true;
+    }
+
+    glViewport(0, 0, viewSize.width(), viewSize.height());
 
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -84,18 +94,19 @@ void HelloWindow::render()
 
     program.bind();
     program.setUniformValue(matrixUniform, modelview);
+    program.setUniformValue(colorUniform, color);
     paintQtLogo();
     program.release();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    glContext()->swapBuffers();
+    m_context->swapBuffers(surface);
 
     m_fAngle += 1.0f;
 }
 
-void HelloWindow::paintQtLogo()
+void Renderer::paintQtLogo()
 {
     program.enableAttributeArray(normalAttr);
     program.enableAttributeArray(vertexAttr);
@@ -106,10 +117,8 @@ void HelloWindow::paintQtLogo()
     program.disableAttributeArray(vertexAttr);
 }
 
-void HelloWindow::initialize()
+void Renderer::initialize()
 {
-    glContext()->makeCurrent();
-
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
     QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
@@ -150,10 +159,9 @@ void HelloWindow::initialize()
 
     m_fAngle = 0;
     createGeometry();
-    updateColor();
 }
 
-void HelloWindow::createGeometry()
+void Renderer::createGeometry()
 {
     vertices.clear();
     normals.clear();
@@ -204,7 +212,7 @@ void HelloWindow::createGeometry()
         vertices[i] *= 2.0f;
 }
 
-void HelloWindow::quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4)
+void Renderer::quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4)
 {
     vertices << QVector3D(x1, y1, -0.05f);
     vertices << QVector3D(x2, y2, -0.05f);
@@ -245,7 +253,7 @@ void HelloWindow::quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y
     normals << n;
 }
 
-void HelloWindow::extrude(qreal x1, qreal y1, qreal x2, qreal y2)
+void Renderer::extrude(qreal x1, qreal y1, qreal x2, qreal y2)
 {
     vertices << QVector3D(x1, y1, +0.05f);
     vertices << QVector3D(x2, y2, +0.05f);

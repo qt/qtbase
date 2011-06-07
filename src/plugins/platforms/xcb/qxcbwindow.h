@@ -43,7 +43,7 @@
 #define QXCBWINDOW_H
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QWindowFormat>
+#include <QtGui/QGuiGLFormat>
 #include <QtGui/QImage>
 
 #include <xcb/xcb.h>
@@ -72,9 +72,9 @@ public:
     void lower();
     void propagateSizeHints();
 
-    void requestActivateWindow();
+    QPlatformGLSurface *createGLSurface() const;
 
-    QPlatformGLContext *glContext() const;
+    void requestActivateWindow();
 
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
@@ -127,7 +127,6 @@ private:
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;
-    QPlatformGLContext *m_context;
 
     uint m_depth;
     QImage::Format m_format;

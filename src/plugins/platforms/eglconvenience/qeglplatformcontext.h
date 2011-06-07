@@ -39,33 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENKODEGLINTEGRATION_H
-#define QOPENKODEGLINTEGRATION_H
+#ifndef QEGLPLATFORMCONTEXT_H
+#define QEGLPLATFORMCONTEXT_H
 
 #include <QtGui/QPlatformGLContext>
 #include <EGL/egl.h>
 
+class QEGLSurface : public QPlatformGLSurface
+{
+public:
+    QEGLSurface(EGLSurface surface, const QGuiGLFormat &format);
+
+    virtual EGLSurface eglSurface() const { return m_eglSurface; }
+
+private:
+    EGLSurface m_eglSurface;
+};
+
 class QEGLPlatformContext : public QPlatformGLContext
 {
 public:
-    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi);
+    QEGLPlatformContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display,
+                        EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API);
     ~QEGLPlatformContext();
 
-    void makeCurrent();
+    bool makeCurrent(const QPlatformGLSurface &surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
+    void swapBuffers(const QPlatformGLSurface &surface);
+    void (*getProcAddress(const QByteArray &procName)) ();
 
-    QWindowFormat windowFormat() const;
+    QGuiGLFormat format() const;
 
     EGLContext eglContext() const;
+
 private:
     EGLContext m_eglContext;
     EGLDisplay m_eglDisplay;
-    EGLSurface m_eglSurface;
     EGLenum m_eglApi;
 
-    QWindowFormat m_windowFormat;
+    QGuiGLFormat m_format;
 };
 
-#endif //QOPENKODEGLINTEGRATION_H
+#endif //QEGLPLATFORMCONTEXT_H

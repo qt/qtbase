@@ -1,26 +1,52 @@
 #ifndef QCOCOAGLCONTEXT_H
 #define QCOCOAGLCONTEXT_H
 
+#include <QtCore/QWeakPointer>
 #include <QtGui/QPlatformGLContext>
-#include <QtGui/QWindowFormat>
+#include <QtGui/QGuiGLContext>
+#include <QtGui/QWindow>
 
 #include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
 
+class QCocoaGLSurface : public QPlatformGLSurface
+{
+public:
+    QCocoaGLSurface(const QGuiGLFormat &format, QWindow *window)
+        : QPlatformGLSurface(format)
+        , window(window)
+    {
+    }
+
+    QWindow *window;
+};
+
 class QCocoaGLContext : public QPlatformGLContext
 {
 public:
-    QCocoaGLContext(NSOpenGLView *glView);
-    void makeCurrent();
+    QCocoaGLContext(const QGuiGLFormat &format, QPlatformGLContext *share);
+
+    QGuiGLFormat format() const;
+
+    void swapBuffers(const QPlatformGLSurface &surface);
+
+    bool makeCurrent(const QPlatformGLSurface &surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-    QWindowFormat windowFormat() const;
+
+    void (*getProcAddress(const QByteArray &procName)) ();
+
+    void update();
+
     static NSOpenGLPixelFormat *createNSOpenGLPixelFormat();
     NSOpenGLContext *nsOpenGLContext() const;
+
 private:
-    NSOpenGLView *m_glView;
+    void setActiveWindow(QWindow *window);
+
+    NSOpenGLContext *m_context;
+    QGuiGLFormat m_format;
+    QWeakPointer<QWindow> m_currentWindow;
 };
 
 QT_END_NAMESPACE

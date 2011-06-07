@@ -43,7 +43,7 @@
 #define QPLATFORM_GL_CONTEXT_H
 
 #include <QtCore/qnamespace.h>
-#include <QtGui/qwindowformat_qpa.h>
+#include <QtGui/qguiglformat_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -51,17 +51,44 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class Q_GUI_EXPORT QPlatformGLSurface
+{
+public:
+    QPlatformGLSurface(const QGuiGLFormat &format = QGuiGLFormat())
+        : m_format(format)
+    {
+    }
+
+    virtual ~QPlatformGLSurface() {}
+
+    QGuiGLFormat format() const
+    {
+        return m_format;
+    }
+
+protected:
+    void setFormat(const QGuiGLFormat &format)
+    {
+        m_format = format;
+    }
+
+private:
+    QGuiGLFormat m_format;
+};
+
 class Q_GUI_EXPORT QPlatformGLContext
 {
 public:
     virtual ~QPlatformGLContext() {}
 
-    virtual void makeCurrent() = 0;
-    virtual void doneCurrent() = 0;
-    virtual void swapBuffers() = 0;
-    virtual void *getProcAddress(const QString& procName) = 0;
+    virtual QGuiGLFormat format() const = 0;
 
-    virtual QWindowFormat windowFormat() const = 0;
+    virtual void swapBuffers(const QPlatformGLSurface &surface) = 0;
+
+    virtual bool makeCurrent(const QPlatformGLSurface &surface) = 0;
+    virtual void doneCurrent() = 0;
+
+    virtual void (*getProcAddress(const QByteArray &procName)) () = 0;
 };
 
 QT_END_NAMESPACE

@@ -53,7 +53,10 @@
 // We mean it.
 //
 
+#include <QtCore/qrect.h>
+
 #include <QtGui/qwindow.h>
+#include <QtGui/qregion.h>
 
 QT_BEGIN_NAMESPACE
 

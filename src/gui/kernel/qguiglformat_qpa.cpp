@@ -39,31 +39,29 @@
 **
 ****************************************************************************/
 
-#include "qwindowformat_qpa.h"
+#include "qguiglformat_qpa.h"
 
-#include "qplatformglcontext_qpa.h"
-
+#include <QtCore/qatomic.h>
 #include <QtCore/QDebug>
 
-class QWindowFormatPrivate
+class QGuiGLFormatPrivate
 {
 public:
-    QWindowFormatPrivate()
+    QGuiGLFormatPrivate()
         : ref(1)
-        , opts(QWindowFormat::DoubleBuffer | QWindowFormat::WindowSurface)
+        , opts(QGuiGLFormat::DoubleBuffer | QGuiGLFormat::WindowSurface)
         , redBufferSize(-1)
         , greenBufferSize(-1)
         , blueBufferSize(-1)
         , alphaBufferSize(-1)
         , depthSize(-1)
         , stencilSize(-1)
-        , swapBehavior(QWindowFormat::DefaultSwapBehavior)
+        , swapBehavior(QGuiGLFormat::DefaultSwapBehavior)
         , numSamples(-1)
-        , sharedContext(0)
     {
     }
 
-    QWindowFormatPrivate(const QWindowFormatPrivate *other)
+    QGuiGLFormatPrivate(const QGuiGLFormatPrivate *other)
         : ref(1),
           opts(other->opts),
           redBufferSize(other->redBufferSize),
@@ -73,41 +71,40 @@ public:
           depthSize(other->depthSize),
           stencilSize(other->stencilSize),
           swapBehavior(other->swapBehavior),
-          numSamples(other->numSamples),
-          sharedContext(other->sharedContext)
+          numSamples(other->numSamples)
     {
     }
+
     QAtomicInt ref;
-    QWindowFormat::FormatOptions opts;
+    QGuiGLFormat::FormatOptions opts;
     int redBufferSize;
     int greenBufferSize;
     int blueBufferSize;
     int alphaBufferSize;
     int depthSize;
     int stencilSize;
-    QWindowFormat::SwapBehavior swapBehavior;
+    QGuiGLFormat::SwapBehavior swapBehavior;
     int numSamples;
-    QWindowContext *sharedContext;
 };
 
-QWindowFormat::QWindowFormat()
+QGuiGLFormat::QGuiGLFormat()
 {
-    d = new QWindowFormatPrivate;
+    d = new QGuiGLFormatPrivate;
 }
 
-QWindowFormat::QWindowFormat(QWindowFormat::FormatOptions options)
+QGuiGLFormat::QGuiGLFormat(QGuiGLFormat::FormatOptions options)
 {
-    d = new QWindowFormatPrivate;
+    d = new QGuiGLFormatPrivate;
     d->opts = options;
 }
 
 /*!
     \internal
 */
-void QWindowFormat::detach()
+void QGuiGLFormat::detach()
 {
     if (d->ref != 1) {
-        QWindowFormatPrivate *newd = new QWindowFormatPrivate(d);
+        QGuiGLFormatPrivate *newd = new QGuiGLFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
         d = newd;
@@ -118,7 +115,7 @@ void QWindowFormat::detach()
     Constructs a copy of \a other.
 */
 
-QWindowFormat::QWindowFormat(const QWindowFormat &other)
+QGuiGLFormat::QGuiGLFormat(const QGuiGLFormat &other)
 {
     d = other.d;
     d->ref.ref();
@@ -128,7 +125,7 @@ QWindowFormat::QWindowFormat(const QWindowFormat &other)
     Assigns \a other to this object.
 */
 
-QWindowFormat &QWindowFormat::operator=(const QWindowFormat &other)
+QGuiGLFormat &QGuiGLFormat::operator=(const QGuiGLFormat &other)
 {
     if (d != other.d) {
         other.d->ref.ref();
@@ -140,16 +137,16 @@ QWindowFormat &QWindowFormat::operator=(const QWindowFormat &other)
 }
 
 /*!
-    Destroys the QWindowFormat.
+    Destroys the QGuiGLFormat.
 */
-QWindowFormat::~QWindowFormat()
+QGuiGLFormat::~QGuiGLFormat()
 {
     if (!d->ref.deref())
         delete d;
 }
 
 /*!
-    \fn bool QWindowFormat::stereo() const
+    \fn bool QGuiGLFormat::stereo() const
 
     Returns true if stereo buffering is enabled; otherwise returns
     false. Stereo buffering is disabled by default.
@@ -169,12 +166,12 @@ QWindowFormat::~QWindowFormat()
     \sa stereo()
 */
 
-void QWindowFormat::setStereo(bool enable)
+void QGuiGLFormat::setStereo(bool enable)
 {
     if (enable) {
-        d->opts |= QWindowFormat::StereoBuffers;
+        d->opts |= QGuiGLFormat::StereoBuffers;
     } else {
-        d->opts &= ~QWindowFormat::StereoBuffers;
+        d->opts &= ~QGuiGLFormat::StereoBuffers;
     }
 }
 
@@ -185,7 +182,7 @@ void QWindowFormat::setStereo(bool enable)
 
     \sa setSampleBuffers(), sampleBuffers(), setSamples()
 */
-int QWindowFormat::samples() const
+int QGuiGLFormat::samples() const
 {
    return d->numSamples;
 }
@@ -197,26 +194,15 @@ int QWindowFormat::samples() const
 
     \sa setSampleBuffers(), sampleBuffers(), samples()
 */
-void QWindowFormat::setSamples(int numSamples)
+void QGuiGLFormat::setSamples(int numSamples)
 {
     detach();
     d->numSamples = numSamples;
 }
 
 
-
-void QWindowFormat::setSharedContext(QWindowContext *context)
-{
-    d->sharedContext = context;
-}
-
-QWindowContext *QWindowFormat::sharedContext() const
-{
-    return d->sharedContext;
-}
-
 /*!
-    \fn bool QWindowFormat::hasWindowSurface() const
+    \fn bool QGuiGLFormat::hasWindowSurface() const
 
     Returns true if the corresponding widget has an instance of QWindowSurface.
 
@@ -227,12 +213,12 @@ QWindowContext *QWindowFormat::sharedContext() const
     \sa setOverlay()
 */
 
-void QWindowFormat::setWindowSurface(bool enable)
+void QGuiGLFormat::setWindowSurface(bool enable)
 {
     if (enable) {
-        d->opts |= QWindowFormat::WindowSurface;
+        d->opts |= QGuiGLFormat::WindowSurface;
     } else {
-        d->opts &= ~QWindowFormat::WindowSurface;
+        d->opts &= ~QGuiGLFormat::WindowSurface;
     }
 }
 
@@ -242,7 +228,7 @@ void QWindowFormat::setWindowSurface(bool enable)
     \sa testOption()
 */
 
-void QWindowFormat::setOption(QWindowFormat::FormatOptions opt)
+void QGuiGLFormat::setOption(QGuiGLFormat::FormatOptions opt)
 {
     detach();
     d->opts |= opt;
@@ -254,7 +240,7 @@ void QWindowFormat::setOption(QWindowFormat::FormatOptions opt)
     \sa setOption()
 */
 
-bool QWindowFormat::testOption(QWindowFormat::FormatOptions opt) const
+bool QGuiGLFormat::testOption(QGuiGLFormat::FormatOptions opt) const
 {
     return d->opts & opt;
 }
@@ -264,7 +250,7 @@ bool QWindowFormat::testOption(QWindowFormat::FormatOptions opt) const
 
     \sa depthBufferSize(), setDepth(), depth()
 */
-void QWindowFormat::setDepthBufferSize(int size)
+void QGuiGLFormat::setDepthBufferSize(int size)
 {
     detach();
     d->depthSize = size;
@@ -275,22 +261,22 @@ void QWindowFormat::setDepthBufferSize(int size)
 
     \sa depth(), setDepth(), setDepthBufferSize()
 */
-int QWindowFormat::depthBufferSize() const
+int QGuiGLFormat::depthBufferSize() const
 {
    return d->depthSize;
 }
 
-void QWindowFormat::setSwapBehavior(SwapBehavior behavior)
+void QGuiGLFormat::setSwapBehavior(SwapBehavior behavior)
 {
     d->swapBehavior = behavior;
 }
 
-QWindowFormat::SwapBehavior QWindowFormat::swapBehavior() const
+QGuiGLFormat::SwapBehavior QGuiGLFormat::swapBehavior() const
 {
     return d->swapBehavior;
 }
 
-bool QWindowFormat::hasAlpha() const
+bool QGuiGLFormat::hasAlpha() const
 {
     return d->alphaBufferSize > 0;
 }
@@ -300,7 +286,7 @@ bool QWindowFormat::hasAlpha() const
 
     \sa stencilBufferSize(), setStencil(), stencil()
 */
-void QWindowFormat::setStencilBufferSize(int size)
+void QGuiGLFormat::setStencilBufferSize(int size)
 {
     detach();
     d->stencilSize = size;
@@ -311,52 +297,52 @@ void QWindowFormat::setStencilBufferSize(int size)
 
     \sa stencil(), setStencil(), setStencilBufferSize()
 */
-int QWindowFormat::stencilBufferSize() const
+int QGuiGLFormat::stencilBufferSize() const
 {
    return d->stencilSize;
 }
 
-int QWindowFormat::redBufferSize() const
+int QGuiGLFormat::redBufferSize() const
 {
     return d->redBufferSize;
 }
 
-int QWindowFormat::greenBufferSize() const
+int QGuiGLFormat::greenBufferSize() const
 {
     return d->greenBufferSize;
 }
 
-int QWindowFormat::blueBufferSize() const
+int QGuiGLFormat::blueBufferSize() const
 {
     return d->blueBufferSize;
 }
 
-int QWindowFormat::alphaBufferSize() const
+int QGuiGLFormat::alphaBufferSize() const
 {
     return d->alphaBufferSize;
 }
 
-void QWindowFormat::setRedBufferSize(int size)
+void QGuiGLFormat::setRedBufferSize(int size)
 {
     d->redBufferSize = size;
 }
 
-void QWindowFormat::setGreenBufferSize(int size)
+void QGuiGLFormat::setGreenBufferSize(int size)
 {
     d->greenBufferSize = size;
 }
 
-void QWindowFormat::setBlueBufferSize(int size)
+void QGuiGLFormat::setBlueBufferSize(int size)
 {
     d->blueBufferSize = size;
 }
 
-void QWindowFormat::setAlphaBufferSize(int size)
+void QGuiGLFormat::setAlphaBufferSize(int size)
 {
     d->alphaBufferSize = size;
 }
 
-bool operator==(const QWindowFormat& a, const QWindowFormat& b)
+bool operator==(const QGuiGLFormat& a, const QGuiGLFormat& b)
 {
     return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
         && a.d->stencilSize == b.d->stencilSize
@@ -366,29 +352,28 @@ bool operator==(const QWindowFormat& a, const QWindowFormat& b)
         && a.d->alphaBufferSize == b.d->alphaBufferSize
         && a.d->depthSize == b.d->depthSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapBehavior == b.d->swapBehavior
-        && a.d->sharedContext == b.d->sharedContext);
+        && a.d->swapBehavior == b.d->swapBehavior);
 }
 
 
 /*!
-    Returns false if all the options of the two QWindowFormat objects
+    Returns false if all the options of the two QGuiGLFormat objects
     \a a and \a b are equal; otherwise returns true.
 
-    \relates QWindowFormat
+    \relates QGuiGLFormat
 */
 
-bool operator!=(const QWindowFormat& a, const QWindowFormat& b)
+bool operator!=(const QGuiGLFormat& a, const QGuiGLFormat& b)
 {
     return !(a == b);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QWindowFormat &f)
+QDebug operator<<(QDebug dbg, const QGuiGLFormat &f)
 {
-    const QWindowFormatPrivate * const d = f.d;
+    const QGuiGLFormatPrivate * const d = f.d;
 
-    dbg.nospace() << "QWindowFormat("
+    dbg.nospace() << "QGuiGLFormat("
                   << "options " << d->opts
                   << ", depthBufferSize " << d->depthSize
                   << ", redBufferSize " << d->redBufferSize
@@ -398,7 +383,6 @@ QDebug operator<<(QDebug dbg, const QWindowFormat &f)
                   << ", stencilBufferSize " << d->stencilSize
                   << ", samples " << d->numSamples
                   << ", swapBehavior " << d->swapBehavior
-                  << ", sharedContext " << d->sharedContext
                   << ')';
 
     return dbg.space();

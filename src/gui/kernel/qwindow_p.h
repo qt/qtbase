@@ -64,7 +64,7 @@ public:
         , parentWindow(0)
         , platformWindow(0)
         , visible(false)
-        , glContext(0)
+        , glSurface(0)
         , surface(0)
         , windowState(Qt::WindowNoState)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
@@ -83,10 +83,10 @@ public:
     QWindow *parentWindow;
     QPlatformWindow *platformWindow;
     bool visible;
-    QWindowFormat requestedFormat;
+    QGuiGLFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
-    QWindowContext *glContext;
+    QPlatformGLSurface *glSurface;
     QWindowSurface *surface;
     Qt::WindowState windowState;
 

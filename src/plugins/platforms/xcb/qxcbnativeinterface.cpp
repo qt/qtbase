@@ -48,7 +48,7 @@
 
 #include <QtCore/QDebug>
 
-#include <QtGui/qwindowcontext_qpa.h>
+#include <QtGui/qguiglcontext_qpa.h>
 
 #if defined(XCB_USE_EGL)
 #include "../eglconvenience/qeglplatformcontext.h"
@@ -163,6 +163,7 @@ void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
 
 void * QXcbNativeInterface::eglContextForWindow(QWindow *window)
 {
+#if 0
     Q_ASSERT(window);
     QPlatformGLContext *platformContext = window->glContext()->handle();
     if (!platformContext) {
@@ -176,6 +177,9 @@ void * QXcbNativeInterface::eglContextForWindow(QWindow *window)
 #elif defined (XCB_USE_DRI2)
     QDri2Context *dri2Context = static_cast<QDri2Context *>(platformContext);
     return dri2Context->eglContext();
+#else
+    return 0;
+#endif
 #else
     return 0;
 #endif

@@ -42,9 +42,9 @@
 #include "qwindow.h"
 
 #include "qplatformwindow_qpa.h"
-#include "qwindowformat_qpa.h"
+#include "qguiglformat_qpa.h"
 #include "qplatformglcontext_qpa.h"
-#include "qwindowcontext_qpa.h"
+#include "qguiglcontext_qpa.h"
 
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
@@ -177,21 +177,26 @@ void QWindow::setWindowModality(Qt::WindowModality windowModality)
     d->modality = windowModality;
 }
 
-void QWindow::setWindowFormat(const QWindowFormat &format)
+void QWindow::setGLFormat(const QGuiGLFormat &format)
 {
     Q_D(QWindow);
     d->requestedFormat = format;
 }
 
-QWindowFormat QWindow::requestedWindowFormat() const
+QGuiGLFormat QWindow::glFormat() const
 {
     Q_D(const QWindow);
+    if (d->glSurface)
+        return d->glSurface->format();
     return d->requestedFormat;
 }
 
-QWindowFormat QWindow::actualWindowFormat() const
+QPlatformGLSurface *QWindow::glSurface() const
 {
-    return glContext()->handle()->windowFormat();
+    Q_D(const QWindow);
+    if (d->platformWindow && !d->glSurface)
+        const_cast<QPlatformGLSurface *&>(d->glSurface) = d->platformWindow->createGLSurface();
+    return d->glSurface;
 }
 
 void QWindow::setSurfaceType(SurfaceType type)
@@ -397,23 +402,12 @@ void QWindow::setWindowIcon(const QImage &icon) const
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
-QWindowContext * QWindow::glContext() const
-{
-    Q_D(const QWindow);
-    if (d->platformWindow && !d->glContext)
-        const_cast<QWindowPrivate *>(d)->glContext = new QWindowContext(const_cast<QWindow *>(this));
-    return d->glContext;
-}
-
 void QWindow::destroy()
 {
     Q_D(QWindow);
-    if (d->glContext) {
-        d->glContext->deleteQGLContext();
-    }
-    delete d->glContext;
-    d->glContext = 0;
+    delete d->glSurface;
     delete d->platformWindow;
+    d->glSurface = 0;
     d->platformWindow = 0;
 }
 

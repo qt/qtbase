@@ -205,9 +205,9 @@ void QPlatformWindow::requestActivateWindow()
 }
 
 /*!
-  Reimplement to return the glContext associated with the window.
+  Reimplement to create a GL surface for the window.
 */
-QPlatformGLContext *QPlatformWindow::glContext() const
+QPlatformGLSurface *QPlatformWindow::createGLSurface() const
 {
     return 0;
 }

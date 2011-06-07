@@ -84,6 +84,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
 QCocoaWindow::~QCocoaWindow()
 {
+
 }
 
 void QCocoaWindow::setGeometry(const QRect &rect)
@@ -92,6 +93,9 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 
     NSRect bounds = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
     [[m_nsWindow contentView]setFrameSize:bounds.size];
+
+    if (m_glContext)
+        m_glContext->update();
 }
 
 void QCocoaWindow::setVisible(bool visible)
@@ -131,18 +135,41 @@ NSView *QCocoaWindow::contentView() const
     return [m_nsWindow contentView];
 }
 
+NSView *QCocoaWindow::windowSurfaceView() const
+{
+    return m_windowSurfaceView;
+}
+
+void QCocoaWindow::windowDidMove()
+{
+    if (m_glContext)
+        m_glContext->update();
+}
+
 void QCocoaWindow::windowDidResize()
 {
     //jlind: XXX This isn't ideal. Eventdispatcher does not run when resizing...
     NSRect rect = [[m_nsWindow contentView]frame];
     QRect geo(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
     QWindowSystemInterface::handleGeometryChange(window(),geo);
+
+    if (m_glContext)
+        m_glContext->update();
 }
 
-QPlatformGLContext *QCocoaWindow::glContext() const
+QPlatformGLSurface *QCocoaWindow::createGLSurface() const
 {
-    if (!m_glContext) {
-        m_glContext = new QCocoaGLContext(m_windowSurfaceView);
-    }
+    Q_ASSERT(window()->surfaceType() == QWindow::OpenGLSurface);
+    return new QCocoaGLSurface(window()->glFormat(), window());
+}
+
+void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
+{
+    m_glContext = context;
+}
+
+QCocoaGLContext *QCocoaWindow::currentContext() const
+{
     return m_glContext;
 }
+

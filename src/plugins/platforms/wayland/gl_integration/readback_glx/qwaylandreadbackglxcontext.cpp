@@ -44,7 +44,18 @@
 #include "qwaylandshmsurface.h"
 #include "qwaylandreadbackglxwindow.h"
 
+#include <QtGui/QGuiGLContext>
 #include <QtCore/QDebug>
+
+QWaylandReadbackGlxSurface::QWaylandReadbackGlxSurface(QWaylandReadbackGlxWindow *window)
+    : m_window(window)
+{
+}
+
+GLXPixmap QWaylandReadbackGlxSurface::glxPixmap() const
+{
+    return m_window->glxPixmap();
+}
 
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
 {
@@ -68,94 +79,66 @@ static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
     }
 }
 
-QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegration *glxIntegration, QWaylandReadbackGlxWindow *window)
-    : QPlatformGLContext()
-    , mGlxIntegration(glxIntegration)
-    , mWindow(window)
-    , mBuffer(0)
-    , mPixmap(0)
-    , mConfig(qglx_findConfig(glxIntegration->xDisplay(),glxIntegration->screen(),window->widget()->platformWindowFormat(),GLX_PIXMAP_BIT))
-    , mGlxPixmap(0)
+QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(const QGuiGLFormat &format,
+        QPlatformGLContext *share, Display *display, int screen)
+    : m_display(display)
 {
-    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(glxIntegration->xDisplay(),mConfig);
-    mContext = glXCreateContext(glxIntegration->xDisplay(),visualInfo,0,TRUE);
+    GLXFBConfig config = qglx_findConfig(display, screen, format, GLX_PIXMAP_BIT);
 
-    geometryChanged();
+    GLXContext shareContext = share ? static_cast<QWaylandReadbackGlxContext *>(share)->m_context : 0;
+
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display, config);
+    m_context = glXCreateContext(display, visualInfo, shareContext, TRUE);
+    m_format = qglx_guiGLFormatFromGLXFBConfig(display, config, m_context);
 }
 
-void QWaylandReadbackGlxContext::makeCurrent()
+QGuiGLFormat QWaylandReadbackGlxContext::format() const
 {
-    glXMakeCurrent(mGlxIntegration->xDisplay(),mGlxPixmap,mContext);
+    return m_format;
+}
+
+bool QWaylandReadbackGlxContext::makeCurrent(const QPlatformGLSurface &surface)
+{
+    GLXPixmap glxPixmap = static_cast<const QWaylandReadbackGlxSurface &>(surface).glxPixmap();
+
+    return glXMakeCurrent(m_display, glxPixmap, m_context);
 }
 
 void QWaylandReadbackGlxContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
+    glXMakeCurrent(m_display, 0, 0);
 }
 
-void QWaylandReadbackGlxContext::swapBuffers()
+void QWaylandReadbackGlxContext::swapBuffers(const QPlatformGLSurface &surface)
 {
-    if (QWindowContext::currentContext().handle() != this) {
-        makeCurrent();
-    }
+    // #### makeCurrent() directly on the platform context doesn't update QGuiGLContext::currentContext()
+    if (QGuiGLContext::currentContext()->handle() != this)
+        makeCurrent(surface, surface);
 
-    QSize size = mWindow->geometry().size();
+    const QWaylandReadbackGlxSurface &s =
+        static_cast<const QWaylandReadbackGlxSurface &>(surface);
 
-    QImage img(size,QImage::Format_ARGB32);
+    QSize size = s.window()->geometry().size();
+
+    QImage img(size, QImage::Format_ARGB32);
     const uchar *constBits = img.bits();
     void *pixels = const_cast<uchar *>(constBits);
 
-    glReadPixels(0,0, size.width(), size.height(), GL_RGBA,GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, size.width(), size.height(), GL_RGBA,GL_UNSIGNED_BYTE, pixels);
 
     img = img.mirrored();
-    qgl_byteSwapImage(img,GL_UNSIGNED_INT_8_8_8_8_REV);
+    qgl_byteSwapImage(img, GL_UNSIGNED_INT_8_8_8_8_REV);
     constBits = img.bits();
 
-    const uchar *constDstBits = mBuffer->image()->bits();
+    const uchar *constDstBits = s.window()->buffer();
     uchar *dstBits = const_cast<uchar *>(constDstBits);
-    memcpy(dstBits,constBits,(img.width()*4) * img.height());
+    memcpy(dstBits, constBits, (img.width() * 4) * img.height());
 
-
-    mWindow->damage(QRegion(QRect(QPoint(0,0),size)));
-    mWindow->waitForFrameSync();
-
+    s.window()->damage(QRect(QPoint(), size));
+    s.window()->waitForFrameSync();
 }
 
-void * QWaylandReadbackGlxContext::getProcAddress(const QString &procName)
+void (*QWaylandReadbackGlxContext::getProcAddress(const QByteArray &procName)) ()
 {
-    return (void *) glXGetProcAddress(reinterpret_cast<GLubyte *>(procName.toLatin1().data()));
-}
-
-QPlatformWindowFormat QWaylandReadbackGlxContext::platformWindowFormat() const
-{
-    return qglx_platformWindowFromGLXFBConfig(mGlxIntegration->xDisplay(),mConfig,mContext);
-}
-
-void QWaylandReadbackGlxContext::geometryChanged()
-{
-    QSize size(mWindow->geometry().size());
-    if (size.isEmpty()) {
-        //QGLWidget wants a context for a window without geometry
-        size = QSize(1,1);
-    }
-
-    mWindow->waitForFrameSync();
-
-    delete mBuffer;
-    //XFreePixmap deletes the glxPixmap as well
-    if (mPixmap) {
-        XFreePixmap(mGlxIntegration->xDisplay(),mPixmap);
-    }
-
-    mBuffer = new QWaylandShmBuffer(mGlxIntegration->waylandDisplay(),size,QImage::Format_ARGB32);
-    mWindow->attach(mBuffer);
-    int depth = XDefaultDepth(mGlxIntegration->xDisplay(),mGlxIntegration->screen());
-    mPixmap = XCreatePixmap(mGlxIntegration->xDisplay(),mGlxIntegration->rootWindow(),size.width(),size.height(),depth);
-    XSync(mGlxIntegration->xDisplay(),False);
-
-    mGlxPixmap = glXCreatePixmap(mGlxIntegration->xDisplay(),mConfig,mPixmap,0);
-
-    if (!mGlxPixmap) {
-        qDebug() << "Could not make egl surface out of pixmap :(";
-    }
+    return glXGetProcAddress(reinterpret_cast<const GLubyte *>(procName.constData()));
 }

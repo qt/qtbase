@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWCONTEXT_H
-#define QWINDOWCONTEXT_H
+#ifndef QGUIGLCONTEXT_H
+#define QGUIGLCONTEXT_H
 
 #include <QtCore/qnamespace.h>
 
@@ -50,41 +50,49 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QWindowContextPrivate;
+class QGuiGLContextPrivate;
 class QPlatformGLContext;
+class QPlatformGLSurface;
 
-class Q_GUI_EXPORT QWindowContext
+class Q_GUI_EXPORT QGuiGLContext
 {
-Q_DECLARE_PRIVATE(QWindowContext);
+Q_DECLARE_PRIVATE(QGuiGLContext);
 public:
-    ~QWindowContext();
+    QGuiGLContext(const QGuiGLFormat &format = QGuiGLFormat(), QGuiGLContext *shareContext = 0);
+    ~QGuiGLContext();
 
-    void makeCurrent();
+    bool isValid() const;
+
+    bool makeCurrent(QPlatformGLSurface *surface);
     void doneCurrent();
-    void swapBuffers();
+
+    void swapBuffers(QPlatformGLSurface *surface);
     void (*getProcAddress(const QByteArray &procName)) ();
 
-    static QWindowContext *currentContext();
+    QGuiGLFormat format() const;
+
+    QGuiGLContext *shareContext() const;
+
+    static QGuiGLContext *currentContext();
 
     QPlatformGLContext *handle() const;
 
 private:
-    QWindowContext(QWindow *window);
-
-    QScopedPointer<QWindowContextPrivate> d_ptr;
+    QScopedPointer<QGuiGLContextPrivate> d_ptr;
 
     //hack to make it work with QGLContext::CurrentContext
     friend class QGLContext;
     friend class QWidgetPrivate;
-    friend class QWindow;
+
     void *qGLContextHandle() const;
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
     void deleteQGLContext();
-    Q_DISABLE_COPY(QWindowContext);
+
+    Q_DISABLE_COPY(QGuiGLContext);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QWINDOWCONTEXT_H
+#endif // QGUIGLCONTEXT_H

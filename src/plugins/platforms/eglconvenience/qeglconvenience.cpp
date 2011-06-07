@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
+#include <QByteArray>
+
 #include "qeglconvenience.h"
 
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QWindowFormat &format)
+QVector<EGLint> q_createConfigAttributesFromFormat(const QGuiGLFormat &format)
 {
     int redSize     = format.redBufferSize();
     int greenSize   = format.greenBufferSize();
@@ -68,7 +70,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QWindowFormat &format)
     // "AtLeast" for EGL_BUFFER_SIZE, it's sort order is "smaller" meaning 16-bit configs are
     // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
     // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
-    // if the application sets the red/green/blue size to 5/6/5 on the QPlatformWindowFormat,
+    // if the application sets the red/green/blue size to 5/6/5 on the QGuiGLFormat,
     // they will probably get a 32-bit config, even when there's an RGB565 config available.
 
 //    // Now normalize the values so -1 becomes 0
@@ -195,7 +197,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromQWindowFormat(EGLDisplay display, const QWindowFormat &format, bool highestPixelFormat, int surfaceType)
+EGLConfig q_configFromGLFormat(EGLDisplay display, const QGuiGLFormat &format, bool highestPixelFormat, int surfaceType)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
@@ -257,9 +259,9 @@ EGLConfig q_configFromQWindowFormat(EGLDisplay display, const QWindowFormat &for
     return 0;
 }
 
-QWindowFormat q_windowFormatFromConfig(EGLDisplay display, const EGLConfig config)
+QGuiGLFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
 {
-    QWindowFormat format;
+    QGuiGLFormat format;
     EGLint redSize     = 0;
     EGLint greenSize   = 0;
     EGLint blueSize    = 0;

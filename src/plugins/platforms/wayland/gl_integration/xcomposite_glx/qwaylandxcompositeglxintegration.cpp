@@ -72,7 +72,12 @@ void QWaylandXCompositeGLXIntegration::initialize()
 
 QWaylandWindow * QWaylandXCompositeGLXIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandXCompositeGLXWindow(window,this);
+    return new QWaylandXCompositeGLXWindow(window, this);
+}
+
+QPlatformGLContext *QWaylandXCompositeGLXIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+{
+    return new QWaylandXCompositeGLXContext(glFormat, share, mDisplay, mScreen);
 }
 
 Display * QWaylandXCompositeGLXIntegration::xDisplay() const

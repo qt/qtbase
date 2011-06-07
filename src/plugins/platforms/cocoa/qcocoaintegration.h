@@ -78,6 +78,7 @@ public:
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
     QWindowSurface *createWindowSurface(QWindow *widget, WId winId) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }

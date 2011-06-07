@@ -65,17 +65,22 @@ public:
 
     WId winId() const;
     NSView *contentView() const;
+    NSView *windowSurfaceView() const;
 
+    void windowDidMove();
     void windowDidResize();
 
-    QPlatformGLContext *glContext() const;
+    QPlatformGLSurface *createGLSurface() const;
+
+    void setCurrentContext(QCocoaGLContext *context);
+    QCocoaGLContext *currentContext() const;
 
 private:
     friend class QCocoaWindowSurface;
     NSWindow *m_nsWindow;
     QNSView *m_contentView;
     NSView *m_windowSurfaceView;
-    mutable QCocoaGLContext *m_glContext;
+    QCocoaGLContext *m_glContext;
 };
 
 QT_END_NAMESPACE

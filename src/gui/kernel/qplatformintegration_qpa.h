@@ -61,6 +61,7 @@ class QPlatformClipboard;
 class QPlatformNativeInterface;
 class QPlatformPrinterSupport;
 class QPlatformDrag;
+class QPlatformGLContext;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -78,6 +79,7 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QWindowSurface *createWindowSurface(QWindow *window, WId winId) const = 0;
+    virtual QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
 
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;

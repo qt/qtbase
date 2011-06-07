@@ -71,6 +71,11 @@ QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWindow *window
     return new QWaylandReadbackGlxWindow(window,this);
 }
 
+QPlatformGLContext *QWaylandReadbackGlxIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+{
+    return new QWaylandReadbackGlxContext(glFormat, share, mDisplay, mScreen);
+}
+
 QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)
 {
     return new QWaylandReadbackGlxIntegration(waylandDisplay);

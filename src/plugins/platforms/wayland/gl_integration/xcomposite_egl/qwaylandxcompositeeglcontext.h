@@ -44,37 +44,29 @@
 
 #include <QtGui/QPlatformGLContext>
 
-#include "qwaylandbuffer.h"
 #include "qwaylandxcompositeeglintegration.h"
+
+#include "qeglplatformcontext.h"
 
 class QWaylandXCompositeEGLWindow;
 
-class QWaylandXCompositeEGLContext : public QPlatformGLContext
+class QWaylandXCompositeEGLSurface : public QEGLSurface
 {
 public:
-    QWaylandXCompositeEGLContext(QWaylandXCompositeEGLIntegration *glxIntegration, QWaylandXCompositeEGLWindow *window);
+    QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window);
 
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
-
-    QWindowFormat windowFormat() const;
-
-    void geometryChanged();
-
+    EGLSurface eglSurface() const;
+    QWaylandXCompositeEGLWindow *window() const { return m_window; }
 private:
-    QWaylandXCompositeEGLIntegration *mEglIntegration;
-    QWaylandXCompositeEGLWindow *mWindow;
-    QWaylandBuffer *mBuffer;
+    QWaylandXCompositeEGLWindow *m_window;
+};
 
-    Window mXWindow;
-    EGLConfig mConfig;
-    EGLContext mContext;
-    EGLSurface mEglWindowSurface;
+class QWaylandXCompositeEGLContext : public QEGLPlatformContext
+{
+public:
+    QWaylandXCompositeEGLContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display);
 
-    static void sync_function(void *data);
-    bool mWaitingForSync;
+    void swapBuffers(const QPlatformGLSurface &surface);
 };
 
 #endif // QWAYLANDXCOMPOSITEEGLCONTEXT_H

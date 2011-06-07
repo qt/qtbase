@@ -50,7 +50,7 @@
 #include <X11/Xutil.h>
 #include <GL/glx.h>
 
-#include <QtGui/QWindowContext>
+#include <QtGui/QGuiGLContext>
 
 #include "qglxintegration.h"
 #include "qglxconvenience.h"
@@ -59,60 +59,61 @@
 #include <dlfcn.h>
 #endif
 
-QGLXContext::QGLXContext(Window window, QXcbScreen *screen, const QWindowFormat &format)
+QGLXSurface::QGLXSurface(GLXDrawable drawable, const QGuiGLFormat &format)
+    : QPlatformGLSurface(format)
+    , glxDrawable(drawable)
+{
+}
+
+QGLXContext::QGLXContext(QXcbScreen *screen, const QGuiGLFormat &format, QPlatformGLContext *share)
     : QPlatformGLContext()
     , m_screen(screen)
-    , m_drawable((Drawable)window)
     , m_context(0)
 {
     Q_XCB_NOOP(m_screen->connection());
-    const QWindowContext *shareContext = format.sharedContext();
     GLXContext shareGlxContext = 0;
-    if (shareContext)
-        shareGlxContext = static_cast<const QGLXContext*>(shareContext->handle())->glxContext();
+    if (share)
+        shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
     m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, shareGlxContext, TRUE);
-    m_windowFormat = qglx_platformWindowFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+    m_format = qglx_guiGLFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
     Q_XCB_NOOP(m_screen->connection());
-}
-
-QGLXContext::QGLXContext(QXcbScreen *screen, Drawable drawable, GLXContext context)
-    : QPlatformGLContext(), m_screen(screen), m_drawable(drawable), m_context(context)
-{
-
 }
 
 QGLXContext::~QGLXContext()
 {
     Q_XCB_NOOP(m_screen->connection());
-    if (m_context)
-        glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
+    glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
     Q_XCB_NOOP(m_screen->connection());
 }
 
-void QGLXContext::makeCurrent()
+bool QGLXContext::makeCurrent(const QPlatformGLSurface &surface)
 {
     Q_XCB_NOOP(m_screen->connection());
-    glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), m_drawable, m_context);
+
+    GLXDrawable glxSurface = static_cast<const QGLXSurface &>(surface).glxDrawable;
+
+    bool result = glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), glxSurface, m_context);
+
     Q_XCB_NOOP(m_screen->connection());
+    return result;
 }
 
 void QGLXContext::doneCurrent()
 {
-    Q_XCB_NOOP(m_screen->connection());
     glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
-    Q_XCB_NOOP(m_screen->connection());
 }
 
-void QGLXContext::swapBuffers()
+void QGLXContext::swapBuffers(const QPlatformGLSurface &drawable)
 {
     Q_XCB_NOOP(m_screen->connection());
-    glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), m_drawable);
+    GLXDrawable glxDrawable = static_cast<const QGLXSurface &>(drawable).glxDrawable;
+    glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), glxDrawable);
     Q_XCB_NOOP(m_screen->connection());
 }
 
-void* QGLXContext::getProcAddress(const QString& procName)
+void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
 {
     Q_XCB_NOOP(m_screen->connection());
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
@@ -143,10 +144,10 @@ void* QGLXContext::getProcAddress(const QString& procName)
     }
     if (!glXGetProcAddressARB)
         return 0;
-    return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
+    return (void (*)())glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.constData()));
 }
 
-QWindowFormat QGLXContext::windowFormat() const
+QGuiGLFormat QGLXContext::format() const
 {
-    return m_windowFormat;
+    return m_format;
 }

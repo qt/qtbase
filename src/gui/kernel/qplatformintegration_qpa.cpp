@@ -172,6 +172,13 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     \sa createPlatformWindow(QWindow *window, WId winId = 0) const
 */
 
+
+QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+{
+    qWarning("This plugin does not support createPlatformGLContext!");
+    return 0;
+}
+
 /*!
     \fn void QPlatformIntegration::moveToScreen(QWindow *window, int screen)
 

@@ -41,19 +41,20 @@
 
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
+#include "qcocoawindow.h"
 #include <qbytearray.h>
 #include <qwindow.h>
 #include "qplatformwindow_qpa.h"
-#include "qwindowformat_qpa.h"
+#include "qguiglformat_qpa.h"
 #include "qplatformglcontext_qpa.h"
-#include "qwindowcontext_qpa.h"
+#include "qguiglcontext_qpa.h"
 #include <qdebug.h>
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (resourceString == "nsopenglcontext") {
-        QPlatformGLContext *platformContext = window->glContext()->handle();
-        return static_cast<QCocoaGLContext *>(platformContext)->nsOpenGLContext();
+
+        static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
     }
     return 0;
 }

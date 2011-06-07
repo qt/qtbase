@@ -63,9 +63,9 @@ QWaylandWindow::WindowType QWaylandShmWindow::windowType() const
     return QWaylandWindow::Shm;
 }
 
-QPlatformGLContext * QWaylandShmWindow::glContext() const
+QPlatformGLSurface * QWaylandShmWindow::glSurface() const
 {
-    qWarning("Trying to retrieve a glContext from a Raster window surface!");
+    qWarning("Raster window does not have a GL drawable");
     return 0;
 }
 

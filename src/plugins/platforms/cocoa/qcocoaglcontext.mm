@@ -1,66 +1,88 @@
 #include "qcocoaglcontext.h"
+#include "qcocoawindow.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #import <Cocoa/Cocoa.h>
 
-QCocoaGLContext::QCocoaGLContext(NSOpenGLView *glView)
-:m_glView(glView)
+QCocoaGLContext::QCocoaGLContext(const QGuiGLFormat &format, QPlatformGLContext *share)
+    : m_format(format)
 {
+    NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat();
+    NSOpenGLContext *actualShare = share ? static_cast<QCocoaGLContext *>(share)->m_context : 0;
 
+    m_context = [NSOpenGLContext alloc];
+    [m_context initWithFormat:pixelFormat shareContext:actualShare];
 }
 
-void QCocoaGLContext::makeCurrent()
+// Match up with createNSOpenGLPixelFormat!
+QGuiGLFormat QCocoaGLContext::format() const
 {
-    [[m_glView openGLContext] makeCurrentContext];
+    return m_format;
 }
+
+void QCocoaGLContext::swapBuffers(const QPlatformGLSurface &surface)
+{
+    QWindow *window = static_cast<const QCocoaGLSurface &>(surface).window;
+    setActiveWindow(window);
+
+    [m_context flushBuffer];
+}
+
+bool QCocoaGLContext::makeCurrent(const QPlatformGLSurface &surface)
+{
+    QWindow *window = static_cast<const QCocoaGLSurface &>(surface).window;
+    setActiveWindow(window);
+
+    [m_context makeCurrentContext];
+    return true;
+}
+
+void QCocoaGLContext::setActiveWindow(QWindow *window)
+{
+    if (window == m_currentWindow.data())
+        return;
+
+    if (m_currentWindow)
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
+
+    Q_ASSERT(window->handle());
+
+    m_currentWindow = window;
+
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    cocoaWindow->setCurrentContext(this);
+
+    NSView *view = cocoaWindow->windowSurfaceView();
+    [m_context setView:view];
+}
+
 void QCocoaGLContext::doneCurrent()
 {
+    if (m_currentWindow)
+        static_cast<QCocoaWindow *>(m_currentWindow.data()->handle())->setCurrentContext(0);
+
+    m_currentWindow.clear();
+
     [NSOpenGLContext clearCurrentContext];
 }
 
-void QCocoaGLContext::swapBuffers()
-{
-    [[m_glView openGLContext] flushBuffer];
-}
-
-void* QCocoaGLContext::getProcAddress(const QString& procName)
+void (*QCocoaGLContext::getProcAddress(const QByteArray &procName)) ()
 {
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
             CFSTR("/System/Library/Frameworks/OpenGL.framework"), kCFURLPOSIXPathStyle, false);
     CFBundleRef bundle = CFBundleCreate(kCFAllocatorDefault, url);
-    CFStringRef procNameCF = QCFString::toCFStringRef(procName);
+    CFStringRef procNameCF = QCFString::toCFStringRef(QString::fromAscii(procName.constData()));
     void *proc = CFBundleGetFunctionPointerForName(bundle, procNameCF);
     CFRelease(url);
     CFRelease(bundle);
     CFRelease(procNameCF);
-    return proc;
+    return (void (*) ())proc;
 }
 
-// Match up with createNSOpenGLPixelFormat below!
-QWindowFormat QCocoaGLContext::windowFormat() const
+void QCocoaGLContext::update()
 {
-    QWindowFormat format;
-    format.setRedBufferSize(8);
-    format.setGreenBufferSize(8);
-    format.setBlueBufferSize(8);
-    format.setAlphaBufferSize(8);
-
-/*
-    format.setDepthBufferSize(24);
-    format.setAccumBufferSize(0);
-    format.setStencilBufferSize(8);
-    format.setSampleBuffers(false);
-    format.setSamples(1);
-    format.setDepth(true);
-    format.setRgba(true);
-    format.setAlpha(true);
-    format.setAccum(false);
-    format.setStencil(true);
-    format.setStereo(false);
-    format.setDirectRendering(false);
-*/
-    return format;
+    [m_context update];
 }
 
 NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat()
@@ -78,6 +100,6 @@ NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat()
 
 NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
 {
-    return [m_glView openGLContext];
+    return m_context;
 }
 

@@ -46,6 +46,9 @@ class QWaylandWindow;
 class QWaylandDisplay;
 class QWindow;
 
+class QPlatformGLContext;
+class QGuiGLFormat;
+
 class QWaylandGLIntegration
 {
 public:
@@ -55,6 +58,7 @@ public:
     virtual void initialize() = 0;
 
     virtual QWaylandWindow *createEglWindow(QWindow *window) = 0;
+    virtual QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const = 0;
 
     static QWaylandGLIntegration *createGLIntegration(QWaylandDisplay *waylandDisplay);
 };

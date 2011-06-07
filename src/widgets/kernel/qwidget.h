@@ -58,7 +58,6 @@
 
 #ifdef Q_WS_QPA //should this go somewhere else?
 #include <QtGui/qwindow.h>
-#include <QtGui/qwindowformat_qpa.h>
 #endif
 
 #ifdef QT_INCLUDE_COMPAT

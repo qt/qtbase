@@ -44,7 +44,9 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
-#include <QtGui/qwindowformat_qpa.h>
+
+#include <QtGui/qguiglformat_qpa.h>
+#include <QtGui/qwindowdefs.h>
 
 QT_BEGIN_HEADER
 
@@ -64,8 +66,8 @@ class QMouseEvent;
 class QWheelEvent;
 #endif
 
+class QPlatformGLSurface;
 class QPlatformWindow;
-class QWindowContext;
 class QWindowSurface;
 
 class Q_GUI_EXPORT QWindow : public QObject
@@ -100,9 +102,10 @@ public:
     Qt::WindowModality windowModality() const;
     void setWindowModality(Qt::WindowModality windowModality);
 
-    void setWindowFormat(const QWindowFormat &format);
-    QWindowFormat requestedWindowFormat() const;
-    QWindowFormat actualWindowFormat() const;
+    void setGLFormat(const QGuiGLFormat &format);
+    QGuiGLFormat glFormat() const;
+
+    QPlatformGLSurface *glSurface() const;
 
     void setSurfaceType(SurfaceType type);
     SurfaceType surfaceType() const;
@@ -136,8 +139,6 @@ public:
     QRect geometry() const;
 
     void setWindowIcon(const QImage &icon) const;
-
-    QWindowContext *glContext() const;
 
     void destroy();
 

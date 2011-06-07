@@ -328,9 +328,6 @@ void QGuiApplicationPrivate::init()
 
 QGuiApplicationPrivate::~QGuiApplicationPrivate()
 {
-    delete platform_integration;
-    platform_integration = 0;
-
     is_app_closing = true;
     is_app_running = false;
 
@@ -341,6 +338,11 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 #endif
 
     layout_direction = Qt::LeftToRight;
+
+    cleanupThreadData();
+
+    delete platform_integration;
+    platform_integration = 0;
 }
 
 #if 0
