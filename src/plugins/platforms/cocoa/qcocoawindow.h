@@ -60,6 +60,9 @@ public:
     void setGeometry(const QRect &rect);
     void setVisible(bool visible);
     void setWindowTitle(const QString &title);
+    void raise();
+    void lower();
+
     WId winId() const;
     NSView *contentView() const;
 
