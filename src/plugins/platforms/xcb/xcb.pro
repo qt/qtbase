@@ -15,6 +15,7 @@ SOURCES = \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
         qxcbwindowsurface.cpp \
+        qxcbwmsupport.cpp \
         main.cpp \
         qxcbnativeinterface.cpp
 
@@ -29,6 +30,7 @@ HEADERS = \
         qxcbscreen.h \
         qxcbwindow.h \
         qxcbwindowsurface.h \
+        qxcbwmsupport.h \
         qxcbnativeinterface.h
 
 QT += gui-private core-private

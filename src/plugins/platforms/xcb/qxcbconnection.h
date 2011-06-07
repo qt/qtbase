@@ -56,6 +56,7 @@ class QXcbWindow;
 class QXcbDrag;
 class QXcbKeyboard;
 class QXcbClipboard;
+class QXcbWMSupport;
 
 typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
@@ -67,6 +68,7 @@ namespace QXcbAtom {
     static const xcb_atom_t XA_BITMAP = 5;
     static const xcb_atom_t XA_STRING = 32;
     static const xcb_atom_t XA_WINDOW = 33;
+    static const xcb_atom_t XA_CARDINAL = 6;
 
     enum Atom {
         // window-manager <-> client protocols
@@ -256,6 +258,8 @@ public:
     QXcbClipboard *clipboard() const { return m_clipboard; }
     QXcbDrag *drag() const { return m_drag; }
 
+    QXcbWMSupport *wmSupport() const { return m_wmSupport; }
+
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -284,8 +288,6 @@ public:
     xcb_generic_event_t *checkEvent(int type);
     template<typename T>
     inline xcb_generic_event_t *checkEvent(const T &checker);
-
-    QXcbWindow *platformWindowFromId(xcb_window_t id);
 
     typedef bool (*PeekFunc)(xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
@@ -319,6 +321,7 @@ private:
     QXcbKeyboard *m_keyboard;
     QXcbClipboard *m_clipboard;
     QXcbDrag *m_drag;
+    QXcbWMSupport *m_wmSupport;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;

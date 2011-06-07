@@ -100,6 +100,8 @@ public:
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global);
 
     void updateSyncRequestCounter();
+    void updateNetWmUserTime(xcb_timestamp_t timestamp);
+    void netWmUserTime() const;
 
 private:
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
@@ -112,6 +114,7 @@ private:
 
     void updateMotifWmHintsBeforeMap();
     void updateNetWmStateBeforeMap();
+
 
     void create();
     void destroy();
@@ -134,6 +137,7 @@ private:
     Qt::WindowState m_windowState;
 
     bool m_mapped;
+    xcb_window_t m_netWmUserTimeWindow;
 };
 
 #endif

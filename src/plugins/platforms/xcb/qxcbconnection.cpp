@@ -45,6 +45,7 @@
 #include "qxcbwindow.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
+#include "qxcbwmsupport.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
@@ -119,6 +120,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
+    m_wmSupport = new QXcbWMSupport(this);
     m_keyboard = new QXcbKeyboard(this);
     m_clipboard = new QXcbClipboard(this);
     m_drag = new QXcbDrag(this);
@@ -178,7 +180,7 @@ break;
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
-        m_keyboard->handler(platformWindow->window(), e); \
+        m_keyboard->handler(platformWindow, e); \
 } \
 break;
 
@@ -515,6 +517,7 @@ void QXcbConnection::processXcbEvents()
         xcb_generic_event_t *event = eventqueue.at(i);
         if (!event)
             continue;
+        eventqueue[i] = 0;
 
         uint response_type = event->response_type & ~0x80;
 
@@ -788,8 +791,15 @@ xcb_atom_t QXcbConnection::internAtom(const char *name)
 
 QByteArray QXcbConnection::atomName(xcb_atom_t atom)
 {
-    xcb_get_atom_name_cookie_t cookie = Q_XCB_CALL(xcb_get_atom_name_unchecked(xcb_connection(), atom));
-    xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, 0);
+    if (!atom)
+        return QByteArray();
+
+    xcb_generic_error_t *error = 0;
+    xcb_get_atom_name_cookie_t cookie = Q_XCB_CALL(xcb_get_atom_name(xcb_connection(), atom));
+    xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, &error);
+    if (error) {
+        qWarning() << "QXcbConnection::atomName: bad Atom" << atom;
+    }
     if (reply) {
         QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
         free(reply);

@@ -46,7 +46,7 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
-
+#include "qxcbwmsupport.h"
 
 #ifdef XCB_USE_DRI2
 #include "qdri2context.h"
@@ -98,6 +98,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_context(0)
     , m_syncCounter(0)
     , m_mapped(false)
+    , m_netWmUserTimeWindow(XCB_NONE)
 {
     m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
 
@@ -812,6 +813,43 @@ void QXcbWindow::updateNetWmStateBeforeMap()
     setNetWmState(netWmState);
 }
 
+void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
+{
+    xcb_window_t wid = m_window;
+
+    const bool isSupportedByWM = connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
+    if (m_netWmUserTimeWindow || isSupportedByWM) {
+        if (!m_netWmUserTimeWindow) {
+            m_netWmUserTimeWindow = xcb_generate_id(xcb_connection());
+            Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                         XCB_COPY_FROM_PARENT,            // depth -- same as root
+                                         m_netWmUserTimeWindow,                        // window id
+                                         m_window,                   // parent window id
+                                         -1, -1, 1, 1,
+                                         0,                               // border width
+                                         XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                                         m_screen->screen()->root_visual, // visual
+                                         0,                               // value mask
+                                         0));                             // value list
+            wid = m_netWmUserTimeWindow;
+            xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
+                                QXcbAtom::XA_WINDOW, 32, 1, &m_netWmUserTimeWindow);
+            xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME));
+        } else if (!isSupportedByWM) {
+            // WM no longer supports it, then we should remove the
+            // _NET_WM_USER_TIME_WINDOW atom.
+            xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
+            xcb_destroy_window(xcb_connection(), m_netWmUserTimeWindow);
+            m_netWmUserTimeWindow = XCB_NONE;
+        } else {
+            wid = m_netWmUserTimeWindow;
+        }
+    }
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, wid, atom(QXcbAtom::_NET_WM_USER_TIME),
+                        QXcbAtom::XA_CARDINAL, 32, 1, &timestamp);
+}
+
+
 WId QXcbWindow::winId() const
 {
     return m_window;
@@ -892,9 +930,10 @@ void QXcbWindow::propagateSizeHints()
 void QXcbWindow::requestActivateWindow()
 {
     if (m_mapped){
-        Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, XCB_TIME_CURRENT_TIME));
-        connection()->sync();
+        updateNetWmUserTime(connection()->time());
+        Q_XCB_CALL(xcb_set_input_focus(xcb_connection(), XCB_INPUT_FOCUS_PARENT, m_window, connection()->time()));
     }
+    connection()->sync();
 }
 
 QPlatformGLContext *QXcbWindow::glContext() const
@@ -942,11 +981,12 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         return;
 
     if (event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
+        qDebug() << "WM_PROTO" << m_window << connection()->atomName(event->data.data32[0]);
         if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(window());
         } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
             connection()->setTime(event->data.data32[1]);
-            // ### handle take focus!
+            requestActivateWindow();
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
             xcb_client_message_event_t reply = *event;
 
@@ -963,6 +1003,8 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             }
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
+        } else {
+            qWarning() << "unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
         }
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
         connection()->drag()->handleEnter(window(), event);
@@ -972,6 +1014,8 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         connection()->drag()->handleLeave(window(), event, false);
     } else if (event->type == atom(QXcbAtom::XdndDrop)) {
         connection()->drag()->handleDrop(window(), event, false);
+    } else {
+        qWarning() << "unhandled client message:" << connection()->atomName(event->type);
     }
 }
 
@@ -1043,6 +1087,8 @@ static Qt::MouseButton translateMouseButton(xcb_button_t s)
 
 void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
+    updateNetWmUserTime(event->time);
+
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
 

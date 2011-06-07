@@ -38,52 +38,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef QXCBKEYBOARD_H
-#define QXCBKEYBOARD_H
+#ifndef QXCBWMSUPPORT_H
+#define QXCBWMSUPPORT_H
 
 #include "qxcbobject.h"
+#include "qxcbconnection.h"
+#include <qvector.h>
 
-#include "xcb/xcb_keysyms.h"
-
-#include <QEvent>
-
-class QWindow;
-
-class QXcbKeyboard : public QXcbObject
+class QXcbWMSupport : public QXcbObject
 {
 public:
-    QXcbKeyboard(QXcbConnection *connection);
-    ~QXcbKeyboard();
+    QXcbWMSupport(QXcbConnection *c);
 
-    void handleKeyPressEvent(QXcbWindow *window, const xcb_key_press_event_t *event);
-    void handleKeyReleaseEvent(QXcbWindow *window, const xcb_key_release_event_t *event);
 
-    void handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event);
-
-    Qt::KeyboardModifiers translateModifiers(int s);
+    bool isSupportedByWM(xcb_atom_t atom) const;
+    const QVector<xcb_window_t> &virtualRoots() const { return net_virtual_roots; }
 
 private:
-    void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    friend class QXcbConnection;
+    void updateNetWMAtoms();
+    void updateVirtualRoots();
 
-    int translateKeySym(uint key) const;
-    QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
-                            int &code, Qt::KeyboardModifiers &modifiers,
-                            QByteArray &chars, int &count);
-    void initXkb();
-    void setMask(uint sym, uint mask);
-
-    uint m_alt_mask;
-    uint m_super_mask;
-    uint m_hyper_mask;
-    uint m_meta_mask;
-    uint m_mode_switch_mask;
-    uint m_num_lock_mask;
-
-    xcb_key_symbols_t *m_key_symbols;
-#ifndef QT_NO_XCB_XKB
-    struct xkb_desc *m_xkb;
-#endif
+    QVector<xcb_atom_t> net_wm_atoms;
+    QVector<xcb_window_t> net_virtual_roots;
 };
+
 
 #endif

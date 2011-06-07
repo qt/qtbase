@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qxcbkeyboard.h"
+#include "qxcbwindow.h"
 
 #include <xcb/xcb_keysyms.h>
 
@@ -1030,14 +1031,15 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers, code, 0, state, string.left(count));
 }
 
-void QXcbKeyboard::handleKeyPressEvent(QWindow *window, const xcb_key_press_event_t *event)
+void QXcbKeyboard::handleKeyPressEvent(QXcbWindow *window, const xcb_key_press_event_t *event)
 {
-    handleKeyEvent(window, QEvent::KeyPress, event->detail, event->state, event->time);
+    window->updateNetWmUserTime(event->time);
+    handleKeyEvent(window->window(), QEvent::KeyPress, event->detail, event->state, event->time);
 }
 
-void QXcbKeyboard::handleKeyReleaseEvent(QWindow *window, const xcb_key_release_event_t *event)
+void QXcbKeyboard::handleKeyReleaseEvent(QXcbWindow *window, const xcb_key_release_event_t *event)
 {
-    handleKeyEvent(window, QEvent::KeyRelease, event->detail, event->state, event->time);
+    handleKeyEvent(window->window(), QEvent::KeyRelease, event->detail, event->state, event->time);
 }
 
 void QXcbKeyboard::handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event)
