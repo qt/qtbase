@@ -186,7 +186,7 @@ QMimeData * QXcbClipboard::mimeData(QClipboard::Mode mode)
     } else if (mode == QClipboard::Selection) {
         if (!m_xSelection) {
             m_xSelection = new QXcbClipboardMime(mode, this);
-        }
+    }
         xcb_window_t clipboardOwner = getSelectionOwner(XCB_ATOM_PRIMARY);
         if (clipboardOwner == owner()) {
             return m_clientSelection;
@@ -336,10 +336,10 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
 
     QString fmt = QXcbMime::mimeAtomToString(connection(), target);
     if (fmt.isEmpty()) { // Not a MIME type we have
-        qDebug() << "QClipboard: send_selection(): converting to type '%s' is not supported" << fmt.data();
+//        qDebug() << "QClipboard: send_selection(): converting to type" << connection()->atomName(target) << "is not supported";
         return XCB_NONE;
     }
-    qDebug() << "QClipboard: send_selection(): converting to type '%s'" << fmt.data();
+//    qDebug() << "QClipboard: send_selection(): converting to type" << fmt;
 
     if (QXcbMime::mimeDataForAtom(connection(), target, d, &data, &atomFormat, &dataFormat)) {
 
@@ -356,7 +356,7 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
                                 atom(QXcbAtom::INCR), 32, 1, (const void *)&bytes);
 
 //            (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
-            qDebug() << "not implemented INCRT just YET!";
+            qWarning() << "not implemented INCR just YET!";
             return property;
         }
 

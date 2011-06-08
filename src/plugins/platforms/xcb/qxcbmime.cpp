@@ -64,7 +64,7 @@ QXcbMime::~QXcbMime()
 QString QXcbMime::mimeAtomToString(QXcbConnection *connection, xcb_atom_t a)
 {
     if (a == XCB_NONE)
-        return 0;
+        return QString();
 
     // special cases for string type
     if (a == XCB_ATOM_STRING
