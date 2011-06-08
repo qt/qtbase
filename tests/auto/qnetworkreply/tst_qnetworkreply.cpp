@@ -5970,7 +5970,7 @@ public slots:
 
     void onReadAndReschedule() {
         const qint64 bytesReceived = m_reply->bytesAvailable();
-        if (bytesReceived) {
+        if (bytesReceived && m_reply->readBufferSize()) {
            QByteArray data = m_reply->read(bytesReceived);
            // reschedule read
            const int millisecDelay = static_cast<int>(bytesReceived * 1000 / m_reply->readBufferSize());
