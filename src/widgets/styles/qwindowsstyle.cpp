@@ -918,7 +918,7 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
 static QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
@@ -3256,7 +3256,7 @@ QIcon QWindowsStyle::standardIconImplementation(StandardPixmap standardIcon, con
 {
     QIcon icon;
     QPixmap pixmap;
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
     switch (standardIcon) {
     case SP_FileDialogNewFolder:
     {

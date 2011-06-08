@@ -854,7 +854,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             && (event->pos() - state->pressPos).manhattanLength()
                 > QApplication::startDragDistance()) {
             startDrag();
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
             grabMouseWhileInWindow();
 #else
             q->grabMouse();
@@ -925,7 +925,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
             initDrag(event->pos(), true);
             if (state == 0)
                 break;
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
             // On Windows, NCA mouse events don't contain modifier info
             state->ctrlDrag = GetKeyState(VK_CONTROL) & 0x8000;
 #else
@@ -1433,7 +1433,7 @@ bool QDockWidget::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent *>(event)))
             return true;
         break;
-#ifdef Q_OS_WIN
+#ifdef Q_WS_WIN
     case QEvent::Leave:
         if (d->state != 0 && d->state->dragging && !d->state->nca) {
             // This is a workaround for loosing the mouse on Vista.
