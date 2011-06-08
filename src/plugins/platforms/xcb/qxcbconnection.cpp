@@ -63,6 +63,10 @@
 #include <X11/Xlib-xcb.h>
 #endif
 
+#ifdef XCB_USE_RENDER
+#include <xcb/render.h>
+#endif
+
 #ifdef XCB_USE_EGL //dont pull in eglext prototypes
 #include <EGL/egl.h>
 #endif
@@ -126,6 +130,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_drag = new QXcbDrag(this);
 
     initializeXFixes();
+    initializeXRender();
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -846,6 +851,23 @@ void QXcbConnection::initializeXFixes()
         free(error);
     }
     free(xfixes_query);
+}
+
+void QXcbConnection::initializeXRender()
+{
+#ifdef XCB_USE_RENDER
+    xcb_generic_error_t *error = 0;
+    xcb_render_query_version_cookie_t xrender_query_cookie = xcb_render_query_version(m_connection,
+                                                                                      XCB_RENDER_MAJOR_VERSION,
+                                                                                      XCB_RENDER_MINOR_VERSION);
+    xcb_render_query_version_reply_t *xrender_query = xcb_render_query_version_reply(m_connection,
+                                                                                     xrender_query_cookie, &error);
+    if (!xrender_query || error || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
+        qWarning("Failed to initialize XRender");
+        free(error);
+    }
+    free(xrender_query);
+#endif
 }
 
 #if defined(XCB_USE_EGL)

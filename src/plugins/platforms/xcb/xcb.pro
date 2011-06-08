@@ -42,6 +42,9 @@ QT += gui-private core-private
 # needed by GLX, Xcursor, ...
 DEFINES += XCB_USE_XLIB
 
+# to support custom cursors with depth > 1
+DEFINES += XCB_USE_RENDER
+
 contains(QT_CONFIG, opengl) {
     QT += opengl
 
@@ -74,6 +77,7 @@ contains(QT_CONFIG, opengl) {
 
 LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes
 contains(DEFINES, XCB_USE_XLIB): LIBS += -lX11 -lX11-xcb
+contains(DEFINES, XCB_USE_RENDER): LIBS += -lxcb-render -lxcb-render-util
 
 DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB

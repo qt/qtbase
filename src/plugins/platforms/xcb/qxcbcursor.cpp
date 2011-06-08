@@ -489,22 +489,18 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
 {
     xcb_connection_t *conn = xcb_connection();
     QPoint spot = cursor->hotSpot();
-    xcb_pixmap_t cp;
-    xcb_pixmap_t mp;
-    if (cursor->pixmap().depth() > 1) {
-        // ### this will result in monochrome cursors
-        cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
-        mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
-    } else {
-        cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
-        mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
-    }
-    xcb_cursor_t c = xcb_generate_id(conn);
-    xcb_create_cursor(conn, c, cp, mp, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF,
-                      spot.x(), spot.y());
-    xcb_free_pixmap(conn, cp);
-    if (mp)
+    xcb_cursor_t c = XCB_NONE;
+    if (cursor->pixmap().depth() > 1)
+        c = qt_xcb_createCursorXRender(m_screen, cursor->pixmap().toImage(), spot);
+    if (!c) {
+        xcb_pixmap_t cp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->bitmap()->toImage());
+        xcb_pixmap_t mp = qt_xcb_XPixmapFromBitmap(m_screen, cursor->mask()->toImage());
+        c = xcb_generate_id(conn);
+        xcb_create_cursor(conn, c, cp, mp, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF,
+                          spot.x(), spot.y());
+        xcb_free_pixmap(conn, cp);
         xcb_free_pixmap(conn, mp);
+    }
     return c;
 }
 

@@ -293,6 +293,7 @@ private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
     void initializeXFixes();
+    void initializeXRender();
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif

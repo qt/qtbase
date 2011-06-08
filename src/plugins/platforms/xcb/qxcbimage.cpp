@@ -42,6 +42,17 @@
 #include "qxcbimage.h"
 #include <QtGui/QColor>
 #include <QtGui/private/qimage_p.h>
+#include <QtGui/private/qdrawhelper_p.h>
+#ifdef XCB_USE_RENDER
+#include <xcb/render.h>
+// 'template' is used as a function argument name in xcb_renderutil.h
+#define template template_param
+// extern "C" is missing too
+extern "C" {
+#include <xcb/xcb_renderutil.h>
+}
+#undef template
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -175,6 +186,75 @@ xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image)
                                                          width, height, 1, 0, 0, 0);
     delete[] buf;
     return pm;
+}
+
+xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
+                                        const QPoint &spot)
+{
+#ifdef XCB_USE_RENDER
+    xcb_connection_t *conn = screen->xcb_connection();
+    const int w = image.width();
+    const int h = image.height();
+    xcb_generic_error_t *error = 0;
+    xcb_render_query_pict_formats_cookie_t formatsCookie = xcb_render_query_pict_formats(conn);
+    xcb_render_query_pict_formats_reply_t *formatsReply = xcb_render_query_pict_formats_reply(conn,
+                                                                                              formatsCookie,
+                                                                                              &error);
+    if (!formatsReply || error) {
+        qWarning("createCursorXRender: query_pict_formats failed");
+        free(formatsReply);
+        free(error);
+        return XCB_NONE;
+    }
+    xcb_render_pictforminfo_t *fmt = xcb_render_util_find_standard_format(formatsReply,
+                                                                          XCB_PICT_STANDARD_ARGB_32);
+    if (!fmt) {
+        qWarning("createCursorXRender: Failed to find format PICT_STANDARD_ARGB_32");
+        free(formatsReply);
+        return XCB_NONE;
+    }
+
+    QImage img = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    xcb_image_t *xi = xcb_image_create(w, h, XCB_IMAGE_FORMAT_Z_PIXMAP,
+                                       32, 32, 32, 32,
+                                       QSysInfo::ByteOrder == QSysInfo::BigEndian ? XCB_IMAGE_ORDER_MSB_FIRST : XCB_IMAGE_ORDER_LSB_FIRST,
+                                       XCB_IMAGE_ORDER_MSB_FIRST,
+                                       0, 0, 0);
+    if (!xi) {
+        qWarning("createCursorXRender: xcb_image_create failed");
+        free(formatsReply);
+        return XCB_NONE;
+    }
+    xi->data = (uint8_t *) malloc(xi->stride * h);
+    memcpy(xi->data, img.constBits(), img.byteCount());
+
+    xcb_pixmap_t pix = xcb_generate_id(conn);
+    xcb_create_pixmap(conn, 32, pix, screen->root(), w, h);
+
+    xcb_render_picture_t pic = xcb_generate_id(conn);
+    xcb_render_create_picture(conn, pic, pix, fmt->id, 0, 0);
+
+    xcb_gcontext_t gc = xcb_generate_id(conn);
+    xcb_create_gc(conn, gc, pix, 0, 0);
+    xcb_image_put(conn, pix, gc, xi, 0, 0, 0);
+    xcb_free_gc(conn, gc);
+
+    xcb_cursor_t cursor = xcb_generate_id(conn);
+    xcb_render_create_cursor(conn, cursor, pic, spot.x(), spot.y());
+
+    free(xi->data);
+    xcb_image_destroy(xi);
+    xcb_render_free_picture(conn, pic);
+    xcb_free_pixmap(conn, pix);
+    free(formatsReply);
+    return cursor;
+
+#else
+    Q_UNUSED(screen);
+    Q_UNUSED(image);
+    Q_UNUSED(spot);
+    return XCB_NONE;
+#endif
 }
 
 QT_END_NAMESPACE

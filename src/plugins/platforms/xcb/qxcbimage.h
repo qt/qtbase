@@ -56,6 +56,8 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
                                  int width, int height, int depth,
                                  const xcb_visualtype_t *visual);
 xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image);
+xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
+                                        const QPoint &spot);
 
 QT_END_NAMESPACE
 
