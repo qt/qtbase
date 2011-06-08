@@ -1,3 +1,5 @@
+load(qt_module)
+
 # Qt network module
 TARGET   = QtNetwork
 QPRO_PWD = $$PWD

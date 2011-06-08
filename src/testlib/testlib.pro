@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET = QtTest
 QPRO_PWD = $$PWD
 QT = core

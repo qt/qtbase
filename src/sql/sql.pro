@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET	   = QtSql
 QPRO_PWD   = $$PWD
 QT         = core-private

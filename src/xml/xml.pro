@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET     = QtXml
 QPRO_PWD   = $$PWD
 QT         = core-private
