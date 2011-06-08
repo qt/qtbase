@@ -71,9 +71,9 @@ SOURCES += \
         kernel/qguiplatformplugin.cpp \
         kernel/qwidgetsvariant.cpp
 
-win32 {
-	DEFINES += QT_NO_DIRECTDRAW
+win32: DEFINES += QT_NO_DIRECTDRAW
 
+win32:!qpa {
     HEADERS += \
         kernel/qwinnativepangesturerecognizer_win_p.h
 

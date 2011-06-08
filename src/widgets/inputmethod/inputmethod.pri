@@ -11,7 +11,7 @@ x11 {
     HEADERS += inputmethod/qximinputcontext_p.h
     SOURCES += inputmethod/qximinputcontext_x11.cpp
 }
-win32 {
+win32:!qpa {
     HEADERS += inputmethod/qwininputcontext_p.h
     SOURCES += inputmethod/qwininputcontext_win.cpp
 }

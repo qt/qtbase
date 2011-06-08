@@ -16,7 +16,7 @@ contains(QT_CONFIG, accessibility) {
         HEADERS += accessible/qaccessible_mac_p.h
         OBJECTIVE_SOURCES += accessible/qaccessible_mac.mm \
                              accessible/qaccessible_mac_cocoa.mm
-      } else:win32 { 
+      } else:win32:!qpa {
         SOURCES += accessible/qaccessible_win.cpp
       } else {
         HEADERS += accessible/qaccessiblebridge.h

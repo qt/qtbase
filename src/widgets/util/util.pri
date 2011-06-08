@@ -29,7 +29,7 @@ SOURCES += \
 wince* {
 		SOURCES += \
 				util/qsystemtrayicon_wince.cpp
-} else:win32 {
+} else:win32:!qpa {
 		SOURCES += \
 				util/qsystemtrayicon_win.cpp
 }
