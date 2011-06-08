@@ -48,16 +48,19 @@
 
 class QXcbConnection;
 class QXcbScreen;
+class QXcbClipboardMime;
 
 class QXcbClipboard : public QXcbObject, public QPlatformClipboard
 {
 public:
     QXcbClipboard(QXcbConnection *connection);
+    ~QXcbClipboard();
 
     QMimeData *mimeData(QClipboard::Mode mode);
     void setMimeData(QMimeData *data, QClipboard::Mode mode);
 
     bool supportsMode(QClipboard::Mode mode) const;
+    bool ownsMode(QClipboard::Mode mode) const;
 
     QXcbScreen *screen() const { return m_screen; }
 
@@ -67,6 +70,7 @@ public:
     xcb_window_t owner() const;
 
     void handleSelectionRequest(xcb_selection_request_event_t *event);
+    void handleSelectionClearRequest(xcb_selection_clear_event_t *event);
 
     bool clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const;
     QByteArray clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm);
@@ -77,20 +81,20 @@ public:
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property);
 
 private:
-    void setOwner(xcb_window_t window);
-
     xcb_generic_event_t *waitForClipboardEvent(xcb_window_t win, int type, int timeout);
 
     xcb_atom_t sendTargetsSelection(QMimeData *d, xcb_window_t window, xcb_atom_t property);
     xcb_atom_t sendSelection(QMimeData *d, xcb_atom_t target, xcb_window_t window, xcb_atom_t property);
 
+    xcb_atom_t atomForMode(QClipboard::Mode mode) const;
+    QClipboard::Mode modeForAtom(xcb_atom_t atom) const;
+
     QXcbScreen *m_screen;
 
-    QMimeData *m_xClipboard;
-    QMimeData *m_clientClipboard;
-
-    QMimeData *m_xSelection;
-    QMimeData *m_clientSelection;
+    // Selection and Clipboard
+    QXcbClipboardMime *m_xClipboard[2];
+    QMimeData *m_clientClipboard[2];
+    xcb_timestamp_t m_timestamp[2];
 
     xcb_window_t m_requestor;
     xcb_window_t m_owner;

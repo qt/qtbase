@@ -148,6 +148,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
 
 QXcbConnection::~QXcbConnection()
 {
+    delete m_clipboard;
+
     qDeleteAll(m_screens);
 
 #ifdef XCB_USE_XLIB
@@ -157,7 +159,6 @@ QXcbConnection::~QXcbConnection()
 #endif
 
     delete m_keyboard;
-    delete m_clipboard;
 }
 
 void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
@@ -488,10 +489,11 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
     case XCB_SELECTION_CLEAR:
         setTime(((xcb_selection_clear_event_t *)event)->time);
-        qDebug() << "XCB_SELECTION_CLEAR";
-        handled = false;
+        m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
+        handled = true;
         break;
     case XCB_SELECTION_NOTIFY:
+        setTime(((xcb_selection_notify_event_t *)event)->time);
         qDebug() << "XCB_SELECTION_NOTIFY";
         handled = false;
         break;
