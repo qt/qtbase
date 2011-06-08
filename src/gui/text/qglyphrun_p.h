@@ -97,6 +97,10 @@ public:
     QVector<QPointF> glyphPositions;
     QRawFont rawFont;
 
+    uint overline  : 1;
+    uint underline : 1;
+    uint strikeOut : 1;
+
     const quint32 *glyphIndexData;
     int glyphIndexDataSize;
 
@@ -107,10 +111,6 @@ public:
     {
         return glyphRun.d.data();
     }
-
-    uint overline  : 1;
-    uint underline : 1;
-    uint strikeOut : 1;
 };
 
 QT_END_NAMESPACE
