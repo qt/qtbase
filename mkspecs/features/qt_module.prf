@@ -11,11 +11,18 @@ isEmpty(QMAKE_QT_MODULE)|!exists($$QMAKE_QT_MODULE) {
    !exists($$QMAKE_QT_MODULE):exists($$[QT_INSTALL_DATA]/mkspecs/qmodule.pri):QMAKE_QT_MODULE = $$[QT_INSTALL_DATA]/mkspecs/qmodule.pri
 }
 
-!exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
-   error("Cannot load qmodule.pri!")
+!contains(QMAKE_INTERNAL_INCLUDED_FILES, .*qmodule\\.pri) {
+    !exists($$QMAKE_QT_MODULE)|!include($$QMAKE_QT_MODULE, "", true) {
+        error("Cannot load qmodule.pri!")
+    } else {
+        QMAKE_QT_MODULE_PRI_LOADED = 1
+        debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
+    }
 } else {
-   debug(1, "Loaded qmodule.pri from ($$QMAKE_QT_MODULE)")
+    QMAKE_QT_MODULE_PRI_LOADED = 1  # covers 'preloading' from .qmake.cache
+    debug(1, "Not loading qmodule.pri twice")
 }
+
 mac {
    !isEmpty(QMAKE_RPATHDIR){
        CONFIG += absolute_library_soname
