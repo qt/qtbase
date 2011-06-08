@@ -237,8 +237,10 @@ bool QPlatformIntegration::hasCapability(Capability cap) const
 QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
 {
     static QPlatformPrinterSupport *ps = 0;
+#ifndef QT_NO_PRINTER
     if (!ps)
         ps = new QPlatformPrinterSupport;
+#endif
     return ps;
 }
 
