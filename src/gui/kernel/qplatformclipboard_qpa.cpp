@@ -102,6 +102,11 @@ bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const
     return mode == QClipboard::Clipboard;
 }
 
+bool QPlatformClipboard::ownsMode(QClipboard::Mode mode) const
+{
+    return false;
+}
+
 void QPlatformClipboard::emitChanged(QClipboard::Mode mode)
 {
     QGuiApplication::clipboard()->emitChanged(mode);

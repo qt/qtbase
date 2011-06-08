@@ -53,7 +53,7 @@ QT_USE_NAMESPACE
 
 void QClipboard::clear(Mode mode)
 {
-    setMimeData(0,mode);
+    setMimeData(0, mode);
 }
 
 
@@ -87,9 +87,8 @@ bool QClipboard::supportsMode(Mode mode) const
 
 bool QClipboard::ownsMode(Mode mode) const
 {
-    if (mode == Clipboard)
-        qWarning("QClipboard::ownsClipboard: UNIMPLEMENTED!");
-    return false;
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    return clipboard->ownsMode(mode);
 }
 
 void QClipboard::connectNotify( const char * )
