@@ -54,6 +54,23 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
+#ifndef QT_DISABLE_DEPRECATED_BEFORE
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
+#endif
+
+/*
+    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
+    the deprecation point specified.
+
+    Use it to specify from which version of Qt a function or class has been deprecated
+
+    Example:
+        #if QT_DEPRECATED_SINCE(5,1)
+            QT_DEPRECATED void deprecatedFunction(); //function deprecated sine Qt 5.1
+        #endif
+ */
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
 #define QT_PACKAGE_TAG ""
