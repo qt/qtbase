@@ -60,8 +60,8 @@
 #include <qobject.h>
 #include <qwidget.h>
 #include <qabstractbutton.h>
-#include <QtGui/private/qwidget_p.h>
-#include <QtGui/private/qstylehelper_p.h>
+#include <QtWidgets/private/qwidget_p.h>
+#include <QtWidgets/private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 

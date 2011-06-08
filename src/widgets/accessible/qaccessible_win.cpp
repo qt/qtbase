@@ -49,9 +49,9 @@
 #include "qsettings.h"
 #include <QtCore/qmap.h>
 #include <QtCore/qpair.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <QtWidgets/qgraphicsscene.h>
+#include <QtWidgets/qgraphicsview.h>
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
