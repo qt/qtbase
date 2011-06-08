@@ -70,7 +70,11 @@
 
 #include <qmutex.h>
 
-#include <harfbuzz-shaper.h>
+#if defined (QT_BUILD_GUI_LIB)
+#  include "private/qharfbuzz_p.h"
+#else
+#  include "private/qharfbuzz_copy_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

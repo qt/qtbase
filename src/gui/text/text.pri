@@ -43,7 +43,8 @@ HEADERS += \
         text/qrawfont.h \
         text/qrawfont_p.h \
     text/qglyphrun.h \
-    text/qglyphrun_p.h
+    text/qglyphrun_p.h \
+    text/qharfbuzz_copy_p.h
 
 SOURCES += \
 	text/qfont.cpp \
