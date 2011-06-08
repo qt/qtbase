@@ -287,8 +287,10 @@ void QGuiApplicationPrivate::init()
         }
     }
 
-    argv[j] = 0;
-    argc = j;
+    if (j < argc) {
+        argv[j] = 0;
+        argc = j;
+    }
 
 #if 0
     QByteArray pluginEnv = qgetenv("QT_QPA_PLUGINS");
