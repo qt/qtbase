@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QDialPrivate;
 class QStyleOptionSlider;
 
-class Q_GUI_EXPORT QDial: public QAbstractSlider
+class Q_WIDGETS_EXPORT QDial: public QAbstractSlider
 {
     Q_OBJECT
 

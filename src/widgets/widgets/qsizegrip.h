@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_SIZEGRIP
 class QSizeGripPrivate;
-class Q_GUI_EXPORT QSizeGrip : public QWidget
+class Q_WIDGETS_EXPORT QSizeGrip : public QWidget
 {
     Q_OBJECT
 public:

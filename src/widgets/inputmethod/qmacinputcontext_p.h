@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacInputContext : public QInputContext
+class Q_WIDGETS_EXPORT QMacInputContext : public QInputContext
 {
     Q_OBJECT
     //Q_DECLARE_PRIVATE(QMacInputContext)

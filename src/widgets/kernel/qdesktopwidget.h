@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 class QApplication;
 class QDesktopWidgetPrivate;
 
-class Q_GUI_EXPORT QDesktopWidget : public QWidget
+class Q_WIDGETS_EXPORT QDesktopWidget : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool virtualDesktop READ isVirtualDesktop)

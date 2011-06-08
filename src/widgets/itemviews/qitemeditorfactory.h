@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 
 class QWidget;
 
-class Q_GUI_EXPORT QItemEditorCreatorBase
+class Q_WIDGETS_EXPORT QItemEditorCreatorBase
 {
 public:
     virtual ~QItemEditorCreatorBase() {}
@@ -97,7 +97,7 @@ template <class T>
 Q_INLINE_TEMPLATE QItemEditorCreator<T>::QItemEditorCreator(const QByteArray &avaluePropertyName)
     : propertyName(avaluePropertyName) {}
 
-class Q_GUI_EXPORT QItemEditorFactory
+class Q_WIDGETS_EXPORT QItemEditorFactory
 {
 public:
     inline QItemEditorFactory() {}

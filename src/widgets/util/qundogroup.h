@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_UNDOGROUP
 
-class Q_GUI_EXPORT QUndoGroup : public QObject
+class Q_WIDGETS_EXPORT QUndoGroup : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QUndoGroup)

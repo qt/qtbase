@@ -61,7 +61,7 @@ class QPolygonF;
 class QStyleOptionGraphicsItem;
 
 class QGraphicsViewPrivate;
-class Q_GUI_EXPORT QGraphicsView : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QGraphicsView : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_FLAGS(QPainter::RenderHints CacheMode OptimizationFlags)

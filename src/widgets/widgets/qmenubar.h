@@ -59,7 +59,7 @@ class QWindowsStyle;
 class QMenuItem;
 #endif
 
-class Q_GUI_EXPORT QMenuBar : public QWidget
+class Q_WIDGETS_EXPORT QMenuBar : public QWidget
 {
     Q_OBJECT
 

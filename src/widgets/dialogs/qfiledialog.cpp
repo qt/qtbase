@@ -78,16 +78,16 @@ Q_GLOBAL_STATIC(QString, lastVisitedDir)
     Exported hooks that can be used to customize the static functions.
  */
 typedef QString (*_qt_filedialog_existing_directory_hook)(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
-Q_GUI_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook = 0;
+Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook = 0;
 
 typedef QString (*_qt_filedialog_open_filename_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_GUI_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook = 0;
+Q_WIDGETS_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook = 0;
 
 typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_GUI_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook = 0;
+Q_WIDGETS_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook = 0;
 
 typedef QString (*_qt_filedialog_save_filename_hook)(QWidget * parent, const QString &caption, const QString &dir, const QString &filter, QString *selectedFilter, QFileDialog::Options options);
-Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook = 0;
+Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook = 0;
 
 /*!
   \class QFileDialog
@@ -293,7 +293,7 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
 */
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
-bool Q_GUI_EXPORT qt_use_native_dialogs = true; // for the benefit of testing tools, until we have a proper API
+bool Q_WIDGETS_EXPORT qt_use_native_dialogs = true; // for the benefit of testing tools, until we have a proper API
 #endif
 
 QT_BEGIN_INCLUDE_NAMESPACE

@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 class QRadioButtonPrivate;
 class QStyleOptionButton;
 
-class Q_GUI_EXPORT QRadioButton : public QAbstractButton
+class Q_WIDGETS_EXPORT QRadioButton : public QAbstractButton
 {
     Q_OBJECT
 

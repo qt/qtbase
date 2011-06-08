@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QInputDialogPrivate;
 
-class Q_GUI_EXPORT QInputDialog : public QDialog
+class Q_WIDGETS_EXPORT QInputDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QInputDialog)

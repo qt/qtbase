@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_STYLE_PROXY)
 
 class QProxyStylePrivate;
-class Q_GUI_EXPORT QProxyStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QProxyStyle : public QCommonStyle
 {
     Q_OBJECT
 

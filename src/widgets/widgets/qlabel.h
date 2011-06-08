@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QLabelPrivate;
 
-class Q_GUI_EXPORT QLabel : public QFrame
+class Q_WIDGETS_EXPORT QLabel : public QFrame
 {
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText)

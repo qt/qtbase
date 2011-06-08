@@ -102,7 +102,7 @@ class QApplicationPrivate;
 #define QApplicationBase QCoreApplication
 #endif
 
-class Q_GUI_EXPORT QApplication : public QApplicationBase
+class Q_WIDGETS_EXPORT QApplication : public QApplicationBase
 {
     Q_OBJECT
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)

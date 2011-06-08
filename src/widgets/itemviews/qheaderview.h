@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QHeaderViewPrivate;
 class QStyleOptionHeader;
 
-class Q_GUI_EXPORT QHeaderView : public QAbstractItemView
+class Q_WIDGETS_EXPORT QHeaderView : public QAbstractItemView
 {
     Q_OBJECT
     Q_PROPERTY(bool showSortIndicator READ isSortIndicatorShown WRITE setSortIndicatorShown)

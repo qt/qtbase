@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QCommandLinkButtonPrivate;
 
-class Q_GUI_EXPORT QCommandLinkButton: public QPushButton 
+class Q_WIDGETS_EXPORT QCommandLinkButton: public QPushButton
 {
     Q_OBJECT
 

@@ -145,7 +145,7 @@ public:
 
 class QWidgetPrivate;
 
-class Q_GUI_EXPORT QWidget : public QObject, public QPaintDevice
+class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWidget)
@@ -803,8 +803,8 @@ private:
     friend void qt_set_winid_on_widget(QWidget*, Qt::HANDLE);
 #endif
 
-    friend Q_GUI_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
-    friend Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);
+    friend Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
+    friend Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);
 
 private:
     Q_DISABLE_COPY(QWidget)

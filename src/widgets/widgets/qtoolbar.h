@@ -59,7 +59,7 @@ class QIcon;
 class QMainWindow;
 class QStyleOptionToolBar;
 
-class Q_GUI_EXPORT QToolBar : public QWidget
+class Q_WIDGETS_EXPORT QToolBar : public QWidget
 {
     Q_OBJECT
 

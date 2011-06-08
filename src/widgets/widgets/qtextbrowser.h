@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 class QTextBrowserPrivate;
 
-class Q_GUI_EXPORT QTextBrowser : public QTextEdit
+class Q_WIDGETS_EXPORT QTextBrowser : public QTextEdit
 {
     Q_OBJECT
 

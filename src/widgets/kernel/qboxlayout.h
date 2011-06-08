@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 
 class QBoxLayoutPrivate;
 
-class Q_GUI_EXPORT QBoxLayout : public QLayout
+class Q_WIDGETS_EXPORT QBoxLayout : public QLayout
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QBoxLayout)
@@ -126,7 +126,7 @@ private:
     Q_DISABLE_COPY(QBoxLayout)
 };
 
-class Q_GUI_EXPORT QHBoxLayout : public QBoxLayout
+class Q_WIDGETS_EXPORT QHBoxLayout : public QBoxLayout
 {
     Q_OBJECT
 public:
@@ -146,7 +146,7 @@ private:
     Q_DISABLE_COPY(QHBoxLayout)
 };
 
-class Q_GUI_EXPORT QVBoxLayout : public QBoxLayout
+class Q_WIDGETS_EXPORT QVBoxLayout : public QBoxLayout
 {
     Q_OBJECT
 public:

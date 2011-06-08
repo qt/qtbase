@@ -63,7 +63,7 @@ class QPixmap;
 class QGraphicsEffectSource;
 
 class QGraphicsEffectPrivate;
-class Q_GUI_EXPORT QGraphicsEffect : public QObject
+class Q_WIDGETS_EXPORT QGraphicsEffect : public QObject
 {
     Q_OBJECT
     Q_FLAGS(ChangeFlags)
@@ -127,7 +127,7 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags)
 
 class QGraphicsColorizeEffectPrivate;
-class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
+class Q_WIDGETS_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -156,7 +156,7 @@ private:
 };
 
 class QGraphicsBlurEffectPrivate;
-class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
+class Q_WIDGETS_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_FLAGS(BlurHint BlurHints)
@@ -196,7 +196,7 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsBlurEffect::BlurHints)
 
 class QGraphicsDropShadowEffectPrivate;
-class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
+class Q_WIDGETS_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
@@ -252,7 +252,7 @@ private:
 };
 
 class QGraphicsOpacityEffectPrivate;
-class Q_GUI_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
+class Q_WIDGETS_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)

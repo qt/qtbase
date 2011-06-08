@@ -58,7 +58,7 @@ class QProgressBar;
 class QTimer;
 class QProgressDialogPrivate;
 
-class Q_GUI_EXPORT QProgressDialog : public QDialog
+class Q_WIDGETS_EXPORT QProgressDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QProgressDialog)

@@ -58,7 +58,7 @@ class QDateTimeEditPrivate;
 class QStyleOptionSpinBox;
 class QCalendarWidget;
 
-class Q_GUI_EXPORT QDateTimeEdit : public QAbstractSpinBox
+class Q_WIDGETS_EXPORT QDateTimeEdit : public QAbstractSpinBox
 {
     Q_OBJECT
 
@@ -203,7 +203,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_resetButton())
 };
 
-class Q_GUI_EXPORT QTimeEdit : public QDateTimeEdit
+class Q_WIDGETS_EXPORT QTimeEdit : public QDateTimeEdit
 {
     Q_OBJECT
 public:
@@ -211,7 +211,7 @@ public:
     QTimeEdit(const QTime &time, QWidget *parent = 0);
 };
 
-class Q_GUI_EXPORT QDateEdit : public QDateTimeEdit
+class Q_WIDGETS_EXPORT QDateEdit : public QDateTimeEdit
 {
     Q_OBJECT
 public:

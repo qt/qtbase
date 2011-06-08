@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QAccessibleWidgetPrivate;
 
-class Q_GUI_EXPORT QAccessibleWidget : public QAccessibleObject
+class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject
 {
 public:
     explicit QAccessibleWidget(QWidget *o, Role r = Client, const QString& name = QString());
@@ -94,7 +94,7 @@ private:
     Q_DISABLE_COPY(QAccessibleWidget)
 };
 
-class Q_GUI_EXPORT QAccessibleWidgetEx : public QAccessibleObjectEx
+class Q_WIDGETS_EXPORT QAccessibleWidgetEx : public QAccessibleObjectEx
 {
 public:
     explicit QAccessibleWidgetEx(QWidget *o, Role r = Client, const QString& name = QString());

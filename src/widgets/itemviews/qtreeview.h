@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QTreeViewPrivate;
 class QHeaderView;
 
-class Q_GUI_EXPORT QTreeView : public QAbstractItemView
+class Q_WIDGETS_EXPORT QTreeView : public QAbstractItemView
 {
     Q_OBJECT
     Q_PROPERTY(int autoExpandDelay READ autoExpandDelay WRITE setAutoExpandDelay)

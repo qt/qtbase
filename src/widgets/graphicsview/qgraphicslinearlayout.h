@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 class QGraphicsLinearLayoutPrivate;
 
-class Q_GUI_EXPORT QGraphicsLinearLayout : public QGraphicsLayout
+class Q_WIDGETS_EXPORT QGraphicsLinearLayout : public QGraphicsLayout
 {
 public:
     QGraphicsLinearLayout(QGraphicsLayoutItem *parent = 0);

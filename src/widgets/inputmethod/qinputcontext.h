@@ -79,7 +79,7 @@ class QInputContextPrivate;
 class QSymbianEvent;
 #endif
 
-class Q_GUI_EXPORT QInputContext : public QObject
+class Q_WIDGETS_EXPORT QInputContext : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QInputContext)

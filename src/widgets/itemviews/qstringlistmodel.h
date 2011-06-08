@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_STRINGLISTMODEL
 
-class Q_GUI_EXPORT QStringListModel : public QAbstractListModel
+class Q_WIDGETS_EXPORT QStringListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:

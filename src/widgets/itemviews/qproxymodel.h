@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QProxyModelPrivate;
 
-class Q_GUI_EXPORT QProxyModel : public QAbstractItemModel
+class Q_WIDGETS_EXPORT QProxyModel : public QAbstractItemModel
 {
     Q_OBJECT
 

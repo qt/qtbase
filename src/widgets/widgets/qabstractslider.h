@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QAbstractSliderPrivate;
 
-class Q_GUI_EXPORT QAbstractSlider : public QWidget
+class Q_WIDGETS_EXPORT QAbstractSlider : public QWidget
 {
     Q_OBJECT
 

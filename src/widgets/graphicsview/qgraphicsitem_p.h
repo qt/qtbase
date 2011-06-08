@@ -155,7 +155,7 @@ public:
     void purge();
 };
 
-class Q_GUI_EXPORT QGraphicsItemPrivate
+class Q_WIDGETS_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:

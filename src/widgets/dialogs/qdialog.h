@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 class QPushButton;
 class QDialogPrivate;
 
-class Q_GUI_EXPORT QDialog : public QWidget
+class Q_WIDGETS_EXPORT QDialog : public QWidget
 {
     Q_OBJECT
     friend class QPushButton;

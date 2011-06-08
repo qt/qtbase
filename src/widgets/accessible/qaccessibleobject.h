@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QAccessibleObjectPrivate;
 class QObject;
 
-class Q_GUI_EXPORT QAccessibleObject : public QAccessibleInterface
+class Q_WIDGETS_EXPORT QAccessibleObject : public QAccessibleInterface
 {
 public:
     explicit QAccessibleObject(QObject *object);
@@ -81,7 +81,7 @@ private:
     Q_DISABLE_COPY(QAccessibleObject)
 };
 
-class Q_GUI_EXPORT QAccessibleObjectEx : public QAccessibleInterfaceEx
+class Q_WIDGETS_EXPORT QAccessibleObjectEx : public QAccessibleInterfaceEx
 {
 public:
     explicit QAccessibleObjectEx(QObject *object);
@@ -106,7 +106,7 @@ private:
     Q_DISABLE_COPY(QAccessibleObjectEx)
 };
 
-class Q_GUI_EXPORT QAccessibleApplication : public QAccessibleObject
+class Q_WIDGETS_EXPORT QAccessibleApplication : public QAccessibleObject
 {
 public:
     QAccessibleApplication();

@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_SPLASHSCREEN
 class QSplashScreenPrivate;
 
-class Q_GUI_EXPORT QSplashScreen : public QWidget
+class Q_WIDGETS_EXPORT QSplashScreen : public QWidget
 {
     Q_OBJECT
 public:

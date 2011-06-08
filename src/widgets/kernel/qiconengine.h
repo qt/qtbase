@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QIconEngine
+class Q_WIDGETS_EXPORT QIconEngine
 {
 public:
     virtual ~QIconEngine();
@@ -70,7 +70,7 @@ public:
 };
 
 // ### Qt 5: move the below into QIconEngine
-class Q_GUI_EXPORT QIconEngineV2 : public QIconEngine
+class Q_WIDGETS_EXPORT QIconEngineV2 : public QIconEngine
 {
 public:
     virtual QString key() const;

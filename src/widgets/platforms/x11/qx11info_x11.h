@@ -60,7 +60,7 @@ class QX11InfoPrivate;
 struct QX11WindowAttributes;
 
 void qt_x11_getX11InfoForWindow(QX11Info * xinfo, const QX11WindowAttributes &a);
-class Q_GUI_EXPORT QX11Info
+class Q_WIDGETS_EXPORT QX11Info
 {
 public:
     QX11Info();

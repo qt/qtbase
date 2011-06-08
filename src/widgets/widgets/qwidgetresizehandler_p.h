@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QMouseEvent;
 class QKeyEvent;
 
-class Q_GUI_EXPORT QWidgetResizeHandler : public QObject
+class Q_WIDGETS_EXPORT QWidgetResizeHandler : public QObject
 {
     Q_OBJECT
 

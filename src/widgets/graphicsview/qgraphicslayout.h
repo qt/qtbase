@@ -56,7 +56,7 @@ class QGraphicsLayoutPrivate;
 class QGraphicsLayoutItem;
 class QGraphicsWidget;
 
-class Q_GUI_EXPORT QGraphicsLayout : public QGraphicsLayoutItem
+class Q_WIDGETS_EXPORT QGraphicsLayout : public QGraphicsLayoutItem
 {
 public:
     QGraphicsLayout(QGraphicsLayoutItem *parent = 0);

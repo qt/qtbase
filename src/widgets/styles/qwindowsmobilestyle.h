@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QWindowsMobileStylePrivate;
 
-class Q_GUI_EXPORT QWindowsMobileStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT QWindowsMobileStyle : public QWindowsStyle
 {
     Q_OBJECT
 public:

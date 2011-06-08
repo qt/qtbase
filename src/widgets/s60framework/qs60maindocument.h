@@ -64,7 +64,7 @@ QT_MODULE(Gui)
 
 class QS60MainAppUi;
 
-class Q_GUI_EXPORT QS60MainDocument : public QS60MainDocumentBase
+class Q_WIDGETS_EXPORT QS60MainDocument : public QS60MainDocumentBase
 {
 public:
 

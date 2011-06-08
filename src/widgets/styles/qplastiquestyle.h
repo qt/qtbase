@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_STYLE_PLASTIQUE)
 
 class QPlastiqueStylePrivate;
-class Q_GUI_EXPORT QPlastiqueStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT QPlastiqueStyle : public QWindowsStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPlastiqueStyle)

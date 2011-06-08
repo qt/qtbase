@@ -58,7 +58,7 @@ QT_MODULE(Gui)
 class QPainterPath;
 class QGtkStylePrivate;
 
-class Q_GUI_EXPORT QGtkStyle : public QCleanlooksStyle
+class Q_WIDGETS_EXPORT QGtkStyle : public QCleanlooksStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGtkStyle)

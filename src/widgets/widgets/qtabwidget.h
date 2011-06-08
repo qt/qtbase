@@ -57,7 +57,7 @@ class QTabBar;
 class QTabWidgetPrivate;
 class QStyleOptionTabWidgetFrame;
 
-class Q_GUI_EXPORT QTabWidget : public QWidget
+class Q_WIDGETS_EXPORT QTabWidget : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(TabPosition TabShape)

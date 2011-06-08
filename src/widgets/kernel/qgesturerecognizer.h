@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QObject;
 class QEvent;
 class QGesture;
-class Q_GUI_EXPORT QGestureRecognizer
+class Q_WIDGETS_EXPORT QGestureRecognizer
 {
 public:
     enum ResultFlag

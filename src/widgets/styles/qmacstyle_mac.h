@@ -55,15 +55,15 @@ QT_MODULE(Gui)
 class QPalette;
 
 #if defined(QT_PLUGIN)
-#define Q_GUI_EXPORT_STYLE_MAC
+#define Q_WIDGETS_EXPORT_STYLE_MAC
 #else
-#define Q_GUI_EXPORT_STYLE_MAC Q_GUI_EXPORT
+#define Q_WIDGETS_EXPORT_STYLE_MAC Q_WIDGETS_EXPORT
 #endif
 
 class QPushButton;
 class QStyleOptionButton;
 class QMacStylePrivate;
-class Q_GUI_EXPORT_STYLE_MAC QMacStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT_STYLE_MAC QMacStyle : public QWindowsStyle
 {
     Q_OBJECT
 public:

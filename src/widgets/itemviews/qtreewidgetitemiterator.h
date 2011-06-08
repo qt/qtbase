@@ -58,7 +58,7 @@ class QTreeWidgetItem;
 class QTreeModel;
 
 class QTreeWidgetItemIteratorPrivate;
-class Q_GUI_EXPORT QTreeWidgetItemIterator
+class Q_WIDGETS_EXPORT QTreeWidgetItemIterator
 {
     friend class QTreeModel;
 

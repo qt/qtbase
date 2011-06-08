@@ -100,12 +100,12 @@ static QString buddyString(const QWidget *widget)
     return QString();
 }
 
-QString Q_GUI_EXPORT qt_accStripAmp(const QString &text)
+QString Q_WIDGETS_EXPORT qt_accStripAmp(const QString &text)
 {
     return QString(text).remove(QLatin1Char('&'));
 }
 
-QString Q_GUI_EXPORT qt_accHotKey(const QString &text)
+QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
 {
 #ifndef QT_NO_SHORTCUT
     if (text.isEmpty())

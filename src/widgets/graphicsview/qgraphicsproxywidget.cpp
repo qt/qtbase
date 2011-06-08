@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 */
 
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
-Q_GUI_EXPORT extern bool qt_tab_all_widgets;
+Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
 
 /*!
     \internal

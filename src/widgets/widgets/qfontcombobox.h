@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 class QFontComboBoxPrivate;
 
-class Q_GUI_EXPORT QFontComboBox : public QComboBox
+class Q_WIDGETS_EXPORT QFontComboBox : public QComboBox
 {
     Q_OBJECT
     Q_FLAGS(FontFilters)

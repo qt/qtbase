@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 class QToolBoxPrivate;
 
-class Q_GUI_EXPORT QToolBox : public QFrame
+class Q_WIDGETS_EXPORT QToolBox : public QFrame
 {
     Q_OBJECT
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentChanged)

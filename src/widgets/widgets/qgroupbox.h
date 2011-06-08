@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QGroupBoxPrivate;
 class QStyleOptionGroupBox;
-class Q_GUI_EXPORT QGroupBox : public QWidget
+class Q_WIDGETS_EXPORT QGroupBox : public QWidget
 {
     Q_OBJECT
 

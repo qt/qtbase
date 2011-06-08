@@ -98,7 +98,7 @@ class QStyle;
 class QStyleOptionGraphicsItem;
 
 class QGraphicsScenePrivate;
-class Q_GUI_EXPORT QGraphicsScene : public QObject
+class Q_WIDGETS_EXPORT QGraphicsScene : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QBrush backgroundBrush READ backgroundBrush WRITE setBackgroundBrush)

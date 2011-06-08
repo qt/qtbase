@@ -57,7 +57,7 @@ class QDate;
 class QTextCharFormat;
 class QCalendarWidgetPrivate;
 
-class Q_GUI_EXPORT QCalendarWidget : public QWidget
+class Q_WIDGETS_EXPORT QCalendarWidget : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(Qt::DayOfWeek)

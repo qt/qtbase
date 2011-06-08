@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QMenuItem : public QAction
+class Q_WIDGETS_EXPORT QMenuItem : public QAction
 {
     Q_OBJECT
 

@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QStringList;
 class QAccessibleInterface;
 
-struct Q_GUI_EXPORT QAccessibleFactoryInterface : public QAccessible, public QFactoryInterface
+struct Q_WIDGETS_EXPORT QAccessibleFactoryInterface : public QAccessible, public QFactoryInterface
 {
     virtual QAccessibleInterface* create(const QString &key, QObject *object) = 0;
 };
@@ -66,7 +66,7 @@ Q_DECLARE_INTERFACE(QAccessibleFactoryInterface, QAccessibleFactoryInterface_iid
 
 class QAccessiblePluginPrivate;
 
-class Q_GUI_EXPORT QAccessiblePlugin : public QObject, public QAccessibleFactoryInterface
+class Q_WIDGETS_EXPORT QAccessiblePlugin : public QObject, public QAccessibleFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QAccessibleFactoryInterface:QFactoryInterface)

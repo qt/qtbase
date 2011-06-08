@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_TABLEWIDGET
 
-class Q_GUI_EXPORT QTableWidgetSelectionRange
+class Q_WIDGETS_EXPORT QTableWidgetSelectionRange
 {
 public:
     QTableWidgetSelectionRange();
@@ -79,7 +79,7 @@ class QTableModel;
 class QWidgetItemData;
 class QTableWidgetItemPrivate;
 
-class Q_GUI_EXPORT QTableWidgetItem
+class Q_WIDGETS_EXPORT QTableWidgetItem
 {
     friend class QTableWidget;
     friend class QTableModel;
@@ -211,13 +211,13 @@ inline void QTableWidgetItem::setFont(const QFont &afont)
 { setData(Qt::FontRole, afont); }
 
 #ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QTableWidgetItem &item);
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &out, const QTableWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &in, QTableWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &out, const QTableWidgetItem &item);
 #endif
 
 class QTableWidgetPrivate;
 
-class Q_GUI_EXPORT QTableWidget : public QTableView
+class Q_WIDGETS_EXPORT QTableWidget : public QTableView
 {
     Q_OBJECT
     Q_PROPERTY(int rowCount READ rowCount WRITE setRowCount)

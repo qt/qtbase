@@ -63,7 +63,7 @@ class QStyleOptionFrame;
 class QAbstractSpinBox;
 class QDateTimeEdit;
 
-class Q_GUI_EXPORT QLineEdit : public QWidget
+class Q_WIDGETS_EXPORT QLineEdit : public QWidget
 {
     Q_OBJECT
 

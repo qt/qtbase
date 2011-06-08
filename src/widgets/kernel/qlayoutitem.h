@@ -61,7 +61,7 @@ class QSpacerItem;
 class QWidget;
 class QSize;
 
-class Q_GUI_EXPORT QLayoutItem
+class Q_WIDGETS_EXPORT QLayoutItem
 {
 public:
     inline explicit QLayoutItem(Qt::Alignment alignment = 0);
@@ -93,7 +93,7 @@ protected:
 inline QLayoutItem::QLayoutItem(Qt::Alignment aalignment)
     : align(aalignment) { }
 
-class Q_GUI_EXPORT QSpacerItem : public QLayoutItem
+class Q_WIDGETS_EXPORT QSpacerItem : public QLayoutItem
 {
 public:
     QSpacerItem(int w, int h,
@@ -119,7 +119,7 @@ private:
     QRect rect;
 };
 
-class Q_GUI_EXPORT QWidgetItem : public QLayoutItem
+class Q_WIDGETS_EXPORT QWidgetItem : public QLayoutItem
 {
     Q_DISABLE_COPY(QWidgetItem)
 
@@ -141,7 +141,7 @@ protected:
     QWidget *wid;
 };
 
-class Q_GUI_EXPORT QWidgetItemV2 : public QWidgetItem
+class Q_WIDGETS_EXPORT QWidgetItemV2 : public QWidgetItem
 {
 public:
     explicit QWidgetItemV2(QWidget *widget);

@@ -1299,6 +1299,11 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_WIDGETS_LIB)
+#      define Q_WIDGETS_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_WIDGETS_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_SQL_LIB)
 #      define Q_SQL_EXPORT Q_DECL_EXPORT
 #    else
@@ -1383,6 +1388,7 @@ class QDataStream;
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
 #    define Q_GUI_EXPORT Q_DECL_IMPORT
+#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
 #    define Q_SQL_EXPORT Q_DECL_IMPORT
 #    define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
@@ -1415,6 +1421,7 @@ class QDataStream;
 #  if defined(QT_SHARED)
 #    define Q_CORE_EXPORT Q_DECL_EXPORT
 #    define Q_GUI_EXPORT Q_DECL_EXPORT
+#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
 #    define Q_SQL_EXPORT Q_DECL_EXPORT
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
@@ -1433,6 +1440,7 @@ class QDataStream;
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
+#    define Q_WIDGETS_EXPORT
 #    define Q_SQL_EXPORT
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
@@ -1463,6 +1471,11 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#    if defined(QT_BUILD_WIDGETS_LIB)
+#      define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
+#    else
+#      define Q_WIDGETS_EXPORT_INLINE inline
+#    endif
 #    if defined(QT_BUILD_COMPAT_LIB)
 #      define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #    else
@@ -1474,10 +1487,12 @@ class QDataStream;
 // note: this affects the contents of the DEF files (ie. these functions do not appear)
 #    define Q_CORE_EXPORT_INLINE inline
 #    define Q_GUI_EXPORT_INLINE inline
+#    define Q_WIDGETS_EXPORT_INLINE inline
 #    define Q_COMPAT_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
+#    define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
 #    define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #endif
 

@@ -752,7 +752,7 @@ void QScrollBar::hideEvent(QHideEvent *)
 /*! \internal
     Returns the style option for scroll bar.
 */
-Q_GUI_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollbar)
+Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollbar)
 {
     QStyleOptionSlider opt;
     scrollbar->initStyleOption(&opt);

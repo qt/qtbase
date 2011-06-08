@@ -465,8 +465,8 @@ int QApplicationPrivate::keyboard_input_time = 400; // keyboard input interval
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
-extern bool qt_is_gui_used;
-bool Q_GUI_EXPORT qt_tab_all_widgets = true;
+bool qt_is_gui_used;
+bool Q_WIDGETS_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
@@ -2774,7 +2774,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
 }
 
 /* exported for the benefit of testing tools */
-Q_GUI_EXPORT bool qt_tryModalHelper(QWidget *widget, QWidget **rettop)
+Q_WIDGETS_EXPORT bool qt_tryModalHelper(QWidget *widget, QWidget **rettop)
 {
     return QApplicationPrivate::tryModalHelper(widget, rettop);
 }
@@ -5643,7 +5643,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     }
 }
 
-Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             QTouchEvent::DeviceType deviceType,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints)
 {

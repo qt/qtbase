@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QDirModelPrivate;
 
-class Q_GUI_EXPORT QDirModel : public QAbstractItemModel
+class Q_WIDGETS_EXPORT QDirModel : public QAbstractItemModel
 {
     Q_OBJECT
     Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks)

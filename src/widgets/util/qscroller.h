@@ -60,7 +60,7 @@ class QFlickGestureRecognizer;
 class QMouseFlickGestureRecognizer;
 #endif
 
-class Q_GUI_EXPORT QScroller : public QObject
+class Q_WIDGETS_EXPORT QScroller : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(State state READ state NOTIFY stateChanged)

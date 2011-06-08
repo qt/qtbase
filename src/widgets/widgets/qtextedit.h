@@ -67,7 +67,7 @@ class QMenu;
 class QTextEditPrivate;
 class QMimeData;
 
-class Q_GUI_EXPORT QTextEdit : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QTextEdit)

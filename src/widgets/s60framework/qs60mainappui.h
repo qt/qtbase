@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QS60MainAppUi : public QS60MainAppUiBase
+class Q_WIDGETS_EXPORT QS60MainAppUi : public QS60MainAppUiBase
 {
 public:
     QS60MainAppUi();

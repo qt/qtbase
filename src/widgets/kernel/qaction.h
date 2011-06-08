@@ -61,7 +61,7 @@ class QActionGroup;
 class QActionPrivate;
 class QGraphicsWidget;
 
-class Q_GUI_EXPORT QAction : public QObject
+class Q_WIDGETS_EXPORT QAction : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QAction)

@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QScrollBarPrivate;
 class QStyleOptionSlider;
 
-class Q_GUI_EXPORT QScrollBar : public QAbstractSlider
+class Q_WIDGETS_EXPORT QScrollBar : public QAbstractSlider
 {
     Q_OBJECT
 public:
@@ -89,7 +89,7 @@ public:
 #endif
 
 private:
-    friend Q_GUI_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollBar);
+    friend Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollBar);
 
     Q_DISABLE_COPY(QScrollBar)
     Q_DECLARE_PRIVATE(QScrollBar)

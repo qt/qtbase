@@ -58,7 +58,7 @@ class QSortFilterProxyModelPrivate;
 class QSortFilterProxyModelLessThan;
 class QSortFilterProxyModelGreaterThan;
 
-class Q_GUI_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
+class Q_WIDGETS_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
 {
     friend class QSortFilterProxyModelLessThan;
     friend class QSortFilterProxyModelGreaterThan;

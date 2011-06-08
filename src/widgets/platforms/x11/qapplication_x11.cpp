@@ -328,7 +328,7 @@ static const char * x11_atomnames = {
     "ERASER\0"
 };
 
-Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
+Q_WIDGETS_EXPORT QX11Data *qt_x11Data = 0;
 
 /*****************************************************************************
   Internal variables and functions
@@ -387,7 +387,7 @@ static bool popupGrabOk;
 
 bool qt_sm_blockUserInput = false;                // session management
 
-Q_GUI_EXPORT int qt_xfocusout_grab_counter = 0;
+Q_WIDGETS_EXPORT int qt_xfocusout_grab_counter = 0;
 
 #if !defined (QT_NO_TABLET)
 Q_GLOBAL_STATIC(QTabletDeviceDataList, tablet_devices)
@@ -403,7 +403,7 @@ typedef bool(*QX11FilterFunction)(XEvent *event);
 
 Q_GLOBAL_STATIC(QList<QX11FilterFunction>, x11Filters)
 
-Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func)
+Q_WIDGETS_EXPORT void qt_installX11EventFilter(QX11FilterFunction func)
 {
     Q_ASSERT(func);
 
@@ -411,7 +411,7 @@ Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func)
         list->append(func);
 }
 
-Q_GUI_EXPORT void qt_removeX11EventFilter(QX11FilterFunction func)
+Q_WIDGETS_EXPORT void qt_removeX11EventFilter(QX11FilterFunction func)
 {
     Q_ASSERT(func);
 
@@ -447,7 +447,7 @@ extern bool qt_xfixes_clipboard_changed(Window clipboardOwner, Time timestamp); 
 extern bool qt_xfixes_selection_changed(Window selectionOwner, Time timestamp); //def in qclipboard_x11.cpp
 
 static void        qt_save_rootinfo();
-Q_GUI_EXPORT bool qt_try_modal(QWidget *, XEvent *);
+Q_WIDGETS_EXPORT bool qt_try_modal(QWidget *, XEvent *);
 
 QWidget *qt_button_down = 0; // last widget to be pressed with the mouse
 QPointer<QWidget> qt_last_mouse_receiver = 0;
@@ -844,7 +844,7 @@ static void qt_x11_create_intern_atoms()
 #endif
 }
 
-Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
+Q_WIDGETS_EXPORT void qt_x11_apply_settings_in_all_apps()
 {
     QByteArray stamp;
     QDataStream s(&stamp, QIODevice::WriteOnly);

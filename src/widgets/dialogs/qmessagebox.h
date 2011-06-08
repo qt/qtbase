@@ -56,7 +56,7 @@ class QLabel;
 class QMessageBoxPrivate;
 class QAbstractButton;
 
-class Q_GUI_EXPORT QMessageBox : public QDialog
+class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 {
     Q_OBJECT
     Q_ENUMS(Icon)

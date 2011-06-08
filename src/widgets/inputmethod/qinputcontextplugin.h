@@ -71,7 +71,7 @@ QT_MODULE(Gui)
 class QInputContext;
 class QInputContextPluginPrivate;
 
-struct Q_GUI_EXPORT QInputContextFactoryInterface : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QInputContextFactoryInterface : public QFactoryInterface
 {
     virtual QInputContext *create( const QString &key ) = 0;
     virtual QStringList languages( const QString &key ) = 0;
@@ -82,7 +82,7 @@ struct Q_GUI_EXPORT QInputContextFactoryInterface : public QFactoryInterface
 #define QInputContextFactoryInterface_iid "com.trolltech.Qt.QInputContextFactoryInterface"
 Q_DECLARE_INTERFACE(QInputContextFactoryInterface, QInputContextFactoryInterface_iid)
 
-class Q_GUI_EXPORT QInputContextPlugin : public QObject, public QInputContextFactoryInterface
+class Q_WIDGETS_EXPORT QInputContextPlugin : public QObject, public QInputContextFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QInputContextFactoryInterface:QFactoryInterface)

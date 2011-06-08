@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QGraphicsEffectSourcePrivate;
-class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
+class Q_WIDGETS_EXPORT QGraphicsEffectSource : public QObject
 {
     Q_OBJECT
 public:
@@ -145,7 +145,7 @@ private:
     mutable QPixmapCache::Key m_cacheKey;
 };
 
-class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
+class Q_WIDGETS_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffect)
 public:

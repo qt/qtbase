@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QStackedLayoutPrivate;
 
-class Q_GUI_EXPORT QStackedLayout : public QLayout
+class Q_WIDGETS_EXPORT QStackedLayout : public QLayout
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QStackedLayout)

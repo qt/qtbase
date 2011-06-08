@@ -60,7 +60,7 @@ class QTreeModel;
 class QWidgetItemData;
 class QTreeWidgetItemPrivate;
 
-class Q_GUI_EXPORT QTreeWidgetItem
+class Q_WIDGETS_EXPORT QTreeWidgetItem
 {
     friend class QTreeModel;
     friend class QTreeWidget;
@@ -251,13 +251,13 @@ inline int QTreeWidgetItem::indexOfChild(QTreeWidgetItem *achild) const
 { executePendingSort(); return children.indexOf(achild); }
 
 #ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &out, const QTreeWidgetItem &item);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QTreeWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &out, const QTreeWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &in, QTreeWidgetItem &item);
 #endif
 
 class QTreeWidgetPrivate;
 
-class Q_GUI_EXPORT QTreeWidget : public QTreeView
+class Q_WIDGETS_EXPORT QTreeWidget : public QTreeView
 {
     Q_OBJECT
     Q_PROPERTY(int columnCount READ columnCount WRITE setColumnCount)

@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QMouseEventTransitionPrivate;
 class QPainterPath;
-class Q_GUI_EXPORT QMouseEventTransition : public QEventTransition
+class Q_WIDGETS_EXPORT QMouseEventTransition : public QEventTransition
 {
     Q_OBJECT
     Q_PROPERTY(Qt::MouseButton button READ button WRITE setButton)

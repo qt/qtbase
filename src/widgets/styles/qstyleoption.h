@@ -64,7 +64,7 @@ QT_MODULE(Gui)
 
 class QDebug;
 
-class Q_GUI_EXPORT QStyleOption
+class Q_WIDGETS_EXPORT QStyleOption
 {
 public:
     enum OptionType {
@@ -100,7 +100,7 @@ public:
     QStyleOption &operator=(const QStyleOption &other);
 };
 
-class Q_GUI_EXPORT QStyleOptionFocusRect : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionFocusRect : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_FocusRect };
@@ -115,7 +115,7 @@ protected:
     QStyleOptionFocusRect(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionFrame : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Frame };
@@ -131,7 +131,7 @@ protected:
     QStyleOptionFrame(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionFrameV2 : public QStyleOptionFrame
+class Q_WIDGETS_EXPORT QStyleOptionFrameV2 : public QStyleOptionFrame
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -154,7 +154,7 @@ protected:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionFrameV2::FrameFeatures)
 
 
-class Q_GUI_EXPORT QStyleOptionFrameV3 : public QStyleOptionFrameV2
+class Q_WIDGETS_EXPORT QStyleOptionFrameV3 : public QStyleOptionFrameV2
 {
 public:
     enum StyleOptionVersion { Version = 3 };
@@ -172,7 +172,7 @@ protected:
 
 
 #ifndef QT_NO_TABWIDGET
-class Q_GUI_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabWidgetFrame };
@@ -193,7 +193,7 @@ protected:
     QStyleOptionTabWidgetFrame(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionTabWidgetFrameV2 : public QStyleOptionTabWidgetFrame
+class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrameV2 : public QStyleOptionTabWidgetFrame
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -215,7 +215,7 @@ protected:
 
 
 #ifndef QT_NO_TABBAR
-class Q_GUI_EXPORT QStyleOptionTabBarBase : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionTabBarBase : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_TabBarBase };
@@ -232,7 +232,7 @@ protected:
     QStyleOptionTabBarBase(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionTabBarBaseV2 : public QStyleOptionTabBarBase
+class Q_WIDGETS_EXPORT QStyleOptionTabBarBaseV2 : public QStyleOptionTabBarBase
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -248,7 +248,7 @@ protected:
 
 #endif
 
-class Q_GUI_EXPORT QStyleOptionHeader : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionHeader : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Header };
@@ -276,7 +276,7 @@ protected:
     QStyleOptionHeader(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionButton : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionButton : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Button };
@@ -301,7 +301,7 @@ protected:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionButton::ButtonFeatures)
 
 #ifndef QT_NO_TABBAR
-class Q_GUI_EXPORT QStyleOptionTab : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionTab : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Tab };
@@ -330,7 +330,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
-class Q_GUI_EXPORT QStyleOptionTabV2 : public QStyleOptionTab
+class Q_WIDGETS_EXPORT QStyleOptionTabV2 : public QStyleOptionTab
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -344,7 +344,7 @@ protected:
     QStyleOptionTabV2(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionTabV3 : public QStyleOptionTabV2
+class Q_WIDGETS_EXPORT QStyleOptionTabV3 : public QStyleOptionTabV2
 {
 public:
     enum StyleOptionVersion { Version = 3 };
@@ -366,7 +366,7 @@ protected:
 
 #ifndef QT_NO_TOOLBAR
 
-class Q_GUI_EXPORT QStyleOptionToolBar : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionToolBar : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ToolBar };
@@ -393,7 +393,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolBar::ToolBarFeatures)
 
 
 
-class Q_GUI_EXPORT QStyleOptionProgressBar : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionProgressBar : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ProgressBar };
@@ -414,7 +414,7 @@ protected:
 };
 
 // Adds style info for vertical progress bars
-class Q_GUI_EXPORT QStyleOptionProgressBarV2 : public QStyleOptionProgressBar
+class Q_WIDGETS_EXPORT QStyleOptionProgressBarV2 : public QStyleOptionProgressBar
 {
 public:
     enum StyleOptionType { Type = SO_ProgressBar };
@@ -432,7 +432,7 @@ protected:
     QStyleOptionProgressBarV2(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionMenuItem : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionMenuItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_MenuItem };
@@ -460,7 +460,7 @@ protected:
     QStyleOptionMenuItem(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionQ3ListViewItem : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionQ3ListViewItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Q3ListViewItem };
@@ -485,7 +485,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionQ3ListViewItem::Q3ListViewItemFeatures)
 
-class Q_GUI_EXPORT QStyleOptionQ3DockWindow : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionQ3DockWindow : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Q3DockWindow };
@@ -501,7 +501,7 @@ protected:
     QStyleOptionQ3DockWindow(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionDockWidget : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionDockWidget : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_DockWidget };
@@ -519,7 +519,7 @@ protected:
     QStyleOptionDockWidget(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionDockWidgetV2 : public QStyleOptionDockWidget
+class Q_WIDGETS_EXPORT QStyleOptionDockWidgetV2 : public QStyleOptionDockWidget
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -536,7 +536,7 @@ protected:
     QStyleOptionDockWidgetV2(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionViewItem : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionViewItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ViewItem };
@@ -559,7 +559,7 @@ protected:
     QStyleOptionViewItem(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionViewItemV2 : public QStyleOptionViewItem
+class Q_WIDGETS_EXPORT QStyleOptionViewItemV2 : public QStyleOptionViewItem
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -587,7 +587,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionViewItemV2::ViewItemFeatures)
 
-class Q_GUI_EXPORT QStyleOptionViewItemV3 : public QStyleOptionViewItemV2
+class Q_WIDGETS_EXPORT QStyleOptionViewItemV3 : public QStyleOptionViewItemV2
 {
 public:
     enum StyleOptionVersion { Version = 3 };
@@ -606,7 +606,7 @@ protected:
 };
 
 #ifndef QT_NO_ITEMVIEWS
-class Q_GUI_EXPORT QStyleOptionViewItemV4 : public QStyleOptionViewItemV3
+class Q_WIDGETS_EXPORT QStyleOptionViewItemV4 : public QStyleOptionViewItemV3
 {
 public:
     enum StyleOptionVersion { Version = 4 };
@@ -630,7 +630,7 @@ protected:
 };
 #endif
 
-class Q_GUI_EXPORT QStyleOptionToolBox : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionToolBox : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_ToolBox };
@@ -646,7 +646,7 @@ protected:
     QStyleOptionToolBox(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionToolBoxV2 : public QStyleOptionToolBox
+class Q_WIDGETS_EXPORT QStyleOptionToolBoxV2 : public QStyleOptionToolBox
 {
 public:
     enum StyleOptionVersion { Version = 2 };
@@ -666,7 +666,7 @@ protected:
 };
 
 #ifndef QT_NO_RUBBERBAND
-class Q_GUI_EXPORT QStyleOptionRubberBand : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionRubberBand : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_RubberBand };
@@ -684,7 +684,7 @@ protected:
 #endif // QT_NO_RUBBERBAND
 
 // -------------------------- Complex style options -------------------------------
-class Q_GUI_EXPORT QStyleOptionComplex : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionComplex : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_Complex };
@@ -698,7 +698,7 @@ public:
 };
 
 #ifndef QT_NO_SLIDER
-class Q_GUI_EXPORT QStyleOptionSlider : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionSlider : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_Slider };
@@ -726,7 +726,7 @@ protected:
 #endif // QT_NO_SLIDER
 
 #ifndef QT_NO_SPINBOX
-class Q_GUI_EXPORT QStyleOptionSpinBox : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionSpinBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_SpinBox };
@@ -744,7 +744,7 @@ protected:
 };
 #endif // QT_NO_SPINBOX
 
-class Q_GUI_EXPORT QStyleOptionQ3ListView : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionQ3ListView : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_Q3ListView };
@@ -765,7 +765,7 @@ protected:
     QStyleOptionQ3ListView(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ToolButton };
@@ -793,7 +793,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionToolButton::ToolButtonFeatures)
 
-class Q_GUI_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionComboBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_ComboBox };
@@ -813,7 +813,7 @@ protected:
     QStyleOptionComboBox(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionTitleBar : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionTitleBar : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_TitleBar };
@@ -831,7 +831,7 @@ protected:
     QStyleOptionTitleBar(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionGroupBox : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionGroupBox : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_GroupBox };
@@ -850,7 +850,7 @@ protected:
     QStyleOptionGroupBox(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionSizeGrip : public QStyleOptionComplex
+class Q_WIDGETS_EXPORT QStyleOptionSizeGrip : public QStyleOptionComplex
 {
 public:
     enum StyleOptionType { Type = SO_SizeGrip };
@@ -864,7 +864,7 @@ protected:
     QStyleOptionSizeGrip(int version);
 };
 
-class Q_GUI_EXPORT QStyleOptionGraphicsItem : public QStyleOption
+class Q_WIDGETS_EXPORT QStyleOptionGraphicsItem : public QStyleOption
 {
 public:
     enum StyleOptionType { Type = SO_GraphicsItem };
@@ -904,7 +904,7 @@ T qstyleoption_cast(QStyleOption *opt)
 }
 
 // -------------------------- QStyleHintReturn -------------------------------
-class Q_GUI_EXPORT QStyleHintReturn {
+class Q_WIDGETS_EXPORT QStyleHintReturn {
 public:
     enum HintReturnType {
         SH_Default=0xf000, SH_Mask, SH_Variant
@@ -920,7 +920,7 @@ public:
     int type;
 };
 
-class Q_GUI_EXPORT QStyleHintReturnMask : public QStyleHintReturn {
+class Q_WIDGETS_EXPORT QStyleHintReturnMask : public QStyleHintReturn {
 public:
     enum StyleOptionType { Type = SH_Mask };
     enum StyleOptionVersion { Version = 1 };
@@ -930,7 +930,7 @@ public:
     QRegion region;
 };
 
-class Q_GUI_EXPORT QStyleHintReturnVariant : public QStyleHintReturn {
+class Q_WIDGETS_EXPORT QStyleHintReturnVariant : public QStyleHintReturn {
 public:
     enum StyleOptionType { Type = SH_Variant };
     enum StyleOptionVersion { Version = 1 };
@@ -959,8 +959,8 @@ T qstyleoption_cast(QStyleHintReturn *hint)
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QStyleOption &option);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, const QStyleOption &option);
 #endif
 
 QT_END_NAMESPACE

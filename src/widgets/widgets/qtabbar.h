@@ -56,7 +56,7 @@ class QIcon;
 class QTabBarPrivate;
 class QStyleOptionTab;
 
-class Q_GUI_EXPORT QTabBar: public QWidget
+class Q_WIDGETS_EXPORT QTabBar: public QWidget
 {
     Q_OBJECT
 

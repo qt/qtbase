@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QGesturePrivate;
-class Q_GUI_EXPORT QGesture : public QObject
+class Q_WIDGETS_EXPORT QGesture : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
@@ -105,7 +105,7 @@ private:
 };
 
 class QPanGesturePrivate;
-class Q_GUI_EXPORT QPanGesture : public QGesture
+class Q_WIDGETS_EXPORT QPanGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPanGesture)
@@ -134,7 +134,7 @@ public:
 };
 
 class QPinchGesturePrivate;
-class Q_GUI_EXPORT QPinchGesture : public QGesture
+class Q_WIDGETS_EXPORT QPinchGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPinchGesture)
@@ -205,7 +205,7 @@ Q_DECLARE_METATYPE(QPinchGesture::ChangeFlags)
 QT_BEGIN_NAMESPACE
 
 class QSwipeGesturePrivate;
-class Q_GUI_EXPORT QSwipeGesture : public QGesture
+class Q_WIDGETS_EXPORT QSwipeGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSwipeGesture)
@@ -230,7 +230,7 @@ public:
 };
 
 class QTapGesturePrivate;
-class Q_GUI_EXPORT QTapGesture : public QGesture
+class Q_WIDGETS_EXPORT QTapGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QTapGesture)
@@ -247,7 +247,7 @@ public:
 };
 
 class QTapAndHoldGesturePrivate;
-class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
+class Q_WIDGETS_EXPORT QTapAndHoldGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QTapAndHoldGesture)
@@ -268,7 +268,7 @@ public:
 
 class QGesture;
 class QGestureEventPrivate;
-class Q_GUI_EXPORT QGestureEvent : public QEvent
+class Q_WIDGETS_EXPORT QGestureEvent : public QEvent
 {
 public:
     QGestureEvent(const QList<QGesture *> &gestures);

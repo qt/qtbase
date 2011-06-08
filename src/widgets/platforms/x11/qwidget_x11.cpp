@@ -341,7 +341,7 @@ void qt_x11_enforce_cursor(QWidget * w, bool force)
     }
 }
 
-Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
+Q_WIDGETS_EXPORT void qt_x11_enforce_cursor(QWidget * w)
 {
     qt_x11_enforce_cursor(w, false);
 }
@@ -397,7 +397,7 @@ void qt_x11_wait_for_window_manager(QWidget *w, bool sendPostedEvents)
     } while(1);
 }
 
-Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
+Q_WIDGETS_EXPORT void qt_x11_wait_for_window_manager(QWidget *w)
 {
     qt_x11_wait_for_window_manager(w, true);
 }

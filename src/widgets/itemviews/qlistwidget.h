@@ -60,7 +60,7 @@ class QListModel;
 class QWidgetItemData;
 class QListWidgetItemPrivate;
 
-class Q_GUI_EXPORT QListWidgetItem
+class Q_WIDGETS_EXPORT QListWidgetItem
 {
     friend class QListModel;
     friend class QListWidget;
@@ -193,13 +193,13 @@ inline void QListWidgetItem::setFont(const QFont &afont)
 { setData(Qt::FontRole, afont); }
 
 #ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &out, const QListWidgetItem &item);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QListWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &out, const QListWidgetItem &item);
+Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &in, QListWidgetItem &item);
 #endif
 
 class QListWidgetPrivate;
 
-class Q_GUI_EXPORT QListWidget : public QListView
+class Q_WIDGETS_EXPORT QListWidget : public QListView
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)

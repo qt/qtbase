@@ -60,7 +60,7 @@ class QDrag;
 class QEvent;
 class QAbstractItemViewPrivate;
 
-class Q_GUI_EXPORT QAbstractItemView : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QAbstractItemView : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_ENUMS(SelectionMode SelectionBehavior ScrollHint ScrollMode DragDropMode)

@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QHeaderView;
 class QTableViewPrivate;
 
-class Q_GUI_EXPORT QTableView : public QAbstractItemView
+class Q_WIDGETS_EXPORT QTableView : public QAbstractItemView
 {
     Q_OBJECT
     Q_PROPERTY(bool showGrid READ showGrid WRITE setShowGrid)

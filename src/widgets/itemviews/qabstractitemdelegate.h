@@ -59,7 +59,7 @@ class QAbstractItemModel;
 class QAbstractItemView;
 class QHelpEvent;
 
-class Q_GUI_EXPORT QAbstractItemDelegate : public QObject
+class Q_WIDGETS_EXPORT QAbstractItemDelegate : public QObject
 {
     Q_OBJECT
 

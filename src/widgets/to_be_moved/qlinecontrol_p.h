@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QLineControl : public QObject
+class Q_WIDGETS_EXPORT QLineControl : public QObject
 {
     Q_OBJECT
 

@@ -57,7 +57,7 @@ class QDockWidgetPrivate;
 class QMainWindow;
 class QStyleOptionDockWidget;
 
-class Q_GUI_EXPORT QDockWidget : public QWidget
+class Q_WIDGETS_EXPORT QDockWidget : public QWidget
 {
     Q_OBJECT
 

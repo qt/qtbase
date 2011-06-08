@@ -63,7 +63,7 @@ public:
     virtual void notifyAccessibilityUpdate(int, QAccessibleInterface*, int) = 0;
 };
 
-struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
 {
     virtual QAccessibleBridge *create(const QString& name) = 0;
 };
@@ -71,7 +71,7 @@ struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
 #define QAccessibleBridgeFactoryInterface_iid "com.trolltech.Qt.QAccessibleBridgeFactoryInterface"
 Q_DECLARE_INTERFACE(QAccessibleBridgeFactoryInterface, QAccessibleBridgeFactoryInterface_iid)
 
-class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface
+class Q_WIDGETS_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QAccessibleBridgeFactoryInterface:QFactoryInterface)

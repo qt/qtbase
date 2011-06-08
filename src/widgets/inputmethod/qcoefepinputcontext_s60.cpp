@@ -74,7 +74,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
+Q_WIDGETS_EXPORT void qt_s60_setPartialScreenInputMode(bool enable)
 {
     S60->partial_keyboard = enable;
 

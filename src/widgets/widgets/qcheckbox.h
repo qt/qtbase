@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 class QCheckBoxPrivate;
 class QStyleOptionButton;
 
-class Q_GUI_EXPORT QCheckBox : public QAbstractButton
+class Q_WIDGETS_EXPORT QCheckBox : public QAbstractButton
 {
     Q_OBJECT
 

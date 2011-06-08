@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QMdiSubWindow;
 
 class QMdiAreaPrivate;
-class Q_GUI_EXPORT QMdiArea : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QMdiArea : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_ENUMS(ViewMode)

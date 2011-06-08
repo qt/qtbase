@@ -60,7 +60,7 @@ class QStatusBar;
 class QToolBar;
 class QMenu;
 
-class Q_GUI_EXPORT QMainWindow : public QWidget
+class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 {
     Q_OBJECT
 

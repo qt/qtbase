@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
 
 class QWindowsVistaStylePrivate;
-class Q_GUI_EXPORT QWindowsVistaStyle : public QWindowsXPStyle
+class Q_WIDGETS_EXPORT QWindowsVistaStyle : public QWindowsXPStyle
 {
     Q_OBJECT
 public:

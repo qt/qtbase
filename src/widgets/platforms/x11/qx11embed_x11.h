@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QX11EmbedWidgetPrivate;
-class Q_GUI_EXPORT QX11EmbedWidget : public QWidget
+class Q_WIDGETS_EXPORT QX11EmbedWidget : public QWidget
 {
     Q_OBJECT
 public:
@@ -85,7 +85,7 @@ private:
 };
 
 class QX11EmbedContainerPrivate;
-class Q_GUI_EXPORT QX11EmbedContainer : public QWidget
+class Q_WIDGETS_EXPORT QX11EmbedContainer : public QWidget
 {
     Q_OBJECT
 public:

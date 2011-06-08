@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QFileIconProviderPrivate;
 
-class Q_GUI_EXPORT QFileIconProvider
+class Q_WIDGETS_EXPORT QFileIconProvider
 {
 public:
     QFileIconProvider();

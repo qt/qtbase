@@ -57,7 +57,7 @@ class QPalette;
 class QFocusFrame;
 
 class QMotifStylePrivate;
-class Q_GUI_EXPORT QMotifStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QMotifStyle : public QCommonStyle
 {
     Q_OBJECT
 public:

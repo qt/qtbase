@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QFormLayoutPrivate;
 
-class Q_GUI_EXPORT QFormLayout : public QLayout
+class Q_WIDGETS_EXPORT QFormLayout : public QLayout
 {
     Q_OBJECT
     Q_ENUMS(FormStyle FieldGrowthPolicy RowWrapPolicy ItemRole)

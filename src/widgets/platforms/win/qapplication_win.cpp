@@ -237,9 +237,9 @@ static void resolveAygLibs()
 #  define FE_FONTSMOOTHINGCLEARTYPE 0x0002
 #endif
 
-Q_GUI_EXPORT qreal qt_fontsmoothing_gamma;
-Q_GUI_EXPORT bool qt_cleartype_enabled;
-Q_GUI_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
+Q_WIDGETS_EXPORT qreal qt_fontsmoothing_gamma;
+Q_WIDGETS_EXPORT bool qt_cleartype_enabled;
+Q_WIDGETS_EXPORT bool qt_win_owndc_required; // CS_OWNDC is required if we use the GL graphicssystem as default
 
 typedef HCTX (API *PtrWTOpen)(HWND, LPLOGCONTEXT, BOOL);
 typedef BOOL (API *PtrWTClose)(HCTX);
@@ -427,7 +427,7 @@ static bool        sm_cancel;
 static bool replayPopupMouseEvent = false; // replay handling when popups close
 
 // ignore the next release event if return from a modal widget
-Q_GUI_EXPORT bool qt_win_ignoreNextMouseReleaseEvent = false;
+Q_WIDGETS_EXPORT bool qt_win_ignoreNextMouseReleaseEvent = false;
 
 
 #if defined(QT_DEBUG)
@@ -946,7 +946,7 @@ void qt_cleanup()
   Platform specific global and internal functions
  *****************************************************************************/
 
-Q_GUI_EXPORT HDC qt_win_display_dc()                        // get display DC
+Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC
 {
     Q_ASSERT(qApp && qApp->thread() == QThread::currentThread());
     if (!displayDC)
@@ -1122,7 +1122,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     return cname;
 }
 
-Q_GUI_EXPORT const QString qt_getRegisteredWndClass()
+Q_WIDGETS_EXPORT const QString qt_getRegisteredWndClass()
 {
     return qt_reg_winclass(0);
 }

@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 #if !defined(QT_NO_STYLE_CLEANLOOKS)
 
 class QCleanlooksStylePrivate;
-class Q_GUI_EXPORT QCleanlooksStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT QCleanlooksStyle : public QWindowsStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QCleanlooksStyle)

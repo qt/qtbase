@@ -116,7 +116,7 @@ QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow)
 }
 
 #ifdef QT_EXPERIMENTAL_CLIENT_DECORATIONS
-Q_GUI_EXPORT void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, Qt::DockWidgetArea area, QWidget *widget)
+Q_WIDGETS_EXPORT void qt_setMainWindowTitleWidget(QMainWindow *mainWindow, Qt::DockWidgetArea area, QWidget *widget)
 {
     QGridLayout *topLayout = qobject_cast<QGridLayout *>(mainWindow->layout());
     Q_ASSERT(topLayout);

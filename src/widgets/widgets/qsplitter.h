@@ -59,7 +59,7 @@ template <typename T> class QList;
 
 class QSplitterHandle;
 
-class Q_GUI_EXPORT QSplitter : public QFrame
+class Q_WIDGETS_EXPORT QSplitter : public QFrame
 {
     Q_OBJECT
 
@@ -149,13 +149,13 @@ private:
 
 //#ifdef QT3_SUPPORT
 #ifndef QT_NO_TEXTSTREAM
-Q_GUI_EXPORT QTextStream& operator<<(QTextStream&, const QSplitter&);
-Q_GUI_EXPORT QTextStream& operator>>(QTextStream&, QSplitter&);
+Q_WIDGETS_EXPORT QTextStream& operator<<(QTextStream&, const QSplitter&);
+Q_WIDGETS_EXPORT QTextStream& operator>>(QTextStream&, QSplitter&);
 #endif
 //#endif
 
 class QSplitterHandlePrivate;
-class Q_GUI_EXPORT QSplitterHandle : public QWidget
+class Q_WIDGETS_EXPORT QSplitterHandle : public QWidget
 {
     Q_OBJECT
 public:

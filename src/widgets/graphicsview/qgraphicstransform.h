@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 class QGraphicsItem;
 class QGraphicsTransformPrivate;
 
-class Q_GUI_EXPORT QGraphicsTransform : public QObject
+class Q_WIDGETS_EXPORT QGraphicsTransform : public QObject
 {
     Q_OBJECT
 public:
@@ -80,7 +80,7 @@ private:
 
 class QGraphicsScalePrivate;
 
-class Q_GUI_EXPORT QGraphicsScale : public QGraphicsTransform
+class Q_WIDGETS_EXPORT QGraphicsScale : public QGraphicsTransform
 {
     Q_OBJECT
 
@@ -119,7 +119,7 @@ private:
 
 class QGraphicsRotationPrivate;
 
-class Q_GUI_EXPORT QGraphicsRotation : public QGraphicsTransform
+class Q_WIDGETS_EXPORT QGraphicsRotation : public QGraphicsTransform
 {
     Q_OBJECT
 

@@ -137,7 +137,7 @@ private:
 
 #ifndef QT_NO_FONTCONFIG
 
-class Q_GUI_EXPORT QFontEngineMultiFT : public QFontEngineMulti
+class Q_WIDGETS_EXPORT QFontEngineMultiFT : public QFontEngineMulti
 {
 public:
     QFontEngineMultiFT(QFontEngine *fe, FcPattern *firstEnginePattern, FcPattern *p, int s, const QFontDef &request);
@@ -154,7 +154,7 @@ private:
     int firstFontIndex; // first font in fontset
 };
 
-class Q_GUI_EXPORT QFontEngineX11FT : public QFontEngineFT
+class Q_WIDGETS_EXPORT QFontEngineX11FT : public QFontEngineFT
 {
 public:
     explicit QFontEngineX11FT(const QFontDef &fontDef) : QFontEngineFT(fontDef) {}

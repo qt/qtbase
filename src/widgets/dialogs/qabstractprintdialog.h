@@ -56,7 +56,7 @@ class QAbstractPrintDialogPrivate;
 class QPrinter;
 
 // ### Qt 5: remove this class
-class Q_GUI_EXPORT QAbstractPrintDialog : public QDialog
+class Q_WIDGETS_EXPORT QAbstractPrintDialog : public QDialog
 {
     Q_DECLARE_PRIVATE(QAbstractPrintDialog)
     Q_OBJECT

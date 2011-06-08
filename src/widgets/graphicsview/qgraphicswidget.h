@@ -66,7 +66,7 @@ class QStyleOption;
 
 class QGraphicsWidgetPrivate;
 
-class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLayoutItem
+class Q_WIDGETS_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLayoutItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem QGraphicsLayoutItem)

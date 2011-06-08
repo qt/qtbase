@@ -54,7 +54,7 @@ class QAbstractButton;
 class QPushButton;
 class QDialogButtonBoxPrivate;
 
-class Q_GUI_EXPORT QDialogButtonBox : public QWidget
+class Q_WIDGETS_EXPORT QDialogButtonBox : public QWidget
 {
     Q_OBJECT
     Q_FLAGS(StandardButtons)

@@ -59,7 +59,7 @@ class QTimeLine;
 template <class T1, class T2> struct QPair;
 
 class QGraphicsItemAnimationPrivate;
-class Q_GUI_EXPORT QGraphicsItemAnimation : public QObject
+class Q_WIDGETS_EXPORT QGraphicsItemAnimation : public QObject
 {
     Q_OBJECT
 public:

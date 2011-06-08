@@ -142,7 +142,7 @@ static bool qt_enable_backingstore = true;
 #endif
 #ifdef Q_WS_X11
 // for compatibility with Qt 4.0
-Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
+Q_WIDGETS_EXPORT void qt_x11_set_global_double_buffer(bool enable)
 {
     qt_enable_backingstore = enable;
 }
@@ -12242,12 +12242,12 @@ void QWidgetPrivate::adjustQuitOnCloseAttribute()
 
 
 
-Q_GUI_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
+Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
 {
     return widget->data;
 }
 
-Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
+Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 {
     return widget->d_func();
 }

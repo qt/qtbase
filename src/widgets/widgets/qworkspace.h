@@ -57,7 +57,7 @@ class QWorkspaceChild;
 class QShowEvent;
 class QWorkspacePrivate;
 
-class Q_GUI_EXPORT QWorkspace : public QWidget
+class Q_WIDGETS_EXPORT QWorkspace : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool scrollBarsEnabled READ scrollBarsEnabled WRITE setScrollBarsEnabled)

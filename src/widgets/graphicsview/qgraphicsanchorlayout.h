@@ -58,7 +58,7 @@ class QGraphicsAnchorPrivate;
 class QGraphicsAnchorLayout;
 class QGraphicsAnchorLayoutPrivate;
 
-class Q_GUI_EXPORT QGraphicsAnchor : public QObject
+class Q_WIDGETS_EXPORT QGraphicsAnchor : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing RESET unsetSpacing)
@@ -79,7 +79,7 @@ private:
     friend struct AnchorData;
 };
 
-class Q_GUI_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout
+class Q_WIDGETS_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout
 {
 public:
     QGraphicsAnchorLayout(QGraphicsLayoutItem *parent = 0);

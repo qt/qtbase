@@ -56,7 +56,7 @@ class QAbstractButton;
 class QWizardPage;
 class QWizardPrivate;
 
-class Q_GUI_EXPORT QWizard : public QDialog
+class Q_WIDGETS_EXPORT QWizard : public QDialog
 {
     Q_OBJECT
     Q_ENUMS(WizardStyle WizardOption)
@@ -211,7 +211,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWizard::WizardOptions)
 
 class QWizardPagePrivate;
 
-class Q_GUI_EXPORT QWizardPage : public QWidget
+class Q_WIDGETS_EXPORT QWizardPage : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(QString title READ title WRITE setTitle)

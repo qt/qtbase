@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     can't be obtained.
 */
 
-Drawable Q_GUI_EXPORT qt_x11Handle(const QPaintDevice *pd)
+Drawable Q_WIDGETS_EXPORT qt_x11Handle(const QPaintDevice *pd)
 {
     if (!pd) return 0;
     if (pd->devType() == QInternal::Widget)
@@ -71,7 +71,7 @@ Drawable Q_GUI_EXPORT qt_x11Handle(const QPaintDevice *pd)
     Returns the QX11Info structure for the \a pd paint device. 0 is
     returned if it can't be obtained.
 */
-const Q_GUI_EXPORT QX11Info *qt_x11Info(const QPaintDevice *pd)
+const Q_WIDGETS_EXPORT QX11Info *qt_x11Info(const QPaintDevice *pd)
 {
     if (!pd) return 0;
     if (pd->devType() == QInternal::Widget)

@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_STYLE_WINDOWSCE)
 
-class Q_GUI_EXPORT QWindowsCEStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT QWindowsCEStyle : public QWindowsStyle
 {
    Q_OBJECT
 public:

@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QMacCocoaViewContainerPrivate;
 
-class Q_GUI_EXPORT QMacCocoaViewContainer : public QWidget
+class Q_WIDGETS_EXPORT QMacCocoaViewContainer : public QWidget
 {
     Q_OBJECT
 public:

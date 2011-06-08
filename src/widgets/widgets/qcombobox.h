@@ -59,7 +59,7 @@ class QLineEdit;
 class QComboBoxPrivate;
 class QCompleter;
 
-class Q_GUI_EXPORT QComboBox : public QWidget
+class Q_WIDGETS_EXPORT QComboBox : public QWidget
 {
     Q_OBJECT
 

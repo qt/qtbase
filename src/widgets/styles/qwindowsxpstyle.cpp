@@ -132,7 +132,7 @@ static const int windowsArrowHMargin     =  6; // arrow horizontal margin
 static const int windowsRightBorder      = 12; // right border on windows
 
 // External function calls
-extern Q_GUI_EXPORT HDC qt_win_display_dc();
+extern Q_WIDGETS_EXPORT HDC qt_win_display_dc();
 extern QRegion qt_region_from_HRGN(HRGN rgn);
 
 

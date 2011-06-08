@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QRubberBandPrivate;
 class QStyleOptionRubberBand;
 
-class Q_GUI_EXPORT QRubberBand : public QWidget
+class Q_WIDGETS_EXPORT QRubberBand : public QWidget
 {
     Q_OBJECT
 

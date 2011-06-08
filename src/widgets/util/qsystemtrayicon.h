@@ -62,7 +62,7 @@ class QWheelEvent;
 class QMouseEvent;
 class QPoint;
 
-class Q_GUI_EXPORT QSystemTrayIcon : public QObject
+class Q_WIDGETS_EXPORT QSystemTrayIcon : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip)

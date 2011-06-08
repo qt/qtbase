@@ -57,7 +57,7 @@ QT_MODULE(Gui)
 
 class QGridLayoutPrivate;
 
-class Q_GUI_EXPORT QGridLayout : public QLayout
+class Q_WIDGETS_EXPORT QGridLayout : public QLayout
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGridLayout)

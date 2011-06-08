@@ -87,7 +87,7 @@ private:
     bool m_hasAlreadyRun;
 };
 
-class Q_GUI_EXPORT QEventDispatcherS60 : public QEventDispatcherSymbian
+class Q_WIDGETS_EXPORT QEventDispatcherS60 : public QEventDispatcherSymbian
 {
     Q_OBJECT
 

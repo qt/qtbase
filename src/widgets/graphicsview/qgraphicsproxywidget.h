@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QGraphicsProxyWidgetPrivate;
 
-class Q_GUI_EXPORT QGraphicsProxyWidget : public QGraphicsWidget
+class Q_WIDGETS_EXPORT QGraphicsProxyWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:

@@ -85,7 +85,7 @@ float qt_mac_defaultDpi_y()
     \warning This function is only available on Mac OS X.
 */
 
-Q_GUI_EXPORT GrafPtr qt_mac_qd_context(const QPaintDevice *device)
+Q_WIDGETS_EXPORT GrafPtr qt_mac_qd_context(const QPaintDevice *device)
 {
     if (device->devType() == QInternal::Pixmap) {
         return static_cast<GrafPtr>(static_cast<const QPixmap *>(device)->macQDHandle());
@@ -109,7 +109,7 @@ extern CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *pdev);
     \warning This function is only available on Mac OS X.
 */
 
-Q_GUI_EXPORT CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
+Q_WIDGETS_EXPORT CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
 {
     if (pdev->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap*>(pdev);

@@ -69,7 +69,7 @@ class QStyleOptionMenuItem;
 class QMenuItem;
 #endif
 
-class Q_GUI_EXPORT QMenu : public QWidget
+class Q_WIDGETS_EXPORT QMenu : public QWidget
 {
 private:
     Q_OBJECT

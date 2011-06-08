@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 
 class QStyle;
 
-struct Q_GUI_EXPORT QStyleFactoryInterface : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QStyleFactoryInterface : public QFactoryInterface
 {
     virtual QStyle *create(const QString &key) = 0;
 };
@@ -62,7 +62,7 @@ struct Q_GUI_EXPORT QStyleFactoryInterface : public QFactoryInterface
 
 Q_DECLARE_INTERFACE(QStyleFactoryInterface, QStyleFactoryInterface_iid)
 
-class Q_GUI_EXPORT QStylePlugin : public QObject, public QStyleFactoryInterface
+class Q_WIDGETS_EXPORT QStylePlugin : public QObject, public QStyleFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QStyleFactoryInterface:QFactoryInterface)

@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QStatusBarPrivate;
 
-class Q_GUI_EXPORT QStatusBar: public QWidget
+class Q_WIDGETS_EXPORT QStatusBar: public QWidget
 {
     Q_OBJECT
 

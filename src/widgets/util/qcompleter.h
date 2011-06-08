@@ -61,7 +61,7 @@ class QAbstractItemView;
 class QAbstractProxyModel;
 class QWidget;
 
-class Q_GUI_EXPORT QCompleter : public QObject
+class Q_WIDGETS_EXPORT QCompleter : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString completionPrefix READ completionPrefix WRITE setCompletionPrefix)

@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QButtonGroup;
 class QAbstractButtonPrivate;
 
-class Q_GUI_EXPORT QAbstractButton : public QWidget
+class Q_WIDGETS_EXPORT QAbstractButton : public QWidget
 {
     Q_OBJECT
 

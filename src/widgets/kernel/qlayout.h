@@ -60,7 +60,7 @@ class QLayout;
 class QSize;
 
 #ifdef QT3_SUPPORT
-class Q_GUI_EXPORT QLayoutIterator
+class Q_WIDGETS_EXPORT QLayoutIterator
 {
 public:
     inline QT3_SUPPORT_CONSTRUCTOR QLayoutIterator(QLayout *i) : layout(i), index(0) {}
@@ -87,7 +87,7 @@ private:
 
 class QLayoutPrivate;
 
-class Q_GUI_EXPORT QLayout : public QObject, public QLayoutItem
+class Q_WIDGETS_EXPORT QLayout : public QObject, public QLayoutItem
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QLayout)

@@ -296,7 +296,7 @@ PaletteHash *qt_app_palettes_hash();
 #define QApplicationPrivateBase QCoreApplicationPrivate
 #endif
 
-class Q_GUI_EXPORT QApplicationPrivate : public QApplicationPrivateBase
+class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
 {
     Q_DECLARE_PUBLIC(QApplication)
 public:
@@ -607,7 +607,7 @@ private:
     static bool isAlien(QWidget *);
 };
 
-Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
+Q_WIDGETS_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             QTouchEvent::DeviceType deviceType,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints);
 

@@ -97,7 +97,7 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
     QPainter::begin() must be called before this function returns a
     valid GC.
 */
-Q_GUI_EXPORT GC qt_x11_get_pen_gc(QPainter *p)
+Q_WIDGETS_EXPORT GC qt_x11_get_pen_gc(QPainter *p)
 {
     if (p && p->paintEngine()
         && p->paintEngine()->isActive()
@@ -112,7 +112,7 @@ Q_GUI_EXPORT GC qt_x11_get_pen_gc(QPainter *p)
     QPainter::begin() must be called before this function returns a
     valid GC.
 */
-Q_GUI_EXPORT GC qt_x11_get_brush_gc(QPainter *p)
+Q_WIDGETS_EXPORT GC qt_x11_get_brush_gc(QPainter *p)
 {
     if (p && p->paintEngine()
         && p->paintEngine()->isActive()
@@ -148,7 +148,7 @@ static inline int qpainterOpToXrender(QPainter::CompositionMode mode)
 
 // hack, so we don't have to make QRegion::clipRectangles() public or include
 // X11 headers in qregion.h
-Q_GUI_EXPORT void *qt_getClipRects(const QRegion &r, int &num)
+Q_WIDGETS_EXPORT void *qt_getClipRects(const QRegion &r, int &num)
 {
     return r.clipRectangles(num);
 }
@@ -1819,7 +1819,7 @@ void QX11PaintEngine::drawPath(const QPainterPath &path)
     }
 }
 
-Q_GUI_EXPORT void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image,
+Q_WIDGETS_EXPORT void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image,
                                    Drawable hd, GC gc, Display *dpy, Visual *visual, int depth)
 {
     Q_ASSERT(image.format() == QImage::Format_RGB32);

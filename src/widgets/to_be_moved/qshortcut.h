@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_SHORTCUT
 
 class QShortcutPrivate;
-class Q_GUI_EXPORT QShortcut : public QObject
+class Q_WIDGETS_EXPORT QShortcut : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QShortcut)

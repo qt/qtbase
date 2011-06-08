@@ -70,7 +70,7 @@ class QFileDialog;
 class QColorDialog;
 class QFileInfo;
 
-struct Q_GUI_EXPORT QGuiPlatformPluginInterface  : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QGuiPlatformPluginInterface  : public QFactoryInterface
 {
 };
 
@@ -78,7 +78,7 @@ struct Q_GUI_EXPORT QGuiPlatformPluginInterface  : public QFactoryInterface
 
 Q_DECLARE_INTERFACE(QGuiPlatformPluginInterface, QGuiPlatformPluginInterface_iid)
 
-class Q_GUI_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformPluginInterface
+class Q_WIDGETS_EXPORT QGuiPlatformPlugin : public QObject, public QGuiPlatformPluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(QGuiPlatformPluginInterface:QFactoryInterface)

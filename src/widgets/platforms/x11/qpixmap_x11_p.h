@@ -64,7 +64,7 @@ class QX11PaintEngine;
 
 struct QXImageWrapper;
 
-class Q_GUI_EXPORT QX11PixmapData : public QPixmapData
+class Q_WIDGETS_EXPORT QX11PixmapData : public QPixmapData
 {
 public:
     QX11PixmapData(PixelType type);

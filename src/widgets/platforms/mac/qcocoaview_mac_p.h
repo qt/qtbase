@@ -61,7 +61,7 @@ QT_FORWARD_DECLARE_CLASS(QEvent);
 QT_FORWARD_DECLARE_CLASS(QString);
 QT_FORWARD_DECLARE_CLASS(QStringList);
 
-Q_GUI_EXPORT
+Q_WIDGETS_EXPORT
 @interface QT_MANGLE_NAMESPACE(QCocoaView) : NSControl <NSTextInput> {
     QWidget *qwidget;
     QWidgetPrivate *qwidgetprivate;

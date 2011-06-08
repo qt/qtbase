@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 class QFlickGesturePrivate;
 class QGraphicsItem;
 
-class Q_GUI_EXPORT QFlickGesture : public QGesture
+class Q_WIDGETS_EXPORT QFlickGesture : public QGesture
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFlickGesture)

@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QPageSetupDialogPrivate;
 
-class Q_GUI_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
+class Q_WIDGETS_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPageSetupDialog)

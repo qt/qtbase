@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QWidgetItem;
 class QSpacerItem;
 
-class Q_GUI_EXPORT QLayoutPrivate : public QObjectPrivate
+class Q_WIDGETS_EXPORT QLayoutPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QLayout)
 

@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QGraphicsLayoutItemPrivate;
 class QGraphicsItem;
-class Q_GUI_EXPORT QGraphicsLayoutItem
+class Q_WIDGETS_EXPORT QGraphicsLayoutItem
 {
 public:
     QGraphicsLayoutItem(QGraphicsLayoutItem *parent = 0, bool isLayout = false);

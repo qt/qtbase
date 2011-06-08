@@ -654,7 +654,7 @@ int QSlider::tickInterval() const
 /*! \internal
     Returns the style option for slider.
 */
-Q_GUI_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider)
+Q_WIDGETS_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider)
 {
     QStyleOptionSlider sliderOption;
     slider->initStyleOption(&sliderOption);

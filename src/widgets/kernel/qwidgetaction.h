@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QWidgetActionPrivate;
 
-class Q_GUI_EXPORT QWidgetAction : public QAction
+class Q_WIDGETS_EXPORT QWidgetAction : public QAction
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWidgetAction)

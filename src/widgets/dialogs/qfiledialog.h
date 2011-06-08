@@ -63,7 +63,7 @@ class QAbstractItemDelegate;
 class QAbstractProxyModel;
 class QUrl;
 
-class Q_GUI_EXPORT QFileDialog : public QDialog
+class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 {
     Q_OBJECT
     Q_ENUMS(ViewMode FileMode AcceptMode Option)

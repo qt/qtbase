@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QStyle;
 
-class Q_GUI_EXPORT QStyleFactory
+class Q_WIDGETS_EXPORT QStyleFactory
 {
 public:
     static QStringList keys();

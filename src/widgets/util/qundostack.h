@@ -57,7 +57,7 @@ class QUndoStackPrivate;
 
 #ifndef QT_NO_UNDOCOMMAND
 
-class Q_GUI_EXPORT QUndoCommand
+class Q_WIDGETS_EXPORT QUndoCommand
 {
     QUndoCommandPrivate *d;
 
@@ -88,7 +88,7 @@ private:
 
 #ifndef QT_NO_UNDOSTACK
 
-class Q_GUI_EXPORT QUndoStack : public QObject
+class Q_WIDGETS_EXPORT QUndoStack : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QUndoStack)

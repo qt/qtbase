@@ -61,7 +61,7 @@ QT_MODULE(Gui)
 
 class QAccessibleInterface;
 
-class Q_GUI_EXPORT QAccessible
+class Q_WIDGETS_EXPORT QAccessible
 {
 public:
     enum Event {
@@ -357,7 +357,7 @@ class QAccessibleTableInterface;
 class QAccessibleActionInterface;
 class QAccessibleImageInterface;
 
-class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
+class Q_WIDGETS_EXPORT QAccessibleInterface : public QAccessible
 {
 public:
     virtual ~QAccessibleInterface() {}
@@ -423,7 +423,7 @@ private:
     QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);
 };
 
-class Q_GUI_EXPORT QAccessibleInterfaceEx: public QAccessibleInterface
+class Q_WIDGETS_EXPORT QAccessibleInterfaceEx: public QAccessibleInterface
 {
 public:
     virtual QVariant invokeMethodEx(Method method, int child, const QVariantList &params) = 0;
@@ -433,7 +433,7 @@ public:
 };
 
 
-class Q_GUI_EXPORT QAccessibleEvent : public QEvent
+class Q_WIDGETS_EXPORT QAccessibleEvent : public QEvent
 {
 public:
     inline QAccessibleEvent(Type type, int child);

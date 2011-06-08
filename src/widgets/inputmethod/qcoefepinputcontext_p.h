@@ -167,7 +167,7 @@ private:
     friend class tst_QInputContext;
 };
 
-Q_GUI_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
+Q_WIDGETS_EXPORT void qt_s60_setPartialScreenInputMode(bool enable);
 
 QT_END_NAMESPACE
 

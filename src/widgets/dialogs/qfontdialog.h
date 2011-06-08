@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 
 class QFontDialogPrivate;
 
-class Q_GUI_EXPORT QFontDialog : public QDialog
+class Q_WIDGETS_EXPORT QFontDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFontDialog)

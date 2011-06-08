@@ -56,7 +56,7 @@ class QToolButtonPrivate;
 class QMenu;
 class QStyleOptionToolButton;
 
-class Q_GUI_EXPORT QToolButton : public QAbstractButton
+class Q_WIDGETS_EXPORT QToolButton : public QAbstractButton
 {
     Q_OBJECT
     Q_ENUMS(Qt::ToolButtonStyle Qt::ArrowType ToolButtonPopupMode)

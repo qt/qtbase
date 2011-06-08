@@ -86,7 +86,7 @@ class QRectF;
 class QStyleOptionGraphicsItem;
 
 class QGraphicsItemPrivate;
-class Q_GUI_EXPORT QGraphicsItem
+class Q_WIDGETS_EXPORT QGraphicsItem
 {
 public:
     enum GraphicsItemFlag {
@@ -544,7 +544,7 @@ inline QRectF QGraphicsItem::mapRectFromScene(qreal ax, qreal ay, qreal w, qreal
 { return mapRectFromScene(QRectF(ax, ay, w, h)); }
 
 
-class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
+class Q_WIDGETS_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 {
     Q_OBJECT
     Q_PROPERTY(QGraphicsObject * parent READ parentObject WRITE setParentItem NOTIFY parentChanged DESIGNABLE false)
@@ -607,7 +607,7 @@ private:
 
 
 class QAbstractGraphicsShapeItemPrivate;
-class Q_GUI_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
+class Q_WIDGETS_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
 {
 public:
     QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0
@@ -637,7 +637,7 @@ private:
 };
 
 class QGraphicsPathItemPrivate;
-class Q_GUI_EXPORT QGraphicsPathItem : public QAbstractGraphicsShapeItem
+class Q_WIDGETS_EXPORT QGraphicsPathItem : public QAbstractGraphicsShapeItem
 {
 public:
     QGraphicsPathItem(QGraphicsItem *parent = 0
@@ -680,7 +680,7 @@ private:
 };
 
 class QGraphicsRectItemPrivate;
-class Q_GUI_EXPORT QGraphicsRectItem : public QAbstractGraphicsShapeItem
+class Q_WIDGETS_EXPORT QGraphicsRectItem : public QAbstractGraphicsShapeItem
 {
 public:
     QGraphicsRectItem(QGraphicsItem *parent = 0
@@ -733,7 +733,7 @@ inline void QGraphicsRectItem::setRect(qreal ax, qreal ay, qreal w, qreal h)
 { setRect(QRectF(ax, ay, w, h)); }
 
 class QGraphicsEllipseItemPrivate;
-class Q_GUI_EXPORT QGraphicsEllipseItem : public QAbstractGraphicsShapeItem
+class Q_WIDGETS_EXPORT QGraphicsEllipseItem : public QAbstractGraphicsShapeItem
 {
 public:
     QGraphicsEllipseItem(QGraphicsItem *parent = 0
@@ -792,7 +792,7 @@ inline void QGraphicsEllipseItem::setRect(qreal ax, qreal ay, qreal w, qreal h)
 { setRect(QRectF(ax, ay, w, h)); }
 
 class QGraphicsPolygonItemPrivate;
-class Q_GUI_EXPORT QGraphicsPolygonItem : public QAbstractGraphicsShapeItem
+class Q_WIDGETS_EXPORT QGraphicsPolygonItem : public QAbstractGraphicsShapeItem
 {
 public:
     QGraphicsPolygonItem(QGraphicsItem *parent = 0
@@ -839,7 +839,7 @@ private:
 };
 
 class QGraphicsLineItemPrivate;
-class Q_GUI_EXPORT QGraphicsLineItem : public QGraphicsItem
+class Q_WIDGETS_EXPORT QGraphicsLineItem : public QGraphicsItem
 {
 public:
     QGraphicsLineItem(QGraphicsItem *parent = 0
@@ -893,7 +893,7 @@ private:
 };
 
 class QGraphicsPixmapItemPrivate;
-class Q_GUI_EXPORT QGraphicsPixmapItem : public QGraphicsItem
+class Q_WIDGETS_EXPORT QGraphicsPixmapItem : public QGraphicsItem
 {
 public:
     enum ShapeMode {
@@ -957,7 +957,7 @@ inline void QGraphicsPixmapItem::setOffset(qreal ax, qreal ay)
 class QGraphicsTextItemPrivate;
 class QTextDocument;
 class QTextCursor;
-class Q_GUI_EXPORT QGraphicsTextItem : public QGraphicsObject
+class Q_WIDGETS_EXPORT QGraphicsTextItem : public QGraphicsObject
 {
     Q_OBJECT
     QDOC_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
@@ -1062,7 +1062,7 @@ private:
 };
 
 class QGraphicsSimpleTextItemPrivate;
-class Q_GUI_EXPORT QGraphicsSimpleTextItem : public QAbstractGraphicsShapeItem
+class Q_WIDGETS_EXPORT QGraphicsSimpleTextItem : public QAbstractGraphicsShapeItem
 {
 public:
     QGraphicsSimpleTextItem(QGraphicsItem *parent = 0
@@ -1108,7 +1108,7 @@ private:
 };
 
 class QGraphicsItemGroupPrivate;
-class Q_GUI_EXPORT QGraphicsItemGroup : public QGraphicsItem
+class Q_WIDGETS_EXPORT QGraphicsItemGroup : public QGraphicsItem
 {
 public:
     QGraphicsItemGroup(QGraphicsItem *parent = 0
@@ -1149,11 +1149,11 @@ template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem *item);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsObject *item);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem *item);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsObject *item);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags);
 #endif
 
 QT_END_NAMESPACE

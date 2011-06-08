@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_ITEMVIEWS
 
-class Q_GUI_EXPORT QItemSelectionRange
+class Q_WIDGETS_EXPORT QItemSelectionRange
 {
 
 public:
@@ -148,7 +148,7 @@ inline QItemSelectionRange::QItemSelectionRange(const QModelIndex &atopLeft,
 class QItemSelection;
 class QItemSelectionModelPrivate;
 
-class Q_GUI_EXPORT QItemSelectionModel : public QObject
+class Q_WIDGETS_EXPORT QItemSelectionModel : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QItemSelectionModel)
@@ -228,7 +228,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 // dummy implentation of qHash() necessary for instantiating QList<QItemSelectionRange>::toSet() with MSVC
 inline uint qHash(const QItemSelectionRange &) { return 0; }
 
-class Q_GUI_EXPORT QItemSelection : public QList<QItemSelectionRange>
+class Q_WIDGETS_EXPORT QItemSelection : public QList<QItemSelectionRange>
 {
 public:
     QItemSelection() {}
@@ -243,7 +243,7 @@ public:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
 #endif
 
 #endif // QT_NO_ITEMVIEWS

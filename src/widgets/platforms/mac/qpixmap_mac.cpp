@@ -72,7 +72,7 @@ extern QRegion qt_mac_convert_mac_region(RgnHandle rgn); //qregion_mac.cpp
 
 static int qt_pixmap_serial = 0;
 
-Q_GUI_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
+Q_WIDGETS_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
 {
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         return reinterpret_cast<quint32 *>(static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bits());
@@ -80,7 +80,7 @@ Q_GUI_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
         return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
 }
 
-Q_GUI_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
+Q_WIDGETS_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
 {
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
         return static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bytesPerLine();

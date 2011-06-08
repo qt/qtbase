@@ -54,7 +54,7 @@ class QPushButtonPrivate;
 class QMenu;
 class QStyleOptionButton;
 
-class Q_GUI_EXPORT QPushButton : public QAbstractButton
+class Q_WIDGETS_EXPORT QPushButton : public QAbstractButton
 {
     Q_OBJECT
 

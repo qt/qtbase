@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_TOOLTIP
 
-class Q_GUI_EXPORT QToolTip
+class Q_WIDGETS_EXPORT QToolTip
 {
     QToolTip();
 public:

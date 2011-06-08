@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
-class Q_GUI_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
+class Q_WIDGETS_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QAbstractScrollArea)
 

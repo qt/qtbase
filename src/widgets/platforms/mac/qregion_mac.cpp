@@ -66,7 +66,7 @@ static void qt_mac_cleanup_rgncache()
 }
 #endif
 
-Q_GUI_EXPORT RgnHandle qt_mac_get_rgn()
+Q_WIDGETS_EXPORT RgnHandle qt_mac_get_rgn()
 {
 #ifdef RGN_CACHE_SIZE
     if(!rgncache_init) {
@@ -90,7 +90,7 @@ Q_GUI_EXPORT RgnHandle qt_mac_get_rgn()
     return NewRgn();
 }
 
-Q_GUI_EXPORT void qt_mac_dispose_rgn(RgnHandle r)
+Q_WIDGETS_EXPORT void qt_mac_dispose_rgn(RgnHandle r)
 {
 #ifdef RGN_CACHE_SIZE
     if(rgncache_init && rgncache_used < RGN_CACHE_SIZE) {
@@ -116,7 +116,7 @@ static OSStatus qt_mac_get_rgn_rect(UInt16 msg, RgnHandle, const Rect *rect, voi
     return noErr;
 }
 
-Q_GUI_EXPORT QRegion qt_mac_convert_mac_region(RgnHandle rgn)
+Q_WIDGETS_EXPORT QRegion qt_mac_convert_mac_region(RgnHandle rgn)
 {
     return QRegion::fromQDRgn(rgn);
 }

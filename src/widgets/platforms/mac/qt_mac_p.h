@@ -138,7 +138,7 @@ public:
     void performFade();
 };
 
-class Q_GUI_EXPORT QMacCocoaAutoReleasePool
+class Q_WIDGETS_EXPORT QMacCocoaAutoReleasePool
 {
 private:
     void *pool;
@@ -151,7 +151,7 @@ public:
 
 QString qt_mac_removeMnemonics(const QString &original); //implemented in qmacstyle_mac.cpp
 
-class Q_GUI_EXPORT QMacWindowChangeEvent
+class Q_WIDGETS_EXPORT QMacWindowChangeEvent
 {
 private:
     static QList<QMacWindowChangeEvent*> *change_events;

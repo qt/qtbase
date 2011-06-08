@@ -64,7 +64,7 @@ class QSizeF;
 class QWidget;
 
 class QGraphicsSceneEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneEvent : public QEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneEvent : public QEvent
 {
 public:
     QGraphicsSceneEvent(Type type);
@@ -82,7 +82,7 @@ private:
 };
 
 class QGraphicsSceneMouseEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneMouseEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneMouseEvent : public QGraphicsSceneEvent
 {
 public:
     QGraphicsSceneMouseEvent(Type type = None);
@@ -130,7 +130,7 @@ private:
 };
 
 class QGraphicsSceneWheelEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneWheelEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneWheelEvent : public QGraphicsSceneEvent
 {
 public:
     QGraphicsSceneWheelEvent(Type type = None);
@@ -163,7 +163,7 @@ private:
 };
 
 class QGraphicsSceneContextMenuEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneContextMenuEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneContextMenuEvent : public QGraphicsSceneEvent
 {
 public:
     enum Reason { Mouse, Keyboard, Other };
@@ -192,7 +192,7 @@ private:
 };
 
 class QGraphicsSceneHoverEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneHoverEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneHoverEvent : public QGraphicsSceneEvent
 {
 public:
     QGraphicsSceneHoverEvent(Type type = None);
@@ -225,7 +225,7 @@ private:
 };
 
 class QGraphicsSceneHelpEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneHelpEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneHelpEvent : public QGraphicsSceneEvent
 {
 public:
     QGraphicsSceneHelpEvent(Type type = None);
@@ -243,7 +243,7 @@ private:
 };
 
 class QGraphicsSceneDragDropEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneDragDropEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneDragDropEvent : public QGraphicsSceneEvent
 {
 public:
     QGraphicsSceneDragDropEvent(Type type = None);
@@ -286,7 +286,7 @@ private:
 };
 
 class QGraphicsSceneResizeEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneResizeEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneResizeEvent : public QGraphicsSceneEvent
 {
     Q_DECLARE_PRIVATE(QGraphicsSceneResizeEvent)
     Q_DISABLE_COPY(QGraphicsSceneResizeEvent)
@@ -302,7 +302,7 @@ public:
 };
 
 class QGraphicsSceneMoveEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneMoveEvent : public QGraphicsSceneEvent
+class Q_WIDGETS_EXPORT QGraphicsSceneMoveEvent : public QGraphicsSceneEvent
 {
     Q_DECLARE_PRIVATE(QGraphicsSceneMoveEvent)
     Q_DISABLE_COPY(QGraphicsSceneMoveEvent)

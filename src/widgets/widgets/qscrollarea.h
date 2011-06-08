@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QScrollAreaPrivate;
 
-class Q_GUI_EXPORT QScrollArea : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QScrollArea : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_PROPERTY(bool widgetResizable READ widgetResizable WRITE setWidgetResizable)

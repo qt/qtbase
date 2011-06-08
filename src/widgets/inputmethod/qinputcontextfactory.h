@@ -69,7 +69,7 @@ QT_MODULE(Gui)
 class QInputContext;
 class QWidget;
 
-class Q_GUI_EXPORT QInputContextFactory
+class Q_WIDGETS_EXPORT QInputContextFactory
 {
 public:
     static QStringList keys();

@@ -497,7 +497,7 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     return code == Qt::Key_unknown ? 0 : code;
 }
 
-Q_GUI_EXPORT int qt_translateKeyCode(int vk)
+Q_WIDGETS_EXPORT int qt_translateKeyCode(int vk)
 {
     int code = winceKeyBend((vk < 0 || vk > 255) ? 0 : vk);
     return code == Qt::Key_unknown ? 0 : code;

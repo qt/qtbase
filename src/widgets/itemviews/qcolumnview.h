@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QColumnViewPrivate;
 
-class Q_GUI_EXPORT QColumnView : public QAbstractItemView {
+class Q_WIDGETS_EXPORT QColumnView : public QAbstractItemView {
 
 Q_OBJECT
     Q_PROPERTY(bool resizeGripsVisible READ resizeGripsVisible WRITE setResizeGripsVisible)

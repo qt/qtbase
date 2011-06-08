@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 class QProgressBarPrivate;
 class QStyleOptionProgressBar;
 
-class Q_GUI_EXPORT QProgressBar : public QWidget
+class Q_WIDGETS_EXPORT QProgressBar : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(Direction)

@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_SPINBOX
 
 class QSpinBoxPrivate;
-class Q_GUI_EXPORT QSpinBox : public QAbstractSpinBox
+class Q_WIDGETS_EXPORT QSpinBox : public QAbstractSpinBox
 {
     Q_OBJECT
 
@@ -123,7 +123,7 @@ private:
 };
 
 class QDoubleSpinBoxPrivate;
-class Q_GUI_EXPORT QDoubleSpinBox : public QAbstractSpinBox
+class Q_WIDGETS_EXPORT QDoubleSpinBox : public QAbstractSpinBox
 {
     Q_OBJECT
 

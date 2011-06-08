@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QVariant;
 
-class Q_GUI_EXPORT QSizePolicy
+class Q_WIDGETS_EXPORT QSizePolicy
 {
     Q_GADGET
     Q_ENUMS(Policy)
@@ -196,8 +196,8 @@ public:
 
 private:
 #ifndef QT_NO_DATASTREAM
-    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
-    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
+    friend Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
+    friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
     QSizePolicy(int i) : data(i) { }
 
@@ -222,8 +222,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
 
 #ifndef QT_NO_DATASTREAM
 // implemented in qlayout.cpp
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
+Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
+Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
 #endif
 
 inline void QSizePolicy::transpose() {

@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QColorDialogPrivate;
 
-class Q_GUI_EXPORT QColorDialog : public QDialog
+class Q_WIDGETS_EXPORT QColorDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QColorDialog)

@@ -58,7 +58,7 @@ QT_MODULE(Gui)
 class QStyledItemDelegatePrivate;
 class QItemEditorFactory;
 
-class Q_GUI_EXPORT QStyledItemDelegate : public QAbstractItemDelegate
+class Q_WIDGETS_EXPORT QStyledItemDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 

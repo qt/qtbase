@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 class QIconEngine;
 class QIconEngineV2;
 
-struct Q_GUI_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
 {
     virtual QIconEngine *create(const QString &filename) = 0;
 };
@@ -63,7 +63,7 @@ struct Q_GUI_EXPORT QIconEngineFactoryInterface : public QFactoryInterface
     "com.trolltech.Qt.QIconEngineFactoryInterface"
 Q_DECLARE_INTERFACE(QIconEngineFactoryInterface, QIconEngineFactoryInterface_iid)
 
-class Q_GUI_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
+class Q_WIDGETS_EXPORT QIconEnginePlugin : public QObject, public QIconEngineFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QIconEngineFactoryInterface:QFactoryInterface)
@@ -76,7 +76,7 @@ public:
 };
 
 // ### Qt 5: remove version 2
-struct Q_GUI_EXPORT QIconEngineFactoryInterfaceV2 : public QFactoryInterface
+struct Q_WIDGETS_EXPORT QIconEngineFactoryInterfaceV2 : public QFactoryInterface
 {
     virtual QIconEngineV2 *create(const QString &filename = QString()) = 0;
 };
@@ -85,7 +85,7 @@ struct Q_GUI_EXPORT QIconEngineFactoryInterfaceV2 : public QFactoryInterface
     "com.trolltech.Qt.QIconEngineFactoryInterfaceV2"
 Q_DECLARE_INTERFACE(QIconEngineFactoryInterfaceV2, QIconEngineFactoryInterfaceV2_iid)
 
-class Q_GUI_EXPORT QIconEnginePluginV2 : public QObject, public QIconEngineFactoryInterfaceV2
+class Q_WIDGETS_EXPORT QIconEnginePluginV2 : public QObject, public QIconEngineFactoryInterfaceV2
 {
     Q_OBJECT
     Q_INTERFACES(QIconEngineFactoryInterfaceV2:QFactoryInterface)

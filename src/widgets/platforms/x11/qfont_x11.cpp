@@ -118,7 +118,7 @@ QString qt_fallback_font_family(int script)
 }
 
 // Sets the fallback family for the specified script.
-Q_GUI_EXPORT void qt_x11_set_fallback_font_family(int script, const QString &family)
+Q_WIDGETS_EXPORT void qt_x11_set_fallback_font_family(int script, const QString &family)
 {
     FallBackHash *hash = fallBackHash();
     if (!family.isEmpty())

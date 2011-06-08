@@ -58,7 +58,7 @@ class QAction;
 class QToolButton;
 #endif
 
-class Q_GUI_EXPORT QWhatsThis
+class Q_WIDGETS_EXPORT QWhatsThis
 {
     QWhatsThis();
 

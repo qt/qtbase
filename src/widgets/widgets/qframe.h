@@ -52,7 +52,7 @@ QT_MODULE(Gui)
 
 class QFramePrivate;
 
-class Q_GUI_EXPORT QFrame : public QWidget
+class Q_WIDGETS_EXPORT QFrame : public QWidget
 {
     Q_OBJECT
 

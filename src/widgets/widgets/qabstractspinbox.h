@@ -58,7 +58,7 @@ class QLineEdit;
 class QAbstractSpinBoxPrivate;
 class QStyleOptionSpinBox;
 
-class Q_GUI_EXPORT QAbstractSpinBox : public QWidget
+class Q_WIDGETS_EXPORT QAbstractSpinBox : public QWidget
 {
     Q_OBJECT
 

@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 class QFocusFramePrivate;
 class QStyleOption;
 
-class Q_GUI_EXPORT QFocusFrame : public QWidget
+class Q_WIDGETS_EXPORT QFocusFrame : public QWidget
 {
     Q_OBJECT
 public:

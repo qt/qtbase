@@ -56,7 +56,7 @@ class QAbstractButton;
 class QAbstractButtonPrivate;
 class QButtonGroupPrivate;
 
-class Q_GUI_EXPORT QButtonGroup : public QObject
+class Q_WIDGETS_EXPORT QButtonGroup : public QObject
 {
     Q_OBJECT
 

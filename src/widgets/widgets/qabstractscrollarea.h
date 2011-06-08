@@ -56,7 +56,7 @@ class QMargins;
 class QScrollBar;
 class QAbstractScrollAreaPrivate;
 
-class Q_GUI_EXPORT QAbstractScrollArea : public QFrame
+class Q_WIDGETS_EXPORT QAbstractScrollArea : public QFrame
 {
     Q_OBJECT
     Q_PROPERTY(Qt::ScrollBarPolicy verticalScrollBarPolicy READ verticalScrollBarPolicy WRITE setVerticalScrollBarPolicy)

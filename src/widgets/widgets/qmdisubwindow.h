@@ -57,7 +57,7 @@ class QMdiArea;
 
 namespace QMdi { class ControlContainer; }
 class QMdiSubWindowPrivate;
-class Q_GUI_EXPORT QMdiSubWindow : public QWidget
+class Q_WIDGETS_EXPORT QMdiSubWindow : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(int keyboardSingleStep READ keyboardSingleStep WRITE setKeyboardSingleStep)

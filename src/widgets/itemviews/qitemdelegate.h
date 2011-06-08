@@ -58,7 +58,7 @@ QT_MODULE(Gui)
 class QItemDelegatePrivate;
 class QItemEditorFactory;
 
-class Q_GUI_EXPORT QItemDelegate : public QAbstractItemDelegate
+class Q_WIDGETS_EXPORT QItemDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
     Q_PROPERTY(bool clipping READ hasClipping WRITE setClipping)

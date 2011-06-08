@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QStackedWidgetPrivate;
 
-class Q_GUI_EXPORT QStackedWidget : public QFrame
+class Q_WIDGETS_EXPORT QStackedWidget : public QFrame
 {
     Q_OBJECT
 

@@ -69,7 +69,7 @@ class QFontDialogPrivate;
 class QInputDialogPrivate;
 class QWidget;
 
-class Q_GUI_EXPORT QColorDialog
+class Q_WIDGETS_EXPORT QColorDialog
 {
 private:
     explicit QColorDialog(QWidget *, bool);
@@ -92,7 +92,7 @@ bool QColorDialog::selectColor(const QColor &) { return false; }
 void QColorDialog::setSelectedAlpha(int) {}
 int QColorDialog::selectedAlpha() const { return 0; }
 
-class Q_GUI_EXPORT QFontDialog
+class Q_WIDGETS_EXPORT QFontDialog
 {
 private:
     explicit QFontDialog(QWidget *, bool, Qt::WindowFlags);
@@ -118,7 +118,7 @@ void QFontDialog::updateStyles() {}
 void QFontDialog::updateSizes() {}
 QFont QFontDialog::getFont(bool *, const QFont *, QWidget *) { return QFont(); }
 
-class Q_GUI_EXPORT QInputDialog
+class Q_WIDGETS_EXPORT QInputDialog
 {
 private:
     enum Type { LineEdit, SpinBox, DoubleSpinBox, ComboBox, EditableComboBox };

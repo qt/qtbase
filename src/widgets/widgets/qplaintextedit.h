@@ -66,7 +66,7 @@ class QPlainTextEditPrivate;
 class QMimeData;
 
 
-class Q_GUI_EXPORT QPlainTextEdit : public QAbstractScrollArea
+class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPlainTextEdit)
@@ -277,7 +277,7 @@ private:
 
 
 class QPlainTextDocumentLayoutPrivate;
-class Q_GUI_EXPORT QPlainTextDocumentLayout : public QAbstractTextDocumentLayout
+class Q_WIDGETS_EXPORT QPlainTextDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPlainTextDocumentLayout)

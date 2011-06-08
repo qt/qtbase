@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QSoundPrivate;
 
-class Q_GUI_EXPORT QSound : public QObject
+class Q_WIDGETS_EXPORT QSound : public QObject
 {
     Q_OBJECT
 

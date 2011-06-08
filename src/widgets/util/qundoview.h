@@ -58,7 +58,7 @@ class QIcon;
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QUndoView : public QListView
+class Q_WIDGETS_EXPORT QUndoView : public QListView
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QUndoView)

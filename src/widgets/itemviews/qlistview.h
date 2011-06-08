@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QListViewPrivate;
 
-class Q_GUI_EXPORT QListView : public QAbstractItemView
+class Q_WIDGETS_EXPORT QListView : public QAbstractItemView
 {
     Q_OBJECT
     Q_ENUMS(Movement Flow ResizeMode LayoutMode ViewMode)

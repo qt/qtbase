@@ -56,7 +56,7 @@ class QScroller;
 class QScrollerPrivate;
 class QScrollerPropertiesPrivate;
 
-class Q_GUI_EXPORT QScrollerProperties
+class Q_WIDGETS_EXPORT QScrollerProperties
 {
 public:
     QScrollerProperties();

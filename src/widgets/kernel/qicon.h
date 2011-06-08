@@ -57,7 +57,7 @@ class QIconPrivate;
 class QIconEngine;
 class QIconEngineV2;
 
-class Q_GUI_EXPORT QIcon
+class Q_WIDGETS_EXPORT QIcon
 {
 public:
     enum Mode { Normal, Disabled, Active, Selected };
@@ -119,8 +119,8 @@ public:
 private:
     QIconPrivate *d;
 #if !defined(QT_NO_DATASTREAM)
-    friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
-    friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
+    friend Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
+    friend Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 #endif
 
 public:
@@ -132,8 +132,8 @@ Q_DECLARE_SHARED(QIcon)
 Q_DECLARE_TYPEINFO(QIcon, Q_MOVABLE_TYPE);
 
 #if !defined(QT_NO_DATASTREAM)
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
+Q_WIDGETS_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
+Q_WIDGETS_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 #endif
 
 QT_END_NAMESPACE

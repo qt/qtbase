@@ -103,7 +103,7 @@ Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
  
    \sa QMacPasteboardMime
 */
-Q_GUI_EXPORT void qRegisterDraggedTypes(const QStringList &types)
+Q_WIDGETS_EXPORT void qRegisterDraggedTypes(const QStringList &types)
 {
     (*globalDraggedTypesList()) += types;
 }

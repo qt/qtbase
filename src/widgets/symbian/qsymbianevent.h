@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QSymbianEvent
+class Q_WIDGETS_EXPORT QSymbianEvent
 {
 public:
     enum Type {
@@ -96,7 +96,7 @@ inline bool QSymbianEvent::isValid() const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QSymbianEvent *o);
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QSymbianEvent *o);
 #endif
 
 QT_END_NAMESPACE

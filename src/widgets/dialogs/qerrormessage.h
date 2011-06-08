@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QErrorMessagePrivate;
 
-class Q_GUI_EXPORT QErrorMessage: public QDialog
+class Q_WIDGETS_EXPORT QErrorMessage: public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QErrorMessage)

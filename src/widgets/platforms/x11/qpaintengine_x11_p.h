@@ -131,8 +131,8 @@ protected:
 
     friend class QPixmap;
     friend class QFontEngineBox;
-    friend Q_GUI_EXPORT GC qt_x11_get_pen_gc(QPainter *);
-    friend Q_GUI_EXPORT GC qt_x11_get_brush_gc(QPainter *);
+    friend Q_WIDGETS_EXPORT GC qt_x11_get_pen_gc(QPainter *);
+    friend Q_WIDGETS_EXPORT GC qt_x11_get_brush_gc(QPainter *);
 
 private:
     Q_DISABLE_COPY(QX11PaintEngine)
