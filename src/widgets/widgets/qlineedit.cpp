@@ -85,6 +85,9 @@
 #endif
 
 #include <limits.h>
+#ifdef DrawText
+#undef DrawText
+#endif
 
 QT_BEGIN_NAMESPACE
 
