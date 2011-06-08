@@ -41,7 +41,7 @@
 #include <QtGui/QMenuBar>
 #include "mainwindow.h"
 #include "vibrationsurface.h"
-#include "XQVibra.h"
+#include "xqvibra.h"
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
