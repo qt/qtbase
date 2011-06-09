@@ -226,6 +226,12 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
         return XCB_NONE;
     }
     xi->data = (uint8_t *) malloc(xi->stride * h);
+    if (!xi->data) {
+        qWarning("createCursorXRender: Failed to malloc() image data");
+        xcb_image_destroy(xi);
+        free(formatsReply);
+        return XCB_NONE;
+    }
     memcpy(xi->data, img.constBits(), img.byteCount());
 
     xcb_pixmap_t pix = xcb_generate_id(conn);
