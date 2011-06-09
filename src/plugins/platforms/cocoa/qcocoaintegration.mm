@@ -43,7 +43,6 @@
 
 #include "qcocoawindow.h"
 #include "qcocoawindowsurface.h"
-#include "qcocoaeventloopintegration.h"
 #include "qcocoanativeinterface.h"
 
 #include "qbasicunixfontdatabase.h"
@@ -122,11 +121,6 @@ QWindowSurface *QCocoaIntegration::createWindowSurface(QWindow *window, WId winI
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 {
     return mFontDb;
-}
-
-QPlatformEventLoopIntegration *QCocoaIntegration::createEventLoopIntegration() const
-{
-    return new QCocoaEventLoopIntegration();
 }
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const

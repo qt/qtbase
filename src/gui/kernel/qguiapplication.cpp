@@ -50,6 +50,9 @@
 #include "qeventdispatcher_glib_qpa_p.h"
 #endif
 #include "qeventdispatcher_qpa_p.h"
+#ifdef Q_OS_MAC
+#include "qeventdispatcher_mac_p.h"
+#endif
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -245,7 +248,11 @@ void QGuiApplicationPrivate::createEventDispatcher()
         eventDispatcher = new QPAEventDispatcherGlib(q);
     else
 #endif
-    eventDispatcher = new QEventDispatcherQPA(q);
+#ifdef Q_OS_MAC
+        eventDispatcher = new QEventDispatcherMac(q);
+#else
+        eventDispatcher = new QEventDispatcherQPA(q);
+#endif
 }
 
 void QGuiApplicationPrivate::init()

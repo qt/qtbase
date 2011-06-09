@@ -7,7 +7,6 @@ OBJECTIVE_SOURCES = main.mm \
     qcocoawindowsurface.mm \
     qcocoawindow.mm \
     qnsview.mm \
-    qcocoaeventloopintegration.mm \
     qcocoaautoreleasepool.mm \
     qnswindowdelegate.mm \
     qcocoaglcontext.mm \
@@ -18,7 +17,6 @@ OBJECTIVE_HEADERS = qcocoaintegration.h \
     qcocoawindowsurface.h \
     qcocoawindow.h \
     qnsview.h \
-    qcocoaeventloopintegration.h \
     qcocoaautoreleasepool.h \
     qnswindowdelegate.h \
     qcocoaglcontext.h \

@@ -111,12 +111,14 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
         delete event;
     }
 
+#ifdef Q_OS_MAC // (inverted inheritance on mac: QEventDispatcherMac calls QEventDispatcherQPA)
     if (!d->interrupt) {
         if (EVENTDISPATCHERBASE::processEvents(flags)) {
             EVENTDISPATCHERBASE::processEvents(flags);
             return true;
         }
     }
+#endif
     return (nevents > 0);
 }
 

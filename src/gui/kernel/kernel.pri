@@ -90,4 +90,12 @@ qpa {
 	}
 }
 
+mac {
+    HEADERS += \
+        kernel/qeventdispatcher_mac_p.h
+    OBJECTIVE_SOURCES += \
+        kernel/qeventdispatcher_mac.mm
+    LIBS += -framework CoreFoundation -framework Cocoa -framework Carbon
+}
+
 win32:HEADERS+=kernel/qwindowdefs_win.h

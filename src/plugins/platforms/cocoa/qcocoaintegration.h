@@ -84,7 +84,6 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const;
 
-    QPlatformEventLoopIntegration *createEventLoopIntegration() const;
     QPlatformNativeInterface *nativeInterface() const;
 private:
     QList<QPlatformScreen *> mScreens;

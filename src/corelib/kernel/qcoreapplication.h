@@ -217,6 +217,7 @@ private:
     friend class QWidget;
     friend class QWidgetWindow;
     friend class QWidgetPrivate;
+    friend class QEventDispatcherMacPrivate;
     friend bool qt_sendSpontaneousEvent(QObject*, QEvent*);
     friend Q_CORE_EXPORT QString qAppName();
     friend class QClassFactory;
