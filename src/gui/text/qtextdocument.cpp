@@ -2553,7 +2553,7 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
 
     const bool emptyBlock = block.begin().atEnd();
     if (emptyBlock) {
-        html += QLatin1String("-qt-paragraph-type:empty;");
+        html += QLatin1String("-qt-paragraph-type:empty; height:1em;");
     }
 
     emitMargins(QString::number(format.topMargin()),

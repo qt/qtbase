@@ -182,6 +182,8 @@ private slots:
 
     void copiedFontSize();
 
+    void htmlExportImportBlockCount();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -1582,7 +1584,7 @@ void tst_QTextDocument::toHtml()
 
     expectedOutput.replace("OPENDEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
-    expectedOutput.replace("EMPTYBLOCK", "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n");
+    expectedOutput.replace("EMPTYBLOCK", "<p style=\"-qt-paragraph-type:empty; height:1em; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n");
     if (expectedOutput.endsWith(QLatin1Char('\n')))
         expectedOutput.chop(1);
     expectedOutput.append(htmlTail);
@@ -2758,6 +2760,28 @@ void tst_QTextDocument::copiedFontSize()
     cursorOutput.insertFragment(fragmentOutput);
 
     QCOMPARE(cursorOutput.charFormat().font().pixelSize(), 24);
+}
+
+void tst_QTextDocument::htmlExportImportBlockCount()
+{
+    QTextDocument document;
+    {
+        QTextCursor cursor(&document);
+        cursor.insertText("Foo");
+        cursor.insertBlock();
+        cursor.insertBlock();
+        cursor.insertBlock();
+        cursor.insertBlock();
+        cursor.insertText("Bar");
+    }
+
+    QCOMPARE(document.blockCount(), 5);
+    QString html = document.toHtml();
+
+    document.clear();
+    document.setHtml(html);
+
+    QCOMPARE(document.blockCount(), 5);
 }
 
 QTEST_MAIN(tst_QTextDocument)
