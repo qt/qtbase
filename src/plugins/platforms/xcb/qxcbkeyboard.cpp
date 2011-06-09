@@ -41,19 +41,10 @@
 
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
-
 #include <xcb/xcb_keysyms.h>
-
 #include <X11/keysym.h>
-
-#ifndef QT_NO_XCB_XKB
-typedef unsigned char KeyCode;
-#include <X11/extensions/XKBcommon.h>
-#endif
-
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QTextCodec>
-
 #include <stdio.h>
 
 #ifndef XK_ISO_Left_Tab
@@ -904,13 +895,9 @@ QString QXcbKeyboard::translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
 
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     : QXcbObject(connection)
-    , m_alt_mask(0)
-    , m_super_mask(0)
-    , m_hyper_mask(0)
-    , m_meta_mask(0)
 {
     m_key_symbols = xcb_key_symbols_alloc(xcb_connection());
-    initXkb();
+    setupModifiers();
 }
 
 QXcbKeyboard::~QXcbKeyboard()
@@ -918,27 +905,58 @@ QXcbKeyboard::~QXcbKeyboard()
     xcb_key_symbols_free(m_key_symbols);
 }
 
-void QXcbKeyboard::initXkb()
+void QXcbKeyboard::setupModifiers()
 {
-#ifndef QT_NO_XCB_XKB
-    struct xkb_rule_names names;
-    names.rules = "evdev";
-    names.model = "pc105";
-    names.layout = "us";
-    names.variant = "";
-    names.options = "";
-    m_xkb = xkb_compile_keymap_from_rules(&names);
-    for (int i = m_xkb->min_key_code; i < m_xkb->max_key_code; ++i) {
-        const uint mask = m_xkb->map->modmap ? m_xkb->map->modmap[i] : 0;
-        if (!mask)
-            continue;
-        for (int j = 0; j < XkbKeyGroupsWidth(m_xkb, i); ++j) {
-            uint32_t keySym = XkbKeySym(m_xkb, i, j);
-            if (keySym)
-                setMask(keySym, mask);
+    m_alt_mask = 0;
+    m_super_mask = 0;
+    m_hyper_mask = 0;
+    m_meta_mask = 0;
+    m_mode_switch_mask = 0;
+    m_num_lock_mask = 0;
+
+    xcb_generic_error_t *error = 0;
+    xcb_connection_t *conn = xcb_connection();
+    xcb_get_modifier_mapping_cookie_t modMapCookie = xcb_get_modifier_mapping(conn);
+    xcb_get_modifier_mapping_reply_t *modMapReply =
+        xcb_get_modifier_mapping_reply(conn, modMapCookie, &error);
+    if (error) {
+        qWarning("xcb keyboard: failed to get modifier mapping");
+        free(error);
+        return;
+    }
+
+    // Figure out the modifier mapping, ICCCM 6.6
+    typedef QPair<uint, xcb_keycode_t *> SymCodes;
+    QList<SymCodes> modKeyCodes;
+
+    // for Alt and Meta L and R are the same
+    modKeyCodes << SymCodes(XK_Alt_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Alt_L));
+    modKeyCodes << SymCodes(XK_Meta_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Meta_L));
+    modKeyCodes << SymCodes(XK_Super_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Super_L));
+    modKeyCodes << SymCodes(XK_Super_R, xcb_key_symbols_get_keycode(m_key_symbols, XK_Super_R));
+    modKeyCodes << SymCodes(XK_Hyper_L, xcb_key_symbols_get_keycode(m_key_symbols, XK_Hyper_L));
+    modKeyCodes << SymCodes(XK_Hyper_R, xcb_key_symbols_get_keycode(m_key_symbols, XK_Hyper_R));
+    modKeyCodes << SymCodes(XK_Num_Lock, xcb_key_symbols_get_keycode(m_key_symbols, XK_Num_Lock));
+    modKeyCodes << SymCodes(XK_Mode_switch, xcb_key_symbols_get_keycode(m_key_symbols, XK_Mode_switch));
+
+    xcb_keycode_t *modMap = xcb_get_modifier_mapping_keycodes(modMapReply);
+    const int w = modMapReply->keycodes_per_modifier;
+    for (int i = 0; i < modKeyCodes.count(); ++i) {
+        for (int bit = 0; bit < 8; ++bit) {
+            uint mask = 1 << bit;
+            for (int x = 0; x < w; ++x) {
+                xcb_keycode_t keyCode = modMap[x + bit * w];
+                xcb_keycode_t *itk = modKeyCodes.at(i).second;
+                while (itk && *itk != XCB_NO_SYMBOL)
+                    if (*itk++ == keyCode)
+                        setMask(modKeyCodes.at(i).first, mask);
+            }
         }
     }
-#endif
+
+    for (int i = 0; i < modKeyCodes.count(); ++i)
+        free(modKeyCodes.at(i).second);
+    free(modMapReply);
 }
 
 void QXcbKeyboard::setMask(uint sym, uint mask)
@@ -1045,4 +1063,5 @@ void QXcbKeyboard::handleKeyReleaseEvent(QXcbWindow *window, const xcb_key_relea
 void QXcbKeyboard::handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event)
 {
     xcb_refresh_keyboard_mapping(m_key_symbols, const_cast<xcb_mapping_notify_event_t *>(event));
+    setupModifiers();
 }

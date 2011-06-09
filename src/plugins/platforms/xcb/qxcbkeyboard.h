@@ -70,7 +70,7 @@ private:
     QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
                             int &code, Qt::KeyboardModifiers &modifiers,
                             QByteArray &chars, int &count);
-    void initXkb();
+    void setupModifiers();
     void setMask(uint sym, uint mask);
 
     uint m_alt_mask;
