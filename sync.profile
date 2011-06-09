@@ -10,6 +10,7 @@
     "QtDBus" => "$basedir/src/dbus",
     "QtUiTools" => "$basedir/src/uitools",
     "QtDesigner" => "$basedir/tools/uilib",
+    "QtPlatformSupport" => "$basedir/src/platformsupport",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );
@@ -60,6 +61,7 @@
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
     "QtUiTools" => "$basedir/src/modules/qt_uitools.pri",
     "QtDesigner" => "$basedir/src/modules/qt_uilib.pri",
+    "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
 
 @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );
@@ -108,5 +110,9 @@
         "QtCore" => "THIS_REPOSITORY",
         "QtGui" => "THIS_REPOSITORY",
         "QtWidgets" => "THIS_REPOSITORY",
+    },
+    "QtPlatformSupport" => {
+        "QtCore" => "THIS_REPOSITORY",
+        "QtGui" => "THIS_REPOSITORY",
     },
 );

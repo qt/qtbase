@@ -47,7 +47,7 @@
 #include "qwaylandnativeinterface.h"
 #include "qwaylandclipboard.h"
 
-#include "qgenericunixfontdatabase.h"
+#include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>

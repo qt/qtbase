@@ -51,7 +51,7 @@
 #include <QtGui/qguiglcontext_qpa.h>
 
 #if defined(XCB_USE_EGL)
-#include "../eglconvenience/qeglplatformcontext.h"
+#include "QtPlatformSupport/private/qeglplatformcontext_p.h"
 #elif defined (XCB_USE_DRI2)
 #include "qdri2context.h"
 #endif

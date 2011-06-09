@@ -1,9 +1,0 @@
-load(qpa/platforms_dir)
-
-INCLUDEPATH += $$QT_PLATFORMS_DIR/eglconvenience
-
-HEADERS += \
-    $$QT_PLATFORMS_DIR/eglconvenience/qxlibeglintegration.h
-
-SOURCES += \
-    $$QT_PLATFORMS_DIR/eglconvenience/qxlibeglintegration.cpp

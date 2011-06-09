@@ -49,13 +49,13 @@
 #include "qxcbdrag.h"
 #include "qxcbimage.h"
 
-#include <qgenericunixprintersupport.h>
+#include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 
 #include <xcb/xcb.h>
 
 #include <private/qpixmap_raster_p.h>
 
-#include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>
 

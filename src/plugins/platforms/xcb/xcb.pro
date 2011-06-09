@@ -1,9 +1,9 @@
 TARGET = xcb
 
-load(qpa/plugin)
+load(qt_plugin)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-QT += core-private gui-private
+QT += core-private gui-private platformsupport-private
 
 SOURCES = \
         qxcbclipboard.cpp \
@@ -61,14 +61,9 @@ contains(QT_CONFIG, opengl) {
     } else {
         contains(QT_CONFIG, opengles2) {
             DEFINES += XCB_USE_EGL
-            load(qpa/egl/convenience)
-            load(qpa/egl/context)
-            load(qpa/egl/xlibintegration)
-
             LIBS += -lEGL
         } else {
             DEFINES += XCB_USE_GLX
-            load(qpa/glx/convenience)
             HEADERS += qglxintegration.h
             SOURCES += qglxintegration.cpp
         }
@@ -83,8 +78,7 @@ DEFINES += $$QMAKE_DEFINES_XCB
 LIBS += $$QMAKE_LIBS_XCB
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
 
-load(qpa/fontdatabases/genericunix)
-load(qpa/printersupport/genericunix)
+CONFIG += qpa/genericunixfontdatabase
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

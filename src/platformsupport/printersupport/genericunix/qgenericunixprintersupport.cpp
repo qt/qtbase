@@ -39,40 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxcompositeeglcontext.h"
+#include "qgenericunixprintersupport_p.h"
 
-#include "qwaylandxcompositeeglwindow.h"
+#include <QtGui/QPrinterInfo>
+#include <private/qcups_p.h>
 
-#include <QtCore/QDebug>
-#include <QtGui/QRegion>
+QT_BEGIN_NAMESPACE
 
-#include "QtPlatformSupport/private/qeglconvenience_p.h"
-
-QWaylandXCompositeEGLSurface::QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window)
-    : QEGLSurface(window->eglSurface(), window->window()->glFormat())
-    , m_window(window)
+QList<QPrinter::PaperSize> QGenericUnixPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
 {
+#ifndef QT_NO_CUPS
+    return QCUPSSupport::getCupsPrinterPaperSizes(QPlatformPrinterSupport::printerInfoCupsPrinterIndex(printerInfo));
+#else
+    return QList<QPrinter::PaperSize>();
+#endif
 }
 
-EGLSurface QWaylandXCompositeEGLSurface::eglSurface() const
+QList<QPrinterInfo> QGenericUnixPrinterSupport::availablePrinters()
 {
-    return m_window->eglSurface();
+    QList<QPrinterInfo> printers;
+#ifndef QT_NO_CUPS
+    foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
+        QPrinterInfo printer(QPlatformPrinterSupport::printerInfo(p.name, p.isDefault));
+        QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
+        printers.append(printer);
+    }
+#endif
+    return printers;
 }
 
-QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display)
-    : QEGLPlatformContext(format, share, display)
-{
-}
-
-void QWaylandXCompositeEGLContext::swapBuffers(const QPlatformGLSurface &surface)
-{
-    QEGLPlatformContext::swapBuffers(surface);
-
-    const QWaylandXCompositeEGLSurface &s =
-        static_cast<const QWaylandXCompositeEGLSurface &>(surface);
-
-    QSize size = s.window()->geometry().size();
-
-    s.window()->damage(QRect(QPoint(), size));
-    s.window()->waitForFrameSync();
-}
+QT_END_NAMESPACE

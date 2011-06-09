@@ -39,40 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxcompositeeglcontext.h"
+#ifndef QTESTLITEEGLINTEGRATION_H
+#define QTESTLITEEGLINTEGRATION_H
 
-#include "qwaylandxcompositeeglwindow.h"
+#include "qeglconvenience_p.h"
 
-#include <QtCore/QDebug>
-#include <QtGui/QRegion>
-
-#include "QtPlatformSupport/private/qeglconvenience_p.h"
-
-QWaylandXCompositeEGLSurface::QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window)
-    : QEGLSurface(window->eglSurface(), window->window()->glFormat())
-    , m_window(window)
+class QXlibEglIntegration
 {
-}
+public:
+    static VisualID getCompatibleVisualId(Display *display, EGLDisplay eglDisplay, EGLConfig config);
+};
 
-EGLSurface QWaylandXCompositeEGLSurface::eglSurface() const
-{
-    return m_window->eglSurface();
-}
-
-QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display)
-    : QEGLPlatformContext(format, share, display)
-{
-}
-
-void QWaylandXCompositeEGLContext::swapBuffers(const QPlatformGLSurface &surface)
-{
-    QEGLPlatformContext::swapBuffers(surface);
-
-    const QWaylandXCompositeEGLSurface &s =
-        static_cast<const QWaylandXCompositeEGLSurface &>(surface);
-
-    QSize size = s.window()->geometry().size();
-
-    s.window()->damage(QRect(QPoint(), size));
-    s.window()->waitForFrameSync();
-}
+#endif // QTESTLITEEGLINTEGRATION_H

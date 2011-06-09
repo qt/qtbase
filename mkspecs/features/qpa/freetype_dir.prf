@@ -1,8 +1,0 @@
-load(qpa/platforms_dir)
-
-QT_FREETYPE_DIR = ""
-isEmpty(QT_SOURCE_TREE) {
-    QT_FREETYPE_DIR = $$QT_PLATFORMS_DIR/fontdatabases/freetype
-} else {
-    QT_FREETYPE_DIR = $$QT_SOURCE_TREE/src/3rdparty/freetype
-}

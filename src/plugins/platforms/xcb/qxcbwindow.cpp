@@ -68,12 +68,12 @@
 #endif
 
 #if defined(XCB_USE_GLX)
-#include "qglxintegration.h"
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/glxintegration_p.h>
+#include <QtPlatformSupport/private/glxconvenience_p.h>
 #elif defined(XCB_USE_EGL)
-#include "../eglconvenience/qeglplatformcontext.h"
-#include "../eglconvenience/qeglconvenience.h"
-#include "../eglconvenience/qxlibeglintegration.h"
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qxlibeglintegration_p.h>
 #endif
 
 #define XCOORD_MAX 16383

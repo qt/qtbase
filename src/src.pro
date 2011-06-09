@@ -10,7 +10,7 @@ SRC_SUBDIRS += src_corelib
 !cross_compile {
     win32:!wince*: SRC_SUBDIRS += src_tools_idc
 }
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_testlib
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
@@ -50,6 +50,9 @@ src_widgets.subdir = $$QT_SOURCE_TREE/src/widgets
 src_widgets.target = sub-widgets
 src_testlib.subdir = $$QT_SOURCE_TREE/src/testlib
 src_testlib.target = sub-testlib
+src_platformsupport.subdir = $$QT_SOURCE_TREE/src/platformsupport
+src_platformsupport.target = sub-platformsupport
+
 
 #CONFIG += ordered
 !wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
@@ -66,6 +69,7 @@ src_testlib.target = sub-testlib
    src_testlib.depends = src_corelib src_gui src_widgets
    src_tools_idc.depends = src_corelib             # target defined in tools.pro
    src_plugins.depends = src_gui src_sql src_xml
+   qpa: src_plugins.depends = src_platformsupport
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_s60installs.depends -= src_s60installs
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {

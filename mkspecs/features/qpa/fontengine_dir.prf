@@ -1,9 +1,0 @@
-load(qpa/platforms_dir)
-
-QT_FONTENGINE_DIR = ""
-
-isEmpty(QT_SOURCE_TREE) {
-    QT_FONTENGINE_DIR = $$QT_PLATFORMS_DIR/fontdatabases/fontengines
-} else {
-    QT_FONTENGINE_DIR = $$QT_SOURCE_TREE/src/gui/text
-}
