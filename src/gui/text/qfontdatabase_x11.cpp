@@ -1034,13 +1034,14 @@ static void loadFontConfig()
     FcChar8 *file_value;
     int index_value;
     FcChar8 *foundry_value;
+    FcChar8 *style_value;
     FcBool scalable;
 
     {
         FcObjectSet *os = FcObjectSetCreate();
         FcPattern *pattern = FcPatternCreate();
         const char *properties [] = {
-            FC_FAMILY, FC_WEIGHT, FC_SLANT,
+            FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
             FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE, FC_WEIGHT,
             FC_WIDTH,
@@ -1085,6 +1086,8 @@ static void loadFontConfig()
 	    scalable = FcTrue;
         if (FcPatternGetString(fonts->fonts[i], FC_FOUNDRY, 0, &foundry_value) != FcResultMatch)
 	    foundry_value = 0;
+        if (FcPatternGetString(fonts->fonts[i], FC_STYLE, 0, &style_value) != FcResultMatch)
+            style_value = 0;
         QtFontFamily *family = db->family(familyName, true);
 
         FcLangSet *langset = 0;
@@ -1142,6 +1145,7 @@ static void loadFontConfig()
         family->fontFileIndex = index_value;
 
         QtFontStyle::Key styleKey;
+        styleKey.styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
         styleKey.style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
                          : ((slant_value == FC_SLANT_OBLIQUE)
