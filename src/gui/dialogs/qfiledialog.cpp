@@ -871,7 +871,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     QString ret = path;
     QStringList tokens = ret.split(QDir::separator());
     if (tokens.first() == QLatin1String("~")) {
-        ret.replace(0, 1, QDir::homeDirPath());
+        ret.replace(0, 1, QDir::homePath());
     } else {
         QString userName = tokens.first();
         userName.remove(0, 1);
