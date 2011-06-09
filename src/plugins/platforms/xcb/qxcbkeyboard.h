@@ -72,6 +72,8 @@ private:
                             QByteArray &chars, int &count);
     void setupModifiers();
     void setMask(uint sym, uint mask);
+    xcb_keysym_t lookupString(QWindow *window, uint state, xcb_keycode_t code,
+                              QEvent::Type type, QByteArray *chars);
 
     uint m_alt_mask;
     uint m_super_mask;
@@ -79,6 +81,7 @@ private:
     uint m_meta_mask;
     uint m_mode_switch_mask;
     uint m_num_lock_mask;
+    uint m_caps_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
 #ifndef QT_NO_XCB_XKB

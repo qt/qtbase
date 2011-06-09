@@ -41,6 +41,7 @@
 
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
+#include "qxcbscreen.h"
 #include <xcb/xcb_keysyms.h>
 #include <X11/keysym.h>
 #include <QtGui/QWindowSystemInterface>
@@ -913,6 +914,7 @@ void QXcbKeyboard::setupModifiers()
     m_meta_mask = 0;
     m_mode_switch_mask = 0;
     m_num_lock_mask = 0;
+    m_caps_lock_mask = 0;
 
     xcb_generic_error_t *error = 0;
     xcb_connection_t *conn = xcb_connection();
@@ -938,6 +940,7 @@ void QXcbKeyboard::setupModifiers()
     modKeyCodes << SymCodes(XK_Hyper_R, xcb_key_symbols_get_keycode(m_key_symbols, XK_Hyper_R));
     modKeyCodes << SymCodes(XK_Num_Lock, xcb_key_symbols_get_keycode(m_key_symbols, XK_Num_Lock));
     modKeyCodes << SymCodes(XK_Mode_switch, xcb_key_symbols_get_keycode(m_key_symbols, XK_Mode_switch));
+    modKeyCodes << SymCodes(XK_Caps_Lock, xcb_key_symbols_get_keycode(m_key_symbols, XK_Caps_Lock));
 
     xcb_keycode_t *modMap = xcb_get_modifier_mapping_keycodes(modMapReply);
     const int w = modMapReply->keycodes_per_modifier;
@@ -965,56 +968,51 @@ void QXcbKeyboard::setMask(uint sym, uint mask)
         && m_meta_mask != mask
         && m_super_mask != mask
         && m_hyper_mask != mask
-        && (sym == XK_Alt_L || sym == XK_Alt_R)) {
+        && (sym == XK_Alt_L || sym == XK_Alt_R))
         m_alt_mask = mask;
-    }
+
     if (m_meta_mask == 0
         && m_alt_mask != mask
         && m_super_mask != mask
         && m_hyper_mask != mask
-        && (sym == XK_Meta_L || sym == XK_Meta_R)) {
+        && (sym == XK_Meta_L || sym == XK_Meta_R))
         m_meta_mask = mask;
-    }
+
     if (m_super_mask == 0
         && m_alt_mask != mask
         && m_meta_mask != mask
         && m_hyper_mask != mask
-        && (sym == XK_Super_L || sym == XK_Super_R)) {
+        && (sym == XK_Super_L || sym == XK_Super_R))
         m_super_mask = mask;
-    }
+
     if (m_hyper_mask == 0
         && m_alt_mask != mask
         && m_meta_mask != mask
         && m_super_mask != mask
-        && (sym == XK_Hyper_L || sym == XK_Hyper_R)) {
+        && (sym == XK_Hyper_L || sym == XK_Hyper_R))
         m_hyper_mask = mask;
-    }
+
     if (m_mode_switch_mask == 0
         && m_alt_mask != mask
         && m_meta_mask != mask
         && m_super_mask != mask
         && m_hyper_mask != mask
-        && sym == XK_Mode_switch) {
+        && sym == XK_Mode_switch)
         m_mode_switch_mask = mask;
-    }
-    if (m_num_lock_mask == 0
-        && sym == XK_Num_Lock) {
+
+    if (m_num_lock_mask == 0 && sym == XK_Num_Lock)
         m_num_lock_mask = mask;
-    }
+
+    if (m_caps_lock_mask == 0 && sym == XK_Caps_Lock)
+        m_caps_lock_mask = mask;
 }
 
 // #define XCB_KEYBOARD_DEBUG
 
-void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time)
+void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code,
+                                  quint16 state, xcb_timestamp_t time)
 {
-    int col = state & XCB_MOD_MASK_SHIFT ? 1 : 0;
-
-    const int altGrOffset = 4;
-    if (state & 128)
-        col += altGrOffset;
-
     Q_XCB_NOOP(connection());
-
 #ifdef XCB_KEYBOARD_DEBUG
     printf("key code: %d, state: %d, syms: ", code, state);
     for (int i = 0; i <= 5; ++i) {
@@ -1023,30 +1021,76 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     printf("\n");
 #endif
 
-    Q_XCB_NOOP(connection());
+    QByteArray chars;
+    xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
+    Qt::KeyboardModifiers modifiers;
+    int qtcode = 0;
+    int count = chars.count();
+    QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
+    QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
+                                                   code, 0, state, string.left(count));
+}
 
+#ifdef XCB_USE_XLIB
+extern "C" {
+    int XLookupString(void *event, char *buf, int count, void *keysym, void *comp);
+}
+typedef struct { // must match XKeyEvent in Xlib.h
+    int type;
+    unsigned long serial;
+    int send_event;
+    void *display;
+    unsigned long window;
+    unsigned long root;
+    unsigned long subwindow;
+    unsigned long time;
+    int x, y;
+    int x_root, y_root;
+    unsigned int state;
+    unsigned int keycode;
+    int same_screen;
+} FakeXKeyEvent;
+#endif
+
+xcb_keysym_t QXcbKeyboard::lookupString(QWindow *window, uint state, xcb_keycode_t code,
+                                        QEvent::Type type, QByteArray *chars)
+{
+#ifdef XCB_USE_XLIB
+
+    xcb_keysym_t sym = XCB_NO_SYMBOL;
+    chars->resize(512);
+    FakeXKeyEvent event;
+    memset(&event, 0, sizeof(event));
+    event.type = (type == QEvent::KeyRelease ? 3 : 2);
+    event.display = connection()->xlib_display();
+    event.window = static_cast<QXcbWindow *>(window->handle())->xcb_window();
+    event.root = connection()->screens().at(0)->root();
+    event.state = state;
+    event.keycode = code;
+    int count = XLookupString(&event, chars->data(), chars->size(), &sym, 0);
+    chars->resize(count);
+    return sym;
+
+#else
+
+    // No XLookupString available. The following is really incomplete...
+
+    int col = state & XCB_MOD_MASK_SHIFT ? 1 : 0;
+    const int altGrOffset = 4;
+    if (state & 128)
+        col += altGrOffset;
     xcb_keysym_t sym = xcb_key_symbols_get_keysym(m_key_symbols, code, col);
     if (sym == XCB_NO_SYMBOL)
         sym = xcb_key_symbols_get_keysym(m_key_symbols, code, col ^ 0x1);
-
     if (state & XCB_MOD_MASK_LOCK && sym <= 0x7f && isprint(sym)) {
         if (isupper(sym))
             sym = tolower(sym);
         else
             sym = toupper(sym);
     }
+    return sym;
 
-    Q_XCB_NOOP(connection());
-
-    QByteArray chars;
-
-    Qt::KeyboardModifiers modifiers;
-    int qtcode = 0;
-    int count = 0;
-
-    QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
-
-    QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers, code, 0, state, string.left(count));
+#endif
 }
 
 void QXcbKeyboard::handleKeyPressEvent(QXcbWindow *window, const xcb_key_press_event_t *event)

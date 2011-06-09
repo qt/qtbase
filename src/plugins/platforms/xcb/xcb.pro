@@ -39,7 +39,7 @@ HEADERS = \
 
 QT += gui-private core-private
 
-# needed by GLX, Xcursor, ...
+# needed by GLX, Xcursor, XLookupString, ...
 DEFINES += XCB_USE_XLIB
 
 # to support custom cursors with depth > 1
