@@ -68,8 +68,6 @@ class QPAEventDispatcherGlib : public QEventDispatcherGlib
 public:
     explicit QPAEventDispatcherGlib(QObject *parent = 0);
     ~QPAEventDispatcherGlib();
-
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
 };
 
 struct GUserEventSource;

@@ -49,7 +49,6 @@ qpa {
                 kernel/qplatformwindow_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qwindowcontext_qpa.h \
-                kernel/qplatformeventloopintegration_qpa.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
@@ -71,7 +70,6 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa.cpp \
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
-                kernel/qplatformeventloopintegration_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
                 kernel/qwindowcontext_qpa.cpp \
                 kernel/qplatformcursor_qpa.cpp \

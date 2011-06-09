@@ -75,19 +75,21 @@ class QEventDispatcherQPA : public EVENTDISPATCHERBASE
 
 public:
     explicit QEventDispatcherQPA(QObject *parent = 0);
+    QEventDispatcherQPA(QEventDispatcherUNIXPrivate &priv, QObject *parent);
     ~QEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
-    void registerSocketNotifier(QSocketNotifier *notifier);
-    void unregisterSocketNotifier(QSocketNotifier *notifier);
-
     void flush();
+};
 
-protected:
-    int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-               timeval *timeout);
+class QEventDispatcherQPAPrivate : public EVENTDISPATCHERBASEPRIVATE
+{
+    Q_DECLARE_PUBLIC(QEventDispatcherQPA)
+public:
+    QEventDispatcherQPAPrivate();
+    ~QEventDispatcherQPAPrivate();
 };
 
 QT_END_NAMESPACE

@@ -58,17 +58,6 @@ QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, in
     return QPixmap();
 }
 
-/*!
-    Factory function for the eventloop integration interface.
-
-    Default implementation returns 0, which causes the eventloop to run in a single thread mode.
-
-    \sa QPlatformEventLoopIntegration
-*/
-QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration() const
-{
-    return 0;
-}
 
 /*!
     Accessor for the platform integrations fontdatabase.

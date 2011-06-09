@@ -56,7 +56,6 @@ QT_MODULE(Gui)
 class QPlatformWindow;
 class QWindow;
 class QBlittable;
-class QPlatformEventLoopIntegration;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
@@ -94,11 +93,6 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     virtual QPlatformDrag *drag() const;
 #endif
-
-// Experimental in mainthread eventloop integration
-// This should only be used if it is only possible to do window system event processing in
-// the gui thread. All of the functions in QWindowSystemInterface are thread safe.
-    virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
