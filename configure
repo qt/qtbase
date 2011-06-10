@@ -751,7 +751,7 @@ CFG_DECORATION_PLUGIN_AVAILABLE=
 CFG_DECORATION_PLUGIN=
 CFG_XINPUT=runtime
 CFG_XKB=auto
-CFG_XCB=no
+CFG_XCB=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -6296,6 +6296,21 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     # Check we actually have X11 :-)
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
         QT_CONFIG="$QT_CONFIG xlib"
+    fi
+
+    if [ "$CFG_XCB" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_XCB=yes
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                QT_CONFIG="$QT_CONFIG xcb-render"
+            fi
+
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                QT_CONFIG="$QT_CONFIG xcb-xlib"
+            fi
+        else
+            CFG_XCB=no
+        fi
     fi
 
     # Detect libxkbcommon
