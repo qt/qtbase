@@ -396,6 +396,14 @@ QRect QWindow::geometry() const
     return d->geometry;
 }
 
+QMargins QWindow::frameMargins() const
+{
+    Q_D(const QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->frameMargins();
+    return QMargins();
+}
+
 void QWindow::setWindowIcon(const QImage &icon) const
 {
     Q_UNUSED(icon);

@@ -266,9 +266,20 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     QGuiApplication::sendSpontaneousEvent(widget, event);
 }
 
+void QWidgetWindow::updateGeometry()
+{
+    if (m_widget->testAttribute(Qt::WA_OutsideWSRange))
+        return;
+
+    QMargins margins = frameMargins();
+
+    m_widget->data->crect = geometry().translated(-margins.left(), -margins.top());
+    m_widget->d_func()->topData()->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
+}
+
 void QWidgetWindow::handleMoveEvent(QMoveEvent *event)
 {
-    m_widget->data->crect = geometry();
+    updateGeometry();
     QGuiApplication::sendSpontaneousEvent(m_widget, event);
 }
 
@@ -276,7 +287,7 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
 {
     QSize oldSize = m_widget->data->crect.size();
 
-    m_widget->data->crect = geometry();
+    updateGeometry();
     QGuiApplication::sendSpontaneousEvent(m_widget, event);
 
     if (m_widget->d_func()->paintOnScreen()) {

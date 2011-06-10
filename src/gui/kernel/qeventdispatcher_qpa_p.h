@@ -75,7 +75,7 @@ class QEventDispatcherQPA : public EVENTDISPATCHERBASE
 
 public:
     explicit QEventDispatcherQPA(QObject *parent = 0);
-    QEventDispatcherQPA(QEventDispatcherUNIXPrivate &priv, QObject *parent);
+    QEventDispatcherQPA(EVENTDISPATCHERBASEPRIVATE &priv, QObject *parent);
     ~QEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
