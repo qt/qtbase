@@ -71,7 +71,7 @@ QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
     : EVENTDISPATCHERBASE(*new QEventDispatcherQPAPrivate, parent)
 { }
 
-QEventDispatcherQPA::QEventDispatcherQPA(QEventDispatcherUNIXPrivate &priv, QObject *parent)
+QEventDispatcherQPA::QEventDispatcherQPA(EVENTDISPATCHERBASEPRIVATE &priv, QObject *parent)
     : EVENTDISPATCHERBASE(priv, parent)
 { }
 
