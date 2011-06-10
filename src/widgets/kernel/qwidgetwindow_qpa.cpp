@@ -273,7 +273,7 @@ void QWidgetWindow::updateGeometry()
 
     QMargins margins = frameMargins();
 
-    m_widget->data->crect = geometry().translated(-margins.left(), -margins.top());
+    m_widget->data->crect = geometry();
     m_widget->d_func()->topData()->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
 }
 

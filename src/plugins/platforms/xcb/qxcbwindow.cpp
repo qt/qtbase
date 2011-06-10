@@ -149,6 +149,7 @@ void QXcbWindow::create()
     };
 
     QRect rect = window()->geometry();
+    QPlatformWindow::setGeometry(rect);
 
     xcb_window_t xcb_parent_id = m_screen->root();
     if (parent())
@@ -993,6 +994,7 @@ void QXcbWindow::propagateSizeHints()
 
     xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
     xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
+    xcb_size_hints_set_win_gravity(&hints, XCB_GRAVITY_STATIC);
 
     QWindow *win = window();
 
