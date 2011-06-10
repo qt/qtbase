@@ -76,17 +76,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDateTimePrivate
+class QDateTimePrivate : public QSharedData
 {
 public:
     enum Spec { LocalUnknown = -1, LocalStandard = 0, LocalDST = 1, UTC = 2, OffsetFromUTC = 3};
 
     QDateTimePrivate() : spec(LocalUnknown), utcOffset(0) {}
     QDateTimePrivate(const QDateTimePrivate &other)
-        : date(other.date), time(other.time), spec(other.spec), utcOffset(other.utcOffset)
+        : QSharedData(other), date(other.date), time(other.time), spec(other.spec), utcOffset(other.utcOffset)
     {}
 
-    QAtomicInt ref;
     QDate date;
     QTime time;
     Spec spec;
