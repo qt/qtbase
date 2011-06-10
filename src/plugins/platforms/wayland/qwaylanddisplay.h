@@ -97,6 +97,9 @@ public slots:
     void blockingReadEvents();
     void flushRequests();
 
+private slots:
+    void handleSelectionOffer(uint32_t id);
+
 private:
     void waitForScreens();
     void displayHandleGlobal(uint32_t id,
@@ -115,6 +118,7 @@ private:
     bool mScreensInitialized;
 
     uint32_t mSocketMask;
+    uint32_t mSelectionOfferId;
 
     struct wl_visual *argb_visual, *premultiplied_argb_visual, *rgb_visual;
 
