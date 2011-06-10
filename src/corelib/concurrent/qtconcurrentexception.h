@@ -47,6 +47,7 @@
 #ifndef QT_NO_QFUTURE
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qshareddata.h>
 
 #ifndef QT_NO_EXCEPTIONS
 #  include <exception>
@@ -87,7 +88,7 @@ public:
     void operator=(const ExceptionHolder &other);
     ~ExceptionHolder();
     Exception *exception() const;
-    Base *base;
+    QExplicitlySharedDataPointer<Base> base;
 };
 
 class Q_CORE_EXPORT ExceptionStore
