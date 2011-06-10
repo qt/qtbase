@@ -68,8 +68,8 @@
 #endif
 
 #if defined(XCB_USE_GLX)
-#include <QtPlatformSupport/private/glxintegration_p.h>
-#include <QtPlatformSupport/private/glxconvenience_p.h>
+#include "qglxintegration.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 #elif defined(XCB_USE_EGL)
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>

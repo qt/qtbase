@@ -53,7 +53,7 @@
 #include <QtGui/QGuiGLContext>
 
 #include "qglxintegration.h"
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
 #include <dlfcn.h>
