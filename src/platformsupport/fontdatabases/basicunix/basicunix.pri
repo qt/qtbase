@@ -9,10 +9,6 @@ SOURCES += \
         $$PWD/qbasicunixfontdatabase.cpp \
         $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp
 
-INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
-
-INCLUDEPATH += $$PWD
-
 CONFIG += opentype
 
 contains(QT_CONFIG, freetype) {

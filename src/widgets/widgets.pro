@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET     = QtWidgets
 QPRO_PWD   = $$PWD
 QT = core core-private gui gui-private
