@@ -6,7 +6,7 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += .
 INCLUDEPATH += .
-
+CONFIG+=console
 QT += gui-private
 QT += core-private
 
