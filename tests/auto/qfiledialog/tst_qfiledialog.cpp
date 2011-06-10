@@ -78,6 +78,10 @@
 # define STRINGIFY(x) #x
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#elif defined(Q_OS_UNIX)
+#ifdef QT_BUILD_INTERNAL
+extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
+#endif
 #endif
 
 class QNonNativeFileDialog : public QFileDialog
@@ -144,6 +148,10 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void hooks();
+#ifdef Q_OS_UNIX
+    void tildeExpansion_data();
+    void tildeExpansion();
+#endif
 
 private:
     QByteArray userSettings;
@@ -1322,6 +1330,37 @@ void tst_QFiledialog::hooks()
     QCOMPARE(QFileDialog::getOpenFileNames(), QStringList("openNames"));
     QCOMPARE(QFileDialog::getSaveFileName(), QString("saveName"));
 }
+
+#ifdef Q_OS_UNIX
+void tst_QFiledialog::tildeExpansion_data()
+{
+    QTest::addColumn<QString>("tildePath");
+    QTest::addColumn<QString>("expandedPath");
+
+    QTest::newRow("empty path") << QString() << QString();
+    QTest::newRow("~") << QString::fromLatin1("~") << QDir::homePath();
+    QTest::newRow("~/some/sub/dir/") << QString::fromLatin1("~/some/sub/dir") << QDir::homePath()
+                                        + QString::fromLatin1("/some/sub/dir");
+    QString userHome = QString(qgetenv("USER"));
+    userHome.prepend('~');
+    QTest::newRow("current user (~<user> syntax)") << userHome << QDir::homePath();
+    QString invalid = QString::fromLatin1("~thisIsNotAValidUserName");
+    QTest::newRow("invalid user name") << invalid << invalid;
+}
+
+
+void tst_QFiledialog::tildeExpansion()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
+#else
+    QFETCH(QString, tildePath);
+    QFETCH(QString, expandedPath);
+
+    QCOMPARE(qt_tildeExpansion(tildePath), expandedPath);
+#endif
+}
+#endif
 
 QTEST_MAIN(tst_QFiledialog)
 #include "tst_qfiledialog.moc"

@@ -66,6 +66,10 @@ public:
     QRawFont rawFont() const;
     void setRawFont(const QRawFont &rawFont);
 
+    void setRawData(const quint32 *glyphIndexArray,
+                    const QPointF *glyphPositionArray,
+                    int size);
+
     QVector<quint32> glyphIndexes() const;
     void setGlyphIndexes(const QVector<quint32> &glyphIndexes);
 

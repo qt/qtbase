@@ -116,17 +116,11 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const 
     init(kerning);
 }
 
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(CGFontRef cgFontRef, const QFontDef &fontDef, bool kerning)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(CTFontRef ctFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
-
-    transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100) {
-        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
-    }
-
-    ctfont = CTFontCreateWithGraphicsFont(cgFontRef, fontDef.pixelSize, &transform, NULL);
+    ctfont = (CTFontRef) CFRetain(ctFontRef);
     init(kerning);
 }
 
@@ -149,6 +143,9 @@ void QCoreTextFontEngineMulti::init(bool kerning)
     }
 
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef);
+    fontDef.family = fe->fontDef.family;
+    fontDef.styleName = fe->fontDef.styleName;
+    transform = fe->transform;
     fe->ref.ref();
     engines.append(fe);
 }
@@ -405,7 +402,7 @@ void QCoreTextFontEngineMulti::loadEngine(int)
 
 extern int qt_antialiasing_threshold; // from qapplication.cpp
 
-static inline CGAffineTransform transformFromFontDef(const QFontDef &fontDef)
+CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef)
 {
     CGAffineTransform transform = CGAffineTransformIdentity;
     if (fontDef.stretch != 100)
@@ -416,7 +413,7 @@ static inline CGAffineTransform transformFromFontDef(const QFontDef &fontDef)
 QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 {
     fontDef = def;
-    transform = transformFromFontDef(fontDef);
+    transform = qt_transform_from_fontdef(fontDef);
     ctfont = font;
     CFRetain(ctfont);
     cgFont = CTFontCopyGraphicsFont(font, NULL);
@@ -426,7 +423,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def)
 QCoreTextFontEngine::QCoreTextFontEngine(CGFontRef font, const QFontDef &def)
 {
     fontDef = def;
-    transform = transformFromFontDef(fontDef);
+    transform = qt_transform_from_fontdef(fontDef);
     cgFont = font;
     // Keep reference count balanced
     CFRetain(cgFont);
@@ -463,6 +460,9 @@ void QCoreTextFontEngine::init()
 
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
+
+    QCFString styleName = (CFStringRef) CTFontCopyAttribute(ctfont, kCTFontStyleNameAttribute);
+    fontDef.styleName = styleName;
 
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
@@ -745,9 +745,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, aa ||
-                                (fontDef.pointSize > qt_antialiasing_threshold
-                                 && !(fontDef.styleStrategy & QFont::NoAntialias)));
+    CGContextSetShouldAntialias(ctx, (aa || fontDef.pointSize > qt_antialiasing_threshold)
+                                 && !(fontDef.styleStrategy & QFont::NoAntialias));
     CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);

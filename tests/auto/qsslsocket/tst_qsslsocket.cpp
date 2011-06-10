@@ -156,6 +156,7 @@ private slots:
     void setSslConfiguration_data();
     void setSslConfiguration();
     void waitForEncrypted();
+    void waitForEncryptedMinusOne();
     void waitForConnectedEncryptedReadyRead();
     void startClientEncryption();
     void startServerEncryption();
@@ -1096,6 +1097,20 @@ void tst_QSslSocket::waitForEncrypted()
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
 
     QVERIFY(socket->waitForEncrypted(10000));
+}
+
+void tst_QSslSocket::waitForEncryptedMinusOne()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket;
+
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    QVERIFY(socket->waitForEncrypted(-1));
 }
 
 void tst_QSslSocket::waitForConnectedEncryptedReadyRead()

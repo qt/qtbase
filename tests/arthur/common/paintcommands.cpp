@@ -48,6 +48,7 @@
 #include <qtextstream.h>
 #include <qtextlayout.h>
 #include <qdebug.h>
+#include <QStaticText>
 
 #ifndef QT_NO_OPENGL
 #include <qglpixelbuffer.h>
@@ -433,6 +434,10 @@ void PaintCommands::staticInit()
                       "^drawText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawText <x> <y> <text>",
                       "drawText 10 10 \"my text\"");
+    DECL_PAINTCOMMAND("drawStaticText", command_drawStaticText,
+                      "^drawStaticText\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
+                      "drawStaticText <x> <y> <text>",
+                      "drawStaticText 10 10 \"my text\"");
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -1254,6 +1259,21 @@ void PaintCommands::command_drawText(QRegExp re)
         printf(" -(lance) drawText(%d, %d, %s)\n", x, y, qPrintable(txt));
 
     m_painter->drawText(x, y, txt);
+}
+
+void PaintCommands::command_drawStaticText(QRegExp re)
+{
+    if (!m_shouldDrawText)
+        return;
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    QString txt = caps.at(3);
+
+    if (m_verboseMode)
+        printf(" -(lance) drawStaticText(%d, %d, %s)\n", x, y, qPrintable(txt));
+
+    m_painter->drawStaticText(x, y, QStaticText(txt));
 }
 
 /***************************************************************************************************/

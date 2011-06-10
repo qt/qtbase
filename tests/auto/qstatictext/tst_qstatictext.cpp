@@ -361,7 +361,7 @@ bool tst_QStaticText::supportsTransformations() const
     QPaintEngine::Type type = engine->type();
 
     if (type == QPaintEngine::OpenGL
-#if !defined(Q_WS_WIN) && !defined(Q_WS_X11)
+#if !defined(Q_WS_WIN) && !defined(Q_WS_X11) && !defined(Q_WS_MAC)
         || type == QPaintEngine::Raster
 #endif
         )
@@ -601,7 +601,7 @@ void tst_QStaticText::setPenPlainText()
 
         QStaticText staticText("XXXXX");
         staticText.setTextFormat(Qt::PlainText);
-        p.drawStaticText(0, fm.ascent(), staticText);
+        p.drawStaticText(0, 0, staticText);
     }
 
     QImage img = image.toImage();

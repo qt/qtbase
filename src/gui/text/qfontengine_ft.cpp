@@ -51,7 +51,6 @@
 #include "qabstractfileengine.h"
 #include "qthreadstorage.h"
 #include <qmath.h>
-#include <private/qharfbuzz_p.h>
 
 #include "qfontengine_ft_p.h"
 #include <ft2build.h>
@@ -757,6 +756,8 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         }
     }
 #endif
+
+    fontDef.styleName = QString::fromUtf8(face->style_name);
 
     unlockFace();
 

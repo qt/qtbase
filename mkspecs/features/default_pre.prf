@@ -12,24 +12,23 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
     isEmpty(QTDIR) {
         QTDIR = $$(QTDIR)
         isEmpty(QTDIR):QTDIR = $$QT_BUILD_TREE
-        isEmpty(QTDIR):QTDIR = $$dirname(_QMAKE_CACHE_)
-        isEmpty(QTDIR) {
-            QMAKE_BASED_QTDIR = $$dirname(QMAKE_QMAKE)
-            QMAKE_BASED_QTDIR = $$dirname(QMAKE_BASED_QTDIR)
-            exists($$QMAKE_BASED_QTDIR/mkspecs/qconfig.pri): QTDIR = $$QMAKE_BASED_QTDIR
-            unset(QMAKE_BASED_QTDIR)
-        }
     }
 
-    isEmpty(QTDIR):QTFWD="-no-module-fwd"
-    else:QTFWD="-qtdir $$QTDIR"
+    QTFWD =
+    isEmpty(QTDIR) {
+        QTFWD += -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
+    } else {
+        QTFWD += -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+    }
 
-    message("Running syncqt for $$PRO_BASENAME in $$OUT_PWD")
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    system("$$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_") {
+
+    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_)
+    !silent:message($$MSG)
+    system($$MSG) {
         # success! Nothing to do
     } else {
-        error("Failed to run: $$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_")
+        error("Failed to run: $$MSG")
     }
     unset(QTFWD)
     unset(PRO_BASENAME)

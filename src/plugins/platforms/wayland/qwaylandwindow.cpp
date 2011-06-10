@@ -141,6 +141,7 @@ void QWaylandWindow::damage(const QRegion &region)
     QVector<QRect> rects = region.rects();
     for (int i = 0; i < rects.size(); i++) {
         const QRect rect = rects.at(i);
+        wl_buffer_damage(mBuffer->buffer(), rect.x(), rect.y(), rect.width(), rect.height());
         wl_surface_damage(mSurface,
                           rect.x(), rect.y(), rect.width(), rect.height());
     }

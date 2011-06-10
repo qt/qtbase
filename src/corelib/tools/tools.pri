@@ -116,6 +116,10 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            tools/qharfbuzz.cpp
 HEADERS += tools/qharfbuzz_p.h
 
+corelib_tools_private_headers.files = ../3rdparty/harfbuzz/src/*.h
+corelib_tools_private_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/$$eval(QT.$${MODULE}.VERSION)/$$TARGET
+INSTALLS += corelib_tools_private_headers
+
 INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4
 

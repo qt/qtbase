@@ -70,7 +70,9 @@
 #ifndef QT_BUILD_COMPAT_LIB
 #include "private/qtextdocument_p.h"
 #endif
-#include "private/qharfbuzz_p.h"
+
+#include "private/qharfbuzz_copy_p.h"
+
 #include "private/qfixed_p.h"
 
 #include <stdlib.h>

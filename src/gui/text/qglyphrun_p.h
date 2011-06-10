@@ -71,6 +71,10 @@ public:
         : overline(false)
         , underline(false)
         , strikeOut(false)
+        , glyphIndexData(glyphIndexes.constData())
+        , glyphIndexDataSize(0)
+        , glyphPositionData(glyphPositions.constData())
+        , glyphPositionDataSize(0)
     {
     }
 
@@ -82,6 +86,10 @@ public:
       , overline(other.overline)
       , underline(other.underline)
       , strikeOut(other.strikeOut)
+      , glyphIndexData(other.glyphIndexData)
+      , glyphIndexDataSize(other.glyphIndexDataSize)
+      , glyphPositionData(other.glyphPositionData)
+      , glyphPositionDataSize(other.glyphPositionDataSize)
     {
     }
 
@@ -92,6 +100,17 @@ public:
     uint overline  : 1;
     uint underline : 1;
     uint strikeOut : 1;
+
+    const quint32 *glyphIndexData;
+    int glyphIndexDataSize;
+
+    const QPointF *glyphPositionData;
+    int glyphPositionDataSize;
+
+    static QGlyphRunPrivate *get(const QGlyphRun &glyphRun)
+    {
+        return glyphRun.d.data();
+    }
 };
 
 QT_END_NAMESPACE

@@ -3,7 +3,8 @@ TEMPLATE = lib
 TARGET = $$qtLibraryTarget(QtUiTools)
 QT = core xml
 
-CONFIG += qt staticlib   # Not adding module here, since the module pri's are only used for building
+CONFIG += qt staticlib module
+MODULE = uitools
 MODULE_PRI = ../modules/qt_uitools.pri \
              ../modules/qt_uilib.pri
 
@@ -22,7 +23,7 @@ isEmpty(QT_MAJOR_VERSION) {
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
-include(../qt_targets.pri)
+load(qt_targets)
 QMAKE_TARGET_PRODUCT = UiLoader
 QMAKE_TARGET_DESCRIPTION = QUiLoader
 
@@ -34,7 +35,17 @@ SOURCES += quiloader.cpp
 include($$QT_BUILD_TREE/include/QtUiTools/headers.pri, "", true)
 quitools_headers.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
 quitools_headers.path = $$[QT_INSTALL_HEADERS]/QtUiTools
-INSTALLS        += quitools_headers
+quitools_private_headers.files = $$SYNCQT.PRIVATE_HEADER_FILES
+quitools_private_headers.path = $$[QT_INSTALL_HEADERS]/QtUiTools/$$QT.uitools.VERSION/QtUiTools/private
+INSTALLS        += quitools_headers quitools_private_headers
+
+# Uilib is from designer.
+include($$QT_BUILD_TREE/include/QtDesigner/headers.pri, "", true)
+quilib_headers.files = $$replace($$list($$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES), ^, ../../tools/uilib/)
+quilib_headers.path = $$[QT_INSTALL_HEADERS]/QtDesigner
+quilib_private_headers.files = $$replace($$list($$SYNCQT.PRIVATE_HEADER_FILES), ^, ../../tools/uilib/)
+quilib_private_headers.path = $$[QT_INSTALL_HEADERS]/QtDesigner/$$QT.uilib.VERSION/QtDesigner/private
+INSTALLS        += quilib_headers quilib_private_headers
 
 target.path=$$[QT_INSTALL_LIBS]
 INSTALLS        += target

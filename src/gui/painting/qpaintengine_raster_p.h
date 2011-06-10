@@ -237,6 +237,9 @@ public:
 
     QPoint coordinateOffset() const;
 
+    bool supportsTransformations(const QFontEngine *fontEngine) const;
+    bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
+
 protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);
 private:

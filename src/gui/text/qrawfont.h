@@ -84,6 +84,7 @@ public:
     bool operator==(const QRawFont &other) const;
 
     QString familyName() const;
+    QString styleName() const;
 
     QFont::Style style() const;
     int weight() const;

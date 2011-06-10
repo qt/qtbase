@@ -1,6 +1,5 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-    lackey \
     qsharedmemory \
     qsystemsemaphore \
-
+#    lackey \ should be moved to QtScript

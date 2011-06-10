@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET     = QtOpenGL
 QPRO_PWD   = $$PWD
 QT         = core-private gui-private widgets-private
@@ -13,7 +15,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/opengl/qtopenglversion.h
 

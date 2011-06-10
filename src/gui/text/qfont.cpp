@@ -325,6 +325,9 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
     if (! (mask & QFont::FamilyResolved))
         request.family = other->request.family;
 
+    if (! (mask & QFont::StyleNameResolved))
+        request.styleName = other->request.styleName;
+
     if (! (mask & QFont::SizeResolved)) {
         request.pointSize = other->request.pointSize;
         request.pixelSize = other->request.pixelSize;
@@ -871,6 +874,38 @@ void QFont::setFamily(const QString &family)
 #endif // Q_WS_X11
 
     resolve_mask |= QFont::FamilyResolved;
+}
+
+/*!
+    \since 4.8
+
+    Returns the requested font style name, it will be used to match the
+    font with irregular styles (that can't be normalized in other style
+    properties). It depends on system font support, thus only works for
+    Mac OS X and X11 so far. On Windows irregular styles will be added
+    as separate font families so there is no need for this.
+
+    \sa setFamily() setStyle()
+*/
+QString QFont::styleName() const
+{
+    return d->request.styleName;
+}
+
+/*!
+    \since 4.8
+
+    Sets the style name of the font. When set, other style properties
+    like \a style() and \a weight() will be ignored for font matching.
+
+    \sa styleName()
+*/
+void QFont::setStyleName(const QString &styleName)
+{
+    detach();
+
+    d->request.styleName = styleName;
+    resolve_mask |= QFont::StyleNameResolved;
 }
 
 /*!
@@ -2434,6 +2469,21 @@ QString QFontInfo::family() const
     QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.family;
+}
+
+/*!
+    \since 4.8
+
+    Returns the style name of the matched window system font on
+    system that supports it.
+
+    \sa QFont::styleName()
+*/
+QString QFontInfo::styleName() const
+{
+    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    Q_ASSERT(engine != 0);
+    return engine->fontDef.styleName;
 }
 
 /*!

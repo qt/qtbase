@@ -113,7 +113,7 @@ class QCoreTextFontEngineMulti : public QFontEngineMulti
 {
 public:
     QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning);
-    QCoreTextFontEngineMulti(CGFontRef cgFontRef, const QFontDef &fontDef, bool kerning);
+    QCoreTextFontEngineMulti(CTFontRef ctFontRef, const QFontDef &fontDef, bool kerning);
     ~QCoreTextFontEngineMulti();
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
@@ -140,6 +140,8 @@ private:
     CGAffineTransform transform;
     friend class QFontDialogPrivate;
 };
+
+CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 

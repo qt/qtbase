@@ -20,5 +20,5 @@ wince* {
 }
 
 QT += widgets
-maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+maemo5: CONFIG += qt_example
 

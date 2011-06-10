@@ -61,6 +61,7 @@ public:
     QFontInfo &operator=(const QFontInfo &);
 
     QString family() const;
+    QString styleName() const;
     int pixelSize() const;
     int pointSize() const;
     qreal pointSizeF() const;

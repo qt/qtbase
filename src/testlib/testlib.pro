@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET = QtTest
 QPRO_PWD = $$PWD
 QT = core gui widgets
@@ -84,7 +86,7 @@ qpa:mac: {
     }
 }
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/testlib/qttestlibversion.h
 

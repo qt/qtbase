@@ -70,7 +70,7 @@
 
 #include <qmutex.h>
 
-#include <harfbuzz-shaper.h>
+#include "private/qharfbuzz_copy_p.h"
 
 QT_BEGIN_NAMESPACE
 

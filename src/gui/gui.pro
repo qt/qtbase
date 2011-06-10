@@ -1,3 +1,5 @@
+load(qt_module)
+
 TARGET     = QtGui
 QPRO_PWD   = $$PWD
 QT = core-private
@@ -9,7 +11,7 @@ DEFINES   += QT_BUILD_GUI_LIB QT_NO_USING_NAMESPACE
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
-include(../qbase.pri)
+load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 

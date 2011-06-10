@@ -25,13 +25,13 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl_es2.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl_es2
 INSTALLS += target sources
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+symbian: CONFIG += qt_example
 
 maemo5 {
     # Debian package name may not contain numbers or special characters
     # such as '_', lets change this in Maemo.
     TARGET = helloglestwo
-    include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+    CONFIG += qt_example
 }
 
 symbian: warning(This example might not fully work on Symbian platform)

@@ -1,20 +1,25 @@
 # This file is loaded by the mkspecs, before .qmake.cache has been loaded.
 # Consequently, we have to do some stunts to get values out of the cache.
 
-exists($$_QMAKE_CACHE_):QMAKE_QT_CONFIG = $$fromfile($$_QMAKE_CACHE_, QMAKE_QT_CONFIG)
+exists($$_QMAKE_CACHE_) {
+    QMAKE_QT_CONFIG = $$fromfile($$_QMAKE_CACHE_, QMAKE_QT_CONFIG)
+    QMAKE_EXTRA_MODULE_FORWARDS = $$fromfile($$_QMAKE_CACHE_, QMAKE_EXTRA_MODULE_FORWARDS)
+}
 isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
    !isEmpty(QT_BUILD_TREE):QMAKE_QT_CONFIG = $$QT_BUILD_TREE/mkspecs/qconfig.pri
    else:exists($$_QMAKE_CACHE_):infile($$_QMAKE_CACHE_, QT_BUILD_TREE):QMAKE_QT_CONFIG = $$fromfile($$_QMAKE_CACHE_, QT_BUILD_TREE)/mkspecs/qconfig.pri
-   else:exists($$[QT_INSTALL_DATA]/mkspecs/qconfig.pri):QMAKE_QT_CONFIG = $$[QT_INSTALL_DATA]/mkspecs/qconfig.pri
+   isEmpty(QMAKE_QT_CONFIG):exists($$[QT_INSTALL_DATA]/mkspecs/qconfig.pri):QMAKE_QT_CONFIG = $$[QT_INSTALL_DATA]/mkspecs/qconfig.pri
 }
 !exists($$QMAKE_QT_CONFIG)|!include($$QMAKE_QT_CONFIG, "", true) {
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
-   for(dir, $$list($$unique($$list($$dirname(QMAKE_QT_CONFIG) \
-                                   $$replace($$list($$split($$list($$(QMAKEPATH)), $$DIRLIST_SEPARATOR)), $, /mkspecs))))) {
+   for(dir, $$list($$unique($$list($$replace($$list($$dirname(QMAKE_QT_CONFIG) \
+                                                    $$replace($$list($$split($$list($$(QMAKEPATH)), $$DIRLIST_SEPARATOR)), $, /mkspecs)), \
+                                             $, /modules) \
+                                   $$QMAKE_EXTRA_MODULE_FORWARDS)))) {
       debug(1, "Loading modules from $${dir}")
-      for(mod, $$list($$files($$dir/modules/qt_*.pri))) {
+      for(mod, $$list($$files($$dir/qt_*.pri))) {
          # For installed Qt these paths will be common for all modules
          # For development these will vary per module, and syncqt will override the value in the
          # qt_<module>.pri forwarding file

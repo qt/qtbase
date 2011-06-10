@@ -5970,7 +5970,7 @@ public slots:
 
     void onReadAndReschedule() {
         const qint64 bytesReceived = m_reply->bytesAvailable();
-        if (bytesReceived) {
+        if (bytesReceived && m_reply->readBufferSize()) {
            QByteArray data = m_reply->read(bytesReceived);
            // reschedule read
            const int millisecDelay = static_cast<int>(bytesReceived * 1000 / m_reply->readBufferSize());
@@ -6193,16 +6193,62 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
 }
 #endif
 
+class HttpAbortHelper : public QObject
+{
+    Q_OBJECT
+public:
+    HttpAbortHelper(QNetworkReply *parent)
+    : QObject(parent)
+    {
+        mReply = parent;
+        connect(parent, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    }
+
+    ~HttpAbortHelper()
+    {
+    }
+
+public slots:
+    void readyRead()
+    {
+        mReply->abort();
+        QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
+    }
+
+private:
+    QNetworkReply *mReply;
+};
+
 void tst_QNetworkReply::httpAbort()
 {
-    // FIXME: Implement a test that aborts a big HTTP reply
-    // a) after the first readyRead()
-    // b) immediatly after the get()
-    // c) after the finished()
-    // The goal is no crash and no irrelevant signals after the abort
-
     // FIXME Also implement one where we do a big upload and then abort().
     // It must not crash either.
+
+    // Abort after the first readyRead()
+    QNetworkRequest request("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile");
+    QNetworkReplyPtr reply;
+    reply = manager.get(request);
+    HttpAbortHelper replyHolder(reply);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
+    QVERIFY(reply->isFinished());
+
+    // Abort immediatly after the get()
+    QNetworkReplyPtr reply2 = manager.get(request);
+    connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    reply2->abort();
+    QCOMPARE(reply2->error(), QNetworkReply::OperationCanceledError);
+    QVERIFY(reply2->isFinished());
+
+    // Abort after the finished()
+    QNetworkRequest request3("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QNetworkReplyPtr reply3 = manager.get(request3);
+    connect(reply3, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(reply3->isFinished());
+    reply3->abort();
+    QCOMPARE(reply3->error(), QNetworkReply::NoError);
 }
 
 void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()

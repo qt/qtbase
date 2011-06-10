@@ -1452,6 +1452,35 @@ static const char *styleHint(const QFontDef &request)
 
 void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontDef &request)
 {
+    double size_value = qMax(qreal(1.), request.pixelSize);
+    FcPatternDel(pattern, FC_PIXEL_SIZE);
+    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
+
+    if (X11->display && QX11Info::appDepth(screen) <= 8) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
+        // can't do antialiasing on 8bpp
+        FcPatternAddBool(pattern, FC_ANTIALIAS, false);
+    } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
+        FcPatternAddBool(pattern, FC_ANTIALIAS,
+                         !(request.styleStrategy & QFont::NoAntialias));
+    }
+
+    if (script != QUnicodeTables::Common && *specialLanguages[script] != '\0') {
+        Q_ASSERT(script < QUnicodeTables::ScriptCount);
+        FcLangSet *ls = FcLangSetCreate();
+        FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
+        FcPatternDel(pattern, FC_LANG);
+        FcPatternAddLangSet(pattern, FC_LANG, ls);
+        FcLangSetDestroy(ls);
+    }
+
+    if (!request.styleName.isEmpty()) {
+        QByteArray cs = request.styleName.toUtf8();
+        FcPatternAddString(pattern, FC_STYLE, (const FcChar8 *) cs.constData());
+        return;
+    }
+
     int weight_value = FC_WEIGHT_BLACK;
     if (request.weight == 0)
         weight_value = FC_WEIGHT_MEDIUM;
@@ -1474,34 +1503,11 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
     FcPatternDel(pattern, FC_SLANT);
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
-    double size_value = qMax(qreal(1.), request.pixelSize);
-    FcPatternDel(pattern, FC_PIXEL_SIZE);
-    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
-
     int stretch = request.stretch;
     if (!stretch)
         stretch = 100;
     FcPatternDel(pattern, FC_WIDTH);
     FcPatternAddInteger(pattern, FC_WIDTH, stretch);
-
-    if (X11->display && QX11Info::appDepth(screen) <= 8) {
-        FcPatternDel(pattern, FC_ANTIALIAS);
-        // can't do antialiasing on 8bpp
-        FcPatternAddBool(pattern, FC_ANTIALIAS, false);
-    } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
-        FcPatternDel(pattern, FC_ANTIALIAS);
-        FcPatternAddBool(pattern, FC_ANTIALIAS,
-                         !(request.styleStrategy & QFont::NoAntialias));
-    }
-
-    if (script != QUnicodeTables::Common && *specialLanguages[script] != '\0') {
-        Q_ASSERT(script < QUnicodeTables::ScriptCount);
-        FcLangSet *ls = FcLangSetCreate();
-        FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
-        FcPatternDel(pattern, FC_LANG);
-        FcPatternAddLangSet(pattern, FC_LANG, ls);
-        FcLangSetDestroy(ls);
-    }
 }
 
 static bool preferScalable(const QFontDef &request)
@@ -2049,7 +2055,8 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
             return;
 
         FcPatternDel(pattern, FC_FILE);
-        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *)fnt->fileName.toUtf8().constData());
+        QByteArray cs = fnt->fileName.toUtf8();
+        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *) cs.constData());
 
         FcChar8 *fam = 0, *familylang = 0;
         int i, n = 0;
@@ -2135,7 +2142,8 @@ QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
     if (!pattern)
         return family;
 
-    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) family.toUtf8().data());
+    QByteArray cs = family.toUtf8();
+    FcPatternAddString(pattern, FC_FAMILY, (const FcChar8 *) cs.constData());
     FcConfigSubstitute(0, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 

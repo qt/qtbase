@@ -166,7 +166,9 @@ private slots:
     void readLineString();
     void readChunks();
     void waitForBytesWritten();
+    void waitForBytesWrittenMinusOne();
     void waitForReadyRead();
+    void waitForReadyReadMinusOne();
     void flush();
     void synchronousApi();
     void dontCloseOnTimeout();
@@ -1417,12 +1419,27 @@ void tst_QTcpSocket::readChunks()
 void tst_QTcpSocket::waitForBytesWritten()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 22);
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
     QVERIFY(socket->waitForConnected(10000));
 
-    socket->write(QByteArray(10000, '@'));
+    socket->write("GET / HTTP/1.0\r\n\r\n");
     qint64 toWrite = socket->bytesToWrite();
     QVERIFY(socket->waitForBytesWritten(5000));
+    QVERIFY(toWrite > socket->bytesToWrite());
+
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+void tst_QTcpSocket::waitForBytesWrittenMinusOne()
+{
+    QTcpSocket *socket = newSocket();
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    QVERIFY(socket->waitForConnected(10000));
+
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    qint64 toWrite = socket->bytesToWrite();
+    QVERIFY(socket->waitForBytesWritten(-1));
     QVERIFY(toWrite > socket->bytesToWrite());
 
     delete socket;
@@ -1432,8 +1449,19 @@ void tst_QTcpSocket::waitForBytesWritten()
 void tst_QTcpSocket::waitForReadyRead()
 {
     QTcpSocket *socket = newSocket();
-    socket->connectToHost(QtNetworkSettings::serverName(), 22);
-    socket->waitForReadyRead(0);
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    QVERIFY(socket->waitForReadyRead(5000));
+    delete socket;
+}
+
+//----------------------------------------------------------------------------------
+void tst_QTcpSocket::waitForReadyReadMinusOne()
+{
+    QTcpSocket *socket = newSocket();
+    socket->connectToHost(QtNetworkSettings::serverName(), 80);
+    socket->write("GET / HTTP/1.0\r\n\r\n");
+    QVERIFY(socket->waitForReadyRead(-1));
     delete socket;
 }
 

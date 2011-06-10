@@ -33,8 +33,8 @@ contains(QT_CONFIG, opengl) {
     message(OpenGL support is not available.)
 }
 
-symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
-maemo5: include($$QT_SOURCE_TREE/examples/maemo5pkgrules.pri)
+symbian: CONFIG += qt_example
+maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)
 simulator: warning(This example might not fully work on Simulator platform)

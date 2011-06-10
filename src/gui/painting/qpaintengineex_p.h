@@ -227,6 +227,7 @@ public:
         IsEmulationEngine = 0x02    // If set, this object is a QEmulationEngine.
     };
     virtual uint flags() const {return 0;}
+    virtual bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
 protected:
     QPaintEngineEx(QPaintEngineExPrivate &data);
