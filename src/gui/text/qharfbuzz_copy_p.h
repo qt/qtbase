@@ -34,6 +34,9 @@
   headers for font and text classes without having to pull in the full
   harfbuzz library under QTDIR/src/3rdparty/harfbuzz/src
 */
+#if defined(QT_BUILD_GUI_LIB) || defined(QT_COMPILES_IN_HARFBUZZ)
+#include <private/qharfbuzz_p.h>
+#else
 
 extern "C" {
 
@@ -97,5 +100,7 @@ typedef struct {
 } HB_CharAttributes;
 
 }
+
+#endif // ifdef QT_BUILD_GUI_LIB
 
 #endif // QHARFBUZZ_COPY_P_H

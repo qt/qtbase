@@ -71,11 +71,7 @@
 #include "private/qtextdocument_p.h"
 #endif
 
-#if defined (QT_BUILD_GUI_LIB)
-#  include "private/qharfbuzz_p.h"
-#else
-#  include "private/qharfbuzz_copy_p.h"
-#endif
+#include "private/qharfbuzz_copy_p.h"
 
 #include "private/qfixed_p.h"
 

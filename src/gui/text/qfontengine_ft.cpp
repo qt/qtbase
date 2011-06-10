@@ -51,7 +51,6 @@
 #include "qabstractfileengine.h"
 #include "qthreadstorage.h"
 #include <qmath.h>
-#include <private/qharfbuzz_p.h>
 
 #include "qfontengine_ft_p.h"
 #include <ft2build.h>

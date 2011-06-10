@@ -7,6 +7,8 @@ SOURCES += \
         $$QT_SOURCE_TREE/src/plugins/platforms/fontdatabases/basicunix/qbasicunixfontdatabase.cpp \
         $$QT_SOURCE_TREE/src/gui/text/qfontengine_ft.cpp
 
+DEFINES += QT_COMPILES_IN_HARFBUZZ
+
 INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/harfbuzz/src
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/platforms/fontdatabases/basicunix
