@@ -641,24 +641,41 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QPoint oldPos = q->pos();
     data.crect = r;
 
+    bool needsShow = false;
+
+    if (w == 0 || h == 0) {
+        q->setAttribute(Qt::WA_OutsideWSRange, true);
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+            hide_sys();
+        data.crect = QRect(x, y, w, h);
+    } else if (q->isVisible() && q->testAttribute(Qt::WA_OutsideWSRange)) {
+        q->setAttribute(Qt::WA_OutsideWSRange, false);
+        needsShow = true;
+    }
+
     if (q->isVisible()) {
-        if (q->windowHandle()) {
-            if (q->isWindow()) {
-                q->windowHandle()->setGeometry(q->geometry());
+        if (!q->testAttribute(Qt::WA_DontShowOnScreen) && !q->testAttribute(Qt::WA_OutsideWSRange)) {
+            if (q->windowHandle()) {
+                if (q->isWindow()) {
+                    q->windowHandle()->setGeometry(q->geometry());
+                } else {
+                    QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
+                    q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
+                }
+                const QWidgetBackingStore *bs = maybeBackingStore();
+                if (bs->windowSurface) {
+                    if (isResize)
+                        bs->windowSurface->resize(r.size());
+                }
+
+                if (needsShow)
+                    show_sys();
             } else {
-                QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
-                q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
+                if (isMove && !isResize)
+                    moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
+                else
+                    invalidateBuffer_resizeHelper(oldPos, olds);
             }
-            const QWidgetBackingStore *bs = maybeBackingStore();
-            if (bs->windowSurface) {
-                if (isResize)
-                    bs->windowSurface->resize(r.size());
-            }
-        } else {
-            if (isMove && !isResize)
-                moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
-            else
-                invalidateBuffer_resizeHelper(oldPos, olds);
         }
 
         if (isMove) {

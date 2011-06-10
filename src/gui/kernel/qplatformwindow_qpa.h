@@ -44,6 +44,7 @@
 
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qmargins.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
 
@@ -70,6 +71,8 @@ public:
 
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
+
+    virtual QMargins frameMargins() const;
 
     virtual void setVisible(bool visible);
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);

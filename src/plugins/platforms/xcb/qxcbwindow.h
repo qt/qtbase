@@ -61,6 +61,8 @@ public:
 
     void setGeometry(const QRect &rect);
 
+    QMargins frameMargins() const;
+
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowState setWindowState(Qt::WindowState state);
@@ -139,6 +141,9 @@ private:
 
     bool m_mapped;
     xcb_window_t m_netWmUserTimeWindow;
+
+    mutable bool m_dirtyFrameMargins;
+    mutable QMargins m_frameMargins;
 };
 
 #endif

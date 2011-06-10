@@ -113,6 +113,7 @@ void QXcbWindow::create()
 
     m_windowState = Qt::WindowNoState;
     m_hasReceivedSyncRequest = false;
+    m_dirtyFrameMargins = true;
 
     Qt::WindowType type = window()->windowType();
 
@@ -304,6 +305,93 @@ void QXcbWindow::setGeometry(const QRect &rect)
     Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
 }
 
+QMargins QXcbWindow::frameMargins() const
+{
+    if (m_dirtyFrameMargins) {
+        xcb_window_t window = m_window;
+        xcb_window_t parent = m_window;
+
+        bool foundRoot = false;
+
+        const QVector<xcb_window_t> &virtualRoots =
+            connection()->wmSupport()->virtualRoots();
+
+        while (!foundRoot) {
+            xcb_query_tree_cookie_t cookie = xcb_query_tree(xcb_connection(), parent);
+
+            xcb_generic_error_t *error;
+            xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, &error);
+            if (reply) {
+                if (reply->root == reply->parent || virtualRoots.indexOf(reply->parent) != -1) {
+                    foundRoot = true;
+                } else {
+                    window = parent;
+                    parent = reply->parent;
+                }
+
+                free(reply);
+            } else {
+                if (error) {
+                    connection()->handleXcbError(error);
+                    free(error);
+                }
+
+                m_dirtyFrameMargins = false;
+                m_frameMargins = QMargins();
+                return m_frameMargins;
+            }
+        }
+
+        QPoint offset;
+
+        xcb_generic_error_t *error;
+        xcb_translate_coordinates_reply_t *reply =
+            xcb_translate_coordinates_reply(
+                xcb_connection(),
+                xcb_translate_coordinates(xcb_connection(), window, parent, 0, 0),
+                &error);
+
+        if (reply) {
+            offset = QPoint(reply->dst_x, reply->dst_y);
+            free(reply);
+        } else if (error) {
+            free(error);
+        }
+
+        xcb_get_geometry_reply_t *geom =
+            xcb_get_geometry_reply(
+                xcb_connection(),
+                xcb_get_geometry(xcb_connection(), parent),
+                &error);
+
+        if (geom) {
+            // --
+            // add the border_width for the window managers frame... some window managers
+            // do not use a border_width of zero for their frames, and if we the left and
+            // top strut, we ensure that pos() is absolutely correct.  frameGeometry()
+            // will still be incorrect though... perhaps i should have foffset as well, to
+            // indicate the frame offset (equal to the border_width on X).
+            // - Brad
+            // -- copied from qwidget_x11.cpp
+
+            int left = offset.x() + geom->border_width;
+            int top = offset.y() + geom->border_width;
+            int right = geom->width + geom->border_width - geometry().width() - offset.x();
+            int bottom = geom->height + geom->border_width - geometry().height() - offset.y();
+
+            m_frameMargins = QMargins(left, top, right, bottom);
+
+            free(geom);
+        } else if (error) {
+            free(error);
+        }
+
+        m_dirtyFrameMargins = false;
+    }
+
+    return m_frameMargins;
+}
+
 void QXcbWindow::setVisible(bool visible)
 {
     if (visible)
@@ -326,6 +414,8 @@ void QXcbWindow::show()
             connection()->handleXcbError(error);
             free(error);
         }
+
+        m_dirtyFrameMargins = true;
 
         if (window()->windowState() & Qt::WindowMinimized)
             xcb_wm_hints_set_iconic(&hints);
@@ -634,6 +724,8 @@ Qt::WindowState QXcbWindow::setWindowState(Qt::WindowState state)
 {
     if (state == m_windowState)
         return state;
+
+    m_dirtyFrameMargins = true;
 
     // unset old state
     switch (m_windowState) {

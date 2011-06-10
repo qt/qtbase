@@ -108,6 +108,11 @@ QRect QPlatformWindow::geometry() const
     return d->rect;
 }
 
+QMargins QPlatformWindow::frameMargins() const
+{
+    return QMargins();
+}
+
 /*!
     Reimplemented in subclasses to show the surface
     if \a visible is \c true, and hide it if \a visible is \c false.

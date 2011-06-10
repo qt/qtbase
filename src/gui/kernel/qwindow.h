@@ -44,6 +44,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
+#include <QtCore/QMargins>
 
 #include <QtGui/qguiglformat_qpa.h>
 #include <QtGui/qwindowdefs.h>
@@ -137,6 +138,8 @@ public:
 
     void setGeometry(const QRect &rect);
     QRect geometry() const;
+
+    QMargins frameMargins() const;
 
     void setWindowIcon(const QImage &icon) const;
 

@@ -78,6 +78,8 @@ protected:
     void handleExposeEvent(QExposeEvent *);
 
 private:
+    void updateGeometry();
+
     QWidget *m_widget;
     QWeakPointer<QWidget> m_implicit_mouse_grabber;
     QWeakPointer<QWidget> m_dragTarget;
