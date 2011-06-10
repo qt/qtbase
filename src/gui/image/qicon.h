@@ -132,14 +132,14 @@ public:
     Q_DUMMY_COMPARISON_OPERATOR(QIcon)
 
 private:
-    QIconPrivate *d;
+    QExplicitlySharedDataPointer<QIconPrivate> d;
 #if !defined(QT_NO_DATASTREAM)
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QIcon &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QIcon &);
 #endif
 
 public:
-    typedef QIconPrivate * DataPtr;
+    typedef QExplicitlySharedDataPointer<QIconPrivate> DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
 

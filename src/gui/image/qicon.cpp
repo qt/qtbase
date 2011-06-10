@@ -116,7 +116,7 @@ static void qt_cleanup_icon_cache()
 }
 
 QIconPrivate::QIconPrivate()
-    : engine(0), ref(1),
+    : engine(0),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
     detach_no(0),
     engine_version(2),
@@ -536,10 +536,7 @@ QIcon::QIcon(const QPixmap &pixmap)
 */
 QIcon::QIcon(const QIcon &other)
     :d(other.d)
-{
-    if (d)
-        d->ref.ref();
-}
+{}
 
 /*!
     Constructs an icon from the file with the given \a fileName. The
@@ -593,10 +590,7 @@ QIcon::QIcon(QIconEngineV2 *engine)
     Destroys the icon.
 */
 QIcon::~QIcon()
-{
-    if (d && !d->ref.deref())
-        delete d;
-}
+{}
 
 /*!
     Assigns the \a other icon to this icon and returns a reference to
@@ -604,10 +598,6 @@ QIcon::~QIcon()
 */
 QIcon &QIcon::operator=(const QIcon &other)
 {
-    if (other.d)
-        other.d->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
     d = other.d;
     return *this;
 }
@@ -775,8 +765,6 @@ void QIcon::detach()
                 x->v1RefCount->ref();
             }
             x->engine_version = d->engine_version;
-            if (!d->ref.deref())
-                delete d;
             d = x;
         }
         ++d->detach_no;

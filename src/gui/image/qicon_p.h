@@ -63,7 +63,7 @@
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
 
-class QIconPrivate
+class QIconPrivate : public QSharedData
 {
 public:
     QIconPrivate();
@@ -81,7 +81,6 @@ public:
 
     QIconEngine *engine;
 
-    QAtomicInt ref;
     int serialNum;
     int detach_no;
     int engine_version;
