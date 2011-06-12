@@ -212,7 +212,7 @@ QVariant QAccessibleAbstractSpinBox::currentValue()
 
 void QAccessibleAbstractSpinBox::setCurrentValue(const QVariant &value)
 {
-    abstractSpinBox()->setProperty("setValue", value);
+    abstractSpinBox()->setProperty("value", value);
 }
 
 QVariant QAccessibleAbstractSpinBox::maximumValue()
