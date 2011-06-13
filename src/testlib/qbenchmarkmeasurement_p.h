@@ -54,7 +54,9 @@
 //
 
 #include <QtCore/qelapsedtimer.h>
+#ifdef HAVE_TICK_COUNTER
 #include "3rdparty/cycle_p.h"
+#endif
 #include "qbenchmark.h"
 
 QT_BEGIN_NAMESPACE
