@@ -41,7 +41,9 @@
 #ifndef QABSTRACTPLATFORMMENUBAR_P_H
 #define QABSTRACTPLATFORMMENUBAR_P_H
 
+#include <qfactoryinterface.h>
 #include <qglobal.h>
+#include <qplugin.h>
 
 #ifndef QT_NO_MENUBAR
 
@@ -53,6 +55,16 @@ class QEvent;
 class QMenuBar;
 class QObject;
 class QWidget;
+
+class QAbstractPlatformMenuBar;
+
+struct QPlatformMenuBarFactoryInterface : public QFactoryInterface
+{
+    virtual QAbstractPlatformMenuBar *create() = 0;
+};
+
+#define QPlatformMenuBarFactoryInterface_iid "com.nokia.qt.QPlatformMenuBarFactoryInterface"
+Q_DECLARE_INTERFACE(QPlatformMenuBarFactoryInterface, QPlatformMenuBarFactoryInterface_iid)
 
 /*!
     The platform-specific implementation of a menubar

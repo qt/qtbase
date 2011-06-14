@@ -55,6 +55,9 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
+#ifdef Q_WS_X11
+#include <qpluginloader.h>
+#endif
 
 #ifndef QT_NO_MENUBAR
 
@@ -761,7 +764,7 @@ void QMenuBarPrivate::init()
     }
 #endif
 #ifdef Q_WS_X11
-    platformMenuBar = new QX11MenuBar;
+    platformMenuBar = qt_guiPlatformMenuBarFactory()->create();
     platformMenuBar->init(q);
 #endif
 

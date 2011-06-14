@@ -77,6 +77,8 @@ private:
     int nativeMenuBar : 3;  // Only has values -1, 0, and 1
 };
 
+QPlatformMenuBarFactoryInterface *qt_guiPlatformMenuBarFactory();
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_MENUBAR

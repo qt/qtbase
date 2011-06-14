@@ -48,6 +48,8 @@
 #include "qmenu.h"
 #include "qmenubar.h"
 
+#include <private/qfactoryloader_p.h>
+
 QT_BEGIN_NAMESPACE
 
 QX11MenuBar::~QX11MenuBar()
@@ -107,6 +109,28 @@ bool QX11MenuBar::shortcutsHandledByNativeMenuBar() const
 bool QX11MenuBar::menuBarEventFilter(QObject *, QEvent *)
 {
     return false;
+}
+
+struct QX11MenuBarFactory : public QPlatformMenuBarFactoryInterface
+{
+    QAbstractPlatformMenuBar *create() { return new QX11MenuBar; }
+    virtual QStringList keys() const { return QStringList(); }
+};
+
+QPlatformMenuBarFactoryInterface *qt_guiPlatformMenuBarFactory()
+{
+    static QPlatformMenuBarFactoryInterface *factory = 0;
+    if (!factory) {
+#ifndef QT_NO_LIBRARY
+        QFactoryLoader loader(QPlatformMenuBarFactoryInterface_iid, QLatin1String("/menubar"));
+        factory = qobject_cast<QPlatformMenuBarFactoryInterface *>(loader.instance(QLatin1String("default")));
+#endif // QT_NO_LIBRARY
+        if(!factory) {
+            static QX11MenuBarFactory def;
+            factory = &def;
+        }
+    }
+    return factory;
 }
 
 QT_END_NAMESPACE
