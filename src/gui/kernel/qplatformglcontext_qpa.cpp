@@ -62,7 +62,8 @@ class QPlatformGLContextPrivate
 {
 public:
     QPlatformGLContextPrivate()
-        :qGLContextHandle(0)
+        : qGLContextHandle(0)
+        , qGLContextDeleteFunction(0)
     {
     }
 
