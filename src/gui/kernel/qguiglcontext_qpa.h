@@ -43,6 +43,7 @@
 #define QGUIGLCONTEXT_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 
