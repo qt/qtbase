@@ -2442,6 +2442,8 @@ bool QTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
     and the text edit will try to guess the right format.
 
     Use setHtml() or setPlainText() directly to avoid text edit's guessing.
+
+    \sa toPlainText(), toHtml()
 */
 void QTextEdit::setText(const QString &text)
 {
