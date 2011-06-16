@@ -3,12 +3,10 @@ contains(QT_CONFIG, opengl) {
     QT += opengl
 
 HEADERS += \
-    $$PWD/qwaylandglintegration.h \
-    $$PWD/qwaylandglwindowsurface.h
+    $$PWD/qwaylandglintegration.h
 
 SOURCES += \
-    $$PWD/qwaylandglintegration.cpp \
-    $$PWD/qwaylandglwindowsurface.cpp
+    $$PWD/qwaylandglintegration.cpp
 
     QT_WAYLAND_GL_CONFIG = $$(QT_WAYLAND_GL_CONFIG)
     contains(QT_CONFIG, opengles2) {

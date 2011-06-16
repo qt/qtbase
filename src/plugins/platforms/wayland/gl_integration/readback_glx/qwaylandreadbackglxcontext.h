@@ -47,7 +47,7 @@
 
 #include "qwaylandreadbackglxintegration.h"
 
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 
 class QWaylandReadbackGlxWindow;
 class QWaylandShmBuffer;

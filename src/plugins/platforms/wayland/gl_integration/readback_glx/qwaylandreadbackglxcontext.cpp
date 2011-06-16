@@ -113,7 +113,7 @@ void QWaylandReadbackGlxContext::swapBuffers(const QPlatformGLSurface &surface)
 {
     // #### makeCurrent() directly on the platform context doesn't update QGuiGLContext::currentContext()
     if (QGuiGLContext::currentContext()->handle() != this)
-        makeCurrent(surface, surface);
+        makeCurrent(surface);
 
     const QWaylandReadbackGlxSurface &s =
         static_cast<const QWaylandReadbackGlxSurface &>(surface);
@@ -135,6 +135,7 @@ void QWaylandReadbackGlxContext::swapBuffers(const QPlatformGLSurface &surface)
     memcpy(dstBits, constBits, (img.width() * 4) * img.height());
 
     s.window()->damage(QRect(QPoint(), size));
+
     s.window()->waitForFrameSync();
 }
 

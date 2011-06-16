@@ -34,9 +34,8 @@ HelloWindow::HelloWindow(Renderer *renderer)
     create();
 
     QTimer *timer = new QTimer(this);
-    timer->start(10);
-
     connect(timer, SIGNAL(timeout()), this, SLOT(render()));
+    timer->start(10);
 
     updateColor();
 }

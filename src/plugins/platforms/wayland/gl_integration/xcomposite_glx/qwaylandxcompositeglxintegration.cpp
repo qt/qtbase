@@ -52,12 +52,15 @@ QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDispl
     return new QWaylandXCompositeGLXIntegration(waylandDisplay);
 }
 
-QWaylandXCompositeGLXIntegration::QWaylandXCompositeGLXIntegration(QWaylandDisplay * waylandDispaly)
-    : QWaylandGLIntegration()
-    , mWaylandDisplay(waylandDispaly)
+QWaylandXCompositeGLXIntegration::QWaylandXCompositeGLXIntegration(QWaylandDisplay *waylandDisplay)
+    : mWaylandDisplay(waylandDisplay)
+    , mWaylandComposite(0)
+    , mDisplay(0)
+    , mScreen(0)
+    , mRootWindow(0)
 {
     qDebug() << "Using XComposite-GLX";
-    wl_display_add_global_listener(waylandDispaly->wl_display(), QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal,
+    wl_display_add_global_listener(waylandDisplay->wl_display(), QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal,
                                    this);
 }
 
@@ -112,6 +115,7 @@ void QWaylandXCompositeGLXIntegration::wlDisplayHandleGlobal(wl_display *display
 {
     Q_UNUSED(version);
     if (strcmp(interface, "wl_xcomposite") == 0) {
+        qDebug("XComposite-GLX: got wl_xcomposite global");
         QWaylandXCompositeGLXIntegration *integration = static_cast<QWaylandXCompositeGLXIntegration *>(data);
         integration->mWaylandComposite = wl_xcomposite_create(display,id,1);
         wl_xcomposite_add_listener(integration->mWaylandComposite,&xcomposite_listener,integration);
@@ -123,6 +127,8 @@ void QWaylandXCompositeGLXIntegration::rootInformation(void *data, wl_xcomposite
 {
     Q_UNUSED(xcomposite);
     QWaylandXCompositeGLXIntegration *integration = static_cast<QWaylandXCompositeGLXIntegration *>(data);
+
+    qDebug("XComposite-GLX: xcomposite listener callback");
 
     integration->mDisplay = XOpenDisplay(display_name);
     integration->mRootWindow = (Window) root_window;

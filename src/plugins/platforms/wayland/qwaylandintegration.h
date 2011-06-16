@@ -52,7 +52,7 @@ class QWaylandDisplay;
 class QWaylandIntegration : public QPlatformIntegration
 {
 public:
-    QWaylandIntegration(bool useOpenGL = false);
+    QWaylandIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
@@ -69,11 +69,8 @@ public:
     QPlatformClipboard *clipboard() const;
 
 private:
-    bool hasOpenGL() const;
-
     QPlatformFontDatabase *mFontDb;
     QWaylandDisplay *mDisplay;
-    bool mUseOpenGL;
     QPlatformNativeInterface *mNativeInterface;
     mutable QPlatformClipboard *mClipboard;
 };

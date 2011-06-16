@@ -60,8 +60,8 @@ Window QWaylandXCompositeGLXSurface::xWindow() const
 QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QGuiGLFormat &format, QPlatformGLContext *share, Display *display, int screen)
     : m_display(display)
 {
+    qDebug("creating XComposite-GLX context");
     GLXContext shareContext = share ? static_cast<QWaylandXCompositeGLXContext *>(share)->m_context : 0;
-
     GLXFBConfig config = qglx_findConfig(display, screen, format);
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display, config);
     m_context = glXCreateContext(display, visualInfo, shareContext, true);

@@ -1,4 +1,3 @@
-load(qpa/glx/convenience)
 HEADERS += \
     $$PWD/qwaylandreadbackglxintegration.h \
     $$PWD/qwaylandreadbackglxwindow.h \

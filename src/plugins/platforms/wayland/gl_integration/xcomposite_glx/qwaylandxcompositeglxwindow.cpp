@@ -112,6 +112,11 @@ void QWaylandXCompositeGLXWindow::createSurface()
         size = QSize(1,1);
     }
 
+    if (!m_glxIntegration->xDisplay()) {
+        qWarning("XCompositeGLXWindow: X display still null?!");
+        return;
+    }
+
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(m_glxIntegration->xDisplay(), m_config);
     Colormap cmap = XCreateColormap(m_glxIntegration->xDisplay(), m_glxIntegration->rootWindow(),
             visualInfo->visual, AllocNone);

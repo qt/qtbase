@@ -45,7 +45,7 @@
 #include <QtGui/QPlatformGLContext>
 
 #include "qwaylandxcompositeglxintegration.h"
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 
 class QWaylandXCompositeGLXWindow;
 class QWaylandShmBuffer;
