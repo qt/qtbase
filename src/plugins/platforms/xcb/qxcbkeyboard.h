@@ -84,9 +84,6 @@ private:
     uint m_caps_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
-#ifndef QT_NO_XCB_XKB
-    struct xkb_desc *m_xkb;
-#endif
 };
 
 #endif
