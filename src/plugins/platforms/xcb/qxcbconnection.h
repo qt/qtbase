@@ -286,6 +286,8 @@ public:
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
 
+    bool hasXFixes() const { return xfixes_first_event > 0; }
+
 private slots:
     void processXcbEvents();
 
@@ -347,6 +349,8 @@ private:
     WindowMapper m_mapper;
 
     QVector<PeekFunc> m_peekFuncs;
+
+    uint32_t xfixes_first_event;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

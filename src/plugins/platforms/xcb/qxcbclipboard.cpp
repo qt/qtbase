@@ -163,6 +163,28 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     m_timestamp[QClipboard::Selection] = XCB_CURRENT_TIME;
 
     m_screen = connection()->screens().at(connection()->primaryScreen());
+
+    int x = 0, y = 0, w = 3, h = 3;
+
+    m_owner = xcb_generate_id(xcb_connection());
+    Q_XCB_CALL(xcb_create_window(xcb_connection(),
+                                 XCB_COPY_FROM_PARENT,            // depth -- same as root
+                                 m_owner,                        // window id
+                                 m_screen->screen()->root,                   // parent window id
+                                 x, y, w, h,
+                                 0,                               // border width
+                                 XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
+                                 m_screen->screen()->root_visual, // visual
+                                 0,                               // value mask
+                                 0));                             // value list
+
+    if (connection()->hasXFixes()) {
+        const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
+                XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_WINDOW_DESTROY |
+                XCB_XFIXES_SELECTION_EVENT_MASK_SELECTION_CLIENT_CLOSE;
+        Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, XCB_ATOM_PRIMARY, mask));
+        Q_XCB_CALL(xcb_xfixes_select_selection_input_checked(xcb_connection(), m_owner, atom(QXcbAtom::CLIPBOARD), mask));
+    }
 }
 
 QXcbClipboard::~QXcbClipboard()
@@ -322,24 +344,6 @@ void QXcbClipboard::setRequestor(xcb_window_t window)
 
 xcb_window_t QXcbClipboard::owner() const
 {
-    if (!m_owner) {
-        int x = 0, y = 0, w = 3, h = 3;
-
-        xcb_window_t window = xcb_generate_id(xcb_connection());
-        Q_XCB_CALL(xcb_create_window(xcb_connection(),
-                                     XCB_COPY_FROM_PARENT,            // depth -- same as root
-                                     window,                        // window id
-                                     m_screen->screen()->root,                   // parent window id
-                                     x, y, w, h,
-                                     0,                               // border width
-                                     XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
-                                     m_screen->screen()->root_visual, // visual
-                                     0,                               // value mask
-                                     0));                             // value list
-
-        QXcbClipboard *that = const_cast<QXcbClipboard *>(this);
-        that->m_owner = window;
-    }
     return m_owner;
 }
 
@@ -553,6 +557,16 @@ void QXcbClipboard::handleSelectionRequest(xcb_selection_request_event_t *req)
     // send selection notify to requestor
     xcb_send_event(xcb_connection(), false, req->requestor, XCB_EVENT_MASK_NO_EVENT, (const char *)&event);
 }
+
+void QXcbClipboard::handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event)
+{
+    QClipboard::Mode mode = modeForAtom(event->selection);
+    if (event->owner != owner() && m_clientClipboard[mode] && m_timestamp[mode] < event->selection_timestamp) {
+        setMimeData(0, mode);
+        emitChanged(mode);
+    }
+}
+
 
 static inline int maxSelectionIncr(xcb_connection_t *c)
 {

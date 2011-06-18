@@ -45,6 +45,7 @@
 #include <QPlatformClipboard>
 #include <qxcbobject.h>
 #include <xcb/xcb.h>
+#include <xcb/xfixes.h>
 
 class QXcbConnection;
 class QXcbScreen;
@@ -71,6 +72,7 @@ public:
 
     void handleSelectionRequest(xcb_selection_request_event_t *event);
     void handleSelectionClearRequest(xcb_selection_clear_event_t *event);
+    void handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event);
 
     bool clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const;
     QByteArray clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm);

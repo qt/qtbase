@@ -90,6 +90,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     , m_dri2_support_probed(false)
     , m_has_support_for_dri2(false)
 #endif
+    , xfixes_first_event(0)
 {
     m_primaryScreen = 0;
 
@@ -110,6 +111,8 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
 
 #endif //XCB_USE_XLIB
+    xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+
     m_setup = xcb_get_setup(xcb_connection());
 
     initializeAllAtoms();
@@ -124,13 +127,13 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
+    initializeXFixes();
+    initializeXRender();
+
     m_wmSupport = new QXcbWMSupport(this);
     m_keyboard = new QXcbKeyboard(this);
     m_clipboard = new QXcbClipboard(this);
     m_drag = new QXcbDrag(this);
-
-    initializeXFixes();
-    initializeXRender();
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
@@ -506,6 +509,15 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         handled = false;
         break;
     }
+
+    if (!handled) {
+        if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
+            setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
+            m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+            handled = true;
+        }
+    }
+
     if (handled)
         printXcbEvent("Handled XCB event", event);
     else
@@ -842,7 +854,9 @@ void QXcbConnection::sync()
 void QXcbConnection::initializeXFixes()
 {
     xcb_generic_error_t *error = 0;
-    xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xfixes_id);
+    xfixes_first_event = reply->first_event;
+
     xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
                                                                                      XCB_XFIXES_MAJOR_VERSION,
                                                                                      XCB_XFIXES_MINOR_VERSION);
@@ -851,8 +865,10 @@ void QXcbConnection::initializeXFixes()
     if (!xfixes_query || error || xfixes_query->major_version < 2) {
         qWarning("Failed to initialize XFixes");
         free(error);
+        xfixes_first_event = 0;
     }
     free(xfixes_query);
+
 }
 
 void QXcbConnection::initializeXRender()
