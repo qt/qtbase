@@ -789,15 +789,8 @@ void QPaintEngineEx::drawLines(const QLine *lines, int lineCount)
 
         qreal pts[64];
         int count2 = count<<1;
-#ifdef Q_WS_MAC
-        for (int i=0; i<count2; i+=2) {
-            pts[i] = ((int *) lines)[i+1];
-            pts[i+1] = ((int *) lines)[i];
-        }
-#else
         for (int i=0; i<count2; ++i)
             pts[i] = ((int *) lines)[i];
-#endif
 
         QVectorPath path(pts, count, qpaintengineex_line_types_16, QVectorPath::LinesHint);
         stroke(path, state()->pen);

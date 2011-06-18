@@ -92,14 +92,8 @@ public:
 
 private:
     friend class QTransform;
-    // ### Qt 5;  remove the ifdef and just have the same order on all platforms.
-#if defined(Q_OS_MAC)
-    int yp;
-    int xp;
-#else
     int xp;
     int yp;
-#endif
 };
 
 Q_DECLARE_TYPEINFO(QPoint, Q_MOVABLE_TYPE);
