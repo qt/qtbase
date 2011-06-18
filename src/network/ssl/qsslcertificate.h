@@ -62,6 +62,7 @@ QT_MODULE(Network)
 
 class QDateTime;
 class QIODevice;
+class QSslError;
 class QSslKey;
 class QStringList;
 template <typename T, typename U> class QMultiMap;
@@ -121,6 +122,8 @@ public:
         QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
     static QList<QSslCertificate> fromData(
         const QByteArray &data, QSsl::EncodingFormat format = QSsl::Pem);
+
+    static QList<QSslError> verify(QList<QSslCertificate> certificateChain, const QString &hostName = QString());
 
     Qt::HANDLE handle() const;
 

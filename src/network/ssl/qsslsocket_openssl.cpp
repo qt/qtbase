@@ -1283,33 +1283,14 @@ bool QSslSocketBackendPrivate::startHandshake()
         // if we're the server, don't check CN
         if (mode == QSslSocket::SslClientMode) {
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
-            QStringList commonNameList = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
-            bool matched = false;
 
-            foreach (const QString &commonName, commonNameList) {
-                if (isMatchingHostname(commonName.toLower(), peerName.toLower())) {
-                    matched = true;
-                    break;
-                }
-            }
-
-            if (!matched) {
-                foreach (const QString &altName, configuration.peerCertificate
-                         .alternateSubjectNames().values(QSsl::DnsEntry)) {
-                    if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
-                        matched = true;
-                        break;
-                    }
-                }
-            }
-
-        if (!matched) {
-            // No matches in common names or alternate names.
-            QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
-            errors << error;
-            emit q->peerVerifyError(error);
-            if (q->state() != QAbstractSocket::ConnectedState)
-                return false;
+            if (!isMatchingHostname(configuration.peerCertificate, peerName)) {
+                // No matches in common names or alternate names.
+                QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
+                errors << error;
+                emit q->peerVerifyError(error);
+                if (q->state() != QAbstractSocket::ConnectedState)
+                    return false;
             }
         }
     } else {
@@ -1444,6 +1425,25 @@ QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
     return errorString;
 }
 
+bool QSslSocketBackendPrivate::isMatchingHostname(const QSslCertificate &cert, const QString &peerName)
+{
+    QStringList commonNameList = cert.subjectInfo(QSslCertificate::CommonName);
+
+    foreach (const QString &commonName, commonNameList) {
+        if (isMatchingHostname(commonName.toLower(), peerName.toLower())) {
+            return true;
+        }
+    }
+
+    foreach (const QString &altName, cert.alternateSubjectNames().values(QSsl::DnsEntry)) {
+        if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
 {
     int wildcard = cn.indexOf(QLatin1Char('*'));
@@ -1482,6 +1482,135 @@ bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QStri
 
     // Ok, I guess this was a wildcard CN and the hostname matches.
     return true;
+}
+
+QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
+{
+    QList<QSslError> errors;
+    if (certificateChain.count() <= 0) {
+        errors << QSslError(QSslError::UnspecifiedError);
+        return errors;
+    }
+
+    // Setup the store with the default CA certificates
+    X509_STORE *certStore = q_X509_STORE_new();
+    if (!certStore) {
+        qWarning() << "Unable to create certificate store";
+        errors << QSslError(QSslError::UnspecifiedError);
+        return errors;
+    }
+
+    QList<QSslCertificate> expiredCerts;
+
+    foreach (const QSslCertificate &caCertificate, QSslSocket::defaultCaCertificates()) {
+        // add expired certs later, so that the
+        // valid ones are used before the expired ones
+        if (!caCertificate.isValid()) {
+            expiredCerts.append(caCertificate);
+        } else {
+            q_X509_STORE_add_cert(certStore, (X509 *)caCertificate.handle());
+        }
+    }
+
+    bool addExpiredCerts = true;
+#if defined(Q_OS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_5)
+    //On Leopard SSL does not work if we add the expired certificates.
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_5)
+        addExpiredCerts = false;
+#endif
+    // now add the expired certs
+    if (addExpiredCerts) {
+        foreach (const QSslCertificate &caCertificate, expiredCerts) {
+            q_X509_STORE_add_cert(certStore, (X509 *)caCertificate.handle());
+        }
+    }
+
+    _q_sslErrorList()->mutex.lock();
+
+    // Register a custom callback to get all verification errors.
+    X509_STORE_set_verify_cb_func(certStore, q_X509Callback);
+
+    // Build the chain of intermediate certificates
+    STACK_OF(X509) *intermediates = 0;
+    if (certificateChain.length() > 1) {
+        intermediates = (STACK_OF(X509) *) q_sk_new_null();
+
+        if (!intermediates) {
+            q_X509_STORE_free(certStore);
+            errors << QSslError(QSslError::UnspecifiedError);
+            return errors;
+        }
+
+        bool first = true;
+        foreach (const QSslCertificate &cert, certificateChain) {
+            if (first) {
+                first = false;
+                continue;
+            }
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+            q_sk_push( (_STACK *)intermediates, (X509 *)cert.handle());
+#else
+            q_sk_push( (STACK *)intermediates, (X509 *)cert.handle());
+#endif
+        }
+    }
+
+    X509_STORE_CTX *storeContext = q_X509_STORE_CTX_new();
+    if (!storeContext) {
+        q_X509_STORE_free(certStore);
+        errors << QSslError(QSslError::UnspecifiedError);
+        return errors;
+    }
+
+    if (!q_X509_STORE_CTX_init(storeContext, certStore, (X509 *)certificateChain[0].handle(), intermediates)) {
+        q_X509_STORE_CTX_free(storeContext);
+        q_X509_STORE_free(certStore);
+        errors << QSslError(QSslError::UnspecifiedError);
+        return errors;
+    }
+
+    // Now we can actually perform the verification of the chain we have built.
+    // We ignore the result of this function since we process errors via the
+    // callback.
+    (void) q_X509_verify_cert(storeContext);
+
+    q_X509_STORE_CTX_free(storeContext);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+    q_sk_free( (_STACK *) intermediates);
+#else
+    q_sk_free( (STACK *) intermediates);
+#endif
+
+    // Now process the errors
+    const QList<QPair<int, int> > errorList = _q_sslErrorList()->errors;
+    _q_sslErrorList()->errors.clear();
+
+    _q_sslErrorList()->mutex.unlock();
+
+    // Translate the errors
+    if (QSslCertificatePrivate::isBlacklisted(certificateChain[0])) {
+        QSslError error(QSslError::CertificateBlacklisted, certificateChain[0]);
+        errors << error;
+    }
+
+    // Check the certificate name against the hostname if one was specified
+    if ((!hostName.isEmpty()) && (!isMatchingHostname(certificateChain[0], hostName))) {
+        // No matches in common names or alternate names.
+        QSslError error(QSslError::HostNameMismatch, certificateChain[0]);
+        errors << error;
+    }
+
+    // Translate errors from the error list into QSslErrors.
+    for (int i = 0; i < errorList.size(); ++i) {
+        const QPair<int, int> &errorAndDepth = errorList.at(i);
+        int err = errorAndDepth.first;
+        int depth = errorAndDepth.second;
+        errors << _q_OpenSSL_to_QSslError(err, certificateChain.value(depth));
+    }
+
+    q_X509_STORE_free(certStore);
+
+    return errors;
 }
 
 QT_END_NAMESPACE

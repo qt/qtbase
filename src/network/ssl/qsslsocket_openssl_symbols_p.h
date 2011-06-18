@@ -263,9 +263,13 @@ void q_RSA_free(RSA *a);
 int q_sk_num(STACK *a);
 void q_sk_pop_free(STACK *a, void (*b)(void *));
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+_STACK *q_sk_new_null();
+void q_sk_push(_STACK *st, void *data);
 void q_sk_free(_STACK *a);
 void * q_sk_value(STACK *a, int b);
 #else
+STACK *q_sk_new_null();
+void q_sk_push(STACK *st, void *data);
 void q_sk_free(STACK *a);
 char * q_sk_value(STACK *a, int b);
 #endif
