@@ -76,7 +76,10 @@ public:
         LocalityName,
         OrganizationalUnitName,
         CountryName,
-        StateOrProvinceName
+        StateOrProvinceName,
+        DistinguishedNameQualifier,
+        SerialNumber,
+        EmailAddress
     };
 
     QSslCertificate(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
@@ -96,10 +99,10 @@ public:
     QByteArray version() const;
     QByteArray serialNumber() const;
     QByteArray digest(QCryptographicHash::Algorithm algorithm = QCryptographicHash::Md5) const;
-    QString issuerInfo(SubjectInfo info) const;
-    QString issuerInfo(const QByteArray &tag) const;
-    QString subjectInfo(SubjectInfo info) const;
-    QString subjectInfo(const QByteArray &tag) const;
+    QStringList issuerInfo(SubjectInfo info) const;
+    QStringList issuerInfo(const QByteArray &tag) const;
+    QStringList subjectInfo(SubjectInfo info) const;
+    QStringList subjectInfo(const QByteArray &tag) const;
     QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const;
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;

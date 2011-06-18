@@ -1262,10 +1262,17 @@ bool QSslSocketBackendPrivate::startHandshake()
         // if we're the server, don't check CN
         if (mode == QSslSocket::SslClientMode) {
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
-            QString commonName = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
+            QStringList commonNameList = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
+            bool matched = false;
 
-            if (!isMatchingHostname(commonName.toLower(), peerName.toLower())) {
-                bool matched = false;
+            foreach (const QString &commonName, commonNameList) {
+                if (isMatchingHostname(commonName.toLower(), peerName.toLower())) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched) {
                 foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
                     if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
@@ -1273,15 +1280,15 @@ bool QSslSocketBackendPrivate::startHandshake()
                         break;
                     }
                 }
+            }
 
-                if (!matched) {
-                    // No matches in common names or alternate names.
-                    QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
-                    errors << error;
-                    emit q->peerVerifyError(error);
-                    if (q->state() != QAbstractSocket::ConnectedState)
-                        return false;
-                }
+        if (!matched) {
+            // No matches in common names or alternate names.
+            QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
+            errors << error;
+            emit q->peerVerifyError(error);
+            if (q->state() != QAbstractSocket::ConnectedState)
+                return false;
             }
         }
     } else {
