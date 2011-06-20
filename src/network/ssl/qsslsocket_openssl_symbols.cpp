@@ -630,6 +630,7 @@ bool q_resolveOpenSslSymbols()
 #ifndef SSLEAY_MACROS
     RESOLVEFUNC(X509_dup, 1997, libs.second )
 #endif
+    RESOLVEFUNC(X509_print, 2046, libs.second )
     RESOLVEFUNC(X509_EXTENSION_get_object, 1785, libs.second )
     RESOLVEFUNC(X509_free, 2001, libs.second )
     RESOLVEFUNC(X509_get_ext, 2012, libs.second )
