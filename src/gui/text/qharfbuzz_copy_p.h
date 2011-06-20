@@ -43,7 +43,7 @@ extern "C" {
 #ifdef  __xlC__
 typedef unsigned hb_bitfield;
 #else
-typedef quint8 hb_bitfield;
+typedef QT_PREPEND_NAMESPACE(quint8) hb_bitfield;
 #endif
 
 typedef enum {
@@ -66,12 +66,12 @@ typedef enum {
   HB_Err_Out_Of_Memory                = 0xDEAD
 } HB_Error;
 
-typedef quint32 HB_Glyph;
+typedef QT_PREPEND_NAMESPACE(quint32) HB_Glyph;
 typedef void * HB_Font;
 typedef void * HB_Face;
 typedef void * HB_FontRec;
-typedef quint32 hb_uint32;
-typedef qint32 HB_Fixed;
+typedef QT_PREPEND_NAMESPACE(quint32) hb_uint32;
+typedef QT_PREPEND_NAMESPACE(qint32) HB_Fixed;
 
 typedef struct {
     HB_Fixed x;

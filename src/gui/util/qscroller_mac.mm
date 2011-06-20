@@ -47,6 +47,8 @@
 
 #include "qscroller_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QPointF QScrollerPrivate::realDpi(int screen)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -67,5 +69,7 @@ QPointF QScrollerPrivate::realDpi(int screen)
     }
     [pool release];
 }
+
+QT_END_NAMESPACE
 
 #endif

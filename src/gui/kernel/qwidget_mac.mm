@@ -5018,7 +5018,7 @@ void QWidgetPrivate::registerTouchWindow(bool enable)
     if (enable == touchEventsEnabled)
         return;
 
-    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_effectiveview_for(q));
+    QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_effectiveview_for(q));
     if (!view)
         return;
 
