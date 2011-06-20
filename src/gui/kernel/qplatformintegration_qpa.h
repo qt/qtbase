@@ -62,6 +62,7 @@ class QPlatformNativeInterface;
 class QPlatformPrinterSupport;
 class QPlatformDrag;
 class QPlatformGLContext;
+class QGuiGLFormat;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {

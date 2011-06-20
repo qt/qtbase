@@ -41,7 +41,7 @@
 
 #include "qwaylandreadbackeglcontext.h"
 
-#include "../../../eglconvenience/qeglconvenience.h"
+#include <QPlatformSupport/eglconvenience/qeglconvenience_p.h>
 
 #include <QtCore/QDebug>
 #include <QtGui/QWindowContext>

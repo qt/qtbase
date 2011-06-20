@@ -46,7 +46,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QRegion>
 
-#include "QtPlatformSupport/private/qeglconvenience_p.h"
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 QWaylandXCompositeEGLSurface::QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window)
     : QEGLSurface(window->eglSurface(), window->window()->glFormat())

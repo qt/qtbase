@@ -66,7 +66,7 @@
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
 #elif defined(XCB_USE_EGL)
-#include "../eglconvenience/qeglplatformcontext.h"
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #endif
 
 QXcbIntegration::QXcbIntegration()

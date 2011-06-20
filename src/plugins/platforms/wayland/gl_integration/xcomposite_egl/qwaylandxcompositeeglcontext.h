@@ -46,7 +46,7 @@
 
 #include "qwaylandxcompositeeglintegration.h"
 
-#include "qeglplatformcontext.h"
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 class QWaylandXCompositeEGLWindow;
 
