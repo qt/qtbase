@@ -1,8 +1,9 @@
 load(qt_module)
-TARGET	   = QtPlatformSupport
+TARGET     = $$qtLibraryTarget(QtPlatformSupport)
 QPRO_PWD   = $$PWD
 QT         += core-private gui-private
-TEMPLATE = lib
+TEMPLATE   = lib
+DESTDIR    = $$QMAKE_LIBDIR_QT
 
 CONFIG += module staticlib
 MODULE_PRI = ../modules/qt_platformssupport.pri
