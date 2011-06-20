@@ -692,8 +692,8 @@ QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
 
     q_X509_print(bio, x509);
 
-    QVarLengthArray<char, 4096> data;
-    int count = q_BIO_read(bio, data.data(), 4096);
+    QVarLengthArray<char, 16384> data;
+    int count = q_BIO_read(bio, data.data(), 16384);
     if ( count > 0 ) {
         result = QByteArray( data.data(), count );
     }
