@@ -76,7 +76,7 @@ public:
     QCocoaGLContext *currentContext() const;
 
 private:
-    friend class QCocoaWindowSurface;
+    friend class QCocoaBackingStore;
     NSWindow *m_nsWindow;
     QNSView *m_contentView;
     NSView *m_windowSurfaceView;

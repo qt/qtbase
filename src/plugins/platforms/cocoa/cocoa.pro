@@ -4,7 +4,7 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 OBJECTIVE_SOURCES = main.mm \
     qcocoaintegration.mm \
-    qcocoawindowsurface.mm \
+    qcocoabackingstore.mm \
     qcocoawindow.mm \
     qnsview.mm \
     qcocoaautoreleasepool.mm \
@@ -14,7 +14,7 @@ OBJECTIVE_SOURCES = main.mm \
 
 
 OBJECTIVE_HEADERS = qcocoaintegration.h \
-    qcocoawindowsurface.h \
+    qcocoabackingstore.h \
     qcocoawindow.h \
     qnsview.h \
     qcocoaautoreleasepool.h \

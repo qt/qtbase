@@ -42,7 +42,7 @@
 #include "qcocoaintegration.h"
 
 #include "qcocoawindow.h"
-#include "qcocoawindowsurface.h"
+#include "qcocoabackingstore.h"
 #include "qcocoanativeinterface.h"
 
 #include <QtPlatformSupport/5.0.0/QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
@@ -117,9 +117,9 @@ QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QGuiGLForma
     return new QCocoaGLContext(glFormat, share);
 }
 
-QWindowSurface *QCocoaIntegration::createWindowSurface(QWindow *window, WId winId) const
+QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QCocoaWindowSurface(window, winId);
+    return new QCocoaBackingStore(window, winId);
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const

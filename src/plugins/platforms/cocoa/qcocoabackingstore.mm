@@ -39,33 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_COCOA_H
-#define QWINDOWSURFACE_COCOA_H
+#include "qcocoabackingstore.h"
 
-#include <Cocoa/Cocoa.h>
-
-#include "qcocoawindow.h"
-#include "qnsview.h"
-
-#include <QtGui/private/qwindowsurface_p.h>
+#include <QtCore/qdebug.h>
+#include <QtGui/QPainter>
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaWindowSurface : public QWindowSurface
+QRect flipedRect(const QRect &sourceRect,int height)
 {
-public:
-    QCocoaWindowSurface(QWindow *window, WId wid);
-    ~QCocoaWindowSurface();
+    if (!sourceRect.isValid())
+        return QRect();
+    QRect flippedRect = sourceRect;
+    flippedRect.moveTop(height - sourceRect.y());
+    return flippedRect;
+}
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
-    void resize (const QSize &size);
+QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
+{
+    m_cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
 
-private:
-    QCocoaWindow *m_cocoaWindow;
-    QImage *m_image;
-};
+    const QRect geo = window->geometry();
+    NSRect rect = NSMakeRect(geo.x(),geo.y(),geo.width(),geo.height());
+
+    m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32);
+}
+
+QCocoaBackingStore::~QCocoaBackingStore()
+{
+    delete m_image;
+}
+
+QPaintDevice *QCocoaBackingStore::paintDevice()
+{
+    return m_image;
+}
+
+void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(widget);
+    Q_UNUSED(offset);
+
+    QRect geo = region.boundingRect();
+
+    NSRect rect = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
+    [m_cocoaWindow->m_windowSurfaceView displayRect:rect];
+}
+
+void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
+{
+    delete m_image;
+    m_image = new QImage(size,QImage::Format_ARGB32_Premultiplied);
+    NSSize newSize = NSMakeSize(size.width(),size.height());
+    [m_cocoaWindow->m_windowSurfaceView setImage:m_image];
+}
 
 QT_END_NAMESPACE
-
-#endif
