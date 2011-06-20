@@ -55,7 +55,9 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 
+#ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
+#endif
 
 QWaylandIntegration::QWaylandIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
@@ -80,7 +82,12 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
-    case OpenGL: return true;
+    case OpenGL:
+#ifdef QT_WAYLAND_GL_SUPPORT
+        return true;
+#else
+        return false;
+#endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -92,15 +99,21 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const
 {
+#ifdef QT_WAYLAND_GL_SUPPORT
     if (window->surfaceType() == QWindow::OpenGLSurface)
         return mDisplay->eglIntegration()->createEglWindow(window);
+#endif
 
     return new QWaylandShmWindow(window);
 }
 
 QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
 {
+#ifdef QT_WAYLAND_GL_SUPPORT
     return mDisplay->eglIntegration()->createPlatformGLContext(glFormat, share);
+#else
+    return 0;
+#endif
 }
 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWindow *window, WId winId) const

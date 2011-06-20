@@ -47,7 +47,9 @@
 #include "qwaylandinputdevice.h"
 #include "qwaylandclipboard.h"
 
+#ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
+#endif
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
 #include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
@@ -91,10 +93,12 @@ struct wl_visual *QWaylandDisplay::argbPremultipliedVisual()
     return premultiplied_argb_visual;
 }
 
+#ifdef QT_WAYLAND_GL_SUPPORT
 QWaylandGLIntegration * QWaylandDisplay::eglIntegration()
 {
     return mEglIntegration;
 }
+#endif
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
 QWaylandWindowManagerIntegration *QWaylandDisplay::windowManagerIntegration()
@@ -132,7 +136,9 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
 
+#ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
+#endif
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
     mWindowManagerIntegration = QWaylandWindowManagerIntegration::createIntegration(this);
@@ -142,7 +148,9 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     qRegisterMetaType<uint32_t>("uint32_t");
 
+#ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
+#endif
 
     connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
 
@@ -157,7 +165,9 @@ QWaylandDisplay::QWaylandDisplay(void)
 QWaylandDisplay::~QWaylandDisplay(void)
 {
     close(mFd);
+#ifdef QT_WAYLAND_GL_SUPPORT
     delete mEglIntegration;
+#endif
     wl_display_destroy(mDisplay);
 }
 

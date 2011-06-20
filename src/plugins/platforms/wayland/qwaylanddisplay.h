@@ -73,7 +73,9 @@ public:
     struct wl_visual *argbVisual();
     struct wl_visual *argbPremultipliedVisual();
 
+#ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *eglIntegration();
+#endif
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
     QWaylandWindowManagerIntegration *windowManagerIntegration();
@@ -132,7 +134,9 @@ private:
                                        struct wl_compositor *compositor,
                                        uint32_t id, uint32_t token);
 
+#ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;
+#endif
 
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
     QWaylandWindowManagerIntegration *mWindowManagerIntegration;
