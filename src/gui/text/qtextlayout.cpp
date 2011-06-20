@@ -2151,7 +2151,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
         }
 
         int relativeFrom = qMax(iterator.itemStart, from) - si.position;
-        int relativeTo = qMin(iterator.itemEnd, from + length - 1) - si.position;
+        int relativeTo = qMin(iterator.itemEnd - 1, from + length - 1) - si.position;
 
         unsigned short *logClusters = eng->logClusters(&si);
         int glyphsStart = logClusters[relativeFrom];
@@ -2170,7 +2170,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                 pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
                                glyphLayout.advances_y[i].toReal());
             }
-        } else if (relativeTo != (iterator.itemEnd - si.position) && rtl) {
+        } else if (relativeTo != (iterator.itemEnd - si.position - 1) && rtl) {
             for (int i=glyphLayout.numGlyphs - 1; i>glyphsEnd; --i) {
                 QFixed justification = QFixed::fromFixed(glyphLayout.justifications[i].space_18d6);
                 pos += QPointF((glyphLayout.advances_x[i] + justification).toReal(),
