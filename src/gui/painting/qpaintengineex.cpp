@@ -1084,7 +1084,7 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
             changedHints = true;
         }
 
-        fill(qtVectorPathForPath(path), staticTextItem->color);
+        fill(qtVectorPathForPath(path), s->pen.color());
 
         if (changedHints) {
             s->renderHints = oldHints;
