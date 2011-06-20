@@ -39,48 +39,34 @@
 **
 ****************************************************************************/
 
+#ifndef QXCBBACKINGSTORE_H
+#define QXCBBACKINGSTORE_H
 
-#include "qminimalwindowsurface.h"
-#include <QtCore/qdebug.h>
-#include <private/qguiapplication_p.h>
+#include <qplatformbackingstore_qpa.h>
 
-QT_BEGIN_NAMESPACE
+#include <xcb/xcb.h>
 
-QMinimalWindowSurface::QMinimalWindowSurface(QWindow *window)
-    : QWindowSurface(window)
+#include "qxcbobject.h"
+
+class QXcbShmImage;
+
+class QXcbBackingStore : public QXcbObject, public QPlatformBackingStore
 {
-    //qDebug() << "QMinimalWindowSurface::QMinimalWindowSurface:" << (long)this;
-}
+public:
+    QXcbBackingStore(QWindow *widget);
+    ~QXcbBackingStore();
 
-QMinimalWindowSurface::~QMinimalWindowSurface()
-{
-}
+    QPaintDevice *paintDevice();
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
+    bool scroll(const QRegion &area, int dx, int dy);
 
-QPaintDevice *QMinimalWindowSurface::paintDevice()
-{
-    //qDebug() << "QMinimalWindowSurface::paintDevice";
-    return &mImage;
-}
+    void beginPaint(const QRegion &);
+    void endPaint(const QRegion &);
 
-void QMinimalWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
-{
-    Q_UNUSED(window);
-    Q_UNUSED(region);
-    Q_UNUSED(offset);
+private:
+    QXcbShmImage *m_image;
+    bool m_syncingResize;
+};
 
-    static int c = 0;
-    QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
-    qDebug() << "QMinimalWindowSurface::flush() saving contents to" << filename.toLocal8Bit().constData();
-    mImage.save(filename);
-}
-
-void QMinimalWindowSurface::resize(const QSize &size)
-{
-    //qDebug() << "QMinimalWindowSurface::setGeometry:" << (long)this << rect;
-    QWindowSurface::resize(size);
-    QImage::Format format = QGuiApplicationPrivate::platformIntegration()->screens().first()->format();
-    if (mImage.size() != size)
-        mImage = QImage(size, format);
-}
-
-QT_END_NAMESPACE
+#endif

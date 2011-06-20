@@ -43,7 +43,6 @@
 #define QPLATFORMINTEGRATION_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qplatformscreen_qpa.h>
 
@@ -55,7 +54,7 @@ QT_MODULE(Gui)
 
 class QPlatformWindow;
 class QWindow;
-class QBlittable;
+class QPlatformBackingStore;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
@@ -79,7 +78,7 @@ public:
 // GraphicsSystem functions
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
-    virtual QWindowSurface *createWindowSurface(QWindow *window, WId winId) const = 0;
+    virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
     virtual QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
 
 // Window System functions

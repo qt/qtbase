@@ -13,7 +13,7 @@ QT += core-private gui-private opengl-private platformsupport-private
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
             qwaylandnativeinterface.cpp \
-            qwaylandshmsurface.cpp \
+            qwaylandshmbackingstore.cpp \
             qwaylandinputdevice.cpp \
             qwaylandcursor.cpp \
             qwaylanddisplay.cpp \
@@ -28,7 +28,7 @@ HEADERS =   qwaylandintegration.h \
             qwaylanddisplay.h \
             qwaylandwindow.h \
             qwaylandscreen.h \
-            qwaylandshmsurface.h \
+            qwaylandshmbackingstore.h \
             qwaylandbuffer.h \
             qwaylandshmwindow.h \
             qwaylandclipboard.h

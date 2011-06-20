@@ -163,8 +163,8 @@ struct QTLWExtra {
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     QIcon *icon; // widget icon
     QPixmap *iconPixmap;
-    QWidgetBackingStoreTracker backingStore;
-    QWindowSurface *windowSurface;
+    QWidgetBackingStoreTracker backingStoreTracker;
+    QBackingStore *backingStore;
     QPainter *sharedPainter;
 
     // Implicit pointers (shared_null).
@@ -458,11 +458,8 @@ public:
 
 
     void paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& children, int index,
-                                const QRegion &rgn, const QPoint &offset, int flags
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-                                , const QWindowSurface *currentSurface
-#endif
-                                , QPainter *sharedPainter, QWidgetBackingStore *backingStore);
+                                const QRegion &rgn, const QPoint &offset, int flags,
+                                QPainter *sharedPainter, QWidgetBackingStore *backingStore);
 
 
     QPainter *beginSharedPainter();
@@ -470,8 +467,6 @@ public:
 #ifndef QT_NO_GRAPHICSVIEW
     static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
 #endif
-    QWindowSurface *createDefaultWindowSurface();
-    QWindowSurface *createDefaultWindowSurface_sys();
     void repaint_sys(const QRegion &rgn);
 
     QRect clipRect() const;
@@ -884,20 +879,6 @@ public:
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
     void registerTouchWindow(bool enable = true);
-#elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
-    void setMaxWindowState_helper();
-    void setFullScreenSize_helper();
-    void moveSurface(QWindowSurface *surface, const QPoint &offset);
-    QRegion localRequestedRegion() const;
-    QRegion localAllocatedRegion() const;
-
-    friend class QWSManager;
-    friend class QWSManagerPrivate;
-    friend class QDecoration;
-#ifndef QT_NO_CURSOR
-    void updateCursor() const;
-#endif
-    QScreen* getScreen() const;
 #elif defined(Q_WS_QPA) // <--------------------------------------------------------- QPA
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
@@ -1026,7 +1007,7 @@ inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
 {
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
-    return x ? x->backingStore.data() : 0;
+    return x ? x->backingStoreTracker.data() : 0;
 }
 
 QT_END_NAMESPACE

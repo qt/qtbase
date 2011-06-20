@@ -444,8 +444,6 @@ private:
     friend class QGL2PaintEngineEx;
     friend class QGL2PaintEngineExPrivate;
     friend class QGLEngineShaderManager;
-    friend class QGLWindowSurface;
-    friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
     friend struct QGLGlyphTexture;
@@ -467,7 +465,6 @@ private:
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
     friend class QGLWidgetGLPaintDevice;
-    friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
     friend class QGLContextResourceBase;
     friend class QSGDistanceFieldGlyphCache;

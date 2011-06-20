@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qxcbwindowsurface.h"
+#include "qxcbbackingstore.h"
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
@@ -64,6 +64,7 @@ public:
     ~QXcbShmImage() { destroy(); }
 
     QImage *image() { return &m_qimage; }
+    QSize size() const { return m_qimage.size(); }
 
     void put(xcb_window_t window, const QPoint &dst, const QRect &source);
     void preparePaint(const QRegion &region);
@@ -113,12 +114,12 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
     if (error) {
-        qWarning() << "QXcbWindowSurface: Unable to attach to shared memory segment";
+        qWarning() << "QXcbBackingStore: Unable to attach to shared memory segment";
         free(error);
     }
 
     if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
-        qWarning() << "QXcbWindowSurface: Error while marking the shared memory segment to be destroyed";
+        qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
 }
@@ -183,8 +184,8 @@ void QXcbShmImage::preparePaint(const QRegion &region)
     }
 }
 
-QXcbWindowSurface::QXcbWindowSurface(QWindow *window, bool setDefaultSurface)
-    : QWindowSurface(window, setDefaultSurface)
+QXcbBackingStore::QXcbBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
     , m_image(0)
     , m_syncingResize(false)
 {
@@ -192,20 +193,21 @@ QXcbWindowSurface::QXcbWindowSurface(QWindow *window, bool setDefaultSurface)
     setConnection(screen->connection());
 }
 
-QXcbWindowSurface::~QXcbWindowSurface()
+QXcbBackingStore::~QXcbBackingStore()
 {
     delete m_image;
 }
 
-QPaintDevice *QXcbWindowSurface::paintDevice()
+QPaintDevice *QXcbBackingStore::paintDevice()
 {
     return m_image->image();
 }
 
-void QXcbWindowSurface::beginPaint(const QRegion &region)
+void QXcbBackingStore::beginPaint(const QRegion &region)
 {
     m_image->preparePaint(region);
 
+#if 0
     if (m_image->image()->hasAlphaChannel()) {
         QPainter p(m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
@@ -215,17 +217,18 @@ void QXcbWindowSurface::beginPaint(const QRegion &region)
             p.fillRect(*it, blank);
         }
     }
+#endif
 }
 
-void QXcbWindowSurface::endPaint(const QRegion &)
+void QXcbBackingStore::endPaint(const QRegion &)
 {
 }
 
-void QXcbWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     QRect bounds = region.boundingRect();
 
-    if (size().isEmpty() || !geometry().contains(bounds))
+    if (!m_image || m_image->size().isEmpty())
         return;
 
     Q_XCB_NOOP(connection());
@@ -246,13 +249,12 @@ void QXcbWindowSurface::flush(QWindow *window, const QRegion &region, const QPoi
     }
 }
 
-void QXcbWindowSurface::resize(const QSize &size)
+void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {
-    if (size == QWindowSurface::size())
+    if (m_image && size == m_image->size())
         return;
 
     Q_XCB_NOOP(connection());
-    QWindowSurface::resize(size);
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window()));
     QXcbWindow* win = static_cast<QXcbWindow *>(window()->handle());
@@ -266,7 +268,7 @@ void QXcbWindowSurface::resize(const QSize &size)
 
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
-bool QXcbWindowSurface::scroll(const QRegion &area, int dx, int dy)
+bool QXcbBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
     if (!m_image || m_image->image()->isNull())
         return false;

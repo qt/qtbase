@@ -14,7 +14,7 @@ SOURCES = \
         qxcbdrag.cpp \
         qxcbscreen.cpp \
         qxcbwindow.cpp \
-        qxcbwindowsurface.cpp \
+        qxcbbackingstore.cpp \
         qxcbwmsupport.cpp \
         main.cpp \
         qxcbnativeinterface.cpp \
@@ -31,7 +31,7 @@ HEADERS = \
         qxcbobject.h \
         qxcbscreen.h \
         qxcbwindow.h \
-        qxcbwindowsurface.h \
+        qxcbbackingstore.h \
         qxcbwmsupport.h \
         qxcbnativeinterface.h \
         qxcbcursor.h \

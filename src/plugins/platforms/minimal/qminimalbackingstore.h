@@ -39,34 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBWINDOWSURFACE_H
-#define QXCBWINDOWSURFACE_H
+#ifndef QBACKINGSTORE_MINIMAL_H
+#define QBACKINGSTORE_MINIMAL_H
 
-#include <private/qwindowsurface_p.h>
+#include <QtGui/QPlatformBackingStore>
+#include <QtGui/QPlatformWindow>
+#include <QtGui/QImage>
 
-#include <xcb/xcb.h>
+QT_BEGIN_NAMESPACE
 
-#include "qxcbobject.h"
-
-class QXcbShmImage;
-
-class QXcbWindowSurface : public QXcbObject, public QWindowSurface
+class QMinimalBackingStore : public QPlatformBackingStore
 {
 public:
-    QXcbWindowSurface(QWindow *widget, bool setDefaultSurface = true);
-    ~QXcbWindowSurface();
+    QMinimalBackingStore(QWindow *window);
+    ~QMinimalBackingStore();
 
     QPaintDevice *paintDevice();
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-    void beginPaint(const QRegion &);
-    void endPaint(const QRegion &);
+    void resize(const QSize &size, const QRegion &staticContents);
 
 private:
-    QXcbShmImage *m_image;
-    bool m_syncingResize;
+    QImage mImage;
 };
+
+QT_END_NAMESPACE
 
 #endif

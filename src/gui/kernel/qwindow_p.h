@@ -65,7 +65,6 @@ public:
         , platformWindow(0)
         , visible(false)
         , glSurface(0)
-        , surface(0)
         , windowState(Qt::WindowNoState)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
@@ -87,7 +86,6 @@ public:
     QString windowTitle;
     QRect geometry;
     QPlatformGLSurface *glSurface;
-    QWindowSurface *surface;
     Qt::WindowState windowState;
 
     QSize minimumSize;

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qminimalintegration.h"
-#include "qminimalwindowsurface.h"
+#include "qminimalbackingstore.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
@@ -75,8 +75,7 @@ QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) cons
     return new QPlatformWindow(window);
 }
 
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWindow *window, WId winId) const
+QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QMinimalWindowSurface(window);
+    return new QMinimalBackingStore(window);
 }

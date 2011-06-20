@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBACKINGSTORE_P_H
-#define QBACKINGSTORE_P_H
+#ifndef QWIDGETBACKINGSTORE_P_H
+#define QWIDGETBACKINGSTORE_P_H
 
 //
 //  W A R N I N G
@@ -56,20 +56,15 @@
 #include <QDebug>
 #include <QtWidgets/qwidget.h>
 #include <private/qwidget_p.h>
-#include <private/qwindowsurface_p.h>
-#ifdef Q_WS_QWS
-#include <private/qwindowsurface_qws_p.h>
-#endif
+#include <QtGui/qbackingstore.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowSurface;
-
 struct BeginPaintInfo {
-    inline BeginPaintInfo() : wasFlushed(0), nothingToPaint(0), windowSurfaceRecreated(0) {}
+    inline BeginPaintInfo() : wasFlushed(0), nothingToPaint(0), backingStoreRecreated(0) {}
     uint wasFlushed : 1;
     uint nothingToPaint : 1;
-    uint windowSurfaceRecreated : 1;
+    uint backingStoreRecreated : 1;
 };
 
 class Q_AUTOTEST_EXPORT QWidgetBackingStore
@@ -82,11 +77,11 @@ public:
 
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
-    void flush(QWidget *widget = 0, QWindowSurface *surface = 0);
+    void flush(QWidget *widget = 0, QBackingStore *store = 0);
 
     inline QPoint topLevelOffset() const { return tlwOffset; }
 
-    QWindowSurface *surface() const { return windowSurface; }
+    QBackingStore *backingStore() const { return store; }
 
     inline bool isDirty() const
     {
@@ -112,10 +107,7 @@ private:
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> *dirtyOnScreenWidgets;
     QList<QWidget *> staticWidgets;
-    QWindowSurface *windowSurface;
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-    QList<QWindowSurface*> subSurfaces;
-#endif
+    QBackingStore *store;
     uint hasDirtyFromPreviousSync : 1;
     uint fullUpdatePending : 1;
 
@@ -127,9 +119,9 @@ private:
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
     void releaseBuffer();
 
-    void beginPaint(QRegion &toClean, QWidget *widget, QWindowSurface *windowSurface,
+    void beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
                     BeginPaintInfo *returnInfo, bool toCleanIsInTopLevelCoordinates = true);
-    void endPaint(const QRegion &cleaned, QWindowSurface *windowSurface, BeginPaintInfo *beginPaintInfo);
+    void endPaint(const QRegion &cleaned, QBackingStore *backingStore, BeginPaintInfo *beginPaintInfo);
 
     QRegion dirtyRegion(QWidget *widget = 0) const;
     QRegion staticContents(QWidget *widget = 0, const QRect &withinClipRect = QRect()) const;
@@ -262,15 +254,13 @@ private:
     }
 
     inline bool hasStaticContents() const
-    { return !staticWidgets.isEmpty() && windowSurface->hasFeature(QWindowSurface::StaticContents); }
+    { return !staticWidgets.isEmpty(); }
 
     friend QRegion qt_dirtyRegion(QWidget *);
     friend class QWidgetPrivate;
     friend class QWidget;
-    friend class QWSManagerPrivate;
     friend class QETWidget;
-    friend class QWindowSurface;
-    friend class QWSWindowSurface;
+    friend class QBackingStore;
 };
 
 QT_END_NAMESPACE

@@ -97,7 +97,7 @@ class QShowEvent;
 class QHideEvent;
 class QInputContext;
 class QIcon;
-class QWindowSurface;
+class QBackingStore;
 class QPlatformWindow;
 class QLocale;
 class QGraphicsProxyWidget;
@@ -631,8 +631,7 @@ public:
     bool autoFillBackground() const;
     void setAutoFillBackground(bool enabled);
 
-    void setWindowSurface(QWindowSurface *surface);
-    QWindowSurface *windowSurface() const;
+    QBackingStore *backingStore() const;
 
 #if defined(Q_WS_QPA)
     void setWindowHandle(QWindow *window);
@@ -730,6 +729,7 @@ protected:
 protected:
     QWidget(QWidgetPrivate &d, QWidget* parent, Qt::WindowFlags f);
 private:
+    void setBackingStore(QBackingStore *store);
 
     bool testAttribute_helper(Qt::WidgetAttribute) const;
 

@@ -156,19 +156,17 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     created.
 
     \sa QPlatformWindow, QPlatformWindowFormat
-    \sa createWindowSurface(QWindow *window, WId winId) const
+    \sa createPlatformBackingStore(QWindow *window) const
 */
 
 /*!
-    \fn QWindowSurface *QPlatformIntegration::createWindowSurface(QWindow *window, WId winId) const
+    \fn QPlatformBackingStore *QPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 
-    Factory function for QWindowSurface. The QWindow parameter is a pointer to the
+    Factory function for QPlatformBackingStore. The QWindow parameter is a pointer to the
     top level widget(tlw) the window surface is created for. A QPlatformWindow is always created
-    before the QWindowSurface for tlw where the widget also requires a WindowSurface. It is
-    possible to create top level QWindow without a QWindowSurface by specifying
-    QPlatformWindowFormat::setWindowSurface(false) for the tlw QPlatformWindowFormat.
+    before the QPlatformBackingStore for tlw where the widget also requires a backing store.
 
-    \sa QWindowSurface
+    \sa QBackingStore
     \sa createPlatformWindow(QWindow *window, WId winId = 0) const
 */
 

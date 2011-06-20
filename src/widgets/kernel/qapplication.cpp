@@ -503,17 +503,7 @@ bool qt_tabletChokeMouse = false;
 
 inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
-    if (!widget)
-        return false;
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
-    return !widget->isWindow()
-# ifdef Q_BACKINGSTORE_SUBSURFACES
-        && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
-# endif
-        ;
-#else
-    return !widget->internalWinId();
-#endif
+    return widget && !widget->isWindow();
 }
 
 // ######## move to QApplicationPrivate

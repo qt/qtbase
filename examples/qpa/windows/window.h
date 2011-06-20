@@ -22,4 +22,5 @@ private:
     QImage m_image;
     QPoint m_lastPos;
     int m_backgroundColorIndex;
+    QBackingStore *m_backingStore;
 };

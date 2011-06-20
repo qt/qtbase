@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "private/qpixmapfilter_p.h"
-#include "private/qpixmapdata_gl_p.h"
 #include "private/qpaintengineex_opengl2_p.h"
 #include "private/qglengineshadermanager_p.h"
 #include "private/qpixmapdata_p.h"

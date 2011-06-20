@@ -39,30 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_MINIMAL_H
-#define QWINDOWSURFACE_MINIMAL_H
 
-#include <QtGui/private/qwindowsurface_p.h>
-
-#include <QtGui/QPlatformWindow>
-#include <QtGui/QImage>
+#include "qminimalbackingstore.h"
+#include <QtCore/qdebug.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMinimalWindowSurface : public QWindowSurface
+QMinimalBackingStore::QMinimalBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
 {
-public:
-    QMinimalWindowSurface(QWindow *window);
-    ~QMinimalWindowSurface();
+    //qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (long)this;
+}
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size);
+QMinimalBackingStore::~QMinimalBackingStore()
+{
+}
 
-private:
-    QImage mImage;
-};
+QPaintDevice *QMinimalBackingStore::paintDevice()
+{
+    //qDebug() << "QMinimalBackingStore::paintDevice";
+    return &mImage;
+}
+
+void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(window);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+
+    static int c = 0;
+    QString filename = QString("output%1.png").arg(c++, 4, 10, QLatin1Char('0'));
+    qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
+    mImage.save(filename);
+}
+
+void QMinimalBackingStore::resize(const QSize &size, const QRegion &)
+{
+    //qDebug() << "QMinimalBackingStore::setGeometry:" << (long)this << rect;
+    QImage::Format format = QGuiApplicationPrivate::platformIntegration()->screens().first()->format();
+    if (mImage.size() != size)
+        mImage = QImage(size, format);
+}
 
 QT_END_NAMESPACE
-
-#endif

@@ -56,8 +56,8 @@
 
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
-#include <private/qwindowsurface_p.h>
 
+#include <QtGui/QPlatformBackingStore>
 #include <QtGui/QWindowSystemInterface>
 
 #include <stdio.h>
@@ -1053,12 +1053,8 @@ QPlatformGLSurface *QXcbWindow::createGLSurface() const
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
-    QWindowSurface *surface = window()->surface();
-    if (surface) {
-        QRect rect(event->x, event->y, event->width, event->height);
-
-        QWindowSystemInterface::handleExposeEvent(window(), rect);
-    }
+    QRect rect(event->x, event->y, event->width, event->height);
+    QWindowSystemInterface::handleExposeEvent(window(), rect);
 }
 
 void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)

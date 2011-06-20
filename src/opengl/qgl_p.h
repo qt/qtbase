@@ -96,10 +96,6 @@ QT_END_INCLUDE_NAMESPACE
 class QMacWindowChangeEvent;
 #endif
 
-#ifdef Q_WS_QWS
-class QWSGLWindowSurface;
-#endif
-
 #ifndef QT_NO_EGL
 class QEglContext;
 #endif
@@ -212,8 +208,6 @@ public:
 #elif defined(Q_WS_MAC)
     QGLContext *olcx;
     void updatePaintDevice();
-#elif defined(Q_WS_QWS)
-    QWSGLWindowSurface *wsurf;
 #endif
 #ifdef Q_OS_SYMBIAN
     void recreateEglSurface();

@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qwaylandshmsurface.h"
+#include "qwaylandshmbackingstore.h"
 
 #include <QtCore/qdebug.h>
 
@@ -90,30 +90,30 @@ QWaylandShmBuffer::~QWaylandShmBuffer(void)
     wl_buffer_destroy(mBuffer);
 }
 
-QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWindow *window)
-    : QWindowSurface(window)
+QWaylandShmBackingStore::QWaylandShmBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
     , mBuffer(0)
     , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
 {
 }
 
-QWaylandShmWindowSurface::~QWaylandShmWindowSurface()
+QWaylandShmBackingStore::~QWaylandShmBackingStore()
 {
 }
 
-QPaintDevice *QWaylandShmWindowSurface::paintDevice()
+QPaintDevice *QWaylandShmBackingStore::paintDevice()
 {
     return mBuffer->image();
 }
 
-void QWaylandShmWindowSurface::beginPaint(const QRegion &)
+void QWaylandShmBackingStore::beginPaint(const QRegion &)
 {
     QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
     waylandWindow->waitForFrameSync();
 }
 
-void QWaylandShmWindowSurface::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(window);
     Q_UNUSED(offset);
@@ -122,12 +122,11 @@ void QWaylandShmWindowSurface::flush(QWindow *window, const QRegion &region, con
     waylandWindow->damage(region);
 }
 
-void QWaylandShmWindowSurface::resize(const QSize &size)
+void QWaylandShmBackingStore::resize(const QSize &size, const QRegion &)
 {
     QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
 
-    QWindowSurface::resize(size);
     QImage::Format format = QPlatformScreen::platformScreenForWindow(window())->format();
 
     if (mBuffer != NULL && mBuffer->size() == size)

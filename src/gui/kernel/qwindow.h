@@ -69,7 +69,7 @@ class QWheelEvent;
 
 class QPlatformGLSurface;
 class QPlatformWindow;
-class QWindowSurface;
+class QBackingStore;
 
 class Q_GUI_EXPORT QWindow : public QObject
 {
@@ -146,7 +146,6 @@ public:
     void destroy();
 
     QPlatformWindow *handle() const;
-    QWindowSurface *surface() const;
 
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
@@ -192,7 +191,6 @@ private:
 
     friend class QGuiApplication;
     friend class QGuiApplicationPrivate;
-    friend class QWindowSurface;
     friend Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window);
 };
 

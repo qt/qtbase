@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,60 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QPIXMAPDATA_X11GL_P_H
-#define QPIXMAPDATA_X11GL_P_H
+#ifndef QPLATFORMBACKINGSTORE_QPA_H
+#define QPLATFORMBACKINGSTORE_QPA_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qrect.h>
 
-#include <private/qpixmapdata_p.h>
-#include <private/qpixmap_x11_p.h>
-#include <private/qglpaintdevice_p.h>
-
-#include <qgl.h>
-
-#ifndef QT_NO_EGL
-#include <QtGui/private/qeglcontext_p.h>
-#endif
+#include <QtGui/qwindow.h>
+#include <QtGui/qregion.h>
 
 QT_BEGIN_NAMESPACE
 
-class QX11GLSharedContexts;
+class QRegion;
+class QRect;
+class QPoint;
+class QImage;
+class QPlatformBackingStorePrivate;
+class QPlatformWindow;
 
-class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
+class Q_GUI_EXPORT QPlatformBackingStore
 {
 public:
-    QX11GLPixmapData();
-    virtual ~QX11GLPixmapData();
+    QPlatformBackingStore(QWindow *window);
+    virtual ~QPlatformBackingStore();
 
-    // Re-implemented from QX11PixmapData:
-    void fill(const QColor &color);
-    void copy(const QPixmapData *data, const QRect &rect);
-    bool scroll(int dx, int dy, const QRect &rect);
+    QWindow *window() const;
 
-    // Re-implemented from QGLPaintDevice
-    QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
-    void beginPaint();
-    QGLContext* context() const;
-    QSize size() const;
+    virtual QPaintDevice *paintDevice() = 0;
 
-    static bool hasX11GLPixmaps();
-    static QGLFormat glFormat();
-    static QX11GLSharedContexts* sharedContexts();
+    // 'window' can be a child window, in which case 'region' is in child window coordinates and
+    // offset is the (child) window's offset in relation to the window surface.
+    virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
+
+    virtual void resize(const QSize &size, const QRegion &staticContents) = 0;
+
+    virtual bool scroll(const QRegion &area, int dx, int dy);
+
+    virtual void beginPaint(const QRegion &);
+    virtual void endPaint();
 
 private:
-    mutable QGLContext* ctx;
+    QPlatformBackingStorePrivate *d_ptr;
 };
-
 
 QT_END_NAMESPACE
 
-#endif // QPIXMAPDATA_X11GL_P_H
+#endif // QPLATFORMBACKINGSTORE_QPA_H

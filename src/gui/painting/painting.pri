@@ -1,6 +1,7 @@
 # Qt gui library, paint module
 
 HEADERS += \
+        painting/qbackingstore.h \
         painting/qbezier_p.h \
         painting/qbrush.h \
         painting/qcolor.h \
@@ -38,11 +39,12 @@ HEADERS += \
         painting/qtessellator_p.h \
         painting/qtextureglyphcache_p.h \
         painting/qtransform.h \
-        painting/qwindowsurface_p.h \
+        painting/qplatformbackingstore_qpa.h \
         painting/qpaintbuffer_p.h
 
 
 SOURCES += \
+        painting/qbackingstore.cpp \
         painting/qbezier.cpp \
         painting/qblendfunctions.cpp \
         painting/qbrush.cpp \
@@ -74,7 +76,7 @@ SOURCES += \
         painting/qtessellator.cpp \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
-        painting/qwindowsurface.cpp \
+        painting/qplatformbackingstore_qpa.cpp \
         painting/qpaintbuffer.cpp
 
         SOURCES +=                                      \

@@ -70,12 +70,6 @@
 # include "qtoolbar.h"
 # include <private/qmainwindowlayout_p.h>
 #endif
-#if defined(Q_WS_QWS)
-# include "qwsdisplay_qws.h"
-# include "qwsmanager_qws.h"
-# include "qpaintengine.h" // for PorterDuff
-# include "private/qwindowsurface_qws_p.h"
-#endif
 #if defined(Q_WS_QPA)
 #include "qplatformwindow_qpa.h"
 #include "private/qwidgetwindow_qpa_p.h"
@@ -100,8 +94,8 @@
 #endif
 
 #include <private/qgraphicseffect_p.h>
-#include <private/qwindowsurface_p.h>
-#include <private/qbackingstore_p.h>
+#include <qbackingstore.h>
+#include <private/qwidgetbackingstore_p.h>
 #ifdef Q_WS_MAC
 # include <private/qpaintengine_mac_p.h>
 #endif
@@ -137,9 +131,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_WS_QWS)
 static bool qt_enable_backingstore = true;
-#endif
 #ifdef Q_WS_X11
 // for compatibility with Qt 4.0
 Q_WIDGETS_EXPORT void qt_x11_set_global_double_buffer(bool enable)
@@ -352,32 +344,6 @@ QWidgetPrivate::~QWidgetPrivate()
 #endif //QT_NO_GRAPHICSEFFECT
 }
 
-class QDummyWindowSurface : public QWindowSurface
-{
-public:
-    QDummyWindowSurface(QWindow *window) : QWindowSurface(window) {}
-    QPaintDevice *paintDevice() { return static_cast<QWidgetWindow *>(window())->widget(); }
-    void flush(QWindow *, const QRegion &, const QPoint &) {}
-};
-
-QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
-{
-    Q_Q(QWidget);
-
-    QWindowSurface *surface;
-#ifndef QT_NO_PROPERTIES
-    if (q->property("_q_DummyWindowSurface").toBool()) {
-        surface = new QDummyWindowSurface(q->windowHandle());
-    } else
-#endif
-    {
-        QWindow *win = topData()->window;
-        surface = QGuiApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
-    }
-
-    return surface;
-}
-
 /*!
     \internal
 */
@@ -393,10 +359,8 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
                 QPoint oldp = w->pos();
                 QRect  r(w->pos() + pd, w->size());
                 w->data->crect = r;
-#ifndef Q_WS_QWS
                 if (w->testAttribute(Qt::WA_WState_Created))
                     w->d_func()->setWSGeometry();
-#endif
                 w->d_func()->setDirtyOpaqueRegion();
                 QMoveEvent e(r.topLeft(), oldp);
                 QApplication::sendEvent(w, &e);
@@ -1508,9 +1472,9 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
-        d->topData()->backingStore.destroy();
+        d->topData()->backingStoreTracker.destroy();
         if (hasBackingStoreSupport())
-            d->topData()->backingStore.create(this);
+            d->topData()->backingStoreTracker.create(this);
     }
 
     d->setModal_sys();
@@ -1625,7 +1589,7 @@ QWidget::~QWidget()
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
     }
-#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#elif defined(Q_WS_QPA)
     else if (isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
     }
@@ -1732,7 +1696,7 @@ void QWidgetPrivate::createTLExtra()
         QTLWExtra* x = extra->topextra = new QTLWExtra;
         x->icon = 0;
         x->iconPixmap = 0;
-        x->windowSurface = 0;
+        x->backingStore = 0;
         x->sharedPainter = 0;
         x->incw = x->inch = 0;
         x->basew = x->baseh = 0;
@@ -1815,13 +1779,10 @@ void QWidgetPrivate::deleteExtra()
 #endif
         if (extra->topextra) {
             deleteTLSysExtra();
-            extra->topextra->backingStore.destroy();
+            extra->topextra->backingStoreTracker.destroy();
             delete extra->topextra->icon;
             delete extra->topextra->iconPixmap;
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
-            delete extra->topextra->qwsManager;
-#endif
-            delete extra->topextra->windowSurface;
+            delete extra->topextra->backingStore;
             delete extra->topextra;
         }
         delete extra;
@@ -2212,9 +2173,7 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
 
 bool QWidgetPrivate::paintOnScreen() const
 {
-#if defined(Q_WS_QWS)
-    return false;
-#elif  defined(QT_NO_BACKINGSTORE)
+#if defined(QT_NO_BACKINGSTORE)
     return true;
 #else
     Q_Q(const QWidget);
@@ -2376,10 +2335,6 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if ((flags & DrawAsRoot) && !(q->autoFillBackground() && autoFillBrush.isOpaque())) {
         const QBrush bg = q->palette().brush(QPalette::Window);
-#ifdef Q_WS_QWS
-        if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
-            painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
-#endif
         fillRegion(painter, rgn, bg);
     }
 
@@ -3891,19 +3846,6 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
 {
     Q_Q(QWidget);
 
-#ifdef Q_WS_QWS
-    if (q->isWindow()) {
-        const QRect maxWindowRect = QApplication::desktop()->availableGeometry(QApplication::desktop()->screenNumber(q));
-        if (!maxWindowRect.isEmpty()) {
-            // ### This is really just a work-around. Layout shouldn't be
-            // asking for minimum sizes bigger than the screen.
-            if (minw > maxWindowRect.width())
-                minw = maxWindowRect.width();
-            if (minh > maxWindowRect.height())
-                minh = maxWindowRect.height();
-        }
-    }
-#endif
     int mw = minw, mh = minh;
     if (mw == QWIDGETSIZE_MAX)
         mw = 0;
@@ -4094,15 +4036,7 @@ void QWidget::setFixedSize(const QSize & s)
 void QWidget::setFixedSize(int w, int h)
 {
     Q_D(QWidget);
-#ifdef Q_WS_QWS
-    // temporary fix for 4.3.x.
-    // Should move the embedded spesific contraints in setMinimumSize_helper into QLayout
-    int tmpW = w;
-    int tmpH = h;
-    bool minSizeSet = d->setMinimumSize_helper(tmpW, tmpH);
-#else
     bool minSizeSet = d->setMinimumSize_helper(w, h);
-#endif
     bool maxSizeSet = d->setMaximumSize_helper(w, h);
     if (!minSizeSet && !maxSizeSet)
         return;
@@ -5050,7 +4984,7 @@ void QWidget::setCursor(const QCursor &cursor)
 {
     Q_D(QWidget);
 // On Mac we must set the cursor even if it is the ArrowCursor.
-#if !defined(Q_WS_MAC) && !defined(Q_WS_QWS)
+#if !defined(Q_WS_MAC)
     if (cursor.shape() != Qt::ArrowCursor
         || (d->extra && d->extra->curs))
 #endif
@@ -5538,7 +5472,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             //actually send the paint event
             QPaintEvent e(toBePainted);
             QCoreApplication::sendSpontaneousEvent(q, &e);
-#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
+#if !defined(Q_WS_QPA)
             if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
                 backingStore->markDirtyOnScreen(toBePainted, q, offset);
 #endif
@@ -5587,9 +5521,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
     if (recursive && !children.isEmpty()) {
         paintSiblingsRecursive(pdev, children, children.size() - 1, rgn, offset, flags & ~DrawAsRoot
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-                                , q->windowSurface()
-#endif
                                 , sharedPainter, backingStore);
     }
 }
@@ -5661,10 +5592,6 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     else
         flags |= DontSubtractOpaqueChildren;
 
-#ifdef Q_WS_QWS
-    flags |= DontSetCompositionMode;
-#endif
-
     if (target->devType() == QInternal::Printer) {
         QPainter p(target);
         render_helper(&p, targetOffset, paintRegion, renderFlags);
@@ -5686,9 +5613,6 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
 
 void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& siblings, int index, const QRegion &rgn,
                                             const QPoint &offset, int flags
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-                                            , const QWindowSurface *currentSurface
-#endif
                                             , QPainter *sharedPainter, QWidgetBackingStore *backingStore)
 {
     QWidget *w = 0;
@@ -5707,13 +5631,8 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
             }
 
             if (qRectIntersects(boundingRect, x->d_func()->effectiveRectFor(x->data->crect))) {
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-                if (x->windowSurface() == currentSurface)
-#endif
-                {
-                    w = x;
-                    break;
-                }
+                w = x;
+                break;
             }
         }
         --index;
@@ -5730,9 +5649,6 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
         if (wd->isOpaque)
             wr -= hasMask ? wd->extra->mask.translated(widgetPos) : w->data->crect;
         paintSiblingsRecursive(pdev, siblings, --index, wr, offset, flags
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-                               , currentSurface
-#endif
                                , sharedPainter, backingStore);
     }
 
@@ -7582,7 +7498,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
         qApp->d_func()->sendSyntheticEnterLeave(q);
 #endif
 
@@ -7653,9 +7569,6 @@ void QWidget::setVisible(bool visible)
 #if defined(Q_WS_X11)
         if (windowType() == Qt::Window)
             QApplicationPrivate::applyX11SpecificCommandLineArguments(this);
-#elif defined(Q_WS_QWS)
-        if (windowType() == Qt::Window)
-            QApplicationPrivate::applyQWSSpecificCommandLineArguments(this);
 #endif
 
         bool wasResized = testAttribute(Qt::WA_Resized);
@@ -7714,7 +7627,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
             qApp->d_func()->sendSyntheticEnterLeave(this);
 #endif
         }
@@ -7846,7 +7759,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #endif
 #ifndef QT_NO_ACCESSIBILITY
@@ -8049,13 +7962,6 @@ QRegion QWidget::visibleRegion() const
     QRegion r(clipRect);
     d->subtractOpaqueChildren(r, clipRect);
     d->subtractOpaqueSiblings(r);
-#ifdef Q_WS_QWS
-    const QWSWindowSurface *surface = static_cast<const QWSWindowSurface*>(windowSurface());
-    if (surface) {
-        const QPoint offset = mapTo(surface->window(), QPoint());
-        r &= surface->clipRegion().translated(-offset);
-    }
-#endif
     return r;
 }
 
@@ -8807,10 +8713,6 @@ void QWidget::changeEvent(QEvent * event)
         updateGeometry();
         if (d->layout)
             d->layout->invalidate();
-#ifdef Q_WS_QWS
-        if (isWindow())
-            d->data.fstrut_dirty = true;
-#endif
         break;
     }
 
@@ -9588,31 +9490,6 @@ bool QWidget::x11Event(XEvent *)
 }
 
 #endif
-#if defined(Q_WS_QWS)
-
-/*!
-    \fn bool QWidget::qwsEvent(QWSEvent *event)
-
-    This special event handler can be reimplemented in a subclass to
-    receive native Qt for Embedded Linux events which are passed in the
-    \a event parameter.
-
-    In your reimplementation of this function, if you want to stop the
-    event being handled by Qt, return true. If you return false, this
-    native event is passed back to Qt, which translates the event into
-    a Qt event and sends it to the widget.
-
-    \warning This function is not portable.
-
-    \sa QApplication::qwsEventFilter()
-*/
-bool QWidget::qwsEvent(QWSEvent *)
-{
-    return false;
-}
-
-#endif
-
 
 /*!
     Ensures that the widget has been polished by QStyle (i.e., has a
@@ -10132,33 +10009,17 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         focusWidget()->clearFocus();
 
     QTLWExtra *oldTopExtra = window()->d_func()->maybeTopData();
-    QWidgetBackingStoreTracker *oldBsTracker = oldTopExtra ? &oldTopExtra->backingStore : 0;
+    QWidgetBackingStoreTracker *oldBsTracker = oldTopExtra ? &oldTopExtra->backingStoreTracker : 0;
 
     d->setParent_sys(parent, f);
 
     QTLWExtra *topExtra = window()->d_func()->maybeTopData();
-    QWidgetBackingStoreTracker *bsTracker = topExtra ? &topExtra->backingStore : 0;
+    QWidgetBackingStoreTracker *bsTracker = topExtra ? &topExtra->backingStoreTracker : 0;
     if (oldBsTracker && oldBsTracker != bsTracker)
         oldBsTracker->unregisterWidgetSubtree(this);
 
     if (desktopWidget)
         parent = 0;
-
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-    QTLWExtra *extra = d->maybeTopData();
-    QWindowSurface *windowSurface = (extra ? extra->windowSurface : 0);
-    if (newParent && windowSurface) {
-        QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore();
-        if (oldBs)
-            oldBs->subSurfaces.removeAll(windowSurface);
-
-        if (parent) {
-            QWidgetBackingStore *newBs = parent->d_func()->maybeBackingStore();
-            if (newBs)
-                newBs->subSurfaces.append(windowSurface);
-        }
-    }
-#endif
 
     if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
         if (newParent)
@@ -10405,7 +10266,7 @@ void QWidget::repaint(const QRect &rect)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStore->markDirty(rect, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rect, this, true);
             tlwExtra->inRepaint = false;
         }
     } else {
@@ -10440,7 +10301,7 @@ void QWidget::repaint(const QRegion &rgn)
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
-            tlwExtra->backingStore->markDirty(rgn, this, true);
+            tlwExtra->backingStoreTracker->markDirty(rgn, this, true);
             tlwExtra->inRepaint = false;
         }
     } else {
@@ -10502,7 +10363,7 @@ void QWidget::update(const QRect &rect)
 #endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStore->markDirty(rect, this);
+            tlwExtra->backingStoreTracker->markDirty(rect, this);
     } else {
         d_func()->repaint_sys(rect);
     }
@@ -10532,7 +10393,7 @@ void QWidget::update(const QRegion &rgn)
 #endif // QT_MAC_USE_COCOA
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStore->markDirty(rgn, this);
+            tlwExtra->backingStoreTracker->markDirty(rgn, this);
     } else {
         d_func()->repaint_sys(rgn);
     }
@@ -10873,14 +10734,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             // from the desktop. show_sys will only update platform specific
             // attributes at this point.
             d->hide_sys();
-#ifdef Q_WS_QWS
-            // Release the region for this window from qws if the widget has
-            // been shown before the attribute was set.
-            if (QWSWindowSurface *surface = static_cast<QWSWindowSurface *>(windowSurface())) {
-                QWidget::qwsDisplay()->requestRegion(surface->winId(), surface->key(),
-                                                     surface->permanentState(), QRegion());
-            }
-#endif
             d->show_sys();
         }
         break;
@@ -11029,10 +10882,8 @@ void QWidget::setWindowOpacity(qreal opacity)
     extra->opacity = uint(opacity * 255);
     setAttribute(Qt::WA_WState_WindowOpacitySet);
 
-#ifndef Q_WS_QWS
     if (!testAttribute(Qt::WA_WState_Created))
         return;
-#endif
 
 #ifndef QT_NO_GRAPHICSVIEW
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget()) {
@@ -11322,7 +11173,7 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 */
 void QWidget::updateMicroFocus()
 {
-#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
+#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimization to update input context only it has already been created.
     if (d->assignedInputContext() || qApp->d_func()->inputContext) {
@@ -12102,83 +11953,55 @@ bool QWidgetPrivate::inTabWidget(QWidget *widget)
 #endif
 
 /*!
-    \preliminary
-    \since 4.2
-    \obsolete
+    \since 5.0
+    \internal
 
-    Sets the window surface to be the \a surface specified.
-    The QWidget takes will ownership of the \a surface.
-    widget itself is deleted.
+    Sets the backing store to be the \a store specified.
+    The QWidget will take ownership of the \a store.
 */
-void QWidget::setWindowSurface(QWindowSurface *surface)
+void QWidget::setBackingStore(QBackingStore *store)
 {
     // ### createWinId() ??
 
-#ifndef Q_BACKINGSTORE_SUBSURFACES
     if (!isTopLevel())
         return;
-#endif
 
     Q_D(QWidget);
 
     QTLWExtra *topData = d->topData();
-    if (topData->windowSurface == surface)
+    if (topData->backingStore == store)
         return;
 
-    QWindowSurface *oldSurface = topData->windowSurface;
-    delete topData->windowSurface;
-    topData->windowSurface = surface;
+    QBackingStore *oldStore = topData->backingStore;
+    delete topData->backingStore;
+    topData->backingStore = store;
 
     QWidgetBackingStore *bs = d->maybeBackingStore();
     if (!bs)
         return;
 
     if (isTopLevel()) {
-        if (bs->windowSurface != oldSurface && bs->windowSurface != surface)
-            delete bs->windowSurface;
-        bs->windowSurface = surface;
+        if (bs->store != oldStore && bs->store != store)
+            delete bs->store;
+        bs->store = store;
     }
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-    else {
-        bs->subSurfaces.append(surface);
-    }
-    bs->subSurfaces.removeOne(oldSurface);
-#endif
 }
 
 /*!
-    \preliminary
-    \since 4.2
+    \since 5.0
 
-    Returns the QWindowSurface this widget will be drawn into.
+    Returns the QBackingStore this widget will be drawn into.
 */
-QWindowSurface *QWidget::windowSurface() const
+QBackingStore *QWidget::backingStore() const
 {
     Q_D(const QWidget);
     QTLWExtra *extra = d->maybeTopData();
-    if (extra && extra->windowSurface)
-        return extra->windowSurface;
+    if (extra && extra->backingStore)
+        return extra->backingStore;
 
     QWidgetBackingStore *bs = d->maybeBackingStore();
 
-#ifdef Q_BACKINGSTORE_SUBSURFACES
-    if (bs && bs->subSurfaces.isEmpty())
-        return bs->windowSurface;
-
-    if (!isTopLevel()) {
-        const QWidget *w = parentWidget();
-        while (w) {
-            QTLWExtra *extra = w->d_func()->maybeTopData();
-            if (extra && extra->windowSurface)
-                return extra->windowSurface;
-            if (w->isTopLevel())
-                break;
-            w = w->parentWidget();
-        }
-    }
-#endif // Q_BACKINGSTORE_SUBSURFACES
-
-    return bs ? bs->windowSurface : 0;
+    return bs ? bs->store : 0;
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

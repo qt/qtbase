@@ -58,7 +58,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
-    QWindowSurface *createWindowSurface(QWindow *window, WId winId) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QList<QPlatformScreen *> screens() const;
 

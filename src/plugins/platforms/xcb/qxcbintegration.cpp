@@ -43,7 +43,7 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
-#include "qxcbwindowsurface.h"
+#include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
@@ -114,10 +114,9 @@ QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QGuiGLFormat 
 #endif
 }
 
-QWindowSurface *QXcbIntegration::createWindowSurface(QWindow *window, WId winId) const
+QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QXcbWindowSurface(window);
+    return new QXcbBackingStore(window);
 }
 
 QList<QPlatformScreen *> QXcbIntegration::screens() const

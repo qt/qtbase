@@ -70,15 +70,10 @@
 
 #if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
-#include <private/qwindowsurface_gl_p.h>
 #endif
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
-#endif
-
-#ifdef Q_WS_QWS
-#include <private/qglwindowsurface_qws_p.h>
 #endif
 
 #ifdef Q_WS_QPA
@@ -90,7 +85,6 @@
 
 #include <private/qimage_p.h>
 #include <private/qpixmapdata_p.h>
-#include <private/qpixmapdata_gl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
@@ -100,9 +94,6 @@
 
 #if defined(QT_OPENGL_ES) && !defined(QT_NO_EGL)
 #include <EGL/egl.h>
-#endif
-#ifdef QGL_USE_TEXTURE_POOL
-#include <private/qgltexturepool_p.h>
 #endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
@@ -2547,18 +2538,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
 
     const QImage &constRef = img; // to avoid detach in bits()...
-#ifdef QGL_USE_TEXTURE_POOL
-    QGLTexturePool::instance()->createPermanentTexture(tx_id,
-                                                        target,
-                                                        0, internalFormat,
-                                                        img.width(), img.height(),
-                                                        externalFormat,
-                                                        pixel_type,
-                                                        constRef.bits());
-#else
     glTexImage2D(target, 0, internalFormat, img.width(), img.height(), 0, externalFormat,
                  pixel_type, constRef.bits());
-#endif
 #if defined(QT_OPENGL_ES_2)
     if (genMipmap)
         glGenerateMipmap(target);
@@ -2602,18 +2583,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 {
     Q_Q(QGLContext);
     QPixmapData *pd = pixmap.pixmapData();
-#if !defined(QT_OPENGL_ES_1)
-    if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
-        const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
-
-        if (data->isValidContext(q)) {
-            data->bind();
-            return data->texture();
-        }
-    }
-#else
     Q_UNUSED(pd);
-#endif
 
     const qint64 key = pixmap.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);

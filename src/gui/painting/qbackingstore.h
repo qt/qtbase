@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_WAYLAND_H
-#define QWINDOWSURFACE_WAYLAND_H
+#ifndef QBACKINGSTORE_H
+#define QBACKINGSTORE_H
 
-#include "qwaylandbuffer.h"
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/QImage>
-#include <QtGui/QPlatformWindow>
+#include <QtCore/qrect.h>
+
+#include <QtGui/qwindow.h>
+#include <QtGui/qregion.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWaylandDisplay;
+class QRegion;
+class QRect;
+class QPoint;
+class QImage;
+class QBackingStorePrivate;
 
-class QWaylandShmBuffer : public QWaylandBuffer {
-public:
-    QWaylandShmBuffer(QWaylandDisplay *display,
-		   const QSize &size, QImage::Format format);
-    ~QWaylandShmBuffer();
-    QSize size() const { return mImage.size(); }
-    QImage *image() { return &mImage; }
-private:
-    QImage mImage;
-};
-
-class QWaylandShmWindowSurface : public QWindowSurface
+class Q_GUI_EXPORT QBackingStore
 {
 public:
-    QWaylandShmWindowSurface(QWindow *window);
-    ~QWaylandShmWindowSurface();
+    QBackingStore(QWindow *window);
+    ~QBackingStore();
+
+    QWindow *window() const;
 
     QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+
+    // 'window' can be a child window, in which case 'region' is in child window coordinates and
+    // offset is the (child) window's offset in relation to the window surface.
+    void flush(const QRegion &region, QWindow *window = 0, const QPoint &offset = QPoint());
+
     void resize(const QSize &size);
+    QSize size() const;
+
+    bool scroll(const QRegion &area, int dx, int dy);
+
     void beginPaint(const QRegion &);
+    void endPaint();
+
+    void setStaticContents(const QRegion &region);
+    QRegion staticContents() const;
+    bool hasStaticContents() const;
 
 private:
-    QWaylandShmBuffer *mBuffer;
-    QWaylandDisplay *mDisplay;
+    QScopedPointer<QBackingStorePrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QBACKINGSTORE_H

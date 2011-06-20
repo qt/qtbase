@@ -39,44 +39,40 @@
 **
 ****************************************************************************/
 
-#include <private/qwindowsurface_p.h>
+#include <qbackingstore.h>
 #include <qwindow.h>
 #include <qpixmap.h>
+#include <qplatformbackingstore_qpa.h>
+
+#include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowSurfacePrivate
+class QBackingStorePrivate
 {
 public:
-    QWindowSurfacePrivate(QWindow *w)
+    QBackingStorePrivate(QWindow *w)
         : window(w)
     {
     }
 
     QWindow *window;
-#if !defined(Q_WS_QPA)
-    QRect geometry;
-#else
-    QSize size;
-#endif //Q_WS_QPA
+    QPlatformBackingStore *platformBackingStore;
     QRegion staticContents;
+    QSize size;
 };
 
 /*!
-    \class QWindowSurface
-    \since 4.3
-    \internal
-    \preliminary
-    \ingroup qws qpa
+    \class QBackingStore
+    \since 5.0
 
-    \brief The QWindowSurface class provides the drawing area for top-level
-    windows.
+    \brief The QBackingStore class provides the drawing area for top-level windows.
 */
 
 
 /*!
-    \fn void QWindowSurface::beginPaint(const QRegion &region)
+    \fn void QBackingStore::beginPaint(const QRegion &region)
 
     This function is called before painting onto the surface begins,
     with the \a region in which the painting will occur.
@@ -85,7 +81,7 @@ public:
 */
 
 /*!
-    \fn void QWindowSurface::endPaint(const QRegion &region)
+    \fn void QBackingStore::endPaint(const QRegion &region)
 
     This function is called after painting onto the surface has ended,
     with the \a region in which the painting was performed.
@@ -94,7 +90,7 @@ public:
 */
 
 /*!
-    \fn void QWindowSurface::flush(QWindow *window, const QRegion &region,
+    \fn void QBackingStore::flush(QWindow *window, const QRegion &region,
                                   const QPoint &offset)
 
     Flushes the given \a region from the specified \a window onto the
@@ -102,91 +98,77 @@ public:
 
     Note that the \a offset parameter is currently unused.
 */
+void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &offset)
+{
+    if (!win)
+        win = window();
+    d_ptr->platformBackingStore->flush(win, region, offset);
+}
 
 /*!
-    \fn QPaintDevice* QWindowSurface::paintDevice()
+    \fn QPaintDevice* QBackingStore::paintDevice()
 
     Implement this function to return the appropriate paint device.
 */
+QPaintDevice *QBackingStore::paintDevice()
+{
+    return d_ptr->platformBackingStore->paintDevice();
+}
 
 /*!
     Constructs an empty surface for the given top-level \a window.
 */
-QWindowSurface::QWindowSurface(QWindow *window, bool /*setDefaultSurface*/)
-    : d_ptr(new QWindowSurfacePrivate(window))
+QBackingStore::QBackingStore(QWindow *window)
+    : d_ptr(new QBackingStorePrivate(window))
 {
-    if (window)
-        window->d_func()->surface = this;
+    d_ptr->platformBackingStore = QGuiApplicationPrivate::platformIntegration()->createPlatformBackingStore(window);
 }
 
 /*!
     Destroys this surface.
 */
-QWindowSurface::~QWindowSurface()
+QBackingStore::~QBackingStore()
 {
-//    if (d_ptr->window)
-//        d_ptr->window->d_func()->extra->topextra->windowSurface = 0;
-    delete d_ptr;
+    delete d_ptr->platformBackingStore;
 }
 
 /*!
     Returns a pointer to the top-level window associated with this
     surface.
 */
-QWindow* QWindowSurface::window() const
+QWindow* QBackingStore::window() const
 {
     return d_ptr->window;
 }
 
-void QWindowSurface::beginPaint(const QRegion &)
+void QBackingStore::beginPaint(const QRegion &region)
 {
+    d_ptr->platformBackingStore->beginPaint(region);
 }
 
-void QWindowSurface::endPaint(const QRegion &)
+void QBackingStore::endPaint()
 {
+    d_ptr->platformBackingStore->endPaint();
 }
-
-#if !defined(Q_WS_QPA)
-/*!
-    Sets the currently allocated area to be the given \a rect.
-
-    This function is called whenever area covered by the top-level
-    window changes.
-
-    \sa geometry()
-*/
-void QWindowSurface::setGeometry(const QRect &rect)
-{
-    d_ptr->geometry = rect;
-}
-
-/*!
-    Returns the currently allocated area on the screen.
-*/
-QRect QWindowSurface::geometry() const
-{
-    return d_ptr->geometry;
-}
-#else
 
 /*!
       Sets the size of the windowsurface to be \a size.
 
       \sa size()
 */
-void QWindowSurface::resize(const QSize &size)
+void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size;
+    d_ptr->platformBackingStore->resize(size, d_ptr->staticContents);
 }
 
 /*!
     Returns the current size of the windowsurface.
 */
-QSize QWindowSurface::size() const
+QSize QBackingStore::size() const
 {
     return d_ptr->size;
 }
-#endif //Q_WS_QPA
 
 /*!
     Scrolls the given \a area \a dx pixels to the right and \a dy
@@ -194,108 +176,31 @@ QSize QWindowSurface::size() const
 
     Returns true if the area was scrolled successfully; false otherwise.
 */
-bool QWindowSurface::scroll(const QRegion &area, int dx, int dy)
+bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
     Q_UNUSED(area);
     Q_UNUSED(dx);
     Q_UNUSED(dy);
 
-    return false;
+    return d_ptr->platformBackingStore->scroll(area, dx, dy);
 }
 
-/*!
-  Returns a QPixmap generated from the part of the backing store
-  corresponding to \a window. Returns a null QPixmap if an error
-  occurs. The contents of the pixmap are only defined for the regions
-  of \a window that have received paint events since the last resize
-  of the backing store.
-
-  If \a rectangle is a null rectangle (the default), the entire window
-  is grabbed. Otherwise, the grabbed area is limited to \a rectangle.
-
-  The default implementation uses QWindowSurface::buffer().
-
-  \sa QPixmap::grabWindow()
-*/
-QPixmap QWindowSurface::grabWindow(const QWindow *, const QRect &) const
-{
-    QPixmap result;
-
-#if 0
-    if (window->window() != window())
-        return result;
-
-    const QImage *img = const_cast<QWindowSurface *>(this)->buffer(window->window());
-
-    if (!img || img->isNull())
-        return result;
-
-    QRect rect = rectangle.isEmpty() ? window->rect() : (window->rect() & rectangle);
-
-    rect.translate(offset(window) - offset(window->window()));
-    rect &= QRect(QPoint(), img->size());
-
-    if (rect.isEmpty())
-        return result;
-
-    QImage subimg(img->scanLine(rect.y()) + rect.x() * img->depth() / 8,
-                  rect.width(), rect.height(),
-                  img->bytesPerLine(), img->format());
-    subimg.detach(); //### expensive -- maybe we should have a real SubImage that shares reference count
-
-    result = QPixmap::fromImage(subimg);
-#endif
-    return result;
-}
-
-/*!
-  Returns the offset of \a window in the coordinates of this
-  window surface.
- */
-QPoint QWindowSurface::offset(const QWindow *) const
-{
-    QPoint offset;
-#if 0
-    QWindow *window = d_ptr->window;
-    QPoint offset = window->mapTo(window, QPoint());
-#endif
-    return offset;
-}
-
-/*!
-  \fn QRect QWindowSurface::rect(const QWindow *window) const
-
-  Returns the rectangle for \a window in the coordinates of this
-  window surface.
-*/
-
-void QWindowSurface::setStaticContents(const QRegion &region)
+void QBackingStore::setStaticContents(const QRegion &region)
 {
     d_ptr->staticContents = region;
 }
 
-QRegion QWindowSurface::staticContents() const
+QRegion QBackingStore::staticContents() const
 {
     return d_ptr->staticContents;
 }
 
-bool QWindowSurface::hasStaticContents() const
+bool QBackingStore::hasStaticContents() const
 {
-    return hasFeature(QWindowSurface::StaticContents) && !d_ptr->staticContents.isEmpty();
+    return !d_ptr->staticContents.isEmpty();
 }
 
-QWindowSurface::WindowSurfaceFeatures QWindowSurface::features() const
-{
-    return PartialUpdates | PreservedContents;
-}
-
-#ifdef Q_WS_QPA
-#define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
-#else
-#define Q_EXPORT_SCROLLRECT
-#endif
-
-void Q_EXPORT_SCROLLRECT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
     uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());

@@ -57,8 +57,6 @@ SOURCES += qgl.cpp \
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
                 qgraphicsshadereffect_p.h \
-                qwindowsurface_gl_p.h \
-                qpixmapdata_gl_p.h \
                 gl2paintengineex/qglgradientcache_p.h \
                 gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
@@ -74,8 +72,6 @@ SOURCES += qgl.cpp \
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
                 qgraphicsshadereffect.cpp \
-                qwindowsurface_gl.cpp \
-                qpixmapdata_gl.cpp \
                 gl2paintengineex/qglgradientcache.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
@@ -96,13 +92,9 @@ x11 {
     contains(QT_CONFIG, egl) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
-                    qgl_egl.cpp \
-                    qpixmapdata_x11gl_egl.cpp \
-                    qwindowsurface_x11gl.cpp
+                    qgl_egl.cpp
 
-        HEADERS +=  qgl_egl_p.h \
-                    qpixmapdata_x11gl_p.h \
-                    qwindowsurface_x11gl_p.h
+        HEADERS +=  qgl_egl_p.h
 
     } else {
         SOURCES +=  qgl_x11.cpp \
@@ -144,16 +136,12 @@ wince*: {
 }
 
 symbian {
-    DEFINES += QGL_USE_TEXTURE_POOL QGL_NO_PRESERVED_SWAP
-    SOURCES -= qpixmapdata_gl.cpp
+    DEFINES += QGL_NO_PRESERVED_SWAP
     SOURCES += qgl_symbian.cpp \
-               qpixmapdata_poolgl.cpp \
                qglpixelbuffer_egl.cpp \
-               qgl_egl.cpp \
-               qgltexturepool.cpp
+               qgl_egl.cpp
 
-    HEADERS += qgl_egl_p.h \
-               qgltexturepool_p.h
+    HEADERS += qgl_egl_p.h
 
     contains(QT_CONFIG, freetype) {
         DEFINES += QT_NO_FONTCONFIG

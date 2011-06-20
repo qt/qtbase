@@ -42,7 +42,7 @@
 #include "QtWidgets/qwidget.h"
 #include "QtGui/qevent.h"
 #include "QtWidgets/qapplication.h"
-#include "private/qbackingstore_p.h"
+#include "private/qwidgetbackingstore_p.h"
 #include "private/qwidget_p.h"
 #include "private/qwidgetwindow_qpa_p.h"
 #include "private/qapplication_p.h"
@@ -94,8 +94,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow())
         return; // we only care about real toplevels
 
-    QWindowSurface *surface = q->windowSurface();
-
     QWindow *win = topData()->window;
     // topData() ensures the extra is created but does not ensure 'window' is non-null
     // in case the extra was already valid.
@@ -129,13 +127,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     data.window_flags = win->windowFlags();
 
-    if (!surface ) {
-        if (win) {
-            surface = QGuiApplicationPrivate::platformIntegration()->createWindowSurface(win, win->winId());
-            q->setWindowSurface(surface);
-        } else {
-            q->setAttribute(Qt::WA_PaintOnScreen,true);
-        }
+    QBackingStore *store = q->backingStore();
+
+    if (!store) {
+        if (win)
+            q->setBackingStore(new QBackingStore(win));
+        else
+            q->setAttribute(Qt::WA_PaintOnScreen, true);
     }
 
     setWinId(win->winId());
@@ -449,11 +447,14 @@ void QWidgetPrivate::show_sys()
         if (windowRect != geomRect) {
             window->setGeometry(geomRect);
         }
-        if (QWindowSurface *surface = q->windowSurface()) {
-            if (windowRect.size() != geomRect.size()) {
-                surface->resize(geomRect.size());
+
+        if (QBackingStore *store = q->backingStore()) {
+            if (store->size() != geomRect.size()) {
+                store->resize(geomRect.size());
             }
         }
+
+        invalidateBuffer(q->rect());
 
         if (window)
             window->setVisible(true);
@@ -663,9 +664,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
                 }
                 const QWidgetBackingStore *bs = maybeBackingStore();
-                if (bs->windowSurface) {
+                if (bs->store) {
                     if (isResize)
-                        bs->windowSurface->resize(r.size());
+                        bs->store->resize(r.size());
                 }
 
                 if (needsShow)
@@ -852,13 +853,6 @@ QPaintEngine *QWidget::paintEngine() const
 {
     qWarning("QWidget::paintEngine: Should no longer be called");
     return 0; //##### @@@
-}
-
-QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
-{
-    //This function should not be called.
-    Q_ASSERT(false);
-    return 0;
 }
 
 void QWidgetPrivate::setModal_sys()

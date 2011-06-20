@@ -43,8 +43,8 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandinputdevice.h"
-#include "qwaylandshmsurface.h"
 #include "qwaylandscreen.h"
+#include "qwaylandshmbackingstore.h"
 
 #include <QtGui/QImageReader>
 

@@ -426,11 +426,6 @@ QPlatformWindow *QWindow::handle() const
     return d->platformWindow;
 }
 
-QWindowSurface *QWindow::surface() const
-{
-    Q_D(const QWindow);
-    return d->surface;
-}
 
 bool QWindow::setKeyboardGrabEnabled(bool grab)
 {
@@ -529,11 +524,6 @@ bool QWindow::event(QEvent *event)
 
     case QEvent::Close:
         destroy();
-        break;
-
-    case QEvent::Expose:
-        if (d->surface)
-            d->surface->flush(this, static_cast<QExposeEvent *>(event)->region, QPoint());
         break;
 
     default:

@@ -42,7 +42,7 @@
 #include "qwaylandintegration.h"
 
 #include "qwaylanddisplay.h"
-#include "qwaylandshmsurface.h"
+#include "qwaylandshmbackingstore.h"
 #include "qwaylandshmwindow.h"
 #include "qwaylandnativeinterface.h"
 #include "qwaylandclipboard.h"
@@ -116,10 +116,9 @@ QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QGuiGLFor
 #endif
 }
 
-QWindowSurface *QWaylandIntegration::createWindowSurface(QWindow *window, WId winId) const
+QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QWaylandShmWindowSurface(window);
+    return new QWaylandShmBackingStore(window);
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

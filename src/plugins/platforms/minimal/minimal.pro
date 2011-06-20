@@ -6,9 +6,9 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES =   main.cpp \
             qminimalintegration.cpp \
-            qminimalwindowsurface.cpp
+            qminimalbackingstore.cpp
 HEADERS =   qminimalintegration.h \
-            qminimalwindowsurface.h
+            qminimalbackingstore.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

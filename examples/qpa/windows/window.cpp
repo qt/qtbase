@@ -1,8 +1,8 @@
 #include "window.h"
 
 #include <private/qguiapplication_p.h>
-#include <private/qwindowsurface_p.h>
 
+#include <QBackingStore>
 #include <QPainter>
 
 static int colorIndexId = 0;
@@ -33,7 +33,7 @@ Window::Window(QWindow *parent)
     }
 
     create();
-    QGuiApplicationPrivate::platformIntegration()->createWindowSurface(this, winId());
+    m_backingStore = new QBackingStore(this);
 
     m_image = QImage(geometry().size(), QImage::Format_RGB32);
     m_image.fill(colorTable[m_backgroundColorIndex % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
@@ -110,11 +110,11 @@ void Window::keyPressEvent(QKeyEvent *event)
 void Window::render()
 {
     QRect rect(QPoint(), geometry().size());
-    surface()->resize(rect.size());
+    m_backingStore->resize(rect.size());
 
-    surface()->beginPaint(rect);
+    m_backingStore->beginPaint(rect);
 
-    QPaintDevice *device = surface()->paintDevice();
+    QPaintDevice *device = m_backingStore->paintDevice();
 
     QPainter p(device);
     p.drawImage(0, 0, m_image);
@@ -125,8 +125,8 @@ void Window::render()
     p.setFont(font);
     p.drawText(rect, 0, m_text);
 
-    surface()->endPaint(rect);
-    surface()->flush(this, rect, QPoint());
+    m_backingStore->endPaint();
+    m_backingStore->flush(rect);
 }
 
 

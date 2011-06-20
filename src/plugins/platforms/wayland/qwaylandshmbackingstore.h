@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_X11GL_P_H
-#define QWINDOWSURFACE_X11GL_P_H
+#ifndef QWAYLANDSHMBACKINGSTORE_H
+#define QWAYLANDSHMBACKINGSTORE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <private/qwindowsurface_p.h>
+#include "qwaylandbuffer.h"
+#include <QtGui/QPlatformBackingStore>
+#include <QtGui/QImage>
+#include <QtGui/QPlatformWindow>
 
 QT_BEGIN_NAMESPACE
 
-class QX11GLWindowSurface : public QWindowSurface
-{
+class QWaylandDisplay;
+
+class QWaylandShmBuffer : public QWaylandBuffer {
 public:
-    QX11GLWindowSurface(QWidget* window);
-    virtual ~QX11GLWindowSurface();
-
-    // Inherreted from QWindowSurface
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    bool scroll(const QRegion &area, int dx, int dy);
-    QPixmap grabWidget(const QWidget *widget, const QRect& rectangle = QRect()) const;
-
+    QWaylandShmBuffer(QWaylandDisplay *display,
+		   const QSize &size, QImage::Format format);
+    ~QWaylandShmBuffer();
+    QSize size() const { return mImage.size(); }
+    QImage *image() { return &mImage; }
 private:
-    GC      m_windowGC;
-    GC      m_pixmapGC;
-    QPixmap m_backBuffer;
-    QWidget *m_window;
+    QImage mImage;
 };
 
+class QWaylandShmBackingStore : public QPlatformBackingStore
+{
+public:
+    QWaylandShmBackingStore(QWindow *window);
+    ~QWaylandShmBackingStore();
+
+    QPaintDevice *paintDevice();
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
+    void beginPaint(const QRegion &);
+
+private:
+    QWaylandShmBuffer *mBuffer;
+    QWaylandDisplay *mDisplay;
+};
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSURFACE_X11GL_P_H
+#endif

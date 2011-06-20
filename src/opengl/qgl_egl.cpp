@@ -261,8 +261,7 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
 #if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
         // Make sure we don't call eglDestroySurface on a surface which
         // was created for a different winId. This applies only to QGLWidget
-        // paint device, so make sure this is the one we're operating on
-        // (as opposed to a QGLWindowSurface use case).
+        // paint device, so make sure this is the one we're operating on.
         if (paintDevice && paintDevice->devType() == QInternal::Widget) {
             QWidget *w = static_cast<QWidget *>(paintDevice);
             if (QGLWidget *wgl = qobject_cast<QGLWidget *>(w)) {
