@@ -272,7 +272,8 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
 
     xcb_window_t newOwner = XCB_NONE;
 
-    delete m_clientClipboard[mode];
+    if (m_clientClipboard[QClipboard::Clipboard] != m_clientClipboard[QClipboard::Selection])
+        delete m_clientClipboard[mode];
     m_clientClipboard[mode] = 0;
     m_timestamp[mode] = XCB_CURRENT_TIME;
 
