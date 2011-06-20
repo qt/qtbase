@@ -223,7 +223,7 @@ void QAuthenticator::setUser(const QString &user)
         } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
             //domain name is present
             d->realm.clear();
-            d->userDomain = user.left(separatorPosn);
+            d->userDomain = user.mid(separatorPosn + 1);
             d->extractedUser = user.left(separatorPosn);
             d->user = user;
         } else {
