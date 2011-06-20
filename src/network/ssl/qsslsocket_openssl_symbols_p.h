@@ -353,6 +353,7 @@ void *q_ASN1_dup(i2d_of_void *i2d, d2i_of_void *d2i, char *x);
 #else
 X509 *q_X509_dup(X509 *a);
 #endif
+void q_X509_print(BIO *a, X509*b);
 ASN1_OBJECT *q_X509_EXTENSION_get_object(X509_EXTENSION *a);
 void q_X509_free(X509 *a);
 X509_EXTENSION *q_X509_get_ext(X509 *a, int b);
