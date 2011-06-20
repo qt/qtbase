@@ -29,6 +29,7 @@ LIBS += -lz
 LIBS += -framework cocoa
 
 QT += core-private gui-private platformsupport-private
+LIBS += -lQtPlatformSupport
 
 CONFIG += qpa/basicunixfontdatabase
 target.path += $$[QT_INSTALL_PLUGINS]/platforms

@@ -45,8 +45,7 @@
 #include "qcocoawindowsurface.h"
 #include "qcocoanativeinterface.h"
 
-#include "qbasicunixfontdatabase.h"
-
+#include <QtPlatformSupport/5.0.0/QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 #include <private/qpixmap_raster_p.h>
 
 QT_BEGIN_NAMESPACE
