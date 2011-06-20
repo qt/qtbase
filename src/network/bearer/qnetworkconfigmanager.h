@@ -42,10 +42,6 @@
 #ifndef QNETWORKCONFIGURATIONMANAGER_H
 #define QNETWORKCONFIGURATIONMANAGER_H
 
-#ifdef QT_MOBILITY_BEARER
-# include "qmobilityglobal.h"
-#endif
-
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
 
@@ -53,17 +49,11 @@
 
 QT_BEGIN_HEADER
 
-#ifndef QT_MOBILITY_BEARER
 QT_BEGIN_NAMESPACE
-#define QNetworkConfigurationManagerExport Q_NETWORK_EXPORT
 QT_MODULE(Network)
-#else
-QTM_BEGIN_NAMESPACE
-#define QNetworkConfigurationManagerExport Q_BEARER_EXPORT
-#endif
 
 class QNetworkConfigurationManagerPrivate;
-class QNetworkConfigurationManagerExport QNetworkConfigurationManager : public QObject
+class Q_NETWORK_EXPORT QNetworkConfigurationManager : public QObject
 {
     Q_OBJECT
 
@@ -104,11 +94,7 @@ Q_SIGNALS:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
 
-#ifndef QT_MOBILITY_BEARER
 QT_END_NAMESPACE
-#else
-QTM_END_NAMESPACE
-#endif
 
 QT_END_HEADER
 
