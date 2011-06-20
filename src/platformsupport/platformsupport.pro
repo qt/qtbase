@@ -2,6 +2,7 @@ load(qt_module)
 TARGET	   = QtPlatformSupport
 QPRO_PWD   = $$PWD
 QT         += core-private gui-private
+TEMPLATE = lib
 
 CONFIG += module staticlib
 MODULE_PRI = ../modules/qt_platformssupport.pri
