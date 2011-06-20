@@ -2553,7 +2553,7 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
 
     const bool emptyBlock = block.begin().atEnd();
     if (emptyBlock) {
-        html += QLatin1String("-qt-paragraph-type:empty; height:1em;");
+        html += QLatin1String("-qt-paragraph-type:empty;");
     }
 
     emitMargins(QString::number(format.topMargin()),
@@ -2709,6 +2709,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
     emitBlockAttributes(block);
 
     html += QLatin1Char('>');
+    if (block.begin().atEnd())
+        html += "<br />";
 
     QTextBlock::Iterator it = block.begin();
     if (fragmentMarkers && !it.atEnd() && block == doc->begin())
