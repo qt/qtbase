@@ -296,6 +296,8 @@ public:
 
         Expose = 208,
 
+        InputMethodQuery = 209,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

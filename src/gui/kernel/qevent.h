@@ -427,6 +427,22 @@ private:
     int replace_from;
     int replace_length;
 };
+
+class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
+{
+public:
+    QInputMethodQueryEvent(Qt::InputMethodQuery query);
+    ~QInputMethodQueryEvent();
+
+    Qt::InputMethodQuery query() const { return m_query; }
+
+    void setValue(const QVariant &v) { m_value = v; }
+    QVariant value() const { return m_value; }
+private:
+    Qt::InputMethodQuery m_query;
+    QVariant m_value;
+};
+
 #endif // QT_NO_INPUTMETHOD
 
 #ifndef QT_NO_DRAGANDDROP

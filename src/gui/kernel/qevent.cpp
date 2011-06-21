@@ -1755,6 +1755,53 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
     \sa replacementStart(), setCommitString()
 */
 
+
+/*! \class QInputMethodQueryEvent
+
+    This event is sent by the input context to input objects.
+
+    It is used by the
+    input method to query a set of properties of the object to be
+    able to support complex input method operations as support for
+    surrounding text and reconversions.
+
+    query() specifies which property is queried.
+
+    The object should call setValue() on the event to fill in the requested
+    data before calling accept().
+*/
+QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQuery query)
+    : QEvent(InputMethodQuery),
+      m_query(query)
+{
+}
+
+QInputMethodQueryEvent::~QInputMethodQueryEvent()
+{
+}
+
+/*!
+    \fn Qt::InputMethodQuery QInputMethodQueryEvent::query() const
+
+    returns the type of data queried.
+*/
+
+/*!
+    \fn QVariant QInputMethodQueryEvent::value() const
+
+    returns the value set by the receiving object. Mainly used by the input method.
+
+    \sa setValue()
+*/
+
+/*!
+    \fn QVariant QInputMethodQueryEvent::setValue()
+
+    Used by the receiving object to set the value requested by query().
+
+    \sa setValue()
+*/
+
 #ifndef QT_NO_TABLETEVENT
 
 /*!

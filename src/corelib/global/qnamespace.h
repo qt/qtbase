@@ -1488,7 +1488,8 @@ public:
         ImSurroundingText,
         ImCurrentSelection,
         ImMaximumTextLength,
-        ImAnchorPosition
+        ImAnchorPosition,
+        ImHints
     };
 
     enum InputMethodHint {

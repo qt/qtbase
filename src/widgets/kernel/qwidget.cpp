@@ -8297,6 +8297,21 @@ bool QWidget::event(QEvent *event)
         inputMethodEvent((QInputMethodEvent *) event);
         break;
 
+    case QEvent::InputMethodQuery:
+        if (testAttribute(Qt::WA_InputMethodEnabled)) {
+            QInputMethodQueryEvent *query = static_cast<QInputMethodQueryEvent *>(event);
+            QVariant v = inputMethodQuery(query->query());
+
+            if (query->query() == Qt::ImMicroFocus) {
+                QRect r = v.toRect();
+                v = QRect(mapToGlobal(r.topLeft()), r.size());
+            }
+
+            query->setValue(v);
+            query->accept();
+            break;
+        }
+
     case QEvent::PolishRequest:
         ensurePolished();
         break;
@@ -9215,6 +9230,8 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
     case Qt::ImAnchorPosition:
         // Fallback.
         return inputMethodQuery(Qt::ImCursorPosition);
+    case Qt::ImHints:
+        return (int)inputMethodHints();
     default:
         return QVariant();
     }
