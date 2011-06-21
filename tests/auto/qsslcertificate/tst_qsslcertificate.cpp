@@ -859,10 +859,16 @@ void tst_QSslCertificate::toText()
     QCOMPARE(certList.size(), 1);
     const QSslCertificate &cert = certList.at(0);
 
-    QFile f(SRCDIR "more-certificates/cert-large-expiration-date.txt");
-    QVERIFY(f.open(QIODevice::ReadOnly));
-    QByteArray txt = f.readAll();
-    QVERIFY(txt == cert.toText());
+    // Openssl's cert dump method changed slightly between 0.9.8 and 1.0.0 versions, so we want it to match any output
+
+    QFile fOld(SRCDIR "more-certificates/cert-large-expiration-date.txt.0.9.8");
+    QVERIFY(fOld.open(QIODevice::ReadOnly));
+    QByteArray txtOld = fOld.readAll();
+
+    QFile fNew(SRCDIR "more-certificates/cert-large-expiration-date.txt.1.0.0");
+    QVERIFY(fNew.open(QIODevice::ReadOnly));
+    QByteArray txtNew = fNew.readAll();
+    QVERIFY(txtOld == cert.toText() || txtNew == cert.toText());
 }
 
 #endif // QT_NO_OPENSSL
