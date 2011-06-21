@@ -13,6 +13,7 @@ protected:
 
     void keyPressEvent(QKeyEvent *);
 
+    void exposeEvent(QExposeEvent *);
     void resizeEvent(QResizeEvent *);
 
 private:

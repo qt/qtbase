@@ -57,6 +57,7 @@ QT_MODULE(Gui)
 
 class QWindowPrivate;
 
+class QExposeEvent;
 class QResizeEvent;
 class QShowEvent;
 class QHideEvent;
@@ -179,6 +180,7 @@ Q_SIGNALS:
     void backBufferReady();
 
 protected:
+    virtual void exposeEvent(QExposeEvent *);
     virtual void resizeEvent(QResizeEvent *);
 
     virtual void showEvent(QShowEvent *);

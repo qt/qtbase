@@ -454,6 +454,10 @@ bool QWindow::close()
     return true;
 }
 
+void QWindow::exposeEvent(QExposeEvent *)
+{
+}
+
 void QWindow::resizeEvent(QResizeEvent *)
 {
 }
@@ -508,6 +512,10 @@ bool QWindow::event(QEvent *event)
 
     case QEvent::Close:
         destroy();
+        break;
+
+    case QEvent::Expose:
+        exposeEvent(static_cast<QExposeEvent *>(event));
         break;
 
     default:

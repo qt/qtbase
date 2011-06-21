@@ -38,8 +38,6 @@ Window::Window(QWindow *parent)
     m_image.fill(colorTable[m_backgroundColorIndex % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
 
     m_lastPos = QPoint(-1, -1);
-
-    render();
 }
 
 void Window::mousePressEvent(QMouseEvent *event)
@@ -68,6 +66,11 @@ void Window::mouseReleaseEvent(QMouseEvent *event)
         m_lastPos = QPoint(-1, -1);
     }
 
+    render();
+}
+
+void Window::exposeEvent(QExposeEvent *)
+{
     render();
 }
 

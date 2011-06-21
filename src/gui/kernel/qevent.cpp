@@ -1145,6 +1145,29 @@ QMoveEvent::~QMoveEvent()
     Returns the old position of the widget.
 */
 
+/*!
+    \class QExposeEvent
+    \brief The QExposeEvent class contains event parameters for expose events.
+
+    \ingroup events
+
+    Expose events are sent to widgets when an area of the widget is invalidated
+    and needs to be flushed from the backing store.
+
+    The event handler QWindow::exposeEvent() receives expose events.
+*/
+QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
+    : QEvent(Expose)
+    , rgn(exposeRegion)
+{
+}
+
+/*!
+  \internal
+*/
+QExposeEvent::~QExposeEvent()
+{
+}
 
 /*!
     \class QResizeEvent

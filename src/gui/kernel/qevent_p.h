@@ -167,18 +167,6 @@ public:
     QScrollEvent::ScrollState state;
 };
 
-class QExposeEvent : public QEvent
-{
-public:
-    inline QExposeEvent(const QRegion &rgn)
-        : QEvent(Expose)
-        , region(rgn)
-    {
-    }
-
-    QRegion region;
-};
-
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

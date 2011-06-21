@@ -300,6 +300,17 @@ protected:
     friend class QCoreApplication;
 };
 
+class Q_GUI_EXPORT QExposeEvent : public QEvent
+{
+public:
+    QExposeEvent(const QRegion &rgn);
+    ~QExposeEvent();
+
+    inline const QRegion &region() const { return rgn; }
+
+protected:
+    QRegion rgn;
+};
 
 class Q_GUI_EXPORT QResizeEvent : public QEvent
 {
