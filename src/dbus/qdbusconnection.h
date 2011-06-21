@@ -176,6 +176,8 @@ public:
     static void disconnectFromBus(const QString &name);
     static void disconnectFromPeer(const QString &name);
 
+    static QByteArray localMachineId();
+
     static QDBusConnection sessionBus();
     static QDBusConnection systemBus();
 

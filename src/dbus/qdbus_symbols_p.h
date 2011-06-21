@@ -301,6 +301,8 @@ DEFINEFUNC(void          , dbus_get_version ,     (int *major_version_p,
                                                    int *minor_version_p,
                                                    int *micro_version_p),
            (major_version_p, minor_version_p, micro_version_p), )
+DEFINEFUNC(char*         , dbus_get_local_machine_id ,  (void), (), return)
+
 
 /* dbus-pending-call.h */
 DEFINEFUNC(dbus_bool_t  , dbus_pending_call_set_notify, (DBusPendingCall               *pending,
