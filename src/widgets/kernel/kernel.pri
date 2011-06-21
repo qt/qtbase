@@ -21,6 +21,7 @@ HEADERS += \
         kernel/qiconloader_p.h \
         kernel/qiconengine.h \
         kernel/qiconengineplugin.h \
+        kernel/qinputcontext.h \
         kernel/qlayout.h \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
@@ -54,6 +55,7 @@ SOURCES += \
         kernel/qiconloader.cpp \
         kernel/qiconengine.cpp \
         kernel/qiconengineplugin.cpp \
+        kernel/qinputcontext.cpp \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \

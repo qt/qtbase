@@ -5222,38 +5222,7 @@ void QApplication::setInputContext(QInputContext *inputContext)
 */
 QInputContext *QApplication::inputContext() const
 {
-    Q_D(const QApplication);
-    Q_UNUSED(d);// only static members being used.
-    if (QApplicationPrivate::is_app_closing)
-        return d->inputContext;
-#ifdef Q_WS_X11
-    if (!X11)
-        return 0;
-    if (!d->inputContext) {
-        QApplication *that = const_cast<QApplication *>(this);
-        QInputContext *qic = QInputContextFactory::create(X11->default_im, that);
-        // fallback to default X Input Method.
-        if (!qic)
-            qic = QInputContextFactory::create(QLatin1String("xim"), that);
-        that->d_func()->inputContext = qic;
-    }
-#elif defined(Q_OS_SYMBIAN)
-    if (!d->inputContext) {
-        QApplication *that = const_cast<QApplication *>(this);
-        const QStringList keys = QInputContextFactory::keys();
-        // Try hbim and coefep first, then try others.
-        if (keys.contains(QLatin1String("hbim"))) {
-            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
-        } else if (keys.contains(QLatin1String("coefep"))) {
-            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
-        } else {
-            for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
-                that->d_func()->inputContext = QInputContextFactory::create(keys[c], that);
-            }
-        }
-    }
-#endif
-    return d->inputContext;
+    return QApplicationPrivate::inputContext;
 }
 #endif // QT_NO_IM
 
