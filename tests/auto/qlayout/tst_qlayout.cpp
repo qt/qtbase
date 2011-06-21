@@ -56,7 +56,7 @@
 #include <QRadioButton>
 #include <private/qlayoutengine_p.h>
 
-#ifdef Q_OS_MAC
+#ifdef Q_WS_MAC
 # include <QtGui/QMacStyle>
 #endif
 
@@ -280,7 +280,7 @@ public:
 
 void tst_QLayout::layoutItemRect()
 {
-#ifdef Q_OS_MAC
+#ifdef Q_WS_MAC
     if (qobject_cast<QMacStyle*>(QApplication::style())) {
         QWidget *window = new QWidget;
         QRadioButton *radio = new QRadioButton(window);
