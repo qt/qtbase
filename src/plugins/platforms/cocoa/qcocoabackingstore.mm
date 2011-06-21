@@ -92,7 +92,7 @@ void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
     delete m_image;
     m_image = new QImage(size,QImage::Format_ARGB32_Premultiplied);
     NSSize newSize = NSMakeSize(size.width(),size.height());
-    [m_cocoaWindow->m_windowSurfaceView setImage:m_image];
+    [static_cast<QNSView *>(m_cocoaWindow->m_windowSurfaceView) setImage:m_image];
 }
 
 QT_END_NAMESPACE
