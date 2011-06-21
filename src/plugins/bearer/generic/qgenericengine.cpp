@@ -147,6 +147,9 @@ static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interf
 QGenericEngine::QGenericEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
+    //workaround for deadlock in __cxa_guard_acquire with webkit on macos x
+    //initialise the Q_GLOBAL_STATIC in same thread as the AtomicallyInitializedStatic
+    (void)QNetworkInterface::interfaceFromIndex(0);
 }
 
 QGenericEngine::~QGenericEngine()
