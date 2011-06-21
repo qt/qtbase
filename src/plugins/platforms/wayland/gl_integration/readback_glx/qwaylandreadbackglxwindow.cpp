@@ -49,8 +49,9 @@ QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWindow *window, QWaylandRe
     , m_glxIntegration(glxIntegration)
     , m_buffer(0)
     , m_pixmap(0)
-    , m_config(qglx_findConfig(glxIntegration->xDisplay(), glxIntegration->screen(), window->glFormat()))
+    , m_config(0)
     , m_glxPixmap(0)
+    , m_window(window)
 {
 }
 
@@ -106,6 +107,9 @@ void QWaylandReadbackGlxWindow::createSurface()
     int depth = XDefaultDepth(m_glxIntegration->xDisplay(), m_glxIntegration->screen());
     m_pixmap = XCreatePixmap(m_glxIntegration->xDisplay(), m_glxIntegration->rootWindow(), size.width(), size.height(), depth);
     XSync(m_glxIntegration->xDisplay(), False);
+
+    if (!m_config)
+        m_config = qglx_findConfig(m_glxIntegration->xDisplay(), m_glxIntegration->screen(), m_window->glFormat());
 
     m_glxPixmap = glXCreatePixmap(m_glxIntegration->xDisplay(), m_config, m_pixmap,0);
 

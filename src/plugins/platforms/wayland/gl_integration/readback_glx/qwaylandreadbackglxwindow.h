@@ -69,6 +69,7 @@ private:
     Pixmap m_pixmap;
     GLXFBConfig m_config;
     GLXPixmap m_glxPixmap;
+    QWindow *m_window;
 };
 
 #endif // QWAYLANDREADBACKGLXWINDOW_H
