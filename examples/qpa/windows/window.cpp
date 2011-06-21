@@ -18,7 +18,6 @@ Window::Window(QWindow *parent)
     : QWindow(parent)
     , m_backgroundColorIndex(colorIndexId++)
 {
-    setSurfaceType(RasterSurface);
     setWindowTitle(QLatin1String("Window"));
 
     if (parent)
