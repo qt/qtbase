@@ -50,23 +50,15 @@
 
 class QWaylandXCompositeEGLWindow;
 
-class QWaylandXCompositeEGLSurface : public QEGLSurface
-{
-public:
-    QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window);
-
-    EGLSurface eglSurface() const;
-    QWaylandXCompositeEGLWindow *window() const { return m_window; }
-private:
-    QWaylandXCompositeEGLWindow *m_window;
-};
-
 class QWaylandXCompositeEGLContext : public QEGLPlatformContext
 {
 public:
-    QWaylandXCompositeEGLContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display);
+    QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display);
 
-    void swapBuffers(const QPlatformGLSurface &surface);
+    void swapBuffers(QPlatformSurface *surface);
+
+private:
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
 };
 
 #endif // QWAYLANDXCOMPOSITEEGLCONTEXT_H

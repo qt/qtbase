@@ -57,7 +57,7 @@ QWaylandXCompositeEGLWindow::QWaylandXCompositeEGLWindow(QWindow *window, QWayla
     , m_context(0)
     , m_buffer(0)
     , m_xWindow(0)
-    , m_config(q_configFromGLFormat(glxIntegration->eglDisplay(), window->glFormat(), true))
+    , m_config(q_configFromGLFormat(glxIntegration->eglDisplay(), window->format(), true))
     , m_surface(0)
     , m_waitingForSync(false)
 {
@@ -67,11 +67,6 @@ QWaylandWindow::WindowType QWaylandXCompositeEGLWindow::windowType() const
 {
     //yeah. this type needs a new name
     return QWaylandWindow::Egl;
-}
-
-QPlatformGLSurface *QWaylandXCompositeEGLWindow::createGLSurface() const
-{
-    return new QWaylandXCompositeEGLSurface(const_cast<QWaylandXCompositeEGLWindow *>(this));
 }
 
 void QWaylandXCompositeEGLWindow::setGeometry(const QRect &rect)

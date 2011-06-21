@@ -48,31 +48,25 @@
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-QWaylandXCompositeEGLSurface::QWaylandXCompositeEGLSurface(QWaylandXCompositeEGLWindow *window)
-    : QEGLSurface(window->eglSurface(), window->window()->glFormat())
-    , m_window(window)
-{
-}
-
-EGLSurface QWaylandXCompositeEGLSurface::eglSurface() const
-{
-    return m_window->eglSurface();
-}
-
-QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QGuiGLFormat &format, QPlatformGLContext *share, EGLDisplay display)
+QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display)
     : QEGLPlatformContext(format, share, display)
 {
 }
 
-void QWaylandXCompositeEGLContext::swapBuffers(const QPlatformGLSurface &surface)
+void QWaylandXCompositeEGLContext::swapBuffers(QPlatformSurface *surface)
 {
     QEGLPlatformContext::swapBuffers(surface);
 
-    const QWaylandXCompositeEGLSurface &s =
-        static_cast<const QWaylandXCompositeEGLSurface &>(surface);
+    QWaylandXCompositeEGLWindow *w =
+        static_cast<QWaylandXCompositeEGLWindow *>(surface);
 
-    QSize size = s.window()->geometry().size();
+    QSize size = w->geometry().size();
 
-    s.window()->damage(QRect(QPoint(), size));
-    s.window()->waitForFrameSync();
+    w->damage(QRect(QPoint(), size));
+    w->waitForFrameSync();
+}
+
+EGLSurface QWaylandXCompositeEGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+{
+    return static_cast<QWaylandXCompositeEGLWindow *>(surface)->eglSurface();
 }

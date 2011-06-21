@@ -56,7 +56,8 @@ class QPlatformWindowPrivate
 */
 
 QPlatformWindow::QPlatformWindow(QWindow *window)
-    : d_ptr(new QPlatformWindowPrivate)
+    : QPlatformSurface(QSurface::Window)
+    , d_ptr(new QPlatformWindowPrivate)
 {
     Q_D(QPlatformWindow);
     d->window = window;
@@ -85,6 +86,14 @@ QPlatformWindow *QPlatformWindow::parent() const
 {
     Q_D(const QPlatformWindow);
     return d->window->parent() ? d->window->parent()->handle() : 0;
+}
+
+/*!
+    Returns the actual surface format of the window.
+*/
+QSurfaceFormat QPlatformWindow::format() const
+{
+    return QSurfaceFormat();
 }
 
 /*!
@@ -207,14 +216,6 @@ void QPlatformWindow::setOpacity(qreal level)
 void QPlatformWindow::requestActivateWindow()
 {
     QWindowSystemInterface::handleWindowActivated(window());
-}
-
-/*!
-  Reimplement to create a GL surface for the window.
-*/
-QPlatformGLSurface *QPlatformWindow::createGLSurface() const
-{
-    return 0;
 }
 
 bool QPlatformWindow::setKeyboardGrabEnabled(bool grab)

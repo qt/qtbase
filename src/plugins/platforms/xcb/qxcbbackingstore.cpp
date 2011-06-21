@@ -260,7 +260,7 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     QXcbWindow* win = static_cast<QXcbWindow *>(window()->handle());
 
     delete m_image;
-    m_image = new QXcbShmImage(screen, size, win->depth(), win->format());
+    m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
     Q_XCB_NOOP(connection());
 
     m_syncingResize = true;

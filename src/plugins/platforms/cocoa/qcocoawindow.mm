@@ -157,12 +157,6 @@ void QCocoaWindow::windowDidResize()
         m_glContext->update();
 }
 
-QPlatformGLSurface *QCocoaWindow::createGLSurface() const
-{
-    Q_ASSERT(window()->surfaceType() == QWindow::OpenGLSurface);
-    return new QCocoaGLSurface(window()->glFormat(), window());
-}
-
 void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)
 {
     m_glContext = context;

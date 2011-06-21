@@ -112,7 +112,7 @@ QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
     return new QCocoaWindow(window);
 }
 
-QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
 {
     return new QCocoaGLContext(glFormat, share);
 }

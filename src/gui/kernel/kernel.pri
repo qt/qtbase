@@ -52,7 +52,7 @@ qpa {
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
-                kernel/qguiglformat_qpa.h \
+                kernel/qsurfaceformat.h \
                 kernel/qguiapplication.h \
                 kernel/qguiapplication_p.h \
                 kernel/qwindow_p.h \
@@ -76,7 +76,7 @@ qpa {
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \
                 kernel/qsessionmanager_qpa.cpp \
-                kernel/qguiglformat_qpa.cpp \
+                kernel/qsurfaceformat.cpp \
                 kernel/qguiapplication.cpp \
                 kernel/qwindow.cpp
 

@@ -42,7 +42,7 @@
 #include "qwindow.h"
 
 #include "qplatformwindow_qpa.h"
-#include "qguiglformat_qpa.h"
+#include "qsurfaceformat.h"
 #include "qplatformglcontext_qpa.h"
 #include "qguiglcontext_qpa.h"
 
@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
 QWindow::QWindow(QWindow *parent)
     : QObject(*new QWindowPrivate(), parent)
+    , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
     d->parentWindow = parent;
@@ -178,38 +179,18 @@ void QWindow::setWindowModality(Qt::WindowModality windowModality)
     d->modality = windowModality;
 }
 
-void QWindow::setGLFormat(const QGuiGLFormat &format)
+void QWindow::setFormat(const QSurfaceFormat &format)
 {
     Q_D(QWindow);
     d->requestedFormat = format;
 }
 
-QGuiGLFormat QWindow::glFormat() const
+QSurfaceFormat QWindow::format() const
 {
     Q_D(const QWindow);
-    if (d->glSurface)
-        return d->glSurface->format();
+    if (d->platformWindow)
+        return d->platformWindow->format();
     return d->requestedFormat;
-}
-
-QPlatformGLSurface *QWindow::glSurface() const
-{
-    Q_D(const QWindow);
-    if (d->platformWindow && !d->glSurface)
-        const_cast<QPlatformGLSurface *&>(d->glSurface) = d->platformWindow->createGLSurface();
-    return d->glSurface;
-}
-
-void QWindow::setSurfaceType(SurfaceType type)
-{
-    Q_D(QWindow);
-    d->surfaceType = type;
-}
-
-QWindow::SurfaceType QWindow::surfaceType() const
-{
-    Q_D(const QWindow);
-    return d->surfaceType;
 }
 
 void QWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -414,9 +395,7 @@ void QWindow::setWindowIcon(const QImage &icon) const
 void QWindow::destroy()
 {
     Q_D(QWindow);
-    delete d->glSurface;
     delete d->platformWindow;
-    d->glSurface = 0;
     d->platformWindow = 0;
 }
 
@@ -426,6 +405,11 @@ QPlatformWindow *QWindow::handle() const
     return d->platformWindow;
 }
 
+QPlatformSurface *QWindow::surfaceHandle() const
+{
+    Q_D(const QWindow);
+    return d->platformWindow;
+}
 
 bool QWindow::setKeyboardGrabEnabled(bool grab)
 {

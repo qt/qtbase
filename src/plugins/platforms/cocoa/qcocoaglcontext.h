@@ -10,28 +10,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaGLSurface : public QPlatformGLSurface
-{
-public:
-    QCocoaGLSurface(const QGuiGLFormat &format, QWindow *window)
-        : QPlatformGLSurface(format)
-        , window(window)
-    {
-    }
-
-    QWindow *window;
-};
-
 class QCocoaGLContext : public QPlatformGLContext
 {
 public:
-    QCocoaGLContext(const QGuiGLFormat &format, QPlatformGLContext *share);
+    QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share);
 
-    QGuiGLFormat format() const;
+    QSurfaceFormat format() const;
 
-    void swapBuffers(const QPlatformGLSurface &surface);
+    void swapBuffers(QPlatformSurface *surface);
 
-    bool makeCurrent(const QPlatformGLSurface &surface);
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
 
     void (*getProcAddress(const QByteArray &procName)) ();
@@ -45,7 +33,7 @@ private:
     void setActiveWindow(QWindow *window);
 
     NSOpenGLContext *m_context;
-    QGuiGLFormat m_format;
+    QSurfaceFormat m_format;
     QWeakPointer<QWindow> m_currentWindow;
 };
 

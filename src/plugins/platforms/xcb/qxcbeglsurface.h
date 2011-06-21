@@ -39,43 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDREADBACKGLXINTEGRATION_H
-#define QWAYLANDREADBACKGLXINTEGRATION_H
+#ifndef QXCBEGLSURFACE_H
+#define QXCBEGLSURFACE_H
 
-#include "gl_integration/qwaylandglintegration.h"
+#include <EGL/egl.h>
 
-#include <QtCore/QTextStream>
-#include <QtCore/QDataStream>
-#include <QtCore/QMetaType>
-#include <QtCore/QVariant>
-#include <QtGui/QWindow>
-
-#include <X11/Xlib.h>
-
-class QWaylandReadbackGlxIntegration : public QWaylandGLIntegration
+class QXcbEGLSurface
 {
 public:
-    QWaylandReadbackGlxIntegration(QWaylandDisplay * waylandDispaly);
-    ~QWaylandReadbackGlxIntegration();
+    QXcbEGLSurface(EGLDisplay display, EGLSurface surface)
+        : m_display(display)
+        , m_surface(surface)
+    {
+    }
 
-    void initialize();
+    ~QXcbEGLSurface()
+    {
+        eglDestroySurface(m_display, m_surface);
+    }
 
-    QWaylandWindow *createEglWindow(QWindow *window);
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-
-    QWaylandDisplay *waylandDisplay() const;
-
-    Display *xDisplay() const;
-    int screen() const;
-    Window rootWindow() const;
+    EGLSurface surface() const { return m_surface; }
 
 private:
-    QWaylandDisplay *mWaylandDisplay;
-
-    Display *mDisplay;
-    int mScreen;
-    Window mRootWindow;
-
+    EGLDisplay m_display;
+    EGLSurface m_surface;
 };
 
-#endif // QWAYLANDREADBACKGLXINTEGRATION_H
+#endif

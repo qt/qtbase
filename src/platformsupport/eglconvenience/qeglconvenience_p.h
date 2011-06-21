@@ -43,16 +43,16 @@
 #define QEGLCONVENIENCE_H
 
 
-#include <QtGui/QGuiGLFormat>
+#include <QtGui/QSurfaceFormat>
 #include <QtCore/QVector>
 
 #include <EGL/egl.h>
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QGuiGLFormat &format);
+QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format);
 bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes);
-EGLConfig q_configFromGLFormat(EGLDisplay display, const QGuiGLFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
-QGuiGLFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config);
+EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat = false, int surfaceType = EGL_WINDOW_BIT);
+QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config);
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 
 QT_END_NAMESPACE

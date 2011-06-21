@@ -12,9 +12,9 @@ class Renderer : public QObject
 public:
     Renderer();
 
-    QGuiGLFormat format() const;
+    QSurfaceFormat format() const;
 
-    void render(QPlatformGLSurface *surface, const QColor &color, const QSize &viewSize);
+    void render(QSurface *surface, const QColor &color, const QSize &viewSize);
 
 private:
     void initialize();
@@ -35,7 +35,7 @@ private:
     int colorUniform;
 
     bool m_initialized;
-    QGuiGLFormat m_format;
+    QSurfaceFormat m_format;
     QGuiGLContext *m_context;
 };
 

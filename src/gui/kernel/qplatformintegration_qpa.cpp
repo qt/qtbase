@@ -171,7 +171,7 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 
-QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QSurfaceFormat &, QPlatformGLContext *) const
 {
     qWarning("This plugin does not support createPlatformGLContext!");
     return 0;

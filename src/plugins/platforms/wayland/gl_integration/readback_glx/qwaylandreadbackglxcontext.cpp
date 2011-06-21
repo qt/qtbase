@@ -47,16 +47,6 @@
 #include <QtGui/QGuiGLContext>
 #include <QtCore/QDebug>
 
-QWaylandReadbackGlxSurface::QWaylandReadbackGlxSurface(QWaylandReadbackGlxWindow *window)
-    : m_window(window)
-{
-}
-
-GLXPixmap QWaylandReadbackGlxSurface::glxPixmap() const
-{
-    return m_window->glxPixmap();
-}
-
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
 {
     const int width = img.width();
@@ -79,7 +69,7 @@ static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
     }
 }
 
-QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(const QGuiGLFormat &format,
+QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(const QSurfaceFormat &format,
         QPlatformGLContext *share, Display *display, int screen)
     : m_display(display)
 {
@@ -89,17 +79,17 @@ QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(const QGuiGLFormat &forma
 
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display, config);
     m_context = glXCreateContext(display, visualInfo, shareContext, TRUE);
-    m_format = qglx_guiGLFormatFromGLXFBConfig(display, config, m_context);
+    m_format = qglx_surfaceFormatFromGLXFBConfig(display, config, m_context);
 }
 
-QGuiGLFormat QWaylandReadbackGlxContext::format() const
+QSurfaceFormat QWaylandReadbackGlxContext::format() const
 {
     return m_format;
 }
 
-bool QWaylandReadbackGlxContext::makeCurrent(const QPlatformGLSurface &surface)
+bool QWaylandReadbackGlxContext::makeCurrent(QPlatformSurface *surface)
 {
-    GLXPixmap glxPixmap = static_cast<const QWaylandReadbackGlxSurface &>(surface).glxPixmap();
+    GLXPixmap glxPixmap = static_cast<QWaylandReadbackGlxWindow *>(surface)->glxPixmap();
 
     return glXMakeCurrent(m_display, glxPixmap, m_context);
 }
@@ -109,16 +99,15 @@ void QWaylandReadbackGlxContext::doneCurrent()
     glXMakeCurrent(m_display, 0, 0);
 }
 
-void QWaylandReadbackGlxContext::swapBuffers(const QPlatformGLSurface &surface)
+void QWaylandReadbackGlxContext::swapBuffers(QPlatformSurface *surface)
 {
     // #### makeCurrent() directly on the platform context doesn't update QGuiGLContext::currentContext()
     if (QGuiGLContext::currentContext()->handle() != this)
         makeCurrent(surface);
 
-    const QWaylandReadbackGlxSurface &s =
-        static_cast<const QWaylandReadbackGlxSurface &>(surface);
+    QWaylandReadbackGlxWindow *w = static_cast<QWaylandReadbackGlxWindow *>(surface);
 
-    QSize size = s.window()->geometry().size();
+    QSize size = w->geometry().size();
 
     QImage img(size, QImage::Format_ARGB32);
     const uchar *constBits = img.bits();
@@ -130,13 +119,13 @@ void QWaylandReadbackGlxContext::swapBuffers(const QPlatformGLSurface &surface)
     qgl_byteSwapImage(img, GL_UNSIGNED_INT_8_8_8_8_REV);
     constBits = img.bits();
 
-    const uchar *constDstBits = s.window()->buffer();
+    const uchar *constDstBits = w->buffer();
     uchar *dstBits = const_cast<uchar *>(constDstBits);
     memcpy(dstBits, constBits, (img.width() * 4) * img.height());
 
-    s.window()->damage(QRect(QPoint(), size));
+    w->damage(QRect(QPoint(), size));
 
-    s.window()->waitForFrameSync();
+    w->waitForFrameSync();
 }
 
 void (*QWaylandReadbackGlxContext::getProcAddress(const QByteArray &procName)) ()

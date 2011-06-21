@@ -71,7 +71,7 @@
 #include "qglxintegration.h"
 #include <QtPlatformSupport/private/qglxconvenience_p.h>
 #elif defined(XCB_USE_EGL)
-#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include "qxcbeglsurface.h"
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qxlibeglintegration_p.h>
 #endif
@@ -98,6 +98,9 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_syncCounter(0)
     , m_mapped(false)
     , m_netWmUserTimeWindow(XCB_NONE)
+#if defined(XCB_USE_EGL)
+    , m_eglSurface(0)
+#endif
 {
     m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
 
@@ -120,7 +123,7 @@ void QXcbWindow::create()
     if (type == Qt::Desktop) {
         m_window = m_screen->root();
         m_depth = m_screen->screen()->root_depth;
-        m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
         connection()->addWindow(m_window, this);
         return;
     }
@@ -155,17 +158,18 @@ void QXcbWindow::create()
     if (parent())
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
 
+    m_requestedFormat = window()->format();
+
 #if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
-    if ((window()->surfaceType() == QWindow::OpenGLSurface
-        && QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
-        || window()->glFormat().hasAlpha())
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
+        || window()->format().hasAlpha())
     {
 #if defined(XCB_USE_GLX)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->glFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen),m_screen->screenNumber(), window()->format());
 
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
-        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->glFormat(), true);
+        EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, window()->format(), true);
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 
         XVisualInfo visualInfoTemplate;
@@ -178,7 +182,7 @@ void QXcbWindow::create()
 #endif //XCB_USE_GLX
         if (visualInfo) {
             m_depth = visualInfo->depth;
-            m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
             Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(this), xcb_parent_id, visualInfo->visual, AllocNone);
 
             XSetWindowAttributes a;
@@ -196,7 +200,7 @@ void QXcbWindow::create()
     {
         m_window = xcb_generate_id(xcb_connection());
         m_depth = m_screen->screen()->root_depth;
-        m_format = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        m_imageFormat = (m_depth == 32) ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
 
         Q_XCB_CALL(xcb_create_window(xcb_connection(),
                                      XCB_COPY_FROM_PARENT,            // depth -- same as root
@@ -291,6 +295,11 @@ void QXcbWindow::destroy()
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
     }
     m_mapped = false;
+
+#if defined(XCB_USE_EGL)
+    delete m_eglSurface;
+    m_eglSurface = 0;
+#endif
 }
 
 void QXcbWindow::setGeometry(const QRect &rect)
@@ -1028,28 +1037,26 @@ void QXcbWindow::requestActivateWindow()
     connection()->sync();
 }
 
-QPlatformGLSurface *QXcbWindow::createGLSurface() const
+QSurfaceFormat QXcbWindow::format() const
 {
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
-        qWarning() << "QXcb::createGLSurface() called without OpenGL support";
-        return 0;
+    // ### return actual format
+    return m_requestedFormat;
+}
+
+#if defined(XCB_USE_EGL)
+QXcbEGLSurface *QXcbWindow::eglSurface() const
+{
+    if (!m_eglSurface) {
+        EGLDisplay display = connection()->egl_display();
+        EGLConfig config = q_configFromGLFormat(display, window()->format(), true);
+        EGLSurface surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
+
+        m_eglSurface = new QXcbEGLSurface(display, surface);
     }
 
-    QGuiGLFormat format = window()->glFormat();
-
-#if defined(XCB_USE_GLX)
-    return new QGLXSurface(m_window, format);
-#elif defined(XCB_USE_EGL)
-    EGLDisplay display = connection()->egl_display();
-    EGLConfig config = q_configFromGLFormat(display, format, true);
-
-    EGLSurface eglSurface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)m_window, 0);
-
-    return new QEGLSurface(eglSurface, window()->glFormat());
-#else
-    return 0;
-#endif
+    return m_eglSurface;
 }
+#endif
 
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {

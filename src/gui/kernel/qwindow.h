@@ -46,7 +46,7 @@
 #include <QtCore/QEvent>
 #include <QtCore/QMargins>
 
-#include <QtGui/qguiglformat_qpa.h>
+#include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
 
 QT_BEGIN_HEADER
@@ -67,11 +67,31 @@ class QMouseEvent;
 class QWheelEvent;
 #endif
 
-class QPlatformGLSurface;
+class QPlatformSurface;
 class QPlatformWindow;
 class QBackingStore;
 
-class Q_GUI_EXPORT QWindow : public QObject
+class Q_GUI_EXPORT QSurface
+{
+public:
+    enum SurfaceType {
+        Window
+    };
+
+    SurfaceType surfaceType() const { return m_type; }
+
+    virtual QSurfaceFormat format() const = 0;
+    virtual QPlatformSurface *surfaceHandle() const = 0;
+
+private:
+    QSurface(SurfaceType type) : m_type(type) {}
+
+    SurfaceType m_type;
+
+    friend class QWindow;
+};
+
+class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWindow)
@@ -79,11 +99,6 @@ class Q_GUI_EXPORT QWindow : public QObject
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
 
 public:
-    enum SurfaceType {
-        RasterSurface,
-        OpenGLSurface
-    };
-
     QWindow(QWindow *parent = 0);
     virtual ~QWindow();
 
@@ -103,13 +118,8 @@ public:
     Qt::WindowModality windowModality() const;
     void setWindowModality(Qt::WindowModality windowModality);
 
-    void setGLFormat(const QGuiGLFormat &format);
-    QGuiGLFormat glFormat() const;
-
-    QPlatformGLSurface *glSurface() const;
-
-    void setSurfaceType(SurfaceType type);
-    SurfaceType surfaceType() const;
+    void setFormat(const QSurfaceFormat &format);
+    QSurfaceFormat format() const;
 
     void setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowFlags windowFlags() const;
@@ -187,6 +197,8 @@ protected:
 #endif
 
 private:
+    QPlatformSurface *surfaceHandle() const;
+
     Q_DISABLE_COPY(QWindow)
 
     friend class QGuiApplication;

@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtCore/QDebug>
+
 #include "qxcbconnection.h"
 #include "qxcbkeyboard.h"
 #include "qxcbscreen.h"
@@ -49,10 +52,7 @@
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
-#include <QtGui/private/qguiapplication_p.h>
 #include <QAbstractEventDispatcher>
-
-#include <QtCore/QDebug>
 
 #include <stdio.h>
 #include <errno.h>
@@ -108,7 +108,7 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_has_egl = eglInitialize(eglDisplay,&major,&minor);
 #endif //XCB_USE_EGL
 #else
-    m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
+    m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 
 #endif //XCB_USE_XLIB
     xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);

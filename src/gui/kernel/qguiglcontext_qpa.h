@@ -53,24 +53,25 @@ QT_MODULE(Gui)
 
 class QGuiGLContextPrivate;
 class QPlatformGLContext;
-class QPlatformGLSurface;
+class QSurface;
+class QSurfaceFormat;
 
 class Q_GUI_EXPORT QGuiGLContext
 {
 Q_DECLARE_PRIVATE(QGuiGLContext);
 public:
-    QGuiGLContext(const QGuiGLFormat &format = QGuiGLFormat(), QGuiGLContext *shareContext = 0);
+    QGuiGLContext(const QSurfaceFormat &format = QSurfaceFormat(), QGuiGLContext *shareContext = 0);
     ~QGuiGLContext();
 
     bool isValid() const;
 
-    bool makeCurrent(QPlatformGLSurface *surface);
+    bool makeCurrent(QSurface *surface);
     void doneCurrent();
 
-    void swapBuffers(QPlatformGLSurface *surface);
+    void swapBuffers(QSurface *surface);
     void (*getProcAddress(const QByteArray &procName)) ();
 
-    QGuiGLFormat format() const;
+    QSurfaceFormat format() const;
 
     QGuiGLContext *shareContext() const;
 

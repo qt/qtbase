@@ -47,17 +47,7 @@
 
 #include <QRegion>
 
-QWaylandXCompositeGLXSurface::QWaylandXCompositeGLXSurface(QWaylandXCompositeGLXWindow *window)
-    : m_window(window)
-{
-}
-
-Window QWaylandXCompositeGLXSurface::xWindow() const
-{
-    return m_window->xWindow();
-}
-
-QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QGuiGLFormat &format, QPlatformGLContext *share, Display *display, int screen)
+QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen)
     : m_display(display)
 {
     qDebug("creating XComposite-GLX context");
@@ -65,12 +55,12 @@ QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QGuiGLFormat &f
     GLXFBConfig config = qglx_findConfig(display, screen, format);
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display, config);
     m_context = glXCreateContext(display, visualInfo, shareContext, true);
-    m_format = qglx_guiGLFormatFromGLXFBConfig(display, config, m_context);
+    m_format = qglx_surfaceFormatFromGLXFBConfig(display, config, m_context);
 }
 
-bool QWaylandXCompositeGLXContext::makeCurrent(const QPlatformGLSurface &surface)
+bool QWaylandXCompositeGLXContext::makeCurrent(QPlatformSurface *surface)
 {
-    Window xWindow = static_cast<const QWaylandXCompositeGLXSurface &>(surface).xWindow();
+    Window xWindow = static_cast<QWaylandXCompositeGLXWindow *>(surface)->xWindow();
 
     return glXMakeCurrent(m_display, xWindow, m_context);
 }
@@ -80,17 +70,16 @@ void QWaylandXCompositeGLXContext::doneCurrent()
     glXMakeCurrent(m_display, 0, 0);
 }
 
-void QWaylandXCompositeGLXContext::swapBuffers(const QPlatformGLSurface &surface)
+void QWaylandXCompositeGLXContext::swapBuffers(QPlatformSurface *surface)
 {
-    const QWaylandXCompositeGLXSurface &s =
-        static_cast<const QWaylandXCompositeGLXSurface &>(surface);
+    QWaylandXCompositeGLXWindow *w = static_cast<QWaylandXCompositeGLXWindow *>(surface);
 
-    QSize size = s.window()->geometry().size();
+    QSize size = w->geometry().size();
 
-    glXSwapBuffers(m_display, s.xWindow());
+    glXSwapBuffers(m_display, w->xWindow());
 
-    s.window()->damage(QRect(QPoint(), size));
-    s.window()->waitForFrameSync();
+    w->damage(QRect(QPoint(), size));
+    w->waitForFrameSync();
 }
 
 void (*QWaylandXCompositeGLXContext::getProcAddress(const QByteArray &procName)) ()
@@ -98,7 +87,7 @@ void (*QWaylandXCompositeGLXContext::getProcAddress(const QByteArray &procName))
     return glXGetProcAddress(reinterpret_cast<const GLubyte *>(procName.constData()));
 }
 
-QGuiGLFormat QWaylandXCompositeGLXContext::format() const
+QSurfaceFormat QWaylandXCompositeGLXContext::format() const
 {
     return m_format;
 }

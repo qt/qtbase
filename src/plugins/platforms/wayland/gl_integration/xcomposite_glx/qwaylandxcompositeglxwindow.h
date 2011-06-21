@@ -56,8 +56,6 @@ public:
     QWaylandXCompositeGLXWindow(QWindow *window, QWaylandXCompositeGLXIntegration *glxIntegration);
     WindowType windowType() const;
 
-    QPlatformGLSurface *createGLSurface() const;
-
     void setGeometry(const QRect &rect);
 
     Window xWindow() const;

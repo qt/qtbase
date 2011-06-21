@@ -39,29 +39,29 @@
 **
 ****************************************************************************/
 
-#include "qguiglformat_qpa.h"
+#include "qsurfaceformat.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/QDebug>
 
-class QGuiGLFormatPrivate
+class QSurfaceFormatPrivate
 {
 public:
-    QGuiGLFormatPrivate()
+    QSurfaceFormatPrivate()
         : ref(1)
-        , opts(QGuiGLFormat::DoubleBuffer | QGuiGLFormat::WindowSurface)
+        , opts(QSurfaceFormat::DoubleBuffer)
         , redBufferSize(-1)
         , greenBufferSize(-1)
         , blueBufferSize(-1)
         , alphaBufferSize(-1)
         , depthSize(-1)
         , stencilSize(-1)
-        , swapBehavior(QGuiGLFormat::DefaultSwapBehavior)
+        , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
     {
     }
 
-    QGuiGLFormatPrivate(const QGuiGLFormatPrivate *other)
+    QSurfaceFormatPrivate(const QSurfaceFormatPrivate *other)
         : ref(1),
           opts(other->opts),
           redBufferSize(other->redBufferSize),
@@ -76,35 +76,35 @@ public:
     }
 
     QAtomicInt ref;
-    QGuiGLFormat::FormatOptions opts;
+    QSurfaceFormat::FormatOptions opts;
     int redBufferSize;
     int greenBufferSize;
     int blueBufferSize;
     int alphaBufferSize;
     int depthSize;
     int stencilSize;
-    QGuiGLFormat::SwapBehavior swapBehavior;
+    QSurfaceFormat::SwapBehavior swapBehavior;
     int numSamples;
 };
 
-QGuiGLFormat::QGuiGLFormat()
+QSurfaceFormat::QSurfaceFormat()
 {
-    d = new QGuiGLFormatPrivate;
+    d = new QSurfaceFormatPrivate;
 }
 
-QGuiGLFormat::QGuiGLFormat(QGuiGLFormat::FormatOptions options)
+QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options)
 {
-    d = new QGuiGLFormatPrivate;
+    d = new QSurfaceFormatPrivate;
     d->opts = options;
 }
 
 /*!
     \internal
 */
-void QGuiGLFormat::detach()
+void QSurfaceFormat::detach()
 {
     if (d->ref != 1) {
-        QGuiGLFormatPrivate *newd = new QGuiGLFormatPrivate(d);
+        QSurfaceFormatPrivate *newd = new QSurfaceFormatPrivate(d);
         if (!d->ref.deref())
             delete d;
         d = newd;
@@ -115,7 +115,7 @@ void QGuiGLFormat::detach()
     Constructs a copy of \a other.
 */
 
-QGuiGLFormat::QGuiGLFormat(const QGuiGLFormat &other)
+QSurfaceFormat::QSurfaceFormat(const QSurfaceFormat &other)
 {
     d = other.d;
     d->ref.ref();
@@ -125,7 +125,7 @@ QGuiGLFormat::QGuiGLFormat(const QGuiGLFormat &other)
     Assigns \a other to this object.
 */
 
-QGuiGLFormat &QGuiGLFormat::operator=(const QGuiGLFormat &other)
+QSurfaceFormat &QSurfaceFormat::operator=(const QSurfaceFormat &other)
 {
     if (d != other.d) {
         other.d->ref.ref();
@@ -137,16 +137,16 @@ QGuiGLFormat &QGuiGLFormat::operator=(const QGuiGLFormat &other)
 }
 
 /*!
-    Destroys the QGuiGLFormat.
+    Destroys the QSurfaceFormat.
 */
-QGuiGLFormat::~QGuiGLFormat()
+QSurfaceFormat::~QSurfaceFormat()
 {
     if (!d->ref.deref())
         delete d;
 }
 
 /*!
-    \fn bool QGuiGLFormat::stereo() const
+    \fn bool QSurfaceFormat::stereo() const
 
     Returns true if stereo buffering is enabled; otherwise returns
     false. Stereo buffering is disabled by default.
@@ -166,12 +166,12 @@ QGuiGLFormat::~QGuiGLFormat()
     \sa stereo()
 */
 
-void QGuiGLFormat::setStereo(bool enable)
+void QSurfaceFormat::setStereo(bool enable)
 {
     if (enable) {
-        d->opts |= QGuiGLFormat::StereoBuffers;
+        d->opts |= QSurfaceFormat::StereoBuffers;
     } else {
-        d->opts &= ~QGuiGLFormat::StereoBuffers;
+        d->opts &= ~QSurfaceFormat::StereoBuffers;
     }
 }
 
@@ -182,7 +182,7 @@ void QGuiGLFormat::setStereo(bool enable)
 
     \sa setSampleBuffers(), sampleBuffers(), setSamples()
 */
-int QGuiGLFormat::samples() const
+int QSurfaceFormat::samples() const
 {
    return d->numSamples;
 }
@@ -194,32 +194,10 @@ int QGuiGLFormat::samples() const
 
     \sa setSampleBuffers(), sampleBuffers(), samples()
 */
-void QGuiGLFormat::setSamples(int numSamples)
+void QSurfaceFormat::setSamples(int numSamples)
 {
     detach();
     d->numSamples = numSamples;
-}
-
-
-/*!
-    \fn bool QGuiGLFormat::hasWindowSurface() const
-
-    Returns true if the corresponding widget has an instance of QWindowSurface.
-
-    Otherwise returns false.
-
-    WindowSurface is enabled by default.
-
-    \sa setOverlay()
-*/
-
-void QGuiGLFormat::setWindowSurface(bool enable)
-{
-    if (enable) {
-        d->opts |= QGuiGLFormat::WindowSurface;
-    } else {
-        d->opts &= ~QGuiGLFormat::WindowSurface;
-    }
 }
 
 /*!
@@ -228,7 +206,7 @@ void QGuiGLFormat::setWindowSurface(bool enable)
     \sa testOption()
 */
 
-void QGuiGLFormat::setOption(QGuiGLFormat::FormatOptions opt)
+void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
     detach();
     d->opts |= opt;
@@ -240,7 +218,7 @@ void QGuiGLFormat::setOption(QGuiGLFormat::FormatOptions opt)
     \sa setOption()
 */
 
-bool QGuiGLFormat::testOption(QGuiGLFormat::FormatOptions opt) const
+bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 {
     return d->opts & opt;
 }
@@ -250,7 +228,7 @@ bool QGuiGLFormat::testOption(QGuiGLFormat::FormatOptions opt) const
 
     \sa depthBufferSize(), setDepth(), depth()
 */
-void QGuiGLFormat::setDepthBufferSize(int size)
+void QSurfaceFormat::setDepthBufferSize(int size)
 {
     detach();
     d->depthSize = size;
@@ -261,22 +239,22 @@ void QGuiGLFormat::setDepthBufferSize(int size)
 
     \sa depth(), setDepth(), setDepthBufferSize()
 */
-int QGuiGLFormat::depthBufferSize() const
+int QSurfaceFormat::depthBufferSize() const
 {
    return d->depthSize;
 }
 
-void QGuiGLFormat::setSwapBehavior(SwapBehavior behavior)
+void QSurfaceFormat::setSwapBehavior(SwapBehavior behavior)
 {
     d->swapBehavior = behavior;
 }
 
-QGuiGLFormat::SwapBehavior QGuiGLFormat::swapBehavior() const
+QSurfaceFormat::SwapBehavior QSurfaceFormat::swapBehavior() const
 {
     return d->swapBehavior;
 }
 
-bool QGuiGLFormat::hasAlpha() const
+bool QSurfaceFormat::hasAlpha() const
 {
     return d->alphaBufferSize > 0;
 }
@@ -286,7 +264,7 @@ bool QGuiGLFormat::hasAlpha() const
 
     \sa stencilBufferSize(), setStencil(), stencil()
 */
-void QGuiGLFormat::setStencilBufferSize(int size)
+void QSurfaceFormat::setStencilBufferSize(int size)
 {
     detach();
     d->stencilSize = size;
@@ -297,52 +275,52 @@ void QGuiGLFormat::setStencilBufferSize(int size)
 
     \sa stencil(), setStencil(), setStencilBufferSize()
 */
-int QGuiGLFormat::stencilBufferSize() const
+int QSurfaceFormat::stencilBufferSize() const
 {
    return d->stencilSize;
 }
 
-int QGuiGLFormat::redBufferSize() const
+int QSurfaceFormat::redBufferSize() const
 {
     return d->redBufferSize;
 }
 
-int QGuiGLFormat::greenBufferSize() const
+int QSurfaceFormat::greenBufferSize() const
 {
     return d->greenBufferSize;
 }
 
-int QGuiGLFormat::blueBufferSize() const
+int QSurfaceFormat::blueBufferSize() const
 {
     return d->blueBufferSize;
 }
 
-int QGuiGLFormat::alphaBufferSize() const
+int QSurfaceFormat::alphaBufferSize() const
 {
     return d->alphaBufferSize;
 }
 
-void QGuiGLFormat::setRedBufferSize(int size)
+void QSurfaceFormat::setRedBufferSize(int size)
 {
     d->redBufferSize = size;
 }
 
-void QGuiGLFormat::setGreenBufferSize(int size)
+void QSurfaceFormat::setGreenBufferSize(int size)
 {
     d->greenBufferSize = size;
 }
 
-void QGuiGLFormat::setBlueBufferSize(int size)
+void QSurfaceFormat::setBlueBufferSize(int size)
 {
     d->blueBufferSize = size;
 }
 
-void QGuiGLFormat::setAlphaBufferSize(int size)
+void QSurfaceFormat::setAlphaBufferSize(int size)
 {
     d->alphaBufferSize = size;
 }
 
-bool operator==(const QGuiGLFormat& a, const QGuiGLFormat& b)
+bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
 {
     return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
         && a.d->stencilSize == b.d->stencilSize
@@ -357,23 +335,23 @@ bool operator==(const QGuiGLFormat& a, const QGuiGLFormat& b)
 
 
 /*!
-    Returns false if all the options of the two QGuiGLFormat objects
+    Returns false if all the options of the two QSurfaceFormat objects
     \a a and \a b are equal; otherwise returns true.
 
-    \relates QGuiGLFormat
+    \relates QSurfaceFormat
 */
 
-bool operator!=(const QGuiGLFormat& a, const QGuiGLFormat& b)
+bool operator!=(const QSurfaceFormat& a, const QSurfaceFormat& b)
 {
     return !(a == b);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QGuiGLFormat &f)
+QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
 {
-    const QGuiGLFormatPrivate * const d = f.d;
+    const QSurfaceFormatPrivate * const d = f.d;
 
-    dbg.nospace() << "QGuiGLFormat("
+    dbg.nospace() << "QSurfaceFormat("
                   << "options " << d->opts
                   << ", depthBufferSize " << d->depthSize
                   << ", redBufferSize " << d->redBufferSize

@@ -51,7 +51,7 @@
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
-#include <QtGui/QGuiGLFormat>
+#include <QtGui/QSurfaceFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 
@@ -100,18 +100,19 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
-    if (window->surfaceType() == QWindow::OpenGLSurface)
-        return mDisplay->eglIntegration()->createEglWindow(window);
-#endif
-
+    return mDisplay->eglIntegration()->createEglWindow(window);
+#else
     return new QWaylandShmWindow(window);
+#endif
 }
 
-QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
     return mDisplay->eglIntegration()->createPlatformGLContext(glFormat, share);
 #else
+    Q_UNUSED(glFormat);
+    Q_UNUSED(share);
     return 0;
 #endif
 }

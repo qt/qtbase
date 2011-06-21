@@ -52,8 +52,6 @@ public:
     QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration);
     WindowType windowType() const;
 
-    QPlatformGLSurface *createGLSurface() const;
-
     void setGeometry(const QRect &rect);
 
     Pixmap glxPixmap() const;

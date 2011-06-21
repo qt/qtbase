@@ -70,7 +70,7 @@ enum {
 #undef FontChange
 #endif
 
-QVector<int> qglx_buildSpec(const QGuiGLFormat &format, int drawableBit)
+QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit)
 {
     QVector<int> spec(48);
     int i = 0;
@@ -88,7 +88,7 @@ QVector<int> qglx_buildSpec(const QGuiGLFormat &format, int drawableBit)
         spec[i++] = GLX_ALPHA_SIZE; spec[i++] = format.alphaBufferSize();
     }
 
-    spec[i++] = GLX_DOUBLEBUFFER; spec[i++] = format.swapBehavior() != QGuiGLFormat::SingleBuffer ? True : False;
+    spec[i++] = GLX_DOUBLEBUFFER; spec[i++] = format.swapBehavior() != QSurfaceFormat::SingleBuffer ? True : False;
 
     spec[i++] = GLX_STEREO; spec[i++] =  format.stereo() ? True : False;
 
@@ -111,11 +111,11 @@ QVector<int> qglx_buildSpec(const QGuiGLFormat &format, int drawableBit)
     return spec;
 }
 
-GLXFBConfig qglx_findConfig(Display *display, int screen , const QGuiGLFormat &format, int drawableBit)
+GLXFBConfig qglx_findConfig(Display *display, int screen , const QSurfaceFormat &format, int drawableBit)
 {
     bool reduced = true;
     GLXFBConfig chosenConfig = 0;
-    QGuiGLFormat reducedFormat = format;
+    QSurfaceFormat reducedFormat = format;
     while (!chosenConfig && reduced) {
         QVector<int> spec = qglx_buildSpec(reducedFormat, drawableBit);
         int confcount = 0;
@@ -147,7 +147,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QGuiGLFormat &f
 
             XFree(configs);
         }
-        reducedFormat = qglx_reduceGuiGLFormat(reducedFormat,&reduced);
+        reducedFormat = qglx_reduceSurfaceFormat(reducedFormat,&reduced);
     }
 
     if (!chosenConfig)
@@ -156,16 +156,16 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , const QGuiGLFormat &f
     return chosenConfig;
 }
 
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QGuiGLFormat &format)
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QSurfaceFormat &format)
 {
     GLXFBConfig config = qglx_findConfig(display,screen,format);
     XVisualInfo *visualInfo = glXGetVisualFromFBConfig(display,config);
     return visualInfo;
 }
 
-QGuiGLFormat qglx_guiGLFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext)
+QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext)
 {
-    QGuiGLFormat format;
+    QSurfaceFormat format;
     int redSize     = 0;
     int greenSize   = 0;
     int blueSize    = 0;
@@ -203,9 +203,9 @@ QGuiGLFormat qglx_guiGLFormatFromGLXFBConfig(Display *display, GLXFBConfig confi
     return format;
 }
 
-QGuiGLFormat qglx_reduceGuiGLFormat(const QGuiGLFormat &format, bool *reduced)
+QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced)
 {
-    QGuiGLFormat retFormat = format;
+    QSurfaceFormat retFormat = format;
     *reduced = true;
 
     if (retFormat.samples() > 1) {

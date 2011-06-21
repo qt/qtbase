@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QGUIGLFORMAT_QPA_H
-#define QGUIGLFORMAT_QPA_H
+#ifndef QSURFACEFORMAT_H
+#define QSURFACEFORMAT_H
 
 #include <qglobal.h>
 
@@ -50,14 +50,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QGuiGLContext;
-class QGuiGLFormatPrivate;
+class QSurfaceFormatPrivate;
 
-class Q_GUI_EXPORT QGuiGLFormat
+class Q_GUI_EXPORT QSurfaceFormat
 {
 public:
     enum FormatOption {
-        StereoBuffers           = 0x0001,
-        WindowSurface           = 0x0002
+        StereoBuffers           = 0x0001
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
@@ -74,11 +73,11 @@ public:
         CompatibilityProfile
     };
 
-    QGuiGLFormat();
-    QGuiGLFormat(FormatOptions options);
-    QGuiGLFormat(const QGuiGLFormat &other);
-    QGuiGLFormat &operator=(const QGuiGLFormat &other);
-    ~QGuiGLFormat();
+    QSurfaceFormat();
+    QSurfaceFormat(FormatOptions options);
+    QSurfaceFormat(const QSurfaceFormat &other);
+    QSurfaceFormat &operator=(const QSurfaceFormat &other);
+    ~QSurfaceFormat();
 
     void setDepthBufferSize(int size);
     int depthBufferSize() const;
@@ -108,45 +107,38 @@ public:
 
     bool stereo() const;
     void setStereo(bool enable);
-    bool windowSurface() const;
-    void setWindowSurface(bool enable);
 
-    void setOption(QGuiGLFormat::FormatOptions opt);
-    bool testOption(QGuiGLFormat::FormatOptions opt) const;
+    void setOption(QSurfaceFormat::FormatOptions opt);
+    bool testOption(QSurfaceFormat::FormatOptions opt) const;
 
 private:
-    QGuiGLFormatPrivate *d;
+    QSurfaceFormatPrivate *d;
 
     void detach();
 
-    friend Q_GUI_EXPORT bool operator==(const QGuiGLFormat&, const QGuiGLFormat&);
-    friend Q_GUI_EXPORT bool operator!=(const QGuiGLFormat&, const QGuiGLFormat&);
+    friend Q_GUI_EXPORT bool operator==(const QSurfaceFormat&, const QSurfaceFormat&);
+    friend Q_GUI_EXPORT bool operator!=(const QSurfaceFormat&, const QSurfaceFormat&);
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QGuiGLFormat &);
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QSurfaceFormat &);
 #endif
 };
 
-Q_GUI_EXPORT bool operator==(const QGuiGLFormat&, const QGuiGLFormat&);
-Q_GUI_EXPORT bool operator!=(const QGuiGLFormat&, const QGuiGLFormat&);
+Q_GUI_EXPORT bool operator==(const QSurfaceFormat&, const QSurfaceFormat&);
+Q_GUI_EXPORT bool operator!=(const QSurfaceFormat&, const QSurfaceFormat&);
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QGuiGLFormat &);
+Q_GUI_EXPORT QDebug operator<<(QDebug, const QSurfaceFormat &);
 #endif
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGuiGLFormat::FormatOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSurfaceFormat::FormatOptions)
 
-inline bool QGuiGLFormat::stereo() const
+inline bool QSurfaceFormat::stereo() const
 {
-    return testOption(QGuiGLFormat::StereoBuffers);
-}
-
-inline bool QGuiGLFormat::windowSurface() const
-{
-    return testOption(QGuiGLFormat::WindowSurface);
+    return testOption(QSurfaceFormat::StereoBuffers);
 }
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif //QGUIGLFORMAT_QPA_H
+#endif //QSURFACEFORMAT_H

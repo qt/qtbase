@@ -60,11 +60,9 @@ public:
     QWindowPrivate()
         : QObjectPrivate()
         , windowFlags(Qt::Window)
-        , surfaceType(QWindow::RasterSurface)
         , parentWindow(0)
         , platformWindow(0)
         , visible(false)
-        , glSurface(0)
         , windowState(Qt::WindowNoState)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
@@ -78,14 +76,12 @@ public:
     }
 
     Qt::WindowFlags windowFlags;
-    QWindow::SurfaceType surfaceType;
     QWindow *parentWindow;
     QPlatformWindow *platformWindow;
     bool visible;
-    QGuiGLFormat requestedFormat;
+    QSurfaceFormat requestedFormat;
     QString windowTitle;
     QRect geometry;
-    QPlatformGLSurface *glSurface;
     Qt::WindowState windowState;
 
     QSize minimumSize;

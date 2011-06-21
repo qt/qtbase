@@ -86,11 +86,6 @@ uchar *QWaylandReadbackGlxWindow::buffer()
     return m_buffer->image()->bits();
 }
 
-QPlatformGLSurface *QWaylandReadbackGlxWindow::createGLSurface() const
-{
-    return new QWaylandReadbackGlxSurface(const_cast<QWaylandReadbackGlxWindow *>(this));
-}
-
 void QWaylandReadbackGlxWindow::createSurface()
 {
     QSize size(geometry().size());

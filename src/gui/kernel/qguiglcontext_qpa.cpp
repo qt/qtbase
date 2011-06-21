@@ -120,7 +120,7 @@ QPlatformGLContext *QGuiGLContext::handle() const
 /*!
   Creates a new GL context with the given format and shared context.
 */
-QGuiGLContext::QGuiGLContext(const QGuiGLFormat &format, QGuiGLContext *shareContext)
+QGuiGLContext::QGuiGLContext(const QSurfaceFormat &format, QGuiGLContext *shareContext)
     : d_ptr(new QGuiGLContextPrivate())
 {
     Q_D(QGuiGLContext);
@@ -149,7 +149,7 @@ bool QGuiGLContext::isValid() const
 /*!
   If surface is 0 this is equivalent to calling doneCurrent().
 */
-bool QGuiGLContext::makeCurrent(QPlatformGLSurface *surface)
+bool QGuiGLContext::makeCurrent(QSurface *surface)
 {
     Q_D(QGuiGLContext);
     if (!d->platformGLContext)
@@ -160,7 +160,10 @@ bool QGuiGLContext::makeCurrent(QPlatformGLSurface *surface)
         return true;
     }
 
-    if (d->platformGLContext->makeCurrent(*surface)) {
+    if (!surface->surfaceHandle())
+        return false;
+
+    if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
         QGuiGLContextPrivate::setCurrentContext(this);
         return true;
     }
@@ -181,7 +184,7 @@ void QGuiGLContext::doneCurrent()
     QGuiGLContextPrivate::setCurrentContext(0);
 }
 
-void QGuiGLContext::swapBuffers(QPlatformGLSurface *surface)
+void QGuiGLContext::swapBuffers(QSurface *surface)
 {
     Q_D(QGuiGLContext);
     if (!d->platformGLContext)
@@ -192,7 +195,7 @@ void QGuiGLContext::swapBuffers(QPlatformGLSurface *surface)
         return;
     }
 
-    d->platformGLContext->swapBuffers(*surface);
+    d->platformGLContext->swapBuffers(surface->surfaceHandle());
 }
 
 void (*QGuiGLContext::getProcAddress(const QByteArray &procName)) ()
@@ -203,11 +206,11 @@ void (*QGuiGLContext::getProcAddress(const QByteArray &procName)) ()
     return d->platformGLContext->getProcAddress(procName);
 }
 
-QGuiGLFormat QGuiGLContext::format() const
+QSurfaceFormat QGuiGLContext::format() const
 {
     Q_D(const QGuiGLContext);
     if (!d->platformGLContext)
-        return QGuiGLFormat();
+        return QSurfaceFormat();
     return d->platformGLContext->format();
 }
 

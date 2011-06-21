@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QVector<EGLint> q_createConfigAttributesFromFormat(const QGuiGLFormat &format)
+QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
 {
     int redSize     = format.redBufferSize();
     int greenSize   = format.greenBufferSize();
@@ -70,7 +70,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QGuiGLFormat &format)
     // "AtLeast" for EGL_BUFFER_SIZE, it's sort order is "smaller" meaning 16-bit configs are
     // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
     // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
-    // if the application sets the red/green/blue size to 5/6/5 on the QGuiGLFormat,
+    // if the application sets the red/green/blue size to 5/6/5 on the QSurfaceFormat,
     // they will probably get a 32-bit config, even when there's an RGB565 config available.
 
 //    // Now normalize the values so -1 becomes 0
@@ -197,7 +197,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromGLFormat(EGLDisplay display, const QGuiGLFormat &format, bool highestPixelFormat, int surfaceType)
+EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat, int surfaceType)
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
@@ -259,9 +259,9 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QGuiGLFormat &format, b
     return 0;
 }
 
-QGuiGLFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
+QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config)
 {
-    QGuiGLFormat format;
+    QSurfaceFormat format;
     EGLint redSize     = 0;
     EGLint greenSize   = 0;
     EGLint blueSize    = 0;

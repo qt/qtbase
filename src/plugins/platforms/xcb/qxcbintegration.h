@@ -58,7 +58,7 @@ public:
     bool hasCapability(Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
+    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QList<QPlatformScreen *> screens() const;

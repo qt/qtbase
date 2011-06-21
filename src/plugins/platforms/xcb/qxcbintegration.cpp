@@ -66,6 +66,7 @@
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
 #elif defined(XCB_USE_EGL)
+#include "qxcbeglsurface.h"
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #endif
 
@@ -103,12 +104,28 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
     return new QXcbWindow(window);
 }
 
-QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const
+#if defined(XCB_USE_EGL)
+class QEGLXcbPlatformContext : public QEGLPlatformContext
+{
+public:
+    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share, EGLDisplay display)
+        : QEGLPlatformContext(glFormat, share, display)
+    {
+    }
+
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+    {
+        return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
+    }
+};
+#endif
+
+QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
 {
 #if defined(XCB_USE_GLX)
     return new QGLXContext(static_cast<QXcbScreen *>(m_screens.at(0)), glFormat, share);
 #elif defined(XCB_USE_EGL)
-    return new QEGLPlatformContext(glFormat, share, m_connection->egl_display());
+    return new QEGLXcbPlatformContext(glFormat, share, m_connection->egl_display());
 #elif defined(XCB_USE_DRI2)
     return new QDri2Context(glFormat, share);
 #endif

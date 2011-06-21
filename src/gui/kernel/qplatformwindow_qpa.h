@@ -41,13 +41,13 @@
 #ifndef QPLATFORMWINDOW_H
 #define QPLATFORMWINDOW_H
 
-
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qmargins.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
-
+#include <QtGui/qwindow.h>
+#include <QtGui/qplatformglcontext_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -57,9 +57,8 @@ QT_MODULE(Gui)
 
 class QPlatformWindowPrivate;
 class QWindow;
-class QPlatformGLSurface;
 
-class Q_GUI_EXPORT QPlatformWindow
+class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
@@ -68,6 +67,8 @@ public:
 
     QWindow *window() const;
     QPlatformWindow *parent() const;
+
+    virtual QSurfaceFormat format() const;
 
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
@@ -89,8 +90,6 @@ public:
 
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
-
-    virtual QPlatformGLSurface *createGLSurface() const;
 
     virtual bool setKeyboardGrabEnabled(bool grab);
     virtual bool setMouseGrabEnabled(bool grab);

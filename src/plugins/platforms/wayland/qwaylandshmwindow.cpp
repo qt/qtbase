@@ -63,9 +63,3 @@ QWaylandWindow::WindowType QWaylandShmWindow::windowType() const
     return QWaylandWindow::Shm;
 }
 
-QPlatformGLSurface * QWaylandShmWindow::glSurface() const
-{
-    qWarning("Raster window does not have a GL drawable");
-    return 0;
-}
-

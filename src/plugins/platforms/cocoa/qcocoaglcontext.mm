@@ -5,7 +5,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-QCocoaGLContext::QCocoaGLContext(const QGuiGLFormat &format, QPlatformGLContext *share)
+QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share)
     : m_format(format)
 {
     NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat();
@@ -16,22 +16,22 @@ QCocoaGLContext::QCocoaGLContext(const QGuiGLFormat &format, QPlatformGLContext 
 }
 
 // Match up with createNSOpenGLPixelFormat!
-QGuiGLFormat QCocoaGLContext::format() const
+QSurfaceFormat QCocoaGLContext::format() const
 {
     return m_format;
 }
 
-void QCocoaGLContext::swapBuffers(const QPlatformGLSurface &surface)
+void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    QWindow *window = static_cast<const QCocoaGLSurface &>(surface).window;
+    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
     [m_context flushBuffer];
 }
 
-bool QCocoaGLContext::makeCurrent(const QPlatformGLSurface &surface)
+bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    QWindow *window = static_cast<const QCocoaGLSurface &>(surface).window;
+    QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
     [m_context makeCurrentContext];

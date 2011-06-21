@@ -42,16 +42,16 @@
 #ifndef QGLXCONVENIENCE_H
 #define QGLXCONVENIENCE_H
 
-#include <QGuiGLFormat>
+#include <QSurfaceFormat>
 #include <QVector>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QGuiGLFormat &format);
-GLXFBConfig qglx_findConfig(Display *display, int screen, const QGuiGLFormat &format, int drawableBit = GLX_WINDOW_BIT);
-QGuiGLFormat qglx_guiGLFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
-QVector<int> qglx_buildSpec(const QGuiGLFormat &format, int drawableBit = GLX_WINDOW_BIT);
-QGuiGLFormat qglx_reduceGuiGLFormat(const QGuiGLFormat &format, bool *reduced);
+XVisualInfo *qglx_findVisualInfo(Display *display, int screen, const QSurfaceFormat &format);
+GLXFBConfig qglx_findConfig(Display *display, int screen, const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
+QVector<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit = GLX_WINDOW_BIT);
+QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced);
 
 #endif // QGLXCONVENIENCE_H

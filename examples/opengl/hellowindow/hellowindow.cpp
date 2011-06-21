@@ -15,7 +15,7 @@ Renderer::Renderer()
     m_context = new QGuiGLContext(m_format);
 }
 
-QGuiGLFormat Renderer::format() const
+QSurfaceFormat Renderer::format() const
 {
     return m_format;
 }
@@ -24,10 +24,9 @@ HelloWindow::HelloWindow(Renderer *renderer)
     : m_colorIndex(0)
     , m_renderer(renderer)
 {
-    setSurfaceType(OpenGLSurface);
     setWindowTitle(QLatin1String("Hello Window"));
 
-    setGLFormat(renderer->format());
+    setFormat(renderer->format());
 
     setGeometry(QRect(10, 10, 640, 480));
 
@@ -62,13 +61,13 @@ void HelloWindow::updateColor()
 
 void HelloWindow::render()
 {
-    if (glSurface())
-        m_renderer->render(glSurface(), m_color, geometry().size());
+    m_renderer->render(this, m_color, geometry().size());
 }
 
-void Renderer::render(QPlatformGLSurface *surface, const QColor &color, const QSize &viewSize)
+void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewSize)
 {
-    m_context->makeCurrent(surface);
+    if (!m_context->makeCurrent(surface))
+        return;
 
     if (!m_initialized) {
         initialize();

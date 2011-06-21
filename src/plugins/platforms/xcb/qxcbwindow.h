@@ -43,7 +43,7 @@
 #define QXCBWINDOW_H
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QGuiGLFormat>
+#include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 
 #include <xcb/xcb.h>
@@ -52,6 +52,7 @@
 #include "qxcbobject.h"
 
 class QXcbScreen;
+class QXcbEGLSurface;
 
 class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
@@ -74,8 +75,6 @@ public:
     void lower();
     void propagateSizeHints();
 
-    QPlatformGLSurface *createGLSurface() const;
-
     void requestActivateWindow();
 
     bool setKeyboardGrabEnabled(bool grab);
@@ -83,9 +82,11 @@ public:
 
     void setCursor(xcb_cursor_t cursor);
 
+    QSurfaceFormat format() const;
+
     xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
+    QImage::Format imageFormat() const { return m_imageFormat; }
 
     void handleExposeEvent(const xcb_expose_event_t *event);
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
@@ -107,6 +108,10 @@ public:
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
     void netWmUserTime() const;
 
+#if defined(XCB_USE_EGL)
+    QXcbEGLSurface *eglSurface() const;
+#endif
+
 private:
     void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
     QVector<xcb_atom_t> getNetWmState();
@@ -119,7 +124,6 @@ private:
     void updateMotifWmHintsBeforeMap();
     void updateNetWmStateBeforeMap();
 
-
     void create();
     void destroy();
 
@@ -131,7 +135,7 @@ private:
     xcb_window_t m_window;
 
     uint m_depth;
-    QImage::Format m_format;
+    QImage::Format m_imageFormat;
 
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter;
@@ -142,8 +146,14 @@ private:
     bool m_mapped;
     xcb_window_t m_netWmUserTimeWindow;
 
+    QSurfaceFormat m_requestedFormat;
+
     mutable bool m_dirtyFrameMargins;
     mutable QMargins m_frameMargins;
+
+#if defined(XCB_USE_EGL)
+    mutable QXcbEGLSurface *m_eglSurface;
+#endif
 };
 
 #endif

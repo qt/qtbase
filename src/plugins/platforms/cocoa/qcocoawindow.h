@@ -70,8 +70,6 @@ public:
     void windowDidMove();
     void windowDidResize();
 
-    QPlatformGLSurface *createGLSurface() const;
-
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
 

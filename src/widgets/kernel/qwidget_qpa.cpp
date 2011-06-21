@@ -48,7 +48,7 @@
 #include "private/qapplication_p.h"
 #include "QtWidgets/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
-#include "QtGui/qguiglformat_qpa.h"
+#include "QtGui/qsurfaceformat.h"
 #include "QtGui/qplatformglcontext_qpa.h"
 #include "QtGui/private/qwindow_p.h"
 
@@ -106,9 +106,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     win->setGeometry(q->geometry());
 
     if (q->testAttribute(Qt::WA_TranslucentBackground)) {
-        QGuiGLFormat format;
+        QSurfaceFormat format;
         format.setAlphaBufferSize(8);
-        win->setGLFormat(format);
+        win->setFormat(format);
     }
 
     if (QWidget *nativeParent = q->nativeParentWidget()) {

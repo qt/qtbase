@@ -47,7 +47,7 @@
 #include <private/qapplication_p.h>
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QGuiGLFormat>
+#include <QtGui/QSurfaceFormat>
 
 #include "qgl.h"
 #include "qgl_p.h"
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Returns an OpenGL format for the window format specified by \a format.
 */
-QGLFormat QGLFormat::fromGuiGLFormat(const QGuiGLFormat &format)
+QGLFormat QGLFormat::fromSurfaceFormat(const QSurfaceFormat &format)
 {
     QGLFormat retFormat;
     if (format.alphaBufferSize() >= 0)
@@ -78,7 +78,7 @@ QGLFormat QGLFormat::fromGuiGLFormat(const QGuiGLFormat &format)
         retFormat.setStencil(true);
         retFormat.setStencilBufferSize(format.stencilBufferSize());
     }
-    retFormat.setDoubleBuffer(format.swapBehavior() != QGuiGLFormat::SingleBuffer);
+    retFormat.setDoubleBuffer(format.swapBehavior() != QSurfaceFormat::SingleBuffer);
     retFormat.setStereo(format.stereo());
     return retFormat;
 }
@@ -86,9 +86,9 @@ QGLFormat QGLFormat::fromGuiGLFormat(const QGuiGLFormat &format)
 /*!
     Returns a window format for the OpenGL format specified by \a format.
 */
-QGuiGLFormat QGLFormat::toGuiGLFormat(const QGLFormat &format)
+QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
 {
-    QGuiGLFormat retFormat;
+    QSurfaceFormat retFormat;
     if (format.alpha())
         retFormat.setAlphaBufferSize(format.alphaBufferSize() == -1 ? 1 : format.alphaBufferSize());
     if (format.blueBufferSize() >= 0)
@@ -99,7 +99,7 @@ QGuiGLFormat QGLFormat::toGuiGLFormat(const QGLFormat &format)
         retFormat.setRedBufferSize(format.redBufferSize());
     if (format.depth())
         retFormat.setDepthBufferSize(format.depthBufferSize() == -1 ? 1 : format.depthBufferSize());
-    retFormat.setSwapBehavior(format.doubleBuffer() ? QGuiGLFormat::DoubleBuffer : QGuiGLFormat::DefaultSwapBehavior);
+    retFormat.setSwapBehavior(format.doubleBuffer() ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::DefaultSwapBehavior);
     if (format.sampleBuffers())
         retFormat.setSamples(format.samples() == -1 ? 4 : format.samples());
     if (format.stencil())
@@ -138,14 +138,12 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
         QGLFormat glformat = format();
-        QGuiGLFormat winFormat = QGLFormat::toGuiGLFormat(glformat);
+        QSurfaceFormat winFormat = QGLFormat::toSurfaceFormat(glformat);
         if (widget->testAttribute(Qt::WA_TranslucentBackground))
             winFormat.setAlphaBufferSize(qMax(winFormat.alphaBufferSize(), 8));
-        winFormat.setWindowSurface(false);
 
         if (!widget->windowHandle()->handle()) {
-            widget->windowHandle()->setSurfaceType(QWindow::OpenGLSurface);
-            widget->windowHandle()->setGLFormat(winFormat);
+            widget->windowHandle()->setFormat(winFormat);
             widget->winId();//make window
         }
 
@@ -153,7 +151,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         QGuiGLContext *shareGlContext = shareContext ? shareContext->d_func()->guiGlContext : 0;
         d->guiGlContext = new QGuiGLContext(winFormat, shareGlContext);
 
-        d->glFormat = QGLFormat::fromGuiGLFormat(d->guiGlContext->format());
+        d->glFormat = QGLFormat::fromSurfaceFormat(d->guiGlContext->format());
         d->valid = d->guiGlContext->isValid();
         if (d->valid) {
             d->guiGlContext->setQGLContextHandle(this,qDeleteQGLContext);
@@ -193,7 +191,7 @@ void QGLContext::makeCurrent()
     if (!widget->windowHandle())
         return;
 
-    if (d->guiGlContext->makeCurrent(widget->windowHandle()->glSurface())) {
+    if (d->guiGlContext->makeCurrent(widget->windowHandle())) {
         if (!d->workaroundsCached) {
             d->workaroundsCached = true;
             const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
@@ -220,7 +218,7 @@ void QGLContext::swapBuffers() const
     if (!widget->windowHandle())
         return;
 
-    d->guiGlContext->swapBuffers(widget->windowHandle()->glSurface());
+    d->guiGlContext->swapBuffers(widget->windowHandle());
 }
 
 void *QGLContext::getProcAddress(const QString &procName) const
@@ -297,11 +295,10 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
 
     d->window = new QWindow;
     d->window->setGeometry(QRect(0, 0, 3, 3));
-    d->window->setSurfaceType(QWindow::OpenGLSurface);
     d->window->create();
 
     d->context = new QGuiGLContext;
-    d->context->makeCurrent(d->window->glSurface());
+    d->context->makeCurrent(d->window);
 }
 
 QGLTemporaryContext::~QGLTemporaryContext()
@@ -380,7 +377,7 @@ QGLContext::QGLContext(QGuiGLContext *context)
     : d_ptr(new QGLContextPrivate(this))
 {
     Q_D(QGLContext);
-    d->init(0,QGLFormat::fromGuiGLFormat(context->format()));
+    d->init(0, QGLFormat::fromSurfaceFormat(context->format()));
     d->guiGlContext = context;
     d->guiGlContext->setQGLContextHandle(this,qDeleteQGLContext);
     d->valid = context->isValid();

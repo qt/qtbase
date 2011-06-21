@@ -52,7 +52,7 @@ public:
     ~QWaylandShmWindow();
 
     WindowType windowType() const;
-    QPlatformGLSurface *glSurface() const;
+    QSurfaceFormat format() const { return window()->format(); }
 };
 
 #endif // QWAYLANDSHMWINDOW_H

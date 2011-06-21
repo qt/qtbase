@@ -45,6 +45,7 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qplatformscreen_qpa.h>
+#include <QtGui/qsurfaceformat.h>
 
 QT_BEGIN_HEADER
 
@@ -79,7 +80,7 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
-    virtual QPlatformGLContext *createPlatformGLContext(const QGuiGLFormat &glFormat, QPlatformGLContext *share) const;
+    virtual QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &format, QPlatformGLContext *share) const;
 
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;

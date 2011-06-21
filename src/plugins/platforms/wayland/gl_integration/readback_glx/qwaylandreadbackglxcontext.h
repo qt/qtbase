@@ -43,7 +43,7 @@
 #define QWAYLANDREADBACKGLXCONTEXT_H
 
 #include <QPlatformGLContext>
-#include <QGuiGLFormat>
+#include <QSurfaceFormat>
 
 #include "qwaylandreadbackglxintegration.h"
 
@@ -52,28 +52,16 @@
 class QWaylandReadbackGlxWindow;
 class QWaylandShmBuffer;
 
-class QWaylandReadbackGlxSurface : public QPlatformGLSurface
-{
-public:
-    QWaylandReadbackGlxSurface(QWaylandReadbackGlxWindow *window);
-
-    QWaylandReadbackGlxWindow *window() const { return m_window; }
-    GLXPixmap glxPixmap() const;
-
-private:
-    QWaylandReadbackGlxWindow *m_window;
-};
-
 class QWaylandReadbackGlxContext : public QPlatformGLContext
 {
 public:
-    QWaylandReadbackGlxContext(const QGuiGLFormat &format, QPlatformGLContext *share, Display *display, int screen);
+    QWaylandReadbackGlxContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen);
 
-    QGuiGLFormat format() const;
+    QSurfaceFormat format() const;
 
-    void swapBuffers(const QPlatformGLSurface &surface);
+    void swapBuffers(QPlatformSurface *surface);
 
-    bool makeCurrent(const QPlatformGLSurface &surface);
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
 
     void (*getProcAddress(const QByteArray &procName)) ();
@@ -82,7 +70,7 @@ private:
     GLXContext m_context;
 
     Display *m_display;
-    QGuiGLFormat m_format;
+    QSurfaceFormat m_format;
 };
 
 #endif // QWAYLANDREADBACKGLXCONTEXT_H

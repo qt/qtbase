@@ -54,8 +54,6 @@ public:
     QWaylandXCompositeEGLWindow(QWindow *window, QWaylandXCompositeEGLIntegration *glxIntegration);
     WindowType windowType() const;
 
-    QPlatformGLSurface *createGLSurface() const;
-
     void setGeometry(const QRect &rect);
 
     EGLSurface eglSurface() const;

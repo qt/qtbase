@@ -48,9 +48,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
 
-#ifdef Q_WS_QPA
-#include <QtGui/QGuiGLFormat>
-#endif
+#include <QtGui/QSurfaceFormat>
 
 QT_BEGIN_HEADER
 
@@ -282,10 +280,8 @@ public:
 
     static OpenGLVersionFlags openGLVersionFlags();
 
-#if defined(Q_WS_QPA)
-    static QGLFormat fromGuiGLFormat(const QGuiGLFormat &format);
-    static QGuiGLFormat toGuiGLFormat(const QGLFormat &format);
-#endif
+    static QGLFormat fromSurfaceFormat(const QSurfaceFormat &format);
+    static QSurfaceFormat toSurfaceFormat(const QGLFormat &format);
 private:
     QGLFormatPrivate *d;
 

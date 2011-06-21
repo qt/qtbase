@@ -50,29 +50,16 @@
 class QWaylandXCompositeGLXWindow;
 class QWaylandShmBuffer;
 
-class QWaylandXCompositeGLXSurface : public QPlatformGLSurface
-{
-public:
-    QWaylandXCompositeGLXSurface(QWaylandXCompositeGLXWindow *window);
-
-    QWaylandXCompositeGLXWindow *window() const { return m_window; }
-    Window xWindow() const;
-
-private:
-    QWaylandXCompositeGLXWindow *m_window;
-};
-
-
 class QWaylandXCompositeGLXContext : public QPlatformGLContext
 {
 public:
-    QWaylandXCompositeGLXContext(const QGuiGLFormat &format, QPlatformGLContext *share, Display *display, int screen);
+    QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen);
 
-    QGuiGLFormat format() const;
+    QSurfaceFormat format() const;
 
-    void swapBuffers(const QPlatformGLSurface &surface);
+    void swapBuffers(QPlatformSurface *surface);
 
-    bool makeCurrent(const QPlatformGLSurface &surface);
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
 
     void (*getProcAddress(const QByteArray &procName)) ();
@@ -81,7 +68,7 @@ private:
     GLXContext m_context;
 
     Display *m_display;
-    QGuiGLFormat m_format;
+    QSurfaceFormat m_format;
 };
 
 #endif // QWAYLANDXCOMPOSITEGLXCONTEXT_H
