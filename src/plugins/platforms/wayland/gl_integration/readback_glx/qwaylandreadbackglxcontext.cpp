@@ -41,7 +41,7 @@
 
 #include "qwaylandreadbackglxcontext.h"
 
-#include "qwaylandshmsurface.h"
+#include "qwaylandshmbackingstore.h"
 #include "qwaylandreadbackglxwindow.h"
 
 #include <QtGui/QGuiGLContext>

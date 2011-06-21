@@ -42,8 +42,7 @@
 #include <QtDebug>
 
 #include "qwaylandreadbackglxwindow.h"
-
-#include "qwaylandshmsurface.h"
+#include "qwaylandshmbackingstore.h"
 
 QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration)
     : QWaylandShmWindow(window)
