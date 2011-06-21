@@ -48,6 +48,7 @@
 #include "qwaylandclipboard.h"
 
 #include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
@@ -120,6 +121,11 @@ QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QSurfaceF
 QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QWaylandShmBackingStore(window);
+}
+
+QAbstractEventDispatcher *QWaylandIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

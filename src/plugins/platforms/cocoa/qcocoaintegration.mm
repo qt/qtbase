@@ -45,6 +45,7 @@
 #include "qcocoabackingstore.h"
 #include "qcocoanativeinterface.h"
 
+#include "qcocoaeventdispatcher.h"
 #include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 #include <private/qpixmap_raster_p.h>
 
@@ -120,6 +121,11 @@ QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QSurfaceFor
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QCocoaBackingStore(window);
+}
+
+QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
+{
+    return new QCocoaEventDispatcher();
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const

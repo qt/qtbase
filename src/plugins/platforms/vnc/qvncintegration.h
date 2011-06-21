@@ -74,7 +74,7 @@ private:
 };
 
 class QVNCIntegrationPrivate;
-
+class QAbstractEventDispatcher;
 
 class QVNCIntegration : public QPlatformIntegration
 {
@@ -85,6 +85,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QAbstractEventDispatcher createEventDispatcher() const;
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 

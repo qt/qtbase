@@ -2,6 +2,8 @@ TARGET = qdirectfb
 load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
+QT += core-private gui-private platformsupport-private
+
 isEmpty(DIRECTFB_LIBS) {
     DIRECTFB_LIBS = -ldirectfb -lfusion -ldirect -lpthread
 }

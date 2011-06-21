@@ -73,7 +73,8 @@ public:
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

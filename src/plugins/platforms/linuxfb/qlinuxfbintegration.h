@@ -70,6 +70,7 @@ class QLinuxFbIntegrationPrivate;
 struct fb_cmap;
 struct fb_var_screeninfo;
 struct fb_fix_screeninfo;
+class QAbstractEventDispatcher;
 
 class QLinuxFbIntegration : public QPlatformIntegration
 {
@@ -82,6 +83,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId WinId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId WinId) const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

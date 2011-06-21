@@ -1,7 +1,7 @@
 TARGET = qvncgraphicssystem
 load(qt_plugin)
 
-QT += network
+QT += network core-private gui-private platformsupport-private
 
 DESTDIR = $$QT.gui.plugins/platforms
 

@@ -63,6 +63,7 @@ class QPlatformPrinterSupport;
 class QPlatformDrag;
 class QPlatformGLContext;
 class QGuiGLFormat;
+class QAbstractEventDispatcher;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -87,6 +88,9 @@ public:
     virtual void moveToScreen(QWindow *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
+// Event dispatcher:
+    virtual QAbstractEventDispatcher *createEventDispatcher() const = 0;
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;

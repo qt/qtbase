@@ -38,7 +38,6 @@ qpa {
 	HEADERS += \
                 kernel/qgenericpluginfactory_qpa.h \
                 kernel/qgenericplugin_qpa.h \
-                kernel/qeventdispatcher_qpa_p.h \
                 kernel/qwindowsysteminterface_qpa.h \
                 kernel/qwindowsysteminterface_qpa_p.h \
                 kernel/qplatformintegration_qpa.h \
@@ -63,7 +62,6 @@ qpa {
                 kernel/qcursor_qpa.cpp \
                 kernel/qgenericpluginfactory_qpa.cpp \
                 kernel/qgenericplugin_qpa.cpp \
-                kernel/qeventdispatcher_qpa.cpp \
                 kernel/qwindowsysteminterface_qpa.cpp \
                 kernel/qplatformintegration_qpa.cpp \
                 kernel/qplatformscreen_qpa.cpp \
@@ -79,23 +77,6 @@ qpa {
                 kernel/qsurfaceformat.cpp \
                 kernel/qguiapplication.cpp \
                 kernel/qwindow.cpp
-
-        contains(QT_CONFIG, glib) {
-            SOURCES += \
-                kernel/qeventdispatcher_glib_qpa.cpp
-            HEADERS += \
-                kernel/qeventdispatcher_glib_qpa_p.h
-            QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-            LIBS_PRIVATE +=$$QT_LIBS_GLIB
-	}
-}
-
-mac {
-    HEADERS += \
-        kernel/qeventdispatcher_mac_p.h
-    OBJECTIVE_SOURCES += \
-        kernel/qeventdispatcher_mac.mm
-    LIBS += -framework CoreFoundation -framework Cocoa -framework Carbon
 }
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

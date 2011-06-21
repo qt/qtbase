@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -87,12 +87,10 @@
 // We mean it.
 //
 
-#include <QtGui/qwindowdefs.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qstack.h>
-#include "private/qabstracteventdispatcher_p.h"
-#include <private/qeventdispatcher_qpa_p.h>
-//#include "private/qt_mac_p.h"
+#include <QtGui/qwindowdefs.h>
+#include <qeventdispatcher_qpa.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -116,16 +114,16 @@ public:
     inline void *handle() const { return pool; }
 };
 
-class QEventDispatcherMacPrivate;
-class QEventDispatcherMac : public QEventDispatcherQPA
+class QCocoaEventDispatcherPrivate;
+class QCocoaEventDispatcher : public QEventDispatcherQPA
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherMac)
+    Q_DECLARE_PRIVATE(QCocoaEventDispatcher)
 
 public:
-    QEventDispatcherMac(QAbstractEventDispatcherPrivate &priv, QObject *parent = 0);
-    explicit QEventDispatcherMac(QObject *parent = 0);
-    ~QEventDispatcherMac();
+    QCocoaEventDispatcher(QAbstractEventDispatcherPrivate &priv, QObject *parent = 0);
+    explicit QCocoaEventDispatcher(QObject *parent = 0);
+    ~QCocoaEventDispatcher();
 
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
@@ -169,12 +167,12 @@ struct MacSocketInfo {
 };
 typedef QHash<int, MacSocketInfo *> MacSocketHash;
 
-class QEventDispatcherMacPrivate : public QEventDispatcherQPAPrivate
+class QCocoaEventDispatcherPrivate : public QEventDispatcherQPAPrivate
 {
-    Q_DECLARE_PUBLIC(QEventDispatcherMac)
+    Q_DECLARE_PUBLIC(QCocoaEventDispatcher)
 
 public:
-    QEventDispatcherMacPrivate();
+    QCocoaEventDispatcherPrivate();
 
     static MacTimerHash macTimerHash;
     // Set 'blockSendPostedEvents' to true if you _really_ need
@@ -198,7 +196,7 @@ public:
     static void ensureNSAppInitialized();
 
     MacSocketHash macSockets;
-    QList<void *> queuedUserInputEvents; // List of EventRef in Carbon, and NSEvent * in Cocoa
+    QList<void *> queuedUserInputEvents; // NSEvent *
     CFRunLoopSourceRef postedEventsSource;
     CFRunLoopObserverRef waitingObserver;
     CFRunLoopObserverRef firstTimeObserver;
@@ -212,16 +210,16 @@ private:
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
     static void firstLoopEntry(CFRunLoopObserverRef ref, CFRunLoopActivity activity, void *info);
-    friend void processPostedEvents(QEventDispatcherMacPrivate *const d, const bool blockSendPostedEvents);
+    friend void processPostedEvents(QCocoaEventDispatcherPrivate *const d, const bool blockSendPostedEvents);
 };
 
-class QtMacInterruptDispatcherHelp : public QObject
+class QtCocoaInterruptDispatcher : public QObject
 {
-    static QtMacInterruptDispatcherHelp *instance;
+    static QtCocoaInterruptDispatcher *instance;
     bool cancelled;
 
-    QtMacInterruptDispatcherHelp();
-    ~QtMacInterruptDispatcherHelp();
+    QtCocoaInterruptDispatcher();
+    ~QtCocoaInterruptDispatcher();
 
     public:
     static void interruptLater();

@@ -173,6 +173,10 @@ QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
     return surface;
 }
 
+QAbstractEventDispatcher *QVFbIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
+}
 
 QPlatformWindow *QVNCIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {

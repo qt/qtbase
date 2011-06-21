@@ -45,7 +45,8 @@
 #include <QtCore/qdebug.h>
 
 #include "qxlibwindow.h"
-#include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include "qxlibscreen.h"
 #include "qxlibclipboard.h"
 #include "qxlibdisplay.h"
@@ -106,7 +107,10 @@ QPlatformWindow *QXlibIntegration::createPlatformWindow(QWidget *widget, WId /*w
     return new QXlibWindow(widget);
 }
 
-
+QAbstractEventDispatcher *QXlibIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
+}
 
 QPixmap QXlibIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 {

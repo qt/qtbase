@@ -42,10 +42,6 @@
 #include "qapplication_p.h"
 #include "qcolormap.h"
 #include "qpixmapcache.h"
-#if !defined(QT_NO_GLIB)
-#include "private/qeventdispatcher_glib_qpa_p.h"
-#endif
-#include "private/qeventdispatcher_qpa_p.h"
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qeventdispatcher_glib_qpa_p.h"
+#include "qeventdispatcher_glib_p.h"
 
 #include "qguiapplication.h"
 

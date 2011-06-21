@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QVFbScreenPrivate;
+class QAbstractEventDispatcher;
 
 class QVFbScreen : public QPlatformScreen
 {
@@ -81,6 +82,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

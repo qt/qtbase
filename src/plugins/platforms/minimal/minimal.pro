@@ -1,7 +1,7 @@
 TARGET = qminimal
 load(qt_plugin)
 
-QT = core-private gui-private
+QT += core-private gui-private platformsupport-private
 DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES =   main.cpp \

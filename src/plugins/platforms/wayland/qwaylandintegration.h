@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 class QWaylandBuffer;
 class QWaylandDisplay;
+class QAbstractEventDispatcher;
 
 class QWaylandIntegration : public QPlatformIntegration
 {
@@ -59,6 +60,7 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const;
 

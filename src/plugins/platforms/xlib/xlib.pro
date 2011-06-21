@@ -3,7 +3,7 @@ TARGET = qxlib
 load(qpa/plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
-QT += core-private gui-private opengl-private
+QT += core-private gui-private opengl-private platformsupport-private
 
 SOURCES = \
         main.cpp \

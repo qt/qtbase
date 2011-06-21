@@ -214,6 +214,13 @@ QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QSurface
     QRect(x,y,width,height).
 */
 
+/*!
+    \fn QAbstractEventDispatcher *createEventDispatcher() const
+
+    Factory function for the event dispatcher. The platform plugin
+    must create and and return a QAbstractEventDispatcher subclass when
+    this function is called.
+*/
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {

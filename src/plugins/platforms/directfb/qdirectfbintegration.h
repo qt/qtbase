@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 class QThread;
+class QAbstractEventDispatcher;
 class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
@@ -87,6 +88,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 

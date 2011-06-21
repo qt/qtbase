@@ -39,62 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_COCOA_H
-#define QPLATFORMINTEGRATION_COCOA_H
+#ifndef QEVENTDISPATCHER_QPA_H
+#define QEVENTDISPATCHER_QPA_H
 
-#include <Cocoa/Cocoa.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qcocoaautoreleasepool.h"
-
-#include <QtGui/QPlatformIntegration>
+#include <QtCore/qglobal.h>
+#if defined(Q_OS_UNIX)
+#include "private/qeventdispatcher_unix_p.h"
+#define EVENTDISPATCHERBASE QEventDispatcherUNIX
+#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherUNIXPrivate
+#elif defined(Q_OS_WIN)
+#include "private/qeventdispatcher_win_p.h"
+#define EVENTDISPATCHERBASE QEventDispatcherWin32
+#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherWin32Private
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaScreen : public QPlatformScreen
+class QEventDispatcherQPAPrivate;
+
+class Q_GUI_EXPORT QEventDispatcherQPA : public EVENTDISPATCHERBASE
 {
-public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QEventDispatcherQPA)
 
 public:
-    NSScreen *m_screen;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
+    explicit QEventDispatcherQPA(QObject *parent = 0);
+    QEventDispatcherQPA(EVENTDISPATCHERBASEPRIVATE &priv, QObject *parent);
+    ~QEventDispatcherQPA();
+
+    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool hasPendingEvents();
+
+    void flush();
 };
 
-class QCocoaIntegration : public QPlatformIntegration
+class Q_GUI_EXPORT QEventDispatcherQPAPrivate : public EVENTDISPATCHERBASEPRIVATE
 {
+    Q_DECLARE_PUBLIC(QEventDispatcherQPA)
 public:
-    QCocoaIntegration();
-    ~QCocoaIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-private:
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
-
-    QCocoaAutoReleasePool *mPool;
+    QEventDispatcherQPAPrivate();
+    ~QEventDispatcherQPAPrivate();
 };
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QEVENTDISPATCHER_QPA_H

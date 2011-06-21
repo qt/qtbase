@@ -41,6 +41,7 @@
 
 #include "qminimalintegration.h"
 #include "qminimalbackingstore.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
@@ -79,3 +80,9 @@ QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *
 {
     return new QMinimalBackingStore(window);
 }
+
+QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
+}
+

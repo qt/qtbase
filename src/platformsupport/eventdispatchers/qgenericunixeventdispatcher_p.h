@@ -39,62 +39,9 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_COCOA_H
-#define QPLATFORMINTEGRATION_COCOA_H
-
-#include <Cocoa/Cocoa.h>
-
-#include "qcocoaautoreleasepool.h"
-
-#include <QtGui/QPlatformIntegration>
-
-QT_BEGIN_NAMESPACE
-
-class QCocoaScreen : public QPlatformScreen
-{
-public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
-
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSize physicalSize() const { return m_physicalSize; }
-
-public:
-    NSScreen *m_screen;
-    QRect m_geometry;
-    int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
-};
-
-class QCocoaIntegration : public QPlatformIntegration
-{
-public:
-    QCocoaIntegration();
-    ~QCocoaIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-private:
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
-
-    QCocoaAutoReleasePool *mPool;
-};
-
-QT_END_NAMESPACE
-
+class QAbstractEventDispatcher;
+#ifdef Q_OS_MAC
+Q_GUI_EXPORT QAbstractEventDispatcher* createUnixEventDispatcher();
+#else
+Q_GUI_EXPORT QAbstractEventDispatcher* createUnixEventDispatcher();
 #endif
-

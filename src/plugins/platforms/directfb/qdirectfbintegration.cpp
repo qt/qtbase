@@ -46,7 +46,8 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbwindow.h"
 
-#include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
@@ -55,6 +56,7 @@
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
+#include <QtCore/QAbstractEventDispatcher>
 
 QT_BEGIN_NAMESPACE
 
@@ -129,6 +131,11 @@ QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId
     Q_UNUSED(winId);
     QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
     return new QDirectFbWindow(widget,input);
+}
+
+QAbstractEventDispatcher *QDirectFbIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const

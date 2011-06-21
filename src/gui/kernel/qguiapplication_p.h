@@ -67,6 +67,7 @@ public:
     QGuiApplicationPrivate(int &argc, char **argv, int flags);
     ~QGuiApplicationPrivate();
 
+    void createPlatformIntegration();
     void createEventDispatcher();
 
     virtual void notifyLayoutDirectionChange();

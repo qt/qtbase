@@ -55,6 +55,7 @@
 
 #include <private/qpixmap_raster_p.h>
 
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>
@@ -134,6 +135,11 @@ QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QSurfaceForma
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QXcbBackingStore(window);
+}
+
+QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QList<QPlatformScreen *> QXcbIntegration::screens() const

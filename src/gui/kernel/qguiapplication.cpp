@@ -46,14 +46,6 @@
 #include "private/qevent_p.h"
 #include "qfont.h"
 
-#if !defined(QT_NO_GLIB)
-#include "qeventdispatcher_glib_qpa_p.h"
-#endif
-#include "qeventdispatcher_qpa_p.h"
-#ifdef Q_OS_MAC
-#include "qeventdispatcher_mac_p.h"
-#endif
-
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
@@ -240,24 +232,9 @@ static void init_plugins(const QList<QByteArray> &pluginList)
     }
 }
 
-void QGuiApplicationPrivate::createEventDispatcher()
+void QGuiApplicationPrivate::createPlatformIntegration()
 {
-    Q_Q(QGuiApplication);
-#if !defined(QT_NO_GLIB) && !defined(Q_OS_WIN)
-    if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QPAEventDispatcherGlib(q);
-    else
-#endif
-#ifdef Q_OS_MAC
-        eventDispatcher = new QEventDispatcherMac(q);
-#else
-        eventDispatcher = new QEventDispatcherQPA(q);
-#endif
-}
-
-void QGuiApplicationPrivate::init()
-{
-    QList<QByteArray> pluginList;
+    // Load the platform integration
     QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
     QByteArray platformName;
 #ifdef QT_QPA_DEFAULT_PLATFORM_NAME
@@ -283,7 +260,45 @@ void QGuiApplicationPrivate::init()
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];
-        } else if (arg == "-plugin") {
+        } else {
+            argv[j++] = argv[i];
+        }
+    }
+
+    if (j < argc) {
+        argv[j] = 0;
+        argc = j;
+    }
+
+    init_platform(QLatin1String(platformName), platformPluginPath);
+
+}
+
+void QGuiApplicationPrivate::createEventDispatcher()
+{
+    Q_Q(QGuiApplication);
+
+    if (platform_integration == 0)
+        createPlatformIntegration();
+
+    eventDispatcher = platform_integration->createEventDispatcher();
+    eventDispatcher->setParent(q);
+}
+
+void QGuiApplicationPrivate::init()
+{
+    qDebug() << "QGuiApplicationPrivate::init";
+    QList<QByteArray> pluginList;
+    // Get command line params
+
+    int j = argc ? 1 : 0;
+    for (int i=1; i<argc; i++) {
+        if (argv[i] && *argv[i] != '-') {
+            argv[j++] = argv[i];
+            continue;
+        }
+        QByteArray arg = argv[i];
+        if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];
         } else if (arg == "-reverse") {
@@ -299,14 +314,9 @@ void QGuiApplicationPrivate::init()
         argc = j;
     }
 
-#if 0
-    QByteArray pluginEnv = qgetenv("QT_QPA_PLUGINS");
-    if (!pluginEnv.isEmpty()) {
-        pluginList.append(pluginEnv.split(';'));
-    }
-#endif
+    if (platform_integration == 0)
+        createPlatformIntegration();
 
-    init_platform(QLatin1String(platformName), platformPluginPath);
     init_plugins(pluginList);
 
     // Set up which span functions should be used in raster engine...

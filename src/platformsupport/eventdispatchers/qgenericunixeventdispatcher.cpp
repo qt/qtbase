@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,48 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTDISPATCHER_GLIB_QPA_P_H
-#define QEVENTDISPATCHER_GLIB_QPA_P_H
+#include "qgenericunixeventdispatcher_p.h"
+#include "qeventdispatcher_qpa_p.h"
+#include "qeventdispatcher_glib_p.h"
+#include <qglobal.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/private/qeventdispatcher_glib_p.h>
-
-typedef struct _GMainContext GMainContext;
-
-QT_BEGIN_NAMESPACE
-class QPAEventDispatcherGlibPrivate;
-
-class QPAEventDispatcherGlib : public QEventDispatcherGlib
+class QAbstractEventDispatcher *createUnixEventDispatcher()
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QPAEventDispatcherGlib)
-
-public:
-    explicit QPAEventDispatcherGlib(QObject *parent = 0);
-    ~QPAEventDispatcherGlib();
-};
-
-struct GUserEventSource;
-
-class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
-{
-    Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
-public:
-    QPAEventDispatcherGlibPrivate(GMainContext *context = 0);
-    GUserEventSource *userEventSource;
-};
-
-
-QT_END_NAMESPACE
-
-#endif // QEVENTDISPATCHER_GLIB_QPA_P_H
+#if !defined(QT_NO_GLIB) && !defined(Q_OS_WIN)
+    if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
+        return new QPAEventDispatcherGlib();
+    else
+#endif
+        return new QEventDispatcherQPA();
+}
