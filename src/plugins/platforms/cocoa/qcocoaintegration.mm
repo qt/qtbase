@@ -119,7 +119,7 @@ QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QGuiGLForma
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QCocoaBackingStore(window, winId);
+    return new QCocoaBackingStore(window);
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
