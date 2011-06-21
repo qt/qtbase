@@ -1584,7 +1584,7 @@ void tst_QTextDocument::toHtml()
 
     expectedOutput.replace("OPENDEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
-    expectedOutput.replace("EMPTYBLOCK", "<p style=\"-qt-paragraph-type:empty; height:1em; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n");
+    expectedOutput.replace("EMPTYBLOCK", "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n");
     if (expectedOutput.endsWith(QLatin1Char('\n')))
         expectedOutput.chop(1);
     expectedOutput.append(htmlTail);
