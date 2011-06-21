@@ -52,7 +52,11 @@ struct FontFile
     int indexValue;
 };
 
+#ifdef Q_OS_MAC
+class Q_GUI_EXPORT QBasicUnixFontDatabase : public QPlatformFontDatabase
+#else
 class QBasicUnixFontDatabase : public QPlatformFontDatabase
+#endif
 {
 public:
     void populateFontDatabase();

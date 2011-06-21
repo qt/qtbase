@@ -5,7 +5,10 @@ QT         += core-private gui-private
 TEMPLATE   = lib
 DESTDIR    = $$QMAKE_LIBDIR_QT
 
-CONFIG += module staticlib
+CONFIG += module
+!mac:CONFIG += staticlib
+mac:LIBS+=-lz
+
 MODULE_PRI = ../modules/qt_platformssupport.pri
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
