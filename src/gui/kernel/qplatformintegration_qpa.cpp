@@ -98,6 +98,12 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 #endif
 
 #ifndef QT_NO_DRAGANDDROP
+/*!
+    Accessor for the platform integrations drag object.
+
+    Default implementation returns 0, implying no drag and drop support.
+
+*/
 QPlatformDrag *QPlatformIntegration::drag() const
 {
     return 0;
@@ -243,6 +249,16 @@ QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
         ps = new QPlatformPrinterSupport;
 #endif
     return ps;
+}
+
+/*!
+  Returns the platforms input context.
+
+  The default implementation returns 0, implying no input method support.
+*/
+QPlatformInputContext *QPlatformIntegration::inputContext() const
+{
+    return 0;
 }
 
 QT_END_NAMESPACE

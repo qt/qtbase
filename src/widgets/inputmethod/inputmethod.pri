@@ -2,7 +2,6 @@
 
 HEADERS +=inputmethod/qinputcontextfactory.h \
           inputmethod/qinputcontextplugin.h \
-          inputmethod/qinputcontext_p.h \
           inputmethod/qinputcontext.h
 SOURCES +=inputmethod/qinputcontextfactory.cpp \
           inputmethod/qinputcontextplugin.cpp \

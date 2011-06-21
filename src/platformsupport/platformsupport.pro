@@ -27,4 +27,4 @@ include(fb_base/fb_base.pri)
 include(fontdatabases/fontdatabases.pri)
 include(glxconvenience/glxconvenience.pri)
 include(printersupport/printersupport.pri)
-
+#include(inputmethods/inputmethods.pri)

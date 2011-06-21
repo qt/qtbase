@@ -43,6 +43,7 @@ qpa {
                 kernel/qplatformintegration_qpa.h \
                 kernel/qplatformdrag_qpa.h \
                 kernel/qplatformscreen_qpa.h \
+                kernel/qplatforminputcontext_qpa.h \
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
@@ -63,6 +64,7 @@ qpa {
                 kernel/qgenericpluginfactory_qpa.cpp \
                 kernel/qgenericplugin_qpa.cpp \
                 kernel/qwindowsysteminterface_qpa.cpp \
+                kernel/qplatforminputcontext_qpa.cpp \
                 kernel/qplatformintegration_qpa.cpp \
                 kernel/qplatformscreen_qpa.cpp \
                 kernel/qplatformintegrationfactory_qpa.cpp \

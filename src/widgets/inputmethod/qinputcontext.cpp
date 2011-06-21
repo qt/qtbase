@@ -56,13 +56,15 @@
 //#define QT_NO_IM_PREEDIT_RELOCATION
 
 #include "qinputcontext.h"
-#include "qinputcontext_p.h"
 
 #ifndef QT_NO_IM
 
 #include "qplatformdefs.h"
 
 #include "qapplication.h"
+#include "private/qguiapplication_p.h"
+#include "qplatformintegration_qpa.h"
+#include "qplatforminputcontext_qpa.h"
 #include "qmenu.h"
 #include "qtextformat.h"
 #include "qpalette.h"
@@ -143,7 +145,7 @@ QT_BEGIN_NAMESPACE
     Constructs an input context with the given \a parent.
 */
 QInputContext::QInputContext(QObject* parent)
-    : QObject(*new QInputContextPrivate, parent)
+    : QObject(parent)
 {
 }
 
@@ -170,8 +172,10 @@ QInputContext::~QInputContext()
 */
 QWidget *QInputContext::focusWidget() const
 {
-    Q_D(const QInputContext);
-    return d->focusWidget;
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        return qobject_cast<QWidget *>(ic->focusObject());
+    return 0;
 }
 
 
@@ -186,12 +190,14 @@ QWidget *QInputContext::focusWidget() const
 void QInputContext::setFocusWidget(QWidget *widget)
 {
     Q_ASSERT(!widget || widget->testAttribute(Qt::WA_InputMethodEnabled));
-    Q_D(QInputContext);
-    d->focusWidget = widget;
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        ic->setFocusObject(widget);
 }
 
 /*!
     \fn bool QInputContext::isComposing() const
+    \obsolete
 
     This function indicates whether InputMethodStart event had been
     sent to the current focus widget. It is ensured that an input
@@ -298,12 +304,11 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
     QEvent::MouseMove. The event's button and state indicate
     the kind of operation that was performed.
 */
-void QInputContext::mouseHandler(int /*x*/, QMouseEvent *event)
+void QInputContext::mouseHandler(int x, QMouseEvent *event)
 {
-    // Default behavior for simple ephemeral input contexts. Some
-    // complex input contexts should not be reset here.
-    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
-	reset();
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        ic->mouseHandler(x, event);
 }
 
 
@@ -312,11 +317,11 @@ void QInputContext::mouseHandler(int /*x*/, QMouseEvent *event)
 */
 QFont QInputContext::font() const
 {
-    Q_D(const QInputContext);
-    if (!d->focusWidget)
+    QWidget *focus = focusWidget();
+    if (!focus)
         return QApplication::font();
 
-    return qvariant_cast<QFont>(d->focusWidget->inputMethodQuery(Qt::ImFont));
+    return qvariant_cast<QFont>(focus->inputMethodQuery(Qt::ImFont));
 }
 
 /*!
@@ -326,6 +331,9 @@ QFont QInputContext::font() const
 */
 void QInputContext::update()
 {
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        ic->update();
 }
 
 /*!
@@ -335,8 +343,7 @@ void QInputContext::update()
 */
 void QInputContext::widgetDestroyed(QWidget *widget)
 {
-    Q_D(QInputContext);
-    if (widget == d->focusWidget)
+    if (widget == focusWidget())
         setFocusWidget(0);
 }
 
@@ -360,6 +367,12 @@ void QInputContext::widgetDestroyed(QWidget *widget)
     string and attributes; otherwise, you risk breaking input state
     consistency.
 */
+void QInputContext::reset()
+{
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        ic->reset();
+}
 
 
 /*!
@@ -380,6 +393,10 @@ void QInputContext::widgetDestroyed(QWidget *widget)
 
     \sa QInputContextPlugin::keys(), QInputContextPlugin::displayName()
 */
+QString QInputContext::identifierName()
+{
+    return QLatin1String("qpa");
+}
 
 
 /*!
@@ -398,6 +415,10 @@ void QInputContext::widgetDestroyed(QWidget *widget)
     (that automatically modifies fonts in CJK-mixed text) and XML editor
     (that automatically inserts lang attr).
 */
+QString QInputContext::language()
+{
+    return QString();
+}
 
 
 /*!

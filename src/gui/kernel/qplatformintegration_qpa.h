@@ -64,6 +64,7 @@ class QPlatformDrag;
 class QPlatformGLContext;
 class QGuiGLFormat;
 class QAbstractEventDispatcher;
+class QPlatformInputContext;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -100,6 +101,7 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     virtual QPlatformDrag *drag() const;
 #endif
+    virtual QPlatformInputContext *inputContext() const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;

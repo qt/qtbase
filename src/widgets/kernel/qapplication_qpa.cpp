@@ -420,21 +420,6 @@ QPlatformNativeInterface *QApplication::platformNativeInterface()
     return pi->nativeInterface();
 }
 
-#ifndef QT_NO_QWS_INPUTMETHODS
-class QDummyInputContext : public QInputContext
-{
-public:
-    explicit QDummyInputContext(QObject* parent = 0) : QInputContext(parent) {}
-    ~QDummyInputContext() {}
-    QString identifierName() { return QString(); }
-    QString language() { return QString(); }
-
-    void reset() {}
-    bool isComposing() const { return false; }
-
-};
-#endif // QT_NO_QWS_INPUTMETHODS
-
 void qt_init(QApplicationPrivate *, int type)
 {
     Q_UNUSED(type);
@@ -445,7 +430,7 @@ void qt_init(QApplicationPrivate *, int type)
     qApp->setObjectName(appName);
 
 #ifndef QT_NO_QWS_INPUTMETHODS
-        qApp->setInputContext(new QDummyInputContext(qApp));
+    qApp->setInputContext(new QInputContext(qApp));
 #endif
 }
 

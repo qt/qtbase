@@ -80,7 +80,7 @@
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
-#include "private/qinputcontext_p.h"
+#include "qinputcontext.h"
 #include "qfileinfo.h"
 #include "private/qsoftkeymanager_p.h"
 

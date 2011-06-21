@@ -39,56 +39,34 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <qplatforminputcontext_qpa.h>
 
-/****************************************************************************
-**
-** Implementation of QInputContext class
-**
-** Copyright (C) 2003-2004 immodule for Qt Project.  All rights reserved.
-**
-** This file is written to contribute to Nokia Corporation and/or its subsidiary(-ies) under their own
-** license. You may use this file under your Qt license. Following
-** description is copied from their original file headers. Contact
-** immodule-qt@freedesktop.org if any conditions of this licensing are
-** not clear to you.
-**
-****************************************************************************/
-
-#ifndef QINPUTCONTEXT_P_H
-#define QINPUTCONTEXT_P_H
-
-#include "private/qobject_p.h"
-#include "qwidget.h"
-#include "qinputcontext.h"
-
-#ifndef QT_NO_IM
-
-QT_BEGIN_NAMESPACE
-
-class QInputContextPrivate : public QObjectPrivate
+QPlatformInputContext::QPlatformInputContext()
 {
-    Q_DECLARE_PUBLIC(QInputContext)
-public:
-    QInputContextPrivate()
-	: focusWidget(0)
-    {}
+}
 
-    QWidget *focusWidget;
-};
+void QPlatformInputContext::reset()
+{
+}
 
-QT_END_NAMESPACE
+void QPlatformInputContext::update()
+{
+}
 
-#endif
+void QPlatformInputContext::mouseHandler(int, QMouseEvent *event)
+{
+    // Default behavior for simple ephemeral input contexts. Some
+    // complex input contexts should not be reset here.
+    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+        reset();
+}
 
-#endif
+QObject *QPlatformInputContext::focusObject() const
+{
+    return focus.data();
+}
 
+void QPlatformInputContext::setFocusObject(QObject *o)
+{
+    focus = o;
+}

@@ -82,20 +82,18 @@ class QSymbianEvent;
 class Q_WIDGETS_EXPORT QInputContext : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QInputContext)
 public:
     explicit QInputContext(QObject* parent = 0);
     virtual ~QInputContext();
 
-    virtual QString identifierName() = 0;
-    virtual QString language() = 0;
+    virtual QString identifierName();
+    virtual QString language();
 
-    virtual void reset() = 0;
+    virtual void reset();
     virtual void update();
 
     virtual void mouseHandler( int x, QMouseEvent *event);
     virtual QFont font() const;
-    virtual bool isComposing() const = 0;
 
     QWidget *focusWidget() const;
     virtual void setFocusWidget( QWidget *w );
@@ -114,6 +112,9 @@ public:
 
     void sendEvent(const QInputMethodEvent &event);
 
+    virtual bool isComposing() const { return false; }
+
+private:
     enum StandardFormat {
         PreeditFormat,
         SelectionFormat
