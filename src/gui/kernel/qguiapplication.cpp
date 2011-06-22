@@ -287,7 +287,6 @@ void QGuiApplicationPrivate::createEventDispatcher()
 
 void QGuiApplicationPrivate::init()
 {
-    qDebug() << "QGuiApplicationPrivate::init";
     QList<QByteArray> pluginList;
     // Get command line params
 

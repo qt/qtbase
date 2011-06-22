@@ -138,14 +138,6 @@ QXcbConnection::QXcbConnection(const char *displayName)
 #ifdef XCB_USE_DRI2
     initializeDri2();
 #endif
-
-    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
-
-    QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance(qApp->thread());
-    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
-    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
-
     sync();
 }
 
@@ -162,6 +154,15 @@ QXcbConnection::~QXcbConnection()
 #endif
 
     delete m_keyboard;
+}
+
+void QXcbConnection::setEventDispatcher(QAbstractEventDispatcher *dispatcher)
+{
+    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
+
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
+    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
 }
 
 void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)

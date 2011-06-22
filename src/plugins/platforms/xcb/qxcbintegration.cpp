@@ -139,7 +139,9 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
 
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    QAbstractEventDispatcher *eventDispatcher = createUnixEventDispatcher();
+    m_connection->setEventDispatcher(eventDispatcher);
+    return eventDispatcher;
 }
 
 QList<QPlatformScreen *> QXcbIntegration::screens() const

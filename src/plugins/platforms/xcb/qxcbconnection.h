@@ -222,6 +222,7 @@ namespace QXcbAtom {
     };
 }
 
+class QAbstractEventDispatcher;
 class QXcbConnection : public QObject
 {
     Q_OBJECT
@@ -230,6 +231,8 @@ public:
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
+
+    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
     const QList<QXcbScreen *> &screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
