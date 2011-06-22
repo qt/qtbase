@@ -90,7 +90,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
-#include <qeventdispatcher_qpa.h>
+#include <QtPlatformSupport/private/qeventdispatcher_qpa_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 

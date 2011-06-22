@@ -45,7 +45,7 @@
 #include <qbytearray.h>
 #include <qwindow.h>
 #include "qplatformwindow_qpa.h"
-#include "qguiglformat_qpa.h"
+#include "qsurfaceformat.h"
 #include "qplatformglcontext_qpa.h"
 #include "qguiglcontext_qpa.h"
 #include <qdebug.h>
