@@ -23,11 +23,8 @@ HEADERS += qcocoaintegration.h \
     qcocoanativeinterface.h \
     qcocoaeventdispatcher.h
 
-DEFINES += QT_BUILD_COCOA_LIB
-
 #add libz for freetype.
 LIBS += -lz
-LIBS += -framework cocoa -framework Carbon
 
 QT += core-private gui-private platformsupport-private
 
