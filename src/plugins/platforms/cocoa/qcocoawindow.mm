@@ -102,6 +102,7 @@ void QCocoaWindow::setVisible(bool visible)
 {
     if (visible) {
         [m_nsWindow makeKeyAndOrderFront:nil];
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     } else {
         [m_nsWindow orderOut:nil];
     }
