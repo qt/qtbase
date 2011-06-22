@@ -382,7 +382,7 @@ void QWidgetWindow::handleDragEvent(QEvent *event)
 
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
-    m_widget->d_func()->syncBackingStore(event->region);
+    m_widget->d_func()->syncBackingStore(event->region());
 }
 
 QT_END_NAMESPACE
