@@ -8,6 +8,14 @@ HEADERS +=\
     $$PWD/qgenericunixeventdispatcher_p.h\
 }
 
+win32 {
+SOURCES +=\
+    $$PWD/qguieventdispatcherwin32.cpp
+
+HEADERS +=\
+    $$PWD/qguieventdispatcherwin32_p.h
+}
+
 contains(QT_CONFIG, glib) {
     SOURCES +=$$PWD/qeventdispatcher_glib.cpp
     HEADERS +=$$PWD/qeventdispatcher_glib_p.h
