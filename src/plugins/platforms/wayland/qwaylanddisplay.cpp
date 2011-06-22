@@ -234,17 +234,36 @@ int QWaylandDisplay::sourceUpdate(uint32_t mask, void *data)
 }
 
 void QWaylandDisplay::outputHandleGeometry(void *data,
-                                           struct wl_output *output,
+                                           wl_output *output,
                                            int32_t x, int32_t y,
-                                           int32_t width, int32_t height)
+                                           int32_t physicalWidth,
+                                           int32_t physicalHeight,
+                                           int subpixel,
+                                           const char *make, const char *model)
 {
     QWaylandDisplay *waylandDisplay = static_cast<QWaylandDisplay *>(data);
-    QRect outputRect = QRect(x, y, width, height);
+    QRect outputRect = QRect(x, y, physicalWidth, physicalHeight);
     waylandDisplay->createNewScreen(output,outputRect);
 }
 
+void QWaylandDisplay::mode(void *data,
+             struct wl_output *wl_output,
+             uint32_t flags,
+             int width,
+             int height,
+             int refresh)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(wl_output);
+    Q_UNUSED(flags);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+    Q_UNUSED(refresh);
+}
+
 const struct wl_output_listener QWaylandDisplay::outputListener = {
-    QWaylandDisplay::outputHandleGeometry
+    QWaylandDisplay::outputHandleGeometry,
+    QWaylandDisplay::mode
 };
 
 const struct wl_compositor_listener QWaylandDisplay::compositorListener = {
