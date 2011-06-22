@@ -13,12 +13,12 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/sqlbrowser
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/sqlbrowser
 sources.files = $$SOURCES $$HEADERS $$FORMS *.pro
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/sqlbrowser
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/sqlbrowser
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example
 
 wince*: {
     DEPLOYMENT_PLUGIN += qsqlite

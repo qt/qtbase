@@ -7,6 +7,7 @@ SUBDIRS          += \
                  moveblocks \
                  states \
                  stickman \
+                 sub-attaq \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/animation
