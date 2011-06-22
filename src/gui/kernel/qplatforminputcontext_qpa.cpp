@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qplatforminputcontext_qpa.h>
+#include <QtGui/QMouseEvent>
 
 QPlatformInputContext::QPlatformInputContext()
 {
