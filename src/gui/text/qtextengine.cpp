@@ -319,6 +319,26 @@ static void appendItems(QScriptAnalysis *analysis, int &start, int &stop, const 
     start = stop;
 }
 
+static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
+                                            const ushort *unicode, int length,
+                                            int &sor, int &eor, QBidiControl &control)
+{
+    QChar::Direction dir;
+    int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
+    while (sor < length) {
+        dir = QChar::direction(unicode[sor]);
+        // Keep skipping DirBN as if it doesn't exist
+        if (dir != QChar::DirBN)
+            break;
+        analysis[sor++].bidiLevel = level;
+    }
+
+    eor = sor;
+    if (eor == length)
+        dir = control.basicDirection();
+
+    return dir;
+}
 
 // creates the next QScript items.
 static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiControl &control)
@@ -430,8 +450,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                 case QChar::DirAN:
                     if (eor >= 0) {
                         appendItems(analysis, sor, eor, control, dir);
-                        dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                        status.eor = dir;
+                        status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                     } else {
                         eor = current; status.eor = dir;
                     }
@@ -455,8 +474,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                             }
                             eor = current - 1;
                             appendItems(analysis, sor, eor, control, dir);
-                            dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                            status.eor = dir;
+                            status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                         } else {
                             if(status.eor != QChar::DirL) {
                                 appendItems(analysis, sor, eor, control, dir);
