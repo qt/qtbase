@@ -46,7 +46,13 @@
 #include <X11/keysym.h>
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QTextCodec>
+#include <private/qguiapplication_p.h>
 #include <stdio.h>
+
+#define XCB_USE_IBUS
+#if defined(XCB_USE_IBUS)
+#include "QtPlatformSupport/qibusplatforminputcontext.h"
+#endif
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
@@ -1023,6 +1029,11 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     QByteArray chars;
     xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
+
+    QIBusPlatformInputContext *ic = static_cast<QIBusPlatformInputContext *>(QGuiApplicationPrivate::platformIntegration()->inputContext());
+    if (ic && ic->x11FilterEvent(sym, code, state, type == QEvent::KeyPress))
+        return;
+
     Qt::KeyboardModifiers modifiers;
     int qtcode = 0;
     int count = chars.count();

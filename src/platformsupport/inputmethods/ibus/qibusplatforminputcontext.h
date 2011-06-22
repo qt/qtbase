@@ -38,58 +38,34 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QIBUSPLATFORMINPUTCONTEXT_H
+#define QIBUSPLATFORMINPUTCONTEXT_H
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#include <QPlatformInputContext>
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+class QIBusPlatformInputContextPrivate;
+class QDBusVariant;
 
-QT_BEGIN_NAMESPACE
-
-class QXcbConnection;
-class QAbstractEventDispatcher;
-
-class QXcbIntegration : public QPlatformIntegration
+class QIBusPlatformInputContext : public QObject, public QPlatformInputContext
 {
+    Q_OBJECT
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    QIBusPlatformInputContext();
+    ~QIBusPlatformInputContext();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    void mouseHandler(int x, QMouseEvent *event);
+    void reset(void);
+    void update(void);
+    void setFocusObject(QObject *object);
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
 
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformDrag *drag() const;
-
-    QPlatformInputContext *inputContext() const;
+public Q_SLOTS:
+    void commitText(const QDBusVariant &text);
+    void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
 
 private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
-
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
-
-    QPlatformInputContext *m_inputContext;
+    QIBusPlatformInputContextPrivate *d;
 };
-
-QT_END_NAMESPACE
 
 #endif

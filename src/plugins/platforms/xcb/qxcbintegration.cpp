@@ -71,6 +71,11 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #endif
 
+#define XCB_USE_IBUS
+#if defined(XCB_USE_IBUS)
+#include "QtPlatformSupport/qibusplatforminputcontext.h"
+#endif
+
 QXcbIntegration::QXcbIntegration()
     : m_connection(new QXcbConnection), m_printerSupport(new QGenericUnixPrinterSupport)
 {
@@ -79,6 +84,8 @@ QXcbIntegration::QXcbIntegration()
 
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
+
+    m_inputContext = 0;
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -141,6 +148,11 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
     QAbstractEventDispatcher *eventDispatcher = createUnixEventDispatcher();
     m_connection->setEventDispatcher(eventDispatcher);
+#ifdef XCB_USE_IBUS
+    // A bit hacky to do this here, but we need an eventloop before we can instantiate
+    // the input context.
+    const_cast<QXcbIntegration *>(this)->m_inputContext = new QIBusPlatformInputContext;
+#endif
     return eventDispatcher;
 }
 
@@ -317,4 +329,9 @@ QPlatformClipboard *QXcbIntegration::clipboard() const
 QPlatformDrag *QXcbIntegration::drag() const
 {
     return m_connection->drag();
+}
+
+QPlatformInputContext *QXcbIntegration::inputContext() const
+{
+    return m_inputContext;
 }

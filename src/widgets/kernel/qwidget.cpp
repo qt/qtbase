@@ -11190,7 +11190,6 @@ void QWidget::setShortcutAutoRepeat(int id, bool enable)
 */
 void QWidget::updateMicroFocus()
 {
-#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
     // and optimization to update input context only it has already been created.
     if (d->assignedInputContext() || qApp->d_func()->inputContext) {
@@ -11198,7 +11197,6 @@ void QWidget::updateMicroFocus()
         if (ic)
             ic->update();
     }
-#endif
 #ifndef QT_NO_ACCESSIBILITY
     if (isVisible()) {
         // ##### is this correct

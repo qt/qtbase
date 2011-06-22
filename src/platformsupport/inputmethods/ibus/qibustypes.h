@@ -38,58 +38,79 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QIBUSTYPES_H
+#define QIBUSTYPES_H
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#include <qvector.h>
+#include <qevent.h>
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+class QDBusArgument;
 
-QT_BEGIN_NAMESPACE
-
-class QXcbConnection;
-class QAbstractEventDispatcher;
-
-class QXcbIntegration : public QPlatformIntegration
+class QIBusSerializable
 {
 public:
-    QXcbIntegration();
-    ~QXcbIntegration();
+    QIBusSerializable();
+    virtual ~QIBusSerializable();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    virtual void fromDBusArgument(const QDBusArgument &arg);
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface()const;
-
-    QPlatformPrinterSupport *printerSupport() const;
-    QPlatformClipboard *clipboard() const;
-    QPlatformDrag *drag() const;
-
-    QPlatformInputContext *inputContext() const;
-
-private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
-
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
-
-    QPlatformInputContext *m_inputContext;
+    QString name;
+    QHash<QString, QDBusArgument>  attachments;
 };
 
-QT_END_NAMESPACE
+class QIBusAttribute : public QIBusSerializable
+{
+public:
+    enum Type {
+        Invalid = 0,
+        Underline = 1,
+        Foreground = 2,
+        Background = 3,
+    };
+
+    enum Underline {
+        UnderlineNone = 0,
+        UnderlineSingle  = 1,
+        UnderlineDouble  = 2,
+        UnderlineLow = 3,
+        UnderlineError = 4,
+    };
+
+    QIBusAttribute();
+    ~QIBusAttribute();
+
+    void fromDBusArgument(const QDBusArgument &arg);
+    QTextFormat format() const;
+
+    Type type;
+    quint32 value;
+    quint32 start;
+    quint32 end;
+};
+
+class QIBusAttributeList : public QIBusSerializable
+{
+public:
+    QIBusAttributeList();
+    ~QIBusAttributeList();
+
+    void fromDBusArgument(const QDBusArgument &arg);
+
+    QList<QInputMethodEvent::Attribute> imAttributes() const;
+
+    QVector<QIBusAttribute> attributes;
+};
+
+class QIBusText : public QIBusSerializable
+{
+public:
+    QIBusText();
+    ~QIBusText();
+
+    void fromDBusArgument(const QDBusArgument &arg);
+
+    QString text;
+    QIBusAttributeList attributes;
+};
 
 #endif
