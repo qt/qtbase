@@ -699,7 +699,7 @@ CFG_FONTCONFIG=auto
 CFG_QWS_FREETYPE=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
-QT_DEFAULT_BUILD_PARTS="libs examples demos tests"
+QT_DEFAULT_BUILD_PARTS="libs examples tests"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
@@ -849,7 +849,6 @@ QT_INSTALL_DATA=
 QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
 QT_INSTALL_EXAMPLES=
-QT_INSTALL_DEMOS=
 QT_HOST_PREFIX=
 
 #flags for SQL drivers
@@ -1060,7 +1059,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1313,9 +1312,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     examplesdir)
         QT_INSTALL_EXAMPLES="$VAL"
-        ;;
-    demosdir)
-        QT_INSTALL_DEMOS="$VAL"
         ;;
     qconfig)
         CFG_QCONFIG="$VAL"
@@ -3545,7 +3541,6 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     [ -z "$QT_INSTALL_TRANSLATIONS" ] && QT_INSTALL_TRANSLATIONS="\\\\resource\\\\qt$QT_LIBINFIX\\\\translations"
     [ -z "$QT_INSTALL_SETTINGS" ] && QT_INSTALL_SETTINGS=
     [ -z "$QT_INSTALL_EXAMPLES" ] && QT_INSTALL_EXAMPLES=
-    [ -z "$QT_INSTALL_DEMOS" ] && QT_INSTALL_DEMOS=
 else
     #docs
     if [ -z "$QT_INSTALL_DOCS" ]; then #default
@@ -3652,17 +3647,6 @@ else
         [ -z "$QT_INSTALL_EXAMPLES" ] && QT_INSTALL_EXAMPLES="$QT_INSTALL_PREFIX/examples" #fallback
     fi
     QT_INSTALL_EXAMPLES=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_EXAMPLES"`
-
-    #demos
-    if [ -z "$QT_INSTALL_DEMOS" ]; then #default
-        if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
-	    if [ "$PLATFORM_MAC" = "yes" ]; then
-	        QT_INSTALL_DEMOS="/Developer/Examples/Qt/Demos"
-            fi
-        fi
-        [ -z "$QT_INSTALL_DEMOS" ] && QT_INSTALL_DEMOS="$QT_INSTALL_PREFIX/demos"
-    fi
-    QT_INSTALL_DEMOS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DEMOS"`
 fi
 
 #-------------------------------------------------------------------------------
@@ -3731,8 +3715,8 @@ if [ "$OPT_HELP" = "yes" ]; then
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
         [-translationdir <dir>] [-sysconfdir <dir>] [-examplesdir <dir>]
-        [-demosdir <dir>] [-buildkey <key>] [-release] [-debug]
-        [-debug-and-release] [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
+        [-buildkey <key>] [-release] [-debug] [-debug-and-release]
+        [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
@@ -3808,8 +3792,6 @@ cat <<EOF
                             (default PREFIX/etc/settings)
     -examplesdir <dir> .... Examples will be installed to <dir>
                             (default PREFIX/examples)
-    -demosdir <dir> ....... Demos will be installed to <dir>
-                            (default PREFIX/demos)
 
  You may use these options to turn on strict plugin loading.
 
@@ -4657,7 +4639,6 @@ DATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_INSTA
 TRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_INSTALL_TRANSLATIONS"`
 SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
 EXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
-DEMOS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_demopath=$QT_INSTALL_DEMOS"`
 
 TODAY=`date +%Y-%m-%d`
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
@@ -4682,7 +4663,6 @@ if [ ! -z "$QT_HOST_PREFIX" ]; then
     HOSTTRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_HOST_PREFIX/translations"`
     HOSTSETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
     HOSTEXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
-    HOSTDEMOS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_demopath=$QT_INSTALL_DEMOS"`
 
     cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 
@@ -4699,7 +4679,6 @@ static const char qt_configure_data_path_str         [256 + 12] = "$HOSTDATA_PAT
 static const char qt_configure_translations_path_str [256 + 12] = "$HOSTTRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$HOSTSETTINGS_PATH_STR";
 static const char qt_configure_examples_path_str     [256 + 12] = "$HOSTEXAMPLES_PATH_STR";
-static const char qt_configure_demos_path_str        [256 + 12] = "$HOSTDEMOS_PATH_STR";
 #else // QT_BOOTSTRAPPED
 EOF
 fi
@@ -4717,7 +4696,6 @@ static const char qt_configure_data_path_str         [256 + 12] = "$DATA_PATH_ST
 static const char qt_configure_translations_path_str [256 + 12] = "$TRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$SETTINGS_PATH_STR";
 static const char qt_configure_examples_path_str     [256 + 12] = "$EXAMPLES_PATH_STR";
-static const char qt_configure_demos_path_str        [256 + 12] = "$DEMOS_PATH_STR";
 EOF
 
 if [ ! -z "$QT_HOST_PREFIX" ]; then
@@ -4742,7 +4720,6 @@ cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 #define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;
 #define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;
 #define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;
-#define QT_CONFIGURE_DEMOS_PATH qt_configure_demos_path_str + 12;
 EOF
 
 # avoid unecessary rebuilds by copying only if qconfig.cpp has changed
@@ -9038,7 +9015,7 @@ for part in $CFG_BUILD_PARTS; do
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
     libs) PART_ROOTS="$PART_ROOTS src tools/linguist/lrelease" ;;
     translations) PART_ROOTS="$PART_ROOTS translations" ;;
-    examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
+    examples) PART_ROOTS="$PART_ROOTS examples" ;;
     *) ;;
     esac
 done

@@ -27,10 +27,6 @@ contains(PROJECTS, examples) {
     PROJECTS -= examples
     SUBDIRS += examples
 }
-contains(PROJECTS, demos) {
-    PROJECTS -= demos
-    SUBDIRS += demos
-}
 contains(PROJECTS, tests) {
     PROJECTS -= tests
     SUBDIRS += module_qtbase_tests

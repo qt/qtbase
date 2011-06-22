@@ -1176,13 +1176,6 @@ void Configure::parseCmdLine()
             dictionary[ "QT_INSTALL_EXAMPLES" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-demosdir") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "QT_INSTALL_DEMOS" ] = configCmdLine.at(i);
-        }
-
         else if (configCmdLine.at(i) == "-hostprefix") {
             ++i;
             if (i == argCount)
@@ -1664,7 +1657,7 @@ bool Configure::displayHelp()
 //      desc("Usage: configure [-prefix dir] [-bindir <dir>] [-libdir <dir>]\n"
 //                  "[-docdir <dir>] [-headerdir <dir>] [-plugindir <dir>]\n"
 //                  "[-importdir <dir>] [-datadir <dir>] [-translationdir <dir>]\n"
-//                  "[-examplesdir <dir>] [-demosdir <dir>][-buildkey <key>]\n"
+//                  "[-examplesdir <dir>] [-buildkey <key>]\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
@@ -1709,7 +1702,6 @@ bool Configure::displayHelp()
         desc(                   "-datadir <dir>",       "Data used by Qt programs will be installed to dir\n(default PREFIX)");
         desc(                   "-translationdir <dir>","Translations of Qt programs will be installed to dir\n(default PREFIX/translations)\n");
         desc(                   "-examplesdir <dir>",   "Examples will be installed to dir\n(default PREFIX/examples)");
-        desc(                   "-demosdir <dir>",      "Demos will be installed to dir\n(default PREFIX/demos)");
 */
         desc(" You may use these options to turn on strict plugin loading:\n\n", 0, 1);
 
@@ -2828,8 +2820,6 @@ void Configure::generateOutputVars()
         dictionary[ "QT_INSTALL_TRANSLATIONS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/translations");
     if (!dictionary[ "QT_INSTALL_EXAMPLES" ].size())
         dictionary[ "QT_INSTALL_EXAMPLES" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/examples");
-    if (!dictionary[ "QT_INSTALL_DEMOS" ].size())
-        dictionary[ "QT_INSTALL_DEMOS" ] = qipempty ? "" : fixSeparators(dictionary[ "QT_INSTALL_PREFIX" ] + "/demos");
 
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         dictionary[ "QMAKE_RPATHDIR" ] = dictionary[ "QT_INSTALL_LIBS" ];
@@ -2930,7 +2920,7 @@ void Configure::generateCachefile()
         moduleStream << "QT_BUILD_TREE   = " << fixSeparators(dictionary[ "QT_BUILD_TREE" ], true) << endl;
         moduleStream << "QT_SOURCE_TREE  = " << fixSeparators(dictionary[ "QT_SOURCE_TREE" ], true) << endl;
         QStringList buildParts;
-        buildParts << "libs" << "examples" << "demos";
+        buildParts << "libs" << "examples";
         foreach (const QString &item, disabledBuildParts) {
             buildParts.removeAll(item);
         }
@@ -3356,7 +3346,6 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << escapeSeparators(dictionary["QT_INSTALL_DATA"]) << "\";"  << endl
                   << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << escapeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\";" << endl
                   << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << escapeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << "\";"  << endl
-                  << "static const char qt_configure_demos_path_str        [512 + 12] = \"qt_demopath=" << escapeSeparators(dictionary["QT_INSTALL_DEMOS"]) << "\";"  << endl
                   //<< "static const char qt_configure_settings_path_str [256] = \"qt_stngpath=" << escapeSeparators(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl
                   ;
         if (!dictionary[ "QT_HOST_PREFIX" ].isNull()) {
@@ -3371,7 +3360,6 @@ void Configure::generateConfigfiles()
                        << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ], true) <<"\";"  << endl
                        << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/translations", true) <<"\";" << endl
                        << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/example", true) <<"\";"  << endl
-                       << "static const char qt_configure_demos_path_str        [512 + 12] = \"qt_demopath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/demos", true) <<"\";"  << endl
                        << "#endif //QT_BOOTSTRAPPED" << endl;
         }
         tmpStream << "/* strlen( \"qt_lcnsxxxx\") == 12 */" << endl
@@ -3387,7 +3375,6 @@ void Configure::generateConfigfiles()
                   << "#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;" << endl
-                  << "#define QT_CONFIGURE_DEMOS_PATH qt_configure_demos_path_str + 12;" << endl
                   //<< "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl
                   << endl;
 
@@ -3547,7 +3534,6 @@ void Configure::displayConfig()
     cout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;
     cout << "Translations installed to..." << dictionary[ "QT_INSTALL_TRANSLATIONS" ] << endl;
     cout << "Examples installed to......." << dictionary[ "QT_INSTALL_EXAMPLES" ] << endl;
-    cout << "Demos installed to.........." << dictionary[ "QT_INSTALL_DEMOS" ] << endl << endl;
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
         cout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
