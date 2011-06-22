@@ -100,8 +100,13 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
 
 public:
+    enum SurfaceType { RasterSurface, OpenGLSurface };
+
     QWindow(QWindow *parent = 0);
     virtual ~QWindow();
+
+    void setSurfaceType(SurfaceType surfaceType);
+    SurfaceType surfaceType() const;
 
     void setVisible(bool visible);
     bool visible() const;

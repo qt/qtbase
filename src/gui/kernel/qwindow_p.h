@@ -59,6 +59,7 @@ class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
 public:
     QWindowPrivate()
         : QObjectPrivate()
+        , surfaceType(QWindow::RasterSurface)
         , windowFlags(Qt::Window)
         , parentWindow(0)
         , platformWindow(0)
@@ -75,6 +76,7 @@ public:
     {
     }
 
+    QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
     QPlatformWindow *platformWindow;

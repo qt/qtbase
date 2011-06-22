@@ -24,6 +24,7 @@ HelloWindow::HelloWindow(Renderer *renderer)
     : m_colorIndex(0)
     , m_renderer(renderer)
 {
+    setSurfaceType(QWindow::OpenGLSurface);
     setWindowTitle(QLatin1String("Hello Window"));
 
     setFormat(renderer->format());

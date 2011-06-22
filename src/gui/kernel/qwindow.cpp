@@ -72,6 +72,18 @@ QWindow::~QWindow()
     destroy();
 }
 
+void QWindow::setSurfaceType(SurfaceType surfaceType)
+{
+    Q_D(QWindow);
+    d->surfaceType = surfaceType;
+}
+
+QWindow::SurfaceType QWindow::surfaceType() const
+{
+    Q_D(const QWindow);
+    return d->surfaceType;
+}
+
 void QWindow::setVisible(bool visible)
 {
     Q_D(QWindow);

@@ -143,6 +143,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             winFormat.setAlphaBufferSize(qMax(winFormat.alphaBufferSize(), 8));
 
         if (!widget->windowHandle()->handle()) {
+            widget->windowHandle()->setSurfaceType(QWindow::OpenGLSurface);
             widget->windowHandle()->setFormat(winFormat);
             widget->winId();//make window
         }
@@ -294,6 +295,7 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
 
     d->window = new QWindow;
+    d->window->setSurfaceType(QWindow::OpenGLSurface);
     d->window->setGeometry(QRect(0, 0, 3, 3));
     d->window->create();
 
