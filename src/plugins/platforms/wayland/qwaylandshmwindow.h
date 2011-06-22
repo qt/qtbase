@@ -52,7 +52,7 @@ public:
     ~QWaylandShmWindow();
 
     WindowType windowType() const;
-    QSurfaceFormat format() const { return window()->format(); }
+    QSurfaceFormat format() const { return QSurfaceFormat(); }
 };
 
 #endif // QWAYLANDSHMWINDOW_H
