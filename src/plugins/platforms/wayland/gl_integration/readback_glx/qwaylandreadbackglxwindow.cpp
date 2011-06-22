@@ -104,7 +104,7 @@ void QWaylandReadbackGlxWindow::createSurface()
     XSync(m_glxIntegration->xDisplay(), False);
 
     if (!m_config)
-        m_config = qglx_findConfig(m_glxIntegration->xDisplay(), m_glxIntegration->screen(), m_window->glFormat());
+        m_config = qglx_findConfig(m_glxIntegration->xDisplay(), m_glxIntegration->screen(), m_window->format());
 
     m_glxPixmap = glXCreatePixmap(m_glxIntegration->xDisplay(), m_config, m_pixmap,0);
 

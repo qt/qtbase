@@ -104,6 +104,7 @@ void QWaylandWindow::setVisible(bool visible)
 
     if (visible) {
         wl_surface_map_toplevel(mSurface);
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     } else {
         wl_surface_destroy(mSurface);
         mSurface = NULL;

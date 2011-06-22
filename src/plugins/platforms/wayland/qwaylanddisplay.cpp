@@ -152,9 +152,12 @@ QWaylandDisplay::QWaylandDisplay(void)
     mEglIntegration->initialize();
 #endif
 
-    connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
-
     mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
+}
+
+void QWaylandDisplay::eventDispatcherCreated(QAbstractEventDispatcher *dispatcher)
+{
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
 
     mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
     connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));

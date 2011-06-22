@@ -49,6 +49,7 @@
 
 #include <wayland-client.h>
 
+class QAbstractEventDispatcher;
 class QWaylandInputDevice;
 class QSocketNotifier;
 class QWaylandBuffer;
@@ -90,6 +91,8 @@ public:
     struct wl_shell *wl_shell() const { return mShell; }
 
     QList<QWaylandInputDevice *> inputDevices() const { return mInputDevices; }
+
+    void eventDispatcherCreated(QAbstractEventDispatcher *dispatcher);
 
 public slots:
     void createNewScreen(struct wl_output *output, QRect geometry);

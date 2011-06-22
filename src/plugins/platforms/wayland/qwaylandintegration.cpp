@@ -101,10 +101,10 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
-    return mDisplay->eglIntegration()->createEglWindow(window);
-#else
-    return new QWaylandShmWindow(window);
+    if (window->surfaceType() == QWindow::OpenGLSurface)
+        return mDisplay->eglIntegration()->createEglWindow(window);
 #endif
+    return new QWaylandShmWindow(window);
 }
 
 QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
@@ -125,7 +125,9 @@ QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *
 
 QAbstractEventDispatcher *QWaylandIntegration::createEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
+    mDisplay->eventDispatcherCreated(dispatcher);
+    return dispatcher;
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
