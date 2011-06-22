@@ -58,6 +58,7 @@
 
 QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
+    , mSurface(0)
     , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
     , mBuffer(0)
     , mWaitingForFrameSync(false)
@@ -69,8 +70,6 @@ QWaylandWindow::QWaylandWindow(QWidget *window)
         mDisplay->windowManagerIntegration()->mapClientToProcess(qApp->applicationPid());
         mDisplay->windowManagerIntegration()->authenticateWithToken();
 #endif
-
-    mSurface = mDisplay->createSurface(this);
 }
 
 QWaylandWindow::~QWaylandWindow()
@@ -101,9 +100,7 @@ void QWaylandWindow::setVisible(bool visible)
         newSurfaceCreated();
     }
 
-    if (visible) {
-        wl_surface_map_toplevel(mSurface);
-    } else {
+    if (!visible) {
         wl_surface_destroy(mSurface);
         mSurface = NULL;
     }
@@ -143,6 +140,8 @@ void QWaylandWindow::damage(const QRegion &region)
         wl_buffer_damage(mBuffer->buffer(), rect.x(), rect.y(), rect.width(), rect.height());
         wl_surface_damage(mSurface,
                           rect.x(), rect.y(), rect.width(), rect.height());
+        wl_buffer_damage(mBuffer->buffer(),
+                         rect.x(), rect.y(), rect.width(), rect.height());
     }
 }
 

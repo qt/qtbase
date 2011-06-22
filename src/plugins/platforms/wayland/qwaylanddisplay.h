@@ -132,7 +132,16 @@ private:
     static void outputHandleGeometry(void *data,
                                      struct wl_output *output,
                                      int32_t x, int32_t y,
-                                     int32_t width, int32_t height);
+                                     int32_t width, int32_t height,
+                                     int subpixel,
+                                     const char *make,
+                                     const char *model);
+    static void mode(void *data,
+                     struct wl_output *wl_output,
+                     uint32_t flags,
+                     int width,
+                     int height,
+                     int refresh);
 
     static void handleVisual(void *data,
                                        struct wl_compositor *compositor,
