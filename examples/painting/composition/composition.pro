@@ -12,12 +12,12 @@ contains(QT_CONFIG, opengl) {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/composition
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.jpg *.pro *.html
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/composition
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example
 
 win32-msvc* {
     QMAKE_CXXFLAGS += /Zm500
