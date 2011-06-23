@@ -74,7 +74,6 @@ private:
     QWaylandDisplay *mDisplay;
     bool mUseOpenGL;
     QPlatformNativeInterface *mNativeInterface;
-    mutable QPlatformClipboard *mClipboard;
 };
 
 QT_END_NAMESPACE

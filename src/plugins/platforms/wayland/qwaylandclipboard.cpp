@@ -50,7 +50,7 @@
 #include <QtCore/QtDebug>
 #include <QtGui/private/qdnd_p.h>
 
-static QWaylandClipboard *clipboard;
+static QWaylandClipboard *clipboard = 0;
 
 class QWaylandMimeData : public QInternalMimeData
 {
@@ -162,10 +162,16 @@ void QWaylandSelection::cancelled(void *data, struct wl_selection *selection)
     delete static_cast<QWaylandSelection *>(data);
 }
 
+QWaylandClipboard *QWaylandClipboard::instance(QWaylandDisplay *display)
+{
+    if (!clipboard)
+        clipboard = new QWaylandClipboard(display);
+    return clipboard;
+}
+
 QWaylandClipboard::QWaylandClipboard(QWaylandDisplay *display)
     : mDisplay(display), mMimeDataIn(0), mOffer(0)
 {
-    clipboard = this;
 }
 
 QWaylandClipboard::~QWaylandClipboard()

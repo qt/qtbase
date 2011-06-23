@@ -126,9 +126,12 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
     QWaylandDisplay::shellHandleConfigure,
 };
 
+static QWaylandDisplay *display = 0;
+
 QWaylandDisplay::QWaylandDisplay(void)
     : argb_visual(0), premultiplied_argb_visual(0), rgb_visual(0)
 {
+    display = this;
     qRegisterMetaType<uint32_t>("uint32_t");
 
     mDisplay = wl_display_connect(NULL);
@@ -309,23 +312,8 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
             new QWaylandInputDevice(mDisplay, id);
         mInputDevices.append(inputDevice);
     } else if (interface == "wl_selection_offer") {
-        QPlatformIntegration *plat = QApplicationPrivate::platformIntegration();
-        mSelectionOfferId = id;
-        if (plat)
-            handleSelectionOffer(id);
-        else
-            QMetaObject::invokeMethod(this, "handleSelectionOffer",
-                                      Qt::QueuedConnection, Q_ARG(uint32_t, id));
+        QWaylandClipboard::instance(display)->createSelectionOffer(id);
     }
-}
-
-void QWaylandDisplay::handleSelectionOffer(uint32_t id)
-{
-    if (mSelectionOfferId != id)
-        return;
-    QPlatformIntegration *plat = QApplicationPrivate::platformIntegration();
-    QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
-    clipboard->createSelectionOffer(id);
 }
 
 void QWaylandDisplay::handleVisual(void *data,

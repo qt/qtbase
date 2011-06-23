@@ -65,7 +65,6 @@ QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
     , mDisplay(new QWaylandDisplay())
     , mUseOpenGL(useOpenGL)
     , mNativeInterface(new QWaylandNativeInterface)
-    , mClipboard(0)
 {
 }
 
@@ -137,7 +136,5 @@ bool QWaylandIntegration::hasOpenGL() const
 
 QPlatformClipboard *QWaylandIntegration::clipboard() const
 {
-    if (!mClipboard)
-        mClipboard = new QWaylandClipboard(mDisplay);
-    return mClipboard;
+    return QWaylandClipboard::instance(mDisplay);
 }
