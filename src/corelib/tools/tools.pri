@@ -56,6 +56,7 @@ HEADERS +=  \
         tools/qstack.h \
         tools/qstring.h \
         tools/qstringbuilder.h \
+        tools/qstringiterator_p.h \
         tools/qstringlist.h \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \

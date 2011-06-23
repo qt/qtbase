@@ -44,6 +44,7 @@ SUBDIRS=\
     qstring \
     qstring_no_cast_from_bytearray \
     qstringbuilder \
+    qstringiterator \
     qstringlist \
     qstringmatcher \
     qstringref \
