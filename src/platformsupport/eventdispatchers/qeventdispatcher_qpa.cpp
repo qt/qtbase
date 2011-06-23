@@ -57,24 +57,10 @@ QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
 
-QEventDispatcherQPAPrivate::QEventDispatcherQPAPrivate()
-{
-
-}
-
-QEventDispatcherQPAPrivate::~QEventDispatcherQPAPrivate()
-{
-
-}
 
 QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
-    : EVENTDISPATCHERBASE(*new QEventDispatcherQPAPrivate, parent)
+    : QEventDispatcherUNIX(parent)
 { }
-
-QEventDispatcherQPA::QEventDispatcherQPA(EVENTDISPATCHERBASEPRIVATE &priv, QObject *parent)
-    : EVENTDISPATCHERBASE(priv, parent)
-{ }
-
 
 QEventDispatcherQPA::~QEventDispatcherQPA()
 { }
@@ -85,8 +71,8 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(this, flags);
 
-    if (EVENTDISPATCHERBASE::processEvents(flags)) {
-        EVENTDISPATCHERBASE::processEvents(flags);
+    if (QEventDispatcherUNIX::processEvents(flags)) {
+        QEventDispatcherUNIX::processEvents(flags);
         return true;
     }
 

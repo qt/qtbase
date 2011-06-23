@@ -54,42 +54,25 @@
 //
 
 #include <QtCore/qglobal.h>
-#if defined(Q_OS_UNIX)
-#include "private/qeventdispatcher_unix_p.h"
-#define EVENTDISPATCHERBASE QEventDispatcherUNIX
-#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherUNIXPrivate
-#elif defined(Q_OS_WIN)
-#include "private/qeventdispatcher_win_p.h"
-#define EVENTDISPATCHERBASE QEventDispatcherWin32
-#define EVENTDISPATCHERBASEPRIVATE QEventDispatcherWin32Private
-#endif
+#include <QtCore/private/qeventdispatcher_unix_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEventDispatcherQPAPrivate;
 
-class Q_GUI_EXPORT QEventDispatcherQPA : public EVENTDISPATCHERBASE
+class Q_GUI_EXPORT QEventDispatcherQPA : public QEventDispatcherUNIX
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventDispatcherQPA)
 
 public:
     explicit QEventDispatcherQPA(QObject *parent = 0);
-    QEventDispatcherQPA(EVENTDISPATCHERBASEPRIVATE &priv, QObject *parent);
     ~QEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
     void flush();
-};
-
-class Q_GUI_EXPORT QEventDispatcherQPAPrivate : public EVENTDISPATCHERBASEPRIVATE
-{
-    Q_DECLARE_PUBLIC(QEventDispatcherQPA)
-public:
-    QEventDispatcherQPAPrivate();
-    ~QEventDispatcherQPAPrivate();
 };
 
 QT_END_NAMESPACE
