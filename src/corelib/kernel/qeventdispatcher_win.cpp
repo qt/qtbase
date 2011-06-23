@@ -643,7 +643,7 @@ QEventDispatcherWin32::~QEventDispatcherWin32()
 {
 }
 
-bool QEventDispatcherWin32::dispatchGuiEvents()
+bool QEventDispatcherWin32::dispatchGuiEvents(QEventLoop::ProcessEventsFlags)
 {
     return false;
 }
@@ -750,7 +750,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 if (!filterEvent(&msg)) {
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
-                    dispatchGuiEvents();
+                    dispatchGuiEvents(flags);
                 }
             } else if (waitRet >= WAIT_OBJECT_0 && waitRet < WAIT_OBJECT_0 + nCount) {
                 d->activateEventNotifier(d->winEventNotifierList.at(waitRet - WAIT_OBJECT_0));
