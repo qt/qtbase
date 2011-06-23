@@ -44,10 +44,12 @@
 #include <QtCore/QTime>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/QEvent>
+#include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/QWindow>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
 #include <QtGui/QTouchEvent>
+#include <QtCore/QEventLoop>
 
 QT_BEGIN_HEADER
 
@@ -105,6 +107,9 @@ public:
     static void handleScreenGeometryChange(int screenIndex);
     static void handleScreenAvailableGeometryChange(int screenIndex);
     static void handleScreenCountChange(int count);
+
+    // For event dispatcher implementations
+    static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
 };
 
 QT_END_NAMESPACE

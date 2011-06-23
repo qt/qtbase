@@ -74,25 +74,9 @@ static gboolean userEventSourceCheck(GSource *source)
 static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GUserEventSource * source = reinterpret_cast<GUserEventSource *>(s);
-
-    QWindowSystemInterfacePrivate::WindowSystemEvent * event;
-    while (QWindowSystemInterfacePrivate::windowSystemEventsQueued()) {
-        event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
-        if (!event)
-            break;
-
-        // send through event filter
-        if (source->q->filterEvent(event)) {
-            delete event;
-            continue;
-        }
-        QGuiApplicationPrivate::processWindowSystemEvent(event);
-        delete event;
-    }
-
+    QWindowSystemInterface::sendWindowSystemEvents(source->q, flags);
     return true;
 }
-
 
 static GSourceFuncs userEventSourceFuncs = {
     userEventSourcePrepare,

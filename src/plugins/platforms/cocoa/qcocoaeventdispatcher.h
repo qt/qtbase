@@ -90,7 +90,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qstack.h>
 #include <QtGui/qwindowdefs.h>
-#include <QtPlatformSupport/private/qeventdispatcher_qpa_p.h>
+#include <QtCore/private/qeventdispatcher_unix_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -115,7 +115,7 @@ public:
 };
 
 class QCocoaEventDispatcherPrivate;
-class QCocoaEventDispatcher : public QEventDispatcherQPA
+class QCocoaEventDispatcher : public QEventDispatcherUNIX
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QCocoaEventDispatcher)
@@ -167,7 +167,7 @@ struct MacSocketInfo {
 };
 typedef QHash<int, MacSocketInfo *> MacSocketHash;
 
-class QCocoaEventDispatcherPrivate : public QEventDispatcherQPAPrivate
+class QCocoaEventDispatcherPrivate : public QEventDispatcherUNIXPrivate
 {
     Q_DECLARE_PUBLIC(QCocoaEventDispatcher)
 

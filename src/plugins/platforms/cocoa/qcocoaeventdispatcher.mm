@@ -910,7 +910,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
 }
 
 QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
-    : QEventDispatcherQPA(*new QCocoaEventDispatcherPrivate, parent)
+    : QEventDispatcherUNIX(*new QCocoaEventDispatcherPrivate, parent)
 {
     Q_D(QCocoaEventDispatcher);
     CFRunLoopSourceContext context;
@@ -992,9 +992,7 @@ void processPostedEvents(QCocoaEventDispatcherPrivate *const d, const bool block
 
     if (!d->threadData->canWait || (d->serialNumber != d->lastSerial)) {
         d->lastSerial = d->serialNumber;
-        // Call down to the base class event handler, which will send
-        // the window system events.
-        d->q_func()->QEventDispatcherQPA::processEvents(QEventLoop::AllEvents);
+        QWindowSystemInterface::sendWindowSystemEvents(d->q_func(), QEventLoop::AllEvents);
     }
 }
 

@@ -83,43 +83,14 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherQPA);
 
-    int nevents = 0;
+    bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(this, flags);
 
-    // handle gui and posted events
-    d->interrupt = false;
-    QCoreApplication::sendPostedEvents();
-
-    while (!d->interrupt) {        // also flushes output buffer ###can be optimized
-        QWindowSystemInterfacePrivate::WindowSystemEvent *event;
-        if (!(flags & QEventLoop::ExcludeUserInputEvents)
-            && QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0) {
-            // process a pending user input event
-            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
-            if (!event)
-                break;
-        } else {
-            break;
-        }
-
-        if (filterEvent(event)) {
-            delete event;
-            continue;
-        }
-        nevents++;
-
-        QGuiApplicationPrivate::processWindowSystemEvent(event);
-        delete event;
+    if (EVENTDISPATCHERBASE::processEvents(flags)) {
+        EVENTDISPATCHERBASE::processEvents(flags);
+        return true;
     }
 
-#ifdef Q_OS_MAC // (inverted inheritance on mac: QEventDispatcherMac calls QEventDispatcherQPA)
-    if (!d->interrupt) {
-        if (EVENTDISPATCHERBASE::processEvents(flags)) {
-            EVENTDISPATCHERBASE::processEvents(flags);
-            return true;
-        }
-    }
-#endif
-    return (nevents > 0);
+    return didSendEvents;
 }
 
 bool QEventDispatcherQPA::hasPendingEvents()

@@ -270,4 +270,37 @@ void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &regi
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags)
+{
+    int nevents = 0;
+
+    // handle gui and posted events
+    QCoreApplication::sendPostedEvents();
+
+    while (true) {
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event;
+        if (!(flags & QEventLoop::ExcludeUserInputEvents)
+            && QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0) {
+            // process a pending user input event
+            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
+            if (!event)
+                break;
+        } else {
+            break;
+        }
+
+        if (eventDispatcher->filterEvent(event)) {
+            delete event;
+            continue;
+        }
+
+        nevents++;
+
+        QGuiApplicationPrivate::processWindowSystemEvent(event);
+        delete event;
+    }
+
+    return (nevents > 0);
+}
+
 QT_END_NAMESPACE
