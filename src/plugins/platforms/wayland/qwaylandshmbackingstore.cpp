@@ -119,7 +119,12 @@ void QWaylandShmBackingStore::flush(QWindow *window, const QRegion &region, cons
     Q_UNUSED(offset);
     QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window->handle());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
-    waylandWindow->damage(region);
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        const QRect rect = rects.at(i);
+        wl_buffer_damage(mBuffer->buffer(),rect.x(),rect.y(),rect.width(),rect.height());
+        waylandWindow->damage(rect);
+    }
 }
 
 void QWaylandShmBackingStore::resize(const QSize &size, const QRegion &)
