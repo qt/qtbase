@@ -120,7 +120,12 @@ void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, con
     Q_UNUSED(offset);
     QWaylandShmWindow *waylandWindow = static_cast<QWaylandShmWindow *>(window()->platformWindow());
     Q_ASSERT(waylandWindow->windowType() == QWaylandWindow::Shm);
-    waylandWindow->damage(region);
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i < rects.size(); i++) {
+        const QRect rect = rects.at(i);
+        wl_buffer_damage(mBuffer->buffer(),rect.x(),rect.y(),rect.width(),rect.height());
+        waylandWindow->damage(rect);
+    }
 }
 
 void QWaylandShmWindowSurface::resize(const QSize &size)

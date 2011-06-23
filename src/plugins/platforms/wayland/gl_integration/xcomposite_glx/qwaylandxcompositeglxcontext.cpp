@@ -81,7 +81,7 @@ void QWaylandXCompositeGLXContext::swapBuffers()
     QSize size = mWindow->geometry().size();
 
     glXSwapBuffers(mGlxIntegration->xDisplay(),mXWindow);
-    mWindow->damage(QRegion(QRect(QPoint(0,0),size)));
+    mWindow->damage(QRect(QPoint(0,0),size));
     mWindow->waitForFrameSync();
 }
 

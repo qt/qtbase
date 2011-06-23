@@ -71,7 +71,7 @@ public:
                    int32_t x, int32_t y, int32_t width, int32_t height);
 
     void attach(QWaylandBuffer *buffer);
-    void damage(const QRegion &region);
+    void damage(const QRect &rect);
 
     void waitForFrameSync();
 

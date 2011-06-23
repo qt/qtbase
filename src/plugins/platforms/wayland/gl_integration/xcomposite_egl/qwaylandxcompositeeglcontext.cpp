@@ -91,7 +91,7 @@ void QWaylandXCompositeEGLContext::swapBuffers()
     QSize size = mWindow->geometry().size();
 
     eglSwapBuffers(mEglIntegration->eglDisplay(),mEglWindowSurface);
-    mWindow->damage(QRegion(QRect(QPoint(0,0),size)));
+    mWindow->damage(QRect(QPoint(0,0),size));
     mWindow->waitForFrameSync();
 }
 
