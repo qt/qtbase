@@ -42,4 +42,3 @@ INSTALLS += target
 
 include ($$PWD/gl_integration/gl_integration.pri)
 include ($$PWD/windowmanager_integration/windowmanager_integration.pri)
-load(qpa/eventdispatchers/eventdispatchers)
