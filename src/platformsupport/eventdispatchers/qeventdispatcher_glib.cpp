@@ -74,7 +74,7 @@ static gboolean userEventSourceCheck(GSource *source)
 static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GUserEventSource * source = reinterpret_cast<GUserEventSource *>(s);
-    QWindowSystemInterface::sendWindowSystemEvents(source->q, flags);
+    QWindowSystemInterface::sendWindowSystemEvents(source->q, QEventLoop::AllEvents);
     return true;
 }
 
