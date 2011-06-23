@@ -30,11 +30,11 @@ RESOURCES += boxes.qrc
 QT += opengl
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/boxes
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/boxes
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.jpg *.png *.fsh *.vsh *.par
 sources.files -= 3rdparty/fbm.h 3rdparty/fbm.c
 sources.files += 3rdparty
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/boxes
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/boxes
 INSTALLS += target sources
 
 wince*: {
