@@ -816,7 +816,16 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     // call overhead.
     QObjectPrivate *d = receiver->d_func();
     QThreadData *threadData = d->threadData;
-    ++threadData->loopLevel;
+
+    // Exception-safety without try/catch
+    struct Incrementer {
+        int &variable;
+        inline Incrementer(int &variable) : variable(variable)
+        { ++variable; }
+        inline ~Incrementer()
+        { --variable; }
+    };
+    Incrementer inc(threadData->loopLevel);
 
 #ifdef QT_JAMBI_BUILD
     int deleteWatch = 0;
@@ -827,12 +836,7 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 #endif
 
     bool returnValue;
-    QT_TRY {
-        returnValue = notify(receiver, event);
-    } QT_CATCH (...) {
-        --threadData->loopLevel;
-        QT_RETHROW;
-    }
+    returnValue = notify(receiver, event);
 
 #ifdef QT_JAMBI_BUILD
     // Restore the previous state if the object was not deleted..
@@ -841,7 +845,6 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     }
     QObjectPrivate::resetDeleteWatch(d, oldDeleteWatch, deleteWatch);
 #endif
-    --threadData->loopLevel;
     return returnValue;
 }
 
@@ -1384,6 +1387,40 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
     int &i = (!event_type && !receiver) ? data->postEventList.startOffset : startOffset;
     data->postEventList.insertionOffset = data->postEventList.size();
 
+    // Exception-safe cleaning up without the need for a try/catch block
+    struct CleanUp {
+        QObject *receiver;
+        int event_type;
+        QThreadData *data;
+        bool exceptionCaught;
+
+        inline CleanUp(QObject *receiver, int event_type, QThreadData *data) :
+            receiver(receiver), event_type(event_type), data(data), exceptionCaught(true)
+        {}
+        inline ~CleanUp()
+        {
+            if (exceptionCaught) {
+                // since we were interrupted, we need another pass to make sure we clean everything up
+                data->canWait = false;
+            }
+
+            --data->postEventList.recursion;
+            if (!data->postEventList.recursion && !data->canWait && data->eventDispatcher)
+                data->eventDispatcher->wakeUp();
+
+            // clear the global list, i.e. remove everything that was
+            // delivered.
+            if (!event_type && !receiver && data->postEventList.startOffset >= 0) {
+                const QPostEventList::iterator it = data->postEventList.begin();
+                data->postEventList.erase(it, it + data->postEventList.startOffset);
+                data->postEventList.insertionOffset -= data->postEventList.startOffset;
+                Q_ASSERT(data->postEventList.insertionOffset >= 0);
+                data->postEventList.startOffset = 0;
+            }
+        }
+    };
+    CleanUp cleanup(receiver, event_type, data);
+
     while (i < data->postEventList.size()) {
         // avoid live-lock
         if (i >= data->postEventList.insertionOffset)
@@ -1422,7 +1459,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         // first, we diddle the event so that we can deliver
         // it, and that no one will try to touch it later.
         pe.event->posted = false;
-        QEvent * e = pe.event;
+        QScopedPointer<QEvent> e(pe.event);
         QObject * r = pe.receiver;
 
         --r->d_func()->postedEvents;
@@ -1432,49 +1469,23 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         // for the next event.
         const_cast<QPostEvent &>(pe).event = 0;
 
-        locker.unlock();
+        struct MutexUnlocker
+        {
+            QMutexLocker &m;
+            MutexUnlocker(QMutexLocker &m) : m(m) { m.unlock(); }
+            ~MutexUnlocker() { m.relock(); }
+        };
+        MutexUnlocker unlocker(locker);
+
         // after all that work, it's time to deliver the event.
-#ifdef QT_NO_EXCEPTIONS
-        QCoreApplication::sendEvent(r, e);
-#else
-        try {
-            QCoreApplication::sendEvent(r, e);
-        } catch (...) {
-            delete e;
-            locker.relock();
-
-            // since we were interrupted, we need another pass to make sure we clean everything up
-            data->canWait = false;
-
-            // uglehack: copied from below
-            --data->postEventList.recursion;
-            if (!data->postEventList.recursion && !data->canWait && data->eventDispatcher)
-                data->eventDispatcher->wakeUp();
-            throw;              // rethrow
-        }
-#endif
-
-        delete e;
-        locker.relock();
+        QCoreApplication::sendEvent(r, e.data());
 
         // careful when adding anything below this point - the
         // sendEvent() call might invalidate any invariants this
         // function depends on.
     }
 
-    --data->postEventList.recursion;
-    if (!data->postEventList.recursion && !data->canWait && data->eventDispatcher)
-        data->eventDispatcher->wakeUp();
-
-    // clear the global list, i.e. remove everything that was
-    // delivered.
-    if (!event_type && !receiver && data->postEventList.startOffset >= 0) {
-        const QPostEventList::iterator it = data->postEventList.begin();
-        data->postEventList.erase(it, it + data->postEventList.startOffset);
-        data->postEventList.insertionOffset -= data->postEventList.startOffset;
-        Q_ASSERT(data->postEventList.insertionOffset >= 0);
-        data->postEventList.startOffset = 0;
-    }
+    cleanup.exceptionCaught = false;
 }
 
 /*!
