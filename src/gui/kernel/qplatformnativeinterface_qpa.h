@@ -50,11 +50,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QGuiGLContext;
 class QWindow;
 
 class Q_GUI_EXPORT QPlatformNativeInterface
 {
 public:
+    virtual void *nativeResourceForContext(const QByteArray &resource, QGuiGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 };
 

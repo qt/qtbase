@@ -50,4 +50,11 @@ void *QPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resour
     return 0;
 }
 
+void *QPlatformNativeInterface::nativeResourceForContext(const QByteArray &resource, QGuiGLContext *context)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(context);
+    return 0;
+}
+
 QT_END_NAMESPACE

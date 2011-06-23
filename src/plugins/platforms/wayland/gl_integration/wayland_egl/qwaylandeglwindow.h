@@ -55,16 +55,24 @@ public:
     ~QWaylandEglWindow();
     WindowType windowType() const;
     void setGeometry(const QRect &rect);
-    void setParent(const QPlatformWindow *parent);
-    QPlatformGLContext *glContext() const;
+
+    EGLSurface eglSurface() const;
+
+    QSurfaceFormat format() const;
+
 protected:
     void newSurfaceCreated();
-private:
-    QWaylandEglIntegration *mEglIntegration;
-    QWaylandGLContext *mGLContext;
-    struct wl_egl_window *mWaylandEglWindow;
 
-    const QWaylandWindow *mParentWindow;
+private:
+    QWaylandEglIntegration *m_eglIntegration;
+    struct wl_egl_window *m_waylandEglWindow;
+
+    const QWaylandWindow *m_parentWindow;
+
+    mutable EGLSurface m_eglSurface;
+    mutable EGLConfig m_eglConfig;
+
+    QSurfaceFormat m_format;
 };
 
 #endif // QWAYLANDEGLWINDOW_H

@@ -386,6 +386,12 @@ QGLContext::QGLContext(QGuiGLContext *context)
     d->setupSharing();
 }
 
+QGuiGLContext *QGLContext::contextHandle() const
+{
+    Q_D(const QGLContext);
+    return d->guiGlContext;
+}
+
 /*!
     Returns a OpenGL context for the window context specified by \a windowContext
 */

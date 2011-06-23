@@ -114,7 +114,6 @@ public:
 
     virtual bool isComposing() const { return false; }
 
-private:
     enum StandardFormat {
         PreeditFormat,
         SelectionFormat

@@ -45,6 +45,8 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/QScopedPointer>
 
+#include <QSurfaceFormat>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -54,7 +56,6 @@ QT_MODULE(Gui)
 class QGuiGLContextPrivate;
 class QPlatformGLContext;
 class QSurface;
-class QSurfaceFormat;
 
 class Q_GUI_EXPORT QGuiGLContext
 {

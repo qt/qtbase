@@ -73,6 +73,21 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
+void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QGuiGLContext *context)
+{
+    QByteArray lowerCaseResource = resourceString.toLower();
+    ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
+    void *result = 0;
+    switch(resource) {
+    case EglContext:
+        result = eglContextForContext(context);
+        break;
+    default:
+        result = 0;
+    }
+    return result;
+}
+
 void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
@@ -93,9 +108,6 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
         break;
     case GraphicsDevice:
         result = graphicsDeviceForWindow(window);
-        break;
-    case EglContext:
-        result = eglContextForWindow(window);
         break;
     default:
         result = 0;
@@ -161,8 +173,13 @@ void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
 
 }
 
-void * QXcbNativeInterface::eglContextForWindow(QWindow *window)
+void * QXcbNativeInterface::eglContextForContext(QGuiGLContext *context)
 {
+    Q_ASSERT(context);
+#if defined(XCB_USE_EGL)
+    QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
+    return eglPlatformContext->eglContext();
+#endif
 #if 0
     Q_ASSERT(window);
     QPlatformGLContext *platformContext = window->glContext()->handle();

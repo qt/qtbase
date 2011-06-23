@@ -53,27 +53,27 @@ class QWaylandGLWindowSurface;
 
 class QWaylandGLContext : public QPlatformGLContext {
 public:
-    QWaylandGLContext(EGLDisplay eglDisplay, const QWindowFormat &format);
+    QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformGLContext *share);
     ~QWaylandGLContext();
-    void makeCurrent();
+
+    void swapBuffers(QPlatformSurface *surface);
+
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString&);
 
-    QWindowFormat windowFormat() const { return mFormat; }
+    void (*getProcAddress(const QByteArray &procName)) ();
 
-    void setEglSurface(EGLSurface surface);
+    QSurfaceFormat format() const { return m_format; }
+
     EGLConfig eglConfig() const;
+    EGLContext eglContext() const { return m_context; }
+
 private:
-    EGLDisplay mEglDisplay;
+    EGLDisplay m_eglDisplay;
 
-    EGLContext mContext;
-    EGLSurface mSurface;
-    EGLConfig mConfig;
-    QWindowFormat mFormat;
-
-    QWaylandGLContext();
-
+    EGLContext m_context;
+    EGLConfig m_config;
+    QSurfaceFormat m_format;
 };
 
 

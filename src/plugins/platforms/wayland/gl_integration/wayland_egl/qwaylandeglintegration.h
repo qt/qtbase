@@ -58,13 +58,14 @@ public:
     void initialize();
 
     QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
 
     EGLDisplay eglDisplay() const;
-    struct wl_egl_display *nativeDisplay() const;
-private:
-    struct wl_display *mWaylandDisplay;
 
-    EGLDisplay mEglDisplay;
+private:
+    struct wl_display *m_waylandDisplay;
+
+    EGLDisplay m_eglDisplay;
 };
 
 #endif // QWAYLANDEGLINTEGRATION_H

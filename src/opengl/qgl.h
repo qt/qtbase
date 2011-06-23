@@ -394,7 +394,9 @@ public:
 
 #ifdef Q_WS_QPA
     static QGLContext *fromGuiGLContext(QGuiGLContext *platformContext);
+    QGuiGLContext *contextHandle() const;
 #endif
+
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
 
