@@ -44,6 +44,14 @@ contains(DEFINES,QT_EVAL):include($$QT_SOURCE_TREE/src/corelib/eval.pri)
 
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
 
+# Code coverage with TestCocoon
+# The following is required as extra compilers use $$QMAKE_CXX instead of $(CXX).
+# Without this, testcocoon.prf is read only after $$QMAKE_CXX is used by the
+# extra compilers.
+testcocoon {
+    load(testcocoon)
+}
+
 DEFINES += Q_INTERNAL_QAPP_SRC
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src

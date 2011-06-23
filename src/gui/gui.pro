@@ -13,6 +13,14 @@ unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 load(qt_module_config)
 
+# Code coverage with TestCocoon
+# The following is required as extra compilers use $$QMAKE_CXX instead of $(CXX).
+# Without this, testcocoon.prf is read only after $$QMAKE_CXX is used by the
+# extra compilers.
+testcocoon {
+    load(testcocoon)
+}
+
 HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 
 include(accessible/accessible.pri)

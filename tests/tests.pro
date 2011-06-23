@@ -3,5 +3,6 @@ TEMPLATE = subdirs
 SUBDIRS = auto
 
 # benchmarks in debug mode is rarely sensible
-contains(QT_CONFIG,release):SUBDIRS += benchmarks
+# benchmarks are not sensible for code coverage (here with tool testcocoon)
+!testcocoon:contains(QT_CONFIG,release):SUBDIRS += benchmarks
 }
