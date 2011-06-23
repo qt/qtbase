@@ -63,7 +63,7 @@ static gboolean userEventSourcePrepare(GSource *s, gint *timeout)
     Q_UNUSED(s)
     Q_UNUSED(timeout)
 
-    return QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0;
+    return QWindowSystemInterface::windowSystemEventsQueued() > 0;
 }
 
 static gboolean userEventSourceCheck(GSource *source)

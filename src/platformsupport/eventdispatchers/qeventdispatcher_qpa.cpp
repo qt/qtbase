@@ -96,7 +96,7 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 bool QEventDispatcherQPA::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QWindowSystemInterfacePrivate::windowSystemEventsQueued();
+    return qGlobalPostedEventsCount() || QWindowSystemInterface::windowSystemEventsQueued();
 }
 
 void QEventDispatcherQPA::flush()

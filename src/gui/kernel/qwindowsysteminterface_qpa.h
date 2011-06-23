@@ -110,6 +110,7 @@ public:
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
+    static int windowSystemEventsQueued();
 };
 
 QT_END_NAMESPACE

@@ -47,7 +47,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
+class QWindowSystemInterfacePrivate {
 public:
     enum EventType {
         Close,

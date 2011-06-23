@@ -303,4 +303,9 @@ bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *ev
     return (nevents > 0);
 }
 
+int QWindowSystemInterface::windowSystemEventsQueued()
+{
+    return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
+}
+
 QT_END_NAMESPACE
