@@ -113,6 +113,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
+                    && styleName == other.styleName
                     && hintingPreference == other.hintingPreference
 #ifdef Q_WS_X11
                     && addStyle == other.addStyle
@@ -128,6 +129,8 @@ struct QFontDef
         if (styleHint != other.styleHint) return styleHint < other.styleHint;
         if (styleStrategy != other.styleStrategy) return styleStrategy < other.styleStrategy;
         if (family != other.family) return family < other.family;
+        if (!styleName.isEmpty() && !other.styleName.isEmpty() && styleName != other.styleName)
+            return styleName < other.styleName;
         if (hintingPreference != other.hintingPreference) return hintingPreference < other.hintingPreference;
 
 #ifdef Q_WS_X11
