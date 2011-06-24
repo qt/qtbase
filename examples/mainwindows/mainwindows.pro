@@ -1,9 +1,12 @@
 TEMPLATE      = subdirs
 SUBDIRS       = application \
+                mainwindow \
                 mdi \
                 menus \
                 recentfiles \
                 sdi
+
+mac* && !qpa: SUBDIRS += macmainwindow
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows

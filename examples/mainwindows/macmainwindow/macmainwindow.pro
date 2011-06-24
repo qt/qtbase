@@ -16,8 +16,8 @@ LIBS += -framework Cocoa -framework Carbon
 
 # install
 mac {
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/macmainwindow
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/macmainwindow
 sources.files = $$SOURCES  *.pro *.html
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/macmainwindow
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/macmainwindow
 INSTALLS += target sources
 }

@@ -9,9 +9,9 @@ build_all:!build_pass {
 RESOURCES += mainwindow.qrc
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/mainwindow
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mainwindow
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.png *.jpg *.pro
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/mainwindow
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mainwindow
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example
