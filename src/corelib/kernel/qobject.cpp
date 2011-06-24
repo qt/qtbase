@@ -1482,7 +1482,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
             continue;
         if (pe.receiver == q) {
             // move this post event to the targetList
-            targetData->postEventList.append(pe);
+            targetData->postEventList.addEvent(pe);
             const_cast<QPostEvent &>(pe).event = 0;
             ++eventsMoved;
         }

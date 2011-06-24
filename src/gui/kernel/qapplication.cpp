@@ -1288,8 +1288,8 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
           || event->type() == QEvent::LanguageChange
           || event->type() == QEvent::UpdateSoftKeys
           || event->type() == QEvent::InputMethod)) {
-        for (int i = 0; i < postedEvents->size(); ++i) {
-            const QPostEvent &cur = postedEvents->at(i);
+        for (QPostEventList::const_iterator it = postedEvents->constBegin(); it != postedEvents->constEnd(); ++it) {
+            const QPostEvent &cur = *it;
             if (cur.receiver != receiver || cur.event == 0 || cur.event->type() != event->type())
                 continue;
             if (cur.event->type() == QEvent::LayoutRequest

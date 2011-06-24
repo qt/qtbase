@@ -1272,20 +1272,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
-    if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
-        // optimization: we can simply append if the last event in
-        // the queue has higher or equal priority
-        data->postEventList.append(QPostEvent(receiver, event, priority));
-    } else {
-        // insert event in descending priority order, using upper
-        // bound for a given priority (to ensure proper ordering
-        // of events with the same priority)
-        QPostEventList::iterator begin = data->postEventList.begin()
-                                         + data->postEventList.insertionOffset,
-                                   end = data->postEventList.end();
-        QPostEventList::iterator at = qUpperBound(begin, end, priority);
-        data->postEventList.insert(at, QPostEvent(receiver, event, priority));
-    }
+    data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     eventDeleter.take();
     event->posted = true;
     ++receiver->d_func()->postedEvents;
@@ -1445,7 +1432,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
                     // don't lose the event
-                    data->postEventList.append(pe);
+                    data->postEventList.addEvent(pe);
                     const_cast<QPostEvent &>(pe).event = 0;
                 }
                 continue;

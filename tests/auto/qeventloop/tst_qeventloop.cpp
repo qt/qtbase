@@ -59,6 +59,8 @@
 #include <unistd.h>
 #endif
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -208,6 +210,7 @@ private slots:
     void quit();
     void processEventsExcludeSocket();
     void processEventsExcludeTimers();
+    void deliverInDefinedOrder_QTBUG19637();
 
     // keep this test last:
     void nestedLoops();
@@ -836,6 +839,78 @@ void tst_QEventLoop::symbianNestedActiveSchedulerLoop()
     QVERIFY(thread.succeeded);
 #endif
 }
+
+Q_DECLARE_METATYPE(QThread*)
+
+namespace DeliverInDefinedOrder_QTBUG19637 {
+    enum { NbThread = 3,  NbObject = 500, NbEventQueue = 5, NbEvent = 50 };
+
+    struct CustomEvent : public QEvent {
+        CustomEvent(int q, int v) : QEvent(Type(User + q)), value(v) {}
+        int value;
+    };
+
+    struct Object : public QObject {
+        Q_OBJECT
+    public:
+        Object() : count(0) {
+            for (int i = 0; i < NbEventQueue;  i++)
+                lastReceived[i] = -1;
+        }
+        int lastReceived[NbEventQueue];
+        int count;
+        virtual void customEvent(QEvent* e) {
+            QVERIFY(e->type() >= QEvent::User);
+            QVERIFY(e->type() < QEvent::User + 5);
+            uint idx = e->type() - QEvent::User;
+            int value = static_cast<CustomEvent *>(e)->value;
+            QVERIFY(lastReceived[idx] < value);
+            lastReceived[idx] = value;
+            count++;
+        }
+
+    public slots:
+        void moveToThread(QThread *t) {
+            QObject::moveToThread(t);
+        }
+    };
+
+}
+
+void tst_QEventLoop::deliverInDefinedOrder_QTBUG19637()
+{
+    using namespace DeliverInDefinedOrder_QTBUG19637;
+    qMetaTypeId<QThread*>();
+    QThread threads[NbThread];
+    Object objects[NbObject];
+    for (int t = 0; t < NbThread; t++) {
+        threads[t].start();
+    }
+
+    int event = 0;
+
+    for (int o = 0; o < NbObject; o++) {
+        objects[o].moveToThread(&threads[o % NbThread]);
+        for (int e = 0; e < NbEvent; e++) {
+            int q = e % NbEventQueue;
+            QCoreApplication::postEvent(&objects[o], new CustomEvent(q, ++event) , q);
+            if (e % 7)
+                QMetaObject::invokeMethod(&objects[o], "moveToThread", Qt::QueuedConnection, Q_ARG(QThread*, &threads[(e+o)%NbThread]));
+        }
+    }
+
+    QTest::qWait(30);
+    for (int o = 0; o < NbObject; o++) {
+        QTRY_COMPARE(objects[o].count, int(NbEvent));
+    }
+
+    for (int t = 0; t < NbThread; t++) {
+        threads[t].quit();
+        threads[t].wait();
+    }
+
+}
+
 
 QTEST_MAIN(tst_QEventLoop)
 #include "tst_qeventloop.moc"
