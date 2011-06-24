@@ -195,8 +195,8 @@ void tst_QSslCertificate::emptyConstructor()
     QCOMPARE(certificate.version() , QByteArray());
     QCOMPARE(certificate.serialNumber(), QByteArray());
     QCOMPARE(certificate.digest(), QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5));
-    QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization), QString());
-    QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization), QString());
+    QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization)[0], QString());
+    QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization)[0], QString());
     QCOMPARE(certificate.alternateSubjectNames(),(QMultiMap<QSsl::AlternateNameEntryType, QString>()));
 #ifndef QT_NO_TEXTSTREAM
     QCOMPARE(certificate.effectiveDate(), QDateTime());
@@ -423,11 +423,11 @@ void tst_QSslCertificate::utf8SubjectNames()
     static const char *ou = "\xe3\x88\xa7" "A" "\xe3\x89\x81\xef\xbd\xab" "BC";
 
     // the following two tests should help find "\x"-literal encoding bugs in the test itself
-    QCOMPARE(cert.subjectInfo("O").length(), QString::fromUtf8(o).length());
-    QCOMPARE (cert.subjectInfo("O").toUtf8().toHex(), QByteArray(o).toHex());
+    QCOMPARE(cert.subjectInfo("O")[0].length(), QString::fromUtf8(o).length());
+    QCOMPARE (cert.subjectInfo("O")[0].toUtf8().toHex(), QByteArray(o).toHex());
 
-    QCOMPARE(cert.subjectInfo("O"), QString::fromUtf8(o));
-    QCOMPARE(cert.subjectInfo("OU"), QString::fromUtf8(ou));
+    QCOMPARE(cert.subjectInfo("O")[0], QString::fromUtf8(o));
+    QCOMPARE(cert.subjectInfo("OU")[0], QString::fromUtf8(ou));
 }
 
 void tst_QSslCertificate::publicKey_data()
@@ -680,33 +680,33 @@ void tst_QSslCertificate::certInfo()
                                                       QRegExp::FixedString).first();
     QVERIFY(!cert.isNull());
 
-    QCOMPARE(cert.issuerInfo(QSslCertificate::Organization), QString("CryptSoft Pty Ltd"));
-    QCOMPARE(cert.issuerInfo(QSslCertificate::CommonName), QString("Test CA (1024 bit)"));
-    QCOMPARE(cert.issuerInfo(QSslCertificate::LocalityName), QString());
-    QCOMPARE(cert.issuerInfo(QSslCertificate::OrganizationalUnitName), QString());
-    QCOMPARE(cert.issuerInfo(QSslCertificate::CountryName), QString("AU"));
-    QCOMPARE(cert.issuerInfo(QSslCertificate::StateOrProvinceName), QString("Queensland"));
+    QCOMPARE(cert.issuerInfo(QSslCertificate::Organization)[0], QString("CryptSoft Pty Ltd"));
+    QCOMPARE(cert.issuerInfo(QSslCertificate::CommonName)[0], QString("Test CA (1024 bit)"));
+    QCOMPARE(cert.issuerInfo(QSslCertificate::LocalityName)[0], QString());
+    QCOMPARE(cert.issuerInfo(QSslCertificate::OrganizationalUnitName)[0], QString());
+    QCOMPARE(cert.issuerInfo(QSslCertificate::CountryName)[0], QString("AU"));
+    QCOMPARE(cert.issuerInfo(QSslCertificate::StateOrProvinceName)[0], QString("Queensland"));
 
-    QCOMPARE(cert.issuerInfo("O"), QString("CryptSoft Pty Ltd"));
-    QCOMPARE(cert.issuerInfo("CN"), QString("Test CA (1024 bit)"));
-    QCOMPARE(cert.issuerInfo("L"), QString());
-    QCOMPARE(cert.issuerInfo("OU"), QString());
-    QCOMPARE(cert.issuerInfo("C"), QString("AU"));
-    QCOMPARE(cert.issuerInfo("ST"), QString("Queensland"));
+    QCOMPARE(cert.issuerInfo("O")[0], QString("CryptSoft Pty Ltd"));
+    QCOMPARE(cert.issuerInfo("CN")[0], QString("Test CA (1024 bit)"));
+    QCOMPARE(cert.issuerInfo("L")[0], QString());
+    QCOMPARE(cert.issuerInfo("OU")[0], QString());
+    QCOMPARE(cert.issuerInfo("C")[0], QString("AU"));
+    QCOMPARE(cert.issuerInfo("ST")[0], QString("Queensland"));
 
-    QCOMPARE(cert.subjectInfo(QSslCertificate::Organization), QString());
-    QCOMPARE(cert.subjectInfo(QSslCertificate::CommonName), QString("name/with/slashes"));
-    QCOMPARE(cert.subjectInfo(QSslCertificate::LocalityName), QString());
-    QCOMPARE(cert.subjectInfo(QSslCertificate::OrganizationalUnitName), QString());
-    QCOMPARE(cert.subjectInfo(QSslCertificate::CountryName), QString("NO"));
-    QCOMPARE(cert.subjectInfo(QSslCertificate::StateOrProvinceName), QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::Organization)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::CommonName)[0], QString("name/with/slashes"));
+    QCOMPARE(cert.subjectInfo(QSslCertificate::LocalityName)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::OrganizationalUnitName)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::CountryName)[0], QString("NO"));
+    QCOMPARE(cert.subjectInfo(QSslCertificate::StateOrProvinceName)[0], QString());
 
-    QCOMPARE(cert.subjectInfo("O"), QString());
-    QCOMPARE(cert.subjectInfo("CN"), QString("name/with/slashes"));
-    QCOMPARE(cert.subjectInfo("L"), QString());
-    QCOMPARE(cert.subjectInfo("OU"), QString());
-    QCOMPARE(cert.subjectInfo("C"), QString("NO"));
-    QCOMPARE(cert.subjectInfo("ST"), QString());
+    QCOMPARE(cert.subjectInfo("O")[0], QString());
+    QCOMPARE(cert.subjectInfo("CN")[0], QString("name/with/slashes"));
+    QCOMPARE(cert.subjectInfo("L")[0], QString());
+    QCOMPARE(cert.subjectInfo("OU")[0], QString());
+    QCOMPARE(cert.subjectInfo("C")[0], QString("NO"));
+    QCOMPARE(cert.subjectInfo("ST")[0], QString());
 
     QCOMPARE(cert.version(), QByteArray::number(1));
     QCOMPARE(cert.serialNumber(), QByteArray::number(17));
@@ -739,8 +739,8 @@ void tst_QSslCertificate::certInfoQByteArray()
 
     // in this test, check the bytearray variants before the enum variants to see if
     // we fixed a bug we had with lazy initialization of the values.
-    QCOMPARE(cert.issuerInfo("CN"), QString("Test CA (1024 bit)"));
-    QCOMPARE(cert.subjectInfo("CN"), QString("name/with/slashes"));
+    QCOMPARE(cert.issuerInfo("CN")[0], QString("Test CA (1024 bit)"));
+    QCOMPARE(cert.subjectInfo("CN")[0], QString("name/with/slashes"));
 }
 
 void tst_QSslCertificate::task256066toPem()
@@ -789,7 +789,7 @@ void tst_QSslCertificate::nulInCN()
     const QSslCertificate &cert = certList.at(0);
     QVERIFY(!cert.isNull());
 
-    QString cn = cert.subjectInfo(QSslCertificate::CommonName);
+    QString cn = cert.subjectInfo(QSslCertificate::CommonName)[0];
     QVERIFY(cn != "www.bank.com");
 
     static const char realCN[] = "www.bank.com\0.badguy.com";
