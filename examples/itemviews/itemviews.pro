@@ -8,12 +8,14 @@ SUBDIRS       = addressbook \
                 editabletreemodel \
                 fetchmore \
                 frozencolumn \
+                interview \
                 pixelator \
                 puzzle \
                 simpledommodel \
                 simpletreemodel \
                 simplewidgetmapper \
-                spinboxdelegate
+                spinboxdelegate \
+                spreadsheet
 
 # install
 sources.files = README *.pro

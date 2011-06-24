@@ -11,9 +11,9 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/interview
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/interview
 sources.files = $$SOURCES $$HEADERS $$RESOURCES README *.pro images
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/interview
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/interview
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example
