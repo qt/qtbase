@@ -114,6 +114,7 @@ private slots:
     void largeExpirationDate();
     void blacklistedCertificates();
     void toText();
+    void multipleCommonNames();
 
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
@@ -195,8 +196,8 @@ void tst_QSslCertificate::emptyConstructor()
     QCOMPARE(certificate.version() , QByteArray());
     QCOMPARE(certificate.serialNumber(), QByteArray());
     QCOMPARE(certificate.digest(), QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5));
-    QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization)[0], QString());
-    QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization)[0], QString());
+    QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization), QStringList());
+    QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.alternateSubjectNames(),(QMultiMap<QSsl::AlternateNameEntryType, QString>()));
 #ifndef QT_NO_TEXTSTREAM
     QCOMPARE(certificate.effectiveDate(), QDateTime());
@@ -682,31 +683,31 @@ void tst_QSslCertificate::certInfo()
 
     QCOMPARE(cert.issuerInfo(QSslCertificate::Organization)[0], QString("CryptSoft Pty Ltd"));
     QCOMPARE(cert.issuerInfo(QSslCertificate::CommonName)[0], QString("Test CA (1024 bit)"));
-    QCOMPARE(cert.issuerInfo(QSslCertificate::LocalityName)[0], QString());
-    QCOMPARE(cert.issuerInfo(QSslCertificate::OrganizationalUnitName)[0], QString());
+    QCOMPARE(cert.issuerInfo(QSslCertificate::LocalityName), QStringList());
+    QCOMPARE(cert.issuerInfo(QSslCertificate::OrganizationalUnitName), QStringList());
     QCOMPARE(cert.issuerInfo(QSslCertificate::CountryName)[0], QString("AU"));
     QCOMPARE(cert.issuerInfo(QSslCertificate::StateOrProvinceName)[0], QString("Queensland"));
 
     QCOMPARE(cert.issuerInfo("O")[0], QString("CryptSoft Pty Ltd"));
     QCOMPARE(cert.issuerInfo("CN")[0], QString("Test CA (1024 bit)"));
-    QCOMPARE(cert.issuerInfo("L")[0], QString());
-    QCOMPARE(cert.issuerInfo("OU")[0], QString());
+    QCOMPARE(cert.issuerInfo("L"), QStringList());
+    QCOMPARE(cert.issuerInfo("OU"), QStringList());
     QCOMPARE(cert.issuerInfo("C")[0], QString("AU"));
     QCOMPARE(cert.issuerInfo("ST")[0], QString("Queensland"));
 
-    QCOMPARE(cert.subjectInfo(QSslCertificate::Organization)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(cert.subjectInfo(QSslCertificate::CommonName)[0], QString("name/with/slashes"));
-    QCOMPARE(cert.subjectInfo(QSslCertificate::LocalityName)[0], QString());
-    QCOMPARE(cert.subjectInfo(QSslCertificate::OrganizationalUnitName)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::LocalityName), QStringList());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::OrganizationalUnitName), QStringList());
     QCOMPARE(cert.subjectInfo(QSslCertificate::CountryName)[0], QString("NO"));
-    QCOMPARE(cert.subjectInfo(QSslCertificate::StateOrProvinceName)[0], QString());
+    QCOMPARE(cert.subjectInfo(QSslCertificate::StateOrProvinceName), QStringList());
 
-    QCOMPARE(cert.subjectInfo("O")[0], QString());
+    QCOMPARE(cert.subjectInfo("O"), QStringList());
     QCOMPARE(cert.subjectInfo("CN")[0], QString("name/with/slashes"));
-    QCOMPARE(cert.subjectInfo("L")[0], QString());
-    QCOMPARE(cert.subjectInfo("OU")[0], QString());
+    QCOMPARE(cert.subjectInfo("L"), QStringList());
+    QCOMPARE(cert.subjectInfo("OU"), QStringList());
     QCOMPARE(cert.subjectInfo("C")[0], QString("NO"));
-    QCOMPARE(cert.subjectInfo("ST")[0], QString());
+    QCOMPARE(cert.subjectInfo("ST"), QStringList());
 
     QCOMPARE(cert.version(), QByteArray::number(1));
     QCOMPARE(cert.serialNumber(), QByteArray::number(17));
@@ -869,6 +870,17 @@ void tst_QSslCertificate::toText()
     QVERIFY(fNew.open(QIODevice::ReadOnly));
     QByteArray txtNew = fNew.readAll();
     QVERIFY(txtOld == cert.toText() || txtNew == cert.toText());
+}
+
+void tst_QSslCertificate::multipleCommonNames()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/test-cn-two-cns-cert.pem");
+    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+
+    QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
+    QVERIFY(commonNames.contains(QString("www.example.com")));
+    QVERIFY(commonNames.contains(QString("www2.example.com")));
 }
 
 #endif // QT_NO_OPENSSL
