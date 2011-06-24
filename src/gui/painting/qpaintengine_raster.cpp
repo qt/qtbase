@@ -123,6 +123,10 @@ void dumpClip(int width, int height, const QClipData *clip);
 static inline bool winClearTypeFontsEnabled()
 {
     UINT result = 0;
+#if !defined(SPI_GETFONTSMOOTHINGTYPE) // MinGW
+#    define SPI_GETFONTSMOOTHINGTYPE  0x200A
+#    define FE_FONTSMOOTHINGCLEARTYPE 0x002
+#endif
     SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &result, 0);
     return result == FE_FONTSMOOTHINGCLEARTYPE;
 }
