@@ -259,8 +259,6 @@ QT_BEGIN_NAMESPACE
 
     \value Symbol_Other  Unicode class name So
 
-    \omitvalue Punctuation_Dask
-
     \sa category()
 */
 
