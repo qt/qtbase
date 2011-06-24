@@ -158,9 +158,6 @@ distclean:: clean
 
 $(OBJS): qmake_pch.obj
 
-qsystemlibrary.obj: $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
-
 $(QTOBJS): qmake_pch.obj
 
 qmake_pch.obj:
