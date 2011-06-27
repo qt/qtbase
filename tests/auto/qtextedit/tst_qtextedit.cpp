@@ -49,7 +49,7 @@
 #include <qapplication.h>
 #include <qclipboard.h>
 #include <qtextbrowser.h>
-#include <private/qtextcontrol_p.h>
+#include <private/qwidgettextcontrol_p.h>
 #include <qscrollbar.h>
 #include <qtextobject.h>
 #include <qtexttable.h>
@@ -1482,7 +1482,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.insertCallCount, 0);
 
 #ifdef QT_BUILD_INTERNAL
-    QTextControl *control = qFindChild<QTextControl *>(&ed);
+    QWidgetTextControl *control = qFindChild<QWidgetTextControl *>(&ed);
     QVERIFY(control);
 
     control->canInsertFromMimeData(QApplication::clipboard()->mimeData());
@@ -2093,7 +2093,7 @@ void tst_QTextEdit::cursorRect()
 void tst_QTextEdit::setDocumentPreservesPalette()
 {
 #ifdef QT_BUILD_INTERNAL
-    QTextControl *control = qFindChild<QTextControl *>(ed);
+    QWidgetTextControl *control = qFindChild<QWidgetTextControl *>(ed);
     QVERIFY(control);
 
     QPalette defaultPal = ed->palette();
