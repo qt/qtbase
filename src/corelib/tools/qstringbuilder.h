@@ -352,6 +352,8 @@ template <> struct QConcatenable<const char *> : private QAbstractConcatenable
 #endif
     static inline void appendTo(const char *a, char *&out)
     {
+        if (!a)
+            return;
         while (*a)
             *out++ = *a++;
     }
