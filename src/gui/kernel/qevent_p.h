@@ -81,20 +81,6 @@ protected:
     friend class QKeyEvent;
 };
 
-// ### Qt 5: remove
-class QMouseEventEx : public QMouseEvent
-{
-public:
-    QMouseEventEx(Type type, const QPointF &pos, const QPoint &globalPos,
-                  Qt::MouseButton button, Qt::MouseButtons buttons,
-                  Qt::KeyboardModifiers modifiers);
-    ~QMouseEventEx();
-
-protected:
-    QPointF posF;
-    friend class QMouseEvent;
-};
-
 class QTouchEventTouchPointPrivate
 {
 public:

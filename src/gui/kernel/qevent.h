@@ -85,27 +85,24 @@ protected:
 class Q_GUI_EXPORT QMouseEvent : public QInputEvent
 {
 public:
-    QMouseEvent(Type type, const QPoint &pos, Qt::MouseButton button,
+    QMouseEvent(Type type, const QPointF &pos, Qt::MouseButton button,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
+    QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
     ~QMouseEvent();
 
-    inline const QPoint &pos() const { return p; }
-    inline const QPoint &globalPos() const { return g; }
-    inline int x() const { return p.x(); }
-    inline int y() const { return p.y(); }
-    inline int globalX() const { return g.x(); }
-    inline int globalY() const { return g.y(); }
+    inline QPoint pos() const { return p.toPoint(); }
+    inline QPoint globalPos() const { return g.toPoint(); }
+    inline int x() const { return qRound(p.x()); }
+    inline int y() const { return qRound(p.y()); }
+    inline int globalX() const { return qRound(g.x()); }
+    inline int globalY() const { return qRound(g.y()); }
     inline Qt::MouseButton button() const { return b; }
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
-    static QMouseEvent *createExtendedMouseEvent(Type type, const QPointF &pos,
-                                                 const QPoint &globalPos, Qt::MouseButton button,
-                                                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    inline bool hasExtendedInfo() const { return reinterpret_cast<const QMouseEvent *>(d) == this; }
-    QPointF posF() const;
+    const QPointF &posF() const { return p; }
+    const QPointF &globalPosF() const { return g; }
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT_CONSTRUCTOR QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state);
@@ -117,7 +114,7 @@ public:
     { return Qt::ButtonState(int(mouseState)|int(modifiers())); }
 #endif
 protected:
-    QPoint p, g;
+    QPointF p, g;
     Qt::MouseButton b;
     Qt::MouseButtons mouseState;
 };
@@ -125,31 +122,34 @@ protected:
 class Q_GUI_EXPORT QHoverEvent : public QEvent
 {
 public:
-    QHoverEvent(Type type, const QPoint &pos, const QPoint &oldPos);
+    QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos);
     ~QHoverEvent();
 
-    inline const QPoint &pos() const { return p; }
-    inline const QPoint &oldPos() const { return op; }
+    inline QPoint pos() const { return p.toPoint(); }
+    inline QPoint oldPos() const { return op.toPoint(); }
+
+    inline const QPointF &posF() const { return p; }
+    inline const QPointF &oldPosF() const { return op; }
 
 protected:
-    QPoint p, op;
+    QPointF p, op;
 };
 
 #ifndef QT_NO_WHEELEVENT
 class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 {
 public:
-    QWheelEvent(const QPoint &pos, int delta,
+    QWheelEvent(const QPointF &pos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
-    QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta,
+    QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
     ~QWheelEvent();
 
     inline int delta() const { return d; }
-    inline const QPoint &pos() const { return p; }
-    inline const QPoint &globalPos()   const { return g; }
+    inline QPoint pos() const { return p.toPoint(); }
+    inline QPoint globalPos()   const { return g.toPoint(); }
     inline int x() const { return p.x(); }
     inline int y() const { return p.y(); }
     inline int globalX() const { return g.x(); }
@@ -157,6 +157,9 @@ public:
 
     inline Qt::MouseButtons buttons() const { return mouseState; }
     Qt::Orientation orientation() const { return o; }
+
+    inline const QPointF &posF() const { return p; }
+    inline const QPointF &globalPosF()   const { return g; }
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT_CONSTRUCTOR QWheelEvent(const QPoint &pos, int delta, int state,
@@ -167,8 +170,8 @@ public:
     { return static_cast<Qt::ButtonState>(int(buttons())|int(modifiers())); }
 #endif
 protected:
-    QPoint p;
-    QPoint g;
+    QPointF p;
+    QPointF g;
     int d;
     Qt::MouseButtons mouseState;
     Qt::Orientation o;
