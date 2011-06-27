@@ -14,9 +14,9 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/textedit
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/textedit
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/textedit
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/textedit
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example

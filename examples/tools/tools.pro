@@ -13,6 +13,7 @@ SUBDIRS       = codecs \
                 settingseditor \
                 styleplugin \
                 treemodelcompleter \
+                undo \
                 undoframework
 
 plugandpaint.depends = plugandpaintplugins
