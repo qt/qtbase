@@ -393,6 +393,30 @@ qreal QRawFont::unitsPerEm() const
 }
 
 /*!
+   Returns the thickness for drawing lines (underline, overline, etc.)
+   along with text drawn in this font.
+ */
+qreal QRawFont::lineThickness() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->lineThickness().toReal();
+}
+
+/*!
+   Returns the position from baseline for drawing underlines below the text
+   rendered with this font.
+ */
+qreal QRawFont::underlinePosition() const
+{
+    if (!isValid())
+        return 0.0;
+
+    return d->fontEngine->underlinePosition().toReal();
+}
+
+/*!
    Returns the family name of this QRawFont.
 */
 QString QRawFont::familyName() const
@@ -652,6 +676,9 @@ extern int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSyst
 /*!
    Fetches the physical representation based on a \a font query. The physical font returned is
    the font that will be preferred by Qt in order to display text in the selected \a writingSystem.
+
+   \warning This function is potentially expensive and should not be called in performance
+   sensitive code.
 */
 QRawFont QRawFont::fromFont(const QFont &font, QFontDatabase::WritingSystem writingSystem)
 {
