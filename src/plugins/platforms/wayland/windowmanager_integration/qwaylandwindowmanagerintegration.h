@@ -62,9 +62,13 @@ private:
     static void wlHandleListenerGlobal(wl_display *display, uint32_t id,
                                        const char *interface, uint32_t version, void *data);
 
+    static void wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible);
 private:
+
     QWaylandDisplay *mWaylandDisplay;
     struct wl_windowmanager *mWaylandWindowManager;
+
+    static const struct wl_windowmanager_listener mWindowManagerListener;
 };
 
 #endif // QWAYLANDWINDOWMANAGERINTEGRATION_H

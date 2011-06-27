@@ -44,6 +44,14 @@
 
 #include <stdint.h>
 
+#include <QDebug>
+#include <QEvent>
+#include <QCoreApplication>
+
+const struct wl_windowmanager_listener QWaylandWindowManagerIntegration::mWindowManagerListener = {
+    QWaylandWindowManagerIntegration::wlHandleOnScreenVisibilityChange,
+};
+
 QWaylandWindowManagerIntegration *QWaylandWindowManagerIntegration::createIntegration(QWaylandDisplay *waylandDisplay)
 {
     return new QWaylandWindowManagerIntegration(waylandDisplay);
@@ -72,7 +80,9 @@ void QWaylandWindowManagerIntegration::wlHandleListenerGlobal(wl_display *displa
 {
     if (strcmp(interface, "wl_windowmanager") == 0) {
         QWaylandWindowManagerIntegration *integration = static_cast<QWaylandWindowManagerIntegration *>(data);
-        integration->mWaylandWindowManager = wl_windowmanager_create(display, id);
+        integration->mWaylandWindowManager = wl_windowmanager_create(display, id, 1);
+
+        wl_windowmanager_add_listener(integration->mWaylandWindowManager, &mWindowManagerListener, integration);
     }
 }
 
@@ -89,4 +99,15 @@ void QWaylandWindowManagerIntegration::authenticateWithToken(const QByteArray &t
         authToken = qgetenv("WL_AUTHENTICATION_TOKEN");
     if (mWaylandWindowManager)
         wl_windowmanager_authenticate_with_token(mWaylandWindowManager, authToken.constData());
+}
+
+void QWaylandWindowManagerIntegration::wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible)
+{
+    QWaylandWindowManagerIntegration *integration = (QWaylandWindowManagerIntegration *)data;
+
+    QEvent evt(visible != 0 ? QEvent::ApplicationActivated : QEvent::ApplicationDeactivated);
+
+    QCoreApplication::sendEvent(QCoreApplication::instance(), &evt);
+
+    qDebug() << "OnScreenVisibility" << (visible != 0);
 }
