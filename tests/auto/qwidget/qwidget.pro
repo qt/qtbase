@@ -9,7 +9,7 @@ aix-g++*:QMAKE_CXXFLAGS+=-fpermissive
 
 CONFIG += x11inc
 
-mac {
+mac:!qpa {
     LIBS += -framework Security -framework AppKit -framework Carbon
     OBJECTIVE_SOURCES += tst_qwidget_mac_helpers.mm
 }

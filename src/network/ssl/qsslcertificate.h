@@ -107,6 +107,7 @@ public:
 
     QByteArray toPem() const;
     QByteArray toDer() const;
+    QByteArray toText() const;
 
     static QList<QSslCertificate> fromPath(
         const QString &path, QSsl::EncodingFormat format = QSsl::Pem,

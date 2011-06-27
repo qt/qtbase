@@ -12,9 +12,9 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/chip
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/chip
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/chip
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/chip
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example

@@ -7,11 +7,11 @@ QT += network widgets
 
 symbian {
     TARGET.UID3 = 0xA000CF74
-    CONFIG += qt_demo
+    CONFIG += qt_example
     TARGET.CAPABILITY = NetworkServices
 }
 
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/embedded/flightinfo
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/embedded/flightinfo
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/embedded/flightinfo
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/embedded/flightinfo
 INSTALLS += target sources

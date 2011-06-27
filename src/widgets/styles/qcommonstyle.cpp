@@ -5292,7 +5292,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
                 pixmap = QIcon::fromTheme(QLatin1String("media-seek-backward")).pixmap(16);
                 break;
         case SP_MediaSkipForward:
-                pixmap = QIcon::fromTheme(QLatin1String("media-skip-backward")).pixmap(16);
+                pixmap = QIcon::fromTheme(QLatin1String("media-skip-forward")).pixmap(16);
                 break;
         case SP_MediaSkipBackward:
                 pixmap = QIcon::fromTheme(QLatin1String("media-skip-backward")).pixmap(16);

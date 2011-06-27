@@ -67,34 +67,7 @@ static QByteArray combinePath(const char *infile, const char *outfile)
 {
     QFileInfo inFileInfo(QDir::current(), QFile::decodeName(infile));
     QFileInfo outFileInfo(QDir::current(), QFile::decodeName(outfile));
-    int numCommonComponents = 0;
-
-    QStringList inSplitted = inFileInfo.dir().canonicalPath().split(QLatin1Char('/'));
-    QStringList outSplitted = outFileInfo.dir().canonicalPath().split(QLatin1Char('/'));
-
-    while (!inSplitted.isEmpty() && !outSplitted.isEmpty() &&
-            inSplitted.first() == outSplitted.first()) {
-        inSplitted.removeFirst();
-        outSplitted.removeFirst();
-        numCommonComponents++;
-    }
-
-    if (numCommonComponents < 2)
-        /*
-          The paths don't have the same drive, or they don't have the
-          same root directory. Use an absolute path.
-        */
-        return QFile::encodeName(inFileInfo.absoluteFilePath());
-    /*
-       The paths have something in common. Use a path relative to
-       the output file.
-     */
-    while (!outSplitted.isEmpty()) {
-        outSplitted.removeFirst();
-        inSplitted.prepend(QLatin1String(".."));
-    }
-    inSplitted.append(inFileInfo.fileName());
-    return QFile::encodeName(inSplitted.join(QLatin1String("/")));
+    return QFile::encodeName(outFileInfo.dir().relativeFilePath(inFileInfo.filePath()));
 }
 
 

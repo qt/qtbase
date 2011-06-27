@@ -61,7 +61,8 @@ public slots:
 class QWaylandClipboard : public QPlatformClipboard
 {
 public:
-    QWaylandClipboard(QWaylandDisplay *display);
+    static QWaylandClipboard *instance(QWaylandDisplay *display);
+
     ~QWaylandClipboard();
 
     QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard);
@@ -75,6 +76,8 @@ public:
     QVariant retrieveData(const QString &mimeType, QVariant::Type type) const;
 
 private:
+    QWaylandClipboard(QWaylandDisplay *display);
+
     static void offer(void *data,
                       struct wl_selection_offer *selection_offer,
                       const char *type);

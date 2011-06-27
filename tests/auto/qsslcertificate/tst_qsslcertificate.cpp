@@ -113,6 +113,7 @@ private slots:
     void largeSerialNumber();
     void largeExpirationDate();
     void blacklistedCertificates();
+    void toText();
 
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
@@ -848,6 +849,26 @@ void tst_QSslCertificate::blacklistedCertificates()
     for (int a = 0; a < blacklistedCerts.count(); a++) {
         QVERIFY(! blacklistedCerts.at(a).isValid());
     }
+}
+
+void tst_QSslCertificate::toText()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-expiration-date.pem");
+
+    QCOMPARE(certList.size(), 1);
+    const QSslCertificate &cert = certList.at(0);
+
+    // Openssl's cert dump method changed slightly between 0.9.8 and 1.0.0 versions, so we want it to match any output
+
+    QFile fOld(SRCDIR "more-certificates/cert-large-expiration-date.txt.0.9.8");
+    QVERIFY(fOld.open(QIODevice::ReadOnly));
+    QByteArray txtOld = fOld.readAll();
+
+    QFile fNew(SRCDIR "more-certificates/cert-large-expiration-date.txt.1.0.0");
+    QVERIFY(fNew.open(QIODevice::ReadOnly));
+    QByteArray txtNew = fNew.readAll();
+    QVERIFY(txtOld == cert.toText() || txtNew == cert.toText());
 }
 
 #endif // QT_NO_OPENSSL

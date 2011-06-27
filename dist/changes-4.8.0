@@ -53,6 +53,7 @@ QtCore
  - QStringBuilder: added support for QByteArray
  - qSwap now uses std::swap, specialized std::swap for our container to work better with stl algoritms
  - QVariant: deprecated global function qVariantSetValue, qVariantValue, qVariantCanConvert, qVariantFromValue
+ - QUrl: add method for retrieving effective top level domain [QTBUG-13601] (MR-1205)
 
 QtGui
 -----
@@ -62,6 +63,21 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+
+QtNetwork
+---------
+
+ - SSL: Switch default version to TLS 1.0
+ - SSL: enable Server Name Indication (SNI) by default
+ - QSslCertificate: report fraudulent certificates as invalid ("Comodogate") [QTBUG-18338]
+ - QSslCertificate: display non-ASCII names from subject and issuerInfo (MR-922)
+ - QSslCertificate: loat root certificates on demand on Unix (excluding Mac) [QTBUG-14016]
+ - QNetworkCookie: retain quotes in value attribute [QTBUG-17746]
+ - QNetworkCookie: allow spaces in unquoted values [QTBUG-18876]
+ - HTTP API: add support for HTTP multipart messages [QTBUG-6222]
+ - HTTP cache: do not load resources from cache that must be revalidated [QTBUG-18983]
+ - HTTP cache: change file organization (MR-2505)
+
 
  QtOpenGL
  --------

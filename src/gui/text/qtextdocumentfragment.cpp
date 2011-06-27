@@ -545,8 +545,13 @@ void QTextHtmlImporter::import()
         }
 
         if (currentNode->isBlock()) {
-            if (processBlockNode() == ContinueWithNextNode)
+            QTextHtmlImporter::ProcessNodeResult result = processBlockNode();
+            if (result == ContinueWithNextNode) {
                 continue;
+            } else if (result == ContinueWithNextSibling) {
+                currentNodeIdx += currentNode->children.size();
+                continue;
+            }
         }
 
         if (currentNode->charFormat.isAnchor() && !currentNode->charFormat.anchorName().isEmpty()) {
@@ -1157,7 +1162,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
 
     if (currentNode->isEmptyParagraph) {
         hasBlock = false;
-        return ContinueWithNextNode;
+        return ContinueWithNextSibling;
     }
 
     hasBlock = true;

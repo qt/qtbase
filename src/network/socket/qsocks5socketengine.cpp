@@ -827,7 +827,7 @@ void QSocks5SocketEnginePrivate::sendRequestMethod()
         //### set error code ....
         return;
     } else if (!peerName.isEmpty() && !qt_socks5_set_host_name_and_port(peerName, port, &buf)) {
-        QSOCKS5_DEBUG << "error setting address" << address << " : " << port;
+        QSOCKS5_DEBUG << "error setting peer name" << peerName << " : " << port;
         //### set error code ....
         return;
     }
@@ -1325,11 +1325,17 @@ void QSocks5SocketEnginePrivate::_q_udpSocketReadNotification()
 }
 #endif // QT_NO_UDPSOCKET
 
-bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
+bool QSocks5SocketEngine::bind(const QHostAddress &addr, quint16 port)
 {
     Q_D(QSocks5SocketEngine);
 
     // when bind wee will block until the bind is finished as the info from the proxy server is needed
+
+    QHostAddress address;
+    if (addr.protocol() == QAbstractSocket::AnyIPProtocol)
+        address = QHostAddress::AnyIPv4; //SOCKS5 doesnt support dual stack, and there isn't any implementation of udp on ipv6 yet
+    else
+        address = addr;
 
     if (!d->data) {
         if (socketType() == QAbstractSocket::TcpSocket) {

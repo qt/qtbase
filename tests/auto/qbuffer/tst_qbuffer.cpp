@@ -56,6 +56,7 @@ public:
     tst_QBuffer();
 
 private slots:
+    void open();
     void getSetCheck();
     void readBlock();
     void readBlockPastEnd();
@@ -102,6 +103,55 @@ void tst_QBuffer::getSetCheck()
 
 tst_QBuffer::tst_QBuffer()
 {
+}
+
+void tst_QBuffer::open()
+{
+    QByteArray data(10, 'f');
+
+    QBuffer b;
+
+    QTest::ignoreMessage(QtWarningMsg, "QBuffer::open: Buffer access not specified");
+    QVERIFY(!b.open(QIODevice::NotOpen));
+    QVERIFY(!b.isOpen());
+    b.close();
+
+    QTest::ignoreMessage(QtWarningMsg, "QBuffer::open: Buffer access not specified");
+    QVERIFY(!b.open(QIODevice::Text));
+    QVERIFY(!b.isOpen());
+    b.close();
+
+    QTest::ignoreMessage(QtWarningMsg, "QBuffer::open: Buffer access not specified");
+    QVERIFY(!b.open(QIODevice::Unbuffered));
+    QVERIFY(!b.isOpen());
+    b.close();
+
+    QVERIFY(b.open(QIODevice::ReadOnly));
+    QVERIFY(b.isReadable());
+    b.close();
+
+    QVERIFY(b.open(QIODevice::WriteOnly));
+    QVERIFY(b.isWritable());
+    b.close();
+
+    b.setData(data);
+    QVERIFY(b.open(QIODevice::Append));
+    QVERIFY(b.isWritable());
+    QCOMPARE(b.size(), qint64(10));
+    QCOMPARE(b.pos(), b.size());
+    b.close();
+
+    b.setData(data);
+    QVERIFY(b.open(QIODevice::Truncate));
+    QVERIFY(b.isWritable());
+    QCOMPARE(b.size(), qint64(0));
+    QCOMPARE(b.pos(), qint64(0));
+    b.close();
+
+    QVERIFY(b.open(QIODevice::ReadWrite));
+    QVERIFY(b.isReadable());
+    QVERIFY(b.isWritable());
+    b.close();
 }
 
 // some status() tests, too

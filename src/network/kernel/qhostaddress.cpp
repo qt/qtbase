@@ -134,15 +134,40 @@ QHostAddressPrivate::QHostAddressPrivate()
 void QHostAddressPrivate::setAddress(quint32 a_)
 {
     a = a_;
+    //create mapped address
+    memset(&a6, 0, sizeof(a6));
+    int i;
+    for (i=15; a_ != 0; i--) {
+        a6[i] = a_ & 0xFF;
+        a_ >>=8;
+    }
+    Q_ASSERT(i >= 11);
+    a6[11] = 0xFF;
+    a6[10] = 0xFF;
     protocol = QAbstractSocket::IPv4Protocol;
     isParsed = true;
+}
+
+static bool parseMappedAddress(quint32& a, const Q_IPV6ADDR &a6)
+{
+    int i;
+    for (i=0;i<10;i++)
+        if (a6[i]) return false;
+    for (;i<12;i++)
+        if (a6[i] != 0xFF) return false;
+    a=(a6[12] << 24) | (a6[13] << 16) | (a6[14] << 8) | a6[15];
+    return true;
 }
 
 void QHostAddressPrivate::setAddress(const quint8 *a_)
 {
     for (int i = 0; i < 16; i++)
         a6[i] = a_[i];
-    protocol = QAbstractSocket::IPv6Protocol;
+    a = 0;
+    if (parseMappedAddress(a, a6))
+        protocol = QAbstractSocket::IPv4Protocol;
+    else
+        protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
 
@@ -150,7 +175,10 @@ void QHostAddressPrivate::setAddress(const Q_IPV6ADDR &a_)
 {
     a6 = a_;
     a = 0;
-    protocol = QAbstractSocket::IPv6Protocol;
+    if (parseMappedAddress(a, a6))
+        protocol = QAbstractSocket::IPv4Protocol;
+    else
+        protocol = QAbstractSocket::IPv6Protocol;
     isParsed = true;
 }
 
@@ -447,8 +475,9 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     \value LocalHost The IPv4 localhost address. Equivalent to QHostAddress("127.0.0.1").
     \value LocalHostIPv6 The IPv6 localhost address. Equivalent to QHostAddress("::1").
     \value Broadcast The IPv4 broadcast address. Equivalent to QHostAddress("255.255.255.255").
-    \value Any The IPv4 any-address. Equivalent to QHostAddress("0.0.0.0").
-    \value AnyIPv6 The IPv6 any-address. Equivalent to QHostAddress("::").
+    \value AnyIPv4 The IPv4 any-address. Equivalent to QHostAddress("0.0.0.0"). A socket bound with this address will listen only on IPv4 interaces.
+    \value AnyIPv6 The IPv6 any-address. Equivalent to QHostAddress("::"). A socket bound with this address will listen only on IPv6 interaces.
+    \value Any The dual stack any-address. A socket bound with this address will listen on both IPv4 and IPv6 interfaces.
 */
 
 /*!  Constructs a host address object with the IP address 0.0.0.0.
@@ -548,11 +577,15 @@ QHostAddress::QHostAddress(SpecialAddress address)
     case LocalHostIPv6:
         setAddress(QLatin1String("::1"));
         break;
-    case Any:
+    case AnyIPv4:
         setAddress(QLatin1String("0.0.0.0"));
         break;
     case AnyIPv6:
         setAddress(QLatin1String("::"));
+        break;
+    case Any:
+        d->clear();
+        d->protocol = QAbstractSocket::AnyIPProtocol;
         break;
     }
 }
@@ -679,8 +712,11 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
     For example, if the address is 127.0.0.1, the returned value is
     2130706433 (i.e. 0x7f000001).
 
-    This value is only valid if the Protocol() is
-    \l{QAbstractSocket::}{IPv4Protocol}.
+    This value is valid if the protocol() is
+    \l{QAbstractSocket::}{IPv4Protocol},
+    or if the protocol is
+    \l{QAbstractSocket::}{IPv6Protocol},
+    and the IPv6 address is an IPv4 mapped address. (RFC4291)
 
     \sa toString()
 */
@@ -705,8 +741,11 @@ QAbstractSocket::NetworkLayerProtocol QHostAddress::protocol() const
 
     \snippet doc/src/snippets/code/src_network_kernel_qhostaddress.cpp 0
 
-    This value is only valid if the protocol() is
+    This value is valid if the protocol() is
     \l{QAbstractSocket::}{IPv6Protocol}.
+    If the protocol is
+    \l{QAbstractSocket::}{IPv4Protocol},
+    then the address is returned an an IPv4 mapped IPv6 address. (RFC4291)
 
     \sa toString()
 */
@@ -722,13 +761,15 @@ Q_IPV6ADDR QHostAddress::toIPv6Address() const
     For example, if the address is the IPv4 address 127.0.0.1, the
     returned string is "127.0.0.1". For IPv6 the string format will 
     follow the RFC5952 recommendation.
+    For QHostAddress::Any, its IPv4 address will be returned ("0.0.0.0")
 
     \sa toIPv4Address()
 */
 QString QHostAddress::toString() const
 {
     QT_ENSURE_PARSED(this);
-    if (d->protocol == QAbstractSocket::IPv4Protocol) {
+    if (d->protocol == QAbstractSocket::IPv4Protocol
+        || d->protocol == QAbstractSocket::AnyIPProtocol) {
         quint32 i = toIPv4Address();
         QString s;
         s.sprintf("%d.%d.%d.%d", (i>>24) & 0xff, (i>>16) & 0xff,
@@ -1182,6 +1223,9 @@ QDataStream &operator>>(QDataStream &in, QHostAddress &address)
         in >> scope;
         address.setScopeId(scope);
     }
+        break;
+    case QAbstractSocket::AnyIPProtocol:
+        address = QHostAddress::Any;
         break;
     default:
         address.clear();

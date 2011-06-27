@@ -64,7 +64,6 @@ QWaylandIntegration::QWaylandIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
     , mDisplay(new QWaylandDisplay())
     , mNativeInterface(new QWaylandNativeInterface)
-    , mClipboard(0)
 {
 }
 
@@ -137,7 +136,5 @@ QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
 
 QPlatformClipboard *QWaylandIntegration::clipboard() const
 {
-    if (!mClipboard)
-        mClipboard = new QWaylandClipboard(mDisplay);
-    return mClipboard;
+    return QWaylandClipboard::instance(mDisplay);
 }

@@ -74,7 +74,6 @@ private:
     QPlatformFontDatabase *mFontDb;
     QWaylandDisplay *mDisplay;
     QPlatformNativeInterface *mNativeInterface;
-    mutable QPlatformClipboard *mClipboard;
 };
 
 QT_END_NAMESPACE

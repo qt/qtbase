@@ -12,13 +12,21 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
     isEmpty(QTDIR) {
         QTDIR = $$(QTDIR)
         isEmpty(QTDIR):QTDIR = $$QT_BUILD_TREE
+        isEmpty(QTDIR) { # figure out QTDIR based on qmake binary
+            QMAKE_BASED_QTDIR = $$dirname(QMAKE_QMAKE)
+            QTDIR = $$dirname(QMAKE_BASED_QTDIR)
+            unset(QMAKE_BASED_QTDIR)
+        }
     }
 
-    QTFWD =
-    isEmpty(QTDIR) {
-        QTFWD += -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
-    } else {
-        QTFWD += -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+    QTFWD = -module-fwd $$OUT_PWD/module-paths/modules -cache-module-fwd
+    !isEmpty(QTDIR) {
+        # Only if QTDIR points to an actual build directory
+        # and this build directory is the install directory
+        # can we tell syncqt to do a -developer-build
+        exists($$QTDIR/.qmake.cache):contains(QTDIR, $$[QT_INSTALL_PREFIX]) {
+            QTFWD = -qtdir $$QTDIR -module-fwd $$QTDIR/mkspecs/modules -developer-build
+        }
     }
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)

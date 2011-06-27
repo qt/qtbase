@@ -45,7 +45,7 @@
 
 #include <qmacstyle_mac.h>
 
-#ifdef Q_OS_MAC
+#ifdef Q_WS_MAC
 
 const int N = 1;
 

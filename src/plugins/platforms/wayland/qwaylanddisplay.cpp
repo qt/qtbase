@@ -125,9 +125,14 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
     QWaylandDisplay::shellHandleConfigure,
 };
 
+static QWaylandDisplay *display = 0;
+
 QWaylandDisplay::QWaylandDisplay(void)
     : argb_visual(0), premultiplied_argb_visual(0), rgb_visual(0)
 {
+    display = this;
+    qRegisterMetaType<uint32_t>("uint32_t");
+
     mDisplay = wl_display_connect(NULL);
     if (mDisplay == NULL) {
         qErrnoWarning(errno, "Failed to create display");
@@ -145,8 +150,6 @@ QWaylandDisplay::QWaylandDisplay(void)
 #endif
 
     blockingReadEvents();
-
-    qRegisterMetaType<uint32_t>("uint32_t");
 
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
@@ -311,11 +314,7 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
             new QWaylandInputDevice(mDisplay, id);
         mInputDevices.append(inputDevice);
     } else if (interface == "wl_selection_offer") {
-        QPlatformIntegration *plat = QGuiApplicationPrivate::platformIntegration();
-        if (!plat)
-            return;
-        QWaylandClipboard *clipboard = static_cast<QWaylandClipboard *>(plat->clipboard());
-        clipboard->createSelectionOffer(id);
+        QWaylandClipboard::instance(display)->createSelectionOffer(id);
     }
 }
 

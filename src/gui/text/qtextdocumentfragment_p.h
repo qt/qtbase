@@ -135,7 +135,7 @@ private:
 
     Table scanTable(int tableNodeIdx);
 
-    enum ProcessNodeResult { ContinueWithNextNode, ContinueWithCurrentNode };
+    enum ProcessNodeResult { ContinueWithNextNode, ContinueWithCurrentNode, ContinueWithNextSibling };
 
     void appendBlock(const QTextBlockFormat &format, QTextCharFormat charFmt = QTextCharFormat());
     bool appendNodeText();

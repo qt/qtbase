@@ -90,6 +90,7 @@ private slots:
     void loop();
     void ipv6Loop_data();
     void ipv6Loop();
+    void dualStack();
     void readLine();
     void pendingDatagramSize();
     void writeDatagram();
@@ -212,7 +213,7 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
     const char *message[] = {"Yo mista", "Yo", "Wassap"};
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(serverSocket.localAddress() == QHostAddress::Any || serverSocket.localAddress() == QHostAddress::AnyIPv6))
+    if (!(serverSocket.localAddress() == QHostAddress::AnyIPv4 || serverSocket.localAddress() == QHostAddress::AnyIPv6))
         serverAddress = serverSocket.localAddress();
 
     for (int i = 0; i < 3; ++i) {
@@ -343,10 +344,10 @@ void tst_QUdpSocket::loop()
     QVERIFY2(paul.bind(), paul.errorString().toLatin1().constData());
 
     QHostAddress peterAddress = QHostAddress::LocalHost;
-    if (!(peter.localAddress() == QHostAddress::Any || peter.localAddress() == QHostAddress::AnyIPv6))
+    if (!(peter.localAddress() == QHostAddress::AnyIPv4 || peter.localAddress() == QHostAddress::AnyIPv6))
         peterAddress = peter.localAddress();
     QHostAddress pualAddress = QHostAddress::LocalHost;
-    if (!(paul.localAddress() == QHostAddress::Any || paul.localAddress() == QHostAddress::AnyIPv6))
+    if (!(paul.localAddress() == QHostAddress::AnyIPv4 || paul.localAddress() == QHostAddress::AnyIPv6))
         pualAddress = paul.localAddress();
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(),
@@ -428,6 +429,64 @@ void tst_QUdpSocket::ipv6Loop()
     }
 }
 
+void tst_QUdpSocket::dualStack()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("test server SOCKS proxy doesn't support IPv6", SkipSingle);
+    QUdpSocket dualSock;
+    QByteArray dualData("dual");
+    QVERIFY(dualSock.bind(QHostAddress(QHostAddress::Any), 0));
+
+    QUdpSocket v4Sock;
+    QByteArray v4Data("v4");
+    QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
+
+    QUdpSocket v6Sock;
+    QByteArray v6Data("v6");
+    QVERIFY(v6Sock.bind(QHostAddress(QHostAddress::AnyIPv6), 0));
+
+    QHostAddress from;
+    quint16 port;
+    QByteArray buffer;
+    //test v4 -> dual
+    QCOMPARE((int)v4Sock.writeDatagram(v4Data.constData(), v4Data.length(), QHostAddress(QHostAddress::LocalHost), dualSock.localPort()), v4Data.length());
+    QVERIFY(dualSock.waitForReadyRead(5000));
+    buffer.reserve(100);
+    qint64 size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
+    QCOMPARE((int)size, v4Data.length());
+    buffer.resize(size);
+    QCOMPARE(buffer, v4Data);
+
+    //test v6 -> dual
+    QCOMPARE((int)v6Sock.writeDatagram(v6Data.constData(), v6Data.length(), QHostAddress(QHostAddress::LocalHostIPv6), dualSock.localPort()), v6Data.length());
+    QVERIFY(dualSock.waitForReadyRead(5000));
+    buffer.reserve(100);
+    size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
+    QCOMPARE((int)size, v6Data.length());
+    buffer.resize(size);
+    QCOMPARE(buffer, v6Data);
+
+    //test dual -> v4
+    QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHost), v4Sock.localPort()), dualData.length());
+    QVERIFY(v4Sock.waitForReadyRead(5000));
+    buffer.reserve(100);
+    size = v4Sock.readDatagram(buffer.data(), 100, &from, &port);
+    QCOMPARE((int)size, dualData.length());
+    buffer.resize(size);
+    QCOMPARE(buffer, dualData);
+
+    //test dual -> v6
+    QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
+    QVERIFY(v6Sock.waitForReadyRead(5000));
+    buffer.reserve(100);
+    size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
+    QCOMPARE((int)size, dualData.length());
+    buffer.resize(size);
+    QCOMPARE(buffer, dualData);
+
+}
+
 void tst_QUdpSocket::empty_readyReadSlot()
 {
     QTestEventLoop::instance().exitLoop();
@@ -465,7 +524,7 @@ void tst_QUdpSocket::pendingDatagramSize()
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::Any || server.localAddress() == QHostAddress::AnyIPv6))
+    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.localAddress();
 
     QUdpSocket client;
@@ -519,7 +578,7 @@ void tst_QUdpSocket::writeDatagram()
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::Any || server.localAddress() == QHostAddress::AnyIPv6))
+    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.localAddress();
 
     QUdpSocket client;
@@ -592,7 +651,7 @@ void tst_QUdpSocket::performance()
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
-    if (!(server.localAddress() == QHostAddress::Any || server.localAddress() == QHostAddress::AnyIPv6))
+    if (!(server.localAddress() == QHostAddress::AnyIPv4 || server.localAddress() == QHostAddress::AnyIPv6))
         serverAddress = server.localAddress();
 
     QUdpSocket client;
@@ -1147,7 +1206,7 @@ void tst_QUdpSocket::setMulticastInterface()
 
 void tst_QUdpSocket::multicast_data()
 {
-    QHostAddress anyAddress = QHostAddress(QHostAddress::Any);
+    QHostAddress anyAddress = QHostAddress(QHostAddress::AnyIPv4);
     QHostAddress groupAddress = QHostAddress("239.255.118.62");
     QHostAddress any6Address = QHostAddress(QHostAddress::AnyIPv6);
     QHostAddress group6Address = QHostAddress("FF01::114");
@@ -1173,8 +1232,12 @@ void tst_QUdpSocket::multicast()
     QFETCH(bool, joinResult);
     if (setProxy) {
         // UDP multicast does not work with proxies
-        if ((bindAddress.protocol() == QAbstractSocket::IPv4Protocol && (bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000)
-            || bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+        if (
+#ifndef Q_OS_WIN
+            //windows native socket engine binds 0.0.0.0 instead of the requested multicast address
+            (bindAddress.protocol() == QAbstractSocket::IPv4Protocol && (bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000) ||
+#endif
+            bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
             // proxy cannot bind to IPv6 or multicast addresses
             bindResult = false;
         }

@@ -97,6 +97,8 @@ private slots:
     void constructing();
     void clientServerLoop();
     void ipv6Server();
+    void dualStack_data();
+    void dualStack();
     void ipv6ServerMapped();
     void crashTests();
     void maxPendingConnections();
@@ -263,6 +265,44 @@ void tst_QTcpServer::ipv6Server()
     QVERIFY((serverSocket = server.nextPendingConnection()));
     serverSocket->close();
     delete serverSocket;
+}
+
+Q_DECLARE_METATYPE(QHostAddress);
+
+void tst_QTcpServer::dualStack_data()
+{
+    QTest::addColumn<QHostAddress>("bindAddress");
+    QTest::addColumn<bool>("v4ok");
+    QTest::addColumn<bool>("v6ok");
+    QTest::newRow("any") << QHostAddress(QHostAddress::Any) << true << true;
+    QTest::newRow("anyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << true << false;
+    QTest::newRow("anyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << false << true;
+}
+
+void tst_QTcpServer::dualStack()
+{
+#ifdef QT_NO_IPV6
+    QSKIP("test requires IPv6 support", SkipAll);
+#else
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("test server proxy doesn't support ipv6", SkipSingle);
+    QFETCH(QHostAddress, bindAddress);
+    QFETCH(bool, v4ok);
+    QFETCH(bool, v6ok);
+
+    QTcpServer server;
+    QVERIFY(server.listen(bindAddress));
+
+    QTcpSocket v4client;
+    v4client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+
+    QTcpSocket v6client;
+    v6client.connectToHost(QHostAddress::LocalHostIPv6, server.serverPort());
+
+    QCOMPARE(v4client.waitForConnected(5000), v4ok);
+    QCOMPARE(v6client.waitForConnected(5000), v6ok);
+#endif
 }
 
 //----------------------------------------------------------------------------------

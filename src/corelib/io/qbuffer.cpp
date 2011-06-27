@@ -333,23 +333,18 @@ bool QBuffer::open(OpenMode flags)
 {
     Q_D(QBuffer);
 
-    if ((flags & Append) == Append)
+    if ((flags & (Append | Truncate)) != 0)
         flags |= WriteOnly;
-    setOpenMode(flags);
-    if (!(isReadable() || isWritable())) {
-        qWarning("QFile::open: File access not specified");
+    if ((flags & (ReadOnly | WriteOnly)) == 0) {
+        qWarning("QBuffer::open: Buffer access not specified");
         return false;
     }
 
-    if ((flags & QIODevice::Truncate) == QIODevice::Truncate) {
+    if ((flags & Truncate) == Truncate)
         d->buf->resize(0);
-    }
-    if ((flags & QIODevice::Append) == QIODevice::Append) // append to end of buffer
-        seek(d->buf->size());
-    else
-        seek(0);
+    d->ioIndex = (flags & Append) == Append ? d->buf->size() : 0;
 
-    return true;
+    return QIODevice::open(flags);
 }
 
 /*!

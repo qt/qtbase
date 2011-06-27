@@ -241,6 +241,7 @@ DEFINEFUNC2(int, X509_cmp, X509 *a, a, X509 *b, b, return -1, return)
 #ifndef SSLEAY_MACROS
 DEFINEFUNC(X509 *, X509_dup, X509 *a, a, return 0, return)
 #endif
+DEFINEFUNC2(void, X509_print, BIO *a, a, X509 *b, b, return, DUMMYARG);
 DEFINEFUNC(ASN1_OBJECT *, X509_EXTENSION_get_object, X509_EXTENSION *a, a, return 0, return)
 DEFINEFUNC(void, X509_free, X509 *a, a, return, DUMMYARG)
 DEFINEFUNC2(X509_EXTENSION *, X509_get_ext, X509 *a, a, int b, b, return 0, return)
@@ -629,6 +630,7 @@ bool q_resolveOpenSslSymbols()
 #ifndef SSLEAY_MACROS
     RESOLVEFUNC(X509_dup, 1997, libs.second )
 #endif
+    RESOLVEFUNC(X509_print, 2046, libs.second )
     RESOLVEFUNC(X509_EXTENSION_get_object, 1785, libs.second )
     RESOLVEFUNC(X509_free, 2001, libs.second )
     RESOLVEFUNC(X509_get_ext, 2012, libs.second )
@@ -761,6 +763,7 @@ bool q_resolveOpenSslSymbols()
 #ifndef SSLEAY_MACROS
     RESOLVEFUNC(X509_dup)
 #endif
+    RESOLVEFUNC(X509_print)
     RESOLVEFUNC(X509_EXTENSION_get_object)
     RESOLVEFUNC(X509_free)
     RESOLVEFUNC(X509_get_ext)

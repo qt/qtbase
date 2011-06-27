@@ -1,6 +1,7 @@
 TEMPLATE      = subdirs
 
-SUBDIRS             =   drilldown
+SUBDIRS             =   books \
+                        drilldown
 !symbian: SUBDIRS   +=  cachedtable \
                         relationaltablemodel \
                         sqlwidgetmapper
@@ -11,6 +12,11 @@ SUBDIRS             =   drilldown
                         querymodel \
                         tablemodel
 
+!cross_compile:{
+    contains(QT_BUILD_PARTS, tools):{
+        SUBDIRS += sqlbrowser
+    }
+}
 
 # install
 sources.files = connection.h sql.pro README

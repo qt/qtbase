@@ -123,6 +123,7 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -522,6 +523,17 @@ QByteArray QSslCertificate::toDer() const
 }
 
 /*!
+    Returns this certificate converted to a human-readable text
+    representation.
+*/
+QByteArray QSslCertificate::toText() const
+{
+    if (!d->x509)
+        return QByteArray();
+    return d->text_from_X509(d->x509);
+}
+
+/*!
     Searches all files in the \a path for certificates encoded in the
     specified \a format and returns them in a list. \e must be a file or a
     pattern matching one or more files, as specified by \a syntax.
@@ -664,6 +676,31 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     }
 
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
+}
+
+QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
+{
+    if (!x509) {
+        qWarning("QSslSocketBackendPrivate::text_from_X509: null X509");
+        return QByteArray();
+    }
+
+    QByteArray result;
+    BIO *bio = q_BIO_new(q_BIO_s_mem());
+    if (!bio)
+      return result;
+
+    q_X509_print(bio, x509);
+
+    QVarLengthArray<char, 16384> data;
+    int count = q_BIO_read(bio, data.data(), 16384);
+    if ( count > 0 ) {
+        result = QByteArray( data.data(), count );
+    }
+
+    q_BIO_free(bio);
+
+    return result;
 }
 
 static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)

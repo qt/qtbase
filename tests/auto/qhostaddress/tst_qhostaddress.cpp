@@ -269,7 +269,10 @@ void tst_QHostAddress::specialAddresses_data()
     QTest::newRow("broadcast_2") << QString("255.255.255.255") << (int)QHostAddress::Broadcast << true;
 
     QTest::newRow("any_ipv6") << QString("::") << (int)QHostAddress::AnyIPv6 << true;
-    QTest::newRow("any_ipv4") << QString("0.0.0.0") << (int)QHostAddress::Any << true;
+    QTest::newRow("any_ipv4") << QString("0.0.0.0") << (int)QHostAddress::AnyIPv4 << true;
+
+    QTest::newRow("dual_not_ipv6") << QString("::") << (int)QHostAddress::Any << false;
+    QTest::newRow("dual_not_ipv4") << QString("0.0.0.0") << (int)QHostAddress::Any << false;
 }
 
 
@@ -366,8 +369,9 @@ void tst_QHostAddress::streaming_data()
     QTest::newRow("8") << QHostAddress(QHostAddress::LocalHostIPv6);
     QTest::newRow("9") << QHostAddress(QHostAddress::Broadcast);
     QTest::newRow("10") << QHostAddress(QHostAddress::Any);
-    QTest::newRow("11") << QHostAddress(QHostAddress::AnyIPv6);
-    QTest::newRow("12") << QHostAddress("foo.bar.com");
+    QTest::newRow("11") << QHostAddress(QHostAddress::AnyIPv4);
+    QTest::newRow("12") << QHostAddress(QHostAddress::AnyIPv6);
+    QTest::newRow("13") << QHostAddress("foo.bar.com");
 }
 
 void tst_QHostAddress::streaming()
@@ -409,26 +413,26 @@ void tst_QHostAddress::parseSubnet_data()
     QTest::newRow("invalid_23") << "ffff::/ff00::" << QHostAddress() << -1;
 
     // correct IPv4 with netmask
-    QTest::newRow("netmask_0") << "0.0.0.0/0.0.0.0" << QHostAddress(QHostAddress::Any) << 0;
-    QTest::newRow("netmask_1") << "0.0.0.0/255.128.0.0" << QHostAddress(QHostAddress::Any) << 9;
-    QTest::newRow("netmask_2") << "0.0.0.0/255.192.0.0" << QHostAddress(QHostAddress::Any) << 10;
-    QTest::newRow("netmask_3") << "0.0.0.0/255.224.0.0" << QHostAddress(QHostAddress::Any) << 11;
-    QTest::newRow("netmask_4") << "0.0.0.0/255.240.0.0" << QHostAddress(QHostAddress::Any) << 12;
-    QTest::newRow("netmask_5") << "0.0.0.0/255.248.0.0" << QHostAddress(QHostAddress::Any) << 13;
-    QTest::newRow("netmask_6") << "0.0.0.0/255.252.0.0" << QHostAddress(QHostAddress::Any) << 14;
-    QTest::newRow("netmask_7") << "0.0.0.0/255.254.0.0" << QHostAddress(QHostAddress::Any) << 15;
-    QTest::newRow("netmask_8") << "0.0.0.0/255.255.0.0" << QHostAddress(QHostAddress::Any) << 16;
-    QTest::newRow("netmask_16") << "0.0.0.0/255.255.0.0" << QHostAddress(QHostAddress::Any) << 16;
-    QTest::newRow("netmask_24") << "0.0.0.0/255.255.255.0" << QHostAddress(QHostAddress::Any) << 24;
-    QTest::newRow("netmask_31") << "0.0.0.0/255.255.255.254" << QHostAddress(QHostAddress::Any) << 31;
-    QTest::newRow("netmask_32") << "0.0.0.0/255.255.255.255" << QHostAddress(QHostAddress::Any) << 32;
+    QTest::newRow("netmask_0") << "0.0.0.0/0.0.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 0;
+    QTest::newRow("netmask_1") << "0.0.0.0/255.128.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 9;
+    QTest::newRow("netmask_2") << "0.0.0.0/255.192.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 10;
+    QTest::newRow("netmask_3") << "0.0.0.0/255.224.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 11;
+    QTest::newRow("netmask_4") << "0.0.0.0/255.240.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 12;
+    QTest::newRow("netmask_5") << "0.0.0.0/255.248.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 13;
+    QTest::newRow("netmask_6") << "0.0.0.0/255.252.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 14;
+    QTest::newRow("netmask_7") << "0.0.0.0/255.254.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 15;
+    QTest::newRow("netmask_8") << "0.0.0.0/255.255.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 16;
+    QTest::newRow("netmask_16") << "0.0.0.0/255.255.0.0" << QHostAddress(QHostAddress::AnyIPv4) << 16;
+    QTest::newRow("netmask_24") << "0.0.0.0/255.255.255.0" << QHostAddress(QHostAddress::AnyIPv4) << 24;
+    QTest::newRow("netmask_31") << "0.0.0.0/255.255.255.254" << QHostAddress(QHostAddress::AnyIPv4) << 31;
+    QTest::newRow("netmask_32") << "0.0.0.0/255.255.255.255" << QHostAddress(QHostAddress::AnyIPv4) << 32;
 
     // correct IPv4 with prefix
-    QTest::newRow("prefix_0") << "0.0.0.0/0" << QHostAddress(QHostAddress::Any) << 0;
-    QTest::newRow("prefix_1") << "0.0.0.0/1" << QHostAddress(QHostAddress::Any) << 1;
-    QTest::newRow("prefix_9") << "0.0.0.0/9" << QHostAddress(QHostAddress::Any) << 9;
-    QTest::newRow("prefix_31") << "0.0.0.0/31" << QHostAddress(QHostAddress::Any) << 31;
-    QTest::newRow("prefix_32") << "0.0.0.0/32" << QHostAddress(QHostAddress::Any) << 32;
+    QTest::newRow("prefix_0") << "0.0.0.0/0" << QHostAddress(QHostAddress::AnyIPv4) << 0;
+    QTest::newRow("prefix_1") << "0.0.0.0/1" << QHostAddress(QHostAddress::AnyIPv4) << 1;
+    QTest::newRow("prefix_9") << "0.0.0.0/9" << QHostAddress(QHostAddress::AnyIPv4) << 9;
+    QTest::newRow("prefix_31") << "0.0.0.0/31" << QHostAddress(QHostAddress::AnyIPv4) << 31;
+    QTest::newRow("prefix_32") << "0.0.0.0/32" << QHostAddress(QHostAddress::AnyIPv4) << 32;
 
     // correct IPv4 without prefix or netmask
     QTest::newRow("classA") << "10" << QHostAddress("10.0.0.0") << 8;
@@ -533,22 +537,22 @@ void tst_QHostAddress::isInSubnet_data()
 
     // invalid QHostAddresses are never in any subnets
     QTest::newRow("invalid_01") << QHostAddress() << QHostAddress() << 32 << false;
-    QTest::newRow("invalid_02") << QHostAddress() << QHostAddress(QHostAddress::Any) << 32 << false;
-    QTest::newRow("invalid_03") << QHostAddress() << QHostAddress(QHostAddress::Any) << 8 << false;
-    QTest::newRow("invalid_04") << QHostAddress() << QHostAddress(QHostAddress::Any) << 0 << false;
+    QTest::newRow("invalid_02") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv4) << 32 << false;
+    QTest::newRow("invalid_03") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv4) << 8 << false;
+    QTest::newRow("invalid_04") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv4) << 0 << false;
     QTest::newRow("invalid_05") << QHostAddress() << QHostAddress("255.255.255.0") << 24 << false;
     QTest::newRow("invalid_06") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv6) << 0 << false;
     QTest::newRow("invalid_07") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv6) << 32 << false;
     QTest::newRow("invalid_08") << QHostAddress() << QHostAddress(QHostAddress::AnyIPv6) << 128<< false;
 
     // and no host address can be in a subnet whose prefix is invalid
-    QTest::newRow("invalid_20") << QHostAddress(QHostAddress::Any) << QHostAddress() << 16 << false;
+    QTest::newRow("invalid_20") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress() << 16 << false;
     QTest::newRow("invalid_21") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress() << 16 << false;
     QTest::newRow("invalid_22") << QHostAddress(QHostAddress::LocalHost) << QHostAddress() << 16 << false;
     QTest::newRow("invalid_23") << QHostAddress(QHostAddress::LocalHostIPv6) << QHostAddress() << 16 << false;
 
     // negative netmasks don't make sense:
-    QTest::newRow("invalid_30") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::Any) << -1 << false;
+    QTest::newRow("invalid_30") << QHostAddress(QHostAddress::AnyIPv4) << QHostAddress(QHostAddress::Any) << -1 << false;
     QTest::newRow("invalid_31") << QHostAddress(QHostAddress::AnyIPv6) << QHostAddress(QHostAddress::AnyIPv6) << -1 << false;
 
     // we don't support IPv4 belonging in an IPv6 netmask and vice-versa
@@ -558,10 +562,10 @@ void tst_QHostAddress::isInSubnet_data()
     QTest::newRow("v4-in-v6mapped2") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("::ffff:255.0.0.0") << 113 << false;
 
     // IPv4 correct ones
-    QTest::newRow("netmask_0") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::Any) << 0 << true;
+    QTest::newRow("netmask_0") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::AnyIPv4) << 0 << true;
     QTest::newRow("netmask_0bis") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("255.255.0.0") << 0 << true;
     QTest::newRow("netmask_0ter") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("1.2.3.4") << 0 << true;
-    QTest::newRow("netmask_1") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::Any) << 1 << true;
+    QTest::newRow("netmask_1") << QHostAddress(QHostAddress::LocalHost) << QHostAddress(QHostAddress::AnyIPv4) << 1 << true;
     QTest::newRow("~netmask_1") << QHostAddress(QHostAddress::LocalHost) << QHostAddress("128.0.0.0") << 1 << false;
     QTest::newRow("netmask_1bis") << QHostAddress("224.0.0.1") << QHostAddress("128.0.0.0") << 1 << true;
     QTest::newRow("~netmask_1bis") << QHostAddress("224.0.0.1") << QHostAddress("0.0.0.0") << 1 << false;

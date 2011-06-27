@@ -93,6 +93,7 @@ public:
     void init(const QByteArray &data, QSsl::EncodingFormat format);
 
     static QByteArray QByteArray_from_X509(X509 *x509, QSsl::EncodingFormat format);
+    static QByteArray text_from_X509(X509 *x509);
     static QSslCertificate QSslCertificate_from_X509(X509 *x509);
     static QList<QSslCertificate> certificatesFromPem(const QByteArray &pem, int count = -1);
     static QList<QSslCertificate> certificatesFromDer(const QByteArray &der, int count = -1);
