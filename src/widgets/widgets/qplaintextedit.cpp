@@ -57,7 +57,6 @@
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
-#include "private/qtextcontrol_p.h"
 
 #include <qtextformat.h>
 #include <qdatetime.h>
@@ -434,7 +433,7 @@ qreal QPlainTextDocumentLayout::blockWidth(const QTextBlock &block)
 
 
 QPlainTextEditControl::QPlainTextEditControl(QPlainTextEdit *parent)
-    : QTextControl(parent), textEdit(parent),
+    : QWidgetTextControl(parent), textEdit(parent),
       topBlock(0)
 {
     setAcceptRichText(false);
@@ -456,19 +455,19 @@ void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {
 QMimeData *QPlainTextEditControl::createMimeDataFromSelection() const {
         QPlainTextEdit *ed = qobject_cast<QPlainTextEdit *>(parent());
         if (!ed)
-            return QTextControl::createMimeDataFromSelection();
+            return QWidgetTextControl::createMimeDataFromSelection();
         return ed->createMimeDataFromSelection();
     }
 bool QPlainTextEditControl::canInsertFromMimeData(const QMimeData *source) const {
     QPlainTextEdit *ed = qobject_cast<QPlainTextEdit *>(parent());
     if (!ed)
-        return QTextControl::canInsertFromMimeData(source);
+        return QWidgetTextControl::canInsertFromMimeData(source);
     return ed->canInsertFromMimeData(source);
 }
 void QPlainTextEditControl::insertFromMimeData(const QMimeData *source) {
     QPlainTextEdit *ed = qobject_cast<QPlainTextEdit *>(parent());
     if (!ed)
-        QTextControl::insertFromMimeData(source);
+        QWidgetTextControl::insertFromMimeData(source);
     else
         ed->insertFromMimeData(source);
 }
@@ -2356,7 +2355,7 @@ QList<QTextEdit::ExtraSelection> QPlainTextEdit::extraSelections() const
 QMimeData *QPlainTextEdit::createMimeDataFromSelection() const
 {
     Q_D(const QPlainTextEdit);
-    return d->control->QTextControl::createMimeDataFromSelection();
+    return d->control->QWidgetTextControl::createMimeDataFromSelection();
 }
 
 /*!
@@ -2368,7 +2367,7 @@ QMimeData *QPlainTextEdit::createMimeDataFromSelection() const
 bool QPlainTextEdit::canInsertFromMimeData(const QMimeData *source) const
 {
     Q_D(const QPlainTextEdit);
-    return d->control->QTextControl::canInsertFromMimeData(source);
+    return d->control->QWidgetTextControl::canInsertFromMimeData(source);
 }
 
 /*!
@@ -2381,7 +2380,7 @@ bool QPlainTextEdit::canInsertFromMimeData(const QMimeData *source) const
 void QPlainTextEdit::insertFromMimeData(const QMimeData *source)
 {
     Q_D(QPlainTextEdit);
-    d->control->QTextControl::insertFromMimeData(source);
+    d->control->QWidgetTextControl::insertFromMimeData(source);
 }
 
 /*!

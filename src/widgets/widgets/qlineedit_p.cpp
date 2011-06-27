@@ -153,7 +153,7 @@ void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
-    control = new QLineControl(txt);
+    control = new QWidgetLineControl(txt);
     control->setParent(q);
     control->setFont(q->font());
     QObject::connect(control, SIGNAL(textChanged(QString)),

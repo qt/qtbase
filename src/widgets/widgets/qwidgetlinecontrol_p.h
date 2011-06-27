@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QLINECONTROL_P_H
-#define QLINECONTROL_P_H
+#ifndef QWidgetLineControl_P_H
+#define QWidgetLineControl_P_H
 
 //
 //  W A R N I N G
@@ -71,12 +71,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_WIDGETS_EXPORT QLineControl : public QObject
+class Q_WIDGETS_EXPORT QWidgetLineControl : public QObject
 {
     Q_OBJECT
 
 public:
-    QLineControl(const QString &txt = QString())
+    QWidgetLineControl(const QString &txt = QString())
         : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LayoutDirectionAuto),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
@@ -88,7 +88,7 @@ public:
         init(txt);
     }
 
-    ~QLineControl()
+    ~QWidgetLineControl()
     {
         delete [] m_maskData;
     }
@@ -459,4 +459,4 @@ QT_END_HEADER
 
 #endif // QT_NO_LINEEDIT
 
-#endif // QLINECONTROL_P_H
+#endif // QWidgetLineControl_P_H

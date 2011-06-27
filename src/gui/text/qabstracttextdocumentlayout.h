@@ -122,7 +122,7 @@ protected:
     QTextCharFormat format(int pos);
 
 private:
-    friend class QTextControl;
+    friend class QWidgetTextControl;
     friend class QTextDocument;
     friend class QTextDocumentPrivate;
     friend class QTextEngine;

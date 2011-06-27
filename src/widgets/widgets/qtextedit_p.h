@@ -62,7 +62,7 @@
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qurl.h"
-#include "private/qtextcontrol_p.h"
+#include "private/qwidgettextcontrol_p.h"
 #include "qtextedit.h"
 
 QT_BEGIN_NAMESPACE
@@ -106,7 +106,7 @@ public:
     virtual QUrl resolveUrl(const QUrl &url) const
     { return url; }
 
-    QTextControl *control;
+    QWidgetTextControl *control;
 
     QTextEdit::AutoFormatting autoFormatting;
     bool tabChangesFocus;

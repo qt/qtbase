@@ -339,7 +339,7 @@ void QLabel::setText(const QString &text)
     if (d->text == text)
         return;
 
-    QTextControl *oldControl = d->control;
+    QWidgetTextControl *oldControl = d->control;
     d->control = 0;
 
     d->clearContents();
@@ -1599,7 +1599,7 @@ void QLabelPrivate::ensureTextControl() const
     if (!isTextLabel)
         return;
     if (!control) {
-        control = new QTextControl(const_cast<QLabel *>(q));
+        control = new QWidgetTextControl(const_cast<QLabel *>(q));
         control->document()->setUndoRedoEnabled(false);
         control->document()->setDefaultFont(q->font());
         control->setTextInteractionFlags(textInteractionFlags);

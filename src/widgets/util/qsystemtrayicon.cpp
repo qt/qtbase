@@ -474,7 +474,7 @@ QBalloonTip::QBalloonTip(QSystemTrayIcon::MessageIcon icon, const QString& title
         msgLabel->setWordWrap(true);
         if (msgLabel->sizeHint().width() > limit) {
             msgLabel->d_func()->ensureTextControl();
-            if (QTextControl *control = msgLabel->d_func()->control) {
+            if (QWidgetTextControl *control = msgLabel->d_func()->control) {
                 QTextOption opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);

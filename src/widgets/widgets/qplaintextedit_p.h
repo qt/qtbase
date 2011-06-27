@@ -61,7 +61,7 @@
 #include "QtWidgets/qmenu.h"
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
-#include "private/qtextcontrol_p.h"
+#include "private/qwidgettextcontrol_p.h"
 #include "qplaintextedit.h"
 
 #ifndef QT_NO_TEXTEDIT
@@ -73,7 +73,7 @@ class QMimeData;
 class QPlainTextEdit;
 class ExtraArea;
 
-class QPlainTextEditControl : public QTextControl
+class QPlainTextEditControl : public QWidgetTextControl
 {
     Q_OBJECT
 public:
@@ -86,7 +86,7 @@ public:
     int hitTest(const QPointF &point, Qt::HitTestAccuracy = Qt::FuzzyHit) const;
     QRectF blockBoundingRect(const QTextBlock &block) const;
     inline QRectF cursorRect(const QTextCursor &cursor) const {
-        QRectF r = QTextControl::cursorRect(cursor);
+        QRectF r = QWidgetTextControl::cursorRect(cursor);
         r.setLeft(qMax(r.left(), (qreal) 0.));
         return r;
     }

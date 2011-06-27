@@ -65,7 +65,7 @@
 #include "QtCore/qpointer.h"
 #include "QtWidgets/qlineedit.h"
 
-#include "private/qlinecontrol_p.h"
+#include "private/qwidgetlinecontrol_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -86,7 +86,7 @@ public:
     {
     }
 
-    QLineControl *control;
+    QWidgetLineControl *control;
 
 #ifndef QT_NO_CONTEXTMENU
     QPointer<QAction> selectAllAction;

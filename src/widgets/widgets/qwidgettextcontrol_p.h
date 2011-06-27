@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTEXTCONTROL_P_H
-#define QTEXTCONTROL_P_H
+#ifndef QWIDGETTEXTCONTROL_P_H
+#define QWIDGETTEXTCONTROL_P_H
 
 //
 //  W A R N I N G
@@ -73,16 +73,16 @@ QT_MODULE(Gui)
 class QStyleSheet;
 class QTextDocument;
 class QMenu;
-class QTextControlPrivate;
+class QWidgetTextControlPrivate;
 class QMimeData;
 class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;
 
-class Q_WIDGETS_EXPORT QTextControl : public QObject
+class Q_WIDGETS_EXPORT QWidgetTextControl : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTextControl)
+    Q_DECLARE_PRIVATE(QWidgetTextControl)
 #ifndef QT_NO_TEXTHTMLPARSER
     Q_PROPERTY(QString html READ toHtml WRITE setHtml NOTIFY textChanged USER true)
 #endif
@@ -93,10 +93,10 @@ class Q_WIDGETS_EXPORT QTextControl : public QObject
     Q_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
     Q_PROPERTY(bool ignoreUnusedNavigationEvents READ ignoreUnusedNavigationEvents WRITE setIgnoreUnusedNavigationEvents)
 public:
-    explicit QTextControl(QObject *parent = 0);
-    explicit QTextControl(const QString &text, QObject *parent = 0);
-    explicit QTextControl(QTextDocument *doc, QObject *parent = 0);
-    virtual ~QTextControl();
+    explicit QWidgetTextControl(QObject *parent = 0);
+    explicit QWidgetTextControl(const QString &text, QObject *parent = 0);
+    explicit QWidgetTextControl(QTextDocument *doc, QObject *parent = 0);
+    virtual ~QWidgetTextControl();
 
     void setDocument(QTextDocument *document);
     QTextDocument *document() const;
@@ -259,7 +259,7 @@ protected:
     virtual bool event(QEvent *e);
 
 private:
-    Q_DISABLE_COPY(QTextControl)
+    Q_DISABLE_COPY(QWidgetTextControl)
     Q_PRIVATE_SLOT(d_func(), void _q_updateCurrentCharFormatAndSelection())
     Q_PRIVATE_SLOT(d_func(), void _q_emitCursorPosChanged(const QTextCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_deleteSelected())
@@ -304,4 +304,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTEXTCONTROL_H
+#endif // QWidgetTextControl_H

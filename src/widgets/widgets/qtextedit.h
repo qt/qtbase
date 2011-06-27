@@ -417,7 +417,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_ensureVisible(const QRectF &))
     friend class QTextEditControl;
     friend class QTextDocument;
-    friend class QTextControl;
+    friend class QWidgetTextControl;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEdit::AutoFormatting)

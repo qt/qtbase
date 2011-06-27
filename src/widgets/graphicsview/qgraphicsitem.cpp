@@ -750,7 +750,7 @@
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
-#include <private/qtextcontrol_p.h>
+#include <private/qwidgettextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
 #include <private/qwidget_p.h>
@@ -9854,8 +9854,8 @@ public:
         : control(0), pageNumber(0), useDefaultImpl(false), tabChangesFocus(false), clickCausedFocus(0)
     { }
 
-    mutable QTextControl *control;
-    QTextControl *textControl() const;
+    mutable QWidgetTextControl *control;
+    QWidgetTextControl *textControl() const;
 
     inline QPointF controlOffset() const
     { return QPointF(0., pageNumber * control->document()->pageSize().height()); }
@@ -10005,7 +10005,7 @@ void QGraphicsTextItem::setFont(const QFont &font)
 */
 void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
 {
-    QTextControl *c = dd->textControl();
+    QWidgetTextControl *c = dd->textControl();
     QPalette pal = c->palette();
     QColor old = pal.color(QPalette::Text);
     pal.setColor(QPalette::Text, col);
@@ -10502,11 +10502,11 @@ void QGraphicsTextItemPrivate::_q_ensureVisible(QRectF rect)
     }
 }
 
-QTextControl *QGraphicsTextItemPrivate::textControl() const
+QWidgetTextControl *QGraphicsTextItemPrivate::textControl() const
 {
     if (!control) {
         QGraphicsTextItem *that = const_cast<QGraphicsTextItem *>(qq);
-        control = new QTextControl(that);
+        control = new QWidgetTextControl(that);
         control->setTextInteractionFlags(Qt::NoTextInteraction);
 
         QObject::connect(control, SIGNAL(updateRequest(QRectF)),

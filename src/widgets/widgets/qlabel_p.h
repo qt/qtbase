@@ -56,7 +56,7 @@
 #include "qlabel.h"
 
 #include "private/qtextdocumentlayout_p.h"
-#include "private/qtextcontrol_p.h"
+#include "private/qwidgettextcontrol_p.h"
 #include "qtextdocumentfragment.h"
 #include "qframe_p.h"
 #include "qtextdocument.h"
@@ -112,7 +112,7 @@ public:
     mutable uint isTextLabel : 1;
     mutable uint hasShortcut : 1;
     Qt::TextFormat textformat;
-    mutable QTextControl *control;
+    mutable QWidgetTextControl *control;
     mutable QTextCursor shortcutCursor;
     Qt::TextInteractionFlags textInteractionFlags;
 

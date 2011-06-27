@@ -76,6 +76,9 @@ HEADERS += \
         widgets/qscrollarea.h \
         widgets/qworkspace.h \
         widgets/qwidgetanimator_p.h \
+        widgets/qwidgettextcontrol_p.h \
+        widgets/qwidgettextcontrol_p_p.h \
+        widgets/qwidgetlinecontrol_p.h \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
@@ -136,6 +139,8 @@ SOURCES += \
         widgets/qscrollarea.cpp \
         widgets/qworkspace.cpp \
         widgets/qwidgetanimator.cpp \
+        widgets/qwidgettextcontrol.cpp \
+        widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
         widgets/qprintpreviewwidget.cpp

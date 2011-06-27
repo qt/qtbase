@@ -1978,7 +1978,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     }
 #endif
 #ifndef QT_NO_TEXTCONTROL
-    else if (QTextControl *control = qobject_cast<QTextControl *>(parent())) {
+    else if (QWidgetTextControl *control = qobject_cast<QWidgetTextControl *>(parent())) {
         r = control->loadResource(type, name);
     }
 #endif

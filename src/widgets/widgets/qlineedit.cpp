@@ -1979,13 +1979,13 @@ void QLineEdit::paintEvent(QPaintEvent *)
 #endif
     p.setPen(pal.text().color());
 
-    int flags = QLineControl::DrawText;
+    int flags = QWidgetLineControl::DrawText;
 
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || hasEditFocus())
 #endif
     if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
-        flags |= QLineControl::DrawSelections;
+        flags |= QWidgetLineControl::DrawSelections;
         // Palette only used for selections/mask and may not be in sync
         if (d->control->palette() != pal
            || d->control->palette().currentColorGroup() != pal.currentColorGroup())
@@ -1996,7 +1996,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // selection phase of input method, so the ordinary cursor should be
     // invisible if we have a preedit string.
     if (d->cursorVisible && !d->control->isReadOnly())
-        flags |= QLineControl::DrawCursor;
+        flags |= QWidgetLineControl::DrawCursor;
 
     d->control->setCursorWidth(style()->pixelMetric(QStyle::PM_TextCursorWidth));
     d->control->draw(&p, topLeft, r, flags);

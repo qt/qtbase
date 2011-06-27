@@ -390,7 +390,7 @@ private:
 #ifndef QT_NO_SHORTCUT
     friend class QShortcut;
     friend class QLineEdit;
-    friend class QTextControl;
+    friend class QWidgetTextControl;
 #endif
     friend class QAction;
 

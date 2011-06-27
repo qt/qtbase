@@ -341,7 +341,7 @@ void QMessageBoxPrivate::updateSize()
 
         if (width > hardLimit) {
             label->d_func()->ensureTextControl();
-            if (QTextControl *control = label->d_func()->control) {
+            if (QWidgetTextControl *control = label->d_func()->control) {
                 QTextOption opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);
@@ -367,7 +367,7 @@ void QMessageBoxPrivate::updateSize()
         width = qMax(width, layoutMinimumWidth());
         if (width > hardLimit) { // longest word is really big, so wrap anywhere
             informativeLabel->d_func()->ensureTextControl();
-            if (QTextControl *control = informativeLabel->d_func()->control) {
+            if (QWidgetTextControl *control = informativeLabel->d_func()->control) {
                 QTextOption opt = control->document()->defaultTextOption();
                 opt.setWrapMode(QTextOption::WrapAnywhere);
                 control->document()->setDefaultTextOption(opt);

@@ -58,7 +58,7 @@
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
-#include "private/qtextcontrol_p.h"
+#include "private/qwidgettextcontrol_p.h"
 
 #include <qtextformat.h>
 #include <qdatetime.h>
@@ -79,27 +79,27 @@ static inline bool shouldEnableInputMethod(QTextEdit *textedit)
     return !textedit->isReadOnly();
 }
 
-class QTextEditControl : public QTextControl
+class QTextEditControl : public QWidgetTextControl
 {
 public:
-    inline QTextEditControl(QObject *parent) : QTextControl(parent) {}
+    inline QTextEditControl(QObject *parent) : QWidgetTextControl(parent) {}
 
     virtual QMimeData *createMimeDataFromSelection() const {
         QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
-            return QTextControl::createMimeDataFromSelection();
+            return QWidgetTextControl::createMimeDataFromSelection();
         return ed->createMimeDataFromSelection();
     }
     virtual bool canInsertFromMimeData(const QMimeData *source) const {
         QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
-            return QTextControl::canInsertFromMimeData(source);
+            return QWidgetTextControl::canInsertFromMimeData(source);
         return ed->canInsertFromMimeData(source);
     }
     virtual void insertFromMimeData(const QMimeData *source) {
         QTextEdit *ed = qobject_cast<QTextEdit *>(parent());
         if (!ed)
-            QTextControl::insertFromMimeData(source);
+            QWidgetTextControl::insertFromMimeData(source);
         else
             ed->insertFromMimeData(source);
     }
@@ -235,7 +235,7 @@ void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::Mo
 }
 
 #ifndef QT_NO_SCROLLBAR
-static QSize documentSize(QTextControl *control)
+static QSize documentSize(QWidgetTextControl *control)
 {
     QTextDocument *doc = control->document();
     QAbstractTextDocumentLayout *layout = doc->documentLayout();
@@ -2019,7 +2019,7 @@ QList<QTextEdit::ExtraSelection> QTextEdit::extraSelections() const
 QMimeData *QTextEdit::createMimeDataFromSelection() const
 {
     Q_D(const QTextEdit);
-    return d->control->QTextControl::createMimeDataFromSelection();
+    return d->control->QWidgetTextControl::createMimeDataFromSelection();
 }
 
 /*!
@@ -2034,7 +2034,7 @@ QMimeData *QTextEdit::createMimeDataFromSelection() const
 bool QTextEdit::canInsertFromMimeData(const QMimeData *source) const
 {
     Q_D(const QTextEdit);
-    return d->control->QTextControl::canInsertFromMimeData(source);
+    return d->control->QWidgetTextControl::canInsertFromMimeData(source);
 }
 
 /*!
@@ -2049,7 +2049,7 @@ bool QTextEdit::canInsertFromMimeData(const QMimeData *source) const
 void QTextEdit::insertFromMimeData(const QMimeData *source)
 {
     Q_D(QTextEdit);
-    d->control->QTextControl::insertFromMimeData(source);
+    d->control->QWidgetTextControl::insertFromMimeData(source);
 }
 
 /*!

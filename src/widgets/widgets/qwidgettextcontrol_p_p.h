@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTEXTCONTROL_P_P_H
-#define QTEXTCONTROL_P_P_H
+#ifndef QWIDGETTEXTCONTROL_P_P_H
+#define QWIDGETTEXTCONTROL_P_P_H
 
 //
 //  W A R N I N G
@@ -69,11 +69,11 @@ class QMimeData;
 class QAbstractScrollArea;
 class QInputContext;
 
-class QTextControlPrivate : public QObjectPrivate
+class QWidgetTextControlPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QTextControl)
+    Q_DECLARE_PUBLIC(QWidgetTextControl)
 public:
-    QTextControlPrivate();
+    QWidgetTextControlPrivate();
 
     bool cursorMoveKeyEvent(QKeyEvent *e);
 
@@ -235,4 +235,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QTEXTCONTROL_P_H
+#endif // QWidgetTextControl_P_H

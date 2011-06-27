@@ -230,7 +230,7 @@ private:
     QSharedDataPointer<QTextCursorPrivate> d;
     friend class QTextDocumentFragmentPrivate;
     friend class QTextCopyHelper;
-    friend class QTextControlPrivate;
+    friend class QWidgetTextControlPrivate;
 };
 
 QT_END_NAMESPACE
