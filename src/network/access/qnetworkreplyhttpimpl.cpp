@@ -876,6 +876,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
                      delegate->incomingContentLength);
+            replyDownloadData(delegate->synchronousDownloadData);
             httpError(delegate->incomingErrorCode, delegate->incomingErrorDetail);
         } else {
             replyDownloadMetaData
