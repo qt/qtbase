@@ -2,13 +2,14 @@
 #include "qcocoawindow.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtPlatformSupport/private/cglconvenience_p.h>
 
 #import <Cocoa/Cocoa.h>
 
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share)
     : m_format(format)
 {
-    NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat();
+    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
     NSOpenGLContext *actualShare = share ? static_cast<QCocoaGLContext *>(share)->m_context : 0;
 
     m_context = [NSOpenGLContext alloc];
@@ -67,17 +68,9 @@ void QCocoaGLContext::doneCurrent()
     [NSOpenGLContext clearCurrentContext];
 }
 
-void (*QCocoaGLContext::getProcAddress(const QByteArray &procName)) ()
+void (*QCocoaGLContext::getProcAddress(const QByteArray &procName))()
 {
-    CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-            CFSTR("/System/Library/Frameworks/OpenGL.framework"), kCFURLPOSIXPathStyle, false);
-    CFBundleRef bundle = CFBundleCreate(kCFAllocatorDefault, url);
-    CFStringRef procNameCF = QCFString::toCFStringRef(QString::fromAscii(procName.constData()));
-    void *proc = CFBundleGetFunctionPointerForName(bundle, procNameCF);
-    CFRelease(url);
-    CFRelease(bundle);
-    CFRelease(procNameCF);
-    return (void (*) ())proc;
+    return qcgl_getProcAddress(procName);
 }
 
 void QCocoaGLContext::update()
@@ -87,15 +80,7 @@ void QCocoaGLContext::update()
 
 NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat()
 {
-    NSOpenGLPixelFormatAttribute attrs[] =
-    {
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFADepthSize, 32,
-        0
-    };
-
-    NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    return pixelFormat;
+    return static_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
 }
 
 NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const

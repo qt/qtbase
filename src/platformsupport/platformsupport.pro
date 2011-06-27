@@ -20,6 +20,7 @@ HEADERS += $$PWD/qtplatformsupportversion.h
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
+include(cglconvenience/cglconvenience.pri)
 include(dnd/dnd.pri)
 include(eglconvenience/eglconvenience.pri)
 include(eventdispatchers/eventdispatchers.pri)
