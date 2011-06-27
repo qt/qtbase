@@ -54,6 +54,7 @@
 #include <qdebug.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
+#include <qaccessible2.h>
 #endif
 
 #include <private/qtreeview_p.h>
@@ -2883,20 +2884,36 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
 void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
 {
+    Q_Q(QTreeView);
     viewItems.insert(pos, count, viewItem);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos + count; i < viewItems.count(); i++)
         if (items[i].parentItem >= pos)
             items[i].parentItem += count;
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
 
 void QTreeViewPrivate::removeViewItems(int pos, int count)
 {
+    Q_Q(QTreeView);
     viewItems.remove(pos, count);
     QTreeViewItem *items = viewItems.data();
     for (int i = pos; i < viewItems.count(); i++)
         if (items[i].parentItem >= pos)
             items[i].parentItem -= count;
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
 
 #if 0
@@ -3687,14 +3704,6 @@ void QTreeViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
  */
 void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
-#ifndef QT_NO_ACCESSIBILITY
-    if (QAccessible::isActive()) {
-        int entry = visualIndex(current) + 1;
-        if (header())
-            ++entry;
-        QAccessible::updateAccessibility(viewport(), entry, QAccessible::Focus);
-    }
-#endif
     QAbstractItemView::currentChanged(current, previous);
 
     if (allColumnsShowFocus()) {
@@ -3711,6 +3720,19 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
             viewport()->update(currentRect);
         }
     }
+#ifndef QT_NO_ACCESSIBILITY
+    if (QAccessible::isActive() && current.isValid()) {
+#ifdef Q_WS_X11
+        int entry = (visualIndex(current) + (header()?1:0))*current.model()->columnCount()+current.column() + 1;
+        QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+#else
+        int entry = visualIndex(current) + 1;
+        if (header())
+            ++entry;
+        QAccessible::updateAccessibility(viewport(), entry, QAccessible::Focus);
+#endif
+    }
+#endif
 }
 
 /*!
@@ -3719,26 +3741,38 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
 void QTreeView::selectionChanged(const QItemSelection &selected,
                                  const QItemSelection &deselected)
 {
+    QAbstractItemView::selectionChanged(selected, deselected);
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column() + 1;
+            Q_ASSERT(entry > 0);
+            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+#else
             int entry = visualIndex(sel) + 1;
             if (header())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Selection);
+#endif
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column() + 1;
+            Q_ASSERT(entry > 0);
+            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+#else
             int entry = visualIndex(desel) + 1;
             if (header())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::SelectionRemove);
+#endif
         }
     }
 #endif
-    QAbstractItemView::selectionChanged(selected, deselected);
 }
 
 int QTreeView::visualIndex(const QModelIndex &index) const

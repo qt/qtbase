@@ -44,17 +44,20 @@
 #include "simplewidgets.h"
 #include "rangecontrols.h"
 #include "complexwidgets.h"
+#include "itemviews.h"
 
 #include <qaccessibleplugin.h>
 #include <qplugin.h>
 #include <qpushbutton.h>
 #include <qtoolbutton.h>
+#include <qtreeview.h>
 #include <qvariant.h>
 #include <qaccessible.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
+
 
 class AccessibleFactory : public QAccessiblePlugin
 {
@@ -251,6 +254,22 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         iface = new QAccessibleMenu(widget);
 #endif
 #ifndef QT_NO_ITEMVIEWS
+#ifdef Q_WS_X11
+    } else if (classname == QLatin1String("QAbstractItemView")) {
+        if (qobject_cast<const QTreeView*>(widget)) {
+            iface = new QAccessibleTree(widget);
+        } else {
+            iface = new QAccessibleTable2(widget);
+        }
+    } else if (classname == QLatin1String("QWidget")
+               && widget->objectName() == QLatin1String("qt_scrollarea_viewport")
+               && qobject_cast<QAbstractItemView*>(widget->parentWidget())) {
+        if (qobject_cast<const QTreeView*>(widget->parentWidget())) {
+            iface = new QAccessibleTree(widget->parentWidget());
+        } else {
+            iface = new QAccessibleTable2(widget->parentWidget());
+        }
+#else
     } else if (classname == QLatin1String("QHeaderView")) {
         iface = new QAccessibleHeader(widget);
     } else if (classname == QLatin1String("QAbstractItemView")) {
@@ -259,7 +278,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
                && widget->objectName() == QLatin1String("qt_scrollarea_viewport")
                && qobject_cast<QAbstractItemView*>(widget->parentWidget())) {
         iface = new QAccessibleItemView(widget);
-#endif
+#endif // Q_WS_X11
+#endif // QT_NO_ITEMVIEWS
 #ifndef QT_NO_TABBAR
     } else if (classname == QLatin1String("QTabBar")) {
         iface = new QAccessibleTabBar(widget);

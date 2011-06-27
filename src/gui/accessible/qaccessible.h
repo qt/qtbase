@@ -151,6 +151,7 @@ public:
         ReadOnly        = 0x00000040,
         HotTracked      = 0x00000080,
         DefaultButton   = 0x00000100,
+        // #### Qt5 Expandable
         Expanded        = 0x00000200,
         Collapsed       = 0x00000400,
         Busy            = 0x00000800,
@@ -178,6 +179,8 @@ public:
         HasPopup        = 0x40000000,
         Modal           = 0x80000000,
 
+        // #### Qt5 ManagesDescendants
+        // #### Qt5 remove HasInvokeExtension
         HasInvokeExtension = 0x10000000 // internal
     };
     Q_DECLARE_FLAGS(State, StateFlag)
@@ -348,7 +351,8 @@ namespace QAccessible2
         ValueInterface,
         TableInterface,
         ActionInterface,
-        ImageInterface
+        ImageInterface,
+        Table2Interface
     };
 }
 
@@ -359,6 +363,7 @@ class QAccessibleValueInterface;
 class QAccessibleTableInterface;
 class QAccessibleActionInterface;
 class QAccessibleImageInterface;
+class QAccessibleTable2Interface;
 
 class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
@@ -421,6 +426,9 @@ public:
 
     inline QAccessibleImageInterface *imageInterface()
     { return reinterpret_cast<QAccessibleImageInterface *>(cast_helper(QAccessible2::ImageInterface)); }
+
+    inline QAccessibleTable2Interface *table2Interface()
+    { return reinterpret_cast<QAccessibleTable2Interface *>(cast_helper(QAccessible2::Table2Interface)); }
 
 private:
     QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);

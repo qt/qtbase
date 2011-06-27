@@ -219,6 +219,9 @@ protected:
 
 private:
     friend class QAccessibleItemView;
+    friend class QAccessibleTable2;
+    friend class QAccessibleTree;
+    friend class QAccessibleTable2Cell;
     int visualIndex(const QModelIndex &index) const;
 
     Q_DECLARE_PRIVATE(QTreeView)

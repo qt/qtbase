@@ -1048,6 +1048,11 @@ const QAccessibleInterface *other, int otherChild) const
 */
 
 /*!
+    \fn QAccessibleTable2Interface *QAccessibleInterface::table2Interface()
+    \internal
+*/
+
+/*!
     \fn QAccessibleActionInterface *QAccessibleInterface::actionInterface()
     \internal
 */

@@ -52,6 +52,8 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_ACCESSIBILITY
 
+class QModelIndex;
+
 namespace QAccessible2
 {
     enum CoordinateType
@@ -68,6 +70,24 @@ namespace QAccessible2
         LineBoundary,
         NoBoundary
     };
+
+    enum TableModelChangeType {
+        TableModelChangeInsert,
+        TableModelChangeDelete,
+        TableModelChangeUpdate
+    };
+
+    struct TableModelChange {
+        int firstColumn;
+        int firstRow;
+        int lastColumn;
+        int lastRow;
+        TableModelChangeType type;
+
+        TableModelChange()
+            : firstColumn(0), firstRow(0), lastColumn(0), lastRow(0), type(TableModelChangeUpdate)
+        {}
+    };
 }
 
 class Q_GUI_EXPORT QAccessible2Interface
@@ -83,6 +103,7 @@ inline QAccessible2Interface *qAccessibleEditableTextCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleTableCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleActionCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleImageCastHelper() { return 0; }
+inline QAccessible2Interface *qAccessibleTable2CastHelper() { return 0; }
 
 #define Q_ACCESSIBLE_OBJECT \
     public: \
@@ -101,6 +122,8 @@ inline QAccessible2Interface *qAccessibleImageCastHelper() { return 0; }
             return qAccessibleActionCastHelper(); \
         case QAccessible2::ImageInterface: \
             return qAccessibleImageCastHelper(); \
+        case QAccessible2::Table2Interface: \
+            return qAccessibleTable2CastHelper(); \
         } \
         return 0; \
     } \
@@ -212,6 +235,95 @@ public:
     virtual void unselectColumn(int column) = 0;
     virtual void cellAtIndex(int index, int *row, int *column, int *rowSpan,
                              int *columnSpan, bool *isSelected) = 0;
+};
+
+class Q_GUI_EXPORT QAccessibleTable2CellInterface: public QAccessibleInterface
+{
+public:
+    //            Returns the number of columns occupied by this cell accessible.
+    virtual int columnExtent() const = 0;
+
+    //            Returns the column headers as an array of cell accessibles.
+    virtual QList<QAccessibleInterface*> columnHeaderCells() const = 0;
+
+    //            Translates this cell accessible into the corresponding column index.
+    virtual int columnIndex() const = 0;
+    //            Returns the number of rows occupied by this cell accessible.
+    virtual int rowExtent() const = 0;
+    //            Returns the row headers as an array of cell accessibles.
+    virtual QList<QAccessibleInterface*> rowHeaderCells() const = 0;
+    //            Translates this cell accessible into the corresponding row index.
+    virtual int rowIndex() const = 0;
+    //            Returns a boolean value indicating whether this cell is selected.
+    virtual bool isSelected() const = 0;
+
+    //            Gets the row and column indexes and extents of this cell accessible and whether or not it is selected.
+    virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const = 0;
+    //            Returns a reference to the accessbile of the containing table.
+    virtual QAccessibleTable2Interface* table() const = 0;
+
+    // #### Qt5 this should not be here but part of the state
+    virtual bool isExpandable() const = 0;
+};
+
+class Q_GUI_EXPORT QAccessibleTable2Interface: public QAccessible2Interface
+{
+public:
+    inline QAccessible2Interface *qAccessibleTable2CastHelper() { return this; }
+
+    // Returns the cell at the specified row and column in the table.
+    virtual QAccessibleTable2CellInterface *cellAt (int row, int column) const = 0;
+    // Returns the caption for the table.
+    virtual QAccessibleInterface *caption() const = 0;
+    // Returns the description text of the specified column in the table.
+    virtual QString columnDescription(int column) const = 0;
+    // Returns the total number of columns in table.
+    virtual int columnCount() const = 0;
+    // Returns the total number of rows in table.
+    virtual int rowCount() const = 0;
+    // Returns the total number of selected cells.
+    virtual int selectedCellCount() const = 0;
+    // Returns the total number of selected columns.
+    virtual int selectedColumnCount() const = 0;
+    // Returns the total number of selected rows.
+    virtual int selectedRowCount() const = 0;
+    // Returns the description text of the specified row in the table.
+    virtual QString rowDescription(int row) const = 0;
+    // Returns a list of accessibles currently selected.
+    virtual QList<QAccessibleTable2CellInterface*> selectedCells() const = 0;
+    // Returns a list of column indexes currently selected (0 based).
+    virtual QList<int> selectedColumns() const = 0;
+    // Returns a list of row indexes currently selected (0 based).
+    virtual QList<int> selectedRows() const = 0;
+    // Returns the summary description of the table.
+    virtual QAccessibleInterface *summary() const = 0;
+    // Returns a boolean value indicating whether the specified column is completely selected.
+    virtual bool isColumnSelected(int column) const = 0;
+    // Returns a boolean value indicating whether the specified row is completely selected.
+    virtual bool isRowSelected(int row) const = 0;
+    // Selects a row and unselects all previously selected rows.
+    virtual bool selectRow(int row) = 0;
+    // Selects a column and unselects all previously selected columns.
+    virtual bool selectColumn(int column) = 0;
+    // Unselects one row, leaving other selected rows selected (if any).
+    virtual bool unselectRow(int row) = 0;
+    // Unselects one column, leaving other selected columns selected (if any).
+    virtual bool unselectColumn(int column) = 0;
+    // Returns the type and extents describing how a table changed.
+    virtual QAccessible2::TableModelChange modelChange() const = 0;
+
+protected:
+    // These functions are called when the model changes.
+    virtual void modelReset() = 0;
+    virtual void rowsInserted(const QModelIndex &parent, int first, int last) = 0;
+    virtual void rowsRemoved(const QModelIndex &parent, int first, int last) = 0;
+    virtual void columnsInserted(const QModelIndex &parent, int first, int last) = 0;
+    virtual void columnsRemoved(const QModelIndex &parent, int first, int last) = 0;
+    virtual void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row) = 0;
+    virtual void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column) = 0;
+
+friend class QAbstractItemView;
+friend class QAbstractItemViewPrivate;
 };
 
 class Q_GUI_EXPORT QAccessibleActionInterface : public QAccessible2Interface
