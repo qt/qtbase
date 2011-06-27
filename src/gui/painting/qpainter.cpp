@@ -1223,7 +1223,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     rotate it clockwise and translate() to translate it (i.e. adding a
     given offset to the points). You can also twist the coordinate
     system around the origin using the shear() function. See the \l
-    {demos/affine}{Affine Transformations} demo for a visualization of
+    {painting/affine}{Affine Transformations} example for a visualization of
     a sheared coordinate system.
 
     See also the \l {painting/transformations}{Transformations}
@@ -1234,9 +1234,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \table 100%
     \row
     \o
-    \bold {Affine Transformations Demo}
+    \bold {Affine Transformations Example}
 
-    The \l {demos/affine}{Affine Transformations} demo show Qt's
+    The \l {painting/affine}{Affine Transformations} example shows Qt's
     ability to perform affine transformations on painting
     operations. The demo also allows the user to experiment with the
     transformation operations and see the results immediately.

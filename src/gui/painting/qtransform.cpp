@@ -223,8 +223,8 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/transform/main.cpp 2
     \endtable
 
-    \sa QPainter, {Coordinate System}, {demos/affine}{Affine
-    Transformations Demo}, {Transformations Example}
+    \sa QPainter, {Coordinate System}, {painting/affine}{Affine
+    Transformations Example}, {Transformations Example}
 */
 
 /*!

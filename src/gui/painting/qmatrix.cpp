@@ -177,7 +177,7 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     \sa QPainter, QTransform, {Coordinate System}, 
-    {demos/affine}{Affine Transformations Demo}, {Transformations Example}
+    {painting/affine}{Affine Transformations Example}, {Transformations Example}
 */
 
 

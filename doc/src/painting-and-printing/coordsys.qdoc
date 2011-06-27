@@ -195,8 +195,8 @@
     \endtable
 
     You can also twist the coordinate system around the origin using
-    the QPainter::shear() function. See the \l {demos/affine}{Affine
-    Transformations} demo for a visualization of a sheared coordinate
+    the QPainter::shear() function. See the \l {painting/affine}{Affine
+    Transformations} example for a visualization of a sheared coordinate
     system. All the transformation operations operate on QPainter's
     transformation matrix that you can retrieve using the
     QPainter::worldTransform() function. A matrix transforms a point
@@ -285,7 +285,7 @@
 
     For a demonstation of Qt's ability to perform affine
     transformations on painting operations, see the \l
-    {demos/affine}{Affine Transformations} demo which allows the user
+    {painting/affine}{Affine Transformations} example which allows the user
     to experiment with the transformation operations.  See also the \l
     {painting/transformations}{Transformations} example which shows
     how transformations influence the way that QPainter renders
