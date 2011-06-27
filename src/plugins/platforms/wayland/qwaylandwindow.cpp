@@ -144,8 +144,8 @@ void QWaylandWindow::newSurfaceCreated()
 {
     if (mBuffer) {
         wl_surface_attach(mSurface,mBuffer->buffer(),0,0);
-        wl_surface_damage(mSurface,
-                          0,0,mBuffer->size().width(),mBuffer->size().height());
+        // do not damage the surface here, as this leads to graphical corruptions in the compositor until
+        // the first frame has been rendered
     }
 }
 
