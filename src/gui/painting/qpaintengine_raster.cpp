@@ -1162,8 +1162,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     const QPainterPath::ElementType *types = path.elements();
 
     // There are some cases that are not supported by clip(QRect)
-    if (op != Qt::UniteClip && (op != Qt::IntersectClip || !s->clip
-                                || s->clip->hasRectClip || s->clip->hasRegionClip)) {
+    if (op != Qt::IntersectClip || !s->clip || s->clip->hasRectClip || s->clip->hasRegionClip) {
         if (s->matrix.type() <= QTransform::TxScale
             && ((path.shape() == QVectorPath::RectangleHint)
                 || (isRect(points, path.elementCount())
@@ -1206,18 +1205,6 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
         newClip->fixup();
 
-        if (op == Qt::UniteClip) {
-            // merge clips
-            QClipData *result = new QClipData(d->rasterBuffer->height());
-            QClipData *current = s->clip ? s->clip : new QClipData(d->rasterBuffer->height());
-            qt_merge_clip(current, newClip, result);
-            result->fixup();
-            delete newClip;
-            if (!s->clip)
-                delete current;
-            newClip = result;
-        }
-
         if (s->flags.has_clip_ownership)
             delete s->clip;
 
@@ -1243,7 +1230,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         qrasterpaintengine_state_setNoClip(s);
 
-    } else if (op == Qt::UniteClip || s->matrix.type() > QTransform::TxScale) {
+    } else if (s->matrix.type() > QTransform::TxScale) {
         QPaintEngineEx::clip(rect, op);
         return;
 
@@ -1328,7 +1315,6 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         qrasterpaintengine_state_setNoClip(s);
     } else if (s->matrix.type() > QTransform::TxScale
-               || op == Qt::UniteClip
                || (op == Qt::IntersectClip && !clip->hasRectClip && !clip->hasRegionClip)
                || (op == Qt::ReplaceClip && !baseClip->hasRectClip && !baseClip->hasRegionClip)) {
         QPaintEngineEx::clip(region, op);
@@ -4450,7 +4436,6 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
         }
         break;
 
-    case Qt::UniteClip:
     case Qt::ReplaceClip:
         clipData->newClip->appendSpans(spans, count);
         break;

@@ -1879,7 +1879,7 @@ void PaintCommands::command_setClipRect(QRegExp re)
     int w = convertToInt(caps.at(3));
     int h = convertToInt(caps.at(4));
 
-    int combine = translateEnum(clipOperationTable, caps.at(5), Qt::UniteClip + 1);
+    int combine = translateEnum(clipOperationTable, caps.at(5), Qt::IntersectClip + 1);
     if (combine == -1)
         combine = Qt::ReplaceClip;
 
@@ -1892,7 +1892,7 @@ void PaintCommands::command_setClipRect(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_setClipPath(QRegExp re)
 {
-    int combine = translateEnum(clipOperationTable, re.cap(2), Qt::UniteClip + 1);
+    int combine = translateEnum(clipOperationTable, re.cap(2), Qt::IntersectClip + 1);
     if (combine == -1)
         combine = Qt::ReplaceClip;
 
@@ -1907,7 +1907,7 @@ void PaintCommands::command_setClipPath(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_setClipRegion(QRegExp re)
 {
-    int combine = translateEnum(clipOperationTable, re.cap(2), Qt::UniteClip + 1);
+    int combine = translateEnum(clipOperationTable, re.cap(2), Qt::IntersectClip + 1);
     if (combine == -1)
         combine = Qt::ReplaceClip;
     QRegion r = m_regionMap[re.cap(1)];

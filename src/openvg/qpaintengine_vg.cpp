@@ -1693,12 +1693,6 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
             region = s->clipRegion.intersect(d->transform.map(region));
         }
         break;
-
-        case Qt::UniteClip:
-        {
-            region = s->clipRegion.unite(d->transform.map(region));
-        }
-        break;
     }
     if (region.numRects() <= d->maxScissorRects) {
         // We haven't reached the maximum scissor count yet, so we can
@@ -1738,12 +1732,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             s->clipRegion = s->clipRegion.intersect(d->transform.map(QRegion(rect)));
         }
         break;
-
-        case Qt::UniteClip:
-        {
-            s->clipRegion = s->clipRegion.unite(d->transform.map(QRegion(rect)));
-        }
-        break;
     }
 
     updateScissor();
@@ -1772,12 +1760,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         case Qt::IntersectClip:
         {
             s->clipRegion = s->clipRegion.intersect(d->transform.map(region));
-        }
-        break;
-
-        case Qt::UniteClip:
-        {
-            s->clipRegion = s->clipRegion.unite(d->transform.map(region));
         }
         break;
     }
@@ -1835,10 +1817,6 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     VGPath vgpath = d->vectorPathToVGPath(path);
     switch (op) {
         case Qt::ReplaceClip:
-        case Qt::UniteClip:
-            vgRenderToMask(vgpath, VG_FILL_PATH, VG_UNION_MASK);
-            break;
-
         case Qt::IntersectClip:
             vgRenderToMask(vgpath, VG_FILL_PATH, VG_INTERSECT_MASK);
             break;
@@ -1955,15 +1933,6 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             }
         }
         break;
-
-        case Qt::UniteClip:
-        {
-            // If we already have a full-window clip, then uniting a
-            // region with it will do nothing.  Otherwise union.
-            if (!(d->maskIsSet))
-                d->modifyMask(this, VG_UNION_MASK, d->transform.mapRect(rect));
-        }
-        break;
     }
 }
 
@@ -2059,15 +2028,6 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
             }
         }
         break;
-
-        case Qt::UniteClip:
-        {
-            // If we already have a full-window clip, then uniting a
-            // region with it will do nothing.  Otherwise union.
-            if (!(d->maskIsSet))
-                d->modifyMask(this, VG_UNION_MASK, d->transform.map(region));
-        }
-        break;
     }
 }
 
@@ -2152,10 +2112,6 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
     VGPath vgpath = d->painterPathToVGPath(path);
     switch (op) {
         case Qt::ReplaceClip:
-        case Qt::UniteClip:
-            vgRenderToMask(vgpath, VG_FILL_PATH, VG_UNION_MASK);
-            break;
-
         case Qt::IntersectClip:
             vgRenderToMask(vgpath, VG_FILL_PATH, VG_INTERSECT_MASK);
             break;

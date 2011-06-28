@@ -1742,12 +1742,6 @@ public:
         painter->fillRect(rect(), Qt::green);
         painter->restore();
 
-        painter->save();
-        painter->setClipRect(0, 60, 60, 25, Qt::IntersectClip);
-        painter->setClipRect(60, 60, 50, 25, Qt::UniteClip);
-        painter->fillRect(rect(), Qt::yellow);
-        painter->restore();
-
         painter->restore();
 
         painter->translate(100, 100);
@@ -1792,17 +1786,6 @@ public:
             painter->setClipPath(path, Qt::ReplaceClip);
         }
         painter->fillRect(rect(), Qt::green);
-        painter->restore();
-
-        painter->save();
-        {
-            QPainterPath path;
-            path.addRect(0, 60, 60, 25);
-            path.addRect(10, 10, 10, 10);
-            painter->setClipPath(path, Qt::IntersectClip);
-        }
-        painter->setClipRect(60, 60, 50, 25, Qt::UniteClip);
-        painter->fillRect(rect(), Qt::yellow);
         painter->restore();
     }
 

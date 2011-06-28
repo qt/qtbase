@@ -2576,8 +2576,6 @@ QRegion QPainter::clipRegion() const
             }
             if (info.operation == Qt::IntersectClip)
                 region &= info.region * matrix;
-            else if (info.operation == Qt::UniteClip)
-                region |= info.region * matrix;
             else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2596,9 +2594,6 @@ QRegion QPainter::clipRegion() const
             }
             if (info.operation == Qt::IntersectClip) {
                 region &= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
-                                  info.path.fillRule());
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                   info.path.fillRule());
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
@@ -2623,8 +2618,6 @@ QRegion QPainter::clipRegion() const
                     region &= matrix.mapRect(info.rect);
                 else
                     region &= matrix.map(QRegion(info.rect));
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion(info.rect) * matrix;
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2647,8 +2640,6 @@ QRegion QPainter::clipRegion() const
                     region &= matrix.mapRect(info.rectf.toRect());
                 else
                     region &= matrix.map(QRegion(info.rectf.toRect()));
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion(info.rectf.toRect()) * matrix;
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2759,8 +2750,6 @@ QRectF QPainter::clipBoundingRect() const
              bounds = r;
          else if (info.operation == Qt::IntersectClip)
              bounds &= r;
-         else if (info.operation == Qt::UniteClip)
-             bounds |= r;
     }
 
 
@@ -2789,7 +2778,7 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
     Q_D(QPainter);
 
     if (d->extended) {
-        if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+        if ((!d->state->clipEnabled && op != Qt::NoClip))
             op = Qt::ReplaceClip;
 
         if (!d->engine) {
@@ -2847,7 +2836,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -2902,7 +2891,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -3307,7 +3296,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {

@@ -1494,8 +1494,7 @@ public:
     enum ClipOperation {
         NoClip,
         ReplaceClip,
-        IntersectClip,
-        UniteClip
+        IntersectClip
     };
 
     // Shape = 0x1, BoundingRect = 0x2

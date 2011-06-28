@@ -14,6 +14,8 @@ information about a particular change.
 - QSslCertificate::subjectInfo() and QSslCertificate::issuerInfo() now
   return a QStringList instead of a QString
 
+- Unite clipping support has been removed from QPainter. The alternative is
+  to unite QRegion's and using the result on QPainter.
 
 ****************************************************************************
 *                           General                                        *
