@@ -374,10 +374,6 @@ public:
     uint mono_surface : 1;
     uint outlinemapper_xform_dirty : 1;
 
-#ifdef Q_WS_WIN
-    uint isPlain45DegreeRotation : 1;
-#endif
-
     QScopedPointer<QRasterizer> rasterizer;
 };
 

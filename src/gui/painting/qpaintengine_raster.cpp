@@ -483,10 +483,6 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     }
 #endif
 
-#if defined(Q_WS_WIN)
-    d->isPlain45DegreeRotation = true;
-#endif
-
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
 #if defined(Q_WS_WIN)
@@ -590,33 +586,6 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     s->flags.tx_noshear = qt_scaleForTransform(s->matrix, &s->txscale);
 
     ensureOutlineMapper();
-
-#ifdef Q_WS_WIN
-    Q_D(QRasterPaintEngine);
-    d->isPlain45DegreeRotation = false;
-    if (txop >= QTransform::TxRotate) {
-        d->isPlain45DegreeRotation =
-            (qFuzzyIsNull(matrix.m11())
-             && qFuzzyIsNull(matrix.m12() - qreal(1))
-             && qFuzzyIsNull(matrix.m21() + qreal(1))
-             && qFuzzyIsNull(matrix.m22())
-                )
-            ||
-            (qFuzzyIsNull(matrix.m11() + qreal(1))
-             && qFuzzyIsNull(matrix.m12())
-             && qFuzzyIsNull(matrix.m21())
-             && qFuzzyIsNull(matrix.m22() + qreal(1))
-                )
-            ||
-            (qFuzzyIsNull(matrix.m11())
-             && qFuzzyIsNull(matrix.m12() + qreal(1))
-             && qFuzzyIsNull(matrix.m21() - qreal(1))
-             && qFuzzyIsNull(matrix.m22())
-                )
-            ;
-    }
-#endif
-
 }
 
 
