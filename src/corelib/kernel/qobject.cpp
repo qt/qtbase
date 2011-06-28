@@ -202,22 +202,6 @@ void QObjectPrivate::resetDeleteWatch(QObjectPrivate *d, int *oldWatch, int dele
 }
 #endif
 
-#ifdef QT3_SUPPORT
-void QObjectPrivate::sendPendingChildInsertedEvents()
-{
-    Q_Q(QObject);
-    for (int i = 0; i < pendingChildInsertedEvents.size(); ++i) {
-        QObject *c = pendingChildInsertedEvents.at(i).data();
-        if (!c || c->parent() != q)
-            continue;
-        QChildEvent childEvent(QEvent::ChildInserted, c);
-        QCoreApplication::sendEvent(q, &childEvent);
-    }
-    pendingChildInsertedEvents.clear();
-}
-
-#endif
-
 
 /*!\internal
   For a given metaobject, compute the signal offset, and the method offset (including signals)
@@ -736,29 +720,6 @@ QObject::QObject(QObject *parent)
     qt_addObject(this);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \overload QObject()
-    \obsolete
-
-    Creates a new QObject with the given \a parent and object \a name.
- */
-QObject::QObject(QObject *parent, const char *name)
-    : d_ptr(new QObjectPrivate)
-{
-    Q_D(QObject);
-    qt_addObject(d_ptr->q_ptr = this);
-    d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
-    d->threadData->ref();
-    if (parent) {
-        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-            parent = 0;
-        setParent(parent);
-    }
-    setObjectName(QString::fromAscii(name));
-}
-#endif
-
 /*! \internal
  */
 QObject::QObject(QObjectPrivate &dd, QObject *parent)
@@ -1078,56 +1039,6 @@ void QObject::setObjectName(const QString &name)
         d->declarativeData->objectNameChanged(d->declarativeData, this);
 }
 
-
-#ifdef QT3_SUPPORT
-/*! \internal
-    QObject::child is compat but needs to call itself recursively,
-    that's why we need this helper.
-*/
-static QObject *qChildHelper(const char *objName, const char *inheritsClass,
-                             bool recursiveSearch, const QObjectList &children)
-{
-    if (children.isEmpty())
-        return 0;
-
-    bool onlyWidgets = (inheritsClass && qstrcmp(inheritsClass, "QWidget") == 0);
-    const QLatin1String oName(objName);
-    for (int i = 0; i < children.size(); ++i) {
-        QObject *obj = children.at(i);
-        if (onlyWidgets) {
-            if (obj->isWidgetType() && (!objName || obj->objectName() == oName))
-                return obj;
-        } else if ((!inheritsClass || obj->inherits(inheritsClass))
-                   && (!objName || obj->objectName() == oName))
-            return obj;
-        if (recursiveSearch && (obj = qChildHelper(objName, inheritsClass,
-                                                   recursiveSearch, obj->children())))
-            return obj;
-    }
-    return 0;
-}
-
-
-/*!
-    Searches the children and optionally grandchildren of this object,
-    and returns a child that is called \a objName that inherits \a
-    inheritsClass. If \a inheritsClass is 0 (the default), any class
-    matches.
-
-    If \a recursiveSearch is true (the default), child() performs a
-    depth-first search of the object's children.
-
-    If there is no such object, this function returns 0. If there are
-    more than one, the first one found is returned.
-*/
-QObject* QObject::child(const char *objName, const char *inheritsClass,
-                        bool recursiveSearch) const
-{
-    Q_D(const QObject);
-    return qChildHelper(objName, inheritsClass, recursiveSearch, d->children);
-}
-#endif
-
 /*!
     \fn bool QObject::isWidgetType() const
 
@@ -1156,17 +1067,8 @@ bool QObject::event(QEvent *e)
         timerEvent((QTimerEvent*)e);
         break;
 
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInsertedRequest:
-        d_func()->sendPendingChildInsertedEvents();
-        break;
-#endif
-
     case QEvent::ChildAdded:
     case QEvent::ChildPolished:
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInserted:
-#endif
     case QEvent::ChildRemoved:
         childEvent((QChildEvent*)e);
         break;
@@ -1635,102 +1537,6 @@ void QObject::killTimer(int id)
     \sa findChild(), findChildren(), parent(), setParent()
 */
 
-#ifdef QT3_SUPPORT
-static void objSearch(QObjectList &result,
-                      const QObjectList &list,
-                      const char *inheritsClass,
-                      bool onlyWidgets,
-                      const char *objName,
-                      QRegExp *rx,
-                      bool recurse)
-{
-    for (int i = 0; i < list.size(); ++i) {
-        QObject *obj = list.at(i);
-        if (!obj)
-            continue;
-        bool ok = true;
-        if (onlyWidgets)
-            ok = obj->isWidgetType();
-        else if (inheritsClass && !obj->inherits(inheritsClass))
-            ok = false;
-        if (ok) {
-            if (objName)
-                ok = (obj->objectName() == QLatin1String(objName));
-#ifndef QT_NO_REGEXP
-            else if (rx)
-                ok = (rx->indexIn(obj->objectName()) != -1);
-#endif
-        }
-        if (ok)                                // match!
-            result.append(obj);
-        if (recurse) {
-            QObjectList clist = obj->children();
-            if (!clist.isEmpty())
-                objSearch(result, clist, inheritsClass,
-                           onlyWidgets, objName, rx, recurse);
-        }
-    }
-}
-
-/*!
-    \internal
-
-    Searches the children and optionally grandchildren of this object,
-    and returns a list of those objects that are named or that match
-    \a objName and inherit \a inheritsClass. If \a inheritsClass is 0
-    (the default), all classes match. If \a objName is 0 (the
-    default), all object names match.
-
-    If \a regexpMatch is true (the default), \a objName is a regular
-    expression that the objects's names must match. The syntax is that
-    of a QRegExp. If \a regexpMatch is false, \a objName is a string
-    and object names must match it exactly.
-
-    Note that \a inheritsClass uses single inheritance from QObject,
-    the way inherits() does. According to inherits(), QWidget
-    inherits QObject but not QPaintDevice. This does not quite match
-    reality, but is the best that can be done on the wide variety of
-    compilers Qt supports.
-
-    Finally, if \a recursiveSearch is true (the default), queryList()
-    searches \e{n}th-generation as well as first-generation children.
-
-    If all this seems a bit complex for your needs, the simpler
-    child() function may be what you want.
-
-    This somewhat contrived example disables all the buttons in this
-    window:
-
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 9
-
-    \warning Delete the list as soon you have finished using it. The
-    list contains pointers that may become invalid at almost any time
-    without notice (as soon as the user closes a window you may have
-    dangling pointers, for example).
-
-    \sa child() children(), parent(), inherits(), objectName(), QRegExp
-*/
-
-QObjectList QObject::queryList(const char *inheritsClass,
-                               const char *objName,
-                               bool regexpMatch,
-                               bool recursiveSearch) const
-{
-    Q_D(const QObject);
-    QObjectList list;
-    bool onlyWidgets = (inheritsClass && qstrcmp(inheritsClass, "QWidget") == 0);
-#ifndef QT_NO_REGEXP
-    if (regexpMatch && objName) {                // regexp matching
-        QRegExp rx(QString::fromLatin1(objName));
-        objSearch(list, d->children, inheritsClass, onlyWidgets, 0, &rx, recursiveSearch);
-    } else
-#endif
-    {
-        objSearch(list, d->children, inheritsClass, onlyWidgets, objName, 0, recursiveSearch);
-    }
-    return list;
-}
-#endif
 
 /*!
     \fn T *QObject::findChild(const QString &name) const
@@ -1948,16 +1754,6 @@ void QObjectPrivate::setParent_helper(QObject *o)
             if (!isWidget) {
                 QChildEvent e(QEvent::ChildAdded, q);
                 QCoreApplication::sendEvent(parent, &e);
-#ifdef QT3_SUPPORT
-                if (QCoreApplicationPrivate::useQt3Support) {
-                    if (parent->d_func()->pendingChildInsertedEvents.isEmpty()) {
-                        QCoreApplication::postEvent(parent,
-                                                    new QEvent(QEvent::ChildInsertedRequest),
-                                                    Qt::HighEventPriority);
-                    }
-                    parent->d_func()->pendingChildInsertedEvents.append(q);
-                }
-#endif
             }
         }
     }

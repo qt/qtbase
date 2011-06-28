@@ -89,9 +89,6 @@ public:
         Quit = 20,                              // request to quit application
         ParentChange = 21,                      // widget has been reparented
         ParentAboutToChange = 131,              // sent just before the parent change is done
-#ifdef QT3_SUPPORT
-        Reparent = ParentChange,
-#endif
         ThreadChange = 22,                      // object has changed threads
         WindowActivate = 24,                    // window was activated
         WindowDeactivate = 25,                  // window was deactivated
@@ -118,11 +115,6 @@ public:
         DragResponse = 64,                      // drag accepted/rejected
         ChildAdded = 68,                        // new child widget
         ChildPolished = 69,                     // polished child widget
-#ifdef QT3_SUPPORT
-        ChildInsertedRequest = 67,              // send ChildInserted compatibility events to receiver
-        ChildInserted = 70,                     // compatibility child inserted
-        LayoutHint = 72,                        // compatibility relayout request
-#endif
         ChildRemoved = 71,                      // deleted child widget
         ShowWindowRequest = 73,                 // widget's window should be mapped
         PolishRequest = 74,                     // widget should be polished
@@ -357,25 +349,11 @@ public:
     ~QChildEvent();
     QObject *child() const { return c; }
     bool added() const { return type() == ChildAdded; }
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT bool inserted() const { return type() == ChildInserted; }
-#endif
     bool polished() const { return type() == ChildPolished; }
     bool removed() const { return type() == ChildRemoved; }
 protected:
     QObject *c;
 };
-
-#ifdef QT3_SUPPORT
-class Q_CORE_EXPORT QCustomEvent : public QEvent
-{
-public:
-    QT3_SUPPORT_CONSTRUCTOR QCustomEvent(int type, void *data = 0);
-    ~QCustomEvent();
-    QT3_SUPPORT void *data()  const { return d; }
-    QT3_SUPPORT void setData(void* aData) { d = reinterpret_cast<QEventPrivate *>(aData); }
-};
-#endif
 
 class Q_CORE_EXPORT QDynamicPropertyChangeEvent : public QEvent
 {

@@ -504,65 +504,6 @@ QChildEvent::~QChildEvent()
     false.
 */
 
-/*!
-    \class QCustomEvent
-    \brief The QCustomEvent class provides support for custom events.
-
-    \compat
-
-    QCustomEvent has a \c{void *} that can be used to store custom
-    data.
-
-    In Qt 3, QObject::customEvent() took a QCustomEvent pointer. We
-    found out that this approach was unsatisfactory, because
-    there was often no safe way of deleting the data held in the
-    \c{void *}.
-
-    In Qt 4, QObject::customEvent() takes a plain QEvent pointer.
-    You can add custom data by subclassing.
-
-    \sa QObject::customEvent(), QCoreApplication::notify()
-*/
-
-/*!
-    \fn QCustomEvent::QCustomEvent(int type, void *data)
-
-    Constructs a custom event object with the event \a type and a
-    pointer to \a data. The value of \a type must be at least as
-    large as QEvent::User. By default, the data pointer is set to 0.
-*/
-#ifdef QT3_SUPPORT
-QCustomEvent::QCustomEvent(int type, void *data)
-    : QEvent(static_cast<Type>(type))
-{
-    d = reinterpret_cast<QEventPrivate *>(data);
-}
-
-/*! \internal
-*/
-QCustomEvent::~QCustomEvent()
-{
-}
-#endif
-/*!
-    \fn void QCustomEvent::setData(void *data)
-
-    \compat
-
-    Sets the generic data pointer to \a data.
-
-    \sa data()
-*/
-
-/*!
-    \fn void *QCustomEvent::data() const
-
-    \compat
-
-    Returns a pointer to the generic event data.
-
-    \sa setData()
-*/
 
 /*!
     \fn bool QChildEvent::inserted() const

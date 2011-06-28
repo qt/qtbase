@@ -102,10 +102,6 @@ QT_BEGIN_NAMESPACE
 QTextCodec *QString::codecForCStrings;
 #endif
 
-#ifdef QT3_SUPPORT
-static QHash<void *, QByteArray> *asciiCache = 0;
-#endif
-
 #ifdef QT_USE_ICU
 // qlocale_icu.cpp
 extern bool qt_ucol_strcoll(const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result);
@@ -802,9 +798,9 @@ const QString::Null QString::null = { };
 */
 
 QString::Data QString::shared_null = { Q_BASIC_ATOMIC_INITIALIZER(1),
-                                       0, 0, shared_null.array, 0, 0, 0, 0, 0, 0, {0} };
+                                       0, 0, shared_null.array, 0, 0, 0, 0, 0, {0} };
 QString::Data QString::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
-                                        0, 0, shared_empty.array, 0, 0, 0, 0, 0, 0, {0} };
+                                        0, 0, shared_empty.array, 0, 0, 0, 0, 0, {0} };
 
 int QString::grow(int size)
 {
@@ -1058,7 +1054,7 @@ QString::QString(const QChar *unicode, int size)
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
-        d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+        d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
         memcpy(d->array, unicode, size * sizeof(QChar));
         d->array[size] = '\0';
@@ -1091,7 +1087,7 @@ QString::QString(const QChar *unicode)
              Q_CHECK_PTR(d);
              d->ref = 1;
              d->alloc = d->size = size;
-             d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+             d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
              d->data = d->array;
              memcpy(d->array, unicode, size * sizeof(QChar));
              d->array[size] = '\0';
@@ -1116,7 +1112,7 @@ QString::QString(int size, QChar ch)
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
-        d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+        d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
         d->array[size] = '\0';
         ushort *i = d->array + size;
@@ -1139,7 +1135,7 @@ QString::QString(int size, Qt::Initialization)
     Q_CHECK_PTR(d);
     d->ref = 1;
     d->alloc = d->size = size;
-    d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+    d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
     d->data = d->array;
     d->array[size] = '\0';
 }
@@ -1161,7 +1157,7 @@ QString::QString(QChar ch)
     d = reinterpret_cast<Data *>(buf);
     d->ref = 1;
     d->alloc = d->size = 1;
-    d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+    d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
     d->data = d->array;
     d->array[0] = ch.unicode();
     d->array[1] = '\0';
@@ -1222,12 +1218,6 @@ QString::QString(QChar ch)
 // ### Qt 5: rename freeData() to avoid confusion. See task 197625.
 void QString::free(Data *d)
 {
-#ifdef QT3_SUPPORT
-    if (d->asciiCache) {
-        Q_ASSERT(asciiCache);
-        asciiCache->remove(d);
-    }
-#endif
     qFree(d);
 }
 
@@ -1344,7 +1334,6 @@ void QString::realloc(int alloc)
         x->size = qMin(alloc, d->size);
         ::memcpy(x->array, d->data, x->size * sizeof(QChar));
         x->array[x->size] = 0;
-        x->asciiCache = 0;
         x->ref = 1;
         x->alloc = alloc;
         x->clean = d->clean;
@@ -1356,12 +1345,6 @@ void QString::realloc(int alloc)
             QString::free(d);
         d = x;
     } else {
-#ifdef QT3_SUPPORT
-        if (d->asciiCache) {
-            Q_ASSERT(asciiCache);
-            asciiCache->remove(d);
-        }
-#endif
         Data *p = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
         Q_CHECK_PTR(p);
         d = p;
@@ -3794,7 +3777,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
-        d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+        d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
         d->array[size] = '\0';
         ushort *dst = d->data;
@@ -3867,44 +3850,6 @@ QString QString::fromLatin1(const char *str, int size)
     return QString(fromLatin1_helper(str, size), 0);
 }
 
-
-#ifdef QT3_SUPPORT
-
-/*!
-  \internal
-*/
-const char *QString::ascii_helper() const
-{
-    if (!asciiCache)
-        asciiCache = new QHash<void *, QByteArray>();
-
-    d->asciiCache = true;
-    QByteArray ascii = toAscii();
-    QByteArray old = asciiCache->value(d);
-    if (old == ascii)
-        return old.constData();
-    asciiCache->insert(d, ascii);
-    return ascii.constData();
-}
-
-/*!
-  \internal
-*/
-const char *QString::latin1_helper() const
-{
-    if (!asciiCache)
-        asciiCache = new QHash<void *, QByteArray>();
-
-    d->asciiCache = true;
-    QByteArray ascii = toLatin1();
-    QByteArray old = asciiCache->value(d);
-    if (old == ascii)
-        return old.constData();
-    asciiCache->insert(d, ascii);
-    return ascii.constData();
-}
-
-#endif
 
 /*!
     Returns a QString initialized with the first \a size characters
@@ -4636,24 +4581,15 @@ QString& QString::fill(QChar ch, int size)
     sensitivity setting \a cs.
 */
 
+
 /*!
     \overload compare()
+    \since 4.2
 
     Lexically compares this string with the \a other string and
     returns an integer less than, equal to, or greater than zero if
     this string is less than, equal to, or greater than the other
     string.
-
-    Equivalent to \c {compare(*this, other)}.
-*/
-int QString::compare(const QString &other) const
-{
-    return ucstrcmp(constData(), length(), other.constData(), other.length());
-}
-
-/*!
-    \overload compare()
-    \since 4.2
 
     Same as compare(*this, \a other, \a cs).
 */
@@ -7196,7 +7132,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     x->ref = 1;
     x->alloc = x->size = size;
     *x->array = '\0';
-    x->clean = x->asciiCache = x->simpletext = x->righttoleft = x->capacity = 0;
+    x->clean = x->simpletext = x->righttoleft = x->capacity = 0;
     return QString(x, 0);
 }
 
@@ -7219,12 +7155,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
     if (d->ref != 1 || (d->data == d->array && d->alloc)) {
         *this = fromRawData(unicode, size);
     } else {
-#ifdef QT3_SUPPORT
-        if (d->asciiCache) {
-            Q_ASSERT(asciiCache);
-            asciiCache->remove(d);
-        }
-#endif
         if (unicode) {
             d->data = (ushort *)unicode;
         } else {
@@ -7233,7 +7163,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
         }
         d->alloc = d->size = size;
         *d->array = '\0';
-        d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+        d->clean = d->simpletext = d->righttoleft = d->capacity = 0;
     }
     return *this;
 }
