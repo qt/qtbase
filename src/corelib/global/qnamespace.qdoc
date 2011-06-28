@@ -2201,52 +2201,6 @@
                             TargetMoveAction is not used on the Mac.
 */
 
-#if defined(Q_OS_WIN) && defined(QT3_SUPPORT)
-/*!
-    \enum Qt::WindowsVersion
-    \compat
-
-    \value WV_32s
-    \value WV_95
-    \value WV_98
-    \value WV_Me
-    \value WV_DOS_based
-    \value WV_NT
-    \value WV_2000
-    \value WV_XP
-    \value WV_2003
-    \value WV_NT_based
-    \value WV_CE
-    \value WV_CENET
-    \value WV_CE_based
-    \value WV_CE_5
-    \value WV_CE_6
-*/
-#endif
-
-#if defined(Q_OS_MAC) && defined(QT3_SUPPORT)
-/*!
-    \enum Qt::MacintoshVersion
-    \compat
-
-    \value MV_Unknown  Use QSysInfo::MV_Unknown instead.
-    \value MV_9        Use QSysInfo::MV_9 instead.
-    \value MV_10_DOT_0 Use QSysInfo::MV_10_0 instead.
-    \value MV_10_DOT_1 Use QSysInfo::MV_10_1 instead.
-    \value MV_10_DOT_2 Use QSysInfo::MV_10_2 instead.
-    \value MV_10_DOT_3 Use QSysInfo::MV_10_3 instead.
-    \value MV_10_DOT_4 Use QSysInfo::MV_10_4 instead.
-
-    \value MV_CHEETAH  Use QSysInfo::MV_10_0 instead.
-    \value MV_PUMA     Use QSysInfo::MV_10_1 instead.
-    \value MV_JAGUAR   Use QSysInfo::MV_10_2 instead.
-    \value MV_PANTHER  Use QSysInfo::MV_10_3 instead.
-    \value MV_TIGER    Use QSysInfo::MV_10_4 instead.
-
-    \sa QSysInfo::MacVersion
-*/
-#endif
-
 /*! \typedef Qt::ToolBarDock
     \compat
 

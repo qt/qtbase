@@ -2471,11 +2471,6 @@ void qCritical(const char *msg, ...)
     va_end(ap);
 }
 
-#ifdef QT3_SUPPORT
-void qSystemWarning(const char *msg, int code)
-   { qCritical("%s (%s)", msg, qt_error_string(code).toLocal8Bit().constData()); }
-#endif // QT3_SUPPORT
-
 void qErrnoWarning(const char *msg, ...)
 {
     // qt_error_string() will allocate anyway, so we don't have
@@ -3031,54 +3026,6 @@ int qrand()
     with meaningful parameter names in their signatures.
 */
 
-#if defined(QT3_SUPPORT) && !defined(QT_NO_SETTINGS)
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <qlibraryinfo.h>
-QT_END_INCLUDE_NAMESPACE
-
-static const char *qInstallLocation(QLibraryInfo::LibraryLocation loc)
-{
-    static QByteArray ret;
-    ret = QLibraryInfo::location(loc).toLatin1();
-    return ret.constData();
-}
-const char *qInstallPath()
-{
-    return qInstallLocation(QLibraryInfo::PrefixPath);
-}
-const char *qInstallPathDocs()
-{
-    return qInstallLocation(QLibraryInfo::DocumentationPath);
-}
-const char *qInstallPathHeaders()
-{
-    return qInstallLocation(QLibraryInfo::HeadersPath);
-}
-const char *qInstallPathLibs()
-{
-    return qInstallLocation(QLibraryInfo::LibrariesPath);
-}
-const char *qInstallPathBins()
-{
-    return qInstallLocation(QLibraryInfo::BinariesPath);
-}
-const char *qInstallPathPlugins()
-{
-    return qInstallLocation(QLibraryInfo::PluginsPath);
-}
-const char *qInstallPathData()
-{
-    return qInstallLocation(QLibraryInfo::DataPath);
-}
-const char *qInstallPathTranslations()
-{
-    return qInstallLocation(QLibraryInfo::TranslationsPath);
-}
-const char *qInstallPathSysconf()
-{
-    return qInstallLocation(QLibraryInfo::SettingsPath);
-}
-#endif
 
 struct QInternal_CallBackTable {
     QVector<QList<qInternalCallback> > callbacks;
