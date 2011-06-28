@@ -370,14 +370,6 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
     file handle and must close it.
  */
 
-#ifdef QT3_SUPPORT
-/*!
-    \typedef QFile::PermissionSpec
-
-    Use QFile::Permission instead.
-*/
-#endif
-
 #ifdef QT_NO_QOBJECT
 QFile::QFile()
     : QIODevice(*new QFilePrivate)

@@ -139,40 +139,6 @@ public:
     bool caching() const;
     void setCaching(bool on);
 
-#ifdef QT3_SUPPORT
-    enum Permission {
-        ReadOwner = QFile::ReadOwner, WriteOwner = QFile::WriteOwner, ExeOwner = QFile::ExeOwner,
-        ReadUser  = QFile::ReadUser,  WriteUser  = QFile::WriteUser,  ExeUser  = QFile::ExeUser,
-        ReadGroup = QFile::ReadGroup, WriteGroup = QFile::WriteGroup, ExeGroup = QFile::ExeGroup,
-        ReadOther = QFile::ReadOther, WriteOther = QFile::WriteOther, ExeOther = QFile::ExeOther
-    };
-    Q_DECLARE_FLAGS(PermissionSpec, Permission)
-
-    inline QT3_SUPPORT QString baseName(bool complete) {
-        if(complete)
-            return completeBaseName();
-        return baseName();
-    }
-    inline QT3_SUPPORT QString extension(bool complete = true) const {
-        if(complete)
-            return completeSuffix();
-        return suffix();
-    }
-    inline QT3_SUPPORT QString absFilePath() const { return absoluteFilePath(); }
-
-    inline QT3_SUPPORT QString dirPath(bool absPath = false) const {
-        if(absPath)
-            return absolutePath();
-        return path();
-    }
-    QT3_SUPPORT QDir dir(bool absPath) const;
-    inline QT3_SUPPORT bool convertToAbs() { return makeAbsolute(); }
-#if !defined(Q_NO_TYPESAFE_FLAGS)
-    inline QT3_SUPPORT bool permission(PermissionSpec permissions) const
-    { return permission(QFile::Permissions(static_cast<int>(permissions))); }
-#endif
-#endif
-
 protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
 private:
@@ -190,14 +156,7 @@ private:
 
 Q_DECLARE_TYPEINFO(QFileInfo, Q_MOVABLE_TYPE);
 
-#ifdef QT3_SUPPORT
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFileInfo::PermissionSpec)
-#endif
-
 typedef QList<QFileInfo> QFileInfoList;
-#ifdef QT3_SUPPORT
-typedef QList<QFileInfo>::Iterator QFileInfoListIterator;
-#endif
 
 QT_END_NAMESPACE
 

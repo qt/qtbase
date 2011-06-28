@@ -113,9 +113,6 @@ public:
 
     QDataStream();
     explicit QDataStream(QIODevice *);
-#ifdef QT3_SUPPORT
-    QDataStream(QByteArray *, int mode);
-#endif
     QDataStream(QByteArray *, QIODevice::OpenMode flags);
     QDataStream(const QByteArray &);
     virtual ~QDataStream();
@@ -125,9 +122,6 @@ public:
     void unsetDevice();
 
     bool atEnd() const;
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool eof() const { return atEnd(); }
-#endif
 
     Status status() const;
     void setStatus(Status status);
@@ -176,15 +170,6 @@ public:
     int writeRawData(const char *, int len);
 
     int skipRawData(int len);
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QDataStream &readRawBytes(char *str, uint len)
-        { readRawData(str, static_cast<int>(len)); return *this; }
-    inline QT3_SUPPORT QDataStream &writeRawBytes(const char *str, uint len)
-        { writeRawData(str, static_cast<int>(len)); return *this; }
-    inline QT3_SUPPORT bool isPrintableData() const { return false; }
-    inline QT3_SUPPORT void setPrintableData(bool) {}
-#endif
 
 private:
     Q_DISABLE_COPY(QDataStream)

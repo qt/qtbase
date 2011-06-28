@@ -54,10 +54,6 @@ QT_END_NAMESPACE
 
 #ifndef QT_NO_SETTINGS
 
-#ifdef QT3_SUPPORT
-#include <QtCore/qstringlist.h>
-#endif
-
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
@@ -115,11 +111,6 @@ public:
     enum Scope {
         UserScope,
         SystemScope
-#ifdef QT3_SUPPORT
-        ,
-        User = UserScope,
-        Global = SystemScope
-#endif
     };
 
 #ifndef QT_NO_QOBJECT
@@ -194,113 +185,12 @@ public:
     static Format registerFormat(const QString &extension, ReadFunc readFunc, WriteFunc writeFunc,
                                  Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive);
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool writeEntry(const QString &key, bool value)
-    { setValue(key, value); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, double value)
-    { setValue(key, value); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, int value)
-    { setValue(key, value); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, const char *value)
-    { setValue(key, QString::fromAscii(value)); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, const QString &value)
-    { setValue(key, value); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, const QStringList &value)
-    { setValue(key, value); return isWritable(); }
-    inline QT3_SUPPORT bool writeEntry(const QString &key, const QStringList &value, QChar separator)
-    { setValue(key, value.join(QString(separator))); return isWritable(); }
-    inline QT3_SUPPORT QStringList readListEntry(const QString &key, bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        return value(key).toStringList();
-    }
-    inline QT3_SUPPORT QStringList readListEntry(const QString &key, QChar separator, bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        QString str = value(key).toString();
-        if (str.isEmpty())
-            return QStringList();
-        return str.split(separator);
-    }
-    inline QT3_SUPPORT QString readEntry(const QString &key, const QString &defaultValue = QString(),
-                                         bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        return value(key, defaultValue).toString();
-    }
-    inline QT3_SUPPORT int readNumEntry(const QString &key, int defaultValue = 0, bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        return value(key, defaultValue).toInt();
-    }
-    inline QT3_SUPPORT double readDoubleEntry(const QString &key, double defaultValue = 0,
-                                              bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        return value(key, defaultValue).toDouble();
-    }
-    inline QT3_SUPPORT bool readBoolEntry(const QString &key, bool defaultValue = false,
-                                          bool *ok = 0)
-    {
-        if (ok)
-            *ok = contains(key);
-        return value(key, defaultValue).toBool();
-    }
-    inline QT3_SUPPORT bool removeEntry(const QString &key)
-    { remove(key); return true; }
-
-    enum System { Unix, Windows, Mac };
-    inline QT3_SUPPORT void insertSearchPath(System, const QString &) {}
-    inline QT3_SUPPORT void removeSearchPath(System, const QString &) {}
-
-    inline QT3_SUPPORT void setPath(const QString &organization, const QString &application,
-                                    Scope scope = Global)
-    {
-        setPath_helper(scope == Global ? QSettings::SystemScope : QSettings::UserScope,
-                       organization, application);
-    }
-    inline QT3_SUPPORT void resetGroup()
-    {
-        while (!group().isEmpty())
-            endGroup();
-    }
-    inline QT3_SUPPORT QStringList entryList(const QString &key) const
-    {
-        QSettings *that = const_cast<QSettings *>(this);
-        QStringList result;
-
-        that->beginGroup(key);
-        result = that->childKeys();
-        that->endGroup();
-        return result;
-    }
-    inline QT3_SUPPORT QStringList subkeyList(const QString &key) const
-    {
-        QSettings *that = const_cast<QSettings *>(this);
-        QStringList result;
-
-        that->beginGroup(key);
-        result = that->childGroups();
-        that->endGroup();
-        return result;
-    }
-#endif
-
 protected:
 #ifndef QT_NO_QOBJECT
     bool event(QEvent *event);
 #endif
 
 private:
-#ifdef QT3_SUPPORT
-    void setPath_helper(Scope scope, const QString &organization, const QString &application);
-#endif
-
     Q_DISABLE_COPY(QSettings)
 };
 

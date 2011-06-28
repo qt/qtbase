@@ -1790,31 +1790,6 @@ QString QIODevice::errorString() const
     Use write(\a data) instead.
 */
 
-#if defined QT3_SUPPORT
-QIODevice::Status QIODevice::status() const
-{
-#if !defined(QT_NO_QOBJECT)
-    const QFile *f = qobject_cast<const QFile *>(this);
-    if (f) return (int) f->error();
-#endif
-    return isOpen() ? 0 /* IO_Ok */ : 8 /* IO_UnspecifiedError */;
-}
-
-/*!
-    For device specific error handling, please refer to the
-    individual device documentation.
-
-    \sa qobject_cast()
-*/
-void QIODevice::resetStatus()
-{
-#if !defined(QT_NO_QOBJECT)
-    QFile *f = qobject_cast<QFile *>(this);
-    if (f) f->unsetError();
-#endif
-}
-#endif
-
 #if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
 {

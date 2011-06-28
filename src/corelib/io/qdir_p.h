@@ -77,11 +77,6 @@ public:
     QDir::SortFlags sort;
     QDir::Filters filters;
 
-#ifdef QT3_SUPPORT
-    QChar filterSepChar;
-    bool matchAllDirs;
-#endif
-
     QScopedPointer<QAbstractFileEngine> fileEngine;
 
     mutable bool fileListsInitialized;
