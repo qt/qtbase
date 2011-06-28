@@ -8,6 +8,10 @@ DESTDIR = $$QT.gui.plugins/platforms
 DEFINES += Q_PLATFORM_WAYLAND
 DEFINES += $$QMAKE_DEFINES_WAYLAND
 
+mac {
+    DEFINES += QT_NO_WAYLAND_XKB
+}
+
 QT += core-private gui-private opengl-private platformsupport-private
 
 SOURCES =   main.cpp \
@@ -35,6 +39,10 @@ HEADERS =   qwaylandintegration.h \
 
 INCLUDEPATH += $$QMAKE_INCDIR_WAYLAND
 LIBS += $$QMAKE_LIBS_WAYLAND
+mac {
+    LIBS += -lwayland-client
+}
+
 QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_WAYLAND
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
