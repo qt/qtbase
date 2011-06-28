@@ -234,42 +234,6 @@ void QtPrivate::QStringList_sort(QStringList *that)
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QStringList QStringList::split(const QChar &sep, const QString &str, bool allowEmptyEntries)
-
-    \overload
-
-    This version of the function uses a QChar as separator.
-
-    \sa join() QString::section()
-*/
-
-/*!
-    \fn QStringList QStringList::split(const QString &sep, const QString &str, bool allowEmptyEntries)
-
-    \overload
-
-    This version of the function uses a QString as separator.
-
-    \sa join() QString::section()
-*/
-#ifndef QT_NO_REGEXP
-/*!
-    \fn QStringList QStringList::split(const QRegExp &sep, const QString &str, bool allowEmptyEntries)
-
-    Use QString::split(\a sep, QString::SkipEmptyParts) or
-    QString::split(\a sep, QString::KeepEmptyParts) instead.
-
-    Be aware that the QString::split()'s return value is a
-    QStringList that always contains at least one element, even if \a
-    str is empty.
-
-    \sa join() QString::section()
-*/
-#endif
-#endif // QT3_SUPPORT
-
 /*!
     \fn QStringList QStringList::filter(const QString &str, Qt::CaseSensitivity cs) const
 

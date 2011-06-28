@@ -96,10 +96,6 @@ class QCache
 
 public:
     inline explicit QCache(int maxCost = 100);
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT_CONSTRUCTOR QCache(int maxCost, int /* dummy */)
-        : f(0), l(0), mx(maxCost), total(0) {}
-#endif
     inline ~QCache() { clear(); }
 
     inline int maxCost() const { return mx; }
@@ -123,11 +119,6 @@ public:
 
 private:
     void trim(int m);
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT T *find(const Key &key) const { return object(key); }
-#endif
-
 };
 
 template <class Key, class T>

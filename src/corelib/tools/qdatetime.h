@@ -76,10 +76,6 @@ public:
     int weekNumber(int *yearNum = 0) const;
 
 #ifndef QT_NO_TEXTDATE
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QString monthName(int month) { return shortMonthName(month); }
-    static QT3_SUPPORT QString dayName(int weekday) { return shortDayName(weekday); }
-#endif
     // ### Qt 5: merge these functions.
     static QString shortMonthName(int month);
     static QString shortMonthName(int month, MonthNameType type);
@@ -118,17 +114,10 @@ public:
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
-#ifdef QT3_SUPPORT
-    inline static QT3_SUPPORT bool leapYear(int year) { return isLeapYear(year); }
-#endif
 
     // ### Qt 5: remove these two functions
     static uint gregorianToJulian(int y, int m, int d);
     static void julianToGregorian(uint jd, int &y, int &m, int &d);
-
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QDate currentDate(Qt::TimeSpec spec);
-#endif
 
     static inline QDate fromJulianDay(int jd) { QDate d; d.jd = jd; return d; }
     inline int toJulianDay() const { return jd; }
@@ -186,10 +175,6 @@ public:
     static QTime fromString(const QString &s, const QString &format);
 #endif
     static bool isValid(int h, int m, int s, int ms = 0);
-
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QTime currentTime(Qt::TimeSpec spec);
-#endif
 
     void start();
     int restart();
@@ -273,21 +258,6 @@ public:
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
     static qint64 currentMSecsSinceEpoch();
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void setTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec) {
-        setTime_t(secsSince1Jan1970UTC);
-        if (spec == Qt::UTC)
-            *this = toUTC();
-    }
-    static inline QT3_SUPPORT QDateTime currentDateTime(Qt::TimeSpec spec) {
-        if (spec == Qt::LocalTime)
-            return currentDateTime();
-        else
-            return currentDateTime().toUTC();
-    }
-    
-#endif
-
 private:
     friend class QDateTimePrivate;
     void detach();
@@ -299,24 +269,6 @@ private:
 #endif
 };
 Q_DECLARE_TYPEINFO(QDateTime, Q_MOVABLE_TYPE);
-
-#ifdef QT3_SUPPORT
-inline QDate QDate::currentDate(Qt::TimeSpec spec)
-{
-    if (spec == Qt::LocalTime)
-        return currentDate();
-    else
-        return QDateTime::currentDateTime().toUTC().date();
-}
-
-inline QTime QTime::currentTime(Qt::TimeSpec spec)
-{
-    if (spec == Qt::LocalTime)
-        return currentTime();
-    else
-        return QDateTime::currentDateTime().toUTC().time();
-}
-#endif
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDate &);

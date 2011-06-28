@@ -249,9 +249,6 @@ public:
 
         inline const Key &key() const { return concrete(i)->key; }
         inline T &value() const { return concrete(i)->value; }
-#ifdef QT3_SUPPORT
-        inline QT3_SUPPORT T &data() const { return concrete(i)->value; }
-#endif
         inline T &operator*() const { return concrete(i)->value; }
         inline T *operator->() const { return &concrete(i)->value; }
         inline bool operator==(const iterator &o) const { return i == o.i; }
@@ -323,9 +320,6 @@ public:
 
         inline const Key &key() const { return concrete(i)->key; }
         inline const T &value() const { return concrete(i)->value; }
-#ifdef QT3_SUPPORT
-        inline QT3_SUPPORT const T &data() const { return concrete(i)->value; }
-#endif
         inline const T &operator*() const { return concrete(i)->value; }
         inline const T *operator->() const { return &concrete(i)->value; }
         inline bool operator==(const const_iterator &o) const { return i == o.i; }
@@ -379,10 +373,6 @@ public:
     inline const_iterator end() const { return const_iterator(e); }
     inline const_iterator constEnd() const { return const_iterator(e); }
     iterator erase(iterator it);
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT iterator remove(iterator it) { return erase(it); }
-    inline QT3_SUPPORT void erase(const Key &aKey) { remove(aKey); }
-#endif
 
     // more Qt
     typedef iterator Iterator;
@@ -396,13 +386,7 @@ public:
     iterator upperBound(const Key &key);
     const_iterator upperBound(const Key &key) const;
     iterator insert(const Key &key, const T &value);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT iterator insert(const Key &key, const T &value, bool overwrite);
-#endif
     iterator insertMulti(const Key &key, const T &value);
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT iterator replace(const Key &aKey, const T &aValue) { return insert(aKey, aValue); }
-#endif
     QMap<Key, T> &unite(const QMap<Key, T> &other);
 
     // STL compatibility
@@ -570,26 +554,6 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insert(const Key
     }
     return iterator(node);
 }
-
-#ifdef QT3_SUPPORT
-template <class Key, class T>
-Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insert(const Key &akey,
-                                                                       const T &avalue,
-                                                                       bool aoverwrite)
-{
-    detach();
-
-    QMapData::Node *update[QMapData::LastLevel + 1];
-    QMapData::Node *node = mutableFindNode(update, akey);
-    if (node == e) {
-        node = node_create(d, update, akey, avalue);
-    } else {
-        if (aoverwrite)
-            concrete(node)->value = avalue;
-    }
-    return iterator(node);
-}
-#endif
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &akey,

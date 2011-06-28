@@ -73,15 +73,6 @@ public:
     int bottom() const;
     QRect normalized() const;
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT int &rLeft() { return x1; }
-    QT3_SUPPORT int &rTop() { return y1; }
-    QT3_SUPPORT int &rRight() { return x2; }
-    QT3_SUPPORT int &rBottom() { return y2; }
-
-    QT3_SUPPORT QRect normalize() const { return normalized(); }
-#endif
-
     int x() const;
     int y() const;
     void setLeft(int pos);
@@ -120,18 +111,10 @@ public:
     void moveTo(int x, int t);
     void moveTo(const QPoint &p);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT void moveBy(int dx, int dy) { translate(dx, dy); }
-    QT3_SUPPORT void moveBy(const QPoint &p) { translate(p); }
-#endif
-
     void setRect(int x, int y, int w, int h);
     inline void getRect(int *x, int *y, int *w, int *h) const;
 
     void setCoords(int x1, int y1, int x2, int y2);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT void addCoords(int x1, int y1, int x2, int y2);
-#endif
     inline void getCoords(int *x1, int *y1, int *x2, int *y2) const;
 
     inline void adjust(int x1, int y1, int x2, int y2);
@@ -161,12 +144,6 @@ public:
 
     friend Q_CORE_EXPORT_INLINE bool operator==(const QRect &, const QRect &);
     friend Q_CORE_EXPORT_INLINE bool operator!=(const QRect &, const QRect &);
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void rect(int *x, int *y, int *w, int *h) const { getRect(x, y, w, h); }
-    inline QT3_SUPPORT void coords(int *ax1, int *ay1, int *ax2, int *ay2) const
-    { getCoords(ax1, ay1, ax2, ay2); }
-#endif
 
 private:
 #if defined(Q_WS_X11)
@@ -420,13 +397,6 @@ inline void QRect::setCoords(int xp1, int yp1, int xp2, int yp2)
     x2 = xp2;
     y2 = yp2;
 }
-
-#ifdef QT3_SUPPORT
-inline void QRect::addCoords(int dx1, int dy1, int dx2, int dy2)
-{
-    adjust(dx1, dy1, dx2, dy2);
-}
-#endif
 
 inline QRect QRect::adjusted(int xp1, int yp1, int xp2, int yp2) const
 { return QRect(QPoint(x1 + xp1, y1 + yp1), QPoint(x2 + xp2, y2 + yp2)); }

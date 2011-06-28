@@ -227,21 +227,6 @@ public:
     { std::list<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
 
-#ifdef QT3_SUPPORT
-    // compatibility
-    inline QT3_SUPPORT iterator remove(iterator pos) { return erase(pos); }
-    inline QT3_SUPPORT int findIndex(const T& t) const
-    { int i=0; for (const_iterator it = begin(); it != end(); ++it, ++i) if(*it == t) return i; return -1;}
-    inline QT3_SUPPORT iterator find(iterator from, const T& t)
-    { while (from != end() && !(*from == t)) ++from; return from; }
-    inline QT3_SUPPORT iterator find(const T& t)
-    { return find(begin(), t); }
-    inline QT3_SUPPORT const_iterator find(const_iterator from, const T& t) const
-    { while (from != end() && !(*from == t)) ++from; return from; }
-    inline QT3_SUPPORT const_iterator find(const T& t) const
-    { return find(begin(), t); }
-#endif
-
     // comfort
     QLinkedList<T> &operator+=(const QLinkedList<T> &l);
     QLinkedList<T> operator+(const QLinkedList<T> &l) const;

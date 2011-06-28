@@ -89,13 +89,6 @@ public:
         ObjectReplacementCharacter = 0xfffc,
         ByteOrderMark = 0xfeff,
         ByteOrderSwapped = 0xfffe,
-#ifdef QT3_SUPPORT
-        null = Null,
-        replacement = ReplacementCharacter,
-        byteOrderMark = ByteOrderMark,
-        byteOrderSwapped = ByteOrderSwapped,
-        nbsp = Nbsp,
-#endif
         ParagraphSeparator = 0x2029,
         LineSeparator = 0x2028
     };
@@ -173,10 +166,6 @@ public:
         Square,
         Compat,
         Fraction
-
-#ifdef QT3_SUPPORT
-        , Single = NoDecomposition
-#endif
     };
 
     enum Joining
@@ -337,22 +326,6 @@ public:
     static UnicodeVersion QT_FASTCALL currentUnicodeVersion();
 
     static QString QT_FASTCALL decomposition(uint ucs4);
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool mirrored() const { return hasMirrored(); }
-    inline QT3_SUPPORT QChar lower() const { return toLower(); }
-    inline QT3_SUPPORT QChar upper() const { return toUpper(); }
-    static inline QT3_SUPPORT bool networkOrdered() {
-        return QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    }
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    inline QT3_SUPPORT const char latin1() const { return toLatin1(); }
-    inline QT3_SUPPORT const char ascii() const { return toAscii(); }
-#else
-    inline QT3_SUPPORT char latin1() const { return toLatin1(); }
-    inline QT3_SUPPORT char ascii() const { return toAscii(); }
-#endif
-#endif
 
 private:
 #ifdef QT_NO_CAST_FROM_ASCII

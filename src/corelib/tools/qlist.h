@@ -310,20 +310,6 @@ public:
     typedef const value_type &const_reference;
     typedef qptrdiff difference_type;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT iterator remove(iterator pos) { return erase(pos); }
-    inline QT3_SUPPORT int remove(const T &t) { return removeAll(t); }
-    inline QT3_SUPPORT int findIndex(const T& t) const { return indexOf(t); }
-    inline QT3_SUPPORT iterator find(const T& t)
-    { int i = indexOf(t); return (i == -1 ? end() : (begin()+i)); }
-    inline QT3_SUPPORT const_iterator find (const T& t) const
-    { int i = indexOf(t); return (i == -1 ? end() : (begin()+i)); }
-    inline QT3_SUPPORT iterator find(iterator from, const T& t)
-    { int i = indexOf(t, from - begin()); return i == -1 ? end() : begin()+i; }
-    inline QT3_SUPPORT const_iterator find(const_iterator from, const T& t) const
-    { int i = indexOf(t, from - begin()); return i == -1 ? end() : begin()+i; }
-#endif
-
     // comfort
     QList<T> &operator+=(const QList<T> &l);
     inline QList<T> operator+(const QList<T> &l) const
