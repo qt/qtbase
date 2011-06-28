@@ -80,7 +80,8 @@
 #include <QtGui/private/qapplication_p.h>
 #endif
 
-#include <QMutexLocker>
+#include <QtCore/QMutexLocker>
+#include <QtCore/QMutex>
 
 // #define QFONTCACHE_DEBUG
 #ifdef QFONTCACHE_DEBUG
