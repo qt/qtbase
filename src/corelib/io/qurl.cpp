@@ -5466,6 +5466,7 @@ void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
             if (end < d->query.size())
                 ++end; // remove additional '%'
             d->query.remove(pos, end - pos);
+            query = d->query.constData(); //required if remove detach;
         } else {
             pos = end + 1;
         }
