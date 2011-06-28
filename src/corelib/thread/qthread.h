@@ -116,12 +116,6 @@ protected:
     static void msleep(unsigned long);
     static void usleep(unsigned long);
 
-#ifdef QT3_SUPPORT
-public:
-    inline QT3_SUPPORT bool finished() const { return isFinished(); }
-    inline QT3_SUPPORT bool running() const { return isRunning(); }
-#endif
-
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = 0);
 

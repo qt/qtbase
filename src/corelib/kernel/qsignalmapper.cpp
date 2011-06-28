@@ -121,18 +121,6 @@ QSignalMapper::QSignalMapper(QObject* parent)
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \overload QSignalMapper()
-    \obsolete
- */
-QSignalMapper::QSignalMapper(QObject *parent, const char *name)
-    : QObject(*new QSignalMapperPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-}
-#endif
-
 /*!
     Destroys the QSignalMapper.
 */

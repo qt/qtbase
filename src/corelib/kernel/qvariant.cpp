@@ -2886,21 +2886,6 @@ void* QVariant::data()
 }
 
 
-#ifdef QT3_SUPPORT
-/*! \internal
- */
-void *QVariant::castOrDetach(Type t)
-{
-    if (d.type != uint(t)) {
-        if (!convert(t))
-            create(t, 0);
-    } else {
-        detach();
-    }
-    return data();
-}
-#endif
-
 /*!
   Returns true if this is a NULL variant, false otherwise.
 */

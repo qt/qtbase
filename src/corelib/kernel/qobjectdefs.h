@@ -83,9 +83,6 @@ class QString;
 #define Q_OVERRIDE(text)
 #define Q_ENUMS(x)
 #define Q_FLAGS(x)
-#ifdef QT3_SUPPORT
-# define Q_SETS(x)
-#endif
 #define Q_SCRIPTABLE
 #define Q_INVOKABLE
 #define Q_SIGNAL
@@ -188,9 +185,6 @@ private:
 #define Q_OVERRIDE(text) Q_OVERRIDE(text)
 #define Q_ENUMS(x) Q_ENUMS(x)
 #define Q_FLAGS(x) Q_FLAGS(x)
-#ifdef QT3_SUPPORT
-# define Q_SETS(x) Q_SETS(x)
-#endif
  /* tmake ignore Q_OBJECT */
 #define Q_OBJECT Q_OBJECT
  /* tmake ignore Q_OBJECT */
@@ -231,12 +225,6 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 # endif
 # define SLOT(a)     "1"#a
 # define SIGNAL(a)   "2"#a
-#endif
-
-#ifdef QT3_SUPPORT
-#define METHOD_CODE   0                        // member type codes
-#define SLOT_CODE     1
-#define SIGNAL_CODE   2
 #endif
 
 #define QMETHOD_CODE  0                        // member type codes
@@ -461,10 +449,6 @@ struct Q_CORE_EXPORT QMetaObject
     int static_metacall(Call, int, void **) const;
     static int metacall(QObject *, Call, int, void **);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT const char *superClassName() const;
-#endif
-
     struct { // private data
         const QMetaObject *superdata;
         const char *stringdata;
@@ -493,11 +477,6 @@ inline const char *QMetaObject::className() const
 
 inline const QMetaObject *QMetaObject::superClass() const
 { return d.superdata; }
-
-#ifdef QT3_SUPPORT
-inline const char *QMetaObject::superClassName() const
-{ return d.superdata ? d.superdata->className() : 0; }
-#endif
 
 QT_END_NAMESPACE
 

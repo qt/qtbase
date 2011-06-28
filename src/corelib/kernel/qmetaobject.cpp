@@ -2283,11 +2283,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     QVariant v = value;
     uint t = QVariant::Invalid;
     if (isEnumType()) {
-        if (v.type() == QVariant::String
-#ifdef QT3_SUPPORT
-            || v.type() == QVariant::CString
-#endif
-            ) {
+        if (v.type() == QVariant::String) {
             if (isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray()));
             else

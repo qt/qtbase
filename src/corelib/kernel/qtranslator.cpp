@@ -332,18 +332,6 @@ QTranslator::QTranslator(QObject * parent)
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \overload QTranslator()
-    \obsolete
- */
-QTranslator::QTranslator(QObject * parent, const char * name)
-    : QObject(*new QTranslatorPrivate, parent)
-{
-    setObjectName(QString::fromAscii(name));
-}
-#endif
-
 /*!
     Destroys the object and frees any allocated resources.
 */

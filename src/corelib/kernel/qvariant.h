@@ -127,9 +127,6 @@ class Q_CORE_EXPORT QVariant
         LastCoreType = EasingCurve,
 
         // value 62 is internally reserved
-#ifdef QT3_SUPPORT
-        ColorGroup = 63,
-#endif
         Font = 64,
         Pixmap = 65,
         Brush = 66,
@@ -156,11 +153,6 @@ class Q_CORE_EXPORT QVariant
         LastGuiType = Quaternion,
 
         UserType = 127,
-#ifdef QT3_SUPPORT
-        IconSet = Icon,
-        CString = ByteArray,
-        PointArray = Polygon,
-#endif
         LastType = 0xffffffff // need this so that gcc >= 3.4 allocates 32 bits for Type
     };
 
@@ -233,13 +225,6 @@ class Q_CORE_EXPORT QVariant
     bool canConvert(Type t) const;
     bool convert(Type t);
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool canCast(Type t) const
-    { return canConvert(t); }
-    inline QT3_SUPPORT bool cast(Type t)
-    { return convert(t); }
-#endif
-
     inline bool isValid() const;
     bool isNull() const;
 
@@ -287,39 +272,12 @@ class Q_CORE_EXPORT QVariant
     QEasingCurve toEasingCurve() const;
 #endif
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT int &asInt();
-    inline QT3_SUPPORT uint &asUInt();
-    inline QT3_SUPPORT qlonglong &asLongLong();
-    inline QT3_SUPPORT qulonglong &asULongLong();
-    inline QT3_SUPPORT bool &asBool();
-    inline QT3_SUPPORT double &asDouble();
-    inline QT3_SUPPORT QByteArray &asByteArray();
-    inline QT3_SUPPORT QBitArray &asBitArray();
-    inline QT3_SUPPORT QString &asString();
-    inline QT3_SUPPORT QStringList &asStringList();
-    inline QT3_SUPPORT QDate &asDate();
-    inline QT3_SUPPORT QTime &asTime();
-    inline QT3_SUPPORT QDateTime &asDateTime();
-    inline QT3_SUPPORT QList<QVariant> &asList();
-    inline QT3_SUPPORT QMap<QString,QVariant> &asMap();
-    inline QT3_SUPPORT QPoint &asPoint();
-    inline QT3_SUPPORT QRect &asRect();
-    inline QT3_SUPPORT QSize &asSize();
-#endif //QT3_SUPPORT
-
 #ifndef QT_NO_DATASTREAM
     void load(QDataStream &ds);
     void save(QDataStream &ds) const;
 #endif
     static const char *typeToName(Type type);
     static Type nameToType(const char *name);
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT_CONSTRUCTOR QVariant(bool val, int) { create(Bool, &val); }
-    inline QT3_SUPPORT const QByteArray toCString() const { return toByteArray(); }
-    inline QT3_SUPPORT QByteArray &asCString() { return *reinterpret_cast<QByteArray *>(castOrDetach(ByteArray)); }
-#endif
 
     void *data();
     const void *constData() const;
@@ -419,9 +377,6 @@ protected:
     static const Handler *handler;
 
     void create(int type, const void *copy);
-#ifdef QT3_SUPPORT
-    void *castOrDetach(Type t);
-#endif
     bool cmp(const QVariant &other) const;
 
 private:
@@ -430,10 +385,6 @@ private:
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
     inline QVariant(const char *) { Q_ASSERT(false); }
-#endif
-#ifndef QT3_SUPPORT
-    // force compile error, prevent QVariant(QVariant::Type, int) to be called
-    inline QVariant(bool, int) { Q_ASSERT(false); }
 #endif
 public:
     typedef Private DataPtr;
@@ -483,45 +434,6 @@ inline void qVariantSetValue<QVariant>(QVariant &v, const QVariant &t)
 
 inline QVariant::QVariant() {}
 inline bool QVariant::isValid() const { return d.type != Invalid; }
-
-#ifdef QT3_SUPPORT
-inline int &QVariant::asInt()
-{ return *reinterpret_cast<int *>(castOrDetach(Int)); }
-inline uint &QVariant::asUInt()
-{ return *reinterpret_cast<uint *>(castOrDetach(UInt)); }
-inline qlonglong &QVariant::asLongLong()
-{ return *reinterpret_cast<qlonglong *>(castOrDetach(LongLong)); }
-inline qulonglong &QVariant::asULongLong()
-{ return *reinterpret_cast<qulonglong *>(castOrDetach(ULongLong)); }
-inline bool &QVariant::asBool()
-{ return *reinterpret_cast<bool *>(castOrDetach(Bool)); }
-inline double &QVariant::asDouble()
-{ return *reinterpret_cast<double *>(castOrDetach(Double)); }
-inline QByteArray& QVariant::asByteArray()
-{ return *reinterpret_cast<QByteArray *>(castOrDetach(ByteArray)); }
-inline QBitArray& QVariant::asBitArray()
-{ return *reinterpret_cast<QBitArray *>(castOrDetach(BitArray)); }
-inline QString& QVariant::asString()
-{ return *reinterpret_cast<QString *>(castOrDetach(String)); }
-inline QStringList& QVariant::asStringList()
-{ return *reinterpret_cast<QStringList *>(castOrDetach(StringList)); }
-inline QDate& QVariant::asDate()
-{ return *reinterpret_cast<QDate *>(castOrDetach(Date)); }
-inline QTime& QVariant::asTime()
-{ return *reinterpret_cast<QTime *>(castOrDetach(Time)); }
-inline QDateTime& QVariant::asDateTime()
-{ return *reinterpret_cast<QDateTime *>(castOrDetach(DateTime)); }
-inline QList<QVariant>& QVariant::asList()
-{ return *reinterpret_cast<QList<QVariant> *>(castOrDetach(List)); }
-inline QMap<QString, QVariant>& QVariant::asMap()
-{ return *reinterpret_cast<QMap<QString, QVariant> *>(castOrDetach(Map)); }
-inline QPoint &QVariant::asPoint()
-{ return *reinterpret_cast<QPoint *>(castOrDetach(Point)); }
-inline QRect &QVariant::asRect()
-{ return *reinterpret_cast<QRect *>(castOrDetach(Rect)); }
-inline QSize &QVariant::asSize()
-{ return *reinterpret_cast<QSize *>(castOrDetach(Size)); }
-#endif //QT3_SUPPORT
 
 template<typename T>
 inline void QVariant::setValue(const T &avalue)

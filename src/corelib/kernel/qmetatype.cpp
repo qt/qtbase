@@ -760,9 +760,6 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
 #endif
-#ifdef QT3_SUPPORT
-    case QMetaType::QColorGroup:
-#endif
     case QMetaType::QFont:
     case QMetaType::QPixmap:
     case QMetaType::QBrush:
@@ -964,9 +961,6 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QEasingCurve:
         stream >> *static_cast< NS(QEasingCurve)*>(data);
         break;
-#endif
-#ifdef QT3_SUPPORT
-    case QMetaType::QColorGroup:
 #endif
     case QMetaType::QFont:
     case QMetaType::QPixmap:

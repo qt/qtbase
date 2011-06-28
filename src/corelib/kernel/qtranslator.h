@@ -61,9 +61,6 @@ class Q_CORE_EXPORT QTranslator : public QObject
     Q_OBJECT
 public:
     explicit QTranslator(QObject *parent = 0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QTranslator(QObject * parent, const char * name);
-#endif
     ~QTranslator();
 
     // ### Qt 5: Merge (with "int n = -1")
@@ -84,11 +81,6 @@ public:
               const QString & directory = QString(),
               const QString & suffix = QString());
     bool load(const uchar *data, int len);
-
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT QString find(const char *context, const char *sourceText, const char * comment = 0) const
-        { return translate(context, sourceText, comment); }
-#endif
 
 private:
     Q_DISABLE_COPY(QTranslator)

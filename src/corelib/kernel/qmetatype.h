@@ -72,9 +72,7 @@ public:
         QVariantHash = 28, QEasingCurve = 29, LastCoreType = QEasingCurve,
 
         FirstGuiType = 63 /* QColorGroup */,
-#ifdef QT3_SUPPORT
-        QColorGroup = 63,
-#endif
+
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
         QCursor = 74, QSizePolicy = 75, QKeySequence = 76, QPen = 77,
@@ -313,9 +311,6 @@ class QEasingCurve;
 class QWidget;
 class QObject;
 
-#ifdef QT3_SUPPORT
-class QColorGroup;
-#endif
 class QFont;
 class QPixmap;
 class QBrush;
@@ -383,9 +378,6 @@ Q_DECLARE_BUILTIN_METATYPE(QRegExp, QRegExp)
 #endif
 Q_DECLARE_BUILTIN_METATYPE(QEasingCurve, QEasingCurve)
 
-#ifdef QT3_SUPPORT
-Q_DECLARE_BUILTIN_METATYPE(QColorGroup, QColorGroup)
-#endif
 Q_DECLARE_BUILTIN_METATYPE(QFont, QFont)
 Q_DECLARE_BUILTIN_METATYPE(QPixmap, QPixmap)
 Q_DECLARE_BUILTIN_METATYPE(QBrush, QBrush)

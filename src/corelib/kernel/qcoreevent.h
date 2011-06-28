@@ -166,18 +166,8 @@ public:
         Shortcut = 117,                         // shortcut triggered
         ShortcutOverride = 51,                  // shortcut override request
 
-#ifdef QT3_SUPPORT
-        Accel = 30,                             // accelerator event
-        AccelAvailable = 32,                    // accelerator available event
-        AccelOverride = ShortcutOverride,       // accelerator override event
-#endif
-
         WhatsThisClicked = 118,
 
-#ifdef QT3_SUPPORT
-        CaptionChange = WindowTitleChange,
-        IconChange = WindowIconChange,
-#endif
         ToolBarChange = 120,                    // toolbar visibility toggled
 
         ApplicationActivate = 121,              // application has been changed to active

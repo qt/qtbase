@@ -185,40 +185,6 @@ QSocketNotifier::QSocketNotifier(int socket, Type type, QObject *parent)
     }
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-
-    Use the QSocketNotifier() constructor combined with the
-    QObject::setObjectName() function instead.
-
-    \oldcode
-        QSocketNotifier *notifier = new QSocketNotifier(socket, type, parent, name);
-    \newcode
-        QSocketNotifier *notifier = new QSocketNotifier(socket, type, parent);
-        notifier->setObjectName(name);
-    \endcode
-*/
-
-QSocketNotifier::QSocketNotifier(int socket, Type type, QObject *parent,
-                                  const char *name)
-    : QObject(parent)
-{
-    setObjectName(QString::fromAscii(name));
-    if (socket < 0)
-        qWarning("QSocketNotifier: Invalid socket specified");
-    sockfd = socket;
-    sntype = type;
-    snenabled = true;
-
-    Q_D(QObject);
-    if (!d->threadData->eventDispatcher) {
-        qWarning("QSocketNotifier: Can only be used with threads started with QThread");
-    } else {
-        d->threadData->eventDispatcher->registerSocketNotifier(this);
-    }
-}
-#endif
 /*!
     Destroys this socket notifier.
 */
