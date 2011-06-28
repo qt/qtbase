@@ -73,6 +73,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace QAccessible2;
 
+QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
+QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
+
 QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
 {
     if (widget == 0)
@@ -1139,8 +1142,8 @@ int QAccessibleTitleBar::childCount() const
 QString QAccessibleTitleBar::text(Text t, int child) const
 {
     if (!child) {
-        if (t == Value) {
-            return dockWidget()->windowTitle();
+        if (t == Name || t == Value) {
+            return qt_accStripAmp(dockWidget()->windowTitle());
         }
     }
     return QString();
@@ -1171,17 +1174,19 @@ QAccessible::State QAccessibleTitleBar::state(int child) const
     return state;
 }
 
-QRect QAccessibleTitleBar::rect (int child ) const
+QRect QAccessibleTitleBar::rect(int child) const
 {
     bool mapToGlobal = true;
     QRect rect;
     if (child == 0) {
         if (dockWidget()->isFloating()) {
             rect = dockWidget()->frameGeometry();
-            QPoint globalPos = dockWidget()->mapToGlobal( dockWidget()->widget()->rect().topLeft() );
-            globalPos.ry()--;
-            rect.setBottom(globalPos.y());
-            mapToGlobal = false;
+            if (dockWidget()->widget()) {
+                QPoint globalPos = dockWidget()->mapToGlobal(dockWidget()->widget()->rect().topLeft());
+                globalPos.ry()--;
+                rect.setBottom(globalPos.y());
+                mapToGlobal = false;
+            }
         } else {
             QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(dockWidget()->layout());
             rect = layout->titleArea();
