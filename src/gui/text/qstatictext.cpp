@@ -427,14 +427,17 @@ namespace {
     public:
         DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations)
                 : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
-                  m_untransformedCoordinates(untransformedCoordinates)
+                  m_untransformedCoordinates(untransformedCoordinates), m_currentColor(Qt::black)
         {
         }
 
         virtual void updateState(const QPaintEngineState &newState)
         {
-            if (newState.state() & QPaintEngine::DirtyPen)
+            if (newState.state() & QPaintEngine::DirtyPen
+                && newState.pen().color() != m_currentColor) {
                 m_dirtyPen = true;
+                m_currentColor = newState.pen().color();
+            }
         }
 
         virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
@@ -450,7 +453,7 @@ namespace {
             currentItem.positionOffset = m_glyphs.size(); // Offset into position pool
             currentItem.useBackendOptimizations = m_useBackendOptimizations;
             if (m_dirtyPen)
-                currentItem.color = state->pen().color();
+                currentItem.color = m_currentColor;
 
             QTransform matrix = m_untransformedCoordinates ? QTransform() : state->transform();
             matrix.translate(position.x(), position.y());
@@ -521,6 +524,7 @@ namespace {
         bool m_dirtyPen;
         bool m_useBackendOptimizations;
         bool m_untransformedCoordinates;
+        QColor m_currentColor;
     };
 
     class DrawTextItemDevice: public QPaintDevice

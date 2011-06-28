@@ -227,6 +227,7 @@ win32:SUBDIRS -= qtextpiecetable
            qtextpiecetable \
            qtipc \
            qtoolbar \
+           qstatictext \
 
 symbian:SUBDIRS -= \
     qsystemtrayicon \
