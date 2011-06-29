@@ -97,7 +97,7 @@
                               bitDepth,
                               bytesPrLine,
                               cgColourSpaceRef,
-                              kCGImageAlphaNone,
+                              kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
                               cgDataProviderRef,
                               NULL,
                               false,
