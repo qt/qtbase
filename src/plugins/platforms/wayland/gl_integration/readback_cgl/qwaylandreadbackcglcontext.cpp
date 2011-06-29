@@ -49,6 +49,7 @@
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/glext.h>
+#include <OpenGL/glu.h>
 
 #include <QtPlatformSupport/private/cglconvenience_p.h>
 
@@ -87,26 +88,15 @@ void QWaylandReadbackCGLContext::swapBuffers(QPlatformSurface *surface)
     CGLFlushDrawable(m_glContext);
 
     QWaylandReadbackCGLWindow *window = static_cast<QWaylandReadbackCGLWindow *>(surface);
-
     QSize size = window->geometry().size();
 
-    QImage img(size,QImage::Format_ARGB32);
-    img.fill(Qt::red);
-    const uchar *constBits = img.bits();
-    void *pixels = const_cast<uchar *>(constBits);
-
-//    glReadPixels(0,0, size.width(), size.height(), GL_RGBA,GL_UNSIGNED_BYTE, pixels);
-//    img = img.mirrored();
-//    qgl_byteSwapImage(img,GL_UNSIGNED_INT_8_8_8_8_REV);
-
-    constBits = img.bits();
-
-    const uchar *constDstBits = window->buffer();
-    uchar *dstBits = const_cast<uchar *>(constDstBits);
-    memcpy(dstBits,constBits,(img.width()*4) * img.height());
+    uchar *dstBits = const_cast<uchar *>(window->buffer());
+    glReadPixels(0,0, size.width(), size.height(), GL_BGRA,GL_UNSIGNED_BYTE, dstBits);
 
     window->damage(QRect(QPoint(0,0),size));
-    window->waitForFrameSync();
+
+    // ### Should sync here but this call deadlocks with the server.
+    //window->waitForFrameSync();
 }
 
 void (*QWaylandReadbackCGLContext::getProcAddress(const QByteArray &procName)) ()
