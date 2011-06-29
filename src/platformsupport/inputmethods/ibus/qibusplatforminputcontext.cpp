@@ -78,8 +78,10 @@ public:
 QIBusPlatformInputContext::QIBusPlatformInputContext ()
     : d(new QIBusPlatformInputContextPrivate())
 {
-    connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
-    connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+    if (d->context) {
+        connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
+        connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
+    }
 }
 
 QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
@@ -213,7 +215,7 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
       context(0),
       valid(false)
 {
-    if (!connection->isConnected()) {
+    if (!connection || !connection->isConnected()) {
         qDebug() << "not connected";
         return;
     }
