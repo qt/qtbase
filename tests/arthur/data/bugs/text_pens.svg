@@ -1,7 +1,0 @@
-<?xml version="1.0" standalone="no"?>
-<svg width="10cm" height="10cm" viewBox="0 0 1000 1000"
-     xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny">
-  <text text-anchor="left" font-size="45" font-family="Verdana" x="50" y="50">Text should be drawn in black</text>
-  <text fill="red" text-anchor="left" font-size="45" font-family="Verdana" x="50" y="100">Text should be drawn in red</text>
-  <text fill="none" text-anchor="left" font-size="45" font-family="Verdana" x="50" y="150">Text should not be drawn at all</text>
-</svg>

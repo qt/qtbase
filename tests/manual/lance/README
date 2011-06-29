@@ -1,0 +1,6 @@
+The "lance" tool can be used to edit and run QPainter script (.qps)
+files. They are used in the "lancelot" qpainter regression autotest.
+A collection of scripts can be found in the directory
+tests/auto/lancelot/scripts
+
+See lance -help for options.
