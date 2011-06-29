@@ -119,10 +119,10 @@ protected:
     Qt::MouseButtons mouseState;
 };
 
-class Q_GUI_EXPORT QHoverEvent : public QEvent
+class Q_GUI_EXPORT QHoverEvent : public QInputEvent
 {
 public:
-    QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos);
+    QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QHoverEvent();
 
     inline QPoint pos() const { return p.toPoint(); }

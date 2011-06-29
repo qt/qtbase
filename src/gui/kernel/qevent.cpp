@@ -445,8 +445,8 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos
     receiving widget, while \a oldPos is the previous mouse cursor's
     position relative to the receiving widget.
 */
-QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos)
-    : QEvent(type), p(pos), op(oldPos)
+QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers)
+    : QInputEvent(type, modifiers), p(pos), op(oldPos)
 {
 }
 
