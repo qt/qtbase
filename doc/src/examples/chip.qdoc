@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example demos/chip
+    \example graphicsview/chip
     \title 40000 Chips
 
     This demo shows how to visualize a huge scene with 40000 chip items

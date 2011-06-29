@@ -15,6 +15,7 @@
 "effects/lighting Example", "examples/effects/lighting", "lighting", 10, -1
 "graphicsview/anchorlayout Example", "examples/graphicsview/anchorlayout", "anchorlayout", 10, -1
 "graphicsview/basicgraphicslayouts Example", "examples/graphicsview/basicgraphicslayouts", "basicgraphicslayouts", 0, -1
+"graphicsview/chip Example", "examples/graphicsview/chip", "chip", 0, -1
 "graphicsview/collidingmice Example", "examples/graphicsview/collidingmice", "collidingmice", 10, -1
 "graphicsview/diagramscene Example", "examples/graphicsview/diagramscene", "diagramscene", 10, -1
 "graphicsview/dragdroprobot Example", "examples/graphicsview/dragdroprobot", "dragdroprobot", 10, -1

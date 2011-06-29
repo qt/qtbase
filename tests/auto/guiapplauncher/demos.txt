@@ -1,4 +1,3 @@
-"Chip Demo", "demos/chip", "chip", 0, -1
 "Composition Demo", "demos/composition", "composition", 0, -1
 "Deform Demo", "demos/deform", "deform", 0, -1
 "Embeddeddialogs Demo", "demos/embeddeddialogs", "embeddeddialogs", 0, -1
