@@ -93,7 +93,7 @@ class QAbstractTextDocumentLayout;
 // * negative yoff means the following stuff is drawn higher up.
 // the characters bounding rect is given by QRect(x,y,width,height), its advance by
 // xoo and yoff
-struct glyph_metrics_t
+struct Q_GUI_EXPORT glyph_metrics_t
 {
     inline glyph_metrics_t()
         : x(100000),  y(100000) {}

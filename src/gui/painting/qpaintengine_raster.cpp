@@ -3045,7 +3045,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_OS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;

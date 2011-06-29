@@ -1674,11 +1674,42 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     return allExist;
 }
 
-QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)
+/* Implement alphaMapForGlyph() which is called by Lighthouse/Windows code.
+ * Ideally, that code should be fixed to correctly handle QFontEngineMulti. */
+
+QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph)
 {
-    Q_ASSERT(false);
-    return QImage();
+    const int which = highByte(glyph);
+    Q_ASSERT(which < engines.size());
+    return engine(which)->alphaMapForGlyph(stripped(glyph));
 }
 
+QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
+{
+    const int which = highByte(glyph);
+    Q_ASSERT(which < engines.size());
+    return engine(which)->alphaMapForGlyph(stripped(glyph), subPixelPosition);
+}
+
+QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
+{
+    const int which = highByte(glyph);
+    Q_ASSERT(which < engines.size());
+    return engine(which)->alphaMapForGlyph(stripped(glyph), t);
+}
+
+QImage QFontEngineMulti::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
+{
+    const int which = highByte(glyph);
+    Q_ASSERT(which < engines.size());
+    return engine(which)->alphaMapForGlyph(stripped(glyph), subPixelPosition, t);
+}
+
+QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, const QTransform &t)
+{
+    const int which = highByte(glyph);
+    Q_ASSERT(which < engines.size());
+    return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, margin, t);
+}
 
 QT_END_NAMESPACE

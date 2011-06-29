@@ -393,7 +393,7 @@ private:
     int _size;
 };
 
-class QFontEngineMulti : public QFontEngine
+class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
 {
 public:
     explicit QFontEngineMulti(int engineCount);
@@ -416,6 +416,10 @@ public:
     virtual QFixed xHeight() const;
     virtual QFixed averageCharWidth() const;
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
+    virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
+    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
     virtual QFixed lineThickness() const;
     virtual QFixed underlinePosition() const;
