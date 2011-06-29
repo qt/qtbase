@@ -73,6 +73,7 @@
 "richtext/orderform Example", "examples/richtext/orderform", "orderform", 10, -1
 "richtext/syntaxhighlighter Example", "examples/richtext/syntaxhighlighter", "syntaxhighlighter", 0, -1
 "richtext/textobject Example", "examples/richtext/textobject", "textobject", 10, -1
+"sql/books Example", "examples/sql/books", "books", 0, -1
 "statemachine/eventtransitions Example", "examples/statemachine/eventtransitions", "eventtransitions", 10, -1
 "statemachine/rogue Example", "examples/statemachine/rogue", "rogue", 10, -1
 "statemachine/trafficlight Example", "examples/statemachine/trafficlight", "trafficlight", 0, -1

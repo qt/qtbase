@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example demos/books
+    \example sql/books
     \title Books Demonstration
 
     The Books demonstration shows how Qt's SQL classes can be used with the model/view
