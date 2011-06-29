@@ -1320,8 +1320,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o
     \bold {Composition Modes Demo}
 
-    The \l {demos/composition}{Composition Modes} demo, available in
-    Qt's demo directory, allows you to experiment with the various
+    The \l {painting/composition}{Composition Modes} example, available in
+    Qt's examples directory, allows you to experiment with the various
     composition modes and see the results immediately.
 
     \endtable

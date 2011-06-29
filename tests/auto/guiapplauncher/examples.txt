@@ -62,8 +62,9 @@
 "opengl/overpainting Example", "examples/opengl/overpainting", "overpainting", 10, -1
 "opengl/samplebuffers Example", "examples/opengl/samplebuffers", "samplebuffers", 10, -1
 "opengl/textures Example", "examples/opengl/textures", "textures", 10, -1
-"Affine Transformations Example", "examples/painting/affine", "affine", 0, -1
+"painting/affine Example", "examples/painting/affine", "affine", 0, -1
 "painting/basicdrawing Example", "examples/painting/basicdrawing", "basicdrawing", 10, -1
+"painting/composition Example", "examples/painting/composition", "composition", 0, -1
 "painting/concentriccircles Example", "examples/painting/concentriccircles", "concentriccircles", 0, -1
 "painting/fontsampler Example", "examples/painting/fontsampler", "fontsampler", 0, -1
 "painting/imagecomposition Example", "examples/painting/imagecomposition", "imagecomposition", 10, -1

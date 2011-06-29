@@ -1,4 +1,3 @@
-"Composition Demo", "demos/composition", "composition", 0, -1
 "Deform Demo", "demos/deform", "deform", 0, -1
 "Embeddeddialogs Demo", "demos/embeddeddialogs", "embeddeddialogs", 0, -1
 "Gradients Demo", "demos/gradients", "gradients", 0, -1
