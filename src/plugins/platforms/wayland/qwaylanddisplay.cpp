@@ -309,7 +309,7 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         wl_shell_add_listener(mShell, &shellListener, this);
     } else if (interface == "wl_input_device") {
         QWaylandInputDevice *inputDevice =
-            new QWaylandInputDevice(mDisplay, id);
+            new QWaylandInputDevice(this, id);
         mInputDevices.append(inputDevice);
     } else if (interface == "wl_selection_offer") {
         QWaylandClipboard::instance(display)->createSelectionOffer(id);

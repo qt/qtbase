@@ -48,21 +48,24 @@
 #include <QObject>
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include <QWindowSystemInterface>
 
 #include <wayland-client.h>
 
 QT_BEGIN_NAMESPACE
 
 class QWaylandWindow;
+class QWaylandDisplay;
 
 class QWaylandInputDevice {
 public:
-    QWaylandInputDevice(struct wl_display *display, uint32_t id);
+    QWaylandInputDevice(QWaylandDisplay *display, uint32_t id);
     void attach(QWaylandBuffer *buffer, int x, int y);
     void handleWindowDestroyed(QWaylandWindow *window);
     struct wl_input_device *wl_input_device() const { return mInputDevice; }
 
 private:
+    QWaylandDisplay *mQDisplay;
     struct wl_display *mDisplay;
     struct wl_input_device *mInputDevice;
     QWaylandWindow *mPointerFocus;
@@ -95,6 +98,32 @@ private:
 					 uint32_t time,
 					 struct wl_surface *surface,
 					 struct wl_array *keys);
+    static void inputHandleTouchDown(void *data,
+                                     struct wl_input_device *wl_input_device,
+                                     uint32_t time,
+                                     int id,
+                                     int x,
+                                     int y);
+    static void inputHandleTouchUp(void *data,
+                                   struct wl_input_device *wl_input_device,
+                                   uint32_t time,
+                                   int id);
+    static void inputHandleTouchMotion(void *data,
+                                       struct wl_input_device *wl_input_device,
+                                       uint32_t time,
+                                       int id,
+                                       int x,
+                                       int y);
+    static void inputHandleTouchFrame(void *data,
+                                      struct wl_input_device *wl_input_device);
+    static void inputHandleTouchCancel(void *data,
+                                       struct wl_input_device *wl_input_device);
+
+    void handleTouchPoint(int id, int x, int y, Qt::TouchPointState state);
+    void handleTouchFrame();
+    QList<QWindowSystemInterface::TouchPoint> mTouchPoints;
+    QList<QWindowSystemInterface::TouchPoint> mPrevTouchPoints;
+    QEvent::Type mTouchState;
 };
 
 QT_END_NAMESPACE
