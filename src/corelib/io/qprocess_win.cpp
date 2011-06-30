@@ -263,16 +263,13 @@ static QString qt_create_commandline(const QString &program, const QStringList &
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            QString endQuote(QLatin1Char('\"'));
             int i = tmp.length();
-            while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
+            while (i > 0 && tmp.at(i - 1) == QLatin1Char('\\'))
                 --i;
-                endQuote += QLatin1Char('\\');
-            }
-            args += QLatin1String(" \"") + tmp.left(i) + endQuote;
-        } else {
-            args += QLatin1Char(' ') + tmp;
+            tmp.insert(i, QLatin1Char('"'));
+            tmp.prepend(QLatin1Char('"'));
         }
+        args += QLatin1Char(' ') + tmp;
     }
     return args;
 }
