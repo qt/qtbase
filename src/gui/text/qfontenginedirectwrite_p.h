@@ -86,6 +86,10 @@ public:
 
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     glyph_metrics_t boundingBox(glyph_t g);
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
+                                        QFixed subPixelPosition,
+                                        const QTransform &matrix,
+                                        GlyphFormat format);
 
     QFixed ascent() const;
     QFixed descent() const;
@@ -97,7 +101,7 @@ public:
 
     bool supportsSubPixelPositions() const;
 
-    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
+    QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, int margin,
                                const QTransform &xform);
 
