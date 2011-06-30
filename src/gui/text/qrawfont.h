@@ -135,6 +135,7 @@ public:
 
 private:
     friend class QRawFontPrivate;
+    friend class QTextLayout;
 
     void detach();
 
