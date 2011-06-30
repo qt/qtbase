@@ -48,7 +48,6 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qthread.h>
-#include <QtCore/qthreadpool.h>
 #include <private/qthreadpool_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -195,7 +194,7 @@ void QFutureInterfaceBase::waitForResume()
         return;
 
     // decrease active thread count since this thread will wait.
-    const ThreadPoolThreadReleaser releaser(QThreadPool::globalInstance());
+    const ThreadPoolThreadReleaser releaser(d->pool());
 
     d->pausedWaitCondition.wait(&d->m_mutex);
 }
@@ -301,7 +300,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 
     // To avoid deadlocks and reduce the number of threads used, try to
     // run the runnable in the current thread.
-    QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
+    d->pool()->d_func()->stealRunnable(d->runnable);
 
     lock.relock();
 
@@ -322,7 +321,7 @@ void QFutureInterfaceBase::waitForFinished()
     lock.unlock();
 
     if (!alreadyFinished) {
-        QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
+        d->pool()->d_func()->stealRunnable(d->runnable);
 
         lock.relock();
 
@@ -362,6 +361,11 @@ void QFutureInterfaceBase::reportResultsReady(int beginIndex, int endIndex)
 void QFutureInterfaceBase::setRunnable(QRunnable *runnable)
 {
     d->runnable = runnable;
+}
+
+void QFutureInterfaceBase::setThreadPool(QThreadPool *pool)
+{
+    d->m_pool = pool;
 }
 
 void QFutureInterfaceBase::setFilterMode(bool enable)
@@ -444,7 +448,7 @@ bool QFutureInterfaceBase::derefT() const
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
     : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
       state(initialState),
-      manualProgress(false), m_expectedResultCount(0), runnable(0)
+      manualProgress(false), m_expectedResultCount(0), runnable(0), m_pool(0)
 {
     progressTime.invalidate();
 }

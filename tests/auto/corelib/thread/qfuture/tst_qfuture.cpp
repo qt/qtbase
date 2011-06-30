@@ -47,6 +47,7 @@
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qresultstore.h>
+#include <qthreadpool.h>
 #include <qexception.h>
 #include <private/qfutureinterface_p.h>
 
@@ -80,6 +81,7 @@ private slots:
     void exceptions();
     void nestedExceptions();
 #endif
+    void nonGlobalThreadPool();
 };
 
 void tst_QFuture::resultStore()
@@ -1442,6 +1444,53 @@ void tst_QFuture::nestedExceptions()
     } catch (int) {}
 
     QVERIFY(MyClass::caught);
+}
+
+void tst_QFuture::nonGlobalThreadPool()
+{
+    static Q_CONSTEXPR int Answer = 42;
+
+    struct UselessTask : QRunnable, QFutureInterface<int>
+    {
+        QFuture<int> start(QThreadPool *pool)
+        {
+            setRunnable(this);
+            setThreadPool(pool);
+            reportStarted();
+            QFuture<int> f = future();
+            pool->start(this);
+            return f;
+        }
+
+        void run() Q_DECL_OVERRIDE
+        {
+            const int ms = 100 + (qrand() % 100 - 100/2);
+            QThread::msleep(ms);
+            reportResult(Answer);
+            reportFinished();
+        }
+    };
+
+    QThreadPool pool;
+
+    const int numTasks = QThread::idealThreadCount();
+
+    QVector<QFuture<int> > futures;
+    futures.reserve(numTasks);
+
+    for (int i = 0; i < numTasks; ++i)
+        futures.push_back((new UselessTask)->start(&pool));
+
+    QVERIFY(!pool.waitForDone(0)); // pool is busy (meaning our tasks did end up executing there)
+
+    QVERIFY(pool.waitForDone(10000)); // max sleep time in UselessTask::run is 150ms, so 10s should be enough
+                                      // (and the call returns as soon as all tasks finished anyway, so the
+                                      // maximum wait time only matters when the test fails)
+
+    Q_FOREACH (const QFuture<int> &future, futures) {
+        QVERIFY(future.isFinished());
+        QCOMPARE(future.result(), Answer);
+    }
 }
 
 #endif // QT_NO_EXCEPTIONS

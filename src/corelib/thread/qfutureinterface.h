@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 
 
 template <typename T> class QFuture;
+class QThreadPool;
 class QFutureInterfaceBasePrivate;
 class QFutureWatcherBase;
 class QFutureWatcherBasePrivate;
@@ -85,6 +86,7 @@ public:
     void reportResultsReady(int beginIndex, int endIndex);
 
     void setRunnable(QRunnable *runnable);
+    void setThreadPool(QThreadPool *pool);
     void setFilterMode(bool enable);
     void setProgressRange(int minimum, int maximum);
     int progressMinimum() const;
