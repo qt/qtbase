@@ -623,15 +623,16 @@ QImage QFontEngineDirectWrite::imageForGlyph(glyph_t t,
                 }
 
                 delete[] alphaValues;
+                glyphAnalysis->Release();
+
                 return img;
             } else {
                 delete[] alphaValues;
+                glyphAnalysis->Release();
 
                 qErrnoWarning("QFontEngineDirectWrite::imageForGlyph: CreateAlphaTexture failed");
             }
         }
-
-        glyphAnalysis->Release();
     } else {
         qErrnoWarning("QFontEngineDirectWrite::imageForGlyph: CreateGlyphRunAnalysis failed");
     }
