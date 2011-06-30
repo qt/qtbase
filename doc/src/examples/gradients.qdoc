@@ -26,10 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \example demos/gradients
+    \example painting/gradients
     \title Gradients
 
-    In this demo we show the various types of gradients that can
+    In this example we show the various types of gradients that can
     be used in Qt.
 
     \image gradients-demo.png

@@ -1119,9 +1119,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
     function that draws the outline of the given path (i.e. strokes
     the path).
 
-    See also the \l {demos/deform}{Vector Deformation} demo which
+    See also the \l {painting/deform}{Vector Deformation} example which
     shows how to use advanced vector techniques to draw text using a
-    QPainterPath, the \l {demos/gradients}{Gradients} demo which shows
+    QPainterPath, the \l {painting/gradients}{Gradients} example which shows
     the different types of gradients that are available in Qt, and the \l
     {demos/pathstroke}{Path Stroking} demo which shows Qt's built-in
     dash patterns and shows how custom patterns can be used to extend
@@ -1129,8 +1129,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     \table
     \header
-    \o \l {demos/deform}{Vector Deformation}
-    \o \l {demos/gradients}{Gradients}
+    \o \l {painting/deform}{Vector Deformation}
+    \o \l {painting/gradients}{Gradients}
     \o \l {demos/pathstroke}{Path Stroking}
     \row
     \o \inlineimage qpainter-vectordeformation.png
@@ -3413,7 +3413,7 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
     \endtable
 
     \sa {painting/painterpaths}{the Painter Paths
-    example},{demos/deform}{the Vector Deformation demo}
+    example},{painting/deform}{the Vector Deformation example}
 */
 void QPainter::drawPath(const QPainterPath &path)
 {

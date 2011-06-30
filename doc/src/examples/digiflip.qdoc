@@ -26,8 +26,6 @@
 ****************************************************************************/
 
 /*!
-    \example demos/embedded/lightmaps
-    \title Light Maps Demonstration
-
-    \image lightmaps-demo.png
+    \example embedded/digiflip
+    \title Digiflip
 */

@@ -26,8 +26,8 @@
 ****************************************************************************/
 
 /*!
-    \example demos/embedded/flickable
-    \title Flickable List Demonstration
+    \example embedded/styledemo
+    \title Embedded Styles
 
-    \image flickable-demo.png
+    \image styledemo-demo.png
 */

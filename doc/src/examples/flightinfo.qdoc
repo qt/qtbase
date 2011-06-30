@@ -26,8 +26,8 @@
 ****************************************************************************/
 
 /*!
-    \example demos/embedded/flightinfo
-    \title Flight Info Demonstration
+    \example embedded/flightinfo
+    \title Flight Info
 
     \image flightinfo-demo.png
 */
