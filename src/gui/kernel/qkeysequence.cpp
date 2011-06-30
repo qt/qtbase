@@ -932,7 +932,7 @@ QKeySequence::QKeySequence(const QString &key)
 }
 
 /*!
-    \since 4.x
+    \since 4.7
     Creates a key sequence from the \a key string based on \a format.
 */
 QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat format)
@@ -1129,7 +1129,7 @@ int QKeySequence::assign(const QString &ks)
 
 /*!
     \fn int QKeySequence::assign(const QString &keys, QKeySequence::SequenceFormat format)
-    \since 4.x
+    \since 4.7
 
     Adds the given \a keys to the key sequence (based on \a format).
     \a keys may contain up to four key codes, provided they are
