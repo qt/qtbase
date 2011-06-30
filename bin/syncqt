@@ -15,6 +15,7 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 use strict;
+use English qw(-no_match_vars );
 
 # set output basedir to be where ever syncqt is run from
 our $out_basedir = getcwd();
@@ -50,6 +51,7 @@ my $module_fwd = "";
 my $cache_module_fwd = 0;
 my $developer_build = 0;
 my $no_module_version_header = 0;
+my $makefile_generator = "";
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
@@ -90,6 +92,7 @@ sub showUsage
     print "                        easy development\n";
     print "  -no-module-version-header\n";
     print "                        Don't create module version header file\n";
+    print "  -generator <PATH>     Specify the makefile generator setting (e.g. 'UNIX')\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -658,6 +661,9 @@ while ( @ARGV ) {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
         next;
+    } elsif($arg eq "-generator") {
+        $var = "makefile_generator";
+        $val = shift @ARGV;
     } elsif($arg =~/^-/) {
         print "Unknown option: $arg\n\n" if(!$var);
         showUsage();
@@ -741,6 +747,8 @@ while ( @ARGV ) {
         $cache_module_fwd = 1;
     } elsif ($var eq "developer_build") {
         $developer_build = 1;
+    } elsif ($var eq "makefile_generator") {
+            $makefile_generator = $val;
     } elsif ($var eq "no_module_version_header") {
             $no_module_version_header = 1;
     } elsif ($var eq "output") {
@@ -1307,6 +1315,15 @@ if($check_includes) {
                     }
                 }
             }
+    }
+}
+
+# Do configure tests now (pass some things along)
+# fatal tests have a non zero return
+unless ($showonly) {
+    my $configtests = dirname($0)."/qtmodule-configtests";
+    if (system($EXECUTABLE_NAME, $configtests, $basedir, $out_basedir, $qtbasedir, $makefile_generator)) {
+          die "$configtests exited with status $?";
     }
 }
 
