@@ -469,6 +469,7 @@ private slots:
     void httpDownloadPerformance();
     void httpDownloadPerformanceDownloadBuffer_data();
     void httpDownloadPerformanceDownloadBuffer();
+    void httpsRequestChain();
 };
 
 void tst_qnetworkreply::httpLatency()
@@ -738,6 +739,87 @@ void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
         QVERIFY(!QTestEventLoop::instance().timeout());
     }
 }
+
+
+class HttpsRequestChainHelper : public QObject {
+    Q_OBJECT
+public:
+    QList<QNetworkRequest> requestList;
+
+    QElapsedTimer timeOneRequest;
+    QList<qint64> timeList;
+
+    QElapsedTimer globalTime;
+
+    QNetworkAccessManager manager;
+
+    HttpsRequestChainHelper() {
+    }
+public slots:
+    void doNextRequest() {
+        // all requests done
+        if (requestList.isEmpty()) {
+            QTestEventLoop::instance().exitLoop();
+            return;
+        }
+
+        if (qobject_cast<QNetworkReply*>(sender()) == 0) {
+            // first start after DNS lookup, start timer
+            globalTime.start();
+        }
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        if (reply) {
+            QVERIFY(reply->error() == QNetworkReply::NoError);
+            qDebug() << "time =" << timeOneRequest.elapsed() << "ms";
+            timeList.append(timeOneRequest.elapsed());
+        }
+
+        QNetworkRequest request = requestList.takeFirst();
+        timeOneRequest.restart();
+        reply = manager.get(request);
+        QObject::connect(reply, SIGNAL(sslErrors( const QList<QSslError> &)), reply, SLOT(ignoreSslErrors()));
+        QObject::connect(reply, SIGNAL(finished()), this, SLOT(doNextRequest()));
+    }
+
+};
+
+void tst_qnetworkreply::httpsRequestChain()
+{
+    int count = 10;
+
+    QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/fluke.gif"));
+    //QNetworkRequest request(QUrl("https://www.nokia.com/robots.txt"));
+    // Disable keep-alive so we have the full re-connecting of TCP.
+    request.setRawHeader("Connection", "close");
+
+    HttpsRequestChainHelper helper;
+    for (int i = 0; i < count; i++)
+        helper.requestList.append(request);
+
+    // Warm up DNS cache and then immediatly start HTTP
+    QHostInfo::lookupHost(QtNetworkSettings::serverName(), &helper, SLOT(doNextRequest()));
+    //QHostInfo::lookupHost("www.nokia.com", &helper, SLOT(doNextRequest()));
+
+    // we can use QBENCHMARK_ONCE when we find out how to make it really run once.
+    // there is still a warmup-run :(
+
+    //QBENCHMARK_ONCE {
+        QTestEventLoop::instance().enterLoop(40);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    //}
+
+    qint64 elapsed = helper.globalTime.elapsed();
+
+    qint64 average = (elapsed / count);
+
+    qSort(helper.timeList);
+    qint64 median = helper.timeList.at(5);
+
+    qDebug() << "Total:" << elapsed << "   Average:" << average << "   Median:" << median;
+
+}
+
+
 
 QTEST_MAIN(tst_qnetworkreply)
 
