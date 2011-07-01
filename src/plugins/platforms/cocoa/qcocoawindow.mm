@@ -118,12 +118,12 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 void QCocoaWindow::raise()
 {
     // ### handle spaces (see Qt 4 raise_sys in qwidget_mac.mm)
-    [m_nsWindow orderFront];
+    [m_nsWindow orderFront: m_nsWindow];
 }
 
 void QCocoaWindow::lower()
 {
-    [m_nsWindow orderBack];
+    [m_nsWindow orderFront: m_nsWindow];
 }
 
 WId QCocoaWindow::winId() const
