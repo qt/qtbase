@@ -73,11 +73,16 @@ public:
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
 
+protected:
+    void determineWindowClass();
+    NSWindow *createWindow();
 private:
     friend class QCocoaBackingStore;
     NSWindow *m_nsWindow;
     QNSView *m_contentView;
     NSView *m_windowSurfaceView;
+    quint32 m_windowAttributes;
+    quint32 m_windowClass;
     QCocoaGLContext *m_glContext;
 };
 
