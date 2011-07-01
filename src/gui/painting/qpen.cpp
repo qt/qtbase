@@ -214,14 +214,14 @@ typedef QPenPrivate QPenData;
     \table 100%
     \row
     \o \inlineimage qpen-demo.png
-    \o \bold {\l {demos/pathstroke}{The Path Stroking Demo}}
+    \o \bold {\l {painting/pathstroke}{The Path Stroking Example}}
 
-    The Path Stroking demo shows Qt's built-in dash patterns and shows
+    The Path Stroking example shows Qt's built-in dash patterns and shows
     how custom patterns can be used to extend the range of available
     patterns.
     \endtable
 
-    \sa QPainter, QBrush, {demos/pathstroke}{Path Stroking Demo},
+    \sa QPainter, QBrush, {painting/pathstroke}{Path Stroking Example},
         {Scribble Example}
 */
 

@@ -1,7 +1,0 @@
-"Interview Demo", "demos/interview", "interview", 0, -1
-"Mainwindow Demo", "demos/mainwindow", "mainwindow", 0, -1
-"PathStroke Demo", "demos/pathstroke", "pathstroke", 0, -1
-"Spreadsheet Demo", "demos/spreadsheet", "spreadsheet", 0, -1
-"Sub-Attac Demo", "demos/sub-attaq", "sub-attaq", 0, -1
-"TextEdit Demo", "demos/textedit", "textedit", 0, -1
-"Undo Demo", "demos/undo", "undo", 0, -1

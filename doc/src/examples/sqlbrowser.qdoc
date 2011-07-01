@@ -26,12 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example demos/interview
-    \title Interview
+    \example sql/sqlbrowser
+    \title SQL Browser
 
-    The Interview demonstration explores the flexibility and scalability of the
-    model/view framework by presenting an infinitely deep data structure using a model
-    and three different types of view.
+    The SQL Browser example shows how a data browser can be used to visualize
+    the results of SQL statements on a live database.
 
-    \image interview-demo.png
+    \image sqlbrowser-demo.png
 */

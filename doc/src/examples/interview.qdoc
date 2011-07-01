@@ -26,15 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example demos/sub-attaq
-    \title Sub-Attaq
+    \example itemviews/interview
+    \title Interview
 
-    This demo shows Qt's ability to combine \l{The Animation Framework}{the animation framework} 
-    and \l{The State Machine Framework}{the state machine framework} to create a game.
-    
-    \image sub-attaq-demo.png
+    The Interview example explores the flexibility and scalability of the
+    model/view framework by presenting an infinitely deep data structure using a model
+    and three different types of view.
 
-    The purpose of the game is to destroy all submarines to win the current level.
-    The boat can be controlled using left and right keys. To fire a bomb you can press
-    up and down keys.
+    \image interview-demo.png
 */

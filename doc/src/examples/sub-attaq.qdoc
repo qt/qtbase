@@ -26,17 +26,15 @@
 ****************************************************************************/
 
 /*!
-  \example demos/macmainwindow
-  \title Mac Main Window Demo
+    \example animation/sub-attaq
+    \title Sub-Attaq
 
-  This demo shows how to create a main window that has the
-  same appearance as other Mac OS X applications such as Mail or iTunes.
-  This includes customizing the item views and QSplitter and wrapping native
-  widgets such as the search field.
+    This example shows Qt's ability to combine \l{The Animation Framework}{the animation framework}
+    and \l{The State Machine Framework}{the state machine framework} to create a game.
+    
+    \image sub-attaq-demo.png
 
-  \image macmainwindow.png
-
-  See \c{$QTDIR/demos/macmainwindow} for the source code.
+    The purpose of the game is to destroy all submarines to win the current level.
+    The boat can be controlled using left and right keys. To fire a bomb you can press
+    up and down keys.
 */
-
-

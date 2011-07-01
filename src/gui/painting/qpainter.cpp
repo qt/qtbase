@@ -1123,7 +1123,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     shows how to use advanced vector techniques to draw text using a
     QPainterPath, the \l {painting/gradients}{Gradients} example which shows
     the different types of gradients that are available in Qt, and the \l
-    {demos/pathstroke}{Path Stroking} demo which shows Qt's built-in
+    {painting/pathstroke}{Path Stroking} example which shows Qt's built-in
     dash patterns and shows how custom patterns can be used to extend
     the range of available patterns.
 
@@ -1131,7 +1131,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \header
     \o \l {painting/deform}{Vector Deformation}
     \o \l {painting/gradients}{Gradients}
-    \o \l {demos/pathstroke}{Path Stroking}
+    \o \l {painting/pathstroke}{Path Stroking}
     \row
     \o \inlineimage qpainter-vectordeformation.png
     \o \inlineimage qpainter-gradients.png

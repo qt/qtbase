@@ -26,18 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example demos/undo
-    \title Undo Framework
+    \example itemviews/spreadsheet
+    \title Spreadsheet
 
-    This demo shows Qt's undo framework in action.
+    The Spreadsheet example shows how a table view can be used to create a
+    simple spreadsheet application. Custom delegates are used to render different
+    types of data in distinctive colors.
 
-    \image undodemo.png
-
-    Qt's undo framework is an implementation of the Command
-    pattern, which provides advanced undo/redo functionality. 
-
-    To show the abilities of the framework, we have implemented a
-    small diagram application in which the diagram items are geometric
-    primitives.  You can edit the diagram in the following ways: add,
-    move, change the color of, and delete the items.
+    \image spreadsheet-demo.png
 */

@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example demos/sqlbrowser
-    \title SQL Browser
+    \example richtext/textedit
+    \title Text Edit
 
-    The SQL Browser demonstration shows how a data browser can be used to visualize
-    the results of SQL statements on a live database.
+    The Text Edit example shows Qt's rich text editing facilities in action,
+    providing an example document for you to experiment with.
 
-    \image sqlbrowser-demo.png
+    \image textedit-demo.png
 */

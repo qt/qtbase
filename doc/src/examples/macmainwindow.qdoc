@@ -26,22 +26,17 @@
 ****************************************************************************/
 
 /*!
-    \example demos/pathstroke
-    \title Path Stroking
+  \example mainwindows/macmainwindow
+  \title Mac Main Window Example
 
-    In this demo we show some of the various types of pens that can be
-    used in Qt.
+  This example shows how to create a main window that has the
+  same appearance as other Mac OS X applications such as Mail or iTunes.
+  This includes customizing the item views and QSplitter and wrapping native
+  widgets such as the search field.
 
-    \image pathstroke-demo.png
+  \image macmainwindow.png
 
-    Qt defines cap styles for how the end points are treated and join
-    styles for how path segments are joined together. A standard set of
-    predefined dash patterns are also included that can be used with
-    QPen.
-
-    In addition to the predefined patterns available in
-    QPen we also demonstrate direct use of the
-    QPainterPathStroker class which can be used to define
-    custom dash patterns. You can see this by enabling the
-    \e{Custom Pattern} option.
+  See \c{$QTDIR/examples/mainwindows/macmainwindow} for the source code.
 */
+
+
