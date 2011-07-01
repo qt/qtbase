@@ -483,7 +483,8 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
-      socketError(QAbstractSocket::UnknownSocketError)
+      socketError(QAbstractSocket::UnknownSocketError),
+      preferredNetworkLayerProtocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
 }
 
@@ -899,7 +900,16 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         qWarning("QAbstractSocketPrivate::_q_startConnecting() received hostInfo for wrong lookup ID %d expected %d", hostInfo.lookupId(), hostLookupId);
     }
 
-    addresses = hostInfo.addresses();
+    // Only add the addresses for the prefered network layer.
+    // Or all if prefered network layer is not set.
+    if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
+        addresses = hostInfo.addresses();
+    } else {
+        foreach (QHostAddress address, hostInfo.addresses())
+            if (address.protocol() == preferredNetworkLayerProtocol)
+                addresses += address;
+    }
+
 
 #if defined(QABSTRACTSOCKET_DEBUG)
     QString s = QLatin1String("{");
@@ -1330,8 +1340,12 @@ bool QAbstractSocket::isValid() const
     \sa state(), peerName(), peerAddress(), peerPort(), waitForConnected()
 */
 void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
-                                    OpenMode openMode)
+                                    OpenMode openMode,
+                                    NetworkLayerProtocol protocol)
 {
+    Q_D(QAbstractSocket);
+    d->preferredNetworkLayerProtocol = protocol;
+
     QMetaObject::invokeMethod(this, "connectToHostImplementation",
                               Qt::DirectConnection,
                               Q_ARG(QString, hostName),

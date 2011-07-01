@@ -129,7 +129,7 @@ public:
     virtual ~QAbstractSocket();
 
     // ### Qt 5: Make connectToHost() and disconnectFromHost() virtual.
-    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite);
+    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
     void disconnectFromHost();
 

@@ -82,6 +82,7 @@ QT_BEGIN_NAMESPACE
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
 class QByteArray;
+class QHostInfo;
 
 class QHttpNetworkConnectionPrivate;
 class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
@@ -132,6 +133,7 @@ private:
     friend class QHttpNetworkConnectionChannel;
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
+    Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))
 };
 
 
@@ -152,6 +154,13 @@ public:
         PausedState = 1,
     };
 
+    enum NetworkLayerPreferenceState {
+        Unknown,
+        InProgress,
+        IPv4,
+        IPv6
+    };
+
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
@@ -160,6 +169,7 @@ public:
     void pauseConnection();
     void resumeConnection();
     ConnectionState state;
+    NetworkLayerPreferenceState networkLayerState;
 
     enum { ChunkSize = 4096 };
 
@@ -179,8 +189,13 @@ public:
 
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
+    void startHostInfoLookup();
+    void startNetworkLayerStateLookup();
+
     // private slots
     void _q_startNextRequest(); // send the next request from the queue
+
+    void _q_hostLookupFinished(QHostInfo info);
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
 
@@ -198,6 +213,7 @@ public:
 
     const int channelCount;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
+    bool shouldEmitChannelError(QAbstractSocket *socket);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;

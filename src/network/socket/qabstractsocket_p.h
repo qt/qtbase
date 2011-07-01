@@ -156,6 +156,8 @@ public:
 
     QAbstractSocket::SocketError socketError;
 
+    QAbstractSocket::NetworkLayerProtocol preferredNetworkLayerProtocol;
+
     bool prePauseReadSocketNotifierState;
     bool prePauseWriteSocketNotifierState;
     bool prePauseExceptionSocketNotifierState;

@@ -405,7 +405,7 @@ QSslSocket::~QSslSocket()
 
     \sa connectToHost(), startClientEncryption(), waitForConnected(), waitForEncrypted()
 */
-void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode)
+void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode, NetworkLayerProtocol protocol)
 {
     Q_D(QSslSocket);
     if (d->state == ConnectedState || d->state == ConnectingState) {
@@ -419,7 +419,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
 
     // Note: When connecting to localhost, some platforms (e.g., HP-UX and some BSDs)
     // establish the connection immediately (i.e., first attempt).
-    connectToHost(hostName, port, mode);
+    connectToHost(hostName, port, mode, protocol);
 }
 
 /*!
@@ -434,7 +434,8 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
     \sa connectToHostEncrypted()
 */
 void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
-                                        const QString &sslPeerName, OpenMode mode)
+                                        const QString &sslPeerName, OpenMode mode,
+                                        NetworkLayerProtocol protocol)
 {
     Q_D(QSslSocket);
     if (d->state == ConnectedState || d->state == ConnectingState) {
@@ -449,7 +450,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
 
     // Note: When connecting to localhost, some platforms (e.g., HP-UX and some BSDs)
     // establish the connection immediately (i.e., first attempt).
-    connectToHost(hostName, port, mode);
+    connectToHost(hostName, port, mode, protocol);
 }
 
 /*!
@@ -1740,7 +1741,7 @@ void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 po
     d->plainSocket->setProperty("_q_user-agent", property("_q_user-agent"));
 #endif
     QIODevice::open(openMode);
-    d->plainSocket->connectToHost(hostName, port, openMode);
+    d->plainSocket->connectToHost(hostName, port, openMode, d->preferredNetworkLayerProtocol);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
 }
 

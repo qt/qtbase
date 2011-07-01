@@ -80,6 +80,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
 #endif
     , pipeliningSupported(PipeliningSupportUnknown)
     , connection(0)
+    , networkLayerPreference(QAbstractSocket::AnyIPProtocol)
 {
     // Inlining this function in the header leads to compiler error on
     // release-armv5, on at least timebox 9.2 and 10.1.
@@ -594,7 +595,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
         if (ssl) {
 #ifndef QT_NO_OPENSSL
             QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
-            sslSocket->connectToHostEncrypted(connectHost, connectPort);
+            sslSocket->connectToHostEncrypted(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
             if (ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
             sslSocket->ignoreSslErrors(ignoreSslErrorsList);
@@ -613,12 +614,12 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                     && connection->cacheProxy().type() == QNetworkProxy::NoProxy
                     && connection->transparentProxy().type() == QNetworkProxy::NoProxy) {
 #endif
-                socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite | QIODevice::Unbuffered);
+                socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite | QIODevice::Unbuffered, networkLayerPreference);
                 // For an Unbuffered QTcpSocket, the read buffer size has a special meaning.
                 socket->setReadBufferSize(1*1024);
 #ifndef QT_NO_NETWORKPROXY
             } else {
-                socket->connectToHost(connectHost, connectPort);
+                socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
 
                 // limit the socket read buffer size. we will read everything into
                 // the QHttpNetworkReply anyway, so let's grow only that and not
@@ -1002,6 +1003,25 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 
 void QHttpNetworkConnectionChannel::_q_connected()
 {
+    // For the Happy Eyeballs we need to check if this is the first channel to connect.
+    if (!pendingEncrypt) {
+        if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+            if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
+                connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
+            else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)
+                connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
+        } else {
+            if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (networkLayerPreference != QAbstractSocket::IPv4Protocol))
+                || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (networkLayerPreference != QAbstractSocket::IPv6Protocol))) {
+                close();
+                // This is the second connection so it has to be closed and we can schedule it for another request.
+                QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+                return;
+            }
+            //The connections networkLayerState had already been decided.
+        }
+    }
+
     // improve performance since we get the request sent by the kernel ASAP
     //socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     // We have this commented out now. It did not have the effect we wanted. If we want to
@@ -1088,6 +1108,11 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     }
     QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
+
+    // In the InProgress state the channel should not emit the error.
+    // This will instead be handled by the connection.
+    if (!connection->d_func()->shouldEmitChannelError(socket))
+        return;
 
     // Need to dequeu the request so that we can emit the error.
     if (!reply)
