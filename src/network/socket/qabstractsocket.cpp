@@ -1003,17 +1003,6 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
                host.toString().toLatin1().constData(), port, addresses.count());
 #endif
 
-#if defined(QT_NO_IPV6)
-        if (host.protocol() == QAbstractSocket::IPv6Protocol) {
-            // If we have no IPv6 support, then we will not be able to
-            // connect. So we just pretend we didn't see this address.
-#if defined(QABSTRACTSOCKET_DEBUG)
-            qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), skipping IPv6 entry");
-#endif
-            continue;
-        }
-#endif
-
         if (!initSocketLayer(host.protocol())) {
             // hope that the next address is better
 #if defined(QABSTRACTSOCKET_DEBUG)

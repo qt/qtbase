@@ -380,9 +380,6 @@ void tst_QUdpSocket::ipv6Loop_data()
 
 void tst_QUdpSocket::ipv6Loop()
 {
-#if defined(QT_NO_IPV6)
-    QSKIP("IPv6 is not yet supported", SkipAll);
-#endif
     QFETCH(QByteArray, peterMessage);
     QFETCH(QByteArray, paulMessage);
     QFETCH(bool, success);

@@ -47,9 +47,7 @@
 #  undef _POSIX_          /* Don't polute                             */
 
    /* Make sure IP v6 is defined first of all, before windows.h     */
-#  ifndef QT_NO_IPV6
 #     include <winsock2.h>
-#  endif
 #  include <stdlib.h>
 #endif
 

@@ -203,6 +203,7 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
     case BroadcastingInitFailedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to initialize broadcast socket");
         break;
+    // should not happen anymore
     case NoIpV6ErrorString:
         socketErrorString = QNativeSocketEngine::tr("Attempt to use IPv6 socket on a platform with no IPv6 support");
         break;
@@ -344,14 +345,6 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
     Q_D(QNativeSocketEngine);
     if (isValid())
         close();
-
-#if defined(QT_NO_IPV6)
-    if (protocol == QAbstractSocket::IPv6Protocol) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::NoIpV6ErrorString);
-        return false;
-    }
-#endif
 
     // Create the socket
     if (!d->createNewSocket(socketType, protocol)) {
@@ -511,13 +504,6 @@ bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 por
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::connectToHost(), false);
 
-#if defined (QT_NO_IPV6)
-    if (address.protocol() == QAbstractSocket::IPv6Protocol) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::NoIpV6ErrorString);
-        return false;
-    }
-#endif
     if (!d->checkProxy(address))
         return false;
 
@@ -581,13 +567,6 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bind(), false);
 
-#if defined (QT_NO_IPV6)
-    if (address.protocol() == QAbstractSocket::IPv6Protocol) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    QNativeSocketEnginePrivate::NoIpV6ErrorString);
-        return false;
-    }
-#endif
     if (!d->checkProxy(address))
         return false;
 

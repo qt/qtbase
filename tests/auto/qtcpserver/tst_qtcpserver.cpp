@@ -281,9 +281,6 @@ void tst_QTcpServer::dualStack_data()
 
 void tst_QTcpServer::dualStack()
 {
-#ifdef QT_NO_IPV6
-    QSKIP("test requires IPv6 support", SkipAll);
-#else
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         QSKIP("test server proxy doesn't support ipv6", SkipSingle);
@@ -302,7 +299,6 @@ void tst_QTcpServer::dualStack()
 
     QCOMPARE(v4client.waitForConnected(5000), v4ok);
     QCOMPARE(v6client.waitForConnected(5000), v6ok);
-#endif
 }
 
 //----------------------------------------------------------------------------------
