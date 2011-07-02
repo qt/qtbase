@@ -79,8 +79,8 @@ public:
     void relock()
     {
         if (!locked) {
-            if (mtx1) mtx1->lockInline();
-            if (mtx2) mtx2->lockInline();
+            if (mtx1) mtx1->lock();
+            if (mtx2) mtx2->lock();
             locked = true;
         }
     }
@@ -88,8 +88,8 @@ public:
     void unlock()
     {
         if (locked) {
-            if (mtx1) mtx1->unlockInline();
-            if (mtx2) mtx2->unlockInline();
+            if (mtx1) mtx1->unlock();
+            if (mtx2) mtx2->unlock();
             locked = false;
         }
     }
@@ -100,10 +100,10 @@ public:
         if (mtx1 == mtx2)
             return false;
         if (mtx1 < mtx2) {
-            mtx2->lockInline();
+            mtx2->lock();
             return true;
         }
-        if (!mtx2->tryLockInline()) {
+        if (!mtx2->tryLock()) {
             mtx1->unlock();
             mtx2->lock();
             mtx1->lock();

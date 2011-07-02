@@ -151,7 +151,6 @@ void tst_QMutex::noThread_data()
     QTest::addColumn<int>("t");
 
     QTest::newRow("noLock") << 1;
-    QTest::newRow("QMutexInline") << 2;
     QTest::newRow("QMutex") << 3;
     QTest::newRow("QMutexLocker") << 4;
 }
@@ -169,16 +168,6 @@ void tst_QMutex::noThread()
                 count = 0;
                 for (int i = 0; i < N; i++) {
                     count++;
-                }
-            }
-            break;
-        case 2:
-            QBENCHMARK {
-                count = 0;
-                for (int i = 0; i < N; i++) {
-                    mtx.lockInline();
-                    count++;
-                    mtx.unlockInline();
                 }
             }
             break;

@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
+    : recursive(mode)
 {
     event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
@@ -60,13 +60,7 @@ QMutexPrivate::~QMutexPrivate()
 
 bool QMutexPrivate::wait(int timeout)
 {
-    if (contenders.fetchAndAddAcquire(1) == 0) {
-        // lock acquired without waiting
-        return true;
-    }
-    bool returnValue = (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
-    contenders.deref();
-    return returnValue;
+    return (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
 }
 
 void QMutexPrivate::wakeUp()

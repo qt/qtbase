@@ -41,78 +41,56 @@
 
 #include "qplatformdefs.h"
 #include "qmutex.h"
-#include "qstring.h"
 
-#ifndef QT_NO_THREAD
-#include "qatomic.h"
+#if !defined(QT_NO_THREAD)
+
 #include "qmutex_p.h"
-#include <errno.h>
 
-#if defined(Q_OS_VXWORKS) && defined(wakeup)
-#undef wakeup
-#endif
+#include <mach/mach.h>
+#include <mach/task.h>
+
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 
-static void report_error(int code, const char *where, const char *what)
-{
-    if (code != 0)
-        qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
-}
-
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive), wakeup(false)
+    : recursive(mode == QMutex::Recursive)
 {
-    report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
-    report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
+    kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);
+    if (r != KERN_SUCCESS)
+        qWarning("QMutex: failed to create semaphore, error %d", r);
 }
 
 QMutexPrivate::~QMutexPrivate()
 {
-    report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
-    report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
+    kern_return_t r = semaphore_destroy(mach_task_self(), mach_semaphore);
+    if (r != KERN_SUCCESS)
+        qWarning("QMutex: failed to destroy semaphore, error %d", r);
 }
 
 bool QMutexPrivate::wait(int timeout)
 {
-    report_error(pthread_mutex_lock(&mutex), "QMutex::lock", "mutex lock");
-    int errorCode = 0;
-    while (!wakeup) {
-        if (timeout < 0) {
-            errorCode = pthread_cond_wait(&cond, &mutex);
-        } else {
-            struct timeval tv;
-            gettimeofday(&tv, 0);
-            timespec ti;
-            ti.tv_nsec = (tv.tv_usec + (timeout % 1000) * 1000) * 1000;
-            ti.tv_sec = tv.tv_sec + (timeout / 1000) + (ti.tv_nsec / 1000000000);
-            ti.tv_nsec %= 1000000000;
-            errorCode = pthread_cond_timedwait(&cond, &mutex, &ti);
-        }
-        if (errorCode) {
-            if (errorCode == ETIMEDOUT) {
-                if (wakeup)
-                    errorCode = 0;
-                break;
-            }
-            report_error(errorCode, "QMutex::lock()", "cv wait");
-        }
+    kern_return_t r;
+    if (timeout < 0) {
+        do {
+            r = semaphore_wait(mach_semaphore);
+        } while (r == KERN_ABORTED);
+        Q_ASSERT(r == KERN_SUCCESS);
+    } else {
+        mach_timespec_t ts;
+        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
+        ts.tv_sec = (timeout / 1000);
+        r = semaphore_timedwait(mach_semaphore, ts);
     }
-    bool ret = wakeup;
-    wakeup = false;
-    report_error(pthread_mutex_unlock(&mutex), "QMutex::lock", "mutex unlock");
-    return ret;
+    return (r == KERN_SUCCESS);
 }
 
 void QMutexPrivate::wakeUp()
 {
-    report_error(pthread_mutex_lock(&mutex), "QMutex::unlock", "mutex lock");
-    wakeup = true;
-    report_error(pthread_cond_signal(&cond), "QMutex::unlock", "cv signal");
-    report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
+    semaphore_signal(mach_semaphore);
 }
 
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_THREAD
+#endif //QT_NO_THREAD
