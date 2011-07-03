@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,8 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef CP949CODETBL_H
-#define CP494CODETBL_H
+#ifndef CP949CODETBL_P_H
+#define CP494CODETBL_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 static const unsigned short cp949_icode_to_unicode[] = {
 0xac02, 0xac03, 0xac05, 0xac06, 0xac0b, 0xac0c, 0xac0d, 0xac0e, 0xac0f, 0xac18, 0xac1e, 0xac1f, 0xac21, 0xac22, 0xac23, 
@@ -634,4 +645,4 @@ static const unsigned short cp949_icode_to_unicode[] = {
 0xd7a2, 0xd7a3
 };
 
-#endif // CP494CODETBL_H
+#endif // CP494CODETBL_P_H

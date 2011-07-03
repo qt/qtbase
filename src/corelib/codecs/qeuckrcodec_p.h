@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -64,8 +64,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef QEUCKRCODEC_H
-#define QEUCKRCODEC_H
+#ifndef QEUCKRCODEC_P_H
+#define QEUCKRCODEC_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qtextcodec.h>
 #include <QtCore/qlist.h>
@@ -126,4 +137,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QEUCKRCODEC_H
+#endif // QEUCKRCODEC_P_H
