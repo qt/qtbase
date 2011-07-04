@@ -117,15 +117,6 @@ public:
     bool isNull() const;
     void clear();
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT quint32 ip4Addr() const { return toIPv4Address(); }
-    inline QT3_SUPPORT bool isIPv4Address() const { return protocol() == QAbstractSocket::IPv4Protocol
-                                                      || protocol() == QAbstractSocket::UnknownNetworkLayerProtocol; }
-    inline QT3_SUPPORT bool isIp4Addr() const  { return protocol() == QAbstractSocket::IPv4Protocol
-                                                      || protocol() == QAbstractSocket::UnknownNetworkLayerProtocol; }
-    inline QT3_SUPPORT bool isIPv6Address() const { return protocol() == QAbstractSocket::IPv6Protocol; }
-#endif
-
     bool isInSubnet(const QHostAddress &subnet, int netmask) const;
     bool isInSubnet(const QPair<QHostAddress, int> &subnet) const;
 
