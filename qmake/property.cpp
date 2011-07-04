@@ -104,7 +104,7 @@ QMakeProperty::value(QString v, bool just_check)
     else if(v == "QT_INSTALL_EXAMPLES")
         return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
     else if(v == "QT_INSTALL_DEMOS")
-        return QLibraryInfo::location(QLibraryInfo::DemosPath);
+        return QLibraryInfo::location(QLibraryInfo::ExamplesPath);
     else if(v == "QMAKE_MKSPECS")
         return qmake_mkspec_paths().join(Option::dirlist_sep);
     else if(v == "QMAKE_VERSION")
