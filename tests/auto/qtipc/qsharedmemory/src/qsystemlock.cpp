@@ -124,7 +124,7 @@
         systemLock.unlock();
     }
 
-    If this is called from two seperate processes the resulting log file is
+    If this is called from two separate processes the resulting log file is
     guaranteed to contain both lines.
 
     When you call lock(), other threads or processes that try to call lock()

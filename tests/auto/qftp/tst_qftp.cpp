@@ -1416,7 +1416,7 @@ void tst_QFtp::abort()
                 QVERIFY( bytesDone != bytesTotal );
             }
         } else {
-            // this could be tested by verifying that no more progress signals are emited
+            // this could be tested by verifying that no more progress signals are emitted
             QVERIFY(bytesDone <= bytesTotal);
         }
     } else {

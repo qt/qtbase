@@ -302,7 +302,7 @@ void tst_QMenu::mouseActivation()
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
-    //context menus can allways be accessed with right click except on windows
+    //context menus can always be accessed with right click except on windows
     menu.show();
     QTest::mouseClick(&menu, Qt::RightButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());

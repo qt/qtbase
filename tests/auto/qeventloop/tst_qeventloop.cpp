@@ -287,7 +287,7 @@ void tst_QEventLoop::onlySymbianActiveScheduler() {
     // In here we try to use timers and sockets exclusively using the Symbian
     // active scheduler and no processEvents().
     // This test should therefore be run first, so that we can verify that
-    // the first occurrence of processEvents does not do any initalization that
+    // the first occurrence of processEvents does not do any initialization that
     // we depend on.
 
     // Open up a pipe so we can test socket notifiers.

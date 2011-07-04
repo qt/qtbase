@@ -382,7 +382,7 @@ void tst_QPushButton::toggled()
     testWidget->toggle();
     QVERIFY( toggle_count == 0 );
 
-    // do it again, just to be shure
+    // do it again, just to be sure
     resetCounters();
     testWidget->toggle();
     QVERIFY( toggle_count == 0 );

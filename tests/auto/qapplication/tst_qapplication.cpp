@@ -1515,7 +1515,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
 }
 
 /*
-    Test for crash whith QApplication::setDesktopSettingsAware(false).
+    Test for crash with QApplication::setDesktopSettingsAware(false).
 */
 void tst_QApplication::desktopSettingsAware()
 {

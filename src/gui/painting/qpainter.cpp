@@ -2728,7 +2728,7 @@ QRectF QPainter::clipBoundingRect() const
     }
 
     // Accumulate the bounding box in device space. This is not 100%
-    // precise, but it fits within the guarantee and it is resonably
+    // precise, but it fits within the guarantee and it is reasonably
     // fast.
     QRectF bounds;
     for (int i=0; i<d->state->clipInfo.size(); ++i) {

@@ -2456,7 +2456,7 @@ void tst_QGraphicsWidget::popupMouseGrabber()
     QCOMPARE(widgetUngrabEventSpy.count(), 1);
     QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
 
-    // Showing it grabs the mosue again
+    // Showing it grabs the mouse again
     widget->show();
     QCOMPARE(widgetGrabEventSpy.count(), 2);
     QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)widget);
@@ -3175,7 +3175,7 @@ void tst_QGraphicsWidget::initialShow2()
     // Don't let paint events triggered by the windowing system
     // influence our test case. We're only interested in knowing
     // whether a QGraphicsWidget generates an additional repaint
-    // on the inital show. Hence create a dummy scenario to find out
+    // on the initial show. Hence create a dummy scenario to find out
     // how many repaints we should expect.
     QGraphicsScene dummyScene(0, 0, 200, 200);
     dummyScene.addItem(new QGraphicsRectItem(0, 0, 100, 100));

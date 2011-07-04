@@ -1030,7 +1030,7 @@ void tst_QShortcut::context()
     other1->clear();
     other2->clear();
 
-    // edit doens't have focus, so ActiveWindow context should work
+    // edit doesn't have focus, so ActiveWindow context should work
     // ..but Focus context shouldn't..
     // Changing focus to edit should make focus context work
     // Application context should always work

@@ -3054,7 +3054,7 @@ void tst_QGraphicsView::task210599_unsetDragWhileDragging()
         QApplication::sendEvent(view.viewport(), &move);
     }
 
-    // Check that no draggin has occured...
+    // Check that no draggin has occurred...
     QCOMPARE(basePos, view.mapFromScene(0, 0));
 }
 

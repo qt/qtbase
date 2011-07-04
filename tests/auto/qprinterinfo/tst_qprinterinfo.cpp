@@ -292,7 +292,7 @@ void tst_QPrinterInfo::testForPrinters()
 
     for (int i = 0; i < sysPrinters.size(); ++i) {
         if (!qtPrinters.value(sysPrinters.at(i))) {
-            qDebug() << "Avaliable printers: " << qtPrinters;
+            qDebug() << "Available printers: " << qtPrinters;
             QFAIL(qPrintable(QString("Printer '%1' reported by system, but not reported by Qt").arg(sysPrinters.at(i))));
         }
     }

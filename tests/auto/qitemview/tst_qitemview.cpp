@@ -86,7 +86,7 @@ bool qt_wince_is_mobile() {
     See viewstotest.cpp for instructions on how to have your view tested with these tests.
 
     Each test such as visualRect have a _data() function which populate the QTest data with
-    tests specified by viewstotest.cpp and any extra data needed for that perticular test.
+    tests specified by viewstotest.cpp and any extra data needed for that particular test.
 
     setupWithNoTestData() fills QTest data with only the tests it is used by most tests.
 
@@ -324,7 +324,7 @@ void tst_QItemView::nonDestructiveBasicTest_data()
 }
 
 /*!
-    nonDestructiveBasicTest trys to call a number of the basic functions (not all)
+    nonDestructiveBasicTest tries to call a number of the basic functions (not all)
     to make sure the view doesn't segfault, testing the functions that makes sense.
  */
 void tst_QItemView::nonDestructiveBasicTest()

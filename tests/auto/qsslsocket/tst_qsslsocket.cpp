@@ -1992,9 +1992,9 @@ void tst_QSslSocket::writeBigChunk()
         qWarning() << socket->error() << socket->errorString();
         QFAIL("Error while writing! Check if the OpenSSL BIO size is limited?!");
     }
-    // also check the error string. If another error (than UnknownError) occured, it should be different than before
+    // also check the error string. If another error (than UnknownError) occurred, it should be different than before
     QVERIFY(errorBefore == errorAfter);
- 
+
     // check that everything has been written to OpenSSL
     QVERIFY(socket->bytesToWrite() == 0);
 

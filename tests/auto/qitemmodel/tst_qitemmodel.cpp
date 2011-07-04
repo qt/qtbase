@@ -67,7 +67,7 @@ Q_DECLARE_METATYPE(QModelIndex)
     See modelstotest.cpp for instructions on how to have your model tested with these tests.
 
     Each test such as rowCount have a _data() function which populate the QTest data with
-    the tests specified by modelstotest.cpp and any extra data needed for that perticular test.
+    the tests specified by modelstotest.cpp and any extra data needed for that particular test.
 
     setupWithNoTestData() fills the QTest data with just the tests and is used by most tests.
 
@@ -192,7 +192,7 @@ void tst_QItemModel::nonDestructiveBasicTest_data()
 }
 
 /*!
-    nonDestructiveBasicTest trys to call a number of the basic functions (not all)
+    nonDestructiveBasicTest tries to call a number of the basic functions (not all)
     to make sure the model doesn't segfault, testing the functions that makes sense.
  */
 void tst_QItemModel::nonDestructiveBasicTest()
@@ -516,7 +516,7 @@ void tst_QItemModel::parent()
         QCOMPARE(currentModel->parent(childIndex), topIndex);
     }
 
-    // Common error test #3, the second colum has the same children
+    // Common error test #3, the second column has the same children
     // as the first column in a row.
     QModelIndex topIndex1 = currentModel->index(0, 1, QModelIndex());
     if (currentModel->rowCount(topIndex1) > 0) {
@@ -817,7 +817,7 @@ void tst_QItemModel::remove_data()
         makeTestRow(":valid start, invalid count",  MIDDLE, 9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
         makeTestRow(":valid start, invalid count",  END,    9999, NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        // Recursive remove's might assert, havn't decided yet...
+        // Recursive remove's might assert, haven't decided yet...
         //makeTestRow(":one at the start recursivly",  START,  DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, FAIL);
         //makeTestRow(":one at the middle recursivly", MIDDLE, DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, SUCCESS);
         //makeTestRow(":one at the end recursivly",    END,    DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, SUCCESS);
@@ -849,7 +849,7 @@ void tst_QItemModel::remove()
     QFETCH(bool, shouldSucceed);
 
     // Populate the test area so we can remove something.  See: cleanup()
-    // parentOfRemoved is stored so that the slots can make sure parentOfRemoved is the index that is emited.
+    // parentOfRemoved is stored so that the slots can make sure parentOfRemoved is the index that is emitted.
     parentOfRemoved = testModels->populateTestArea(currentModel);
 
     if (count == -1)
@@ -866,7 +866,7 @@ void tst_QItemModel::remove()
     //qDebug() << "remove start:" << start << "count:" << count << "rowCount:" << currentModel->rowCount(parentOfRemoved);
 
     // When a row or column is removed there should be two signals.
-    // Watch to make sure they are emited and get the row/column count when they do get emited by connecting them to a slot
+    // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
     qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy columnsAboutToBeRemovedSpy(currentModel, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )));
     QSignalSpy rowsAboutToBeRemovedSpy(currentModel, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )));
@@ -914,7 +914,7 @@ void tst_QItemModel::remove()
         QVERIFY(parentOfRemoved == parent);
     }
 
-    // Only the row signals should have been emited
+    // Only the row signals should have been emitted
     if (modelResetSpy.count() >= 1 || modelLayoutChangedSpy.count() >=1 ){
         QCOMPARE(columnsAboutToBeRemovedSpy.count(), 0);
         QCOMPARE(rowsAboutToBeRemovedSpy.count(), 0);
@@ -928,7 +928,7 @@ void tst_QItemModel::remove()
         QCOMPARE(rowsRemovedSpy.count(), numberOfRowsRemovedSignals);
     }
 
-    // The row count should only change *after* rowsAboutToBeRemoved has been emited
+    // The row count should only change *after* rowsAboutToBeRemoved has been emitted
     //qDebug() << beforeRemoveRowCount << afterAboutToRemoveRowCount << afterRemoveRowCount << currentModel->rowCount(parentOfRemoved);
     if (shouldSucceed) {
         if (modelResetSpy.count() == 0 && modelLayoutChangedSpy.count() == 0){
@@ -978,7 +978,7 @@ void tst_QItemModel::remove()
             QCOMPARE(rowsRemovedSpy.count(), numberOfRowsRemovedSignals);
         }
 
-        // The column count should only change *after* rowsAboutToBeRemoved has been emited
+        // The column count should only change *after* rowsAboutToBeRemoved has been emitted
         if (shouldSucceed) {
             if (modelResetSpy.count() == 0 && modelLayoutChangedSpy.count() == 0){
                 QCOMPARE(afterAboutToRemoveColumnCount, beforeRemoveColumnCount);
@@ -1160,7 +1160,7 @@ void tst_QItemModel::insert_data()
         makeTestRow(":valid start, invalid count",  MIDDLE, -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
         makeTestRow(":valid start, invalid count",  END,    -2,   NOSIGNALS, NOSIGNALS, NOSIGNALS, NOSIGNALS, !RECURSIVE, 0, 0, FAIL);
 
-        // Recursive insert's might assert, havn't decided yet...
+        // Recursive insert's might assert, haven't decided yet...
         //makeTestRow(":one at the start recursivly",  START,  DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, FAIL);
         //makeTestRow(":one at the middle recursivly", MIDDLE, DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, SUCCESS);
         //makeTestRow(":one at the end recursivly",    END,    DEFAULTCOUNT, 2, DNS, 2, DNS, RECURSIVE, START, DEFAULTCOUNT, SUCCESS);
@@ -1191,7 +1191,7 @@ void tst_QItemModel::insert()
     QFETCH(bool, shouldSucceed);
 
     // Populate the test area so we can insert something.  See: cleanup()
-    // parentOfInserted is stored so that the slots can make sure parentOfInserted is the index that is emited.
+    // parentOfInserted is stored so that the slots can make sure parentOfInserted is the index that is emitted.
     parentOfInserted = testModels->populateTestArea(currentModel);
 
     if (count == -1)
@@ -1208,7 +1208,7 @@ void tst_QItemModel::insert()
     //qDebug() << "insert start:" << start << "count:" << count << "rowCount:" << currentModel->rowCount(parentOfInserted);
 
     // When a row or column is inserted there should be two signals.
-    // Watch to make sure they are emited and get the row/column count when they do get emited by connecting them to a slot
+    // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
     qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy columnsAboutToBeInsertedSpy(currentModel, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )));
     QSignalSpy rowsAboutToBeInsertedSpy(currentModel, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )));
@@ -1253,7 +1253,7 @@ void tst_QItemModel::insert()
         QVERIFY(parentOfInserted == parent);
     }
 
-    // Only the row signals should have been emited
+    // Only the row signals should have been emitted
     if (modelResetSpy.count() >= 1 || modelLayoutChangedSpy.count() >= 1) {
         QCOMPARE(columnsAboutToBeInsertedSpy.count(), 0);
         QCOMPARE(rowsAboutToBeInsertedSpy.count(), 0);
@@ -1266,7 +1266,7 @@ void tst_QItemModel::insert()
         QCOMPARE(columnsInsertedSpy.count(), 0);
         QCOMPARE(rowsInsertedSpy.count(), numberOfRowsInsertedSignals);
     }
-    // The row count should only change *after* rowsAboutToBeInserted has been emited
+    // The row count should only change *after* rowsAboutToBeInserted has been emitted
     //qDebug() << beforeInsertRowCount << afterAboutToInsertRowCount << afterInsertRowCount << currentModel->rowCount(parentOfInserted);
     if (shouldSucceed) {
         if (modelResetSpy.count() == 0 && modelLayoutChangedSpy.count() == 0) {
@@ -1315,7 +1315,7 @@ void tst_QItemModel::insert()
             QCOMPARE(columnsInsertedSpy.count(), numberOfColumnsInsertedSignals);
             QCOMPARE(rowsInsertedSpy.count(), numberOfRowsInsertedSignals);
         }
-        // The column count should only change *after* rowsAboutToBeInserted has been emited
+        // The column count should only change *after* rowsAboutToBeInserted has been emitted
         if (shouldSucceed) {
             if (modelResetSpy.count() == 0 &&  modelLayoutChangedSpy.count() == 0) {
                 QCOMPARE(afterAboutToInsertColumnCount, beforeInsertColumnCount);

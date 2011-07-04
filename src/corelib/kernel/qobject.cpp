@@ -2735,7 +2735,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \a receiver. Returns true if the connection is successfully broken;
     otherwise returns false.
 
-    This function provides the same posibilities like
+    This function provides the same possibilities like
     disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
     but uses QMetaMethod to represent the signal and the method to be disconnected.
 
@@ -2753,7 +2753,7 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
 
     QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
     In the same way 0 can be used for \a receiver in the meaning "any receiving object". In this case
-    method shoud also be QMetaMethod(). \a sender parameter should be never 0.
+    method should also be QMetaMethod(). \a sender parameter should be never 0.
 
     \sa disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
  */

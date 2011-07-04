@@ -979,7 +979,7 @@ void tst_QListView::selection_data()
         << IntList();                           // expected items
 
 #if defined(Q_OS_WINCE)
-    // depending on wether the display is double-pixeld, we need
+    // depending on whether the display is double-pixeld, we need
     // to click at a different position
     bool doubledSize = false;
     int dpi = GetDeviceCaps(GetDC(0), LOGPIXELSX);
