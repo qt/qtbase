@@ -1510,22 +1510,6 @@ QByteArray QTextEncoder::fromUnicode(const QChar *uc, int len)
     return result;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-  \overload
-
-  Converts \a lenInOut characters (not bytes) from \a uc, and returns the
-  result in a QByteArray. The number of characters read is returned in
-  the \a lenInOut parameter.
-*/
-QByteArray QTextEncoder::fromUnicode(const QString& uc, int& lenInOut)
-{
-    QByteArray result = c->fromUnicode(uc.constData(), lenInOut, &state);
-    lenInOut = result.length();
-    return result;
-}
-#endif
-
 /*!
     \class QTextDecoder
     \brief The QTextDecoder class provides a state-based decoder.
