@@ -63,6 +63,15 @@ QtGui
  - Deprecate qGenericMatrixFromMatrix4x4 and qGenericMatrixToMatrix4x4
  - QListView diverses optimisations [QTBUG-11438]
  - QTreeWidget/QListWidget: use localeAwareCompare for string comparisons [QTBUG-10839]
+ - PNG image I/O: Much improved support for text annotations, including iTXt fields.
+ - QRawFont and QGlyphRun are introduced for low-level text rendering. [QTBUG-18252]
+ - QFont: hintingPreference() is introduced to control hinting in font rendering and
+   subpixel positioning of glyphs for Windows, Mac OS X and X11/raster. [QTBUG-10615]
+ - Subpixel positioned text layout is supported in raster and OpenGL paint engines.
+ - QFont: styleName() is added to allow selecting fonts with irregular style names
+   like UltraLight. [QTBUG-19366]
+ - Visual text cursor movement behavior is added to QTextEdit and QLineEdit controls,
+   which can be used as an optional mode for bi-directional text editing. [QTBUG-13859]
 
 QtNetwork
 ---------
@@ -103,15 +112,22 @@ QtScript
 
 Qt for Linux/X11
 ----------------
-
+ - Now takes font hinting settings from GConf by default if running in
+   GNOME desktop.
+ - Various fixes to FontConfig font matching code to make it consistent
+   with other X11 programs. [QTBUG-2148, QTBUG-19947, QTBUG-14269]
 
 Qt for Windows
 --------------
-
+ - DirectWrite experimental text shaping engine is added with subpixel
+   positioning support. [QTBUG-12678]
 
 Qt for Mac OS X
 ---------------
-
+ - raster graphics system is now made as the default paint engine for
+   Mac OS X. [QTBUG-12615]
+ - HarfBuzz can now be used as an optional text layout engine on Mac OS X.
+   [QTBUG-17728]
 
 Qt for Embedded Linux
 ---------------------
