@@ -1318,7 +1318,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o \inlineimage qpainter-compositiondemo.png
 
     \o
-    \bold {Composition Modes Demo}
+    \bold {Composition Modes Example}
 
     The \l {painting/composition}{Composition Modes} example, available in
     Qt's examples directory, allows you to experiment with the various

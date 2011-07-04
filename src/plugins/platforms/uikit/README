@@ -18,11 +18,11 @@ After configuring and building Qt you need to also build src/plugins/platforms/u
 
 Simulator:
 ----------
-configure -qpa -xplatform qws/macx-iphonesimulator-g++ -arch i386 -developer-build -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+configure -qpa -xplatform qws/macx-iphonesimulator-g++ -arch i386 -developer-build -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake docs -nomake examples -nomake translations
 
 Device:
 -------
-configure -qpa -xplatform qws/macx-iphonedevice-g++ -arch armv7 -developer-build -release -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake demos -nomake docs -nomake examples -nomake translations
+configure -qpa -xplatform qws/macx-iphonedevice-g++ -arch armv7 -developer-build -release -opengl es1 -no-accessibility -no-qt3support -no-multimedia -no-phonon -no-phonon-backend -no-svg -no-webkit -no-scripttools -no-openssl -no-sql-mysql -no-sql-odbc -no-cups -no-iconv -no-dbus -static -nomake tools -nomake docs -nomake examples -nomake translations
 
 2) XCode setup:
 - there are examples in the examples subdirectory of the platform plugin

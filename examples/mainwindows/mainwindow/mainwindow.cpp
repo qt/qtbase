@@ -64,7 +64,7 @@
 #include <qdebug.h>
 
 static const char * const message =
-    "<p><b>Qt Main Window Demo</b></p>"
+    "<p><b>Qt Main Window Example</b></p>"
 
     "<p>This is a demonstration of the QMainWindow, QToolBar and "
     "QDockWidget classes.</p>"
@@ -88,7 +88,7 @@ MainWindow::MainWindow(const QMap<QString, QSize> &customSizeHints,
     : QMainWindow(parent, flags)
 {
     setObjectName("MainWindow");
-    setWindowTitle("Qt Main Window Demo");
+    setWindowTitle("Qt Main Window Example");
 
     center = new QTextEdit(this);
     center->setReadOnly(true);

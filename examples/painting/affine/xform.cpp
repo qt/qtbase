@@ -895,7 +895,7 @@ XFormWidget::XFormWidget(QWidget *parent)
     // defaults
     view->reset();
     vectorType->setChecked(true);
-    textEditor->setText("Qt Affine Transformation Demo");
+    textEditor->setText("Qt Affine Transformation Example");
     textEditor->setEnabled(false);
 
     animateButton->animateClick();

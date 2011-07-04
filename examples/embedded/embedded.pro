@@ -1,5 +1,5 @@
 TEMPLATE  = subdirs
-SUBDIRS   = styledemo raycasting flickable digiflip
+SUBDIRS   = styleexample raycasting flickable digiflip
 
 SUBDIRS += lightmaps
 SUBDIRS += flightinfo

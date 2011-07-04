@@ -78,6 +78,6 @@ int main(int argc, char *argv[])
     view.setBackgroundBrush(QPixmap(":/No-Ones-Laughing-3.jpg"));
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.show();
-    view.setWindowTitle("Embedded Dialogs Demo");
+    view.setWindowTitle("Embedded Dialogs Example");
     return app.exec();
 }

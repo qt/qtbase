@@ -45,7 +45,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    Q_INIT_RESOURCE(styledemo);
+    Q_INIT_RESOURCE(styleexample);
 
     app.setApplicationName("style");
     app.setOrganizationName("Nokia");
