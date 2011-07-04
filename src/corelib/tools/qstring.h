@@ -610,11 +610,11 @@ public:
 class Q_CORE_EXPORT QLatin1String
 {
 public:
-    inline explicit QLatin1String(const char *s) : chars(s) {}
-    inline QLatin1String &operator=(const QLatin1String &other)
-    { chars = other.chars; return *this; }
+    inline explicit QLatin1String(const char *s) : m_size(s ? strlen(s) : 0), m_data(s) {}
 
-    inline const char *latin1() const { return chars; }
+    inline const char *latin1() const { return m_data; }
+    inline int size() const { return m_size; }
+    inline const char *data() const { return m_data; }
 
     inline bool operator==(const QString &s) const
     { return s == *this; }
@@ -642,9 +642,12 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const
         { return QString::fromAscii(s) <= *this; }
 private:
-    const char *chars;
+    int m_size;
+    const char *m_data;
 };
 
+// Qt 4.x compatibility
+typedef QLatin1String QLatin1Literal;
 
 
 inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLatin1.latin1()))
