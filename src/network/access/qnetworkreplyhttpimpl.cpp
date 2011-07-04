@@ -365,6 +365,7 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
 
 void QNetworkReplyHttpImpl::setReadBufferSize(qint64 size)
 {
+    Q_UNUSED(size);
     // FIXME, unsupported right now
     return;
 }
@@ -1169,7 +1170,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
 void QNetworkReplyHttpImplPrivate::httpAuthenticationRequired(const QHttpNetworkRequest &,
                                                            QAuthenticator *auth)
 {
-    Q_Q(QNetworkReplyHttpImpl);
     managerPrivate->authenticationRequired(auth, q_func(), synchronous, url, &urlForLastAuthentication);
 }
 
