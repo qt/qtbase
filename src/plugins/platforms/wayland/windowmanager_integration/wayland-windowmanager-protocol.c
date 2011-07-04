@@ -26,12 +26,13 @@
 #include "wayland-util.h"
 
 static const struct wl_message wl_windowmanager_requests[] = {
-	{ "map_client_to_process", "u", NULL },
-	{ "authenticate_with_token", "s", NULL },
+    { "map_client_to_process", "u", NULL },
+    { "authenticate_with_token", "s", NULL },
 };
 
 static const struct wl_message wl_windowmanager_events[] = {
-	{ "client_onscreen_visibility", "i", NULL },
+    { "client_onscreen_visibility", "i", NULL },
+    { "set_screen_rotation", "i", NULL },
 };
 
 WL_EXPORT const struct wl_interface wl_windowmanager_interface = {

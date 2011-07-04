@@ -63,6 +63,7 @@ private:
                                        const char *interface, uint32_t version, void *data);
 
     static void wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible);
+    static void wlHandleScreenOrientationChange(void *data, struct wl_windowmanager *wl_windowmanager, int screenOrientation);
 private:
 
     QWaylandDisplay *mWaylandDisplay;

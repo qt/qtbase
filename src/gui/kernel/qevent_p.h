@@ -200,6 +200,17 @@ public:
     QScrollEvent::ScrollState state;
 };
 
+class QScreenOrientationChangeEventPrivate
+{
+public:
+    inline QScreenOrientationChangeEventPrivate()
+    {
+    }
+    QScreenOrientationChangeEvent::Orientation orientation;
+    qint32 orientationInDegrees;
+    bool isValid;
+};
+
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

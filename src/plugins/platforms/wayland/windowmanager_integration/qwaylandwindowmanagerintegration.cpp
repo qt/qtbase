@@ -43,13 +43,14 @@
 #include "qwaylandwindowmanager-client-protocol.h"
 
 #include <stdint.h>
-
 #include <QDebug>
 #include <QEvent>
+#include <QtGui/QtEvents>
 #include <QCoreApplication>
 
 const struct wl_windowmanager_listener QWaylandWindowManagerIntegration::mWindowManagerListener = {
     QWaylandWindowManagerIntegration::wlHandleOnScreenVisibilityChange,
+    QWaylandWindowManagerIntegration::wlHandleScreenOrientationChange,
 };
 
 QWaylandWindowManagerIntegration *QWaylandWindowManagerIntegration::createIntegration(QWaylandDisplay *waylandDisplay)
@@ -78,6 +79,7 @@ struct wl_windowmanager *QWaylandWindowManagerIntegration::windowManager() const
 
 void QWaylandWindowManagerIntegration::wlHandleListenerGlobal(wl_display *display, uint32_t id, const char *interface, uint32_t version, void *data)
 {
+    Q_UNUSED(version);
     if (strcmp(interface, "wl_windowmanager") == 0) {
         QWaylandWindowManagerIntegration *integration = static_cast<QWaylandWindowManagerIntegration *>(data);
         integration->mWaylandWindowManager = wl_windowmanager_create(display, id, 1);
@@ -103,11 +105,19 @@ void QWaylandWindowManagerIntegration::authenticateWithToken(const QByteArray &t
 
 void QWaylandWindowManagerIntegration::wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible)
 {
-    QWaylandWindowManagerIntegration *integration = (QWaylandWindowManagerIntegration *)data;
-
+    Q_UNUSED(data);
+    Q_UNUSED(wl_windowmanager);
     QEvent evt(visible != 0 ? QEvent::ApplicationActivated : QEvent::ApplicationDeactivated);
 
     QCoreApplication::sendEvent(QCoreApplication::instance(), &evt);
 
     qDebug() << "OnScreenVisibility" << (visible != 0);
+}
+
+void QWaylandWindowManagerIntegration::wlHandleScreenOrientationChange(void *data, struct wl_windowmanager *wl_windowmanager, int screenOrientation)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(wl_windowmanager);
+    QScreenOrientationChangeEvent event(screenOrientation);
+    QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 }
