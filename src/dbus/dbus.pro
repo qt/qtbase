@@ -35,7 +35,7 @@ win32 {
 }
 load(qt_module_config)
 
-HEADERS += $$QT_SOURCE_TREE/src/dub/qtdbusversion.h
+HEADERS += $$QT_SOURCE_TREE/src/dbus/qtdbusversion.h
 
 PUB_HEADERS = qdbusargument.h \
     qdbusconnectioninterface.h \
