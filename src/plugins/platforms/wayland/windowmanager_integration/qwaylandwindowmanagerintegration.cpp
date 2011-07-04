@@ -99,19 +99,18 @@ void QWaylandWindowManagerIntegration::authenticateWithToken(const QByteArray &t
     QByteArray authToken = token;
     if (authToken.isEmpty())
         authToken = qgetenv("WL_AUTHENTICATION_TOKEN");
-    if (mWaylandWindowManager)
+
+    if (mWaylandWindowManager && !authToken.isEmpty()) {
         wl_windowmanager_authenticate_with_token(mWaylandWindowManager, authToken.constData());
+    }
 }
 
 void QWaylandWindowManagerIntegration::wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible)
 {
     Q_UNUSED(data);
     Q_UNUSED(wl_windowmanager);
-    QEvent evt(visible != 0 ? QEvent::ApplicationActivated : QEvent::ApplicationDeactivated);
-
+    QEvent evt(visible != 0 ? QEvent::ApplicationActivate : QEvent::ApplicationDeactivate);
     QCoreApplication::sendEvent(QCoreApplication::instance(), &evt);
-
-    qDebug() << "OnScreenVisibility" << (visible != 0);
 }
 
 void QWaylandWindowManagerIntegration::wlHandleScreenOrientationChange(void *data, struct wl_windowmanager *wl_windowmanager, int screenOrientation)

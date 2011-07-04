@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qwaylandxcompositeeglwindow.h"
+#include "qwaylandxcompositeeglintegration.h"
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
 
 #include <QtCore/QDebug>
 
@@ -74,4 +76,13 @@ void QWaylandXCompositeEGLWindow::setGeometry(const QRect &rect)
     if (mContext) {
         mContext->geometryChanged();
     }
+}
+
+void QWaylandXCompositeEGLWindow::requestActivateWindow()
+{
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    mDisplay->windowManagerIntegration()->authenticateWithToken();
+#endif
+
+    QWaylandWindow::requestActivateWindow();
 }

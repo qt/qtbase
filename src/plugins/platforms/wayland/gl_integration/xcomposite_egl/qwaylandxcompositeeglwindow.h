@@ -55,6 +55,7 @@ public:
     QPlatformGLContext *glContext() const;
 
     void setGeometry(const QRect &rect);
+    void requestActivateWindow();
 
 private:
     QWaylandXCompositeEGLIntegration *mGlxIntegration;
