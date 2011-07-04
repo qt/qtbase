@@ -47,9 +47,6 @@ symbian: SUBDIRS = \
                 xml
 
 qpa:SUBDIRS += qpa
-!contains(QT_CONFIG, no-gui):contains(QT_CONFIG, multimedia) {
-    SUBDIRS += multimedia
-}
 
 wince*|symbian|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
 
