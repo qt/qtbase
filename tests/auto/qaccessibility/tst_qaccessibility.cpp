@@ -2031,8 +2031,61 @@ void tst_QAccessibility::lineEditTest()
     delete iface;
     delete le;
     delete le2;
-    delete toplevel;
     QTestAccessibility::clearEvents();
+
+    // IA2
+    QString cite = "I always pass on good advice. It is the only thing to do with it. It is never of any use to oneself. --Oscar Wilde";
+    QLineEdit *le3 = new QLineEdit(cite, toplevel);
+    iface = QAccessible::queryAccessibleInterface(le3);
+    QAccessibleTextInterface* textIface = iface->textInterface();
+    le3->deselect();
+    le3->setCursorPosition(3);
+    QCOMPARE(textIface->cursorPosition(), 3);
+    QCOMPARE(textIface->selectionCount(), 0);
+    int start, end;
+
+    QCOMPARE(textIface->text(0, 8), QString::fromLatin1("I always"));
+    QCOMPARE(textIface->textAtOffset(0, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("I"));
+    QCOMPARE(start, 0);
+    QCOMPARE(end, 1);
+    QCOMPARE(textIface->textBeforeOffset(0, QAccessible2::CharBoundary,&start,&end), QString());
+    QCOMPARE(textIface->textAfterOffset(0, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(start, 1);
+    QCOMPARE(end, 2);
+
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("a"));
+    QCOMPARE(start, 5);
+    QCOMPARE(end, 6);
+    QCOMPARE(textIface->textBeforeOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("w"));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("y"));
+
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(start, 2);
+    QCOMPARE(end, 8);
+
+    QCOMPARE(textIface->textAtOffset(2, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(textIface->textAtOffset(7, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(textIface->textAtOffset(8, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAtOffset(25, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("advice"));
+    QCOMPARE(textIface->textAtOffset(92, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("oneself"));
+
+    QCOMPARE(textIface->textBeforeOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
+    QCOMPARE(start, 0);
+    QCOMPARE(end, 30);
+
+    QCOMPARE(textIface->textBeforeOffset(40, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("It is the only thing to do with it. "));
+
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::ParagraphBoundary,&start,&end), cite);
+    QCOMPARE(start, 0);
+    QCOMPARE(end, cite.length());
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::LineBoundary,&start,&end), cite);
+    QCOMPARE(textIface->textAtOffset(5, QAccessible2::NoBoundary,&start,&end), cite);
+
+    delete iface;
+    delete toplevel;
 }
 
 void tst_QAccessibility::workspaceTest()
