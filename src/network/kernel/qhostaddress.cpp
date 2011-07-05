@@ -38,18 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qhostaddress.h"
 #include "qhostaddress_p.h"
 #include "qdebug.h"
+#if defined(Q_OS_WIN)
+#include <winsock2.h>
+#endif
 #include "qplatformdefs.h"
 #include "qstringlist.h"
 #include "qendian.h"
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
-#endif
-#if defined(Q_OS_WINCE)
-#include <winsock.h>
 #endif
 
 #ifdef QT_LINUXBASE
