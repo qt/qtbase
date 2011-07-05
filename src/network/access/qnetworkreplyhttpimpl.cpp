@@ -380,7 +380,8 @@ bool QNetworkReplyHttpImpl::canReadLine () const
     if (d->cacheLoadDevice)
         return d->cacheLoadDevice->canReadLine() || d->downloadMultiBuffer.canReadLine();
 
-    // FIXME zerocopy buffer?
+    if (d->downloadZerocopyBuffer)
+        return memchr(d->downloadZerocopyBuffer + d->downloadBufferReadPosition, '\n', d->downloadBufferCurrentSize - d->downloadBufferReadPosition);
 
     return d->downloadMultiBuffer.canReadLine();
 }

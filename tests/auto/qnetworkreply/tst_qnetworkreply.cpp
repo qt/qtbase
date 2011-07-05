@@ -348,6 +348,7 @@ private Q_SLOTS:
     void getFromHttpIntoBuffer();
     void getFromHttpIntoBuffer2_data();
     void getFromHttpIntoBuffer2();
+    void getFromHttpIntoBufferCanReadLine();
 
     void ioGetFromHttpWithoutContentLength();
 
@@ -5822,6 +5823,33 @@ void tst_QNetworkReply::getFromHttpIntoBuffer2()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
+
+
+void tst_QNetworkReply::getFromHttpIntoBufferCanReadLine()
+{
+    QString header("HTTP/1.0 200 OK\r\nContent-Length: 7\r\n\r\nxxx\nxxx");
+
+    MiniHttpServer server(header.toAscii());
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->canReadLine());
+    QCOMPARE(reply->read(1), QByteArray("x"));
+    QVERIFY(reply->canReadLine());
+    QCOMPARE(reply->read(3), QByteArray("xx\n"));
+    QVERIFY(!reply->canReadLine());
+    QCOMPARE(reply->readAll(), QByteArray("xxx"));
+    QVERIFY(!reply->canReadLine());
+}
+
 
 
 // Is handled somewhere else too, introduced this special test to have it more accessible
