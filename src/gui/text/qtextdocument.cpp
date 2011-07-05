@@ -2710,7 +2710,7 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
     html += QLatin1Char('>');
     if (block.begin().atEnd())
-        html += "<br />";
+        html += QLatin1String("<br />");
 
     QTextBlock::Iterator it = block.begin();
     if (fragmentMarkers && !it.atEnd() && block == doc->begin())
