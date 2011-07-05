@@ -1692,6 +1692,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
     int numGlyphs = vertexCoordinates->vertexCount() / 4;
+    if (numGlyphs == 0)
+        return;
 
     if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
