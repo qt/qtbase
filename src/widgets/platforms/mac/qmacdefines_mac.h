@@ -117,7 +117,6 @@ typedef signed long OSStatus;
 #      undef old_slots
 #    endif
 #endif
-#ifdef QT_MAC_USE_COCOA
     typedef struct OpaqueEventHandlerCallRef * EventHandlerCallRef;
     typedef struct OpaqueEventRef * EventRef;
     typedef struct OpaqueMenuRef * MenuRef;
@@ -142,27 +141,6 @@ typedef signed long OSStatus;
         typedef void *OSMenuRef;
         typedef void *OSEventRef;
 #   endif
-#else  // Carbon
-    typedef struct OpaqueEventHandlerCallRef * EventHandlerCallRef;
-    typedef struct OpaqueEventRef * EventRef;
-    typedef struct OpaqueMenuRef * MenuRef;
-    typedef struct OpaquePasteboardRef* PasteboardRef;
-    typedef struct OpaqueRgnHandle * RgnHandle;
-    typedef const struct __HIShape *HIShapeRef;
-    typedef struct __HIShape *HIMutableShapeRef;
-    typedef struct CGRect CGRect;
-    typedef struct CGImage *CGImageRef;
-    typedef struct CGContext *CGContextRef;
-    typedef struct GDevice * GDPtr;
-    typedef GDPtr * GDHandle;
-    typedef struct OpaqueIconRef * IconRef;
-    typedef struct OpaqueWindowPtr * WindowRef;
-    typedef struct OpaqueControlRef * HIViewRef;
-    typedef WindowRef OSWindowRef;
-    typedef HIViewRef OSViewRef;
-    typedef MenuRef OSMenuRef;
-    typedef EventRef OSEventRef;
-#endif  // QT_MAC_USE_COCOA
 
 typedef PasteboardRef OSPasteboardRef;
 typedef struct AEDesc AEDescList;
