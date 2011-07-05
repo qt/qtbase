@@ -92,6 +92,8 @@ public:
 public Q_SLOTS:
     void updateConfigurations();
 
+    static void addPostRoutine();
+
 Q_SIGNALS:
     void configurationAdded(const QNetworkConfiguration &config);
     void configurationRemoved(const QNetworkConfiguration &config);
@@ -105,6 +107,7 @@ private Q_SLOTS:
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
 
     void pollEngines();
+
 
 private:
     Q_INVOKABLE void startPolling();

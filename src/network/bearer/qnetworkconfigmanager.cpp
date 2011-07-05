@@ -46,34 +46,55 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qthread.h>
+#include <QtCore/private/qcoreapplication_p.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
-#define Q_GLOBAL_STATIC_QAPP_DESTRUCTION(TYPE, NAME)                    \
-    static QGlobalStatic<TYPE > this_##NAME                             \
-                = { Q_BASIC_ATOMIC_INITIALIZER(0), false };             \
-    static void NAME##_cleanup()                                        \
-    {                                                                   \
-        delete this_##NAME.pointer;                                     \
-        this_##NAME.pointer = 0;                                        \
-    }                                                                   \
-    static TYPE *NAME()                                                 \
-    {                                                                   \
-        if (!this_##NAME.pointer) {                                     \
-            TYPE *x = new TYPE;                                         \
-            if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
-                delete x;                                               \
-            else {                                                      \
-                qAddPostRoutine(NAME##_cleanup);                        \
-                this_##NAME.pointer->updateConfigurations();            \
-            }                                                           \
-        }                                                               \
-        return this_##NAME.pointer;                                     \
-    }
+static QBasicAtomicPointer<QNetworkConfigurationManagerPrivate> connManager_ptr;
+Q_GLOBAL_STATIC(QMutex, connManager_mutex)
 
-Q_GLOBAL_STATIC_QAPP_DESTRUCTION(QNetworkConfigurationManagerPrivate, connManager);
+static void connManager_cleanup()
+{
+    // this is not atomic or thread-safe!
+    delete connManager_ptr.load();
+    connManager_ptr.store(0);
+}
+
+void QNetworkConfigurationManagerPrivate::addPostRoutine()
+{
+    qAddPostRoutine(connManager_cleanup);
+}
+
+static QNetworkConfigurationManagerPrivate *connManager()
+{
+    QNetworkConfigurationManagerPrivate *ptr = connManager_ptr.loadAcquire();
+    if (!ptr) {
+        QMutexLocker locker(connManager_mutex());
+        if (!(ptr = connManager_ptr.loadAcquire())) {
+            ptr = new QNetworkConfigurationManagerPrivate;
+
+            if (QCoreApplicationPrivate::mainThread() == QThread::currentThread()) {
+                // right thread or no main thread yet
+                ptr->addPostRoutine();
+                ptr->updateConfigurations();
+            } else {
+                // wrong thread, we need to make the main thread do this
+                QObject *obj = new QObject;
+                QObject::connect(obj, SIGNAL(destroyed()), ptr, SLOT(addPostRoutine()), Qt::DirectConnection);
+                ptr->updateConfigurations(); // this moves us to the main thread
+                obj->moveToThread(QCoreApplicationPrivate::mainThread());
+                obj->deleteLater();
+            }
+
+            connManager_ptr.storeRelease(ptr);
+        }
+    }
+    return ptr;
+}
 
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
