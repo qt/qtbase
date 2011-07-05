@@ -893,6 +893,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
 void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
 {
     Q_Q(QAbstractSocket);
+    addresses.clear();
     if (state != QAbstractSocket::HostLookupState)
         return;
 
