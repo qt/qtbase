@@ -55,11 +55,15 @@
 
 #include "QtWidgets/qmenubar.h"
 #include "QtWidgets/qstyleoption.h"
+#ifdef Q_OS_MAC
+#include "QtWidgets/qmacdefines_mac.h"
+#endif
 #include "QtCore/qdatetime.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qbasictimer.h"
 #include "private/qwidget_p.h"
+
 
 #ifdef Q_WS_S60
 class CEikMenuPane;
@@ -79,7 +83,7 @@ void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 class QTornOffMenu;
 class QEventLoop;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #  ifdef __OBJC__
 QT_END_NAMESPACE
 @class NSMenuItem;
@@ -89,20 +93,12 @@ typedef void NSMenuItem;
 #  endif //__OBJC__
 struct QMacMenuAction {
     QMacMenuAction()
-#ifndef QT_MAC_USE_COCOA
-       : command(0)
-#else
        : menuItem(0)
-#endif
          , ignore_accel(0), merged(0), menu(0)
     {
     }
     ~QMacMenuAction();
-#ifndef QT_MAC_USE_COCOA
-    uint command;
-#else
     NSMenuItem *menuItem;
-#endif
     uchar ignore_accel : 1;
     uchar merged : 1;
     QPointer<QAction> action;
@@ -111,17 +107,12 @@ struct QMacMenuAction {
 
 struct QMenuMergeItem
 {
-#ifndef QT_MAC_USE_COCOA
-    inline QMenuMergeItem(MenuCommand c, QMacMenuAction *a) : command(c), action(a) { }
-    MenuCommand command;
-#else
     inline QMenuMergeItem(NSMenuItem *c, QMacMenuAction *a) : menuItem(c), action(a) { }
     NSMenuItem *menuItem;
-#endif
     QMacMenuAction *action;
 };
 typedef QList<QMenuMergeItem> QMenuMergeList;
-#endif
+#endif // Q_OS_MAC
 
 #ifdef Q_WS_WINCE
 struct QWceMenuAction {
@@ -154,7 +145,7 @@ public:
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
                       hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
                       ,mac_menu(0)
 #endif
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
@@ -170,7 +161,7 @@ public:
     ~QMenuPrivate()
     {
         delete scroll;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         delete mac_menu;
 #endif
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
@@ -302,7 +293,7 @@ public:
     //menu fading/scrolling effects
     bool doChildEffects;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     //mac menu binding
     struct QMacMenuPrivate {
         QList<QMacMenuAction*> actionItems;

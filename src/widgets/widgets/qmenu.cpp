@@ -77,7 +77,7 @@
 #   include <private/qt_x11_p.h>
 #endif
 
-#if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS)
+#if defined(Q_OS_MAC) && !defined(QT_NO_EFFECTS)
 #   include <private/qcore_mac_p.h>
 #   include <private/qt_cocoa_helpers_mac_p.h>
 #endif
@@ -417,7 +417,7 @@ QRect QMenuPrivate::actionRect(QAction *act) const
     return actionRects.at(index);
 }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
 static const qreal MenuFadeTimeInSec = 0.150;
 #endif
 
@@ -2366,7 +2366,7 @@ void QMenu::changeEvent(QEvent *e)
         if (d->tornPopup) // torn-off menu
             d->tornPopup->setEnabled(isEnabled());
         d->menuAction->setEnabled(isEnabled());
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         if (d->mac_menu)
             d->setMacMenuEnabled(isEnabled());
 #endif
@@ -2473,7 +2473,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         else if (key == Qt::Key_Right)
             key = Qt::Key_Left;
     }
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     if (key == Qt::Key_Tab) //means down
         key = Qt::Key_Down;
     if (key == Qt::Key_Backtab) //means up
@@ -2922,7 +2922,7 @@ void QMenu::actionEvent(QActionEvent *e)
         d->widgetItems.remove(e->action());
     }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (d->mac_menu) {
         if (e->type() == QEvent::ActionAdded)
             d->mac_menu->addAction(e->action(), d->mac_menu->findAction(e->before()), d);
@@ -3122,7 +3122,7 @@ void QMenu::setSeparatorsCollapsible(bool collapse)
         d->updateActionRects();
         update();
     }
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (d->mac_menu)
         d->syncSeparatorsCollapsible(collapse);
 #endif

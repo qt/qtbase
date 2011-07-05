@@ -54,7 +54,6 @@
 //
 
 #include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder
@@ -91,5 +90,4 @@
 - (void)orderFrontCharacterPalette:(id)sender;
 @end
 
-#endif // QT_MAC_USE_COCOA
 #endif // QCOCOAMENULOADER_P_H

@@ -143,14 +143,11 @@ void qt_mac_update_mouseTracking(QWidget *widget);
 OSStatus qt_mac_drawCGImage(CGContextRef cg, const CGRect *inbounds, CGImageRef);
 bool qt_mac_checkForNativeSizeGrip(const QWidget *widget);
 void qt_dispatchTabletProximityEvent(void * /*NSEvent * */ tabletEvent);
-#ifdef QT_MAC_USE_COCOA
 bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 // These methods exists only for supporting unified mode.
 void macDrawRectOnTop(void * /*OSWindowRef */ window);
 void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window);
 void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *widget);
-void qt_mac_menu_collapseSeparators(void * /*NSMenu */ menu, bool collapse);
-#endif
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 void qt_dispatchModifiersChanged(void * /*NSEvent * */flagsChangedEvent, QWidget *widgetToGetEvent);
 bool qt_mac_handleTabletEvent(void * /*QCocoaView * */view, void * /*NSEvent * */event);
@@ -163,7 +160,7 @@ QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height);
 void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon,
                                       QStyle::StandardPixmap standardIcon = QStyle::SP_CustomBase);
 
-#if QT_MAC_USE_COCOA && __OBJC__
+#ifdef __OBJC__
 struct DnDParams
 {
     NSView *view;
@@ -217,7 +214,6 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
 { return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
 
-#ifdef QT_MAC_USE_COCOA
 class QCocoaPostMessageArgs {
 public:
     id target;
@@ -242,7 +238,6 @@ public:
 };
 void qt_cocoaPostMessage(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0);
 void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0);
-#endif
 
 #endif
 
@@ -301,11 +296,9 @@ public:
 
 void qt_mac_post_retranslateAppMenu();
 
-#ifdef QT_MAC_USE_COCOA
 void qt_mac_display(QWidget *widget);
 void qt_mac_setNeedsDisplay(QWidget *widget);
 void qt_mac_setNeedsDisplayInRect(QWidget *widget, QRegion region);
-#endif // QT_MAC_USE_COCOA
 
 
 // Utility functions to ease the use of Core Graphics contexts.

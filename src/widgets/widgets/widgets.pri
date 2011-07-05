@@ -150,12 +150,17 @@ SOURCES += \
                widgets/qmaccocoaviewcontainer_mac.h
     OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \ 
                          widgets/qcocoamenu_mac_p.h
-    OBJECTIVE_SOURCES += widgets/qmenu_mac.mm \
-                         widgets/qmaccocoaviewcontainer_mac.mm \
+    OBJECTIVE_SOURCES += widgets/qmaccocoaviewcontainer_mac.mm \
                          widgets/qcocoatoolbardelegate_mac.mm \
                          widgets/qmainwindowlayout_mac.mm \
                          widgets/qmacnativewidget_mac.mm \
-                         widgets/qcocoamenu_mac.mm
+}
+
+mac {
+    OBJECTIVE_SOURCES += widgets/qmenu_mac.mm \
+                         widgets/qcocoamenu_mac.mm \
+                         platforms/mac/qt_widget_helpers_mac.mm \
+                         platforms/mac/qcocoamenuloader_mac.mm
 }
 
 wince*: {

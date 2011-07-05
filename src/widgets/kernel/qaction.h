@@ -246,7 +246,7 @@ private:
     friend class QMenuBar;
     friend class QShortcutMap;
     friend class QToolButton;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     friend void qt_mac_clear_status_text(QAction *action);
 #endif
 };

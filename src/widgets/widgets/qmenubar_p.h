@@ -82,7 +82,7 @@ public:
 #ifdef QT3_SUPPORT
                          , doAutoResize(false)
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
                          , mac_menubar(0)
 #endif
 
@@ -96,7 +96,7 @@ public:
         { }
     ~QMenuBarPrivate()
         {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
             delete mac_menubar;
 #endif
 #ifdef Q_WS_WINCE
@@ -173,7 +173,7 @@ public:
 #ifdef QT3_SUPPORT
     bool doAutoResize;
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     //mac menubar binding
     struct QMacMenuBarPrivate {
         QList<QMacMenuAction*> actionItems;

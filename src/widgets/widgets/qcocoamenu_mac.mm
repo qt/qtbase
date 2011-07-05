@@ -41,7 +41,7 @@
 
 #include "qmacdefines_mac.h"
 #include "qapplication.h"
-#ifdef QT_MAC_USE_COCOA
+#include "qvarlengtharray.h"
 #import <private/qcocoamenu_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
 #import <private/qcocoaapplication_mac_p.h>
@@ -50,7 +50,7 @@
 #include <private/qaction_p.h>
 #include <private/qcocoaapplication_mac_p.h>
 
-#include <QtGui/QMenu>
+#include <QtWidgets/QMenu>
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QWidget)
@@ -62,7 +62,8 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 
 QT_BEGIN_NAMESPACE
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
-extern NSString *qt_mac_removePrivateUnicode(NSString* string);
+extern void qt_mac_menu_collapseSeparators(NSMenu *menu, bool collapse);
+void qt_mac_clear_status_text(QAction *action);
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -149,6 +150,27 @@ QT_USE_NAMESPACE
     return NO;
 }
 
+NSString *qt_mac_removePrivateUnicode(NSString* string)
+{
+    int len = [string length];
+    if (len) {
+        QVarLengthArray <unichar, 10> characters(len);
+        bool changed = false;
+        for (int i = 0; i<len; i++) {
+            characters[i] = [string characterAtIndex:i];
+            // check if they belong to key codes in private unicode range
+            // currently we need to handle only the NSDeleteFunctionKey
+            if (characters[i] == NSDeleteFunctionKey) {
+                characters[i] = NSDeleteCharacter;
+                changed = true;
+            }
+        }
+        if (changed)
+            return [NSString stringWithCharacters:characters.data() length:len];
+    }
+    return string;
+}
+
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action
 {
     // Check if the menu actually has a keysequence defined for this key event.
@@ -186,7 +208,10 @@ QT_USE_NAMESPACE
             accel_ev.ignore();
             qt_sendSpontaneousEvent(widget, &accel_ev);
             if (accel_ev.isAccepted()) {
+                qWarning("Unimplemented: qt_dispatchKeyEvent");
+#if 0
                 qt_dispatchKeyEvent(event, widget);
+#endif
                 *target = nil;
                 *action = nil;
                 return YES;
@@ -241,4 +266,3 @@ void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action)
 
 QT_END_NAMESPACE
 
-#endif

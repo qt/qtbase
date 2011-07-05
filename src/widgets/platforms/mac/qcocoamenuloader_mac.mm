@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #include <qaction.h>
 #include <qcoreapplication.h>
 #include <private/qcocoamenuloader_mac_p.h>
@@ -261,4 +260,3 @@ QT_USE_NAMESPACE
      [NSApp orderFrontCharacterPalette:sender];
  }
 @end
-#endif // QT_MAC_USE_COCOA

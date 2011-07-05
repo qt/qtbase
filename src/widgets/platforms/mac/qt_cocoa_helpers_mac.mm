@@ -319,24 +319,6 @@ void macWindowFlush(void * /*OSWindowRef*/ window)
 #endif
 }
 
-void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm)
-{
-    QMacCocoaAutoReleasePool pool;
-    if(QCFType<CGImageRef> image = pm.toMacCGImageRef()) {
-        NSImage *newImage = 0;
-        NSRect imageRect = NSMakeRect(0.0, 0.0, CGImageGetWidth(image), CGImageGetHeight(image));
-        newImage = [[NSImage alloc] initWithSize:imageRect.size];
-        [newImage lockFocus];
-        {
-            CGContextRef imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-            CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
-        }
-        [newImage unlockFocus];
-        return newImage;
-    }
-    return 0;
-}
-
 void qt_mac_update_mouseTracking(QWidget *widget)
 {
 #ifdef QT_MAC_USE_COCOA
@@ -693,27 +675,6 @@ Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags)
     if (modifierFlags & NSNumericPadKeyMask)
         qtMods |= Qt::KeypadModifier;
     return qtMods;
-}
-
-NSString *qt_mac_removePrivateUnicode(NSString* string)
-{
-    int len = [string length];
-    if (len) {
-        QVarLengthArray <unichar, 10> characters(len);
-        bool changed = false;
-        for (int i = 0; i<len; i++) {
-            characters[i] = [string characterAtIndex:i];
-            // check if they belong to key codes in private unicode range
-            // currently we need to handle only the NSDeleteFunctionKey
-            if (characters[i] == NSDeleteFunctionKey) {
-                characters[i] = NSDeleteCharacter;
-                changed = true;
-            }
-        }
-        if (changed)
-            return [NSString stringWithCharacters:characters.data() length:len];
-    }
-    return string;
 }
 
 Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
@@ -1625,39 +1586,6 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
 }
 
 #ifdef QT_MAC_USE_COCOA
-void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
-{
-    QMacCocoaAutoReleasePool pool;
-    OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
-    if (collapse) {
-        bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
-        NSMenuItem *previousItem = nil;
-            
-        NSArray *itemArray = [menu itemArray];
-        for (unsigned int i = 0; i < [itemArray count]; ++i) {
-            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
-            if ([item isSeparatorItem]) {
-                [item setHidden:previousIsSeparator];
-            }
-
-            if (![item isHidden]) {
-                previousItem = item;
-                previousIsSeparator = ([previousItem isSeparatorItem]);
-            }
-        }
-
-        // We now need to check the final item since we don't want any separators at the end of the list.
-        if (previousItem && previousIsSeparator)
-            [previousItem setHidden:YES];
-    } else {
-        NSArray *itemArray = [menu itemArray];
-        for (unsigned int i = 0; i < [itemArray count]; ++i) {
-            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
-            if (QAction *action = reinterpret_cast<QAction *>([item tag]))
-                [item setHidden:!action->isVisible()];
-        }
-    }
-}
 
 class CocoaPostMessageAfterEventLoopExitHelp : public QObject
 {
@@ -1700,19 +1628,6 @@ void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount
 }
 
 #endif
-
-QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
-{
-#ifndef QT_MAC_USE_COCOA
-    NSApplicationLoad();
-#endif
-    pool = (void*)[[NSAutoreleasePool alloc] init];
-}
-
-QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
-{
-    [(NSAutoreleasePool*)pool release];
-}
 
 void qt_mac_post_retranslateAppMenu()
 {

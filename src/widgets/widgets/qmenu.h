@@ -46,6 +46,10 @@
 #include <QtCore/qstring.h>
 #include <QtWidgets/qicon.h>
 #include <QtWidgets/qaction.h>
+#ifdef Q_OS_MAC
+#include "QtWidgets/qmacdefines_mac.h"
+#endif
+
 
 #ifdef QT3_SUPPORT
 #include <QtGui/qpixmap.h>
@@ -141,7 +145,7 @@ public:
     void setIcon(const QIcon &icon);
 
     void setNoReplayFor(QWidget *widget);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     OSMenuRef macMenu(OSMenuRef merge=0);
 #endif
 
@@ -415,7 +419,7 @@ private:
     friend class QAction;
     friend class QToolButtonPrivate;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     friend void qt_mac_trayicon_activate_action(QMenu *, QAction *action);
     friend bool qt_mac_watchingAboutToShow(QMenu *);
     friend OSStatus qt_mac_menu_event(EventHandlerCallRef, EventRef, void *);

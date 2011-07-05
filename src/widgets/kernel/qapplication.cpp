@@ -2281,31 +2281,6 @@ void QApplication::aboutQt()
     \sa QWidget::setFocus(), QWidget::clearFocus(), Qt::FocusReason
 */
 
-
-#ifndef QT_NO_TRANSLATION
-#if defined(Q_WS_MAC)
-static const char *application_menu_strings[] = {
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
-    };
-QString qt_mac_applicationmenu_string(int type)
-{
-    QString menuString = QString::fromLatin1(application_menu_strings[type]);
-    QString translated = qApp->translate("QMenuBar", application_menu_strings[type]);
-    if (translated != menuString)
-        return translated;
-    else
-        return qApp->translate("MAC_APPLICATION_MENU",
-                               application_menu_strings[type]);
-}
-#endif
-#endif
-
 /*!\reimp
 
 */

@@ -272,21 +272,12 @@ namespace QT_NAMESPACE {}
 #endif
 
 #if defined(Q_OS_DARWIN)
-#  define Q_OS_MAC /* Q_OS_MAC is mostly for compatibility, but also more clear */
+#  define Q_OS_MAC
 #  define Q_OS_MACX /* Q_OS_MACX is only for compatibility.*/
 #  if defined(Q_OS_DARWIN64)
 #     define Q_OS_MAC64
 #  elif defined(Q_OS_DARWIN32)
 #     define Q_OS_MAC32
-#  endif
-#endif
-
-#ifdef QT_AUTODETECT_COCOA
-#  ifdef Q_OS_MAC64
-#    define QT_MAC_USE_COCOA 1
-#    define QT_BUILD_KEY QT_BUILD_KEY_COCOA
-#  else
-#    define QT_BUILD_KEY QT_BUILD_KEY_CARBON
 #  endif
 #endif
 
@@ -877,15 +868,7 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
 #elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
-#    define Q_WS_MAC
-#    define Q_WS_MACX
-#    if defined(Q_OS_MAC64)
-#      define Q_WS_MAC64
-#    elif defined(Q_OS_MAC32)
-#      define Q_WS_MAC32
-#    endif
-#  elif defined(Q_OS_SYMBIAN)
+#  if defined(Q_OS_SYMBIAN)
 #    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
