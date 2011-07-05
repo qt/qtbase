@@ -46,9 +46,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtSql/qsql.h>
-#ifdef QT3_SUPPORT
-#include <QtSql/qsqlquery.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -93,17 +90,6 @@ public:
     virtual QStringList tables(QSql::TableType tableType) const;
     virtual QSqlIndex primaryIndex(const QString &tableName) const;
     virtual QSqlRecord record(const QString &tableName) const;
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QSqlRecord record(const QSqlQuery& query) const
-    { return query.record(); }
-    inline QT3_SUPPORT QSqlRecord recordInfo(const QString& tablename) const
-    { return record(tablename); }
-    inline QT3_SUPPORT QSqlRecord recordInfo(const QSqlQuery& query) const
-    { return query.record(); }
-    inline QT3_SUPPORT QString nullText() const { return QLatin1String("NULL"); }
-    inline QT3_SUPPORT QString formatValue(const QSqlField *field, bool trimStrings = false) const
-    { return field ? formatValue(*field, trimStrings) : QString(); }
-#endif
     virtual QString formatValue(const QSqlField& field, bool trimStrings = false) const;
 
     virtual QString escapeIdentifier(const QString &identifier, IdentifierType type) const;

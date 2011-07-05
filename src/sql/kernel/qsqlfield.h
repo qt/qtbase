@@ -98,10 +98,6 @@ public:
     bool isGenerated() const;
     bool isValid() const;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT void setNull() { clear(); }
-#endif
-
 private:
     void detach();
     QVariant val;

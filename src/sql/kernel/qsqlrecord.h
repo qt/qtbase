@@ -87,15 +87,6 @@ public:
     void setGenerated(const QString& name, bool generated);
     void setGenerated(int i, bool generated);
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT const QSqlField* fieldPtr(int i) const;
-    QT3_SUPPORT const QSqlField* fieldPtr(const QString& name) const;
-    inline QT3_SUPPORT int position(const QString& name) const { return indexOf(name); }
-    QT3_SUPPORT QString toString(const QString& prefix = QString(),
-                               const QString& sep = QLatin1String(",")) const;
-    QT3_SUPPORT QStringList toStringList(const QString& prefix = QString()) const;
-#endif
-
     void append(const QSqlField& field);
     void replace(int pos, const QSqlField& field);
     void insert(int pos, const QSqlField& field);

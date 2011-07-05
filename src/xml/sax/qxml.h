@@ -172,11 +172,6 @@ public:
     static const ushort EndOfData;
     static const ushort EndOfDocument;
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QXmlInputSource(QFile& file);
-    QT3_SUPPORT_CONSTRUCTOR QXmlInputSource(QTextStream& stream);
-#endif
-
 protected:
     virtual QString fromRawData(const QByteArray &data, bool beginning = false);
 
