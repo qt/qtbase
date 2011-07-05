@@ -7,3 +7,6 @@ for(p, QMAKE_LIBDIR_OPENGL) {
 
 CONFIG -= qt
 LIBS += $$QMAKE_LIBS_OPENGL
+
+mac:DEFINES += Q_OS_MAC
+CONFIG -= app_bundle
