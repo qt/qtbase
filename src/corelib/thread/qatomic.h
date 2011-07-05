@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #ifndef QATOMIC_H
 #define QATOMIC_H
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qbasicatomic.h>
 
 QT_BEGIN_HEADER
@@ -51,10 +52,16 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wextra"
+#endif
+
 // High-level atomic integer operations
 class Q_CORE_EXPORT QAtomicInt : public QBasicAtomicInt
 {
 public:
+    // Non-atomic API
     inline QAtomicInt(int value = 0)
     {
 #ifdef QT_ARCH_PARISC
@@ -62,32 +69,48 @@ public:
 #endif
         _q_value = value;
     }
+
     inline QAtomicInt(const QAtomicInt &other)
     {
 #ifdef QT_ARCH_PARISC
         this->_q_lock[0] = this->_q_lock[1] = this->_q_lock[2] = this->_q_lock[3] = -1;
 #endif
-        _q_value = other._q_value;
+        store(other.load());
     }
 
     inline QAtomicInt &operator=(int value)
     {
-        (void) QBasicAtomicInt::operator=(value);
+        this->store(value);
         return *this;
     }
 
     inline QAtomicInt &operator=(const QAtomicInt &other)
     {
-        (void) QBasicAtomicInt::operator=(other);
+        this->store(other.load());
         return *this;
     }
 
-#ifdef qdoc
-    bool operator==(int value) const;
-    bool operator!=(int value) const;
-    bool operator!() const;
-    operator int() const;
+    inline bool operator==(int value) const
+    {
+        return this->load() == value;
+    }
 
+    inline bool operator!=(int value) const
+    {
+        return this->load() != value;
+    }
+
+    inline operator int() const
+    {
+        return this->load();
+    }
+
+    inline bool operator!() const
+    {
+        return !this->load();
+    }
+
+#ifdef qdoc
     static bool isReferenceCountingNative();
     static bool isReferenceCountingWaitFree();
 
@@ -130,35 +153,54 @@ public:
 #ifdef QT_ARCH_PARISC
         this->_q_lock[0] = this->_q_lock[1] = this->_q_lock[2] = this->_q_lock[3] = -1;
 #endif
-        QBasicAtomicPointer<T>::_q_value = value;
+        store(value);
     }
     inline QAtomicPointer(const QAtomicPointer<T> &other)
     {
 #ifdef QT_ARCH_PARISC
         this->_q_lock[0] = this->_q_lock[1] = this->_q_lock[2] = this->_q_lock[3] = -1;
 #endif
-        QBasicAtomicPointer<T>::_q_value = other._q_value;
+        store(other.load());
     }
 
     inline QAtomicPointer<T> &operator=(T *value)
     {
-        (void) QBasicAtomicPointer<T>::operator=(value);
+        this->store(value);
         return *this;
     }
 
     inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other)
     {
-        (void) QBasicAtomicPointer<T>::operator=(other);
+        this->store(other.load());
         return *this;
     }
 
-#ifdef qdoc
-    bool operator==(T *value) const;
-    bool operator!=(T *value) const;
-    bool operator!() const;
-    operator T *() const;
-    T *operator->() const;
+    inline bool operator==(T *value) const
+    {
+        return this->load() == value;
+    }
 
+    inline bool operator!=(T *value) const
+    {
+        return this->load() != value;
+    }
+
+    inline bool operator!() const
+    {
+        return !this->load();
+    }
+
+    inline operator T *() const
+    {
+        return this->load();
+    }
+
+    inline T *operator->() const
+    {
+        return this->load();
+    }
+
+#ifdef qdoc
     static bool isTestAndSetNative();
     static bool isTestAndSetWaitFree();
 
@@ -184,6 +226,10 @@ public:
     T *fetchAndAddOrdered(qptrdiff valueToAdd);
 #endif
 };
+
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic pop
+#endif
 
 /*!
     This is a helper for the assignment operators of implicitly

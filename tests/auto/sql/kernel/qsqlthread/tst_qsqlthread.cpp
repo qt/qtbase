@@ -363,7 +363,7 @@ void tst_QSqlThread::cleanupTestCase()
 void tst_QSqlThread::init()
 {
     threadFinishedCount = 0;
-    counter = 4;
+    counter.store(4);
 }
 
 void tst_QSqlThread::cleanup()
