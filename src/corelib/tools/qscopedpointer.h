@@ -208,8 +208,10 @@ template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
 public:
+    inline QScopedArrayPointer() : QScopedPointer<T, Cleanup>(0) {}
+
     template <typename D>
-    explicit inline QScopedArrayPointer(D *p = 0, typename QtPrivate::QScopedArrayEnsureSameType<T,D>::Type = 0)
+    explicit inline QScopedArrayPointer(D *p, typename QtPrivate::QScopedArrayEnsureSameType<T,D>::Type = 0)
         : QScopedPointer<T, Cleanup>(p)
     {
     }

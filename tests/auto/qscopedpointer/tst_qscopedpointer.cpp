@@ -72,6 +72,7 @@ private Q_SLOTS:
     void isNullSignature();
     void objectSize();
     void comparison();
+    void array();
     // TODO instanciate on const object
 };
 
@@ -436,6 +437,27 @@ void tst_QScopedPointer::comparison()
 
     QCOMPARE( int(RefCounted::instanceCount), 0 );
 }
+
+void tst_QScopedPointer::array()
+{
+    int instCount = RefCounted::instanceCount;
+    {
+        QScopedArrayPointer<RefCounted> array;
+        array.reset(new RefCounted[42]);
+        QCOMPARE(instCount + 42, int(RefCounted::instanceCount));
+    }
+    QCOMPARE(instCount, int(RefCounted::instanceCount));
+    {
+        QScopedArrayPointer<RefCounted> array(new RefCounted[42]);
+        QCOMPARE(instCount + 42, int(RefCounted::instanceCount));
+        array.reset(new RefCounted[28]);
+        QCOMPARE(instCount + 28, int(RefCounted::instanceCount));
+        array.reset(0);
+        QCOMPARE(instCount, int(RefCounted::instanceCount));
+    }
+    QCOMPARE(instCount, int(RefCounted::instanceCount));
+}
+
 
 QTEST_MAIN(tst_QScopedPointer)
 #include "tst_qscopedpointer.moc"
