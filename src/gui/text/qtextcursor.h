@@ -228,6 +228,7 @@ public:
 
 private:
     QSharedDataPointer<QTextCursorPrivate> d;
+    friend class QTextCursorPrivate;
     friend class QTextDocumentFragmentPrivate;
     friend class QTextCopyHelper;
     friend class QWidgetTextControlPrivate;

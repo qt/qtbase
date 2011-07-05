@@ -22,7 +22,9 @@ HEADERS += \
 	text/qtexthtmlparser_p.h \
 	text/qabstracttextdocumentlayout.h \
 	text/qtextdocumentlayout_p.h \
-	text/qtextcursor.h \
+        text/qtextcontrol_p.h \
+        text/qtextcontrol_p_p.h \
+        text/qtextcursor.h \
         text/qtextcursor_p.h \
 	text/qtextdocumentfragment.h \
 	text/qtextdocumentfragment_p.h \
@@ -50,6 +52,7 @@ SOURCES += \
 	text/qfontsubset.cpp \
 	text/qfontmetrics.cpp \
 	text/qfontdatabase.cpp \
+        text/qtextcontrol.cpp \
         text/qtextengine.cpp \
 	text/qtextlayout.cpp \
 	text/qtextformat.cpp \

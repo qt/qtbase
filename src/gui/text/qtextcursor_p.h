@@ -68,6 +68,8 @@ public:
     QTextCursorPrivate(const QTextCursorPrivate &rhs);
     ~QTextCursorPrivate();
 
+    static inline QTextCursorPrivate *getPrivate(QTextCursor *c) { return c->d; }
+
     enum AdjustResult { CursorMoved, CursorUnchanged };
     AdjustResult adjustPosition(int positionOfChange, int charsAddedOrRemoved, QTextUndoCommand::Operation op);
 

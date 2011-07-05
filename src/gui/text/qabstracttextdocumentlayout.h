@@ -123,6 +123,7 @@ protected:
 
 private:
     friend class QWidgetTextControl;
+    friend class QTextControl;
     friend class QTextDocument;
     friend class QTextDocumentPrivate;
     friend class QTextEngine;
