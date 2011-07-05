@@ -58,9 +58,7 @@ QT_BEGIN_HEADER
 # include <QtCore/qt_windows.h>
 #endif
 
-#if defined(Q_WS_MAC)
-# include <OpenGL/gl.h>
-#elif defined(QT_OPENGL_ES_1)
+#if defined(QT_OPENGL_ES_1)
 # if defined(Q_OS_MAC)
 #  include <OpenGLES/ES1/gl.h>
 # else
@@ -85,7 +83,11 @@ typedef GLfloat GLdouble;
 typedef GLfloat GLdouble;
 # endif
 #else
-# include <GL/gl.h>
+# if defined(Q_OS_MAC)
+#  include <OpenGL/gl.h>
+# else
+#  include <GL/gl.h>
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE
