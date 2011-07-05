@@ -221,7 +221,7 @@ namespace QTest {
             return;
 
         if (type != QtFatalMsg) {
-            if (counter <= 0)
+            if (counter.load() <= 0)
                 return;
 
             if (!counter.deref()) {

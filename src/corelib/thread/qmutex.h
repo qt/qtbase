@@ -65,7 +65,7 @@ public:
     }
 
     inline void unlock() {
-        Q_ASSERT(d); //mutex must be locked
+        Q_ASSERT(d.load()); //mutex must be locked
         if (!d.testAndSetRelease(dummyLocked(), 0))
             unlockInternal();
     }

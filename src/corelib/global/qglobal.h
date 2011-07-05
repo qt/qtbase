@@ -1909,8 +1909,8 @@ public:
 
     inline ~QGlobalStaticDeleter()
     {
-        delete globalStatic.pointer;
-        globalStatic.pointer = 0;
+        delete globalStatic.pointer.load();
+        globalStatic.pointer.store(0);
         globalStatic.destroyed = true;
     }
 };
@@ -1920,14 +1920,14 @@ public:
     {                                                                         \
         static QGlobalStatic<TYPE > thisGlobalStatic                          \
                             = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) { \
             TYPE *x = new TYPE;                                               \
             if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
                 delete x;                                                     \
             else                                                              \
                 static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return thisGlobalStatic.pointer.load();                               \
     }
 
 #define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                           \
@@ -1935,14 +1935,14 @@ public:
     {                                                                         \
         static QGlobalStatic<TYPE > thisGlobalStatic                          \
                             = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) {       \
             TYPE *x = new TYPE ARGS;                                          \
             if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
                 delete x;                                                     \
             else                                                              \
                 static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return thisGlobalStatic.pointer.load();                               \
     }
 
 #define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)             \
@@ -1950,7 +1950,7 @@ public:
     {                                                                         \
         static QGlobalStatic<TYPE > thisGlobalStatic                          \
                             = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) {       \
             QScopedPointer<TYPE > x(new TYPE);                                \
             INITIALIZER;                                                      \
             if (thisGlobalStatic.pointer.testAndSetOrdered(0, x.data())) {    \
@@ -1958,7 +1958,7 @@ public:
                 x.take();                                                     \
             }                                                                 \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return thisGlobalStatic.pointer.load();                               \
     }
 
 #endif

@@ -94,7 +94,7 @@ private:
 
 inline void QGLColormap::detach()
 {
-    if (d->ref != 1)
+    if (d->ref.load() != 1)
         detach_helper();
 }
 

@@ -75,7 +75,7 @@ QOnceControl::QOnceControl(QBasicAtomicInt *control)
     d = 0;
     gv = control;
     // check if code has already run once
-    if (*gv == 2) {
+    if (gv->loadAcquire() == 2) {
         // uncontended case: it has already initialized
         // no waiting
         return;

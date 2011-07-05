@@ -120,7 +120,7 @@ public:
         //senders linked list
         Connection *next;
         Connection **prev;
-        QBasicAtomicPointer<int> argumentTypes;
+        QAtomicPointer<int> argumentTypes;
         ushort method_offset;
         ushort method_relative;
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking

@@ -1260,13 +1260,13 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
 
     // we can create the refcount data because it doesn't exist
     ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
-    x->strongref = -1;
-    x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
+    x->strongref.store(-1);
+    x->weakref.store(2);  // the QWeakPointer that called us plus the QObject itself
     if (!d->sharedRefcount.testAndSetRelease(0, x)) {
         delete x;
         d->sharedRefcount->weakref.ref();
     }
-    return d->sharedRefcount;
+    return d->sharedRefcount.loadAcquire();
 }
 
 QT_END_NAMESPACE

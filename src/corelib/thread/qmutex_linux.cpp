@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline int _q_futex(QMutexPrivate *volatile *addr, int op, int val, const struct timespec *timeout)
+static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout)
 {
     volatile int *int_addr = reinterpret_cast<volatile int *>(addr);
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN && QT_POINTER_SIZE == 8
@@ -82,7 +82,7 @@ bool QBasicMutex::lockInternal(int timeout)
         elapsedTimer.start();
 
     while (!fastTryLock()) {
-        QMutexPrivate *d = this->d;
+        QMutexPrivate *d = this->d.load();
         if (!d) // if d is 0, the mutex is unlocked
             continue;
 
@@ -103,7 +103,7 @@ bool QBasicMutex::lockInternal(int timeout)
                     ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
                     pts = &ts;
                 }
-                int r = _q_futex(&this->d._q_value, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
+                int r = _q_futex(&this->d, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
                 if (r != 0 && errno == ETIMEDOUT)
                     return false;
             }
@@ -112,19 +112,19 @@ bool QBasicMutex::lockInternal(int timeout)
         Q_ASSERT(d->recursive);
         return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
     }
-    Q_ASSERT(this->d);
+    Q_ASSERT(this->d.load());
     return true;
 }
 
 void QBasicMutex::unlockInternal()
 {
-    QMutexPrivate *d = this->d;
+    QMutexPrivate *d = this->d.load();
     Q_ASSERT(d); //we must be locked
     Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
 
     if (d == dummyFutexValue()) {
         this->d.fetchAndStoreRelease(0);
-        _q_futex(&this->d._q_value, FUTEX_WAKE, 1, 0);
+        _q_futex(&this->d, FUTEX_WAKE, 1, 0);
         return;
     }
 

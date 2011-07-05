@@ -154,7 +154,7 @@ QGLColormap & QGLColormap::operator=(const QGLColormap &map)
 void QGLColormap::detach_helper()
 {
     QGLColormapData *x = new QGLColormapData;
-    x->ref = 1;
+    x->ref.store(1);
     x->cmapHandle = 0;
     x->cells = 0;
     if (d->cells) {

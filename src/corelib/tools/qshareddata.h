@@ -72,7 +72,7 @@ public:
     typedef T Type;
     typedef T *pointer;
 
-    inline void detach() { if (d && d->ref != 1) detach_helper(); }
+    inline void detach() { if (d && d->ref.load() != 1) detach_helper(); }
     inline T &operator*() { detach(); return *d; }
     inline const T &operator*() const { return *d; }
     inline T *operator->() { detach(); return d; }
@@ -145,7 +145,7 @@ public:
     inline T *data() const { return d; }
     inline const T *constData() const { return d; }
 
-    inline void detach() { if (d && d->ref != 1) detach_helper(); }
+    inline void detach() { if (d && d->ref.load() != 1) detach_helper(); }
 
     inline void reset()
     {

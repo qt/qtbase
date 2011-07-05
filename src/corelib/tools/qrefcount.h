@@ -56,27 +56,29 @@ namespace QtPrivate
 class RefCount
 {
 public:
-   inline void ref() {
-        if (atomic > 0)
+    inline void ref() {
+        if (atomic.load() > 0)
             atomic.ref();
     }
 
     inline bool deref() {
-        if (atomic <= 0)
+        if (atomic.load() <= 0)
             return true;
         return atomic.deref();
     }
 
     inline bool operator==(int value) const
-    { return atomic.operator ==(value); }
+    { return atomic.load() == value; }
     inline bool operator!=(int value) const
-    { return atomic.operator !=(value); }
+    { return atomic.load() != value; }
     inline bool operator!() const
-    { return atomic.operator !(); }
+    { return !atomic.load(); }
     inline operator int() const
-    { return atomic.operator int(); }
+    { return atomic.load(); }
     inline RefCount &operator=(int value)
-    { atomic = value; return *this; }
+    { atomic.store(value); return *this; }
+    inline RefCount &operator=(const RefCount &other)
+    { atomic.store(other.atomic.load()); return *this; }
 
     QBasicAtomicInt atomic;
 };

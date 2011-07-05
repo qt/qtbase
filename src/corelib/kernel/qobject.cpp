@@ -808,13 +808,13 @@ QObject::~QObject()
     }
 
     if (d->sharedRefcount) {
-        if (d->sharedRefcount->strongref > 0) {
+        if (d->sharedRefcount->strongref.load() > 0) {
             qWarning("QObject: shared QObject was deleted directly. The program is malformed and may crash.");
             // but continue deleting, it's too late to stop anyway
         }
 
         // indicate to all QWeakPointers that this QObject has now been deleted
-        d->sharedRefcount->strongref = 0;
+        d->sharedRefcount->strongref.store(0);
         if (!d->sharedRefcount->weakref.deref())
             delete d->sharedRefcount;
     }

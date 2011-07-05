@@ -382,8 +382,8 @@ const int features_count = (sizeof features_indices - 1) / (sizeof features_indi
 uint qDetectCPUFeatures()
 {
     static QBasicAtomicInt features = Q_BASIC_ATOMIC_INITIALIZER(-1);
-    if (features != -1)
-        return features;
+    if (features.load() != -1)
+        return features.load();
 
     uint f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
@@ -395,8 +395,8 @@ uint qDetectCPUFeatures()
         }
     }
 
-    features = f;
-    return features;
+    features.store(f);
+    return f;
 }
 
 void qDumpCPUFeatures()

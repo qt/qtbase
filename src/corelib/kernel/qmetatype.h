@@ -273,10 +273,10 @@ inline int qRegisterMetaTypeStreamOperators()
         static int qt_metatype_id()                                     \
             {                                                           \
                 static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
-                if (!metatype_id)                                       \
-                    metatype_id = qRegisterMetaType< TYPE >(#TYPE,      \
-                               reinterpret_cast< TYPE *>(quintptr(-1))); \
-                return metatype_id;                                     \
+                if (!metatype_id.load())                                \
+                    metatype_id.storeRelease(qRegisterMetaType< TYPE >(#TYPE, \
+                               reinterpret_cast< TYPE *>(quintptr(-1)))); \
+                return metatype_id.loadAcquire();                       \
             }                                                           \
     };                                                                  \
     QT_END_NAMESPACE

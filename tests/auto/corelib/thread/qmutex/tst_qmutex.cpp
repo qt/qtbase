@@ -486,7 +486,7 @@ void tst_QMutex::stressTest()
     for (int i = 1; i < threadCount; ++i)
         QVERIFY(threads[i].wait(10000));
     QCOMPARE(StressTestThread::errorCount, 0);
-    qDebug("locked %d times", int(StressTestThread::lockCount));
+    qDebug("locked %d times", int(StressTestThread::lockCount.load()));
 }
 
 class TryLockRaceThread : public QThread
