@@ -265,7 +265,6 @@ public:
     mutable QVector<QRelation> relations;
     QSqlRecord baseRec; // the record without relations
     void clearChanges();
-    void clearEditBuffer();
     void clearCache();
     void revertCachedRow(int row);
 
@@ -309,12 +308,6 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
         idx = QSqlTableModelPrivate::nameToIndex(name);
     }
     return idx;
-}
-
-void QSqlRelationalTableModelPrivate::clearEditBuffer()
-{
-    editBuffer = baseRec;
-    clearGenerated(editBuffer);
 }
 
 /*!
@@ -445,23 +438,16 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
         //when the value at index has been changed or added.
         //At an unmodified index, the underlying model will
         //already have the correct display value.
-        QVariant v;
-        switch (d->strategy) {
-            case OnFieldChange:
-                break;
-            case OnRowChange:
-                if ((index.row() == d->editIndex || index.row() == d->insertIndex)
-                    && d->editBuffer.isGenerated(index.column()))
-                    v = d->editBuffer.value(index.column());
-                break;
-            case OnManualSubmit:
-                const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-                if (row.op != QSqlTableModelPrivate::None && row.rec.isGenerated(index.column()))
-                    v = row.rec.value(index.column());
-                break;
+        if (d->strategy != OnFieldChange) {
+            const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+            if (row.op != QSqlTableModelPrivate::None && row.rec.isGenerated(index.column())) {
+                if (d->strategy == OnManualSubmit || row.op != QSqlTableModelPrivate::Delete) {
+                    QVariant v = row.rec.value(index.column());
+                    if (v.isValid())
+                        return relation.dictionary[v.toString()];
+                }
+            }
         }
-        if (v.isValid())
-            return relation.dictionary[v.toString()];
     }
     return QSqlTableModel::data(index, role);
 }
