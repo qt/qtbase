@@ -1203,52 +1203,49 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
     if (row >= rowCount())
         return false;
 
+    if (d->strategy == OnFieldChange && d->cache.value(row).op != QSqlTableModelPrivate::Insert)
+        d->cache.clear();
+    else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(row))
+        submit();
+
+    QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
+    if (mrow.op == QSqlTableModelPrivate::None)
+        mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
+                                                  d->rec,
+                                                  d->primaryValues(indexInQuery(createIndex(row, 0)).row()));
+
     bool isOk = true;
-    switch (d->strategy) {
-    case OnFieldChange:
-    case OnRowChange: {
-        EditStrategy oldStrategy = d->strategy;
-
-        // FieldChange strategy makes no sense when setting an entire row
-        if (d->strategy == OnFieldChange)
-            d->strategy = OnRowChange;
-        for (int i = 0; i < record.count(); ++i) {
-            int idx = d->nameToIndex(record.fieldName(i));
-            if (idx == -1)
-                continue;
-            QModelIndex cIndex = createIndex(row, idx);
-            QVariant value = record.value(i);
-            QVariant oldValue = data(cIndex);
-            if (oldValue.isNull() || oldValue != value)
-                isOk &= setData(cIndex, value, Qt::EditRole);
-        }
-        if (isOk && oldStrategy == OnFieldChange)
-            submitAll();
-        d->strategy = oldStrategy;
-
-        return isOk;
-    }
-    case OnManualSubmit: {
-        QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
-        if (mrow.op == QSqlTableModelPrivate::None)
-            mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                      d->rec,
-                                                      d->primaryValues(indexInQuery(createIndex(row, 0)).row()));
-        for (int i = 0; i < record.count(); ++i) {
-            int idx = d->nameToIndex(record.fieldName(i));
-            if (idx == -1) {
-                isOk = false;
-            } else {
+    for (int i = 0; i < record.count(); ++i) {
+        int idx = d->nameToIndex(record.fieldName(i));
+        if (idx == -1) {
+            isOk = false;
+        } else if (d->strategy != OnManualSubmit) {
+            // historical bug: this could all be simple like OnManualSubmit, but isn't
+            const QModelIndex cIndex = createIndex(row, idx);
+            // historical bug: comparing EditRole with DisplayRole values here
+            const QVariant oldValue = data(cIndex);
+            const QVariant value = record.value(i);
+            // historical bug: it's a bad idea to check for change here
+            // historical bug: should test oldValue.isNull() != value.isNull()
+            if (oldValue.isNull() || oldValue != value) {
+            // historical bug: dataChanged() is suppressed for Insert. See also setData().
                 mrow.setValue(idx, record.value(i));
+                if (mrow.op != QSqlTableModelPrivate::Insert)
+                    emit dataChanged(cIndex, cIndex);
             }
+        } else {
+            mrow.setValue(idx, record.value(i));
         }
+    }
 
-        if (isOk)
-            emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
+    if (d->strategy == OnManualSubmit && isOk)
+        emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
+    else if (d->strategy == OnFieldChange)
+        return submitAll();
+    else if (d->strategy == OnManualSubmit)
         return isOk;
-    }
-    }
-    return false;
+
+    return true;
 }
 
 QT_END_NAMESPACE
