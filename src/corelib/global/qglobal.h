@@ -525,6 +525,7 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
+#      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_EXTERN_TEMPLATES
@@ -535,7 +536,6 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++0x features supported in GCC 4.5: */
 #      define Q_COMPILER_LAMBDA
-#      define Q_COMPILER_UNICODE_STRINGS
 #    endif
 #  endif
 
@@ -975,6 +975,7 @@ QT_END_INCLUDE_NAMESPACE
 #if defined(Q_NO_BOOL_TYPE)
 #error "Compiler doesn't support the bool type"
 #endif
+
 
 /*
    Constant bool values
