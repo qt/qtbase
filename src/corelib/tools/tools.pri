@@ -30,6 +30,7 @@ HEADERS +=  \
         tools/qrect.h \
         tools/qregexp.h \
         tools/qringbuffer_p.h \
+        tools/qrefcount.h \
         tools/qscopedpointer.h \
         tools/qscopedpointer_p.h \
         tools/qscopedvaluerollback.h \
@@ -72,6 +73,7 @@ SOURCES += \
         tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
         tools/qregexp.cpp \
+        tools/qrefcount.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
         tools/qsimd.cpp \
