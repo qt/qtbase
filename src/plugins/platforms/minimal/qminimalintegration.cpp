@@ -41,7 +41,11 @@
 
 #include "qminimalintegration.h"
 #include "qminimalbackingstore.h"
+#ifndef Q_OS_WIN
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#else
+#include <QtCore/private/qeventdispatcher_win_p.h>
+#endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
@@ -83,6 +87,10 @@ QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *
 
 QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
 {
+#ifndef Q_OS_WIN
     return createUnixEventDispatcher();
+#else
+    return new QEventDispatcherWin32();
+#endif
 }
 
