@@ -537,6 +537,11 @@ namespace QT_NAMESPACE {}
        /* C++0x features supported in GCC 4.5: */
 #      define Q_COMPILER_LAMBDA
 #    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+       /* C++0x features supported in GCC 4.6: */
+#      define Q_COMPILER_CONSTEXPR
+#    endif
+
 #  endif
 
 /* IBM compiler versions are a bit messy. There are actually two products:
@@ -1107,6 +1112,12 @@ redefine to built-in booleans to make autotests work properly */
 #  define QT_FASTCALL
 #endif
 
+#ifdef Q_COMPILER_CONSTEXPR
+# define Q_DECL_CONSTEXPR constexpr
+#else
+# define Q_DECL_CONSTEXPR
+#endif
+
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_WS_WIN)
@@ -1138,25 +1149,25 @@ typedef double qreal;
 */
 
 template <typename T>
-inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
+Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
-inline int qRound(qreal d)
+Q_DECL_CONSTEXPR inline int qRound(qreal d)
 { return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1); }
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
-inline qint64 qRound64(double d)
+Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
-inline qint64 qRound64(qreal d)
+Q_DECL_CONSTEXPR inline qint64 qRound64(qreal d)
 { return d >= qreal(0.0) ? qint64(d + qreal(0.5)) : qint64(d - qreal(qint64(d-1)) + qreal(0.5)) + qint64(d-1); }
 #endif
 
 template <typename T>
-inline const T &qMin(const T &a, const T &b) { if (a < b) return a; return b; }
+Q_DECL_CONSTEXPR inline const T &qMin(const T &a, const T &b) { return (a < b) ? a : b; }
 template <typename T>
-inline const T &qMax(const T &a, const T &b) { if (a < b) return b; return a; }
+Q_DECL_CONSTEXPR inline const T &qMax(const T &a, const T &b) { return (a < b) ? b : a; }
 template <typename T>
-inline const T &qBound(const T &min, const T &val, const T &max)
+Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
 
 /*
@@ -1915,12 +1926,12 @@ inline bool operator!=(QBool b1, bool b2) { return !b1 != !b2; }
 inline bool operator!=(bool b1, QBool b2) { return !b1 != !b2; }
 inline bool operator!=(QBool b1, QBool b2) { return !b1 != !b2; }
 
-static inline bool qFuzzyCompare(double p1, double p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) <= 0.000000000001 * qMin(qAbs(p1), qAbs(p2)));
 }
 
-static inline bool qFuzzyCompare(float p1, float p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
@@ -1928,7 +1939,7 @@ static inline bool qFuzzyCompare(float p1, float p2)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(double d)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
@@ -1936,7 +1947,7 @@ static inline bool qFuzzyIsNull(double d)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(float f)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
