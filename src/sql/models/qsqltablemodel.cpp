@@ -1344,12 +1344,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             QSqlTableModelPrivate::clearGenerated(mrow.rec);
             mrow.primaryValues = d->primaryValues(indexInQuery(createIndex(row, 0)).row());
         }
-        QString fieldName;
         for (int i = 0; i < record.count(); ++i) {
-            fieldName = record.fieldName(i);
-            if (d->db.driver()->isIdentifierEscaped(fieldName, QSqlDriver::FieldName))
-                fieldName = d->db.driver()->stripDelimiters(fieldName, QSqlDriver::FieldName);
-            int idx = mrow.rec.indexOf(fieldName);
+            int idx = d->nameToIndex(record.fieldName(i));
             if (idx == -1) {
                 isOk = false;
             } else {

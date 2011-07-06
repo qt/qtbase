@@ -303,7 +303,12 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
     QString fieldname = name;
     if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
         fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
-    return baseRec.indexOf(fieldname);
+    int idx = baseRec.indexOf(fieldname);
+    if (idx == -1) {
+        // If the name is an alias we can find it here.
+        idx = QSqlTableModelPrivate::nameToIndex(name);
+    }
+    return idx;
 }
 
 void QSqlRelationalTableModelPrivate::clearEditBuffer()
