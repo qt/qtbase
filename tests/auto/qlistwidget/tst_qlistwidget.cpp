@@ -260,7 +260,7 @@ void tst_QListWidget::addItem2()
 {
     int count = testWidget->count();
 
-    // Boundry Checking
+    // Boundary Checking
     testWidget->addItem(0);
     QCOMPARE(testWidget->count(), count);
 
@@ -276,7 +276,7 @@ void tst_QListWidget::addItems()
 {
     int count = testWidget->count();
 
-    // Boundry Checking
+    // Boundary Checking
     testWidget->addItems(QStringList());
     QCOMPARE(testWidget->count(), count);
 
@@ -294,7 +294,7 @@ void tst_QListWidget::addItems()
 
 void tst_QListWidget::openPersistentEditor()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->openPersistentEditor(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
     testWidget->openPersistentEditor(item);
@@ -312,7 +312,7 @@ void tst_QListWidget::closePersistentEditor()
     QTest::qWait(1000);
 #endif
 
-    // Boundry checking
+    // Boundary checking
     int childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
@@ -337,7 +337,7 @@ void tst_QListWidget::closePersistentEditor()
 
 void tst_QListWidget::setItemHidden()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->setItemHidden(0, true);
     testWidget->setItemHidden(0, false);
 
@@ -394,7 +394,7 @@ void tst_QListWidget::setCurrentItem()
     for (int i = 0; i < fill; ++i)
         testWidget->addItem(QString("%1").arg(i));
 
-    // Boundry checking
+    // Boundary checking
     testWidget->setCurrentItem((QListWidgetItem *)0);
     QCOMPARE((QListWidgetItem *)0, testWidget->currentItem());
     QListWidgetItem item;
@@ -426,7 +426,7 @@ void tst_QListWidget::setCurrentRow()
     for (int i = 0; i < fill; ++i)
         testWidget->addItem(QString("%1").arg(i));
 
-    // Boundry checking
+    // Boundary checking
     testWidget->setCurrentRow(-1);
     QCOMPARE(-1, testWidget->currentRow());
     testWidget->setCurrentRow(testWidget->count());
@@ -483,7 +483,7 @@ void tst_QListWidget::editItem_data()
 
 void tst_QListWidget::editItem()
 {
-    // Boundry checking
+    // Boundary checking
     testWidget->editItem(0);
     QListWidgetItem *item = new QListWidgetItem(QString("%1").arg(testWidget->count()));
     testWidget->editItem(item);
@@ -517,7 +517,7 @@ void tst_QListWidget::findItems()
 {
     // This really just tests that the items that are returned are converted from index's to items correctly.
 
-    // Boundry checking
+    // Boundary checking
     QCOMPARE(testWidget->findItems("GirlsCanWearJeansAndCutTheirHairShort", Qt::MatchExactly).count(), 0);
 
     populate();

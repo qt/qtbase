@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 /*
- * This programm takes a *.ui file and an output dir as argument in order to
+ * This program takes a *.ui file and an output dir as argument in order to
  * create a screenshot of the widget defined in the ui file.
  *
  * The screenshot is saved in the output dir (default current dir), ".png" is

@@ -448,7 +448,7 @@ void tst_QStyleSheetStyle::widgetStyle()
     window2->setStyleSheet("");
     qApp->setStyle(0);
 
-    qApp->setStyleSheet("may_insanity_prevail { }"); // app has styleshet
+    qApp->setStyleSheet("may_insanity_prevail { }"); // app has stylesheet
     QCOMPARE(window1->style(), qApp->style());
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle");
     QCOMPARE(widget1->style()->metaObject()->className(), "QStyleSheetStyle"); // check the child

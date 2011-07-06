@@ -153,7 +153,7 @@ void tst_Subtest::test3()
 
     QFETCH(QString, str);
 
-    // second and third time we call this it shoud FAIL
+    // second and third time we call this it should FAIL
     QCOMPARE(str, QString("hello0"));
 
     printf("test2 end\n");
