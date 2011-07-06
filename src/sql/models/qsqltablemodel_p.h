@@ -106,7 +106,7 @@ public:
         ModifiedRow(const ModifiedRow &other): op(other.op), rec(other.rec), primaryValues(other.primaryValues) {}
         Op op;
         QSqlRecord rec;
-		QSqlRecord primaryValues;
+        QSqlRecord primaryValues;
     };
 
     QSqlRecord editBuffer;
