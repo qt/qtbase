@@ -483,7 +483,8 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
-      socketError(QAbstractSocket::UnknownSocketError)
+      socketError(QAbstractSocket::UnknownSocketError),
+      preferredNetworkLayerProtocol(QAbstractSocket::UnknownNetworkLayerProtocol)
 {
 }
 
@@ -892,6 +893,7 @@ void QAbstractSocketPrivate::startConnectingByName(const QString &host)
 void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
 {
     Q_Q(QAbstractSocket);
+    addresses.clear();
     if (state != QAbstractSocket::HostLookupState)
         return;
 
@@ -899,7 +901,16 @@ void QAbstractSocketPrivate::_q_startConnecting(const QHostInfo &hostInfo)
         qWarning("QAbstractSocketPrivate::_q_startConnecting() received hostInfo for wrong lookup ID %d expected %d", hostInfo.lookupId(), hostLookupId);
     }
 
-    addresses = hostInfo.addresses();
+    // Only add the addresses for the prefered network layer.
+    // Or all if prefered network layer is not set.
+    if (preferredNetworkLayerProtocol == QAbstractSocket::UnknownNetworkLayerProtocol || preferredNetworkLayerProtocol == QAbstractSocket::AnyIPProtocol) {
+        addresses = hostInfo.addresses();
+    } else {
+        foreach (QHostAddress address, hostInfo.addresses())
+            if (address.protocol() == preferredNetworkLayerProtocol)
+                addresses += address;
+    }
+
 
 #if defined(QABSTRACTSOCKET_DEBUG)
     QString s = QLatin1String("{");
@@ -991,17 +1002,6 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
 #if defined(QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), connecting to %s:%i, %d left to try",
                host.toString().toLatin1().constData(), port, addresses.count());
-#endif
-
-#if defined(QT_NO_IPV6)
-        if (host.protocol() == QAbstractSocket::IPv6Protocol) {
-            // If we have no IPv6 support, then we will not be able to
-            // connect. So we just pretend we didn't see this address.
-#if defined(QABSTRACTSOCKET_DEBUG)
-            qDebug("QAbstractSocketPrivate::_q_connectToNextAddress(), skipping IPv6 entry");
-#endif
-            continue;
-        }
 #endif
 
         if (!initSocketLayer(host.protocol())) {
@@ -1330,8 +1330,12 @@ bool QAbstractSocket::isValid() const
     \sa state(), peerName(), peerAddress(), peerPort(), waitForConnected()
 */
 void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
-                                    OpenMode openMode)
+                                    OpenMode openMode,
+                                    NetworkLayerProtocol protocol)
 {
+    Q_D(QAbstractSocket);
+    d->preferredNetworkLayerProtocol = protocol;
+
     QMetaObject::invokeMethod(this, "connectToHostImplementation",
                               Qt::DirectConnection,
                               Q_ARG(QString, hostName),
@@ -2501,10 +2505,6 @@ void QAbstractSocket::disconnectFromHostImplementation()
         return;
     }
 
-#ifdef QT3_SUPPORT
-    emit connectionClosed(); // compat signal
-#endif
-
     // Disable and delete read notification
     if (d->socketEngine)
         d->socketEngine->setReadNotificationEnabled(false);
@@ -2567,9 +2567,6 @@ void QAbstractSocket::disconnectFromHostImplementation()
     emit stateChanged(d->state);
     emit readChannelFinished();       // we got an EOF
 
-#ifdef QT3_SUPPORT
-    emit delayedCloseFinished(); // compat signal
-#endif
     // only emit disconnected if we were connected before
     if (previousState == ConnectedState || previousState == ClosingState)
         emit disconnected();
@@ -2746,78 +2743,6 @@ QNetworkProxy QAbstractSocket::proxy() const
     return d->proxy;
 }
 #endif // QT_NO_NETWORKPROXY
-
-#ifdef QT3_SUPPORT
-/*! 
-    \enum QAbstractSocket::Error
-    \compat
-
-    Use QAbstractSocket::SocketError instead.
-
-    \value ErrConnectionRefused Use QAbstractSocket::ConnectionRefusedError instead.
-    \value ErrHostNotFound Use QAbstractSocket::HostNotFoundError instead.
-    \value ErrSocketRead Use QAbstractSocket::UnknownSocketError instead.
-*/
-
-/*!
-    \typedef QAbstractSocket::State
-    \compat
-
-    Use QAbstractSocket::SocketState instead.
-
-    \table
-    \header \o Qt 3 enum value \o Qt 4 enum value
-    \row \o \c Idle            \o \l UnconnectedState
-    \row \o \c HostLookup      \o \l HostLookupState
-    \row \o \c Connecting      \o \l ConnectingState
-    \row \o \c Connected       \o \l ConnectedState
-    \row \o \c Closing         \o \l ClosingState
-    \row \o \c Connection      \o \l ConnectedState
-    \endtable
-*/
-
-/*!
-    \fn int QAbstractSocket::socket() const
-
-    Use socketDescriptor() instead.
-*/
-
-/*!
-    \fn void QAbstractSocket::setSocket(int socket)
-
-    Use setSocketDescriptor() instead.
-*/
-
-/*!
-    \fn Q_ULONG QAbstractSocket::waitForMore(int msecs, bool *timeout = 0) const
-
-    Use waitForReadyRead() instead.
-
-    \oldcode
-        bool timeout;
-        Q_ULONG numBytes = socket->waitForMore(30000, &timeout);
-    \newcode
-        qint64 numBytes = 0;
-        if (socket->waitForReadyRead(msecs))
-            numBytes = socket->bytesAvailable();
-        bool timeout = (error() == QAbstractSocket::SocketTimeoutError);
-    \endcode
-
-    \sa waitForReadyRead(), bytesAvailable(), error(), SocketTimeoutError
-*/
-
-/*!
-    \fn void QAbstractSocket::connectionClosed()
-
-    Use disconnected() instead.
-*/
-
-/*!
-    \fn void QAbstractSocket::delayedCloseFinished()
-
-    Use disconnected() instead.
-*/
-#endif // QT3_SUPPORT
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, QAbstractSocket::SocketError error)

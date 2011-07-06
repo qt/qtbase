@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-     version="1.2" baseProfile="tiny" 
-     id="animationRef" width="150" height="50" viewBox="0 0 150 50" fill="inherit">  
-
-    <rect id="aMovingRect" width="50" height="50" rx="5" ry="5" fill="rgb(255,28,141)" stroke-width="3" stroke="black">
-         <animateTransform attributeName="transform" type="translate" values="0,0;0,100" begin="0" dur="2" fill="freeze"/>
-    </rect>
-</svg>

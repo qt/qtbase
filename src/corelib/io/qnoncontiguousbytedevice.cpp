@@ -479,7 +479,7 @@ qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 */
 
 /*!
-    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *device);
+    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *device)
 
     Create a QNonContiguousByteDevice out of a QIODevice.
     For QFile, QBuffer and all other QIoDevice, sequential or not.
@@ -501,7 +501,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 }
 
 /*!
-    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer);
+    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer<QRingBuffer> ringBuffer)
 
     Create a QNonContiguousByteDevice out of a QRingBuffer.
 
@@ -513,7 +513,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QSharedPointer
 }
 
 /*!
-    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray);
+    \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray)
 
     Create a QNonContiguousByteDevice out of a QByteArray.
 
@@ -525,7 +525,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *by
 }
 
 /*!
-    \fn static QIODevice* QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice* byteDevice);
+    \fn static QIODevice* QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice* byteDevice)
 
     Wrap the \a byteDevice (possibly again) into a QIODevice.
 

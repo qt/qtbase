@@ -61,9 +61,6 @@ class Q_CORE_EXPORT QTimer : public QObject
     Q_PROPERTY(bool active READ isActive)
 public:
     explicit QTimer(QObject *parent = 0);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QTimer(QObject *parent, const char *name);
-#endif
     ~QTimer();
 
     inline bool isActive() const { return id >= 0; }
@@ -82,11 +79,6 @@ public Q_SLOTS:
 
     void start();
     void stop();
-
-#ifdef QT3_SUPPORT
-    inline QT_MOC_COMPAT void changeInterval(int msec) { start(msec); }
-    QT_MOC_COMPAT int start(int msec, bool sshot);
-#endif
 
 Q_SIGNALS:
     void timeout();

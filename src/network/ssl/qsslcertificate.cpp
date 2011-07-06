@@ -307,6 +307,9 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
     case QSslCertificate::OrganizationalUnitName: str = QLatin1String("OU"); break;
     case QSslCertificate::CountryName: str = QLatin1String("C"); break;
     case QSslCertificate::StateOrProvinceName: str = QLatin1String("ST"); break;
+    case QSslCertificate::DistinguishedNameQualifier: str = QLatin1String("dnQualifier"); break;
+    case QSslCertificate::SerialNumber: str = QLatin1String("serialNumber"); break;
+    case QSslCertificate::EmailAddress: str = QLatin1String("emailAddress"); break;
     }
     return str;
 }
@@ -320,14 +323,14 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 
   \sa subjectInfo()
 */
-QString QSslCertificate::issuerInfo(SubjectInfo info) const
+QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 {
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
-    return d->issuerInfo.value(_q_SubjectInfoToString(info));
+    return d->issuerInfo.values(_q_SubjectInfoToString(info));
 }
 
 /*!
@@ -337,14 +340,14 @@ QString QSslCertificate::issuerInfo(SubjectInfo info) const
 
   \sa subjectInfo()
 */
-QString QSslCertificate::issuerInfo(const QByteArray &tag) const
+QStringList QSslCertificate::issuerInfo(const QByteArray &tag) const
 {
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
-    return d->issuerInfo.value(QString::fromLatin1(tag));
+    return d->issuerInfo.values(QString::fromLatin1(tag));
 }
 
 /*!
@@ -356,14 +359,14 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 
     \sa issuerInfo()
 */
-QString QSslCertificate::subjectInfo(SubjectInfo info) const
+QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 {
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
-    return d->subjectInfo.value(_q_SubjectInfoToString(info));
+    return d->subjectInfo.values(_q_SubjectInfoToString(info));
 }
 
 /*!
@@ -372,14 +375,14 @@ QString QSslCertificate::subjectInfo(SubjectInfo info) const
 
     \sa issuerInfo()
 */
-QString QSslCertificate::subjectInfo(const QByteArray &tag) const
+QStringList QSslCertificate::subjectInfo(const QByteArray &tag) const
 {
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
-    return d->subjectInfo.value(QString::fromLatin1(tag));
+    return d->subjectInfo.values(QString::fromLatin1(tag));
 }
 
 /*!
@@ -711,7 +714,7 @@ static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
         const char *obj = q_OBJ_nid2sn(q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e)));
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info[QString::fromUtf8(obj)] = QString::fromUtf8((char*)data, size);
+        info.insertMulti(QString::fromUtf8(obj), QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
     return info;
@@ -867,6 +870,9 @@ QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo info)
     case QSslCertificate::LocalityName: debug << "LocalityName"; break;
     case QSslCertificate::OrganizationalUnitName: debug << "OrganizationalUnitName"; break;
     case QSslCertificate::StateOrProvinceName: debug << "StateOrProvinceName"; break;
+    case QSslCertificate::DistinguishedNameQualifier: debug << "DistinguishedNameQualifier"; break;
+    case QSslCertificate::SerialNumber: debug << "SerialNumber"; break;
+    case QSslCertificate::EmailAddress: debug << "EmailAddress"; break;
     }
     return debug;
 }

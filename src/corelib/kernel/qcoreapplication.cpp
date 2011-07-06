@@ -176,9 +176,6 @@ extern QString qAppFileName();
 #endif
 
 int QCoreApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly, but it's at least 4.0.0
-#if defined(QT3_SUPPORT)
-bool QCoreApplicationPrivate::useQt3Support = true;
-#endif
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_MAC
@@ -337,9 +334,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
       in_exec(false), aboutToQuitEmitted(false), threadData_clean(false)
 {
     app_compile_version = flags & 0xffffff;
-#if defined(QT3_SUPPORT)
-    useQt3Support = !(flags & 0x01000000);
-#endif
     static const char *const empty = "";
     if (argc == 0 || argv == 0) {
         argc = 0;
@@ -1261,20 +1255,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
-    if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
-        // optimization: we can simply append if the last event in
-        // the queue has higher or equal priority
-        data->postEventList.append(QPostEvent(receiver, event, priority));
-    } else {
-        // insert event in descending priority order, using upper
-        // bound for a given priority (to ensure proper ordering
-        // of events with the same priority)
-        QPostEventList::iterator begin = data->postEventList.begin()
-                                         + data->postEventList.insertionOffset,
-                                   end = data->postEventList.end();
-        QPostEventList::iterator at = qUpperBound(begin, end, priority);
-        data->postEventList.insert(at, QPostEvent(receiver, event, priority));
-    }
+    data->postEventList.addEvent(QPostEvent(receiver, event, priority));
     eventDeleter.take();
     event->posted = true;
     ++receiver->d_func()->postedEvents;
@@ -1372,20 +1353,6 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
     ++data->postEventList.recursion;
 
-#ifdef QT3_SUPPORT
-    if (event_type == QEvent::ChildInserted) {
-        if (receiver) {
-            // optimize sendPostedEvents(w, QEvent::ChildInserted) calls away
-            receiver->d_func()->sendPendingChildInsertedEvents();
-            --data->postEventList.recursion;
-            return;
-        }
-
-        // ChildInserted events are sent in response to *Request
-        event_type = QEvent::ChildInsertedRequest;
-    }
-#endif
-
     QMutexLocker locker(&data->postEventList.mutex);
 
     // by default, we assume that the event dispatcher can go to sleep after
@@ -1434,7 +1401,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
                     // don't lose the event
-                    data->postEventList.append(pe);
+                    data->postEventList.addEvent(pe);
                     const_cast<QPostEvent &>(pe).event = 0;
                 }
                 continue;
@@ -1536,11 +1503,6 @@ void QCoreApplication::removePostedEvents(QObject *receiver)
 
 void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 {
-#ifdef QT3_SUPPORT
-    if (eventType == QEvent::ChildInserted)
-        eventType = QEvent::ChildInsertedRequest;
-#endif
-
     QThreadData *data = receiver ? receiver->d_func()->threadData : QThreadData::current();
     QMutexLocker locker(&data->postEventList.mutex);
 
@@ -1563,10 +1525,6 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
         if ((!receiver || pe.receiver == receiver)
             && (pe.event && (eventType == 0 || pe.event->type() == eventType))) {
             --pe.receiver->d_func()->postedEvents;
-#ifdef QT3_SUPPORT
-            if (pe.event->type() == QEvent::ChildInsertedRequest)
-                pe.receiver->d_func()->pendingChildInsertedEvents.clear();
-#endif
             pe.event->posted = false;
             events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = 0;
@@ -2557,109 +2515,6 @@ bool QCoreApplication::hasPendingEvents()
         return eventDispatcher->hasPendingEvents();
     return false;
 }
-
-#ifdef QT3_SUPPORT
-/*! \fn void QCoreApplication::lock()
-
-    In Qt 3, this function locked the Qt library mutex, allowing
-    non-GUI threads to perform basic printing operations using
-    QPainter.
-
-    In Qt 4, this is no longer supported, since painting is only
-    supported from within a paint event handler. This function does
-    nothing.
-
-    \sa QWidget::paintEvent()
-*/
-
-/*! \fn void QCoreApplication::unlock(bool wakeUpGui)
-
-    In Qt 3, this function unlocked the Qt library mutex. The mutex
-    allowed non-GUI threads to perform basic printing operations
-    using QPainter.
-
-    In Qt 4, this is no longer supported, since painting is only
-    supported from within a paint event handler. This function does
-    nothing.
-*/
-
-/*! \fn bool QCoreApplication::locked()
-
-    This function does nothing. It is there to keep old code working.
-    It always returns false.
-
-    See lock() for details.
-*/
-
-/*! \fn bool QCoreApplication::tryLock()
-
-    This function does nothing. It is there to keep old code working.
-    It always returns false.
-
-    See lock() for details.
-*/
-
-/*! \fn void QCoreApplication::processOneEvent()
-    \obsolete
-
-    Waits for an event to occur, processes it, then returns.
-
-    This function is useful for adapting Qt to situations where the
-    event processing must be grafted onto existing program loops.
-
-    Using this function in new applications may be an indication of design
-    problems.
-
-    \sa processEvents(), exec(), QTimer
-*/
-
-/*! \obsolete
-
-    This function enters the main event loop (recursively). Do not call
-    it unless you really know what you are doing.
-*/
-int QCoreApplication::enter_loop()
-{
-    if (!QCoreApplicationPrivate::checkInstance("enter_loop"))
-        return -1;
-    if (QThreadData::current() != self->d_func()->threadData) {
-        qWarning("QCoreApplication::enter_loop: Must be called from the main thread");
-        return -1;
-    }
-    QEventLoop eventLoop;
-    int returnCode = eventLoop.exec();
-    return returnCode;
-}
-
-/*! \obsolete
-
-    This function exits from a recursive call to the main event loop.
-    Do not call it unless you are an expert.
-*/
-void QCoreApplication::exit_loop()
-{
-    if (!QCoreApplicationPrivate::checkInstance("exit_loop"))
-        return;
-    QThreadData *data = QThreadData::current();
-    if (data != self->d_func()->threadData) {
-        qWarning("QCoreApplication::exit_loop: Must be called from the main thread");
-        return;
-    }
-    if (!data->eventLoops.isEmpty())
-        data->eventLoops.top()->exit();
-}
-
-/*! \obsolete
-
-    Returns the current loop level.
-*/
-int QCoreApplication::loopLevel()
-{
-    if (!QCoreApplicationPrivate::checkInstance("loopLevel"))
-        return -1;
-    return self->d_func()->threadData->eventLoops.size();
-}
-#endif
 
 /*
     \fn void QCoreApplication::watchUnixSignal(int signal, bool watch)

@@ -38,18 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qhostaddress.h"
 #include "qhostaddress_p.h"
 #include "qdebug.h"
+#if defined(Q_OS_WIN)
+#include <winsock2.h>
+#endif
 #include "qplatformdefs.h"
 #include "qstringlist.h"
 #include "qendian.h"
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
-#endif
-#if defined(Q_OS_WINCE)
-#include <winsock.h>
 #endif
 
 #ifdef QT_LINUXBASE
@@ -65,7 +64,6 @@ QT_BEGIN_NAMESPACE
     } while (0)
 
 #ifdef Q_OS_WIN
-#    if !defined (QT_NO_IPV6)
 // sockaddr_in6 size changed between old and new SDK
 // Only the new version is the correct one, so always
 // use this structure.
@@ -90,12 +88,6 @@ typedef struct {
     struct  qt_in6_addr sin6_addr;  /* IPv6 address */
     u_long  sin6_scope_id;          /* set of interfaces for a scope */
 } qt_sockaddr_in6;
-#    else
-typedef void * qt_sockaddr_in6 ;
-#    endif
-#    ifndef AF_INET6
-#        define AF_INET6        23  /* Internetwork Version 6 */
-#    endif
 #else
 #define qt_sockaddr_in6 sockaddr_in6
 #define qt_s6_addr s6_addr
@@ -545,10 +537,8 @@ QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
 {
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
-#ifndef QT_NO_IPV6
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
-#endif
 }
 
 /*!
@@ -700,10 +690,8 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
     clear();
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((sockaddr_in *)sockaddr)->sin_addr.s_addr));
-#ifndef QT_NO_IPV6
     else if (sockaddr->sa_family == AF_INET6)
         setAddress(((qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
-#endif
 }
 
 /*!

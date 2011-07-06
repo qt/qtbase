@@ -31,16 +31,14 @@ follow these instructions:
 http://qt.nokia.com/doc/%SHORTVERSION%/install-symbian-installer.html
 
 
-DEMOS AND EXAMPLES
+EXAMPLES
 
-Once Qt is installed, we suggest that you take a look at the demos and
-examples to see Qt in action.
+Once Qt is installed, we suggest that you take a look at the examples
+to see Qt in action.
 
-For desktop computers, run the Qt Examples and Demos either by
-typing 'qtdemo' on the command line or through the desktop's Start
-menu. On Mac OS X, you can find it in /Developers/Applications/Qt.
+For desktop computers, run the Qt Examples by opening them in Qt Creator.
 
-For embedded devices, launch the Qt 'fluidlauncher' demo, either through 
+For embedded devices, launch the Qt 'fluidlauncher' example, either through
 the platforms filebrowser or the built in menu system.
 
 

@@ -111,6 +111,8 @@ public:
     qreal xHeight() const;
     qreal averageCharWidth() const;
     qreal maxCharWidth() const;
+    qreal lineThickness() const;
+    qreal underlinePosition() const;
 
     qreal unitsPerEm() const;
 
@@ -133,6 +135,7 @@ public:
 
 private:
     friend class QRawFontPrivate;
+    friend class QTextLayout;
 
     void detach();
 

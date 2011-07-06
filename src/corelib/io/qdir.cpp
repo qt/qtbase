@@ -91,10 +91,6 @@ QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, Q
     , nameFilters(nameFilters_)
     , sort(sort_)
     , filters(filters_)
-#ifdef QT3_SUPPORT
-    , filterSepChar(0)
-    , matchAllDirs(false)
-#endif
     , fileListsInitialized(false)
 {
     setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
@@ -118,10 +114,6 @@ QDirPrivate::QDirPrivate(const QDirPrivate &copy)
     , nameFilters(copy.nameFilters)
     , sort(copy.sort)
     , filters(copy.filters)
-#ifdef QT3_SUPPORT
-    , filterSepChar(copy.filterSepChar)
-    , matchAllDirs(copy.matchAllDirs)
-#endif
     , fileListsInitialized(false)
     , dirEntry(copy.dirEntry)
     , metaData(copy.metaData)
@@ -1288,10 +1280,6 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 
     if (filters == NoFilter)
         filters = d->filters;
-#ifdef QT3_SUPPORT
-    if (d->matchAllDirs)
-        filters |= AllDirs;
-#endif
     if (sort == NoSort)
         sort = d->sort;
 
@@ -1334,10 +1322,6 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     if (filters == NoFilter)
         filters = d->filters;
-#ifdef QT3_SUPPORT
-    if (d->matchAllDirs)
-        filters |= AllDirs;
-#endif
     if (sort == NoSort)
         sort = d->sort;
 
@@ -2177,145 +2161,6 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     \sa Q_INIT_RESOURCE(), {The Qt Resource System}
 */
 
-#ifdef QT3_SUPPORT
-
-/*!
-    \fn bool QDir::matchAllDirs() const
-
-    Use filter() & AllDirs instead.
-*/
-bool QDir::matchAllDirs() const
-{
-    const QDirPrivate* d = d_ptr.constData();
-    return d->matchAllDirs;
-}
-
-
-/*!
-    \fn void QDir::setMatchAllDirs(bool on)
-
-    Use setFilter() instead.
-*/
-void QDir::setMatchAllDirs(bool on)
-{
-    QDirPrivate* d = d_ptr.data();
-    d->initFileEngine();
-    d->clearFileLists();
-
-    d->matchAllDirs = on;
-}
-
-/*!
-    Use nameFilters() instead.
-*/
-QString QDir::nameFilter() const
-{
-    const QDirPrivate* d = d_ptr.constData();
-    return nameFilters().join(QString(d->filterSepChar));
-}
-
-/*!
-    Use setNameFilters() instead.
-
-    The \a nameFilter is a wildcard (globbing) filter that understands
-    "*" and "?" wildcards. (See \l{QRegExp wildcard matching}.) You may
-    specify several filter entries, each separated by spaces or by
-    semicolons.
-
-    For example, if you want entryList() and entryInfoList() to list
-    all files ending with either ".cpp" or ".h", you would use either
-    dir.setNameFilters("*.cpp *.h") or dir.setNameFilters("*.cpp;*.h").
-
-    \oldcode
-        QString filter = "*.cpp *.cxx *.cc";
-        dir.setNameFilter(filter);
-    \newcode
-        QString filter = "*.cpp *.cxx *.cc";
-        dir.setNameFilters(filter.split(' '));
-    \endcode
-*/
-void QDir::setNameFilter(const QString &nameFilter)
-{
-    QDirPrivate* d = d_ptr.data();
-    d->initFileEngine();
-    d->clearFileLists();
-
-    d->filterSepChar = QDirPrivate::getFilterSepChar(nameFilter);
-    d->nameFilters = QDirPrivate::splitFilters(nameFilter, d->filterSepChar);
-}
-
-/*!
-    \fn QString QDir::absPath() const
-
-    Use absolutePath() instead.
-*/
-
-/*!
-    \fn QString QDir::absFilePath(const QString &fileName, bool acceptAbsPath) const
-
-    Use absoluteFilePath(\a fileName) instead.
-
-    The \a acceptAbsPath parameter is ignored.
-*/
-
-/*!
-    \fn bool QDir::mkdir(const QString &dirName, bool acceptAbsPath) const
-
-    Use mkdir(\a dirName) instead.
-
-    The \a acceptAbsPath parameter is ignored.
-*/
-
-/*!
-    \fn bool QDir::rmdir(const QString &dirName, bool acceptAbsPath) const
-
-    Use rmdir(\a dirName) instead.
-
-    The \a acceptAbsPath parameter is ignored.
-*/
-
-/*!
-    \fn QStringList QDir::entryList(const QString &nameFilter, Filters filters,
-                                    SortFlags sort) const
-    \overload
-
-    Use the overload that takes a name filter string list as first
-    argument instead of a combination of attribute filter flags.
-*/
-
-/*!
-    \fn QFileInfoList QDir::entryInfoList(const QString &nameFilter, Filters filters,
-                                          SortFlags sort) const
-    \overload
-
-    Use the overload that takes a name filter string list as first
-    argument instead of a combination of attribute filter flags.
-*/
-
-/*!
-    \fn void QDir::convertToAbs()
-
-    Use makeAbsolute() instead.
-*/
-
-/*!
-    \fn QString QDir::cleanDirPath(const QString &name)
-
-    Use cleanPath() instead.
-*/
-
-/*!
-    \typedef QDir::FilterSpec
-
-    Use QDir::Filters instead.
-*/
-
-/*!
-    \typedef QDir::SortSpec
-
-    Use QDir::SortFlags instead.
-*/
-#endif // QT3_SUPPORT
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QDir::Filters filters)

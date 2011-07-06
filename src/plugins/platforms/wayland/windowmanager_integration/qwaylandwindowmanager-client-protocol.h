@@ -36,71 +36,67 @@ struct wl_client;
 
 struct wl_windowmanager;
 
-struct wl_proxy;
-
-extern void
-wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
-extern struct wl_proxy *
-wl_proxy_create(struct wl_proxy *factory,
-                const struct wl_interface *interface);
-extern struct wl_proxy *
-wl_proxy_create_for_id(struct wl_display *display,
-                       const struct wl_interface *interface, uint32_t id);
-extern void
-wl_proxy_destroy(struct wl_proxy *proxy);
-
-extern int
-wl_proxy_add_listener(struct wl_proxy *proxy,
-                      void (**implementation)(void), void *data);
-
-extern void
-wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
-
-extern void *
-wl_proxy_get_user_data(struct wl_proxy *proxy);
-
 extern const struct wl_interface wl_windowmanager_interface;
 
-#define wl_WINDOWMANAGER_MAP_CLIENT_TO_PROCESS	0
-#define wl_WINDOWMANAGER_AUTHENTICATE_WITH_TOKEN	1
+struct wl_windowmanager_listener {
+    void (*client_onscreen_visibility)(void *data,
+                                       struct wl_windowmanager *wl_windowmanager,
+                                       int visible);
+    void (*set_screen_rotation)(void *data,
+                                struct wl_windowmanager *wl_windowmanager,
+                                int rotation);
+};
+
+static inline int
+wl_windowmanager_add_listener(struct wl_windowmanager *wl_windowmanager,
+                              const struct wl_windowmanager_listener *listener, void *data)
+{
+    return wl_proxy_add_listener((struct wl_proxy *) wl_windowmanager,
+                                 (void (**)(void)) listener, data);
+}
+
+#define WL_WINDOWMANAGER_MAP_CLIENT_TO_PROCESS	0
+#define WL_WINDOWMANAGER_AUTHENTICATE_WITH_TOKEN	1
 
 static inline struct wl_windowmanager *
-wl_windowmanager_create(struct wl_display *display, uint32_t id)
+wl_windowmanager_create(struct wl_display *display, uint32_t id, uint32_t version)
 {
-        return (struct wl_windowmanager *)
-                wl_proxy_create_for_id(display, &wl_windowmanager_interface, id);
+    wl_display_bind(display, id, "wl_windowmanager", version);
+
+    return (struct wl_windowmanager *)
+            wl_proxy_create_for_id(display, &wl_windowmanager_interface, id);
 }
 
 static inline void
 wl_windowmanager_set_user_data(struct wl_windowmanager *wl_windowmanager, void *user_data)
 {
-        wl_proxy_set_user_data((struct wl_proxy *) wl_windowmanager, user_data);
+    wl_proxy_set_user_data((struct wl_proxy *) wl_windowmanager, user_data);
 }
 
 static inline void *
 wl_windowmanager_get_user_data(struct wl_windowmanager *wl_windowmanager)
 {
-        return wl_proxy_get_user_data((struct wl_proxy *) wl_windowmanager);
+    return wl_proxy_get_user_data((struct wl_proxy *) wl_windowmanager);
 }
 
 static inline void
 wl_windowmanager_destroy(struct wl_windowmanager *wl_windowmanager)
 {
-        wl_proxy_destroy((struct wl_proxy *) wl_windowmanager);
+    wl_proxy_destroy((struct wl_proxy *) wl_windowmanager);
 }
 
 static inline void
 wl_windowmanager_map_client_to_process(struct wl_windowmanager *wl_windowmanager, uint32_t processid)
 {
-        wl_proxy_marshal((struct wl_proxy *) wl_windowmanager,
-                         wl_WINDOWMANAGER_MAP_CLIENT_TO_PROCESS, processid);
+    wl_proxy_marshal((struct wl_proxy *) wl_windowmanager,
+                     WL_WINDOWMANAGER_MAP_CLIENT_TO_PROCESS, processid);
 }
 
 static inline void
-wl_windowmanager_authenticate_with_token(struct wl_windowmanager *wl_windowmanager, const char *wl_authentication_token)
+wl_windowmanager_authenticate_with_token(struct wl_windowmanager *wl_windowmanager, const char *processid)
 {
-        wl_proxy_marshal((struct wl_proxy *) wl_windowmanager,
-                         wl_WINDOWMANAGER_AUTHENTICATE_WITH_TOKEN, wl_authentication_token);
+    wl_proxy_marshal((struct wl_proxy *) wl_windowmanager,
+                     WL_WINDOWMANAGER_AUTHENTICATE_WITH_TOKEN, processid);
 }
 
 #ifdef  __cplusplus

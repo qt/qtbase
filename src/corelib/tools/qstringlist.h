@@ -48,9 +48,6 @@
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
-#ifdef QT_INCLUDE_COMPAT
-#include <Qt3Support/q3valuelist.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -107,24 +104,6 @@ public:
     { return QList<QString>::indexOf(str, from); }
     inline int lastIndexOf(const QString &str, int from = -1) const
     { return QList<QString>::lastIndexOf(str, from); }
-#endif
-#ifdef QT3_SUPPORT
-    static inline QT3_SUPPORT QStringList split(const QString &sep, const QString &str, bool allowEmptyEntries = false);
-    static inline QT3_SUPPORT QStringList split(const QChar &sep, const QString &str, bool allowEmptyEntries = false);
-    inline QT3_SUPPORT QStringList grep(const QString &str, bool cs = true) const
-        { return filter(str, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-
-#ifndef QT_NO_REGEXP
-    static inline QT3_SUPPORT QStringList split(const QRegExp &sep, const QString &str, bool allowEmptyEntries = false);
-    inline QT3_SUPPORT QStringList grep(const QRegExp &rx) const { return filter(rx); }
-    inline QT3_SUPPORT QStringList &gres(const QRegExp &rx, const QString &after)
-        { return replaceInStrings(rx, after); }
-#endif
-    inline QT3_SUPPORT QStringList &gres(const QString &before, const QString &after, bool cs = true)
-        { return replaceInStrings(before, after, cs ? Qt::CaseSensitive : Qt::CaseInsensitive); }
-
-    inline Iterator QT3_SUPPORT fromLast() { return (isEmpty() ? end() : --end()); }
-    inline ConstIterator QT3_SUPPORT fromLast() const { return (isEmpty() ? end() : --end()); }
 #endif
 };
 
@@ -212,36 +191,6 @@ inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
     return QtPrivate::QStringList_lastIndexOf(this, rx, from);
 }
 #endif
-
-
-#ifdef QT3_SUPPORT
-inline QStringList QStringList::split(const QChar &sep, const QString &str, bool allowEmptyEntries)
-{
-    if (str.isEmpty())
-        return QStringList();
-    return str.split(sep, allowEmptyEntries ? QString::KeepEmptyParts
-                                            : QString::SkipEmptyParts);
-}
-
-inline QStringList QStringList::split(const QString &sep, const QString &str, bool allowEmptyEntries)
-{
-    if (str.isEmpty())
-        return QStringList();
-    return str.split(sep, allowEmptyEntries ? QString::KeepEmptyParts
-                                            : QString::SkipEmptyParts);
-}
-
-#ifndef QT_NO_REGEXP
-inline QStringList QStringList::split(const QRegExp &sep, const QString &str, bool allowEmptyEntries)
-{
-    if (str.isEmpty())
-        return QStringList();
-    return str.split(sep, allowEmptyEntries ? QString::KeepEmptyParts
-                                            : QString::SkipEmptyParts);
-}
-#endif // QT_NO_REGEXP
-
-#endif // QT3_SUPPORT
 
 
 #ifndef QT_NO_DATASTREAM

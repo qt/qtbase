@@ -87,9 +87,6 @@ public:
         ResizeError = 12,
         PermissionsError = 13,
         CopyError = 14
-#ifdef QT3_SUPPORT
-        , ConnectError = 30
-#endif
     };
 
     enum Permission {
@@ -185,14 +182,6 @@ public:
     bool unmap(uchar *address);
 
     virtual QAbstractFileEngine *fileEngine() const;
-
-#ifdef QT3_SUPPORT
-    typedef Permission PermissionSpec;
-    inline QT3_SUPPORT QString name() const { return fileName(); }
-    inline QT3_SUPPORT void setName(const QString &aName) { setFileName(aName); }
-    inline QT3_SUPPORT bool open(OpenMode aFlags, FILE *f) { return open(f, aFlags); }
-    inline QT3_SUPPORT bool open(OpenMode aFlags, int fd) { return open(fd, aFlags); }
-#endif
 
 protected:
 #ifdef QT_NO_QOBJECT

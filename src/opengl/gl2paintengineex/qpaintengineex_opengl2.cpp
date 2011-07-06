@@ -1691,6 +1691,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
     int numGlyphs = vertexCoordinates->vertexCount() / 4;
+    if (numGlyphs == 0)
+        return;
 
     if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
@@ -2318,41 +2320,6 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         state()->currentClip = d->maxClip;
         state()->clipTestEnabled = true;
         break;
-    case Qt::UniteClip: {
-        d->resetClipIfNeeded();
-        ++d->maxClip;
-        if (state()->rectangleClip.isValid()) {
-            QPainterPath path;
-            path.addRect(state()->rectangleClip);
-
-            // flush the existing clip rectangle to the depth buffer
-            d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(path)), d->maxClip);
-        }
-
-        state()->clipTestEnabled = false;
-#ifndef QT_GL_NO_SCISSOR_TEST
-        QRect oldRectangleClip = state()->rectangleClip;
-
-        state()->rectangleClip = state()->rectangleClip.united(pathRect);
-        d->updateClipScissorTest();
-
-        QRegion extendRegion = QRegion(state()->rectangleClip) - oldRectangleClip;
-
-        if (!extendRegion.isEmpty()) {
-            QPainterPath extendPath;
-            extendPath.addRegion(extendRegion);
-
-            // first clear the depth buffer in the extended region
-            d->writeClip(qtVectorPathForPath(state()->matrix.inverted().map(extendPath)), 0);
-        }
-#endif
-        // now write the clip path
-        d->writeClip(path, d->maxClip);
-        state()->canRestoreClip = false;
-        state()->currentClip = d->maxClip;
-        state()->clipTestEnabled = true;
-        break;
-        }
     default:
         break;
     }

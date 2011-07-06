@@ -364,8 +364,8 @@
     QTransform documentation.
 
     The Qt reference documentation provides several painting
-    demos. Among these is the \l {demos/affine}{Affine
-    Transformations} demo that shows Qt's ability to perform
-    transformations on painting operations. The demo also allows the
+    examples. Among these is the \l {painting/affine}{Affine
+    Transformations} example that shows Qt's ability to perform
+    transformations on painting operations. The example also allows the
     user to experiment with the various transformation operations.
 */

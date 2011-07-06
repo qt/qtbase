@@ -1092,19 +1092,19 @@ void QPainterPrivate::updateState(QPainterState *newState)
     function that draws the outline of the given path (i.e. strokes
     the path).
 
-    See also the \l {demos/deform}{Vector Deformation} demo which
+    See also the \l {painting/deform}{Vector Deformation} example which
     shows how to use advanced vector techniques to draw text using a
-    QPainterPath, the \l {demos/gradients}{Gradients} demo which shows
+    QPainterPath, the \l {painting/gradients}{Gradients} example which shows
     the different types of gradients that are available in Qt, and the \l
-    {demos/pathstroke}{Path Stroking} demo which shows Qt's built-in
+    {painting/pathstroke}{Path Stroking} example which shows Qt's built-in
     dash patterns and shows how custom patterns can be used to extend
     the range of available patterns.
 
     \table
     \header
-    \o \l {demos/deform}{Vector Deformation}
-    \o \l {demos/gradients}{Gradients}
-    \o \l {demos/pathstroke}{Path Stroking}
+    \o \l {painting/deform}{Vector Deformation}
+    \o \l {painting/gradients}{Gradients}
+    \o \l {painting/pathstroke}{Path Stroking}
     \row
     \o \inlineimage qpainter-vectordeformation.png
     \o \inlineimage qpainter-gradients.png
@@ -1196,7 +1196,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     rotate it clockwise and translate() to translate it (i.e. adding a
     given offset to the points). You can also twist the coordinate
     system around the origin using the shear() function. See the \l
-    {demos/affine}{Affine Transformations} demo for a visualization of
+    {painting/affine}{Affine Transformations} example for a visualization of
     a sheared coordinate system.
 
     See also the \l {painting/transformations}{Transformations}
@@ -1207,9 +1207,9 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \table 100%
     \row
     \o
-    \bold {Affine Transformations Demo}
+    \bold {Affine Transformations Example}
 
-    The \l {demos/affine}{Affine Transformations} demo show Qt's
+    The \l {painting/affine}{Affine Transformations} example shows Qt's
     ability to perform affine transformations on painting
     operations. The demo also allows the user to experiment with the
     transformation operations and see the results immediately.
@@ -1293,8 +1293,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o
     \bold {Composition Modes Demo}
 
-    The \l {demos/composition}{Composition Modes} demo, available in
-    Qt's demo directory, allows you to experiment with the various
+    The \l {painting/composition}{Composition Modes} example, available in
+    Qt's examples directory, allows you to experiment with the various
     composition modes and see the results immediately.
 
     \endtable
@@ -2526,8 +2526,6 @@ QRegion QPainter::clipRegion() const
             }
             if (info.operation == Qt::IntersectClip)
                 region &= info.region * matrix;
-            else if (info.operation == Qt::UniteClip)
-                region |= info.region * matrix;
             else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2546,9 +2544,6 @@ QRegion QPainter::clipRegion() const
             }
             if (info.operation == Qt::IntersectClip) {
                 region &= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
-                                  info.path.fillRule());
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion((info.path * matrix).toFillPolygon().toPolygon(),
                                   info.path.fillRule());
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
@@ -2573,8 +2568,6 @@ QRegion QPainter::clipRegion() const
                     region &= matrix.mapRect(info.rect);
                 else
                     region &= matrix.map(QRegion(info.rect));
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion(info.rect) * matrix;
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2597,8 +2590,6 @@ QRegion QPainter::clipRegion() const
                     region &= matrix.mapRect(info.rectf.toRect());
                 else
                     region &= matrix.map(QRegion(info.rectf.toRect()));
-            } else if (info.operation == Qt::UniteClip) {
-                region |= QRegion(info.rectf.toRect()) * matrix;
             } else if (info.operation == Qt::NoClip) {
                 lastWasNothing = true;
                 region = QRegion();
@@ -2687,7 +2678,7 @@ QRectF QPainter::clipBoundingRect() const
     }
 
     // Accumulate the bounding box in device space. This is not 100%
-    // precise, but it fits within the guarantee and it is resonably
+    // precise, but it fits within the guarantee and it is reasonably
     // fast.
     QRectF bounds;
     for (int i=0; i<d->state->clipInfo.size(); ++i) {
@@ -2709,8 +2700,6 @@ QRectF QPainter::clipBoundingRect() const
              bounds = r;
          else if (info.operation == Qt::IntersectClip)
              bounds &= r;
-         else if (info.operation == Qt::UniteClip)
-             bounds |= r;
     }
 
 
@@ -2739,7 +2728,7 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
     Q_D(QPainter);
 
     if (d->extended) {
-        if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+        if ((!d->state->clipEnabled && op != Qt::NoClip))
             op = Qt::ReplaceClip;
 
         if (!d->engine) {
@@ -2797,7 +2786,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -2852,7 +2841,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -3257,7 +3246,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         return;
     }
 
-    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -3374,7 +3363,7 @@ void QPainter::fillPath(const QPainterPath &path, const QBrush &brush)
     \endtable
 
     \sa {painting/painterpaths}{the Painter Paths
-    example},{demos/deform}{the Vector Deformation demo}
+    example},{painting/deform}{the Vector Deformation example}
 */
 void QPainter::drawPath(const QPainterPath &path)
 {
@@ -5658,6 +5647,8 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 }
 
 /*!
+    \fn void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphs)
+
     Draws the glyphs represented by \a glyphs at \a position. The \a position gives the
     edge of the baseline for the string of glyphs. The glyphs will be retrieved from the font
     selected on \a glyphs and at offsets given by the positions in \a glyphs.

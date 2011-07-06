@@ -644,7 +644,7 @@ void tst_QByteArray::qstrncpy()
     QCOMPARE(QByteArray(::qstrncpy(dst.data(), src.data(), src.size())),
             QByteArray("Tumdelidu"));
 
-    // normal copy with length is longer than neccessary
+    // normal copy with length is longer than necessary
     src = QByteArray( "Tumdelidum\0foo" );
     dst.resize(128*1024);
     QCOMPARE(QByteArray(::qstrncpy(dst.data(), src.data(), dst.size())),

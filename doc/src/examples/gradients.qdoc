@@ -1,0 +1,55 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example painting/gradients
+    \title Gradients
+
+    In this example we show the various types of gradients that can
+    be used in Qt.
+
+    \image gradients-demo.png
+
+    There are three types of gradients:
+
+    \list
+      \o \bold{Linear} gradients interpolate colors between start and end points.
+      \o \bold{Radial} gradients interpolate colors between a focal point and the
+          points on a circle surrounding it.
+      \o \bold{Conical} gradients interpolate colors around a center point.
+    \endlist
+
+    The panel on the right contains a color table editor that defines
+    the colors in the gradient. The three topmost controls determine the red,
+    green and blue components while the last defines the alpha of the
+    gradient. You can move points, and add new ones, by clicking with the left
+    mouse button, and remove points by clicking with the right button.
+
+    There are three default configurations available at the bottom of
+    the page that are provided as suggestions on how a color table could be
+    configured.
+*/

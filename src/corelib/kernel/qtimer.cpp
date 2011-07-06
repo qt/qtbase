@@ -147,18 +147,6 @@ QTimer::QTimer(QObject *parent)
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a timer called \a name, with a \a parent.
-*/
-
-QTimer::QTimer(QObject *parent, const char *name)
-    : QObject(parent), id(INV_TIMER), single(0), nulltimer(0)
-{
-    setObjectName(QString::fromAscii(name));
-}
-#endif
-
 /*!
     Destroys the timer.
 */
@@ -234,24 +222,6 @@ void QTimer::start(int msec)
     start();
 }
 
-
-#ifdef QT3_SUPPORT
-/*! \overload start()
-
-  Call setSingleShot(\a sshot) and start(\a msec) instead.
-*/
-
-int QTimer::start(int msec, bool sshot)
-{
-    if (id >=0 && nulltimer && !msec && sshot)
-        return id;
-    stop();
-    setInterval(msec);
-    setSingleShot(sshot);
-    start();
-    return timerId();
-}
-#endif
 
 
 /*!

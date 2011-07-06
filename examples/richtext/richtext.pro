@@ -1,7 +1,8 @@
 TEMPLATE    = subdirs
 SUBDIRS     = calendar \
               orderform \
-              syntaxhighlighter
+              syntaxhighlighter \
+              textedit
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext

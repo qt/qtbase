@@ -291,7 +291,7 @@ void tst_QKeySequence::checkMultipleCodes()
 }
 
 /*
-* We must ensure that the keyBindings data is allways sorted
+* We must ensure that the keyBindings data is always sorted
 * so that we can safely perform binary searches.
 */
 void tst_QKeySequence::ensureSorted()

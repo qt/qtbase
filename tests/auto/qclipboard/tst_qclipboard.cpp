@@ -140,8 +140,8 @@ void tst_QClipboard::modes()
 }
 
 /*
-    Test that the apropriate signals are emitted when the cliboard
-    contents is changed by calling the qt funcitons.
+    Test that the appropriate signals are emitted when the cliboard
+    contents is changed by calling the qt functions.
 */
 void tst_QClipboard::testSignals()
 {
@@ -170,7 +170,7 @@ void tst_QClipboard::testSignals()
 
     changedSpy.clear();
 
-    // Test the selction mode signal.
+    // Test the selection mode signal.
     if (clipboard->supportsSelection()) {
         clipboard->setText(text, QClipboard::Selection);
         QCOMPARE(selectionChangedSpy.count(), 1);

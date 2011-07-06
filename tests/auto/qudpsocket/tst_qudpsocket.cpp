@@ -380,9 +380,6 @@ void tst_QUdpSocket::ipv6Loop_data()
 
 void tst_QUdpSocket::ipv6Loop()
 {
-#if defined(QT_NO_IPV6)
-    QSKIP("IPv6 is not yet supported", SkipAll);
-#endif
     QFETCH(QByteArray, peterMessage);
     QFETCH(QByteArray, paulMessage);
     QFETCH(bool, success);
@@ -760,7 +757,7 @@ void tst_QUdpSocket::bindMode()
     // Depending on the user's privileges, this or will succeed or
     // fail. Admins are allowed to reuse the address, but nobody else.
     if (!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData())
-        qWarning("Failed to bind with QUdpSocket::ReuseAddressHint, user isn't an adminstrator?");
+        qWarning("Failed to bind with QUdpSocket::ReuseAddressHint, user isn't an administrator?");
     socket.close();
     QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
     QVERIFY(!socket2.bind(socket.localPort()));

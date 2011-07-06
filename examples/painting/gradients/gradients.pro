@@ -12,9 +12,9 @@ contains(QT_CONFIG, opengl) {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/gradients
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/gradients
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/gradients
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/gradients
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
+symbian: CONFIG += qt_example

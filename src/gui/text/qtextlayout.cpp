@@ -1002,15 +1002,46 @@ QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
     if (length < 0)
         length = text().length();
 
-    QList<QGlyphRun> glyphs;
+    QHash<QPair<QFontEngine *, int>, QGlyphRun> glyphRunHash;
     for (int i=0; i<d->lines.size(); ++i) {
         if (d->lines[i].from > from + length)
             break;
-        else if (d->lines[i].from + d->lines[i].length >= from)
-            glyphs += QTextLine(i, d).glyphRuns(from, length);
+        else if (d->lines[i].from + d->lines[i].length >= from) {
+            QList<QGlyphRun> glyphRuns = QTextLine(i, d).glyphRuns(from, length);
+
+            for (int j = 0; j < glyphRuns.size(); j++) {
+                const QGlyphRun &glyphRun = glyphRuns.at(j);
+                QRawFont rawFont = glyphRun.rawFont();
+
+                QFontEngine *fontEngine = rawFont.d->fontEngine;
+                QTextItem::RenderFlags flags;
+                if (glyphRun.underline())
+                    flags |= QTextItem::Underline;
+                if (glyphRun.overline())
+                    flags |= QTextItem::Overline;
+                if (glyphRun.strikeOut())
+                    flags |= QTextItem::StrikeOut;
+                QPair<QFontEngine *, int> key(fontEngine, int(flags));
+                // merge the glyph runs using the same font
+                if (glyphRunHash.contains(key)) {
+                    QGlyphRun &oldGlyphRun = glyphRunHash[key];
+
+                    QVector<quint32> indexes = oldGlyphRun.glyphIndexes();
+                    QVector<QPointF> positions = oldGlyphRun.positions();
+
+                    indexes += glyphRun.glyphIndexes();
+                    positions += glyphRun.positions();
+
+                    oldGlyphRun.setGlyphIndexes(indexes);
+                    oldGlyphRun.setPositions(positions);
+                } else {
+                    glyphRunHash[key] = glyphRun;
+                }
+            }
+        }
     }
 
-    return glyphs;
+    return glyphRunHash.values();
 }
 #endif // QT_NO_RAWFONT
 
@@ -2075,19 +2106,65 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 
 }
 
-namespace {
-    struct GlyphInfo
-    {
-        GlyphInfo(const QGlyphLayout &layout, const QPointF &position,
-                  const QTextItemInt::RenderFlags &renderFlags)
-            : glyphLayout(layout), itemPosition(position), flags(renderFlags)
-        {
-        }
+static QGlyphRun glyphRunWithInfo(QFontEngine *fontEngine, const QGlyphLayout &glyphLayout,
+                                  const QPointF &pos, const QTextItem::RenderFlags &flags)
+{
+    QGlyphRun glyphRun;
 
-        QGlyphLayout glyphLayout;
-        QPointF itemPosition;
-        QTextItem::RenderFlags flags;
-    };
+    // Make a font for this particular engine
+    QRawFont font;
+    QRawFontPrivate *fontD = QRawFontPrivate::get(font);
+    fontD->fontEngine = fontEngine;
+    fontD->fontEngine->ref.ref();
+
+#if defined(Q_WS_WIN)
+    if (fontEngine->supportsSubPixelPositions())
+        fontD->hintingPreference = QFont::PreferVerticalHinting;
+    else
+        fontD->hintingPreference = QFont::PreferFullHinting;
+#elif defined(Q_WS_MAC)
+    fontD->hintingPreference = QFont::PreferNoHinting;
+#elif !defined(QT_NO_FREETYPE)
+    if (fontEngine->type() == QFontEngine::Freetype) {
+        QFontEngineFT *freeTypeEngine = static_cast<QFontEngineFT *>(fontEngine);
+        switch (freeTypeEngine->defaultHintStyle()) {
+        case QFontEngineFT::HintNone:
+            fontD->hintingPreference = QFont::PreferNoHinting;
+            break;
+        case QFontEngineFT::HintLight:
+            fontD->hintingPreference = QFont::PreferVerticalHinting;
+            break;
+        case QFontEngineFT::HintMedium:
+        case QFontEngineFT::HintFull:
+            fontD->hintingPreference = QFont::PreferFullHinting;
+            break;
+        };
+    }
+#endif
+
+    QVarLengthArray<glyph_t> glyphsArray;
+    QVarLengthArray<QFixedPoint> positionsArray;
+
+    fontEngine->getGlyphPositions(glyphLayout, QTransform(), flags, glyphsArray,
+                                  positionsArray);
+    Q_ASSERT(glyphsArray.size() == positionsArray.size());
+
+    QVector<quint32> glyphs;
+    QVector<QPointF> positions;
+    for (int i=0; i<glyphsArray.size(); ++i) {
+        glyphs.append(glyphsArray.at(i) & 0xffffff);
+        positions.append(positionsArray.at(i).toPointF() + pos);
+    }
+
+    glyphRun.setGlyphIndexes(glyphs);
+    glyphRun.setPositions(positions);
+
+    glyphRun.setOverline(flags.testFlag(QTextItem::Overline));
+    glyphRun.setUnderline(flags.testFlag(QTextItem::Underline));
+    glyphRun.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
+    glyphRun.setRawFont(font);
+
+    return glyphRun;
 }
 
 /*!
@@ -2117,10 +2194,9 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
     if (length < 0)
         length = textLength();
 
-    QHash<QFontEngine *, GlyphInfo> glyphLayoutHash;
-
     QTextLineItemIterator iterator(eng, i);
     qreal y = line.y.toReal() + line.base().toReal();
+    QList<QGlyphRun> glyphRuns;
     while (!iterator.atEnd()) {
         QScriptItem &si = iterator.next();
         if (si.analysis.flags >= QScriptAnalysis::TabOrObject)
@@ -2191,8 +2267,8 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                         continue;
 
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
-                    glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
-                                                GlyphInfo(subLayout, pos, flags));
+                    glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
+                                                      subLayout, pos, flags));
                     for (int i = 0; i < subLayout.numGlyphs; i++) {
                         pos += QPointF(subLayout.advances_x[i].toReal(),
                                        subLayout.advances_y[i].toReal());
@@ -2203,101 +2279,15 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                 }
 
                 QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
-                glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
-                                            GlyphInfo(subLayout, pos, flags));
-
+                glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
+                                                  subLayout, pos, flags));
             } else {
-                glyphLayoutHash.insertMulti(mainFontEngine,
-                                            GlyphInfo(glyphLayout, pos, flags));
+                glyphRuns.append(glyphRunWithInfo(mainFontEngine, glyphLayout, pos, flags));
             }
         }
     }
 
-    QHash<QPair<QFontEngine *, int>, QGlyphRun> glyphsHash;
-
-    QList<QFontEngine *> keys = glyphLayoutHash.uniqueKeys();
-    for (int i=0; i<keys.size(); ++i) {
-        QFontEngine *fontEngine = keys.at(i);
-
-        // Make a font for this particular engine
-        QRawFont font;
-        QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-        fontD->fontEngine = fontEngine;
-        fontD->fontEngine->ref.ref();
-
-#if defined(Q_WS_WIN)
-        if (fontEngine->supportsSubPixelPositions())
-            fontD->hintingPreference = QFont::PreferVerticalHinting;
-        else
-            fontD->hintingPreference = QFont::PreferFullHinting;
-#elif defined(Q_WS_MAC)
-        fontD->hintingPreference = QFont::PreferNoHinting;
-#elif !defined(QT_NO_FREETYPE)
-        if (fontEngine->type() == QFontEngine::Freetype) {
-            QFontEngineFT *freeTypeEngine = static_cast<QFontEngineFT *>(fontEngine);
-            switch (freeTypeEngine->defaultHintStyle()) {
-            case QFontEngineFT::HintNone:
-                fontD->hintingPreference = QFont::PreferNoHinting;
-                break;
-            case QFontEngineFT::HintLight:
-                fontD->hintingPreference = QFont::PreferVerticalHinting;
-                break;
-            case QFontEngineFT::HintMedium:
-            case QFontEngineFT::HintFull:
-                fontD->hintingPreference = QFont::PreferFullHinting;
-                break;
-            };
-        }
-#endif
-
-        QList<GlyphInfo> glyphLayouts = glyphLayoutHash.values(fontEngine);
-        for (int j=0; j<glyphLayouts.size(); ++j) {
-            const QPointF &pos = glyphLayouts.at(j).itemPosition;
-            const QGlyphLayout &glyphLayout = glyphLayouts.at(j).glyphLayout;
-            const QTextItem::RenderFlags &flags = glyphLayouts.at(j).flags;            
-
-            QVarLengthArray<glyph_t> glyphsArray;
-            QVarLengthArray<QFixedPoint> positionsArray;
-
-            fontEngine->getGlyphPositions(glyphLayout, QTransform(), flags, glyphsArray,
-                                          positionsArray);
-            Q_ASSERT(glyphsArray.size() == positionsArray.size());
-
-            QVector<quint32> glyphs;
-            QVector<QPointF> positions;
-            for (int i=0; i<glyphsArray.size(); ++i) {
-                glyphs.append(glyphsArray.at(i) & 0xffffff);
-                positions.append(positionsArray.at(i).toPointF() + pos);
-            }
-
-            QGlyphRun glyphIndexes;
-            glyphIndexes.setGlyphIndexes(glyphs);
-            glyphIndexes.setPositions(positions);
-
-            glyphIndexes.setOverline(flags.testFlag(QTextItem::Overline));
-            glyphIndexes.setUnderline(flags.testFlag(QTextItem::Underline));
-            glyphIndexes.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
-            glyphIndexes.setRawFont(font);
-
-            QPair<QFontEngine *, int> key(fontEngine, int(flags));
-            if (!glyphsHash.contains(key)) {
-                glyphsHash.insert(key, glyphIndexes);
-            } else {
-                QGlyphRun &glyphRun = glyphsHash[key];
-
-                QVector<quint32> indexes = glyphRun.glyphIndexes();
-                QVector<QPointF> positions = glyphRun.positions();
-
-                indexes += glyphIndexes.glyphIndexes();
-                positions += glyphIndexes.positions();
-
-                glyphRun.setGlyphIndexes(indexes);
-                glyphRun.setPositions(positions);
-            }
-        }
-    }
-
-    return glyphsHash.values();
+    return glyphRuns;
 }
 #endif // QT_NO_RAWFONT
 

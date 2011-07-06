@@ -189,9 +189,6 @@
 #include "qstack.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
-#if defined QT3_SUPPORT
-#include "qfileinfo.h"
-#endif
 #ifndef QT_BOOTSTRAPPED
 #include "qtldurl_p.h"
 #endif
@@ -5466,6 +5463,7 @@ void QUrl::removeAllEncodedQueryItems(const QByteArray &key)
             if (end < d->query.size())
                 ++end; // remove additional '%'
             d->query.remove(pos, end - pos);
+            query = d->query.constData(); //required if remove detach;
         } else {
             pos = end + 1;
         }
@@ -6361,35 +6359,6 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
 
     Use QFileInfo(path()).absolutePath() or QFileInfo(path()) instead.
 */
-
-#ifdef QT3_SUPPORT
-void QUrl::setFileName(const QString &txt)
-{
-    QFileInfo fileInfo(path());
-    fileInfo.setFile(txt);
-    setPath(fileInfo.filePath());
-}
-
-QString QUrl::fileName() const
-{
-    QFileInfo fileInfo(path());
-    return fileInfo.fileName();
-}
-
-QString QUrl::dirPath() const
-{
-    QFileInfo fileInfo(path());
-    if (fileInfo.isAbsolute()) {
-        QString absPath = fileInfo.absolutePath();
-#ifdef Q_OS_WIN
-        if (absPath.size() > 1 && absPath.at(1) == QLatin1Char(':'))
-            absPath = absPath.mid(2);
-#endif
-        return absPath;
-    }
-    return fileInfo.path();
-}
-#endif
 
 
 #ifndef QT_NO_DATASTREAM

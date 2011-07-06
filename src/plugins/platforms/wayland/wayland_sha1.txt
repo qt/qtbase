@@ -1,3 +1,3 @@
 This version of the Qt Wayland plugin is checked against the following sha1
 from the Wayland repository:
-bfea3d6befdb688d5354e6f15a9400ea637febf9
+aa7bbb210b7121b9314993228960240358e9b123

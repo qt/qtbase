@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
 #define qreal_to_fixed_26_6(f) (int(f * 64))
 
 
@@ -212,6 +214,13 @@ void QOutlineMapper::endOutline()
             return;
         }
         elements = m_elements_dev.data();
+    }
+
+    if (m_round_coords) {
+        // round coordinates to match outlines drawn with drawLine_midpoint_i
+        for (int i = 0; i < m_elements.size(); ++i)
+            elements[i] = QPointF(qFloor(elements[i].x() + aliasedCoordinateDelta),
+                                  qFloor(elements[i].y() + aliasedCoordinateDelta));
     }
 
     controlPointRect = boundingRect(elements, element_count);

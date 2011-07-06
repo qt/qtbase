@@ -1,0 +1,130 @@
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  http://bugreports.qt.nokia.com/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+
+****************************************************************************
+*                       Source incompatible changes                        *
+****************************************************************************
+
+- QSslCertificate::subjectInfo() and QSslCertificate::issuerInfo() now
+  return a QStringList instead of a QString
+
+- Unite clipping support has been removed from QPainter. The alternative is
+  to unite QRegion's and using the result on QPainter.
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+General Improvements
+--------------------
+
+-
+
+Third party components
+----------------------
+
+-
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+QtCore
+------
+
+QtGui
+-----
+
+QtNetwork
+---------
+
+QtOpenGL
+--------
+
+QtScript
+--------
+
+
+****************************************************************************
+*                          Database Drivers                                *
+****************************************************************************
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+
+
+Qt for Windows
+--------------
+
+
+Qt for Mac OS X
+---------------
+
+
+Qt for Embedded Linux
+---------------------
+
+
+Qt for Windows CE
+-----------------
+
+
+****************************************************************************
+*                      Compiler Specific Changes                           *
+****************************************************************************
+
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Build System
+
+- Assistant
+
+- Designer
+
+- Linguist
+
+- rcc
+
+
+- moc
+
+
+- uic
+
+
+- uic3
+
+
+- qmake
+
+
+- configure
+
+
+- qtconfig
+
+
+****************************************************************************
+*                          Plugins                                         *
+****************************************************************************
+
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+

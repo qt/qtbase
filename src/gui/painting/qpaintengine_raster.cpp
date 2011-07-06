@@ -118,6 +118,8 @@ void dumpClip(int width, int height, const QClipData *clip);
 // 4 pixels.
 #define int_dim(pos, dim) (int(pos+dim) - int(pos))
 
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
 #ifdef Q_OS_WIN
 
 static inline bool winClearTypeFontsEnabled()
@@ -164,6 +166,10 @@ enum LineDrawMode {
     LineDrawNormal,
     LineDrawIncludeLastPixel
 };
+
+static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
+                                   ProcessSpans pen_func, ProcessSpans brush_func,
+                                   QSpanData *pen_data, QSpanData *brush_data);
 
 struct QRasterFloatPoint {
     qreal x;
@@ -479,10 +485,6 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     }
 #endif
 
-#if defined(Q_OS_WIN)
-    d->isPlain45DegreeRotation = true;
-#endif
-
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
 #if defined(Q_OS_WIN)
@@ -586,33 +588,6 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     s->flags.tx_noshear = qt_scaleForTransform(s->matrix, &s->txscale);
 
     ensureOutlineMapper();
-
-#ifdef Q_OS_WIN
-    Q_D(QRasterPaintEngine);
-    d->isPlain45DegreeRotation = false;
-    if (txop >= QTransform::TxRotate) {
-        d->isPlain45DegreeRotation =
-            (qFuzzyIsNull(matrix.m11())
-             && qFuzzyIsNull(matrix.m12() - qreal(1))
-             && qFuzzyIsNull(matrix.m21() + qreal(1))
-             && qFuzzyIsNull(matrix.m22())
-                )
-            ||
-            (qFuzzyIsNull(matrix.m11() + qreal(1))
-             && qFuzzyIsNull(matrix.m12())
-             && qFuzzyIsNull(matrix.m21())
-             && qFuzzyIsNull(matrix.m22() + qreal(1))
-                )
-            ||
-            (qFuzzyIsNull(matrix.m11())
-             && qFuzzyIsNull(matrix.m12() + qreal(1))
-             && qFuzzyIsNull(matrix.m21() - qreal(1))
-             && qFuzzyIsNull(matrix.m22())
-                )
-            ;
-    }
-#endif
-
 }
 
 
@@ -1182,8 +1157,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     const QPainterPath::ElementType *types = path.elements();
 
     // There are some cases that are not supported by clip(QRect)
-    if (op != Qt::UniteClip && (op != Qt::IntersectClip || !s->clip
-                                || s->clip->hasRectClip || s->clip->hasRegionClip)) {
+    if (op != Qt::IntersectClip || !s->clip || s->clip->hasRectClip || s->clip->hasRegionClip) {
         if (s->matrix.type() <= QTransform::TxScale
             && ((path.shape() == QVectorPath::RectangleHint)
                 || (isRect(points, path.elementCount())
@@ -1226,18 +1200,6 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
         newClip->fixup();
 
-        if (op == Qt::UniteClip) {
-            // merge clips
-            QClipData *result = new QClipData(d->rasterBuffer->height());
-            QClipData *current = s->clip ? s->clip : new QClipData(d->rasterBuffer->height());
-            qt_merge_clip(current, newClip, result);
-            result->fixup();
-            delete newClip;
-            if (!s->clip)
-                delete current;
-            newClip = result;
-        }
-
         if (s->flags.has_clip_ownership)
             delete s->clip;
 
@@ -1263,7 +1225,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         qrasterpaintengine_state_setNoClip(s);
 
-    } else if (op == Qt::UniteClip || s->matrix.type() > QTransform::TxScale) {
+    } else if (s->matrix.type() > QTransform::TxScale) {
         QPaintEngineEx::clip(rect, op);
         return;
 
@@ -1348,7 +1310,6 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         qrasterpaintengine_state_setNoClip(s);
     } else if (s->matrix.type() > QTransform::TxScale
-               || op == Qt::UniteClip
                || (op == Qt::IntersectClip && !clip->hasRectClip && !clip->hasRegionClip)
                || (op == Qt::ReplaceClip && !baseClip->hasRectClip && !baseClip->hasRegionClip)) {
         QPaintEngineEx::clip(region, op);
@@ -1662,10 +1623,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    int x1 = qRound(rect.x());
-    int y1 = qRound(rect.y());
-    int x2 = qRound(rect.right());
-    int y2 = qRound(rect.bottom());
+    int x1 = qRound(rect.x() + aliasedCoordinateDelta);
+    int y1 = qRound(rect.y() + aliasedCoordinateDelta);
+    int x2 = qRound(rect.right() + aliasedCoordinateDelta);
+    int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
 
     if (x2 < x1)
         qSwap(x1, x2);
@@ -1935,7 +1896,9 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
         // Do the fill...
         ensureBrush();
         if (s->brushData.blend) {
+            d->outlineMapper->setCoordinateRounding(s->penData.blend && s->flags.fast_pen && s->lastPen.brush().isOpaque());
             fillPolygon(points, pointCount, mode);
+            d->outlineMapper->setCoordinateRounding(false);
         }
     }
 
@@ -1982,6 +1945,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         if (s->brushData.blend) {
             // Compose polygon fill..,
             ensureOutlineMapper();
+            d->outlineMapper->setCoordinateRounding(s->penData.blend != 0);
             d->outlineMapper->beginOutline(mode == WindingMode ? Qt::WindingFill : Qt::OddEvenFill);
             d->outlineMapper->moveTo(*points);
             const QPoint *p = points;
@@ -1995,6 +1959,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
             ProcessSpans brushBlend = d->getBrushFunc(d->outlineMapper->controlPointRect,
                                                       &s->brushData);
             d->rasterize(d->outlineMapper->outline(), brushBlend, &s->brushData, d->rasterBuffer.data());
+            d->outlineMapper->setCoordinateRounding(false);
         }
     }
 
@@ -2244,7 +2209,10 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     int sr_b = qCeil(sr.bottom()) - 1;
 
     if (s->matrix.type() <= QTransform::TxScale && !s->flags.antialiased && sr_l == sr_r && sr_t == sr_b) {
+        // as fillRect will apply the aliased coordinate delta we need to
+        // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
+        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
 
         // Do whatever fillRect() does, but without premultiplying the color if it's already premultiplied.
         QRgb color = img.pixel(sr_l, sr_t);
@@ -2388,9 +2356,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
 
+            const QPointF offs = s->flags.antialiased ? QPointF() : QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta);
+
             const QRectF &rect = r.normalized();
-            const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f);
-            const QPointF b = s->matrix.map((rect.topRight() + rect.bottomRight()) * 0.5f);
+            const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f) - offs;
+            const QPointF b = s->matrix.map((rect.topRight() + rect.bottomRight()) * 0.5f) - offs;
 
             if (s->flags.tx_noshear)
                 d->rasterizer->rasterizeLine(a, b, rect.height() / rect.width());
@@ -2399,12 +2369,13 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             return;
         }
 #endif
+        const qreal offs = s->flags.antialiased ? qreal(0) : aliasedCoordinateDelta;
         QPainterPath path;
         path.addRect(r);
         QTransform m = s->matrix;
         s->matrix = QTransform(m.m11(), m.m12(), m.m13(),
                                m.m21(), m.m22(), m.m23(),
-                               m.m31(), m.m32(), m.m33());
+                               m.m31() - offs, m.m32() - offs, m.m33());
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
@@ -2856,6 +2827,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = cache->glyphMargin();
+        const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
@@ -2865,8 +2837,8 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             if (c.isNull())
                 continue;
 
-            int x = qFloor(positions[i].x) + c.baseLineX - margin;
-            int y = qFloor(positions[i].y) - c.baseLineY - margin;
+            int x = qFloor(positions[i].x + offs) + c.baseLineX - margin;
+            int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
             //        c.x, c.y,
@@ -2904,13 +2876,15 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
         fe->setFontScale(matrix.m11());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+    const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
+
     for (int i=0; i<glyphs.size(); ++i) {
         TOpenFontCharMetrics tmetrics;
         const TUint8 *glyphBitmapBytes;
         TSize glyphBitmapSize;
         fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
-        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX());
-        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY());
+        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX() + aliasDelta);
+        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY() + aliasDelta);
         alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
     }
 
@@ -3010,6 +2984,19 @@ QRasterPaintEnginePrivate::getBrushFunc(const QRectF &rect,
     return isUnclipped(rect, 0) ? data->unclipped_blend : data->blend;
 }
 
+inline ProcessSpans
+QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
+                                      const QSpanData *data) const
+{
+    Q_Q(const QRasterPaintEngine);
+    const QRasterPaintEngineState *s = q->state();
+
+    if (!s->flags.fast_pen && s->matrix.type() > QTransform::TxTranslate)
+        return data->blend;
+    const int penWidth = s->flags.fast_pen ? 1 : qCeil(s->lastPen.widthF());
+    return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
+}
+
 /*!
    \reimp
 */
@@ -3089,6 +3076,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         for(int i = 0; i < glyphs.size(); i++) {
             QImage img = fontEngine->alphaMapForGlyph(glyphs[i]);
             glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
+            // ### hm, perhaps an QFixed offs = QFixed::fromReal(aliasedCoordinateDelta) is needed here?
             alphaPenBlt(img.bits(), img.bytesPerLine(), img.depth(),
                                          qRound(positions[i].x + metrics.x),
                                          qRound(positions[i].y + metrics.y),
@@ -3269,6 +3257,30 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
 */
 void QRasterPaintEngine::drawEllipse(const QRectF &rect)
 {
+    Q_D(QRasterPaintEngine);
+    QRasterPaintEngineState *s = state();
+
+    ensurePen();
+    if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
+           || (qpen_style(s->lastPen) == Qt::NoPen))
+        && !s->flags.antialiased
+        && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
+        && !rect.isEmpty()
+        && s->matrix.type() <= QTransform::TxScale) // no shear
+    {
+        ensureBrush();
+        const QRectF r = s->matrix.mapRect(rect);
+        ProcessSpans penBlend = d->getPenFunc(r, &s->penData);
+        ProcessSpans brushBlend = d->getBrushFunc(r, &s->brushData);
+        const QRect brect = QRect(int(r.x()), int(r.y()),
+                                  int_dim(r.x(), r.width()),
+                                  int_dim(r.y(), r.height()));
+        if (brect == r) {
+            drawEllipse_midpoint_i(brect, d->deviceRect, penBlend, brushBlend,
+                                   &s->penData, &s->brushData);
+            return;
+        }
+    }
     QPaintEngineEx::drawEllipse(rect);
 }
 
@@ -4221,7 +4233,6 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
         }
         break;
 
-    case Qt::UniteClip:
     case Qt::ReplaceClip:
         clipData->newClip->appendSpans(spans, count);
         break;
@@ -4767,6 +4778,125 @@ void QSpanData::initTexture(const QImage *image, int alpha, QTextureData::Type _
     adjustSpanMethods();
 }
 
+/*!
+    \internal
+    \a x and \a y is relative to the midpoint of \a rect.
+*/
+static inline void drawEllipsePoints(int x, int y, int length,
+                                     const QRect &rect,
+                                     const QRect &clip,
+                                     ProcessSpans pen_func, ProcessSpans brush_func,
+                                     QSpanData *pen_data, QSpanData *brush_data)
+{
+    if (length == 0)
+        return;
+
+    QT_FT_Span outline[4];
+    const int midx = rect.x() + (rect.width() + 1) / 2;
+    const int midy = rect.y() + (rect.height() + 1) / 2;
+
+    x = x + midx;
+    y = midy - y;
+
+    // topleft
+    outline[0].x = midx + (midx - x) - (length - 1) - (rect.width() & 0x1);
+    outline[0].len = qMin(length, x - outline[0].x);
+    outline[0].y = y;
+    outline[0].coverage = 255;
+
+    // topright
+    outline[1].x = x;
+    outline[1].len = length;
+    outline[1].y = y;
+    outline[1].coverage = 255;
+
+    // bottomleft
+    outline[2].x = outline[0].x;
+    outline[2].len = outline[0].len;
+    outline[2].y = midy + (midy - y) - (rect.height() & 0x1);
+    outline[2].coverage = 255;
+
+    // bottomright
+    outline[3].x = x;
+    outline[3].len = length;
+    outline[3].y = outline[2].y;
+    outline[3].coverage = 255;
+
+    if (brush_func && outline[0].x + outline[0].len < outline[1].x) {
+        QT_FT_Span fill[2];
+
+        // top fill
+        fill[0].x = outline[0].x + outline[0].len - 1;
+        fill[0].len = qMax(0, outline[1].x - fill[0].x);
+        fill[0].y = outline[1].y;
+        fill[0].coverage = 255;
+
+        // bottom fill
+        fill[1].x = outline[2].x + outline[2].len - 1;
+        fill[1].len = qMax(0, outline[3].x - fill[1].x);
+        fill[1].y = outline[3].y;
+        fill[1].coverage = 255;
+
+        int n = (fill[0].y >= fill[1].y ? 1 : 2);
+        n = qt_intersect_spans(fill, n, clip);
+        if (n > 0)
+            brush_func(n, fill, brush_data);
+    }
+    if (pen_func) {
+        int n = (outline[1].y >= outline[2].y ? 2 : 4);
+        n = qt_intersect_spans(outline, n, clip);
+        if (n > 0)
+            pen_func(n, outline, pen_data);
+    }
+}
+
+/*!
+    \internal
+    Draws an ellipse using the integer point midpoint algorithm.
+*/
+static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
+                                   ProcessSpans pen_func, ProcessSpans brush_func,
+                                   QSpanData *pen_data, QSpanData *brush_data)
+{
+    const qreal a = qreal(rect.width()) / 2;
+    const qreal b = qreal(rect.height()) / 2;
+    qreal d = b*b - (a*a*b) + 0.25*a*a;
+
+    int x = 0;
+    int y = (rect.height() + 1) / 2;
+    int startx = x;
+
+    // region 1
+    while (a*a*(2*y - 1) > 2*b*b*(x + 1)) {
+        if (d < 0) { // select E
+            d += b*b*(2*x + 3);
+            ++x;
+        } else {     // select SE
+            d += b*b*(2*x + 3) + a*a*(-2*y + 2);
+            drawEllipsePoints(startx, y, x - startx + 1, rect, clip,
+                              pen_func, brush_func, pen_data, brush_data);
+            startx = ++x;
+            --y;
+        }
+    }
+    drawEllipsePoints(startx, y, x - startx + 1, rect, clip,
+                      pen_func, brush_func, pen_data, brush_data);
+
+    // region 2
+    d = b*b*(x + 0.5)*(x + 0.5) + a*a*((y - 1)*(y - 1) - b*b);
+    const int miny = rect.height() & 0x1;
+    while (y > miny) {
+        if (d < 0) { // select SE
+            d += b*b*(2*x + 2) + a*a*(-2*y + 3);
+            ++x;
+        } else {     // select S
+            d += a*a*(-2*y + 3);
+        }
+        --y;
+        drawEllipsePoints(x, y, 1, rect, clip,
+                          pen_func, brush_func, pen_data, brush_data);
+    }
+}
 
 /*!
     \fn void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)

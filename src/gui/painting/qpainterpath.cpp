@@ -305,19 +305,19 @@ static void qt_debug_path(const QPainterPath &path)
     \section1 Examples
 
     Qt provides the \l {painting/painterpaths}{Painter Paths Example}
-    and the \l {demos/deform}{Vector Deformation Demo} which are
-    located in Qt's example and demo directories respectively.
+    and the \l {painting/deform}{Vector Deformation example} which are
+    located in Qt's example directory.
 
     The \l {painting/painterpaths}{Painter Paths Example} shows how
     painter paths can be used to build complex shapes for rendering
     and lets the user experiment with the filling and stroking.  The
-    \l {demos/deform}{Vector Deformation Demo} shows how to use
+    \l {painting/deform}{Vector Deformation Example} shows how to use
     QPainterPath to draw text.
 
     \table
     \header
     \o \l {painting/painterpaths}{Painter Paths Example}
-    \o \l {demos/deform}{Vector Deformation Demo}
+    \o \l {painting/deform}{Vector Deformation Example}
     \row
     \o \inlineimage qpainterpath-example.png
     \o \inlineimage qpainterpath-demo.png

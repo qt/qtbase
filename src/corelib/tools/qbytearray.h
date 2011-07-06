@@ -110,19 +110,6 @@ Q_CORE_EXPORT int qstrnicmp(const char *, const char *, uint len);
 Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...);
 
-#ifdef QT3_SUPPORT
-inline QT3_SUPPORT void *qmemmove(void *dst, const void *src, uint len)
-{ return memmove(dst, src, len); }
-inline QT3_SUPPORT uint cstrlen(const char *str)
-{ return uint(strlen(str)); }
-inline QT3_SUPPORT char *cstrcpy(char *dst, const char *src)
-{ return qstrcpy(dst,src); }
-inline QT3_SUPPORT int cstrcmp(const char *str1, const char *str2)
-{ return strcmp(str1,str2); }
-inline QT3_SUPPORT int cstrncmp(const char *str1, const char *str2, uint len)
-{ return strncmp(str1,str2,len); }
-#endif
-
 // qChecksum: Internet checksum
 
 Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len);
@@ -233,13 +220,6 @@ public:
     QByteArray simplified() const;
     QByteArray leftJustified(int width, char fill = ' ', bool truncate = false) const;
     QByteArray rightJustified(int width, char fill = ' ', bool truncate = false) const;
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QByteArray leftJustify(uint width, char aFill = ' ', bool aTruncate = false) const
-    { return leftJustified(int(width), aFill, aTruncate); }
-    inline QT3_SUPPORT QByteArray rightJustify(uint width, char aFill = ' ', bool aTruncate = false) const
-    { return rightJustified(int(width), aFill, aTruncate); }
-#endif
 
     QByteArray &prepend(char c);
     QByteArray &prepend(const char *s);
@@ -356,29 +336,6 @@ public:
     int length() const { return d->size; }
     bool isNull() const;
 
-    // compatibility
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QByteArray(int size);
-    inline QT3_SUPPORT QByteArray& duplicate(const QByteArray& a) { *this = a; return *this; }
-    inline QT3_SUPPORT QByteArray& duplicate(const char *a, uint n)
-    { *this = QByteArray(a, n); return *this; }
-    inline QT3_SUPPORT void resetRawData(const char *, uint) { clear(); }
-    inline QT3_SUPPORT QByteArray lower() const { return toLower(); }
-    inline QT3_SUPPORT QByteArray upper() const { return toUpper(); }
-    inline QT3_SUPPORT QByteArray stripWhiteSpace() const { return trimmed(); }
-    inline QT3_SUPPORT QByteArray simplifyWhiteSpace() const { return simplified(); }
-    inline QT3_SUPPORT int find(char c, int from = 0) const { return indexOf(c, from); }
-    inline QT3_SUPPORT int find(const char *c, int from = 0) const { return indexOf(c, from); }
-    inline QT3_SUPPORT int find(const QByteArray &ba, int from = 0) const { return indexOf(ba, from); }
-    inline QT3_SUPPORT int findRev(char c, int from = -1) const { return lastIndexOf(c, from); }
-    inline QT3_SUPPORT int findRev(const char *c, int from = -1) const { return lastIndexOf(c, from); }
-    inline QT3_SUPPORT int findRev(const QByteArray &ba, int from = -1) const { return lastIndexOf(ba, from); }
-#ifndef QT_NO_CAST_TO_ASCII
-    QT3_SUPPORT int find(const QString &s, int from = 0) const;
-    QT3_SUPPORT int findRev(const QString &s, int from = -1) const;
-#endif
-#endif
-
 private:
     operator QNoImplicitBoolCast() const;
     static Data shared_null;
@@ -438,10 +395,6 @@ inline bool QByteArray::isDetached() const
 { return d->ref == 1; }
 inline QByteArray::QByteArray(const QByteArray &a) : d(a.d)
 { d->ref.ref(); }
-#ifdef QT3_SUPPORT
-inline QByteArray::QByteArray(int aSize) : d(&shared_null)
-{ d->ref.ref(); if (aSize > 0) fill('\0', aSize); }
-#endif
 
 inline int QByteArray::capacity() const
 { return d->alloc; }

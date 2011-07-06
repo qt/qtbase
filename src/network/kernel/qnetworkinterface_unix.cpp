@@ -80,10 +80,9 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
 
     if (sa->sa_family == AF_INET)
         address.setAddress(htonl(((sockaddr_in *)sa)->sin_addr.s_addr));
-#ifndef QT_NO_IPV6
     else if (sa->sa_family == AF_INET6)
         address.setAddress(((sockaddr_in6 *)sa)->sin6_addr.s6_addr);
-#endif
+
     return address;
 
 }

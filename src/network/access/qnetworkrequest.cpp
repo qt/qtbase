@@ -77,28 +77,33 @@ QT_BEGIN_NAMESPACE
     List of known header types that QNetworkRequest parses. Each known
     header is also represented in raw form with its full HTTP name.
 
-    \value ContentTypeHeader    corresponds to the HTTP Content-Type
-    header and contains a string containing the media (MIME) type and
-    any auxiliary data (for instance, charset)
+    \value ContentDispositionHeader  Corresponds to the HTTP
+    Content-Disposition header and contains a string containing the
+    disposition type (for instance, attachment) and a parameter (for
+    instance, filename).
 
-    \value ContentLengthHeader  corresponds to the HTTP Content-Length
+    \value ContentTypeHeader    Corresponds to the HTTP Content-Type
+    header and contains a string containing the media (MIME) type and
+    any auxiliary data (for instance, charset).
+
+    \value ContentLengthHeader  Corresponds to the HTTP Content-Length
     header and contains the length in bytes of the data transmitted.
 
-    \value LocationHeader       corresponds to the HTTP Location
+    \value LocationHeader       Corresponds to the HTTP Location
     header and contains a URL representing the actual location of the
     data, including the destination URL in case of redirections.
 
-    \value LastModifiedHeader   corresponds to the HTTP Last-Modified
+    \value LastModifiedHeader   Corresponds to the HTTP Last-Modified
     header and contains a QDateTime representing the last modification
-    date of the contents
+    date of the contents.
 
-    \value CookieHeader         corresponds to the HTTP Cookie header
+    \value CookieHeader         Corresponds to the HTTP Cookie header
     and contains a QList<QNetworkCookie> representing the cookies to
-    be sent back to the server
+    be sent back to the server.
 
-    \value SetCookieHeader      corresponds to the HTTP Set-Cookie
+    \value SetCookieHeader      Corresponds to the HTTP Set-Cookie
     header and contains a QList<QNetworkCookie> representing the
-    cookies sent by the server to be stored locally
+    cookies sent by the server to be stored locally.
 
     \sa header(), setHeader(), rawHeader(), setRawHeader()
 */

@@ -294,31 +294,6 @@ QDataStream::QDataStream(QIODevice *d)
     q_status = Ok;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QDataStream::QDataStream(QByteArray *array, int mode)
-    \compat
-
-    Constructs a data stream that operates on the given \a array. The
-    \a mode specifies how the byte array is to be used, and is
-    usually either QIODevice::ReadOnly or QIODevice::WriteOnly.
-*/
-QDataStream::QDataStream(QByteArray *a, int mode)
-{
-    QBuffer *buf = new QBuffer(a);
-#ifndef QT_NO_QOBJECT
-    buf->blockSignals(true);
-#endif
-    buf->open(QIODevice::OpenMode(mode));
-    dev = buf;
-    owndev = true;
-    byteorder = BigEndian;
-    ver = DefaultStreamVersion;
-    noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    q_status = Ok;
-}
-#endif
-
 /*!
     \fn QDataStream::QDataStream(QByteArray *a, QIODevice::OpenMode mode)
 
@@ -587,6 +562,8 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_6 Version 12 (Qt 4.6, Qt 4.7, Qt 4.8)
     \value Qt_4_7 Same as Qt_4_6.
     \value Qt_4_8 Same as Qt_4_6.
+    \value Qt_4_9 Same as Qt_4_6.
+    \value Qt_5_0 Same as Qt_4_6.
 
     \sa setVersion(), version()
 */
@@ -1306,20 +1283,6 @@ int QDataStream::skipRawData(int len)
         return len;
     }
 }
-
-#ifdef QT3_SUPPORT
-/*!
-    \fn QDataStream &QDataStream::readRawBytes(char *str, uint len)
-
-    Use readRawData() instead.
-*/
-
-/*!
-    \fn QDataStream &QDataStream::writeRawBytes(const char *str, uint len)
-
-    Use writeRawData() instead.
-*/
-#endif
 
 QT_END_NAMESPACE
 

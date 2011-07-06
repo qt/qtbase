@@ -76,20 +76,6 @@ public:
     void unlock();     //### Qt5: make inline;
     inline void unlockInline();
 
-#if defined(QT3_SUPPORT)
-    inline QT3_SUPPORT bool locked()
-    {
-        if (!tryLock())
-            return true;
-        unlock();
-        return false;
-    }
-    inline QT3_SUPPORT_CONSTRUCTOR QMutex(bool recursive)
-    {
-        new (this) QMutex(recursive ? Recursive : NonRecursive);
-    }
-#endif
-
 private:
     void lockInternal();
     void unlockInternal();
@@ -216,10 +202,6 @@ public:
     static inline bool tryLockInline() { return true; }
     static inline void unlock() {}
     static inline void unlockInline() {}
-
-#if defined(QT3_SUPPORT)
-    static inline QT3_SUPPORT bool locked() { return false; }
-#endif
 
 private:
     Q_DISABLE_COPY(QMutex)

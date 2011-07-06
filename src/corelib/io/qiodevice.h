@@ -167,80 +167,9 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QIODevice)
     Q_DISABLE_COPY(QIODevice)
-
-#ifdef QT3_SUPPORT
-public:
-    typedef qint64 Offset;
-
-    inline QT3_SUPPORT int flags() const { return static_cast<int>(openMode()); }
-    inline QT3_SUPPORT int mode() const { return static_cast<int>(openMode()); }
-    inline QT3_SUPPORT int state() const;
-
-    inline QT3_SUPPORT bool isDirectAccess() const { return !isSequential(); }
-    inline QT3_SUPPORT bool isSequentialAccess() const { return isSequential(); }
-    inline QT3_SUPPORT bool isCombinedAccess() const { return false; }
-    inline QT3_SUPPORT bool isBuffered() const { return true; }
-    inline QT3_SUPPORT bool isRaw() const { return false; }
-    inline QT3_SUPPORT bool isSynchronous() const { return true; }
-    inline QT3_SUPPORT bool isAsynchronous() const { return false; }
-    inline QT3_SUPPORT bool isTranslated() const { return (openMode() & Text) != 0; }
-    inline QT3_SUPPORT bool isInactive() const { return !isOpen(); }
-
-    typedef int Status;
-    QT3_SUPPORT Status status() const;
-    QT3_SUPPORT void resetStatus();
-
-    inline QT3_SUPPORT Offset at() const { return pos(); }
-    inline QT3_SUPPORT bool at(Offset offset) { return seek(offset); }
-
-    inline QT3_SUPPORT qint64 readBlock(char *data, quint64 maxlen) { return read(data, maxlen); }
-    inline QT3_SUPPORT qint64 writeBlock(const char *data, quint64 len) { return write(data, len); }
-    inline QT3_SUPPORT qint64 writeBlock(const QByteArray &data) { return write(data); }
-
-    inline QT3_SUPPORT int getch() { char c; return getChar(&c) ? int(uchar(c)) : -1; }
-    inline QT3_SUPPORT int putch(int c) { return putChar(char(c)) ? int(uchar(c)) : -1; }
-    inline QT3_SUPPORT int ungetch(int c) { ungetChar(uchar(c)); return c; }
-#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QIODevice::OpenMode)
-
-#ifdef QT3_SUPPORT
-static QT3_SUPPORT_VARIABLE const uint IO_Direct = 0x0100;
-static QT3_SUPPORT_VARIABLE const uint IO_Sequential = 0x0200;
-static QT3_SUPPORT_VARIABLE const uint IO_Combined = 0x0300;
-static QT3_SUPPORT_VARIABLE const uint IO_TypeMask = 0x0300;
-
-static QT3_SUPPORT_VARIABLE const uint IO_Raw = 0x0000;
-static QT3_SUPPORT_VARIABLE const uint IO_Async = 0x0000;
-
-#define IO_ReadOnly QIODevice::ReadOnly
-#define IO_WriteOnly QIODevice::WriteOnly
-#define IO_ReadWrite QIODevice::ReadWrite
-#define IO_Append QIODevice::Append
-#define IO_Truncate QIODevice::Truncate
-#define IO_Translate QIODevice::Text
-#define IO_ModeMask 0x00ff
-
-static QT3_SUPPORT_VARIABLE const uint IO_Open = 0x1000;
-static QT3_SUPPORT_VARIABLE const uint IO_StateMask = 0xf000;
-
-static QT3_SUPPORT_VARIABLE const uint IO_Ok = 0;
-static QT3_SUPPORT_VARIABLE const uint IO_ReadError = 1;
-static QT3_SUPPORT_VARIABLE const uint IO_WriteError = 2;
-static QT3_SUPPORT_VARIABLE const uint IO_FatalError = 3;
-static QT3_SUPPORT_VARIABLE const uint IO_ResourceError = 4;
-static QT3_SUPPORT_VARIABLE const uint IO_OpenError = 5;
-static QT3_SUPPORT_VARIABLE const uint IO_ConnectError = 5;
-static QT3_SUPPORT_VARIABLE const uint IO_AbortError = 6;
-static QT3_SUPPORT_VARIABLE const uint IO_TimeOutError = 7;
-static QT3_SUPPORT_VARIABLE const uint IO_UnspecifiedError	= 8;
-
-inline QT3_SUPPORT int QIODevice::state() const
-{
-    return isOpen() ? 0x1000 : 0;
-}
-#endif
 
 #if !defined(QT_NO_DEBUG_STREAM)
 class QDebug;

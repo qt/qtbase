@@ -83,7 +83,11 @@ typedef GLfloat GLdouble;
 typedef GLfloat GLdouble;
 # endif
 #else
-# include <GL/gl.h>
+# if defined(Q_OS_MAC)
+#  include <OpenGL/gl.h>
+# else
+#  include <GL/gl.h>
+# endif
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -364,19 +364,13 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
     QIODevice.
 
     \value AutoCloseHandle The file handle passed into open() should be
-    closed by close(), the default behaviour is that close just flushes
-    the file and the app is responsible for closing the file handle. When
-    opening a file by name, this flag is ignored as Qt always "owns" the
+    closed by close(), the default behavior is that close just flushes
+    the file and the application is responsible for closing the file handle.
+    When opening a file by name, this flag is ignored as Qt always owns the
     file handle and must close it.
+    \value DontCloseHandle If not explicitly closed, the underlying file
+    handle is left open when the QFile object is destroyed.
  */
-
-#ifdef QT3_SUPPORT
-/*!
-    \typedef QFile::PermissionSpec
-
-    Use QFile::Permission instead.
-*/
-#endif
 
 #ifdef QT_NO_QOBJECT
 QFile::QFile()

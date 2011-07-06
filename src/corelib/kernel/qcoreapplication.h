@@ -46,10 +46,6 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
 
-#ifdef QT_INCLUDE_COMPAT
-#include <QtCore/qstringlist.h>
-#endif
-
 #if defined(Q_OS_WIN) && !defined(tagMSG)
 typedef struct tagMSG MSG;
 #endif
@@ -79,9 +75,6 @@ class Q_CORE_EXPORT QCoreApplication : public QObject
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
     enum { ApplicationFlags = QT_VERSION
-#if !defined(QT3_SUPPORT)
-        | 0x01000000
-#endif
     };
 
     QCoreApplication(int &argc, char **argv, int = ApplicationFlags);
@@ -154,19 +147,6 @@ public:
                              Encoding encoding, int n);
 
     static void flush();
-
-#if defined(QT3_SUPPORT)
-    inline QT3_SUPPORT void lock() {}
-    inline QT3_SUPPORT void unlock(bool = true) {}
-    inline QT3_SUPPORT bool locked() { return false; }
-    inline QT3_SUPPORT bool tryLock() { return false; }
-
-    static inline QT3_SUPPORT void processOneEvent()
-    { processEvents(QEventLoop::WaitForMoreEvents); }
-    static QT3_SUPPORT int enter_loop();
-    static QT3_SUPPORT void exit_loop();
-    static QT3_SUPPORT int loopLevel();
-#endif
 
 #if defined(Q_OS_WIN)
     virtual bool winEventFilter(MSG *message, long *result);

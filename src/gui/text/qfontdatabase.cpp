@@ -218,16 +218,17 @@ struct QtFontStyle
         Key(const QString &styleString);
         Key() : style(QFont::StyleNormal),
                 weight(QFont::Normal), stretch(0) { }
-        Key(const Key &o) : style(o.style),
+        Key(const Key &o) : styleName(o.styleName), style(o.style),
                               weight(o.weight), stretch(o.stretch) { }
+        QString styleName;
         uint style : 2;
         signed int  weight : 8;
         signed int stretch : 12;
 
         bool operator==(const Key & other) {
-            return (style == other.style &&
+            return styleName == other.styleName && style == other.style &&
                      weight == other.weight &&
-                     (stretch == 0 || other.stretch == 0 || stretch == other.stretch));
+                     (stretch == 0 || other.stretch == 0 || stretch == other.stretch);
         }
         bool operator!=(const Key &other) {
             return !operator==(other);
@@ -292,7 +293,7 @@ struct QtFontStyle
 };
 
 QtFontStyle::Key::Key(const QString &styleString)
-    : style(QFont::StyleNormal), weight(QFont::Normal), stretch(0)
+    : styleName(styleString), style(QFont::StyleNormal), weight(QFont::Normal), stretch(0)
 {
     weight = getFontWeight(styleString);
 
@@ -1139,6 +1140,12 @@ static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &st
     for ( int i = 0; i < foundry->count; i++ ) {
         QtFontStyle *style = foundry->styles[i];
 
+        if (!styleKey.styleName.isEmpty() && styleKey.styleName == style->key.styleName) {
+            dist = 0;
+            best = i;
+            break;
+        }
+
         int d = qAbs( styleKey.weight - style->key.weight );
 
         if ( styleKey.stretch != 0 && style->key.stretch != 0 ) {
@@ -1532,7 +1539,8 @@ static QString styleStringHelper(int weight, QFont::Style style)
 */
 QString QFontDatabase::styleString(const QFont &font)
 {
-    return styleStringHelper(font.weight(), font.style());
+    return font.styleName().isEmpty() ? styleStringHelper(font.weight(), font.style())
+                                      : font.styleName();
 }
 
 /*!
@@ -1542,7 +1550,8 @@ QString QFontDatabase::styleString(const QFont &font)
 */
 QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 {
-    return styleStringHelper(fontInfo.weight(), fontInfo.style());
+    return fontInfo.styleName().isEmpty() ? styleStringHelper(fontInfo.weight(), fontInfo.style())
+                                          : fontInfo.styleName();
 }
 
 
@@ -1793,8 +1802,12 @@ QStringList QFontDatabase::styles(const QString &family) const
         }
     }
 
-    for (int i = 0; i < allStyles.count; i++)
-        l.append(styleStringHelper(allStyles.styles[i]->key.weight, (QFont::Style)allStyles.styles[i]->key.style));
+    for (int i = 0; i < allStyles.count; i++) {
+        l.append(allStyles.styles[i]->key.styleName.isEmpty() ?
+                 styleStringHelper(allStyles.styles[i]->key.weight,
+                                   (QFont::Style)allStyles.styles[i]->key.style) :
+                 allStyles.styles[i]->key.styleName);
+    }
     return l;
 }
 
@@ -2017,9 +2030,16 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 
     if (!s) // no styles found?
         return QGuiApplication::font();
-    QFont fnt(family, pointSize, s->key.weight);
-    fnt.setStyle((QFont::Style)s->key.style);
-    return fnt;
+    if (s->key.styleName.isEmpty()) {
+        QFont fnt(family, pointSize, s->key.weight);
+        fnt.setStyle((QFont::Style)s->key.style);
+        return fnt;
+    } else {
+        // found a perfect match
+        QFont fnt(family, pointSize);
+        fnt.setStyleName(s->key.styleName);
+        return fnt;
+    }
 }
 
 

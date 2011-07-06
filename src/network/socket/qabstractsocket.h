@@ -108,15 +108,6 @@ public:
         BoundState,
         ListeningState,
         ClosingState
-#ifdef QT3_SUPPORT
-        ,
-        Idle = UnconnectedState,
-        HostLookup = HostLookupState,
-        Connecting = ConnectingState,
-        Connected = ConnectedState,
-        Closing = ClosingState,
-        Connection = ConnectedState
-#endif
     };
     enum SocketOption {
         LowDelayOption, // TCP_NODELAY
@@ -129,7 +120,7 @@ public:
     virtual ~QAbstractSocket();
 
     // ### Qt 5: Make connectToHost() and disconnectFromHost() virtual.
-    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite);
+    void connectToHost(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     void connectToHost(const QHostAddress &address, quint16 port, OpenMode mode = ReadWrite);
     void disconnectFromHost();
 
@@ -221,32 +212,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_abortConnectionAttempt())
     Q_PRIVATE_SLOT(d_func(), void _q_testConnection())
     Q_PRIVATE_SLOT(d_func(), void _q_forceDisconnect())
-
-#ifdef QT3_SUPPORT
-public:
-    enum Error {
-        ErrConnectionRefused = ConnectionRefusedError,
-        ErrHostNotFound = HostNotFoundError,
-        ErrSocketRead = UnknownSocketError
-    };
-    inline QT3_SUPPORT int socket() const { return socketDescriptor(); }
-    inline QT3_SUPPORT void setSocket(int socket) { setSocketDescriptor(socket); }
-    inline QT3_SUPPORT qulonglong waitForMore(int msecs, bool *timeout = 0) const
-    {
-        QAbstractSocket *that = const_cast<QAbstractSocket *>(this);
-        if (that->waitForReadyRead(msecs))
-            return qulonglong(bytesAvailable());
-        if (error() == SocketTimeoutError && timeout)
-            *timeout = true;
-        return 0;
-    }
-    typedef SocketState State;
-Q_SIGNALS:
-    QT_MOC_COMPAT void connectionClosed(); // same as disconnected()
-    QT_MOC_COMPAT void delayedCloseFinished(); // same as disconnected()
-
-
-#endif
 };
 
 #ifndef QT_NO_DEBUG_STREAM

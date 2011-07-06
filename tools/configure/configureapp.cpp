@@ -341,7 +341,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENVG" ]          = "no";
-    dictionary[ "IPV6" ]            = "yes"; // Always, dynamically loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
     dictionary[ "S60" ]             = "yes";
@@ -1555,8 +1554,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
-        // On Symbian we now always will have IPv6 with no chance to disable it
-        dictionary[ "IPV6" ]                = "yes";
         dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "yes";
         dictionary[ "RTTI" ]                = "yes";
@@ -2435,7 +2432,6 @@ bool Configure::verifyConfiguration()
      nis
      nas
      tablet
-     ipv6
 
      X11     : x11sm xinerama xcursor xfixes xrandr xrender fontconfig xkb
      Embedded: embedded freetype
@@ -2709,11 +2705,6 @@ void Configure::generateOutputVars()
         qtConfig += "dbus";
     else if (dictionary[ "DBUS" ] == "linked")
         qtConfig += "dbus dbus-linked";
-
-    if (dictionary["IPV6"] == "yes")
-        qtConfig += "ipv6";
-    else if (dictionary["IPV6"] == "no")
-        qtConfig += "no-ipv6";
 
     if (dictionary[ "CETEST" ] == "yes")
         qtConfig += "cetest";
@@ -3188,7 +3179,6 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENSSL"] == "no")           qconfigList += "QT_NO_OPENSSL";
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
-        if (dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
         if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
         if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";

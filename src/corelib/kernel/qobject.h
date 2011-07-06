@@ -188,14 +188,6 @@ public:
     }
 #endif
 
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT QObject *child(const char *objName, const char *inheritsClass = 0,
-                   bool recursiveSearch = true) const;
-    QT3_SUPPORT QObjectList queryList(const char *inheritsClass = 0,
-                          const char *objName = 0,
-                          bool regexpMatch = true,
-                          bool recursiveSearch = true) const;
-#endif
     inline const QObjectList &children() const { return d_ptr->children; }
 
     void setParent(QObject *);
@@ -204,44 +196,14 @@ public:
 
 
     static bool connect(const QObject *sender, const char *signal,
-                        const QObject *receiver, const char *member, Qt::ConnectionType =
-#ifdef qdoc
-                        Qt::AutoConnection
-#else
-#ifdef QT3_SUPPORT
-                        Qt::AutoCompatConnection
-#else
-                        Qt::AutoConnection
-#endif
-#endif
-        );
+                        const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
         
     static bool connect(const QObject *sender, const QMetaMethod &signal,
                         const QObject *receiver, const QMetaMethod &method,
-                        Qt::ConnectionType type = 
-#ifdef qdoc
-                        Qt::AutoConnection
-#else
-#ifdef QT3_SUPPORT
-                        Qt::AutoCompatConnection
-#else
-                        Qt::AutoConnection
-#endif
-#endif
-        );
+                        Qt::ConnectionType type = Qt::AutoConnection);
 
     inline bool connect(const QObject *sender, const char *signal,
-                        const char *member, Qt::ConnectionType type =
-#ifdef qdoc
-                        Qt::AutoConnection
-#else
-#ifdef QT3_SUPPORT
-                        Qt::AutoCompatConnection
-#else
-                        Qt::AutoConnection
-#endif
-#endif
-        ) const;
+                        const char *member, Qt::ConnectionType type = Qt::AutoConnection) const;
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
@@ -291,29 +253,6 @@ protected:
 
     virtual void connectNotify(const char *signal);
     virtual void disconnectNotify(const char *signal);
-
-#ifdef QT3_SUPPORT
-public:
-    QT3_SUPPORT_CONSTRUCTOR QObject(QObject *parent, const char *name);
-    inline QT3_SUPPORT void insertChild(QObject *o)
-        { if (o) o->setParent(this); }
-    inline QT3_SUPPORT void removeChild(QObject *o)
-        { if (o) o->setParent(0); }
-    inline QT3_SUPPORT bool isA(const char *classname) const
-        { return qstrcmp(classname, metaObject()->className()) == 0; }
-    inline QT3_SUPPORT const char *className() const { return metaObject()->className(); }
-    inline QT3_SUPPORT const char *name() const { return objectName().latin1_helper(); }
-    inline QT3_SUPPORT const char *name(const char *defaultName) const
-        { QString s = objectName(); return s.isEmpty()?defaultName:s.latin1_helper(); }
-    inline QT3_SUPPORT void setName(const char *aName) { setObjectName(QLatin1String(aName)); }
-protected:
-    inline QT3_SUPPORT bool checkConnectArgs(const char *signal,
-                                  const QObject *,
-                                  const char *member)
-        { return QMetaObject::checkConnectArgs(signal, member); }
-    static inline QT3_SUPPORT QByteArray normalizeSignalSlot(const char *signalSlot)
-        { return QMetaObject::normalizedSignature(signalSlot); }
-#endif
 
 protected:
     QObject(QObjectPrivate &dd, QObject *parent = 0);

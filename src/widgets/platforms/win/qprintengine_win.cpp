@@ -586,8 +586,7 @@ void QWin32PrintEngine::updateClipPath(const QPainterPath &clipPath, Qt::ClipOpe
             const int ops[] = {
                 -1,         // Qt::NoClip, covered above
                 RGN_COPY,   // Qt::ReplaceClip
-                RGN_AND,    // Qt::IntersectClip
-                RGN_OR      // Qt::UniteClip
+                RGN_AND     // Qt::IntersectClip
             };
             Q_ASSERT(op > 0 && unsigned(op) <= sizeof(ops) / sizeof(int));
             SelectClipPath(d->hdc, ops[op]);

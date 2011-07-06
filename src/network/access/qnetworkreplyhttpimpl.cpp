@@ -365,6 +365,7 @@ qint64 QNetworkReplyHttpImpl::readData(char* data, qint64 maxlen)
 
 void QNetworkReplyHttpImpl::setReadBufferSize(qint64 size)
 {
+    Q_UNUSED(size);
     // FIXME, unsupported right now
     return;
 }
@@ -379,7 +380,8 @@ bool QNetworkReplyHttpImpl::canReadLine () const
     if (d->cacheLoadDevice)
         return d->cacheLoadDevice->canReadLine() || d->downloadMultiBuffer.canReadLine();
 
-    // FIXME zerocopy buffer?
+    if (d->downloadZerocopyBuffer)
+        return memchr(d->downloadZerocopyBuffer + d->downloadBufferReadPosition, '\n', d->downloadBufferCurrentSize - d->downloadBufferReadPosition);
 
     return d->downloadMultiBuffer.canReadLine();
 }
@@ -876,6 +878,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
                      delegate->isPipeliningUsed,
                      QSharedPointer<char>(),
                      delegate->incomingContentLength);
+            replyDownloadData(delegate->synchronousDownloadData);
             httpError(delegate->incomingErrorCode, delegate->incomingErrorDetail);
         } else {
             replyDownloadMetaData
@@ -1168,7 +1171,6 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
 void QNetworkReplyHttpImplPrivate::httpAuthenticationRequired(const QHttpNetworkRequest &,
                                                            QAuthenticator *auth)
 {
-    Q_Q(QNetworkReplyHttpImpl);
     managerPrivate->authenticationRequired(auth, q_func(), synchronous, url, &urlForLastAuthentication);
 }
 

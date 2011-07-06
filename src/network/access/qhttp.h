@@ -232,10 +232,6 @@ public:
 
     qint64 bytesAvailable() const;
     qint64 read(char *data, qint64 maxlen);
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT qint64 readBlock(char *data, quint64 maxlen)
-    { return read(data, qint64(maxlen)); }
-#endif
     QByteArray readAll();
 
     int currentId() const;

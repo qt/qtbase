@@ -1293,7 +1293,7 @@ void tst_QSqlTableModel::tableModifyWithBlank()
     QCOMPARE(model.rowCount(), 1); //verify only one entry
     QCOMPARE(model.record(0).value(0).toString(), timeString); //verify correct record
 
-    //At this point we know that the intial value (timestamp) was succsefully stored in the database
+    //At this point we know that the initial value (timestamp) was succsefully stored in the database
     //Attempt to modify the data in the new record
     //equivalent to query.exec("update test set column3="... command in direct test
     //set the data in the first column to "col1ModelData"

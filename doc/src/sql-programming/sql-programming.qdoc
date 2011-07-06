@@ -603,7 +603,7 @@
 
     \image qdatawidgetmapper-simple.png
 
-    The \l{demos/books}{Books} demonstration shows how information can
+    The \l{sql/books}{Books} example shows how information can
     be presented for easy access by using QDataWidgetMapper and a set of
     simple input widgets.
 */

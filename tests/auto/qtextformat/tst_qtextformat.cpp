@@ -226,7 +226,7 @@ void tst_QTextFormat::resolveFont()
     QVERIFY(fmt.font().underline());
     QVERIFY(!fmt.hasProperty(QTextFormat::FontUnderline));
 
-    // verify that deleting a non-existant property does not affect the font resolving
+    // verify that deleting a non-existent property does not affect the font resolving
 
     QVERIFY(!fmt.hasProperty(QTextFormat::BackgroundBrush));
     fmt.clearProperty(QTextFormat::BackgroundBrush);
@@ -235,7 +235,7 @@ void tst_QTextFormat::resolveFont()
     QVERIFY(!fmt.hasProperty(QTextFormat::FontUnderline));
     QVERIFY(fmt.font().underline());
 
-    // verify that deleting an existant but font _unrelated_ property does not affect the font resolving
+    // verify that deleting an existent but font _unrelated_ property does not affect the font resolving
 
     QVERIFY(fmt.hasProperty(QTextFormat::ForegroundBrush));
     fmt.clearProperty(QTextFormat::ForegroundBrush);

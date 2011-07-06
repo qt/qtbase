@@ -46,6 +46,7 @@
 #include <private/qnetworkrequest_p.h>
 #include <private/qobject_p.h>
 #include <private/qauthenticator_p.h>
+#include "private/qhostinfo_p.h"
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
 
@@ -83,7 +84,8 @@ const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : state(RunningState),
   hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(defaultChannelCount)
+  channelCount(defaultChannelCount),
+  networkLayerState(Unknown)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -94,7 +96,8 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt)
 : state(RunningState),
   hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(channelCount)
+  channelCount(channelCount),
+  networkLayerState(Unknown)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -173,6 +176,45 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
     qFatal("Called with unknown socket object.");
     return 0;
 }
+
+// If the connection is in the InProgress state channel errors should not always be
+// emitted. This function will check the status of the connection channels if we
+// have not decided the networkLayerState and will return true if the channel error
+// should be emitted by the channel.
+bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *socket)
+{
+    Q_Q(QHttpNetworkConnection);
+
+    bool emitError = true;
+    int i = indexOf(socket);
+    int otherSocket = (i == 0 ? 1 : 0);
+
+    if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+        if (channels[otherSocket].isSocketBusy() && (channels[otherSocket].state != QHttpNetworkConnectionChannel::ClosingState)) {
+            // this was the first socket to fail.
+            channels[i].close();
+            emitError = false;
+        }
+        else {
+            // Both connection attempts has failed.
+            networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
+            channels[i].close();
+            emitError = true;
+        }
+    } else {
+        if ((networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (channels[i].networkLayerPreference != QAbstractSocket::IPv4Protocol)
+            || (networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (channels[i].networkLayerPreference != QAbstractSocket::IPv6Protocol)) {
+            // First connection worked so this is the second one to complete and it failed.
+            channels[i].close();
+            QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+            emitError = false;
+        }
+        if (networkLayerState == QHttpNetworkConnectionPrivate::Unknown)
+            qWarning() << "We got a connection error when networkLayerState is Unknown";
+    }
+    return emitError;
+}
+
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
@@ -469,17 +511,23 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
         break;
     }
 
-    // this used to be called via invokeMethod and a QueuedConnection
-    // It is the only place _q_startNextRequest is called directly without going
-    // through the event loop using a QueuedConnection.
-    // This is dangerous because of recursion that might occur when emitting
-    // signals as DirectConnection from this code path. Therefore all signal
-    // emissions that can come out from this code path need to
-    // be QueuedConnection.
-    // We are currently trying to fine-tune this.
-    _q_startNextRequest();
-
-
+    // For Happy Eyeballs the networkLayerState is set to Unkown
+    // untill we have started the first connection attempt. So no
+    // request will be started untill we know if IPv4 or IPv6
+    // should be used.
+    if (networkLayerState == Unknown) {
+        startHostInfoLookup();
+    } else if ( networkLayerState == IPv4 || networkLayerState == IPv6 ) {
+        // this used to be called via invokeMethod and a QueuedConnection
+        // It is the only place _q_startNextRequest is called directly without going
+        // through the event loop using a QueuedConnection.
+        // This is dangerous because of recursion that might occur when emitting
+        // signals as DirectConnection from this code path. Therefore all signal
+        // emissions that can come out from this code path need to
+        // be QueuedConnection.
+        // We are currently trying to fine-tune this.
+        _q_startNextRequest();
+    }
     return reply;
 }
 
@@ -781,6 +829,10 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 // although it is called _q_startNextRequest, it will actually start multiple requests when possible
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
+    // If there is no network layer state decided we should not start any new requests.
+    if (networkLayerState == Unknown || networkLayerState == InProgress)
+        return;
+
     // If the QHttpNetworkConnection is currently paused then bail out immediately
     if (state == PausedState)
         return;
@@ -830,11 +882,15 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // connected or not. This is to reuse connected channels before we connect new once.
     int queuedRequest = highPriorityQueue.count() + lowPriorityQueue.count();
     for (int i = 0; i < channelCount; ++i) {
-        if (channels[i].socket->state() == QAbstractSocket::ConnectingState)
+        if ((channels[i].socket->state() == QAbstractSocket::ConnectingState) || (channels[i].socket->state() == QAbstractSocket::HostLookupState))
             queuedRequest--;
         if ( queuedRequest <=0 )
             break;
         if (!channels[i].reply && !channels[i].isSocketBusy() && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
+            if (networkLayerState == IPv4)
+                channels[i].networkLayerPreference = QAbstractSocket::IPv4Protocol;
+            else if (networkLayerState == IPv6)
+                channels[i].networkLayerPreference = QAbstractSocket::IPv6Protocol;
             channels[i].ensureConnection();
             queuedRequest--;
         }
@@ -852,6 +908,100 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
         }
     }
 }
+
+
+
+// The first time we start the connection is used we do not know if we
+// should use IPv4 or IPv6. So we start a hostlookup to figure this out.
+// Later when we do the connection the socket will not need to do another
+// lookup as then the hostinfo will already be in the cache.
+void QHttpNetworkConnectionPrivate::startHostInfoLookup()
+{
+    // At this time all channels should be unconnected.
+    Q_ASSERT(!channels[0].isSocketBusy());
+    Q_ASSERT(!channels[1].isSocketBusy());
+
+    networkLayerState = InProgress;
+
+    // check if we already now can descide if this is IPv4 or IPv6
+    QHostAddress temp;
+    if (temp.setAddress(hostName)) {
+        if (temp.protocol() == QAbstractSocket::IPv4Protocol) {
+            networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
+            QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
+            return;
+        } else if (temp.protocol() == QAbstractSocket::IPv6Protocol) {
+            networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
+            QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
+            return;
+        }
+    } else {
+        int hostLookupId;
+        bool immediateResultValid = false;
+        QHostInfo hostInfo = qt_qhostinfo_lookup(hostName,
+                                                 this->q_func(),
+                                                 SLOT(_q_hostLookupFinished(QHostInfo)),
+                                                 &immediateResultValid,
+                                                 &hostLookupId);
+        if (immediateResultValid) {
+            _q_hostLookupFinished(hostInfo);
+        }
+    }
+}
+
+
+void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(QHostInfo info)
+{
+    bool bIpv4 = false;
+    bool bIpv6 = false;
+
+    foreach (QHostAddress address, info.addresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol)
+            bIpv4 = true;
+        else if (address.protocol() == QAbstractSocket::IPv6Protocol)
+            bIpv6 = true;
+    }
+
+    if (bIpv4 && bIpv6)
+        startNetworkLayerStateLookup();
+    else if (bIpv4) {
+        networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
+        QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
+    } else if (bIpv6) {
+        networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
+        QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
+    } else {
+        if (dequeueRequest(channels[0].socket)) {
+            emitReplyError(channels[0].socket, channels[0].reply, QNetworkReply::HostNotFoundError);
+            networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
+        } else {
+            // Should not happen
+            qWarning() << "QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not dequeu request";
+            networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
+        }
+    }
+}
+
+
+// This will be used if the host lookup found both and Ipv4 and
+// Ipv6 address. Then we will start up two connections and pick
+// the network layer of the one that finish first. The second
+// connection will then be disconnected.
+void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
+{
+    // At this time all channels should be unconnected.
+    Q_ASSERT(!channels[0].isSocketBusy());
+    Q_ASSERT(!channels[1].isSocketBusy());
+
+    networkLayerState = InProgress;
+
+    channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
+    channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
+
+    channels[0].ensureConnection(); // Possibly delay this one..
+    channels[1].ensureConnection();
+}
+
 
 #ifndef QT_NO_BEARERMANAGEMENT
 QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt, QObject *parent, QSharedPointer<QNetworkSession> networkSession)

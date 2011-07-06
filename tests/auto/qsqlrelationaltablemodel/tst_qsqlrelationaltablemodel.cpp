@@ -218,7 +218,7 @@ void tst_QSqlRelationalTableModel::data()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
-    //try a non-existant index
+    //try a non-existent index
     QVERIFY2(model.data(model.index(0,4)).isValid() == false,"Invalid index returned valid QVariant");
 
     //check data retrieval when relational key is a non-integer type

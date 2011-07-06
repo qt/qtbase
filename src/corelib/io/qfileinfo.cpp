@@ -851,19 +851,6 @@ QDir QFileInfo::absoluteDir() const
     return QDir(absolutePath());
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use absoluteDir() or the dir() overload that takes no parameters
-    instead.
-*/
-QDir QFileInfo::dir(bool absPath) const
-{
-    if (absPath)
-        return absoluteDir();
-    return dir();
-}
-#endif //QT3_SUPPORT
-
 /*!
     Returns true if the user can read the file; otherwise returns false.
 

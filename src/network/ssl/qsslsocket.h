@@ -85,8 +85,8 @@ public:
     ~QSslSocket();
 
     // Autostarting the SSL client handshake.
-    void connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode = ReadWrite);
-    void connectToHostEncrypted(const QString &hostName, quint16 port, const QString &sslPeerName, OpenMode mode = ReadWrite);
+    void connectToHostEncrypted(const QString &hostName, quint16 port, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
+    void connectToHostEncrypted(const QString &hostName, quint16 port, const QString &sslPeerName, OpenMode mode = ReadWrite, NetworkLayerProtocol protocol = AnyIPProtocol);
     bool setSocketDescriptor(int socketDescriptor, SocketState state = ConnectedState,
                              OpenMode openMode = ReadWrite);
 

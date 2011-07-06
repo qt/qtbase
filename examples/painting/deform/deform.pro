@@ -13,12 +13,12 @@ contains(QT_CONFIG, opengl) {
 }
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/deform
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/deform
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
 INSTALLS += target sources
 
 symbian {
     TARGET.UID3 = 0xA000A63D
-    CONFIG += qt_demo
+    CONFIG += qt_example
 }

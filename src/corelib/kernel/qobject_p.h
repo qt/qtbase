@@ -157,10 +157,6 @@ public:
     void addConnection(int signal, Connection *c);
     void cleanConnectionLists();
 
-#ifdef QT3_SUPPORT
-    void sendPendingChildInsertedEvents();
-#endif
-
     static inline Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);
     static inline void resetCurrentSender(QObject *receiver,
@@ -189,14 +185,6 @@ public:
     Connection *senders;     // linked list of connections connected to this object
     Sender *currentSender;   // object currently activating the object
     mutable quint32 connectedSignals[2];
-
-#ifdef QT3_SUPPORT
-    QVector< QWeakPointer<QObject> > pendingChildInsertedEvents;
-#else
-    // preserve binary compatibility with code compiled without Qt 3 support
-    // keeping the binary layout stable helps the Qt Creator debugger
-    void *unused;
-#endif
 
     QList<QPointer<QObject> > eventFilters;
     union {

@@ -134,17 +134,6 @@ protected:
     QTextCodec();
     virtual ~QTextCodec();
 
-public:
-#ifdef QT3_SUPPORT
-    static QT3_SUPPORT QTextCodec* codecForContent(const char*, int) { return 0; }
-    static QT3_SUPPORT const char* locale();
-    static QT3_SUPPORT QTextCodec* codecForName(const char* hint, int) { return codecForName(QByteArray(hint)); }
-    QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut) const;
-    QT3_SUPPORT QString toUnicode(const QByteArray&, int len) const;
-    QT3_SUPPORT QByteArray mimeName() const { return name(); }
-    static QT3_SUPPORT QTextCodec *codecForIndex(int i) { return codecForName(availableCodecs().value(i)); }
-#endif
-
 private:
     friend class QTextCodecCleanup;
     static QTextCodec *cftr;
@@ -165,9 +154,6 @@ public:
     ~QTextEncoder();
     QByteArray fromUnicode(const QString& str);
     QByteArray fromUnicode(const QChar *uc, int len);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT QByteArray fromUnicode(const QString& uc, int& lenInOut);
-#endif
     bool hasFailure() const;
 private:
     const QTextCodec *c;

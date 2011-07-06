@@ -201,6 +201,8 @@ private slots:
     void task_240612();
     void taskQTBUG_6962();
     void taskQTBUG_8701();
+    void removeAllEncodedQueryItems_data();
+    void removeAllEncodedQueryItems();
 };
 
 // Testing get/set functions
@@ -4018,6 +4020,29 @@ void tst_QUrl::effectiveTLDs()
     QFETCH(QUrl, domain);
     QFETCH(QString, TLD);
     QCOMPARE(domain.topLevelDomain(), TLD);
+}
+
+void tst_QUrl::removeAllEncodedQueryItems_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("key");
+    QTest::addColumn<QUrl>("result");
+
+    QTest::newRow("test1") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
+    QTest::newRow("test2") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("aaa") << QUrl::fromEncoded("http://qt.nokia.com/foo?bbb=b&ccc=c");
+//    QTest::newRow("test3") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("ccc") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b");
+    QTest::newRow("test4") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c");
+    QTest::newRow("test5") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
+    QTest::newRow("test6") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c");
+}
+
+void tst_QUrl::removeAllEncodedQueryItems()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QByteArray, key);
+    QFETCH(QUrl, result);
+    url.removeAllEncodedQueryItems(key);
+    QCOMPARE(url, result);
 }
 
 QTEST_MAIN(tst_QUrl)

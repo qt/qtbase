@@ -136,6 +136,8 @@ public:
     void detectPipeliningSupport();
 
     QHttpNetworkConnectionChannel();
+
+    QAbstractSocket::NetworkLayerProtocol networkLayerPreference;
     
     void setConnection(QHttpNetworkConnection *c);
     QPointer<QHttpNetworkConnection> connection;

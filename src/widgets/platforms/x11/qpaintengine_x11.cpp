@@ -2078,11 +2078,6 @@ void QX11PaintEngine::updateClipRegion_dev(const QRegion &clipRegion, Qt::ClipOp
         else
             d->crgn = clipRegion;
         break;
-    case Qt::UniteClip:
-        d->crgn |= clipRegion;
-        if (!sysClip.isEmpty())
-            d->crgn = d->crgn.intersected(sysClip);
-        break;
     default:
         break;
     }

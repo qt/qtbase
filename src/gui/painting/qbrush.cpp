@@ -1277,7 +1277,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     {coordinate mode} use coordinateMode().
 
 
-    \sa {demos/gradients}{The Gradients Demo}, QBrush
+    \sa {painting/gradients}{The Gradients Example}, QBrush
 */
 
 /*!
@@ -1587,8 +1587,8 @@ bool QGradient::operator==(const QGradient &gradient)
     returns the final stop point of the gradient, and the start()
     function returning the start point of the gradient.
 
-    \sa QRadialGradient, QConicalGradient, {demos/gradients}{The
-    Gradients Demo}
+    \sa QRadialGradient, QConicalGradient, {painting/gradients}{The
+    Gradients Example}
 */
 
 
@@ -1773,8 +1773,8 @@ void QLinearGradient::setFinalStop(const QPointF &stop)
     radius() functions returning the gradient's center, focal point
     and radius respectively.
 
-    \sa QLinearGradient, QConicalGradient, {demos/gradients}{The
-    Gradients Demo}
+    \sa QLinearGradient, QConicalGradient, {painting/gradients}{The
+    Gradients Example}
 */
 
 static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
@@ -2143,8 +2143,8 @@ void QRadialGradient::setFocalPoint(const QPointF &focalPoint)
     gradient can be specified through its radius or final stop points,
     respectively.
 
-    \sa QLinearGradient, QRadialGradient, {demos/gradients}{The
-    Gradients Demo}
+    \sa QLinearGradient, QRadialGradient, {painting/gradients}{The
+    Gradients Example}
 */
 
 

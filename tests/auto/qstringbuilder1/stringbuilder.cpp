@@ -133,6 +133,12 @@ void runScenario()
     QCOMPARE(r, string);
     r = string P ba;
     QCOMPARE(r, string);
+
+    const char *zero = 0;
+    r = string P zero;
+    QCOMPARE(r, string);
+    r = zero P string;
+    QCOMPARE(r, string);
 #endif
 
     string = QString::fromLatin1(LITERAL);
@@ -161,6 +167,12 @@ void runScenario()
         QCOMPARE(r, r2);
         r2 = QByteArray("hello\0") P UTF8_LITERAL;
         QCOMPARE(r, r2);
+
+        const char *zero = 0;
+        r = ba P zero;
+        QCOMPARE(r, ba);
+        r = zero P ba;
+        QCOMPARE(r, ba);
     }
 
     //operator QString  +=

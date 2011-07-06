@@ -45,10 +45,9 @@
 #include "qwaylandwindow.h"
 #include "qwaylandbuffer.h"
 
-#include <QWindowSystemInterface>
-
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
+#include <QDebug>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -58,13 +57,17 @@
 #include <X11/keysym.h>
 #endif
 
-QWaylandInputDevice::QWaylandInputDevice(struct wl_display *display,
+//#define POINT_DEBUG
+
+QWaylandInputDevice::QWaylandInputDevice(QWaylandDisplay *display,
 					 uint32_t id)
-    : mDisplay(display)
-    , mInputDevice(wl_input_device_create(display, id, 1))
+    : mQDisplay(display)
+    , mDisplay(display->wl_display())
+    , mInputDevice(wl_input_device_create(mDisplay, id, 1))
     , mPointerFocus(NULL)
     , mKeyboardFocus(NULL)
     , mButtons(0)
+    , mTouchState(QEvent::TouchBegin)
 {
     wl_input_device_add_listener(mInputDevice,
 				 &inputDeviceListener,
@@ -338,12 +341,168 @@ void QWaylandInputDevice::inputHandleKeyboardFocus(void *data,
 #endif
 }
 
+void QWaylandInputDevice::inputHandleTouchDown(void *data,
+                                               struct wl_input_device *wl_input_device,
+                                               uint32_t time,
+                                               int id,
+                                               int x,
+                                               int y)
+{
+    QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
+    inputDevice->handleTouchPoint(id, x, y, Qt::TouchPointPressed);
+}
+
+void QWaylandInputDevice::inputHandleTouchUp(void *data,
+                                             struct wl_input_device *wl_input_device,
+                                             uint32_t time,
+                                             int id)
+{
+    QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
+    inputDevice->handleTouchPoint(id, 0, 0, Qt::TouchPointReleased);
+}
+
+void QWaylandInputDevice::inputHandleTouchMotion(void *data,
+                                                 struct wl_input_device *wl_input_device,
+                                                 uint32_t time,
+                                                 int id,
+                                                 int x,
+                                                 int y)
+{
+    QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
+    inputDevice->handleTouchPoint(id, x, y, Qt::TouchPointMoved);
+}
+
+void QWaylandInputDevice::handleTouchPoint(int id, int x, int y, Qt::TouchPointState state)
+{
+    QWindowSystemInterface::TouchPoint tp;
+
+    // Find out the coordinates for Released events.
+    bool coordsOk = false;
+    if (state == Qt::TouchPointReleased)
+        for (int i = 0; i < mPrevTouchPoints.count(); ++i)
+            if (mPrevTouchPoints.at(i).id == id) {
+                tp.area = mPrevTouchPoints.at(i).area;
+                coordsOk = true;
+                break;
+            }
+
+    if (!coordsOk) {
+        // x and y are surface relative.
+        // We need a global (screen) position.
+
+        QWaylandWindow *win = mPointerFocus;
+        if (!win)
+            win = mKeyboardFocus;
+#ifdef POINT_DEBUG
+        qDebug() << "surface relative coords" << x << y << "using window" << win;
+#endif
+        if (!win)
+            return;
+
+        QRect winRect = win->geometry();
+
+        // Get a normalized position (0..1).
+        const qreal nx = x / qreal(winRect.width());
+        const qreal ny = y / qreal(winRect.height());
+        tp.normalPosition = QPointF(nx, ny);
+
+        // Map to screen.
+        QPlatformScreen *screen = mQDisplay->screens().at(0);
+        QRect screenRect = screen->geometry();
+        x = int(nx * screenRect.width());
+        y = int(ny * screenRect.height());
+
+#ifdef POINT_DEBUG
+        qDebug() << "normalized position" << nx << ny
+                 << "win rect" << winRect << "screen rect" << screenRect;
+        qDebug() << "mapped to screen position" << x << y;
+#endif
+
+        tp.area = QRectF(x, y, 1, 1);
+    }
+
+    tp.state = state;
+    tp.id = id;
+    tp.isPrimary = mTouchPoints.isEmpty();
+    tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
+    mTouchPoints.append(tp);
+}
+
+void QWaylandInputDevice::inputHandleTouchFrame(void *data, struct wl_input_device *wl_input_device)
+{
+    QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
+    inputDevice->handleTouchFrame();
+}
+
+void QWaylandInputDevice::handleTouchFrame()
+{
+    // Copy all points, that are in the previous but not in the current list, as stationary.
+    for (int i = 0; i < mPrevTouchPoints.count(); ++i) {
+        const QWindowSystemInterface::TouchPoint &prevPoint(mPrevTouchPoints.at(i));
+        if (prevPoint.state == Qt::TouchPointReleased)
+            continue;
+        bool found = false;
+        for (int j = 0; j < mTouchPoints.count(); ++j)
+            if (mTouchPoints.at(j).id == prevPoint.id) {
+                found = true;
+                break;
+            }
+        if (!found) {
+            QWindowSystemInterface::TouchPoint p = prevPoint;
+            p.state = Qt::TouchPointStationary;
+            mTouchPoints.append(p);
+        }
+    }
+
+    if (mTouchPoints.isEmpty()) {
+        mPrevTouchPoints.clear();
+        return;
+    }
+
+#ifdef POINT_DEBUG
+        qDebug() << mTouchPoints.count() << "touchpoints, event type" << mTouchState;
+        for (int i = 0; i < mTouchPoints.count(); ++i)
+            qDebug() << "    " << mTouchPoints[i].id << mTouchPoints[i].state << mTouchPoints[i].area;
+#endif
+
+    QWindowSystemInterface::handleTouchEvent(0, mTouchState, QTouchEvent::TouchScreen, mTouchPoints);
+
+    bool allReleased = true;
+    for (int i = 0; i < mTouchPoints.count(); ++i)
+        if (mTouchPoints.at(i).state != Qt::TouchPointReleased) {
+            allReleased = false;
+            break;
+        }
+
+    mPrevTouchPoints = mTouchPoints;
+    mTouchPoints.clear();
+
+    if (allReleased) {
+#ifdef POINT_DEBUG
+        qDebug() << mTouchPoints.count() << "touchpoints, event type" << QEvent::TouchEnd;
+#endif
+        QWindowSystemInterface::handleTouchEvent(0, QEvent::TouchEnd, QTouchEvent::TouchScreen, mTouchPoints);
+        mTouchState = QEvent::TouchBegin;
+        mPrevTouchPoints.clear();
+    } else if (mTouchState == QEvent::TouchBegin)
+        mTouchState = QEvent::TouchUpdate;
+}
+
+void QWaylandInputDevice::inputHandleTouchCancel(void *data, struct wl_input_device *wl_input_device)
+{
+}
+
 const struct wl_input_device_listener QWaylandInputDevice::inputDeviceListener = {
     QWaylandInputDevice::inputHandleMotion,
     QWaylandInputDevice::inputHandleButton,
     QWaylandInputDevice::inputHandleKey,
     QWaylandInputDevice::inputHandlePointerFocus,
     QWaylandInputDevice::inputHandleKeyboardFocus,
+    QWaylandInputDevice::inputHandleTouchDown,
+    QWaylandInputDevice::inputHandleTouchUp,
+    QWaylandInputDevice::inputHandleTouchMotion,
+    QWaylandInputDevice::inputHandleTouchFrame,
+    QWaylandInputDevice::inputHandleTouchCancel
 };
 
 void QWaylandInputDevice::attach(QWaylandBuffer *buffer, int x, int y)

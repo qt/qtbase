@@ -192,15 +192,6 @@ bool QUdpSocketPrivate::doEnsureInitialized(const QHostAddress &bindAddress, qui
         proto = address->protocol();
     }
 
-#if defined(QT_NO_IPV6)
-    Q_Q(QUdpSocket);
-    if (proto == QUdpSocket::IPv6Protocol) {
-        socketError = QUdpSocket::UnsupportedSocketOperationError;
-        q->setErrorString(QUdpSocket::tr("This platform does not support IPv6"));
-        return false;
-    }
-#endif
-
     // now check if the socket engine is initialized and to the right type
     if (!socketEngine || !socketEngine->isValid()) {
         resolveProxy(remoteAddress.toString(), bindPort);

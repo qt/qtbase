@@ -10,10 +10,10 @@ build_all:!build_pass {
 RESOURCES += undo.qrc
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/qtbase/undo
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/undo
 sources.files = $$SOURCES $$HEADERS *.pro icons $$RESOURCES $$FORMS
-sources.path = $$[QT_INSTALL_DEMOS]/qtbase/undo
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/undo
 INSTALLS += target sources
 
-symbian: CONFIG += qt_demo
 QT += widgets 
+symbian: CONFIG += qt_example

@@ -96,6 +96,9 @@ private slots:
     void drawUnderlinedText();
 
     void unprintableCharacter_qtbug12614();
+
+    void underlinedColor_qtbug20159();
+    void textDocumentColor();
 };
 
 void tst_QStaticText::init()
@@ -781,6 +784,43 @@ void tst_QStaticText::unprintableCharacter_qtbug12614()
     QStaticText staticText(s);
 
     QVERIFY(staticText.size().isValid()); // Force layout. Should not crash.
+}
+
+void tst_QStaticText::underlinedColor_qtbug20159()
+{
+    QString multiScriptText;
+    multiScriptText += QChar(0x0410); // Cyrillic 'A'
+    multiScriptText += QLatin1Char('A');
+
+    QStaticText staticText(multiScriptText);
+
+    QFont font;
+    font.setUnderline(true);
+
+    staticText.prepare(QTransform(), font);
+
+    QStaticTextPrivate *d = QStaticTextPrivate::get(&staticText);
+    QCOMPARE(d->itemCount, 2);
+
+    // The pen should not be marked as dirty when drawing the underline
+    QVERIFY(!d->items[0].color.isValid());
+    QVERIFY(!d->items[1].color.isValid());
+}
+
+void tst_QStaticText::textDocumentColor()
+{
+    QStaticText staticText("A<font color=\"red\">B</font>");
+    staticText.setTextFormat(Qt::RichText);
+    staticText.prepare();
+
+    QStaticTextPrivate *d = QStaticTextPrivate::get(&staticText);
+    QCOMPARE(d->itemCount, 2);
+
+    // The pen should not be marked as dirty when drawing the underline
+    QVERIFY(!d->items[0].color.isValid());
+    QVERIFY(d->items[1].color.isValid());
+
+    QCOMPARE(d->items[1].color, QColor(Qt::red));
 }
 
 QTEST_MAIN(tst_QStaticText)

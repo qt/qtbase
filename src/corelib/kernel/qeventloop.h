@@ -66,10 +66,6 @@ public:
         ExcludeUserInputEvents = 0x01,
         ExcludeSocketNotifiers = 0x02,
         WaitForMoreEvents = 0x04,
-#ifdef QT3_SUPPORT
-        ExcludeUserInput = ExcludeUserInputEvents,
-        WaitForMore = WaitForMoreEvents,
-#endif
 	X11ExcludeTimers = 0x08
 #ifdef QT_DEPRECATED
 	, DeferredDeletion = 0x10

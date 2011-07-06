@@ -221,57 +221,7 @@ public:
     static QStringList idnWhitelist();
     static void setIdnWhitelist(const QStringList &);
 
-#if defined QT3_SUPPORT
-    inline QT3_SUPPORT QString protocol() const { return scheme(); }
-    inline QT3_SUPPORT void setProtocol(const QString &s) { setScheme(s); }
-    inline QT3_SUPPORT void setUser(const QString &s) { setUserName(s); }
-    inline QT3_SUPPORT QString user() const { return userName(); }
-    inline QT3_SUPPORT bool hasUser() const { return !userName().isEmpty(); }
-    inline QT3_SUPPORT bool hasPassword() const { return !password().isEmpty(); }
-    inline QT3_SUPPORT bool hasHost() const { return !host().isEmpty(); }
-    inline QT3_SUPPORT bool hasPort() const { return port() != -1; }
-    inline QT3_SUPPORT bool hasPath() const { return !path().isEmpty(); }
-    inline QT3_SUPPORT void setQuery(const QString &txt)
-    {
-        setEncodedQuery(txt.toLatin1());
-    }
-    inline QT3_SUPPORT QString query() const
-    {
-        return QString::fromLatin1(encodedQuery().constData());
-    }
-    inline QT3_SUPPORT QString ref() const { return fragment(); }
-    inline QT3_SUPPORT void setRef(const QString &txt) { setFragment(txt); }
-    inline QT3_SUPPORT bool hasRef() const { return !fragment().isEmpty(); }
-    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1Char('/') + p); }
-    QT3_SUPPORT void setFileName(const QString &txt);
-    QT3_SUPPORT QString fileName() const;
-    QT3_SUPPORT QString dirPath() const;
-    static inline QT3_SUPPORT void decode(QString &url)
-    {
-        url = QUrl::fromPercentEncoding(url.toLatin1());
-    }
-    static inline QT3_SUPPORT void encode(QString &url)
-    {
-        url = QString::fromLatin1(QUrl::toPercentEncoding(url).constData());
-    }
-    inline QT3_SUPPORT operator QString() const { return toString(); }
-    inline QT3_SUPPORT bool cdUp()
-    {
-        *this = resolved(QUrl(QLatin1String("..")));
-        return true;
-    }
-    static inline QT3_SUPPORT bool isRelativeUrl(const QString &url)
-    {
-        return QUrl(url).isRelative();
-    }
-#endif
-
     QString errorString() const;
-
-protected:
-#if defined (QT3_SUPPORT)
-    inline QT3_SUPPORT void reset() { clear(); }
-#endif
 
 private:
     QUrlPrivate *d;

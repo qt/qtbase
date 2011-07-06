@@ -66,6 +66,13 @@ typedef enum {
   HB_Err_Out_Of_Memory                = 0xDEAD
 } HB_Error;
 
+typedef enum {
+    HB_NoBreak,
+    HB_SoftHyphen,
+    HB_Break,
+    HB_ForcedBreak
+} HB_LineBreakType;
+
 typedef QT_PREPEND_NAMESPACE(quint32) HB_Glyph;
 typedef void * HB_Font;
 typedef void * HB_Face;

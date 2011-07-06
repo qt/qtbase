@@ -778,12 +778,11 @@ CFG_SSE4_1=auto
 CFG_SSE4_2=auto
 CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=no
-CFG_IPV6=auto
 CFG_NAS=no
 CFG_QWS_DEPTHS=all
 CFG_USER_BUILD_KEY=
 CFG_ACCESSIBILITY=auto
-CFG_QT3SUPPORT=yes
+CFG_QT3SUPPORT=no
 CFG_ENDIAN=auto
 CFG_HOST_ENDIAN=auto
 CFG_DOUBLEFORMAT=auto
@@ -3690,10 +3689,6 @@ if [ "$OPT_HELP" = "yes" ]; then
     else
         SHY=" "
         SHN="*"
-    fi
-    if [ "$CFG_IPV6" = "auto" ]; then
-        I6Y="*"
-        I6N=" "
     fi
     if [ "$CFG_PRECOMPILE" = "auto" ] || [ "$CFG_PRECOMPILE" = "no" ]; then
         PHY=" "
@@ -6632,26 +6627,6 @@ if [ "$CFG_STL" != "no" ]; then
     fi
 fi
 
-# find if the platform supports IPv6
-if [ "$CFG_IPV6" != "no" ]; then
-    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-        #IPV6 should always be enabled for Symbian release
-        CFG_IPV6=yes
-    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-        CFG_IPV6=yes
-    else
-        if [ "$CFG_IPV6" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "IPv6 support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_IPV6=no
-        fi
-    fi
-fi
-
 # detect POSIX clock_gettime()
 if [ "$CFG_CLOCK_GETTIME" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/clock-gettime "POSIX clock_gettime()" $L_FLAGS $I_FLAGS $l_FLAGS; then
@@ -7176,9 +7151,6 @@ fi
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 [ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
-if [ "$CFG_IPV6" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG ipv6"
-fi
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -8222,7 +8194,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_ZLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ZLIB"
 [ "$CFG_S60" != "yes" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_S60"
 [ "$CFG_EXCEPTIONS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EXCEPTIONS"
-[ "$CFG_IPV6" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6"
 [ "$CFG_SXE" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SXE"
 [ "$CFG_DBUS" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DBUS"
 
@@ -8735,7 +8706,6 @@ if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "NEON support ........... ${CFG_NEON}"
 fi
 [ "${PLATFORM_QWS}" != "yes" -a "${PLATFORM_QPA}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
-echo "IPv6 support ........... $CFG_IPV6"
 echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
 echo "getaddrinfo support .... $CFG_GETADDRINFO"
 echo "getifaddrs support ..... $CFG_GETIFADDRS"

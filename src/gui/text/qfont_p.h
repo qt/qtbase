@@ -113,7 +113,7 @@ struct QFontDef
                     && styleStrategy == other.styleStrategy
                     && ignorePitch == other.ignorePitch && fixedPitch == other.fixedPitch
                     && family == other.family
-                    && styleName == other.styleName
+                    && (styleName.isEmpty() || other.styleName.isEmpty() || styleName == other.styleName)
                     && hintingPreference == other.hintingPreference
 #ifdef Q_WS_X11
                     && addStyle == other.addStyle

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example demos/affine
+    \example painting/affine
     \title Affine Transformations
 
     In this demo we show Qt's ability to perform affine transformations

@@ -420,7 +420,11 @@ init_context:
         QByteArray ace = QUrl::toAce(tlsHostName);
         // only send the SNI header if the URL is valid and not an IP
         if (!ace.isEmpty() && !QHostAddress().setAddress(tlsHostName)) {
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
+#else
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
+#endif
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
@@ -1262,10 +1266,17 @@ bool QSslSocketBackendPrivate::startHandshake()
         // if we're the server, don't check CN
         if (mode == QSslSocket::SslClientMode) {
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
-            QString commonName = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
+            QStringList commonNameList = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
+            bool matched = false;
 
-            if (!isMatchingHostname(commonName.toLower(), peerName.toLower())) {
-                bool matched = false;
+            foreach (const QString &commonName, commonNameList) {
+                if (isMatchingHostname(commonName.toLower(), peerName.toLower())) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched) {
                 foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
                     if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
@@ -1273,15 +1284,15 @@ bool QSslSocketBackendPrivate::startHandshake()
                         break;
                     }
                 }
+            }
 
-                if (!matched) {
-                    // No matches in common names or alternate names.
-                    QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
-                    errors << error;
-                    emit q->peerVerifyError(error);
-                    if (q->state() != QAbstractSocket::ConnectedState)
-                        return false;
-                }
+        if (!matched) {
+            // No matches in common names or alternate names.
+            QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
+            errors << error;
+            emit q->peerVerifyError(error);
+            if (q->state() != QAbstractSocket::ConnectedState)
+                return false;
             }
         }
     } else {

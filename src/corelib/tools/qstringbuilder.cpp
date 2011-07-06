@@ -162,6 +162,8 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
     }
 #endif
     if (len == -1) {
+        if (!a)
+            return;
         while (*a)
             *out++ = QLatin1Char(*a++);
     } else {

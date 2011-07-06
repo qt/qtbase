@@ -2413,11 +2413,6 @@ void QOpenGLPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOpe
         else
             state()->clipRegion = region;
         break;
-    case Qt::UniteClip:
-        state()->clipRegion |= region;
-        if (d->use_system_clip)
-            state()->clipRegion &= sysClip;
-        break;
     default:
         break;
     }

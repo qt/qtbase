@@ -67,17 +67,11 @@ public:
                   NoSymLinks  = 0x008,
                   AllEntries  = Dirs | Files | Drives,
                   TypeMask    = 0x00f,
-#ifdef QT3_SUPPORT
-                  All         = AllEntries,
-#endif
 
                   Readable    = 0x010,
                   Writable    = 0x020,
                   Executable  = 0x040,
                   PermissionMask    = 0x070,
-#ifdef QT3_SUPPORT
-                  RWEMask     = 0x070,
-#endif
 
                   Modified    = 0x080,
                   Hidden      = 0x100,
@@ -92,14 +86,8 @@ public:
                   NoDotDot      = 0x4000,
 
                   NoFilter = -1
-#ifdef QT3_SUPPORT
-                  ,DefaultFilter = NoFilter
-#endif
     };
     Q_DECLARE_FLAGS(Filters, Filter)
-#ifdef QT3_SUPPORT
-    typedef Filters FilterSpec;
-#endif
 
     enum SortFlag { Name        = 0x00,
                     Time        = 0x01,
@@ -114,9 +102,6 @@ public:
                     LocaleAware = 0x40, 
                     Type        = 0x80,
                     NoSort = -1
-#ifdef QT3_SUPPORT
-                  ,DefaultSort = NoSort
-#endif
     };
     Q_DECLARE_FLAGS(SortFlags, SortFlag)
 
@@ -223,36 +208,6 @@ public:
 
     static QString cleanPath(const QString &path);
     void refresh() const;
-
-#ifdef QT3_SUPPORT
-    typedef SortFlags SortSpec;
-    inline QT3_SUPPORT QString absPath() const { return absolutePath(); }
-    inline QT3_SUPPORT QString absFilePath(const QString &fileName, bool acceptAbsPath = true) const
-       { Q_UNUSED(acceptAbsPath); return absoluteFilePath(fileName); }
-    QT3_SUPPORT bool matchAllDirs() const;
-    QT3_SUPPORT void setMatchAllDirs(bool on);
-    inline QT3_SUPPORT QStringList entryList(const QString &nameFilter, Filters filters = NoFilter,
-                                           SortFlags sort = NoSort) const
-    { return entryList(nameFiltersFromString(nameFilter), filters, sort); }
-    inline QT3_SUPPORT QFileInfoList entryInfoList(const QString &nameFilter,
-                                                 Filters filters = NoFilter,
-                                                 SortFlags sort = NoSort) const
-    { return entryInfoList(nameFiltersFromString(nameFilter), filters, sort); }
-
-    QT3_SUPPORT QString nameFilter() const;
-    QT3_SUPPORT void setNameFilter(const QString &nameFilter);
-
-    inline QT3_SUPPORT bool mkdir(const QString &dirName, bool acceptAbsPath) const
-        { Q_UNUSED(acceptAbsPath); return mkdir(dirName); }
-    inline QT3_SUPPORT bool rmdir(const QString &dirName, bool acceptAbsPath) const
-        { Q_UNUSED(acceptAbsPath); return rmdir(dirName); }
-
-    inline QT3_SUPPORT void convertToAbs() { makeAbsolute(); }
-    inline QT3_SUPPORT static QString currentDirPath() { return currentPath(); }
-    inline QT3_SUPPORT static QString homeDirPath() { return homePath(); }
-    inline QT3_SUPPORT static QString rootDirPath() { return rootPath(); }
-    inline QT3_SUPPORT static QString cleanDirPath(const QString &name) { return cleanPath(name); }
-#endif // QT3_SUPPORT
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDir::Filters)

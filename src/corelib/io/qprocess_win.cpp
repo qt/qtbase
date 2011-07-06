@@ -46,6 +46,7 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qfileinfo.h>
+#include <qregexp.h>
 #include <qtimer.h>
 #include <qthread.h>
 #include <qmutex.h>
@@ -256,24 +257,19 @@ static QString qt_create_commandline(const QString &program, const QStringList &
 
     for (int i=0; i<arguments.size(); ++i) {
         QString tmp = arguments.at(i);
-        // in the case of \" already being in the string the \ must also be escaped
-        tmp.replace( QLatin1String("\\\""), QLatin1String("\\\\\"") );
-        // escape a single " because the arguments will be parsed
-        tmp.replace( QLatin1Char('\"'), QLatin1String("\\\"") );
+        // Quotes are escaped and their preceding backslashes are doubled.
+        tmp.replace(QRegExp(QLatin1String("(\\\\*)\"")), QLatin1String("\\1\\1\\\""));
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            QString endQuote(QLatin1Char('\"'));
             int i = tmp.length();
-            while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
+            while (i > 0 && tmp.at(i - 1) == QLatin1Char('\\'))
                 --i;
-                endQuote += QLatin1Char('\\');
-            }
-            args += QLatin1String(" \"") + tmp.left(i) + endQuote;
-        } else {
-            args += QLatin1Char(' ') + tmp;
+            tmp.insert(i, QLatin1Char('"'));
+            tmp.prepend(QLatin1Char('"'));
         }
+        args += QLatin1Char(' ') + tmp;
     }
     return args;
 }

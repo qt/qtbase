@@ -1427,48 +1427,6 @@ bool QTextCodec::canEncode(const QString& s) const
     return (state.invalidChars == 0);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Returns a string representing the current language and
-    sublanguage, e.g. "pt" for Portuguese, or "pt_br" for Portuguese/Brazil.
-
-    \sa QLocale
-*/
-const char *QTextCodec::locale()
-{
-    static char locale[6];
-    QByteArray l = QLocale::system().name().toLatin1();
-    int len = qMin(l.length(), 5);
-    memcpy(locale, l.constData(), len);
-    locale[len] = '\0';
-
-    return locale;
-}
-
-/*!
-    \overload
-*/
-
-QByteArray QTextCodec::fromUnicode(const QString& uc, int& lenInOut) const
-{
-    QByteArray result = convertFromUnicode(uc.constData(), lenInOut, 0);
-    lenInOut = result.length();
-    return result;
-}
-
-/*!
-    \overload
-
-    \a a contains the source characters; \a len contains the number of
-    characters in \a a to use.
-*/
-QString QTextCodec::toUnicode(const QByteArray& a, int len) const
-{
-    len = qMin(a.size(), len);
-    return convertToUnicode(a.constData(), len, 0);
-}
-#endif
-
 /*!
     \overload
 
@@ -1551,22 +1509,6 @@ QByteArray QTextEncoder::fromUnicode(const QChar *uc, int len)
     QByteArray result = c->fromUnicode(uc, len, &state);
     return result;
 }
-
-#ifdef QT3_SUPPORT
-/*!
-  \overload
-
-  Converts \a lenInOut characters (not bytes) from \a uc, and returns the
-  result in a QByteArray. The number of characters read is returned in
-  the \a lenInOut parameter.
-*/
-QByteArray QTextEncoder::fromUnicode(const QString& uc, int& lenInOut)
-{
-    QByteArray result = c->fromUnicode(uc.constData(), lenInOut, &state);
-    lenInOut = result.length();
-    return result;
-}
-#endif
 
 /*!
     \class QTextDecoder
