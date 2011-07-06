@@ -2215,9 +2215,9 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    inline QFlags(const QFlags &f) : i(f.i) {}
-    inline QFlags(Enum f) : i(f) {}
-    inline QFlags(Zero = 0) : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
@@ -2228,18 +2228,18 @@ public:
     inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
     inline QFlags &operator^=(Enum f) { i ^= f; return *this; }
 
-    inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR  inline operator int() const { return i; }
 
-    inline QFlags operator|(QFlags f) const { QFlags g; g.i = i | f.i; return g; }
-    inline QFlags operator|(Enum f) const { QFlags g; g.i = i | f; return g; }
-    inline QFlags operator^(QFlags f) const { QFlags g; g.i = i ^ f.i; return g; }
-    inline QFlags operator^(Enum f) const { QFlags g; g.i = i ^ f; return g; }
-    inline QFlags operator&(int mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(uint mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(Enum f) const { QFlags g; g.i = i & f; return g; }
-    inline QFlags operator~() const { QFlags g; g.i = ~i; return g; }
+    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(Enum(i ^ f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(Enum(~i)); }
 
-    inline bool operator!() const { return !i; }
+    Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
     inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
@@ -2252,9 +2252,9 @@ inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) \
 { return QIncompatibleFlag(int(f1) | f2); }
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
 { return f2 | f1; } Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
 
 
