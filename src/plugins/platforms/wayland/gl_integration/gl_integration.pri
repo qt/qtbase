@@ -20,10 +20,10 @@ SOURCES += \
             QT_WAYLAND_GL_INTEGRATION = xcomposite_egl
             CONFIG += xcomposite_egl
         }
-    } mac {
+    } else:mac {
         QT_WAYLAND_GL_INTEGRATION = readback_cgl
         CONFIG += readback_cgl
-    }else {
+    } else {
         isEqual(QT_WAYLAND_GL_CONFIG, readback) {
             QT_WAYLAND_GL_INTEGRATION = readback_glx
             CONFIG += readback_glx
