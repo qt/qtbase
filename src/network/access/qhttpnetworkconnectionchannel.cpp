@@ -403,7 +403,7 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
             bytes += headerBytes;
             // If headers were parsed successfully now it is the ReadingDataState
             if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState) {
-                if (replyPrivate->isGzipped() && replyPrivate->autoDecompress) {
+                if (replyPrivate->isCompressed() && replyPrivate->autoDecompress) {
                     // remove the Content-Length from header
                     replyPrivate->removeAutoDecompressHeader();
                 } else {
@@ -475,30 +475,18 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
             {
                 // use the traditional slower reading (for compressed encoding, chunked encoding,
                 // no content-length etc)
-                QByteDataBuffer byteDatas;
-                qint64 haveRead = replyPrivate->readBody(socket, &byteDatas);
-                if (haveRead) {
+                qint64 haveRead = replyPrivate->readBody(socket, &replyPrivate->responseData);
+                if (haveRead > 0) {
                     bytes += haveRead;
-                    if (replyPrivate->autoDecompress)
-                        replyPrivate->appendCompressedReplyData(byteDatas);
-                    else
-                        replyPrivate->appendUncompressedReplyData(byteDatas);
-
-                    if (!replyPrivate->autoDecompress) {
-                        replyPrivate->totalProgress += bytes;
-                        if (replyPrivate->shouldEmitSignals()) {
-                            // important: At the point of this readyRead(), the byteDatas list must be empty,
-                            // else implicit sharing will trigger memcpy when the user is reading data!
-                            emit reply->readyRead();
-                            emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
-                        }
+                    replyPrivate->totalProgress += haveRead;
+                    if (replyPrivate->shouldEmitSignals()) {
+                        emit reply->readyRead();
+                        emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
                     }
-#ifndef QT_NO_COMPRESS
-                    else if (!expand(false)) { // expand a chunk if possible
-                        // If expand() failed we can just return, it had already called connection->emitReplyError()
-                        return;
-                    }
-#endif
+                } else if (haveRead == -1) {
+                    // Some error occured
+                    connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolFailure);
+                    break;
                 }
             }
             // still in ReadingDataState? This function will be called again by the socket's readyRead
@@ -638,57 +626,9 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
     return true;
 }
 
-
-#ifndef QT_NO_COMPRESS
-bool QHttpNetworkConnectionChannel::expand(bool dataComplete)
-{
-    Q_ASSERT(socket);
-    Q_ASSERT(reply);
-
-    qint64 total = reply->d_func()->compressedData.size();
-    if (total >= CHUNK || dataComplete) {
-         // uncompress the data
-        QByteArray content, inflated;
-        content = reply->d_func()->compressedData;
-        reply->d_func()->compressedData.clear();
-
-        int ret = Z_OK;
-        if (content.size())
-            ret = reply->d_func()->gunzipBodyPartially(content, inflated);
-        int retCheck = (dataComplete) ? Z_STREAM_END : Z_OK;
-        if (ret >= retCheck) {
-            if (inflated.size()) {
-                reply->d_func()->totalProgress += inflated.size();
-                reply->d_func()->appendUncompressedReplyData(inflated);
-                if (reply->d_func()->shouldEmitSignals()) {
-                    // important: At the point of this readyRead(), inflated must be cleared,
-                    // else implicit sharing will trigger memcpy when the user is reading data!
-                    emit reply->readyRead();
-                    emit reply->dataReadProgress(reply->d_func()->totalProgress, 0);
-                }
-            }
-        } else {
-            connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolFailure);
-            return false;
-        }
-    }
-    return true;
-}
-#endif
-
-
 void QHttpNetworkConnectionChannel::allDone()
 {
     Q_ASSERT(reply);
-#ifndef QT_NO_COMPRESS
-    // expand the whole data.
-    if (reply->d_func()->expectContent() && reply->d_func()->autoDecompress && !reply->d_func()->streamEnd) {
-        bool expandResult = expand(true);
-        // If expand() failed we can just return, it had already called connection->emitReplyError()
-        if (!expandResult)
-            return;
-    }
-#endif
 
     if (!reply) {
         qWarning() << "QHttpNetworkConnectionChannel::allDone() called without reply. Please report at http://bugreports.qt.nokia.com/";

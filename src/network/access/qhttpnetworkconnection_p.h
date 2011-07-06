@@ -202,9 +202,6 @@ public:
     QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket,
                         const QString &extraDetail = QString());
 
-#ifndef QT_NO_COMPRESS
-    bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
-#endif
     void removeReply(QHttpNetworkReply *reply);
 
     QString hostName;

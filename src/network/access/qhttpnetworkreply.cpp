@@ -65,6 +65,11 @@ QHttpNetworkReply::~QHttpNetworkReply()
     if (d->connection) {
         d->connection->d_func()->removeReply(this);
     }
+
+#ifndef QT_NO_COMPRESS
+    if (d->autoDecompress && d->isCompressed())
+        inflateEnd(&d->inflateStrm);
+#endif
 }
 
 QUrl QHttpNetworkReply::url() const
@@ -252,7 +257,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       chunkedTransferEncoding(false),
       connectionCloseEnabled(true),
       forceConnectionCloseEnabled(false),
-      currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
+      currentChunkSize(0), currentChunkRead(0), connection(0),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
@@ -274,11 +279,9 @@ void QHttpNetworkReplyPrivate::clearHttpLayerInformation()
     currentChunkRead = 0;
     connectionCloseEnabled = true;
 #ifndef QT_NO_COMPRESS
-    if (initInflate)
+    if (autoDecompress)
         inflateEnd(&inflateStrm);
 #endif
-    initInflate = false;
-    streamEnd = false;
     fields.clear();
 }
 
@@ -297,10 +300,10 @@ qint64 QHttpNetworkReplyPrivate::bytesAvailable() const
     return (state != ReadingDataState ? 0 : fragment.size());
 }
 
-bool QHttpNetworkReplyPrivate::isGzipped()
+bool QHttpNetworkReplyPrivate::isCompressed()
 {
     QByteArray encoding = headerField("content-encoding");
-    return qstricmp(encoding.constData(), "gzip") == 0;
+    return qstricmp(encoding.constData(), "gzip") == 0 || qstricmp(encoding.constData(), "deflate") == 0;
 }
 
 void QHttpNetworkReplyPrivate::removeAutoDecompressHeader()
@@ -357,120 +360,6 @@ QAuthenticatorPrivate::Method QHttpNetworkReplyPrivate::authenticationMethod(boo
     }
     return method;
 }
-
-#ifndef QT_NO_COMPRESS
-bool QHttpNetworkReplyPrivate::gzipCheckHeader(QByteArray &content, int &pos)
-{
-    int method = 0; // method byte
-    int flags = 0;  // flags byte
-    bool ret = false;
-
-    // Assure two bytes in the buffer so we can peek ahead -- handle case
-    // where first byte of header is at the end of the buffer after the last
-    // gzip segment
-    pos = -1;
-    QByteArray &body = content;
-    int maxPos = body.size()-1;
-    if (maxPos < 1) {
-        return ret;
-    }
-
-    // Peek ahead to check the gzip magic header
-    if (body[0] != char(gz_magic[0]) ||
-        body[1] != char(gz_magic[1])) {
-        return ret;
-    }
-    pos += 2;
-    // Check the rest of the gzip header
-    if (++pos <= maxPos)
-        method = body[pos];
-    if (pos++ <= maxPos)
-        flags = body[pos];
-    if (method != Z_DEFLATED || (flags & RESERVED) != 0) {
-        return ret;
-    }
-
-    // Discard time, xflags and OS code:
-    pos += 6;
-    if (pos > maxPos)
-        return ret;
-    if ((flags & EXTRA_FIELD) && ((pos+2) <= maxPos)) { // skip the extra field
-        unsigned len =  (unsigned)body[++pos];
-        len += ((unsigned)body[++pos])<<8;
-        pos += len;
-        if (pos > maxPos)
-            return ret;
-    }
-    if ((flags & ORIG_NAME) != 0) { // skip the original file name
-        while(++pos <= maxPos && body[pos]) {}
-    }
-    if ((flags & COMMENT) != 0) {   // skip the .gz file comment
-        while(++pos <= maxPos && body[pos]) {}
-    }
-    if ((flags & HEAD_CRC) != 0) {  // skip the header crc
-        pos += 2;
-        if (pos > maxPos)
-            return ret;
-    }
-    ret = (pos < maxPos); // return failed, if no more bytes left
-    return ret;
-}
-
-int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteArray &inflated)
-{
-    int ret = Z_DATA_ERROR;
-    unsigned have;
-    unsigned char out[CHUNK];
-    int pos = -1;
-
-    if (!initInflate) {
-        // check the header
-        if (!gzipCheckHeader(compressed, pos))
-            return ret;
-        // allocate inflate state
-        inflateStrm.zalloc = Z_NULL;
-        inflateStrm.zfree = Z_NULL;
-        inflateStrm.opaque = Z_NULL;
-        inflateStrm.avail_in = 0;
-        inflateStrm.next_in = Z_NULL;
-        ret = inflateInit2(&inflateStrm, -MAX_WBITS);
-        if (ret != Z_OK)
-            return ret;
-        initInflate = true;
-        streamEnd = false;
-    }
-
-    //remove the header.
-    compressed.remove(0, pos+1);
-    // expand until deflate stream ends
-    inflateStrm.next_in = (unsigned char *)compressed.data();
-    inflateStrm.avail_in = compressed.size();
-    do {
-        inflateStrm.avail_out = sizeof(out);
-        inflateStrm.next_out = out;
-        ret = inflate(&inflateStrm, Z_NO_FLUSH);
-        switch (ret) {
-        case Z_NEED_DICT:
-            ret = Z_DATA_ERROR;
-            // and fall through
-        case Z_DATA_ERROR:
-        case Z_MEM_ERROR:
-            inflateEnd(&inflateStrm);
-            initInflate = false;
-            return ret;
-        }
-        have = sizeof(out) - inflateStrm.avail_out;
-        inflated.append(QByteArray((const char *)out, have));
-     } while (inflateStrm.avail_out == 0);
-    // clean up and return
-    if (ret <= Z_ERRNO || ret == Z_STREAM_END) {
-        inflateEnd(&inflateStrm);
-        initInflate = false;
-    }
-    streamEnd = (ret == Z_STREAM_END);
-    return ret;
-}
-#endif
 
 qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
 {
@@ -616,6 +505,24 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         connectionCloseEnabled = (connectionHeaderField.toLower().contains("close") ||
             headerField("proxy-connection").toLower().contains("close")) ||
             (majorVersion == 1 && minorVersion == 0 && connectionHeaderField.isEmpty());
+
+#ifndef QT_NO_COMPRESS
+        if (autoDecompress && isCompressed()) {
+            // allocate inflate state
+            inflateStrm.zalloc = Z_NULL;
+            inflateStrm.zfree = Z_NULL;
+            inflateStrm.opaque = Z_NULL;
+            inflateStrm.avail_in = 0;
+            inflateStrm.next_in = Z_NULL;
+            // "windowBits can also be greater than 15 for optional gzip decoding.
+            // Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection"
+            // http://www.zlib.net/manual.html
+            int ret = inflateInit2(&inflateStrm, MAX_WBITS+32);
+            if (ret != Z_OK)
+                return -1;
+        }
+#endif
+
     }
     return bytes;
 }
@@ -712,21 +619,73 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteData
 qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuffer *out)
 {
     qint64 bytes = 0;
+
+#ifndef QT_NO_COMPRESS
+    // for gzip we'll allocate a temporary one that we then decompress
+    QByteDataBuffer *tempOutDataBuffer = (autoDecompress ? new QByteDataBuffer : out);
+#else
+    QByteDataBuffer *tempOutDataBuffer = out;
+#endif
+
+
     if (isChunked()) {
         // chunked transfer encoding (rfc 2616, sec 3.6)
-        bytes += readReplyBodyChunked(socket, out);
+        bytes += readReplyBodyChunked(socket, tempOutDataBuffer);
     } else if (bodyLength > 0) {
         // we have a Content-Length
-        bytes += readReplyBodyRaw(socket, out, bodyLength - contentRead);
+        bytes += readReplyBodyRaw(socket, tempOutDataBuffer, bodyLength - contentRead);
         if (contentRead + bytes == bodyLength)
             state = AllDoneState;
     } else {
         // no content length. just read what's possible
-        bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
+        bytes += readReplyBodyRaw(socket, tempOutDataBuffer, socket->bytesAvailable());
     }
+
+#ifndef QT_NO_COMPRESS
+    // This is true if there is compressed encoding and we're supposed to use it.
+    if (autoDecompress) {
+        qint64 uncompressRet = uncompressBodyData(tempOutDataBuffer, out);
+        delete tempOutDataBuffer;
+        if (uncompressRet < 0)
+            return -1;
+    }
+#endif
+
     contentRead += bytes;
     return bytes;
 }
+
+#ifndef QT_NO_COMPRESS
+qint64 QHttpNetworkReplyPrivate::uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out)
+{
+    for (int i = 0; i < in->bufferCount(); i++) {
+        QByteArray &bIn = (*in)[i];
+
+        inflateStrm.avail_in = bIn.size();
+        inflateStrm.next_in = reinterpret_cast<Bytef*>(bIn.data());
+
+        do {
+            QByteArray bOut;
+            // make a wild guess about the uncompressed size.
+            bOut.reserve(inflateStrm.avail_in * 3 + 512);
+            inflateStrm.avail_out = bOut.capacity();
+            inflateStrm.next_out = reinterpret_cast<Bytef*>(bOut.data());
+
+            int ret = inflate(&inflateStrm, Z_NO_FLUSH);
+            switch (ret) {
+            case Z_NEED_DICT:
+            case Z_DATA_ERROR:
+            case Z_MEM_ERROR:
+                return -1;
+            }
+            bOut.resize(bOut.capacity() - inflateStrm.avail_out);
+            out->append(bOut);
+        } while (inflateStrm.avail_in > 0);
+    }
+
+    return out->byteAmount();
+}
+#endif
 
 qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QAbstractSocket *socket, QByteDataBuffer *out, qint64 size)
 {
@@ -840,36 +799,6 @@ qint64 QHttpNetworkReplyPrivate::getChunkSize(QAbstractSocket *socket, qint64 *c
 
     return bytes;
 }
-
-void QHttpNetworkReplyPrivate::appendUncompressedReplyData(QByteArray &qba)
-{
-    responseData.append(qba);
-
-    // clear the original! helps with implicit sharing and
-    // avoiding memcpy when the user is reading the data
-    qba.clear();
-}
-
-void QHttpNetworkReplyPrivate::appendUncompressedReplyData(QByteDataBuffer &data)
-{
-    responseData.append(data);
-
-    // clear the original! helps with implicit sharing and
-    // avoiding memcpy when the user is reading the data
-    data.clear();
-}
-
-void QHttpNetworkReplyPrivate::appendCompressedReplyData(QByteDataBuffer &data)
-{
-    // Work in progress: Later we will directly use a list of QByteArray or a QRingBuffer
-    // instead of one QByteArray.
-    for(int i = 0; i < data.bufferCount(); i++) {
-        QByteArray &byteData = data[i];
-        compressedData.append(byteData.constData(), byteData.size());
-    }
-    data.clear();
-}
-
 
 bool QHttpNetworkReplyPrivate::shouldEmitSignals()
 {
