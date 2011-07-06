@@ -574,12 +574,11 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     case OnManualSubmit: {
         QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
         if (row.op == QSqlTableModelPrivate::None) {
-            row.op = QSqlTableModelPrivate::Update;
-            row.rec = d->rec;
-            QSqlTableModelPrivate::clearGenerated(row.rec);
-            row.primaryValues = d->primaryValues(indexInQuery(index).row());
+            row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
+                                                     d->rec,
+                                                     d->primaryValues(indexInQuery(index).row()));
         }
-        QSqlTableModelPrivate::setGeneratedValue(row.rec, index.column(), value);
+        row.setValue(index.column(), value);
         emit dataChanged(index, index);
         break; }
     }
@@ -1120,8 +1119,9 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
                 // so fake this by adjusting row
                 --row;
             } else {
-                d->cache[idx].op = QSqlTableModelPrivate::Delete;
-                d->cache[idx].primaryValues = d->primaryValues(indexInQuery(createIndex(idx, 0)).row());
+                d->cache[idx] = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Delete,
+                                                                   QSqlRecord(),
+                                                                   d->primaryValues(indexInQuery(createIndex(idx, 0)).row()));
                 emit headerDataChanged(Qt::Vertical, idx, idx);
             }
         }
@@ -1338,18 +1338,16 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
         return d->setRecord(row, record);
     case OnManualSubmit: {
         QSqlTableModelPrivate::ModifiedRow &mrow = d->cache[row];
-        if (mrow.op == QSqlTableModelPrivate::None) {
-            mrow.op = QSqlTableModelPrivate::Update;
-            mrow.rec = d->rec;
-            QSqlTableModelPrivate::clearGenerated(mrow.rec);
-            mrow.primaryValues = d->primaryValues(indexInQuery(createIndex(row, 0)).row());
-        }
+        if (mrow.op == QSqlTableModelPrivate::None)
+            mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
+                                                      d->rec,
+                                                      d->primaryValues(indexInQuery(createIndex(row, 0)).row()));
         for (int i = 0; i < record.count(); ++i) {
             int idx = d->nameToIndex(record.fieldName(i));
             if (idx == -1) {
                 isOk = false;
             } else {
-                QSqlTableModelPrivate::setGeneratedValue(mrow.rec, idx, record.value(i));
+                mrow.setValue(idx, record.value(i));
             }
         }
 

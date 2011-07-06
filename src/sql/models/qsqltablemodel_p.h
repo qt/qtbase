@@ -102,8 +102,13 @@ public:
 
     struct ModifiedRow
     {
-        ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord()): op(o), rec(r) { clearGenerated(rec);}
-        ModifiedRow(const ModifiedRow &other): op(other.op), rec(other.rec), primaryValues(other.primaryValues) {}
+        inline ModifiedRow(Op o = None, const QSqlRecord &r = QSqlRecord(), const QSqlRecord &pVals = QSqlRecord())
+            : op(o), rec(r), primaryValues(pVals) { clearGenerated(rec); }
+        inline void setValue(int c, const QVariant &v)
+        {
+            rec.setValue(c, v);
+            rec.setGenerated(c, true);
+        }
         Op op;
         QSqlRecord rec;
         QSqlRecord primaryValues;
