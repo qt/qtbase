@@ -378,6 +378,8 @@ private Q_SLOTS:
 
     void dontInsertPartialContentIntoTheCache();
 
+    void httpUserAgent();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -1601,6 +1603,11 @@ void tst_QNetworkReply::getFromHttp()
     // only compare when the header is set.
     if (reply->header(QNetworkRequest::ContentLengthHeader).isValid())
         QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+
+    // We know our internal server is apache..
+    if (qstrcmp(QTest::currentDataTag(), "success-internal") == 0)
+        QVERIFY(reply->header(QNetworkRequest::ServerHeader).toString().contains("Apache"));
+
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
@@ -6311,6 +6318,25 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
     QCOMPARE(reply->readAll().constData(), "load");
     QCOMPARE(memoryCache->m_insertedUrls.count(), 0);
 }
+
+void tst_QNetworkReply::httpUserAgent()
+{
+    QByteArray response("HTTP/1.0 200 OK\r\n\r\n");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    request.setHeader(QNetworkRequest::UserAgentHeader, "abcDEFghi");
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(server.receivedData.contains("\r\nUser-Agent: abcDEFghi\r\n"));
+}
+
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
