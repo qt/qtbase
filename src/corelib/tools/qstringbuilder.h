@@ -249,6 +249,23 @@ template <> struct QConcatenable<QString> : private QAbstractConcatenable
 #endif
 };
 
+template <int N> struct QConcatenable<QConstStringDataPtr<N> > : private QAbstractConcatenable
+{
+    typedef QConstStringDataPtr<N> type;
+    typedef QString ConvertTo;
+    enum { ExactSize = true };
+    static int size(const type &) { return N; }
+    static inline void appendTo(const type &a, QChar *&out)
+    {
+        memcpy(out, reinterpret_cast<const char*>(a.ptr->data), sizeof(QChar) * N);
+        out += N;
+    }
+#ifndef QT_NO_CAST_TO_ASCII
+    static inline QT_ASCII_CAST_WARN void appendTo(const type &a, char *&out)
+    { convertToAscii(a.ptr->data, N, out); }
+#endif
+};
+
 template <> struct QConcatenable<QStringRef> : private QAbstractConcatenable
 {
     typedef QStringRef type;
