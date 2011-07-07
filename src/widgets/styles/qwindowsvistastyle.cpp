@@ -43,6 +43,8 @@
 #include "qwindowsvistastyle_p.h"
 #include <private/qstylehelper_p.h>
 #include <private/qsystemlibrary_p.h>
+#include <private/qapplication_p.h>
+#include <qplatformnativeinterface_qpa.h>
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
 
@@ -2606,7 +2608,8 @@ QWidget *QWindowsVistaStylePrivate::treeViewHelper()
 {
     if (!m_treeViewHelper) {
         m_treeViewHelper = new QWidget(0);
-        pSetWindowTheme(m_treeViewHelper->winId(), L"explorer", NULL);
+        HWND handle = QApplicationPrivate::getHWNDForWidget(m_treeViewHelper);
+        pSetWindowTheme(handle, L"explorer", NULL);
     }
     return m_treeViewHelper;
 }

@@ -50,6 +50,8 @@ HEADERS += \
 }
 
 win32 {
+    qpa:DEFINES += QT_NO_PRINTDIALOG
+
     HEADERS += dialogs/qwizard_win_p.h \
                dialogs/qfiledialog_win_p.h
     SOURCES += dialogs/qdialogsbinarycompat_win.cpp \
@@ -61,7 +63,7 @@ win32 {
     !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
 }
 
-!mac:!symbian:unix|qpa {
+!mac:!symbian:unix|qpa:!win32 {
         HEADERS += dialogs/qpagesetupdialog_unix_p.h
 	SOURCES += dialogs/qprintdialog_unix.cpp \
 		   dialogs/qpagesetupdialog_unix.cpp

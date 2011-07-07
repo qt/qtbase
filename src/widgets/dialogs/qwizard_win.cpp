@@ -44,6 +44,8 @@
 
 #include "qwizard_win_p.h"
 #include <private/qsystemlibrary_p.h>
+#include <private/qapplication_p.h>
+#include "qplatformnativeinterface_qpa.h"
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"
@@ -286,7 +288,8 @@ QVistaHelper::VistaState QVistaHelper::vistaState()
 QColor QVistaHelper::basicWindowFrameColor()
 {
     DWORD rgb;
-    HANDLE hTheme = pOpenThemeData(QApplication::desktop()->winId(), L"WINDOW");
+    HWND handle = QApplicationPrivate::getHWNDForWidget(QApplication::desktop());
+    HANDLE hTheme = pOpenThemeData(handle, L"WINDOW");
     pGetThemeColor(
         hTheme, WIZ_WP_CAPTION, WIZ_CS_ACTIVE,
         wizard->isActiveWindow() ? WIZ_TMT_FILLCOLORHINT : WIZ_TMT_BORDERCOLORHINT,
@@ -306,7 +309,8 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
             mar.cyTopHeight = 0;
         else
             mar.cyTopHeight = titleBarSize() + topOffset();
-        HRESULT hr = pDwmExtendFrameIntoClientArea(wizard->winId(), &mar);
+        HWND wizardHandle = QApplicationPrivate::getHWNDForWidget(wizard);
+        HRESULT hr = pDwmExtendFrameIntoClientArea(wizardHandle, &mar);
         value = SUCCEEDED(hr);
     }
     return value;
@@ -314,7 +318,7 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
-    HDC hdc = painter->paintEngine()->getDC();
+    HDC hdc = static_cast<QRasterPaintEngine *>(painter->paintEngine())->getDC();
 
     if (vistaState() == VistaAero)
         drawBlackRect(QRect(0, 0, wizard->width(),
@@ -360,7 +364,8 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
             opt.dwMask = 0;
         else
             opt.dwMask = WIZ_WTNCA_NODRAWICON | WIZ_WTNCA_NODRAWCAPTION;
-        pSetWindowThemeAttribute(wizard->winId(), WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
+        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+        pSetWindowThemeAttribute(handle, WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
     }
 }
 
@@ -437,7 +442,8 @@ void QVistaHelper::setWindowPosHack()
     const int y = wizard->geometry().y(); // ignored by SWP_NOMOVE
     const int w = wizard->width();
     const int h = wizard->height();
-    SetWindowPos(wizard->winId(), 0, x, y, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+    SetWindowPos(handle, 0, x, y, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 }
 
 // The following hack allows any QWidget subclass to access
@@ -575,7 +581,8 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
         msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        msg.hwnd = wizard->winId();
+        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+        msg.hwnd = handle;
         winEvent(&msg, &result);
         msg.wParam = result;
         msg.message = WM_NCMOUSEMOVE;
@@ -587,7 +594,8 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
         msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        msg.hwnd = wizard->winId();
+        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+        msg.hwnd = handle;
         winEvent(&msg, &result);
         msg.wParam = result;
         msg.message = WM_NCLBUTTONDOWN;
@@ -599,7 +607,8 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
         msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        msg.hwnd = wizard->winId();
+        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
+        msg.hwnd = handle;
         winEvent(&msg, &result);
         msg.wParam = result;
         msg.message = WM_NCLBUTTONUP;
@@ -628,7 +637,8 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
 {
     bool value = false;
     if (vistaState() == VistaAero) {
-        HANDLE hTheme = pOpenThemeData(QApplication::desktop()->winId(), L"WINDOW");
+        HWND handle = QApplicationPrivate::getHWNDForWidget(QApplication::desktop());
+        HANDLE hTheme = pOpenThemeData(handle, L"WINDOW");
         if (!hTheme) return false;
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;

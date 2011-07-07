@@ -59,6 +59,9 @@
 #include "QtGui/qfont.h"
 #include "QtGui/qcursor.h"
 #include "QtGui/qregion.h"
+#include "QtGui/qwindow.h"
+#include "qwidget.h"
+#include "QtGui/qplatformnativeinterface_qpa.h"
 #include "QtCore/qmutex.h"
 #include "QtCore/qtranslator.h"
 #include "QtCore/qbasictimer.h"
@@ -511,6 +514,13 @@ public:
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
     void sendSyntheticEnterLeave(QWidget *widget);
+#endif
+#ifdef Q_OS_WIN
+    static HWND getHWNDForWidget(QWidget *widget)
+    {
+        QWindow *window = qobject_cast<QWindow *>(widget);
+        return static_cast<HWND> ("handle", QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window));
+    }
 #endif
 
 #ifndef QT_NO_GESTURES

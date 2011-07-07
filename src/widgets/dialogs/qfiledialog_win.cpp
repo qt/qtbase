@@ -54,6 +54,7 @@
 #include <qstringlist.h>
 #include <private/qsystemlibrary_p.h>
 #include "qfiledialog_win_p.h"
+#include "qplatformnativeinterface_qpa.h"
 
 #ifndef QT_NO_THREAD
 #  include <private/qmutexpool_p.h>
@@ -217,7 +218,7 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     memset(ofn, 0, sizeof(OPENFILENAME));
 
     ofn->lStructSize = sizeof(OPENFILENAME);
-    ofn->hwndOwner = parent ? parent->winId() : 0;
+    ofn->hwndOwner = QApplicationPrivate::getHWNDForWidget(parent);
     ofn->lpstrFilter = (wchar_t*)tFilters.utf16();
     ofn->lpstrFile = tInitSel;
     ofn->nMaxFile = maxLen;
@@ -522,7 +523,7 @@ static QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
         else
             parentWindow = QApplication::activeWindow();
         // Show the file dialog.
-        hr = pfd->Show(parentWindow ? parentWindow->winId() : 0);
+        hr = pfd->Show(QApplicationPrivate::getHWNDForWidget(parentWindow));
         if (SUCCEEDED(hr)) {
             // Retrieve the results.
             IShellItemArray *psiaResults;
@@ -611,7 +612,7 @@ QString qt_win_CID_get_existing_directory(const QFileDialogArgs &args)
                 parentWindow = QApplication::activeWindow();
 
             // Show the file dialog.
-            hr = pfd->Show(parentWindow ? parentWindow->winId() : 0);
+            hr = pfd->Show(QApplicationPrivate::getHWNDForWidget(parentWindow));
             if (SUCCEEDED(hr)) {
                 // Retrieve the result
                 IShellItem *psi = 0;
@@ -786,7 +787,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     qt_BROWSEINFO bi;
 
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
-    bi.hwndOwner = (parent ? parent->winId() : 0);
+    bi.hwndOwner = QApplicationPrivate::getHWNDForWidget(parent);
     bi.pidlRoot = NULL;
     //### This does not seem to be respected? - the dialog always displays "Browse for folder"
     bi.lpszTitle = (wchar_t*)tTitle.utf16();

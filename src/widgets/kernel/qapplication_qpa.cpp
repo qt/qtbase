@@ -434,6 +434,18 @@ void qt_init(QApplicationPrivate *, int type)
 #endif
 }
 
+#ifdef Q_OS_WIN
+static HDC         displayDC        = 0;                // display device context
+
+Q_WIDGETS_EXPORT HDC qt_win_display_dc()                        // get display DC
+{
+    Q_ASSERT(qApp && qApp->thread() == QThread::currentThread());
+    if (!displayDC)
+        displayDC = GetDC(0);
+    return displayDC;
+}
+#endif
+
 void qt_cleanup()
 {
     QPixmapCache::clear();
@@ -442,8 +454,13 @@ void qt_cleanup()
     QApplicationPrivate::inputContext = 0;
 
     QApplicationPrivate::active_window = 0; //### this should not be necessary
+#ifdef Q_OS_WIN
+    if (displayDC) {
+        ReleaseDC(0, displayDC);
+        displayDC = 0;
+    }
+#endif
 }
-
 
 #ifdef QT3_SUPPORT
 void QApplication::setMainWidget(QWidget *mainWidget)

@@ -46,6 +46,7 @@
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
+#include <qplatformnativeinterface_qpa.h>
 #include <private/qstylehelper_p.h>
 #include <private/qwidget_p.h>
 #include <private/qsystemlibrary_p.h>
@@ -295,9 +296,10 @@ void QWindowsXPStylePrivate::cleanupHandleMap()
 */
 HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 {
-    if (widget && widget->internalWinId())
-        return widget->internalWinId();
-
+    if (widget && widget->internalWinId()) {
+        QWidget *w = const_cast<QWidget *>(widget);
+        return QApplicationPrivate::getHWNDForWidget(w);
+    }
     if (!limboWidget) {
         limboWidget = new QWidget(0);
         limboWidget->createWinId();
@@ -307,7 +309,7 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
             QWidgetPrivate::allWidgets->remove(limboWidget);
     }
 
-    return limboWidget->winId();
+    return QApplicationPrivate::getHWNDForWidget(limboWidget);
 }
 
 /*! \internal
@@ -466,8 +468,31 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
 
     QRegion region;
 
-    if (success)
-        region = qt_region_from_HRGN(dest);
+    if (success) {
+        int numBytes = GetRegionData(dest, 0, 0);
+        if (numBytes == 0)
+            return QRegion();
+
+        char *buf = new char[numBytes];
+        if (buf == 0)
+            return QRegion();
+
+        RGNDATA *rd = reinterpret_cast<RGNDATA*>(buf);
+        if (GetRegionData(dest, numBytes, rd) == 0) {
+            delete [] buf;
+            return QRegion();
+        }
+
+        RECT *r = reinterpret_cast<RECT*>(rd->Buffer);
+        for (uint i = 0; i < rd->rdh.nCount; ++i) {
+            QRect rect;
+            rect.setCoords(r->left, r->top, r->right - 1, r->bottom - 1);
+            ++r;
+            region |= rect;
+        }
+
+        delete [] buf;
+    }
 
     DeleteObject(hRgn);
     DeleteObject(dest);
