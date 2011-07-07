@@ -800,8 +800,8 @@ const QString::Null QString::null = { };
     \sa split()
 */
 
-const QConstStringData<1> QString::shared_null = (const QConstStringData<1>) { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
-const QConstStringData<1> QString::shared_empty = (const QConstStringData<1>) { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
+const QConstStringData<1> QString::shared_null = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
+const QConstStringData<1> QString::shared_empty = { { Q_REFCOUNT_INITIALIZER(-1), 0, 0, false, { 0 } }, { 0 } };
 
 int QString::grow(int size)
 {
