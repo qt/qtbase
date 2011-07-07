@@ -90,32 +90,54 @@ struct QStringData {
     inline const ushort *data() const { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
 };
 
+template<int N> struct QConstStringData;
+template<int N> struct QConstStringDataPtr
+{
+    const QConstStringData<N> *ptr;
+};
 
-#if defined(Q_COMPILER_UNICODE_STRINGS)
+#if defined(Q_CC_GNU)
+// We need to create a QStringData in the .rodata section of memory
+// and the only way to do that is to create a "static const" variable.
+// To do that, we need the __extension__ {( )} trick which only GCC supports
 
+# if defined(Q_COMPILER_UNICODE_STRINGS)
 template<int n> struct QConstStringData
 {
     const QStringData str;
     const char16_t data[n];
     operator const QStringData &() const { return str; }
 };
-#define QStringLiteral(str) (const QConstStringData<sizeof(u"" str)/2>) \
-{ { Q_REFCOUNT_INITIALIZER(-1), sizeof(u"" str)/2 -1, 0, 0, { 0 } }, u"" str }
 
+# define QStringLiteral(str) \
+    __extension__ ({ \
+        enum { Size = sizeof(u"" str)/2 }; \
+        static const QConstStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, u"" str }; \
+        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        holder; })
+
+# elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
 // wchar_t is 2 bytes
-#elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
-
 template<int n> struct QConstStringData
 {
     const QStringData str;
     const wchar_t data[n];
     operator const QStringData &() const { return str; }
 };
-#define QStringLiteral(str) (const QConstStringData<sizeof(L"" str)/2>) \
-{ { Q_REFCOUNT_INITIALIZER(-1), sizeof(L"" str)/2 -1, 0, 0, { 0 } }, L"" str }
+# define QStringLiteral(str) \
+    __extension__ ({ \
+        enum { Size = sizeof(L"" str)/2 }; \
+        static const QConstStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, L"" str }; \
+        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        holder; })
+# endif
+#endif
 
+#ifndef QStringLiteral
+// not GCC, or GCC in C++98 mode with 4-byte wchar_t
 // fallback, uses QLatin1String as next best options
-#else
 
 template<int n> struct QConstStringData
 {
@@ -123,8 +145,7 @@ template<int n> struct QConstStringData
     const ushort data[n];
     operator const QStringData &() const { return str; }
 };
-#define QStringLiteral(str) QLatin1String(str)
-
+# define QStringLiteral(str) QLatin1String(str)
 #endif
 
 #ifndef QT_NO_KEYWORDS
@@ -558,6 +579,8 @@ public:
     QString(int size, Qt::Initialization);
     template <int n>
     inline QString(const QConstStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
+    template <int N>
+    inline QString(QConstStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
