@@ -475,51 +475,33 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!index.isValid() || index.column() >= d->rec.count() || index.row() >= rowCount())
         return false;
 
-    bool isOk = true;
-    switch (d->strategy) {
-    case OnFieldChange: {
-        QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
-        if (row.op == QSqlTableModelPrivate::Insert) {
-            row.setValue(index.column(), value);
-            return true;
-        }
+    if (d->strategy == OnFieldChange && d->cache.value(index.row()).op != QSqlTableModelPrivate::Insert) {
+        d->cache.clear();
+    } else if (d->strategy == OnRowChange && !d->cache.isEmpty() && !d->cache.contains(index.row())) {
+        submit();
+        d->cache.clear();
+    }
+
+    QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
+
+    if (row.op == QSqlTableModelPrivate::None) {
         row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                  d->rec,
                                                  d->primaryValues(indexInQuery(index).row()));
-        row.setValue(index.column(), value);
+    }
+
+    row.setValue(index.column(), value);
+
+    bool isOk = true;
+    if (d->strategy == OnFieldChange && row.op != QSqlTableModelPrivate::Insert) {
         isOk = updateRowInTable(index.row(), row.rec);
         if (isOk)
             select();
-        emit dataChanged(index, index);
-        break; }
-    case OnRowChange: {
-        if (!d->cache.isEmpty() && !d->cache.contains(index.row())) {
-            submit();
-            d->cache.clear();
-        }
-        QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
-        if (row.op == QSqlTableModelPrivate::Insert) {
-            row.setValue(index.column(), value);
-            return true;
-        } else if (row.op == QSqlTableModelPrivate::None) {
-            row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                     d->rec,
-                                                     d->primaryValues(indexInQuery(index).row()));
-        }
-        row.setValue(index.column(), value);
-        emit dataChanged(index, index);
-        break; }
-    case OnManualSubmit: {
-        QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
-        if (row.op == QSqlTableModelPrivate::None) {
-            row = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
-                                                     d->rec,
-                                                     d->primaryValues(indexInQuery(index).row()));
-        }
-        row.setValue(index.column(), value);
-        emit dataChanged(index, index);
-        break; }
     }
+
+    if (d->strategy == OnManualSubmit || row.op != QSqlTableModelPrivate::Insert)
+        emit dataChanged(index, index);
+
     return isOk;
 }
 
