@@ -73,7 +73,7 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
         }
 
         QtFontFoundry *foundry = f->foundry(foundryname, true);
-        QtFontStyle *fontStyle = foundry->style(styleKey,  true);
+        QtFontStyle *fontStyle = foundry->style(styleKey, QString(), true);
         fontStyle->smoothScalable = scalable;
         fontStyle->antialiased = antialiased;
         QtFontSize *size = fontStyle->pixelSize(pixelSize?pixelSize:SMOOTH_SCALABLE, true);
