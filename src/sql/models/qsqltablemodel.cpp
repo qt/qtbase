@@ -494,11 +494,25 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     bool isOk = true;
     if (d->strategy == OnFieldChange && row.op != QSqlTableModelPrivate::Insert) {
+        // historical bug: bad style to call updateRowInTable.
+        // Should call submit(), but maybe the author wanted to avoid
+        // clearing the cache on failure.
         isOk = updateRowInTable(index.row(), row.rec);
         if (isOk)
             select();
     }
 
+    // historical bug: dataChanged() is suppressed for OnFieldChange and OnRowChange
+    // when operating on an "insert" record. This is to accomodate
+    // applications that call setData() while handling primeInsert().
+    // Otherwise dataChanged() would be emitted between beginInsert()
+    // and endInsert().
+    // The price of this workaround is that, although the view making
+    // the change will already display the new value, other views connected
+    // to the model probably will not.
+    // It's not clear why OnManualSubmit is excluded from this workaround.
+    // Calling setData() while handling primeInsert() is arguably very wrong anyway.
+    // primeInsert() provides a ref to the record for settings values.
     if (d->strategy == OnManualSubmit || row.op != QSqlTableModelPrivate::Insert)
         emit dataChanged(index, index);
 
