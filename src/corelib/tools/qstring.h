@@ -639,10 +639,10 @@ public:
 };
 
 
-class Q_CORE_EXPORT QLatin1String
+class QLatin1String
 {
 public:
-    inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
+    Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
 
     inline const char *latin1() const { return m_data; }
     inline int size() const { return m_size; }

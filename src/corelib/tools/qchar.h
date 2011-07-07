@@ -55,9 +55,9 @@ class QString;
 struct QLatin1Char
 {
 public:
-    inline explicit QLatin1Char(char c) : ch(c) {}
-    inline char toLatin1() const { return ch; }
-    inline ushort unicode() const { return ushort(uchar(ch)); }
+    Q_DECL_CONSTEXPR inline explicit QLatin1Char(char c) : ch(c) {}
+    Q_DECL_CONSTEXPR inline char toLatin1() const { return ch; }
+    Q_DECL_CONSTEXPR inline ushort unicode() const { return ushort(uchar(ch)); }
 
 private:
     char ch;
@@ -66,17 +66,6 @@ private:
 
 class Q_CORE_EXPORT QChar {
 public:
-    QChar();
-#ifndef QT_NO_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QChar(char c);
-    QT_ASCII_CAST_WARN_CONSTRUCTOR QChar(uchar c);
-#endif
-    QChar(QLatin1Char ch);
-    QChar(uchar c, uchar r);
-    inline QChar(ushort rc) : ucs(rc){}
-    QChar(short rc);
-    QChar(uint rc);
-    QChar(int rc);
     enum SpecialCharacter {
         Null = 0x0000,
         Nbsp = 0x00a0,
@@ -87,8 +76,21 @@ public:
         ParagraphSeparator = 0x2029,
         LineSeparator = 0x2028
     };
-    QChar(SpecialCharacter sc);
 
+    Q_DECL_CONSTEXPR QChar() : ucs(0) {}
+    Q_DECL_CONSTEXPR QChar(ushort rc) : ucs(rc){} // implicit
+    Q_DECL_CONSTEXPR QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}
+    Q_DECL_CONSTEXPR QChar(short rc) : ucs(ushort(rc)){} // implicit
+    Q_DECL_CONSTEXPR QChar(uint rc) : ucs(ushort(rc & 0xffff)){}
+    Q_DECL_CONSTEXPR QChar(int rc) : ucs(ushort(rc & 0xffff)){}
+    Q_DECL_CONSTEXPR QChar(SpecialCharacter s) : ucs(ushort(s)) {} // implicit
+    Q_DECL_CONSTEXPR QChar(QLatin1Char ch) : ucs(ch.unicode()) {} // implicit
+
+#ifndef QT_NO_CAST_FROM_ASCII
+    // these two constructors are NOT inline const_expr!
+    QT_ASCII_CAST_WARN_CONSTRUCTOR explicit QChar(char c);
+    QT_ASCII_CAST_WARN_CONSTRUCTOR explicit QChar(uchar c);
+#endif
     // Unicode information
 
     enum Category
@@ -343,17 +345,8 @@ private:
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
-inline QChar::QChar() : ucs(0) {}
-
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
-
-inline QChar::QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}
-inline QChar::QChar(short rc) : ucs(ushort(rc)){}
-inline QChar::QChar(uint rc) : ucs(ushort(rc & 0xffff)){}
-inline QChar::QChar(int rc) : ucs(ushort(rc & 0xffff)){}
-inline QChar::QChar(SpecialCharacter s) : ucs(ushort(s)) {}
-inline QChar::QChar(QLatin1Char ch) : ucs(ch.unicode()) {}
 
 inline void QChar::setCell(uchar acell)
 { ucs = ushort((ucs & 0xff00) + acell); }
