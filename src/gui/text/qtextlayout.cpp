@@ -2420,13 +2420,13 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         unsigned short *logClusters = eng->logClusters(&si);
         QGlyphLayout glyphs = eng->shapedGlyphs(&si);
 
-        QTextItemInt gf(si, &f, format);
-        gf.glyphs = glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart);
-        gf.chars = eng->layoutData->string.unicode() + iterator.itemStart;
+        QTextItemInt gf(glyphs.mid(iterator.glyphsStart, iterator.glyphsEnd - iterator.glyphsStart),
+                        &f, eng->layoutData->string.unicode() + iterator.itemStart,
+                        iterator.itemEnd - iterator.itemStart, eng->fontEngine(si), format);
         gf.logClusters = logClusters + iterator.itemStart - si.position;
-        gf.num_chars = iterator.itemEnd - iterator.itemStart;
         gf.width = iterator.itemWidth;
         gf.justified = line.justified;
+        gf.initWithScriptItem(si);
 
         Q_ASSERT(gf.fontEngine);
 

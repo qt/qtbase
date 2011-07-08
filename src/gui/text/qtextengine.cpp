@@ -3034,6 +3034,22 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     : justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
       num_chars(0), chars(0), logClusters(0), f(0), fontEngine(0)
 {
+    f = font;
+    fontEngine = f->d->engineForScript(si.analysis.script);
+    Q_ASSERT(fontEngine);
+
+    initWithScriptItem(si);
+}
+
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe, const QTextCharFormat &format)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
+      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
+{
+}
+
+// Fix up flags and underlineStyle with given info
+void QTextItemInt::initWithScriptItem(const QScriptItem &si)
+{
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
     flags = 0;
@@ -3041,13 +3057,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::RightToLeft;
     ascent = si.ascent;
     descent = si.descent;
-    f = font;
-    fontEngine = f->d->engineForScript(si.analysis.script);
-    Q_ASSERT(fontEngine);
 
-    if (format.hasProperty(QTextFormat::TextUnderlineStyle)) {
-        underlineStyle = format.underlineStyle();
-    } else if (format.boolProperty(QTextFormat::FontUnderline)
+    if (charFormat.hasProperty(QTextFormat::TextUnderlineStyle)) {
+        underlineStyle = charFormat.underlineStyle();
+    } else if (charFormat.boolProperty(QTextFormat::FontUnderline)
                || f->d->underline) {
         underlineStyle = QTextCharFormat::SingleUnderline;
     }
@@ -3056,16 +3069,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     if (underlineStyle == QTextCharFormat::SingleUnderline)
         flags |= QTextItem::Underline;
 
-    if (f->d->overline || format.fontOverline())
+    if (f->d->overline || charFormat.fontOverline())
         flags |= QTextItem::Overline;
-    if (f->d->strikeOut || format.fontStrikeOut())
+    if (f->d->strikeOut || charFormat.fontStrikeOut())
         flags |= QTextItem::StrikeOut;
-}
-
-QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe)
-    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
-      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
-{
 }
 
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const
