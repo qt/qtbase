@@ -1131,10 +1131,6 @@ redefine to built-in booleans to make autotests work properly */
 
 typedef int QNoImplicitBoolCast;
 
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
-#define QT_NO_FPU
-#endif
-
 // This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
