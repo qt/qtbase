@@ -148,10 +148,6 @@ template<int n> struct QConstStringData
 # define QStringLiteral(str) QLatin1String(str)
 #endif
 
-#ifndef QT_NO_KEYWORDS
-#define qs(str) QStringLiteral(str)
-#endif
-
 class Q_CORE_EXPORT QString
 {
 public:
