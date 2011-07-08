@@ -137,7 +137,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
 */
-QString Q_GUI_EXPORT textBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
@@ -175,7 +175,7 @@ QString Q_GUI_EXPORT textBeforeOffsetFromString(int offset, QAccessible2::Bounda
 /*!
   \internal
 */
-QString Q_GUI_EXPORT textAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
@@ -210,7 +210,7 @@ QString Q_GUI_EXPORT textAfterOffsetFromString(int offset, QAccessible2::Boundar
 /*!
   \internal
 */
-QString Q_GUI_EXPORT textAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
