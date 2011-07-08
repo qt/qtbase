@@ -198,7 +198,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         Coord c = { 0, 0, // will be filled in later
                     glyph_width,
                     glyph_height, // texture coords
-                    metrics.x.round().truncate(),
+                    metrics.x.truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
         listItemCoordinates.insert(key, c);
