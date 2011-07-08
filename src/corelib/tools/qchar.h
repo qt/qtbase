@@ -228,11 +228,7 @@ public:
     char toAscii() const;
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
-#ifdef Q_NO_PACKED_REFERENCE
-    inline ushort &unicode() { return const_cast<ushort&>(ucs); }
-#else
     inline ushort &unicode() { return ucs; }
-#endif
 
     static QChar fromAscii(char c);
     static QChar fromLatin1(char c);
