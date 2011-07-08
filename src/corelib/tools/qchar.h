@@ -56,13 +56,8 @@ struct QLatin1Char
 {
 public:
     inline explicit QLatin1Char(char c) : ch(c) {}
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    inline const char toLatin1() const { return ch; }
-    inline const ushort unicode() const { return ushort(uchar(ch)); }
-#else
     inline char toLatin1() const { return ch; }
     inline ushort unicode() const { return ushort(uchar(ch)); }
-#endif
 
 private:
     char ch;
@@ -230,15 +225,9 @@ public:
 
     UnicodeVersion unicodeVersion() const;
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const char toAscii() const;
-    inline const char toLatin1() const;
-    inline const ushort unicode() const { return ucs; }
-#else
     char toAscii() const;
     inline char toLatin1() const;
     inline ushort unicode() const { return ucs; }
-#endif
 #ifdef Q_NO_PACKED_REFERENCE
     inline ushort &unicode() { return const_cast<ushort&>(ucs); }
 #else
@@ -339,11 +328,7 @@ Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 
 inline QChar::QChar() : ucs(0) {}
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-inline const char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-#else
 inline char QChar::toLatin1() const { return ucs > 0xff ? '\0' : char(ucs); }
-#endif
 inline QChar QChar::fromLatin1(char c) { return QChar(ushort(uchar(c))); }
 
 inline QChar::QChar(uchar c, uchar r) : ucs(ushort((r << 8) | c)){}

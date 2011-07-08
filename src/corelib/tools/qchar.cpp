@@ -1295,11 +1295,7 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
     \sa toLatin1(), unicode(), QTextCodec::codecForCStrings()
 */
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-const char QChar::toAscii() const
-#else
 char QChar::toAscii() const
-#endif
 {
 #ifndef QT_NO_CODEC_FOR_C_STRINGS
     if (QTextCodec::codecForCStrings())

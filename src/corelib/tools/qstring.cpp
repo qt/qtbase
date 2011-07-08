@@ -3636,10 +3636,6 @@ QByteArray QString::toLatin1() const
     return toLatin1_helper(unicode(), length());
 }
 
-// ### Qt 5: Change the return type of at least toAscii(),
-// toLatin1() and unicode() such that the use of Q_COMPILER_MANGLES_RETURN_TYPE
-// isn't necessary in the header. See task 177402.
-
 /*!
     Returns an 8-bit representation of the string as a QByteArray.
 
