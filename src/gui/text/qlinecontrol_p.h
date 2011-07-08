@@ -60,6 +60,7 @@
 #include "QtGui/qclipboard.h"
 #include "QtGui/qvalidator.h"
 #include "QtGui/qpalette.h"
+#include "QtGui/qguiapplication.h"
 #include "QtCore/qpoint.h"
 
 QT_BEGIN_HEADER
