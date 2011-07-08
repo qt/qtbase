@@ -2973,8 +2973,7 @@ void qt_nameprep(QString *source, int from)
             }
         }
         if (!isUnassignedAllowed) {
-            QChar::UnicodeVersion version = QChar::unicodeVersion(uc);
-            if (version == QChar::Unicode_Unassigned || version > QChar::Unicode_3_2) {
+            if (QChar::unicodeVersion(uc) > QChar::Unicode_3_2) {
                 source->resize(from); // not allowed, clear the label
                 return;
             }
