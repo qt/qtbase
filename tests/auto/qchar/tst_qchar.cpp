@@ -289,11 +289,10 @@ void tst_QChar::category()
     QVERIFY(QChar::category(0xdc00u) == QChar::Other_Surrogate);
     QVERIFY(QChar::category(0xdc01u) == QChar::Other_Surrogate);
 
-    QVERIFY(QChar::category((uint)0x10fffdu) == QChar::Other_PrivateUse);
-    QVERIFY(QChar::category((uint)0x110000u) == QChar::NoCategory);
-
     QVERIFY(QChar::category((uint)0x1aff) == QChar::Other_NotAssigned);
+    QVERIFY(QChar::category((uint)0x10fffdu) == QChar::Other_PrivateUse);
     QVERIFY(QChar::category((uint)0x10ffffu) == QChar::Other_NotAssigned);
+    QVERIFY(QChar::category((uint)0x110000u) == QChar::Other_NotAssigned);
 }
 
 void tst_QChar::direction()

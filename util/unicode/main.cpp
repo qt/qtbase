@@ -615,7 +615,7 @@ static void initCategoryMap()
         { QChar::Symbol_Currency,          "Sc" },
         { QChar::Symbol_Modifier,          "Sk" },
         { QChar::Symbol_Other,             "So" },
-        { QChar::NoCategory, 0 }
+        { QChar::Other_NotAssigned, 0 }
     };
     Cat *c = categories;
     while (c->name) {
@@ -763,10 +763,7 @@ static void readUnicodeData()
         }
 
         UnicodeData data(codepoint);
-        data.p.category = categoryMap.value(properties[UD_Category], QChar::NoCategory);
-        if (data.p.category == QChar::NoCategory)
-            qFatal("unassigned char category: %s", properties[UD_Category].constData());
-
+        data.p.category = categoryMap.value(properties[UD_Category], QChar::Other_NotAssigned);
         data.p.combiningClass = properties[UD_CombiningClass].toInt();
         if (!combiningClassUsage.contains(data.p.combiningClass))
             combiningClassUsage[data.p.combiningClass] = 1;

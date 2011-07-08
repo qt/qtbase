@@ -38,6 +38,8 @@ Third party components
 
 QtCore
 ------
+* drop a bogus QChar::NoCategory enum value; the proper QChar::Other_NotAssigned
+  value is returned for an unassigned codepoints now.
 
 QtGui
 -----
