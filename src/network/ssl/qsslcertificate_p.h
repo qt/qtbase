@@ -83,8 +83,8 @@ public:
     QByteArray versionString;
     QByteArray serialNumberString;
 
-    QMap<QString, QString> issuerInfo;
-    QMap<QString, QString> subjectInfo;
+    QMap<QByteArray, QString> issuerInfo;
+    QMap<QByteArray, QString> subjectInfo;
     QDateTime notValidAfter;
     QDateTime notValidBefore;
 

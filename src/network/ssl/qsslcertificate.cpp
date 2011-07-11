@@ -128,7 +128,7 @@
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name);
+static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -297,19 +297,19 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     return QCryptographicHash::hash(toDer(), algorithm);
 }
 
-static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
+static QByteArray _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 {
-    QString str;
+    QByteArray str;
     switch (info) {
-    case QSslCertificate::Organization: str = QLatin1String("O"); break;
-    case QSslCertificate::CommonName: str = QLatin1String("CN"); break;
-    case QSslCertificate::LocalityName: str = QLatin1String("L"); break;
-    case QSslCertificate::OrganizationalUnitName: str = QLatin1String("OU"); break;
-    case QSslCertificate::CountryName: str = QLatin1String("C"); break;
-    case QSslCertificate::StateOrProvinceName: str = QLatin1String("ST"); break;
-    case QSslCertificate::DistinguishedNameQualifier: str = QLatin1String("dnQualifier"); break;
-    case QSslCertificate::SerialNumber: str = QLatin1String("serialNumber"); break;
-    case QSslCertificate::EmailAddress: str = QLatin1String("emailAddress"); break;
+    case QSslCertificate::Organization: str = QByteArray("O"); break;
+    case QSslCertificate::CommonName: str = QByteArray("CN"); break;
+    case QSslCertificate::LocalityName: str = QByteArray("L"); break;
+    case QSslCertificate::OrganizationalUnitName: str = QByteArray("OU"); break;
+    case QSslCertificate::CountryName: str = QByteArray("C"); break;
+    case QSslCertificate::StateOrProvinceName: str = QByteArray("ST"); break;
+    case QSslCertificate::DistinguishedNameQualifier: str = QByteArray("dnQualifier"); break;
+    case QSslCertificate::SerialNumber: str = QByteArray("serialNumber"); break;
+    case QSslCertificate::EmailAddress: str = QByteArray("emailAddress"); break;
     }
     return str;
 }
@@ -347,7 +347,7 @@ QStringList QSslCertificate::issuerInfo(const QByteArray &tag) const
         d->issuerInfo =
                 _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
-    return d->issuerInfo.values(QString::fromLatin1(tag));
+    return d->issuerInfo.values(tag);
 }
 
 /*!
@@ -382,7 +382,7 @@ QStringList QSslCertificate::subjectInfo(const QByteArray &tag) const
         d->subjectInfo =
                 _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
-    return d->subjectInfo.values(QString::fromLatin1(tag));
+    return d->subjectInfo.values(tag);
 }
 
 /*!
@@ -706,9 +706,9 @@ QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
     return result;
 }
 
-static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
+static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
 {
-    QMap<QString, QString> info;
+    QMap<QByteArray, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
 
@@ -724,7 +724,7 @@ static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
         }
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(QString::fromUtf8(obj ? obj : reinterpret_cast<const char *>(&buf)),
+        info.insertMulti(QByteArray(obj ? obj : reinterpret_cast<const char *>(&buf)),
                          QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
