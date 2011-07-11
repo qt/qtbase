@@ -2285,7 +2285,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: resolve_depends(var, prefix) requires one or two arguments.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {
-            ret += resolveDepends(args[0].split(QString(Option::field_sep)),
+            ret += resolveDepends(values(args[0], place),
                                   (args.count() != 2 ? QString() : args[1]),
                                   place);
         }

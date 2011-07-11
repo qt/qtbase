@@ -130,7 +130,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_QT
 
 # Topological ordering of modules based on their QT.<module>.depends variable
-QT = $$resolve_depends($$QT, "QT.")
+QT = $$resolve_depends(QT, "QT.")
 
 QT_DEPENDS=
 
