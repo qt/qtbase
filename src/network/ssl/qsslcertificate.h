@@ -103,6 +103,8 @@ public:
     QStringList issuerInfo(const QByteArray &tag) const;
     QStringList subjectInfo(SubjectInfo info) const;
     QStringList subjectInfo(const QByteArray &tag) const;
+    QList<QByteArray> subjectInfoTags() const;
+    QList<QByteArray> issuerInfoTags() const;
     QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const;
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;

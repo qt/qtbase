@@ -386,6 +386,44 @@ QStringList QSslCertificate::subjectInfo(const QByteArray &tag) const
 }
 
 /*!
+    Returns a list of the tags that have values in the subject
+    information of this certificate. The information associated
+    with a given tag can be accessed using the subjectInfo()
+    method. Note that this list may include the OIDs for any
+    elements that are not known by the SSL backend.
+
+    \sa subjectInfo()
+*/
+QList<QByteArray> QSslCertificate::subjectInfoTags() const
+{
+    // lazy init
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
+
+    return d->subjectInfo.uniqueKeys();
+}
+
+/*!
+    Returns a list of the tags that have values in the issuer
+    information of this certificate. The information associated
+    with a given tag can be accessed using the issuerInfo()
+    method. Note that this list may include the OIDs for any
+    elements that are not known by the SSL backend.
+
+    \sa subjectInfo()
+*/
+QList<QByteArray> QSslCertificate::issuerInfoTags() const
+{
+    // lazy init
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
+
+    return d->issuerInfo.uniqueKeys();
+}
+
+/*!
   Returns the list of alternative subject names for this
   certificate. The alternate subject names typically contain host
   names, optionally with wildcards, that are valid for this
