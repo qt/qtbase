@@ -124,8 +124,10 @@ mac:!qpa {
 }
 win32:!wince*: {
     DEFINES += QT_NO_EGL
-    SOURCES += qgl_win.cpp \
-	           qglpixelbuffer_win.cpp
+    !qpa {
+        SOURCES += qgl_win.cpp \
+                       qglpixelbuffer_win.cpp
+    }
 }
 wince*: {
     SOURCES += qgl_wince.cpp \

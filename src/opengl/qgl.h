@@ -52,7 +52,7 @@
 
 QT_BEGIN_HEADER
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 # include <QtCore/qt_windows.h>
 #endif
 

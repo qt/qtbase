@@ -125,7 +125,7 @@ struct GLXFBConfig {
 
 #endif // Q_OS_HPUX
 
-#elif defined(Q_WS_WIN)
+#elif defined(Q_OS_WIN)
 DECLARE_HANDLE(HPBUFFERARB);
 #elif !defined(QT_NO_EGL)
 #include <QtGui/private/qegl_p.h>
