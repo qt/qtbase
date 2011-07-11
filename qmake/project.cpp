@@ -81,7 +81,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE, E_GENERATE_UID, E_RESOLVE_DEPENDS };
+                  E_SIZE, E_GENERATE_UID, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -114,6 +114,7 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("replace", E_REPLACE);
         qmake_expand_functions->insert("size", E_SIZE);
         qmake_expand_functions->insert("generate_uid", E_GENERATE_UID);
+        qmake_expand_functions->insert("sort_depends", E_SORT_DEPENDS);
         qmake_expand_functions->insert("resolve_depends", E_RESOLVE_DEPENDS);
     }
     return *qmake_expand_functions;
@@ -1803,32 +1804,32 @@ extern QString generate_test_uid(const QString& target);
 
 
 void calculateDeps(QStringList &sortedList, const QString &item, const QString &prefix,
-                   QStringList &org, QMap<QString, QStringList> &place)
+                   QStringList &org, bool resolve, QMap<QString, QStringList> &place)
 {
     if (sortedList.contains(item))
         return;
 
     foreach(QString dep, place.value(prefix + item + ".depends")) {
-        calculateDeps(sortedList, dep, prefix, org, place);
-        if (org.isEmpty())
+        calculateDeps(sortedList, dep, prefix, org, resolve, place);
+        if (!resolve && org.isEmpty())
             break;
     }
 
-    if (org.contains(item)) {
+    if (resolve || org.contains(item)) {
         sortedList.prepend(item);
         org.removeAll(item);
     }
 }
 
 QStringList
-QMakeProject::resolveDepends(const QStringList &deps, const QString &prefix,
+QMakeProject::resolveDepends(const QStringList &deps, const QString &prefix, bool resolve,
                              QMap<QString, QStringList> &place)
 {
     QStringList sortedList;
     QStringList org = deps;
     foreach(QString item, deps) {
-        calculateDeps(sortedList, item, prefix, org, place);
-        if (org.isEmpty())
+        calculateDeps(sortedList, item, prefix, org, resolve, place);
+        if (!resolve && org.isEmpty())
             break;
     }
     return sortedList;
@@ -2280,13 +2281,15 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += generate_test_uid(args.first());
         }
         break;
+    case E_SORT_DEPENDS:
     case E_RESOLVE_DEPENDS: {
         if(args.count() < 1 || args.count() > 2) {
-            fprintf(stderr, "%s:%d: resolve_depends(var, prefix) requires one or two arguments.\n",
-                    parser.file.toLatin1().constData(), parser.line_no);
+            fprintf(stderr, "%s:%d: %s(var, prefix) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no, func.toLatin1().constData());
         } else {
             ret += resolveDepends(values(args[0], place),
                                   (args.count() != 2 ? QString() : args[1]),
+                                  (func_t == E_RESOLVE_DEPENDS),
                                   place);
         }
         break; }
