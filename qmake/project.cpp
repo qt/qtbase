@@ -1815,7 +1815,7 @@ void calculateDeps(QStringList &sortedList, const QString &item, const QString &
     }
 
     if (org.contains(item)) {
-        sortedList += item;
+        sortedList.prepend(item);
         org.removeAll(item);
     }
 }
