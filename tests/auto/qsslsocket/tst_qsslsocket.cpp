@@ -191,6 +191,7 @@ private slots:
     void writeBigChunk();
     void blacklistedCertificates();
     void setEmptyDefaultConfiguration();
+    void versionAccessors();
 
     static void exitLoop()
     {
@@ -2047,6 +2048,15 @@ void tst_QSslSocket::setEmptyDefaultConfiguration()
     connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(!socket->waitForEncrypted(4000), qPrintable(socket->errorString()));
+}
+
+void tst_QSslSocket::versionAccessors()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    qDebug() << QSslSocket::sslLibraryVersionString();
+    qDebug() << QString::number(QSslSocket::sslLibraryVersionNumber(), 16);
 }
 
 #endif // QT_NO_OPENSSL

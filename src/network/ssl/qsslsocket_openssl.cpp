@@ -602,6 +602,23 @@ void QSslSocketPrivate::ensureInitialized()
     ensureCiphersAndCertsLoaded();
 }
 
+long QSslSocketPrivate::opensslVersionNumber()
+{
+    return q_SSLeay();
+}
+
+QString QSslSocketPrivate::opensslVersionString()
+{
+    if (!supportsSsl())
+        return QString();
+
+    const char *versionString = q_SSLeay_version(SSLEAY_VERSION);
+    if (!versionString)
+        return QString();
+
+    return QString::fromLatin1(versionString);
+}
+
 /*!
     \internal
 

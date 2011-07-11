@@ -1599,6 +1599,27 @@ bool QSslSocket::supportsSsl()
 }
 
 /*!
+    Returns the version number of the SSL library in use. Note that
+    this is the version of the library in use at run-time not compile
+    time. If no SSL support is available then this will return an
+    undefined value.
+*/
+long QSslSocket::sslLibraryVersionNumber()
+{
+    return QSslSocketPrivate::opensslVersionNumber();
+}
+
+/*!
+    Returns the version string of the SSL library in use. Note that
+    this is the version of the library in use at run-time not compile
+    time. If no SSL support is available then this will return an empty value.
+*/
+QString QSslSocket::sslLibraryVersionString()
+{
+    return QSslSocketPrivate::opensslVersionString();
+}
+
+/*!
     Starts a delayed SSL handshake for a client connection. This
     function can be called when the socket is in the \l ConnectedState
     but still in the \l UnencryptedMode. If it is not yet connected,
