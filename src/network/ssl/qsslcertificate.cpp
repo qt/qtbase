@@ -334,20 +334,20 @@ QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 }
 
 /*!
-  Returns the issuer information for \a tag from the certificate,
-  or an empty string if there is no information for \a tag in the
+  Returns the issuer information for \a attribute from the certificate,
+  or an empty string if there is no information for \a attribute in the
   certificate.
 
   \sa subjectInfo()
 */
-QStringList QSslCertificate::issuerInfo(const QByteArray &tag) const
+QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 {
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
-    return d->issuerInfo.values(tag);
+    return d->issuerInfo.values(attribute);
 }
 
 /*!
@@ -370,31 +370,31 @@ QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 }
 
 /*!
-    Returns the subject information for \a tag, or an empty string if
-    there is no information for \a tag in the certificate.
+    Returns the subject information for \a attribute, or an empty string if
+    there is no information for \a attribute in the certificate.
 
     \sa issuerInfo()
 */
-QStringList QSslCertificate::subjectInfo(const QByteArray &tag) const
+QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 {
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
-    return d->subjectInfo.values(tag);
+    return d->subjectInfo.values(attribute);
 }
 
 /*!
-    Returns a list of the tags that have values in the subject
+    Returns a list of the attributes that have values in the subject
     information of this certificate. The information associated
-    with a given tag can be accessed using the subjectInfo()
+    with a given attribute can be accessed using the subjectInfo()
     method. Note that this list may include the OIDs for any
     elements that are not known by the SSL backend.
 
     \sa subjectInfo()
 */
-QList<QByteArray> QSslCertificate::subjectInfoTags() const
+QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
 {
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
@@ -405,15 +405,15 @@ QList<QByteArray> QSslCertificate::subjectInfoTags() const
 }
 
 /*!
-    Returns a list of the tags that have values in the issuer
+    Returns a list of the attributes that have values in the issuer
     information of this certificate. The information associated
-    with a given tag can be accessed using the issuerInfo()
+    with a given attribute can be accessed using the issuerInfo()
     method. Note that this list may include the OIDs for any
     elements that are not known by the SSL backend.
 
     \sa subjectInfo()
 */
-QList<QByteArray> QSslCertificate::issuerInfoTags() const
+QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 {
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)

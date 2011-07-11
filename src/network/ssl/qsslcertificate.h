@@ -100,11 +100,11 @@ public:
     QByteArray serialNumber() const;
     QByteArray digest(QCryptographicHash::Algorithm algorithm = QCryptographicHash::Md5) const;
     QStringList issuerInfo(SubjectInfo info) const;
-    QStringList issuerInfo(const QByteArray &tag) const;
+    QStringList issuerInfo(const QByteArray &attribute) const;
     QStringList subjectInfo(SubjectInfo info) const;
-    QStringList subjectInfo(const QByteArray &tag) const;
-    QList<QByteArray> subjectInfoTags() const;
-    QList<QByteArray> issuerInfoTags() const;
+    QStringList subjectInfo(const QByteArray &attribute) const;
+    QList<QByteArray> subjectInfoAttributes() const;
+    QList<QByteArray> issuerInfoAttributes() const;
     QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const;
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;
