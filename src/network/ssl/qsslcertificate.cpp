@@ -711,12 +711,24 @@ static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
     QMap<QString, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
-        const char *obj = q_OBJ_nid2sn(q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e)));
+
+        int nid = q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e));
+        const char *obj=0;
+        char buf[80];
+        if (nid != NID_undef) {
+            obj = q_OBJ_nid2sn(nid);
+        }
+        else {
+            // This is used for unknown info so we get the OID as text
+            q_i2t_ASN1_OBJECT(buf,sizeof(buf),e->object);
+        }
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(QString::fromUtf8(obj), QString::fromUtf8((char*)data, size));
+        info.insertMulti(QString::fromUtf8(obj ? obj : reinterpret_cast<const char *>(&buf)),
+                         QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
+
     return info;
 }
 
