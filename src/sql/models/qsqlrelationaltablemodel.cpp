@@ -438,9 +438,9 @@ QVariant QSqlRelationalTableModel::data(const QModelIndex &index, int role) cons
         //already have the correct display value.
         if (d->strategy != OnFieldChange) {
             const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
-            if (row.op != QSqlTableModelPrivate::None && row.rec.isGenerated(index.column())) {
-                if (d->strategy == OnManualSubmit || row.op != QSqlTableModelPrivate::Delete) {
-                    QVariant v = row.rec.value(index.column());
+            if (row.op() != QSqlTableModelPrivate::None && row.rec().isGenerated(index.column())) {
+                if (d->strategy == OnManualSubmit || row.op() != QSqlTableModelPrivate::Delete) {
+                    QVariant v = row.rec().value(index.column());
                     if (v.isValid())
                         return relation.dictionary[v.toString()];
                 }
