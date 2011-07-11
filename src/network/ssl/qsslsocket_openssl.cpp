@@ -602,12 +602,12 @@ void QSslSocketPrivate::ensureInitialized()
     ensureCiphersAndCertsLoaded();
 }
 
-long QSslSocketPrivate::opensslVersionNumber()
+long QSslSocketPrivate::sslLibraryVersionNumber()
 {
     return q_SSLeay();
 }
 
-QString QSslSocketPrivate::opensslVersionString()
+QString QSslSocketPrivate::sslLibraryVersionString()
 {
     if (!supportsSsl())
         return QString();

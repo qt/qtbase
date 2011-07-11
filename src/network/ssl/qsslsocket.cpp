@@ -1606,7 +1606,7 @@ bool QSslSocket::supportsSsl()
 */
 long QSslSocket::sslLibraryVersionNumber()
 {
-    return QSslSocketPrivate::opensslVersionNumber();
+    return QSslSocketPrivate::sslLibraryVersionNumber();
 }
 
 /*!
@@ -1616,7 +1616,7 @@ long QSslSocket::sslLibraryVersionNumber()
 */
 QString QSslSocket::sslLibraryVersionString()
 {
-    return QSslSocketPrivate::opensslVersionString();
+    return QSslSocketPrivate::sslLibraryVersionString();
 }
 
 /*!
