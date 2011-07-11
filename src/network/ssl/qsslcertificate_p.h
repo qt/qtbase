@@ -92,6 +92,7 @@ public:
 
     void init(const QByteArray &data, QSsl::EncodingFormat format);
 
+    static QByteArray asn1ObjectName(ASN1_OBJECT *object);
     static QByteArray QByteArray_from_X509(X509 *x509, QSsl::EncodingFormat format);
     static QByteArray text_from_X509(X509 *x509);
     static QSslCertificate QSslCertificate_from_X509(X509 *x509);

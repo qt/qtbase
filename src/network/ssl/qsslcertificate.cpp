@@ -744,26 +744,29 @@ QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
     return result;
 }
 
+QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
+{
+    int nid = q_OBJ_obj2nid(object);
+    if (nid != NID_undef)
+        return QByteArray(q_OBJ_nid2sn(nid));
+
+    // This is used for unknown info so we get the OID as text
+    char buf[80];
+    q_i2t_ASN1_OBJECT(buf, sizeof(buf), object);
+
+    return QByteArray(buf);
+}
+
 static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
 {
     QMap<QByteArray, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
 
-        int nid = q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e));
-        const char *obj=0;
-        char buf[80];
-        if (nid != NID_undef) {
-            obj = q_OBJ_nid2sn(nid);
-        }
-        else {
-            // This is used for unknown info so we get the OID as text
-            q_i2t_ASN1_OBJECT(buf,sizeof(buf),e->object);
-        }
+        QByteArray name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(QByteArray(obj ? obj : reinterpret_cast<const char *>(&buf)),
-                         QString::fromUtf8((char*)data, size));
+        info.insertMulti(name, QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
 
