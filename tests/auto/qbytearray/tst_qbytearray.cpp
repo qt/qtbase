@@ -145,6 +145,8 @@ private slots:
     void byteRefDetaching() const;
 
     void reserve();
+
+    void literals();
 };
 
 tst_QByteArray::tst_QByteArray()
@@ -1527,12 +1529,36 @@ void tst_QByteArray::reserve()
     QVERIFY(qba.capacity() == capacity);
     char *data = qba.data();
 
-    // FIXME count from 0 to make it fail
-    for (int i = 1; i < capacity; i++) {
+    for (int i = 0; i < capacity; i++) {
         qba.resize(i);
         QVERIFY(capacity == qba.capacity());
         QVERIFY(data == qba.data());
     }
+}
+
+void tst_QByteArray::literals()
+{
+#if defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU)
+    QByteArray str(QByteArrayLiteral("abcd"));
+
+    QVERIFY(str.length() == 4);
+    QVERIFY(str == "abcd");
+    QVERIFY(str.data_ptr()->ref == -1);
+    QVERIFY(str.data_ptr()->offset == 0);
+
+    const char *s = str.constData();
+    QByteArray str2 = str;
+    QVERIFY(str2.constData() == s);
+
+    // detach on non const access
+    QVERIFY(str.data() != s);
+
+    QVERIFY(str2.constData() == s);
+    QVERIFY(str2.data() != s);
+
+#else
+    QSKIP("Only tested on c++0x compliant compiler or gcc", SkipAll);
+#endif
 }
 
 const char globalChar = '1';
