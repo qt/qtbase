@@ -1822,20 +1822,6 @@ void calculateDeps(QStringList &sortedList, const QString &item, const QString &
 }
 
 QStringList
-QMakeProject::resolveDepends(const QStringList &deps, const QString &prefix, bool resolve,
-                             QMap<QString, QStringList> &place)
-{
-    QStringList sortedList;
-    QStringList org = deps;
-    foreach(QString item, deps) {
-        calculateDeps(sortedList, item, prefix, org, resolve, place);
-        if (!resolve && org.isEmpty())
-            break;
-    }
-    return sortedList;
-}
-
-QStringList
 QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                               QMap<QString, QStringList> &place)
 {
@@ -2287,10 +2273,15 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             fprintf(stderr, "%s:%d: %s(var, prefix) requires one or two arguments.\n",
                     parser.file.toLatin1().constData(), parser.line_no, func.toLatin1().constData());
         } else {
-            ret += resolveDepends(values(args[0], place),
-                                  (args.count() != 2 ? QString() : args[1]),
-                                  (func_t == E_RESOLVE_DEPENDS),
-                                  place);
+            bool resolve = (func_t == E_RESOLVE_DEPENDS);
+            QString prefix = (args.count() != 2 ? QString() : args[1]);
+            QStringList deps = values(args[0], place);
+            QStringList org = deps;
+            foreach(const QString &item, deps) {
+                calculateDeps(ret, item, prefix, org, resolve, place);
+                if (!resolve && org.isEmpty())
+                    break;
+            }
         }
         break; }
     default: {
