@@ -1639,7 +1639,8 @@ QGraphicsScene::~QGraphicsScene()
     Q_D(QGraphicsScene);
 
     // Remove this scene from qApp's global scene list.
-    qApp->d_func()->scene_list.removeAll(this);
+    if (!QApplicationPrivate::is_app_closing)
+        qApp->d_func()->scene_list.removeAll(this);
 
     clear();
 
