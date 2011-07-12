@@ -152,7 +152,6 @@ extern bool qt_applefontsmoothing_enabled;
 static void qt_span_fill_clipRect(int count, const QSpan *spans, void *userData);
 static void qt_span_fill_clipped(int count, const QSpan *spans, void *userData);
 static void qt_span_clip(int count, const QSpan *spans, void *userData);
-static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *result);
 
 struct ClipData
 {
@@ -3496,76 +3495,6 @@ QRect QRasterPaintEngine::clipBoundingRect() const
         return clip->clipRect;
 
     return QRect(clip->xmin, clip->ymin, clip->xmax - clip->xmin, clip->ymax - clip->ymin);
-}
-
-static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *result)
-{
-    Q_ASSERT(c1->clipSpanHeight == c2->clipSpanHeight && c1->clipSpanHeight == result->clipSpanHeight);
-
-    QVarLengthArray<short, 4096> buffer;
-
-    QClipData::ClipLine *c1ClipLines = const_cast<QClipData *>(c1)->clipLines();
-    QClipData::ClipLine *c2ClipLines = const_cast<QClipData *>(c2)->clipLines();
-    result->initialize();
-
-    for (int y = 0; y < c1->clipSpanHeight; ++y) {
-        const QSpan *c1_spans = c1ClipLines[y].spans;
-        int c1_count = c1ClipLines[y].count;
-        const QSpan *c2_spans = c2ClipLines[y].spans;
-        int c2_count = c2ClipLines[y].count;
-
-        if (c1_count == 0 && c2_count == 0)
-            continue;
-        if (c1_count == 0) {
-            result->appendSpans(c2_spans, c2_count);
-            continue;
-        } else if (c2_count == 0) {
-            result->appendSpans(c1_spans, c1_count);
-            continue;
-        }
-
-        // we need to merge the two
-
-        // find required length
-        int max = qMax(c1_spans[c1_count - 1].x + c1_spans[c1_count - 1].len,
-                c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
-        buffer.resize(max);
-        memset(buffer.data(), 0, buffer.size() * sizeof(short));
-
-        // Fill with old spans.
-        for (int i = 0; i < c1_count; ++i) {
-            const QSpan *cs = c1_spans + i;
-            for (int j=cs->x; j<cs->x + cs->len; ++j)
-                buffer[j] = cs->coverage;
-        }
-
-        // Fill with new spans
-        for (int i = 0; i < c2_count; ++i) {
-            const QSpan *cs = c2_spans + i;
-            for (int j = cs->x; j < cs->x + cs->len; ++j) {
-                buffer[j] += cs->coverage;
-                if (buffer[j] > 255)
-                    buffer[j] = 255;
-            }
-        }
-
-        int x = 0;
-        while (x<max) {
-
-            // Skip to next span
-            while (x < max && buffer[x] == 0) ++x;
-            if (x >= max) break;
-
-            int sx = x;
-            int coverage = buffer[x];
-
-            // Find length of span
-            while (x < max && buffer[x] == coverage)
-                ++x;
-
-            result->appendSpan(sx, x - sx, y, coverage);
-        }
-    }
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
