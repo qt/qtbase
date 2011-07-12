@@ -64,6 +64,13 @@ static void my_terminate_handler()
 #ifdef __GLIBC__
 /* Use glibc's memory allocation hooks */
 
+// From glibc 2.14, the malloc hook variables are declared volatile.
+// Note: The malloc hook implementation is marked as deprecated.
+
+#if !defined(__MALLOC_HOOK_VOLATILE)
+#  define __MALLOC_HOOK_VOLATILE
+#endif
+
 /* our hooks */
 static void *my_malloc_hook(size_t, const void *);
 static void *my_realloc_hook(void *, size_t, const void *);
@@ -71,16 +78,17 @@ static void *my_memalign_hook(size_t, size_t, const void *);
 static void my_free_hook(void *, const void *);
 
 /* original hooks. */
-static void *(*old_malloc_hook)(size_t, const void *);
-static void *(*old_realloc_hook)(void *, size_t, const void *);
-static void *(*old_memalign_hook)(size_t, size_t, const void *);
-static void (*old_free_hook)(void *, const void *);
+static void *(*__MALLOC_HOOK_VOLATILE old_malloc_hook)(size_t, const void *);
+static void *(*__MALLOC_HOOK_VOLATILE old_realloc_hook)(void *, size_t, const void *);
+static void *(*__MALLOC_HOOK_VOLATILE old_memalign_hook)(size_t, size_t, const void *);
+static void  (*__MALLOC_HOOK_VOLATILE old_free_hook)(void *, const void *);
 
 /* initializer function */
 static void my_init_hook();
 
 /* Override initialising hook from the C library. */
-void (*__malloc_initialize_hook) (void) = my_init_hook;
+
+void (*__MALLOC_HOOK_VOLATILE __malloc_initialize_hook) (void) = my_init_hook;
 
 static void disableHooks()
 {
