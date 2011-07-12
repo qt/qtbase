@@ -812,11 +812,10 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
-#    if __INTEL_COMPILER >= 1100
+#    if __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_DECLTYPE
-#    elif __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
