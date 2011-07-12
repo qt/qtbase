@@ -66,7 +66,8 @@ template <class T> class QVector;
 struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
-class Q_GUI_EXPORT QImageTextKeyLang {
+#ifdef QT_DEPRECATED
+class Q_GUI_EXPORT QT_DEPRECATED QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
     QImageTextKeyLang() { }
@@ -81,6 +82,7 @@ public:
     inline bool operator!= (const QImageTextKeyLang &other) const
         { return !operator==(other); }
 };
+#endif
 #endif //QT_NO_IMAGE_TEXT
 
 
@@ -275,12 +277,13 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-    // The following functions are obsolete as of 4.1
-    QString text(const char* key, const char* lang=0) const;
-    QList<QImageTextKeyLang> textList() const;
-    QStringList textLanguages() const;
-    QString text(const QImageTextKeyLang&) const;
-    void setText(const char* key, const char* lang, const QString&);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED QString text(const char* key, const char* lang=0) const;
+    QT_DEPRECATED QList<QImageTextKeyLang> textList() const;
+    QT_DEPRECATED QStringList textLanguages() const;
+    QT_DEPRECATED QString text(const QImageTextKeyLang&) const;
+    QT_DEPRECATED void setText(const char* key, const char* lang, const QString&);
+#endif
 #endif
 
 #ifdef QT3_SUPPORT
