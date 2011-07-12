@@ -105,6 +105,10 @@ QT_BEGIN_NAMESPACE
     header and contains a QList<QNetworkCookie> representing the
     cookies sent by the server to be stored locally.
 
+    \value UserAgentHeader      The User-Agent header sent by HTTP clients.
+
+    \value ServerHeader         The Server header received by HTTP clients.
+
     \sa header(), setHeader(), rawHeader(), setRawHeader()
 */
 
@@ -650,6 +654,12 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
     case QNetworkRequest::ContentDispositionHeader:
         return "Content-Disposition";
 
+    case QNetworkRequest::UserAgentHeader:
+        return "User-Agent";
+
+    case QNetworkRequest::ServerHeader:
+        return "Server";
+
     // no default:
     // if new values are added, this will generate a compiler warning
     }
@@ -663,6 +673,8 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     case QNetworkRequest::ContentTypeHeader:
     case QNetworkRequest::ContentLengthHeader:
     case QNetworkRequest::ContentDispositionHeader:
+    case QNetworkRequest::UserAgentHeader:
+    case QNetworkRequest::ServerHeader:
         return value.toByteArray();
 
     case QNetworkRequest::LocationHeader:
@@ -745,6 +757,13 @@ static QNetworkRequest::KnownHeaders parseHeaderName(const QByteArray &headerNam
     case 's':
         if (qstricmp(headerName.constData(), "set-cookie") == 0)
             return QNetworkRequest::SetCookieHeader;
+        else if (qstricmp(headerName.constData(), "server") == 0)
+            return QNetworkRequest::ServerHeader;
+        break;
+
+    case 'u':
+        if (qstricmp(headerName.constData(), "user-agent") == 0)
+            return QNetworkRequest::UserAgentHeader;
         break;
     }
 
@@ -778,6 +797,8 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 {
     // header is always a valid value
     switch (header) {
+    case QNetworkRequest::UserAgentHeader:
+    case QNetworkRequest::ServerHeader:
     case QNetworkRequest::ContentTypeHeader:
         // copy exactly, convert to QString
         return QString::fromLatin1(value);

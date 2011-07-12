@@ -284,7 +284,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             family->english_name = getEnglishName(familyName);
 
         QtFontFoundry *foundry = family->foundry(foundryName, true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, QString(), true);
         style->smoothScalable = scalable;
         style->pixelSize( size, TRUE);
 
@@ -292,14 +292,14 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
         if (styleKey.weight <= QFont::DemiBold) {
             QtFontStyle::Key key(styleKey);
             key.weight = QFont::Bold;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }
         if (styleKey.style != QFont::StyleItalic) {
             QtFontStyle::Key key(styleKey);
             key.style = QFont::StyleItalic;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }
@@ -307,7 +307,7 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
             QtFontStyle::Key key(styleKey);
             key.weight = QFont::Bold;
             key.style = QFont::StyleItalic;
-            QtFontStyle *style = foundry->style(key, true);
+            QtFontStyle *style = foundry->style(key, QString(), true);
             style->smoothScalable = scalable;
             style->pixelSize( size, TRUE);
         }

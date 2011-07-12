@@ -128,7 +128,7 @@
 QT_BEGIN_NAMESPACE
 
 // forward declaration
-static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name);
+static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -297,19 +297,19 @@ QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) cons
     return QCryptographicHash::hash(toDer(), algorithm);
 }
 
-static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
+static QByteArray _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 {
-    QString str;
+    QByteArray str;
     switch (info) {
-    case QSslCertificate::Organization: str = QLatin1String("O"); break;
-    case QSslCertificate::CommonName: str = QLatin1String("CN"); break;
-    case QSslCertificate::LocalityName: str = QLatin1String("L"); break;
-    case QSslCertificate::OrganizationalUnitName: str = QLatin1String("OU"); break;
-    case QSslCertificate::CountryName: str = QLatin1String("C"); break;
-    case QSslCertificate::StateOrProvinceName: str = QLatin1String("ST"); break;
-    case QSslCertificate::DistinguishedNameQualifier: str = QLatin1String("dnQualifier"); break;
-    case QSslCertificate::SerialNumber: str = QLatin1String("serialNumber"); break;
-    case QSslCertificate::EmailAddress: str = QLatin1String("emailAddress"); break;
+    case QSslCertificate::Organization: str = QByteArray("O"); break;
+    case QSslCertificate::CommonName: str = QByteArray("CN"); break;
+    case QSslCertificate::LocalityName: str = QByteArray("L"); break;
+    case QSslCertificate::OrganizationalUnitName: str = QByteArray("OU"); break;
+    case QSslCertificate::CountryName: str = QByteArray("C"); break;
+    case QSslCertificate::StateOrProvinceName: str = QByteArray("ST"); break;
+    case QSslCertificate::DistinguishedNameQualifier: str = QByteArray("dnQualifier"); break;
+    case QSslCertificate::SerialNumber: str = QByteArray("serialNumber"); break;
+    case QSslCertificate::EmailAddress: str = QByteArray("emailAddress"); break;
     }
     return str;
 }
@@ -334,20 +334,20 @@ QStringList QSslCertificate::issuerInfo(SubjectInfo info) const
 }
 
 /*!
-  Returns the issuer information for \a tag from the certificate,
-  or an empty string if there is no information for \a tag in the
+  Returns the issuer information for \a attribute from the certificate,
+  or an empty string if there is no information for \a attribute in the
   certificate.
 
   \sa subjectInfo()
 */
-QStringList QSslCertificate::issuerInfo(const QByteArray &tag) const
+QStringList QSslCertificate::issuerInfo(const QByteArray &attribute) const
 {
     // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
 
-    return d->issuerInfo.values(QString::fromLatin1(tag));
+    return d->issuerInfo.values(attribute);
 }
 
 /*!
@@ -370,19 +370,57 @@ QStringList QSslCertificate::subjectInfo(SubjectInfo info) const
 }
 
 /*!
-    Returns the subject information for \a tag, or an empty string if
-    there is no information for \a tag in the certificate.
+    Returns the subject information for \a attribute, or an empty string if
+    there is no information for \a attribute in the certificate.
 
     \sa issuerInfo()
 */
-QStringList QSslCertificate::subjectInfo(const QByteArray &tag) const
+QStringList QSslCertificate::subjectInfo(const QByteArray &attribute) const
 {
     // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
 
-    return d->subjectInfo.values(QString::fromLatin1(tag));
+    return d->subjectInfo.values(attribute);
+}
+
+/*!
+    Returns a list of the attributes that have values in the subject
+    information of this certificate. The information associated
+    with a given attribute can be accessed using the subjectInfo()
+    method. Note that this list may include the OIDs for any
+    elements that are not known by the SSL backend.
+
+    \sa subjectInfo()
+*/
+QList<QByteArray> QSslCertificate::subjectInfoAttributes() const
+{
+    // lazy init
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromX509Name(q_X509_get_subject_name(d->x509));
+
+    return d->subjectInfo.uniqueKeys();
+}
+
+/*!
+    Returns a list of the attributes that have values in the issuer
+    information of this certificate. The information associated
+    with a given attribute can be accessed using the issuerInfo()
+    method. Note that this list may include the OIDs for any
+    elements that are not known by the SSL backend.
+
+    \sa subjectInfo()
+*/
+QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
+{
+    // lazy init
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromX509Name(q_X509_get_issuer_name(d->x509));
+
+    return d->issuerInfo.uniqueKeys();
 }
 
 /*!
@@ -706,17 +744,32 @@ QByteArray QSslCertificatePrivate::text_from_X509(X509 *x509)
     return result;
 }
 
-static QMap<QString, QString> _q_mapFromX509Name(X509_NAME *name)
+QByteArray QSslCertificatePrivate::asn1ObjectName(ASN1_OBJECT *object)
 {
-    QMap<QString, QString> info;
+    int nid = q_OBJ_obj2nid(object);
+    if (nid != NID_undef)
+        return QByteArray(q_OBJ_nid2sn(nid));
+
+    // This is used for unknown info so we get the OID as text
+    char buf[80];
+    q_i2t_ASN1_OBJECT(buf, sizeof(buf), object);
+
+    return QByteArray(buf);
+}
+
+static QMap<QByteArray, QString> _q_mapFromX509Name(X509_NAME *name)
+{
+    QMap<QByteArray, QString> info;
     for (int i = 0; i < q_X509_NAME_entry_count(name); ++i) {
         X509_NAME_ENTRY *e = q_X509_NAME_get_entry(name, i);
-        const char *obj = q_OBJ_nid2sn(q_OBJ_obj2nid(q_X509_NAME_ENTRY_get_object(e)));
+
+        QByteArray name = QSslCertificatePrivate::asn1ObjectName(q_X509_NAME_ENTRY_get_object(e));
         unsigned char *data = 0;
         int size = q_ASN1_STRING_to_UTF8(&data, q_X509_NAME_ENTRY_get_data(e));
-        info.insertMulti(QString::fromUtf8(obj), QString::fromUtf8((char*)data, size));
+        info.insertMulti(name, QString::fromUtf8((char*)data, size));
         q_CRYPTO_free(data);
     }
+
     return info;
 }
 

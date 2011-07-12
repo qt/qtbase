@@ -66,7 +66,9 @@ public:
         LastModifiedHeader,
         CookieHeader,
         SetCookieHeader,
-        ContentDispositionHeader  // added for QMultipartMessage
+        ContentDispositionHeader,  // added for QMultipartMessage
+        UserAgentHeader,
+        ServerHeader
     };
     enum Attribute {
         HttpStatusCodeAttribute,

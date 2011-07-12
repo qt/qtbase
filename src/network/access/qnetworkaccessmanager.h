@@ -159,7 +159,6 @@ protected:
 
 private:
     friend class QNetworkReplyImplPrivate;
-    friend class QNetworkAccessHttpBackend;
     friend class QNetworkReplyHttpImpl;
 
     Q_DECLARE_PRIVATE(QNetworkAccessManager)

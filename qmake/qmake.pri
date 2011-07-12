@@ -68,6 +68,7 @@ bootstrap { #Qt code
         qlist.cpp \
         qlinkedlist.cpp \
         qlocale.cpp \
+        qlocale_tools.cpp \
         qmalloc.cpp \
         qmap.cpp \
         qmetatype.cpp \
@@ -111,6 +112,7 @@ bootstrap { #Qt code
         qlist.h \
         qlinkedlist.h \
         qlocale.h \
+        qlocale_tools_p.h \
         qmalloc.h \
         qmap.h \
         qmetatype.h \

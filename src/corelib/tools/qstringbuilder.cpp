@@ -45,47 +45,6 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QLatin1Literal
-    \internal
-    \reentrant
-    \since 4.6
-
-    \brief The QLatin1Literal class provides a thin wrapper around string
-    literals used in source code.
-
-    \ingroup tools
-    \ingroup shared
-    \ingroup string-processing
-
-
-    Unlike \c QLatin1String, a \c QLatin1Literal can retrieve its size
-    without iterating over the literal.
-
-    The main use of \c QLatin1Literal is in conjunction with \c QStringBuilder
-    to reduce the number of reallocations needed to build up a string from
-    smaller chunks.
-
-    \sa QStringBuilder, QLatin1String, QString, QStringRef
-*/
-
-/*! \fn int QLatin1Literal::size() const
- 
-    Returns the number of characters in the literal \e{excluding} the trailing
-    NULL char.
-*/
-
-/*! \fn QLatin1Literal::QLatin1Literal(const char str)
- 
-    Constructs a new literal from the string \a str.
-*/
-
-/*! \fn const char *QLatin1Literal::data() const
- 
-    Returns a pointer to the first character of the string literal.
-    The string literal is terminated by a NUL character.
-*/
-
-/*!
     \class QStringBuilder
     \internal
     \reentrant
@@ -110,7 +69,7 @@ QT_BEGIN_NAMESPACE
     The QStringBuilder class is not to be used explicitly in user
     code.  Instances of the class are created as return values of the
     operator%() function, acting on objects of type QString,
-    QLatin1String, QLatin1Literal, QStringRef, QChar, QCharRef,
+    QLatin1String, QStringRef, QChar, QCharRef,
     QLatin1Char, and \c char.
 
     Concatenating strings with operator%() generally yields better
@@ -118,7 +77,7 @@ QT_BEGIN_NAMESPACE
     if there are three or more of them, and performs equally well in other
     cases.
 
-    \sa QLatin1Literal, QString
+    \sa QLatin1String, QString
 */
 
 /*! \fn QStringBuilder::QStringBuilder(const A &a, const B &b)
@@ -132,7 +91,7 @@ QT_BEGIN_NAMESPACE
     takes a QString parameter.
 
     This function is usable with arguments of type \c QString,
-    \c QLatin1String, \c QLatin1Literal, \c QStringRef, 
+    \c QLatin1String, \c QStringRef,
     \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 
@@ -145,7 +104,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn operator QStringBuilder::QString() const
  
-    Converts the \c QLatin1Literal into a \c QString object.
+    Converts the \c QLatin1String into a \c QString object.
 */
 
 /*! \internal

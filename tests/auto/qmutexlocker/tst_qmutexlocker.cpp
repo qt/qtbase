@@ -182,7 +182,7 @@ void tst_QMutexLocker::unlockAndRelockTest()
     releaseThread();
 
     waitForThread();
-    // mutex has been explicity relocked via QMutexLocker
+    // mutex has been explicitly relocked via QMutexLocker
     QVERIFY(!thread->mutex.tryLock());
     releaseThread();
 

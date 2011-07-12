@@ -923,7 +923,7 @@ void tst_QWizard::setOption_IndependentPages()
     CHECK_PAGE_INIT(11, 10, 11, 10, 10, 10);
 
     // Now, turn on the option and check that they're called at the
-    // appropiate times (which aren't the same).
+    // appropriate times (which aren't the same).
     wizard.setOption(QWizard::IndependentPages, true);
     CHECK_PAGE_INIT(11, 10, 11, 10, 10, 10);
 

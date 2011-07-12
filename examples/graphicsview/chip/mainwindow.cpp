@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(vSplitter);
     setLayout(layout);
 
-    setWindowTitle(tr("Chip Demo"));
+    setWindowTitle(tr("Chip Example"));
 }
 
 void MainWindow::populateScene()

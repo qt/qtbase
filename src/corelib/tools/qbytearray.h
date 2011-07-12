@@ -172,15 +172,9 @@ public:
     inline bool isSharedWith(const QByteArray &other) const { return d == other.d; }
     void clear();
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const char at(int i) const;
-    const char operator[](int i) const;
-    const char operator[](uint i) const;
-#else
     char at(int i) const;
     char operator[](int i) const;
     char operator[](uint i) const;
-#endif
     QByteRef operator[](int i);
     QByteRef operator[](uint i);
 
@@ -359,21 +353,12 @@ inline QByteArray::~QByteArray() { if (!d->ref.deref()) qFree(d); }
 inline int QByteArray::size() const
 { return d->size; }
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-inline const char QByteArray::at(int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
-inline const char QByteArray::operator[](int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
-inline const char QByteArray::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return d->data[i]; }
-#else
 inline char QByteArray::at(int i) const
 { Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
 inline char QByteArray::operator[](int i) const
 { Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
 inline char QByteArray::operator[](uint i) const
 { Q_ASSERT(i < uint(size())); return d->data[i]; }
-#endif
 
 inline bool QByteArray::isEmpty() const
 { return d->size == 0; }
@@ -412,13 +397,8 @@ class Q_CORE_EXPORT QByteRef {
         : a(array),i(idx) {}
     friend class QByteArray;
 public:
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    inline operator const char() const
-        { return i < a.d->size ? a.d->data[i] : char(0); }
-#else
     inline operator char() const
         { return i < a.d->size ? a.d->data[i] : char(0); }
-#endif
     inline QByteRef &operator=(char c)
         { if (i >= a.d->size) a.expand(i); else a.detach();
           a.d->data[i] = c;  return *this; }

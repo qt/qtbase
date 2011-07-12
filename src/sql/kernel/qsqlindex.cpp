@@ -164,60 +164,6 @@ void QSqlIndex::setDescending(int i, bool desc)
         sorts[i] = desc;
 }
 
-#ifdef QT3_SUPPORT
-
-/*!
-    Returns a comma-separated list of all the index's field names as a
-    string. This string is suitable, for example, for generating a
-    SQL SELECT statement. Only generated fields are included in the
-    list (see \l{isGenerated()}). If a \a prefix is specified, e.g. a
-    table name, it is prepended before all field names in the form:
-
-    "\a{prefix}.<fieldname>"
-
-    If \a sep is specified, each field is separated by \a sep. If \a
-    verbose is true (the default), each field contains a suffix
-    indicating an ASCending or DESCending sort order.
-*/
-
-QString QSqlIndex::toString(const QString& prefix, const QString& sep, bool verbose) const
-{
-    QString s;
-    bool comma = false;
-    for (int i = 0; i < count(); ++i) {
-        if(comma)
-            s += sep + QLatin1Char(' ');
-        s += createField(i, prefix, verbose);
-        comma = true;
-    }
-    return s;
-}
-
-/*!
-    Returns a list of all the index's field names. Only generated
-    fields are included in the list (see \l{isGenerated()}). If a \a
-    prefix is specified, e.g. a table name, all fields are prefixed in
-    the form:
-
-    "\a{prefix}.<fieldname>"
-
-    If \a verbose is true (the default), each field contains a suffix
-    indicating an ASCending or DESCending sort order.
-
-    Note that if you want to iterate over the list, you should iterate
-    over a copy, e.g.
-    \snippet doc/src/snippets/code/src_sql_kernel_qsqlindex.cpp 0
-
-*/
-QStringList QSqlIndex::toStringList(const QString& prefix, bool verbose) const
-{
-    QStringList s;
-    for (int i = 0; i < count(); ++i)
-        s += createField(i, prefix, verbose);
-    return s;
-}
-#endif
-
 /*! \internal
 
   Creates a string representing the field number \a i using prefix \a

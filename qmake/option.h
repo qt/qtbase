@@ -219,7 +219,6 @@ public:
         DataPath,
         TranslationsPath,
         SettingsPath,
-        DemosPath,
         ExamplesPath,
         ImportsPath
     };

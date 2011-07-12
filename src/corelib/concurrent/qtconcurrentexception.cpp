@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qtconcurrentexception.h"
+#include "QtCore/qshareddata.h"
 
 #ifndef QT_NO_QFUTURE
 #ifndef QT_NO_EXCEPTIONS
@@ -141,15 +142,14 @@ Exception *UnhandledException::clone() const
 
 namespace internal {
 
-class Base
+class Base : public QSharedData
 {
 public:
     Base(Exception *exception)
-    : exception(exception), refCount(1), hasThrown(false) { }
+    : exception(exception), hasThrown(false) { }
     ~Base() { delete exception; }
 
     Exception *exception;
-    QAtomicInt refCount;
     bool hasThrown;
 };
 
@@ -158,27 +158,15 @@ ExceptionHolder::ExceptionHolder(Exception *exception)
 
 ExceptionHolder::ExceptionHolder(const ExceptionHolder &other)
 : base(other.base)
-{
-    base->refCount.ref();
-}
+{}
 
 void ExceptionHolder::operator=(const ExceptionHolder &other)
 {
-    if (base == other.base)
-        return;
-
-    if (base->refCount.deref() == false)
-        delete base;
-
     base = other.base;
-    base->refCount.ref();
 }
 
 ExceptionHolder::~ExceptionHolder()
-{
-    if (base->refCount.deref() == 0)
-        delete base;
-}
+{}
 
 Exception *ExceptionHolder::exception() const
 {

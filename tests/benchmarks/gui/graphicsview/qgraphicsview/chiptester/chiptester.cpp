@@ -60,7 +60,7 @@ ChipTester::ChipTester(QWidget *parent)
     populateScene();
     setScene(scene);
 
-    setWindowTitle(tr("Chip Demo"));
+    setWindowTitle(tr("Chip Example"));
 }
 
 void ChipTester::setAntialias(bool enabled)

@@ -54,6 +54,23 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
+#ifndef QT_DISABLE_DEPRECATED_BEFORE
+#define QT_DISABLE_DEPRECATED_BEFORE QT_VERSION_CHECK(5, 0, 0)
+#endif
+
+/*
+    QT_DEPRECATED_SINCE(major, minor) evaluates as true if the Qt version is greater than
+    the deprecation point specified.
+
+    Use it to specify from which version of Qt a function or class has been deprecated
+
+    Example:
+        #if QT_DEPRECATED_SINCE(5,1)
+            QT_DEPRECATED void deprecatedFunction(); //function deprecated sine Qt 5.1
+        #endif
+ */
+#define QT_DEPRECATED_SINCE(major, minor) (QT_VERSION_CHECK(major, minor, 0) > QT_DISABLE_DEPRECATED_BEFORE)
+
 #define QT_PACKAGEDATE_STR "YYYY-MM-DD"
 
 #define QT_PACKAGE_TAG ""
@@ -516,6 +533,7 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++0x features supported in GCC 4.4: */
+#      define Q_COMPILER_UNICODE_STRINGS
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_EXTERN_TEMPLATES
@@ -526,8 +544,12 @@ namespace QT_NAMESPACE {}
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++0x features supported in GCC 4.5: */
 #      define Q_COMPILER_LAMBDA
-#      define Q_COMPILER_UNICODE_STRINGS
 #    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
+       /* C++0x features supported in GCC 4.6: */
+#      define Q_COMPILER_CONSTEXPR
+#    endif
+
 #  endif
 
 /* IBM compiler versions are a bit messy. There are actually two products:
@@ -961,6 +983,7 @@ QT_END_INCLUDE_NAMESPACE
 #error "Compiler doesn't support the bool type"
 #endif
 
+
 /*
    Constant bool values
 */
@@ -1091,6 +1114,12 @@ redefine to built-in booleans to make autotests work properly */
 #  define QT_FASTCALL
 #endif
 
+#ifdef Q_COMPILER_CONSTEXPR
+# define Q_DECL_CONSTEXPR constexpr
+#else
+# define Q_DECL_CONSTEXPR
+#endif
+
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
 #if defined(Q_OS_WIN)
@@ -1103,10 +1132,6 @@ redefine to built-in booleans to make autotests work properly */
 #endif
 
 typedef int QNoImplicitBoolCast;
-
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
-#define QT_NO_FPU
-#endif
 
 // This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
@@ -1122,25 +1147,25 @@ typedef double qreal;
 */
 
 template <typename T>
-inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
+Q_DECL_CONSTEXPR inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
-inline int qRound(qreal d)
+Q_DECL_CONSTEXPR inline int qRound(qreal d)
 { return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1); }
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
-inline qint64 qRound64(double d)
+Q_DECL_CONSTEXPR inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
-inline qint64 qRound64(qreal d)
+Q_DECL_CONSTEXPR inline qint64 qRound64(qreal d)
 { return d >= qreal(0.0) ? qint64(d + qreal(0.5)) : qint64(d - qreal(qint64(d-1)) + qreal(0.5)) + qint64(d-1); }
 #endif
 
 template <typename T>
-inline const T &qMin(const T &a, const T &b) { if (a < b) return a; return b; }
+Q_DECL_CONSTEXPR inline const T &qMin(const T &a, const T &b) { return (a < b) ? a : b; }
 template <typename T>
-inline const T &qMax(const T &a, const T &b) { if (a < b) return b; return a; }
+Q_DECL_CONSTEXPR inline const T &qMax(const T &a, const T &b) { return (a < b) ? b : a; }
 template <typename T>
-inline const T &qBound(const T &min, const T &val, const T &max)
+Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
 
 /*
@@ -1914,12 +1939,12 @@ inline bool operator!=(QBool b1, bool b2) { return !b1 != !b2; }
 inline bool operator!=(bool b1, QBool b2) { return !b1 != !b2; }
 inline bool operator!=(QBool b1, QBool b2) { return !b1 != !b2; }
 
-static inline bool qFuzzyCompare(double p1, double p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2)
 {
     return (qAbs(p1 - p2) <= 0.000000000001 * qMin(qAbs(p1), qAbs(p2)));
 }
 
-static inline bool qFuzzyCompare(float p1, float p2)
+Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(float p1, float p2)
 {
     return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
@@ -1927,7 +1952,7 @@ static inline bool qFuzzyCompare(float p1, float p2)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(double d)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(double d)
 {
     return qAbs(d) <= 0.000000000001;
 }
@@ -1935,7 +1960,7 @@ static inline bool qFuzzyIsNull(double d)
 /*!
   \internal
 */
-static inline bool qFuzzyIsNull(float f)
+Q_DECL_CONSTEXPR static inline bool qFuzzyIsNull(float f)
 {
     return qAbs(f) <= 0.00001f;
 }
@@ -2203,9 +2228,9 @@ class QFlags
     int i;
 public:
     typedef Enum enum_type;
-    inline QFlags(const QFlags &f) : i(f.i) {}
-    inline QFlags(Enum f) : i(f) {}
-    inline QFlags(Zero = 0) : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(const QFlags &f) : i(f.i) {}
+    Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator=(const QFlags &f) { i = f.i; return *this; }
@@ -2216,18 +2241,18 @@ public:
     inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
     inline QFlags &operator^=(Enum f) { i ^= f; return *this; }
 
-    inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR  inline operator int() const { return i; }
 
-    inline QFlags operator|(QFlags f) const { QFlags g; g.i = i | f.i; return g; }
-    inline QFlags operator|(Enum f) const { QFlags g; g.i = i | f; return g; }
-    inline QFlags operator^(QFlags f) const { QFlags g; g.i = i ^ f.i; return g; }
-    inline QFlags operator^(Enum f) const { QFlags g; g.i = i ^ f; return g; }
-    inline QFlags operator&(int mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(uint mask) const { QFlags g; g.i = i & mask; return g; }
-    inline QFlags operator&(Enum f) const { QFlags g; g.i = i & f; return g; }
-    inline QFlags operator~() const { QFlags g; g.i = ~i; return g; }
+    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(Enum(i ^ f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(Enum(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(Enum(~i)); }
 
-    inline bool operator!() const { return !i; }
+    Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
     inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
 };
@@ -2240,9 +2265,9 @@ inline QIncompatibleFlag operator|(Flags::enum_type f1, int f2) \
 { return QIncompatibleFlag(int(f1) | f2); }
 
 #define Q_DECLARE_OPERATORS_FOR_FLAGS(Flags) \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, Flags::enum_type f2) \
 { return QFlags<Flags::enum_type>(f1) | f2; } \
-inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
+Q_DECL_CONSTEXPR inline QFlags<Flags::enum_type> operator|(Flags::enum_type f1, QFlags<Flags::enum_type> f2) \
 { return f2 | f1; } Q_DECLARE_INCOMPATIBLE_FLAGS(Flags)
 
 

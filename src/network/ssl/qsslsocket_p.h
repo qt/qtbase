@@ -116,6 +116,8 @@ public:
     bool allowRootCertOnDemandLoading;
 
     static bool supportsSsl();
+    static long sslLibraryVersionNumber();
+    static QString sslLibraryVersionString();
     static void ensureInitialized();
     static void deinitialize();
     static QList<QSslCipher> defaultCiphers();

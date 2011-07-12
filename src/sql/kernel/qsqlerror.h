@@ -59,13 +59,6 @@ public:
         StatementError,
         TransactionError,
         UnknownError
-#ifdef QT3_SUPPORT
-        , None = NoError,
-        Connection = ConnectionError,
-        Statement = StatementError,
-        Transaction = TransactionError,
-        Unknown = UnknownError
-#endif
     };
     QSqlError( const QString& driverText = QString(),
                 const QString& databaseText = QString(),

@@ -68,7 +68,7 @@ public:
     inline QStringList(const QStringList &l) : QList<QString>(l) { }
     inline QStringList(const QList<QString> &l) : QList<QString>(l) { }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
-    inline QStringList(std::initializer_list<QString> args) : QList(args) { }
+    inline QStringList(std::initializer_list<QString> args) : QList<QString>(args) { }
 #endif
 
     inline void sort();

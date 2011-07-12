@@ -157,7 +157,7 @@ void tst_QVector::capacity() const
 {
     QVector<QString> myvec;
 
-    // TODO: is this guarenteed? seems a safe assumption, but I suppose preallocation of a
+    // TODO: is this guaranteed? seems a safe assumption, but I suppose preallocation of a
     // few items isn't an entirely unforseeable possibility.
     QVERIFY(myvec.capacity() == 0);
 

@@ -680,7 +680,7 @@ static void loadXlfds(const char *reqFamily, int encoding_id)
         family->fontFileIndex = -1;
         family->symbol_checked = true;
         QtFontFoundry *foundry = family->foundry(QLatin1String(foundryName), true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, QString(), true);
 
         delete [] style->weightName;
         style->weightName = qstrdup(tokens[Weight]);
@@ -1145,7 +1145,7 @@ static void loadFontConfig()
         family->fontFileIndex = index_value;
 
         QtFontStyle::Key styleKey;
-        styleKey.styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
+        QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
         styleKey.style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
                          : ((slant_value == FC_SLANT_OBLIQUE)
@@ -1160,7 +1160,7 @@ static void loadFontConfig()
 
         QtFontFoundry *foundry
             = family->foundry(foundry_value ? QString::fromUtf8((const char *)foundry_value) : QString(), true);
-        QtFontStyle *style = foundry->style(styleKey, true);
+        QtFontStyle *style = foundry->style(styleKey, styleName, true);
 
         if (spacing_value < FC_MONO)
             family->fixedPitch = false;
@@ -1212,7 +1212,7 @@ static void loadFontConfig()
         for (int i = 0; i < 4; ++i) {
             styleKey.style = (i%2) ? QFont::StyleNormal : QFont::StyleItalic;
             styleKey.weight = (i > 1) ? QFont::Bold : QFont::Normal;
-            QtFontStyle *style = foundry->style(styleKey, true);
+            QtFontStyle *style = foundry->style(styleKey, QString(), true);
             style->smoothScalable = true;
             QtFontSize *size = style->pixelSize(SMOOTH_SCALABLE, true);
             QtFontEncoding *enc = size->encodingID(-1, 0, 0, 0, 0, true);
@@ -1360,7 +1360,7 @@ static void initializeDb()
                 if (equiv) continue;
 
                 // let's fake one...
-                equiv = foundry->style(key, true);
+                equiv = foundry->style(key, QString(), true);
                 equiv->smoothScalable = true;
 
                 QtFontSize *equiv_size = equiv->pixelSize(SMOOTH_SCALABLE, true);

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,22 +38,55 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QApplication>
 
-#include "stylewidget.h"
+#ifndef QREFCOUNT_H
+#define QREFCOUNT_H
 
-int main(int argc, char *argv[])
+#include <QtCore/qatomic.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Core)
+
+namespace QtPrivate
 {
-    QApplication app(argc, argv);
-    Q_INIT_RESOURCE(styledemo);
 
-    app.setApplicationName("style");
-    app.setOrganizationName("Nokia");
-    app.setOrganizationDomain("com.nokia.qt");
+class RefCount
+{
+public:
+   inline void ref() {
+        if (atomic >= 0)
+            atomic.ref();
+    }
 
-    StyleWidget widget;
-    widget.showFullScreen();
+    inline bool deref() {
+        if (atomic < 0)
+            return true;
+        return atomic.deref();
+    }
 
-    return app.exec();
+    inline bool operator==(int value) const
+    { return atomic.operator ==(value); }
+    inline bool operator!=(int value) const
+    { return atomic.operator !=(value); }
+    inline bool operator!() const
+    { return atomic.operator !(); }
+    inline operator int() const
+    { return atomic.operator int(); }
+    inline RefCount &operator=(int value)
+    { atomic = value; return *this; }
+
+    QBasicAtomicInt atomic;
+};
+
+#define Q_REFCOUNT_INITIALIZER(a) { Q_BASIC_ATOMIC_INITIALIZER(a) }
+
 }
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif

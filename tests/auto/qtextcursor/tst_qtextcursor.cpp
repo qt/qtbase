@@ -1302,7 +1302,7 @@ void tst_QTextCursor::selectVisually()
 
     cursor.setPosition(6); // somewhere in the long paragraph.
     cursor.select(QTextCursor::LineUnderCursor);
-    // since we are not yet layed-out, we expect the whole paragraph to be selected.
+    // since we are not yet laid-out, we expect the whole paragraph to be selected.
     QCOMPARE(cursor.position(), 77);
     QCOMPARE(cursor.anchor(), 4);
 }

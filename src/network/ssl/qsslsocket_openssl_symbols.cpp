@@ -133,6 +133,10 @@ DEFINEFUNC(EVP_PKEY *, EVP_PKEY_new, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(int, EVP_PKEY_type, int a, a, return NID_undef, return)
 DEFINEFUNC2(int, i2d_X509, X509 *a, a, unsigned char **b, b, return -1, return)
 DEFINEFUNC(const char *, OBJ_nid2sn, int a, a, return 0, return)
+DEFINEFUNC(const char *, OBJ_nid2ln, int a, a, return 0, return)
+DEFINEFUNC3(int, i2t_ASN1_OBJECT, char *a, a, int b, b, ASN1_OBJECT *c, c, return -1, return)
+
+
 DEFINEFUNC(int, OBJ_obj2nid, const ASN1_OBJECT *a, a, return NID_undef, return)
 #ifdef SSLEAY_MACROS
 DEFINEFUNC6(void *, PEM_ASN1_read_bio, d2i_of_void *a, a, const char *b, b, BIO *c, c, void **d, d, pem_password_cb *e, e, void *f, f, return 0, return)
@@ -276,6 +280,7 @@ DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMM
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_conf, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
 DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
+DEFINEFUNC(const char *, SSLeay_version, int a, a, return 0, return)
 
 #ifdef Q_OS_SYMBIAN
 #define RESOLVEFUNC(func, ordinal, lib) \
@@ -687,6 +692,8 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EVP_PKEY_new)
     RESOLVEFUNC(EVP_PKEY_type)
     RESOLVEFUNC(OBJ_nid2sn)
+    RESOLVEFUNC(OBJ_nid2ln)
+    RESOLVEFUNC(i2t_ASN1_OBJECT)
     RESOLVEFUNC(OBJ_obj2nid)
 #ifdef SSLEAY_MACROS // ### verify
     RESOLVEFUNC(PEM_ASN1_read_bio)
@@ -788,6 +795,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
     RESOLVEFUNC(SSLeay)
+    RESOLVEFUNC(SSLeay_version)
 #endif // Q_OS_SYMBIAN
     symbolsResolved = true;
     delete libs.first;

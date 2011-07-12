@@ -1291,7 +1291,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \o \inlineimage qpainter-compositiondemo.png
 
     \o
-    \bold {Composition Modes Demo}
+    \bold {Composition Modes Example}
 
     The \l {painting/composition}{Composition Modes} example, available in
     Qt's examples directory, allows you to experiment with the various
@@ -6503,6 +6503,10 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         qreal x = p.x();
         qreal y = p.y();
 
+        bool rtl = ti.flags & QTextItem::RightToLeft;
+        if (rtl)
+            x += ti.width.toReal();
+
         int start = 0;
         int end, i;
         for (end = 0; end < ti.glyphs.numGlyphs; ++end) {
@@ -6519,14 +6523,19 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
                 ti2.width += ti.glyphs.effectiveAdvance(i);
             }
 
+            if (rtl)
+                x -= ti2.width.toReal();
+
             d->engine->drawTextItem(QPointF(x, y), ti2);
+
+            if (!rtl)
+                x += ti2.width.toReal();
 
             // reset the high byte for all glyphs and advance to the next sub-string
             const int hi = which << 24;
             for (i = start; i < end; ++i) {
                 glyphs.glyphs[i] = hi | glyphs.glyphs[i];
             }
-            x += ti2.width.toReal();
 
             // change engine
             start = end;
@@ -6540,6 +6549,9 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
             glyphs.glyphs[i] = glyphs.glyphs[i] & 0xffffff;
             ti2.width += ti.glyphs.effectiveAdvance(i);
         }
+
+        if (rtl)
+            x -= ti2.width.toReal();
 
         if (d->extended)
             d->extended->drawTextItem(QPointF(x, y), ti2);

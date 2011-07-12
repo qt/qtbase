@@ -44,9 +44,6 @@
 
 #include <QtCore/qstring.h>
 #include <QtSql/qsql.h>
-#ifdef QT3_SUPPORT
-#include <QtSql/qsqlrecord.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -92,12 +89,6 @@ public:
     QStringList tables(QSql::TableType type = QSql::Tables) const;
     QSqlIndex primaryIndex(const QString& tablename) const;
     QSqlRecord record(const QString& tablename) const;
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT QSqlRecord record(const QSqlQuery& query) const;
-    inline QT3_SUPPORT QSqlRecord recordInfo(const QString& tablename) const
-    { return record(tablename); }
-    QT3_SUPPORT QSqlRecord recordInfo(const QSqlQuery& query) const;
-#endif
     QSqlQuery exec(const QString& query = QString()) const;
     QSqlError lastError() const;
     bool isValid() const;

@@ -184,49 +184,47 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         qWarning("QEventLoop::exec: instance %p has already called exec()", this);
         return -1;
     }
-    d->inExec = true;
-    d->exit = false;
-    ++d->threadData->loopLevel;
-    d->threadData->eventLoops.push(this);
-    locker.unlock();
+
+    struct LoopReference {
+        QEventLoopPrivate *d;
+        QMutexLocker &locker;
+
+        bool exceptionCaught;
+        LoopReference(QEventLoopPrivate *d, QMutexLocker &locker) : d(d), locker(locker), exceptionCaught(true)
+        {
+            d->inExec = true;
+            d->exit = false;
+            ++d->threadData->loopLevel;
+            d->threadData->eventLoops.push(d->q_func());
+            locker.unlock();
+        }
+
+        ~LoopReference()
+        {
+            if (exceptionCaught) {
+                qWarning("Qt has caught an exception thrown from an event handler. Throwing\n"
+                         "exceptions from an event handler is not supported in Qt. You must\n"
+                         "reimplement QApplication::notify() and catch all exceptions there.\n");
+            }
+            locker.relock();
+            QEventLoop *eventLoop = d->threadData->eventLoops.pop();
+            Q_ASSERT_X(eventLoop == d->q_func(), "QEventLoop::exec()", "internal error");
+            Q_UNUSED(eventLoop); // --release warning
+            d->inExec = false;
+            --d->threadData->loopLevel;
+        }
+    };
+    LoopReference ref(d, locker);
 
     // remove posted quit events when entering a new event loop
     QCoreApplication *app = QCoreApplication::instance();
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
-#if defined(QT_NO_EXCEPTIONS)
     while (!d->exit)
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
-#else
-    try {
-        while (!d->exit)
-            processEvents(flags | WaitForMoreEvents | EventLoopExec);
-    } catch (...) {
-        qWarning("Qt has caught an exception thrown from an event handler. Throwing\n"
-                 "exceptions from an event handler is not supported in Qt. You must\n"
-                 "reimplement QApplication::notify() and catch all exceptions there.\n");
 
-        // copied from below
-        locker.relock();
-        QEventLoop *eventLoop = d->threadData->eventLoops.pop();
-        Q_ASSERT_X(eventLoop == this, "QEventLoop::exec()", "internal error");
-        Q_UNUSED(eventLoop); // --release warning
-        d->inExec = false;
-        --d->threadData->loopLevel;
-
-        throw;
-    }
-#endif
-
-    // copied above
-    locker.relock();
-    QEventLoop *eventLoop = d->threadData->eventLoops.pop();
-    Q_ASSERT_X(eventLoop == this, "QEventLoop::exec()", "internal error");
-    Q_UNUSED(eventLoop); // --release warning
-    d->inExec = false;
-    --d->threadData->loopLevel;
-
+    ref.exceptionCaught = false;
     return d->returnCode;
 }
 

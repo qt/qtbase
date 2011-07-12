@@ -237,6 +237,8 @@ int q_EVP_PKEY_type(int a);
 EVP_PKEY *q_EVP_PKEY_new();
 int q_i2d_X509(X509 *a, unsigned char **b);
 const char *q_OBJ_nid2sn(int a);
+const char *q_OBJ_nid2ln(int a);
+int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
 #ifdef SSLEAY_MACROS
 // ### verify
@@ -426,6 +428,7 @@ void q_OPENSSL_add_all_algorithms_noconf();
 void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
 long q_SSLeay();
+const char *q_SSLeay_version(int type);
 
 // Helper function
 class QDateTime;

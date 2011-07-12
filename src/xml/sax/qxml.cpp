@@ -1324,29 +1324,6 @@ QXmlInputSource::QXmlInputSource(QIODevice *dev)
     d->inputDevice->setTextModeEnabled(false);
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use the QXmlInputSource(QIODevice *) constructor instead, with
-    the device used by \a stream.
-
-    \sa QTextStream::device()
-*/
-QXmlInputSource::QXmlInputSource(QTextStream& stream)
-{
-    init();
-    d->inputStream = &stream;
-}
-
-/*!
-    Use QXmlInputSource(&\a file) instead.
-*/
-QXmlInputSource::QXmlInputSource(QFile& file)
-{
-    init();
-    d->inputDevice = &file;
-}
-#endif
-
 /*!
     Destructor.
 */

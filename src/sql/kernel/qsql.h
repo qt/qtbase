@@ -56,10 +56,6 @@ namespace QSql
     {
         BeforeFirstRow = -1,
         AfterLastRow = -2
-#ifdef QT3_SUPPORT
-        , BeforeFirst = BeforeFirstRow,
-        AfterLast = AfterLastRow
-#endif
     };
 
     enum ParamTypeFlag
@@ -87,21 +83,6 @@ namespace QSql
 
         HighPrecision        = 0
     };
-
-#ifdef QT3_SUPPORT
-    enum Op {
-        None = -1,
-        Insert = 0,
-        Update = 1,
-        Delete = 2
-    };
-
-    enum Confirm {
-        Cancel = -1,
-        No = 0,
-        Yes = 1
-    };
-#endif
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSql::ParamType)

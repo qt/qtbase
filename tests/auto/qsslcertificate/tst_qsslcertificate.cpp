@@ -115,6 +115,7 @@ private slots:
     void blacklistedCertificates();
     void toText();
     void multipleCommonNames();
+    void subjectAndIssuerAttributes();
 
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
@@ -881,6 +882,23 @@ void tst_QSslCertificate::multipleCommonNames()
     QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
     QVERIFY(commonNames.contains(QString("www.example.com")));
     QVERIFY(commonNames.contains(QString("www2.example.com")));
+}
+
+void tst_QSslCertificate::subjectAndIssuerAttributes()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/test-cn-with-drink-cert.pem");
+    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+
+    QList<QByteArray> attributes = certList[0].subjectInfoAttributes();
+    QVERIFY(attributes.contains(QByteArray("favouriteDrink")));
+    attributes.clear();
+
+    certList = QSslCertificate::fromPath(SRCDIR "more-certificates/natwest-banking.pem");
+    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+
+    attributes = certList[0].subjectInfoAttributes();
+    QVERIFY(attributes.contains(QByteArray("1.3.6.1.4.1.311.60.2.1.3")));
 }
 
 #endif // QT_NO_OPENSSL
