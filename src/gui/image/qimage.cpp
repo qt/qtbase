@@ -1354,10 +1354,6 @@ int QImage::depth() const
 
     \sa setColorCount()
 */
-int QImage::numColors() const
-{
-    return d ? d->colortable.size() : 0;
-}
 
 /*!
     \since 4.6
@@ -1425,10 +1421,6 @@ QVector<QRgb> QImage::colorTable() const
 
     \sa byteCount()
 */
-int QImage::numBytes() const
-{
-    return d ? d->nbytes : 0;
-}
 
 /*!
     \since 4.6
@@ -1862,10 +1854,6 @@ void QImage::invertPixels(InvertMode mode)
     \sa setColorCount()
 */
 
-void QImage::setNumColors(int numColors)
-{
-    setColorCount(numColors);
-}
 
 /*!
     \since 4.6
@@ -5084,15 +5072,6 @@ void QImage::setText(const QString &key, const QString &value)
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QString QImage::text(const char* key, const char* lang) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromAscii(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromAscii(lang);
-    return d->text.value(k);
-}
 
 /*!
     \fn QString QImage::text(const QImageTextKeyLang& keywordAndLanguage) const
@@ -5106,15 +5085,6 @@ QString QImage::text(const char* key, const char* lang) const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QString QImage::text(const QImageTextKeyLang& kl) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromAscii(kl.key);
-    if (!kl.lang.isEmpty())
-        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
-    return d->text.value(k);
-}
 
 /*!
     \obsolete
@@ -5126,20 +5096,6 @@ QString QImage::text(const QImageTextKeyLang& kl) const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QStringList QImage::textLanguages() const
-{
-    if (!d)
-        return QStringList();
-    QStringList keys = textKeys();
-    QStringList languages;
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0)
-            languages += keys.at(i).mid(index+1);
-    }
-
-    return languages;
-}
 
 /*!
     \obsolete
@@ -5152,24 +5108,6 @@ QStringList QImage::textLanguages() const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QList<QImageTextKeyLang> QImage::textList() const
-{
-    QList<QImageTextKeyLang> imageTextKeys;
-    if (!d)
-        return imageTextKeys;
-    QStringList keys = textKeys();
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0) {
-            QImageTextKeyLang tkl;
-            tkl.key = keys.at(i).left(index).toAscii();
-            tkl.lang = keys.at(i).mid(index+1).toAscii();
-            imageTextKeys += tkl;
-        }
-    }
-
-    return imageTextKeys;
-}
 
 /*!
     \fn void QImage::setText(const char* key, const char* language, const QString& text)
@@ -5194,21 +5132,6 @@ QList<QImageTextKeyLang> QImage::textList() const
     \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or 0.
     \endomit
 */
-void QImage::setText(const char* key, const char* lang, const QString& s)
-{
-    if (!d)
-        return;
-    detach();
-
-    // In case detach() ran out of memory
-    if (!d)
-        return;
-
-    QString k = QString::fromAscii(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromAscii(lang);
-    d->text.insert(k, s);
-}
 
 #endif // QT_NO_IMAGE_TEXT
 

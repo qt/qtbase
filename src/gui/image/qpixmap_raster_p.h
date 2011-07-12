@@ -79,9 +79,7 @@ public:
     void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
-    void setMask(const QBitmap &mask);
     bool hasAlphaChannel() const;
-    void setAlphaChannel(const QPixmap &alphaChannel);
     QImage toImage() const;
     QImage toImage(const QRect &rect) const;
     QPaintEngine* paintEngine() const;

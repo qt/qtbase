@@ -580,7 +580,7 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
     if (!width || !height || !data || !mask || cursorImage.isNull())
         return;
 
-    cursorImage.setNumColors(3);
+    cursorImage.setColorCount(3);
     cursorImage.setColor(0, 0xff000000);
     cursorImage.setColor(1, 0xffffffff);
     cursorImage.setColor(2, 0x00000000);

@@ -58,9 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
-                                     0x10, 0x20, 0x40, 0x80 };
-
 QPixmap qt_toRasterPixmap(const QImage &image)
 {
     QPixmapData *data =
@@ -265,45 +262,6 @@ void QRasterPixmapData::fill(const QColor &color)
     image.fill(pixel);
 }
 
-void QRasterPixmapData::setMask(const QBitmap &mask)
-{
-    if (mask.size().isEmpty()) {
-        if (image.depth() != 1) { // hw: ????
-            image = image.convertToFormat(QImage::Format_RGB32);
-        }
-    } else {
-        const int w = image.width();
-        const int h = image.height();
-
-        switch (image.depth()) {
-        case 1: {
-            const QImage imageMask = mask.toImage().convertToFormat(image.format());
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                uchar *tscan = image.scanLine(y);
-                int bytesPerLine = image.bytesPerLine();
-                for (int i = 0; i < bytesPerLine; ++i)
-                    tscan[i] &= mscan[i];
-            }
-            break;
-        }
-        default: {
-            const QImage imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
-            image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            for (int y = 0; y < h; ++y) {
-                const uchar *mscan = imageMask.scanLine(y);
-                QRgb *tscan = (QRgb *)image.scanLine(y);
-                for (int x = 0; x < w; ++x) {
-                    if (!(mscan[x>>3] & qt_pixmap_bit_mask[x&7]))
-                        tscan[x] = 0;
-                }
-            }
-            break;
-        }
-        }
-    }
-}
-
 bool QRasterPixmapData::hasAlphaChannel() const
 {
     return image.hasAlphaChannel();
@@ -335,11 +293,6 @@ QImage QRasterPixmapData::toImage(const QRect &rect) const
                       image.bytesPerLine(), image.format());
     else
         return image.copy(clipped);
-}
-
-void QRasterPixmapData::setAlphaChannel(const QPixmap &alphaChannel)
-{
-    image.setAlphaChannel(alphaChannel.toImage());
 }
 
 QPaintEngine* QRasterPixmapData::paintEngine() const

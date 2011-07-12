@@ -200,15 +200,6 @@ void *QVolatileImage::duplicateNativeImage() const
     return d->duplicateNativeImage();
 }
 
-void QVolatileImage::setAlphaChannel(const QPixmap &alphaChannel)
-{
-    ensureFormat(QImage::Format_ARGB32_Premultiplied);
-    beginDataAccess();
-    imageRef().setAlphaChannel(alphaChannel.toImage());
-    endDataAccess();
-    d->ensureImage();
-}
-
 void QVolatileImage::fill(uint pixelValue)
 {
     beginDataAccess();

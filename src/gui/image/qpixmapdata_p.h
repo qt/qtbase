@@ -68,17 +68,9 @@ public:
         // Must match QPixmap::Type
         PixmapType, BitmapType
     };
-#if defined(Q_OS_SYMBIAN)
-    enum NativeType {
-        FbsBitmap,
-        SgImage,
-        VolatileImage,
-        NativeImageHandleProvider
-    };
-#endif
-    enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
-                   OpenGLClass, OpenVGClass, RuntimeClass, BlitterClass,
-                   CustomClass = 1024 };
+
+    enum ClassId { RasterClass, DirectFBClass,
+                   BlitterClass, CustomClass = 1024 };
 
     QPixmapData(PixelType pixelType, int classId);
     virtual ~QPixmapData();
@@ -101,13 +93,11 @@ public:
 
     virtual int metric(QPaintDevice::PaintDeviceMetric metric) const = 0;
     virtual void fill(const QColor &color) = 0;
-    virtual QBitmap mask() const;
-    virtual void setMask(const QBitmap &mask);
+
     virtual bool hasAlphaChannel() const = 0;
     virtual QPixmap transformed(const QTransform &matrix,
                                 Qt::TransformationMode mode) const;
-    virtual void setAlphaChannel(const QPixmap &alphaChannel);
-    virtual QPixmap alphaChannel() const;
+
     virtual QImage toImage() const = 0;
     virtual QImage toImage(const QRect &rect) const;
     virtual QPaintEngine* paintEngine() const = 0;
@@ -121,7 +111,6 @@ public:
 
     inline int width() const { return w; }
     inline int height() const { return h; }
-    QT_DEPRECATED inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
     inline int colorCount() const { return metric(QPaintDevice::PdmNumColors); }
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
@@ -134,14 +123,7 @@ public:
                 | ((qint64) detach_no));
     }
 
-#if defined(Q_OS_SYMBIAN)
-    virtual void* toNativeType(NativeType type);
-    virtual void fromNativeType(void* pixmap, NativeType type);
-#endif
-
     static QPixmapData *create(int w, int h, PixelType type);
-
-    virtual QPixmapData *runtimeData() const { return 0; }
 
 protected:
 
@@ -153,8 +135,6 @@ protected:
 
 private:
     friend class QPixmap;
-    friend class QX11PixmapData;
-    friend class QS60PixmapData;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;

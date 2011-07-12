@@ -66,6 +66,7 @@ template <class T> class QVector;
 struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
+#if QT_DEPRECATED_SINCE(5, 0)
 class Q_GUI_EXPORT QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
@@ -81,6 +82,7 @@ public:
     inline bool operator!= (const QImageTextKeyLang &other) const
         { return !operator==(other); }
 };
+#endif
 #endif //QT_NO_IMAGE_TEXT
 
 
@@ -168,17 +170,11 @@ public:
     QRect rect() const;
 
     int depth() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numColors() const;
-#endif
     int colorCount() const;
     int bitPlaneCount() const;
 
     QRgb color(int i) const;
     void setColor(int i, QRgb c);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED void setNumColors(int);
-#endif
     void setColorCount(int);
 
     bool allGray() const;
@@ -187,9 +183,7 @@ public:
     uchar *bits();
     const uchar *bits() const;
     const uchar *constBits() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numBytes() const;
-#endif
+
     int byteCount() const;
 
     uchar *scanLine(int);
@@ -272,12 +266,19 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-    // The following functions are obsolete as of 4.1
-    QString text(const char* key, const char* lang=0) const;
-    QList<QImageTextKeyLang> textList() const;
-    QStringList textLanguages() const;
-    QString text(const QImageTextKeyLang&) const;
-    void setText(const char* key, const char* lang, const QString&);
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QString text(const char* key, const char* lang=0) const;
+    inline QList<QImageTextKeyLang> textList() const;
+    inline QStringList textLanguages() const;
+    inline QString text(const QImageTextKeyLang&) const;
+    inline void setText(const char* key, const char* lang, const QString&);
+#endif
+#endif
+
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline int numColors() const;
+    QT_DEPRECATED inline void setNumColors(int);
+    QT_DEPRECATED inline int numBytes() const;
 #endif
 
 protected:
@@ -307,6 +308,94 @@ Q_GUI_EXPORT_INLINE bool QImage::valid(const QPoint &pt) const { return valid(pt
 Q_GUI_EXPORT_INLINE int QImage::pixelIndex(const QPoint &pt) const { return pixelIndex(pt.x(), pt.y());}
 Q_GUI_EXPORT_INLINE QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y()); }
 Q_GUI_EXPORT_INLINE void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
+
+#if QT_DEPRECATED_SINCE(5, 0)
+#ifndef QT_NO_IMAGE_TEXT
+inline QString QImage::text(const char* key, const char* lang) const
+{
+    if (!d)
+        return QString();
+    QString k = QString::fromAscii(key);
+    if (lang && *lang)
+        k += QLatin1Char('/') + QString::fromAscii(lang);
+    return d->text.value(k);
+}
+
+inline QList<QImageTextKeyLang> QImage::textList() const
+{
+    QList<QImageTextKeyLang> imageTextKeys;
+    if (!d)
+        return imageTextKeys;
+    QStringList keys = textKeys();
+    for (int i = 0; i < keys.size(); ++i) {
+        int index = keys.at(i).indexOf(QLatin1Char('/'));
+        if (index > 0) {
+            QImageTextKeyLang tkl;
+            tkl.key = keys.at(i).left(index).toAscii();
+            tkl.lang = keys.at(i).mid(index+1).toAscii();
+            imageTextKeys += tkl;
+        }
+    }
+
+    return imageTextKeys;
+}
+
+inline QStringList QImage::textLanguages() const
+{
+    if (!d)
+        return QStringList();
+    QStringList keys = textKeys();
+    QStringList languages;
+    for (int i = 0; i < keys.size(); ++i) {
+        int index = keys.at(i).indexOf(QLatin1Char('/'));
+        if (index > 0)
+            languages += keys.at(i).mid(index+1);
+    }
+
+    return languages;
+}
+
+inline QString QImage::text(const QImageTextKeyLang&) const
+{
+    if (!d)
+        return QString();
+    QString k = QString::fromAscii(kl.key);
+    if (!kl.lang.isEmpty())
+        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
+    return d->text.value(k);
+}
+
+inline void QImage::setText(const char* key, const char* lang, const QString&)
+{
+    if (!d)
+        return;
+    detach();
+
+    // In case detach() ran out of memory
+    if (!d)
+        return;
+
+    QString k = QString::fromAscii(key);
+    if (lang && *lang)
+        k += QLatin1Char('/') + QString::fromAscii(lang);
+    d->text.insert(k, s);
+}
+#endif
+inline int QImage::numColors() const
+{
+    return d ? d->colortable.size() : 0;
+}
+
+inline void QImage::setNumColors(int)
+{
+    setColorCount(numColors);
+}
+
+inline int QImage::numBytes() const
+{
+    return d ? d->nbytes : 0;
+}
+#endif
 
 // QImage stream functions
 

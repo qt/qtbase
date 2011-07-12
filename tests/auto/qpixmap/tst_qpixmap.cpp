@@ -102,9 +102,6 @@ public slots:
 private slots:
     void swap();
 
-    void setAlphaChannel_data();
-    void setAlphaChannel();
-
     void fromImage_data();
     void fromImage();
 
@@ -265,79 +262,6 @@ void tst_QPixmap::swap()
     QCOMPARE(p1.size(), QSize(32,32));
     QCOMPARE(p2.cacheKey(), p1k);
     QCOMPARE(p2.size(), QSize(16,16));
-}
-
-void tst_QPixmap::setAlphaChannel_data()
-{
-    QTest::addColumn<int>("red");
-    QTest::addColumn<int>("green");
-    QTest::addColumn<int>("blue");
-    QTest::addColumn<int>("alpha");
-
-    QTest::newRow("red 0") << 255 << 0 << 0 << 0;
-    QTest::newRow("red 24") << 255 << 0 << 0 << 24;
-    QTest::newRow("red 124") << 255 << 0 << 0 << 124;
-    QTest::newRow("red 255") << 255 << 0 << 0 << 255;
-
-    QTest::newRow("green 0") << 0 << 255 << 0 << 0;
-    QTest::newRow("green 24") << 0 << 255 << 0 << 24;
-    QTest::newRow("green 124") << 0 << 255 << 0 << 124;
-    QTest::newRow("green 255") << 0 << 255 << 0 << 255;
-
-    QTest::newRow("blue 0") << 0 << 0 << 255 << 0;
-    QTest::newRow("blue 24") << 0 << 0 << 255 << 24;
-    QTest::newRow("blue 124") << 0 << 0 << 255 << 124;
-    QTest::newRow("blue 255") << 0 << 0 << 255 << 255;
-}
-
-void tst_QPixmap::setAlphaChannel()
-{
-    QFETCH(int, red);
-    QFETCH(int, green);
-    QFETCH(int, blue);
-    QFETCH(int, alpha);
-
-    int width = 100;
-    int height = 100;
-
-    QPixmap pixmap(width, height);
-    pixmap.fill(QColor(red, green, blue));
-
-    QPixmap alphaChannel(width, height);
-    alphaChannel.fill(QColor(alpha, alpha, alpha));
-    pixmap.setAlphaChannel(alphaChannel);
-
-#ifdef Q_WS_X11
-    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
-        QSKIP("Requires XRender support", SkipAll);
-#endif
-
-    QImage result;
-    bool ok = true;
-
-    QPixmap outAlpha = pixmap.alphaChannel();
-    QCOMPARE(outAlpha.size(), pixmap.size());
-
-    result = outAlpha.toImage().convertToFormat(QImage::Format_ARGB32);;
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            ok &= qGray(result.pixel(x, y)) == alpha;
-        }
-    }
-    QVERIFY(ok);
-
-    result = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-    QRgb expected = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            if (result.colorCount() > 0) {
-                ok &= result.pixelIndex(x, y) == expected;
-            } else {
-                ok &= result.pixel(x, y) == expected;
-            }
-        }
-    }
-    QVERIFY(ok);
 }
 
 void tst_QPixmap::fromImage_data()

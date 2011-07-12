@@ -63,35 +63,14 @@
 #include "qthread.h"
 #include "qdebug.h"
 
-#ifdef Q_WS_MAC
-# include "private/qt_mac_p.h"
-# include "private/qpixmap_mac_p.h"
-#endif
-
 #ifdef Q_WS_QPA
 # include "qplatformintegration_qpa.h"
-#endif
-
-#if defined(Q_WS_X11)
-# include "qx11info_x11.h"
-# include <private/qt_x11_p.h>
-# include <private/qpixmap_x11_p.h>
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-# include <private/qt_s60_p.h>
 #endif
 
 #include "qpixmap_raster_p.h"
 #include "private/qhexstring_p.h"
 
 QT_BEGIN_NAMESPACE
-
-// ### Qt 5: remove
-Q_GUI_EXPORT qint64 qt_pixmap_id(const QPixmap &pixmap)
-{
-    return pixmap.cacheKey();
-}
 
 static bool qt_pixmap_thread_test()
 {
@@ -112,11 +91,6 @@ static bool qt_pixmap_thread_test()
         }
     }
     return true;
-}
-
-void QPixmap::init(int w, int h, Type type)
-{
-    init(w, h, int(type));
 }
 
 void QPixmap::init(int w, int h, int type)
@@ -196,17 +170,6 @@ QPixmap::QPixmap(const QSize &size)
         init(0, 0, QPixmapData::PixmapType);
     else
         init(size.width(), size.height(), QPixmapData::PixmapType);
-}
-
-/*!
-  \internal
-*/
-QPixmap::QPixmap(const QSize &s, Type type)
-{
-    if (!qt_pixmap_thread_test())
-        init(0, 0, type);
-    else
-        init(s.width(), s.height(), type);
 }
 
 /*!
@@ -698,7 +661,44 @@ void QPixmap::setMask(const QBitmap &mask)
        return;
 
     detach();
-    data->setMask(mask);
+
+    QImage image = data->toImage();
+    if (mask.size().isEmpty()) {
+        if (image.depth() != 1) { // hw: ????
+            image = image.convertToFormat(QImage::Format_RGB32);
+        }
+    } else {
+        const int w = image.width();
+        const int h = image.height();
+
+        switch (image.depth()) {
+        case 1: {
+            const QImage imageMask = mask.toImage().convertToFormat(image.format());
+            for (int y = 0; y < h; ++y) {
+                const uchar *mscan = imageMask.scanLine(y);
+                uchar *tscan = image.scanLine(y);
+                int bytesPerLine = image.bytesPerLine();
+                for (int i = 0; i < bytesPerLine; ++i)
+                    tscan[i] &= mscan[i];
+            }
+            break;
+        }
+        default: {
+            const QImage imageMask = mask.toImage().convertToFormat(QImage::Format_MonoLSB);
+            image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            for (int y = 0; y < h; ++y) {
+                const uchar *mscan = imageMask.scanLine(y);
+                QRgb *tscan = (QRgb *)image.scanLine(y);
+                for (int x = 0; x < w; ++x) {
+                    if (!(mscan[x>>3] & (1 << (x&7))))
+                        tscan[x] = 0;
+                }
+            }
+            break;
+        }
+        }
+    }
+    data->fromImage(image, Qt::AutoColor);
 }
 
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
@@ -743,19 +743,6 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
 {
     QImage image = toImage().convertToFormat(QImage::Format_ARGB32);
     return QBitmap::fromImage(image.createMaskFromColor(maskColor.rgba(), mode));
-}
-
-/*! \overload
-
-    Creates and returns a mask for this pixmap based on the given \a
-    maskColor. Same as calling createMaskFromColor(maskColor,
-    Qt::MaskInColor)
-
-    \sa createHeuristicMask(), QImage::createMaskFromColor()
-*/
-QBitmap QPixmap::createMaskFromColor(const QColor &maskColor) const
-{
-    return createMaskFromColor(maskColor, Qt::MaskInColor);
 }
 
 /*!
@@ -1131,38 +1118,6 @@ QPixmap QPixmap::grabWidget(QPaintDevice *, const QRect &)
 
     \sa QPixmap::ShareMode
 */
-
-
-#if defined(Q_WS_X11) || defined(Q_WS_QWS)
-
-/*!
-    Returns the pixmap's handle to the device context.
-
-    Note that, since QPixmap make use of \l {Implicit Data
-    Sharing}{implicit data sharing}, the detach() function must be
-    called explicitly to ensure that only \e this pixmap's data is
-    modified if the pixmap data is shared.
-
-    \warning This function is X11 specific; using it is non-portable.
-
-    \warning Since 4.8, pixmaps do not have an X11 handle unless
-    created with \l {QPixmap::}{fromX11Pixmap()}, or if the native
-    graphics system is explicitly enabled.
-
-    \sa detach()
-*/
-
-Qt::HANDLE QPixmap::handle() const
-{
-#if defined(Q_WS_X11)
-    const QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(pd)->handle();
-#endif
-    return 0;
-}
-#endif
-
 
 
 /*****************************************************************************
@@ -1638,23 +1593,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 */
 bool QPixmap::hasAlpha() const
 {
-#if defined(Q_WS_X11)
-    if (data && data->hasAlphaChannel())
-        return true;
-    QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pd);
-#ifndef QT_NO_XRENDER
-        if (x11Data->picture && x11Data->d == 32)
-            return true;
-#endif
-        if (x11Data->d == 1 || x11Data->x11_mask)
-            return true;
-    }
-    return false;
-#else
     return data && data->hasAlphaChannel();
-#endif
 }
 
 /*!
@@ -1677,78 +1616,6 @@ int QPixmap::metric(PaintDeviceMetric metric) const
 }
 
 /*!
-    \fn void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
-    \obsolete
-
-    Sets the alpha channel of this pixmap to the given \a alphaChannel
-    by converting the \a alphaChannel into 32 bit and using the
-    intensity of the RGB pixel values.
-
-    The effect of this function is undefined when the pixmap is being
-    painted on.
-
-    \warning This is potentially an expensive operation. Most usecases
-    for this function are covered by QPainter and compositionModes
-    which will normally execute faster.
-
-    \sa alphaChannel(), {QPixmap#Pixmap Transformations}{Pixmap
-    Transformations}
- */
-void QPixmap::setAlphaChannel(const QPixmap &alphaChannel)
-{
-    if (alphaChannel.isNull())
-        return;
-
-    if (paintingActive()) {
-        qWarning("QPixmap::setAlphaChannel: "
-                 "Cannot set alpha channel while pixmap is being painted on");
-        return;
-    }
-
-    if (width() != alphaChannel.width() && height() != alphaChannel.height()) {
-        qWarning("QPixmap::setAlphaChannel: "
-                 "The pixmap and the alpha channel pixmap must have the same size");
-        return;
-    }
-
-    detach();
-    data->setAlphaChannel(alphaChannel);
-}
-
-/*!
-    \obsolete
-
-    Returns the alpha channel of the pixmap as a new grayscale QPixmap in which
-    each pixel's red, green, and blue values are given the alpha value of the
-    original pixmap. The color depth of the returned pixmap is the system depth
-    on X11 and 8-bit on Windows and Mac OS X.
-
-    You can use this function while debugging
-    to get a visible image of the alpha channel. If the pixmap doesn't have an
-    alpha channel, i.e., the alpha channel's value for all pixels equals
-    0xff), a null pixmap is returned. You can check this with the \c isNull()
-    function.
-
-    We show an example:
-
-    \snippet doc/src/snippets/alphachannel.cpp 0
-
-    \image alphachannelimage.png The pixmap and channelImage QPixmaps
-
-    \warning This is an expensive operation. The alpha channel of the
-    pixmap is extracted dynamically from the pixeldata. Most usecases of this
-    function are covered by QPainter and compositionModes which will normally
-    execute faster.
-
-    \sa setAlphaChannel(), {QPixmap#Pixmap Information}{Pixmap
-    Information}
-*/
-QPixmap QPixmap::alphaChannel() const
-{
-    return data ? data->alphaChannel() : QPixmap();
-}
-
-/*!
     \internal
 */
 QPaintEngine *QPixmap::paintEngine() const
@@ -1768,7 +1635,36 @@ QPaintEngine *QPixmap::paintEngine() const
 */
 QBitmap QPixmap::mask() const
 {
-    return data ? data->mask() : QBitmap();
+    if (!data || !hasAlphaChannel())
+        return QBitmap();
+
+    const QImage img = toImage();
+    const QImage image = (img.depth() < 32 ? img.convertToFormat(QImage::Format_ARGB32_Premultiplied) : img);
+    const int w = image.width();
+    const int h = image.height();
+
+    QImage mask(w, h, QImage::Format_MonoLSB);
+    if (mask.isNull()) // allocation failed
+        return QBitmap();
+
+    mask.setColorCount(2);
+    mask.setColor(0, QColor(Qt::color0).rgba());
+    mask.setColor(1, QColor(Qt::color1).rgba());
+
+    const int bpl = mask.bytesPerLine();
+
+    for (int y = 0; y < h; ++y) {
+        const QRgb *src = reinterpret_cast<const QRgb*>(image.scanLine(y));
+        uchar *dest = mask.scanLine(y);
+        memset(dest, 0, bpl);
+        for (int x = 0; x < w; ++x) {
+            if (qAlpha(*src) > 0)
+                dest[x >> 3] |= (1 << (x & 7));
+            ++src;
+        }
+    }
+
+    return QBitmap::fromImage(mask);
 }
 
 /*!
@@ -1783,21 +1679,7 @@ QBitmap QPixmap::mask() const
 */
 int QPixmap::defaultDepth()
 {
-#if defined(Q_WS_QWS)
-    return QScreen::instance()->depth();
-#elif defined(Q_WS_X11)
-    return QX11Info::appDepth();
-#elif defined(Q_WS_WINCE)
-    return QColormap::instance().depth();
-#elif defined(Q_WS_WIN)
-    return 32; // XXX
-#elif defined(Q_WS_MAC)
-    return 32;
-#elif defined(Q_OS_SYMBIAN)
-    return S60->screenDepth;
-#elif defined(Q_WS_QPA)
-    return 32; //LITE: ### use graphicssystem (we should do that in general)
-#endif
+    return 32; // LITE: ### use QPlatformScreen (we should do that in general)
 }
 
 /*!
@@ -1834,38 +1716,10 @@ void QPixmap::detach()
     if (data->is_cached && data->ref == 1)
         QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
 
-#if defined(Q_WS_MAC)
-    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;
-    if (macData) {
-        if (macData->cg_mask) {
-            CGImageRelease(macData->cg_mask);
-            macData->cg_mask = 0;
-        }
-    }
-#endif
-
     if (data->ref != 1) {
         *this = copy();
     }
     ++data->detach_no;
-
-#if defined(Q_WS_X11)
-    if (pd->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *d = static_cast<QX11PixmapData*>(pd);
-        d->flags &= ~QX11PixmapData::Uninitialized;
-
-        // reset the cache data
-        if (d->hd2) {
-            XFreePixmap(X11->display, d->hd2);
-            d->hd2 = 0;
-        }
-    }
-#elif defined(Q_WS_MAC)
-    if (macData) {
-        macData->macReleaseCGImageRef();
-        macData->uninit = false;
-    }
-#endif
 }
 
 /*!
@@ -1958,12 +1812,7 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
 */
 QPixmapData* QPixmap::pixmapData() const
 {
-    if (data) {
-        QPixmapData* pm = data.data();
-        return pm->runtimeData() ? pm->runtimeData() : pm;
-    }
-
-    return 0;
+    return data.data();
 }
 
 

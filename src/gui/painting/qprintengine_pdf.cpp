@@ -68,9 +68,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern qint64 qt_pixmap_id(const QPixmap &pixmap);
-extern qint64 qt_image_id(const QImage &image);
-
 //#define FONT_DUMP
 
 // might be helpful for smooth transforms of images
@@ -469,7 +466,7 @@ int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, 
             return 0;
         QImage image = brush.texture().toImage();
         bool bitmap = true;
-        imageObject = addImage(image, &bitmap, qt_pixmap_id(brush.texture()));
+        imageObject = addImage(image, &bitmap, brush.texture().cacheKey());
         if (imageObject != -1) {
             QImage::Format f = image.format();
             if (f != QImage::Format_MonoLSB && f != QImage::Format_Mono) {
