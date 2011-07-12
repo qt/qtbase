@@ -1644,7 +1644,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
             overall.y = qMin(overall.y, y);
             xmax = qMax(xmax, x + g->width);
             ymax = qMax(ymax, y + g->height);
-            overall.xoff += qRound(g->advance);
+            overall.xoff += g->advance;
         } else {
             int left  = FLOOR(face->glyph->metrics.horiBearingX);
             int right = CEIL(face->glyph->metrics.horiBearingX + face->glyph->metrics.width);
@@ -1657,7 +1657,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
             overall.y = qMin(overall.y, y);
             xmax = qMax(xmax, x + TRUNC(right - left));
             ymax = qMax(ymax, y + TRUNC(top - bottom));
-            overall.xoff += qRound(TRUNC(ROUND(face->glyph->advance.x)));
+            overall.xoff += int(TRUNC(ROUND(face->glyph->advance.x)));
         }
     }
     overall.height = qMax(overall.height, ymax - overall.y);
