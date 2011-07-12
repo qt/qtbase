@@ -101,7 +101,6 @@ template<int n> struct QConstStringData
 {
     const QStringData str;
     const char16_t data[n];
-    operator const QStringData &() const { return str; }
 };
 #define QT_QSTRING_UNICODE_MARKER   u""
 
@@ -111,7 +110,6 @@ template<int n> struct QConstStringData
 {
     const QStringData str;
     const wchar_t data[n];
-    operator const QStringData &() const { return str; }
 };
 #define QT_QSTRING_UNICODE_MARKER   L""
 
@@ -120,7 +118,6 @@ template<int n> struct QConstStringData
 {
     const QStringData str;
     const ushort data[n];
-    operator const QStringData &() const { return str; }
 };
 #endif
 
