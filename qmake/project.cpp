@@ -81,7 +81,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE, E_GENERATE_UID, E_RESOLVE_DEPENDS };
+                  E_SIZE, E_GENERATE_UID, E_SORT_DEPENDS, E_RESOLVE_DEPENDS };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -114,6 +114,7 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("replace", E_REPLACE);
         qmake_expand_functions->insert("size", E_SIZE);
         qmake_expand_functions->insert("generate_uid", E_GENERATE_UID);
+        qmake_expand_functions->insert("sort_depends", E_SORT_DEPENDS);
         qmake_expand_functions->insert("resolve_depends", E_RESOLVE_DEPENDS);
     }
     return *qmake_expand_functions;
@@ -1801,37 +1802,25 @@ QMakeProject::doProjectExpand(QString func, QStringList args,
 // defined in symbian generator
 extern QString generate_test_uid(const QString& target);
 
-
-void calculateDeps(QStringList &sortedList, const QString &item, const QString &prefix,
-                   QStringList &org, QMap<QString, QStringList> &place)
+static void
+populateDeps(const QStringList &deps, const QString &prefix,
+             QHash<QString, QSet<QString> > &dependencies, QHash<QString, QStringList> &dependees,
+             QStringList &rootSet, QMap<QString, QStringList> &place)
 {
-    if (sortedList.contains(item))
-        return;
-
-    foreach(QString dep, place.value(prefix + item + ".depends")) {
-        calculateDeps(sortedList, dep, prefix, org, place);
-        if (org.isEmpty())
-            break;
-    }
-
-    if (org.contains(item)) {
-        sortedList += item;
-        org.removeAll(item);
-    }
-}
-
-QStringList
-QMakeProject::resolveDepends(const QStringList &deps, const QString &prefix,
-                             QMap<QString, QStringList> &place)
-{
-    QStringList sortedList;
-    QStringList org = deps;
-    foreach(QString item, deps) {
-        calculateDeps(sortedList, item, prefix, org, place);
-        if (org.isEmpty())
-            break;
-    }
-    return sortedList;
+    foreach (const QString &item, deps)
+        if (!dependencies.contains(item)) {
+            QSet<QString> &dset = dependencies[item]; // Always create entry
+            QStringList depends = place.value(prefix + item + ".depends");
+            if (depends.isEmpty()) {
+                rootSet << item;
+            } else {
+                foreach (const QString &dep, depends) {
+                    dset.insert(dep);
+                    dependees[dep] << item;
+                }
+                populateDeps(depends, prefix, dependencies, dependees, rootSet, place);
+            }
+        }
 }
 
 QStringList
@@ -2280,14 +2269,31 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += generate_test_uid(args.first());
         }
         break;
+    case E_SORT_DEPENDS:
     case E_RESOLVE_DEPENDS: {
         if(args.count() < 1 || args.count() > 2) {
-            fprintf(stderr, "%s:%d: resolve_depends(var, prefix) requires one or two arguments.\n",
-                    parser.file.toLatin1().constData(), parser.line_no);
+            fprintf(stderr, "%s:%d: %s(var, prefix) requires one or two arguments.\n",
+                    parser.file.toLatin1().constData(), parser.line_no, func.toLatin1().constData());
         } else {
-            ret += resolveDepends(args[0].split(QString(Option::field_sep)),
-                                  (args.count() != 2 ? QString() : args[1]),
-                                  place);
+            QHash<QString, QSet<QString> > dependencies;
+            QHash<QString, QStringList> dependees;
+            QStringList rootSet;
+
+            QStringList orgList = values(args[0], place);
+            populateDeps(orgList, (args.count() != 2 ? QString() : args[1]),
+                         dependencies, dependees, rootSet, place);
+
+            for (int i = 0; i < rootSet.size(); ++i) {
+                const QString &item = rootSet.at(i);
+                if ((func_t == E_RESOLVE_DEPENDS) || orgList.contains(item))
+                    ret.prepend(item);
+                foreach (const QString &dep, dependees[item]) {
+                    QSet<QString> &dset = dependencies[dep];
+                    dset.remove(item);
+                    if (dset.isEmpty())
+                        rootSet << dep;
+                }
+            }
         }
         break; }
     default: {

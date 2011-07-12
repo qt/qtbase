@@ -665,7 +665,7 @@ public:
 
 
 /*
-    A writer aquires a read-lock, a reader locks
+    A writer acquires a read-lock, a reader locks
     the writer releases the lock, the reader gets the lock
 */
 void tst_QReadWriteLock::readLockBlockRelease()
@@ -682,7 +682,7 @@ void tst_QReadWriteLock::readLockBlockRelease()
 }
 
 /*
-    writer1 aquires a read-lock, writer2 blocks,
+    writer1 acquires a read-lock, writer2 blocks,
     writer1 releases the lock, writer2 gets the lock
 */
 void tst_QReadWriteLock::writeLockBlockRelease()
@@ -698,7 +698,7 @@ void tst_QReadWriteLock::writeLockBlockRelease()
     QVERIFY(threadDone);
 }
 /*
-    Two readers aquire a read-lock, one writer attempts a write block,
+    Two readers acquire a read-lock, one writer attempts a write block,
     the readers release their locks, the writer gets the lock.
 */
 void tst_QReadWriteLock::multipleReadersBlockRelease()

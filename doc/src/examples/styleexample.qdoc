@@ -26,23 +26,8 @@
 ****************************************************************************/
 
 /*!
-    \example painting/affine
-    \title Affine Transformations
+    \example embedded/styleexample
+    \title Embedded Styles
 
-    In this demo we show Qt's ability to perform affine transformations
-    on painting operations.
-
-    \image affine-demo.png
-
-    Transformations can be performed on any kind of graphics drawn using QPainter.
-    The transformations used to display the vector graphics, images, and text can be adjusted
-    in the following ways:
-
-    \list
-    \o Dragging the red circle in the centre of each drawing moves it to a new position.
-    \o Dragging the displaced red circle causes the current drawing to be rotated about the
-       central circle. Rotation can also be controlled with the \key Rotate slider.
-    \o Scaling is controlled with the \key Scale slider.
-    \o Each drawing can be sheared with the \key Shear slider.
-    \endlist
+    \image styledemo-demo.png
 */

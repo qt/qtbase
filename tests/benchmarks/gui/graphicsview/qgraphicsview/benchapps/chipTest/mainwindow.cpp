@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(view);
     setLayout(layout);
 
-    setWindowTitle(tr("Chip Demo"));
+    setWindowTitle(tr("Chip Example"));
 }
 
 void MainWindow::populateScene()

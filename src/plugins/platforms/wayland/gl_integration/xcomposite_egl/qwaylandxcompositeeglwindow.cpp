@@ -48,6 +48,8 @@
 #include "wayland-xcomposite-client-protocol.h"
 
 #include <X11/extensions/Xcomposite.h>
+#include "qwaylandxcompositeeglintegration.h"
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
 
 #include <QtCore/QDebug>
 
@@ -146,4 +148,13 @@ void QWaylandXCompositeEGLWindow::sync_function(void *data)
 {
     QWaylandXCompositeEGLWindow *that = static_cast<QWaylandXCompositeEGLWindow *>(data);
     that->m_waitingForSync = false;
+}
+
+void QWaylandXCompositeEGLWindow::requestActivateWindow()
+{
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    mDisplay->windowManagerIntegration()->authenticateWithToken();
+#endif
+
+    QWaylandWindow::requestActivateWindow();
 }

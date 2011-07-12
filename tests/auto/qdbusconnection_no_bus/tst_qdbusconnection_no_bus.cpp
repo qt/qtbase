@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,46 +38,47 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qcoreapplication.h>
+#include <qdebug.h>
 
-#include "customproxy.h"
-#include "embeddeddialog.h"
+#include <QtTest/QtTest>
+#include <QtDBus/QtDBus>
 
-#include <QtWidgets>
+#include <stdlib.h>
 
-int main(int argc, char *argv[])
+/* This test uses an appless main, to ensure that no D-Bus stuff is implicitly done
+   It also sets the magic "QT_SIMULATE_DBUS_LIBFAIL" env variable, that is only available
+   in developer builds. That env variable simulates a D-Bus library load fail.
+
+   In no case should the QDBus module crash because D-Bus libs couldn't be loaded */
+
+class tst_QDBusConnectionNoBus : public QObject
 {
-    Q_INIT_RESOURCE(embeddeddialogs);
-    QApplication app(argc, argv);
+    Q_OBJECT
 
-    QGraphicsScene scene;
-    scene.setStickyFocus(true);
-#ifndef Q_OS_WINCE
-    const int gridSize = 10;
-#else
-    const int gridSize = 5;
-#endif
-
-    for (int y = 0; y < gridSize; ++y) {
-        for (int x = 0; x < gridSize; ++x) {
-            CustomProxy *proxy = new CustomProxy(0, Qt::Window);
-            proxy->setWidget(new EmbeddedDialog);
-
-            QRectF rect = proxy->boundingRect();
-
-            proxy->setPos(x * rect.width() * 1.05, y * rect.height() * 1.05);
-            proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-
-            scene.addItem(proxy);
-        }
+public:
+    tst_QDBusConnectionNoBus()
+    {
+        ::setenv("DBUS_SESSION_BUS_ADDRESS", "unix:abstract=/tmp/does_not_exist", 1);
+        ::setenv("QT_SIMULATE_DBUS_LIBFAIL", "1", 1);
     }
-    scene.setSceneRect(scene.itemsBoundingRect());
 
-    QGraphicsView view(&scene);
-    view.scale(0.5, 0.5);
-    view.setRenderHints(view.renderHints() | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    view.setBackgroundBrush(QPixmap(":/No-Ones-Laughing-3.jpg"));
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.show();
-    view.setWindowTitle("Embedded Dialogs Example");
-    return app.exec();
+private slots:
+    void connectToBus();
+};
+
+
+void tst_QDBusConnectionNoBus::connectToBus()
+{
+    int argc = 0;
+    QCoreApplication app(argc, 0);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(true); // if we didn't crash here, the test passed :)
 }
+
+QTEST_APPLESS_MAIN(tst_QDBusConnectionNoBus)
+
+#include "tst_qdbusconnection_no_bus.moc"
+

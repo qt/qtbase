@@ -200,7 +200,7 @@ const int RESET = 0;
 
 /*!
     Test plan:
-	insertItem (all flavours and combinations)
+        insertItem (all flavors and combinations)
 	removing menu items
 	clearing the menu
 

@@ -536,12 +536,12 @@ void tst_QWSWindowSystem::dontFlushUnitializedWindowSurfaces()
 
         // At this point w has a windowsurface but it's completely covered by
         // the directpainter so nothing will be painted here and the
-        // windowsurface contains unitialized data.
+        // windowsurface contains uninitialized data.
 
         QApplication::processEvents();
         QCOMPARE(p.allocatedRegion(), QRegion(r));
         QCOMPARE(w.visibleRegion(), QRegion());
-        fillWindowSurface(&w, Qt::black); // fill with "unitialized" data
+        fillWindowSurface(&w, Qt::black); // fill with "uninitialized" data
 
         p.setRegion(QRegion());
 
@@ -569,7 +569,7 @@ void tst_QWSWindowSystem::dontFlushUnitializedWindowSurfaces()
         QApplication::processEvents();
         QCOMPARE(p.allocatedRegion(), QRegion(r));
         QCOMPARE(w.visibleRegion(), QRegion());
-        fillWindowSurface(&w, Qt::black); // fill with "unitialized" data
+        fillWindowSurface(&w, Qt::black); // fill with "uninitialized" data
 
         p.setRegion(QRegion());
 

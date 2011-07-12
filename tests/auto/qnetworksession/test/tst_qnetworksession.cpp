@@ -1413,15 +1413,15 @@ void tst_QNetworkSession::outOfProcessSession()
     }
 }
 
-// A convinience / helper function for testcases. Return the first matching configuration.
+// A convenience / helper function for testcases. Return the first matching configuration.
 // Ignores configurations in other than 'discovered' -state. Returns invalid (QNetworkConfiguration())
 // if none found.
 QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfiguration::Type configType) {
-    
+
     // Refresh configurations and derive configurations matching given parameters.
     QNetworkConfigurationManager mgr;
     QSignalSpy updateSpy(&mgr, SIGNAL(updateCompleted()));
-    
+
     mgr.updateConfigurations();
     QTRY_NOOP(updateSpy.count() == 1);
     if (updateSpy.count() != 1) {
@@ -1430,13 +1430,13 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
     }
     QList<QNetworkConfiguration> discoveredConfigs = mgr.allConfigurations(QNetworkConfiguration::Discovered);
     foreach(QNetworkConfiguration config, discoveredConfigs) {
-        if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {        
+        if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
             discoveredConfigs.removeOne(config);
         } else if (config.type() != configType) {
             // qDebug() << "Dumping config because type (IAP/SNAP) mismatches: " << config.name();
             discoveredConfigs.removeOne(config);
         } else if ((config.type() == QNetworkConfiguration::InternetAccessPoint) &&
-                    bearerType == "cellular") { // 'cellular' bearertype is for convinience
+                    bearerType == "cellular") { // 'cellular' bearertype is for convenience
             if (config.bearerName() != "2G" &&
                 config.bearerName() != "CDMA2000" &&
                 config.bearerName() != "WCDMA" &&
@@ -1458,8 +1458,8 @@ QNetworkConfiguration suitableConfiguration(QString bearerType, QNetworkConfigur
     }
 }
 
-// A convinience-function: updates configurations and waits that they are updated.
-void updateConfigurations() 
+// A convenience-function: updates configurations and waits that they are updated.
+void updateConfigurations()
 {
     QNetworkConfigurationManager mgr;
     QSignalSpy updateSpy(&mgr, SIGNAL(updateCompleted()));
@@ -1467,7 +1467,7 @@ void updateConfigurations()
     QTRY_NOOP(updateSpy.count() == 1);
 }
 
-// A convinience-function: updates and prints all available confiurations and their states
+// A convenience-function: updates and prints all available confiurations and their states
 void printConfigurations()
 {
     QNetworkConfigurationManager manager;
@@ -1480,7 +1480,7 @@ void printConfigurations()
     }
 }
 
-// A convinience function for test-cases: opens the given configuration and return
+// A convenience function for test-cases: opens the given configuration and return
 // true if it was done gracefully.
 bool openSession(QNetworkSession *session) {
     bool result = true;
@@ -1546,10 +1546,10 @@ bool openSession(QNetworkSession *session) {
     return result;
 }
 
-// Helper function for closing opened session. Performs checks that 
+// Helper function for closing opened session. Performs checks that
 // session is closed gradefully (e.g. signals). Function does not delete
 // the session. The lastSessionOnConfiguration (true by default) is used to
-// tell if there are more sessions open, basing on same configration. This 
+// tell if there are more sessions open, basing on same configuration. This
 // impacts the checks made.
 bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration) {
     if (!session) {

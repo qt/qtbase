@@ -38,46 +38,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QApplication>
 
-#include "customproxy.h"
-#include "embeddeddialog.h"
-
-#include <QtWidgets>
+#include "stylewidget.h"
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(embeddeddialogs);
     QApplication app(argc, argv);
+    Q_INIT_RESOURCE(styleexample);
 
-    QGraphicsScene scene;
-    scene.setStickyFocus(true);
-#ifndef Q_OS_WINCE
-    const int gridSize = 10;
-#else
-    const int gridSize = 5;
-#endif
+    app.setApplicationName("style");
+    app.setOrganizationName("Nokia");
+    app.setOrganizationDomain("com.nokia.qt");
 
-    for (int y = 0; y < gridSize; ++y) {
-        for (int x = 0; x < gridSize; ++x) {
-            CustomProxy *proxy = new CustomProxy(0, Qt::Window);
-            proxy->setWidget(new EmbeddedDialog);
+    StyleWidget widget;
+    widget.showFullScreen();
 
-            QRectF rect = proxy->boundingRect();
-
-            proxy->setPos(x * rect.width() * 1.05, y * rect.height() * 1.05);
-            proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-
-            scene.addItem(proxy);
-        }
-    }
-    scene.setSceneRect(scene.itemsBoundingRect());
-
-    QGraphicsView view(&scene);
-    view.scale(0.5, 0.5);
-    view.setRenderHints(view.renderHints() | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    view.setBackgroundBrush(QPixmap(":/No-Ones-Laughing-3.jpg"));
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.show();
-    view.setWindowTitle("Embedded Dialogs Example");
     return app.exec();
 }
+

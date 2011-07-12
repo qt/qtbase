@@ -314,7 +314,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="StyleDemo.qrc"/>
+  <include location="styleexample.qrc"/>
  </resources>
  <connections>
   <connection>

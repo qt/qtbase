@@ -44,7 +44,7 @@
 
 #include <QtCore/qchar.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qatomic.h>
+#include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 
 #ifndef QT_NO_STL
@@ -77,9 +77,86 @@ class QLatin1String;
 class QStringRef;
 template <typename T> class QVector;
 
+struct QStringData {
+    QtPrivate::RefCount ref;
+    int size;
+    uint alloc : 31;
+    uint capacityReserved : 1;
+    union {
+        qptrdiff offset; // will always work as we add/subtract from a ushort ptr
+        ushort d[sizeof(qptrdiff)/sizeof(ushort)];
+    };
+    inline ushort *data() { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
+    inline const ushort *data() const { return d + sizeof(qptrdiff)/sizeof(ushort) + offset; }
+};
+
+template<int N> struct QConstStringData;
+template<int N> struct QConstStringDataPtr
+{
+    const QConstStringData<N> *ptr;
+};
+
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+template<int n> struct QConstStringData
+{
+    const QStringData str;
+    const char16_t data[n];
+};
+#define QT_QSTRING_UNICODE_MARKER   u""
+
+#elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
+// wchar_t is 2 bytes
+template<int n> struct QConstStringData
+{
+    const QStringData str;
+    const wchar_t data[n];
+};
+#define QT_QSTRING_UNICODE_MARKER   L""
+
+#else
+template<int n> struct QConstStringData
+{
+    const QStringData str;
+    const ushort data[n];
+};
+#endif
+
+#if defined(QT_QSTRING_UNICODE_MARKER)
+# if defined(Q_COMPILER_LAMBDA)
+#  define QStringLiteral(str) ([]() { \
+        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 }; \
+        static const QConstStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+    return holder; }())
+
+# elif defined(Q_CC_GNU)
+// We need to create a QStringData in the .rodata section of memory
+// and the only way to do that is to create a "static const" variable.
+// To do that, we need the __extension__ {( )} trick which only GCC supports
+
+#  define QStringLiteral(str) \
+    __extension__ ({ \
+        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 }; \
+        static const QConstStringData<Size> qstring_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        QConstStringDataPtr<Size> holder = { &qstring_literal }; \
+        holder; })
+# endif
+#endif
+
+#ifndef QStringLiteral
+// no lambdas, not GCC, or GCC in C++98 mode with 4-byte wchar_t
+// fallback, uses QLatin1String as next best options
+
+# define QStringLiteral(str) QLatin1String(str)
+#endif
+
 class Q_CORE_EXPORT QString
 {
 public:
+    typedef QStringData Data;
+
     inline QString();
     QString(const QChar *unicode, int size); // Qt5: don't cap size < 0
     explicit QString(const QChar *unicode); // Qt5: merge with the above
@@ -108,7 +185,7 @@ public:
 
     int capacity() const;
     inline void reserve(int size);
-    inline void squeeze() { if (d->size < d->alloc || d->ref != 1) realloc(); d->capacity = 0;}
+    inline void squeeze() { if (d->size < d->alloc || d->ref != 1) realloc(); d->capacityReserved = false;}
 
     inline const QChar *unicode() const;
     inline QChar *data();
@@ -262,8 +339,8 @@ public:
     inline QString &operator+=(QChar c) {
         if (d->ref != 1 || d->size + 1 > d->alloc)
             realloc(grow(d->size + 1));
-        d->data[d->size++] = c.unicode();
-        d->data[d->size] = '\0';
+        d->data()[d->size++] = c.unicode();
+        d->data()[d->size] = '\0';
         return *this;
     }
 
@@ -491,15 +568,19 @@ public:
     // compatibility
     struct Null { };
     static const Null null;
-    inline QString(const Null &): d(&shared_null) { d->ref.ref(); }
+    inline QString(const Null &): d(const_cast<Data *>(&shared_null.str)) {}
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
-    inline bool isNull() const { return d == &shared_null; }
+    inline bool isNull() const { return d == &shared_null.str; }
 
 
-    bool isSimpleText() const { if (!d->clean) updateProperties(); return d->simpletext; }
+    bool isSimpleText() const;
     bool isRightToLeft() const;
 
     QString(int size, Qt::Initialization);
+    template <int n>
+    inline QString(const QConstStringData<n> &dd) : d(const_cast<QStringData *>(&dd.str)) {}
+    template <int N>
+    Q_DECL_CONSTEXPR inline QString(QConstStringDataPtr<N> dd) : d(const_cast<QStringData *>(&dd.ptr->str)) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
@@ -511,22 +592,11 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    struct Data {
-        QBasicAtomicInt ref;
-        int alloc, size;
-        ushort *data; // QT5: put that after the bit field to fill alignment gap; don't use sizeof any more then
-        ushort clean : 1;
-        ushort simpletext : 1;
-        ushort righttoleft : 1;
-        ushort capacity : 1;
-        ushort reserved : 11;
-        // ### Qt5: try to ensure that "array" is aligned to 16 bytes on both 32- and 64-bit
-        ushort array[1];
-    };
-    static Data shared_null;
-    static Data shared_empty;
+    static const QConstStringData<1> shared_null;
+    static const QConstStringData<1> shared_empty;
     Data *d;
-    QString(Data *dd, int /*dummy*/) : d(dd) {}
+    inline QString(Data *dd, int /*dummy*/) : d(dd) {}
+
 #ifndef QT_NO_TEXTCODEC
     static QTextCodec *codecForCStrings;
 #endif
@@ -563,11 +633,11 @@ public:
 class Q_CORE_EXPORT QLatin1String
 {
 public:
-    inline explicit QLatin1String(const char *s) : chars(s) {}
-    inline QLatin1String &operator=(const QLatin1String &other)
-    { chars = other.chars; return *this; }
+    inline explicit QLatin1String(const char *s) : m_size(s ? strlen(s) : 0), m_data(s) {}
 
-    inline const char *latin1() const { return chars; }
+    inline const char *latin1() const { return m_data; }
+    inline int size() const { return m_size; }
+    inline const char *data() const { return m_data; }
 
     inline bool operator==(const QString &s) const
     { return s == *this; }
@@ -595,9 +665,12 @@ public:
     inline QT_ASCII_CAST_WARN bool operator>=(const char *s) const
         { return QString::fromAscii(s) <= *this; }
 private:
-    const char *chars;
+    int m_size;
+    const char *m_data;
 };
 
+// Qt 4.x compatibility
+typedef QLatin1String QLatin1Literal;
 
 
 inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLatin1.latin1()))
@@ -605,23 +678,23 @@ inline QString::QString(const QLatin1String &aLatin1) : d(fromLatin1_helper(aLat
 inline int QString::length() const
 { return d->size; }
 inline const QChar QString::at(int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
 inline const QChar QString::operator[](int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d->data[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
 inline const QChar QString::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return d->data[i]; }
+{ Q_ASSERT(i < uint(size())); return d->data()[i]; }
 inline bool QString::isEmpty() const
 { return d->size == 0; }
 inline const QChar *QString::unicode() const
-{ return reinterpret_cast<const QChar*>(d->data); }
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline const QChar *QString::data() const
-{ return reinterpret_cast<const QChar*>(d->data); }
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline QChar *QString::data()
-{ detach(); return reinterpret_cast<QChar*>(d->data); }
+{ detach(); return reinterpret_cast<QChar*>(d->data()); }
 inline const QChar *QString::constData() const
-{ return reinterpret_cast<const QChar*>(d->data); }
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline void QString::detach()
-{ if (d->ref != 1 || d->data != d->array) realloc(); }
+{ if (d->ref != 1 || d->offset) realloc(); }
 inline bool QString::isDetached() const
 { return d->ref == 1; }
 inline QString &QString::operator=(const QLatin1String &s)
@@ -703,10 +776,10 @@ public:
 
     // all this is not documented: We just say "like QChar" and let it be.
     inline operator QChar() const
-        { return i < s.d->size ? s.d->data[i] : 0; }
+        { return i < s.d->size ? s.d->data()[i] : 0; }
     inline QCharRef &operator=(const QChar &c)
         { if (i >= s.d->size) s.expand(i); else s.detach();
-          s.d->data[i] = c.unicode();  return *this; }
+          s.d->data()[i] = c.unicode();  return *this; }
 
     // An operator= for each QChar cast constructors
 #ifndef QT_NO_CAST_FROM_ASCII
@@ -756,15 +829,9 @@ public:
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
-#ifdef Q_COMPILER_MANGLES_RETURN_TYPE
-    const char toAscii() const { return QChar(*this).toAscii(); }
-    const char toLatin1() const { return QChar(*this).toLatin1(); }
-    const ushort unicode() const { return QChar(*this).unicode(); }
-#else
     char toAscii() const { return QChar(*this).toAscii(); }
     char toLatin1() const { return QChar(*this).toLatin1(); }
     ushort unicode() const { return QChar(*this).unicode(); }
-#endif
     ushort& unicode() { return s.data()[i].unicode(); }
 
 };
@@ -773,9 +840,9 @@ inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
 inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 
-inline QString::QString() : d(&shared_null) { d->ref.ref(); }
+inline QString::QString() : d(const_cast<Data *>(&shared_null.str)) {}
 inline QString::~QString() { if (!d->ref.deref()) free(d); }
-inline void QString::reserve(int asize) { if (d->ref != 1 || asize > d->alloc) realloc(asize); d->capacity = 1;}
+inline void QString::reserve(int asize) { if (d->ref != 1 || asize > d->alloc) realloc(asize); d->capacityReserved = true;}
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 inline QCharRef QString::operator[](int i)
@@ -783,17 +850,17 @@ inline QCharRef QString::operator[](int i)
 inline QCharRef QString::operator[](uint i)
 { return QCharRef(*this, i); }
 inline QString::iterator QString::begin()
-{ detach(); return reinterpret_cast<QChar*>(d->data); }
+{ detach(); return reinterpret_cast<QChar*>(d->data()); }
 inline QString::const_iterator QString::begin() const
-{ return reinterpret_cast<const QChar*>(d->data); }
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline QString::const_iterator QString::constBegin() const
-{ return reinterpret_cast<const QChar*>(d->data); }
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline QString::iterator QString::end()
-{ detach(); return reinterpret_cast<QChar*>(d->data + d->size); }
+{ detach(); return reinterpret_cast<QChar*>(d->data() + d->size); }
 inline QString::const_iterator QString::end() const
-{ return reinterpret_cast<const QChar*>(d->data + d->size); }
+{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
 inline QString::const_iterator QString::constEnd() const
-{ return reinterpret_cast<const QChar*>(d->data + d->size); }
+{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
 inline QBool QString::contains(const QString &s, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(s, 0, cs) != -1); }
 inline QBool QString::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
@@ -1024,7 +1091,7 @@ public:
 
     inline const QChar *unicode() const {
         if (!m_string)
-            return reinterpret_cast<const QChar *>(QString::shared_null.data);
+            return reinterpret_cast<const QChar *>(QString::shared_null.str.data());
         return m_string->unicode() + m_position;
     }
     inline const QChar *data() const { return unicode(); }
@@ -1152,7 +1219,6 @@ inline QBool QStringRef::contains(QChar c, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(c, 0, cs) != -1); }
 inline QBool QStringRef::contains(const QStringRef &s, Qt::CaseSensitivity cs) const
 { return QBool(indexOf(s, 0, cs) != -1); }
-
 
 
 QT_END_NAMESPACE

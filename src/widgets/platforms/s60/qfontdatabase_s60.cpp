@@ -508,7 +508,7 @@ static bool registerScreenDeviceFont(int screenDeviceFontIndex,
     QtFontFamily *family = privateDb()->family(familyName, true);
     family->fixedPitch = faceAttrib.IsMonoWidth();
     QtFontFoundry *foundry = family->foundry(QString(), true);
-    QtFontStyle *style = foundry->style(styleKey, true);
+    QtFontStyle *style = foundry->style(styleKey, QString(), true);
     style->smoothScalable = typefaceSupport.iIsScalable;
     style->pixelSize(0, true);
 

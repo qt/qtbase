@@ -47,6 +47,7 @@ private slots:
     void testFlag() const;
     void testFlagZeroFlag() const;
     void testFlagMultiBits() const;
+    void constExpr();
 };
 
 void tst_QFlags::testFlag() const
@@ -95,6 +96,33 @@ void tst_QFlags::testFlagMultiBits() const
         QVERIFY(hasDialog.testFlag(Qt::Dialog));
     }
 }
+
+template <int N, typename T> bool verifyConstExpr(T n) { return n == N; }
+
+void tst_QFlags::constExpr()
+{
+#ifdef Q_COMPILER_CONSTEXPR
+    Qt::MouseButtons btn = Qt::LeftButton | Qt::RightButton;
+    switch (btn) {
+        case Qt::LeftButton: QVERIFY(false); break;
+        case Qt::RightButton: QVERIFY(false); break;
+        case Qt::LeftButton | Qt::RightButton: QVERIFY(true); break;
+        default: QVERIFY(false);
+    }
+
+    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) & Qt::LeftButton>(Qt::LeftButton));
+    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) & Qt::MiddleButton>(0));
+    QVERIFY(verifyConstExpr<(Qt::LeftButton | Qt::RightButton) | Qt::MiddleButton>(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton));
+    QVERIFY(verifyConstExpr<~(Qt::LeftButton | Qt::RightButton)>(~(Qt::LeftButton | Qt::RightButton)));
+    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::LeftButton) ^ Qt::RightButton>(Qt::LeftButton ^ Qt::RightButton));
+    QVERIFY(verifyConstExpr<Qt::MouseButtons(0)>(0));
+    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::RightButton) & 0xff>(Qt::RightButton));
+    QVERIFY(verifyConstExpr<Qt::MouseButtons(Qt::RightButton) | 0xff>(0xff));
+
+    QVERIFY(!verifyConstExpr<Qt::RightButton>(!Qt::MouseButtons(Qt::LeftButton)));
+#endif
+}
+
 
 QTEST_MAIN(tst_QFlags)
 #include "tst_qflags.moc"

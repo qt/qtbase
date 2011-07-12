@@ -1130,7 +1130,7 @@ void tst_QAccessibility::buttonTest()
 //    QCOMPARE(test->actionText(QAccessible::Press, QAccessible::Name, 0), QString("Press"));
 //    test->release();
 
-//    // test splitted menu toolbutton
+//    // test split menu toolbutton
 //    QVERIFY(QAccessible::queryAccessibleInterface(&splitToolButton, &test));
 //    QCOMPARE(test->childCount(), 2);
 //    QCOMPARE(test->role(0), QAccessible::ButtonDropDown);

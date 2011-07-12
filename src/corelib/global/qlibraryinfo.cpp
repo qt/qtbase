@@ -297,11 +297,6 @@ QLibraryInfo::location(LibraryLocation loc)
             path = QT_CONFIGURE_EXAMPLES_PATH;
             break;
 #endif
-#ifdef QT_CONFIGURE_DEMOS_PATH
-        case DemosPath:
-            path = QT_CONFIGURE_DEMOS_PATH;
-            break;
-#endif
         default:
             break;
         }
@@ -351,9 +346,6 @@ QLibraryInfo::location(LibraryLocation loc)
             break;
         case ExamplesPath:
             key = QLatin1String("Examples");
-            break;
-        case DemosPath:
-            key = QLatin1String("Demos");
             break;
         default:
             break;
@@ -500,7 +492,6 @@ QLibraryInfo::location(LibraryLocation loc)
     \value TranslationsPath The location of translation information for Qt strings.
     \value SettingsPath The location for Qt settings.
     \value ExamplesPath The location for examples upon install.
-    \value DemosPath The location for demos upon install.
 
     \sa location()
 */

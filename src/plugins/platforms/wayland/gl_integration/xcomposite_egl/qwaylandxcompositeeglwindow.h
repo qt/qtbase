@@ -55,6 +55,7 @@ public:
     WindowType windowType() const;
 
     void setGeometry(const QRect &rect);
+    void requestActivateWindow();
 
     EGLSurface eglSurface() const;
 

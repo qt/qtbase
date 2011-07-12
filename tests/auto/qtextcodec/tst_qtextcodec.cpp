@@ -496,7 +496,7 @@ void tst_QTextCodec::flagEFBFBF() const
         start.append("?>");
     }
 
-    /* When 0xEFBFBF is preceeded by what seems to be an arbitrary character,
+    /* When 0xEFBFBF is preceded by what seems to be an arbitrary character,
      * QTextCodec fails to flag it. */
     {
         QByteArray start("B");

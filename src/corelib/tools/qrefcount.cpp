@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,45 +39,13 @@
 **
 ****************************************************************************/
 
-#include "customproxy.h"
-#include "embeddeddialog.h"
+/*!
+  \class QtPrivate::RefCount
+  \internal
 
-#include <QtWidgets>
+  QRefCount implements atomic ref counting for Qt's shared classes. It behaves very similar
+  to QAtomicInt, but ignores negative ref counts.
 
-int main(int argc, char *argv[])
-{
-    Q_INIT_RESOURCE(embeddeddialogs);
-    QApplication app(argc, argv);
-
-    QGraphicsScene scene;
-    scene.setStickyFocus(true);
-#ifndef Q_OS_WINCE
-    const int gridSize = 10;
-#else
-    const int gridSize = 5;
-#endif
-
-    for (int y = 0; y < gridSize; ++y) {
-        for (int x = 0; x < gridSize; ++x) {
-            CustomProxy *proxy = new CustomProxy(0, Qt::Window);
-            proxy->setWidget(new EmbeddedDialog);
-
-            QRectF rect = proxy->boundingRect();
-
-            proxy->setPos(x * rect.width() * 1.05, y * rect.height() * 1.05);
-            proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-
-            scene.addItem(proxy);
-        }
-    }
-    scene.setSceneRect(scene.itemsBoundingRect());
-
-    QGraphicsView view(&scene);
-    view.scale(0.5, 0.5);
-    view.setRenderHints(view.renderHints() | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    view.setBackgroundBrush(QPixmap(":/No-Ones-Laughing-3.jpg"));
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.show();
-    view.setWindowTitle("Embedded Dialogs Example");
-    return app.exec();
-}
+  This can be used to allow to implement e.g. const read-only QStringData objects. QString::shared_null and
+  the qs(...) macro make use of this feature.
+*/

@@ -492,17 +492,6 @@ void QCoreTextFontEngine::init()
         avgCharWidth = QFixed::fromReal(width * fontDef.pixelSize / emSize);
     } else
         avgCharWidth = QFontEngine::averageCharWidth();
-
-    ctMaxCharWidth = ctMinLeftBearing = ctMinRightBearing = 0;
-    QByteArray hheaTable = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
-    if (hheaTable.size() >= 16) {
-        quint16 width = qFromBigEndian<quint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 10));
-        ctMaxCharWidth = width * fontDef.pixelSize / emSize;
-        qint16 bearing = qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 12));
-        ctMinLeftBearing = bearing * fontDef.pixelSize / emSize;
-        bearing = qFromBigEndian<qint16>(reinterpret_cast<const uchar *>(hheaTable.constData() + 14));
-        ctMinRightBearing = bearing * fontDef.pixelSize / emSize;
-    }
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
@@ -599,20 +588,17 @@ QFixed QCoreTextFontEngine::averageCharWidth() const
 
 qreal QCoreTextFontEngine::maxCharWidth() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMaxCharWidth) : ctMaxCharWidth;
+    return 0;
 }
 
 qreal QCoreTextFontEngine::minLeftBearing() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMinLeftBearing) : ctMinLeftBearing;
+    return 0;
 }
 
 qreal QCoreTextFontEngine::minRightBearing() const
 {
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? qRound(ctMinRightBearing) : ctMinLeftBearing;
+    return 0;
 }
 
 void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight)

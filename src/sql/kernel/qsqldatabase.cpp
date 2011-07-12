@@ -1434,26 +1434,6 @@ bool QSqlDatabase::isValid() const
     return d->driver && d->driver != d->shared_null()->driver;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use query.record() instead.
-*/
-QSqlRecord QSqlDatabase::record(const QSqlQuery& query) const
-{ return query.record(); }
-
-/*!
-    Use query.record() instead.
-*/
-QSqlRecord QSqlDatabase::recordInfo(const QSqlQuery& query) const
-{ return query.record(); }
-
-/*!
-    \fn QSqlRecord QSqlDatabase::recordInfo(const QString& tablename) const
-
-    Use record() instead.
-*/
-#endif
-
 /*!
     Clones the database connection \a other and and stores it as \a
     connectionName. All the settings from the original database, e.g.

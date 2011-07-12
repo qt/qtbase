@@ -177,7 +177,7 @@ void tst_QWriteLocker::unlockAndRelockTest()
     releaseThread();
 
     waitForThread();
-    // lock has been explicity relocked via QWriteLocker
+    // lock has been explicitly relocked via QWriteLocker
     QVERIFY(!thread->lock.tryLockForWrite());
     releaseThread();
 

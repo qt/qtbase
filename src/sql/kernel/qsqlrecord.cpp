@@ -244,34 +244,6 @@ int QSqlRecord::indexOf(const QString& name) const
     return -1;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    \obsolete
-    Use field() instead
-*/
-const QSqlField* QSqlRecord::fieldPtr(int index) const
-{
-    if (!d->contains(index))
-        return 0;
-
-    return &d->fields.at(index);
-}
-
-/*!
-    \obsolete
-    Use field() instead
-*/
-
-const QSqlField* QSqlRecord::fieldPtr(const QString& name) const
-{
-    int i = indexOf(name);
-    if (!d->contains(i))
-        return 0;
-
-    return &d->fields.at(i);
-}
-#endif //QT3_SUPPORT
-
 /*!
     Returns the field at position \a index. If the position is out of
     range, an empty field is returned.
@@ -495,49 +467,6 @@ bool QSqlRecord::isGenerated(int index) const
 {
     return d->fields.value(index).isGenerated();
 }
-
-#ifdef QT3_SUPPORT
-/*!
-    Returns a list of all the record's field names as a string
-    separated by \a sep.
-
-    In the unlikely event that you used this function in Qt 3, you
-    can simulate it using the rest of the QSqlRecord public API.
-*/
-
-QString QSqlRecord::toString(const QString& prefix, const QString& sep) const
-{
-    QString pflist;
-    bool comma = false;
-    for (int i = 0; i < count(); ++i) {
-        if (!d->fields.value(i).isGenerated()) {
-            if (comma)
-                pflist += sep + QLatin1Char(' ');
-            pflist += d->createField(i, prefix);
-            comma = true;
-        }
-    }
-    return pflist;
-}
-
-/*!
-    Returns a list of all the record's field names, each having the
-    prefix \a prefix.
-
-    In the unlikely event that you used this function in Qt 3, you
-    can simulate it using the rest of the QSqlRecord public API.
-*/
-
-QStringList QSqlRecord::toStringList(const QString& prefix) const
-{
-    QStringList s;
-    for (int i = 0; i < count(); ++i) {
-        if (!d->fields.value(i).isGenerated())
-            s += d->createField(i, prefix);
-    }
-    return s;
-}
-#endif // QT3_SUPPORT
 
 /*!
     Returns the number of fields in the record.

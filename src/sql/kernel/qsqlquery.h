@@ -94,9 +94,6 @@ public:
     bool seek(int i, bool relative = false);
     bool next();
     bool previous();
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool prev() { return previous(); }
-#endif
     bool first();
     bool last();
 

@@ -777,7 +777,7 @@
 
     \section2 4.2 Qt Documentation
 
-    Qt 4.7 comes with 17 examples and 2 Demonstrations for model/view.
+    Qt 5.0 comes with 19 examples for model/view.
     The examples can be found on the \l{Item Views Examples} page.
 
     \table
@@ -842,6 +842,11 @@
             \o  QStandardItemModel
             \o
         \row
+            \o  Interview
+            \o  Multiple
+            \o  Custom item model
+            \o  Multiple views
+        \row
             \o  Pixelator
             \o  QTableView
             \o  Custom table model
@@ -872,22 +877,14 @@
             \o  QStandardItemModel
             \o  Custom delegate that uses a spin box as a cell editor
         \row
+            \o  Spreadsheet
+            \o  {2, 1}  QTableView
+            \o  Custom delegates
+        \row
             \o  Star Delegate
             \o  {2, 1}  QTableWidget
             \o  Comprehensive custom delegate example.
     \endtable
-
-    \l{Qt Demonstrations}{Demonstrations} are similar to examples except that no
-    walkthrough is provided for the code. Demonstrations are typically more
-    feature rich than examples.
-
-    \list
-       \o   The \bold Interview demonstration shows the same model and
-            selection being shared between three different views.
-       \o   The \bold Spreadsheet demonstration illustrates the use of a
-            table view as a spreadsheet, using custom delegates to render
-            each item according to the type of data it contains.
-    \endlist
 
     A \l{Model/View Programming}{reference document} for model/view technology
     is also available.

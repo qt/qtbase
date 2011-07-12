@@ -62,6 +62,12 @@ void qdbus_unloadLibDBus()
 
 bool qdbus_loadLibDBus()
 {
+#ifdef QT_BUILD_INTERNAL
+    // this is to simulate a library load failure for our autotest suite.
+    if (!qgetenv("QT_SIMULATE_DBUS_LIBFAIL").isEmpty())
+        return false;
+#endif
+
     static volatile bool triedToLoadLibrary = false;
 #ifndef QT_NO_THREAD
     QMutexLocker locker(QMutexPool::globalInstanceGet((void *)&qdbus_resolve_me));
