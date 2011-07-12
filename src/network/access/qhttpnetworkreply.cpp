@@ -211,7 +211,7 @@ void QHttpNetworkReply::setDownstreamLimited(bool dsl)
 bool QHttpNetworkReply::supportsUserProvidedDownloadBuffer()
 {
     Q_D(QHttpNetworkReply);
-    return (!d->isChunked() && !d->autoDecompress && d->bodyLength > 0);
+    return (!d->isChunked() && !d->autoDecompress && d->bodyLength > 0 && d->statusCode == 200);
 }
 
 void QHttpNetworkReply::setUserProvidedDownloadBuffer(char* b)
@@ -672,7 +672,7 @@ qint64 QHttpNetworkReplyPrivate::readBodyVeryFast(QAbstractSocket *socket, char 
     qint64 haveRead = 0;
     haveRead = socket->read(b, bodyLength - contentRead);
     if (haveRead == -1) {
-        return 0; // ### error checking here;
+        return -1;
     }
     contentRead += haveRead;
 

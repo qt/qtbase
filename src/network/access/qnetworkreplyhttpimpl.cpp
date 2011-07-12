@@ -777,8 +777,16 @@ void QNetworkReplyHttpImplPrivate::postRequest()
 
     if (!synchronous) {
         // Tell our zerocopy policy to the delegate
-        delegate->downloadBufferMaximumSize =
-                request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute).toLongLong();
+        QVariant downloadBufferMaximumSizeAttribute = request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute);
+        if (downloadBufferMaximumSizeAttribute.isValid()) {
+            delegate->downloadBufferMaximumSize = downloadBufferMaximumSizeAttribute.toLongLong();
+        } else {
+            // If there is no MaximumDownloadBufferSizeAttribute set (which is for the majority
+            // of QNetworkRequest) then we can assume we'll do it anyway for small HTTP replies.
+            // This helps with performance and memory fragmentation.
+            delegate->downloadBufferMaximumSize = 128*1024;
+        }
+
 
         // These atomic integers are used for signal compression
         delegate->pendingDownloadData = pendingDownloadDataEmissions;

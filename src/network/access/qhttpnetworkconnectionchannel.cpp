@@ -448,12 +448,17 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                // the buffer in that size.
                // note that this call will read only from the still buffered data
                qint64 haveRead = replyPrivate->readBodyVeryFast(socket, replyPrivate->userProvidedDownloadBuffer + replyPrivate->totalProgress);
-               bytes += haveRead;
-               replyPrivate->totalProgress += haveRead;
-
-               // the user will get notified of it via progress signal
-               if (haveRead > 0)
+               if (haveRead > 0) {
+                   bytes += haveRead;
+                   replyPrivate->totalProgress += haveRead;
+                   // the user will get notified of it via progress signal
                    emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
+               } else if (haveRead == 0) {
+                   // Happens since this called in a loop. Currently no bytes available.
+               } else if (haveRead < 0) {
+                   connection->d_func()->emitReplyError(socket, reply, QNetworkReply::RemoteHostClosedError);
+                   break;
+               }
            } else if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
                  && replyPrivate->bodyLength > 0) {
                  // bulk files like images should fulfill these properties and
