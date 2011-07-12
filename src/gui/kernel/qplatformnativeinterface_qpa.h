@@ -52,12 +52,14 @@ QT_MODULE(Gui)
 
 class QGuiGLContext;
 class QWindow;
+class QBackingStore;
 
 class Q_GUI_EXPORT QPlatformNativeInterface
 {
 public:
     virtual void *nativeResourceForContext(const QByteArray &resource, QGuiGLContext *context);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
+    virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore);
 };
 
 QT_END_NAMESPACE

@@ -247,4 +247,9 @@ void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPo
     }
 }
 
+QPlatformBackingStore *QBackingStore::handle() const
+{
+    return d_ptr->platformBackingStore;
+}
+
 QT_END_NAMESPACE

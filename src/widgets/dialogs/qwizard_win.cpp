@@ -232,7 +232,9 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     else if (underMouse())
         state = WIZ_NAV_BB_HOT;
 
-   pDrawThemeBackground(theme, p.paintEngine()->getDC(), WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect); 
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore()));
+    pDrawThemeBackground(theme, hdc, WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect);
 }
 
 /******************************************************************************
@@ -318,12 +320,14 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
-    HDC hdc = static_cast<QRasterPaintEngine *>(painter->paintEngine())->getDC();
+    Q_ASSERT(backButton_);
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    QBackingStore *backingStore = backButton_->backingStore();
+    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
 
     if (vistaState() == VistaAero)
         drawBlackRect(QRect(0, 0, wizard->width(),
                             titleBarSize() + topOffset()), hdc);
-    Q_ASSERT(backButton_);
     const int btnTop = backButton_->mapToParent(QPoint()).y();
     const int btnHeight = backButton_->size().height();
     const int verticalCenter = (btnTop + btnHeight / 2) - 1;

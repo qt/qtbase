@@ -54,6 +54,7 @@ class QRect;
 class QPoint;
 class QImage;
 class QBackingStorePrivate;
+class QPlatformBackingStore;
 
 class Q_GUI_EXPORT QBackingStore
 {
@@ -80,6 +81,8 @@ public:
     void setStaticContents(const QRegion &region);
     QRegion staticContents() const;
     bool hasStaticContents() const;
+
+    QPlatformBackingStore *handle() const;
 
 private:
     QScopedPointer<QBackingStorePrivate> d_ptr;

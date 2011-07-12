@@ -190,17 +190,17 @@ RECT XPThemeData::toRECT(const QRect &qr)
     Returns the native region of a part, if the part is considered
     transparent. The region is scaled to the parts size (rect).
 */
-HRGN XPThemeData::mask()
+HRGN XPThemeData::mask(QWidget *widget)
 {
     if (!pIsThemeBackgroundPartiallyTransparent(handle(), partId, stateId))
         return 0;
 
     HRGN hrgn;
-    HDC dc = painter == 0 ? 0 : painter->paintEngine()->getDC();
+    QBackingStore *backingStore = widget->backingStore();
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
     RECT nativeRect = toRECT(rect);
     pGetThemeBackgroundRegion(handle(), dc, partId, stateId, &nativeRect, &hrgn);
-    if (dc)
-        painter->paintEngine()->releaseDC(dc);
     return hrgn;
 }
 
@@ -505,7 +505,7 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
 */
 void QWindowsXPStylePrivate::setTransparency(QWidget *widget, XPThemeData &themeData)
 {
-    HRGN hrgn = themeData.mask();
+    HRGN hrgn = themeData.mask(widget);
     if (hrgn && widget)
         SetWindowRgn(winId(widget), hrgn, true);
 }
@@ -657,7 +657,10 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
         translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
     }
 
-    bool useFallback = painter->paintEngine()->getDC() == 0
+    QBackingStore *backingStore = themeData.widget->backingStore();
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore ));
+    bool useFallback = dc == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
                        || complexXForm
@@ -681,7 +684,9 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 {
     QPainter *painter = themeData.painter;
-    HDC dc = painter->paintEngine()->getDC();
+    QBackingStore *backingStore= themeData.widget->backingStore();
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
 
     QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
                             int(painter->deviceMatrix().dy()));

@@ -216,7 +216,7 @@ public:
           noContent(false), rotate(0), rect(r)
     {}
 
-    HRGN mask();
+    HRGN mask(QWidget *widget);
     HTHEME handle();
 
     RECT toRECT(const QRect &qr);

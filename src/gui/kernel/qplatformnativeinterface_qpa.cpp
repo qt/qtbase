@@ -57,4 +57,11 @@ void *QPlatformNativeInterface::nativeResourceForContext(const QByteArray &resou
     return 0;
 }
 
+void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(backingStore);
+    return 0;
+}
+
 QT_END_NAMESPACE
