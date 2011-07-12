@@ -883,7 +883,7 @@ void tst_QByteArray::indexOf_data()
     QTest::newRow( "18" ) << QByteArray("aBc") << QByteArray("BC") << 0 << -1;
 
     // task 203692
-    static const char h19[] = {'x', 0x00, 0xe7, 0x25, 0x1c, 0x0a};
+    static const char h19[] = {'x', 0x00, (char)0xe7, 0x25, 0x1c, 0x0a};
     static const char n19[] = {0x00, 0x00, 0x01, 0x00};
     QTest::newRow( "19" ) << QByteArray(h19, sizeof(h19))
                           << QByteArray(n19, sizeof(n19)) << 0 << -1;
@@ -963,7 +963,7 @@ void tst_QByteArray::lastIndexOf_data()
     QTest::newRow( "24" ) << QByteArray("aBc") << QByteArray("BC") << 0 << -1;
 
     // task 203692
-    static const char h25[] = {0x00, 0xbc, 0x03, 0x10, 0x0a };
+    static const char h25[] = {0x00, (char)0xbc, 0x03, 0x10, 0x0a };
     static const char n25[] = {0x00, 0x00, 0x01, 0x00};
     QTest::newRow( "25" ) << QByteArray(h25, sizeof(h25))
                           << QByteArray(n25, sizeof(n25)) << 0 << -1;
