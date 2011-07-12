@@ -243,7 +243,20 @@ static void qt_win_clean_up_OFN(OPENFILENAME **ofn)
     *ofn = 0;
 }
 
-extern void qt_win_eatMouseMove();
+void qt_win_eatMouseMove()
+{
+    // after closing a windows dialog with a double click (i.e. open a file)
+    // the message queue still contains a dubious WM_MOUSEMOVE message where
+    // the left button is reported to be down (wParam != 0).
+    // remove all those messages (usually 1) and post the last one with a
+    // reset button state
+
+    MSG msg = {0, 0, 0, 0, 0, {0, 0} };
+    while (PeekMessage(&msg, 0, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE))
+        ;
+    if (msg.message == WM_MOUSEMOVE)
+        PostMessage(msg.hwnd, msg.message, 0, msg.lParam);
+}
 
 QString qt_win_get_open_file_name(const QFileDialogArgs &args,
                                   QString *initialDirectory,
