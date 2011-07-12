@@ -109,8 +109,10 @@ public:
     QBitmap mask() const;
     void setMask(const QBitmap &);
 
-    QPixmap alphaChannel() const;
-    void setAlphaChannel(const QPixmap &);
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED QPixmap alphaChannel() const;
+    QT_DEPRECATED void setAlphaChannel(const QPixmap &);
+#endif
 
     bool hasAlpha() const;
     bool hasAlphaChannel() const;
@@ -183,7 +185,9 @@ public:
     inline void scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed = 0);
     void scroll(int dx, int dy, const QRect &rect, QRegion *exposed = 0);
 
-    int serialNumber() const;
+#ifdef QT_DEPRECATED
+    QT_DEPRECATED int serialNumber() const;
+#endif
     qint64 cacheKey() const;
 
     bool isDetached() const;
