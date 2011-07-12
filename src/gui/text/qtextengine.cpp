@@ -323,7 +323,7 @@ static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
                                             const ushort *unicode, int length,
                                             int &sor, int &eor, QBidiControl &control)
 {
-    QChar::Direction dir;
+    QChar::Direction dir = control.basicDirection();
     int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
     while (sor < length) {
         dir = QChar::direction(unicode[sor]);
