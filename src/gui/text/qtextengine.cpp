@@ -2872,6 +2872,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     }
 
     const HB_CharAttributes *attrs = attributes();
+    logClusters = this->logClusters(si);
     clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
 
     if (clusterLength) {
