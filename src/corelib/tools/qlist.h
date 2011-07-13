@@ -776,7 +776,6 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::removeAll(const T &_t)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::removeOne(const T &_t)
 {
-    detachShared();
     int index = indexOf(_t);
     if (index != -1) {
         removeAt(index);
