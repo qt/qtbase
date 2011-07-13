@@ -100,6 +100,8 @@ public:
     explicit QNetworkAccessManager(QObject *parent = 0);
     ~QNetworkAccessManager();
 
+    void clearAccessCache();
+
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy proxy() const;
     void setProxy(const QNetworkProxy &proxy);

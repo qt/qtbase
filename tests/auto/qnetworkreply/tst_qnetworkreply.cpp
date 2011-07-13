@@ -1323,7 +1323,7 @@ void tst_QNetworkReply::cleanup()
     QVERIFY(!file.exists() || file.remove());
 
     // clear the internal cache
-    QNetworkAccessManagerPrivate::clearCache(&manager);
+    manager.clearAccessCache();
     manager.setProxy(QNetworkProxy());
     manager.setCache(0);
 
