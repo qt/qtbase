@@ -540,6 +540,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_ATOMICS
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++0x features supported in GCC 4.5: */
@@ -547,7 +548,10 @@ namespace QT_NAMESPACE {}
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 406
        /* C++0x features supported in GCC 4.6: */
+#      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_UNRESTRICTED_UNIONS
+#      define Q_COMPILER_RANGE_FOR
 #    endif
 
 #  endif
@@ -799,11 +803,10 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || defined(__GXX_EXPERIMENTAL_CPP0X__)
-#    if __INTEL_COMPILER >= 1100
+#    if __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_DECLTYPE
-#    elif __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
@@ -1112,6 +1115,12 @@ redefine to built-in booleans to make autotests work properly */
 #  endif
 #else
 #  define QT_FASTCALL
+#endif
+
+#ifdef Q_COMPILER_NULLPTR
+# define Q_NULLPTR         nullptr
+#else
+# define Q_NULLPTR         0
 #endif
 
 #ifdef Q_COMPILER_CONSTEXPR

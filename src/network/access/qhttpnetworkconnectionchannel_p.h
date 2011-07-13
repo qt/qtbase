@@ -149,7 +149,6 @@ public:
 
     bool ensureConnection();
 
-    bool expand(bool dataComplete);
     void allDone(); // reply header + body have been read
     void handleStatus(); // called from allDone()
 

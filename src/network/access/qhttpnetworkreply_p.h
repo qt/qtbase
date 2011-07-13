@@ -56,15 +56,7 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_COMPRESS
-#    include <zlib.h>
-static const unsigned char gz_magic[2] = {0x1f, 0x8b}; // gzip magic header
-// gzip flag byte
-#define HEAD_CRC     0x02 // bit 1 set: header CRC present
-#define EXTRA_FIELD  0x04 // bit 2 set: extra field present
-#define ORIG_NAME    0x08 // bit 3 set: original file name present
-#define COMMENT      0x10 // bit 4 set: file comment present
-#define RESERVED     0xE0 // bits 5..7: reserved
-#define CHUNK 16384
+#include <zlib.h>
 #endif
 
 #include <QtNetwork/qtcpsocket.h>
@@ -192,10 +184,6 @@ public:
     qint64 readReplyBodyChunked(QAbstractSocket *in, QByteDataBuffer *out);
     qint64 getChunkSize(QAbstractSocket *in, qint64 *chunkSize);
 
-    void appendUncompressedReplyData(QByteArray &qba);
-    void appendUncompressedReplyData(QByteDataBuffer &data);
-    void appendCompressedReplyData(QByteDataBuffer &data);
-
     bool shouldEmitSignals();
     bool expectContent();
     void eraseData();
@@ -203,11 +191,8 @@ public:
     qint64 bytesAvailable() const;
     bool isChunked();
     bool isConnectionCloseEnabled();
-    bool isGzipped();
-#ifndef QT_NO_COMPRESS
-    bool gzipCheckHeader(QByteArray &content, int &pos);
-    int gunzipBodyPartially(QByteArray &compressed, QByteArray &inflated);
-#endif
+
+    bool isCompressed();
     void removeAutoDecompressHeader();
 
     enum ReplyState {
@@ -236,11 +221,12 @@ public:
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
-    bool initInflate;
-    bool streamEnd;
+
 #ifndef QT_NO_COMPRESS
     z_stream inflateStrm;
+    qint64 uncompressBodyData(QByteDataBuffer *in, QByteDataBuffer *out);
 #endif
+
     bool autoDecompress;
 
     QByteDataBuffer responseData; // uncompressed body

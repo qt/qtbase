@@ -42,7 +42,7 @@
 #ifndef QBYTEARRAY_H
 #define QBYTEARRAY_H
 
-#include <QtCore/qatomic.h>
+#include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 
 #include <string.h>
@@ -119,18 +119,65 @@ class QString;
 class QDataStream;
 template <typename T> class QList;
 
+struct QByteArrayData
+{
+    QtPrivate::RefCount ref;
+    int size;
+    uint alloc : 31;
+    uint capacityReserved : 1;
+    union {
+        qptrdiff offset; // will always work as we add/subtract from a ushort ptr
+        char d[sizeof(qptrdiff)];
+    };
+    inline char *data() { return d + sizeof(qptrdiff) + offset; }
+    inline const char *data() const { return d + sizeof(qptrdiff) + offset; }
+};
+
+template<int n> struct QConstByteArrayData
+{
+    const QByteArrayData ba;
+    const char data[n];
+};
+
+template<int N> struct QConstByteArrayDataPtr
+{
+    const QConstByteArrayData<N> *ptr;
+};
+
+
+#if defined(Q_COMPILER_LAMBDA)
+#  define QByteArrayLiteral(str) ([]() { \
+        enum { Size = sizeof(str) }; \
+        static const QConstByteArrayData<Size> qbytearray_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
+    return holder; }())
+
+#elif defined(Q_CC_GNU)
+// We need to create a QByteArrayData in the .rodata section of memory
+// and the only way to do that is to create a "static const" variable.
+// To do that, we need the __extension__ {( )} trick which only GCC supports
+
+#  define QByteArrayLiteral(str) \
+    __extension__ ({ \
+        enum { Size = sizeof(str) }; \
+        static const QConstByteArrayData<Size> qbytearray_literal = \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
+        holder; })
+#endif
+
+#ifndef QByteArrayLiteral
+// no lambdas, not GCC, use const char * instead
+
+# define QByteArrayLiteral(str) (str)
+#endif
+
+
 class Q_CORE_EXPORT QByteArray
 {
 private:
-    struct Data {
-        QBasicAtomicInt ref;
-        int alloc, size;
-        // ### Qt 5.0: We need to add the missing capacity bit
-        // (like other tool classes have), to maintain the
-        // reserved memory on resize.
-        char *data;
-        char array[1];
-    };
+    typedef QByteArrayData Data;
 
 public:
     inline QByteArray();
@@ -330,10 +377,17 @@ public:
     int length() const { return d->size; }
     bool isNull() const;
 
+    template <int n>
+    inline QByteArray(const QConstByteArrayData<n> &dd)
+        : d(const_cast<QByteArrayData *>(&dd.str)) {}
+    template <int N>
+    Q_DECL_CONSTEXPR inline QByteArray(QConstByteArrayDataPtr<N> dd)
+        : d(const_cast<QByteArrayData *>(&dd.ptr->ba)) {}
+
 private:
     operator QNoImplicitBoolCast() const;
-    static Data shared_null;
-    static Data shared_empty;
+    static QConstByteArrayData<1> shared_null;
+    static QConstByteArrayData<1> shared_empty;
     Data *d;
     QByteArray(Data *dd, int /*dummy*/, int /*dummy*/) : d(dd) {}
     void realloc(int alloc);
@@ -348,34 +402,34 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-inline QByteArray::QByteArray(): d(&shared_null) { d->ref.ref(); }
+inline QByteArray::QByteArray(): d(const_cast<Data *>(&shared_null.ba)) { d->ref.ref(); }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) qFree(d); }
 inline int QByteArray::size() const
 { return d->size; }
 
 inline char QByteArray::at(int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(i >= 0 && i < size()); return d->data()[i]; }
 inline char QByteArray::operator[](int i) const
-{ Q_ASSERT(i >= 0 && i < size()); return d->data[i]; }
+{ Q_ASSERT(i >= 0 && i < size()); return d->data()[i]; }
 inline char QByteArray::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return d->data[i]; }
+{ Q_ASSERT(i < uint(size())); return d->data()[i]; }
 
 inline bool QByteArray::isEmpty() const
 { return d->size == 0; }
 #ifndef QT_NO_CAST_FROM_BYTEARRAY
 inline QByteArray::operator const char *() const
-{ return d->data; }
+{ return d->data(); }
 inline QByteArray::operator const void *() const
-{ return d->data; }
+{ return d->data(); }
 #endif
 inline char *QByteArray::data()
-{ detach(); return d->data; }
+{ detach(); return d->data(); }
 inline const char *QByteArray::data() const
-{ return d->data; }
+{ return d->data(); }
 inline const char *QByteArray::constData() const
-{ return d->data; }
+{ return d->data(); }
 inline void QByteArray::detach()
-{ if (d->ref != 1 || d->data != d->array) realloc(d->size); }
+{ if (d->ref != 1 || d->offset) realloc(d->size); }
 inline bool QByteArray::isDetached() const
 { return d->ref == 1; }
 inline QByteArray::QByteArray(const QByteArray &a) : d(a.d)
@@ -385,10 +439,10 @@ inline int QByteArray::capacity() const
 { return d->alloc; }
 
 inline void QByteArray::reserve(int asize)
-{ if (d->ref != 1 || asize > d->alloc) realloc(asize); }
+{ if (d->ref != 1 || asize > d->alloc) realloc(asize); d->capacityReserved = true; }
 
 inline void QByteArray::squeeze()
-{ if (d->size < d->alloc) realloc(d->size); }
+{ if (d->size < d->alloc) realloc(d->size); d->capacityReserved = false; }
 
 class Q_CORE_EXPORT QByteRef {
     QByteArray &a;
@@ -398,25 +452,25 @@ class Q_CORE_EXPORT QByteRef {
     friend class QByteArray;
 public:
     inline operator char() const
-        { return i < a.d->size ? a.d->data[i] : char(0); }
+        { return i < a.d->size ? a.d->data()[i] : char(0); }
     inline QByteRef &operator=(char c)
         { if (i >= a.d->size) a.expand(i); else a.detach();
-          a.d->data[i] = c;  return *this; }
+          a.d->data()[i] = c;  return *this; }
     inline QByteRef &operator=(const QByteRef &c)
         { if (i >= a.d->size) a.expand(i); else a.detach();
-          a.d->data[i] = c.a.d->data[c.i];  return *this; }
+          a.d->data()[i] = c.a.d->data()[c.i];  return *this; }
     inline bool operator==(char c) const
-    { return a.d->data[i] == c; }
+    { return a.d->data()[i] == c; }
     inline bool operator!=(char c) const
-    { return a.d->data[i] != c; }
+    { return a.d->data()[i] != c; }
     inline bool operator>(char c) const
-    { return a.d->data[i] > c; }
+    { return a.d->data()[i] > c; }
     inline bool operator>=(char c) const
-    { return a.d->data[i] >= c; }
+    { return a.d->data()[i] >= c; }
     inline bool operator<(char c) const
-    { return a.d->data[i] < c; }
+    { return a.d->data()[i] < c; }
     inline bool operator<=(char c) const
-    { return a.d->data[i] <= c; }
+    { return a.d->data()[i] <= c; }
 };
 
 inline QByteRef QByteArray::operator[](int i)
@@ -424,17 +478,17 @@ inline QByteRef QByteArray::operator[](int i)
 inline QByteRef QByteArray::operator[](uint i)
 { return QByteRef(*this, i); }
 inline QByteArray::iterator QByteArray::begin()
-{ detach(); return d->data; }
+{ detach(); return d->data(); }
 inline QByteArray::const_iterator QByteArray::begin() const
-{ return d->data; }
+{ return d->data(); }
 inline QByteArray::const_iterator QByteArray::constBegin() const
-{ return d->data; }
+{ return d->data(); }
 inline QByteArray::iterator QByteArray::end()
-{ detach(); return d->data + d->size; }
+{ detach(); return d->data() + d->size; }
 inline QByteArray::const_iterator QByteArray::end() const
-{ return d->data + d->size; }
+{ return d->data() + d->size; }
 inline QByteArray::const_iterator QByteArray::constEnd() const
-{ return d->data + d->size; }
+{ return d->data() + d->size; }
 inline QByteArray &QByteArray::operator+=(char c)
 { return append(c); }
 inline QByteArray &QByteArray::operator+=(const char *s)

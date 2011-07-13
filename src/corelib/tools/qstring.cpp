@@ -1051,7 +1051,11 @@ QString::QString(const QChar *unicode, int size)
     } else {
         d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
-        *d = (Data){ Q_REFCOUNT_INITIALIZER(1), size, size, false, { 0 } };
+        d->ref = 1;
+        d->size = size;
+        d->alloc = (uint) size;
+        d->capacityReserved = false;
+        d->offset = 0;
         memcpy(d->data(), unicode, size * sizeof(QChar));
         d->data()[size] = '\0';
     }
@@ -1079,7 +1083,11 @@ QString::QString(const QChar *unicode)
          } else {
              d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
              Q_CHECK_PTR(d);
-             *d = (Data){ Q_REFCOUNT_INITIALIZER(1), size, size, false, { 0 } };
+             d->ref = 1;
+             d->size = size;
+             d->alloc = (uint) size;
+             d->capacityReserved = false;
+             d->offset = 0;
              memcpy(d->data(), unicode, size * sizeof(QChar));
              d->data()[size] = '\0';
          }
@@ -1100,7 +1108,11 @@ QString::QString(int size, QChar ch)
     } else {
         d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
         Q_CHECK_PTR(d);
-        *d = (Data){ Q_REFCOUNT_INITIALIZER(1), size, size, false, { 0 } };
+        d->ref = 1;
+        d->size = size;
+        d->alloc = (uint) size;
+        d->capacityReserved = false;
+        d->offset = 0;
         d->data()[size] = '\0';
         ushort *i = d->data() + size;
         ushort *b = d->data();
@@ -1120,7 +1132,11 @@ QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+(size+1)*sizeof(QChar));
     Q_CHECK_PTR(d);
-    *d = (Data){ Q_REFCOUNT_INITIALIZER(1), size, size, false, { 0 } };
+    d->ref = 1;
+    d->size = size;
+    d->alloc = (uint) size;
+    d->capacityReserved = false;
+    d->offset = 0;
     d->data()[size] = '\0';
 }
 
@@ -1138,7 +1154,11 @@ QString::QString(QChar ch)
 {
     d = (Data *) qMalloc(sizeof(Data) + 2*sizeof(QChar));
     Q_CHECK_PTR(d);
-    *d = (Data) { Q_REFCOUNT_INITIALIZER(1), 1, 1, false, { 0 } };
+    d->ref = 1;
+    d->size = 1;
+    d->alloc = 1;
+    d->capacityReserved = false;
+    d->offset = 0;
     d->data()[0] = ch.unicode();
     d->data()[1] = '\0';
 }
@@ -1313,7 +1333,11 @@ void QString::realloc(int alloc)
     if (d->ref != 1 || d->offset) {
         Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + (alloc+1) * sizeof(QChar)));
         Q_CHECK_PTR(x);
-        *x = (Data){ Q_REFCOUNT_INITIALIZER(1), qMin(alloc, d->size), alloc, d->capacityReserved, { 0 } };
+        x->ref = 1;
+        x->size = qMin(alloc, d->size);
+        x->alloc = (uint) alloc;
+        x->capacityReserved = d->capacityReserved;
+        x->offset =0;
         ::memcpy(x->data(), d->data(), x->size * sizeof(QChar));
         x->data()[x->size] = 0;
         if (!d->ref.deref())
@@ -3747,7 +3771,11 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
             size = qstrlen(str);
         d = static_cast<Data *>(qMalloc(sizeof(Data) + (size+1) * sizeof(QChar)));
         Q_CHECK_PTR(d);
-        *d = (Data){ Q_REFCOUNT_INITIALIZER(1), size, size, false, { 0 } };
+        d->ref = 1;
+        d->size = size;
+        d->alloc = (uint) size;
+        d->capacityReserved = false;
+        d->offset = 0;
         d->data()[size] = '\0';
         ushort *dst = d->data();
         /* SIMD:
@@ -7071,13 +7099,19 @@ bool QString::isRightToLeft() const
 */
 QString QString::fromRawData(const QChar *unicode, int size)
 {
-    Data *x = static_cast<Data *>(qMalloc(sizeof(Data)));
-    *x = (Data){ Q_REFCOUNT_INITIALIZER(1), size, 0, false, { 0 } };
-    Q_CHECK_PTR(x);
-    if (unicode) {
-        x->offset = (const ushort *)unicode - (x->d + sizeof(qptrdiff)/sizeof(ushort));
+    Data *x;
+    if (!unicode) {
+        x = const_cast<Data *>(&shared_null.str);
+    } else if (!size) {
+        x = const_cast<Data *>(&shared_empty.str);
     } else {
-        size = 0;
+        x = static_cast<Data *>(qMalloc(sizeof(Data) + sizeof(ushort)));
+        Q_CHECK_PTR(x);
+        x->ref = 1;
+        x->size = size;
+        x->alloc = 0;
+        x->capacityReserved = false;
+        x->offset = (const ushort *)unicode - (x->d + sizeof(qptrdiff)/sizeof(ushort));
     }
     return QString(x, 0);
 }

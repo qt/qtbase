@@ -116,6 +116,7 @@ private slots:
     void toText();
     void multipleCommonNames();
     void subjectAndIssuerAttributes();
+    void verify();
 
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
@@ -899,6 +900,71 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 
     attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("1.3.6.1.4.1.311.60.2.1.3")));
+}
+
+void tst_QSslCertificate::verify()
+{
+    QList<QSslError> errors;
+    QList<QSslCertificate> toVerify;
+
+    // Empty chain is unspecified error
+    errors = QSslCertificate::verify(toVerify);
+    QVERIFY(errors.count() == 1);
+    QVERIFY(errors[0] == QSslError(QSslError::UnspecifiedError));
+    errors.clear();
+
+    // Verify a valid cert signed by a CA
+    QList<QSslCertificate> caCerts = QSslCertificate::fromPath(SRCDIR "verify-certs/cacert.pem");
+    QSslSocket::addDefaultCaCertificate(caCerts.first());
+
+    toVerify = QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem");
+
+    errors = QSslCertificate::verify(toVerify);
+    QVERIFY(errors.count() == 0);
+    errors.clear();
+
+    // Test a blacklisted certificate
+    toVerify = QSslCertificate::fromPath(SRCDIR "verify-certs/test-addons-mozilla-org-cert.pem");
+    errors = QSslCertificate::verify(toVerify);
+    bool foundBlack = false;
+    foreach (const QSslError &error, errors) {
+        if (error.error() == QSslError::CertificateBlacklisted) {
+            foundBlack = true;
+            break;
+        }
+    }
+    QVERIFY(foundBlack);
+    errors.clear();
+
+    // This one is expired and untrusted
+    toVerify = QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-serial-number.pem");
+    errors = QSslCertificate::verify(toVerify);
+    QVERIFY(errors.contains(QSslError(QSslError::SelfSignedCertificate, toVerify[0])));
+    QVERIFY(errors.contains(QSslError(QSslError::CertificateExpired, toVerify[0])));
+    errors.clear();
+    toVerify.clear();
+
+    // This one is signed by a valid cert, but the signer is not a valid CA
+    toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-not-ca-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem").first();
+    errors = QSslCertificate::verify(toVerify);
+    QVERIFY(errors.contains(QSslError(QSslError::InvalidCaCertificate, toVerify[1])));
+    toVerify.clear();
+
+    // This one is signed by a valid cert, and the signer is a valid CA
+    toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-is-ca-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-ca-cert.pem").first();
+    errors = QSslCertificate::verify(toVerify);
+    QVERIFY(errors.length() == 0);
+
+    // Recheck the above with hostname validation
+    errors = QSslCertificate::verify(toVerify, QLatin1String("example.com"));
+    QVERIFY(errors.length() == 0);
+
+    // Recheck the above with a bad hostname
+    errors = QSslCertificate::verify(toVerify, QLatin1String("fail.example.com"));
+    QVERIFY(errors.contains(QSslError(QSslError::HostNameMismatch, toVerify[0])));
+    toVerify.clear();
 }
 
 #endif // QT_NO_OPENSSL

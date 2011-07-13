@@ -121,6 +121,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvarlengtharray.h>
@@ -664,6 +665,21 @@ QList<QSslCertificate> QSslCertificate::fromData(const QByteArray &data, QSsl::E
     return (format == QSsl::Pem)
         ? QSslCertificatePrivate::certificatesFromPem(data)
         : QSslCertificatePrivate::certificatesFromDer(data);
+}
+
+/*!
+    Verifies a certificate chain. If \a hostName is specified then the certificate is
+    also checked to see if it is valid for the specified host name.
+    Note that the first certificate in the list should be the leaf certificate of
+    the chain to be verified.
+    The root (CA) certificate should not be included in the list to be verified,
+    this will be looked up automatically either using the CA list specified by
+    QSslSocket::defaultCaCertificates() or, if possible, it will be loaded on demand
+    on Unix.
+ */
+QList<QSslError> QSslCertificate::verify(QList<QSslCertificate> certificateChain, const QString &hostName)
+{
+    return QSslSocketBackendPrivate::verify(certificateChain, hostName);
 }
 
 void QSslCertificatePrivate::init(const QByteArray &data, QSsl::EncodingFormat format)
