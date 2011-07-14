@@ -1525,7 +1525,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
         }
     }
 
-    _q_sslErrorList()->mutex.lock();
+    QMutexLocker sslErrorListMutexLocker(&_q_sslErrorList()->mutex);
 
     // Register a custom callback to get all verification errors.
     X509_STORE_set_verify_cb_func(certStore, q_X509Callback);
@@ -1585,7 +1585,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
     const QList<QPair<int, int> > errorList = _q_sslErrorList()->errors;
     _q_sslErrorList()->errors.clear();
 
-    _q_sslErrorList()->mutex.unlock();
+    sslErrorListMutexLocker.unlock();
 
     // Translate the errors
     if (QSslCertificatePrivate::isBlacklisted(certificateChain[0])) {
