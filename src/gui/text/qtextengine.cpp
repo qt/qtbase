@@ -2790,7 +2790,7 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
+            x = (line.width - line.textAdvance)/2 - leadingSpaceWidth(line);
     }
     return x;
 }
