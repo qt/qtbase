@@ -190,6 +190,7 @@ public:
     };
 
     enum UnicodeVersion {
+        Unicode_Unassigned,    // ### Qt 5: assign with some constantly big value
         Unicode_1_1,
         Unicode_2_0,
         Unicode_2_1_2,
@@ -198,8 +199,7 @@ public:
         Unicode_3_2,
         Unicode_4_0,
         Unicode_4_1,
-        Unicode_5_0,
-        Unicode_Unassigned = 0xff
+        Unicode_5_0
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

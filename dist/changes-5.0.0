@@ -40,8 +40,6 @@ QtCore
 ------
 * drop a bogus QChar::NoCategory enum value; the proper QChar::Other_NotAssigned
   value is returned for an unassigned codepoints now.
-* QChar::Unicode_Unassigned value was moved to the end of enum in order to make
-  the version based checks more convenient and less error-prone in use.
 
 QtGui
 -----
