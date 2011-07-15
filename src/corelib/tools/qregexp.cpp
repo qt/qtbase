@@ -1252,7 +1252,9 @@ private:
 
     friend class Box;
 
+#ifndef QT_NO_REGEXP_CCLASS
     void setupCategoriesRangeMap();
+#endif
 
     /*
       This is the lexical analyzer for regular expressions.
@@ -1293,7 +1295,9 @@ private:
 
     int yyTok; // the last token read
     bool yyMayCapture; // set this to false to disable capturing
+#ifndef QT_NO_REGEXP_CCLASS
     QHash<QByteArray, QPair<int, int> > categoriesRangeMap; // fast lookup hash for xml schema extensions
+#endif
 
     friend struct QRegExpMatchState;
 };
@@ -2735,6 +2739,7 @@ void QRegExpEngine::Box::addAnchorsToEngine(const Box &to) const
     }
 }
 
+#ifndef QT_NO_REGEXP_CCLASS
 void QRegExpEngine::setupCategoriesRangeMap()
 {
    categoriesRangeMap.insert("IsBasicLatin",                           qMakePair(0x0000, 0x007F));
@@ -2880,6 +2885,7 @@ void QRegExpEngine::setupCategoriesRangeMap()
    categoriesRangeMap.insert("IsSupplementaryPrivateUseArea-A",        qMakePair(0xF0000, 0xFFFFF));
    categoriesRangeMap.insert("IsSupplementaryPrivateUseArea-B",        qMakePair(0x100000, 0x10FFFF));
 }
+#endif
 
 int QRegExpEngine::getChar()
 {
