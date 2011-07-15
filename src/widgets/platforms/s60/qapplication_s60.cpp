@@ -1905,7 +1905,7 @@ void qt_cleanup()
         qt_S60Beep = 0;
     }
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
-    QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
+    QPixmapCache::clear(); // Has to happen now, since QS60PlatformPixmap has FBS handles
 
 #ifdef QT_NO_FREETYPE
     qt_cleanup_symbianFontDatabase();

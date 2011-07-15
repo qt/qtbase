@@ -92,10 +92,10 @@ void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 
 void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &srcRect)
 {
-    QPixmapData *data = pixmap.pixmapData();
+    QPlatformPixmap *data = pixmap.handle();
     Q_ASSERT(data->width() && data->height());
-    Q_ASSERT(data->classId() == QPixmapData::BlitterClass);
-    QBlittablePixmapData *blitPm = static_cast<QBlittablePixmapData*>(data);
+    Q_ASSERT(data->classId() == QPlatformPixmap::BlitterClass);
+    QBlittablePlatformPixmap *blitPm = static_cast<QBlittablePlatformPixmap*>(data);
     QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blitPm->blittable());
     dfbBlitter->unlock();
 

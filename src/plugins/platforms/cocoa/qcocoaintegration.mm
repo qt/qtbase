@@ -103,9 +103,9 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 
 
-QPixmapData *QCocoaIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QCocoaIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const

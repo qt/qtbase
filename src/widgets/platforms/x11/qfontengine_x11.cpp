@@ -641,7 +641,7 @@ QBitmap QFontEngineXLFD::bitmapForGlyphs(const QGlyphLayout &glyphs, const glyph
     if (w <= 0 || h <= 0)
         return QBitmap();
 
-    QPixmapData *data = new QX11PixmapData(QPixmapData::BitmapType);
+    QPlatformPixmap *data = new QX11PlatformPixmap(QPlatformPixmap::BitmapType);
     data->resize(w, h);
     QPixmap bm(data);
     QPainter p(&bm);

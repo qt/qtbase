@@ -56,7 +56,7 @@ public:
     QWaylandIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;

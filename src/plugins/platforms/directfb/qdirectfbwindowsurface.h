@@ -67,7 +67,7 @@ private:
     void lockSurfaceToImage();
 
     QPixmap *m_pixmap;
-    QBlittablePixmapData *m_pmdata;
+    QBlittablePlatformPixmap *m_pmdata;
 
     IDirectFBSurface *m_dfbSurface;
 };

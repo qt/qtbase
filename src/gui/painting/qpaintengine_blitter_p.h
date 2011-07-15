@@ -49,14 +49,14 @@
 QT_BEGIN_NAMESPACE
 
 class QBlitterPaintEnginePrivate;
-class QBlittablePixmapData;
+class QBlittablePlatformPixmap;
 class QBlittable;
 
 class Q_GUI_EXPORT QBlitterPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QBlitterPaintEngine);
 public:
-    QBlitterPaintEngine(QBlittablePixmapData *p);
+    QBlitterPaintEngine(QBlittablePlatformPixmap *p);
     ~QBlitterPaintEngine();
 
     virtual QPainterState *createState(QPainterState *orig) const;

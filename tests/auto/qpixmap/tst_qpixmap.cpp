@@ -51,7 +51,7 @@
 #include <qtreewidget.h>
 #include <qsplashscreen.h>
 
-#include <private/qpixmapdata_p.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qdrawhelper_p.h>
 
 #include <QSet>
@@ -299,7 +299,7 @@ void tst_QPixmap::fromImage()
 
     const QPixmap pixmap = QPixmap::fromImage(image);
 #ifdef Q_WS_X11
-    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
+    if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     const QImage result = pixmap.toImage();
@@ -530,7 +530,7 @@ void tst_QPixmap::fill()
         pm = QPixmap(400, 400);
 
 #if defined(Q_WS_X11)
-    if (!bitmap && pm.pixmapData()->classId() == QPixmapData::X11Class && !pm.x11PictureHandle())
+    if (!bitmap && pm.handle()->classId() == QPlatformPixmap::X11Class && !pm.x11PictureHandle())
         QSKIP("Requires XRender support", SkipSingle);
 #endif
 
@@ -560,7 +560,7 @@ void tst_QPixmap::fill_transparent()
 {
     QPixmap pixmap(10, 10);
 #ifdef Q_WS_X11
-    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
+    if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     pixmap.fill(Qt::transparent);
@@ -861,7 +861,7 @@ void tst_QPixmap::isNull()
 void tst_QPixmap::convertFromImageNoDetach()
 {
     QPixmap randomPixmap(10, 10);
-    if (randomPixmap.pixmapData()->classId() != QPixmapData::RasterClass)
+    if (randomPixmap.handle()->classId() != QPlatformPixmap::RasterClass)
         QSKIP("Test only valid for raster pixmaps", SkipAll);
 
     //first get the screen format
@@ -1431,7 +1431,7 @@ void tst_QPixmap::fromImage_crash()
     delete img;
 }
 
-//This is testing QPixmapData::createCompatiblePixmapData - see QTBUG-5977
+//This is testing QPlatformPixmap::createCompatiblePlatformPixmap - see QTBUG-5977
 void tst_QPixmap::splash_crash()
 {
     QPixmap pix;
@@ -1673,10 +1673,10 @@ void tst_QPixmap::toImageDeepCopy()
 
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
 Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap);
-class FriendlyVGPixmapData : public QVGPixmapData
+class FriendlyVGPlatformPixmap : public QVGPlatformPixmap
 {
 public:
-    FriendlyVGPixmapData(PixelType type) : QVGPixmapData(type) { }
+    FriendlyVGPlatformPixmap(PixelType type) : QVGPlatformPixmap(type) { }
     bool sourceIsNull() { return source.isNull(); }
     friend QPixmap pixmapFromVGImage(VGImage image);
 };
@@ -1685,7 +1685,7 @@ QPixmap pixmapFromVGImage(VGImage image)
     if (image != VG_INVALID_HANDLE) {
         int w = vgGetParameteri(image, VG_IMAGE_WIDTH);
         int h = vgGetParameteri(image, VG_IMAGE_HEIGHT);
-        FriendlyVGPixmapData *pd = new FriendlyVGPixmapData(QPixmapData::PixmapType);
+        FriendlyVGPlatformPixmap *pd = new FriendlyVGPlatformPixmap(QPlatformPixmap::PixmapType);
         pd->resize(w, h);
         pd->vgImage = image;
         pd->recreate = false;
@@ -1714,12 +1714,12 @@ public:
         } else { // second phase: check if readback works
             painter.drawPixmap(0, 0, pm);
             // Drawing should not cause readback, this is important for performance;
-            noreadback_ok = static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull();
+            noreadback_ok = static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull();
             // However toImage() requires readback.
             QImage img = pm.toImage();
             readback_ok = img.width() == pm.width();
             readback_ok &= img.height() == pm.height();
-            readback_ok &= !static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull();
+            readback_ok &= !static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull();
             uint pix = img.pixel(1, 1);
             content_ok = qRed(pix) == testPixel.red();
             content_ok &= qGreen(pix) == testPixel.green();
@@ -1741,7 +1741,7 @@ public:
 void tst_QPixmap::vgImageReadBack()
 {
     QPixmap tmp(10, 20);
-    if (tmp.pixmapData()->classId() == QPixmapData::OpenVGClass) {
+    if (tmp.handle()->classId() == QPlatformPixmap::OpenVGClass) {
         Content c;
         c.w = 50;
         c.h = 60;
@@ -1755,7 +1755,7 @@ void tst_QPixmap::vgImageReadBack()
         QCOMPARE(pm.width(), c.w);
         QCOMPARE(pm.height(), c.h);
         QVERIFY(qPixmapToVGImage(pm) == c.vgimage);
-        QVERIFY(static_cast<FriendlyVGPixmapData *>(pm.pixmapData())->sourceIsNull());
+        QVERIFY(static_cast<FriendlyVGPlatformPixmap *>(pm.handle())->sourceIsNull());
         c.pm = pm;
         // Make sure the second phase in paintEvent is executed too.
         c.hide();

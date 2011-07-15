@@ -42,7 +42,7 @@
 #include "qvolatileimage_p.h"
 #include "qvolatileimagedata_p.h"
 #include <QtGui/private/qpaintengine_raster_p.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -236,7 +236,7 @@ void QVolatileImage::copyFrom(QVolatileImage *source, const QRect &rect)
 }
 
 /*!
-    To be called from the PixmapData's paintEngine().
+    To be called from the PlatformPixmap's paintEngine().
   */
 QPaintEngine *QVolatileImage::paintEngine()
 {
@@ -275,7 +275,7 @@ bool QVolatileImagePaintEngine::end()
 void QVolatileImagePaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 {
 #ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
+    void *nativeData = pm.handle()->toNativeType(QPlatformPixmap::VolatileImage);
     if (nativeData) {
         QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
         img->beginDataAccess();
@@ -292,7 +292,7 @@ void QVolatileImagePaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 void QVolatileImagePaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
 #ifdef Q_OS_SYMBIAN
-    void *nativeData = pm.pixmapData()->toNativeType(QPixmapData::VolatileImage);
+    void *nativeData = pm.handle()->toNativeType(QPlatformPixmap::VolatileImage);
     if (nativeData) {
         QVolatileImage *img = static_cast<QVolatileImage *>(nativeData);
         img->beginDataAccess();

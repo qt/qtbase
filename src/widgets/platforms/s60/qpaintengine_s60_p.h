@@ -58,14 +58,14 @@
 QT_BEGIN_NAMESPACE
 
 class QS60PaintEnginePrivate;
-class QS60PixmapData;
+class QS60PlatformPixmap;
 
 class QS60PaintEngine : public QRasterPaintEngine
 {
     Q_DECLARE_PRIVATE(QS60PaintEngine)
 
 public:
-    QS60PaintEngine(QPaintDevice *device, QS60PixmapData* data);
+    QS60PaintEngine(QPaintDevice *device, QS60PlatformPixmap* data);
     bool begin(QPaintDevice *device);
     bool end();
 
@@ -76,7 +76,7 @@ public:
     void prepare(QImage* image);
 
 private:
-    QS60PixmapData *pixmapData;
+    QS60PlatformPixmap *handle;
 };
 
 QT_END_NAMESPACE

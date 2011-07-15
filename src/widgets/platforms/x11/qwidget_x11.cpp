@@ -1400,7 +1400,7 @@ void QWidgetPrivate::updateSystemBackground()
     else if (brush.style() == Qt::TexturePattern) {
         extern QPixmap qt_toX11Pixmap(const QPixmap &pixmap); // qpixmap_x11.cpp
         XSetWindowBackgroundPixmap(X11->display, q->internalWinId(),
-                                   static_cast<QX11PixmapData*>(qt_toX11Pixmap(brush.texture()).data.data())->x11ConvertToDefaultDepth());
+                                   static_cast<QX11PlatformPixmap*>(qt_toX11Pixmap(brush.texture()).data.data())->x11ConvertToDefaultDepth());
     } else
         XSetWindowBackground(X11->display, q->internalWinId(),
                              QColormap::instance(xinfo.screen()).pixel(brush.color()));
@@ -1546,7 +1546,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // violates the ICCCM), since this works on all DEs known to Qt
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QPixmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data.data())->x11ConvertToDefaultDepth();
+                pixmap_handle = static_cast<QX11PlatformPixmap*>(topData->iconPixmap->data.data())->x11ConvertToDefaultDepth();
             }
         }
     }

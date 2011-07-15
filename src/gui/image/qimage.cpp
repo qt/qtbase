@@ -54,9 +54,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>
-#include <private/qpixmapdata_p.h>
 #include <private/qimagescale_p.h>
 #include <private/qsimd_p.h>
 

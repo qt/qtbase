@@ -280,16 +280,16 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
 
 EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
 {
-    // If a QPixmapData had to create the QGLContext, we don't have a paintDevice
+    // If a QPlatformPixmap had to create the QGLContext, we don't have a paintDevice
     if (!paintDevice)
         return eglSurface;
 
 #ifdef Q_WS_X11
     if (paintDevice->devType() == QInternal::Pixmap) {
-        QPixmapData *pmd = static_cast<QPixmap*>(paintDevice)->data_ptr().data();
-        if (pmd->classId() == QPixmapData::X11Class) {
-            QX11PixmapData* x11PixmapData = static_cast<QX11PixmapData*>(pmd);
-            return (EGLSurface)x11PixmapData->gl_surface;
+        QPlatformPixmap *pmd = static_cast<QPixmap*>(paintDevice)->data_ptr().data();
+        if (pmd->classId() == QPlatformPixmap::X11Class) {
+            QX11PlatformPixmap* x11PlatformPixmap = static_cast<QX11PlatformPixmap*>(pmd);
+            return (EGLSurface)x11PlatformPixmap->gl_surface;
         }
     }
 #endif

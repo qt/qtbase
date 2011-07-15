@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QPainter;
-class QPixmapData;
+class QPlatformPixmap;
 
 class QPixmapFilterPrivate;
 

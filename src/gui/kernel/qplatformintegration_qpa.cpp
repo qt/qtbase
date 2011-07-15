@@ -142,10 +142,10 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QPixmapData *QPlatformIntegration::createPixmapData(QPixmapData::PixelType type) const
+    \fn QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 
-    Factory function for QPixmapData. PixelType can be either PixmapType or BitmapType.
-    \sa QPixmapData
+    Factory function for QPlatformPixmap. PixelType can be either PixmapType or BitmapType.
+    \sa QPlatformPixmap
 */
 
 /*!

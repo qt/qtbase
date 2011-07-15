@@ -81,17 +81,17 @@ private:
     bool wasLocked;
 };
 
-class QS60PixmapData : public QRasterPixmapData
+class QS60PlatformPixmap : public QRasterPlatformPixmap
 {
 public:
-    QS60PixmapData(PixelType type);
-    ~QS60PixmapData();
+    QS60PlatformPixmap(PixelType type);
+    ~QS60PlatformPixmap();
 
-    QPixmapData *createCompatiblePixmapData() const;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const;
 
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
-    void copy(const QPixmapData *data, const QRect &rect);
+    void copy(const QPlatformPixmap *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
 
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -122,11 +122,11 @@ private:
 
     bool formatLocked;
 
-    QS60PixmapData *next;
-    QS60PixmapData *prev;
+    QS60PlatformPixmap *next;
+    QS60PlatformPixmap *prev;
 
-    static void qt_symbian_register_pixmap(QS60PixmapData *pd);
-    static void qt_symbian_unregister_pixmap(QS60PixmapData *pd);
+    static void qt_symbian_register_pixmap(QS60PlatformPixmap *pd);
+    static void qt_symbian_unregister_pixmap(QS60PlatformPixmap *pd);
     static void qt_symbian_release_pixmaps();
 
     friend class QPixmap;

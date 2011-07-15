@@ -70,7 +70,7 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
         map = cursor->pixmap();
     }
 
-    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPixmapData(map.pixmapData());
+    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.handle());
 
     if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
         return;

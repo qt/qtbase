@@ -61,13 +61,13 @@ class QImageReader;
 class QColor;
 class QVariant;
 class QX11Info;
-class QPixmapData;
+class QPlatformPixmap;
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
 {
 public:
     QPixmap();
-    explicit QPixmap(QPixmapData *data);
+    explicit QPixmap(QPlatformPixmap *data);
     QPixmap(int w, int h);
     QPixmap(const QSize &);
     QPixmap(const QString& fileName, const char *format = 0, Qt::ImageConversionFlags flags = Qt::AutoColor);
@@ -168,7 +168,7 @@ protected:
     int metric(PaintDeviceMetric) const;
 
 private:
-    QExplicitlySharedDataPointer<QPixmapData> data;
+    QExplicitlySharedDataPointer<QPlatformPixmap> data;
 
     bool doImageIO(QImageWriter *io, int quality) const;
 
@@ -176,7 +176,7 @@ private:
     void init(int, int, int);
     void deref();
     Q_DUMMY_COMPARISON_OPERATOR(QPixmap)
-    friend class QPixmapData;
+    friend class QPlatformPixmap;
     friend class QBitmap;
     friend class QPaintDevice;
     friend class QPainter;
@@ -188,10 +188,10 @@ private:
 #endif
 
 public:
-    QPixmapData* pixmapData() const;
+    QPlatformPixmap* handle() const;
 
 public:
-    typedef QExplicitlySharedDataPointer<QPixmapData> DataPtr;
+    typedef QExplicitlySharedDataPointer<QPlatformPixmap> DataPtr;
     inline DataPtr &data_ptr() { return data; }
 };
 

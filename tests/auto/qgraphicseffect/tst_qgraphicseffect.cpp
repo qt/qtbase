@@ -533,8 +533,8 @@ public:
 
     void draw(QPainter *painter)
     {
-        QVERIFY(sourcePixmap(Qt::LogicalCoordinates).pixmapData() == pixmap.pixmapData());
-        QVERIFY((painter->worldTransform().type() <= QTransform::TxTranslate) == (sourcePixmap(Qt::DeviceCoordinates).pixmapData() == pixmap.pixmapData()));
+        QVERIFY(sourcePixmap(Qt::LogicalCoordinates).handle() == pixmap.handle());
+        QVERIFY((painter->worldTransform().type() <= QTransform::TxTranslate) == (sourcePixmap(Qt::DeviceCoordinates).handle() == pixmap.handle()));
 
         ++repaints;
     }

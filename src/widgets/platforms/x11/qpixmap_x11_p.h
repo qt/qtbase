@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include <QtGui/private/qpixmapdata_p.h>
-#include <QtGui/private/qpixmapdatafactory_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
+#include <QtGui/qplatformpixmapfactory_p.h>
 
 #include "QtGui/qx11info_x11.h"
 
@@ -64,20 +64,20 @@ class QX11PaintEngine;
 
 struct QXImageWrapper;
 
-class Q_WIDGETS_EXPORT QX11PixmapData : public QPixmapData
+class Q_WIDGETS_EXPORT QX11PlatformPixmap : public QPlatformPixmap
 {
 public:
-    QX11PixmapData(PixelType type);
-//     QX11PixmapData(PixelType type, int width, int height);
-//     QX11PixmapData(PixelType type, const QImage &image,
+    QX11PlatformPixmap(PixelType type);
+//     QX11PlatformPixmap(PixelType type, int width, int height);
+//     QX11PlatformPixmap(PixelType type, const QImage &image,
 //                    Qt::ImageConversionFlags flags);
-    ~QX11PixmapData();
+    ~QX11PlatformPixmap();
 
-    QPixmapData *createCompatiblePixmapData() const;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const;
 
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
-    void copy(const QPixmapData *data, const QRect &rect);
+    void copy(const QPlatformPixmap *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
 
     void fill(const QColor &color);
@@ -114,9 +114,9 @@ private:
     friend class QGLContextPrivate; // Needs to access xinfo, gl_surface & flags
     friend class QEglContext; // Needs gl_surface
     friend class QGLContext; // Needs gl_surface
-    friend class QX11GLPixmapData; // Needs gl_surface
-    friend class QMeeGoLivePixmapData; // Needs gl_surface and flags
-    friend bool  qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs gl_surface
+    friend class QX11GLPlatformPixmap; // Needs gl_surface
+    friend class QMeeGoLivePlatformPixmap; // Needs gl_surface and flags
+    friend bool  qt_createEGLSurfaceForPixmap(QPlatformPixmap*, bool); // Needs gl_surface
 
     void release();
 

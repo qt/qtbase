@@ -423,9 +423,9 @@ QVFbIntegration::QVFbIntegration(const QStringList &paramList)
     mScreens.append(mPrimaryScreen);
 }
 
-QPixmapData *QVFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QVFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const

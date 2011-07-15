@@ -53,23 +53,23 @@
 // We mean it.
 //
 
-#include <QtGui/private/qpixmapdata_p.h>
-#include <QtGui/private/qpixmapdatafactory_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
+#include <QtGui/qplatformpixmapfactory_p.h>
 #include <QtGui/private/qt_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMacPixmapData : public QPixmapData
+class QMacPlatformPixmap : public QPlatformPixmap
 {
 public:
-    QMacPixmapData(PixelType type);
-    ~QMacPixmapData();
+    QMacPlatformPixmap(PixelType type);
+    ~QMacPlatformPixmap();
 
-    QPixmapData *createCompatiblePixmapData() const;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const;
 
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
-    void copy(const QPixmapData *data, const QRect &rect);
+    void copy(const QPlatformPixmap *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
 
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -89,8 +89,8 @@ private:
     uint has_alpha : 1, has_mask : 1, uninit : 1;
 
     void macSetHasAlpha(bool b);
-    void macGetAlphaChannel(QMacPixmapData *, bool asMask) const;
-    void macSetAlphaChannel(const QMacPixmapData *, bool asMask);
+    void macGetAlphaChannel(QMacPlatformPixmap *, bool asMask) const;
+    void macSetAlphaChannel(const QMacPlatformPixmap *, bool asMask);
     void macCreateCGImageRef();
     void macCreatePixels();
     void macReleaseCGImageRef();
@@ -112,7 +112,7 @@ private:
     uint bytesPerRow;
     QRectF cg_mask_rect;
     CGImageRef cg_data, cg_dataBeingReleased, cg_mask;
-    static QSet<QMacPixmapData*> validDataPointers;
+    static QSet<QMacPlatformPixmap*> validDataPointers;
 
     QPaintEngine *pengine;
 

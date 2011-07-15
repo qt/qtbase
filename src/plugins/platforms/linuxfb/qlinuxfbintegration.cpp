@@ -792,9 +792,9 @@ bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 }
 
 
-QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QLinuxFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) const

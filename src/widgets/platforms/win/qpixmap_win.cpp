@@ -125,8 +125,8 @@ HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
         return 0;
 
     HBITMAP bitmap = 0;
-    if (data->classId() == QPixmapData::RasterClass) {
-        QRasterPixmapData* d = static_cast<QRasterPixmapData*>(data.data());
+    if (data->classId() == QPlatformPixmap::RasterClass) {
+        QRasterPlatformPixmap* d = static_cast<QRasterPlatformPixmap*>(data.data());
         int w = d->image.width();
         int h = d->image.height();
 
@@ -168,8 +168,8 @@ HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
             memcpy(pixels + y * bytes_per_line, image.scanLine(y), bytes_per_line);
 
     } else {
-        QPixmapData *data = new QRasterPixmapData(depth() == 1 ?
-                                                  QPixmapData::BitmapType : QPixmapData::PixmapType);
+        QPlatformPixmap *data = new QRasterPlatformPixmap(depth() == 1 ?
+                                                  QPlatformPixmap::BitmapType : QPlatformPixmap::PixmapType);
         data->fromImage(toImage(), Qt::AutoColor);
         return QPixmap(data).toWinHBITMAP(format);
     }

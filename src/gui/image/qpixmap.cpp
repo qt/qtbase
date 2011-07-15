@@ -42,7 +42,7 @@
 #include <qglobal.h>
 
 #include "qpixmap.h"
-#include "qpixmapdata_p.h"
+#include "qplatformpixmap_qpa.h"
 #include "qimagepixmapcleanuphooks_p.h"
 
 #include "qbitmap.h"
@@ -95,8 +95,8 @@ static bool qt_pixmap_thread_test()
 
 void QPixmap::init(int w, int h, int type)
 {
-    if ((w > 0 && h > 0) || type == QPixmapData::BitmapType)
-        data = QPixmapData::create(w, h, (QPixmapData::PixelType) type);
+    if ((w > 0 && h > 0) || type == QPlatformPixmap::BitmapType)
+        data = QPlatformPixmap::create(w, h, (QPlatformPixmap::PixelType) type);
     else
         data = 0;
 }
@@ -127,7 +127,7 @@ QPixmap::QPixmap()
     : QPaintDevice()
 {
     (void) qt_pixmap_thread_test();
-    init(0, 0, QPixmapData::PixmapType);
+    init(0, 0, QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -148,9 +148,9 @@ QPixmap::QPixmap(int w, int h)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, QPixmapData::PixmapType);
+        init(0, 0, QPlatformPixmap::PixmapType);
     else
-        init(w, h, QPixmapData::PixmapType);
+        init(w, h, QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -167,9 +167,9 @@ QPixmap::QPixmap(const QSize &size)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, QPixmapData::PixmapType);
+        init(0, 0, QPlatformPixmap::PixmapType);
     else
-        init(size.width(), size.height(), QPixmapData::PixmapType);
+        init(size.width(), size.height(), QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -178,15 +178,15 @@ QPixmap::QPixmap(const QSize &size)
 QPixmap::QPixmap(const QSize &s, int type)
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, static_cast<QPixmapData::PixelType>(type));
+        init(0, 0, static_cast<QPlatformPixmap::PixelType>(type));
     else
-        init(s.width(), s.height(), static_cast<QPixmapData::PixelType>(type));
+        init(s.width(), s.height(), static_cast<QPlatformPixmap::PixelType>(type));
 }
 
 /*!
     \internal
 */
-QPixmap::QPixmap(QPixmapData *d)
+QPixmap::QPixmap(QPlatformPixmap *d)
     : QPaintDevice(), data(d)
 {
 }
@@ -223,7 +223,7 @@ QPixmap::QPixmap(QPixmapData *d)
 QPixmap::QPixmap(const QString& fileName, const char *format, Qt::ImageConversionFlags flags)
     : QPaintDevice()
 {
-    init(0, 0, QPixmapData::PixmapType);
+    init(0, 0, QPlatformPixmap::PixmapType);
     if (!qt_pixmap_thread_test())
         return;
 
@@ -240,7 +240,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test()) {
-        init(0, 0, QPixmapData::PixmapType);
+        init(0, 0, QPlatformPixmap::PixmapType);
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
@@ -269,13 +269,13 @@ QPixmap::QPixmap(const QPixmap &pixmap)
 QPixmap::QPixmap(const char * const xpm[])
     : QPaintDevice()
 {
-    init(0, 0, QPixmapData::PixmapType);
+    init(0, 0, QPlatformPixmap::PixmapType);
     if (!xpm)
         return;
 
     QImage image(xpm);
     if (!image.isNull()) {
-        if (data && data->pixelType() == QPixmapData::BitmapType)
+        if (data && data->pixelType() == QPlatformPixmap::BitmapType)
             *this = QBitmap::fromImage(image);
         else
             *this = fromImage(image);
@@ -330,7 +330,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     if (!rect.isEmpty())
         r = r.intersected(rect);
 
-    QPixmapData *d = data->createCompatiblePixmapData();
+    QPlatformPixmap *d = data->createCompatiblePlatformPixmap();
     d->copy(data.data(), r);
     return QPixmap(d);
 }
@@ -507,7 +507,7 @@ QMatrix QPixmap::trueMatrix(const QMatrix &m, int w, int h)
 
 bool QPixmap::isQBitmap() const
 {
-    return data->type == QPixmapData::BitmapType;
+    return data->type == QPlatformPixmap::BitmapType;
 }
 
 /*!
@@ -782,7 +782,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
                   % info.absoluteFilePath()
                   % HexString<uint>(info.lastModified().toTime_t())
                   % HexString<quint64>(info.size())
-                  % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
+                  % HexString<uint>(data ? data->pixelType() : QPlatformPixmap::PixmapType);
 
     // Note: If no extension is provided, we try to match the
     // file against known plugin extensions
@@ -792,7 +792,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    QScopedPointer<QPixmapData> tmp(QPixmapData::create(0, 0, data ? data->type : QPixmapData::PixmapType));
+    QScopedPointer<QPlatformPixmap> tmp(QPlatformPixmap::create(0, 0, data ? data->type : QPlatformPixmap::PixmapType));
     if (tmp->fromFile(fileName, format, flags)) {
         data = tmp.take();
         QPixmapCache::insert(key, *this);
@@ -827,7 +827,7 @@ bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::I
         return false;
 
     if (!data)
-        data = QPixmapData::create(0, 0, QPixmapData::PixmapType);
+        data = QPlatformPixmap::create(0, 0, QPlatformPixmap::PixmapType);
 
     return data->fromData(buf, len, format, flags);
 }
@@ -941,7 +941,7 @@ void QPixmap::fill(const QColor &color)
     } else {
         // Don't bother to make a copy of the data object, since
         // it will be filled with new pixel data anyway.
-        QPixmapData *d = data->createCompatiblePixmapData();
+        QPlatformPixmap *d = data->createCompatiblePlatformPixmap();
         d->resize(data->width(), data->height());
         data = d;
     }
@@ -1704,17 +1704,17 @@ void QPixmap::detach()
     if (!data)
         return;
 
-    // QPixmap.data member may be QRuntimePixmapData so use pixmapData() function to get
+    // QPixmap.data member may be QRuntimePlatformPixmap so use handle() function to get
     // the actual underlaying runtime pixmap data.
-    QPixmapData *pd = pixmapData();
-    QPixmapData::ClassId id = pd->classId();
-    if (id == QPixmapData::RasterClass) {
-        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(pd);
+    QPlatformPixmap *pd = handle();
+    QPlatformPixmap::ClassId id = pd->classId();
+    if (id == QPlatformPixmap::RasterClass) {
+        QRasterPlatformPixmap *rasterData = static_cast<QRasterPlatformPixmap*>(pd);
         rasterData->image.detach();
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
+        QImagePixmapCleanupHooks::executePlatformPixmapModificationHooks(data.data());
 
     if (data->ref != 1) {
         *this = copy();
@@ -1742,7 +1742,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
-    QScopedPointer<QPixmapData> data(QGuiApplicationPrivate::platformIntegration()->createPixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->fromImage(image, flags);
     return QPixmap(data.take());
 }
@@ -1761,7 +1761,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
 {
-    QScopedPointer<QPixmapData> data(QGuiApplicationPrivate::platformIntegration()->createPixmapData(QPixmapData::PixmapType));
+    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
     data->fromImageReader(imageReader, flags);
     return QPixmap(data.take());
 }
@@ -1810,7 +1810,7 @@ QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionF
 /*!
   \internal
 */
-QPixmapData* QPixmap::pixmapData() const
+QPlatformPixmap* QPixmap::handle() const
 {
     return data.data();
 }

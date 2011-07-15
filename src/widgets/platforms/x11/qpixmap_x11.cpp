@@ -80,10 +80,10 @@ QT_BEGIN_NAMESPACE
 
 QPixmap qt_toX11Pixmap(const QImage &image)
 {
-    QPixmapData *data =
-        new QX11PixmapData(image.depth() == 1
-                           ? QPixmapData::BitmapType
-                           : QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QX11PlatformPixmap(image.depth() == 1
+                           ? QPlatformPixmap::BitmapType
+                           : QPlatformPixmap::PixmapType);
 
     data->fromImage(image, Qt::AutoColor);
 
@@ -95,7 +95,7 @@ QPixmap qt_toX11Pixmap(const QPixmap &pixmap)
     if (pixmap.isNull())
         return QPixmap();
 
-    if (QPixmap(pixmap).data_ptr()->classId() == QPixmapData::X11Class)
+    if (QPixmap(pixmap).data_ptr()->classId() == QPlatformPixmap::X11Class)
         return pixmap;
 
     return qt_toX11Pixmap(pixmap.toImage());
@@ -113,7 +113,7 @@ inline static void qSafeXDestroyImage(XImage *x)
     XDestroyImage(x);
 }
 
-QBitmap QX11PixmapData::mask_to_bitmap(int screen) const
+QBitmap QX11PlatformPixmap::mask_to_bitmap(int screen) const
 {
     if (!x11_mask)
         return QBitmap();
@@ -126,7 +126,7 @@ QBitmap QX11PixmapData::mask_to_bitmap(int screen) const
     return bm;
 }
 
-Qt::HANDLE QX11PixmapData::bitmap_to_mask(const QBitmap &bitmap, int screen)
+Qt::HANDLE QX11PlatformPixmap::bitmap_to_mask(const QBitmap &bitmap, int screen)
 {
     if (bitmap.isNull())
         return 0;
@@ -313,19 +313,19 @@ static int defaultScreen = -1;
 QBasicAtomicInt qt_pixmap_serial = Q_BASIC_ATOMIC_INITIALIZER(0);
 int Q_WIDGETS_EXPORT qt_x11_preferred_pixmap_depth = 0;
 
-QX11PixmapData::QX11PixmapData(PixelType type)
-    : QPixmapData(type, X11Class), gl_surface(0), hd(0),
+QX11PlatformPixmap::QX11PlatformPixmap(PixelType type)
+    : QPlatformPixmap(type, X11Class), gl_surface(0), hd(0),
       flags(Uninitialized), x11_mask(0), picture(0), mask_picture(0), hd2(0),
       share_mode(QPixmap::ImplicitlyShared), pengine(0)
 {
 }
 
-QPixmapData *QX11PixmapData::createCompatiblePixmapData() const
+QPlatformPixmap *QX11PlatformPixmap::createCompatiblePlatformPixmap() const
 {
-    return new QX11PixmapData(pixelType());
+    return new QX11PlatformPixmap(pixelType());
 }
 
-void QX11PixmapData::resize(int width, int height)
+void QX11PlatformPixmap::resize(int width, int height)
 {
     setSerialNumber(qt_pixmap_serial.fetchAndAddRelaxed(1));
 
@@ -407,7 +407,7 @@ struct QX11AlphaDetector
     mutable bool has;
 };
 
-void QX11PixmapData::fromImage(const QImage &img,
+void QX11PlatformPixmap::fromImage(const QImage &img,
                                Qt::ImageConversionFlags flags)
 {
     setSerialNumber(qt_pixmap_serial.fetchAndAddRelaxed(1));
@@ -1142,7 +1142,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     }
 }
 
-Qt::HANDLE QX11PixmapData::createBitmapFromImage(const QImage &image)
+Qt::HANDLE QX11PlatformPixmap::createBitmapFromImage(const QImage &image)
 {
     QImage img = image.convertToFormat(QImage::Format_MonoLSB);
     const QRgb c0 = QColor(Qt::black).rgb();
@@ -1183,7 +1183,7 @@ Qt::HANDLE QX11PixmapData::createBitmapFromImage(const QImage &image)
     return hd;
 }
 
-void QX11PixmapData::bitmapFromImage(const QImage &image)
+void QX11PlatformPixmap::bitmapFromImage(const QImage &image)
 {
     w = image.width();
     h = image.height();
@@ -1197,7 +1197,7 @@ void QX11PixmapData::bitmapFromImage(const QImage &image)
 #endif // QT_NO_XRENDER
 }
 
-void QX11PixmapData::fill(const QColor &fillColor)
+void QX11PlatformPixmap::fill(const QColor &fillColor)
 {
     if (fillColor.alpha() != 255) {
 #ifndef QT_NO_XRENDER
@@ -1233,18 +1233,18 @@ void QX11PixmapData::fill(const QColor &fillColor)
     XFreeGC(X11->display, gc);
 }
 
-QX11PixmapData::~QX11PixmapData()
+QX11PlatformPixmap::~QX11PlatformPixmap()
 {
     // Cleanup hooks have to be called before the handles are freed
     if (is_cached) {
-        QImagePixmapCleanupHooks::executePixmapDataDestructionHooks(this);
+        QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(this);
         is_cached = false;
     }
 
     release();
 }
 
-void QX11PixmapData::release()
+void QX11PlatformPixmap::release()
 {
     delete pengine;
     pengine = 0;
@@ -1283,7 +1283,7 @@ void QX11PixmapData::release()
     }
 }
 
-QPixmap QX11PixmapData::alphaChannel() const
+QPixmap QX11PlatformPixmap::alphaChannel() const
 {
     if (!hasAlphaChannel()) {
         QPixmap pm(w, h);
@@ -1294,7 +1294,7 @@ QPixmap QX11PixmapData::alphaChannel() const
     return QPixmap::fromImage(im.alphaChannel(), Qt::OrderedDither);
 }
 
-void QX11PixmapData::setAlphaChannel(const QPixmap &alpha)
+void QX11PlatformPixmap::setAlphaChannel(const QPixmap &alpha)
 {
     QImage image(toImage());
     image.setAlphaChannel(alpha.toImage());
@@ -1303,7 +1303,7 @@ void QX11PixmapData::setAlphaChannel(const QPixmap &alpha)
 }
 
 
-QBitmap QX11PixmapData::mask() const
+QBitmap QX11PlatformPixmap::mask() const
 {
     QBitmap mask;
 #ifndef QT_NO_XRENDER
@@ -1313,7 +1313,7 @@ QBitmap QX11PixmapData::mask() const
     } else
 #endif
     if (d == 1) {
-        QX11PixmapData *that = const_cast<QX11PixmapData*>(this);
+        QX11PlatformPixmap *that = const_cast<QX11PlatformPixmap*>(this);
         mask = QPixmap(that);
     } else {
         mask = mask_to_bitmap(xinfo.screen());
@@ -1342,12 +1342,12 @@ QBitmap QX11PixmapData::mask() const
     \sa mask(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}, QBitmap
 */
-void QX11PixmapData::setMask(const QBitmap &newmask)
+void QX11PlatformPixmap::setMask(const QBitmap &newmask)
 {
     if (newmask.isNull()) { // clear mask
 #ifndef QT_NO_XRENDER
         if (picture && d == 32) {
-            QX11PixmapData newData(pixelType());
+            QX11PlatformPixmap newData(pixelType());
             newData.resize(w, h);
             newData.fill(Qt::black);
             XRenderComposite(X11->display, PictOpOver,
@@ -1355,11 +1355,11 @@ void QX11PixmapData::setMask(const QBitmap &newmask)
                              0, 0, 0, 0, 0, 0, w, h);
             release();
             *this = newData;
-            // the new QX11PixmapData object isn't referenced yet, so
+            // the new QX11PlatformPixmap object isn't referenced yet, so
             // ref it
             ref.ref();
 
-            // the below is to make sure the QX11PixmapData destructor
+            // the below is to make sure the QX11PlatformPixmap destructor
             // doesn't delete our newly created render picture
             newData.hd = 0;
             newData.x11_mask = 0;
@@ -1409,7 +1409,7 @@ void QX11PixmapData::setMask(const QBitmap &newmask)
                     XRenderFreePicture(X11->display, mask_picture);
 #endif
             }
-            x11_mask = QX11PixmapData::bitmap_to_mask(newmask, xinfo.screen());
+            x11_mask = QX11PlatformPixmap::bitmap_to_mask(newmask, xinfo.screen());
 #ifndef QT_NO_XRENDER
             if (picture) {
                 mask_picture = XRenderCreatePicture(X11->display, x11_mask,
@@ -1422,7 +1422,7 @@ void QX11PixmapData::setMask(const QBitmap &newmask)
         }
 }
 
-int QX11PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
+int QX11PlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     switch (metric) {
     case QPaintDevice::PdmWidth:
@@ -1452,7 +1452,7 @@ int QX11PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmPhysicalDpiY:
         return QX11Info::appDpiY(xinfo.screen());
     default:
-        qWarning("QX11PixmapData::metric(): Invalid metric");
+        qWarning("QX11PlatformPixmap::metric(): Invalid metric");
         return 0;
     }
 }
@@ -1462,7 +1462,7 @@ struct QXImageWrapper
     XImage *xi;
 };
 
-bool QX11PixmapData::canTakeQImageFromXImage(const QXImageWrapper &xiWrapper) const
+bool QX11PlatformPixmap::canTakeQImageFromXImage(const QXImageWrapper &xiWrapper) const
 {
     XImage *xi = xiWrapper.xi;
 
@@ -1485,7 +1485,7 @@ bool QX11PixmapData::canTakeQImageFromXImage(const QXImageWrapper &xiWrapper) co
     return false;
 }
 
-QImage QX11PixmapData::takeQImageFromXImage(const QXImageWrapper &xiWrapper) const
+QImage QX11PlatformPixmap::takeQImageFromXImage(const QXImageWrapper &xiWrapper) const
 {
     XImage *xi = xiWrapper.xi;
 
@@ -1538,7 +1538,7 @@ QImage QX11PixmapData::takeQImageFromXImage(const QXImageWrapper &xiWrapper) con
     return image;
 }
 
-QImage QX11PixmapData::toImage(const QRect &rect) const
+QImage QX11PlatformPixmap::toImage(const QRect &rect) const
 {
     QXImageWrapper xiWrapper;
     xiWrapper.xi = XGetImage(X11->display, hd, rect.x(), rect.y(), rect.width(), rect.height(),
@@ -1571,12 +1571,12 @@ QImage QX11PixmapData::toImage(const QRect &rect) const
     \sa fromImage(), {QImage#Image Formats}{Image Formats}
 */
 
-QImage QX11PixmapData::toImage() const
+QImage QX11PlatformPixmap::toImage() const
 {
     return toImage(QRect(0, 0, w, h));
 }
 
-QImage QX11PixmapData::toImage(const QXImageWrapper &xiWrapper, const QRect &rect) const
+QImage QX11PlatformPixmap::toImage(const QXImageWrapper &xiWrapper, const QRect &rect) const
 {
     XImage *xi = xiWrapper.xi;
 
@@ -1852,7 +1852,7 @@ QImage QX11PixmapData::toImage(const QXImageWrapper &xiWrapper, const QRect &rec
     \sa trueMatrix(), {QPixmap#Pixmap Transformations}{Pixmap
     Transformations}
 */
-QPixmap QX11PixmapData::transformed(const QTransform &transform,
+QPixmap QX11PlatformPixmap::transformed(const QTransform &transform,
                                     Qt::TransformationMode mode ) const
 {
     if (mode == Qt::SmoothTransformation || transform.type() >= QTransform::TxProject) {
@@ -2002,9 +2002,9 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         free(dptr);
         return bm;
     } else {                                        // color pixmap
-        QX11PixmapData *x11Data = new QX11PixmapData(QPixmapData::PixmapType);
+        QX11PlatformPixmap *x11Data = new QX11PlatformPixmap(QPlatformPixmap::PixmapType);
         QPixmap pm(x11Data);
-        x11Data->flags &= ~QX11PixmapData::Uninitialized;
+        x11Data->flags &= ~QX11PlatformPixmap::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
         x11Data->w = w;
@@ -2067,13 +2067,13 @@ void QPixmap::x11SetScreen(int screen)
     if (isNull())
         return;
 
-    if (data->classId() != QPixmapData::X11Class)
+    if (data->classId() != QPlatformPixmap::X11Class)
         return;
 
     if (screen < 0)
         screen = QX11Info::appScreen();
 
-    QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(data.data());
+    QX11PlatformPixmap *x11Data = static_cast<QX11PlatformPixmap*>(data.data());
     if (screen == x11Data->xinfo.screen())
         return; // nothing to do
 
@@ -2142,7 +2142,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
         window_attr = root_attr;
     }
 
-    QX11PixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
+    QX11PlatformPixmap *data = new QX11PlatformPixmap(QPlatformPixmap::PixmapType);
 
     void qt_x11_getX11InfoForWindow(QX11Info * xinfo, const XWindowAttributes &a);
     qt_x11_getX11InfoForWindow(&data->xinfo,window_attr);
@@ -2151,7 +2151,7 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 
     QPixmap pm(data);
 
-    data->flags &= ~QX11PixmapData::Uninitialized;
+    data->flags &= ~QX11PlatformPixmap::Uninitialized;
     pm.x11SetScreen(scr);
 
     GC gc = XCreateGC(dpy, pm.handle(), 0, 0);
@@ -2162,15 +2162,15 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     return pm;
 }
 
-bool QX11PixmapData::hasAlphaChannel() const
+bool QX11PlatformPixmap::hasAlphaChannel() const
 {
     return d == 32;
 }
 
 const QX11Info &QPixmap::x11Info() const
 {
-    if (data && data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data.data())->xinfo;
+    if (data && data->classId() == QPlatformPixmap::X11Class)
+        return static_cast<QX11PlatformPixmap*>(data.data())->xinfo;
     else {
         static QX11Info nullX11Info;
         return nullX11Info;
@@ -2189,9 +2189,9 @@ static XRenderPictFormat *qt_renderformat_for_depth(const QX11Info &xinfo, int d
 }
 #endif
 
-QPaintEngine* QX11PixmapData::paintEngine() const
+QPaintEngine* QX11PlatformPixmap::paintEngine() const
 {
-    QX11PixmapData *that = const_cast<QX11PixmapData*>(this);
+    QX11PlatformPixmap *that = const_cast<QX11PlatformPixmap*>(this);
 
     if ((flags & Readonly) && share_mode == QPixmap::ImplicitlyShared) {
         // if someone wants to draw onto us, copy the shared contents
@@ -2215,7 +2215,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
             XFreeGC(X11->display, gc);
         }
         that->hd = hd_copy;
-        that->flags &= ~QX11PixmapData::Readonly;
+        that->flags &= ~QX11PlatformPixmap::Readonly;
     }
 
     if (!that->pengine)
@@ -2226,8 +2226,8 @@ QPaintEngine* QX11PixmapData::paintEngine() const
 Qt::HANDLE QPixmap::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER
-    if (data && data->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(data.data())->picture;
+    if (data && data->classId() == QPlatformPixmap::X11Class)
+        return static_cast<const QX11PlatformPixmap*>(data.data())->picture;
     else
         return 0;
 #else
@@ -2235,7 +2235,7 @@ Qt::HANDLE QPixmap::x11PictureHandle() const
 #endif // QT_NO_XRENDER
 }
 
-Qt::HANDLE QX11PixmapData::x11ConvertToDefaultDepth()
+Qt::HANDLE QX11PlatformPixmap::x11ConvertToDefaultDepth()
 {
 #ifndef QT_NO_XRENDER
     if (d == QX11Info::appDepth() || !X11->use_xrender)
@@ -2255,14 +2255,14 @@ Qt::HANDLE QX11PixmapData::x11ConvertToDefaultDepth()
 #endif
 }
 
-void QX11PixmapData::copy(const QPixmapData *data, const QRect &rect)
+void QX11PlatformPixmap::copy(const QPlatformPixmap *data, const QRect &rect)
 {
     if (data->pixelType() == BitmapType) {
         fromImage(data->toImage().copy(rect), Qt::AutoColor);
         return;
     }
 
-    const QX11PixmapData *x11Data = static_cast<const QX11PixmapData*>(data);
+    const QX11PlatformPixmap *x11Data = static_cast<const QX11PlatformPixmap*>(data);
 
     setSerialNumber(qt_pixmap_serial.fetchAndAddRelaxed(1));
 
@@ -2317,7 +2317,7 @@ void QX11PixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
 }
 
-bool QX11PixmapData::scroll(int dx, int dy, const QRect &rect)
+bool QX11PlatformPixmap::scroll(int dx, int dy, const QRect &rect)
 {
     GC gc = XCreateGC(X11->display, hd, 0, 0);
     XCopyArea(X11->display, hd, hd, gc,
@@ -2328,7 +2328,7 @@ bool QX11PixmapData::scroll(int dx, int dy, const QRect &rect)
 }
 
 #if !defined(QT_NO_XRENDER)
-void QX11PixmapData::convertToARGB32(bool preserveContents)
+void QX11PlatformPixmap::convertToARGB32(bool preserveContents)
 {
     if (!X11->use_xrender)
         return;
@@ -2383,9 +2383,9 @@ QPixmap QPixmap::fromX11Pixmap(Qt::HANDLE pixmap, QPixmap::ShareMode mode)
             break;
     }
 
-    QX11PixmapData *data = new QX11PixmapData(depth == 1 ? QPixmapData::BitmapType : QPixmapData::PixmapType);
+    QX11PlatformPixmap *data = new QX11PlatformPixmap(depth == 1 ? QPlatformPixmap::BitmapType : QPlatformPixmap::PixmapType);
     data->setSerialNumber(qt_pixmap_serial.fetchAndAddRelaxed(1));
-    data->flags = QX11PixmapData::Readonly;
+    data->flags = QX11PlatformPixmap::Readonly;
     data->share_mode = mode;
     data->w = width;
     data->h = height;

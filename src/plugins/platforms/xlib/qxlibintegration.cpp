@@ -59,7 +59,7 @@
 #include <EGL/egl.h>
 #endif //!defined(QT_OPENGL_ES_2)
 #include <private/qwindowsurface_gl_p.h>
-#include <private/qpixmapdata_gl_p.h>
+#include <qplatformpixmap_gl_p.h>
 #endif //QT_NO_OPENGL
 
 QT_BEGIN_NAMESPACE
@@ -83,13 +83,13 @@ bool QXlibIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QPixmapData *QXlibIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QXlibIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
 #ifndef QT_NO_OPENGL
     if (mUseOpenGL)
-        return new QGLPixmapData(type);
+        return new QGLPlatformPixmap(type);
 #endif
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QXlibIntegration::createWindowSurface(QWidget *widget, WId) const

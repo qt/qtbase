@@ -56,8 +56,8 @@ QPixmap pixmapFromNativeImageHandleProvider(QNativeImageHandleProvider *source)
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     if (!source)
         return QPixmap();
-    QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-    pd->fromNativeType(source, QPixmapData::NativeImageHandleProvider);
+    QScopedPointer<QPlatformPixmap> pd(QPlatformPixmap::create(0, 0, QPlatformPixmap::PixmapType));
+    pd->fromNativeType(source, QPlatformPixmap::NativeImageHandleProvider);
     return QPixmap(pd.take());
 #else
     Q_UNUSED(source);
@@ -136,7 +136,7 @@ void tst_NativeImageHandleProvider::create()
     QPixmap pm = pixmapFromNativeImageHandleProvider(0);
     QVERIFY(pm.isNull());
     QPixmap tmp(10, 20);
-    if (tmp.pixmapData()->classId() == QPixmapData::OpenVGClass) {
+    if (tmp.handle()->classId() == QPlatformPixmap::OpenVGClass) {
         // Verify that null pixmap is properly returned when get() provides bogus results.
         DummyProvider prov;
         pm = pixmapFromNativeImageHandleProvider(&prov);
@@ -151,7 +151,7 @@ void tst_NativeImageHandleProvider::bitmap()
 {
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     QPixmap tmp(10, 20);
-    if (tmp.pixmapData()->classId() == QPixmapData::OpenVGClass) {
+    if (tmp.handle()->classId() == QPlatformPixmap::OpenVGClass) {
         BitmapProvider prov;
 
         // This should fail because of null ptr.
@@ -198,7 +198,7 @@ void tst_NativeImageHandleProvider::hibernate()
 {
 #if defined(Q_OS_SYMBIAN) && !defined(QT_NO_OPENVG)
     QPixmap tmp(10, 20);
-    if (tmp.pixmapData()->classId() == QPixmapData::OpenVGClass) {
+    if (tmp.handle()->classId() == QPlatformPixmap::OpenVGClass) {
         BitmapProvider prov;
         prov.bmp = new CFbsBitmap;
         QCOMPARE(prov.bmp->Create(TSize(prov.w, prov.h), EColor16MAP), KErrNone);
@@ -206,7 +206,7 @@ void tst_NativeImageHandleProvider::hibernate()
         QPixmap pm = pixmapFromNativeImageHandleProvider(&prov);
         QCOMPARE(prov.refCount, 1);
 
-        QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pm.pixmapData());
+        QVGPlatformPixmap *vgpd = static_cast<QVGPlatformPixmap *>(pm.handle());
         vgpd->hibernate();
         QCOMPARE(prov.refCount, 0);
 

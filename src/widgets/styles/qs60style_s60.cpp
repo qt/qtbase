@@ -647,17 +647,17 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
         return QPixmap();
 
     QPixmap pixmap;
-    QScopedPointer<QPixmapData> pd(QPixmapData::create(0, 0, QPixmapData::PixmapType));
+    QScopedPointer<QPlatformPixmap> pd(QPlatformPixmap::create(0, 0, QPlatformPixmap::PixmapType));
     if (mask) {
         // Try the efficient path with less copying and conversion.
         QVolatileImage img(icon, mask);
-        pd->fromNativeType(&img, QPixmapData::VolatileImage);
+        pd->fromNativeType(&img, QPlatformPixmap::VolatileImage);
         if (!pd->isNull())
             pixmap = QPixmap(pd.take());
     }
     if (pixmap.isNull()) {
         // Potentially more expensive path.
-        pd->fromNativeType(icon, QPixmapData::FbsBitmap);
+        pd->fromNativeType(icon, QPlatformPixmap::FbsBitmap);
         pixmap = QPixmap(pd.take());
         if (mask) {
             pixmap.setAlphaChannel(QPixmap::fromSymbianCFbsBitmap(mask));

@@ -487,7 +487,7 @@ bool QX11PaintEngine::begin(QPaintDevice *pdev)
             d->picture = (::Picture)w->x11PictureHandle();
     } else if (pdev->devType() == QInternal::Pixmap) {
         const QPixmap *pm = static_cast<const QPixmap *>(pdev);
-        QX11PixmapData *data = static_cast<QX11PixmapData*>(pm->data.data());
+        QX11PlatformPixmap *data = static_cast<QX11PlatformPixmap*>(pm->data.data());
         if (X11->use_xrender && data->depth() != 32 && data->x11_mask)
             data->convertToARGB32();
         d->picture = (::Picture)static_cast<const QPixmap *>(pdev)->x11PictureHandle();
@@ -1370,7 +1370,7 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
                 XRenderPictureAttributes attrs;
                 attrs.repeat = true;
                 XRenderChangePicture(d->dpy, d->brush_pm.x11PictureHandle(), CPRepeat, &attrs);
-                QX11PixmapData *data = static_cast<QX11PixmapData*>(d->brush_pm.data.data());
+                QX11PlatformPixmap *data = static_cast<QX11PlatformPixmap*>(d->brush_pm.data.data());
                 if (data->mask_picture)
                     XRenderChangePicture(d->dpy, data->mask_picture, CPRepeat, &attrs);
             }
@@ -1408,13 +1408,13 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
 #ifndef QT_NO_XRENDER
             if (d->pdev_depth == 32 && d->brush_pm.depth() != 32) {
                 d->brush_pm.detach();
-                QX11PixmapData *brushData = static_cast<QX11PixmapData*>(d->brush_pm.data.data());
+                QX11PlatformPixmap *brushData = static_cast<QX11PlatformPixmap*>(d->brush_pm.data.data());
                 brushData->convertToARGB32();
             }
 #endif
             vals.tile = (d->brush_pm.depth() == d->pdev_depth
                          ? d->brush_pm.handle()
-                         : static_cast<QX11PixmapData*>(d->brush_pm.data.data())->x11ConvertToDefaultDepth());
+                         : static_cast<QX11PlatformPixmap*>(d->brush_pm.data.data())->x11ConvertToDefaultDepth());
             s = FillTiled;
 #if !defined(QT_NO_XRENDER)
             d->current_brush = d->cbrush.texture().x11PictureHandle();
@@ -1925,7 +1925,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     QPixmap::x11SetDefaultScreen(pixmap.x11Info().screen());
 
 #ifndef QT_NO_XRENDER
-    ::Picture src_pict = static_cast<QX11PixmapData*>(pixmap.data.data())->picture;
+    ::Picture src_pict = static_cast<QX11PlatformPixmap*>(pixmap.data.data())->picture;
     if (src_pict && d->picture) {
         const int pDepth = pixmap.depth();
         if (pDepth == 1 && (d->has_alpha_pen)) {
@@ -1944,7 +1944,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     bool mono_dst = d->pdev_depth == 1;
     bool restore_clip = false;
 
-    if (static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask) { // pixmap has a mask
+    if (static_cast<QX11PlatformPixmap*>(pixmap.data.data())->x11_mask) { // pixmap has a mask
         QBitmap comb(sw, sh);
         GC cgc = XCreateGC(d->dpy, comb.handle(), 0, 0);
         XSetForeground(d->dpy, cgc, 0);
@@ -1961,7 +1961,7 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
         XSetFillStyle(d->dpy, cgc, FillOpaqueStippled);
         XSetTSOrigin(d->dpy, cgc, -sx, -sy);
         XSetStipple(d->dpy, cgc,
-                    static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask);
+                    static_cast<QX11PlatformPixmap*>(pixmap.data.data())->x11_mask);
         XFillRectangle(d->dpy, comb.handle(), cgc, 0, 0, sw, sh);
         XFreeGC(d->dpy, cgc);
 
@@ -2007,8 +2007,8 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
 
     if (d->pdev->devType() == QInternal::Pixmap) {
         const QPixmap *px = static_cast<const QPixmap*>(d->pdev);
-        Pixmap src_mask = static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask;
-        Pixmap dst_mask = static_cast<QX11PixmapData*>(px->data.data())->x11_mask;
+        Pixmap src_mask = static_cast<QX11PlatformPixmap*>(pixmap.data.data())->x11_mask;
+        Pixmap dst_mask = static_cast<QX11PlatformPixmap*>(px->data.data())->x11_mask;
         if (dst_mask) {
             GC cgc = XCreateGC(d->dpy, dst_mask, 0, 0);
             if (src_mask) { // copy src mask into dst mask
@@ -2222,7 +2222,7 @@ void QX11PaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, co
 #endif
     } else
 #endif // !QT_NO_XRENDER
-        if (pixmap.depth() > 1 && !static_cast<QX11PixmapData*>(pixmap.data.data())->x11_mask) {
+        if (pixmap.depth() > 1 && !static_cast<QX11PlatformPixmap*>(pixmap.data.data())->x11_mask) {
             XSetTile(d->dpy, d->gc, pixmap.handle());
             XSetFillStyle(d->dpy, d->gc, FillTiled);
             XSetTSOrigin(d->dpy, d->gc, x-sx, y-sy);
@@ -2358,7 +2358,7 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
 
     const bool xrenderPath = (X11->use_xrender
                               && !(d->pdev->devType() == QInternal::Pixmap
-                                   && static_cast<const QPixmap *>(d->pdev)->data->pixelType() == QPixmapData::BitmapType));
+                                   && static_cast<const QPixmap *>(d->pdev)->data->pixelType() == QPlatformPixmap::BitmapType));
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;

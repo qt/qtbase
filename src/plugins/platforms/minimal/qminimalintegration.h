@@ -71,7 +71,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
      QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QAbstractEventDispatcher *createEventDispatcher() const;

@@ -53,7 +53,7 @@
 #include <private/qpixmap_raster_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
@@ -118,12 +118,12 @@ QDirectFbIntegration::~QDirectFbIntegration()
     delete mInput;
 }
 
-QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    if (type == QPixmapData::BitmapType)
-        return new QRasterPixmapData(type);
+    if (type == QPlatformPixmap::BitmapType)
+        return new QRasterPlatformPixmap(type);
     else
-        return new QDirectFbBlitterPixmapData;
+        return new QDirectFbBlitterPlatformPixmap;
 }
 
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const

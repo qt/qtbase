@@ -63,7 +63,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window, WId wId)
     dfbWindow->GetSurface(dfbWindow,&m_dfbSurface);
 //WRONGSIZE
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect().size(), m_dfbSurface);
-    m_pmdata = new QDirectFbBlitterPixmapData;
+    m_pmdata = new QDirectFbBlitterPlatformPixmap;
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
 }

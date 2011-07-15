@@ -382,11 +382,11 @@ public:
     void* pbuf;
     quint32 gpm;
     int screen;
-    QHash<QPixmapData*, QPixmap> boundPixmaps;
+    QHash<QPlatformPixmap*, QPixmap> boundPixmaps;
     QGLTexture *bindTextureFromNativePixmap(QPixmap*, const qint64 key,
                                             QGLContext::BindOptions options);
-    static void destroyGlSurfaceForPixmap(QPixmapData*);
-    static void unbindPixmapFromTexture(QPixmapData*);
+    static void destroyGlSurfaceForPixmap(QPlatformPixmap*);
+    static void unbindPixmapFromTexture(QPlatformPixmap*);
 #endif
 #if defined(Q_WS_MAC)
     bool update;
@@ -502,18 +502,18 @@ class Q_OPENGL_EXPORT QGLTextureDestroyer : public QObject
 public:
     QGLTextureDestroyer() : QObject() {
         qRegisterMetaType<GLuint>("GLuint");
-        connect(this, SIGNAL(freeTexture(QGLContext *, QPixmapData *, GLuint)),
-                this, SLOT(freeTexture_slot(QGLContext *, QPixmapData *, GLuint)));
+        connect(this, SIGNAL(freeTexture(QGLContext *, QPlatformPixmap *, GLuint)),
+                this, SLOT(freeTexture_slot(QGLContext *, QPlatformPixmap *, GLuint)));
     }
-    void emitFreeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+    void emitFreeTexture(QGLContext *context, QPlatformPixmap *boundPixmap, GLuint id) {
         emit freeTexture(context, boundPixmap, id);
     }
 
 Q_SIGNALS:
-    void freeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id);
+    void freeTexture(QGLContext *context, QPlatformPixmap *boundPixmap, GLuint id);
 
 private slots:
-    void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+    void freeTexture_slot(QGLContext *context, QPlatformPixmap *boundPixmap, GLuint id) {
         Q_UNUSED(boundPixmap);
 #if defined(Q_WS_X11)
         if (boundPixmap) {
@@ -565,7 +565,7 @@ public:
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
 #if !defined(Q_WS_X11)
-            QPixmapData *boundPixmap = 0;
+            QPlatformPixmap *boundPixmap = 0;
 #endif
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
@@ -578,7 +578,7 @@ public:
     QGLContext::BindOptions options;
 
 #if defined(Q_WS_X11)
-    QPixmapData* boundPixmap;
+    QPlatformPixmap* boundPixmap;
 #endif
 
     bool canBindCompressedTexture
@@ -623,8 +623,8 @@ public:
     void removeContextTextures(QGLContext *ctx);
     static QGLTextureCache *instance();
     static void cleanupTexturesForCacheKey(qint64 cacheKey);
-    static void cleanupTexturesForPixampData(QPixmapData* pixmap);
-    static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
+    static void cleanupTexturesForPixampData(QPlatformPixmap* pixmap);
+    static void cleanupBeforePixmapDestruction(QPlatformPixmap* pixmap);
 
 private:
     QCache<QGLTextureCacheKey, QGLTexture> m_cache;

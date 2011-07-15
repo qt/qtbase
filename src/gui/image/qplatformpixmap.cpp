@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qpixmapdata_p.h"
+#include "qplatformpixmap_qpa.h"
 #include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>
@@ -48,15 +48,15 @@
 
 QT_BEGIN_NAMESPACE
 
-QPixmapData *QPixmapData::create(int w, int h, PixelType type)
+QPlatformPixmap *QPlatformPixmap::create(int w, int h, PixelType type)
 {
-    QPixmapData *data = QGuiApplicationPrivate::platformIntegration()->createPixmapData(static_cast<QPixmapData::PixelType>(type));
+    QPlatformPixmap *data = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(static_cast<QPlatformPixmap::PixelType>(type));
     data->resize(w, h);
     return data;
 }
 
 
-QPixmapData::QPixmapData(PixelType pixelType, int objectId)
+QPlatformPixmap::QPlatformPixmap(PixelType pixelType, int objectId)
     : w(0),
       h(0),
       d(0),
@@ -70,29 +70,29 @@ QPixmapData::QPixmapData(PixelType pixelType, int objectId)
 {
 }
 
-QPixmapData::~QPixmapData()
+QPlatformPixmap::~QPlatformPixmap()
 {
     // Sometimes the pixmap cleanup hooks will be called from derrived classes, which will
     // then set is_cached to false. For example, on X11 QtOpenGL needs to delete the GLXPixmap
     // or EGL Pixmap Surface for a given pixmap _before_ the native X11 pixmap is deleted,
-    // otherwise some drivers will leak the GL surface. In this case, QX11PixmapData will
+    // otherwise some drivers will leak the GL surface. In this case, QX11PlatformPixmap will
     // call the cleanup hooks itself before deleting the native pixmap and set is_cached to
     // false.
     if (is_cached) {
-        QImagePixmapCleanupHooks::executePixmapDataDestructionHooks(this);
+        QImagePixmapCleanupHooks::executePlatformPixmapDestructionHooks(this);
         is_cached = false;
     }
 }
 
-QPixmapData *QPixmapData::createCompatiblePixmapData() const
+QPlatformPixmap *QPlatformPixmap::createCompatiblePlatformPixmap() const
 {
-    QPixmapData *d = QGuiApplicationPrivate::platformIntegration()->createPixmapData(pixelType());
+    QPlatformPixmap *d = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(pixelType());
     return d;
 }
 
-static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Qt::ImageConversionFlags flags)
+static QImage makeBitmapCompliantIfNeeded(QPlatformPixmap *d, const QImage &image, Qt::ImageConversionFlags flags)
 {
-    if (d->pixelType() == QPixmapData::BitmapType) {
+    if (d->pixelType() == QPlatformPixmap::BitmapType) {
         QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
 
         // make sure image.color(0) == Qt::color0 (white)
@@ -110,14 +110,14 @@ static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Q
     return image;
 }
 
-void QPixmapData::fromImageReader(QImageReader *imageReader,
+void QPlatformPixmap::fromImageReader(QImageReader *imageReader,
                                   Qt::ImageConversionFlags flags)
 {
     const QImage image = imageReader->read();
     fromImage(image, flags);
 }
 
-bool QPixmapData::fromFile(const QString &fileName, const char *format,
+bool QPlatformPixmap::fromFile(const QString &fileName, const char *format,
                            Qt::ImageConversionFlags flags)
 {
     QImage image = QImageReader(fileName, format).read();
@@ -127,7 +127,7 @@ bool QPixmapData::fromFile(const QString &fileName, const char *format,
     return !isNull();
 }
 
-bool QPixmapData::fromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
+bool QPlatformPixmap::fromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
     QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
     QBuffer b(&a);
@@ -137,12 +137,12 @@ bool QPixmapData::fromData(const uchar *buf, uint len, const char *format, Qt::I
     return !isNull();
 }
 
-void QPixmapData::copy(const QPixmapData *data, const QRect &rect)
+void QPlatformPixmap::copy(const QPlatformPixmap *data, const QRect &rect)
 {
     fromImage(data->toImage(rect), Qt::NoOpaqueDetection);
 }
 
-bool QPixmapData::scroll(int dx, int dy, const QRect &rect)
+bool QPlatformPixmap::scroll(int dx, int dy, const QRect &rect)
 {
     Q_UNUSED(dx);
     Q_UNUSED(dy);
@@ -150,18 +150,18 @@ bool QPixmapData::scroll(int dx, int dy, const QRect &rect)
     return false;
 }
 
-QPixmap QPixmapData::transformed(const QTransform &matrix,
-                                 Qt::TransformationMode mode) const
+QPixmap QPlatformPixmap::transformed(const QTransform &matrix,
+                                     Qt::TransformationMode mode) const
 {
     return QPixmap::fromImage(toImage().transformed(matrix, mode));
 }
 
-void QPixmapData::setSerialNumber(int serNo)
+void QPlatformPixmap::setSerialNumber(int serNo)
 {
     ser_no = serNo;
 }
 
-QImage QPixmapData::toImage(const QRect &rect) const
+QImage QPlatformPixmap::toImage(const QRect &rect) const
 {
     if (rect.contains(QRect(0, 0, w, h)))
         return toImage();
@@ -169,18 +169,18 @@ QImage QPixmapData::toImage(const QRect &rect) const
         return toImage().copy(rect);
 }
 
-QImage* QPixmapData::buffer()
+QImage* QPlatformPixmap::buffer()
 {
     return 0;
 }
 
 #if defined(Q_OS_SYMBIAN)
-void* QPixmapData::toNativeType(NativeType /* type */)
+void* QPlatformPixmap::toNativeType(NativeType /* type */)
 {
     return 0;
 }
 
-void QPixmapData::fromNativeType(void* /* pixmap */, NativeType /* typre */)
+void QPlatformPixmap::fromNativeType(void* /* pixmap */, NativeType /* typre */)
 {
     return;
 }

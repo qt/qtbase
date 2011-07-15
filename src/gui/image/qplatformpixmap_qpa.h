@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QImageReader;
 
-class Q_GUI_EXPORT QPixmapData
+class Q_GUI_EXPORT QPlatformPixmap
 {
 public:
     enum PixelType {
@@ -72,10 +72,10 @@ public:
     enum ClassId { RasterClass, DirectFBClass,
                    BlitterClass, CustomClass = 1024 };
 
-    QPixmapData(PixelType pixelType, int classId);
-    virtual ~QPixmapData();
+    QPlatformPixmap(PixelType pixelType, int classId);
+    virtual ~QPlatformPixmap();
 
-    virtual QPixmapData *createCompatiblePixmapData() const;
+    virtual QPlatformPixmap *createCompatiblePlatformPixmap() const;
 
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
@@ -88,7 +88,7 @@ public:
     virtual bool fromData(const uchar *buffer, uint len, const char *format,
                           Qt::ImageConversionFlags flags);
 
-    virtual void copy(const QPixmapData *data, const QRect &rect);
+    virtual void copy(const QPlatformPixmap *data, const QRect &rect);
     virtual bool scroll(int dx, int dy, const QRect &rect);
 
     virtual int metric(QPaintDevice::PaintDeviceMetric metric) const = 0;
@@ -123,7 +123,7 @@ public:
                 | ((qint64) detach_no));
     }
 
-    static QPixmapData *create(int w, int h, PixelType type);
+    static QPlatformPixmap *create(int w, int h, PixelType type);
 
 protected:
 
@@ -137,7 +137,7 @@ private:
     friend class QPixmap;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QGLTextureCache; //Needs to check the reference count
-    friend class QExplicitlySharedDataPointer<QPixmapData>;
+    friend class QExplicitlySharedDataPointer<QPlatformPixmap>;
 
     QAtomicInt ref;
     int detach_no;

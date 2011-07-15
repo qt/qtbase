@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qbitmap.h"
-#include "qpixmapdata_p.h"
+#include "qplatformpixmap_qpa.h"
 #include "qimage.h"
 #include "qvariant.h"
 #include <qpainter.h>
@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     \sa QPixmap::isNull()
 */
 QBitmap::QBitmap()
-    : QPixmap(QSize(0, 0), QPixmapData::BitmapType)
+    : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
 {
 }
 
@@ -115,7 +115,7 @@ QBitmap::QBitmap()
 */
 
 QBitmap::QBitmap(int w, int h)
-    : QPixmap(QSize(w, h), QPixmapData::BitmapType)
+    : QPixmap(QSize(w, h), QPlatformPixmap::BitmapType)
 {
 }
 
@@ -127,7 +127,7 @@ QBitmap::QBitmap(int w, int h)
 */
 
 QBitmap::QBitmap(const QSize &size)
-    : QPixmap(size, QPixmapData::BitmapType)
+    : QPixmap(size, QPlatformPixmap::BitmapType)
 {
 }
 
@@ -172,7 +172,7 @@ QBitmap::QBitmap(const QPixmap &pixmap)
 */
 
 QBitmap::QBitmap(const QString& fileName, const char *format)
-    : QPixmap(QSize(0, 0), QPixmapData::BitmapType)
+    : QPixmap(QSize(0, 0), QPlatformPixmap::BitmapType)
 {
     load(fileName, format, Qt::MonoOnly);
 }
@@ -260,7 +260,7 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
         img.setColor(1, c0);
     }
 
-    QScopedPointer<QPixmapData> data(QGuiApplicationPrivate::platformIntegration()->createPixmapData(QPixmapData::BitmapType));
+    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::BitmapType));
 
     data->fromImage(img, flags | Qt::MonoOnly);
     return QPixmap(data.take());

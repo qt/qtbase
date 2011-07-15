@@ -106,7 +106,7 @@ protected:
 
     friend class QX11PaintEngine;
     friend class QPixmap;
-    friend class QX11PixmapData;
+    friend class QX11PlatformPixmap;
     friend class QWidget;
     friend class QWidgetPrivate;
     friend class QGLWidget;

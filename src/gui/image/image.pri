@@ -21,8 +21,7 @@ HEADERS += \
         image/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
-        image/qpixmapdata_p.h \
-        image/qpixmapdatafactory_p.h \
+        image/qplatformpixmap_qpa.h \
         image/qimagepixmapcleanuphooks_p.h \
         image/qvolatileimage_p.h \
         image/qvolatileimagedata_p.h \
@@ -39,8 +38,7 @@ SOURCES += \
         image/qpictureformatplugin.cpp \
         image/qpixmap.cpp \
         image/qpixmapcache.cpp \
-        image/qpixmapdata.cpp \
-        image/qpixmapdatafactory.cpp \
+        image/qplatformpixmap.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \

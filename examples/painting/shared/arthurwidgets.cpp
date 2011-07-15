@@ -86,7 +86,7 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 
 #ifdef Q_WS_X11
     QPixmap xRenderPixmap(1, 1);
-    m_prefer_image = xRenderPixmap.pixmapData()->classId() == QPixmapData::X11Class && !xRenderPixmap.x11PictureHandle();
+    m_prefer_image = xRenderPixmap.handle()->classId() == QPlatformPixmap::X11Class && !xRenderPixmap.x11PictureHandle();
 #endif
 }
 

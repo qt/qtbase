@@ -539,8 +539,8 @@ void QCursorData::update()
         fg.green = 0;
         fg.blue  = 0;
         QImage image = QApplicationPrivate::instance()->getPixmapCursor(cshape).toImage();
-        pm = QX11PixmapData::createBitmapFromImage(image);
-        pmm = QX11PixmapData::createBitmapFromImage(image.createAlphaMask().convertToFormat(QImage::Format_MonoLSB));
+        pm = QX11PlatformPixmap::createBitmapFromImage(image);
+        pmm = QX11PlatformPixmap::createBitmapFromImage(image.createAlphaMask().convertToFormat(QImage::Format_MonoLSB));
         hcurs = XCreatePixmapCursor(dpy, pm, pmm, &fg, &bg, 8, 8);
     }
 

@@ -92,9 +92,9 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     }
 }
 
-QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QWaylandIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const

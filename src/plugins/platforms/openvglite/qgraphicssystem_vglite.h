@@ -57,7 +57,7 @@ public:
     QVGLiteGraphicsSystem();
     ~QVGLiteGraphicsSystem();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QWindowSurface *createWindowSurface(QWidget *widget) const;
     QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
 

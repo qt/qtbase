@@ -42,7 +42,7 @@
 #include "private/qpixmapfilter_p.h"
 #include "private/qpaintengineex_opengl2_p.h"
 #include "private/qglengineshadermanager_p.h"
-#include "private/qpixmapdata_p.h"
+#include "qplatformpixmap_qpa.h"
 #include "private/qimagepixmapcleanuphooks_p.h"
 #include "qglpixmapfilter_p.h"
 #include "qpaintengine_opengl_p.h"
@@ -324,7 +324,7 @@ public:
     void timerEvent(QTimerEvent *event);
 
 private:
-    static void pixmapDestroyed(QPixmapData *pixmap);
+    static void pixmapDestroyed(QPlatformPixmap *pixmap);
 
     QCache<quint64, QGLBlurTextureInfo > cache;
 
@@ -380,8 +380,8 @@ void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTe
 {
     static bool hookAdded = false;
     if (!hookAdded) {
-        QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(pixmapDestroyed);
-        QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(pixmapDestroyed);
+        QImagePixmapCleanupHooks::instance()->addPlatformPixmapDestructionHook(pixmapDestroyed);
+        QImagePixmapCleanupHooks::instance()->addPlatformPixmapModificationHook(pixmapDestroyed);
         hookAdded = true;
     }
 
@@ -394,7 +394,7 @@ void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTe
     timerId = startTimer(8000);
 }
 
-void QGLBlurTextureCache::pixmapDestroyed(QPixmapData *pmd)
+void QGLBlurTextureCache::pixmapDestroyed(QPlatformPixmap *pmd)
 {
     foreach (QGLBlurTextureCache *cache, blurTextureCaches) {
         if (cache->hasBlurTextureInfo(pmd->cacheKey()))

@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
 
 QPixmap qt_toRasterPixmap(const QImage &image)
 {
-    QPixmapData *data =
-        new QRasterPixmapData(image.depth() == 1
-                           ? QPixmapData::BitmapType
-                           : QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QRasterPlatformPixmap(image.depth() == 1
+                           ? QPlatformPixmap::BitmapType
+                           : QPlatformPixmap::PixmapType);
 
     data->fromImage(image, Qt::AutoColor);
 
@@ -75,27 +75,27 @@ QPixmap qt_toRasterPixmap(const QPixmap &pixmap)
     if (pixmap.isNull())
         return QPixmap();
 
-    if (QPixmap(pixmap).data_ptr()->classId() == QPixmapData::RasterClass)
+    if (QPixmap(pixmap).data_ptr()->classId() == QPlatformPixmap::RasterClass)
         return pixmap;
 
     return qt_toRasterPixmap(pixmap.toImage());
 }
 
-QRasterPixmapData::QRasterPixmapData(PixelType type)
-    : QPixmapData(type, RasterClass)
+QRasterPlatformPixmap::QRasterPlatformPixmap(PixelType type)
+    : QPlatformPixmap(type, RasterClass)
 {
 }
 
-QRasterPixmapData::~QRasterPixmapData()
+QRasterPlatformPixmap::~QRasterPlatformPixmap()
 {
 }
 
-QPixmapData *QRasterPixmapData::createCompatiblePixmapData() const
+QPlatformPixmap *QRasterPlatformPixmap::createCompatiblePlatformPixmap() const
 {
-    return new QRasterPixmapData(pixelType());
+    return new QRasterPlatformPixmap(pixelType());
 }
 
-void QRasterPixmapData::resize(int width, int height)
+void QRasterPlatformPixmap::resize(int width, int height)
 {
     QImage::Format format;
 #ifdef Q_WS_QWS
@@ -130,7 +130,7 @@ void QRasterPixmapData::resize(int width, int height)
     setSerialNumber(image.serialNumber());
 }
 
-bool QRasterPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *format,
                       Qt::ImageConversionFlags flags)
 {
     QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
@@ -144,7 +144,7 @@ bool QRasterPixmapData::fromData(const uchar *buffer, uint len, const char *form
     return !isNull();
 }
 
-void QRasterPixmapData::fromImage(const QImage &sourceImage,
+void QRasterPlatformPixmap::fromImage(const QImage &sourceImage,
                                   Qt::ImageConversionFlags flags)
 {
     Q_UNUSED(flags);
@@ -152,7 +152,7 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
     createPixmapForImage(image, flags, /* inplace = */false);
 }
 
-void QRasterPixmapData::fromImageReader(QImageReader *imageReader,
+void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,
                                         Qt::ImageConversionFlags flags)
 {
     Q_UNUSED(flags);
@@ -166,19 +166,19 @@ void QRasterPixmapData::fromImageReader(QImageReader *imageReader,
 // from qwindowsurface.cpp
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
-void QRasterPixmapData::copy(const QPixmapData *data, const QRect &rect)
+void QRasterPlatformPixmap::copy(const QPlatformPixmap *data, const QRect &rect)
 {
     fromImage(data->toImage(rect).copy(), Qt::NoOpaqueDetection);
 }
 
-bool QRasterPixmapData::scroll(int dx, int dy, const QRect &rect)
+bool QRasterPlatformPixmap::scroll(int dx, int dy, const QRect &rect)
 {
     if (!image.isNull())
         qt_scrollRectInImage(image, rect, QPoint(dx, dy));
     return true;
 }
 
-void QRasterPixmapData::fill(const QColor &color)
+void QRasterPlatformPixmap::fill(const QColor &color)
 {
     uint pixel;
 
@@ -262,12 +262,12 @@ void QRasterPixmapData::fill(const QColor &color)
     image.fill(pixel);
 }
 
-bool QRasterPixmapData::hasAlphaChannel() const
+bool QRasterPlatformPixmap::hasAlphaChannel() const
 {
     return image.hasAlphaChannel();
 }
 
-QImage QRasterPixmapData::toImage() const
+QImage QRasterPlatformPixmap::toImage() const
 {
     if (!image.isNull()) {
         QImageData *data = const_cast<QImage &>(image).data_ptr();
@@ -281,7 +281,7 @@ QImage QRasterPixmapData::toImage() const
     return image;
 }
 
-QImage QRasterPixmapData::toImage(const QRect &rect) const
+QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
 {
     if (rect.isNull())
         return image;
@@ -295,12 +295,12 @@ QImage QRasterPixmapData::toImage(const QRect &rect) const
         return image.copy(clipped);
 }
 
-QPaintEngine* QRasterPixmapData::paintEngine() const
+QPaintEngine* QRasterPlatformPixmap::paintEngine() const
 {
     return image.paintEngine();
 }
 
-int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
+int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
     QImageData *d = image.d;
     if (!d)
@@ -327,14 +327,14 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmPhysicalDpiY:
         return qt_defaultDpiY();
     default:
-        qWarning("QRasterPixmapData::metric(): Unhandled metric type %d", metric);
+        qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;
     }
 
     return 0;
 }
 
-void QRasterPixmapData::createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace)
+void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace)
 {
     QImage::Format format;
     if (flags & Qt::NoFormatConversion)
@@ -436,7 +436,7 @@ void QRasterPixmapData::createPixmapForImage(QImage &sourceImage, Qt::ImageConve
     setSerialNumber(image.serialNumber());
 }
 
-QImage* QRasterPixmapData::buffer()
+QImage* QRasterPlatformPixmap::buffer()
 {
     return &image;
 }

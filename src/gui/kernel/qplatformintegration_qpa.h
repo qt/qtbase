@@ -43,7 +43,7 @@
 #define QPLATFORMINTEGRATION_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 #include <QtGui/qplatformscreen_qpa.h>
 #include <QtGui/qsurfaceformat.h>
 
@@ -79,7 +79,7 @@ public:
     virtual bool hasCapability(Capability cap) const;
 
 // GraphicsSystem functions
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
+    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
     virtual QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &format, QPlatformGLContext *share) const;

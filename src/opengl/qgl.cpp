@@ -84,7 +84,7 @@
 #include <qglframebufferobject.h>
 
 #include <private/qimage_p.h>
-#include <private/qpixmapdata_p.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
@@ -1836,15 +1836,15 @@ Q_GLOBAL_STATIC(QGLTextureCache, qt_gl_texture_cache)
 QGLTextureCache::QGLTextureCache()
     : m_cache(64*1024) // cache ~64 MB worth of textures - this is not accurate though
 {
-    QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTexturesForPixampData);
-    QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
+    QImagePixmapCleanupHooks::instance()->addPlatformPixmapModificationHook(cleanupTexturesForPixampData);
+    QImagePixmapCleanupHooks::instance()->addPlatformPixmapDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->addImageHook(cleanupTexturesForCacheKey);
 }
 
 QGLTextureCache::~QGLTextureCache()
 {
-    QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
-    QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
+    QImagePixmapCleanupHooks::instance()->removePlatformPixmapModificationHook(cleanupTexturesForPixampData);
+    QImagePixmapCleanupHooks::instance()->removePlatformPixmapDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
 }
 
@@ -1903,18 +1903,18 @@ void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 }
 
 
-void QGLTextureCache::cleanupTexturesForPixampData(QPixmapData* pmd)
+void QGLTextureCache::cleanupTexturesForPixampData(QPlatformPixmap* pmd)
 {
     cleanupTexturesForCacheKey(pmd->cacheKey());
 }
 
-void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
+void QGLTextureCache::cleanupBeforePixmapDestruction(QPlatformPixmap* pmd)
 {
     // Remove any bound textures first:
     cleanupTexturesForPixampData(pmd);
 
 #if defined(Q_WS_X11)
-    if (pmd->classId() == QPixmapData::X11Class) {
+    if (pmd->classId() == QPlatformPixmap::X11Class) {
         Q_ASSERT(pmd->ref == 0); // Make sure reference counting isn't broken
         QGLContextPrivate::destroyGlSurfaceForPixmap(pmd);
     }
@@ -2582,7 +2582,7 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
 QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
-    QPixmapData *pd = pixmap.pixmapData();
+    QPlatformPixmap *pd = pixmap.handle();
     Q_UNUSED(pd);
 
     const qint64 key = pixmap.cacheKey();
@@ -2601,7 +2601,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
     const QX11Info *xinfo = qt_x11Info(paintDevice);
-    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
+    if (pd->classId() == QPlatformPixmap::X11Class && pd->pixelType() == QPlatformPixmap::PixmapType
         && xinfo && xinfo->screen() == pixmap.x11Info().screen()
         && target == GL_TEXTURE_2D
         && QApplication::instance()->thread() == QThread::currentThread())
@@ -4442,7 +4442,7 @@ QPixmap QGLWidget::renderPixmap(int w, int h, bool useContext)
     int old_depth = qt_x11_preferred_pixmap_depth;
     qt_x11_preferred_pixmap_depth = x11Info().depth();
 
-    QPixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
+    QPlatformPixmap *data = new QX11PlatformPixmap(QPlatformPixmap::PixmapType);
     data->resize(sz.width(), sz.height());
     QPixmap pm(data);
     qt_x11_preferred_pixmap_depth = old_depth;

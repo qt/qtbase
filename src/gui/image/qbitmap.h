@@ -75,7 +75,7 @@ public:
     QBitmap transformed(const QMatrix &) const;
     QBitmap transformed(const QTransform &matrix) const;
 
-    typedef QExplicitlySharedDataPointer<QPixmapData> DataPtr;
+    typedef QExplicitlySharedDataPointer<QPlatformPixmap> DataPtr;
 };
 Q_DECLARE_SHARED(QBitmap)
 

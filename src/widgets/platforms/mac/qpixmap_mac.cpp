@@ -75,26 +75,26 @@ static int qt_pixmap_serial = 0;
 Q_WIDGETS_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
 {
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
-        return reinterpret_cast<quint32 *>(static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bits());
+        return reinterpret_cast<quint32 *>(static_cast<QRasterPlatformPixmap*>(pix->data.data())->buffer()->bits());
     else
-        return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
+        return static_cast<QMacPlatformPixmap*>(pix->data.data())->pixels;
 }
 
 Q_WIDGETS_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
 {
     if (QApplicationPrivate::graphics_system_name == QLatin1String("raster"))
-        return static_cast<QRasterPixmapData*>(pix->data.data())->buffer()->bytesPerLine();
+        return static_cast<QRasterPlatformPixmap*>(pix->data.data())->buffer()->bytesPerLine();
     else
-        return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
+        return static_cast<QMacPlatformPixmap*>(pix->data.data())->bytesPerRow;
 }
 
 void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)
 {
-    QMacPixmapData *pmdata = static_cast<QMacPixmapData *>(info);
+    QMacPlatformPixmap *pmdata = static_cast<QMacPlatformPixmap *>(info);
     if (!pmdata) {
         free(const_cast<void *>(memoryToFree));
     } else {
-        if (QMacPixmapData::validDataPointers.contains(pmdata) == false) {
+        if (QMacPlatformPixmap::validDataPointers.contains(pmdata) == false) {
             free(const_cast<void *>(memoryToFree));
             return;
         }
@@ -163,26 +163,26 @@ static inline QRgb qt_conv16ToRgb(ushort c) {
     return qRgb(tr,tg,tb);
 }
 
-QSet<QMacPixmapData*> QMacPixmapData::validDataPointers;
+QSet<QMacPlatformPixmap*> QMacPlatformPixmap::validDataPointers;
 
-QMacPixmapData::QMacPixmapData(PixelType type)
-    : QPixmapData(type, MacClass), has_alpha(0), has_mask(0),
+QMacPlatformPixmap::QMacPlatformPixmap(PixelType type)
+    : QPlatformPixmap(type, MacClass), has_alpha(0), has_mask(0),
       uninit(true), pixels(0), pixelsSize(0), pixelsToFree(0),
       bytesPerRow(0), cg_data(0), cg_dataBeingReleased(0), cg_mask(0),
       pengine(0)
 {
 }
 
-QPixmapData *QMacPixmapData::createCompatiblePixmapData() const
+QPlatformPixmap *QMacPlatformPixmap::createCompatiblePlatformPixmap() const
 {
-    return new QMacPixmapData(pixelType());
+    return new QMacPlatformPixmap(pixelType());
 }
 
 #define BEST_BYTE_ALIGNMENT 16
 #define COMPTUE_BEST_BYTES_PER_ROW(bpr) \
     (((bpr) + (BEST_BYTE_ALIGNMENT - 1)) & ~(BEST_BYTE_ALIGNMENT - 1))
 
-void QMacPixmapData::resize(int width, int height)
+void QMacPlatformPixmap::resize(int width, int height)
 {
     setSerialNumber(++qt_pixmap_serial);
 
@@ -214,7 +214,7 @@ void QMacPixmapData::resize(int width, int height)
 
 #undef COMPUTE_BEST_BYTES_PER_ROW
 
-void QMacPixmapData::fromImage(const QImage &img,
+void QMacPlatformPixmap::fromImage(const QImage &img,
                                Qt::ImageConversionFlags flags)
 {
     setSerialNumber(++qt_pixmap_serial);
@@ -371,7 +371,7 @@ int get_index(QImage * qi,QRgb mycol)
     return qi->colorCount();
 }
 
-QImage QMacPixmapData::toImage() const
+QImage QMacPlatformPixmap::toImage() const
 {
     QImage::Format format = QImage::Format_MonoLSB;
     if (d != 1) //Doesn't support index color modes
@@ -405,7 +405,7 @@ QImage QMacPixmapData::toImage() const
     return image;
 }
 
-void QMacPixmapData::fill(const QColor &fillColor)
+void QMacPlatformPixmap::fill(const QColor &fillColor)
 
 {
     { //we don't know what backend to use so we cannot paint here
@@ -427,39 +427,39 @@ void QMacPixmapData::fill(const QColor &fillColor)
         macSetHasAlpha(true);
 }
 
-QPixmap QMacPixmapData::alphaChannel() const
+QPixmap QMacPlatformPixmap::alphaChannel() const
 {
     if (!has_alpha)
         return QPixmap();
 
-    QMacPixmapData *alpha = new QMacPixmapData(PixmapType);
+    QMacPlatformPixmap *alpha = new QMacPlatformPixmap(PixmapType);
     alpha->resize(w, h);
     macGetAlphaChannel(alpha, false);
     return QPixmap(alpha);
 }
 
-void QMacPixmapData::setAlphaChannel(const QPixmap &alpha)
+void QMacPlatformPixmap::setAlphaChannel(const QPixmap &alpha)
 {
     has_mask = true;
-    QMacPixmapData *alphaData = static_cast<QMacPixmapData*>(alpha.data.data());
+    QMacPlatformPixmap *alphaData = static_cast<QMacPlatformPixmap*>(alpha.data.data());
     macSetAlphaChannel(alphaData, false);
 }
 
-QBitmap QMacPixmapData::mask() const
+QBitmap QMacPlatformPixmap::mask() const
 {
     if (!has_mask && !has_alpha)
         return QBitmap();
 
-    QMacPixmapData *mask = new QMacPixmapData(BitmapType);
+    QMacPlatformPixmap *mask = new QMacPlatformPixmap(BitmapType);
     mask->resize(w, h);
     macGetAlphaChannel(mask, true);
     return QPixmap(mask);
 }
 
-void QMacPixmapData::setMask(const QBitmap &mask)
+void QMacPlatformPixmap::setMask(const QBitmap &mask)
 {
     if (mask.isNull()) {
-        QMacPixmapData opaque(PixmapType);
+        QMacPlatformPixmap opaque(PixmapType);
         opaque.resize(w, h);
         opaque.fill(QColor(255, 255, 255, 255));
         macSetAlphaChannel(&opaque, true);
@@ -469,11 +469,11 @@ void QMacPixmapData::setMask(const QBitmap &mask)
 
     has_alpha = false;
     has_mask = true;
-    QMacPixmapData *maskData = static_cast<QMacPixmapData*>(mask.data.data());
+    QMacPlatformPixmap *maskData = static_cast<QMacPlatformPixmap*>(mask.data.data());
     macSetAlphaChannel(maskData, true);
 }
 
-int QMacPixmapData::metric(QPaintDevice::PaintDeviceMetric theMetric) const
+int QMacPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric theMetric) const
 {
     switch (theMetric) {
     case QPaintDevice::PdmWidth:
@@ -504,7 +504,7 @@ int QMacPixmapData::metric(QPaintDevice::PaintDeviceMetric theMetric) const
     return 0;
 }
 
-QMacPixmapData::~QMacPixmapData()
+QMacPlatformPixmap::~QMacPlatformPixmap()
 {
     validDataPointers.remove(this);
     if (cg_mask) {
@@ -521,7 +521,7 @@ QMacPixmapData::~QMacPixmapData()
     free(pixelsToFree);
 }
 
-void QMacPixmapData::macSetAlphaChannel(const QMacPixmapData *pix, bool asMask)
+void QMacPlatformPixmap::macSetAlphaChannel(const QMacPlatformPixmap *pix, bool asMask)
 {
     if (!pixels || !h || !w || pix->w != w || pix->h != h)
         return;
@@ -567,7 +567,7 @@ void QMacPixmapData::macSetAlphaChannel(const QMacPixmapData *pix, bool asMask)
     macSetHasAlpha(true);
 }
 
-void QMacPixmapData::macGetAlphaChannel(QMacPixmapData *pix, bool asMask) const
+void QMacPlatformPixmap::macGetAlphaChannel(QMacPlatformPixmap *pix, bool asMask) const
 {
     quint32 *dptr = pix->pixels, *drow;
     const uint dbpr = pix->bytesPerRow;
@@ -592,13 +592,13 @@ void QMacPixmapData::macGetAlphaChannel(QMacPixmapData *pix, bool asMask) const
     }
 }
 
-void QMacPixmapData::macSetHasAlpha(bool b)
+void QMacPlatformPixmap::macSetHasAlpha(bool b)
 {
     has_alpha = b;
     macReleaseCGImageRef();
 }
 
-void QMacPixmapData::macCreateCGImageRef()
+void QMacPlatformPixmap::macCreateCGImageRef()
 {
     Q_ASSERT(cg_data == 0);
     //create the cg data
@@ -615,7 +615,7 @@ void QMacPixmapData::macCreateCGImageRef()
                             cgflags, provider, 0, 0, kCGRenderingIntentDefault);
 }
 
-void QMacPixmapData::macReleaseCGImageRef()
+void QMacPlatformPixmap::macReleaseCGImageRef()
 {
     if (!cg_data)
         return;  // There's nothing we need to do
@@ -634,7 +634,7 @@ void QMacPixmapData::macReleaseCGImageRef()
 
 // We create our space in memory to paint on here. If we already have existing pixels
 // copy them over. This is to preserve the fact that CGImageRef's are immutable.
-void QMacPixmapData::macCreatePixels()
+void QMacPlatformPixmap::macCreatePixels()
 {
     const int numBytes = bytesPerRow * h;
     quint32 *base_pixels;
@@ -654,7 +654,7 @@ void QMacPixmapData::macCreatePixels()
 }
 
 #if 0
-QPixmap QMacPixmapData::transformed(const QTransform &transform,
+QPixmap QMacPlatformPixmap::transformed(const QTransform &transform,
                                     Qt::TransformationMode mode) const
 {
     int w, h;  // size of target pixmap
@@ -682,15 +682,15 @@ QPixmap QMacPixmapData::transformed(const QTransform &transform,
         return QPixmap();
 
     // create destination
-    QMacPixmapData *pm = new QMacPixmapData(pixelType(), w, h);
+    QMacPlatformPixmap *pm = new QMacPlatformPixmap(pixelType(), w, h);
     const quint32 *sptr = pixels;
     quint32 *dptr = pm->pixels;
     memset(dptr, 0, (pm->bytesPerRow * pm->h));
 
     // do the transform
     if (mode == Qt::SmoothTransformation) {
-#warning QMacPixmapData::transformed not properly implemented
-        qWarning("QMacPixmapData::transformed not properly implemented");
+#warning QMacPlatformPixmap::transformed not properly implemented
+        qWarning("QMacPlatformPixmap::transformed not properly implemented");
 #if 0
         QPainter p(&pm);
         p.setRenderHint(QPainter::Antialiasing);
@@ -709,7 +709,7 @@ QPixmap QMacPixmapData::transformed(const QTransform &transform,
         if (!qt_xForm_helper(mat, 0, QT_XFORM_TYPE_MSBFIRST, bpp,
                              (uchar*)dptr, xbpl, (pm->bytesPerRow) - xbpl,
                              h, (uchar*)sptr, (bytesPerRow), ws, hs)) {
-            qWarning("QMacPixmapData::transform(): failure");
+            qWarning("QMacPlatformPixmap::transform(): failure");
             return QPixmap();
         }
     }
@@ -984,27 +984,27 @@ Qt::HANDLE QPixmap::macCGHandle() const
     if (isNull())
         return 0;
 
-    if (data->classId() == QPixmapData::MacClass) {
-        QMacPixmapData *d = static_cast<QMacPixmapData *>(data.data());
+    if (data->classId() == QPlatformPixmap::MacClass) {
+        QMacPlatformPixmap *d = static_cast<QMacPlatformPixmap *>(data.data());
         if (!d->cg_data)
             d->macCreateCGImageRef();
         CGImageRef ret = d->cg_data;
         CGImageRetain(ret);
         return ret;
-    } else if (data->classId() == QPixmapData::RasterClass) {
-        return qt_mac_image_to_cgimage(static_cast<QRasterPixmapData *>(data.data())->image);
+    } else if (data->classId() == QPlatformPixmap::RasterClass) {
+        return qt_mac_image_to_cgimage(static_cast<QRasterPlatformPixmap *>(data.data())->image);
     }
     return 0;
 }
 
-bool QMacPixmapData::hasAlphaChannel() const
+bool QMacPlatformPixmap::hasAlphaChannel() const
 {
     return has_alpha;
 }
 
 CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
 {
-    QMacPixmapData *px = static_cast<QMacPixmapData*>(pixmap.data.data());
+    QMacPlatformPixmap *px = static_cast<QMacPlatformPixmap*>(pixmap.data.data());
     if (px->cg_mask) {
         if (px->cg_mask_rect == sr) {
             CGImageRetain(px->cg_mask); //reference for the caller
@@ -1114,23 +1114,23 @@ IconRef qt_mac_create_iconref(const QPixmap &px)
 #endif
 
 /*! \internal */
-QPaintEngine* QMacPixmapData::paintEngine() const
+QPaintEngine* QMacPlatformPixmap::paintEngine() const
 {
     if (!pengine) {
-        QMacPixmapData *that = const_cast<QMacPixmapData*>(this);
+        QMacPlatformPixmap *that = const_cast<QMacPlatformPixmap*>(this);
         that->pengine = new QCoreGraphicsPaintEngine();
     }
     return pengine;
 }
 
-void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
+void QMacPlatformPixmap::copy(const QPlatformPixmap *data, const QRect &rect)
 {
     if (data->pixelType() == BitmapType) {
         QBitmap::fromImage(toImage().copy(rect));
         return;
     }
 
-    const QMacPixmapData *macData = static_cast<const QMacPixmapData*>(data);
+    const QMacPlatformPixmap *macData = static_cast<const QMacPlatformPixmap*>(data);
 
     resize(rect.width(), rect.height());
 
@@ -1152,7 +1152,7 @@ void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
     has_mask = macData->has_mask;
 }
 
-bool QMacPixmapData::scroll(int dx, int dy, const QRect &rect)
+bool QMacPlatformPixmap::scroll(int dx, int dy, const QRect &rect)
 {
     Q_UNUSED(dx);
     Q_UNUSED(dy);

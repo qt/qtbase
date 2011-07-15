@@ -109,7 +109,7 @@ private:
     static void setCurrentContext(QEgl::API api, QEglContext *context);
 
     friend class QMeeGoGraphicsSystem;
-    friend class QMeeGoPixmapData;
+    friend class QMeeGoPlatformPixmap;
 };
 
 QT_END_NAMESPACE

@@ -69,9 +69,9 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     }
 }
 
-QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QMinimalIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const

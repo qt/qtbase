@@ -1769,17 +1769,17 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
 
     Q_Q(QGLContext);
 
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
-    Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
+    QX11PlatformPixmap *handle = static_cast<QX11PlatformPixmap*>(pixmap->data_ptr().data());
+    Q_ASSERT(handle->classId() == QPlatformPixmap::X11Class);
 
     // We can't use TFP if the pixmap has a separate X11 mask
-    if (pixmapData->x11_mask)
+    if (handle->x11_mask)
         return 0;
 
     if (!qt_resolveTextureFromPixmap(paintDevice))
         return 0;
 
-    const QX11Info &x11Info = pixmapData->xinfo;
+    const QX11Info &x11Info = handle->xinfo;
 
     // Store the configs (Can be static because configs aren't dependent on current context)
     static GLXFBConfig glxRGBPixmapConfig = 0;
@@ -1787,7 +1787,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
     static GLXFBConfig glxRGBAPixmapConfig = 0;
     static bool RGBAConfigInverted = false;
 
-    bool hasAlpha = pixmapData->hasAlphaChannel();
+    bool hasAlpha = handle->hasAlphaChannel();
 
     // Check to see if we need a config
     if ( (hasAlpha && !glxRGBAPixmapConfig) || (!hasAlpha && !glxRGBPixmapConfig) ) {
@@ -1822,15 +1822,15 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
     }
 
     // Check to see if the surface is still valid
-    if (pixmapData->gl_surface &&
-        hasAlpha != (pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha))
+    if (handle->gl_surface &&
+        hasAlpha != (handle->flags & QX11PlatformPixmap::GlSurfaceCreatedWithAlpha))
     {
         // Surface is invalid!
-        destroyGlSurfaceForPixmap(pixmapData);
+        destroyGlSurfaceForPixmap(handle);
     }
 
     // Check to see if we need a surface
-    if (!pixmapData->gl_surface) {
+    if (!handle->gl_surface) {
         GLXPixmap glxPixmap;
         int pixmapAttribs[] = {
             GLX_TEXTURE_FORMAT_EXT, hasAlpha ? GLX_TEXTURE_FORMAT_RGBA_EXT : GLX_TEXTURE_FORMAT_RGB_EXT,
@@ -1842,21 +1842,21 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
         // Wrap the X Pixmap into a GLXPixmap:
         glxPixmap = glXCreatePixmap(x11Info.display(),
                                     hasAlpha ? glxRGBAPixmapConfig : glxRGBPixmapConfig,
-                                    pixmapData->handle(), pixmapAttribs);
+                                    handle->handle(), pixmapAttribs);
 
         if (!glxPixmap)
             return 0;
 
-        pixmapData->gl_surface = (void*)glxPixmap;
+        handle->gl_surface = (void*)glxPixmap;
 
         // Make sure the cleanup hook gets called so we can delete the glx pixmap
-        QImagePixmapCleanupHooks::enableCleanupHooks(pixmapData);
+        QImagePixmapCleanupHooks::enableCleanupHooks(handle);
     }
 
     GLuint textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    glXBindTexImageEXT(x11Info.display(), (GLXPixmap)pixmapData->gl_surface, GLX_FRONT_LEFT_EXT, 0);
+    glXBindTexImageEXT(x11Info.display(), (GLXPixmap)handle->gl_surface, GLX_FRONT_LEFT_EXT, 0);
 
     glBindTexture(GL_TEXTURE_2D, textureId);
     GLuint filtering = (options & QGLContext::LinearFilteringBindOption) ? GL_LINEAR : GL_NEAREST;
@@ -1868,7 +1868,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
 
     QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     if (texture->options & QGLContext::InvertedYBindOption)
-        pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
+        handle->flags |= QX11PlatformPixmap::InvertedWhenBoundToTexture;
 
     // We assume the cost of bound pixmaps is zero
     QGLTextureCache::instance()->insert(q, key, texture, 0);
@@ -1878,26 +1878,26 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
 }
 
 
-void QGLContextPrivate::destroyGlSurfaceForPixmap(QPixmapData* pmd)
+void QGLContextPrivate::destroyGlSurfaceForPixmap(QPlatformPixmap* pmd)
 {
 #if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
-    Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
-    if (pixmapData->gl_surface) {
-        glXDestroyPixmap(QX11Info::display(), (GLXPixmap)pixmapData->gl_surface);
-        pixmapData->gl_surface = 0;
+    Q_ASSERT(pmd->classId() == QPlatformPixmap::X11Class);
+    QX11PlatformPixmap *handle = static_cast<QX11PlatformPixmap*>(pmd);
+    if (handle->gl_surface) {
+        glXDestroyPixmap(QX11Info::display(), (GLXPixmap)handle->gl_surface);
+        handle->gl_surface = 0;
     }
 #endif
 }
 
-void QGLContextPrivate::unbindPixmapFromTexture(QPixmapData* pmd)
+void QGLContextPrivate::unbindPixmapFromTexture(QPlatformPixmap* pmd)
 {
 #if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
-    Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
+    Q_ASSERT(pmd->classId() == QPlatformPixmap::X11Class);
     Q_ASSERT(QGLContext::currentContext());
-    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
-    if (pixmapData->gl_surface)
-        glXReleaseTexImageEXT(QX11Info::display(), (GLXPixmap)pixmapData->gl_surface, GLX_FRONT_LEFT_EXT);
+    QX11PlatformPixmap *handle = static_cast<QX11PlatformPixmap*>(pmd);
+    if (handle->gl_surface)
+        glXReleaseTexImageEXT(QX11Info::display(), (GLXPixmap)handle->gl_surface, GLX_FRONT_LEFT_EXT);
 #endif
 }
 

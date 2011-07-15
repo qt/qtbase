@@ -42,18 +42,18 @@
 #ifndef QPIXMAP_BLITTER_P_H
 #define QPIXMAP_BLITTER_P_H
 
-#include <private/qpixmapdata_p.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qpaintengine_blitter_p.h>
 
 #ifndef QT_NO_BLITTABLE
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT  QBlittablePixmapData : public QPixmapData
+class Q_GUI_EXPORT  QBlittablePlatformPixmap : public QPlatformPixmap
 {
-//     Q_DECLARE_PRIVATE(QBlittablePixmapData);
+//     Q_DECLARE_PRIVATE(QBlittablePlatformPixmap);
 public:
-    QBlittablePixmapData();
-    ~QBlittablePixmapData();
+    QBlittablePlatformPixmap();
+    ~QBlittablePlatformPixmap();
 
     virtual QBlittable *createBlittable(const QSize &size) const = 0;
     QBlittable *blittable() const;
@@ -98,7 +98,7 @@ protected:
 
 };
 
-inline void QBlittablePixmapData::markRasterOverlay(const QRectF &rect)
+inline void QBlittablePlatformPixmap::markRasterOverlay(const QRectF &rect)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     markRasterOverlayImpl(rect);
@@ -107,7 +107,7 @@ inline void QBlittablePixmapData::markRasterOverlay(const QRectF &rect)
 #endif
 }
 
-inline void QBlittablePixmapData::markRasterOverlay(const QVectorPath &path)
+inline void QBlittablePlatformPixmap::markRasterOverlay(const QVectorPath &path)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     markRasterOverlayImpl(path.convertToPainterPath().boundingRect());
@@ -116,7 +116,7 @@ inline void QBlittablePixmapData::markRasterOverlay(const QVectorPath &path)
 #endif
 }
 
-inline void QBlittablePixmapData::markRasterOverlay(const QPointF &pos, const QTextItem &ti)
+inline void QBlittablePlatformPixmap::markRasterOverlay(const QPointF &pos, const QTextItem &ti)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     QFontMetricsF fm(ti.font());
@@ -129,7 +129,7 @@ inline void QBlittablePixmapData::markRasterOverlay(const QPointF &pos, const QT
 #endif
 }
 
-inline void QBlittablePixmapData::markRasterOverlay(const QRect *rects, int rectCount)
+inline void QBlittablePlatformPixmap::markRasterOverlay(const QRect *rects, int rectCount)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     for (int i = 0; i < rectCount; i++) {
@@ -140,7 +140,7 @@ inline void QBlittablePixmapData::markRasterOverlay(const QRect *rects, int rect
     Q_UNUSED(rectCount)
 #endif
 }
-inline void QBlittablePixmapData::markRasterOverlay(const QRectF *rects, int rectCount)
+inline void QBlittablePlatformPixmap::markRasterOverlay(const QRectF *rects, int rectCount)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     for (int i = 0; i < rectCount; i++) {
@@ -152,7 +152,7 @@ inline void QBlittablePixmapData::markRasterOverlay(const QRectF *rects, int rec
 #endif
 }
 
-inline void QBlittablePixmapData::unmarkRasterOverlay(const QRectF &rect)
+inline void QBlittablePlatformPixmap::unmarkRasterOverlay(const QRectF &rect)
 {
 #ifdef QT_BLITTER_RASTEROVERLAY
     unmarkRasterOverlayImpl(rect);

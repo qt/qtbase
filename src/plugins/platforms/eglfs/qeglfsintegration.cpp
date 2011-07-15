@@ -73,12 +73,12 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     }
 }
 
-QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QEglFSIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPixmapData %d\n", type);
+    qWarning("QEglIntegration::createPlatformPixmap %d\n", type);
 #endif
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const

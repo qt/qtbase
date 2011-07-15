@@ -43,7 +43,7 @@
 
 #include <QtGui/private/qt_x11_p.h>
 #include <QtGui/qx11info_x11.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 #include <QtGui/private/qpixmap_x11_p.h>
 #include <QtGui/private/qimagepixmapcleanuphooks_p.h>
 
@@ -339,14 +339,14 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
         return EGL_NO_SURFACE;
     }
 
-    QX11PixmapData *x11PixmapData = 0;
+    QX11PlatformPixmap *x11PlatformPixmap = 0;
     if (devType == QInternal::Pixmap) {
-        QPixmapData *pmd = static_cast<QPixmap*>(device)->data_ptr().data();
-        if (pmd->classId() == QPixmapData::X11Class)
-            x11PixmapData = static_cast<QX11PixmapData*>(pmd);
+        QPlatformPixmap *pmd = static_cast<QPixmap*>(device)->data_ptr().data();
+        if (pmd->classId() == QPlatformPixmap::X11Class)
+            x11PlatformPixmap = static_cast<QX11PlatformPixmap*>(pmd);
         else {
-            // TODO: Replace the pixmap's data with a new QX11PixmapData
-            qWarning("WARNING: Creating an EGL surface on a QPixmap is only supported for QX11PixmapData");
+            // TODO: Replace the pixmap's data with a new QX11PlatformPixmap
+            qWarning("WARNING: Creating an EGL surface on a QPixmap is only supported for QX11PlatformPixmap");
             return EGL_NO_SURFACE;
         }
     } else if ((devType != QInternal::Widget) && (devType != QInternal::Pbuffer)) {
@@ -426,11 +426,11 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
         return surf;
     }
 
-    if (x11PixmapData) {
+    if (x11PlatformPixmap) {
         // X11 Pixmaps are only created with a depth, so that's all we need to check
         EGLint configDepth;
         eglGetConfigAttrib(QEgl::display(), config, EGL_BUFFER_SIZE , &configDepth);
-        if (x11PixmapData->depth() != configDepth) {
+        if (x11PlatformPixmap->depth() != configDepth) {
             // The bit depths are wrong which means the EGLConfig isn't compatable with
             // this pixmap. So we need to replace the pixmap's existing data with a new
             // one which is created with the correct depth:
@@ -438,13 +438,13 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
 #ifndef QT_NO_XRENDER
             if (configDepth == 32) {
                 qWarning("Warning: EGLConfig's depth (32) != pixmap's depth (%d), converting to ARGB32",
-                         x11PixmapData->depth());
-                x11PixmapData->convertToARGB32(true);
+                         x11PlatformPixmap->depth());
+                x11PlatformPixmap->convertToARGB32(true);
             } else
 #endif
             {
                 qWarning("Warning: EGLConfig's depth (%d) != pixmap's depth (%d)",
-                         configDepth, x11PixmapData->depth());
+                         configDepth, x11PlatformPixmap->depth());
             }
         }
 
@@ -458,10 +458,10 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
             surfaceAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
 
         EGLSurface surf = eglCreatePixmapSurface(QEgl::display(), config,
-                                                 (EGLNativePixmapType) x11PixmapData->handle(),
+                                                 (EGLNativePixmapType) x11PlatformPixmap->handle(),
                                                  surfaceAttribs.properties());
-        x11PixmapData->gl_surface = (void*)surf;
-        QImagePixmapCleanupHooks::enableCleanupHooks(x11PixmapData);
+        x11PlatformPixmap->gl_surface = (void*)surf;
+        QImagePixmapCleanupHooks::enableCleanupHooks(x11PlatformPixmap);
         return surf;
     }
 
