@@ -2239,6 +2239,16 @@ int QFontDatabase::weight(const QString &family,
 }
 
 
+/*! \internal */
+bool QFontDatabase::hasFamily(const QString &family) const
+{
+    QString parsedFamily, foundry;
+    parseFontName(family, foundry, parsedFamily);
+    const QString familyAlias = resolveFontFamilyAlias(parsedFamily);
+    return families().contains(familyAlias, Qt::CaseInsensitive);
+}
+
+
 /*!
     Returns the names the \a writingSystem (e.g. for displaying to the
     user in a dialog).

@@ -138,6 +138,8 @@ public:
     bool bold(const QString &family, const QString &style) const;
     int weight(const QString &family, const QString &style) const;
 
+    bool hasFamily(const QString &family) const;
+
     static QString writingSystemName(WritingSystem writingSystem);
     static QString writingSystemSample(WritingSystem writingSystem);
 
