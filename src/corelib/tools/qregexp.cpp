@@ -1011,6 +1011,8 @@ Q_DECLARE_TYPEINFO(QRegExpAnchorAlternation, Q_PRIMITIVE_TYPE);
 #endif
 
 #ifndef QT_NO_REGEXP_CCLASS
+
+#define FLAG(x) (1 << (x))
 /*
   The class QRegExpCharClass represents a set of characters, such as can
   be found in regular expressions (e.g., [a-z] denotes the set
@@ -1027,7 +1029,7 @@ public:
     void clear();
     bool negative() const { return n; }
     void setNegative(bool negative);
-    void addCategories(int cats);
+    void addCategories(uint cats);
     void addRange(ushort from, ushort to);
     void addSingleton(ushort ch) { addRange(ch, ch); }
 
@@ -1041,7 +1043,7 @@ public:
 #endif
 
 private:
-    int c; // character classes
+    uint c; // character classes
     QVector<QRegExpCharClassRange> r; // character ranges
     bool n; // negative?
 #ifndef QT_NO_REGEXP_OPTIM
@@ -2351,9 +2353,39 @@ void QRegExpCharClass::setNegative(bool negative)
 #endif
 }
 
-void QRegExpCharClass::addCategories(int cats)
+void QRegExpCharClass::addCategories(uint cats)
 {
-    c |= cats;
+    static const int all_cats = FLAG(QChar::Mark_NonSpacing) |
+                                FLAG(QChar::Mark_SpacingCombining) |
+                                FLAG(QChar::Mark_Enclosing) |
+                                FLAG(QChar::Number_DecimalDigit) |
+                                FLAG(QChar::Number_Letter) |
+                                FLAG(QChar::Number_Other) |
+                                FLAG(QChar::Separator_Space) |
+                                FLAG(QChar::Separator_Line) |
+                                FLAG(QChar::Separator_Paragraph) |
+                                FLAG(QChar::Other_Control) |
+                                FLAG(QChar::Other_Format) |
+                                FLAG(QChar::Other_Surrogate) |
+                                FLAG(QChar::Other_PrivateUse) |
+                                FLAG(QChar::Other_NotAssigned) |
+                                FLAG(QChar::Letter_Uppercase) |
+                                FLAG(QChar::Letter_Lowercase) |
+                                FLAG(QChar::Letter_Titlecase) |
+                                FLAG(QChar::Letter_Modifier) |
+                                FLAG(QChar::Letter_Other) |
+                                FLAG(QChar::Punctuation_Connector) |
+                                FLAG(QChar::Punctuation_Dash) |
+                                FLAG(QChar::Punctuation_Open) |
+                                FLAG(QChar::Punctuation_Close) |
+                                FLAG(QChar::Punctuation_InitialQuote) |
+                                FLAG(QChar::Punctuation_FinalQuote) |
+                                FLAG(QChar::Punctuation_Other) |
+                                FLAG(QChar::Symbol_Math) |
+                                FLAG(QChar::Symbol_Currency) |
+                                FLAG(QChar::Symbol_Modifier) |
+                                FLAG(QChar::Symbol_Other);
+    c |= (all_cats & cats);
 #ifndef QT_NO_REGEXP_OPTIM
     occ1.fill(0, NumBadChars);
 #endif
@@ -2394,7 +2426,7 @@ bool QRegExpCharClass::in(QChar ch) const
         return n;
 #endif
 
-    if (c != 0 && (c & (1 << (int)ch.category())) != 0)
+    if (c != 0 && (c & FLAG(ch.category())) != 0)
         return !n;
 
     const int uc = ch.unicode();
@@ -2900,18 +2932,32 @@ int QRegExpEngine::getEscape()
 #ifndef QT_NO_REGEXP_CCLASS
     case 'D':
         // see QChar::isDigit()
-        yyCharClass->addCategories(0x7fffffef);
+        yyCharClass->addCategories(uint(-1) ^ FLAG(QChar::Number_DecimalDigit));
         return Tok_CharClass;
     case 'S':
         // see QChar::isSpace()
-        yyCharClass->addCategories(0x7ffff87f);
+        yyCharClass->addCategories(uint(-1) ^ (FLAG(QChar::Separator_Space) |
+                                               FLAG(QChar::Separator_Line) |
+                                               FLAG(QChar::Separator_Paragraph) |
+                                               FLAG(QChar::Other_Control)));
         yyCharClass->addRange(0x0000, 0x0008);
         yyCharClass->addRange(0x000e, 0x001f);
         yyCharClass->addRange(0x007f, 0x009f);
         return Tok_CharClass;
     case 'W':
         // see QChar::isLetterOrNumber() and QChar::isMark()
-        yyCharClass->addCategories(0x7fe07f81);
+        yyCharClass->addCategories(uint(-1) ^ (FLAG(QChar::Mark_NonSpacing) |
+                                               FLAG(QChar::Mark_SpacingCombining) |
+                                               FLAG(QChar::Mark_Enclosing) |
+                                               FLAG(QChar::Number_DecimalDigit) |
+                                               FLAG(QChar::Number_Letter) |
+                                               FLAG(QChar::Number_Other) |
+                                               FLAG(QChar::Letter_Uppercase) |
+                                               FLAG(QChar::Letter_Lowercase) |
+                                               FLAG(QChar::Letter_Titlecase) |
+                                               FLAG(QChar::Letter_Modifier) |
+                                               FLAG(QChar::Letter_Other) |
+                                               FLAG(QChar::Punctuation_Connector)));
         yyCharClass->addRange(0x203f, 0x2040);
         yyCharClass->addSingleton(0x2040);
         yyCharClass->addSingleton(0x2054);
@@ -2929,16 +2975,28 @@ int QRegExpEngine::getEscape()
 #ifndef QT_NO_REGEXP_CCLASS
     case 'd':
         // see QChar::isDigit()
-        yyCharClass->addCategories(0x00000010);
+        yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit));
         return Tok_CharClass;
     case 's':
         // see QChar::isSpace()
-        yyCharClass->addCategories(0x00000380);
+        yyCharClass->addCategories(FLAG(QChar::Separator_Space) |
+                                   FLAG(QChar::Separator_Line) |
+                                   FLAG(QChar::Separator_Paragraph));
         yyCharClass->addRange(0x0009, 0x000d);
         return Tok_CharClass;
     case 'w':
         // see QChar::isLetterOrNumber() and QChar::isMark()
-        yyCharClass->addCategories(0x000f807e);
+        yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
+                                   FLAG(QChar::Mark_SpacingCombining) |
+                                   FLAG(QChar::Mark_Enclosing) |
+                                   FLAG(QChar::Number_DecimalDigit) |
+                                   FLAG(QChar::Number_Letter) |
+                                   FLAG(QChar::Number_Other) |
+                                   FLAG(QChar::Letter_Uppercase) |
+                                   FLAG(QChar::Letter_Lowercase) |
+                                   FLAG(QChar::Letter_Titlecase) |
+                                   FLAG(QChar::Letter_Modifier) |
+                                   FLAG(QChar::Letter_Other));
         yyCharClass->addSingleton(0x005f); // '_'
         return Tok_CharClass;
     case 'I':
@@ -2948,7 +3006,17 @@ int QRegExpEngine::getEscape()
         }
     case 'i':
         if (xmlSchemaExtensions) {
-            yyCharClass->addCategories(0x000f807e);
+            yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
+                                       FLAG(QChar::Mark_SpacingCombining) |
+                                       FLAG(QChar::Mark_Enclosing) |
+                                       FLAG(QChar::Number_DecimalDigit) |
+                                       FLAG(QChar::Number_Letter) |
+                                       FLAG(QChar::Number_Other) |
+                                       FLAG(QChar::Letter_Uppercase) |
+                                       FLAG(QChar::Letter_Lowercase) |
+                                       FLAG(QChar::Letter_Titlecase) |
+                                       FLAG(QChar::Letter_Modifier) |
+                                       FLAG(QChar::Letter_Other));
             yyCharClass->addSingleton(0x003a); // ':'
             yyCharClass->addSingleton(0x005f); // '_'
             yyCharClass->addRange(0x0041, 0x005a); // [A-Z]
@@ -2974,7 +3042,17 @@ int QRegExpEngine::getEscape()
         }
     case 'c':
         if (xmlSchemaExtensions) {
-            yyCharClass->addCategories(0x000f807e);
+            yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
+                                       FLAG(QChar::Mark_SpacingCombining) |
+                                       FLAG(QChar::Mark_Enclosing) |
+                                       FLAG(QChar::Number_DecimalDigit) |
+                                       FLAG(QChar::Number_Letter) |
+                                       FLAG(QChar::Number_Other) |
+                                       FLAG(QChar::Letter_Uppercase) |
+                                       FLAG(QChar::Letter_Lowercase) |
+                                       FLAG(QChar::Letter_Titlecase) |
+                                       FLAG(QChar::Letter_Modifier) |
+                                       FLAG(QChar::Letter_Other));
             yyCharClass->addSingleton(0x002d); // '-'
             yyCharClass->addSingleton(0x002e); // '.'
             yyCharClass->addSingleton(0x003a); // ':'
@@ -3024,79 +3102,102 @@ int QRegExpEngine::getEscape()
             yyCh = getChar(); // skip closing '}'
 
             if (category == "M") {
-                yyCharClass->addCategories(0x0000000e);
+                yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
+                                           FLAG(QChar::Mark_SpacingCombining) |
+                                           FLAG(QChar::Mark_Enclosing));
             } else if (category == "Mn") {
-                yyCharClass->addCategories(0x00000002);
+                yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing));
             } else if (category == "Mc") {
-                yyCharClass->addCategories(0x00000004);
+                yyCharClass->addCategories(FLAG(QChar::Mark_SpacingCombining));
             } else if (category == "Me") {
-                yyCharClass->addCategories(0x00000008);
+                yyCharClass->addCategories(FLAG(QChar::Mark_Enclosing));
             } else if (category == "N") {
-                yyCharClass->addCategories(0x00000070);
+                yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit) |
+                                           FLAG(QChar::Number_Letter) |
+                                           FLAG(QChar::Number_Other));
             } else if (category == "Nd") {
-                yyCharClass->addCategories(0x00000010);
+                yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit));
             } else if (category == "Nl") {
-                yyCharClass->addCategories(0x00000020);
+                yyCharClass->addCategories(FLAG(QChar::Number_Letter));
             } else if (category == "No") {
-                yyCharClass->addCategories(0x00000040);
+                yyCharClass->addCategories(FLAG(QChar::Number_Other));
             } else if (category == "Z") {
-                yyCharClass->addCategories(0x00000380);
+                yyCharClass->addCategories(FLAG(QChar::Separator_Space) |
+                                           FLAG(QChar::Separator_Line) |
+                                           FLAG(QChar::Separator_Paragraph));
             } else if (category == "Zs") {
-                yyCharClass->addCategories(0x00000080);
+                yyCharClass->addCategories(FLAG(QChar::Separator_Space));
             } else if (category == "Zl") {
-                yyCharClass->addCategories(0x00000100);
+                yyCharClass->addCategories(FLAG(QChar::Separator_Line));
             } else if (category == "Zp") {
-                yyCharClass->addCategories(0x00000200);
+                yyCharClass->addCategories(FLAG(QChar::Separator_Paragraph));
             } else if (category == "C") {
-                yyCharClass->addCategories(0x00006c00);
+                yyCharClass->addCategories(FLAG(QChar::Other_Control) |
+                                           FLAG(QChar::Other_Format) |
+                                           FLAG(QChar::Other_Surrogate) |
+                                           FLAG(QChar::Other_PrivateUse) |
+                                           FLAG(QChar::Other_NotAssigned));
             } else if (category == "Cc") {
-                yyCharClass->addCategories(0x00000400);
+                yyCharClass->addCategories(FLAG(QChar::Other_Control));
             } else if (category == "Cf") {
-                yyCharClass->addCategories(0x00000800);
+                yyCharClass->addCategories(FLAG(QChar::Other_Format));
             } else if (category == "Cs") {
-                yyCharClass->addCategories(0x00001000);
+                yyCharClass->addCategories(FLAG(QChar::Other_Surrogate));
             } else if (category == "Co") {
-                yyCharClass->addCategories(0x00002000);
+                yyCharClass->addCategories(FLAG(QChar::Other_PrivateUse));
             } else if (category == "Cn") {
-                yyCharClass->addCategories(0x00004000);
+                yyCharClass->addCategories(FLAG(QChar::Other_NotAssigned));
             } else if (category == "L") {
-                yyCharClass->addCategories(0x000f8000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase) |
+                                           FLAG(QChar::Letter_Lowercase) |
+                                           FLAG(QChar::Letter_Titlecase) |
+                                           FLAG(QChar::Letter_Modifier) |
+                                           FLAG(QChar::Letter_Other));
             } else if (category == "Lu") {
-                yyCharClass->addCategories(0x00008000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase));
             } else if (category == "Ll") {
-                yyCharClass->addCategories(0x00010000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Lowercase));
             } else if (category == "Lt") {
-                yyCharClass->addCategories(0x00020000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Titlecase));
             } else if (category == "Lm") {
-                yyCharClass->addCategories(0x00040000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Modifier));
             } else if (category == "Lo") {
-                yyCharClass->addCategories(0x00080000);
+                yyCharClass->addCategories(FLAG(QChar::Letter_Other));
             } else if (category == "P") {
-                yyCharClass->addCategories(0x4f580780);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector) |
+                                           FLAG(QChar::Punctuation_Dash) |
+                                           FLAG(QChar::Punctuation_Open) |
+                                           FLAG(QChar::Punctuation_Close) |
+                                           FLAG(QChar::Punctuation_InitialQuote) |
+                                           FLAG(QChar::Punctuation_FinalQuote) |
+                                           FLAG(QChar::Punctuation_Other));
             } else if (category == "Pc") {
-                yyCharClass->addCategories(0x00100000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector));
             } else if (category == "Pd") {
-                yyCharClass->addCategories(0x00200000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Dash));
             } else if (category == "Ps") {
-                yyCharClass->addCategories(0x00400000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Open));
             } else if (category == "Pe") {
-                yyCharClass->addCategories(0x00800000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Close));
             } else if (category == "Pi") {
-                yyCharClass->addCategories(0x01000000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_InitialQuote));
             } else if (category == "Pf") {
-                yyCharClass->addCategories(0x02000000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_FinalQuote));
             } else if (category == "Po") {
-                yyCharClass->addCategories(0x04000000);
+                yyCharClass->addCategories(FLAG(QChar::Punctuation_Other));
             } else if (category == "S") {
-                yyCharClass->addCategories(0x78000000);
+                yyCharClass->addCategories(FLAG(QChar::Symbol_Math) |
+                                           FLAG(QChar::Symbol_Currency) |
+                                           FLAG(QChar::Symbol_Modifier) |
+                                           FLAG(QChar::Symbol_Other));
             } else if (category == "Sm") {
-                yyCharClass->addCategories(0x08000000);
+                yyCharClass->addCategories(FLAG(QChar::Symbol_Math));
             } else if (category == "Sc") {
-                yyCharClass->addCategories(0x10000000);
+                yyCharClass->addCategories(FLAG(QChar::Symbol_Currency));
             } else if (category == "Sk") {
-                yyCharClass->addCategories(0x20000000);
+                yyCharClass->addCategories(FLAG(QChar::Symbol_Modifier));
             } else if (category == "So") {
-                yyCharClass->addCategories(0x40000000);
+                yyCharClass->addCategories(FLAG(QChar::Symbol_Other));
             } else if (category.startsWith("Is")) {
                 if (categoriesRangeMap.isEmpty())
                     setupCategoriesRangeMap();
