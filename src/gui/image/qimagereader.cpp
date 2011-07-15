@@ -359,6 +359,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 #ifndef QT_NO_IMAGEFORMAT_BMP
         } else if (testFormat == "bmp") {
             handler = new QBmpHandler;
+        } else if (testFormat == "dib") {
+            handler = new QBmpHandler(QBmpHandler::DibFormat);
 #endif
 #ifndef QT_NO_IMAGEFORMAT_XPM
         } else if (testFormat == "xpm") {
