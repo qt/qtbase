@@ -3107,104 +3107,130 @@ int QRegExpEngine::getEscape()
             }
             yyCh = getChar(); // skip closing '}'
 
-            if (category == "M") {
-                yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
-                                           FLAG(QChar::Mark_SpacingCombining) |
-                                           FLAG(QChar::Mark_Enclosing));
-            } else if (category == "Mn") {
-                yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing));
-            } else if (category == "Mc") {
-                yyCharClass->addCategories(FLAG(QChar::Mark_SpacingCombining));
-            } else if (category == "Me") {
-                yyCharClass->addCategories(FLAG(QChar::Mark_Enclosing));
-            } else if (category == "N") {
-                yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit) |
-                                           FLAG(QChar::Number_Letter) |
-                                           FLAG(QChar::Number_Other));
-            } else if (category == "Nd") {
-                yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit));
-            } else if (category == "Nl") {
-                yyCharClass->addCategories(FLAG(QChar::Number_Letter));
-            } else if (category == "No") {
-                yyCharClass->addCategories(FLAG(QChar::Number_Other));
-            } else if (category == "Z") {
-                yyCharClass->addCategories(FLAG(QChar::Separator_Space) |
-                                           FLAG(QChar::Separator_Line) |
-                                           FLAG(QChar::Separator_Paragraph));
-            } else if (category == "Zs") {
-                yyCharClass->addCategories(FLAG(QChar::Separator_Space));
-            } else if (category == "Zl") {
-                yyCharClass->addCategories(FLAG(QChar::Separator_Line));
-            } else if (category == "Zp") {
-                yyCharClass->addCategories(FLAG(QChar::Separator_Paragraph));
-            } else if (category == "C") {
-                yyCharClass->addCategories(FLAG(QChar::Other_Control) |
-                                           FLAG(QChar::Other_Format) |
-                                           FLAG(QChar::Other_Surrogate) |
-                                           FLAG(QChar::Other_PrivateUse) |
-                                           FLAG(QChar::Other_NotAssigned));
-            } else if (category == "Cc") {
-                yyCharClass->addCategories(FLAG(QChar::Other_Control));
-            } else if (category == "Cf") {
-                yyCharClass->addCategories(FLAG(QChar::Other_Format));
-            } else if (category == "Cs") {
-                yyCharClass->addCategories(FLAG(QChar::Other_Surrogate));
-            } else if (category == "Co") {
-                yyCharClass->addCategories(FLAG(QChar::Other_PrivateUse));
-            } else if (category == "Cn") {
-                yyCharClass->addCategories(FLAG(QChar::Other_NotAssigned));
-            } else if (category == "L") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase) |
-                                           FLAG(QChar::Letter_Lowercase) |
-                                           FLAG(QChar::Letter_Titlecase) |
-                                           FLAG(QChar::Letter_Modifier) |
-                                           FLAG(QChar::Letter_Other));
-            } else if (category == "Lu") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase));
-            } else if (category == "Ll") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Lowercase));
-            } else if (category == "Lt") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Titlecase));
-            } else if (category == "Lm") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Modifier));
-            } else if (category == "Lo") {
-                yyCharClass->addCategories(FLAG(QChar::Letter_Other));
-            } else if (category == "P") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector) |
-                                           FLAG(QChar::Punctuation_Dash) |
-                                           FLAG(QChar::Punctuation_Open) |
-                                           FLAG(QChar::Punctuation_Close) |
-                                           FLAG(QChar::Punctuation_InitialQuote) |
-                                           FLAG(QChar::Punctuation_FinalQuote) |
-                                           FLAG(QChar::Punctuation_Other));
-            } else if (category == "Pc") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector));
-            } else if (category == "Pd") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Dash));
-            } else if (category == "Ps") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Open));
-            } else if (category == "Pe") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Close));
-            } else if (category == "Pi") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_InitialQuote));
-            } else if (category == "Pf") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_FinalQuote));
-            } else if (category == "Po") {
-                yyCharClass->addCategories(FLAG(QChar::Punctuation_Other));
-            } else if (category == "S") {
-                yyCharClass->addCategories(FLAG(QChar::Symbol_Math) |
-                                           FLAG(QChar::Symbol_Currency) |
-                                           FLAG(QChar::Symbol_Modifier) |
-                                           FLAG(QChar::Symbol_Other));
-            } else if (category == "Sm") {
-                yyCharClass->addCategories(FLAG(QChar::Symbol_Math));
-            } else if (category == "Sc") {
-                yyCharClass->addCategories(FLAG(QChar::Symbol_Currency));
-            } else if (category == "Sk") {
-                yyCharClass->addCategories(FLAG(QChar::Symbol_Modifier));
-            } else if (category == "So") {
-                yyCharClass->addCategories(FLAG(QChar::Symbol_Other));
-            } else if (category.startsWith("Is")) {
+            int catlen = category.length();
+            if (catlen == 1 || catlen == 2) {
+                switch (category.at(0)) {
+                case 'M':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
+                                                   FLAG(QChar::Mark_SpacingCombining) |
+                                                   FLAG(QChar::Mark_Enclosing));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'n': yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing)); break; // Mn
+                        case 'c': yyCharClass->addCategories(FLAG(QChar::Mark_SpacingCombining)); break; // Mc
+                        case 'e': yyCharClass->addCategories(FLAG(QChar::Mark_Enclosing)); break; // Me
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'N':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit) |
+                                                   FLAG(QChar::Number_Letter) |
+                                                   FLAG(QChar::Number_Other));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'd': yyCharClass->addCategories(FLAG(QChar::Number_DecimalDigit)); break; // Nd
+                        case 'l': yyCharClass->addCategories(FLAG(QChar::Number_Letter)); break; // Hl
+                        case 'o': yyCharClass->addCategories(FLAG(QChar::Number_Other)); break; // No
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'Z':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Separator_Space) |
+                                                   FLAG(QChar::Separator_Line) |
+                                                   FLAG(QChar::Separator_Paragraph));
+                    } else {
+                        switch (category.at(1)) {
+                        case 's': yyCharClass->addCategories(FLAG(QChar::Separator_Space)); break; // Zs
+                        case 'l': yyCharClass->addCategories(FLAG(QChar::Separator_Line)); break; // Zl
+                        case 'p': yyCharClass->addCategories(FLAG(QChar::Separator_Paragraph)); break; // Zp
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'C':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Other_Control) |
+                                                   FLAG(QChar::Other_Format) |
+                                                   FLAG(QChar::Other_Surrogate) |
+                                                   FLAG(QChar::Other_PrivateUse) |
+                                                   FLAG(QChar::Other_NotAssigned));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'c': yyCharClass->addCategories(FLAG(QChar::Other_Control)); break; // Cc
+                        case 'f': yyCharClass->addCategories(FLAG(QChar::Other_Format)); break; // Cf
+                        case 's': yyCharClass->addCategories(FLAG(QChar::Other_Surrogate)); break; // Cs
+                        case 'o': yyCharClass->addCategories(FLAG(QChar::Other_PrivateUse)); break; // Co
+                        case 'n': yyCharClass->addCategories(FLAG(QChar::Other_NotAssigned)); break; // Cn
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'L':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase) |
+                                                   FLAG(QChar::Letter_Lowercase) |
+                                                   FLAG(QChar::Letter_Titlecase) |
+                                                   FLAG(QChar::Letter_Modifier) |
+                                                   FLAG(QChar::Letter_Other));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'u': yyCharClass->addCategories(FLAG(QChar::Letter_Uppercase)); break; // Lu
+                        case 'l': yyCharClass->addCategories(FLAG(QChar::Letter_Lowercase)); break; // Ll
+                        case 't': yyCharClass->addCategories(FLAG(QChar::Letter_Titlecase)); break; // Lt
+                        case 'm': yyCharClass->addCategories(FLAG(QChar::Letter_Modifier)); break; // Lm
+                        case 'o': yyCharClass->addCategories(FLAG(QChar::Letter_Other)); break; // Lo
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'P':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector) |
+                                                   FLAG(QChar::Punctuation_Dash) |
+                                                   FLAG(QChar::Punctuation_Open) |
+                                                   FLAG(QChar::Punctuation_Close) |
+                                                   FLAG(QChar::Punctuation_InitialQuote) |
+                                                   FLAG(QChar::Punctuation_FinalQuote) |
+                                                   FLAG(QChar::Punctuation_Other));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'c': yyCharClass->addCategories(FLAG(QChar::Punctuation_Connector)); break; // Pc
+                        case 'd': yyCharClass->addCategories(FLAG(QChar::Punctuation_Dash)); break; // Pd
+                        case 's': yyCharClass->addCategories(FLAG(QChar::Punctuation_Open)); break; // Ps
+                        case 'e': yyCharClass->addCategories(FLAG(QChar::Punctuation_Close)); break; // Pe
+                        case 'i': yyCharClass->addCategories(FLAG(QChar::Punctuation_InitialQuote)); break; // Pi
+                        case 'f': yyCharClass->addCategories(FLAG(QChar::Punctuation_FinalQuote)); break; // Pf
+                        case 'o': yyCharClass->addCategories(FLAG(QChar::Punctuation_Other)); break; // Po
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                case 'S':
+                    if (catlen == 1) {
+                        yyCharClass->addCategories(FLAG(QChar::Symbol_Math) |
+                                                   FLAG(QChar::Symbol_Currency) |
+                                                   FLAG(QChar::Symbol_Modifier) |
+                                                   FLAG(QChar::Symbol_Other));
+                    } else {
+                        switch (category.at(1)) {
+                        case 'm': yyCharClass->addCategories(FLAG(QChar::Symbol_Math)); break; // Sm
+                        case 'c': yyCharClass->addCategories(FLAG(QChar::Symbol_Currency)); break; // Sc
+                        case 'k': yyCharClass->addCategories(FLAG(QChar::Symbol_Modifier)); break; // Sk
+                        case 'o': yyCharClass->addCategories(FLAG(QChar::Symbol_Other)); break; // So
+                        default: error(RXERR_CATEGORY); break;
+                        }
+                    }
+                    break;
+                default:
+                    error(RXERR_CATEGORY);
+                    break;
+                }
+            } else if (catlen > 2 && category.at(0) == 'I' && category.at(1) == 's') {
                 if (categoriesRangeMap.isEmpty())
                     setupCategoriesRangeMap();
 
