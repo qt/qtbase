@@ -1382,14 +1382,14 @@ QMakeProject::read(uchar cmd)
                 read(Option::mkfile::cachefile, base_vars);
             }
         }
-
-        if(cmd & ReadFeatures) {
-            debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
-            doProjectInclude("default_pre", IncludeFlagFeature, base_vars);
-        }
     }
 
     vars = base_vars; // start with the base
+
+    if(cmd & ReadFeatures) {
+        debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
+        doProjectInclude("default_pre", IncludeFlagFeature, vars);
+    }
 
     //get a default
     if(pfile != "-" && vars["TARGET"].isEmpty())
