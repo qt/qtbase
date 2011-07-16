@@ -1402,7 +1402,8 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
                 ucs4 = QChar::surrogateToUcs4(high, ucs4);
             }
         }
-        if (QChar::unicodeVersion(ucs4) > version)
+        const QChar::UnicodeVersion v = QChar::unicodeVersion(ucs4);
+        if (v > version || v == QChar::Unicode_Unassigned)
             continue;
         int length;
         int tag;
@@ -1462,7 +1463,7 @@ static ushort ligatureHelper(ushort u1, ushort u2)
     return 0;
 }
 
-static void composeHelper(QString *str, int from)
+static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
 {
     QString &s = *str;
 
@@ -1482,7 +1483,14 @@ static void composeHelper(QString *str, int from)
                 ++pos;
             }
         }
-        int combining = QChar::combiningClass(uc);
+        const QUnicodeTables::Properties *p = qGetProp(uc);
+        if (p->unicodeVersion > version || p->unicodeVersion == QChar::Unicode_Unassigned) {
+            starter = -1; // to prevent starter == pos - 1
+            lastCombining = 0;
+            ++pos;
+            continue;
+        }
+        int combining = p->combiningClass;
         if (starter == pos - 1 || combining > lastCombining) {
             // allowed to form ligature with S
             QChar ligature = ligatureHelper(s.at(starter).unicode(), uc);
@@ -1529,7 +1537,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         ushort c2 = 0;
         {
             const QUnicodeTables::Properties *p = qGetProp(u2);
-            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+            if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
                 c2 = p->combiningClass;
         }
         if (c2 == 0) {
@@ -1540,7 +1548,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         ushort c1 = 0;
         {
             const QUnicodeTables::Properties *p = qGetProp(u1);
-            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+            if (p->unicodeVersion <= version && p->unicodeVersion != QChar::Unicode_Unassigned)
                 c1 = p->combiningClass;
         }
 

@@ -6230,7 +6230,7 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     if (mode == QString::NormalizationForm_D || mode == QString::NormalizationForm_KD)
         return;
 
-    composeHelper(data, from);
+    composeHelper(data, version, from);
 }
 
 
