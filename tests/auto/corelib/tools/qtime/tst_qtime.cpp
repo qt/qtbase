@@ -242,6 +242,7 @@ void tst_QTime::hour_data()
     QTest::newRow(  "data2" ) << 1 << 2 << 3 << 4;
     QTest::newRow(  "data3" ) << 2 << 12 << 13 << 65;
     QTest::newRow(  "data4" ) << 23 << 59 << 59 << 999;
+    QTest::newRow(  "data5" ) << -1 << -1 << -1 << -1;
 }
 
 void tst_QTime::hour()
@@ -271,6 +272,7 @@ void tst_QTime::setHMS_data()
     QTest::newRow(  "data4" ) << 23 << 0 << 0;
     QTest::newRow(  "data5" ) << 23 << 59 << 0;
     QTest::newRow(  "data6" ) << 23 << 59 << 59;
+    QTest::newRow(  "data7" ) << -1 << -1 << -1;
 }
 
 void tst_QTime::setHMS()
@@ -296,6 +298,9 @@ void tst_QTime::secsTo_data()
     QTest::newRow(  "data1" ) << QTime(0,0,0) << QTime(0,1,0) << 60;
     QTest::newRow(  "data2" ) << QTime(0,0,0) << QTime(0,10,0) << 600;
     QTest::newRow(  "data3" ) << QTime(0,0,0) << QTime(23,59,59) << 86399;
+    QTest::newRow(  "data4" ) << QTime(-1, -1, -1) << QTime(0, 0, 0) << 0;
+    QTest::newRow(  "data5" ) << QTime(0, 0, 0) << QTime(-1, -1, -1) << 0;
+    QTest::newRow(  "data6" ) << QTime(-1, -1, -1) << QTime(-1, -1, -1) << 0;
 }
 
 void tst_QTime::secsTo()
@@ -317,6 +322,9 @@ void tst_QTime::msecsTo_data()
     QTest::newRow(  "data1" ) << QTime(0,0,0,0) << QTime(0,0,1,0) << 1000;
     QTest::newRow(  "data2" ) << QTime(0,0,0,0) << QTime(0,0,10,0) << 10000;
     QTest::newRow(  "data3" ) << QTime(0,0,0,0) << QTime(23,59,59,0) << 86399000;
+    QTest::newRow(  "data4" ) << QTime(-1, -1, -1, -1) << QTime(0, 0, 0, 0) << 0;
+    QTest::newRow(  "data5" ) << QTime(0, 0, 0, 0) << QTime(-1, -1, -1, -1) << 0;
+    QTest::newRow(  "data6" ) << QTime(-1, -1, -1, -1) << QTime(-1, -1, -1, -1) << 0;
 }
 
 void tst_QTime::msecsTo()

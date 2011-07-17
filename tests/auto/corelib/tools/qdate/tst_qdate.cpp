@@ -168,12 +168,24 @@ void tst_QDate::isValid()
     QFETCH(int, year);
     QFETCH(int, month);
     QFETCH(int, day);
+    QFETCH(uint, jd);
+    QFETCH(bool, valid);
 
-    QTEST(QDate::isValid(year, month, day), "valid");
+    QCOMPARE(QDate::isValid(year, month, day), valid);
 
     QDate d;
     d.setDate(year, month, day);
-    QTEST(d.isValid(), "valid");
+    QCOMPARE(d.isValid(), valid);
+
+    if (valid) {
+        QCOMPARE(d.year(), year);
+        QCOMPARE(d.month(), month);
+        QCOMPARE(d.day(), day);
+    } else {
+        QCOMPARE(d.year(), 0);
+        QCOMPARE(d.month(), 0);
+        QCOMPARE(d.day(), 0);
+    }
 }
 
 void tst_QDate::julianDay_data()
@@ -209,6 +221,7 @@ void tst_QDate::dayOfWeek_data()
     QTest::addColumn<int>("day");
     QTest::addColumn<int>("dayOfWeek");
 
+    QTest::newRow("data0")  <<     0 <<  0 <<  0 << 0;
     QTest::newRow("data1")  <<  2000 <<  1 <<  3 << 1;
     QTest::newRow("data2")  <<  2000 <<  1 <<  4 << 2;
     QTest::newRow("data3")  <<  2000 <<  1 <<  5 << 3;
@@ -241,6 +254,7 @@ void tst_QDate::dayOfYear_data()
     QTest::addColumn<int>("day");
     QTest::addColumn<int>("dayOfYear");
 
+    QTest::newRow("data0")  <<     0 <<  0 <<  0 <<   0;
     QTest::newRow("data1")  <<  2000 <<  1 <<  1 <<   1;
     QTest::newRow("data2")  <<  2000 <<  1 <<  2 <<   2;
     QTest::newRow("data3")  <<  2000 <<  1 <<  3 <<   3;
@@ -274,6 +288,7 @@ void tst_QDate::daysInMonth_data()
     QTest::addColumn<int>("day");
     QTest::addColumn<int>("daysInMonth");
 
+    QTest::newRow("data0")  <<     0 <<  0 <<  0 <<   0;
     QTest::newRow("data1")  <<  2000 <<  1 <<  1 <<  31;
     QTest::newRow("data2")  <<  2000 <<  2 <<  1 <<  29;
     QTest::newRow("data3")  <<  2000 <<  3 <<  1 <<  31;
@@ -320,6 +335,11 @@ void tst_QDate::getDate()
     QCOMPARE(y, 2000);
     QCOMPARE(m, 1);
     QCOMPARE(d, 1);
+    dt.setDate(0, 0, 0);
+    dt.getDate(&y, &m, &d);
+    QCOMPARE(y, 0);
+    QCOMPARE(m, 0);
+    QCOMPARE(d, 0);
 }
 
 void tst_QDate::weekNumber_data()
@@ -537,6 +557,11 @@ void tst_QDate::daysTo()
     QDate dt2(2000, 1, 5);
     QCOMPARE(dt1.daysTo(dt2),  4);
     QCOMPARE(dt2.daysTo(dt1), -4);
+    dt1.setDate(0, 0, 0);
+    QCOMPARE(dt1.daysTo(dt2),  0);
+    dt1.setDate(2000, 1, 1);
+    dt2.setDate(0, 0, 0);
+    QCOMPARE(dt1.daysTo(dt2),  0);
 }
 
 void tst_QDate::operator_eq_eq()
@@ -916,6 +941,8 @@ void tst_QDate::roundtripGermanLocale() const
 
 void tst_QDate::shortDayName() const
 {
+    QCOMPARE(QDate::shortDayName(0), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortDayName(1), QLatin1String("Mon"));
         QCOMPARE(QDate::shortDayName(7), QLatin1String("Sun"));
@@ -929,6 +956,8 @@ void tst_QDate::shortDayName() const
 
 void tst_QDate::standaloneShortDayName() const
 {
+    QCOMPARE(QDate::shortDayName(0, QDate::StandaloneFormat), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortDayName(1, QDate::StandaloneFormat), QLatin1String("Mon"));
         QCOMPARE(QDate::shortDayName(7, QDate::StandaloneFormat), QLatin1String("Sun"));
@@ -942,6 +971,8 @@ void tst_QDate::standaloneShortDayName() const
 
 void tst_QDate::longDayName() const
 {
+    QCOMPARE(QDate::longDayName(0), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longDayName(1), QLatin1String("Monday"));
         QCOMPARE(QDate::longDayName(7), QLatin1String("Sunday"));
@@ -955,6 +986,8 @@ void tst_QDate::longDayName() const
 
 void tst_QDate::standaloneLongDayName() const
 {
+    QCOMPARE(QDate::longDayName(0, QDate::StandaloneFormat), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longDayName(1, QDate::StandaloneFormat), QLatin1String("Monday"));
         QCOMPARE(QDate::longDayName(7, QDate::StandaloneFormat), QLatin1String("Sunday"));
@@ -968,6 +1001,8 @@ void tst_QDate::standaloneLongDayName() const
 
 void tst_QDate::shortMonthName() const
 {
+    QCOMPARE(QDate::shortMonthName(0), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortMonthName(1), QLatin1String("Jan"));
         QCOMPARE(QDate::shortMonthName(8), QLatin1String("Aug"));
@@ -981,6 +1016,8 @@ void tst_QDate::shortMonthName() const
 
 void tst_QDate::standaloneShortMonthName() const
 {
+    QCOMPARE(QDate::shortMonthName(0, QDate::StandaloneFormat), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortMonthName(1, QDate::StandaloneFormat), QLatin1String("Jan"));
         QCOMPARE(QDate::shortMonthName(8, QDate::StandaloneFormat), QLatin1String("Aug"));
@@ -994,6 +1031,8 @@ void tst_QDate::standaloneShortMonthName() const
 
 void tst_QDate::longMonthName() const
 {
+    QCOMPARE(QDate::longMonthName(0), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longMonthName(1), QLatin1String("January"));
         QCOMPARE(QDate::longMonthName(8), QLatin1String("August"));
@@ -1007,6 +1046,8 @@ void tst_QDate::longMonthName() const
 
 void tst_QDate::standaloneLongMonthName() const
 {
+    QCOMPARE(QDate::longMonthName(0, QDate::StandaloneFormat), QString());
+
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longMonthName(1, QDate::StandaloneFormat), QLatin1String("January"));
         QCOMPARE(QDate::longMonthName(8, QDate::StandaloneFormat), QLatin1String("August"));

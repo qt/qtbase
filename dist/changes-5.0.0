@@ -236,6 +236,11 @@ QtCore
 
 * QDate, QTime, and QDateTime have undergone important behavioural changes:
   * QDate::setYMD() is deprecated, use QDate::setDate() instead
+  * Most methods now apply strict validity checks and will return appropriate
+    and consistent values when invalid.  For example, QDate::year() will return
+    0 and QDate::shortMonthName() will return QString().
+  * Adding days to a null QDate or seconds to a null QTime will no longer return
+    a valid QDate/QTime.
 
 
 QtGui
