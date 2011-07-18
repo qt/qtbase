@@ -12,3 +12,4 @@ win32:!wince*: DEFINES += QT_NO_EGL
 SOURCES   += tst_qgl.cpp
 RESOURCES  = qgl.qrc
 
+CONFIG+=insignificant_test

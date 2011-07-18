@@ -10,3 +10,5 @@ contains(QT_CONFIG, opengl):QT += opengl
 mac {
     LIBS += -framework Security
 }
+
+CONFIG+=insignificant_test

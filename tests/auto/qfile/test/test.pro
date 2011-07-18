@@ -40,3 +40,5 @@ win32 {
 symbian {
     LIBS+=-lefsrv
 }
+
+CONFIG+=insignificant_test

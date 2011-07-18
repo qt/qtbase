@@ -15,3 +15,4 @@ wince*|symbian: {
    INSTALLS += test_data
 }
 
+CONFIG+=insignificant_test

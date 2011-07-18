@@ -31,4 +31,4 @@ win32 {
   }
 }
 
-
+mac*:CONFIG+=insignificant_test

@@ -9,4 +9,4 @@ SOURCES += tst_qtabwidget.cpp
 
 win32:!wince*:LIBS += -luser32
 
-
+CONFIG+=insignificant_test

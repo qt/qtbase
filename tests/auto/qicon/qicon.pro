@@ -28,3 +28,4 @@ wince* {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 
+CONFIG+=insignificant_test

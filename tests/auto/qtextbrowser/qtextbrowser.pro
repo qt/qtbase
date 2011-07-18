@@ -12,4 +12,4 @@ wince*|symbian: {
 }
 
 
-
+CONFIG+=insignificant_test

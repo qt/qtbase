@@ -4,3 +4,4 @@ QT = core
 
 
 CONFIG += parallel_test
+mac*:CONFIG+=insignificant_test

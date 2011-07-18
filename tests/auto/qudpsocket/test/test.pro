@@ -23,3 +23,6 @@ wince*|symbian: {
 TARGET = tst_qudpsocket
 
 symbian: TARGET.CAPABILITY += NetworkServices
+
+
+CONFIG+=insignificant_test

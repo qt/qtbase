@@ -29,3 +29,4 @@ symbian: {
 }
 
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
+mac*:CONFIG+=insignificant_test
