@@ -106,6 +106,19 @@
     folding rules in QUrl conform to \l{RFC 3491} (Nameprep: A Stringprep
     Profile for Internationalized Domain Names (IDN)).
 
+    \section2 Character Conversions
+
+    Follow these rules to avoid erroneous character conversion when
+    dealing with URLs and strings:
+
+    \list
+    \o When creating an QString to contain a URL from a QByteArray or a
+       char*, always use QString::fromUtf8().
+    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
+       QUrl(string) and QUrl::toString() when converting a QUrl to or from
+       a string.
+    \endlist
+
     \sa QUrlInfo
 */
 
@@ -6329,16 +6342,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \o ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
     \o hostname becomes http://hostname
     \o /home/user/test.html becomes file:///home/user/test.html
-    \endlist
-
-    \section2 Tips to avoid erroneous character conversion when dealing with
-    URLs and strings:
-
-    \list
-    \o When creating an URL QString from a QByteArray or a char*, always use
-       QString::fromUtf8().
-    \o Favor the use of QUrl::fromEncoded() and QUrl::toEncoded() instead of
-       QUrl(string) and QUrl::toString() when converting QUrl to/from string.
     \endlist
 */
 QUrl QUrl::fromUserInput(const QString &userInput)
