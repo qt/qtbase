@@ -185,7 +185,7 @@ public:
 
     int capacity() const;
     inline void reserve(int size);
-    inline void squeeze() { if (d->size < (int)d->alloc || d->ref != 1) realloc(); d->capacityReserved = false;}
+    inline void squeeze() { if (d->size < int(d->alloc) || d->ref != 1) realloc(); d->capacityReserved = false;}
 
     inline const QChar *unicode() const;
     inline QChar *data();
