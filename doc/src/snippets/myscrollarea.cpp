@@ -98,8 +98,8 @@ void MyScrollArea::updateArea()
     QSize areaSize = viewport()->size();
     QSize  widgetSize = widget->size();
 
-    verticalScrollBar()->setPageStep(widgetSize.height());
-    horizontalScrollBar()->setPageStep(widgetSize.width());
+    verticalScrollBar()->setPageStep(areaSize.height());
+    horizontalScrollBar()->setPageStep(areaSize.width());
     verticalScrollBar()->setRange(0, widgetSize.height() - areaSize.height());
     horizontalScrollBar()->setRange(0, widgetSize.width() - areaSize.width());
     updateWidgetPosition();
