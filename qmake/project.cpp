@@ -1385,8 +1385,7 @@ QMakeProject::read(uchar cmd)
 
         if(cmd & ReadFeatures) {
             debug_msg(1, "Processing default_pre: %s", vars["CONFIG"].join("::").toLatin1().constData());
-            if(doProjectInclude("default_pre", IncludeFlagFeature, base_vars) == IncludeNoExist)
-                doProjectInclude("default", IncludeFlagFeature, base_vars);
+            doProjectInclude("default_pre", IncludeFlagFeature, base_vars);
         }
     }
 
