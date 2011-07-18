@@ -870,6 +870,7 @@ foreach my $lib (@modules_to_sync) {
         my $modulepri = $modulepris{$lib};
         if (-e $modulepri) {
             my $modulepriname = basename($modulepri);
+            # FIXME: this creates a file in the source location for shadow-builds
             my $moduleversionheader = "$modules{$lib}/" . lc($lib) . "version.h";
             my $modulehexstring = sprintf("0x%02X%02X%02X", int($module_major_version), int($module_minor_version), int($module_patch_version));
             open MODULE_VERSION_HEADER_FILE, ">$moduleversionheader";
@@ -882,6 +883,8 @@ foreach my $lib (@modules_to_sync) {
             print MODULE_VERSION_HEADER_FILE "#define " .uc($lib) . "_VERSION $modulehexstring\n", ;
             print MODULE_VERSION_HEADER_FILE "\n";
             print MODULE_VERSION_HEADER_FILE "#endif // QT_". uc($lib) . "_VERSION_H\n";
+            close MODULE_VERSION_HEADER_FILE;
+            print "$moduleversionheader created for $lib\n" if(!$quiet);
         } elsif ($modulepri) {
             print "WARNING: Module $lib\'s pri file '$modulepri' not found.\nSkipped creating module version header for $lib.\n";
         }
