@@ -927,4 +927,15 @@ QUuid QUuid::createUuid()
     guid; otherwise returns false.
 */
 
+/**
+    Returns a hash of the QUuid
+ */
+uint qHash(const QUuid &uuid)
+{
+    return uuid.data1 ^ uuid.data2 ^ (uuid.data3 << 16)
+     ^ ((uuid.data4[0] << 24) | (uuid.data4[1] << 16) | (uuid.data4[2] << 8) | uuid.data4[3])
+     ^ ((uuid.data4[4] << 24) | (uuid.data4[5] << 16) | (uuid.data4[6] << 8) | uuid.data4[7]);
+}
+
+
 QT_END_NAMESPACE

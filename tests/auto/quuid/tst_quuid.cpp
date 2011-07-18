@@ -82,6 +82,8 @@ private slots:
     void threadUniqueness();
     void processUniqueness();
 
+    void hash();
+
 public:
     // Variables
     QUuid uuidA;
@@ -321,6 +323,15 @@ void tst_QUuid::processUniqueness()
     // They should be *different*!
     QVERIFY(processOneOutput != processTwoOutput);
 }
+
+void tst_QUuid::hash()
+{
+    uint h = qHash(uuidA);
+    QCOMPARE(qHash(uuidA), h);
+    QCOMPARE(qHash(QUuid(uuidA.toString())), h);
+}
+
+
 
 QTEST_MAIN(tst_QUuid)
 #include "tst_quuid.moc"
