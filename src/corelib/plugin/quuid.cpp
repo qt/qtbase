@@ -441,6 +441,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 #ifndef QT_NO_QUUID_STRING
 /*!
     \fn QUuid::operator QString() const
+    \obsolete
 
     Returns the string representation of the uuid.
 
