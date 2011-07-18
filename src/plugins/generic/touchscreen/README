@@ -14,9 +14,9 @@ LinuxTouchScreen:/dev/input/eventN to explicitly set the device file
 name.
 
 By default the surface of the touch device is mapped to the entire
-screen. If this is not desired, define FORCE_TO_ACTIVE_WINDOW in
-qtoucheventsenderqpa.cpp. This will map the touch surface to the
-active window instead.
+screen. If this is not desired, pass force_window in the plugin
+specification. This will cause mapping the touch surface to the active
+window instead.
 
 Only touch events are generated (via
 QWindowSystemInterface::handleTouchEvent), mouse events are not. This

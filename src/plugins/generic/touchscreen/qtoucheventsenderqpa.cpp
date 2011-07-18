@@ -47,7 +47,11 @@
 QT_BEGIN_NAMESPACE
 
 //#define POINT_DEBUG
-//#define FORCE_TO_ACTIVE_WINDOW
+
+QTouchEventSenderQPA::QTouchEventSenderQPA(const QString &spec)
+{
+    m_forceToActiveWindow = spec.split(QLatin1Char(':')).contains(QLatin1String("force_window"));
+}
 
 void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int y_max)
 {
@@ -60,21 +64,18 @@ void QTouchEventSenderQPA::touch_configure(int x_min, int x_max, int y_min, int 
 void QTouchEventSenderQPA::touch_point(QEvent::Type state,
                                        const QList<QWindowSystemInterface::TouchPoint> &points)
 {
-#ifdef FORCE_TO_ACTIVE_WINDOW
-    QWidget *win = QApplication::activeWindow(); // ### migrate to QWindow later on
-    if (!win) {
-#ifdef POINT_DEBUG
-        qDebug("sendTouchEvent: No active window");
-#endif
-        return;
+    QRect winRect;
+    if (m_forceToActiveWindow) {
+        QWidget *win = QApplication::activeWindow(); // ### migrate to QWindow later on
+        if (!win)
+            return;
+        winRect = win->geometry();
+    } else {
+        winRect = QApplication::desktop()->screenGeometry();
     }
-    const QRect winRect = win->geometry();
-#else
-    const QRect winRect = QApplication::desktop()->screenGeometry();
-#endif
 
 #ifdef POINT_DEBUG
-    qDebug() << points.size() << "points" << winRect << state;
+    qDebug() << "QPA: Mapping" << points.size() << "points to" << winRect << state;
 #endif
 
     QList<QWindowSystemInterface::TouchPoint> touchPoints = points;

@@ -75,6 +75,7 @@ public:
 
 private slots:
     void readData();
+    void onTimeout();
 
 private:
     void try_udev(QString *path);

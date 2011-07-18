@@ -51,10 +51,12 @@ QT_BEGIN_NAMESPACE
 class QTouchEventSenderQPA : public QTouchScreenObserver
 {
 public:
+    QTouchEventSenderQPA(const QString &spec = QString());
     void touch_configure(int x_min, int x_max, int y_min, int y_max);
     void touch_point(QEvent::Type state, const QList<QWindowSystemInterface::TouchPoint> &points);
 
 private:
+    bool m_forceToActiveWindow;
     int hw_range_x_min;
     int hw_range_x_max;
     int hw_range_y_min;
