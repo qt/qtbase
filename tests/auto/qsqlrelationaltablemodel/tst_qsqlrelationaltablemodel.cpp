@@ -118,6 +118,8 @@ void tst_QSqlRelationalTableModel::recreateTestTables(QSqlDatabase db)
     QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(2, 'trond', 2, 1)"));
     QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(3, 'vohi', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(4, 'boris', 2, 2)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(5, 'nat', NULL, NULL)"));
+    QVERIFY_SQL( q, exec("insert into " + reltest1 + " values(6, 'ale', NULL, 2)"));
 
     QVERIFY_SQL( q, exec("create table " + reltest2 + " (tid int not null primary key, title varchar(20))"));
     QVERIFY_SQL( q, exec("insert into " + reltest2 + " values(1, 'herr')"));
@@ -220,6 +222,16 @@ void tst_QSqlRelationalTableModel::data()
 
     //try a non-existent index
     QVERIFY2(model.data(model.index(0,4)).isValid() == false,"Invalid index returned valid QVariant");
+
+    // check row with null relation: they are reported only in LeftJoin mode
+    QCOMPARE(model.rowCount(), 4);
+
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(4, 0)).toInt(), 5);
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("nat"));
+    QVERIFY2(model.data(model.index(4, 2)).isValid() == true, "NULL relation reported with invalid QVariant");
 
     //check data retrieval when relational key is a non-integer type
     //in this case a string
@@ -379,6 +391,24 @@ void tst_QSqlRelationalTableModel::setData()
         QCOMPARE(model.data(model.index(0,1)).toString(), QString("Mr"));
     }
 
+    // Redo same tests, with a LeftJoin
+    {
+        QSqlRelationalTableModel model(0, db);
+
+        model.setTable(reltest2);
+        model.setRelation(1, QSqlRelation(reltest5, "title", "abbrev"));
+        model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+        model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+        QVERIFY_SQL(model, select());
+
+        QCOMPARE(model.data(model.index(0,1)).toString(), QString("Mr"));
+        QVERIFY(model.setData(model.index(0,1), QString("herr")));
+        QCOMPARE(model.data(model.index(0,1)).toString(), QString("Hr"));
+        QVERIFY_SQL(model, submitAll());
+
+        QCOMPARE(model.data(model.index(0,1)).toString(), QString("Hr"));
+    }
+
 }
 
 void tst_QSqlRelationalTableModel::multipleRelation()
@@ -394,6 +424,21 @@ void tst_QSqlRelationalTableModel::multipleRelation()
     model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
     model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
     model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
+
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+    QCOMPARE(model.data(model.index(0, 3)).toString(), QString("Trondheim"));
+
+    // Redo same test in the LeftJoin mode
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+    model.setRelation(3, QSqlRelation(reltest4, "id", "name"));
+    model.setSort(0, Qt::AscendingOrder);
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
@@ -423,7 +468,7 @@ void tst_QSqlRelationalTableModel::insertRecord()
     QSqlField f3("title_key", QVariant::Int);
     QSqlField f4("another_title_key", QVariant::Int);
 
-    f1.setValue(5);
+    f1.setValue(7);
     f2.setValue("test");
     f3.setValue(1);
     f4.setValue(2);
@@ -440,9 +485,17 @@ void tst_QSqlRelationalTableModel::insertRecord()
 
     QVERIFY_SQL(model, insertRecord(-1, rec));
 
-    QCOMPARE(model.data(model.index(4, 0)).toInt(), 5);
+    QCOMPARE(model.data(model.index(4, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(4, 1)).toString(), QString("test"));
     QCOMPARE(model.data(model.index(4, 2)).toString(), QString("herr"));
+
+    // In LeftJoin mode, two additional rows are fetched
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(6, 0)).toInt(), 7);
+    QCOMPARE(model.data(model.index(6, 1)).toString(), QString("test"));
+    QCOMPARE(model.data(model.index(6, 2)).toString(), QString("herr"));
 }
 
 void tst_QSqlRelationalTableModel::setRecord()
@@ -465,7 +518,7 @@ void tst_QSqlRelationalTableModel::setRecord()
     QSqlField f3("title_key", QVariant::Int);
     QSqlField f4("another_title_key", QVariant::Int);
 
-    f1.setValue(5);
+    f1.setValue(7);
     f2.setValue("tester");
     f3.setValue(1);
     f4.setValue(2);
@@ -486,14 +539,14 @@ void tst_QSqlRelationalTableModel::setRecord()
 
     QVERIFY_SQL(model, setRecord(1, rec));
 
-    QCOMPARE(model.data(model.index(1, 0)).toInt(), 5);
+    QCOMPARE(model.data(model.index(1, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("tester"));
     QCOMPARE(model.data(model.index(1, 2)).toString(), QString("herr"));
 
     model.setSort(0, Qt::AscendingOrder);
     QVERIFY_SQL(model, submit());
 
-    QCOMPARE(model.data(model.index(3, 0)).toInt(), 5);
+    QCOMPARE(model.data(model.index(3, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(3, 1)).toString(), QString("tester"));
     QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
 
@@ -633,6 +686,32 @@ void tst_QSqlRelationalTableModel::removeColumn()
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)), QVariant());
 
+    // try in LeftJoin mode the same tests
+    CHECK_DATABASE(db);
+    recreateTestTables(db);
+
+    QSqlRelationalTableModel lmodel(0, db);
+
+    lmodel.setTable(reltest1);
+    lmodel.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+    lmodel.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(lmodel, select());
+
+    QVERIFY_SQL(lmodel, removeColumn(3));
+    QVERIFY_SQL(lmodel, select());
+
+    QCOMPARE(lmodel.columnCount(), 3);
+
+    QCOMPARE(lmodel.data(lmodel.index(0, 0)).toInt(), 1);
+    QCOMPARE(lmodel.data(lmodel.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(lmodel.data(lmodel.index(0, 2)).toString(), QString("herr"));
+    QCOMPARE(lmodel.data(lmodel.index(0, 3)), QVariant());
+
+    // try removing more than one column
+    QVERIFY_SQL(lmodel, removeColumns(1, 2));
+    QCOMPARE(lmodel.columnCount(), 1);
+    QCOMPARE(lmodel.data(lmodel.index(0, 0)).toInt(), 1);
+    QCOMPARE(lmodel.data(lmodel.index(0, 1)), QVariant());
 }
 
 void tst_QSqlRelationalTableModel::filter()
@@ -649,6 +728,14 @@ void tst_QSqlRelationalTableModel::filter()
     model.setFilter("title = 'herr'");
 
     QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+    QCOMPARE(model.data(model.index(1, 2)).toString(), QString("herr"));
+
+    // Redo same filter test in LeftJoin mode
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model,select());
+
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
     QCOMPARE(model.data(model.index(1, 2)).toString(), QString("herr"));
@@ -693,6 +780,36 @@ void tst_QSqlRelationalTableModel::sort()
         QCOMPARE(model.data(model.index(3, 3)).toInt(), 2);
     }
 
+    // redo same test in LeftJoin mode
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    model.setSort(2, Qt::DescendingOrder);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.rowCount(), 6);
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
+    QCOMPARE(model.data(model.index(1, 2)).toString(), QString("mister"));
+    QCOMPARE(model.data(model.index(2, 2)).toString(), QString("herr"));
+    QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
+    QCOMPARE(model.data(model.index(4, 2)).toString(), QString(""));
+    QCOMPARE(model.data(model.index(5, 2)).toString(), QString(""));
+
+    model.setSort(3, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    if (!db.driverName().startsWith("QTDS")) {
+        QCOMPARE(model.rowCount(), 6);
+        QCOMPARE(model.data(model.index(0, 3)).toString(), QString(""));
+        QCOMPARE(model.data(model.index(1, 3)).toString(), QString("herr"));
+        QCOMPARE(model.data(model.index(2, 3)).toString(), QString("mister"));
+        QCOMPARE(model.data(model.index(3, 3)).toString(), QString("mister"));
+        QCOMPARE(model.data(model.index(4, 3)).toString(), QString("mister"));
+        QCOMPARE(model.data(model.index(5, 3)).toString(), QString("mister"));
+    } else {
+        QCOMPARE(model.data(model.index(0, 3)).toInt(), 1);
+        QCOMPARE(model.data(model.index(1, 3)).toInt(), 2);
+        QCOMPARE(model.data(model.index(2, 3)).toInt(), 2);
+        QCOMPARE(model.data(model.index(3, 3)).toInt(), 2);
+    }
 }
 
 static void testRevert(QSqlRelationalTableModel &model)
@@ -773,7 +890,18 @@ void tst_QSqlRelationalTableModel::revert()
     if (QTest::currentTestFailed())
         return;
 
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+    testRevert(model);
+
     /* and again with OnManualSubmit */
+    model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
+    QVERIFY_SQL(model, select());
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    testRevert(model);
+
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
     model.setEditStrategy(QSqlTableModel::OnManualSubmit);
     testRevert(model);
 }
@@ -805,13 +933,13 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
         QCOMPARE(model.data(model.index(3, 3)).toInt(), 2 );
 
     model.insertRow(model.rowCount());
-    QVERIFY(model.setData(model.index(4, 0), 5, Qt::EditRole));
+    QVERIFY(model.setData(model.index(4, 0), 7, Qt::EditRole));
     QVERIFY(model.setData(model.index(4, 1), "anders", Qt::EditRole));
     QVERIFY(model.setData(model.index(4, 2), 1, Qt::EditRole));
     QVERIFY(model.setData(model.index(4, 3), 1, Qt::EditRole));
     model.submitAll();
 
-    QCOMPARE(model.data(model.index(0, 0)).toInt(), 5);
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 7);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("anders"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
     if (!db.driverName().startsWith("QTDS"))
@@ -896,6 +1024,17 @@ void tst_QSqlRelationalTableModel::invalidData()
 
     //try to set data in non valid index
     QVERIFY(model.setData(model.index(0,10),5) == false);
+
+    //same test with LeftJoin mode
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    //try set a non-existent relational key
+    QVERIFY(model.setData(model.index(0, 2), 3) == false);
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+
+    //try to set data in non valid index
+    QVERIFY(model.setData(model.index(0,10),5) == false);
 }
 
 void tst_QSqlRelationalTableModel::relationModel()
@@ -926,6 +1065,19 @@ void tst_QSqlRelationalTableModel::relationModel()
 
     QSqlTableModel *rel_model = model.relationModel(2);
     QCOMPARE(rel_model->data(rel_model->index(0,1)).toString(), QString("herr"));
+
+    //same test in JoinMode
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    QVERIFY(model.relationModel(0) == NULL);
+    QVERIFY(model.relationModel(1) == NULL);
+    QVERIFY(model.relationModel(2) != NULL);
+    QVERIFY(model.relationModel(3) != NULL);
+    QVERIFY(model.relationModel(4) == NULL);
+
+    QSqlTableModel *rel_model2 = model.relationModel(2);
+    QCOMPARE(rel_model2->data(rel_model->index(0,1)).toString(), QString("herr"));
 }
 
 void tst_QSqlRelationalTableModel::casing()
@@ -1021,7 +1173,15 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+
     //try with index column quoted
+    model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
         model.setRelation(2, QSqlRelation(reltest2,
                             db.driver()->escapeIdentifier("tid", QSqlDriver::FieldName).toUpper(),
@@ -1037,8 +1197,15 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
-    //try with display column quoted
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
 
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+
+    //try with display column quoted
+    model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
 
         model.setRelation(2, QSqlRelation(reltest2,
@@ -1056,8 +1223,15 @@ void tst_QSqlRelationalTableModel::escapedRelations()
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
 
-    //try with tablename and index and display columns quoted in the relation
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
 
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+
+    //try with tablename and index and display columns quoted in the relation
+    model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
         model.setRelation(2, QSqlRelation(reltest2,
                             "tid",
@@ -1067,6 +1241,13 @@ void tst_QSqlRelationalTableModel::escapedRelations()
                             "tid",
                             db.driver()->escapeIdentifier("title", QSqlDriver::FieldName)));
     }
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(0, 2)).toString(), QString("herr"));
+
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
     QVERIFY_SQL(model, select());
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
@@ -1126,6 +1307,55 @@ void tst_QSqlRelationalTableModel::escapedTableName()
         QCOMPARE(model.data(model.index(3,2)).toString(), QString("herr"));
 
     }
+
+    //ok, now do same test with LeftJoin
+    {
+        QSqlRelationalTableModel model(0, db);
+
+        if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
+            model.setTable(db.driver()->escapeIdentifier(reltest1.toUpper(), QSqlDriver::TableName));
+        } else {
+            model.setTable(db.driver()->escapeIdentifier(reltest1, QSqlDriver::TableName));
+        }
+        model.setSort(0, Qt::AscendingOrder);
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+        model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+        QVERIFY_SQL(model, select());
+
+        QVERIFY(model.setData(model.index(0, 1), QString("harry2")));
+        QVERIFY(model.setData(model.index(0, 2), 2));
+
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry2"));
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
+
+        model.submit();
+
+        QVERIFY(model.setData(model.index(3,1), QString("boris2")));
+        QVERIFY(model.setData(model.index(3, 2), 1));
+
+        QCOMPARE(model.data(model.index(3,1)).toString(), QString("boris2"));
+        QCOMPARE(model.data(model.index(3, 2)).toString(), QString("herr"));
+
+        model.submit();
+    }
+    { //verify values
+        QSqlRelationalTableModel model(0, db);
+        model.setTable(reltest1);
+        model.setSort(0, Qt::AscendingOrder);
+        model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+        QVERIFY_SQL(model, select());
+
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry2"));
+        QCOMPARE(model.data(model.index(0, 2)).toInt(), 2);
+        QCOMPARE(model.data(model.index(3, 1)).toString(), QString("boris2"));
+        QCOMPARE(model.data(model.index(3, 2)).toInt(), 1);
+
+        model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+        QVERIFY_SQL(model, select());
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("mister"));
+        QCOMPARE(model.data(model.index(3,2)).toString(), QString("herr"));
+
+    }
 }
 
 void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
@@ -1146,6 +1376,15 @@ void tst_QSqlRelationalTableModel::whiteSpaceInIdentifiers()
 
     QCOMPARE(model.data(model.index(0,1)).toString(), QString("Washington"));
     QCOMPARE(model.data(model.index(1,1)).toString(), QString("New York"));
+
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.data(model.index(0,1)).toString(), QString("Washington"));
+    QCOMPARE(model.data(model.index(1,1)).toString(), QString("New York"));
+
+    model.setJoinMode(QSqlRelationalTableModel::InnerJoin);
+    QVERIFY_SQL(model, select());
 
     QSqlRecord rec;
     QSqlField f1("id", QVariant::Int);
@@ -1222,6 +1461,9 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     model.setTable(qTableName("QTBUG_5373", __FILE__)+"."+qTableName("document", __FILE__));
     model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__)+"."+qTableName("user", __FILE__), "userid", "username"));
     model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2", __FILE__)+"."+qTableName("user", __FILE__), "userid", "username"));
+    QVERIFY_SQL(model, select());
+
+    model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
     QVERIFY_SQL(model, select());
 }
 

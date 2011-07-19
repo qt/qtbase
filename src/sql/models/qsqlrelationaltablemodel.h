@@ -76,6 +76,11 @@ class Q_SQL_EXPORT QSqlRelationalTableModel: public QSqlTableModel
     Q_OBJECT
 
 public:
+    enum JoinMode {
+        InnerJoin,
+        LeftJoin
+    };
+
     explicit QSqlRelationalTableModel(QObject *parent = 0,
                                       QSqlDatabase db = QSqlDatabase());
     virtual ~QSqlRelationalTableModel();
@@ -91,6 +96,7 @@ public:
     virtual void setRelation(int column, const QSqlRelation &relation);
     QSqlRelation relation(int column) const;
     virtual QSqlTableModel *relationModel(int column) const;
+    void setJoinMode( QSqlRelationalTableModel::JoinMode joinMode );
 
 public Q_SLOTS:
     void revertRow(int row);
