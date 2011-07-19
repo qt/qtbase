@@ -67,7 +67,7 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
     QUrl url = request.url();
     if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0 || url.isLocalFile()) {
         return new QNetworkAccessFileBackend;
-    } else if (!url.scheme().isEmpty() && url.authority().isEmpty()) {
+    } else if (!url.scheme().isEmpty() && url.authority().isEmpty() && (url.scheme().length() > 1)) {
         // check if QFile could, in theory, open this URL via the file engines
         // it has to be in the format:
         //    prefix:path/to/file
@@ -75,8 +75,6 @@ QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
         //
         // this construct here must match the one below in open()
         QFileInfo fi(url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery));
-        if ((url.scheme().length()==1) && fi.exists())
-            qWarning("QNetworkAccessFileBackendFactory: URL has no schema set, use file:// for files");
         if (fi.exists() || (op == QNetworkAccessManager::PutOperation && fi.dir().exists()))
             return new QNetworkAccessFileBackend;
     }
