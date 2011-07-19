@@ -437,54 +437,6 @@ QString QtPrivate::QStringList_join(const QStringList *that, const QString &sep)
 */
 #endif // QT_NO_DATASTREAM
 
-/*!
-    \fn QStringList QStringList::grep(const QString &str, bool cs = true) const
-
-    Use filter() instead.
-*/
-
-/*!
-    \fn QStringList QStringList::grep(const QRegExp &rx) const
-
-    Use filter() instead.
-*/
-
-/*!
-    \fn QStringList &QStringList::gres(const QString &before, const QString &after, bool cs = true)
-
-    Use replaceInStrings() instead.
-*/
-
-/*!
-    \fn QStringList &QStringList::gres(const QRegExp &rx, const QString &after)
-
-    Use replaceInStrings() instead.
-*/
-
-/*!
-    \fn Iterator QStringList::fromLast()
-
-    Use end() instead.
-
-    \oldcode
-    QStringList::Iterator i = list.fromLast();
-    \newcode
-    QStringList::Iterator i = list.isEmpty() ? list.end() : --list.end();
-    \endcode
-*/
-
-/*!
-    \fn ConstIterator QStringList::fromLast() const
-
-    Use end() instead.
-
-    \oldcode
-    QStringList::ConstIterator i = list.fromLast();
-    \newcode
-    QStringList::ConstIterator i = list.isEmpty() ? list.end() : --list.end();
-    \endcode
-*/
-
 
 #ifndef QT_NO_REGEXP
 static int indexOfMutating(const QStringList *that, QRegExp &rx, int from)

@@ -3774,67 +3774,6 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 #endif
 
 /*!
-  \fn void QObject::insertChild(QObject *object)
-
-  Use setParent() instead, i.e., call object->setParent(this).
-*/
-
-/*!
-  \fn void QObject::removeChild(QObject *object)
-
-  Use setParent() instead, i.e., call object->setParent(0).
-*/
-
-/*!
-  \fn bool QObject::isA(const char *className) const
-
-  Compare \a className with the object's metaObject()->className() instead.
-*/
-
-/*!
-  \fn const char *QObject::className() const
-
-  Use metaObject()->className() instead.
-*/
-
-/*!
-  \fn const char *QObject::name() const
-
-  Use objectName() instead.
-*/
-
-/*!
-  \fn const char *QObject::name(const char *defaultName) const
-
-  Use objectName() instead.
-*/
-
-/*!
-  \fn void QObject::setName(const char *name)
-
-  Use setObjectName() instead.
-*/
-
-/*!
-  \fn bool QObject::checkConnectArgs(const char *signal, const
-  QObject *object, const char *method)
-
-  Use QMetaObject::checkConnectArgs() instead.
-*/
-
-/*!
-  \fn QByteArray QObject::normalizeSignalSlot(const char *signalSlot)
-
-  Use QMetaObject::normalizedSignature() instead.
-*/
-
-/*!
-  \fn const char *QMetaObject::superClassName() const
-
-  \internal
-*/
-
-/*!
     \macro Q_CLASSINFO(Name, Value)
     \relates QObject
 

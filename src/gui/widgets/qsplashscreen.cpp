@@ -297,21 +297,6 @@ void QSplashScreen::drawContents(QPainter *painter)
     }
 }
 
-/*!
-    \fn void QSplashScreen::message(const QString &message, int alignment,
-                                    const QColor &color)
-    \compat
-
-    Use showMessage() instead.
-*/
-
-/*!
-    \fn void QSplashScreen::clear()
-    \compat
-
-    Use clearMessage() instead.
-*/
-
 /*! \reimp */
 bool QSplashScreen::event(QEvent *e)
 {

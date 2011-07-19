@@ -11541,18 +11541,6 @@ void QWidget::languageChange() { }  // compat
 
 
 /*!
-    \enum QWidget::BackgroundOrigin
-
-    \compat
-
-    \value WidgetOrigin
-    \value ParentOrigin
-    \value WindowOrigin
-    \value AncestorOrigin
-
-*/
-
-/*!
     \fn bool QWidget::isVisibleToTLW() const
 
     Use isVisible() instead.
@@ -11956,20 +11944,6 @@ void QWidget::languageChange() { }  // compat
         if (widget->rect().contains(x, y))
             return widget;
     \endcode
-*/
-
-/*!
-    \fn void QWidget::setSizePolicy(QSizePolicy::Policy hor, QSizePolicy::Policy ver, bool hfw)
-    \compat
-
-    Use the \l sizePolicy property and heightForWidth() function instead.
-*/
-
-/*!
-    \fn bool QWidget::isUpdatesEnabled() const
-    \compat
-
-    Use the \l updatesEnabled property instead.
 */
 
 /*!

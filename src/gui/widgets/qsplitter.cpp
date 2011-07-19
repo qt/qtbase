@@ -1532,21 +1532,6 @@ void QSplitter::setOpaqueResize(bool on)
 */
 
 /*!
-    \enum QSplitter::ResizeMode
-    \compat
-
-    This enum describes the different resizing behaviors child
-    widgets can have:
-
-    \value Auto   The widget will be resized according to the stretch factors set in its sizePolicy().
-    \value Stretch  The widget will be resized when the splitter itself is resized.
-    \value KeepSize  QSplitter will try to keep the widget's size unchanged.
-    \value FollowSizeHint  QSplitter will resize the widget when the widget's size hint changes.
-
-    Use setStretchFactor() instead.
-*/
-
-/*!
     \fn void QSplitter::setCollapsible(QWidget *widget, bool collapsible)
 
     Use setCollapsible(indexOf(\a widget, \a collapsible)) instead.

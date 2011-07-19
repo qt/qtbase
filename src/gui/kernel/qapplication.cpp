@@ -4954,13 +4954,6 @@ void QSessionManager::requestPhase2()
 #endif // QT_NO_SESSIONMANAGER
 
 /*!
-    \typedef QApplication::ColorMode
-    \compat
-
-    Use ColorSpec instead.
-*/
-
-/*!
     \fn Qt::MacintoshVersion QApplication::macVersion()
 
     Use QSysInfo::MacintoshVersion instead.
@@ -5096,18 +5089,6 @@ void QApplicationPrivate::emitLastWindowClosed()
         emit qApp->lastWindowClosed();
     }
 }
-
-/*! \variable QApplication::NormalColors
-    \compat
-
-    Use \l NormalColor instead.
-*/
-
-/*! \variable QApplication::CustomColors
-    \compat
-
-    Use \l CustomColor instead.
-*/
 
 #ifdef QT_KEYPAD_NAVIGATION
 /*!

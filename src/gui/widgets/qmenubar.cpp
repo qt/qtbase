@@ -2132,16 +2132,6 @@ int QMenuBar::findIdForAction(QAction *act) const
 #endif
 
 /*!
-    \enum QMenuBar::Separator
-
-    \compat
-
-    \value Never
-    \value InWindowsStyle
-
-*/
-
-/*!
     \fn void QMenuBar::addAction(QAction *action)
     \overload
 

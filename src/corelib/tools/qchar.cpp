@@ -1257,18 +1257,6 @@ ushort QChar::toCaseFolded(ushort ucs2)
 
 
 /*!
-    \fn char QChar::latin1() const
-
-    Use toLatin1() instead.
-*/
-
-/*!
-    \fn char QChar::ascii() const
-
-    Use toAscii() instead.
-*/
-
-/*!
     \fn char QChar::toLatin1() const
 
     Returns the Latin-1 character equivalent to the QChar, or 0. This
@@ -1426,30 +1414,6 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     Returns true if the numeric Unicode value of \a c1 is greater than
     that of \a c2; otherwise returns false.
-*/
-
-/*!
-    \fn bool QChar::mirrored() const
-
-    Use hasMirrored() instead.
-*/
-
-/*!
-    \fn QChar QChar::lower() const
-
-    Use toLower() instead.
-*/
-
-/*!
-    \fn QChar QChar::upper() const
-
-    Use toUpper() instead.
-*/
-
-/*!
-    \fn bool QChar::networkOrdered()
-
-    See if QSysInfo::ByteOrder == QSysInfo::BigEndian instead.
 */
 
 

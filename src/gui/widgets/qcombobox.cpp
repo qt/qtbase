@@ -3217,63 +3217,6 @@ QVariant QComboBox::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 
 /*!
-    \fn QComboBox::InsertPolicy QComboBox::insertionPolicy() const
-    \compat
-
-    Use QComboBox::insertPolicy instead.
-*/
-
-/*!
-    \fn void QComboBox::setInsertionPolicy(InsertPolicy policy)
-    \compat
-
-    Use QComboBox::insertPolicy instead.
-*/
-
-/*!
-    \fn void QComboBox::setCurrentText(const QString &text)
-    \compat
-
-    Use setItemText() instead.
-
-    \sa currentIndex()
-*/
-
-/*!
-    \fn QString QComboBox::text(int index) const
-    \compat
-
-    Use itemText() instead.
-*/
-
-/*!
-    \fn QPixmap QComboBox::pixmap(int index) const
-    \compat
-
-    Use itemIcon() instead.
-*/
-
-/*!
-    \fn void QComboBox::insertStringList(const QStringList &list, int index)
-    \compat
-
-    Use insertItems() instead.
-*/
-
-/*!
-    \fn void QComboBox::insertItem(const QString &text, int index)
-    \compat
-*/
-
-/*!
-    \fn void QComboBox::clearEdit()
-    \compat
-
-    Use clearEditText() instead.
-*/
-
-
-/*!
     \property QComboBox::frame
     \brief whether the combo box draws itself with a frame
 
@@ -3349,13 +3292,6 @@ void QComboBox::setModelColumn(int visibleColumn)
     \fn void QComboBox::textChanged(const QString &text)
 
     Use the editTextChanged(const QString &text) signal instead.
-*/
-
-/*!
-    \typedef QComboBox::Policy
-    \compat
-
-    Use QComboBox::InsertPolicy instead.
 */
 
 QT_END_NAMESPACE

@@ -612,33 +612,6 @@
 */
 
 /*!
-    \enum Qt::BackgroundMode
-
-    \compat
-
-    \value FixedColor
-    \value FixedPixmap
-    \value NoBackground
-    \value PaletteForeground
-    \value PaletteButton
-    \value PaletteLight
-    \value PaletteMidlight
-    \value PaletteDark
-    \value PaletteMid
-    \value PaletteText
-    \value PaletteBrightText
-    \value PaletteBase
-    \value PaletteBackground
-    \value PaletteShadow
-    \value PaletteHighlight
-    \value PaletteHighlightedText
-    \value PaletteButtonText
-    \value PaletteLink
-    \value PaletteLinkVisited
-    \value X11ParentRelative
-*/
-
-/*!
     \enum Qt::ImageConversionFlag
 
     The options marked "(default)" are set if no other values from
@@ -693,17 +666,6 @@
            rendering operation for example.
 */
 
-/*! \enum Qt::GUIStyle
-
-    \compat
-
-    \value WindowsStyle
-    \value MotifStyle
-    \value MacStyle
-    \value Win3Style
-    \value PMStyle
-*/
-
 /*!
     \enum Qt::UIEffect
 
@@ -753,21 +715,6 @@
     \omitvalue ScaleMax
 
     \sa QSize::scale(), QImage::scaled()
-*/
-
-/*! \typedef Qt::ScaleMode
-    \compat
-
-    Use Qt::AspectRatioMode instead.
-
-    The enum values have been renamed as follows:
-
-    \table
-    \row \i Old enum value \i New enum value
-    \row \i Qt::ScaleFree  \i Qt::IgnoreAspectRatio
-    \row \i Qt::ScaleMin   \i Qt::KeepAspectRatio
-    \row \i Qt::ScaleMax   \i Qt::KeepAspectRatioByExpanding
-    \endtable
 */
 
 /*! \enum Qt::TransformationMode
@@ -1764,26 +1711,6 @@
 */
 
 /*!
-    \enum Qt::ButtonState_enum
-    \compat
-    \value ShiftButton
-    \value ControlButton
-    \value AltButton
-    \value MetaButton
-    \value Keypad
-    \value KeyButtonMask
-
-    Use Qt::KeyboardModifier instead.
-*/
-
-/*!
-    \typedef Qt::ButtonState
-    \compat
-
-    Use Qt::KeyboardModifier instead.
-*/
-
-/*!
     \enum Qt::CheckState
 
     This enum describes the state of checkable items, controls, and widgets.
@@ -2201,44 +2128,6 @@
                             TargetMoveAction is not used on the Mac.
 */
 
-/*! \typedef Qt::ToolBarDock
-    \compat
-
-    Use Qt::Dock instead.
-*/
-
-/*!
-    \enum Qt::Dock
-    \compat
-
-    Each dock window can be in one of the following positions:
-
-    \value DockUnmanaged not managed by a Q3MainWindow.
-
-    \value DockTornOff the dock window floats as its own top level
-    window which always stays on top of the main window.
-
-    \value DockTop  above the central widget, below the menu bar.
-
-    \value DockBottom  below the central widget, above the status bar.
-
-    \value DockRight to the right of the central widget.
-
-    \value DockLeft  to the left of the central widget.
-
-    \value DockMinimized the dock window is not shown (this is
-    effectively a 'hidden' dock area); the handles of all minimized
-    dock windows are drawn in one row below the menu bar.
-
-    \omitvalue Bottom
-    \omitvalue Left
-    \omitvalue Minimized
-    \omitvalue Right
-    \omitvalue Top
-    \omitvalue TornOff
-    \omitvalue Unmanaged
-*/
-
 /*!
   \enum Qt::AnchorAttribute
 
@@ -2336,19 +2225,6 @@
     direction of each intersection. If the number is non zero, the point
     is inside the shape. This fill mode can also in most cases be considered
     as the intersection of closed shapes.
-*/
-
-/*!
-    \enum Qt::PaintUnit
-
-    \compat
-
-    \value PixelUnit
-    \value LoMetricUnit Obsolete
-    \value HiMetricUnit Obsolete
-    \value LoEnglishUnit Obsolete
-    \value HiEnglishUnit Obsolete
-    \value TwipsUnit Obsolete
 */
 
 /*!
@@ -2476,13 +2352,6 @@
     \omitvalue pointingHandCursor
     \omitvalue forbiddenCursor
     \omitvalue whatsThisCursor
-*/
-
-/*!
-    \typedef Qt::TextFlags
-    \compat
-
-    Use Qt::TextFlag instead.
 */
 
 /*!

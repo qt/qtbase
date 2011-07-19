@@ -506,14 +506,6 @@ QChildEvent::~QChildEvent()
 
 
 /*!
-    \fn bool QChildEvent::inserted() const
-
-    \compat
-
-    A child has been inserted if the event's type() is ChildInserted.
-*/
-
-/*!
     \class QDynamicPropertyChangeEvent
     \since 4.2
     \brief The QDynamicPropertyChangeEvent class contains event parameters for dynamic

@@ -135,15 +135,6 @@ public:
 */
 
 /*!
-    \enum QCheckBox::ToggleState
-    \compat
-
-    \value Off  Use Qt::Unchecked instead.
-    \value NoChange  Use Qt::PartiallyChecked instead.
-    \value On  Use Qt::Checked instead.
-*/
-
-/*!
     \fn void QCheckBox::stateChanged(int state)
 
     This signal is emitted whenever the check box's state changes, i.e.
@@ -422,26 +413,5 @@ QCheckBox::QCheckBox(const QString &text, QWidget *parent, const char* name)
 
 #endif
 
-
-/*!
-    \fn void QCheckBox::setNoChange()
-    \compat
-
-    Use setCheckState() instead.
-*/
-
-/*!
-    \fn void QCheckBox::setState(ToggleState state)
-    \compat
-
-    Use setCheckState() instead.
-*/
-
-/*!
-    \fn QCheckBox::ToggleState QCheckBox::state() const
-    \compat
-
-    Use checkState() instead.
-*/
 
 QT_END_NAMESPACE

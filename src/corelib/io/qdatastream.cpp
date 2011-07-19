@@ -487,11 +487,6 @@ void QDataStream::setStatus(Status status)
         q_status = status;
 }
 
-/*!\fn bool QDataStream::eof() const
-
-    Use atEnd() instead.
-*/
-
 /*!
     \fn int QDataStream::byteOrder() const
 
@@ -522,24 +517,6 @@ void QDataStream::setByteOrder(ByteOrder bo)
         noswap = (byteorder == LittleEndian);
 }
 
-
-/*!
-    \fn bool QDataStream::isPrintableData() const
-
-    In Qt 4, this function always returns false.
-
-    \sa setPrintableData()
-*/
-
-/*!
-    \fn void QDataStream::setPrintableData(bool enable)
-
-    In Qt 3, this function enabled output in a human-readable
-    format if \a enable was false.
-
-    In Qt 4, QDataStream no longer provides a human-readable output.
-    This function does nothing.
-*/
 
 /*!
     \enum QDataStream::Version
