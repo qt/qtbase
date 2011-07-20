@@ -107,8 +107,18 @@ QT_BEGIN_NAMESPACE
 static QBasicAtomicInt serialNumCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
 
 static void qt_cleanup_icon_cache();
-typedef QCache<QString, QIcon> IconCache;
-Q_GLOBAL_STATIC_WITH_INITIALIZER(IconCache, qtIconCache, qAddPostRoutine(qt_cleanup_icon_cache))
+namespace {
+    class IconCache: public QCache<QString, QIcon>
+    {
+    public:
+        IconCache()
+        {
+            // ### FIXME: needs to be re-added if qApp is re-created
+            qAddPostRoutine(qt_cleanup_icon_cache);
+        }
+    };
+}
+Q_GLOBAL_STATIC(IconCache, qtIconCache)
 
 static void qt_cleanup_icon_cache()
 {

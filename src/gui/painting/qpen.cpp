@@ -244,30 +244,25 @@ inline QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle
 static const Qt::PenCapStyle qpen_default_cap = Qt::SquareCap;
 static const Qt::PenJoinStyle qpen_default_join = Qt::BevelJoin;
 
-#ifndef QT_NO_THREAD
-// Special deleter that only deletes if the ref-count goes to zero
-template <>
-class QGlobalStaticDeleter<QPenPrivate>
+class QPenDataHolder
 {
 public:
-    QGlobalStatic<QPenPrivate> &globalStatic;
-    QGlobalStaticDeleter(QGlobalStatic<QPenPrivate> &_globalStatic)
-        : globalStatic(_globalStatic)
+    QPenData *pen;
+    QPenDataHolder(const QBrush &brush, qreal width, Qt::PenStyle penStyle,
+                   Qt::PenCapStyle penCapStyle, Qt::PenJoinStyle _joinStyle)
+        : pen(new QPenData(brush, width, penStyle, penCapStyle, _joinStyle))
     { }
-
-    inline ~QGlobalStaticDeleter()
+    ~QPenDataHolder()
     {
-        if (!globalStatic.pointer->ref.deref())
-            delete globalStatic.pointer;
-        globalStatic.pointer = 0;
-        globalStatic.destroyed = true;
+        if (!pen->ref.deref())
+            delete pen;
+        pen = 0;
     }
 };
-#endif
 
-Q_GLOBAL_STATIC_WITH_ARGS(QPenData, defaultPenInstance,
+Q_GLOBAL_STATIC_WITH_ARGS(QPenDataHolder, defaultPenInstance,
                           (Qt::black, 0, Qt::SolidLine, qpen_default_cap, qpen_default_join))
-Q_GLOBAL_STATIC_WITH_ARGS(QPenData, nullPenInstance,
+Q_GLOBAL_STATIC_WITH_ARGS(QPenDataHolder, nullPenInstance,
                           (Qt::black, 0, Qt::NoPen, qpen_default_cap, qpen_default_join))
 
 /*!
@@ -276,7 +271,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QPenData, nullPenInstance,
 
 QPen::QPen()
 {
-    d = defaultPenInstance();
+    d = defaultPenInstance()->pen;
     d->ref.ref();
 }
 
@@ -289,7 +284,7 @@ QPen::QPen()
 QPen::QPen(Qt::PenStyle style)
 {
     if (style == Qt::NoPen) {
-        d = nullPenInstance();
+        d = nullPenInstance()->pen;
         d->ref.ref();
     } else {
         d = new QPenData(Qt::black, 0, style, qpen_default_cap, qpen_default_join);

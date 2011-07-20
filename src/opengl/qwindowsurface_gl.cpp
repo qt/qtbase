@@ -178,6 +178,8 @@ QGLGraphicsSystem::QGLGraphicsSystem(bool useX11GL)
 #endif
 }
 
+static void qt_cleanup_gl_share_widget();
+
 //
 // QGLWindowSurface
 //
@@ -185,6 +187,8 @@ class QGLGlobalShareWidget
 {
 public:
     QGLGlobalShareWidget() : firstPixmap(0), widgetRefCount(0), widget(0), initializing(false) {
+        // ### FIXME - readd the post routine if the qApp is recreated
+        qAddPostRoutine(qt_cleanup_gl_share_widget);
         created = true;
     }
 
@@ -238,11 +242,7 @@ private:
 bool QGLGlobalShareWidget::cleanedUp = false;
 bool QGLGlobalShareWidget::created = false;
 
-static void qt_cleanup_gl_share_widget();
-Q_GLOBAL_STATIC_WITH_INITIALIZER(QGLGlobalShareWidget, _qt_gl_share_widget,
-                                 {
-                                     qAddPostRoutine(qt_cleanup_gl_share_widget);
-                                 })
+Q_GLOBAL_STATIC(QGLGlobalShareWidget, _qt_gl_share_widget)
 
 static void qt_cleanup_gl_share_widget()
 {
