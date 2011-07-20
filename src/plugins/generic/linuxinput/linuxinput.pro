@@ -9,6 +9,8 @@ DEFINES += QT_QWS_KBD_LINUXINPUT
 
 HEADERS	= qlinuxinput.h
 
+QT += core-private
+
 SOURCES	= main.cpp \
 	qlinuxinput.cpp
 
