@@ -832,7 +832,7 @@ foreach my $lib (@modules_to_sync) {
         my @subdirs = ("$out_basedir/include/$lib");
         foreach my $subdir (@subdirs) {
             if (opendir DIR, $subdir) {
-                while(my $t = readdir(DIR)) {
+                foreach my $t (sort readdir(DIR)) {
                     my $file = "$subdir/$t";
                     if(-d $file) {
                         push @subdirs, $file unless($t eq "." || $t eq "..");
@@ -895,7 +895,7 @@ foreach my $lib (@modules_to_sync) {
         my @subdirs = ($headers_dir);
         foreach my $subdir (@subdirs) {
             opendir DIR, $subdir or next;
-            while(my $t = readdir(DIR)) {
+            foreach my $t (sort readdir(DIR)) {
                 push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                !($t eq "..") && !($t eq ".obj") &&
                                                !($t eq ".moc") && !($t eq ".rcc") &&
@@ -1145,7 +1145,7 @@ if($check_includes) {
             my @subdirs = ($modules{$lib});
             foreach my $subdir (@subdirs) {
                 opendir DIR, $subdir or die "Huh, directory ".$subdir." cannot be opened.";
-                while(my $t = readdir(DIR)) {
+                foreach my $t (sort readdir(DIR)) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                    !($t eq "..") && !($t eq ".obj") &&
                                                    !($t eq ".moc") && !($t eq ".rcc") &&
