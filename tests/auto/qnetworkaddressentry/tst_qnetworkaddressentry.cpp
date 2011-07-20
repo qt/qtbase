@@ -97,7 +97,7 @@ void tst_QNetworkAddressEntry::prefixAndNetmask_data()
 
     // IPv4 set:
     QHostAddress ipv4(QHostAddress::LocalHost);
-    QTest::newRow("v4/0") << ipv4 << QHostAddress(QHostAddress::Any) << 0;
+    QTest::newRow("v4/0") << ipv4 << QHostAddress(QHostAddress::AnyIPv4) << 0;
     QTest::newRow("v4/32") << ipv4 << QHostAddress("255.255.255.255") << 32;
     QTest::newRow("v4/24") << ipv4 << QHostAddress("255.255.255.0") << 24;
     QTest::newRow("v4/23") << ipv4 << QHostAddress("255.255.254.0") << 23;
