@@ -2438,7 +2438,7 @@ void tst_QFile::rename_data()
     QTest::newRow("a -> b") << QString("a") << QString("b") << false;
     QTest::newRow("a -> .") << QString("a") << QString(".") << false;
     QTest::newRow("renamefile -> renamefile") << QString("renamefile") << QString("renamefile") << false;
-    QTest::newRow("renamefile -> Makefile") << QString("renamefile") << QString("Makefile") << false;
+    QTest::newRow("renamefile -> noreadfile") << QString("renamefile") << QString("noreadfile") << false;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("renamefile -> /etc/renamefile") << QString("renamefile") << QString("/etc/renamefile") << false;
 #endif
