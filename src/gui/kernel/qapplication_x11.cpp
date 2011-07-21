@@ -467,8 +467,8 @@ extern bool qt_is_gui_used;
     \c XFIXES_MAJOR - it is a part of soname and may differ from the Xfixes
     version.
 */
-static void* qt_load_library_runtime(const char *library, int vernum,
-                                     int highestVernum, const char *symbol)
+static QFunctionPointer qt_load_library_runtime(const char *library, int vernum,
+                                                int highestVernum, const char *symbol)
 {
     QList<int> versions;
     // we try to load in the following order:
@@ -483,7 +483,7 @@ static void* qt_load_library_runtime(const char *library, int vernum,
     Q_FOREACH(int version, versions) {
         QLatin1String libName(library);
         QLibrary xfixesLib(libName, version);
-        void *ptr = xfixesLib.resolve(symbol);
+        QFunctionPointer ptr = xfixesLib.resolve(symbol);
         if (ptr)
             return ptr;
     }

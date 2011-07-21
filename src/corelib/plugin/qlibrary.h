@@ -79,10 +79,10 @@ public:
     explicit QLibrary(const QString& fileName, const QString &version, QObject *parent = 0);
     ~QLibrary();
 
-    void *resolve(const char *symbol);
-    static void *resolve(const QString &fileName, const char *symbol);
-    static void *resolve(const QString &fileName, int verNum, const char *symbol);
-    static void *resolve(const QString &fileName, const QString &version, const char *symbol);
+    QFunctionPointer resolve(const char *symbol);
+    static QFunctionPointer resolve(const QString &fileName, const char *symbol);
+    static QFunctionPointer resolve(const QString &fileName, int verNum, const char *symbol);
+    static QFunctionPointer resolve(const QString &fileName, const QString &version, const char *symbol);
 
     bool load();
     bool unload();

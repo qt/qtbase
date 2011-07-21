@@ -1807,6 +1807,8 @@ Q_CORE_EXPORT void qt_message_output(QtMsgType, const char *buf);
 typedef void (*QtMsgHandler)(QtMsgType, const char *);
 Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
+typedef void (*QFunctionPointer)();
+
 #if !defined(Q_UNIMPLEMENTED)
 #  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
 #endif

@@ -529,7 +529,8 @@ void QRawFontPrivate::platformCleanUp()
 {
     if (fontHandle != NULL) {
         if (ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
+            QFunctionPointer func =
+                    QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
             ptrRemoveFontMemResourceEx =
                     reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
         }
@@ -572,7 +573,8 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
         }
 
         if (ptrAddFontMemResourceEx == NULL || ptrRemoveFontMemResourceEx == NULL) {
-            void *func = QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
+            QFunctionPointer func =
+                    QSystemLibrary::resolve(QLatin1String("gdi32"), "RemoveFontMemResourceEx");
             ptrRemoveFontMemResourceEx =
                     reinterpret_cast<QRawFontPrivate::PtrRemoveFontMemResourceEx>(func);
 

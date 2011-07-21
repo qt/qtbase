@@ -102,7 +102,7 @@ HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
     return QChar::mirroredChar(ch);
 }
 
-void *HB_Library_Resolve(const char *library, int version, const char *symbol)
+void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
 {
 #ifdef QT_NO_LIBRARY
     return 0;

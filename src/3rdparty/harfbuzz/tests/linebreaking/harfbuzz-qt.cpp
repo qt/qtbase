@@ -79,7 +79,7 @@ void HB_GetGraphemeAndLineBreakClass(HB_UChar32 ch, HB_GraphemeClass *grapheme, 
     *lineBreak = (HB_LineBreakClass) prop->line_break_class;
 }
 
-void *HB_Library_Resolve(const char *library, int version, const char *symbol)
+void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
 {
     return QLibrary::resolve(library, version, symbol);
 }

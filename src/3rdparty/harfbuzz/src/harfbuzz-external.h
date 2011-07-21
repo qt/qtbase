@@ -144,7 +144,7 @@ HB_CharCategory HB_GetUnicodeCharCategory(HB_UChar32 ch);
 int HB_GetUnicodeCharCombiningClass(HB_UChar32 ch);
 HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch);
 
-void *HB_Library_Resolve(const char *library, int version, const char *symbol);
+void (*HB_Library_Resolve(const char *library, int version, const char *symbol))();
 
 HB_END_HEADER
 

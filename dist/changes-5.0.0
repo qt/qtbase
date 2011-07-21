@@ -17,6 +17,9 @@ information about a particular change.
 - Unite clipping support has been removed from QPainter. The alternative is
   to unite QRegion's and using the result on QPainter.
 
+- QLibrary::resolve() now returns a function pointer instead of a void
+  pointer.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

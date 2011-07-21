@@ -63,8 +63,8 @@ QT_BEGIN_NAMESPACE
 
 #if !defined QT_LINKED_LIBDBUS
 
-void *qdbus_resolve_conditionally(const char *name); // doesn't print a warning
-void *qdbus_resolve_me(const char *name); // prints a warning
+void (*qdbus_resolve_conditionally(const char *name))(); // doesn't print a warning
+void (*qdbus_resolve_me(const char *name))(); // prints a warning
 bool qdbus_loadLibDBus();
 
 # define DEFINEFUNC(ret, func, args, argcall, funcret)          \
