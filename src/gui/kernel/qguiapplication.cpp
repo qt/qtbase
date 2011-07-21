@@ -52,6 +52,7 @@
 #include <QtCore/qmutex.h>
 #include <QtDebug>
 #include <qpalette.h>
+#include <qscreen.h>
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
@@ -102,6 +103,8 @@ QGuiApplicationPrivate *QGuiApplicationPrivate::self = 0;
 #ifndef QT_NO_CLIPBOARD
 QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 #endif
+
+QList<QScreen *> QGuiApplicationPrivate::screen_list;
 
 QWindowList QGuiApplicationPrivate::window_list;
 QWindow *QGuiApplicationPrivate::active_window = 0;
@@ -179,21 +182,27 @@ QWindowList QGuiApplication::topLevelWindows()
     return QGuiApplicationPrivate::window_list;
 }
 
+QScreen *QGuiApplication::primaryScreen()
+{
+    if (QGuiApplicationPrivate::screen_list.isEmpty())
+        return 0;
+    return QGuiApplicationPrivate::screen_list.at(0);
+}
+
+QList<QScreen *> QGuiApplication::screens()
+{
+    return QGuiApplicationPrivate::screen_list;
+}
+
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-
-    QList<QPlatformScreen *> screens = pi->screens();
-    QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
-    QList<QPlatformScreen *>::const_iterator end = screens.constEnd();
-
-    // The first screen in a virtual environment should know about all top levels
-    if (pi->isVirtualDesktop())
-        return (*screen)->topLevelAt(pos);
+    QList<QScreen *> screens = QGuiApplication::screens();
+    QList<QScreen *>::const_iterator screen = screens.constBegin();
+    QList<QScreen *>::const_iterator end = screens.constEnd();
 
     while (screen != end) {
         if ((*screen)->geometry().contains(pos))
-            return (*screen)->topLevelAt(pos);
+            return (*screen)->handle()->topLevelAt(pos);
         ++screen;
     }
     return 0;

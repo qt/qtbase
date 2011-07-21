@@ -44,6 +44,7 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QScreen>
 
 void *QWaylandNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
@@ -64,9 +65,9 @@ QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWindow(QWindow *wind
     QWaylandScreen *screen;
 
     if (window) {
-        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWindow(window));
+        screen = static_cast<QWaylandScreen *>(window->screen()->handle());
     } else {
-        screen = static_cast<QWaylandScreen *>(QGuiApplicationPrivate::platformIntegration()->screens()[0]);
+        screen = static_cast<QWaylandScreen *>(QGuiApplication::primaryScreen()->handle());
     }
     return screen;
 }

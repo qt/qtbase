@@ -61,10 +61,19 @@ class Q_GUI_EXPORT QGuiGLContext
 {
 Q_DECLARE_PRIVATE(QGuiGLContext);
 public:
-    QGuiGLContext(const QSurfaceFormat &format = QSurfaceFormat(), QGuiGLContext *shareContext = 0);
+    QGuiGLContext();
     ~QGuiGLContext();
 
+    void setFormat(const QSurfaceFormat &format);
+    void setShareContext(QGuiGLContext *shareContext);
+    void setScreen(QScreen *screen);
+
+    bool create();
     bool isValid() const;
+
+    QSurfaceFormat format() const;
+    QGuiGLContext *shareContext() const;
+    QScreen *screen() const;
 
     bool makeCurrent(QSurface *surface);
     void doneCurrent();
@@ -72,13 +81,10 @@ public:
     void swapBuffers(QSurface *surface);
     void (*getProcAddress(const QByteArray &procName)) ();
 
-    QSurfaceFormat format() const;
-
-    QGuiGLContext *shareContext() const;
-
     static QGuiGLContext *currentContext();
 
     QPlatformGLContext *handle() const;
+    QPlatformGLContext *shareHandle() const;
 
 private:
     QScopedPointer<QGuiGLContextPrivate> d_ptr;
@@ -90,6 +96,8 @@ private:
     void *qGLContextHandle() const;
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
     void deleteQGLContext();
+
+    void destroy();
 
     Q_DISABLE_COPY(QGuiGLContext);
 };

@@ -113,7 +113,7 @@ class QShapedPixmapWindow : public QWindow {
     QPixmap pixmap;
 public:
     QShapedPixmapWindow() :
-        QWindow(0)
+        QWindow()
     {
         setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
         // ### Should we set the surface type to raster?

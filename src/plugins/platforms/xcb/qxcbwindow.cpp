@@ -42,6 +42,7 @@
 #include "qxcbwindow.h"
 
 #include <QtDebug>
+#include <QScreen>
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
@@ -102,7 +103,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_eglSurface(0)
 #endif
 {
-    m_screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens().at(0));
+    m_screen = static_cast<QXcbScreen *>(window->screen()->handle());
 
     setConnection(m_screen->connection());
 

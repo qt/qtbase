@@ -53,20 +53,17 @@ class QAbstractEventDispatcher;
 class QXcbIntegration : public QPlatformIntegration
 {
 public:
-    QXcbIntegration();
+    QXcbIntegration(const QStringList &parameters);
     ~QXcbIntegration();
 
-    bool hasCapability(Capability cap) const;
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
+    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+
+    bool hasCapability(Capability cap) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
 
-    QList<QPlatformScreen *> screens() const;
     void moveToScreen(QWindow *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
@@ -79,9 +76,7 @@ public:
     QPlatformInputContext *inputContext() const;
 
 private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
+    QList<QXcbConnection *> m_connections;
 
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;

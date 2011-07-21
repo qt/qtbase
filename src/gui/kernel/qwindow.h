@@ -71,6 +71,7 @@ class QWheelEvent;
 class QPlatformSurface;
 class QPlatformWindow;
 class QBackingStore;
+class QScreen;
 
 class Q_GUI_EXPORT QSurface
 {
@@ -102,7 +103,8 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 public:
     enum SurfaceType { RasterSurface, OpenGLSurface };
 
-    QWindow(QWindow *parent = 0);
+    QWindow(QScreen *screen = 0);
+    QWindow(QWindow *parent);
     virtual ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);
@@ -165,6 +167,9 @@ public:
 
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
+
+    QScreen *screen() const;
+    void setScreen(QScreen *screen);
 
 public Q_SLOTS:
     inline void show() { setVisible(true); }

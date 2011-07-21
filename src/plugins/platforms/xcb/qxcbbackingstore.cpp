@@ -56,6 +56,7 @@
 
 #include <qdebug.h>
 #include <qpainter.h>
+#include <qscreen.h>
 
 class QXcbShmImage : public QXcbObject
 {
@@ -213,7 +214,7 @@ QXcbBackingStore::QXcbBackingStore(QWindow *window)
     , m_image(0)
     , m_syncingResize(false)
 {
-    QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window));
+    QXcbScreen *screen = static_cast<QXcbScreen *>(window->screen()->handle());
     setConnection(screen->connection());
 }
 
@@ -280,7 +281,7 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 
     Q_XCB_NOOP(connection());
 
-    QXcbScreen *screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window()));
+    QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
     QXcbWindow* win = static_cast<QXcbWindow *>(window()->handle());
 
     delete m_image;

@@ -71,15 +71,10 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+
     QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-private:
-    QList<QPlatformScreen *> mScreens;
 };
 
 QT_END_NAMESPACE

@@ -162,6 +162,7 @@ public:
 #ifndef QT_NO_CURSOR
     QList<QCursor> cursor_list;
 #endif
+    static QList<QScreen *> screen_list;
 
     static QFont *app_font;
 private:

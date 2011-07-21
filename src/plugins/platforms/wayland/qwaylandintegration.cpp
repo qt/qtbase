@@ -54,8 +54,6 @@
 #include <QtGui/QPlatformCursor>
 #include <QtGui/QSurfaceFormat>
 
-#include <QtGui/private/qpixmap_raster_p.h>
-
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
 #endif
@@ -90,11 +88,6 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 #endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
-}
-
-QPlatformPixmap *QWaylandIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const

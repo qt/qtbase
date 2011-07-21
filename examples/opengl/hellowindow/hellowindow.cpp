@@ -12,7 +12,9 @@ Renderer::Renderer()
     m_format.setDepthBufferSize(16);
     m_format.setSamples(4);
 
-    m_context = new QGuiGLContext(m_format);
+    m_context = new QGuiGLContext;
+    m_context->setFormat(m_format);
+    m_context->create();
 }
 
 QSurfaceFormat Renderer::format() const

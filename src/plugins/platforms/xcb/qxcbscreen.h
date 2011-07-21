@@ -58,6 +58,8 @@ public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
     ~QXcbScreen();
 
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
     QWindow *topLevelAt(const QPoint &point) const;
 
     QRect geometry() const;
@@ -76,6 +78,8 @@ public:
     bool syncRequestSupported() const { return m_syncRequestSupported; }
 
     const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+
+    QString name() const;
 
 private:
     xcb_screen_t *m_screen;

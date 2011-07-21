@@ -50,6 +50,7 @@
 #include "qdatastream.h"
 #include "qguiapplication.h"
 #include "qstringlist.h"
+#include "qscreen.h"
 
 #include "qthread.h"
 #include "qthreadstorage.h"
@@ -167,11 +168,10 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     extern float qt_mac_defaultDpi_x(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_x();
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    if (pi) {
-        QPlatformScreen *screen = pi->screens().at(0);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
         const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->physicalSize();
+        const QSize physicalSize = screen->handle()->physicalSize();
         dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi
@@ -198,11 +198,10 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     extern float qt_mac_defaultDpi_y(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_y();
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    if (pi) {
-        QPlatformScreen *screen = pi->screens().at(0);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
         const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->physicalSize();
+        const QSize physicalSize = screen->handle()->physicalSize();
         dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi

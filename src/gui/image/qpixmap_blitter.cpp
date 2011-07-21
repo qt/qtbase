@@ -43,6 +43,7 @@
 
 #include <qpainter.h>
 #include <qimage.h>
+#include <qscreen.h>
 
 #include <private/qguiapplication_p.h>
 #include <private/qblittable_p.h>
@@ -98,7 +99,7 @@ void QBlittablePlatformPixmap::resize(int width, int height)
     delete m_engine;
     m_engine = 0;
 #ifdef Q_WS_QPA
-    d = QGuiApplicationPrivate::platformIntegration()->screens().at(0)->depth();
+    d = QGuiApplication::primaryScreen()->depth();
 #endif
     w = width;
     h = height;

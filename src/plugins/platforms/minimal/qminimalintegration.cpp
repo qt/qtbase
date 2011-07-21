@@ -58,7 +58,7 @@ QMinimalIntegration::QMinimalIntegration()
     mPrimaryScreen->mDepth = 32;
     mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
 
-    mScreens.append(mPrimaryScreen);
+    screenAdded(mPrimaryScreen);
 }
 
 bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -67,11 +67,6 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case ThreadedPixmaps: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
-}
-
-QPlatformPixmap *QMinimalIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
 }
 
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const

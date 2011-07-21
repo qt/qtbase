@@ -47,6 +47,7 @@
 #include <QtCore/QThread>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QScreen>
 
 #include <QDebug>
 
@@ -69,6 +70,7 @@ public:
         : qGLContextHandle(0)
         , platformGLContext(0)
         , shareContext(0)
+        , screen(0)
     {
     }
 
@@ -79,8 +81,11 @@ public:
     }
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
+
+    QSurfaceFormat requestedFormat;
     QPlatformGLContext *platformGLContext;
     QGuiGLContext *shareContext;
+    QScreen *screen;
 
     static void setCurrentContext(QGuiGLContext *context);
 };
@@ -117,16 +122,74 @@ QPlatformGLContext *QGuiGLContext::handle() const
     return d->platformGLContext;
 }
 
+QPlatformGLContext *QGuiGLContext::shareHandle() const
+{
+    Q_D(const QGuiGLContext);
+    if (d->shareContext)
+        return d->shareContext->handle();
+    return 0;
+}
+
 /*!
-  Creates a new GL context with the given format and shared context.
+  Creates a new GL context instance, you need to call create() before it can be used.
 */
-QGuiGLContext::QGuiGLContext(const QSurfaceFormat &format, QGuiGLContext *shareContext)
+QGuiGLContext::QGuiGLContext()
     : d_ptr(new QGuiGLContextPrivate())
 {
     Q_D(QGuiGLContext);
-    QPlatformGLContext *share = shareContext ? shareContext->handle() : 0;
+    d->screen = QGuiApplication::primaryScreen();
+}
+
+/*!
+  Sets the format the GL context should be compatible with. You need to call create() before it takes effect.
+*/
+void QGuiGLContext::setFormat(const QSurfaceFormat &format)
+{
+    Q_D(QGuiGLContext);
+    d->requestedFormat = format;
+}
+
+/*!
+  Sets the context to share textures, shaders, and other GL resources with. You need to call create() before it takes effect.
+*/
+void QGuiGLContext::setShareContext(QGuiGLContext *shareContext)
+{
+    Q_D(QGuiGLContext);
     d->shareContext = shareContext;
-    d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformGLContext(format, share);
+}
+
+/*!
+  Sets the screen the GL context should be valid for. You need to call create() before it takes effect.
+*/
+void QGuiGLContext::setScreen(QScreen *screen)
+{
+    Q_D(QGuiGLContext);
+    d->screen = screen;
+    if (!d->screen)
+        d->screen = QGuiApplication::primaryScreen();
+}
+
+/*!
+  Attempts to create the GL context with the desired parameters.
+
+  Returns true if the native context was successfully created and is ready to be used.d
+*/
+bool QGuiGLContext::create()
+{
+    destroy();
+
+    Q_D(QGuiGLContext);
+    d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformGLContext(this);
+    return d->platformGLContext;
+}
+
+void QGuiGLContext::destroy()
+{
+    Q_D(QGuiGLContext);
+    if (QGuiGLContext::currentContext() == this)
+        doneCurrent();
+    delete d->platformGLContext;
+    d->platformGLContext = 0;
 }
 
 /*!
@@ -134,12 +197,12 @@ QGuiGLContext::QGuiGLContext(const QSurfaceFormat &format, QGuiGLContext *shareC
 */
 QGuiGLContext::~QGuiGLContext()
 {
-    Q_D(QGuiGLContext);
-    if (QGuiGLContext::currentContext() == this)
-        doneCurrent();
-    delete d->platformGLContext;
+    destroy();
 }
 
+/*!
+  Returns if this context is valid, i.e. has been successfully created.
+*/
 bool QGuiGLContext::isValid() const
 {
     Q_D(const QGuiGLContext);
@@ -210,16 +273,20 @@ QSurfaceFormat QGuiGLContext::format() const
 {
     Q_D(const QGuiGLContext);
     if (!d->platformGLContext)
-        return QSurfaceFormat();
+        return d->requestedFormat;
     return d->platformGLContext->format();
 }
 
 QGuiGLContext *QGuiGLContext::shareContext() const
 {
     Q_D(const QGuiGLContext);
-    if (!d->platformGLContext)
-        return 0;
     return d->shareContext;
+}
+
+QScreen *QGuiGLContext::screen() const
+{
+    Q_D(const QGuiGLContext);
+    return d->screen;
 }
 
 /*

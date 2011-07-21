@@ -42,7 +42,7 @@
 #include "qcolormap.h"
 #include "qcolor.h"
 #include "qpaintdevice.h"
-#include "private/qguiapplication_p.h"
+#include "qscreen.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -66,10 +66,7 @@ void QColormap::initialize()
 {
     screenMap = new QColormapPrivate;
 
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    QList<QPlatformScreen*> screens = pi->screens();
-
-    screenMap->depth = screens.at(0)->depth();
+    screenMap->depth = QGuiApplication::primaryScreen()->depth();
     if (screenMap->depth < 8) {
         screenMap->mode = QColormap::Indexed;
         screenMap->numcolors = 256;

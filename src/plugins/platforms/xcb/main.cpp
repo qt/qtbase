@@ -58,11 +58,10 @@ QStringList QXcbIntegrationPlugin::keys() const
     return list;
 }
 
-QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters)
 {
-    Q_UNUSED(paramList);
     if (system.toLower() == "xcb")
-        return new QXcbIntegration;
+        return new QXcbIntegration(parameters);
 
     return 0;
 }

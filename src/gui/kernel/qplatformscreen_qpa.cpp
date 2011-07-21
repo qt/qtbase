@@ -43,7 +43,46 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformintegration_qpa.h>
+#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+
+struct QPlatformScreenPrivate
+{
+    QScreen *screen;
+};
+
+QPlatformScreen::QPlatformScreen()
+    : d_ptr(new QPlatformScreenPrivate)
+{
+    Q_D(QPlatformScreen);
+    d->screen = new QScreen(this);
+}
+
+QPlatformScreen::~QPlatformScreen()
+{
+    Q_D(QPlatformScreen);
+
+    QGuiApplicationPrivate::screen_list.removeOne(d->screen);
+    delete d->screen;
+}
+
+/*!
+    \fn QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
+
+    This function is called when Qt needs to be able to grab the content of a window.
+
+    Returnes the content of the window specified with the WId handle within the boundaries of
+    QRect(x,y,width,height).
+*/
+QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    Q_UNUSED(window);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+    return QPixmap();
+}
 
 /*!
     Return the given top level window for a given position.
@@ -64,6 +103,26 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 }
 
 /*!
+    Returns a list of all the platform screens that are part of the same
+    virtual desktop.
+
+    Screens part of the same virtual desktop share a common coordinate system,
+    and windows can be freely moved between them.
+*/
+QList<QPlatformScreen *> QPlatformScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen *> list;
+    list << const_cast<QPlatformScreen *>(this);
+    return list;
+}
+
+QScreen *QPlatformScreen::screen() const
+{
+    Q_D(const QPlatformScreen);
+    return d->screen;
+}
+
+/*!
     Reimplement this function in subclass to return the physical size of the
     screen. This function is used by QFont to convert point sizes to pixel
     sizes.
@@ -81,9 +140,9 @@ QSize QPlatformScreen::physicalSize() const
     return QSize(width,height);
 }
 
-QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *)
+QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)
 {
-    return QGuiApplicationPrivate::platformIntegration()->screens().at(0);
+    return window->screen()->handle();
 }
 
 /*!

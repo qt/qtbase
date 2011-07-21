@@ -49,6 +49,7 @@
 #include <QtCore/QDebug>
 
 #include <QtGui/qguiglcontext_qpa.h>
+#include <QtGui/qscreen.h>
 
 #if defined(XCB_USE_EGL)
 #include "QtPlatformSupport/private/qeglplatformcontext_p.h"
@@ -119,9 +120,9 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QXcbScreen *screen;
     if (window) {
-        screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWindow(window));
-    }else {
-        screen = static_cast<QXcbScreen *>(QGuiApplicationPrivate::platformIntegration()->screens()[0]);
+        screen = static_cast<QXcbScreen *>(window->screen()->handle());
+    } else {
+        screen = static_cast<QXcbScreen *>(QGuiApplication::primaryScreen()->handle());
     }
     return screen;
 }

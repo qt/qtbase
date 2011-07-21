@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdesktopwidget.h"
+#include "qscreen.h"
 #include "private/qapplication_p.h"
 #include <QWidget>
 #include "private/qwidget_p.h"
@@ -51,7 +52,7 @@ QT_USE_NAMESPACE
 void QDesktopWidgetPrivate::updateScreenList()
 {
     Q_Q(QDesktopWidget);
-    QList<QPlatformScreen *> screenList = QGuiApplicationPrivate::platformIntegration()->screens();
+    QList<QScreen *> screenList = QGuiApplication::screens();
     int targetLength = screenList.length();
     int currentLength = screens.length();
 
@@ -97,7 +98,7 @@ QDesktopWidget::~QDesktopWidget()
 
 bool QDesktopWidget::isVirtualDesktop() const
 {
-    return QGuiApplicationPrivate::platformIntegration()->isVirtualDesktop();
+    return QGuiApplication::primaryScreen()->virtualSiblings().size() > 1;
 }
 
 int QDesktopWidget::primaryScreen() const
@@ -107,8 +108,7 @@ int QDesktopWidget::primaryScreen() const
 
 int QDesktopWidget::numScreens() const
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    return qMax(pi->screens().size(), 1);
+    return qMax(QGuiApplication::screens().size(), 1);
 }
 
 QWidget *QDesktopWidget::screen(int screen)
@@ -121,26 +121,24 @@ QWidget *QDesktopWidget::screen(int screen)
 
 const QRect QDesktopWidget::availableGeometry(int screenNo) const
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    QList<QPlatformScreen *> screens = pi->screens();
+    QList<QScreen *> screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
         return QRect();
     else
-        return screens[screenNo]->availableGeometry();
+        return screens.at(screenNo)->availableGeometry();
 }
 
 const QRect QDesktopWidget::screenGeometry(int screenNo) const
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    QList<QPlatformScreen *> screens = pi->screens();
+    QList<QScreen *> screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
     if (screenNo < 0 || screenNo >= screens.size())
         return QRect();
     else
-        return screens[screenNo]->geometry();
+        return screens.at(screenNo)->geometry();
 }
 
 int QDesktopWidget::screenNumber(const QWidget *w) const
@@ -157,11 +155,10 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    QList<QPlatformScreen *> screens = pi->screens();
+    QList<QScreen *> screens = QGuiApplication::screens();
 
     for (int i = 0; i < screens.size(); ++i)
-        if (screens[i]->geometry().contains(p))
+        if (screens.at(i)->geometry().contains(p))
             return i;
 
     return primaryScreen(); //even better would be closest screen

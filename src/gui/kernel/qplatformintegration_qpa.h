@@ -43,7 +43,6 @@
 #define QPLATFORMINTEGRATION_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/qplatformpixmap_qpa.h>
 #include <QtGui/qplatformscreen_qpa.h>
 #include <QtGui/qsurfaceformat.h>
 
@@ -78,17 +77,10 @@ public:
 
     virtual bool hasCapability(Capability cap) const;
 
-// GraphicsSystem functions
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const = 0;
+    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
-    virtual QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &format, QPlatformGLContext *share) const;
-
-// Window System functions
-    virtual QList<QPlatformScreen *> screens() const = 0;
-    virtual void moveToScreen(QWindow *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
-    virtual bool isVirtualDesktop() { return false; }
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    virtual QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *createEventDispatcher() const = 0;
@@ -107,6 +99,9 @@ public:
     virtual QPlatformNativeInterface *nativeInterface() const;
 
     virtual QPlatformPrinterSupport *printerSupport() const;
+
+protected:
+    void screenAdded(QPlatformScreen *screen);
 };
 
 QT_END_NAMESPACE

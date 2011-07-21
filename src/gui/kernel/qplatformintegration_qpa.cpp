@@ -44,20 +44,11 @@
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
 #include <QtGui/QPlatformPrinterSupport>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qdnd_p.h>
 
 QT_BEGIN_NAMESPACE
-
-QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    return QPixmap();
-}
-
 
 /*!
     Accessor for the platform integrations fontdatabase.
@@ -177,12 +168,6 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 
-QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QSurfaceFormat &, QPlatformGLContext *) const
-{
-    qWarning("This plugin does not support createPlatformGLContext!");
-    return 0;
-}
-
 /*!
     \fn void QPlatformIntegration::moveToScreen(QWindow *window, int screen)
 
@@ -212,15 +197,6 @@ QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(const QSurface
 */
 
 /*!
-    \fn QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
-
-    This function is called when Qt needs to be able to grab the content of a window.
-
-    Returnes the content of the window specified with the WId handle within the boundaries of
-    QRect(x,y,width,height).
-*/
-
-/*!
     \fn QAbstractEventDispatcher *createEventDispatcher() const
 
     Factory function for the event dispatcher. The platform plugin
@@ -232,6 +208,17 @@ bool QPlatformIntegration::hasCapability(Capability cap) const
 {
     Q_UNUSED(cap);
     return false;
+}
+
+QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
+{
+    return new QRasterPlatformPixmap(type);
+}
+
+QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(QGuiGLContext *context) const
+{
+    qWarning("This plugin does not support createPlatformGLContext!");
+    return 0;
 }
 
 /*!
@@ -259,6 +246,26 @@ QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
 QPlatformInputContext *QPlatformIntegration::inputContext() const
 {
     return 0;
+}
+
+/*!
+  Should be called by the implementation whenever a new screen is added.
+
+  The first screen added will be the primary screen, used for default-created
+  windows, GL contexts, and other resources unless otherwise specified.
+
+  This adds the screen to QGuiApplication::screens(), and emits the
+  QGuiApplication::screenAdded() signal.
+
+  The screen is automatically removed when the QPlatformScreen is destroyed.
+*/
+void QPlatformIntegration::screenAdded(QPlatformScreen *ps)
+{
+    QScreen *screen = ps ? ps->screen() : 0;
+    if (screen && !QGuiApplicationPrivate::screen_list.contains(screen)) {
+        QGuiApplicationPrivate::screen_list << screen;
+        emit qGuiApp->screenAdded(screen);
+    }
 }
 
 QT_END_NAMESPACE

@@ -42,6 +42,7 @@
 #include <qdebug.h>
 #include "qnativeimage_p.h"
 #include "qcolormap.h"
+#include "qscreen.h"
 
 #include "private/qpaintengine_raster_p.h"
 
@@ -207,7 +208,7 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
-    return QGuiApplicationPrivate::platformIntegration()->screens().at(0)->format();
+    return QGuiApplication::primaryScreen()->handle()->format();
 }
 
 #endif // platforms

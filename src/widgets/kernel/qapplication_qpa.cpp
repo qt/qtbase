@@ -45,6 +45,7 @@
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif
+#include "qscreen.h"
 
 #include "private/qwidget_p.h"
 #include "private/qevent_p.h"
@@ -384,21 +385,13 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)
 {
-    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-
-    QList<QPlatformScreen *> screens = pi->screens();
-    QList<QPlatformScreen *>::const_iterator screen = screens.constBegin();
-    QList<QPlatformScreen *>::const_iterator end = screens.constEnd();
-
-    // The first screen in a virtual environment should know about all top levels
-    if (pi->isVirtualDesktop()) {
-        QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->topLevelAt(pos));
-        return w ? w->widget() : 0;
-    }
+    QList<QScreen *> screens = QGuiApplication::screens();
+    QList<QScreen *>::const_iterator screen = screens.constBegin();
+    QList<QScreen *>::const_iterator end = screens.constEnd();
 
     while (screen != end) {
         if ((*screen)->geometry().contains(pos)) {
-            QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->topLevelAt(pos));
+            QWidgetWindow *w = qobject_cast<QWidgetWindow *>((*screen)->handle()->topLevelAt(pos));
             return w ? w->widget() : 0;
         }
         ++screen;

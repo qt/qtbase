@@ -41,6 +41,7 @@
 
 
 #include "qminimalbackingstore.h"
+#include "qscreen.h"
 #include <QtCore/qdebug.h>
 #include <private/qguiapplication_p.h>
 
@@ -77,7 +78,7 @@ void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const Q
 void QMinimalBackingStore::resize(const QSize &size, const QRegion &)
 {
     //qDebug() << "QMinimalBackingStore::setGeometry:" << (long)this << rect;
-    QImage::Format format = QGuiApplicationPrivate::platformIntegration()->screens().first()->format();
+    QImage::Format format = QGuiApplication::primaryScreen()->handle()->format();
     if (mImage.size() != size)
         mImage = QImage(size, format);
 }

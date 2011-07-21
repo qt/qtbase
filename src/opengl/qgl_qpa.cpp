@@ -150,13 +150,15 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
         delete d->guiGlContext;
         QGuiGLContext *shareGlContext = shareContext ? shareContext->d_func()->guiGlContext : 0;
-        d->guiGlContext = new QGuiGLContext(winFormat, shareGlContext);
+        d->guiGlContext = new QGuiGLContext;
+        d->guiGlContext->setFormat(winFormat);
+        d->guiGlContext->setShareContext(shareGlContext);
+        d->valid = d->guiGlContext->create();
+
+        if (d->valid)
+            d->guiGlContext->setQGLContextHandle(this,qDeleteQGLContext);
 
         d->glFormat = QGLFormat::fromSurfaceFormat(d->guiGlContext->format());
-        d->valid = d->guiGlContext->isValid();
-        if (d->valid) {
-            d->guiGlContext->setQGLContextHandle(this,qDeleteQGLContext);
-        }
         d->setupSharing();
     }
 
@@ -300,6 +302,7 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->window->create();
 
     d->context = new QGuiGLContext;
+    d->context->create();
     d->context->makeCurrent(d->window);
 }
 

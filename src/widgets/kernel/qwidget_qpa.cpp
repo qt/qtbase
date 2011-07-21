@@ -104,6 +104,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     win->setWindowFlags(data.window_flags);
     win->setGeometry(q->geometry());
+    win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
 
     if (q->testAttribute(Qt::WA_TranslucentBackground)) {
         QSurfaceFormat format;
@@ -141,7 +142,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 //    first check children. and create them if necessary
 //    q_createNativeChildrenAndSetParent(q->windowHandle(),q);
 
-    QGuiApplicationPrivate::platformIntegration()->moveToScreen(win, topData()->screenIndex);
 //    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
@@ -261,8 +261,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             maybeTopData()->screenIndex = targetScreen;
         // only if it is already created
         if (q->testAttribute(Qt::WA_WState_Created)) {
-            QPlatformIntegration *platform = QGuiApplicationPrivate::platformIntegration();
-            platform->moveToScreen(q->windowHandle(), targetScreen);
+            q->windowHandle()->setScreen(QGuiApplication::screens().value(targetScreen, 0));
         }
     }
 }

@@ -57,6 +57,7 @@ QT_MODULE(Gui)
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
 class QPalette;
+class QScreen;
 
 #if defined(qApp)
 #undef qApp
@@ -83,6 +84,8 @@ public:
     static QWindow *topLevelAt(const QPoint &pos);
 
     static QWindow *activeWindow();
+    static QScreen *primaryScreen();
+    static QList<QScreen *> screens();
 
 #ifndef QT_NO_CURSOR
     static QCursor *overrideCursor();
@@ -125,6 +128,7 @@ public:
 
 Q_SIGNALS:
     void fontDatabaseChanged();
+    void screenAdded(QScreen *screen);
 
 protected:
     bool event(QEvent *);
@@ -140,6 +144,7 @@ private:
     friend class QGestureManager;
 #endif
     friend class QFontDatabasePrivate;
+    friend class QPlatformIntegration;
 };
 
 QT_END_NAMESPACE

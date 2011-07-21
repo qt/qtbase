@@ -109,8 +109,11 @@ QXcbConnection::QXcbConnection(const char *displayName)
 #endif //XCB_USE_EGL
 #else
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
-
 #endif //XCB_USE_XLIB
+
+    if (m_connection)
+        printf("Successfully connected to display %s\n", m_displayName.constData());
+
     xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
 
     m_setup = xcb_get_setup(xcb_connection());

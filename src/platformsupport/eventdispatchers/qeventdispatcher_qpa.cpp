@@ -67,8 +67,6 @@ QEventDispatcherQPA::~QEventDispatcherQPA()
 
 bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_D(QEventDispatcherQPA);
-
     bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(this, flags);
 
     if (QEventDispatcherUNIX::processEvents(flags)) {

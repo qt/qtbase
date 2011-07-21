@@ -45,6 +45,7 @@
 #include "qsurfaceformat.h"
 #include "qplatformglcontext_qpa.h"
 #include "qguiglcontext_qpa.h"
+#include "qscreen.h"
 
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
@@ -55,12 +56,27 @@
 
 QT_BEGIN_NAMESPACE
 
+QWindow::QWindow(QScreen *targetScreen)
+    : QObject(*new QWindowPrivate(), 0)
+    , QSurface(QSurface::Window)
+{
+    Q_D(QWindow);
+    d->screen = targetScreen;
+    if (!d->screen)
+        d->screen = QGuiApplication::primaryScreen();
+    QGuiApplicationPrivate::window_list.prepend(this);
+}
+
 QWindow::QWindow(QWindow *parent)
     : QObject(*new QWindowPrivate(), parent)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
     d->parentWindow = parent;
+    if (parent)
+        d->screen = parent->screen();
+    if (!d->screen)
+        d->screen = QGuiApplication::primaryScreen();
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
@@ -439,6 +455,23 @@ bool QWindow::setMouseGrabEnabled(bool grab)
     return false;
 }
 
+QScreen *QWindow::screen() const
+{
+    Q_D(const QWindow);
+    return d->screen;
+}
+
+void QWindow::setScreen(QScreen *newScreen)
+{
+    Q_D(QWindow);
+    bool wasCreated = d->platformWindow != 0;
+    if (wasCreated)
+        destroy();
+    d->screen = newScreen ? newScreen : QGuiApplication::primaryScreen();
+    if (wasCreated)
+        create();
+}
+
 void QWindow::showMinimized()
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
@@ -486,7 +519,6 @@ void QWindow::hideEvent(QHideEvent *)
 
 bool QWindow::event(QEvent *event)
 {
-    Q_D(QWindow);
     switch (event->type()) {
     case QEvent::MouseMove:
         mouseMoveEvent(static_cast<QMouseEvent*>(event));

@@ -47,7 +47,6 @@
 
 #include "qcocoaeventdispatcher.h"
 #include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
-#include <private/qpixmap_raster_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +82,7 @@ QCocoaIntegration::QCocoaIntegration()
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
         QCocoaScreen *screen = new QCocoaScreen(i);
-        mScreens.append(screen);
+        screenAdded(screen);
     }
 }
 
@@ -103,19 +102,14 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 
 
-QPlatformPixmap *QCocoaIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
-}
-
 QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 {
     return new QCocoaWindow(window);
 }
 
-QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QCocoaIntegration::createPlatformGLContext(QGuiGLContext *context) const
 {
-    return new QCocoaGLContext(glFormat, share);
+    return new QCocoaGLContext(context->format(), context->shareHandle());
 }
 
 QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const

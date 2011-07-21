@@ -76,19 +76,15 @@ public:
     ~QCocoaIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
+    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
 
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface() const;
 private:
-    QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
 
     QCocoaAutoReleasePool *mPool;

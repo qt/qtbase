@@ -47,13 +47,10 @@
 #include "qxcbnativeinterface.h"
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
-#include "qxcbimage.h"
 
 #include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 
 #include <xcb/xcb.h>
-
-#include <private/qpixmap_raster_p.h>
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
@@ -64,6 +61,11 @@
 #include <EGL/egl.h>
 #endif
 
+#define XCB_USE_IBUS
+#if defined(XCB_USE_IBUS)
+#include "QtPlatformSupport/qibusplatforminputcontext.h"
+#endif
+
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
 #elif defined(XCB_USE_EGL)
@@ -71,16 +73,23 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #endif
 
-#define XCB_USE_IBUS
-#if defined(XCB_USE_IBUS)
-#include "QtPlatformSupport/qibusplatforminputcontext.h"
-#endif
+#include <QtGui/QGuiGLContext>
+#include <QtGui/QScreen>
 
-QXcbIntegration::QXcbIntegration()
-    : m_connection(new QXcbConnection), m_printerSupport(new QGenericUnixPrinterSupport)
+QXcbIntegration::QXcbIntegration(const QStringList &parameters)
+    : m_printerSupport(new QGenericUnixPrinterSupport)
 {
-    foreach (QXcbScreen *screen, m_connection->screens())
-        m_screens << screen;
+    m_connections << new QXcbConnection;
+
+    for (int i = 0; i < parameters.size() - 1; i += 2) {
+        qDebug() << parameters.at(i) << parameters.at(i+1);
+        QString display = parameters.at(i) + ':' + parameters.at(i+1);
+        m_connections << new QXcbConnection(display.toAscii().constData());
+    }
+
+    foreach (QXcbConnection *connection, m_connections)
+        foreach (QXcbScreen *screen, connection->screens())
+            screenAdded(screen);
 
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
@@ -90,21 +99,7 @@ QXcbIntegration::QXcbIntegration()
 
 QXcbIntegration::~QXcbIntegration()
 {
-    delete m_connection;
-}
-
-bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
-{
-    switch (cap) {
-    case ThreadedPixmaps: return true;
-    case OpenGL: return hasOpenGL();
-    default: return QPlatformIntegration::hasCapability(cap);
-    }
-}
-
-QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
+    qDeleteAll(m_connections);
 }
 
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -128,14 +123,15 @@ public:
 };
 #endif
 
-QPlatformGLContext *QXcbIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QXcbIntegration::createPlatformGLContext(QGuiGLContext *context) const
 {
+    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
 #if defined(XCB_USE_GLX)
-    return new QGLXContext(static_cast<QXcbScreen *>(m_screens.at(0)), glFormat, share);
+    return new QGLXContext(screen, context->format(), context->shareHandle());
 #elif defined(XCB_USE_EGL)
-    return new QEGLXcbPlatformContext(glFormat, share, m_connection->egl_display());
+    return new QEGLXcbPlatformContext(context->format(), context->shareHandle(), screen->connection()->egl_display());
 #elif defined(XCB_USE_DRI2)
-    return new QDri2Context(glFormat, share);
+    return new QDri2Context(context->format(), context->shareHandle());
 #endif
 }
 
@@ -144,10 +140,21 @@ QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *wind
     return new QXcbBackingStore(window);
 }
 
+bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+{
+    switch (cap) {
+    case ThreadedPixmaps: return true;
+    case OpenGL: return true;
+    default: return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
     QAbstractEventDispatcher *eventDispatcher = createUnixEventDispatcher();
-    m_connection->setEventDispatcher(eventDispatcher);
+
+    foreach (QXcbConnection *connection, m_connections)
+        connection->setEventDispatcher(eventDispatcher);
 #ifdef XCB_USE_IBUS
     // A bit hacky to do this here, but we need an eventloop before we can instantiate
     // the input context.
@@ -156,159 +163,15 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
     return eventDispatcher;
 }
 
-QList<QPlatformScreen *> QXcbIntegration::screens() const
-{
-    return m_screens;
-}
-
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)
 {
     Q_UNUSED(window);
     Q_UNUSED(screen);
 }
 
-bool QXcbIntegration::isVirtualDesktop()
-{
-    return false;
-}
-
 QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
 {
     return m_fontDatabase;
-}
-
-QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    if (width == 0 || height == 0)
-        return QPixmap();
-
-    xcb_connection_t *connection = m_connection->xcb_connection();
-
-    xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry(connection, window);
-
-    xcb_generic_error_t *error;
-    xcb_get_geometry_reply_t *reply =
-        xcb_get_geometry_reply(connection, geometry_cookie, &error);
-
-    if (!reply) {
-        if (error) {
-            m_connection->handleXcbError(error);
-            free(error);
-        }
-        return QPixmap();
-    }
-
-    if (width < 0)
-        width = reply->width - x;
-    if (height < 0)
-        height = reply->height - y;
-
-    // TODO: handle multiple screens
-    QXcbScreen *screen = m_connection->screens().at(0);
-    xcb_window_t root = screen->root();
-    geometry_cookie = xcb_get_geometry(connection, root);
-    xcb_get_geometry_reply_t *root_reply =
-        xcb_get_geometry_reply(connection, geometry_cookie, &error);
-
-    if (!root_reply) {
-        if (error) {
-            m_connection->handleXcbError(error);
-            free(error);
-        }
-        free(reply);
-        return QPixmap();
-    }
-
-    if (reply->depth == root_reply->depth) {
-        // if the depth of the specified window and the root window are the
-        // same, grab pixels from the root window (so that we get the any
-        // overlapping windows and window manager frames)
-
-        // map x and y to the root window
-        xcb_translate_coordinates_cookie_t translate_cookie =
-            xcb_translate_coordinates(connection, window, root, x, y);
-
-        xcb_translate_coordinates_reply_t *translate_reply =
-            xcb_translate_coordinates_reply(connection, translate_cookie, &error);
-
-        if (!translate_reply) {
-            if (error) {
-                m_connection->handleXcbError(error);
-                free(error);
-            }
-            free(reply);
-            free(root_reply);
-            return QPixmap();
-        }
-
-        x = translate_reply->dst_x;
-        y = translate_reply->dst_y;
-
-        window = root;
-
-        free(translate_reply);
-        free(reply);
-        reply = root_reply;
-    } else {
-        free(root_reply);
-        root_reply = 0;
-    }
-
-    xcb_get_window_attributes_reply_t *attributes_reply =
-        xcb_get_window_attributes_reply(connection, xcb_get_window_attributes(connection, window), &error);
-
-    if (!attributes_reply) {
-        if (error) {
-            m_connection->handleXcbError(error);
-            free(error);
-        }
-        free(reply);
-        return QPixmap();
-    }
-
-    const xcb_visualtype_t *visual = screen->visualForId(attributes_reply->visual);
-    free(attributes_reply);
-
-    xcb_pixmap_t pixmap = xcb_generate_id(connection);
-    error = xcb_request_check(connection, xcb_create_pixmap_checked(connection, reply->depth, pixmap, window, width, height));
-    if (error) {
-        m_connection->handleXcbError(error);
-        free(error);
-    }
-
-    uint32_t gc_value_mask = XCB_GC_SUBWINDOW_MODE;
-    uint32_t gc_value_list[] = { XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS };
-
-    xcb_gcontext_t gc = xcb_generate_id(connection);
-    xcb_create_gc(connection, gc, pixmap, gc_value_mask, gc_value_list);
-
-    error = xcb_request_check(connection, xcb_copy_area_checked(connection, window, pixmap, gc, x, y, 0, 0, width, height));
-    if (error) {
-        m_connection->handleXcbError(error);
-        free(error);
-    }
-
-    QPixmap result = qt_xcb_pixmapFromXPixmap(m_connection, pixmap, width, height, reply->depth, visual);
-
-    free(reply);
-    xcb_free_gc(connection, gc);
-    xcb_free_pixmap(connection, pixmap);
-
-    return result;
-}
-
-bool QXcbIntegration::hasOpenGL() const
-{
-#if defined(XCB_USE_GLX)
-    return true;
-#elif defined(XCB_USE_EGL)
-    return m_connection->hasEgl();
-#elif defined(XCB_USE_DRI2)
-    if (m_connection->hasSupportForDri2()) {
-        return true;
-    }
-#endif
-    return false;
 }
 
 QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
@@ -323,12 +186,12 @@ QPlatformPrinterSupport *QXcbIntegration::printerSupport() const
 
 QPlatformClipboard *QXcbIntegration::clipboard() const
 {
-    return m_connection->clipboard();
+    return m_connections.at(0)->clipboard();
 }
 
 QPlatformDrag *QXcbIntegration::drag() const
 {
-    return m_connection->drag();
+    return m_connections.at(0)->drag();
 }
 
 QPlatformInputContext *QXcbIntegration::inputContext() const

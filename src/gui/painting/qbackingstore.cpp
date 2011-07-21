@@ -43,6 +43,7 @@
 #include <qwindow.h>
 #include <qpixmap.h>
 #include <qplatformbackingstore_qpa.h>
+#include <qscreen.h>
 
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>

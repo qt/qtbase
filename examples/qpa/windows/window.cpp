@@ -14,13 +14,23 @@ QColor colorTable[] =
     QColor("#c0ef8f")
 };
 
+Window::Window(QScreen *screen)
+    : QWindow(screen)
+    , m_backgroundColorIndex(colorIndexId++)
+{
+    initialize();
+}
+
 Window::Window(QWindow *parent)
     : QWindow(parent)
     , m_backgroundColorIndex(colorIndexId++)
 {
-    setWindowTitle(QLatin1String("Window"));
+    initialize();
+}
 
-    if (parent)
+void Window::initialize()
+{
+    if (parent())
         setGeometry(QRect(160, 120, 320, 240));
     else {
         setGeometry(QRect(10, 10, 640, 480));
@@ -38,6 +48,7 @@ Window::Window(QWindow *parent)
     m_image.fill(colorTable[m_backgroundColorIndex % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
 
     m_lastPos = QPoint(-1, -1);
+    m_renderTimer = 0;
 }
 
 void Window::mousePressEvent(QMouseEvent *event)
@@ -54,7 +65,7 @@ void Window::mouseMoveEvent(QMouseEvent *event)
         m_lastPos = event->pos();
     }
 
-    render();
+    scheduleRender();
 }
 
 void Window::mouseReleaseEvent(QMouseEvent *event)
@@ -66,12 +77,12 @@ void Window::mouseReleaseEvent(QMouseEvent *event)
         m_lastPos = QPoint(-1, -1);
     }
 
-    render();
+    scheduleRender();
 }
 
 void Window::exposeEvent(QExposeEvent *)
 {
-    render();
+    scheduleRender();
 }
 
 void Window::resizeEvent(QResizeEvent *)
@@ -106,7 +117,20 @@ void Window::keyPressEvent(QKeyEvent *event)
         m_text.append(event->text());
         break;
     }
+    scheduleRender();
+}
+
+void Window::scheduleRender()
+{
+    if (!m_renderTimer)
+        m_renderTimer = startTimer(1);
+}
+
+void Window::timerEvent(QTimerEvent *)
+{
     render();
+    killTimer(m_renderTimer);
+    m_renderTimer = 0;
 }
 
 void Window::render()
