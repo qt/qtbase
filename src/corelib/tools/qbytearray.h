@@ -133,10 +133,10 @@ struct QByteArrayData
     inline const char *data() const { return d + sizeof(qptrdiff) + offset; }
 };
 
-template<int n> struct QConstByteArrayData
+template<int N> struct QConstByteArrayData
 {
     const QByteArrayData ba;
-    const char data[n];
+    const char data[N + 1];
 };
 
 template<int N> struct QConstByteArrayDataPtr
@@ -147,9 +147,9 @@ template<int N> struct QConstByteArrayDataPtr
 
 #if defined(Q_COMPILER_LAMBDA)
 #  define QByteArrayLiteral(str) ([]() { \
-        enum { Size = sizeof(str) }; \
+        enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
     return holder; }())
 
@@ -160,9 +160,9 @@ template<int N> struct QConstByteArrayDataPtr
 
 #  define QByteArrayLiteral(str) \
     __extension__ ({ \
-        enum { Size = sizeof(str) }; \
+        enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
         holder; })
 #endif

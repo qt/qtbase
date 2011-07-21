@@ -97,36 +97,36 @@ template<int N> struct QConstStringDataPtr
 };
 
 #if defined(Q_COMPILER_UNICODE_STRINGS)
-template<int n> struct QConstStringData
+template<int N> struct QConstStringData
 {
     const QStringData str;
-    const char16_t data[n];
+    const char16_t data[N + 1];
 };
 #define QT_QSTRING_UNICODE_MARKER   u""
 
 #elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
 // wchar_t is 2 bytes
-template<int n> struct QConstStringData
+template<int N> struct QConstStringData
 {
     const QStringData str;
-    const wchar_t data[n];
+    const wchar_t data[N + 1];
 };
 #define QT_QSTRING_UNICODE_MARKER   L""
 
 #else
-template<int n> struct QConstStringData
+template<int N> struct QConstStringData
 {
     const QStringData str;
-    const ushort data[n];
+    const ushort data[N + 1];
 };
 #endif
 
 #if defined(QT_QSTRING_UNICODE_MARKER)
 # if defined(Q_COMPILER_LAMBDA)
 #  define QStringLiteral(str) ([]() { \
-        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 }; \
+        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
@@ -137,9 +137,9 @@ template<int n> struct QConstStringData
 
 #  define QStringLiteral(str) \
     __extension__ ({ \
-        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 }; \
+        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif
