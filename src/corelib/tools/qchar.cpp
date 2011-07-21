@@ -72,8 +72,7 @@ QT_BEGIN_NAMESPACE
     \ingroup string-processing
 
     This class is only useful to avoid the codec for C strings business
-    in the QChar(ch) constructor. You can avoid it by writing
-    QChar(ch, 0).
+    in the QChar(ch) constructor. You can avoid it by writing QChar(ch, 0).
 
     \sa QChar, QLatin1String, QString
 */
@@ -81,8 +80,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn const char QLatin1Char::toLatin1() const
 
-    Converts a Latin-1 character to an 8-bit ASCII representation of
-    the character.
+    Converts a Latin-1 character to an 8-bit ASCII representation of the character.
 */
 
 /*!
@@ -132,14 +130,13 @@ QT_BEGIN_NAMESPACE
 
     QChar also provides direction(), which indicates the "natural"
     writing direction of this character. The joining() function
-    indicates how the character joins with its neighbors (needed
+    indicates how the character joins with it's neighbors (needed
     mostly for Arabic) and finally hasMirrored(), which indicates
     whether the character needs to be mirrored when it is printed in
-    its "unnatural" writing direction.
+    it's "unnatural" writing direction.
 
-    Composed Unicode characters (like \aring) can be converted to
-    decomposed Unicode ("a" followed by "ring above") by using
-    decomposition().
+    Composed Unicode characters (like \a ring) can be converted to
+    decomposed Unicode ("a" followed by "ring above") by using decomposition().
 
     In Unicode, comparison is not necessarily possible and case
     conversion is very difficult at best. Unicode, covering the
@@ -148,8 +145,7 @@ QT_BEGIN_NAMESPACE
     based purely on the numeric Unicode value (code point) of the
     characters, and toUpper() and toLower() will do case changes when
     the character has a well-defined uppercase/lowercase equivalent.
-    For locale-dependent comparisons, use
-    QString::localeAwareCompare().
+    For locale-dependent comparisons, use QString::localeAwareCompare().
 
     The conversion functions include unicode() (to a scalar),
     toLatin1() (to scalar, but converts all non-Latin-1 characters to
@@ -165,7 +161,7 @@ QT_BEGIN_NAMESPACE
     to construct a QChar from an 8-bit \c char, and you will need to
     call toAscii() or toLatin1() to get the 8-bit value back.
 
-    \sa QString, Unicode, QLatin1Char
+    \sa Unicode, QString, QLatin1Char
 */
 
 /*!
@@ -186,7 +182,7 @@ QT_BEGIN_NAMESPACE
     \value Unicode_Unassigned  The value is not assigned to any character
         in version 5.0 of Unicode.
 
-    \sa unicodeVersion()
+    \sa unicodeVersion(), currentUnicodeVersion()
 */
 
 /*!
@@ -425,8 +421,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a QChar corresponding to ASCII/Latin-1 character \a
-    ch.
+    Constructs a QChar corresponding to ASCII/Latin-1 character \a ch.
 */
 QChar::QChar(char ch)
 {
@@ -465,34 +460,26 @@ QChar::QChar(uchar ch)
 /*!
     \fn QChar::QChar(ushort code)
 
-    Constructs a QChar for the character with Unicode code point \a
-    code.
+    Constructs a QChar for the character with Unicode code point \a code.
 */
-
 
 /*!
     \fn QChar::QChar(short code)
 
-    Constructs a QChar for the character with Unicode code point \a
-    code.
+    Constructs a QChar for the character with Unicode code point \a code.
 */
-
 
 /*!
     \fn QChar::QChar(uint code)
 
-    Constructs a QChar for the character with Unicode code point \a
-    code.
+    Constructs a QChar for the character with Unicode code point \a code.
 */
-
 
 /*!
     \fn QChar::QChar(int code)
 
-    Constructs a QChar for the character with Unicode code point \a
-    code.
+    Constructs a QChar for the character with Unicode code point \a code.
 */
-
 
 /*!
     \fn bool QChar::isNull() const
@@ -504,8 +491,7 @@ QChar::QChar(uchar ch)
 /*!
     \fn uchar QChar::cell() const
 
-    Returns the cell (least significant byte) of the Unicode
-    character.
+    Returns the cell (least significant byte) of the Unicode character.
 
     \sa row()
 */
@@ -534,7 +520,8 @@ bool QChar::isPrint() const
 
 /*!
     Returns true if the character is a separator character
-    (Separator_* categories); otherwise returns false.
+    (Separator_* categories or certain code points from Other_Control category);
+    otherwise returns false.
 */
 bool QChar::isSpace() const
 {
@@ -621,7 +608,6 @@ bool QChar::isLetterOrNumber() const
     return FLAG(qGetProp(ucs)->category) & test;
 }
 
-
 /*!
     Returns true if the character is a decimal digit
     (Number_DecimalDigit); otherwise returns false.
@@ -630,7 +616,6 @@ bool QChar::isDigit() const
 {
     return (qGetProp(ucs)->category == Number_DecimalDigit);
 }
-
 
 /*!
     Returns true if the character is a symbol (Symbol_* categories);
@@ -648,74 +633,73 @@ bool QChar::isSymbol() const
 /*!
     \fn bool QChar::isHighSurrogate() const
 
-    Returns true if the QChar is the high part of a utf16 surrogate
-    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
+    Returns true if the QChar is the high part of a UTF16 surrogate
+    (i.e. if it's code point in range [0xd800..0xdbff]).
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
-    Returns true if the QChar is the low part of a utf16 surrogate
-    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+    Returns true if the QChar is the low part of a UTF16 surrogate
+    (i.e. if it's code point in range [0xdc00..0xdfff]).
 */
 
 /*!
     \fn static bool QChar::isHighSurrogate(uint ucs4)
-    \since 4.7
+    \overload
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    is the high part of a utf16 surrogate
-    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
+    is the high part of a UTF16 surrogate
+    (i.e. if it's code point in range [0xd800..0xdbff]).
 */
 
 /*!
     \fn static bool QChar::isLowSurrogate(uint ucs4)
-    \since 4.7
+    \overload
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    is the low part of a utf16 surrogate
-    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+    is the low part of a UTF16 surrogate
+    (i.e. if it's code point in range [0xdc00..0xdfff]).
 */
 
 /*!
     \fn static bool QChar::requiresSurrogates(uint ucs4)
-    \since 4.7
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
-    can be split into the high and low parts of a utf16 surrogate
-    (ie. if its code point is greater than or equals to 0x10000).
+    can be split into the high and low parts of a UTF16 surrogate
+    (i.e. if it's code point is greater than or equals to 0x10000).
 */
 
 /*!
     \fn static uint QChar::surrogateToUcs4(ushort high, ushort low)
 
     Converts a UTF16 surrogate pair with the given \a high and \a low values
-    to its UCS-4 code point.
+    to it's UCS-4-encoded code point.
 */
 
 /*!
     \fn static uint QChar::surrogateToUcs4(QChar high, QChar low)
+    \overload
 
-    Converts a utf16 surrogate pair (\a high, \a low) to its ucs4 code point.
+    Converts a UTF16 surrogate pair (\a high, \a low) to it's UCS-4-encoded code point.
 */
 
 /*!
     \fn static ushort QChar::highSurrogate(uint ucs4)
 
-    Returns the high surrogate value of a ucs4 code point.
+    Returns the high surrogate part of a UCS-4-encoded code point.
     The returned result is undefined if \a ucs4 is smaller than 0x10000.
 */
 
 /*!
     \fn static ushort QChar::lowSurrogate(uint ucs4)
 
-    Returns the low surrogate value of a ucs4 code point.
+    Returns the low surrogate part of a UCS-4-encoded code point.
     The returned result is undefined if \a ucs4 is smaller than 0x10000.
 */
 
 /*!
-    Returns the numeric value of the digit, or -1 if the character is
-    not a digit.
+    Returns the numeric value of the digit, or -1 if the character is not a digit.
 */
 int QChar::digitValue() const
 {
@@ -754,7 +738,6 @@ QChar::Category QChar::category() const
 
 /*!
     \overload
-    \since 4.3
     Returns the category of the UCS-4-encoded character specified by \a ucs4.
 */
 QChar::Category QChar::category(uint ucs4)
@@ -814,8 +797,7 @@ QChar::Joining QChar::joining() const
 /*!
     \overload
     Returns information about the joining properties of the UCS-4-encoded
-    character specified by \a ucs4 (needed for certain languages such as
-    Arabic).
+    character specified by \a ucs4 (needed for certain languages such as Arabic).
 */
 QChar::Joining QChar::joining(uint ucs4)
 {
@@ -827,14 +809,12 @@ QChar::Joining QChar::joining(uint ucs4)
 /*!
     \overload
     Returns information about the joining properties of the UCS-2-encoded
-    character specified by \a ucs2 (needed for certain languages such as
-    Arabic).
+    character specified by \a ucs2 (needed for certain languages such as Arabic).
 */
 QChar::Joining QChar::joining(ushort ucs2)
 {
     return (QChar::Joining) qGetProp(ucs2)->joining;
 }
-
 
 /*!
     Returns true if the character should be reversed if the text
@@ -869,7 +849,6 @@ bool QChar::hasMirrored() const
 
 /*!
     \fn bool QChar::isTitleCase() const
-    \since 4.3
 
     Returns true if the character is a titlecase letter, i.e.
     category() is Letter_Titlecase.
@@ -954,8 +933,8 @@ static const unsigned short * QT_FASTCALL decompositionHelper
 }
 
 /*!
-    Decomposes a character into its parts. Returns an empty string if
-    no decomposition exists.
+    Decomposes a character into it's constituent parts. Returns an empty string
+    if no decomposition exists.
 */
 QString QChar::decomposition() const
 {
@@ -964,7 +943,7 @@ QString QChar::decomposition() const
 
 /*!
     \overload
-    Decomposes the UCS-4-encoded character specified by \a ucs4 into its
+    Decomposes the UCS-4-encoded character specified by \a ucs4 into it's
     constituent parts. Returns an empty string if no decomposition exists.
 */
 QString QChar::decomposition(uint ucs4)
@@ -1066,8 +1045,6 @@ QChar::UnicodeVersion QChar::unicodeVersion(ushort ucs2)
 }
 
 /*!
-    \since 4.8
-
     Returns the most recent supported Unicode version.
 */
 QChar::UnicodeVersion QChar::currentUnicodeVersion()
@@ -1266,7 +1243,6 @@ ushort QChar::toCaseFolded(ushort ucs2)
 */
 
 /*!
-    \fn char QChar::toAscii() const
     Returns the character value of the QChar obtained using the current
     codec used to read C strings, or 0 if the character is not representable
     using this codec. The default codec handles Latin-1 encoded text,
@@ -1290,16 +1266,14 @@ char QChar::toAscii() const
 }
 
 /*!
-    \fn QChar QChar::fromLatin1(char c)
-
-    Converts the Latin-1 character \a c to its equivalent QChar. This
+    Converts the Latin-1 character \a c to it's equivalent QChar. This
     is mainly useful for non-internationalized software.
 
     \sa fromAscii(), unicode(), QTextCodec::codecForCStrings()
 */
 
 /*!
-    Converts the ASCII character \a c to its equivalent QChar. This
+    Converts the ASCII character \a c to it's equivalent QChar. This
     is mainly useful for non-internationalized software.
 
     An alternative is to use QLatin1Char.
