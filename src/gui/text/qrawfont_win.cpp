@@ -546,7 +546,7 @@ void QRawFontPrivate::platformCleanUp()
 }
 
 void QRawFontPrivate::platformLoadFromData(const QByteArray &_fontData,
-                                           int pixelSize,
+                                           qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
     QByteArray fontData(_fontData);

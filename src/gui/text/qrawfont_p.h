@@ -99,7 +99,7 @@ public:
     void cleanUp();
     void platformCleanUp();
     void platformLoadFromData(const QByteArray &fontData,
-                              int pixelSize,
+                              qreal pixelSize,
                               QFont::HintingPreference hintingPreference);
 
     static QRawFontPrivate *get(const QRawFont &font) { return font.d.data(); }

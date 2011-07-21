@@ -70,10 +70,10 @@ public:
 
     QRawFont();
     QRawFont(const QString &fileName,
-             int pixelSize,
+             qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QByteArray &fontData,
-             int pixelSize,
+             qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QRawFont &other);
     ~QRawFont();
@@ -117,11 +117,11 @@ public:
     qreal unitsPerEm() const;
 
     void loadFromFile(const QString &fileName,
-                      int pixelSize,
+                      qreal pixelSize,
                       QFont::HintingPreference hintingPreference);
 
     void loadFromData(const QByteArray &fontData,
-                      int pixelSize,
+                      qreal pixelSize,
                       QFont::HintingPreference hintingPreference);
 
     bool supportsCharacter(quint32 ucs4) const;

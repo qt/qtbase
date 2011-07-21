@@ -139,7 +139,7 @@ QRawFont::QRawFont()
    \note The referenced file must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QString &fileName,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -154,7 +154,7 @@ QRawFont::QRawFont(const QString &fileName,
    \note The data must contain a TrueType or OpenType font.
 */
 QRawFont::QRawFont(const QByteArray &fontData,
-                   int pixelSize,
+                   qreal pixelSize,
                    QFont::HintingPreference hintingPreference)
     : d(new QRawFontPrivate)
 {
@@ -204,7 +204,7 @@ bool QRawFont::isValid() const
    \sa loadFromData()
 */
 void QRawFont::loadFromFile(const QString &fileName,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     QFile file(fileName);
@@ -222,7 +222,7 @@ void QRawFont::loadFromFile(const QString &fileName,
    \sa loadFromFile()
 */
 void QRawFont::loadFromData(const QByteArray &fontData,
-                            int pixelSize,
+                            qreal pixelSize,
                             QFont::HintingPreference hintingPreference)
 {
     detach();
