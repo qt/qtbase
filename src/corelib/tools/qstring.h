@@ -337,7 +337,7 @@ public:
     inline QString &prepend(const QLatin1String &s) { return insert(0, s); }
 
     inline QString &operator+=(QChar c) {
-        if (d->ref != 1 || d->size + 1 > (int)d->alloc)
+        if (d->ref != 1 || d->size + 1 > int(d->alloc))
             realloc(grow(d->size + 1));
         d->data()[d->size++] = c.unicode();
         d->data()[d->size] = '\0';
@@ -633,7 +633,7 @@ public:
 class Q_CORE_EXPORT QLatin1String
 {
 public:
-    inline explicit QLatin1String(const char *s) : m_size(s ? (int)strlen(s) : 0), m_data(s) {}
+    inline explicit QLatin1String(const char *s) : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
 
     inline const char *latin1() const { return m_data; }
     inline int size() const { return m_size; }
@@ -842,7 +842,7 @@ inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
 
 inline QString::QString() : d(const_cast<Data *>(&shared_null.str)) {}
 inline QString::~QString() { if (!d->ref.deref()) free(d); }
-inline void QString::reserve(int asize) { if (d->ref != 1 || asize > (int)d->alloc) realloc(asize); d->capacityReserved = true;}
+inline void QString::reserve(int asize) { if (d->ref != 1 || asize > int(d->alloc)) realloc(asize); d->capacityReserved = true;}
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 inline QCharRef QString::operator[](int i)
