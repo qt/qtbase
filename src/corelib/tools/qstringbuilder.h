@@ -294,7 +294,7 @@ template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
 #ifndef QT_NO_CAST_FROM_ASCII
     static inline void QT_ASCII_CAST_WARN appendTo(const char a[N], QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(a, N, out);
+        QAbstractConcatenable::convertFromAscii(a, N - 1, out);
     }
 #endif
     static inline void appendTo(const char a[N], char *&out)
@@ -313,7 +313,7 @@ template <int N> struct QConcatenable<const char[N]> : private QAbstractConcaten
 #ifndef QT_NO_CAST_FROM_ASCII
     static inline void QT_ASCII_CAST_WARN appendTo(const char a[N], QChar *&out)
     {
-        QAbstractConcatenable::convertFromAscii(a, N, out);
+        QAbstractConcatenable::convertFromAscii(a, N - 1, out);
     }
 #endif
     static inline void appendTo(const char a[N], char *&out)
@@ -349,10 +349,9 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
     enum { ExactSize = false };
     static int size(const QByteArray &ba) { return ba.size(); }
 #ifndef QT_NO_CAST_FROM_ASCII
-    static inline void appendTo(const QByteArray &ba, QChar *&out)
+    static inline QT_ASCII_CAST_WARN void appendTo(const QByteArray &ba, QChar *&out)
     {
-        // adding 1 because convertFromAscii expects the size including the null-termination
-        QAbstractConcatenable::convertFromAscii(ba.constData(), ba.size() + 1, out);
+        QAbstractConcatenable::convertFromAscii(ba.constData(), ba.size(), out);
     }
 #endif
     static inline void appendTo(const QByteArray &ba, char *&out)
@@ -373,8 +372,7 @@ template <int N> struct QConcatenable<QConstByteArrayDataPtr<N> > : private QAbs
 #ifndef QT_NO_CAST_FROM_ASCII
     static inline QT_ASCII_CAST_WARN void appendTo(const type &a, QChar *&out)
     {
-        // adding 1 because convertFromAscii expects the size including the null-termination
-        QAbstractConcatenable::convertFromAscii(a.ptr->data, N + 1, out);
+        QAbstractConcatenable::convertFromAscii(a.ptr->data, N, out);
     }
 #endif
     static inline void appendTo(const type &ba, char *&out)

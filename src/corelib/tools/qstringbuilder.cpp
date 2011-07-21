@@ -108,13 +108,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \internal
-   Note: The len contains the ending \0
  */
 void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out)
 {
 #ifndef QT_NO_TEXTCODEC
     if (QString::codecForCStrings && len) {
-        QString tmp = QString::fromAscii(a, len > 0 ? len - 1 : -1);
+        QString tmp = QString::fromAscii(a, len > 0 ? len : -1);
         memcpy(out, reinterpret_cast<const char *>(tmp.constData()), sizeof(QChar) * tmp.size());
         out += tmp.length();
         return;
@@ -126,7 +125,7 @@ void QAbstractConcatenable::convertFromAscii(const char *a, int len, QChar *&out
         while (*a)
             *out++ = QLatin1Char(*a++);
     } else {
-        for (int i = 0; i < len - 1; ++i)
+        for (int i = 0; i < len; ++i)
             *out++ = QLatin1Char(a[i]);
     }
 }
