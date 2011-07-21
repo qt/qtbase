@@ -161,8 +161,8 @@ bool QMutexPrivate::wait(int timeout)
                 return false;
             }
 
-            ts.tv_sec = timeout / Q_INT64_C(1000) / 1000 / 1000;
-            ts.tv_nsec = timeout % (Q_INT64_C(1000) * 1000 * 1000);
+            ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
+            ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
         }
     }
     return true;
