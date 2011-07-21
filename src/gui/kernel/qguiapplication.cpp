@@ -50,6 +50,7 @@
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/private/qthread_p.h>
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
@@ -313,13 +314,25 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
 void QGuiApplicationPrivate::createEventDispatcher()
 {
-    Q_Q(QGuiApplication);
-
     if (platform_integration == 0)
         createPlatformIntegration();
 
-    eventDispatcher = platform_integration->createEventDispatcher();
-    eventDispatcher->setParent(q);
+    if (!eventDispatcher) {
+        QAbstractEventDispatcher *eventDispatcher = platform_integration->createEventDispatcher();
+        setEventDispatcher(eventDispatcher);
+    }
+}
+
+void QGuiApplicationPrivate::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
+{
+    Q_Q(QGuiApplication);
+
+    if (!this->eventDispatcher) {
+        this->eventDispatcher = eventDispatcher;
+        this->eventDispatcher->setParent(q);
+        threadData->eventDispatcher = eventDispatcher;
+    }
+
 }
 
 void QGuiApplicationPrivate::init()

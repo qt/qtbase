@@ -69,6 +69,7 @@ public:
 
     void createPlatformIntegration();
     void createEventDispatcher();
+    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
