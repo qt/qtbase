@@ -60,6 +60,7 @@
 # include <linux/futex.h>
 # include <sys/syscall.h>
 # include <unistd.h>
+# include <QtCore/qelapsedtimer.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -138,16 +139,31 @@ static inline int _q_futex(volatile int *addr, int op, int val, const struct tim
 
 bool QMutexPrivate::wait(int timeout)
 {
+    struct timespec ts, *pts = 0;
+    QElapsedTimer timer;
+    if (timeout >= 0) {
+        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
+        ts.tv_sec = (timeout / 1000);
+        pts = &ts;
+        timer.start();
+    }
     while (contenders.fetchAndStoreAcquire(2) > 0) {
-        struct timespec ts, *pts = 0;
-        if (timeout >= 0) {
-            ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
-            ts.tv_sec = (timeout / 1000);
-            pts = &ts;
-        }
         int r = _q_futex(&contenders._q_value, FUTEX_WAIT, 2, pts, 0, 0);
         if (r != 0 && errno == ETIMEDOUT)
             return false;
+
+        if (pts) {
+            // recalculate the timeout
+            qint64 xtimeout = timeout * 1000 * 1000;
+            xtimeout -= timer.nsecsElapsed();
+            if (xtimeout < 0) {
+                // timer expired after we returned
+                return false;
+            }
+
+            ts.tv_sec = timeout / Q_INT64_C(1000) / 1000 / 1000;
+            ts.tv_nsec = timeout % (Q_INT64_C(1000) * 1000 * 1000);
+        }
     }
     return true;
 }

@@ -52,8 +52,6 @@ typedef enum {
 
 typedef enum 
 {
-    HB_NoCategory,
-
     HB_Mark_NonSpacing,          /*   Mn */
     HB_Mark_SpacingCombining,    /*   Mc */
     HB_Mark_Enclosing,           /*   Me */

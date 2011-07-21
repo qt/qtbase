@@ -1319,64 +1319,6 @@ void QFileInfo::setCaching(bool enable)
 }
 
 /*!
-    \fn QString QFileInfo::baseName(bool complete)
-
-    Use completeBaseName() or the baseName() overload that takes no
-    parameters instead.
-*/
-
-/*!
-    \fn QString QFileInfo::extension(bool complete = true) const
-
-    Use completeSuffix() or suffix() instead.
-*/
-
-/*!
-    \fn QString QFileInfo::absFilePath() const
-
-    Use absoluteFilePath() instead.
-*/
-
-/*!
-    \fn QString QFileInfo::dirPath(bool absPath) const
-
-    Use absolutePath() if the absolute path is wanted (\a absPath
-    is true) or path() if it's not necessary (\a absPath is false).
-*/
-
-/*!
-    \fn bool QFileInfo::convertToAbs()
-
-    Use makeAbsolute() instead.
-*/
-
-/*!
-    \enum QFileInfo::Permission
-
-    \compat
-
-    \value ReadOwner
-    \value WriteOwner
-    \value ExeOwner
-    \value ReadUser
-    \value WriteUser
-    \value ExeUser
-    \value ReadGroup
-    \value WriteGroup
-    \value ExeGroup
-    \value ReadOther
-    \value WriteOther
-    \value ExeOther
-*/
-
-/*!
-    \fn bool QFileInfo::permission(PermissionSpec permissions) const
-    \compat
-
-    Use permission() instead.
-*/
-
-/*!
     \typedef QFileInfoList
     \relates QFileInfo
 

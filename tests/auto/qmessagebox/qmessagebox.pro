@@ -8,5 +8,4 @@ INCLUDEPATH += .
 # Input
 SOURCES += tst_qmessagebox.cpp 
 
-
-
+CONFIG+=insignificant_test

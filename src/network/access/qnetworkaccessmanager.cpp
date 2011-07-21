@@ -1022,6 +1022,20 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     return reply;
 }
 
+
+/*!
+    \since 5.0
+
+    Flushes the internal cache of authentication data and network connections.
+
+    This function is useful for doing auto tests.
+
+*/
+void QNetworkAccessManager::clearAccessCache()
+{
+    QNetworkAccessManagerPrivate::clearCache(this);
+}
+
 void QNetworkAccessManagerPrivate::_q_replyFinished()
 {
     Q_Q(QNetworkAccessManager);

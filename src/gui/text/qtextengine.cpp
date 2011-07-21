@@ -319,6 +319,26 @@ static void appendItems(QScriptAnalysis *analysis, int &start, int &stop, const 
     start = stop;
 }
 
+static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
+                                            const ushort *unicode, int length,
+                                            int &sor, int &eor, QBidiControl &control)
+{
+    QChar::Direction dir = control.basicDirection();
+    int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
+    while (sor < length) {
+        dir = QChar::direction(unicode[sor]);
+        // Keep skipping DirBN as if it doesn't exist
+        if (dir != QChar::DirBN)
+            break;
+        analysis[sor++].bidiLevel = level;
+    }
+
+    eor = sor;
+    if (eor == length)
+        dir = control.basicDirection();
+
+    return dir;
+}
 
 // creates the next QScript items.
 static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiControl &control)
@@ -430,8 +450,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                 case QChar::DirAN:
                     if (eor >= 0) {
                         appendItems(analysis, sor, eor, control, dir);
-                        dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                        status.eor = dir;
+                        status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                     } else {
                         eor = current; status.eor = dir;
                     }
@@ -455,8 +474,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                             }
                             eor = current - 1;
                             appendItems(analysis, sor, eor, control, dir);
-                            dir = eor < length ? QChar::direction(unicode[eor]) : control.basicDirection();
-                            status.eor = dir;
+                            status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
                         } else {
                             if(status.eor != QChar::DirL) {
                                 appendItems(analysis, sor, eor, control, dir);
@@ -2790,7 +2808,7 @@ QFixed QTextEngine::alignLine(const QScriptLine &line)
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - (line.textAdvance + leadingSpaceWidth(line)))/2;
+            x = (line.width - line.textAdvance)/2 - leadingSpaceWidth(line);
     }
     return x;
 }
@@ -2872,6 +2890,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     }
 
     const HB_CharAttributes *attrs = attributes();
+    logClusters = this->logClusters(si);
     clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
 
     if (clusterLength) {
@@ -3033,6 +3052,22 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     : justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
       num_chars(0), chars(0), logClusters(0), f(0), fontEngine(0)
 {
+    f = font;
+    fontEngine = f->d->engineForScript(si.analysis.script);
+    Q_ASSERT(fontEngine);
+
+    initWithScriptItem(si);
+}
+
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe, const QTextCharFormat &format)
+    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
+      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
+{
+}
+
+// Fix up flags and underlineStyle with given info
+void QTextItemInt::initWithScriptItem(const QScriptItem &si)
+{
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
     flags = 0;
@@ -3040,13 +3075,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::RightToLeft;
     ascent = si.ascent;
     descent = si.descent;
-    f = font;
-    fontEngine = f->d->engineForScript(si.analysis.script);
-    Q_ASSERT(fontEngine);
 
-    if (format.hasProperty(QTextFormat::TextUnderlineStyle)) {
-        underlineStyle = format.underlineStyle();
-    } else if (format.boolProperty(QTextFormat::FontUnderline)
+    if (charFormat.hasProperty(QTextFormat::TextUnderlineStyle)) {
+        underlineStyle = charFormat.underlineStyle();
+    } else if (charFormat.boolProperty(QTextFormat::FontUnderline)
                || f->d->underline) {
         underlineStyle = QTextCharFormat::SingleUnderline;
     }
@@ -3055,16 +3087,10 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
     if (underlineStyle == QTextCharFormat::SingleUnderline)
         flags |= QTextItem::Underline;
 
-    if (f->d->overline || format.fontOverline())
+    if (f->d->overline || charFormat.fontOverline())
         flags |= QTextItem::Overline;
-    if (f->d->strikeOut || format.fontStrikeOut())
+    if (f->d->strikeOut || charFormat.fontStrikeOut())
         flags |= QTextItem::StrikeOut;
-}
-
-QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe)
-    : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
-      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
-{
 }
 
 QTextItemInt QTextItemInt::midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const

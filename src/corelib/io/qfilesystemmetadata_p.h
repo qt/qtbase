@@ -369,8 +369,7 @@ inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, boo
         entryFlags &= ~LinkType;
 #if !defined(Q_OS_WINCE)
         if ((fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT)
-            && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK
-                || findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
+            && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
             entryFlags |= LinkType;
         }
 #endif

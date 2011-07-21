@@ -1,4 +1,8 @@
 load(qttest_p4)
+
+# this is not a real testcase ('make check' should not run it)
+CONFIG -= testcase
+
 SOURCES += tst_failinitdata.cpp
 QT = core
 

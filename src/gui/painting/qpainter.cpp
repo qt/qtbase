@@ -2799,6 +2799,9 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
+
     d->state->clipRegion = rect;
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
@@ -2853,6 +2856,9 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipRegion = r;
     d->state->clipOperation = op;
@@ -3258,6 +3264,9 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         d->state->clipOperation = op;
         return;
     }
+
+    if (d->state->clipOperation == Qt::NoClip && op == Qt::IntersectClip)
+        op = Qt::ReplaceClip;
 
     d->state->clipPath = path;
     d->state->clipOperation = op;

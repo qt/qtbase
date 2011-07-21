@@ -317,16 +317,6 @@ QRect QRect::normalized() const
 
 
 /*!
-    \fn QRect QRect::normalize() const
-    \compat
-
-    Returns a normalized rectangle; i.e., a rectangle that has a
-    non-negative width and height.
-
-    Use the normalized() function instead
-*/
-
-/*!
     \fn int QRect::left() const
 
     Returns the x-coordinate of the rectangle's left edge. Equivalent
@@ -364,42 +354,6 @@ QRect QRect::normalized() const
     height() - 1; use y() + height() to retrieve the true y-coordinate.
 
     \sa setBottom(), bottomLeft(), bottomRight()
-*/
-
-/*!
-    \fn int &QRect::rLeft()
-    \compat
-
-    Returns a reference to the left coordinate of the rectangle.
-
-    Use the left() function instead.
-*/
-
-/*!
-    \fn int &QRect::rTop()
-    \compat
-
-    Returns a reference to the top coordinate of the rectangle.
-
-    Use the top() function instead.
-*/
-
-/*!
-    \fn int &QRect::rRight()
-    \compat
-
-    Returns a reference to the right coordinate of the rectangle.
-
-    Use the right() function instead.
-*/
-
-/*!
-    \fn int &QRect::rBottom()
-    \compat
-
-    Returns a reference to the bottom coordinate of the rectangle.
-
-    Use the bottom() function instead.
 */
 
 /*!
@@ -596,28 +550,6 @@ QRect QRect::normalized() const
 */
 
 /*!
-    \fn void QRect::rect(int *x, int *y, int *width, int *height) const
-    \compat
-
-    Extracts the position of the rectangle's top-left corner to *\a x and
-    *\a y, and its dimensions to *\a width and * \a height.
-
-    Use the getRect() function instead.
-*/
-
-
-/*!
-    \fn void QRect::coords(int *x1, int *y1, int *x2, int *y2) const
-    \compat
-
-    Extracts the position of the rectangle's top-left corner to *\a x1
-    and *\a y1, and the position of the bottom-right corner to *\a x2
-    and *\a y2.
-
-    Use the getCoords() function instead.
-*/
-
-/*!
     \fn void QRect::moveLeft(int x)
 
     Moves the rectangle horizontally, leaving the rectangle's left
@@ -719,23 +651,6 @@ void QRect::moveCenter(const QPoint &p)
 }
 
 /*!
-    \fn void QRect::moveBy(int dx, int dy)
-    \compat
-
-    Moves the rectangle \a dx along the x axis and \a dy along the y
-    axis, relative to the current position.
-
-    Use the translate() function instead.
-*/
-
-/*!
-    \fn void QRect::moveBy(const QPoint &)
-    \compat
-
-    Use the translate() function instead.
-*/
-
-/*!
     \fn void QRect::moveTo(int x, int y)
 
     Moves the rectangle, leaving the top-left corner at the given
@@ -817,16 +732,6 @@ void QRect::moveCenter(const QPoint &p)
     \sa getCoords(), setRect()
 */
 
-
-/*!
-    \fn void QRect::addCoords(int dx1, int dy1, int dx2, int dy2)
-    \compat
-
-    Adds \a dx1, \a dy1, \a dx2 and \a dy2 to the existing coordinates
-    of the rectangle respectively.
-
-    Use the adjust() function instead.
-*/
 
 /*! \fn QRect QRect::adjusted(int dx1, int dy1, int dx2, int dy2) const
 

@@ -65,6 +65,7 @@ SOURCES += qgl.cpp \
                 gl2paintengineex/qglcustomshaderstage_p.h \
                 gl2paintengineex/qtriangulatingstroker_p.h \
                 gl2paintengineex/qtriangulator_p.h \
+                gl2paintengineex/qrbtree_p.h \
                 gl2paintengineex/qtextureglyphcache_gl_p.h \
                 gl2paintengineex/qglshadercache_p.h \
                 gl2paintengineex/qglshadercache_meego_p.h

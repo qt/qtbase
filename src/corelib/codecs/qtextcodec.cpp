@@ -1788,33 +1788,6 @@ bool QTextDecoder::hasFailure() const
     return state.invalidChars != 0;
 }
 
-/*!
-    \fn QTextCodec *QTextCodec::codecForContent(const char *str, int size)
-
-    This functionality is no longer provided by Qt. This
-    compatibility function always returns a null pointer.
-*/
-
-/*!
-    \fn QTextCodec *QTextCodec::codecForName(const char *hint, int accuracy)
-
-    Use the codecForName(const QByteArray &) overload instead.
-*/
-
-/*!
-    \fn QTextCodec *QTextCodec::codecForIndex(int i)
-
-    Use availableCodecs() or availableMibs() instead and iterate
-    through the resulting list.
-*/
-
-
-/*!
-    \fn QByteArray QTextCodec::mimeName() const
-
-    Use name() instead.
-*/
-
 QT_END_NAMESPACE
 
 #endif // QT_NO_TEXTCODEC

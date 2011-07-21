@@ -464,19 +464,6 @@ QSize QToolButton::minimumSizeHint() const
 }
 
 /*!
-    \enum QToolButton::TextPosition
-    \compat
-
-    This enum describes the position of the tool button's text label in
-    relation to the tool button's icon.
-
-    \value BesideIcon The text appears beside the icon.
-    \value BelowIcon The text appears below the icon.
-    \omitvalue Right
-    \omitvalue Under
-*/
-
-/*!
     \property QToolButton::toolButtonStyle
     \brief whether the tool button displays an icon only, text only,
     or text beside/below the icon.

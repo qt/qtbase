@@ -100,7 +100,10 @@ QtScript
 --------
  - Deprecated qScriptValueFromQMetaObject, qScriptValueToValue, qScriptValueFromValue
 
+QtSql
+-----
 
+ - Update sqlite to 3.7.7.1
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************

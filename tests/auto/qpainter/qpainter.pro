@@ -16,3 +16,4 @@ wince* {
 }
 
 
+mac*:CONFIG+=insignificant_test

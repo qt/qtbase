@@ -108,7 +108,9 @@ struct Q_CORE_EXPORT QUuid
     QUuid(const QString &);
     QUuid(const char *);
     QString toString() const;
-    operator QString() const { return toString(); } // ### Qt5 remove
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED operator QString() const { return toString(); }
+#endif
     QUuid(const QByteArray &);
     QByteArray toByteArray() const;
 #endif
@@ -186,6 +188,8 @@ struct Q_CORE_EXPORT QUuid
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUuid &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUuid &);
 #endif
+
+Q_CORE_EXPORT uint qHash(const QUuid &uuid);
 
 QT_END_NAMESPACE
 

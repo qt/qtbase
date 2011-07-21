@@ -1036,11 +1036,6 @@ bool QFile::open(OpenMode mode)
     return false;
 }
 
-/*! \fn QFile::open(OpenMode, FILE*)
-
-    Use open(FILE *, OpenMode) instead.
-*/
-
 /*!
     \overload
 
@@ -1157,11 +1152,6 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     }
     return false;
 }
-
-/*! \fn QFile::open(OpenMode, int)
-
-    Use open(int, OpenMode) instead.
-*/
 
 /*!
     \overload
@@ -1398,18 +1388,6 @@ bool QFile::unmap(uchar *address)
     d->setError(PermissionsError, tr("No file engine available or engine does not support UnMapExtension"));
     return false;
 }
-
-/*!
-    \fn QString QFile::name() const
-
-    Use fileName() instead.
-*/
-
-/*!
-    \fn void QFile::setName(const QString &name)
-
-    Use setFileName() instead.
-*/
 
 /*!
     Sets the file size (in bytes) \a sz. Returns true if the file if the

@@ -914,30 +914,6 @@ bool QHostAddress::isNull() const
 }
 
 /*!
-    \fn quint32 QHostAddress::ip4Addr() const
-
-    Use toIPv4Address() instead.
-*/
-
-/*!
-    \fn bool QHostAddress::isIp4Addr() const
-
-    Use protocol() instead.
-*/
-
-/*!
-    \fn bool QHostAddress::isIPv4Address() const
-
-    Use protocol() instead.
-*/
-
-/*!
-    \fn bool QHostAddress::isIPv6Address() const
-
-    Use protocol() instead.
-*/
-
-/*!
     \since 4.5
 
     Returns true if this IP is in the subnet described by the network

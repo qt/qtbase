@@ -43,6 +43,7 @@
 #include <QStringList>
 #include <QSocketNotifier>
 #include <QtCore/private/qcore_unix_p.h>
+#include <QTimer>
 #include <QDebug>
 
 #include <libudev.h>
@@ -58,9 +59,9 @@ QT_BEGIN_NAMESPACE
 class QTouchScreenData
 {
 public:
-    QTouchScreenData(QTouchScreenHandler *q_ptr);
+    QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args);
 
-    void handle(input_event *data);
+    void processInputEvent(input_event *data);
 
     QTouchScreenHandler *q;
     QEvent::Type m_state;
@@ -78,6 +79,8 @@ public:
     QMap<int, Slot> m_slots;
     QMap<int, QPoint> m_lastReport;
     int m_currentSlot;
+    QTimer m_clearTimer;
+    bool m_clearTimerEnabled;
 
     int hw_range_x_min;
     int hw_range_x_max;
@@ -88,7 +91,7 @@ public:
     QList<QTouchScreenObserver *> m_observers;
 };
 
-QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr)
+QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr, const QStringList &args)
     : q(q_ptr),
       m_state(QEvent::TouchBegin),
       m_prevState(m_state),
@@ -96,6 +99,15 @@ QTouchScreenData::QTouchScreenData(QTouchScreenHandler *q_ptr)
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0)
 {
+    m_clearTimerEnabled = !args.contains(QLatin1String("no_timeout"));
+    if (m_clearTimerEnabled) {
+        QObject::connect(&m_clearTimer, SIGNAL(timeout()), q, SLOT(onTimeout()));
+        m_clearTimer.setSingleShot(true);
+        m_clearTimer.setInterval(2000); // default timeout is 2 seconds
+        for (int i = 0; i < args.count(); ++i)
+            if (args.at(i).startsWith(QLatin1String("timeout=")))
+                m_clearTimer.setInterval(args.at(i).mid(8).toInt());
+    }
 }
 
 QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
@@ -130,7 +142,7 @@ QTouchScreenHandler::QTouchScreenHandler(const QString &spec)
         return;
     }
 
-    d = new QTouchScreenData(this);
+    d = new QTouchScreenData(this, args);
 
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
@@ -203,12 +215,25 @@ void QTouchScreenHandler::readData()
     } else if (n > 0) {
         for (int i = 0; i < n; ++i) {
             input_event *data = &buffer[i];
-            d->handle(data);
+            d->processInputEvent(data);
         }
     }
 }
 
-void QTouchScreenData::handle(input_event *data)
+void QTouchScreenHandler::onTimeout()
+{
+#ifdef POINT_DEBUG
+    qDebug("TIMEOUT (%d slots)", d->m_slots.count());
+#endif
+    d->m_slots.clear();
+    if (d->m_state != QEvent::TouchEnd)
+        for (int i = 0; i < d->m_observers.count(); ++i)
+            d->m_observers.at(i)->touch_point(QEvent::TouchEnd,
+                                              QList<QWindowSystemInterface::TouchPoint>());
+    d->m_state = QEvent::TouchBegin;
+}
+
+void QTouchScreenData::processInputEvent(input_event *data)
 {
     if (data->type == EV_ABS) {
          if (data->code == ABS_MT_POSITION_X) {
@@ -233,6 +258,8 @@ void QTouchScreenData::handle(input_event *data)
                  m_slots[m_currentSlot].state = Qt::TouchPointReleased;
          }
     } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
+        if (m_clearTimerEnabled)
+            m_clearTimer.stop();
         m_touchPoints.clear();
         QList<int> keys = m_slots.keys();
         int ignoredSlotCount = 0;
@@ -270,10 +297,6 @@ void QTouchScreenData::handle(input_event *data)
                 }
         }
 
-        // ### TODO Add timestamps and remove points that stay unchanged for too long.
-        // The user's finger may fall off the touchscreen, which means there will be
-        // no released event sent ever for that particular point.
-
 #ifdef POINT_DEBUG
         qDebug() << m_touchPoints.count() << "touchpoints, event type" << m_state;
         for (int i = 0; i < m_touchPoints.count(); ++i)
@@ -294,6 +317,13 @@ void QTouchScreenData::handle(input_event *data)
             m_state = QEvent::TouchUpdate;
         else if (m_state == QEvent::TouchEnd)
             m_state = QEvent::TouchBegin;
+
+        // The user's finger may fall off the touchscreen which in some rare
+        // cases may mean there will be no released event ever received for that
+        // particular point. Use a timer to clear all points when no activity
+        // occurs for a certain period of time.
+        if (m_clearTimerEnabled && m_state != QEvent::TouchBegin)
+            m_clearTimer.start();
     }
 }
 

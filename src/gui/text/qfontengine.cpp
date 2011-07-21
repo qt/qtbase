@@ -1110,12 +1110,19 @@ QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &fami
     return f;
 }
 
-Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
-    x->resize(256);
-    QRgb *it = x->data();
-    for (int i = 0; i < x->size(); ++i, ++it)
-        *it = 0xff000000 | i | (i<<8) | (i<<16);
-})
+class QRgbGreyPalette: public QVector<QRgb>
+{
+public:
+    QRgbGreyPalette()
+    {
+        resize(256);
+        QRgb *it = data();
+        for (int i = 0; i < size(); ++i, ++it)
+            *it = 0xff000000 | i | (i<<8) | (i<<16);
+    }
+};
+
+Q_GLOBAL_STATIC(QVector<QRgb>, qt_grayPalette)
 
 const QVector<QRgb> &QFontEngine::grayPalette()
 {

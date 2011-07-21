@@ -57,12 +57,12 @@ class RefCount
 {
 public:
    inline void ref() {
-        if (atomic >= 0)
+        if (atomic > 0)
             atomic.ref();
     }
 
     inline bool deref() {
-        if (atomic < 0)
+        if (atomic <= 0)
             return true;
         return atomic.deref();
     }

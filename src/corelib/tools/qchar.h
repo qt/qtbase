@@ -93,8 +93,6 @@ public:
 
     enum Category
     {
-        NoCategory,    // ### Qt 5: replace with Other_NotAssigned
-
         Mark_NonSpacing,          //   Mn
         Mark_SpacingCombining,    //   Mc
         Mark_Enclosing,           //   Me
@@ -130,9 +128,7 @@ public:
         Symbol_Math,              //   Sm
         Symbol_Currency,          //   Sc
         Symbol_Modifier,          //   Sk
-        Symbol_Other,             //   So
-
-        Punctuation_Dask = Punctuation_Dash // ### Qt 5: remove
+        Symbol_Other              //   So
     };
 
     enum Direction

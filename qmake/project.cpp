@@ -2289,7 +2289,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                     ret.prepend(item);
                 foreach (const QString &dep, dependees[item]) {
                     QSet<QString> &dset = dependencies[dep];
-                    dset.remove(item);
+                    dset.remove(rootSet.at(i)); // *Don't* use 'item' - rootSet may have changed!
                     if (dset.isEmpty())
                         rootSet << dep;
                 }

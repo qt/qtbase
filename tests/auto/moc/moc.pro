@@ -26,4 +26,5 @@ contains(QT_CONFIG, dbus){
     QT += dbus
 }
 
+CONFIG+=insignificant_test
 

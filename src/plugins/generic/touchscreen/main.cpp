@@ -67,8 +67,8 @@ QObject* QTouchScreenPlugin::create(const QString &key,
                                    const QString &spec)
 {
     if (!key.compare(QLatin1String("LinuxTouchScreen"), Qt::CaseInsensitive)) {
-        QTouchScreenHandler *h = new QTouchScreenHandler(spec);
-        h->addObserver(new QTouchEventSenderQPA);
+        QTouchScreenObserver *obs = new QTouchEventSenderQPA(spec);
+        QTouchScreenHandlerThread *h = new QTouchScreenHandlerThread(spec, obs);
         return h;
     }
 

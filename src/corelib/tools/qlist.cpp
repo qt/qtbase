@@ -1714,48 +1714,6 @@ void **QListData::erase(void **xi)
     \sa \link datastreamformat.html Format of the QDataStream operators \endlink
 */
 
-/*!
-    \fn iterator QList::remove(iterator pos)
-
-    Use erase() instead.
-*/
-
-/*!
-    \fn int QList::remove(const T &t)
-
-    Use removeAll() instead.
-*/
-
-/*!
-    \fn int QList::findIndex(const T& t) const
-
-    Use indexOf() instead.
-*/
-
-/*!
-    \fn iterator QList::find(const T& t)
-
-    Use indexOf() instead.
-*/
-
-/*!
-    \fn const_iterator QList::find (const T& t) const
-
-    Use indexOf() instead.
-*/
-
-/*!
-    \fn iterator QList::find(iterator from, const T& t)
-
-    Use indexOf() instead.
-*/
-
-/*!
-    \fn const_iterator QList::find(const_iterator from, const T& t) const
-
-    Use indexOf() instead.
-*/
-
 /*! \fn QList<T> QList<T>::fromVector(const QVector<T> &vector)
 
     Returns a QList object with the data contained in \a vector.

@@ -112,6 +112,7 @@ QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
     return pm;
 }
 
+static void qt_cleanup_brush_pattern_image_cache();
 class QBrushPatternImageCache
 {
 public:
@@ -123,6 +124,7 @@ public:
 
     void init()
     {
+        qAddPostRoutine(qt_cleanup_brush_pattern_image_cache);
         for (int style = Qt::Dense1Pattern; style <= Qt::DiagCrossPattern; ++style) {
             int i = style - Qt::Dense1Pattern;
             m_images[i][0] = QImage(qt_patternForBrush(style, 0), 8, 8, 1, QImage::Format_MonoLSB);
@@ -153,11 +155,7 @@ private:
     bool m_initialized;
 };
 
-static void qt_cleanup_brush_pattern_image_cache();
-Q_GLOBAL_STATIC_WITH_INITIALIZER(QBrushPatternImageCache, qt_brushPatternImageCache,
-                                 {
-                                     qAddPostRoutine(qt_cleanup_brush_pattern_image_cache);
-                                 })
+Q_GLOBAL_STATIC(QBrushPatternImageCache, qt_brushPatternImageCache)
 
 static void qt_cleanup_brush_pattern_image_cache()
 {
@@ -339,33 +337,29 @@ struct QBrushDataPointerDeleter
     \sa Qt::BrushStyle, QPainter, QColor
 */
 
-#ifndef QT_NO_THREAD
-// Special deleter that only deletes if the ref-count goes to zero
-template <>
-class QGlobalStaticDeleter<QBrushData>
+class QNullBrushData
 {
 public:
-    QGlobalStatic<QBrushData> &globalStatic;
-    QGlobalStaticDeleter(QGlobalStatic<QBrushData> &_globalStatic)
-        : globalStatic(_globalStatic)
-    { }
-
-    inline ~QGlobalStaticDeleter()
+    QBrushData *brush;
+    QNullBrushData() : brush(new QBrushData)
     {
-        if (!globalStatic.pointer->ref.deref())
-            delete globalStatic.pointer;
-        globalStatic.pointer = 0;
-        globalStatic.destroyed = true;
+        brush->ref = 1;
+        brush->style = Qt::BrushStyle(0);
+        brush->color = Qt::black;
+    }
+    ~QNullBrushData()
+    {
+        if (!brush->ref.deref())
+            delete brush;
+        brush = 0;
     }
 };
-#endif
 
-Q_GLOBAL_STATIC_WITH_INITIALIZER(QBrushData, nullBrushInstance,
-                                 {
-                                     x->ref = 1;
-                                     x->style = Qt::BrushStyle(0);
-                                     x->color = Qt::black;
-                                 })
+Q_GLOBAL_STATIC(QNullBrushData, nullBrushInstance_holder)
+static QBrushData *nullBrushInstance()
+{
+    return nullBrushInstance_holder()->brush;
+}
 
 static bool qbrush_check_type(Qt::BrushStyle style) {
     switch (style) {
