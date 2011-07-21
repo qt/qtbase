@@ -364,6 +364,27 @@ template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
     }
 };
 
+template <int N> struct QConcatenable<QConstByteArrayDataPtr<N> > : private QAbstractConcatenable
+{
+    typedef QConstByteArrayDataPtr<N> type;
+    typedef QByteArray ConvertTo;
+    enum { ExactSize = false };
+    static int size(const type &) { return N; }
+#ifndef QT_NO_CAST_FROM_ASCII
+    static inline QT_ASCII_CAST_WARN void appendTo(const type &a, QChar *&out)
+    {
+        // adding 1 because convertFromAscii expects the size including the null-termination
+        QAbstractConcatenable::convertFromAscii(a.ptr->data, N + 1, out);
+    }
+#endif
+    static inline void appendTo(const type &ba, char *&out)
+    {
+        const char *a = ba.ptr->data;
+        while (*a)
+            *out++ = *a++;
+    }
+};
+
 namespace QtStringBuilder {
     template <typename A, typename B> struct ConvertToTypeHelper
     { typedef A ConvertTo; };

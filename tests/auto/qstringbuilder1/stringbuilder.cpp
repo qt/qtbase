@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <QtTest/QtTest>
+
 #define LITERAL "some literal"
 #define LITERAL_LEN (sizeof(LITERAL)-1)
 #define LITERAL_EXTRA "some literal" "EXTRA"
@@ -48,6 +50,12 @@
 #define UTF8_LITERAL_LEN (sizeof(UTF8_LITERAL)-1)
 #define UTF8_LITERAL_EXTRA "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l" "EXTRA"
 
+#ifdef Q_COMPILER_UNICODE_STRINGS
+// "some literal", but replacing all vocals by their umlauted UTF-8 string :)
+#define UNICODE_LITERAL u"s\u00f6m\u00eb l\u00eft\u00ebr\u00e4l"
+#define UNICODE_LITERAL_LEN ((sizeof(UNICODE_LITERAL) - 1) / 2)
+#define UNICODE_LITERAL_EXTRA u"s\u00f6m\u00eb l\u00eft\u00ebr\u00e4l" "EXTRA"
+#endif
 
 //fix for gcc4.0: if the operator+ does not exist without QT_USE_FAST_OPERATOR_PLUS
 #ifndef QT_USE_FAST_CONCATENATION
@@ -68,6 +76,7 @@ void runScenario()
     QStringRef stringref(&string, 2, 10);
     QLatin1Char achar('c');
     QString r2(QLatin1String(LITERAL LITERAL));
+    QString r3 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
     QString r;
 
     r = l1literal Q l1literal;
@@ -80,10 +89,23 @@ void runScenario()
     QCOMPARE(r, r2);
     r = string P l1string;
     QCOMPARE(r, r2);
+    r = string Q QStringLiteral(LITERAL);
+    QCOMPARE(r, r2);
+    r = QStringLiteral(LITERAL) Q string;
+    QCOMPARE(r, r2);
+    r = l1string Q QStringLiteral(LITERAL);
+    QCOMPARE(r, r2);
     r = string + achar;
     QCOMPARE(r, QString(string P achar));
     r = achar + string;
     QCOMPARE(r, QString(achar P string));
+
+#ifdef Q_COMPILER_UNICODE_STRINGS
+    r = QStringLiteral(UNICODE_LITERAL);
+    r = r Q QStringLiteral(UNICODE_LITERAL);
+    QCOMPARE(r, r3);
+#endif
+
 #ifndef QT_NO_CAST_FROM_ASCII
     r = string P LITERAL;
     QCOMPARE(r, r2);
@@ -94,6 +116,11 @@ void runScenario()
     r = ba P string;
     QCOMPARE(r, r2);
     r = string P ba;
+    QCOMPARE(r, r2);
+
+    r = string P QByteArrayLiteral(LITERAL);
+    QCOMPARE(r, r2);
+    r = QByteArrayLiteral(LITERAL) P string;
     QCOMPARE(r, r2);
 
     static const char badata[] = LITERAL_EXTRA;
@@ -109,24 +136,23 @@ void runScenario()
     QCOMPARE(QTextCodec::codecForCStrings()->name(), QByteArray("UTF-8"));
 
     string = QString::fromUtf8(UTF8_LITERAL);
-    r2 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
     ba = UTF8_LITERAL;
 
     r = string P UTF8_LITERAL;
-    QCOMPARE(r.size(), r2.size());
-    QCOMPARE(r, r2);
+    QCOMPARE(r.size(), r3.size());
+    QCOMPARE(r, r3);
     r = UTF8_LITERAL P string;
-    QCOMPARE(r, r2);
+    QCOMPARE(r, r3);
     r = ba P string;
-    QCOMPARE(r, r2);
+    QCOMPARE(r, r3);
     r = string P ba;
-    QCOMPARE(r, r2);
+    QCOMPARE(r, r3);
 
     ba = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
     r = ba P string;
-    QCOMPARE(r, r2);
+    QCOMPARE(r, r3);
     r = string P ba;
-    QCOMPARE(r, r2);
+    QCOMPARE(r, r3);
 
     ba = QByteArray(); // empty
     r = ba P string;
@@ -150,6 +176,11 @@ void runScenario()
     {
         QByteArray ba = LITERAL;
         QByteArray superba = ba P ba P LITERAL;
+        QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
+
+        ba = QByteArrayLiteral(LITERAL);
+        QCOMPARE(ba, QByteArray(LITERAL));
+        superba = ba P QByteArrayLiteral(LITERAL) P LITERAL;
         QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
 
         QByteArray testWith0 = ba P "test\0with\0zero" P ba;
