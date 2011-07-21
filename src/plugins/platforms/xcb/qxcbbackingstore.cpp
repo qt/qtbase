@@ -114,12 +114,18 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
     if (error) {
-        qWarning() << "QXcbBackingStore: Unable to attach to shared memory segment";
         free(error);
-    }
 
-    if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
-        qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
+        shmdt(m_shm_info.shmaddr);
+        shmctl(m_shm_info.shmid, IPC_RMID, 0);
+
+        m_shm_info.shmaddr = 0;
+
+        m_xcb_image->data = (uint8_t *)qMalloc(segmentSize);
+    } else {
+        if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
+            qWarning() << "QXcbBackingStore: Error while marking the shared memory segment to be destroyed";
+    }
 
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
 }
@@ -127,14 +133,18 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
 void QXcbShmImage::destroy()
 {
     const int segmentSize = m_xcb_image ? (m_xcb_image->stride * m_xcb_image->height) : 0;
-    if (segmentSize)
+    if (segmentSize && m_shm_info.shmaddr)
         Q_XCB_CALL(xcb_shm_detach(xcb_connection(), m_shm_info.shmseg));
 
     xcb_image_destroy(m_xcb_image);
 
     if (segmentSize) {
-        shmdt(m_shm_info.shmaddr);
-        shmctl(m_shm_info.shmid, IPC_RMID, 0);
+        if (m_shm_info.shmaddr) {
+            shmdt(m_shm_info.shmaddr);
+            shmctl(m_shm_info.shmid, IPC_RMID, 0);
+        } else {
+            qFree(m_xcb_image->data);
+        }
     }
 
     if (m_gc)
@@ -155,18 +165,32 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
     }
 
     Q_XCB_NOOP(connection());
-    xcb_image_shm_put(xcb_connection(),
+    if (m_shm_info.shmaddr) {
+        xcb_image_shm_put(xcb_connection(),
+                          window,
+                          m_gc,
+                          m_xcb_image,
+                          m_shm_info,
+                          source.x(),
+                          source.y(),
+                          target.x(),
+                          target.y(),
+                          source.width(),
+                          source.height(),
+                          false);
+    } else {
+        xcb_image_t *subimage = xcb_image_subimage(m_xcb_image, source.x(), source.y(), source.width(), source.height(),
+                                                   0, 0, 0);
+        xcb_image_put(xcb_connection(),
                       window,
                       m_gc,
-                      m_xcb_image,
-                      m_shm_info,
-                      source.x(),
-                      source.y(),
+                      subimage,
                       target.x(),
                       target.y(),
-                      source.width(),
-                      source.height(),
-                      false);
+                      0);
+
+        xcb_image_destroy(subimage);
+    }
     Q_XCB_NOOP(connection());
 
     m_dirty = m_dirty | source;
