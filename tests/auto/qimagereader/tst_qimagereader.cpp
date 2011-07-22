@@ -234,6 +234,8 @@ void tst_QImageReader::readImage_data()
 
     QTest::newRow("empty") << QString() << false << QByteArray();
     QTest::newRow("BMP: colorful") << QString("colorful.bmp") << true << QByteArray("bmp");
+    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << true << QByteArray("bmp");
+    QTest::newRow("BMP: test32v5") << QString("test32v5.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: font") << QString("font.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: signed char") << QString("crash-signed-char.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: 4bpp RLE") << QString("4bpp-rle.bmp") << true << QByteArray("bmp");
@@ -432,6 +434,8 @@ void tst_QImageReader::setClipRect_data()
     QTest::addColumn<QRect>("newRect");
     QTest::addColumn<QByteArray>("format");
     QTest::newRow("BMP: colorful") << "colorful" << QRect(0, 0, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32bfv4") << "test32bfv4" << QRect(0, 0, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32v5") << "test32v5" << QRect(0, 0, 50, 50) << QByteArray("bmp");
     QTest::newRow("BMP: font") << "font" << QRect(0, 0, 50, 50) << QByteArray("bmp");
     QTest::newRow("BMP: 4bpp uncompressed") << "tst7.bmp" << QRect(0, 0, 31, 31) << QByteArray("bmp");
     QTest::newRow("XPM: marble") << "marble" << QRect(0, 0, 50, 50) << QByteArray("xpm");
@@ -484,6 +488,8 @@ void tst_QImageReader::setScaledClipRect_data()
     QTest::addColumn<QByteArray>("format");
 
     QTest::newRow("BMP: colorful") << "colorful" << QRect(0, 0, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32bfv4") << "test32bfv4" << QRect(0, 0, 50, 50) << QByteArray("bmp");
+    QTest::newRow("BMP: test32v5") << "test32v5" << QRect(0, 0, 50, 50) << QByteArray("bmp");
     QTest::newRow("BMP: font") << "font" << QRect(0, 0, 50, 50) << QByteArray("bmp");
     QTest::newRow("XPM: marble") << "marble" << QRect(0, 0, 50, 50) << QByteArray("xpm");
     QTest::newRow("PNG: kollada") << "kollada" << QRect(0, 0, 50, 50) << QByteArray("png");
@@ -555,6 +561,8 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm") << QImage::Format_Indexed8;
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp") << QImage::Format_Indexed8;
     QTest::newRow("bmp-2") << QString("font.bmp") << QByteArray("bmp") << QImage::Format_Indexed8;
+    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
+    QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
     QTest::newRow("mng-1") << QString("ball.mng") << QByteArray("mng") << QImage::Format_Invalid;
@@ -684,6 +692,8 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("BMP: colorful") << QString("colorful.bmp") << false;
     QTest::newRow("BMP: font") << QString("font.bmp") << false;
     QTest::newRow("BMP: signed char") << QString("crash-signed-char.bmp") << false;
+    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << false;;
+    QTest::newRow("BMP: test32v5") << QString("test32v5.bmp") << false;
     QTest::newRow("XPM: marble") << QString("marble.xpm") << false;
     QTest::newRow("PNG: kollada") << QString("kollada.png") << false;
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << false;
@@ -1064,6 +1074,8 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-2") << QString("font.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
 #ifdef QTEST_HAVE_MNG
     QTest::newRow("mng-1") << QString("ball.mng") << QByteArray("mng");
@@ -1155,6 +1167,8 @@ void tst_QImageReader::readFromFileAfterJunk_data()
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-2") << QString("font.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
 //    QTest::newRow("mng-1") << QString("images/ball.mng") << QByteArray("mng");
 //    QTest::newRow("mng-2") << QString("images/fire.mng") << QByteArray("mng");
@@ -1233,6 +1247,8 @@ void tst_QImageReader::devicePosition_data()
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-2") << QString("font.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
+    QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
 //    QTest::newRow("mng-1") << QString("images/ball.mng") << QByteArray("mng");
 //    QTest::newRow("mng-2") << QString("images/fire.mng") << QByteArray("mng");
@@ -1304,6 +1320,12 @@ void tst_QImageReader::readFromResources_data()
                                                   << QString("");
     QTest::newRow("4bpp-rle.bmp") << QString("4bpp-rle.bmp")
                                          << QByteArray("bmp") << QSize(640, 480)
+                                         << QString("");
+    QTest::newRow("test32bfv4.bmp") << QString("test32bfv4.bmp")
+                                         << QByteArray("bmp") << QSize(373, 156)
+                                         << QString("");
+    QTest::newRow("test32v5.bmp") << QString("test32v5.bmp")
+                                         << QByteArray("bmp") << QSize(373, 156)
                                          << QString("");
 #ifdef QTEST_HAVE_GIF
     QTest::newRow("corrupt.gif") << QString("corrupt.gif")

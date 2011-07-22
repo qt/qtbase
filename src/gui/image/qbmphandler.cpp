@@ -97,8 +97,10 @@ static QDataStream &operator<<(QDataStream &s, const BMP_FILEHDR &bf)
 
 
 const int BMP_OLD  = 12;                        // old Windows/OS2 BMP size
-const int BMP_WIN  = 40;                        // new Windows BMP size
+const int BMP_WIN  = 40;                        // Windows BMP v3 size
 const int BMP_OS2  = 64;                        // new OS/2 BMP size
+const int BMP_WIN4 = 108;                       // Windows BMP v4 size
+const int BMP_WIN5 = 124;                       // Windows BMP v5 size
 
 const int BMP_RGB  = 0;                                // no compression
 const int BMP_RLE8 = 1;                                // run-length encoded, 8 bits
@@ -109,7 +111,7 @@ const int BMP_BITFIELDS = 3;                        // RGB values encoded in dat
 static QDataStream &operator>>(QDataStream &s, BMP_INFOHDR &bi)
 {
     s >> bi.biSize;
-    if (bi.biSize == BMP_WIN || bi.biSize == BMP_OS2) {
+    if (bi.biSize == BMP_WIN || bi.biSize == BMP_OS2 || bi.biSize == BMP_WIN4 || bi.biSize == BMP_WIN5) {
         s >> bi.biWidth >> bi.biHeight >> bi.biPlanes >> bi.biBitCount;
         s >> bi.biCompression >> bi.biSizeImage;
         s >> bi.biXPelsPerMeter >> bi.biYPelsPerMeter;
@@ -255,7 +257,57 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
     image.setDotsPerMeterY(bi.biYPelsPerMeter);
 
     if (!d->isSequential())
-        d->seek(startpos + BMP_FILEHDR_SIZE + bi.biSize); // goto start of colormap
+        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4? BMP_WIN : bi.biSize)); // goto start of colormap
+
+    if (bi.biSize >= BMP_WIN4 || (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32))) {
+        Q_ASSERT(ncols == 0);
+
+        if (d->read((char *)&red_mask, sizeof(red_mask)) != sizeof(red_mask))
+            return false;
+        if (d->read((char *)&green_mask, sizeof(green_mask)) != sizeof(green_mask))
+            return false;
+        if (d->read((char *)&blue_mask, sizeof(blue_mask)) != sizeof(blue_mask))
+            return false;
+
+        // Read BMP v4+ header
+        if (bi.biSize >= BMP_WIN4) {
+            int alpha_mask   = 0;
+            int CSType       = 0;
+            int gamma_red    = 0;
+            int gamma_green  = 0;
+            int gamma_blue   = 0;
+            int endpoints[9];
+
+            if (d->read((char *)&alpha_mask, sizeof(alpha_mask)) != sizeof(alpha_mask))
+                return false;
+            if (d->read((char *)&CSType, sizeof(CSType)) != sizeof(CSType))
+                return false;
+            if (d->read((char *)&endpoints, sizeof(endpoints)) != sizeof(endpoints))
+                return false;
+            if (d->read((char *)&gamma_red, sizeof(gamma_red)) != sizeof(gamma_red))
+                return false;
+            if (d->read((char *)&gamma_green, sizeof(gamma_green)) != sizeof(gamma_green))
+                return false;
+            if (d->read((char *)&gamma_blue, sizeof(gamma_blue)) != sizeof(gamma_blue))
+                return false;
+
+            if (bi.biSize == BMP_WIN5) {
+                qint32 intent      = 0;
+                qint32 profileData = 0;
+                qint32 profileSize = 0;
+                qint32 reserved    = 0;
+
+                if (d->read((char *)&intent, sizeof(intent)) != sizeof(intent))
+                    return false;
+                if (d->read((char *)&profileData, sizeof(profileData)) != sizeof(profileData))
+                    return false;
+                if (d->read((char *)&profileSize, sizeof(profileSize)) != sizeof(profileSize))
+                    return false;
+                if (d->read((char *)&reserved, sizeof(reserved)) != sizeof(reserved) || reserved != 0)
+                    return false;
+            }
+        }
+    }
 
     if (ncols > 0) {                                // read color table
         uchar rgb[4];
@@ -268,12 +320,6 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
                 return false;
         }
     } else if (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32)) {
-        if (d->read((char *)&red_mask, sizeof(red_mask)) != sizeof(red_mask))
-            return false;
-        if (d->read((char *)&green_mask, sizeof(green_mask)) != sizeof(green_mask))
-            return false;
-        if (d->read((char *)&blue_mask, sizeof(blue_mask)) != sizeof(blue_mask))
-            return false;
         red_shift = calc_shift(red_mask);
         red_scale = 256 / ((red_mask >> red_shift) + 1);
         green_shift = calc_shift(green_mask);
