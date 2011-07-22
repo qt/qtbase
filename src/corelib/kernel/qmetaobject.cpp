@@ -859,20 +859,31 @@ QMetaProperty QMetaObject::property(int index) const
         if (flags & EnumOrFlag) {
             result.menum = enumerator(indexOfEnumerator(type));
             if (!result.menum.isValid()) {
-                QByteArray enum_name = type;
-                QByteArray scope_name = d.stringdata;
-                int s = enum_name.lastIndexOf("::");
-                if (s > 0) {
-                    scope_name = enum_name.left(s);
-                    enum_name = enum_name.mid(s + 2);
+                const char *enum_name = type;
+                const char *scope_name = d.stringdata;
+                char *scope_buffer = 0;
+
+                const char *colon = strrchr(enum_name, ':');
+                // ':' will always appear in pairs
+                Q_ASSERT(colon <= enum_name || *(colon-1) == ':');
+                if (colon > enum_name) {
+                    int len = colon-enum_name-1;
+                    scope_buffer = (char *)qMalloc(len+1);
+                    qMemCopy(scope_buffer, enum_name, len);
+                    scope_buffer[len] = '\0';
+                    scope_name = scope_buffer;
+                    enum_name = colon+1;
                 }
+
                 const QMetaObject *scope = 0;
-                if (scope_name == "Qt")
+                if (qstrcmp(scope_name, "Qt") == 0)
                     scope = &QObject::staticQtMetaObject;
                 else
                     scope = QMetaObject_findMetaObject(this, scope_name);
                 if (scope)
                     result.menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
+                if (scope_buffer)
+                    qFree(scope_buffer);
             }
         }
     }
