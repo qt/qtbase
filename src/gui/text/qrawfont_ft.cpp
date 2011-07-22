@@ -88,7 +88,7 @@ public:
         FaceId faceId;
         faceId.filename = "";
         faceId.index = 0;
-        faceId.uuid = QUuid::createUuid().toString().toAscii();
+        faceId.uuid = QUuid::createUuid().toByteArray();
 
         return init(faceId, true, Format_None, fontData);
     }
