@@ -3011,7 +3011,7 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensureState();
 
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (!supportsTransformations(fontEngine)) {
+    if (shouldDrawCachedGlyphs(fontEngine->fontDef.pixelSize, state()->matrix)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
     } else {
@@ -3385,10 +3385,7 @@ bool QRasterPaintEngine::supportsTransformations(qreal pixelSize, const QTransfo
 #endif
         return true;
 
-    if (pixelSize * pixelSize * qAbs(m.determinant()) >= 64 * 64)
-        return true;
-
-    return false;
+    return !shouldDrawCachedGlyphs(pixelSize, m);
 }
 
 /*!

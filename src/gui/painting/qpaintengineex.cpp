@@ -53,6 +53,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#endif
+
 /*******************************************************************************
  *
  * class QVectorPath
@@ -1094,6 +1098,12 @@ bool QPaintEngineEx::supportsTransformations(qreal pixelSize, const QTransform &
         return true;
 
     return false;
+}
+
+bool QPaintEngineEx::shouldDrawCachedGlyphs(qreal pixelSize, const QTransform &m) const
+{
+    return (pixelSize * pixelSize * qAbs(m.determinant())) <
+            QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
 }
 
 QT_END_NAMESPACE
