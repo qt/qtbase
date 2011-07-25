@@ -42,17 +42,20 @@
 #ifndef QSCREEN_H
 #define QSCREEN_H
 
+#include <QtCore/QList>
+#include <QtCore/QObject>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#include <QList>
-
 class QPlatformScreen;
 class QScreenPrivate;
 class QWindow;
+class QSize;
+class QRect;
 
 class Q_GUI_EXPORT QScreen : public QObject
 {
