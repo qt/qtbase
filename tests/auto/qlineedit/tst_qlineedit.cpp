@@ -72,6 +72,8 @@
 #include "qcommonstyle.h"
 #include "qstyleoption.h"
 
+#include "qplatformdefs.h"
+
 QT_BEGIN_NAMESPACE
 class QPainter;
 QT_END_NAMESPACE
@@ -179,6 +181,10 @@ private slots:
     void setEchoMode();
     void echoMode();
     void passwordEchoOnEdit();
+
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    void passwordEchoDelay();
+#endif
 
     void maxLength_mask_data();
     void maxLength_mask();
@@ -1678,6 +1684,51 @@ void tst_QLineEdit::passwordEchoOnEdit()
     // restore clean state
     testWidget->setEchoMode(QLineEdit::Normal);
 }
+
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+void tst_QLineEdit::passwordEchoDelay()
+{
+    QStyleOptionFrameV2 opt;
+    QChar fillChar = testWidget->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, testWidget);
+
+    testWidget->setEchoMode(QLineEdit::Password);
+    testWidget->setFocus();
+    testWidget->raise();
+    QTRY_VERIFY(testWidget->hasFocus());
+
+    QTest::keyPress(testWidget, '0');
+    QTest::keyPress(testWidget, '1');
+    QTest::keyPress(testWidget, '2');
+    QCOMPARE(testWidget->displayText(), QString(2, fillChar) + QLatin1Char('2'));
+    QTest::keyPress(testWidget, '3');
+    QTest::keyPress(testWidget, '4');
+    QCOMPARE(testWidget->displayText(), QString(4, fillChar) + QLatin1Char('4'));
+    QTest::keyPress(testWidget, Qt::Key_Backspace);
+    QCOMPARE(testWidget->displayText(), QString(4, fillChar));
+    QTest::keyPress(testWidget, '4');
+    QCOMPARE(testWidget->displayText(), QString(4, fillChar) + QLatin1Char('4'));
+    QTest::qWait(QT_GUI_PASSWORD_ECHO_DELAY);
+    QTRY_COMPARE(testWidget->displayText(), QString(5, fillChar));
+    QTest::keyPress(testWidget, '5');
+    QCOMPARE(testWidget->displayText(), QString(5, fillChar) + QLatin1Char('5'));
+    testWidget->clearFocus();
+    QVERIFY(!testWidget->hasFocus());
+    QCOMPARE(testWidget->displayText(), QString(6, fillChar));
+    testWidget->setFocus();
+    QTRY_VERIFY(testWidget->hasFocus());
+    QCOMPARE(testWidget->displayText(), QString(6, fillChar));
+    QTest::keyPress(testWidget, '6');
+    QCOMPARE(testWidget->displayText(), QString(6, fillChar) + QLatin1Char('6'));
+
+    QInputMethodEvent ev;
+    ev.setCommitString(QLatin1String("7"));
+    QApplication::sendEvent(testWidget, &ev);
+    QCOMPARE(testWidget->displayText(), QString(7, fillChar) + QLatin1Char('7'));
+
+    // restore clean state
+    testWidget->setEchoMode(QLineEdit::Normal);
+}
+#endif
 
 void tst_QLineEdit::maxLength_mask_data()
 {

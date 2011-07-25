@@ -66,6 +66,8 @@
 #include "QtGui/qcompleter.h"
 #include "QtGui/qaccessible.h"
 
+#include "qplatformdefs.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -85,6 +87,9 @@ public:
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        , m_passwordEchoTimer(0)
+#endif
     {
         init(txt);
     }
@@ -222,6 +227,7 @@ public:
     uint echoMode() const { return m_echoMode; }
     void setEchoMode(uint mode)
     {
+        cancelPasswordEchoTimer();
         m_echoMode = mode;
         m_passwordEchoEditing = false;
         updateDisplayText();
@@ -271,7 +277,13 @@ public:
     QString preeditAreaText() const { return m_textLayout.preeditAreaText(); }
 
     void updatePasswordEchoEditing(bool editing);
-    bool passwordEchoEditing() const { return m_passwordEchoEditing; }
+    bool passwordEchoEditing() const {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0)
+            return true;
+#endif
+        return m_passwordEchoEditing ;
+    }
 
     QChar passwordCharacter() const { return m_passwordCharacter; }
     void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
@@ -426,6 +438,18 @@ private:
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    int m_passwordEchoTimer;
+#endif
+    void cancelPasswordEchoTimer()
+    {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0) {
+            killTimer(m_passwordEchoTimer);
+            m_passwordEchoTimer = 0;
+        }
+#endif
+    }
 
 Q_SIGNALS:
     void cursorPositionChanged(int, int);
