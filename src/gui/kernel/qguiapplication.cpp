@@ -62,6 +62,9 @@
 #include "private/qwindow_p.h"
 #include "private/qkeymapper_p.h"
 #include "private/qcursor_p.h"
+#ifndef QT_NO_CURSOR
+#include "qplatformcursor_qpa.h"
+#endif
 
 #include <QtGui/QPixmap>
 
@@ -570,6 +573,12 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     if (window) {
         QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
+#ifndef QT_NO_CURSOR
+        QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
+        for (int i = 0; i < cursors.count(); ++i)
+            if (cursors.at(i))
+                cursors.at(i).data()->pointerEvent(ev);
+#endif
         QGuiApplication::sendSpontaneousEvent(window, &ev);
         return;
     }
