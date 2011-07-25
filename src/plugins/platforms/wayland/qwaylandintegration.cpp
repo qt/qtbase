@@ -46,6 +46,7 @@
 #include "qwaylandshmwindow.h"
 #include "qwaylandnativeinterface.h"
 #include "qwaylandclipboard.h"
+#include "qwaylanddnd.h"
 
 #include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -130,4 +131,9 @@ QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
 QPlatformClipboard *QWaylandIntegration::clipboard() const
 {
     return QWaylandClipboard::instance(mDisplay);
+}
+
+QPlatformDrag *QWaylandIntegration::drag() const
+{
+    return QWaylandDrag::instance(mDisplay);
 }

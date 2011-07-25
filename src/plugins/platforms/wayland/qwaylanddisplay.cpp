@@ -46,6 +46,7 @@
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
 #include "qwaylandclipboard.h"
+#include "qwaylanddnd.h"
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
@@ -315,6 +316,8 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         mInputDevices.append(inputDevice);
     } else if (interface == "wl_selection_offer") {
         QWaylandClipboard::instance(display)->createSelectionOffer(id);
+    } else if (interface == "wl_drag_offer") {
+        QWaylandDrag::instance(display)->createDragOffer(id);
     }
 }
 

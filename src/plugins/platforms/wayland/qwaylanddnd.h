@@ -39,44 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_WAYLAND_H
-#define QPLATFORMINTEGRATION_WAYLAND_H
+#ifndef QWAYLANDDND_H
+#define QWAYLANDDND_H
 
-#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformDrag>
+#include <QtCore/QMimeData>
+#include "qwaylanddisplay.h"
 
-QT_BEGIN_NAMESPACE
+class QWaylandDragWrapper;
+class QWaylandDragOfferWrapper;
+class QSocketNotifier;
 
-class QWaylandBuffer;
-class QWaylandDisplay;
-class QAbstractEventDispatcher;
-
-class QWaylandIntegration : public QPlatformIntegration
+class QWaylandDrag : public QObject, public QPlatformDrag
 {
+    Q_OBJECT
+
 public:
-    QWaylandIntegration();
+    static QWaylandDrag *instance(QWaylandDisplay *display);
+    ~QWaylandDrag();
+    void createDragOffer(uint32_t id);
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QMimeData *platformDropData();
+    void startDrag();
+    void move(const QMouseEvent *) { }
+    void drop(const QMouseEvent *) { }
+    void cancel() { }
 
-    QList<QPlatformScreen *> screens() const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    QPlatformClipboard *clipboard() const;
-
-    QPlatformDrag *drag() const;
+private slots:
+    void pipeReadable(int fd);
 
 private:
-    QPlatformFontDatabase *mFontDb;
+    QWaylandDrag(QWaylandDisplay *display);
+
     QWaylandDisplay *mDisplay;
-    QPlatformNativeInterface *mNativeInterface;
+    QMimeData *mDropData;
+    QWaylandDragWrapper *mCurrentDrag;
+    QWaylandDragOfferWrapper *mCurrentOffer;
+    int mPipeWriteEnd;
+    QSocketNotifier *mPipeWatcher;
+    QByteArray mPipeData;
+    QString mMimeFormat;
+    friend class QWaylandDragWrapper;
+    friend class QWaylandDragOfferWrapper;
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // QWAYLANDDND_H
