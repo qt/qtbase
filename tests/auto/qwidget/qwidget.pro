@@ -25,4 +25,4 @@ symbian  {
 
 !wince*:!symbian:win32: LIBS += -luser32 -lgdi32
 
-CONFIG+=insignificant_test
+mac:CONFIG+=insignificant_test
