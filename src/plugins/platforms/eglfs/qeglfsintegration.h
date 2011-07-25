@@ -57,18 +57,17 @@ public:
     QEglFSIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
+    QAbstractEventDispatcher *createEventDispatcher() const;
+
 private:
     QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
 };
 
 QT_END_NAMESPACE

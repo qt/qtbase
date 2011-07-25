@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qeglfswindowsurface.h"
+#include <QtOpenGL/private/qgl_p.h>
+
+#include "qeglfsbackingstore.h"
 
 #include <QtGui/QPlatformGLContext>
+#include <QtGui/QScreen>
 
-#include <QtOpenGL/private/qgl_p.h>
 #include <QtOpenGL/private/qglpaintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,16 +53,16 @@ QT_BEGIN_NAMESPACE
 class QEglFSPaintDevice : public QGLPaintDevice
 {
 public:
-    QEglFSPaintDevice(QEglFSScreen *screen, QWidget *widget)
+    QEglFSPaintDevice(QEglFSScreen *screen)
         :QGLPaintDevice(), m_screen(screen)
     {
     #ifdef QEGL_EXTRA_DEBUG
-        qWarning("QEglPaintDevice %p, %p, %p",this, screen, widget);
+        qWarning("QEglPaintDevice %p, %p",this, screen);
     #endif
     }
 
     QSize size() const { return m_screen->geometry().size(); }
-    QGLContext* context() const { return QGLContext::fromPlatformGLContext(m_screen->platformContext());}
+    QGLContext* context() const { return QGLContext::fromGuiGLContext(m_screen->platformContext()->context()); }
 
     QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 
@@ -73,29 +75,30 @@ private:
 };
 
 
-QEglFSWindowSurface::QEglFSWindowSurface( QEglFSScreen *screen, QWidget *window )
-    :QWindowSurface(window)
+QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
+    : QPlatformBackingStore(window)
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindowSurface %p, %p", window, screen);
+    qWarning("QEglBackingStore %p, %p", window, screen);
 #endif
-    m_paintDevice = new QEglFSPaintDevice(screen,window);
+    m_paintDevice = new QEglFSPaintDevice(static_cast<QEglFSScreen *>(window->screen()->handle()));
 }
 
-void QEglFSWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QEglFSBackingStore::flush(QWindow *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindowSurface::flush %p",widget);
+    qWarning("QEglBackingStore::flush %p",widget);
 #endif
-    widget->platformWindow()->glContext()->swapBuffers();
+    static_cast<QEglFSPaintDevice *>(m_paintDevice)->context()->swapBuffers();
 }
 
-void QEglFSWindowSurface::resize(const QSize &size)
+void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(size);
+    Q_UNUSED(staticContents);
 }
 
 QT_END_NAMESPACE

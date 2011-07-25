@@ -45,19 +45,20 @@
 #include "qeglfsintegration.h"
 #include "qeglfswindow.h"
 
-#include <QtGui/private/qwindowsurface_p.h>
+#include <QtGui/qplatformbackingstore_qpa.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSWindowSurface : public QWindowSurface
+class QEglFSBackingStore : public QPlatformBackingStore
 {
 public:
-    QEglFSWindowSurface(QEglFSScreen *screen, QWidget *window);
-    ~QEglFSWindowSurface() {}
+    QEglFSBackingStore(QWindow *window);
+    ~QEglFSBackingStore() {}
 
     QPaintDevice *paintDevice() { return m_paintDevice; }
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
+
 private:
     QPaintDevice *m_paintDevice;
 };

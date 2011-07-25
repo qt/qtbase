@@ -64,6 +64,8 @@ public:
 
     QPlatformGLContext *platformContext() const;
 
+    EGLSurface surface() const { return m_surface; }
+
 private:
     void createAndSetPlatformContext() const;
     void createAndSetPlatformContext();

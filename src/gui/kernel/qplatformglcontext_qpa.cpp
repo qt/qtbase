@@ -79,3 +79,31 @@
 
     Reimplement this function in a subclass to indicate what format the glContext actually has.
 */
+
+struct QPlatformGLContextPrivate
+{
+    QGuiGLContext *context;
+};
+
+QPlatformGLContext::QPlatformGLContext()
+    : d_ptr(new QPlatformGLContextPrivate)
+{
+    Q_D(QPlatformGLContext);
+    d->context = 0;
+}
+
+QPlatformGLContext::~QPlatformGLContext()
+{
+}
+
+QGuiGLContext *QPlatformGLContext::context() const
+{
+    Q_D(const QPlatformGLContext);
+    return d->context;
+}
+
+void QPlatformGLContext::setContext(QGuiGLContext *context)
+{
+    Q_D(QPlatformGLContext);
+    d->context = context;
+}

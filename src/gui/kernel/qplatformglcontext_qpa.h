@@ -67,10 +67,14 @@ private:
     friend class QPlatformWindow;
 };
 
+class QPlatformGLContextPrivate;
+
 class Q_GUI_EXPORT QPlatformGLContext
 {
+    Q_DECLARE_PRIVATE(QPlatformGLContext)
 public:
-    virtual ~QPlatformGLContext() {}
+    QPlatformGLContext();
+    virtual ~QPlatformGLContext();
 
     virtual QSurfaceFormat format() const = 0;
 
@@ -80,6 +84,17 @@ public:
     virtual void doneCurrent() = 0;
 
     virtual void (*getProcAddress(const QByteArray &procName)) () = 0;
+
+    QGuiGLContext *context() const;
+
+private:
+    friend class QGuiGLContext;
+
+    QScopedPointer<QPlatformGLContextPrivate> d_ptr;
+
+    void setContext(QGuiGLContext *context);
+
+    Q_DISABLE_COPY(QPlatformGLContext)
 };
 
 QT_END_NAMESPACE

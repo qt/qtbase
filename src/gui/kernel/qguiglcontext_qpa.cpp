@@ -180,6 +180,7 @@ bool QGuiGLContext::create()
 
     Q_D(QGuiGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformGLContext(this);
+    d->platformGLContext->setContext(this);
     return d->platformGLContext;
 }
 

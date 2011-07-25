@@ -43,6 +43,7 @@
 
 #include <QtGui/qwindowsysteminterface_qpa.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/qscreen.h>
 
 class QPlatformWindowPrivate
 {
@@ -86,6 +87,15 @@ QPlatformWindow *QPlatformWindow::parent() const
 {
     Q_D(const QPlatformWindow);
     return d->window->parent() ? d->window->parent()->handle() : 0;
+}
+
+/*!
+    Returns the platform screen handle corresponding to this platform window.
+*/
+QPlatformScreen *QPlatformWindow::screen() const
+{
+    Q_D(const QPlatformWindow);
+    return d->window->screen()->handle();
 }
 
 /*!

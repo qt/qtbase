@@ -1,4 +1,5 @@
 contains(QT_CONFIG,opengles2) {
+    CONFIG += opengl
     HEADERS += \
         $$PWD/qeglconvenience_p.h \
         $$PWD/qeglplatformcontext_p.h

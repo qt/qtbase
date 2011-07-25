@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QPlatformScreen;
 class QPlatformWindowPrivate;
 class QWindow;
 
@@ -67,6 +68,8 @@ public:
 
     QWindow *window() const;
     QPlatformWindow *parent() const;
+
+    QPlatformScreen *screen() const;
 
     virtual QSurfaceFormat format() const;
 

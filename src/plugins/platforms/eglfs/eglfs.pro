@@ -2,7 +2,7 @@ TARGET = qeglfs
 TEMPLATE = lib
 CONFIG += plugin
 
-QT += opengl core-private gui-private opengl-private
+QT += opengl core-private gui-private opengl-private platformsupport-private widgets-private
 
 DESTDIR = $$QT.gui.plugins/platforms
 
@@ -12,17 +12,13 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 SOURCES =   main.cpp \
             qeglfsintegration.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            ../eglconvenience/qeglplatformcontext.cpp \
             qeglfswindow.cpp \
-            qeglfswindowsurface.cpp \
+            qeglfsbackingstore.cpp \
             qeglfsscreen.cpp
 
 HEADERS =   qeglfsintegration.h \
-            ../eglconvenience/qeglconvenience.h \
-            ../eglconvenience/qeglplatformcontext.h \
             qeglfswindow.h \
-            qeglfswindowsurface.h \
+            qeglfsbackingstore.h \
             qeglfsscreen.h
 
 load(qpa/fontdatabases/genericunix)
