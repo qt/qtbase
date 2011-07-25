@@ -51,8 +51,6 @@
 #include <QTextBrowser>
 #include <QBoxLayout>
 
-#include <private/qpixmapdata_p.h>
-
 extern QPixmap cached(const QString &img);
 
 ArthurFrame::ArthurFrame(QWidget *parent)
@@ -83,11 +81,6 @@ ArthurFrame::ArthurFrame(QWidget *parent)
 //     QPalette pal = palette();
 //     pal.setBrush(backgroundRole(), m_tile);
 //     setPalette(pal);
-
-#ifdef Q_WS_X11
-    QPixmap xRenderPixmap(1, 1);
-    m_prefer_image = xRenderPixmap.handle()->classId() == QPlatformPixmap::X11Class && !xRenderPixmap.x11PictureHandle();
-#endif
 }
 
 
