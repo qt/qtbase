@@ -55,6 +55,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QMimeData;
+
 QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowSystemInterface
@@ -102,6 +104,10 @@ public:
     static void handleUnmapEvent(QWindow *w);
 
     static void handleExposeEvent(QWindow *w, const QRegion &region);
+
+    // Drag and drop. These events are sent immediately.
+    static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
+    static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
     // Changes to the screen
     static void handleScreenGeometryChange(int screenIndex);

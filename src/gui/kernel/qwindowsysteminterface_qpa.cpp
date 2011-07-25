@@ -308,4 +308,14 @@ int QWindowSystemInterface::windowSystemEventsQueued()
     return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
 }
 
+Qt::DropAction QWindowSystemInterface::handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+{
+    return QGuiApplicationPrivate::processDrag(w, dropData, p);
+}
+
+Qt::DropAction QWindowSystemInterface::handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+{
+    return QGuiApplicationPrivate::processDrop(w, dropData, p);
+}
+
 QT_END_NAMESPACE

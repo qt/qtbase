@@ -125,6 +125,9 @@ public:
 
     static void processExposeEvent(QWindowSystemInterfacePrivate::ExposeEvent *e);
 
+    static Qt::DropAction processDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
+    static Qt::DropAction processDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
+
     static inline Qt::Alignment visualAlignment(Qt::LayoutDirection direction, Qt::Alignment alignment)
     {
         if (!(alignment & Qt::AlignHorizontal_Mask))
