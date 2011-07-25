@@ -75,12 +75,33 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
     return testAndSetOrdered(expectedValue, newValue);
 }
 
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
+inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
 {
     int returnValue = _q_value;
     _q_value += valueToAdd;
     return returnValue;
 }
+
+inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
+inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
+inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
 
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
