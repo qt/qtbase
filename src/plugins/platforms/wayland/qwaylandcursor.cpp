@@ -47,6 +47,7 @@
 #include "qwaylandshmbackingstore.h"
 
 #include <QtGui/QImageReader>
+#include <QDebug>
 
 #define DATADIR "/usr/share"
 
@@ -116,6 +117,7 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWindow *window)
         return;
 
     p = NULL;
+    bool isBitmap = false;
 
     switch (cursor->shape()) {
     case Qt::ArrowCursor:
@@ -152,32 +154,53 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWindow *window)
         p = &pointer_images[cursor->shape()];
         break;
 
-    default:
     case Qt::BitmapCursor:
+        isBitmap = true;
+        break;
+
+    default:
         break;
     }
 
-    if (!p) {
+    if (!p && !isBitmap) {
         p = &pointer_images[0];
         qWarning("unhandled cursor %d", cursor->shape());
     }
 
-    QImageReader reader(p->filename);
-
-    if (!reader.canRead())
-        return;
-
-    if (mBuffer == NULL || mBuffer->size() != reader.size()) {
-        if (mBuffer)
+    if (isBitmap && !cursor->pixmap().isNull()) {
+        setupPixmapCursor(cursor);
+    } else if (isBitmap && cursor->bitmap()) {
+        qWarning("unsupported QBitmap cursor");
+    } else {
+        QImageReader reader(p->filename);
+        if (!reader.canRead())
+            return;
+        if (mBuffer == NULL || mBuffer->size() != reader.size()) {
             delete mBuffer;
+            mBuffer = new QWaylandShmBuffer(mDisplay, reader.size(),
+                                            QImage::Format_ARGB32);
+        }
+        reader.read(mBuffer->image());
+        mDisplay->setCursor(mBuffer, p->hotspot_x, p->hotspot_y);
+    }
+}
 
-        mBuffer = new QWaylandShmBuffer(mDisplay, reader.size(),
+void QWaylandCursor::setupPixmapCursor(QCursor *cursor)
+{
+    if (!cursor) {
+        delete mBuffer;
+        mBuffer = 0;
+        return;
+    }
+    if (!mBuffer || mBuffer->size() != cursor->pixmap().size()) {
+        delete mBuffer;
+        mBuffer = new QWaylandShmBuffer(mDisplay, cursor->pixmap().size(),
                                         QImage::Format_ARGB32);
     }
-
-    reader.read(mBuffer->image());
-
-    mDisplay->setCursor(mBuffer, p->hotspot_x, p->hotspot_y);
+    QImage src = cursor->pixmap().toImage().convertToFormat(QImage::Format_ARGB32);
+    for (int y = 0; y < src.height(); ++y)
+        qMemCopy(mBuffer->image()->scanLine(y), src.scanLine(y), src.bytesPerLine());
+    mDisplay->setCursor(mBuffer, cursor->hotSpot().x(), cursor->hotSpot().y());
 }
 
 void QWaylandDisplay::setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y)
@@ -188,4 +211,20 @@ void QWaylandDisplay::setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y)
         QWaylandInputDevice *inputDevice = mInputDevices.at(i);
         inputDevice->attach(buffer, x, y);
     }
+}
+
+void QWaylandCursor::pointerEvent(const QMouseEvent &event)
+{
+    mLastPos = event.globalPos();
+}
+
+QPoint QWaylandCursor::pos() const
+{
+    return mLastPos;
+}
+
+void QWaylandCursor::setPos(const QPoint &pos)
+{
+    Q_UNUSED(pos);
+    qWarning() << "QWaylandCursor::setPos: not implemented";
 }

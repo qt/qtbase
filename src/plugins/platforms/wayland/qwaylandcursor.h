@@ -48,13 +48,23 @@ class QWaylandShmBuffer;
 class QWaylandDisplay;
 class QWaylandScreen;
 
-class QWaylandCursor : QPlatformCursor {
+class QWaylandCursor : public QPlatformCursor
+{
 public:
     QWaylandCursor(QWaylandScreen *screen);
 
     void changeCursor(QCursor *cursor, QWindow *window);
+    void pointerEvent(const QMouseEvent &event);
+    QPoint pos() const;
+    void setPos(const QPoint &pos);
+
+    void setupPixmapCursor(QCursor *cursor);
+
     QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
+
+private:
+    QPoint mLastPos;
 };
 
 #endif // QWAYLANDCURSOR_H
