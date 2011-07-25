@@ -1918,6 +1918,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     bool isGettingInput = !e->commitString().isEmpty()
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
+    bool forceSelectionChanged = false;
 
     cursor.beginEditBlock();
     if (isGettingInput) {
@@ -1941,6 +1942,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             cursor.setPosition(blockStart + a.length, QTextCursor::KeepAnchor);
             q->ensureCursorVisible();
             repaintOldAndNewSelection(oldCursor);
+            forceSelectionChanged = true;
         }
     }
 
@@ -1974,6 +1976,7 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         cursor.d->setX();
     if (oldPreeditCursor != preeditCursor)
         emit q->microFocusChanged();
+    selectionChanged(forceSelectionChanged);
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const

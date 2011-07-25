@@ -207,6 +207,8 @@ private slots:
     void bidiLogicalMovement_data();
     void bidiLogicalMovement();
 
+    void inputMethodSelection();
+
 private:
     void createSelection();
     int blockCount() const;
@@ -2364,6 +2366,31 @@ void tst_QTextEdit::bidiLogicalMovement()
         moved = (oldPos != newPos);
     } while (moved && i >= 0);
 }
+
+void tst_QTextEdit::inputMethodSelection()
+{
+    ed->setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
+    QSignalSpy selectionSpy(ed, SIGNAL(selectionChanged()));
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(0);
+    cursor.setPosition(5, QTextCursor::KeepAnchor);
+    ed->setTextCursor(cursor);
+
+    QCOMPARE(selectionSpy.count(), 1);
+    QCOMPARE(ed->textCursor().selectionStart(), 0);
+    QCOMPARE(ed->textCursor().selectionEnd(), 5);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 12, 5, QVariant());
+    QInputMethodEvent event("", attributes);
+    QApplication::sendEvent(ed, &event);
+
+    QCOMPARE(selectionSpy.count(), 2);
+    QCOMPARE(ed->textCursor().selectionStart(), 12);
+    QCOMPARE(ed->textCursor().selectionEnd(), 17);
+}
+
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"
