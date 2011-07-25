@@ -135,8 +135,7 @@ sub hashesAreDifferent {
 # Returns: The output.
 ######################################################################
 sub executeSomething {
-    my @args = @_;
-    my $program = $args[0];
+    my ($program, @args) = @_;
 
     my $pid = open(KID_TO_READ, "-|");
 
@@ -183,6 +182,10 @@ sub executeTest {
 
     my $testOutDir = catdir($out_basedir, 'config.tests', $testName);
 
+    # Since we might be cross compiling, look for barename (Linux) and .exe (Win32/Symbian)
+    my $testOutFile1 = catfile($testOutDir, "$testName.exe");
+    my $testOutFile2 = catfile($testOutDir, $testName);
+
     if (abs_path($basedir) eq abs_path($out_basedir)) {
         chdir $testOutDir or die "\nUnable to change to config test directory ($testOutDir): $!\n";
     } else { # shadow build
@@ -194,24 +197,24 @@ sub executeTest {
         push (@QMAKEARGS, catdir($basedir, 'config.tests', $testName));
     }
 
-    # Throw it all away
+    # First remove existing stuff (XXX this probably needs generator specific code, but hopefully
+    # the target removal below will suffice)
+    if (-e "Makefile") {
+        executeSomething($MAKE, 'distclean');
+    }
+
+    # and any targets that we might find that weren't distcleaned
+    unlink $testOutFile1, $testOutFile2;
+
+    # Run qmake && make
     executeSomething($QMAKE, @QMAKEARGS);
-    executeSomething($MAKE, 'clean');
     my $makeOutput = executeSomething(($MAKE));
 
     # If make prints "blah blah blah\nSkipped." we consider this a skipped test
     if ($makeOutput !~ qr(^Skipped\.$)ms) {
-
         # Check the test exists (can't reliably execute, especially for cross compilation)
-        if ($^O =~ /win32/i) {
-            # On windows look for $testName.exe
-            if (-e catfile($testOutDir, "$testName.exe")) {
-                $ret = 1;
-            }
-        } else {
-            if (-e catfile($testOutDir, $testName)) {
-                $ret = 1;
-            }
+        if (-e $testOutFile1 or -e $testOutFile2) {
+            $ret = 1;
         }
     } else {
         $ret = 2;
