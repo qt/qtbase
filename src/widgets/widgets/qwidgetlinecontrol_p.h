@@ -68,6 +68,8 @@
 
 #include "qplatformdefs.h"
 
+#include "qplatformdefs.h"
+
 QT_BEGIN_HEADER
 
 #ifdef DrawText
@@ -252,6 +254,7 @@ public:
     uint echoMode() const { return m_echoMode; }
     void setEchoMode(uint mode)
     {
+        cancelPasswordEchoTimer();
         m_echoMode = mode;
         m_passwordEchoEditing = false;
         updateDisplayText();
@@ -301,7 +304,13 @@ public:
     QString preeditAreaText() const { return m_textLayout.preeditAreaText(); }
 
     void updatePasswordEchoEditing(bool editing);
-    bool passwordEchoEditing() const { return m_passwordEchoEditing; }
+    bool passwordEchoEditing() const {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0)
+            return true;
+#endif
+        return m_passwordEchoEditing ;
+    }
 
     QChar passwordCharacter() const { return m_passwordCharacter; }
     void setPasswordCharacter(const QChar &character) { m_passwordCharacter = character; updateDisplayText(); }
@@ -474,6 +483,18 @@ private:
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+    int m_passwordEchoTimer;
+#endif
+    void cancelPasswordEchoTimer()
+    {
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        if (m_passwordEchoTimer != 0) {
+            killTimer(m_passwordEchoTimer);
+            m_passwordEchoTimer = 0;
+        }
+#endif
+    }
 
     int redoTextLayout() const;
 #if defined(Q_WS_MAC)
