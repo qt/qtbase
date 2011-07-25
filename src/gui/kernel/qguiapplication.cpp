@@ -213,20 +213,37 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 }
 
 
-static void init_platform(const QString &name, const QString &platformPluginPath)
+static void init_platform(QString name, const QString &platformPluginPath)
 {
+    if (name.isEmpty()) {
+        const QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
+#if defined(Q_OS_MAC)
+        const QString defaultPlatform = QLatin1String("cocoa");
+#elif defined (Q_OS_WIN)
+        const QString defaultPlatform = QLatin1String("windows");
+#else
+        const QString defaultPlatform = QLatin1String("xcb");
+#endif
+        if (keys.contains(defaultPlatform)) {
+            qWarning("No platform plugin argument was specified, defaulting to \"%s\".",
+                     qPrintable(defaultPlatform));
+            name = defaultPlatform;
+        } else {
+            qFatal("No platform plugin argument was specified and the default plugin \"%s\" is not available",
+                   qPrintable(defaultPlatform));
+        }
+    }
+
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
     if (!QGuiApplicationPrivate::platform_integration) {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
         foreach(const QString &key, keys) {
-            fatalMessage.append(key + QString::fromLatin1("\n"));
+            fatalMessage.append(key + QLatin1Char('\n'));
         }
         qFatal("%s", fatalMessage.toLocal8Bit().constData());
-
     }
-
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
