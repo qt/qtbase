@@ -43,6 +43,7 @@
 #include "qcolor.h"
 #include "qpaintdevice.h"
 #include "qscreen.h"
+#include "qguiapplication.h"
 
 QT_BEGIN_NAMESPACE
 
