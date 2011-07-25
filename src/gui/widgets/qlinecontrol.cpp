@@ -281,27 +281,27 @@ void QLineControl::setSelection(int start, int length)
     }
 
     if (length > 0) {
-        if (start == m_selstart && start + length == m_selend)
-            return;
+        m_selDirty |= (start != m_selstart || start + length != m_selend);
         m_selstart = start;
         m_selend = qMin(start + length, (int)m_text.length());
         m_cursor = m_selend;
     } else if (length < 0){
-        if (start == m_selend && start + length == m_selstart)
-            return;
+        m_selDirty |= (start != m_selend || start + length != m_selstart);
         m_selstart = qMax(start + length, 0);
         m_selend = start;
         m_cursor = m_selstart;
     } else if (m_selstart != m_selend) {
+        m_selDirty = true;
         m_selstart = 0;
         m_selend = 0;
         m_cursor = start;
     } else {
         m_cursor = start;
-        emitCursorPositionChanged();
-        return;
     }
-    emit selectionChanged();
+    if (m_selDirty) {
+        m_selDirty = false;
+        emit selectionChanged();
+    }
     emitCursorPositionChanged();
 }
 

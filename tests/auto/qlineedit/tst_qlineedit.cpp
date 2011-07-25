@@ -289,6 +289,8 @@ private slots:
     void bidiLogicalMovement_data();
     void bidiLogicalMovement();
 
+    void selectAndCursorPosition();
+
 protected slots:
     void editingFinished();
 
@@ -3869,6 +3871,16 @@ void tst_QLineEdit::bidiLogicalMovement()
         newPos = le.cursorPosition();
         moved = (oldPos != newPos);
     } while (moved && i >= 0);
+}
+
+void tst_QLineEdit::selectAndCursorPosition()
+{
+    testWidget->setText("This is a long piece of text");
+
+    testWidget->setSelection(0, 5);
+    QCOMPARE(testWidget->cursorPosition(), 5);
+    testWidget->setSelection(5, -5);
+    QCOMPARE(testWidget->cursorPosition(), 0);
 }
 
 QTEST_MAIN(tst_QLineEdit)
