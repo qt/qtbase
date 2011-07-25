@@ -1320,10 +1320,18 @@ if($check_includes) {
 
 # Do configure tests now (pass some things along)
 # fatal tests have a non zero return
-unless ($showonly) {
+# If the generator is not set (e.g. someone invoking syncqt as part of configure etc, then don't run tests either)
+unless ($showonly || $makefile_generator eq '') {
     my $configtests = dirname($0)."/qtmodule-configtests";
-    if (system($EXECUTABLE_NAME, $configtests, $basedir, $out_basedir, $qtbasedir, $makefile_generator)) {
-          die "$configtests exited with status $?";
+    if (! -f $configtests) {
+        $configtests = $qtbasedir."/bin/qtmodule-configtests";
+    }
+    if (! -f $configtests) {
+        warn "Unable to locate qtmodule-configtests script - config tests disabled.\n";
+    } else {
+        if (system($EXECUTABLE_NAME, $configtests, $basedir, $out_basedir, $qtbasedir, $makefile_generator)) {
+            die "$configtests exited with status $?";
+        }
     }
 }
 
