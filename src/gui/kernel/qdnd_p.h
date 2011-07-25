@@ -200,6 +200,9 @@ public:
 
     QShapedPixmapWindow *shapedPixmapWindow;
 
+    void unmanageEvents();
+    void stopDrag();
+
 private:
     QMimeData *platformDropData;
 

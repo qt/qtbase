@@ -511,6 +511,24 @@ void QDragManager::cancel(bool deleteSource)
     global_accepted_action = Qt::IgnoreAction;
 }
 
+/*!
+  Called from startDrag() in QPlatformDrag implementations that do not need
+  the desktop-oriented stuff provided by the event filter (e.g. because their
+  drag is not based on mouse events). Instead, they will manage everything on
+  their own, will not rely on move/drop/cancel, and will call stopDrag() to stop
+  the event loop when the drag is over.
+ */
+void QDragManager::unmanageEvents()
+{
+    qApp->removeEventFilter(this);
+}
+
+void QDragManager::stopDrag()
+{
+    if (eventLoop)
+        eventLoop->exit();
+}
+
 #endif // QT_NO_DRAGANDDROP
 
 #if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
