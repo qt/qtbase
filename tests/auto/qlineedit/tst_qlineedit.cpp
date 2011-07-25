@@ -290,6 +290,7 @@ private slots:
     void bidiLogicalMovement();
 
     void selectAndCursorPosition();
+    void inputMethodSelection();
 
 protected slots:
     void editingFinished();
@@ -3881,6 +3882,29 @@ void tst_QLineEdit::selectAndCursorPosition()
     QCOMPARE(testWidget->cursorPosition(), 5);
     testWidget->setSelection(5, -5);
     QCOMPARE(testWidget->cursorPosition(), 0);
+}
+
+void tst_QLineEdit::inputMethodSelection()
+{
+    testWidget->setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    testWidget->setSelection(0,0);
+    QSignalSpy selectionSpy(testWidget, SIGNAL(selectionChanged()));
+
+    QCOMPARE(selectionSpy.count(), 0);
+    QCOMPARE(testWidget->selectionStart(), -1);
+
+    testWidget->setSelection(0,5);
+
+    QCOMPARE(selectionSpy.count(), 1);
+    QCOMPARE(testWidget->selectionStart(), 0);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 12, 5, QVariant());
+    QInputMethodEvent event("", attributes);
+    QApplication::sendEvent(testWidget, &event);
+
+    QCOMPARE(selectionSpy.count(), 2);
+    QCOMPARE(testWidget->selectionStart(), 12);
 }
 
 QTEST_MAIN(tst_QLineEdit)

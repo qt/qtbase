@@ -494,6 +494,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
                 if (m_selend < m_selstart) {
                     qSwap(m_selstart, m_selend);
                 }
+                m_selDirty = true;
             } else {
                 m_selstart = m_selend = 0;
             }
@@ -525,12 +526,18 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     }
     m_textLayout.setAdditionalFormats(formats);
     updateDisplayText(/*force*/ true);
-    if (cursorPositionChanged)
-        emitCursorPositionChanged();
-    else if (m_preeditCursor != oldPreeditCursor)
-        emit updateMicroFocus();
-    if (isGettingInput)
+    if (isGettingInput) {
         finishChange(priorState);
+    } else {
+        if (cursorPositionChanged)
+            emitCursorPositionChanged();
+        else if (m_preeditCursor != oldPreeditCursor)
+            emit updateMicroFocus();
+        if (m_selDirty) {
+            m_selDirty = false;
+            emit selectionChanged();
+        }
+    }
 }
 
 /*!
