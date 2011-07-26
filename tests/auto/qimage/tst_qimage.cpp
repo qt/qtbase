@@ -1986,7 +1986,7 @@ void tst_QImage::rgbSwapped()
 
     QCOMPARE(image, imageSwappedTwice);
 
-    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.numBytes()), 0);
+    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.byteCount()), 0);
 }
 
 void tst_QImage::deepCopyWhenPaintingActive()
