@@ -51,7 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    Accessor for the platform integrations fontdatabase.
+    Accessor for the platform integration's fontdatabase.
 
     Default implementation returns a default QPlatformFontDatabase.
 
@@ -67,7 +67,7 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
 }
 
 /*!
-    Accessor for the platform integrations clipboard.
+    Accessor for the platform integration's clipboard.
 
     Default implementation returns a default QPlatformClipboard.
 
@@ -90,7 +90,7 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 
 #ifndef QT_NO_DRAGANDDROP
 /*!
-    Accessor for the platform integrations drag object.
+    Accessor for the platform integration's drag object.
 
     Default implementation returns 0, implying no drag and drop support.
 
@@ -118,12 +118,12 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
     using the QPA platform. It has factory functions for creating platform specific pixmaps and
     windows. The class also controls the font subsystem.
 
-    QPlatformIntegration is a singelton class which gets instansiated in the QApplication
+    QPlatformIntegration is a singleton class which gets instantiated in the QGuiApplication
     constructor. The QPlatformIntegration instance do not have ownership of objects it creates in
     functions where the name starts with create. However, functions which don't have a name
-    starting with create acts as assessors to member variables.
+    starting with create acts as accessors to member variables.
 
-    It is not trivial to create or build a platform plugin outside of the Qt source tree. Therefor
+    It is not trivial to create or build a platform plugin outside of the Qt source tree. Therefore
     the recommended approach for making new platform plugin is to copy an existing plugin inside
     the QTSRCTREE/src/plugins/platform and develop the plugin inside the source tree.
 
@@ -140,17 +140,20 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QPlatformWindow *QPlatformIntegration::createPlatformWindow(QWindow *window, WId winId = 0) const
+    \fn QPlatformWindow *QPlatformIntegration::createPlatformWindow(QWindow *window) const
 
-    Factory function for QPlatformWindow. The widget parameter is a pointer to the top level
-    widget(tlw) which the QPlatformWindow is suppose to be created for. The WId handle is actually
-    never used, but there for future reference. Its purpose is if it is going to be possible to
-    create QPlatformWindows on existing WId.
+    Factory function for QPlatformWindow. The \a window parameter is a pointer to the top level
+    window which the QPlatformWindow is supposed to be created for.
 
-    All tlw has to have a QPlatformWindow, and it will be created when the QPlatformWindow is set
-    to be visible for the first time. If the tlw's window flags are changed, or if the tlw's
-    QPlatformWindowFormat is changed, then the tlw's QPlatformWindow is deleted and a new one is
-    created.
+    All top level windows have to have a QPlatformWindow, and it will be created when the
+    QPlatformWindow is set to be visible for the first time. If the top level window's flags are
+    changed, or if the top level window's QPlatformWindowFormat is changed, then the top level
+    window's QPlatformWindow is deleted and a new one is created.
+
+    In the constructor, of the QPlatformWindow, the window flags, state, title and geometry
+    of the \a window should be applied to the underlying window. If the resulting flags or state
+    differs, the resulting values should be set on the \a window using QWindow::setWindowFlags()
+    or QWindow::setWindowState(), respectively.
 
     \sa QPlatformWindow, QPlatformWindowFormat
     \sa createPlatformBackingStore(QWindow *window) const
@@ -165,35 +168,6 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 
     \sa QBackingStore
     \sa createPlatformWindow(QWindow *window, WId winId = 0) const
-*/
-
-
-/*!
-    \fn void QPlatformIntegration::moveToScreen(QWindow *window, int screen)
-
-    This function is called when a QWindow is displayed on screen, or the QWindow is to be
-    displayed on a new screen. The QWindow parameter is a pointer to the top level widget and
-    the int parameter is the index to the screen in QList<QPlatformScreen *> screens() const.
-
-    Default implementation does nothing.
-
-    \sa screens() const
-*/
-
-/*!
-    \fn QList<QPlatformScreen *> QPlatformIntegration::screens() const
-
-    Accessor function to a list of all the screens on the current system. The screen with the
-    index == 0 is the default/main screen.
-*/
-
-/*!
-    \fn bool QPlatformIntegration::isVirtualDesktop()
-
-    Returns if the current windowing system configuration defines all the screens to be one
-    desktop(virtual desktop), or if each screen is a desktop of its own.
-
-    Default implementation returns false.
 */
 
 /*!

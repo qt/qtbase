@@ -125,13 +125,6 @@ void QWindow::create()
     Q_D(QWindow);
     if (!d->platformWindow) {
         d->platformWindow = QGuiApplicationPrivate::platformIntegration()->createPlatformWindow(this);
-        d->windowFlags = d->platformWindow->setWindowFlags(d->windowFlags);
-        if (!d->windowTitle.isNull())
-            d->platformWindow->setWindowTitle(d->windowTitle);
-        if (d->windowState != Qt::WindowNoState)
-            d->windowState = d->platformWindow->setWindowState(d->windowState);
-        d->platformWindow->setGeometry(geometry());
-
         QObjectList childObjects = children();
         for (int i = 0; i < childObjects.size(); i ++) {
             QObject *object = childObjects.at(i);
