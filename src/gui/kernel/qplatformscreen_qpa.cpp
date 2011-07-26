@@ -46,8 +46,9 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 
-struct QPlatformScreenPrivate
+class QPlatformScreenPrivate
 {
+public:
     QScreen *screen;
 };
 
