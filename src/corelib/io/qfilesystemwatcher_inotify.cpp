@@ -131,7 +131,7 @@
 # define __NR_inotify_rm_watch  286
 # define __NR_inotify_init1     328
 #else
-# error "This architecture is not supported. Please talk to qt-bugs@trolltech.com"
+# error "This architecture is not supported. Please talk to qt-info@nokia.com"
 #endif
 
 #if !defined(IN_CLOEXEC) && defined(O_CLOEXEC) && defined(__NR_inotify_init1)

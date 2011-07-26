@@ -2970,7 +2970,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     echo
     echo "      $XQMAKESPEC/qplatformdefs.h"
     echo
-    echo "   Please contact qt-bugs@trolltech.com."
+    echo "   Please contact qt-info@nokia.com."
     echo
     exit 2
 fi
