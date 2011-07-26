@@ -60,7 +60,6 @@
 #include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
-#include <private/qmutexpool_p.h>
 
 #include <new>
 
@@ -95,35 +94,22 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
     return types;
 }
 
-static QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
-static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicMutex _q_ObjectMutexPool[131];
 
 /** \internal
  * mutex to be locked when accessing the connectionlists or the senders list
  */
 static inline QMutex *signalSlotLock(const QObject *o)
 {
-    if (!signalSlotMutexes) {
-        QMutexPool *mp = new QMutexPool;
-        if (!signalSlotMutexes.testAndSetOrdered(0, mp)) {
-            delete mp;
-        }
-    }
-    return signalSlotMutexes->get(o);
+    return static_cast<QMutex *>(&_q_ObjectMutexPool[
+        uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)]);
 }
 
 extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
-{
-    objectCount.ref();
-}
+{}
 
 extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
-{
-    if(!objectCount.deref()) {
-        QMutexPool *old = signalSlotMutexes.fetchAndStoreAcquire(0);
-        delete old;
-    }
-}
+{}
 
 struct QConnectionSenderSwitcher {
     QObject *receiver;
