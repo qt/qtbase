@@ -1014,7 +1014,7 @@ void addSegmentsToPath(Segment *segment, QPainterPath &path)
 
 }
 
-Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
+Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 {
     QPainterPath result;
     if (region.rectCount() == 1) {

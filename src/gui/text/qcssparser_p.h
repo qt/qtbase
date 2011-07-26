@@ -416,7 +416,7 @@ struct BorderData {
 // 4. QVector<Declaration> - { prop1: value1; prop2: value2; }
 // 5. Declaration - prop1: value1;
 
-struct Q_AUTOTEST_EXPORT Declaration
+struct Q_GUI_EXPORT Declaration
 {
     struct DeclarationData : public QSharedData
     {
@@ -552,7 +552,7 @@ struct BasicSelector
     Relation relationToNext;
 };
 
-struct Q_AUTOTEST_EXPORT Selector
+struct Q_GUI_EXPORT Selector
 {
     QVector<BasicSelector> basicSelectors;
     int specificity() const;
@@ -565,7 +565,7 @@ struct MediaRule;
 struct PageRule;
 struct ImportRule;
 
-struct Q_AUTOTEST_EXPORT ValueExtractor
+struct Q_GUI_EXPORT ValueExtractor
 {
     ValueExtractor(const QVector<Declaration> &declarations, const QPalette & = QPalette());
 
@@ -739,7 +739,7 @@ struct Q_GUI_EXPORT Symbol
     QString lexem() const;
 };
 
-class Q_AUTOTEST_EXPORT Scanner
+class Q_GUI_EXPORT Scanner
 {
 public:
     static QString preprocess(const QString &input, bool *hasEscapeSequences = 0);
