@@ -32,8 +32,7 @@ SUBDIRS=\
            qvariant \
            qwidget \
            qworkspace \
-           windowsmobile \
-           nativeimagehandleprovider
+           windowsmobile
 
 contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
 

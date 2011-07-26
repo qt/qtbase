@@ -19,7 +19,7 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/opengl/qtopenglversion.h
 
-!win32:!embedded:!mac:!symbian:!qpa:CONFIG	   += x11
+!win32:!embedded:!mac:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
@@ -136,24 +136,6 @@ wince*: {
                qgl_egl.cpp
 
     HEADERS += qgl_egl_p.h
-}
-
-symbian {
-    DEFINES += QGL_NO_PRESERVED_SWAP
-    SOURCES += qgl_symbian.cpp \
-               qglpixelbuffer_egl.cpp \
-               qgl_egl.cpp
-
-    HEADERS += qgl_egl_p.h
-
-    contains(QT_CONFIG, freetype) {
-        DEFINES += QT_NO_FONTCONFIG
-        INCLUDEPATH += \
-            ../3rdparty/freetype/src \
-            ../3rdparty/freetype/include
-    }
-
-    symbian:TARGET.UID3 = 0x2002131A
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
