@@ -9556,6 +9556,18 @@ void QWidget::ensurePolished() const
         QChildEvent e(QEvent::ChildPolished, const_cast<QWidget *>(this));
         QCoreApplication::sendEvent(d->parent, &e);
     }
+#ifdef Q_WS_QPA
+    if (d->extra && d->extra->topextra && d->extra->topextra->window
+        && d->extra->topextra->window->objectName().isEmpty()) {
+        QString on = objectName();
+        if (on.isEmpty()) {
+            on = QString::fromUtf8(metaObject()->className());
+            on += QLatin1String("Class");
+        }
+        on += QLatin1String("Window");
+        d->extra->topextra->window->setObjectName(on);
+    }
+#endif
 }
 
 /*!
