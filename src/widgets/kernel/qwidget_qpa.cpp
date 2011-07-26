@@ -53,6 +53,8 @@
 #include "QtGui/private/qwindow_p.h"
 
 #include <QtGui/QPlatformCursor>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 
 QT_BEGIN_NAMESPACE
 
@@ -733,7 +735,13 @@ int QWidget::metric(PaintDeviceMetric m) const
 {
     Q_D(const QWidget);
 
-    QPlatformScreen *screen = QPlatformScreen::platformScreenForWindow(windowHandle());
+    QPlatformScreen *screen = 0;
+    if (QWidget *topLevel = window())
+        if (QWindow *topLevelWindow = topLevel->windowHandle())
+            screen = QPlatformScreen::platformScreenForWindow(topLevelWindow);
+    if (!screen && QGuiApplication::primaryScreen())
+        screen = QGuiApplication::primaryScreen()->handle();
+
     if (!screen) {
         if (m == PdmDpiX || m == PdmDpiY)
               return 72;
