@@ -115,9 +115,12 @@ void tst_QRegExpValidator::validate()
     QFETCH( int, state );
 
     QRegExpValidator rv( 0 );
+    QSignalSpy spy(&rv, SIGNAL(regExpChanged(const QRegExp&)));
+
     rv.setRegExp( QRegExp( rx ) );
     int dummy;
     QCOMPARE( (int)rv.validate( value, dummy ), state );
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QRegExpValidator)

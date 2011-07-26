@@ -51,6 +51,7 @@ private slots:
     void validate();
     void validateArabic();
     void validateFrench();
+    void notifySignals();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -189,7 +190,6 @@ void tst_QIntValidator::validateFrench()
     QIntValidator validator(-2000, 2000, 0);
     validator.setLocale(QLocale::French);
     int i;
-
     QString s = QLatin1String("1 ");
     QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
     validator.fixup(s);
@@ -218,6 +218,37 @@ void tst_QIntValidator::validate()
     iv.setLocale(QLocale::C);
     int dummy;
     QCOMPARE((int)iv.validate(value, dummy), (int)state);
+}
+
+void tst_QIntValidator::notifySignals()
+{
+    QIntValidator iv(0, 10, 0);
+    QSignalSpy topSpy(&iv, SIGNAL(topChanged(int)));
+    QSignalSpy bottomSpy(&iv, SIGNAL(bottomChanged(int)));
+    iv.setTop(9);
+    QCOMPARE(topSpy.count(), 1);
+    QVERIFY(iv.top() == 9);
+    iv.setBottom(1);
+    QCOMPARE(bottomSpy.count(), 1);
+    QVERIFY(iv.bottom() == 1);
+
+    iv.setRange(1, 8);
+    QCOMPARE(topSpy.count(), 2);
+    QCOMPARE(bottomSpy.count(), 1);
+    QVERIFY(iv.top() == 8);
+    QVERIFY(iv.bottom() == 1);
+
+    iv.setRange(2, 8);
+    QCOMPARE(topSpy.count(), 2);
+    QCOMPARE(bottomSpy.count(), 2);
+    QVERIFY(iv.top() == 8);
+    QVERIFY(iv.bottom() == 2);
+
+    iv.setRange(3, 7);
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QVERIFY(iv.top() == 7);
+    QVERIFY(iv.bottom() == 3);
 }
 
 QTEST_MAIN(tst_QIntValidator)

@@ -55,6 +55,7 @@ private slots:
     void validateThouSep();
     void validateIntEquiv_data();
     void validateIntEquiv();
+    void notifySignals();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -243,6 +244,62 @@ void tst_QDoubleValidator::validate()
     QCOMPARE((int)dv.validate(value, dummy), (int)scientific_state);
     dv.setNotation(QDoubleValidator::StandardNotation);
     QCOMPARE((int)dv.validate(value, dummy), (int)standard_state);
+}
+void tst_QDoubleValidator::notifySignals()
+{
+    QDoubleValidator dv(0.1, 0.9, 10, 0);
+    QSignalSpy topSpy(&dv, SIGNAL(topChanged(double)));
+    QSignalSpy bottomSpy(&dv, SIGNAL(bottomChanged(double)));
+    QSignalSpy decSpy(&dv, SIGNAL(decimalsChanged(int)));
+
+    qRegisterMetaType<QDoubleValidator::Notation>("QDoubleValidator::Notation");
+    QSignalSpy notSpy(&dv, SIGNAL(notationChanged(QDoubleValidator::Notation)));
+
+    dv.setTop(0.8);
+    QCOMPARE(topSpy.count(), 1);
+    QVERIFY(dv.top() == 0.8);
+    dv.setBottom(0.2);
+    QCOMPARE(bottomSpy.count(), 1);
+    QVERIFY(dv.bottom() == 0.2);
+
+    dv.setRange(0.2, 0.7);
+    QCOMPARE(topSpy.count(), 2);
+    QCOMPARE(bottomSpy.count(), 1);
+    QCOMPARE(decSpy.count(), 1);
+    QVERIFY(dv.bottom() == 0.2);
+    QVERIFY(dv.top() == 0.7);
+    QVERIFY(dv.decimals() == 0.);
+
+    dv.setRange(0.3, 0.7);
+    QCOMPARE(topSpy.count(), 2);
+    QCOMPARE(bottomSpy.count(), 2);
+    QVERIFY(dv.bottom() == 0.3);
+    QVERIFY(dv.top() == 0.7);
+    QVERIFY(dv.decimals() == 0.);
+
+    dv.setRange(0.4, 0.6);
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QVERIFY(dv.bottom() == 0.4);
+    QVERIFY(dv.top() == 0.6);
+    QVERIFY(dv.decimals() == 0.);
+
+    dv.setDecimals(10);
+    QCOMPARE(decSpy.count(), 2);
+    QVERIFY(dv.decimals() == 10.);
+
+
+    dv.setRange(0.4, 0.6, 100);
+    QCOMPARE(topSpy.count(), 3);
+    QCOMPARE(bottomSpy.count(), 3);
+    QCOMPARE(decSpy.count(), 3);
+    QVERIFY(dv.bottom() == 0.4);
+    QVERIFY(dv.top() == 0.6);
+    QVERIFY(dv.decimals() == 100.);
+
+    dv.setNotation(QDoubleValidator::StandardNotation);
+    QCOMPARE(notSpy.count(), 1);
+    QVERIFY(dv.notation() == QDoubleValidator::StandardNotation);
 }
 
 void tst_QDoubleValidator::validateIntEquiv_data()

@@ -96,8 +96,8 @@ private:
 class Q_GUI_EXPORT QIntValidator : public QValidator
 {
     Q_OBJECT
-    Q_PROPERTY(int bottom READ bottom WRITE setBottom)
-    Q_PROPERTY(int top READ top WRITE setTop)
+    Q_PROPERTY(int bottom READ bottom WRITE setBottom NOTIFY bottomChanged)
+    Q_PROPERTY(int top READ top WRITE setTop NOTIFY topChanged)
 
 public:
     explicit QIntValidator(QObject * parent = 0);
@@ -113,7 +113,9 @@ public:
 
     int bottom() const { return b; }
     int top() const { return t; }
-
+Q_SIGNALS:
+    void bottomChanged(int bottom);
+    void topChanged(int top);
 #ifdef QT3_SUPPORT
 public:
     QT3_SUPPORT_CONSTRUCTOR QIntValidator(QObject * parent, const char *name);
@@ -134,11 +136,11 @@ class QDoubleValidatorPrivate;
 class Q_GUI_EXPORT QDoubleValidator : public QValidator
 {
     Q_OBJECT
-    Q_PROPERTY(double bottom READ bottom WRITE setBottom)
-    Q_PROPERTY(double top READ top WRITE setTop)
-    Q_PROPERTY(int decimals READ decimals WRITE setDecimals)
+    Q_PROPERTY(double bottom READ bottom WRITE setBottom NOTIFY bottomChanged)
+    Q_PROPERTY(double top READ top WRITE setTop NOTIFY topChanged)
+    Q_PROPERTY(int decimals READ decimals WRITE setDecimals NOTIFY decimalsChanged)
     Q_ENUMS(Notation)
-    Q_PROPERTY(Notation notation READ notation WRITE setNotation)
+    Q_PROPERTY(Notation notation READ notation WRITE setNotation NOTIFY notationChanged)
 
 public:
     explicit QDoubleValidator(QObject * parent = 0);
@@ -149,7 +151,6 @@ public:
         StandardNotation,
         ScientificNotation
     };
-
     QValidator::State validate(QString &, int &) const;
 
     virtual void setRange(double bottom, double top, int decimals = 0);
@@ -162,6 +163,12 @@ public:
     double top() const { return t; }
     int decimals() const { return dec; }
     Notation notation() const;
+
+Q_SIGNALS:
+    void bottomChanged(double bottom);
+    void topChanged(double top);
+    void decimalsChanged(int decimals);
+    void notationChanged(QDoubleValidator::Notation notation);
 
 #ifdef QT3_SUPPORT
 public:
@@ -182,7 +189,7 @@ private:
 class Q_GUI_EXPORT QRegExpValidator : public QValidator
 {
     Q_OBJECT
-    Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
+    Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp NOTIFY regExpChanged)
 
 public:
     explicit QRegExpValidator(QObject *parent = 0);
@@ -194,6 +201,8 @@ public:
     void setRegExp(const QRegExp& rx);
     const QRegExp& regExp() const { return r; } // ### make inline for 5.0
 
+Q_SIGNALS:
+    void regExpChanged(const QRegExp& regExp);
 #ifdef QT3_SUPPORT
 public:
     QT3_SUPPORT_CONSTRUCTOR QRegExpValidator(QObject *parent, const char *name);
