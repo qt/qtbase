@@ -114,6 +114,13 @@ QXcbConnection::QXcbConnection(const char *displayName)
     if (m_connection)
         printf("Successfully connected to display %s\n", m_displayName.constData());
 
+    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
+
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
+    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
+
     xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
 
     m_setup = xcb_get_setup(xcb_connection());
@@ -157,15 +164,6 @@ QXcbConnection::~QXcbConnection()
 #endif
 
     delete m_keyboard;
-}
-
-void QXcbConnection::setEventDispatcher(QAbstractEventDispatcher *dispatcher)
-{
-    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
-
-    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
-    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
 }
 
 void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)

@@ -63,8 +63,9 @@
 QOpenWFDIntegration::QOpenWFDIntegration()
     : QPlatformIntegration()
     , mPrinterSupport(new QGenericUnixPrinterSupport)
+    , mEventDispatcher(createUnixEventDispatcher())
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(createEventDispatcher());
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
     int numberOfDevices = wfdEnumerateDevices(0,0,0);
 
     WFDint devices[numberOfDevices];
@@ -118,10 +119,9 @@ QPlatformBackingStore *QOpenWFDIntegration::createPlatformBackingStore(QWindow *
     return new QOpenWFDBackingStore(window);
 }
 
-QAbstractEventDispatcher *QOpenWFDIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QOpenWFDIntegration::guiThreadEventDispatcher() const
 {
-    QAbstractEventDispatcher *eventDispatcher = createUnixEventDispatcher();
-    return eventDispatcher;
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QOpenWFDIntegration::fontDatabase() const

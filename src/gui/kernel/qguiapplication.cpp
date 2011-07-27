@@ -318,7 +318,7 @@ void QGuiApplicationPrivate::createEventDispatcher()
         createPlatformIntegration();
 
     if (!eventDispatcher) {
-        QAbstractEventDispatcher *eventDispatcher = platform_integration->createEventDispatcher();
+        QAbstractEventDispatcher *eventDispatcher = platform_integration->guiThreadEventDispatcher();
         setEventDispatcher(eventDispatcher);
     }
 }
@@ -327,9 +327,9 @@ void QGuiApplicationPrivate::setEventDispatcher(QAbstractEventDispatcher *eventD
 {
     Q_Q(QGuiApplication);
 
-    if (!this->eventDispatcher) {
-        this->eventDispatcher = eventDispatcher;
-        this->eventDispatcher->setParent(q);
+    if (!QCoreApplicationPrivate::eventDispatcher) {
+        QCoreApplicationPrivate::eventDispatcher = eventDispatcher;
+        QCoreApplicationPrivate::eventDispatcher->setParent(q);
         threadData->eventDispatcher = eventDispatcher;
     }
 

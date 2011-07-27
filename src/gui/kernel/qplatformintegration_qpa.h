@@ -83,7 +83,7 @@ public:
     virtual QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
 
 // Event dispatcher:
-    virtual QAbstractEventDispatcher *createEventDispatcher() const = 0;
+    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;

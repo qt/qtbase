@@ -92,8 +92,6 @@ public:
 
     QList<QWaylandInputDevice *> inputDevices() const { return mInputDevices; }
 
-    void eventDispatcherCreated(QAbstractEventDispatcher *dispatcher);
-
 public slots:
     void createNewScreen(struct wl_output *output, QRect geometry);
     void readEvents();

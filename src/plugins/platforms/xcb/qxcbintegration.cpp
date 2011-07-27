@@ -57,6 +57,9 @@
 
 #include <stdio.h>
 
+//this has to be included before egl, since egl pulls in X headers
+#include <QtGui/private/qguiapplication_p.h>
+
 #ifdef XCB_USE_EGL
 #include <EGL/egl.h>
 #endif
@@ -78,7 +81,10 @@
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_printerSupport(new QGenericUnixPrinterSupport)
+    , m_eventDispatcher(createUnixEventDispatcher())
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
+
     m_connections << new QXcbConnection;
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
@@ -94,7 +100,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
 
-    m_inputContext = 0;
+    m_inputContext = new QIBusPlatformInputContext;
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -149,18 +155,9 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QXcbIntegration::guiThreadEventDispatcher() const
 {
-    QAbstractEventDispatcher *eventDispatcher = createUnixEventDispatcher();
-
-    foreach (QXcbConnection *connection, m_connections)
-        connection->setEventDispatcher(eventDispatcher);
-#ifdef XCB_USE_IBUS
-    // A bit hacky to do this here, but we need an eventloop before we can instantiate
-    // the input context.
-    const_cast<QXcbIntegration *>(this)->m_inputContext = new QIBusPlatformInputContext;
-#endif
-    return eventDispatcher;
+    return m_eventDispatcher;
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

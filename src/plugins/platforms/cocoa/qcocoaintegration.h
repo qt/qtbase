@@ -79,13 +79,15 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface() const;
 private:
     QPlatformFontDatabase *mFontDb;
+    QAbstractEventDispatcher *mEventDispatcher;
 
     QCocoaAutoReleasePool *mPool;
 };

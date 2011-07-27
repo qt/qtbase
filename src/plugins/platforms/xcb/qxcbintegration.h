@@ -61,7 +61,7 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     bool hasCapability(Capability cap) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     void moveToScreen(QWindow *window, int screen);
 
@@ -83,6 +83,7 @@ private:
     QPlatformPrinterSupport *m_printerSupport;
 
     QPlatformInputContext *m_inputContext;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

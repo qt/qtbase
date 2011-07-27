@@ -142,6 +142,13 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
 
+    mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
+
+    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
+    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));
+
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
@@ -155,16 +162,6 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
 #endif
-
-    mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
-}
-
-void QWaylandDisplay::eventDispatcherCreated(QAbstractEventDispatcher *dispatcher)
-{
-    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
-
-    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
-    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));
 
     waitForScreens();
 }

@@ -51,6 +51,8 @@
 #include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
 #include <QtGui/QSurfaceFormat>
@@ -61,9 +63,11 @@
 
 QWaylandIntegration::QWaylandIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
-    , mDisplay(new QWaylandDisplay())
+    , mEventDispatcher(createUnixEventDispatcher())
     , mNativeInterface(new QWaylandNativeInterface)
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+    mDisplay = new QWaylandDisplay();
 }
 
 QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
@@ -116,11 +120,9 @@ QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *
     return new QWaylandShmBackingStore(window);
 }
 
-QAbstractEventDispatcher *QWaylandIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QWaylandIntegration::guiThreadEventDispatcher() const
 {
-    QAbstractEventDispatcher *dispatcher = createUnixEventDispatcher();
-    mDisplay->eventDispatcherCreated(dispatcher);
-    return dispatcher;
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

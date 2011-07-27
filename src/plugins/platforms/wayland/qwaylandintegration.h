@@ -59,7 +59,8 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QList<QPlatformScreen *> screens() const;
 
@@ -73,6 +74,7 @@ public:
 
 private:
     QPlatformFontDatabase *mFontDb;
+    QAbstractEventDispatcher *mEventDispatcher;
     QWaylandDisplay *mDisplay;
     QPlatformNativeInterface *mNativeInterface;
 };

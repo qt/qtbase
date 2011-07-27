@@ -72,6 +72,7 @@ QCocoaScreen::~QCocoaScreen()
 
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QBasicUnixFontDatabase())
+    , mEventDispatcher(new QCocoaEventDispatcher())
 {
     mPool = new QCocoaAutoReleasePool;
 
@@ -117,9 +118,9 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
     return new QCocoaBackingStore(window);
 }
 
-QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QCocoaIntegration::guiThreadEventDispatcher() const
 {
-    return new QCocoaEventDispatcher();
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const

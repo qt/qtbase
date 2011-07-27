@@ -83,8 +83,8 @@ QOpenWFDDevice::QOpenWFDDevice(QOpenWFDIntegration *integration, WFDint device_e
         }
     }
 
-    int copyFd = wfdDeviceEventGetFD(mDevice,mEvent);
-    mEventSocketNotifier = new QSocketNotifier(copyFd,QSocketNotifier::Read,this);
+    int fd = wfdDeviceEventGetFD(mDevice,mEvent);
+    mEventSocketNotifier = new QSocketNotifier(fd,QSocketNotifier::Read,this);
     connect(mEventSocketNotifier,SIGNAL(activated(int)),SLOT(readEvents()));
 
     mCommitedDevice = true;
