@@ -85,28 +85,28 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     QVector<EGLint> configAttributes;
 
     configAttributes.append(EGL_RED_SIZE);
-    configAttributes.append(redSize);
+    configAttributes.append(redSize > 0 ? redSize : 0);
 
     configAttributes.append(EGL_GREEN_SIZE);
-    configAttributes.append(greenSize);
+    configAttributes.append(greenSize > 0 ? greenSize : 0);
 
     configAttributes.append(EGL_BLUE_SIZE);
-    configAttributes.append(blueSize);
+    configAttributes.append(blueSize > 0 ? blueSize : 0);
 
     configAttributes.append(EGL_ALPHA_SIZE);
-    configAttributes.append(alphaSize);
+    configAttributes.append(alphaSize > 0 ? alphaSize : 0);
 
     configAttributes.append(EGL_DEPTH_SIZE);
-    configAttributes.append(depthSize);
+    configAttributes.append(depthSize > 0 ? depthSize : 0);
 
     configAttributes.append(EGL_STENCIL_SIZE);
-    configAttributes.append(stencilSize);
+    configAttributes.append(stencilSize > 0 ? stencilSize : 0);
 
     configAttributes.append(EGL_SAMPLES);
-    configAttributes.append(sampleCount);
+    configAttributes.append(sampleCount > 0 ? sampleCount : 0);
 
     configAttributes.append(EGL_SAMPLE_BUFFERS);
-    configAttributes.append(sampleCount? 1:0);
+    configAttributes.append(sampleCount > 0);
 
     return configAttributes;
 }
@@ -178,12 +178,19 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
 
     i = configAttributes->indexOf(EGL_STENCIL_SIZE);
     if (i >= 0) {
-        configAttributes->remove(i,2);
+        if (configAttributes->at(i + 1) > 1)
+            configAttributes->replace(i + 1, 1);
+        else
+            configAttributes->remove(i, 2);
         return true;
     }
+
     i = configAttributes->indexOf(EGL_DEPTH_SIZE);
     if (i >= 0) {
-        configAttributes->remove(i,2);
+        if (configAttributes->at(i + 1) > 1)
+            configAttributes->replace(i + 1, 1);
+        else
+            configAttributes->remove(i, 2);
         return true;
     }
 #ifdef EGL_BIND_TO_TEXTURE_RGB
@@ -232,7 +239,7 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
         i = configureAttributes.indexOf(EGL_BLUE_SIZE);
         int confAttrBlue = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_ALPHA_SIZE);
-        int confAttrAlpha = configureAttributes.at(i+1);
+        int confAttrAlpha = i == -1 ? 0 : configureAttributes.at(i+1);
 
         EGLint size = matching;
         EGLConfig *configs = new EGLConfig [size];
