@@ -1267,10 +1267,10 @@ void QString::resize(int size)
             QString::free(d);
         d = x;
     } else {
-        if (d->ref != 1 || size > d->alloc ||
-            (!d->capacityReserved && size < d->size && size < d->alloc >> 1))
+        if (d->ref != 1 || size > int(d->alloc) ||
+            (!d->capacityReserved && size < d->size && size < int(d->alloc) >> 1))
             realloc(grow(size));
-        if (d->alloc >= size) {
+        if (int(d->alloc) >= size) {
             d->size = size;
             d->data()[size] = '\0';
         }
@@ -1560,7 +1560,7 @@ QString &QString::append(const QString &str)
         if (d == &shared_null.str) {
             operator=(str);
         } else {
-            if (d->ref != 1 || d->size + str.d->size > d->alloc)
+            if (d->ref != 1 || d->size + str.d->size > int(d->alloc))
                 realloc(grow(d->size + str.d->size));
             memcpy(d->data() + d->size, str.d->data(), str.d->size * sizeof(QChar));
             d->size += str.d->size;
@@ -1580,7 +1580,7 @@ QString &QString::append(const QLatin1String &str)
     const uchar *s = (const uchar *)str.latin1();
     if (s) {
         int len = qstrlen((char *)s);
-        if (d->ref != 1 || d->size + len > d->alloc)
+        if (d->ref != 1 || d->size + len > int(d->alloc))
             realloc(grow(d->size + len));
         ushort *i = d->data() + d->size;
         while ((*i++ = *s++))
@@ -1623,7 +1623,7 @@ QString &QString::append(const QLatin1String &str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d->ref != 1 || d->size + 1 > d->alloc)
+    if (d->ref != 1 || d->size + 1 > int(d->alloc))
         realloc(grow(d->size + 1));
     d->data()[d->size++] = ch.unicode();
     d->data()[d->size] = '\0';
@@ -3550,8 +3550,8 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             const __m128i questionMark = _mm_set1_epi16('?');
             // SSE has no compare instruction for unsigned comparison.
             // The variables must be shiffted + 0x8000 to be compared
-            const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
-            const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+            const __m128i signedBitOffset = _mm_set1_epi16(short(0x8000));
+            const __m128i thresholdMask = _mm_set1_epi16(short(0xff + 0x8000));
             for (int i = 0; i < chunkCount; ++i) {
                 __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
                 src += 8;
@@ -6152,7 +6152,7 @@ QString QString::repeated(int times) const
 
     QString result;
     result.reserve(resultSize);
-    if (result.d->alloc != resultSize)
+    if (int(result.d->alloc) != resultSize)
         return QString(); // not enough memory
 
     memcpy(result.d->data(), d->data(), d->size * sizeof(ushort));

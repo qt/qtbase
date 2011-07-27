@@ -439,10 +439,10 @@ inline int QByteArray::capacity() const
 { return d->alloc; }
 
 inline void QByteArray::reserve(int asize)
-{ if (d->ref != 1 || asize > d->alloc) realloc(asize); d->capacityReserved = true; }
+{ if (d->ref != 1 || asize > int(d->alloc)) realloc(asize); d->capacityReserved = true; }
 
 inline void QByteArray::squeeze()
-{ if (d->size < d->alloc) realloc(d->size); d->capacityReserved = false; }
+{ if (d->size < int(d->alloc)) realloc(d->size); d->capacityReserved = false; }
 
 class Q_CORE_EXPORT QByteRef {
     QByteArray &a;
