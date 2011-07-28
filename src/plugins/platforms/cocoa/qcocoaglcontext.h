@@ -6,6 +6,7 @@
 #include <QtGui/QGuiGLContext>
 #include <QtGui/QWindow>
 
+#undef slots
 #include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE

@@ -86,6 +86,7 @@
 
 //#include <private/qcocoaapplication_mac_p.h>
 //#include "private/qt_cocoa_helpers_mac_p.h"
+#undef slots
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
 
