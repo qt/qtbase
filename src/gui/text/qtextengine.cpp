@@ -1632,7 +1632,7 @@ bool QTextEngine::isRightToLeft() const
 int QTextEngine::findItem(int strPos) const
 {
     itemize();
-    int left = 0;
+    int left = 1;
     int right = layoutData->items.size()-1;
     while(left <= right) {
         int middle = ((right-left)/2)+left;
