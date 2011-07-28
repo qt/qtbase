@@ -6877,7 +6877,7 @@ fi
 # For "-carbon" builds: 32 bit x86/ppc.
 # For builds on snow leopard : compiler default (64-bit).
 # For builds on leopard : compiler default (32-bit).
-if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
+if [ "$CFG_ARCH" = "macosx" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
 	if [ "$CFG_MAC_CARBON" = "yes" ]; then
@@ -7129,7 +7129,7 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
-[ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
+[ "$CFG_ARCH" = "macosx" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -8598,7 +8598,7 @@ else
     echo "Building for:  $XPLATFORM"
 fi
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ ! -z "$CFG_MAC_ARCHS" ]; then
     echo "Architecture:  $CFG_ARCH ($CFG_MAC_ARCHS )"
 else
     echo "Architecture:  $CFG_ARCH"
