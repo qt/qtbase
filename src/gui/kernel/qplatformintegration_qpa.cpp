@@ -171,11 +171,15 @@ QPlatformNativeInterface * QPlatformIntegration::nativeInterface() const
 */
 
 /*!
-    \fn QAbstractEventDispatcher *createEventDispatcher() const
 
-    Factory function for the event dispatcher. The platform plugin
-    must create and and return a QAbstractEventDispatcher subclass when
-    this function is called.
+    \fn QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0
+
+    Accessor function for the event dispatcher. The platform plugin should create
+    an instance of the QAbstractEventDispatcher in its constructor and set it
+    on the application using QGuiApplicationPrivate::instance()->setEventDispatcher().
+    The event dispatcher is owned by QGuiApplication, the accessor should return
+    a flat pointer.
+    \sa QGuiApplicationPrivate
 */
 
 bool QPlatformIntegration::hasCapability(Capability cap) const

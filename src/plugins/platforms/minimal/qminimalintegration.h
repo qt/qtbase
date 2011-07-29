@@ -73,8 +73,10 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
-    QAbstractEventDispatcher *createEventDispatcher() const;
+private:
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

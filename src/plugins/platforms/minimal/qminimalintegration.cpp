@@ -48,10 +48,19 @@
 #endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPlatformWindow>
 
-QMinimalIntegration::QMinimalIntegration()
+QT_BEGIN_NAMESPACE
+
+QMinimalIntegration::QMinimalIntegration() :
+#ifdef Q_OS_WIN
+    m_eventDispatcher(new QEventDispatcherWin32())
+#else
+    m_eventDispatcher(createUnixEventDispatcher())
+#endif
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
@@ -80,12 +89,9 @@ QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *
     return new QMinimalBackingStore(window);
 }
 
-QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QMinimalIntegration::guiThreadEventDispatcher() const
 {
-#ifndef Q_OS_WIN
-    return createUnixEventDispatcher();
-#else
-    return new QEventDispatcherWin32();
-#endif
+    return m_eventDispatcher;
 }
 
+QT_END_NAMESPACE
