@@ -66,6 +66,7 @@
 #include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <QtGui/qbackingstore.h>
+#include <QtGui/qguiapplication.h>
 #include <qmenubar.h>
 #include <qtableview.h>
 
@@ -101,6 +102,23 @@
 #endif
 
 #include <QtTest/QtTest>
+
+#if defined(Q_OS_WIN)
+#  include <QtCore/qt_windows.h>
+#  include <QtGui/private/qguiapplication_p.h>
+#  include <QtGui/QPlatformNativeInterface>
+#  include <QtGui/QPlatformIntegration>
+
+static HWND winHandleOf(const QWidget *w)
+{
+    static QPlatformNativeInterface *nativeInterface
+            = QGuiApplicationPrivate::instance()->platformIntegration()->nativeInterface();
+    if (void *handle = nativeInterface->nativeResourceForWindow("handle", w->window()->windowHandle()))
+        return reinterpret_cast<HWND>(handle);
+    qWarning() << "Cannot obtain native handle for " << w;
+    return 0;
+}
+#endif
 
 #if defined(Q_WS_WIN)
 #  include <qt_windows.h>
@@ -1240,7 +1258,7 @@ void tst_QWidget::visible_setWindowOpacity()
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
 #ifdef Q_OS_WIN
-    QVERIFY(::IsWindowVisible(testWidget->winId()) ==  FALSE);
+    QVERIFY(::IsWindowVisible(winHandleOf(testWidget)) ==  FALSE);
 #endif
     testWidget->setWindowOpacity(1.0);
 }
