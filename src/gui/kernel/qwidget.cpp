@@ -1680,6 +1680,10 @@ QWidget::~QWidget()
     if (!d->children.isEmpty())
         d->deleteChildren();
 
+#ifndef QT_NOACCESSIBILITY
+    QAccessible::updateAccessibility(this, 0, QAccessible::ObjectDestroyed);
+#endif
+
     QApplication::removePostedEvents(this);
 
     QT_TRY {
