@@ -113,8 +113,8 @@ public:
     QBitmap createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode = Qt::MaskInColor) const;
 
     static QPixmap grabWindow(WId, int x=0, int y=0, int w=-1, int h=-1);
-    static QPixmap grabWidget(QPaintDevice *widget, const QRect &rect);
-    static inline QPixmap grabWidget(QPaintDevice *widget, int x=0, int y=0, int w=-1, int h=-1)
+    static QPixmap grabWidget(QObject *widget, const QRect &rect);
+    static inline QPixmap grabWidget(QObject *widget, int x=0, int y=0, int w=-1, int h=-1)
     { return grabWidget(widget, QRect(x, y, w, h)); }
 
     inline QPixmap scaled(int w, int h, Qt::AspectRatioMode aspectMode = Qt::IgnoreAspectRatio,

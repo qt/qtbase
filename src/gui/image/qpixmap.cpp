@@ -1029,39 +1029,18 @@ static void sendResizeEvents(QWidget *target)
     \sa grabWindow()
 */
 
-QPixmap QPixmap::grabWidget(QPaintDevice *, const QRect &)
+QPixmap QPixmap::grabWidget(QObject *widget, const QRect &rectangle)
 {
+    QPixmap pixmap;
     // ### Qt5: should we keep or remove this method?
     // SC solution would be to install a callback form QtWidgets, but ugly.
-    qWarning() << "QPixmap::grabWidget is deprecated, use QWidget::render() instead";
-    return QPixmap();
-#if 0
+    qWarning("QPixmap::grabWidget is deprecated, use QWidget::grab() instead");
     if (!widget)
-        return QPixmap();
-
-    if (widget->testAttribute(Qt::WA_PendingResizeEvent) || !widget->testAttribute(Qt::WA_WState_Created))
-        sendResizeEvents(widget);
-
-    widget->d_func()->prepareToRender(QRegion(),
-        QWidget::DrawWindowBackground | QWidget::DrawChildren | QWidget::IgnoreMask);
-
-    QRect r(rect);
-    if (r.width() < 0)
-        r.setWidth(widget->width() - rect.x());
-    if (r.height() < 0)
-        r.setHeight(widget->height() - rect.y());
-
-    if (!r.intersects(widget->rect()))
-        return QPixmap();
-
-    QPixmap res(r.size());
-    if (!qt_widget_private(widget)->isOpaque)
-        res.fill(Qt::transparent);
-
-    widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
-                             | QWidget::DrawChildren | QWidget::IgnoreMask, true);
-    return res;
-#endif
+        return pixmap;
+    QMetaObject::invokeMethod(widget, "grab", Qt::DirectConnection,
+                              Q_RETURN_ARG(QPixmap, pixmap),
+                              Q_ARG(QRect, rectangle));
+    return pixmap;
 }
 
 /*!

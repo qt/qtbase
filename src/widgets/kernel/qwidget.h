@@ -104,6 +104,7 @@ class QGraphicsProxyWidget;
 class QGraphicsEffect;
 class QRasterWindowSurface;
 class QUnifiedToolbarSurface;
+class QPixmap;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif
@@ -361,6 +362,8 @@ public:
     void render(QPainter *painter, const QPoint &targetOffset = QPoint(),
                 const QRegion &sourceRegion = QRegion(),
                 RenderFlags renderFlags = RenderFlags(DrawWindowBackground | DrawChildren));
+
+    Q_INVOKABLE QPixmap grab(const QRect &rectangle);
 
 #ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *graphicsEffect() const;

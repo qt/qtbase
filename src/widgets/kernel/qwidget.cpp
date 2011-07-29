@@ -5150,6 +5150,58 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+static void sendResizeEvents(QWidget *target)
+{
+    QResizeEvent e(target->size(), QSize());
+    QApplication::sendEvent(target, &e);
+
+    const QObjectList children = target->children();
+    for (int i = 0; i < children.size(); ++i) {
+        QWidget *child = static_cast<QWidget*>(children.at(i));
+        if (child->isWidgetType() && !child->isWindow() && child->testAttribute(Qt::WA_PendingResizeEvent))
+            sendResizeEvents(child);
+    }
+}
+
+/*!
+    \since 5.0
+
+    Renders the widget into a pixmap restricted by the
+    given \a rectangle. If the \a widget has any children, then
+    they are also painted in the appropriate positions.
+
+    If no rectangle is specified (the default) the entire widget is
+    painted.
+
+    Replacement for Qt 4's QPixmap::grabWidget().
+
+    \sa render(), QPixmap
+*/
+
+/* INVOKABLE since used by QPixmap::grabWidget(). */
+QPixmap QWidget::grab(const QRect &rectangle)
+{
+    Q_D(const QWidget);
+    if (testAttribute(Qt::WA_PendingResizeEvent) || !testAttribute(Qt::WA_WState_Created))
+        sendResizeEvents(this);
+
+    QRect r(rectangle);
+    if (r.width() < 0)
+        r.setWidth(width() - rectangle.x());
+    if (r.height() < 0)
+        r.setHeight(height() - rectangle.y());
+
+    if (!r.intersects(rect()))
+        return QPixmap();
+
+    QPixmap res(r.size());
+    if (!d->isOpaque)
+        res.fill(Qt::transparent);
+    render(&res, QPoint(), QRegion(r), QWidget::DrawWindowBackground
+           | QWidget::DrawChildren | QWidget::IgnoreMask);
+    return res;
+}
+
 /*!
     \brief The graphicsEffect function returns a pointer to the
     widget's graphics effect.
