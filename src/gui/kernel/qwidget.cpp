@@ -1680,7 +1680,7 @@ QWidget::~QWidget()
     if (!d->children.isEmpty())
         d->deleteChildren();
 
-#ifndef QT_NOACCESSIBILITY
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::updateAccessibility(this, 0, QAccessible::ObjectDestroyed);
 #endif
 
