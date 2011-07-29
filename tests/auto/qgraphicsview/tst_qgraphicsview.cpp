@@ -104,6 +104,7 @@ static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton 
     QTest::mouseMove(widget, point);
     QMouseEvent event(QEvent::MouseMove, point, button, buttons, 0);
     QApplication::sendEvent(widget, &event);
+    QApplication::processEvents();
 }
 
 static void sendMouseRelease(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
