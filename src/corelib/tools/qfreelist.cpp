@@ -41,6 +41,8 @@
 
 #include "qfreelist_p.h"
 
+QT_BEGIN_NAMESPACE
+
 // default sizes and offsets (no need to define these when customizing)
 enum {
     Offset0 = 0x00000000,
@@ -60,3 +62,6 @@ const int QFreeListDefaultConstants::Sizes[QFreeListDefaultConstants::BlockCount
     Size2,
     Size3
 };
+
+QT_END_NAMESPACE
+
