@@ -58,6 +58,8 @@
 #  include "QtCore/qatomic_mips.h"
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64)
 #  include <QtCore/qatomic_x86_64.h>
+#elif defined(Q_CC_GNU)
+#  include <QtCore/qatomic_gcc.h>
 #else
 #  define QT_OLD_ATOMICS
 #endif
