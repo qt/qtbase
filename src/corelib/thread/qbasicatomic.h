@@ -48,6 +48,8 @@
 #elif defined(Q_CC_MSVC)
   // not ported yet
 #  define QT_OLD_ATOMICS
+#elif defined(__arm__) || defined(__TARGET_ARCH_ARM)
+#  include <QtCore/qatomic_arm.h>
 #elif defined(__i386) || defined(__i386__)
 #  include <QtCore/qatomic_i386.h>
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64)
