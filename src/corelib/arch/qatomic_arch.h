@@ -62,8 +62,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_ia64.h"
 #elif defined(QT_ARCH_MACOSX)
 #  include "QtCore/qatomic_macosx.h"
-#elif defined(QT_ARCH_MIPS)
-#  include "QtCore/qatomic_mips.h"
 #elif defined(QT_ARCH_PARISC)
 #  include "QtCore/qatomic_parisc.h"
 #elif defined(QT_ARCH_POWERPC)
