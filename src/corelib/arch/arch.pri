@@ -31,7 +31,8 @@ integrity:HEADERS += arch/qatomic_integrity.h
                        arch/qatomic_sh.h \
                        arch/qatomic_sh4a.h \
                        arch/qatomic_nacl.h \
-                       arch/qatomic_gcc.h
+                       arch/qatomic_gcc.h \
+                       arch/qatomic_cxx11.h
 
 QT_ARCH_CPP = $$QT_SOURCE_TREE/src/corelib/arch/$$QT_ARCH
 DEPENDPATH += $$QT_ARCH_CPP
