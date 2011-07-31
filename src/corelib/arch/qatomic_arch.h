@@ -62,8 +62,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_bfin.h"
 #elif defined(QT_ARCH_GENERIC)
 #  include "QtCore/qatomic_generic.h"
-#elif defined(QT_ARCH_I386)
-#  include "QtCore/qatomic_i386.h"
 #elif defined(QT_ARCH_IA64)
 #  include "QtCore/qatomic_ia64.h"
 #elif defined(QT_ARCH_MACOSX)
@@ -82,8 +80,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_windows.h"
 #elif defined(QT_ARCH_WINDOWSCE)
 #  include "QtCore/qatomic_windowsce.h"
-#elif defined(QT_ARCH_X86_64)
-#  include "QtCore/qatomic_x86_64.h"
 #elif defined(QT_ARCH_SH)
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
+** Copyright (C) 2011 Thiago Macieira <thiago@kde.org>
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,102 +42,175 @@
 #ifndef QATOMIC_I386_H
 #define QATOMIC_I386_H
 
+#include <QtCore/qgenericatomic.h>
+
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
+
+#if 0
+#pragma qt_sync_stop_processing
+#endif
+
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
 
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_WAIT_FREE
 
-inline bool QBasicAtomicInt::isReferenceCountingNative()
-{ return true; }
-inline bool QBasicAtomicInt::isReferenceCountingWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_WAIT_FREE
-
-inline bool QBasicAtomicInt::isTestAndSetNative()
-{ return true; }
-inline bool QBasicAtomicInt::isTestAndSetWaitFree()
-{ return true; }
 
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_WAIT_FREE
 
-inline bool QBasicAtomicInt::isFetchAndStoreNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndStoreWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_ADD_IS_WAIT_FREE
 
-inline bool QBasicAtomicInt::isFetchAndAddNative()
-{ return true; }
-inline bool QBasicAtomicInt::isFetchAndAddWaitFree()
-{ return true; }
+#define Q_ATOMIC_INT32_IS_SUPPORTED
+
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_REFERENCE_COUNTING_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_TEST_AND_SET_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_STORE_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT32_FETCH_AND_ADD_IS_WAIT_FREE
 
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_TEST_AND_SET_IS_WAIT_FREE
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetWaitFree()
-{ return true; }
-
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_WAIT_FREE
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreWaitFree()
-{ return true; }
 
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_WAIT_FREE
 
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddNative()
-{ return true; }
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
-{ return true; }
+template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
+{
+    static inline bool isReferenceCountingNative() { return true; }
+    static inline bool isReferenceCountingWaitFree() { return true; }
+    template <typename T> static bool ref(T &_q_value);
+    template <typename T> static bool deref(T &_q_value);
+
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return true; }
+    template <typename T> static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue);
+
+    static inline bool isFetchAndStoreNative() { return true; }
+    static inline bool isFetchAndStoreWaitFree() { return true; }
+    template <typename T> static T fetchAndStoreRelaxed(T &_q_value, T newValue);
+
+    static inline bool isFetchAndAddNative() { return true; }
+    static inline bool isFetchAndAddWaitFree() { return true; }
+    template <typename T> static
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd);
+};
+
+template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
+{
+    typedef T Type;
+};
 
 #if defined(Q_CC_GNU) || defined(Q_CC_INTEL)
 
-inline bool QBasicAtomicInt::ref()
+template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<1>::ref(T &_q_value)
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "incb %0\n"
+                 "setne %1"
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
+                 : "memory");
+    return ret != 0;
+}
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<2>::ref(T &_q_value)
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "incw %0\n"
+                 "setne %1"
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
+                 : "memory");
+    return ret != 0;
+}
+
+template<> template<typename T> inline
+bool QBasicAtomicOps<4>::ref(T &_q_value)
 {
     unsigned char ret;
     asm volatile("lock\n"
                  "incl %0\n"
                  "setne %1"
-                 : "=m" (_q_value), "=qm" (ret)
-                 : "m" (_q_value)
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
                  : "memory");
     return ret != 0;
 }
 
-inline bool QBasicAtomicInt::deref()
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::deref(T &_q_value)
 {
-        unsigned char ret;
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "decb %0\n"
+                 "setne %1"
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
+                 : "memory");
+    return ret != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<2>::deref(T &_q_value)
+{
+    unsigned char ret;
+    asm volatile("lock\n"
+                 "decw %0\n"
+                 "setne %1"
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
+                 : "memory");
+    return ret != 0;
+}
+
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::deref(T &_q_value)
+{
+    unsigned char ret;
     asm volatile("lock\n"
                  "decl %0\n"
                  "setne %1"
-                 : "=m" (_q_value), "=qm" (ret)
-                 : "m" (_q_value)
+                 : "+m" (_q_value), "=qm" (ret)
+                 :
                  : "memory");
     return ret != 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
+template<int size> template <typename T> inline
+bool QBasicAtomicOps<size>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "cmpxchgl %3,%2\n"
+                 "cmpxchg %3,%2\n"
                  "sete %1\n"
                  : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
                  : "r" (newValue), "0" (expectedValue)
@@ -145,58 +218,130 @@ inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
     return ret != 0;
 }
 
-inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
-{
-    asm volatile("xchgl %0,%1"
-                 : "=r" (newValue), "+m" (_q_value)
-                 : "0" (newValue)
-                 : "memory");
-    return newValue;
-}
-
-inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
-{
-    asm volatile("lock\n"
-                 "xaddl %0,%1"
-                 : "=r" (valueToAdd), "+m" (_q_value)
-                 : "0" (valueToAdd)
-                 : "memory");
-    return valueToAdd;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
+template<> template <typename T> inline
+bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
 {
     unsigned char ret;
     asm volatile("lock\n"
-                 "cmpxchgl %3,%2\n"
+                 "cmpxchg %3,%2\n"
                  "sete %1\n"
                  : "=a" (newValue), "=qm" (ret), "+m" (_q_value)
-                 : "r" (newValue), "0" (expectedValue)
+                 : "q" (newValue), "0" (expectedValue)
                  : "memory");
     return ret != 0;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
+template<int size> template <typename T> inline
+T QBasicAtomicOps<size>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 {
-    asm volatile("xchgl %0,%1"
+    asm volatile("xchg %0,%1"
                  : "=r" (newValue), "+m" (_q_value)
                  : "0" (newValue)
                  : "memory");
     return newValue;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
+template<> template <typename T> inline
+T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 {
-    asm volatile("lock\n"
-                 "xaddl %0,%1"
-                 : "=r" (valueToAdd), "+m" (_q_value)
-                 : "0" (valueToAdd * sizeof(T))
+    asm volatile("xchg %0,%1"
+                 : "=q" (newValue), "+m" (_q_value)
+                 : "0" (newValue)
                  : "memory");
-    return reinterpret_cast<T *>(valueToAdd);
+    return newValue;
 }
+
+template<int size> template <typename T> inline
+T QBasicAtomicOps<size>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+{
+    T result;
+    asm volatile("lock\n"
+                 "xadd %0,%1"
+                 : "=r" (result), "+m" (_q_value)
+                 : "0" (valueToAdd * QAtomicAdditiveType<T>::AddScale)
+                 : "memory");
+    return result;
+}
+
+template<> template <typename T> inline
+T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
+{
+    T result;
+    asm volatile("lock\n"
+                 "xadd %0,%1"
+                 : "=q" (result), "+m" (_q_value)
+                 : "0" (valueToAdd * QAtomicAdditiveType<T>::AddScale)
+                 : "memory");
+    return result;
+}
+
+#define Q_ATOMIC_INT8_IS_SUPPORTED
+
+#define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT8_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_TEST_AND_SET_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_FETCH_AND_STORE_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT8_FETCH_AND_ADD_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT16_IS_SUPPORTED
+
+#define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_REFERENCE_COUNTING_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT16_TEST_AND_SET_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_TEST_AND_SET_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_FETCH_AND_STORE_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
+#define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_WAIT_FREE
+
+template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
+{
+    static inline bool isTestAndSetNative() { return true; }
+    static inline bool isTestAndSetWaitFree() { return true; }
+    template <typename T> static inline
+    bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
+    {
+#ifdef __PIC__
+# define EBX_reg "r"
+# define EBX_load(reg) "xchg " reg ", %%ebx\n"
+#else
+# define EBX_reg "b"
+# define EBX_load(reg)
+#endif
+        unsigned char ret;
+        asm volatile(EBX_load("%3")
+                     "lock\n"
+                     "cmpxchg8b %0\n"
+                     EBX_load("%3")
+                     "sete %1\n"
+                     : "+m" (_q_value), "=qm" (ret),
+                       "+A" (expectedValue)
+                     : EBX_reg (quint32(newValue & 0xffffffff)), "c" (quint32(newValue >> 32))
+                     : "memory");
+        return ret != 0;
+#undef EBX_reg
+#undef EBX_load
+    }
+};
+#define Q_ATOMIC_INT64_IS_SUPPORTED
+
+#define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_NOT_NATIVE
+
+#define Q_ATOMIC_INT64_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_INT64_TEST_AND_SET_IS_WAIT_FREE
+
+#define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_NATIVE
+
+#define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_NOT_NATIVE
 
 #else
 
@@ -211,149 +356,36 @@ extern "C" {
     Q_CORE_EXPORT void *q_atomic_fetch_and_add_ptr(volatile void *ptr, int value);
 } // extern "C"
 
-inline bool QBasicAtomicInt::ref()
+template<> template<typename T> inline
+bool QBasicAtomicOps<4>::ref(T &_q_value)
 {
-    return q_atomic_increment(&_q_value) != 0;
+    return q_atomic_increment((int *)&_q_value) != 0;
 }
 
-inline bool QBasicAtomicInt::deref()
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::deref(T &_q_value)
 {
-    return q_atomic_decrement(&_q_value) != 0;
+    return q_atomic_decrement((int *)&_q_value) != 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
+template<> template <typename T> inline
+bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue)
 {
-    return q_atomic_test_and_set_int(&_q_value, expectedValue, newValue) != 0;
+    return q_atomic_test_and_set_int((int*)&_q_value, int(expectedValue), int(newValue));
 }
 
-inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
+template<> template <typename T> inline
+T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue)
 {
-    return q_atomic_set_int(&_q_value, newValue);
+    return T(q_atomic_set_int((int*)&_q_value, int(newValue));
 }
 
-inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
+template<> template <typename T> inline
+T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd)
 {
-    return q_atomic_fetch_and_add_int(&_q_value, valueToAdd);
+    return T(q_atomic_fetch_and_add_int((int *)&_q_value, valueToAdd * QAtomicAdditiveType<T>::AddScale));
 }
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
-{
-    return q_atomic_test_and_set_ptr(&_q_value, expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
-{
-    return reinterpret_cast<T *>(q_atomic_set_ptr(&_q_value, newValue));
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
-{
-    return reinterpret_cast<T *>(q_atomic_fetch_and_add_ptr(&_q_value, valueToAdd * sizeof(T)));
-}
-
 #endif
-
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
 
 QT_END_NAMESPACE
 QT_END_HEADER

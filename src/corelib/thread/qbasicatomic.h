@@ -45,6 +45,13 @@
 
 #if defined(QT_MOC) || defined(QT_BUILD_QMAKE) || defined(QT_RCC) || defined(QT_UIC) || defined(QT_BOOTSTRAPPED)
 #  include <QtCore/qatomic_bootstrap.h>
+#elif defined(Q_CC_MSVC)
+  // not ported yet
+#  define QT_OLD_ATOMICS
+#elif defined(__i386) || defined(__i386__)
+#  include <QtCore/qatomic_i386.h>
+#elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64)
+#  include <QtCore/qatomic_x86_64.h>
 #else
 #  define QT_OLD_ATOMICS
 #endif
