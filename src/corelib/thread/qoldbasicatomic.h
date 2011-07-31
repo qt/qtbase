@@ -171,10 +171,6 @@ public:
 QT_END_NAMESPACE
 QT_END_HEADER
 
-#if defined(QT_MOC) || defined(QT_BUILD_QMAKE) || defined(QT_RCC) || defined(QT_UIC) || defined(QT_BOOTSTRAPPED)
-#  include <QtCore/qatomic_bootstrap.h>
-#else
 #  include <QtCore/qatomic_arch.h>
-#endif
 
 #endif // QBASIC_ATOMIC
