@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBASICATOMIC_H
-#define QBASICATOMIC_H
+#ifndef QOLDBASICATOMIC_H
+#define QOLDBASICATOMIC_H
 
 #include <QtCore/qglobal.h>
 
@@ -49,6 +49,11 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
+
+#if 0
+#pragma qt_no_master_include
+#pragma qt_sync_stop_processing
+#endif
 
 class Q_CORE_EXPORT QBasicAtomicInt
 {

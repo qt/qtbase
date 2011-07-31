@@ -8,6 +8,8 @@ HEADERS += thread/qmutex.h \
            thread/qthreadstorage.h \
            thread/qwaitcondition.h \
            thread/qatomic.h \
+           thread/qbasicatomic.h \
+           thread/qgenericatomic.h \
            thread/qoldbasicatomic.h
 
 # private headers
