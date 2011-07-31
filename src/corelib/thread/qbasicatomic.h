@@ -52,6 +52,8 @@
 #  include <QtCore/qatomic_arm.h>
 #elif defined(__i386) || defined(__i386__)
 #  include <QtCore/qatomic_i386.h>
+#elif defined(__ia64) || defined(__ia64__)
+#  include "QtCore/qatomic_ia64.h"
 #elif defined(__mips) || defined(__mips__)
 #  include "QtCore/qatomic_mips.h"
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64)

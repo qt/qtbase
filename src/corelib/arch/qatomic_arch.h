@@ -58,8 +58,6 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_bfin.h"
 #elif defined(QT_ARCH_GENERIC)
 #  include "QtCore/qatomic_generic.h"
-#elif defined(QT_ARCH_IA64)
-#  include "QtCore/qatomic_ia64.h"
 #elif defined(QT_ARCH_MACOSX)
 #  include "QtCore/qatomic_macosx.h"
 #elif defined(QT_ARCH_PARISC)
