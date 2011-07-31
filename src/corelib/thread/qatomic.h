@@ -44,7 +44,7 @@
 #ifndef QATOMIC_H
 #define QATOMIC_H
 
-#include <QtCore/qbasicatomic.h>
+#include <QtCore/qoldbasicatomic.h>
 
 QT_BEGIN_HEADER
 
