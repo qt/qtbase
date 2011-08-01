@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-
+#include <QImageReader>
 #include <qicon.h>
 
 #if defined(Q_OS_SYMBIAN)
@@ -87,6 +87,8 @@ private slots:
     void task239461_custom_iconengine_crash();
 
 private:
+    bool haveImageFormat(QByteArray const&);
+
     QString oldCurrentDir;
 
     const static QIcon staticIcon;
@@ -110,6 +112,11 @@ void tst_QIcon::cleanup()
     if (!oldCurrentDir.isEmpty()) {
         QDir::setCurrent(oldCurrentDir);
     }
+}
+
+bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
+{
+    return QImageReader::supportedImageFormats().contains(desiredFormat);
 }
 
 tst_QIcon::tst_QIcon()
@@ -205,6 +212,10 @@ void tst_QIcon::actualSize2()
 
 void tst_QIcon::svgActualSize()
 {
+    if (!haveImageFormat("svg")) {
+        QSKIP("SVG support is not available", SkipAll);
+    }
+
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
     QIcon icon(prefix + "rect.svg");
     QCOMPARE(icon.actualSize(QSize(16, 16)), QSize(16, 2));
@@ -415,6 +426,9 @@ void tst_QIcon::detach()
 
 void tst_QIcon::svg()
 {
+    if (!haveImageFormat("svg")) {
+        QSKIP("SVG support is not available", SkipAll);
+    }
     QIcon icon1("heart.svg");
 
     QVERIFY(!icon1.pixmap(32).isNull());
@@ -521,14 +535,14 @@ void tst_QIcon::availableSizes()
         QCOMPARE(availableSizes.at(0), QSize(16,16));
     }
 
-    {
+    if (haveImageFormat("svg")) {
         // checks that there are no availableSizes for scalable images.
         QIcon icon("heart.svg");
         QList<QSize> availableSizes = icon.availableSizes();
         QVERIFY(availableSizes.isEmpty());
     }
 
-    {
+    if (haveImageFormat("svg")) {
         // even if an a scalable image contain added pixmaps,
         // availableSizes still should be empty.
         QIcon icon("heart.svg");
