@@ -467,6 +467,22 @@ void tst_QDialog::throwInExec()
 #if defined(Q_WS_MAC) || (defined(Q_WS_WINCE) && defined(_ARM_))
     QSKIP("Throwing exceptions in exec() is not supported on this platform.", SkipAll);
 #endif
+
+#if defined(Q_OS_LINUX)
+    // C++ exceptions can't be passed through glib callbacks.  Skip the test if
+    // we're using the glib event loop.
+    QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
+    if (dispatcher.contains("Glib")) {
+        QSKIP(
+            qPrintable(QString(
+                "Throwing exceptions in exec() won't work if %1 event dispatcher is used.\n"
+                "Try running with QT_NO_GLIB=1 in environment."
+            ).arg(QString::fromLatin1(dispatcher))),
+            SkipAll
+        );
+    }
+#endif
+
     int caughtExceptions = 0;
     try {
         ExceptionDialog dialog;
