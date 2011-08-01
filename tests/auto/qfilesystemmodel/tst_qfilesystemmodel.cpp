@@ -909,12 +909,16 @@ void tst_QFileSystemModel::sort()
     expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + "." << dirPath + QChar('/') + "..";
     //File dialog Mode means sub trees are not sorted, only the current root
     if (fileDialogMode) {
+       // FIXME: we were only able to disableRecursiveSort in developer builds, so we can only
+       // stably perform this test for developer builds
+#ifdef QT_BUILD_INTERNAL
        QList<QString> actualRows;
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
             actualRows << dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString();
         }
         QVERIFY(actualRows != expectedOrder);
+#endif
     } else {
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
