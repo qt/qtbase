@@ -129,11 +129,11 @@ void tst_QIODevice::constructing_QTcpSocket()
     QVERIFY(!device->isOpen());
 
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(socket.waitForConnected(5000));
+    QVERIFY(socket.waitForConnected(30000));
     QVERIFY(device->isOpen());
 
     while (!device->canReadLine())
-        QVERIFY(device->waitForReadyRead(5000));
+        QVERIFY(device->waitForReadyRead(30000));
 
     char buf[1024];
     memset(buf, 0, sizeof(buf));
@@ -143,11 +143,11 @@ void tst_QIODevice::constructing_QTcpSocket()
 
     socket.close();
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
-    QVERIFY(socket.waitForConnected(5000));
+    QVERIFY(socket.waitForConnected(30000));
     QVERIFY(device->isOpen());
 
     while (!device->canReadLine())
-        QVERIFY(device->waitForReadyRead(5000));
+        QVERIFY(device->waitForReadyRead(30000));
 
     char buf2[1024];
     memset(buf2, 0, sizeof(buf2));
