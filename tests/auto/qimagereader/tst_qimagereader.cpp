@@ -143,12 +143,10 @@ private slots:
     void imageFormatBeforeRead_data();
     void imageFormatBeforeRead();
 
-#if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
     void animatedGif();
     void gifImageCount();
     void gifLoopCount();
-#endif
 
     void readCorruptImage_data();
     void readCorruptImage();
@@ -157,7 +155,6 @@ private slots:
     void supportsOption_data();
     void supportsOption();
 
-#if defined QTEST_HAVE_TIFF
     void tiffCompression_data();
     void tiffCompression();
     void tiffEndianness();
@@ -166,7 +163,6 @@ private slots:
     void tiffOrientation();
 
     void tiffGrayscale();
-#endif
 
     void autoDetectImageFormat();
     void fileNameProbing();
@@ -191,6 +187,12 @@ private slots:
 };
 
 static const QLatin1String prefix(SRCDIR "/images/");
+
+// helper to skip an autotest when the given image format is not supported
+#define SKIP_IF_UNSUPPORTED(format) do {                                                          \
+    if (!QByteArray(format).isEmpty() && !QImageReader::supportedImageFormats().contains(format)) \
+        QSKIP("\"" + QByteArray(format) + "\" images are not supported", SkipSingle);             \
+} while (0)
 
 // Testing get/set functions
 void tst_QImageReader::getSetCheck()
@@ -249,22 +251,17 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("PPM: test") << QString("test.ppm") << true << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << true << QByteArray("xbm");
 
-#if defined QTEST_HAVE_JPEG
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
     QTest::newRow("JPEG: qtbug13653") << QString("qtbug13653-no_eoi.jpg") << true << QByteArray("jpeg");
-#endif
-#if defined QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << QString("earth.gif") << true << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << true << QByteArray("gif");
-#endif
-#if defined QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << QString("ball.mng") << true << QByteArray("mng");
     QTest::newRow("MNG: fire") << QString("fire.mng") << true << QByteArray("mng");
-#endif
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << QString("rect.svg") << true << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << true << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::readImage()
@@ -272,6 +269,8 @@ void tst_QImageReader::readImage()
     QFETCH(QString, fileName);
     QFETCH(bool, success);
     QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     for (int i = 0; i < 2; ++i) {
         QImageReader io(prefix + fileName, i ? QByteArray() : format);
@@ -363,7 +362,7 @@ void tst_QImageReader::setScaledSize_data()
     QTest::newRow("PPM: runners") << "runners.ppm" << QSize(400, 400) << QByteArray("ppm");
     QTest::newRow("PPM: test") << "test.ppm" << QSize(10, 10) << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << "gnus" << QSize(200, 200) << QByteArray("xbm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("JPEG: beavis A") << "beavis" << QSize(200, 200) << QByteArray("jpeg");
     QTest::newRow("JPEG: beavis B") << "beavis" << QSize(175, 175) << QByteArray("jpeg");
     QTest::newRow("JPEG: beavis C") << "beavis" << QSize(100, 100) << QByteArray("jpeg");
@@ -373,19 +372,15 @@ void tst_QImageReader::setScaledSize_data()
     QTest::newRow("JPEG: beavis G") << "beavis" << QSize(50, 45) << QByteArray("jpeg");
     QTest::newRow("JPEG: beavis H") << "beavis" << QSize(43, 43) << QByteArray("jpeg");
     QTest::newRow("JPEG: beavis I") << "beavis" << QSize(25, 25) << QByteArray("jpeg");
-#endif // QTEST_HAVE_JPEG
-#ifdef QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << "earth" << QSize(200, 200) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QSize(200, 200) << QByteArray("gif");
-#endif // QTEST_HAVE_GIF
-#ifdef QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << "ball" << QSize(200, 200) << QByteArray("mng");
     QTest::newRow("MNG: fire") << "fire" << QSize(200, 200) << QByteArray("mng");
-#endif // QTEST_HAVE_MNG
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << "rect" << QSize(200, 200) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QSize(200, 200) << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::setScaledSize()
@@ -394,8 +389,7 @@ void tst_QImageReader::setScaledSize()
     QFETCH(QSize, newSize);
     QFETCH(QByteArray, format);
 
-    if (!format.isEmpty() && !QImageReader::supportedImageFormats().contains(format))
-        QSKIP("Qt does not support reading the \"" + format + "\" format", SkipSingle);
+    SKIP_IF_UNSUPPORTED(format);
 
     QImageReader reader(prefix + fileName);
     reader.setScaledSize(newSize);
@@ -415,8 +409,7 @@ void tst_QImageReader::task255627_setNullScaledSize()
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
 
-    if (!format.isEmpty() && !QImageReader::supportedImageFormats().contains(format))
-        QSKIP("Qt does not support reading the \"" + format + "\" format", SkipSingle);
+    SKIP_IF_UNSUPPORTED(format);
 
     QImageReader reader(prefix + fileName);
 
@@ -444,21 +437,17 @@ void tst_QImageReader::setClipRect_data()
     QTest::newRow("PPM: runners") << "runners.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
     QTest::newRow("PPM: test") << "test.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << "gnus" << QRect(0, 0, 50, 50) << QByteArray("xbm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("JPEG: beavis") << "beavis" << QRect(0, 0, 50, 50) << QByteArray("jpeg");
-#endif // QTEST_HAVE_JPEG
-#ifdef QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << "earth" << QRect(0, 0, 50, 50) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QRect(0, 0, 50, 50) << QByteArray("gif");
-#endif // QTEST_HAVE_GIF
-#ifdef QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << "ball" << QRect(0, 0, 50, 50) << QByteArray("mng");
     QTest::newRow("MNG: fire") << "fire" << QRect(0, 0, 50, 50) << QByteArray("mng");
-#endif // QTEST_HAVE_MNG
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::setClipRect()
@@ -467,8 +456,7 @@ void tst_QImageReader::setClipRect()
     QFETCH(QRect, newRect);
     QFETCH(QByteArray, format);
 
-    if (!format.isEmpty() && !QImageReader::supportedImageFormats().contains(format))
-        QSKIP("Qt does not support reading the \"" + format + "\" format", SkipSingle);
+    SKIP_IF_UNSUPPORTED(format);
 
     QImageReader reader(prefix + fileName);
     reader.setClipRect(newRect);
@@ -497,21 +485,17 @@ void tst_QImageReader::setScaledClipRect_data()
     QTest::newRow("PPM: runners") << "runners.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
     QTest::newRow("PPM: test") << "test.ppm" << QRect(0, 0, 50, 50) << QByteArray("ppm");
     QTest::newRow("XBM: gnus") << "gnus" << QRect(0, 0, 50, 50) << QByteArray("xbm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("JPEG: beavis") << "beavis" << QRect(0, 0, 50, 50) << QByteArray("jpeg");
-#endif // QTEST_HAVE_JPEG
-#ifdef QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << "earth" << QRect(0, 0, 50, 50) << QByteArray("gif");
     QTest::newRow("GIF: trolltech") << "trolltech" << QRect(0, 0, 50, 50) << QByteArray("gif");
-#endif // QTEST_HAVE_GIF
-#ifdef QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << "ball" << QRect(0, 0, 50, 50) << QByteArray("mng");
     QTest::newRow("MNG: fire") << "fire" << QRect(0, 0, 50, 50) << QByteArray("mng");
-#endif // QTEST_HAVE_MNG
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svg");
     QTest::newRow("SVGZ: rect") << "rect" << QRect(0, 0, 50, 50) << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::setScaledClipRect()
@@ -520,8 +504,7 @@ void tst_QImageReader::setScaledClipRect()
     QFETCH(QRect, newRect);
     QFETCH(QByteArray, format);
 
-    if (!format.isEmpty() && !QImageReader::supportedImageFormats().contains(format))
-        QSKIP("Qt does not support reading the \"" + format + "\" format", SkipSingle);
+    SKIP_IF_UNSUPPORTED(format);
 
     QImageReader reader(prefix + fileName);
     reader.setScaledSize(QSize(300, 300));
@@ -548,15 +531,14 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("ppm-2") << QString("teapot.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
     QTest::newRow("ppm-3") << QString("runners.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
     QTest::newRow("ppm-4") << QString("test.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Indexed8;
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
-#endif
-#if defined QTEST_HAVE_GIF
+
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif") << QImage::Format_Invalid;
     QTest::newRow("gif-2") << QString("trolltech.gif") << QByteArray("gif") << QImage::Format_Invalid;
-#endif
+
     QTest::newRow("xbm") << QString("gnus.xbm") << QByteArray("xbm") << QImage::Format_MonoLSB;
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm") << QImage::Format_Indexed8;
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp") << QImage::Format_Indexed8;
@@ -577,27 +559,9 @@ void tst_QImageReader::imageFormat()
     QFETCH(QByteArray, format);
     QFETCH(QImage::Format, imageFormat);
 
-    if (QImageReader::imageFormat(prefix + fileName).isEmpty()) {
-        if (QByteArray("jpeg") == format)
-#ifndef QTEST_HAVE_JPEG
-            return;
-#endif // !QTEST_HAVE_JPEG
-        if (QByteArray("gif") == format)
-#ifndef QTEST_HAVE_GIF
-            return;
-#endif // !QTEST_HAVE_GIF
-        if (QByteArray("mng") == format)
-#ifndef QTEST_HAVE_MNG
-            return;
-#endif // !QTEST_HAVE_MNG
-        if (QByteArray("svg") == format || QByteArray("svgz") == format)
-#ifndef QTEST_HAVE_SVG
-            return;
-#endif // !QTEST_HAVE_SVG
-        QSKIP(("Qt does not support the " + format + " format.").constData(), SkipSingle);
-    } else {
-        QCOMPARE(QImageReader::imageFormat(prefix + fileName), format);
-    }
+    SKIP_IF_UNSUPPORTED(format);
+
+    QCOMPARE(QImageReader::imageFormat(prefix + fileName), format);
     QImageReader reader(prefix + fileName);
     QCOMPARE(reader.imageFormat(), imageFormat);
 }
@@ -657,21 +621,17 @@ void tst_QImageReader::setBackgroundColor_data()
     QTest::newRow("PPM: runners") << QString("runners.ppm") << QColor(Qt::red);
     QTest::newRow("PPM: test") << QString("test.ppm") << QColor(Qt::white);
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << QColor(Qt::blue);
-#if defined QTEST_HAVE_JPEG
+
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << QColor(Qt::darkBlue);
-#endif
-#if defined QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << QString("earth.gif") << QColor(Qt::cyan);
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << QColor(Qt::magenta);
-#endif
-#if defined QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << QString("ball.mng") << QColor(Qt::yellow);
     QTest::newRow("MNG: fire") << QString("fire.mng") << QColor(Qt::gray);
-#endif
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << QString("rect.svg") << QColor(Qt::darkGreen);
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << QColor(Qt::darkGreen);
-#endif
 }
 
 void tst_QImageReader::setBackgroundColor()
@@ -700,21 +660,17 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << false;
     QTest::newRow("PPM: runners") << QString("runners.ppm") << false;
     QTest::newRow("XBM: gnus") << QString("gnus.xbm") << false;
-#if defined QTEST_HAVE_JPEG
+
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << false;
-#endif
-#if defined QTEST_HAVE_GIF
+
     QTest::newRow("GIF: earth") << QString("earth.gif") << true;
     QTest::newRow("GIF: trolltech") << QString("trolltech.gif") << true;
-#endif
-#if defined QTEST_HAVE_MNG
+
     QTest::newRow("MNG: ball") << QString("ball.mng") << true;
     QTest::newRow("MNG: fire") << QString("fire.mng") << true;
-#endif
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("SVG: rect") << QString("rect.svg") << false;
     QTest::newRow("SVGZ: rect") << QString("rect.svgz") << false;
-#endif
 }
 
 void tst_QImageReader::supportsAnimation()
@@ -734,6 +690,9 @@ void tst_QImageReader::sizeBeforeRead()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
+
     QImageReader reader(prefix + fileName);
     QVERIFY(reader.canRead());
     if (format == "mng") {
@@ -781,7 +740,11 @@ void tst_QImageReader::imageFormatBeforeRead_data()
 void tst_QImageReader::imageFormatBeforeRead()
 {
     QFETCH(QString, fileName);
+    QFETCH(QByteArray, format);
     QFETCH(QImage::Format, imageFormat);
+
+    SKIP_IF_UNSUPPORTED(format);
+
     QImageReader reader(fileName);
     if (reader.supportsOption(QImageIOHandler::ImageFormat)) {
         QImage::Format fileFormat = reader.imageFormat();
@@ -793,9 +756,10 @@ void tst_QImageReader::imageFormatBeforeRead()
     }
 }
 
-#if defined QTEST_HAVE_GIF
 void tst_QImageReader::gifHandlerBugs()
 {
+    SKIP_IF_UNSUPPORTED("gif");
+
     {
         QImageReader io(prefix + "trolltech.gif");
         QVERIFY(io.loopCount() != 1);
@@ -837,6 +801,8 @@ void tst_QImageReader::gifHandlerBugs()
 
 void tst_QImageReader::animatedGif()
 {
+    SKIP_IF_UNSUPPORTED("gif");
+
     QImageReader io(":images/qt.gif");
     QImage image = io.read();
     QVERIFY(!image.isNull());
@@ -852,6 +818,8 @@ void tst_QImageReader::animatedGif()
 // Check the count of images in various call orders...
 void tst_QImageReader::gifImageCount()
 {
+    SKIP_IF_UNSUPPORTED("gif");
+
     // just read every frame... and see how much we got..
     {
         QImageReader io(":images/four-frames.gif");
@@ -987,6 +955,8 @@ void tst_QImageReader::gifImageCount()
 
 void tst_QImageReader::gifLoopCount()
 {
+    SKIP_IF_UNSUPPORTED("gif");
+
     {
         QImageReader io(":images/qt-gif-anim.gif");
         QCOMPARE(io.loopCount(), -1); // infinite loop
@@ -996,8 +966,6 @@ void tst_QImageReader::gifLoopCount()
         QCOMPARE(io.loopCount(), 0); // no loop
     }
 }
-
-#endif
 
 class Server : public QObject
 {
@@ -1060,16 +1028,15 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("ppm-2") << QString("teapot.ppm") << QByteArray("ppm");
     QTest::newRow("ppm-3") << QString("teapot.ppm") << QByteArray("ppm");
     QTest::newRow("ppm-4") << QString("runners.ppm") << QByteArray("ppm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-4") << QString("qtbug13653-no_eoi.jpg") << QByteArray("jpeg");
-#endif // QTEST_HAVE_JPEG
-#ifdef QTEST_HAVE_GIF
+
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif");
     QTest::newRow("gif-2") << QString("trolltech.gif") << QByteArray("gif");
-#endif // QTEST_HAVE_GIF
+
     QTest::newRow("xbm") << QString("gnus.xbm") << QByteArray("xbm");
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
@@ -1077,20 +1044,20 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
-#ifdef QTEST_HAVE_MNG
+
     QTest::newRow("mng-1") << QString("ball.mng") << QByteArray("mng");
     QTest::newRow("mng-2") << QString("fire.mng") << QByteArray("mng");
-#endif // QTEST_HAVE_MNG
-#if defined QTEST_HAVE_SVG
+
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg");
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::readFromDevice()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage expectedImage(prefix + fileName, format);
 
@@ -1154,15 +1121,11 @@ void tst_QImageReader::readFromFileAfterJunk_data()
     QTest::newRow("ppm-2") << QString("teapot.ppm") << QByteArray("ppm");
     QTest::newRow("ppm-3") << QString("teapot.ppm") << QByteArray("ppm");
     QTest::newRow("ppm-4") << QString("runners.ppm") << QByteArray("ppm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg");
-#endif
-#if defined QTEST_HAVE_GIF
-//    QTest::newRow("gif-1") << QString("images/earth.gif") << QByteArray("gif");
-//    QTest::newRow("gif-2") << QString("images/trolltech.gif") << QByteArray("gif");
-#endif
+
     QTest::newRow("xbm") << QString("gnus.xbm") << QByteArray("xbm");
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
@@ -1170,12 +1133,8 @@ void tst_QImageReader::readFromFileAfterJunk_data()
     QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
-//    QTest::newRow("mng-1") << QString("images/ball.mng") << QByteArray("mng");
-//    QTest::newRow("mng-2") << QString("images/fire.mng") << QByteArray("mng");
-#if defined QTEST_HAVE_SVG
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg");
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::readFromFileAfterJunk()
@@ -1183,10 +1142,7 @@ void tst_QImageReader::readFromFileAfterJunk()
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
 
-    if (!QImageReader::supportedImageFormats().contains(format)) {
-        QString cause = QString("Skipping %1; no %2 support").arg(fileName).arg(QString(format));
-        QSKIP(qPrintable(cause), SkipSingle);
-    }
+    SKIP_IF_UNSUPPORTED(format);
 
     QFile::remove("junk");
     QFile junkFile("junk");
@@ -1235,14 +1191,13 @@ void tst_QImageReader::devicePosition_data()
     QTest::newRow("pbm") << QString("image.pbm") << QByteArray("pbm");
     QTest::newRow("pgm") << QString("image.pgm") << QByteArray("pgm");
     QTest::newRow("ppm-1") << QString("image.ppm") << QByteArray("ppm");
-#ifdef QTEST_HAVE_JPEG
+
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg");
-#endif
-#if defined QTEST_HAVE_GIF
+
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif");
-#endif
+
     QTest::newRow("xbm") << QString("gnus.xbm") << QByteArray("xbm");
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm");
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp");
@@ -1250,18 +1205,16 @@ void tst_QImageReader::devicePosition_data()
     QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp");
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp");
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png");
-//    QTest::newRow("mng-1") << QString("images/ball.mng") << QByteArray("mng");
-//    QTest::newRow("mng-2") << QString("images/fire.mng") << QByteArray("mng");
-#if defined QTEST_HAVE_SVG
     QTest::newRow("svg") << QString("rect.svg") << QByteArray("svg");
     QTest::newRow("svgz") << QString("rect.svgz") << QByteArray("svgz");
-#endif
 }
 
 void tst_QImageReader::devicePosition()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage expected(prefix + fileName);
     QVERIFY(!expected.isNull());
@@ -1327,7 +1280,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("test32v5.bmp") << QString("test32v5.bmp")
                                          << QByteArray("bmp") << QSize(373, 156)
                                          << QString("");
-#ifdef QTEST_HAVE_GIF
     QTest::newRow("corrupt.gif") << QString("corrupt.gif")
                                         << QByteArray("gif") << QSize(0, 0)
                                         << QString("");
@@ -1346,8 +1298,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("bat2.gif") << QString("bat2.gif")
                                      << QByteArray("gif") << QSize(32, 32)
                                      << QString("");
-#endif
-#ifdef QTEST_HAVE_JPEG
     QTest::newRow("corrupt.jpg") << QString("corrupt.jpg")
                                         << QByteArray("jpg") << QSize(0, 0)
                                         << QString("JPEG datastream contains no image");
@@ -1363,8 +1313,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("qtbug13653-no_eoi.jpg") << QString("qtbug13653-no_eoi.jpg")
                                         << QByteArray("jpg") << QSize(240, 180)
                                         << QString("");
-#endif
-#ifdef QTEST_HAVE_MNG
     QTest::newRow("corrupt.mng") << QString("corrupt.mng")
                                         << QByteArray("mng") << QSize(0, 0)
                                         << QString("MNG error 901: Application signalled I/O error; chunk IHDR; subcode 0:0");
@@ -1374,8 +1322,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("ball.mng") << QString("ball.mng")
                                      << QByteArray("mng") << QSize(32, 32)
                                      << QString("");
-#endif
-#ifdef QTEST_HAVE_SVG
     QTest::newRow("rect.svg") << QString("rect.svg")
                                      << QByteArray("svg") << QSize(105, 137)
                                      << QString("");
@@ -1388,7 +1334,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("corrupt.svgz") << QString("corrupt.svgz")
                                      << QByteArray("svgz") << QSize(0, 0)
                                      << QString("");
-#endif
     QTest::newRow("image.pbm") << QString("image.pbm")
                                       << QByteArray("pbm") << QSize(16, 6)
                                       << QString("");
@@ -1425,7 +1370,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("test.ppm") << QString("test.ppm")
                                      << QByteArray("ppm") << QSize(10, 10)
                                      << QString("");
-//    QTest::newRow("corrupt.xbm") << QString("corrupt.xbm") << QByteArray("xbm") << QSize(0, 0);
     QTest::newRow("gnus.xbm") << QString("gnus.xbm")
                                      << QByteArray("xbm") << QSize(271, 273)
                                      << QString("");
@@ -1464,6 +1408,9 @@ void tst_QImageReader::readFromResources()
     QFETCH(QByteArray, format);
     QFETCH(QSize, size);
     QFETCH(QString, message);
+
+    SKIP_IF_UNSUPPORTED(format);
+
     for (int i = 0; i < 2; ++i) {
         QString file = i ? (":/images/" + fileName) : (prefix + fileName);
         {
@@ -1537,31 +1484,26 @@ void tst_QImageReader::readCorruptImage_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<bool>("shouldFail");
     QTest::addColumn<QString>("message");
-#if defined QTEST_HAVE_JPEG
+    QTest::addColumn<QByteArray>("format");
     QTest::newRow("corrupt jpeg") << QString("corrupt.jpg") << true
-                                  << QString("JPEG datastream contains no image");
-#endif
-#if defined QTEST_HAVE_GIF
-    QTest::newRow("corrupt gif") << QString("corrupt.gif") << true << QString("");
-#endif
-#ifdef QTEST_HAVE_MNG
+                                  << QString("JPEG datastream contains no image")
+                                  << QByteArray("jpeg");
+    QTest::newRow("corrupt gif") << QString("corrupt.gif") << true << QString("") << QByteArray("gif");
     QTest::newRow("corrupt mng") << QString("corrupt.mng") << true
-                                 << QString("MNG error 901: Application signalled I/O error; chunk IHDR; subcode 0:0");
-#endif
-    QTest::newRow("corrupt png") << QString("corrupt.png") << true << QString("");
-    QTest::newRow("corrupt bmp") << QString("corrupt.bmp") << true << QString("");
+                                 << QString("MNG error 901: Application signalled I/O error; chunk IHDR; subcode 0:0")
+                                 << QByteArray("mng");
+    QTest::newRow("corrupt png") << QString("corrupt.png") << true << QString("") << QByteArray("png");
+    QTest::newRow("corrupt bmp") << QString("corrupt.bmp") << true << QString("") << QByteArray("bmp");
     QTest::newRow("corrupt xpm (colors)") << QString("corrupt-colors.xpm") << true
-                                          << QString("QImage: XPM color specification is missing: bla9an.n#x");
+                                          << QString("QImage: XPM color specification is missing: bla9an.n#x")
+                                          << QByteArray("xpm");
     QTest::newRow("corrupt xpm (pixels)") << QString("corrupt-pixels.xpm") << true
-                                          << QString("QImage: XPM pixels missing on image line 3");
-    QTest::newRow("corrupt xbm") << QString("corrupt.xbm") << false << QString("");
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("corrupt tiff") << QString("corrupt-data.tif") << true << QString("");
-#endif
-#if defined QTEST_HAVE_SVG
-    QTest::newRow("corrupt svg") << QString("corrupt.svg") << true << QString("");
-    QTest::newRow("corrupt svgz") << QString("corrupt.svgz") << true << QString("");
-#endif
+                                          << QString("QImage: XPM pixels missing on image line 3")
+                                          << QByteArray("xpm");
+    QTest::newRow("corrupt xbm") << QString("corrupt.xbm") << false << QString("") << QByteArray("xbm");
+    QTest::newRow("corrupt tiff") << QString("corrupt-data.tif") << true << QString("") << QByteArray("tiff");
+    QTest::newRow("corrupt svg") << QString("corrupt.svg") << true << QString("") << QByteArray("svg");
+    QTest::newRow("corrupt svgz") << QString("corrupt.svgz") << true << QString("") << QByteArray("svgz");
 }
 
 void tst_QImageReader::readCorruptImage()
@@ -1569,6 +1511,9 @@ void tst_QImageReader::readCorruptImage()
     QFETCH(QString, fileName);
     QFETCH(bool, shouldFail);
     QFETCH(QString, message);
+    QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     if (!message.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, message.toLatin1());
@@ -1625,7 +1570,6 @@ void tst_QImageReader::supportsOption()
         QVERIFY(!reader.supportsOption(option));
 }
 
-#if defined QTEST_HAVE_TIFF
 void tst_QImageReader::tiffCompression_data()
 {
     QTest::addColumn<QString>("uncompressedFile");
@@ -1646,6 +1590,8 @@ void tst_QImageReader::tiffCompression()
     QFETCH(QString, uncompressedFile);
     QFETCH(QString, compressedFile);
 
+    SKIP_IF_UNSUPPORTED("tiff");
+
     QImage uncompressedImage(prefix + uncompressedFile);
     QImage compressedImage(prefix + compressedFile);
 
@@ -1654,6 +1600,8 @@ void tst_QImageReader::tiffCompression()
 
 void tst_QImageReader::tiffEndianness()
 {
+    SKIP_IF_UNSUPPORTED("tiff");
+
     QImage littleEndian(prefix + "rgba_nocompression_littleendian.tif");
     QImage bigEndian(prefix + "rgba_nocompression_bigendian.tif");
 
@@ -1697,6 +1645,8 @@ void tst_QImageReader::tiffOrientation()
     QFETCH(QString, expected);
     QFETCH(QString, oriented);
 
+    SKIP_IF_UNSUPPORTED("tiff");
+
     QImage expectedImage(prefix + expected);
     QImage orientedImage(prefix + oriented);
     QCOMPARE(expectedImage, orientedImage);
@@ -1704,22 +1654,22 @@ void tst_QImageReader::tiffOrientation()
 
 void tst_QImageReader::tiffGrayscale()
 {
+    SKIP_IF_UNSUPPORTED("tiff");
+
     QImage actualImage(prefix + "grayscale.tif");
     QImage expectedImage(prefix + "grayscale-ref.tif");
 
     QCOMPARE(expectedImage, actualImage.convertToFormat(expectedImage.format()));
 }
-#endif
 
 void tst_QImageReader::dotsPerMeter_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("expectedDotsPerMeterX");
     QTest::addColumn<int>("expectedDotsPerMeterY");
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF: 72 dpi") << ("rgba_nocompression_littleendian.tif") << qRound(72 * (100 / 2.54)) << qRound(72 * (100 / 2.54));
-    QTest::newRow("TIFF: 100 dpi") << ("image_100dpi.tif") << qRound(100 * (100 / 2.54)) << qRound(100 * (100 / 2.54));
-#endif
+    QTest::addColumn<QByteArray>("format");
+    QTest::newRow("TIFF: 72 dpi") << ("rgba_nocompression_littleendian.tif") << qRound(72 * (100 / 2.54)) << qRound(72 * (100 / 2.54)) << QByteArray("tiff");
+    QTest::newRow("TIFF: 100 dpi") << ("image_100dpi.tif") << qRound(100 * (100 / 2.54)) << qRound(100 * (100 / 2.54)) << QByteArray("tiff");
 }
 
 void tst_QImageReader::dotsPerMeter()
@@ -1727,6 +1677,9 @@ void tst_QImageReader::dotsPerMeter()
     QFETCH(QString, fileName);
     QFETCH(int, expectedDotsPerMeterX);
     QFETCH(int, expectedDotsPerMeterY);
+    QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage image(prefix + fileName);
 
@@ -1739,10 +1692,9 @@ void tst_QImageReader::physicalDpi_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("expectedPhysicalDpiX");
     QTest::addColumn<int>("expectedPhysicalDpiY");
-#if defined QTEST_HAVE_TIFF
-    QTest::newRow("TIFF: 72 dpi") << "rgba_nocompression_littleendian.tif" << 72 << 72;
-    QTest::newRow("TIFF: 100 dpi") << "image_100dpi.tif" << 100 << 100;
-#endif
+    QTest::addColumn<QByteArray>("format");
+    QTest::newRow("TIFF: 72 dpi") << "rgba_nocompression_littleendian.tif" << 72 << 72 << QByteArray("tiff");
+    QTest::newRow("TIFF: 100 dpi") << "image_100dpi.tif" << 100 << 100 << QByteArray("tiff");
 }
 
 void tst_QImageReader::physicalDpi()
@@ -1750,6 +1702,9 @@ void tst_QImageReader::physicalDpi()
     QFETCH(QString, fileName);
     QFETCH(int, expectedPhysicalDpiX);
     QFETCH(int, expectedPhysicalDpiY);
+    QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
 
     QImage image(prefix + fileName);
 
@@ -1791,21 +1746,19 @@ void tst_QImageReader::autoDetectImageFormat()
         QVERIFY(!reader.read().isNull());
     }
 
-#ifdef QTEST_HAVE_JPEG
-    {
+    if (QImageReader::supportedImageFormats().contains("jpeg")) {
         QImageReader io(prefix + "YCbCr_rgb.jpg");
         io.setAutoDetectImageFormat(false);
         // This should fail since no format string is given
         QImage image;
         QVERIFY(!io.read(&image));
     }
-    {
+    if (QImageReader::supportedImageFormats().contains("jpeg")) {
         QImageReader io(prefix + "YCbCr_rgb.jpg", "jpg");
         io.setAutoDetectImageFormat(false);
         QImage image;
         QVERIFY(io.read(&image));
     }
-#endif
     {
         QImageReader io(prefix + "tst7.png");
         io.setAutoDetectImageFormat(false);
@@ -1895,26 +1848,16 @@ void tst_QImageReader::testIgnoresFormatAndExtension_data()
     QTest::newRow("image.pbm") << "image" << "pbm" << "pbm";
     QTest::newRow("image.pgm") << "image" << "pgm" << "pgm";
 
-#if defined QTEST_HAVE_GIF
     QTest::newRow("bat1.gif") << "bat1" << "gif" << "gif";
-#endif
 
-#if defined QTEST_HAVE_JPEG
     QTest::newRow("beavis.jpg") << "beavis" << "jpg" << "jpeg";
-#endif
 
-#if defined QTEST_HAVE_MNG
     QTest::newRow("fire.mng") << "fire" << "mng" << "mng";
-#endif
 
-#if defined QTEST_HAVE_TIFF
     QTest::newRow("image_100dpi.tif") << "image_100dpi" << "tif" << "tiff";
-#endif
 
-#if defined QTEST_HAVE_SVG
     QTest::newRow("rect.svg") << "rect" << "svg" << "svg";
     QTest::newRow("rect.svgz") << "rect" << "svgz" << "svgz";
-#endif
 }
 
 
@@ -1923,6 +1866,8 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
     QFETCH(QString, name);
     QFETCH(QString, extension);
     QFETCH(QString, expected);
+
+    SKIP_IF_UNSUPPORTED(expected.toLatin1());
 
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
     QString fileNameBase = prefix + name + ".";
