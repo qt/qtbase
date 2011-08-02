@@ -88,6 +88,13 @@ QT_BEGIN_NAMESPACE
             by clear().
     \endtable
 
+    \warning When passing a QString to the constructor or calling setText(),
+    make sure to sanitize your input, as QLabel tries to guess whether it
+    displays the text as plain text or as rich text. You may want to call
+    setTextFormat() explicitly, e.g. in case you expect the text to be in
+    plain format but cannot control the text source (for instance when
+    displaying data loaded from the Web).
+
     When the content is changed using any of these functions, any
     previous content is cleared.
 
