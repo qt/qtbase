@@ -5110,7 +5110,7 @@ void tst_QString::toUpperLower_icu()
 
 void tst_QString::literals()
 {
-#if defined(QT_QSTRING_UNICODE_MARKER) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+#if defined(QT_UNICODE_LITERAL) && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
     QString str(QStringLiteral("abcd"));
 
     QVERIFY(str.length() == 4);

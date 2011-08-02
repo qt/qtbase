@@ -102,7 +102,8 @@ template<int N> struct QConstStringData
     const QStringData str;
     const char16_t data[N + 1];
 };
-#define QT_QSTRING_UNICODE_MARKER   u""
+
+#define QT_UNICODE_LITERAL_II(str) u"" str
 
 #elif defined(Q_OS_WIN) || (defined(__SIZEOF_WCHAR_T__) && __SIZEOF_WCHAR_T__ == 2) || defined(WCHAR_MAX) && (WCHAR_MAX - 0 < 65536)
 // wchar_t is 2 bytes
@@ -111,7 +112,12 @@ template<int N> struct QConstStringData
     const QStringData str;
     const wchar_t data[N + 1];
 };
-#define QT_QSTRING_UNICODE_MARKER   L""
+
+#if defined(Q_CC_MSVC)
+#    define QT_UNICODE_LITERAL_II(str) L##str
+#else
+#    define QT_UNICODE_LITERAL_II(str) L"" str
+#endif
 
 #else
 template<int N> struct QConstStringData
@@ -121,12 +127,13 @@ template<int N> struct QConstStringData
 };
 #endif
 
-#if defined(QT_QSTRING_UNICODE_MARKER)
+#if defined(QT_UNICODE_LITERAL_II)
+#  define QT_UNICODE_LITERAL(str) QT_UNICODE_LITERAL_II(str)
 # if defined(Q_COMPILER_LAMBDA)
-#  define QStringLiteral(str) ([]() { \
-        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 - 1 }; \
+#  define QStringLiteral(str) ([]() -> QConstStringDataPtr<sizeof(QT_UNICODE_LITERAL(str))/2 - 1> { \
+        enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
     return holder; }())
 
@@ -137,9 +144,9 @@ template<int N> struct QConstStringData
 
 #  define QStringLiteral(str) \
     __extension__ ({ \
-        enum { Size = sizeof(QT_QSTRING_UNICODE_MARKER str)/2 - 1 }; \
+        enum { Size = sizeof(QT_UNICODE_LITERAL(str))/2 - 1 }; \
         static const QConstStringData<Size> qstring_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_QSTRING_UNICODE_MARKER str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, QT_UNICODE_LITERAL(str) }; \
         QConstStringDataPtr<Size> holder = { &qstring_literal }; \
         holder; })
 # endif

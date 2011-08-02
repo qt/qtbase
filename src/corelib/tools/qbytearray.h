@@ -146,7 +146,7 @@ template<int N> struct QConstByteArrayDataPtr
 
 
 #if defined(Q_COMPILER_LAMBDA)
-#  define QByteArrayLiteral(str) ([]() { \
+#  define QByteArrayLiteral(str) ([]() -> QConstByteArrayDataPtr<sizeof(str) - 1> { \
         enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
         { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
