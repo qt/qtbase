@@ -10,3 +10,5 @@ wince*|symbian: {
 }
 
 symbian: TARGET.CAPABILITY = NetworkServices
+
+CONFIG += insignificant_test  # QTBUG-20686; note, assumed unstable on all platforms
