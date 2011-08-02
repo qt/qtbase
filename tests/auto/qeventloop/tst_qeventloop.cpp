@@ -203,6 +203,7 @@ private slots:
     void symbianNestedActiveSchedulerLoop();
     void processEvents();
     void exec();
+    void throwInExec();
     void reexec();
     void exit();
     void execAfterExit();
@@ -445,14 +446,35 @@ void tst_QEventLoop::exec()
         QCOMPARE(returnCode, 0);
         QCOMPARE(executor.returnCode, -1);
     }
+}
 
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM) && !defined(Q_OS_SYMBIAN) && !defined(NO_EVENTLOOP_EXCEPTIONS)
+void tst_QEventLoop::throwInExec()
+{
+#if defined(QT_NO_EXCEPTIONS) || defined(NO_EVENTLOOP_EXCEPTIONS)
+    QSKIP("Exceptions are disabled", SkipAll);
+#elif defined(Q_OS_WINCE_WM) || defined(Q_OS_SYMBIAN)
     // Windows Mobile cannot handle cross library exceptions
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash
 
     // Symbian doesn't propagate exceptions from eventloop, but converts them to
     // CActiveScheduler errors instead -> this test will hang.
+    QSKIP("This platform doesn't support propagating exceptions through the event loop", SkipAll);
+#elif defined(Q_OS_LINUX)
+    // C++ exceptions can't be passed through glib callbacks.  Skip the test if
+    // we're using the glib event loop.
+    QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
+    if (dispatcher.contains("Glib")) {
+        QSKIP(
+            qPrintable(QString(
+                "Throwing exceptions in exec() won't work if %1 event dispatcher is used.\n"
+                "Try running with QT_NO_GLIB=1 in environment."
+            ).arg(QString::fromLatin1(dispatcher))),
+            SkipAll
+        );
+    }
+#endif
+
     {
         // QEventLoop::exec() is exception safe
         QEventLoop eventLoop;
@@ -474,7 +496,6 @@ void tst_QEventLoop::exec()
         }
         QCOMPARE(caughtExceptions, 2);
     }
-#endif
 }
 
 void tst_QEventLoop::reexec()

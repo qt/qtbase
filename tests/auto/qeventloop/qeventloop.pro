@@ -6,5 +6,3 @@ QT += network
 win32:!wince*:LIBS += -luser32
 
 symbian:TARGET.CAPABILITY += NetworkServices
-
-CONFIG+=insignificant_test
