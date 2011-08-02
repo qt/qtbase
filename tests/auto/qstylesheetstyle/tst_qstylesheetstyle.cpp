@@ -542,7 +542,6 @@ void tst_QStyleSheetStyle::dynamicProperty()
 }
 
 #ifdef Q_OS_MAC
-#include <QtGui/QMacStyle>
 void tst_QStyleSheetStyle::layoutSpacing()
 {
     qApp->setStyleSheet("* { color: red }");

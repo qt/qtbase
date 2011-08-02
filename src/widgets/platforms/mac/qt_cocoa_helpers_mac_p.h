@@ -111,10 +111,17 @@
 
 struct HIContentBorderMetrics;
 
-#ifdef Q_WS_MAC32
-typedef struct _NSPoint NSPoint; // Just redefine here so I don't have to pull in all of Cocoa.
+#ifdef __OBJC__
+    // If the source file including this file also includes e.g. Cocoa/Cocoa.h, typedef-ing NSPoint will
+    // fail since NSPoint will already be a type. So we try to detect this. If the build fails, ensure
+    // that the inclusion of cocoa headers happends before the inclusion of this file.
+    #include <Foundation/NSGeometry.h>
 #else
-typedef struct CGPoint NSPoint;
+    #ifdef Q_WS_MAC32
+        typedef struct _NSPoint NSPoint; // Just redefine here so I don't have to pull in all of Cocoa.
+    #else
+        typedef struct CGPoint NSPoint;
+    #endif
 #endif
 
 QT_BEGIN_NAMESPACE

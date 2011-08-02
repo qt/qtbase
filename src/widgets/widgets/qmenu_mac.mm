@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include <Cocoa/Cocoa.h>
+
 #include "qmenu.h"
 #include "qhash.h"
 #include <qdebug.h>
@@ -60,7 +62,6 @@
 #include <private/qcocoamenuloader_mac_p.h>
 #include <private/qcocoamenu_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
-#include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
 
