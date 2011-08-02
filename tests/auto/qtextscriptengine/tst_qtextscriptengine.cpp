@@ -233,7 +233,7 @@ void tst_QTextScriptEngine::devanagari()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Raghindi", SkipAll);
+	    QSKIP("couldn't find Raghindi", SkipAll);
 	}
     }
 
@@ -403,7 +403,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Akaash", SkipAll);
+	    QSKIP("couldn't find Akaash", SkipAll);
 	}
     }
     {
@@ -508,7 +508,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Mukti", SkipAll);
+	    QSKIP("couldn't find Mukti", SkipAll);
 	}
     }
     {
@@ -536,7 +536,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Likhan", SkipAll);
+	    QSKIP("couldn't find Likhan", SkipAll);
 	}
     }
 #else
@@ -563,7 +563,7 @@ void tst_QTextScriptEngine::gurmukhi()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Lohit Punjabi", SkipAll);
+	    QSKIP("couldn't find Lohit Punjabi", SkipAll);
 	}
     }
 #endif
@@ -600,7 +600,7 @@ void tst_QTextScriptEngine::oriya()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find utkal", SkipAll);
+	    QSKIP("couldn't find utkal", SkipAll);
 	}
     }
 #else
@@ -677,7 +677,7 @@ void tst_QTextScriptEngine::tamil()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find AkrutiTml1", SkipAll);
+	    QSKIP("couldn't find AkrutiTml1", SkipAll);
 	}
     }
 #else
@@ -725,7 +725,7 @@ void tst_QTextScriptEngine::telugu()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Pothana2000", SkipAll);
+	    QSKIP("couldn't find Pothana2000", SkipAll);
 	}
     }
 #else
@@ -772,7 +772,7 @@ void tst_QTextScriptEngine::kannada()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Sampige", SkipAll);
+	    QSKIP("couldn't find Sampige", SkipAll);
 	}
     }
     {
@@ -803,7 +803,7 @@ void tst_QTextScriptEngine::kannada()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Tunga", SkipAll);
+	    QSKIP("couldn't find Tunga", SkipAll);
 	}
     }
 #else
@@ -864,7 +864,7 @@ void tst_QTextScriptEngine::malayalam()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find AkrutiMal2", SkipAll);
+	    QSKIP("couldn't find AkrutiMal2", SkipAll);
 	}
     }
     {
@@ -892,7 +892,7 @@ void tst_QTextScriptEngine::malayalam()
                 ++s;
             }
         } else {
-            QSKIP("couln't find Rachana", SkipAll);
+            QSKIP("couldn't find Rachana", SkipAll);
         }
     }
 
@@ -930,7 +930,7 @@ void tst_QTextScriptEngine::sinhala()
                 ++s;
             }
         } else {
-            QSKIP("couln't find Malithi Web", SkipAll);
+            QSKIP("couldn't find Malithi Web", SkipAll);
         }
     }
 #else
@@ -974,7 +974,7 @@ void tst_QTextScriptEngine::khmer()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Khmer OS", SkipAll);
+	    QSKIP("couldn't find Khmer OS", SkipAll);
 	}
     }
 #else
@@ -1001,7 +1001,7 @@ void tst_QTextScriptEngine::linearB()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Penuturesu", SkipAll);
+	    QSKIP("couldn't find Penuturesu", SkipAll);
 	}
     }
 #else
@@ -1075,7 +1075,7 @@ void tst_QTextScriptEngine::greek()
                 QVERIFY( decomposedShaping(f, QChar(uc)) );
             }
         } else {
-            QSKIP("couln't find DejaVu Sans", SkipAll);
+            QSKIP("couldn't find DejaVu Sans", SkipAll);
         }
     }
 
@@ -1111,7 +1111,7 @@ void tst_QTextScriptEngine::greek()
                 ++s;
             }
         } else {
-            QSKIP("couln't find SBL_grk", SkipAll);
+            QSKIP("couldn't find SBL_grk", SkipAll);
         }
     }
 #else
