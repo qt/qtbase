@@ -929,7 +929,6 @@ void tst_QSslCertificate::verify()
     toVerify = QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem");
 
     errors = QSslCertificate::verify(toVerify);
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
     errors.clear();
 
@@ -965,12 +964,10 @@ void tst_QSslCertificate::verify()
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-is-ca-cert.pem").first();
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-ca-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with hostname validation
     errors = QSslCertificate::verify(toVerify, QLatin1String("example.com"));
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with a bad hostname
