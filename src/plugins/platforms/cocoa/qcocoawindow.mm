@@ -63,7 +63,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     QNSWindowDelegate *delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
     [m_nsWindow setDelegate:delegate];
-
     [m_nsWindow setAcceptsMouseMovedEvents:YES];
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
@@ -317,9 +316,8 @@ NSWindow * QCocoaWindow::createWindow()
         window = panel;
         break;
     }
-
     default:
-        m_nsWindow  = [[NSWindow alloc] initWithContentRect:frame
+        window  = [[NSWindow alloc] initWithContentRect:frame
                                             styleMask:m_windowAttributes
                                             backing:NSBackingStoreBuffered
                                             defer:YES];
