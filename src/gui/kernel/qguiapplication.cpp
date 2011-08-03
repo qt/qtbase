@@ -45,6 +45,7 @@
 #include "private/qplatformintegrationfactory_qpa_p.h"
 #include "private/qevent_p.h"
 #include "qfont.h"
+#include "qplatformfontdatabase_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -861,7 +862,8 @@ QFont QGuiApplication::font()
 {
     QMutexLocker locker(applicationFontMutex());
     if (!QGuiApplicationPrivate::app_font)
-        QGuiApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
+        QGuiApplicationPrivate::app_font =
+            new QFont(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont());
     return *QGuiApplicationPrivate::app_font;
 }
 

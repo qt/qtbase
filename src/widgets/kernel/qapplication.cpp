@@ -101,7 +101,8 @@
 
 #include "qgesture.h"
 #include "private/qgesturemanager_p.h"
-
+#include "private/qguiapplication_p.h"
+#include "qplatformfontdatabase_qpa.h"
 #ifndef QT_NO_LIBRARY
 #include "qlibrary.h"
 #endif
@@ -514,7 +515,7 @@ PaletteHash *qt_app_palettes_hash()
     return app_palettes();
 }
 
-Q_GLOBAL_STATIC(FontHash, app_fonts)
+Q_GLOBAL_STATIC_WITH_INITIALIZER(FontHash, app_fonts, { *x = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFonts(); } )
 FontHash *qt_app_fonts_hash()
 {
     return app_fonts();

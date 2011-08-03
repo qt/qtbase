@@ -195,6 +195,7 @@ QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::Pix
 
 QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(QGuiGLContext *context) const
 {
+    Q_UNUSED(context);
     qWarning("This plugin does not support createPlatformGLContext!");
     return 0;
 }
