@@ -426,7 +426,7 @@ QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
 
 /*!
   Returns the list of alternative subject names for this
-  certificate. The alternate subject names typically contain host
+  certificate. The alternative names typically contain host
   names, optionally with wildcards, that are valid for this
   certificate.
   
@@ -437,9 +437,9 @@ QList<QByteArray> QSslCertificate::issuerInfoAttributes() const
   
   \sa subjectInfo()
 */
-QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubjectNames() const
+QMultiMap<QSsl::AlternativeNameEntryType, QString> QSslCertificate::subjectAlternativeNames() const
 {
-    QMultiMap<QSsl::AlternateNameEntryType, QString> result;
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> result;
 
     if (!d->x509)
         return result;
@@ -922,7 +922,7 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
           << ',' << certificate.digest().toBase64()
           << ',' << certificate.issuerInfo(QSslCertificate::Organization)
           << ',' << certificate.subjectInfo(QSslCertificate::Organization)
-          << ',' << certificate.alternateSubjectNames()
+          << ',' << certificate.subjectAlternativeNames()
 #ifndef QT_NO_TEXTSTREAM
           << ',' << certificate.effectiveDate()
           << ',' << certificate.expiryDate()

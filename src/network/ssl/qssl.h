@@ -67,10 +67,14 @@ namespace QSsl {
         Dsa
     };
 
-    enum AlternateNameEntryType {
+    enum AlternativeNameEntryType {
         EmailEntry,
         DnsEntry
     };
+
+#if QT_DEPRECATED_SINCE(5,0)
+    typedef AlternativeNameEntryType AlternateNameEntryType;
+#endif
 
     enum SslProtocol {
         SslV3,
