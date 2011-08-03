@@ -49,7 +49,17 @@
 #include "qdri2context.h"
 #endif
 
+#define class class_name // Yeah, in 2011 ...
 #include <xcb/xcb_icccm.h>
+#undef class
+
+// xcb-icccm 3.8 support
+#ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
+#define xcb_wm_hints_t xcb_icccm_wm_hints_t
+#define xcb_wm_hints_set_iconic xcb_icccm_wm_hints_set_iconic
+#define xcb_wm_hints_set_normal xcb_icccm_wm_hints_set_normal
+#define xcb_set_wm_hints xcb_icccm_set_wm_hints
+#endif
 
 #include <private/qapplication_p.h>
 #include <private/qwindowsurface_p.h>
