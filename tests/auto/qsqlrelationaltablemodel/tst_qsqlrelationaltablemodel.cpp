@@ -92,6 +92,7 @@ private slots:
     void escapedTableName();
     void whiteSpaceInIdentifiers();
     void psqlSchemaTest();
+    void selectAfterUpdate();
 
 private:
     void dropTestTables( QSqlDatabase db );
@@ -1465,6 +1466,28 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
 
     model.setJoinMode(QSqlRelationalTableModel::LeftJoin);
     QVERIFY_SQL(model, select());
+}
+
+void tst_QSqlRelationalTableModel::selectAfterUpdate()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlRelationalTableModel model(0, db);
+    model.setTable(reltest1);
+    model.setRelation(2, QSqlRelation(reltest2, "tid", "title"));
+    QVERIFY_SQL(model, select());
+    QVERIFY(model.relationModel(2)->rowCount() == 2);
+    {
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("insert into " + reltest2 + " values(3, 'mrs')"));
+        model.relationModel(2)->select();
+    }
+    QVERIFY(model.relationModel(2)->rowCount() == 3);
+    QVERIFY(model.setData(model.index(0,2), 3));
+    QVERIFY(model.submitAll());
+    QCOMPARE(model.data(model.index(0,2)), QVariant("mrs"));
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)

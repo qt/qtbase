@@ -15,6 +15,7 @@ use Cwd;
 use Cwd 'abs_path';
 use Config;
 use strict;
+use English qw(-no_match_vars );
 
 # set output basedir to be where ever syncqt is run from
 our $out_basedir = getcwd();
@@ -38,7 +39,7 @@ our (%modules, %moduleheaders, %classnames, %mastercontent, %modulepris);
 my $isunix = 0;
 my $module = 0;
 my $showonly = 0;
-my $quiet = 0;
+my $verbose_level = 1;
 my $remove_stale = 1;
 my $force_win = 0;
 my $force_relative = 0;
@@ -50,6 +51,7 @@ my $module_fwd = "";
 my $cache_module_fwd = 0;
 my $developer_build = 0;
 my $no_module_version_header = 0;
+my $makefile_generator = "";
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
@@ -75,7 +77,9 @@ sub showUsage
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
     print "  -qtdir <PATH>         Set the path to QtBase             (detected: " . (defined $qtbasedir ? $qtbasedir : "-none-") . ")\n";
-    print "  -quiet                Only report problems, not activity (default: " . ($quiet ? "yes" : "no") . ")\n";
+    print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
+    print "  -v, -verbose <level>  Sets the verbosity level (max. 4)  (default: $verbose_level)\n";
+    print "                        The short form increases the level by +1\n";
     print "  -separate-module <NAME>:<PROFILEDIR>:<HEADERDIR>\n";
     print "                        Create headers for <NAME> with original headers in\n";
     print "                        <HEADERDIR> relative to <PROFILEDIR> \n";
@@ -88,6 +92,7 @@ sub showUsage
     print "                        easy development\n";
     print "  -no-module-version-header\n";
     print "                        Don't create module version header file\n";
+    print "  -generator <PATH>     Specify the makefile generator setting (e.g. 'UNIX')\n";
     print "  -help                 This help\n";
     exit 0;
 }
@@ -273,6 +278,15 @@ sub classNames {
     return @ret;
 }
 
+sub make_path {
+    my ($dir, $lib, $be_verbose) = @_;
+    unless(-e $dir) {
+        mkpath $dir;
+        $dir = "<outbase>" . substr($dir, length($out_basedir)) if ($be_verbose < 3);
+        print "$lib: mkpath $dir\n" if ($be_verbose > 1);
+    }
+}
+
 ######################################################################
 # Syntax:  syncHeader(header, iheader, copy, timestamp)
 # Params:  header, string, filename to create "symlink" for
@@ -284,14 +298,14 @@ sub classNames {
 # Returns: 1 if successful, else 0.
 ######################################################################
 sub syncHeader {
-    my ($header, $iheader, $copy, $ts) = @_;
+    my ($lib, $header, $iheader, $copy, $ts) = @_;
     $iheader =~ s=\\=/=g;
     $header =~ s=\\=/=g;
-    return copyFile($iheader, $header) if($copy);
+    return copyFile($lib, $iheader, $header) if($copy);
 
     unless(-e $header) {
         my $header_dir = dirname($header);
-        mkpath $header_dir, !$quiet;
+        make_path($header_dir, $lib, $verbose_level);
 
         #write it
         my $iheader_out = fixPaths($iheader, $header_dir);
@@ -412,7 +426,7 @@ sub fileCompare {
 ######################################################################
 sub copyFile
 {
-    my ($file,$ifile, $copy,$knowdiff,$filecontents,$ifilecontents) = @_;
+    my ($lib, $file,$ifile, $copy,$knowdiff,$filecontents,$ifilecontents) = @_;
     # Bi-directional synchronization
     open( I, "< " . $file ) || die "Could not open $file for reading";
     local $/;
@@ -434,7 +448,7 @@ sub copyFile
     if ( $knowdiff || ($filecontents ne $ifilecontents) ) {
         if ( $copy > 0 ) {
             my $file_dir = dirname($file);
-            mkpath $file_dir, !$quiet unless(-e $file_dir);
+            make_path($file_dir, $lib, $verbose_level);
             open(O, "> " . $file) || die "Could not open $file for writing (no write permission?)";
             local $/;
             binmode O;
@@ -444,7 +458,7 @@ sub copyFile
             return 1;
         } elsif ( $copy < 0 ) {
             my $ifile_dir = dirname($ifile);
-            mkpath $ifile_dir, !$quiet unless(-e $ifile_dir);
+            make_path($ifile_dir, $lib, $verbose_level);
             open(O, "> " . $ifile) || die "Could not open $ifile for writing (no write permission?)";
             local $/;
             binmode O;
@@ -468,10 +482,10 @@ sub copyFile
 ######################################################################
 sub symlinkFile
 {
-    my ($file,$ifile) = @_;
+    my ($lib, $file, $ifile) = @_;
 
     if ($isunix) {
-        print "symlink created for $file " unless $quiet;
+        print "$lib: symlink created for $file " if ($verbose_level);
         if ( $force_relative && ($ifile =~ /^$quoted_basedir/)) {
             my $t = getcwd();
             my $c = -1;
@@ -479,12 +493,12 @@ sub symlinkFile
             $t =~ s-^$quoted_basedir/--;
             $p .= "../" while( ($c = index( $t, "/", $c + 1)) != -1 );
             $file =~ s-^$quoted_basedir/-$p-;
-            print " ($file)\n" unless $quiet;
+            print " ($file)\n" if($verbose_level);
         }
-        print "\n" unless $quiet;
+        print "\n" if($verbose_level);
         return symlink($file, $ifile);
     }
-    return copyFile($file, $ifile);
+    return copyFile($lib, $file, $ifile);
 }
 
 ######################################################################
@@ -534,8 +548,10 @@ sub findFiles {
 ######################################################################
 sub loadSyncProfile {
     my ($srcbase, $outbase) = @_;
-    print("srcbase = $$srcbase \n");
-    print("outbase = $$outbase \n");
+    if ($verbose_level) {
+        print("<srcbase> = $$srcbase \n");
+        print("<outbase> = $$outbase \n");
+    }
 
     my $syncprofile = "$$srcbase/sync.profile";
     my $result;
@@ -627,8 +643,14 @@ while ( @ARGV ) {
         $var = "showonly";
         $val = "yes";
     } elsif($arg eq "-quiet") {
-        $var = "quiet";
+        $var = "verbose";
+        $val = "0";
+    } elsif($arg eq "-v") {
+        $var = "verbose";
         $val = "yes";
+    } elsif($arg eq "-verbose") {
+        $var = "verbose";
+        $val = shift @ARGV;
     } elsif($arg eq "-private") {
         $var = "create_private_headers";
         $val = "yes";
@@ -639,6 +661,9 @@ while ( @ARGV ) {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
         next;
+    } elsif($arg eq "-generator") {
+        $var = "makefile_generator";
+        $val = shift @ARGV;
     } elsif($arg =~/^-/) {
         print "Unknown option: $arg\n\n" if(!$var);
         showUsage();
@@ -667,11 +692,13 @@ while ( @ARGV ) {
         } elsif($showonly) {
             $showonly--;
         }
-    } elsif ($var eq "quiet") {
+    } elsif ($var eq "verbose") {
         if($val eq "yes") {
-            $quiet++;
-        } elsif($quiet) {
-            $quiet--;
+            $verbose_level++;
+        } elsif($val eq "no" && $verbose_level) {
+            $verbose_level--;
+        } else {
+            $verbose_level = int($val);
         }
     } elsif ($var eq "check-includes") {
         if($val eq "yes") {
@@ -698,7 +725,7 @@ while ( @ARGV ) {
             $force_relative--;
         }
     } elsif ($var eq "module") {
-        print "module :$val:\n" unless $quiet;
+        print "module :$val:\n" if($verbose_level);
         die "No such module: $val" unless(defined $modules{$val});
         push @modules_to_sync, $val;
     } elsif ($var eq "separate-module") {
@@ -720,6 +747,8 @@ while ( @ARGV ) {
         $cache_module_fwd = 1;
     } elsif ($var eq "developer_build") {
         $developer_build = 1;
+    } elsif ($var eq "makefile_generator") {
+            $makefile_generator = $val;
     } elsif ($var eq "no_module_version_header") {
             $no_module_version_header = 1;
     } elsif ($var eq "output") {
@@ -766,9 +795,7 @@ loadSyncProfile(\$basedir, \$out_basedir);
 $isunix = checkUnix; #cache checkUnix
 
 # create path
-mkpath "$out_basedir/include", !$quiet;
-mkpath "$out_basedir/include/Qt", !$quiet;
-
+make_path("$out_basedir/include/Qt", "<outdir>", $verbose_level);
 
 foreach my $lib (@modules_to_sync) {
     #iteration info
@@ -796,7 +823,7 @@ foreach my $lib (@modules_to_sync) {
             chomp $module_patch_version;
         }
     }
-    print "WARNING: Module $lib\'s pri missing QT.<module>.VERSION variable! Private headers not versioned!\n" if (!$module_version);
+    print "$lib: WARNING: Module\'s pri missing QT.<module>.VERSION variable! Private headers not versioned!\n" if (!$module_version);
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});
@@ -870,6 +897,7 @@ foreach my $lib (@modules_to_sync) {
         my $modulepri = $modulepris{$lib};
         if (-e $modulepri) {
             my $modulepriname = basename($modulepri);
+            # FIXME: this creates a file in the source location for shadow-builds
             my $moduleversionheader = "$modules{$lib}/" . lc($lib) . "version.h";
             my $modulehexstring = sprintf("0x%02X%02X%02X", int($module_major_version), int($module_minor_version), int($module_patch_version));
             open MODULE_VERSION_HEADER_FILE, ">$moduleversionheader";
@@ -882,8 +910,11 @@ foreach my $lib (@modules_to_sync) {
             print MODULE_VERSION_HEADER_FILE "#define " .uc($lib) . "_VERSION $modulehexstring\n", ;
             print MODULE_VERSION_HEADER_FILE "\n";
             print MODULE_VERSION_HEADER_FILE "#endif // QT_". uc($lib) . "_VERSION_H\n";
+            close MODULE_VERSION_HEADER_FILE;
+            $moduleversionheader = "<srcbase>" . substr($moduleversionheader, length($basedir)) if ($verbose_level < 2);
+            print "$lib: created version header $moduleversionheader\n" if($verbose_level);
         } elsif ($modulepri) {
-            print "WARNING: Module $lib\'s pri file '$modulepri' not found.\nSkipped creating module version header for $lib.\n";
+            print "$lib: WARNING: Module\'s pri file '$modulepri' not found.\n$lib: Skipped creating module version header.\n";
         }
     }
 
@@ -913,6 +944,7 @@ foreach my $lib (@modules_to_sync) {
                     push @headers, "*".$if;
                 }
             }
+            my $header_dirname = "";
             foreach my $header (@headers) {
                 my $shadow = ($header =~ s/^\*//);
                 $header = 0 if($header =~ /^ui_.*.h/);
@@ -979,11 +1011,11 @@ foreach my $lib (@modules_to_sync) {
 #                                  class =~ s,::,/,g;
 #                               }
                                 $class_lib_map_contents .= "QT_CLASS_LIB($full_class, $lib, $header_base)\n";
-                                $header_copies++ if(syncHeader("$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
+                                $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
 
                                 # KDE-Compat headers for Phonon
                                 if ($lib eq "phonon") {
-                                    $header_copies++ if (syncHeader("$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0, $ts));
+                                    $header_copies++ if (syncHeader($lib, "$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
                             }
                         } elsif ($create_private_headers) {
@@ -994,7 +1026,7 @@ foreach my $lib (@modules_to_sync) {
                             }
                         }
                         foreach(@headers) { #sync them
-                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers && !$shadow, $ts));
+                            $header_copies++ if(syncHeader($lib, $_, $iheader, $copy_headers && !$shadow, $ts));
                         }
 
                         if($public_header) {
@@ -1023,9 +1055,29 @@ foreach my $lib (@modules_to_sync) {
                             $pri_install_pfiles.= "$pri_install_iheader ";;
                         }
                     }
-                    print "header created for $iheader ($header_copies)\n" if($header_copies > 0 && !$quiet);
+
+                    if ($verbose_level && $header_copies) {
+                        my $new_header_dirname = dirname($iheader);
+                        $new_header_dirname = "<srcbase>" . substr($new_header_dirname, length($basedir)) if ($new_header_dirname && $verbose_level < 2);
+                        my $header_base = basename($iheader);
+                        if ($verbose_level < 3) {
+                            my $line_prefix = ",";
+                            if ($new_header_dirname ne $header_dirname) {
+                                $line_prefix = "$lib: created fwd-include header(s) for $new_header_dirname/ {";
+                                $line_prefix = " }\n".$line_prefix if ($header_dirname);
+                                $header_dirname = $new_header_dirname;
+                            } else {
+                                $line_prefix = ",";
+                            }
+                            print "$line_prefix $header_base ($header_copies)";
+                        } else { # $verbose_level >= 3
+                            $iheader = "<srcbase>" . substr($iheader, length($basedir)) if ($verbose_level == 3);
+                            print "$lib: created $header_copies fwd-include headers for $iheader\n";
+                        }
+                    }
                 }
             }
+            print " }\n" if ($header_dirname && $verbose_level > 0 && $verbose_level < 3);
         }
     }
 
@@ -1051,11 +1103,11 @@ foreach my $lib (@modules_to_sync) {
             }
             if($master_include && $master_contents) {
                 my $master_dir = dirname($master_include);
-                mkpath $master_dir, !$quiet;
-                print "header (master) created for $lib\n" unless $quiet;
+                make_path($master_dir, $lib, $verbose_level);
                 open MASTERINCLUDE, ">$master_include";
                 print MASTERINCLUDE $master_contents;
                 close MASTERINCLUDE;
+                print "$lib: created header (master) file\n" if($verbose_level);
             }
         }
 
@@ -1076,11 +1128,11 @@ foreach my $lib (@modules_to_sync) {
         }
         if($headers_pri_file && $master_contents) {
             my $headers_pri_dir = dirname($headers_pri_file);
-            mkpath $headers_pri_dir, !$quiet;
-            print "headers.pri file created for $lib\n" unless $quiet;
+            make_path($headers_pri_dir, $lib, $verbose_level);
             open HEADERS_PRI_FILE, ">$headers_pri_file";
             print HEADERS_PRI_FILE $headers_pri_contents;
             close HEADERS_PRI_FILE;
+            print "$lib: created headers.pri file\n" if($verbose_level);
         }
 
         # create forwarding module pri in qtbase/mkspecs/modules
@@ -1088,7 +1140,7 @@ foreach my $lib (@modules_to_sync) {
             my $modulepri = $modulepris{$lib};
             if (-e $modulepri) {
                 my $modulepriname = basename($modulepri);
-                mkpath($module_fwd);
+                make_path($module_fwd, $lib, $verbose_level);
                 my $moduleprifwd = "$module_fwd/$modulepriname";
                 my $mod_base = $developer_build ? $basedir : $out_basedir;
                 my $mod_component_base = $developer_build ? $qtbasedir : $out_basedir;
@@ -1114,7 +1166,7 @@ foreach my $lib (@modules_to_sync) {
                     }
                 }
             } elsif ($modulepri) {
-                print "WARNING: Module $lib\'s pri file '$modulepri' not found.\nSkipped creating forwarding pri for $lib.\n";
+                print "$lib: WARNING: Module\'s pri file '$modulepri' not found.\n$lib: Skipped creating forwarding pri.\n";
             }
         }
     }
@@ -1132,7 +1184,7 @@ unless($showonly || !$create_uic_class_map) {
     }
     if($class_lib_map) {
         my $class_lib_map_dir = dirname($class_lib_map);
-        mkpath $class_lib_map_dir, !$quiet;
+        make_path($class_lib_map_dir, "<outdir>", $verbose_level);
         open CLASS_LIB_MAP, ">$class_lib_map";
         print CLASS_LIB_MAP $class_lib_map_contents;
         close CLASS_LIB_MAP;
@@ -1216,7 +1268,7 @@ if($check_includes) {
                                         if($include) {
                                             for my $trylib (keys(%modules)) {
                                                 if(-e "$out_basedir/include/$trylib/$include") {
-                                                    print "WARNING: $iheader includes $include when it should include $trylib/$include\n";
+                                                    print "$lib: WARNING: $iheader includes $include when it should include $trylib/$include\n";
                                                 }
                                             }
                                         }
@@ -1234,27 +1286,27 @@ if($check_includes) {
                                 }
                                 if ($header_skip_qt_begin_header_test == 0) {
                                     if ($qt_begin_header_found == 0) {
-                                        print "WARNING: $iheader does not include QT_BEGIN_HEADER\n";
+                                        print "$lib: WARNING: $iheader does not include QT_BEGIN_HEADER\n";
                                     }
 
                                     if ($qt_begin_header_found && $qt_end_header_found == 0) {
-                                        print "WARNING: $iheader has QT_BEGIN_HEADER but no QT_END_HEADER\n";
+                                        print "$lib: WARNING: $iheader has QT_BEGIN_HEADER but no QT_END_HEADER\n";
                                     }
                                 }
 
                                 if ($header_skip_qt_begin_namespace_test == 0) {
                                     if ($qt_begin_namespace_found == 0) {
-                                        print "WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
+                                        print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
                                     }
 
                                     if ($qt_begin_namespace_found && $qt_end_namespace_found == 0) {
-                                        print "WARNING: $iheader has QT_BEGIN_NAMESPACE but no QT_END_NAMESPACE\n";
+                                        print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE but no QT_END_NAMESPACE\n";
                                     }
                                 }
 
                                 if ($header_skip_qt_module_test == 0) {
                                     if ($qt_module_found == 0) {
-                                        print "WARNING: $iheader does not include QT_MODULE\n";
+                                        print "$lib: WARNING: $iheader does not include QT_MODULE\n";
                                     }
                                 }
                                 close(F);
@@ -1263,6 +1315,23 @@ if($check_includes) {
                     }
                 }
             }
+    }
+}
+
+# Do configure tests now (pass some things along)
+# fatal tests have a non zero return
+# If the generator is not set (e.g. someone invoking syncqt as part of configure etc, then don't run tests either)
+unless ($showonly || $makefile_generator eq '') {
+    my $configtests = dirname($0)."/qtmodule-configtests";
+    if (! -f $configtests) {
+        $configtests = $qtbasedir."/bin/qtmodule-configtests";
+    }
+    if (! -f $configtests) {
+        warn "Unable to locate qtmodule-configtests script - config tests disabled.\n";
+    } else {
+        if (system($EXECUTABLE_NAME, $configtests, $basedir, $out_basedir, $qtbasedir, $makefile_generator)) {
+            die "$configtests exited with status $?";
+        }
     }
 }
 

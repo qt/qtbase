@@ -30,6 +30,7 @@ SUBDIRS=\
    qfileinfo \
    qfilesystemwatcher \
    qflags \
+   qfreelist \
    qfuture \
    qfuturewatcher \
    qgetputenv \

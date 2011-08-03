@@ -45,6 +45,7 @@
 
 #include "qrawfont_p.h"
 #include "qfontengine_ft_p.h"
+#include "quuid.h"
 
 #if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
 #  include "qfontengine_x11_p.h"
@@ -87,6 +88,7 @@ public:
         FaceId faceId;
         faceId.filename = "";
         faceId.index = 0;
+        faceId.uuid = QUuid::createUuid().toByteArray();
 
         return init(faceId, true, Format_None, fontData);
     }
@@ -98,7 +100,7 @@ void QRawFontPrivate::platformCleanUp()
     // Font engine handles all resources
 }
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, int pixelSize,
+void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
     Q_ASSERT(fontEngine == 0);

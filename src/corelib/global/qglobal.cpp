@@ -718,6 +718,13 @@ QT_BEGIN_NAMESPACE
     \sa QtMsgHandler, qInstallMsgHandler()
 */
 
+/*! \typedef QFunctionPointer
+    \relates <QtGlobal>
+
+    This is a typedef for \c{void (*)()}, a pointer to a function that takes
+    no arguments and returns void.
+*/
+
 /*! \macro qint64 Q_INT64_C(literal)
     \relates <QtGlobal>
 

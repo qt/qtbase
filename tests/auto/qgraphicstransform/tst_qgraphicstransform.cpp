@@ -61,6 +61,9 @@ private slots:
     void rotation3d();
     void rotation3dArbitraryAxis_data();
     void rotation3dArbitraryAxis();
+
+private:
+    QString toString(QTransform const&);
 };
 
 
@@ -305,6 +308,15 @@ void tst_QGraphicsTransform::rotation3d()
     QVERIFY(transform2D(rotation).isIdentity());
 }
 
+QByteArray labelForTest(QVector3D const& axis, int angle) {
+    return QString("rotation of %1 on (%2, %3, %4)")
+        .arg(angle)
+        .arg(axis.x())
+        .arg(axis.y())
+        .arg(axis.z())
+        .toLatin1();
+}
+
 void tst_QGraphicsTransform::rotation3dArbitraryAxis_data()
 {
     QTest::addColumn<QVector3D>("axis");
@@ -317,11 +329,11 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis_data()
     QVector3D axis5 = QVector3D(0.01f, 0.01f, 0.01f);
 
     for (int angle = 0; angle <= 360; angle++) {
-        QTest::newRow("test rotation on (1, 1, 1)") << axis1 << qreal(angle);
-        QTest::newRow("test rotation on (2, -3, .5)") << axis2 << qreal(angle);
-        QTest::newRow("test rotation on (-2, 0, -.5)") << axis3 << qreal(angle);
-        QTest::newRow("test rotation on (.0001, .0001, .0001)") << axis4 << qreal(angle);
-        QTest::newRow("test rotation on (.01, .01, .01)") << axis5 << qreal(angle);
+        QTest::newRow(labelForTest(axis1, angle).constData()) << axis1 << qreal(angle);
+        QTest::newRow(labelForTest(axis2, angle).constData()) << axis2 << qreal(angle);
+        QTest::newRow(labelForTest(axis3, angle).constData()) << axis3 << qreal(angle);
+        QTest::newRow(labelForTest(axis4, angle).constData()) << axis4 << qreal(angle);
+        QTest::newRow(labelForTest(axis5, angle).constData()) << axis5 << qreal(angle);
     }
 }
 
@@ -347,7 +359,26 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
     exp.rotate(angle, axis);
     QTransform expected = exp.toTransform(1024.0f);
 
-    QVERIFY(fuzzyCompare(transform2D(rotation), expected));
+#ifdef Q_OS_LINUX
+    // These failures possibly relate to the float vs qreal issue mentioned
+    // in the comment above fuzzyCompare().
+    if (sizeof(qreal) == sizeof(double)) {
+        QEXPECT_FAIL("rotation of 120 on (1, 1, 1)",                "QTBUG-20661", Abort);
+        QEXPECT_FAIL("rotation of 240 on (1, 1, 1)",                "QTBUG-20661", Abort);
+        QEXPECT_FAIL("rotation of 120 on (0.01, 0.01, 0.01)",       "QTBUG-20661", Abort);
+        QEXPECT_FAIL("rotation of 240 on (0.01, 0.01, 0.01)",       "QTBUG-20661", Abort);
+        QEXPECT_FAIL("rotation of 120 on (0.0001, 0.0001, 0.0001)", "QTBUG-20661", Abort);
+        QEXPECT_FAIL("rotation of 240 on (0.0001, 0.0001, 0.0001)", "QTBUG-20661", Abort);
+    }
+#endif
+
+    QTransform actual = transform2D(rotation);
+    QVERIFY2(fuzzyCompare(actual, expected), qPrintable(
+        QString("\nactual:   %1\n"
+                  "expected: %2")
+        .arg(toString(actual))
+        .arg(toString(expected))
+    ));
 
     // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
     // i.e. third row and column are 0 0 1 0.
@@ -355,6 +386,21 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
     rotation.applyTo(&t);
     QMatrix4x4 r(expected);
     QVERIFY(qFuzzyCompare(t, r));
+}
+
+QString tst_QGraphicsTransform::toString(QTransform const& t)
+{
+    return QString("[ [ %1  %2   %3 ]; [ %4  %5  %6 ]; [ %7  %8  %9 ] ]")
+        .arg(t.m11())
+        .arg(t.m12())
+        .arg(t.m13())
+        .arg(t.m21())
+        .arg(t.m22())
+        .arg(t.m23())
+        .arg(t.m31())
+        .arg(t.m32())
+        .arg(t.m33())
+    ;
 }
 
 

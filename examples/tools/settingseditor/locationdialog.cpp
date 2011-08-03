@@ -54,7 +54,7 @@ LocationDialog::LocationDialog(QWidget *parent)
     scopeComboBox->addItem(tr("System"));
 
     organizationComboBox = new QComboBox;
-    organizationComboBox->addItem(tr("Trolltech"));
+    organizationComboBox->addItem(tr("Qt"));
     organizationComboBox->setEditable(true);
 
     applicationComboBox = new QComboBox;

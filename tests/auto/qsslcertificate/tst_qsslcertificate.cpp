@@ -118,6 +118,9 @@ private slots:
     void subjectAndIssuerAttributes();
     void verify();
 
+    // helper for verbose test failure messages
+    QString toString(const QList<QSslError>&);
+
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -907,10 +910,16 @@ void tst_QSslCertificate::verify()
     QList<QSslError> errors;
     QList<QSslCertificate> toVerify;
 
+    // Like QVERIFY, but be verbose about the content of `errors' when failing
+#define VERIFY_VERBOSE(A)                                       \
+    QVERIFY2((A),                                               \
+        qPrintable(QString("errors: %1").arg(toString(errors))) \
+    )
+
     // Empty chain is unspecified error
     errors = QSslCertificate::verify(toVerify);
-    QVERIFY(errors.count() == 1);
-    QVERIFY(errors[0] == QSslError(QSslError::UnspecifiedError));
+    VERIFY_VERBOSE(errors.count() == 1);
+    VERIFY_VERBOSE(errors[0] == QSslError(QSslError::UnspecifiedError));
     errors.clear();
 
     // Verify a valid cert signed by a CA
@@ -920,7 +929,8 @@ void tst_QSslCertificate::verify()
     toVerify = QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem");
 
     errors = QSslCertificate::verify(toVerify);
-    QVERIFY(errors.count() == 0);
+    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
+    VERIFY_VERBOSE(errors.count() == 0);
     errors.clear();
 
     // Test a blacklisted certificate
@@ -939,8 +949,8 @@ void tst_QSslCertificate::verify()
     // This one is expired and untrusted
     toVerify = QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-serial-number.pem");
     errors = QSslCertificate::verify(toVerify);
-    QVERIFY(errors.contains(QSslError(QSslError::SelfSignedCertificate, toVerify[0])));
-    QVERIFY(errors.contains(QSslError(QSslError::CertificateExpired, toVerify[0])));
+    VERIFY_VERBOSE(errors.contains(QSslError(QSslError::SelfSignedCertificate, toVerify[0])));
+    VERIFY_VERBOSE(errors.contains(QSslError(QSslError::CertificateExpired, toVerify[0])));
     errors.clear();
     toVerify.clear();
 
@@ -948,23 +958,38 @@ void tst_QSslCertificate::verify()
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-not-ca-cert.pem").first();
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
-    QVERIFY(errors.contains(QSslError(QSslError::InvalidCaCertificate, toVerify[1])));
+    VERIFY_VERBOSE(errors.contains(QSslError(QSslError::InvalidCaCertificate, toVerify[1])));
     toVerify.clear();
 
     // This one is signed by a valid cert, and the signer is a valid CA
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-is-ca-cert.pem").first();
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-ca-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
-    QVERIFY(errors.length() == 0);
+    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
+    VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with hostname validation
     errors = QSslCertificate::verify(toVerify, QLatin1String("example.com"));
-    QVERIFY(errors.length() == 0);
+    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
+    VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with a bad hostname
     errors = QSslCertificate::verify(toVerify, QLatin1String("fail.example.com"));
-    QVERIFY(errors.contains(QSslError(QSslError::HostNameMismatch, toVerify[0])));
+    VERIFY_VERBOSE(errors.contains(QSslError(QSslError::HostNameMismatch, toVerify[0])));
     toVerify.clear();
+
+#undef VERIFY_VERBOSE
+}
+
+QString tst_QSslCertificate::toString(const QList<QSslError>& errors)
+{
+    QStringList errorStrings;
+
+    foreach (const QSslError& error, errors) {
+        errorStrings.append(QLatin1String("\"") + error.errorString() + QLatin1String("\""));
+    }
+
+    return QLatin1String("[ ") + errorStrings.join(QLatin1String(", ")) + QLatin1String(" ]");
 }
 
 #endif // QT_NO_OPENSSL

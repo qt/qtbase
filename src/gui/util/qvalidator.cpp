@@ -131,6 +131,69 @@ QT_BEGIN_NAMESPACE
     \omitvalue Valid
 */
 
+
+/*!
+    \fn void QIntValidator::topChanged(int top)
+
+    This signal is emitted after the top property changed.
+
+    \sa QIntValidator::top(), QIntValidator::setTop(), QIntValidator::bottom(), QIntValidator::setBottom()
+    \internal
+*/
+
+/*!
+    \fn void QIntValidator::bottomChanged(int bottom)
+
+    This signal is emitted after the bottom property changed.
+
+    \sa QIntValidator::top(), QIntValidator::setTop(), QIntValidator::bottom(), QIntValidator::setBottom()
+    \internal
+*/
+
+/*!
+    \fn void QDoubleValidator::topChanged(int top)
+
+    This signal is emitted after the top property changed.
+
+    \sa QDoubleValidator::top(), QDoubleValidator::setTop(), QDoubleValidator::bottom(), QDoubleValidator::setBottom()
+    \internal
+*/
+
+/*!
+    \fn void QDoubleValidator::bottomChanged(int bottom)
+
+    This signal is emitted after the bottom property changed.
+
+    \sa QDoubleValidator::top(), QDoubleValidator::setTop(), QDoubleValidator::bottom(), QDoubleValidator::setBottom()
+    \internal
+*/
+
+/*!
+    \fn void QDoubleValidator::decimalsChanged(int decimals)
+
+    This signal is emitted after the decimals property changed.
+
+    \internal
+*/
+
+/*!
+    \fn void QDoubleValidator::notationChanged(QDoubleValidator::Notation notation)
+
+    This signal is emitted after the notation property changed.
+
+    QDoubleValidator::Notation is not a registered metatype, so for queued connections,
+    you will have to register it with Q_DECLARE_METATYPE() and qRegisterMetaType().
+
+    \internal
+*/
+
+/*!
+    \fn void QRegExpValidator::regExpChanged(const QRegExp &regExp)
+
+    This signal is emitted after the regExp property changed.
+    \internal
+*/
+
 class QValidatorPrivate : public QObjectPrivate{
     Q_DECLARE_PUBLIC(QValidator)
 public:
@@ -436,8 +499,15 @@ void QIntValidator::fixup(QString &input) const
 
 void QIntValidator::setRange(int bottom, int top)
 {
-    b = bottom;
-    t = top;
+    if (b != bottom) {
+        b = bottom;
+        emit bottomChanged(b);
+    }
+
+    if (t != top) {
+        t = top;
+        emit topChanged(t);
+    }
 }
 
 
@@ -710,9 +780,20 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
 
 void QDoubleValidator::setRange(double minimum, double maximum, int decimals)
 {
-    b = minimum;
-    t = maximum;
-    dec = decimals;
+    if (b != minimum) {
+        b = minimum;
+        emit bottomChanged(b);
+    }
+
+    if (t != maximum) {
+        t = maximum;
+        emit topChanged(t);
+    }
+
+    if (dec != decimals) {
+        dec = decimals;
+        emit decimalsChanged(dec);
+    }
 }
 
 /*!
@@ -771,7 +852,10 @@ void QDoubleValidator::setDecimals(int decimals)
 void QDoubleValidator::setNotation(Notation newNotation)
 {
     Q_D(QDoubleValidator);
-    d->notation = newNotation;
+    if (d->notation != newNotation) {
+        d->notation = newNotation;
+        emit notationChanged(d->notation);
+    }
 }
 
 QDoubleValidator::Notation QDoubleValidator::notation() const
@@ -915,7 +999,10 @@ QValidator::State QRegExpValidator::validate(QString &input, int& pos) const
 
 void QRegExpValidator::setRegExp(const QRegExp& rx)
 {
-    r = rx;
+    if (r != rx) {
+        r = rx;
+        emit regExpChanged(r);
+    }
 }
 
 #endif

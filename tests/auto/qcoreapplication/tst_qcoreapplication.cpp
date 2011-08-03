@@ -361,26 +361,25 @@ class DeliverInDefinedOrderObject : public QObject
 
     QPointer<QThread> thread;
     int count;
+    int startCount;
+    int loopLevel;
 
 public:
     DeliverInDefinedOrderObject(QObject *parent)
-        : QObject(parent), thread(0), count(0)
+        : QObject(parent), thread(0), count(0), startCount(0), loopLevel(0)
     { }
-    ~DeliverInDefinedOrderObject()
-    {
-        if (!thread.isNull())
-            thread->wait();
-    }
+
+signals:
+    void done();
 
 public slots:
-    void start()
+    void startThread()
     {
         QVERIFY(!thread);
         thread = new DeliverInDefinedOrderThread();
         connect(thread, SIGNAL(progress(int)), this, SLOT(threadProgress(int)));
         connect(thread, SIGNAL(finished()), this, SLOT(threadFinished()));
-        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-        connect(thread, SIGNAL(destroyed()), this, SLOT(start()));
+        connect(thread, SIGNAL(destroyed()), this, SLOT(threadDestroyed()));
         thread->start();
 
         QCoreApplication::postEvent(this, new QEvent(QEvent::MaxUser), -1);
@@ -398,8 +397,17 @@ public slots:
     {
         QVERIFY(count == 7);
         count = 0;
+        thread->deleteLater();
 
         QCoreApplication::postEvent(this, new QEvent(QEvent::MaxUser), -1);
+    }
+
+    void threadDestroyed()
+    {
+        if (++startCount < 20)
+            startThread();
+        else
+            emit done();
     }
 
 public:
@@ -407,12 +415,16 @@ public:
     {
         switch (event->type()) {
         case QEvent::User:
-            {
-                (void) QEventLoop().exec();
-                break;
+        {
+            ++loopLevel;
+            if (loopLevel == 2) {
+                // Ready. Starts a thread that emits (queued) signals, which should be handled in order
+                startThread();
             }
-        case QEvent::User + 1:
+            QCoreApplication::postEvent(this, new QEvent(QEvent::MaxUser), -1);
+            (void) QEventLoop().exec();
             break;
+        }
         default:
             break;
         }
@@ -430,11 +442,8 @@ void tst_QCoreApplication::deliverInDefinedOrder()
     // causes sendPostedEvents() to recurse twice
     QCoreApplication::postEvent(&obj, new QEvent(QEvent::User));
     QCoreApplication::postEvent(&obj, new QEvent(QEvent::User));
-    // starts a thread that emits (queued) signals, which should be handled in order
-    obj.start();
 
-    // run for 15 seconds
-    QTimer::singleShot(15000, &app, SLOT(quit()));
+    QObject::connect(&obj, SIGNAL(done()), &app, SLOT(quit()));
     app.exec();
 }
 #endif // QT_NO_QTHREAD
@@ -524,7 +533,7 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
         QCoreApplication::processEvents();
         QCOMPARE(object.counter, i);
         ++i;
-    } while (t.elapsed() < 3000);
+    } while (t.elapsed() < 1000);
 }
 
 void tst_QCoreApplication::reexec()

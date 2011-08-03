@@ -113,12 +113,12 @@ bool QLibraryPrivate::unload_sys()
     return true;
 }
 
-void* QLibraryPrivate::resolve_sys(const char* symbol)
+QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
 #ifdef Q_OS_WINCE
-    void* address = (void*)GetProcAddress(pHnd, (const wchar_t*)QString::fromLatin1(symbol).utf16());
+    FARPROC address = GetProcAddress(pHnd, (const wchar_t*)QString::fromLatin1(symbol).utf16());
 #else
-    void* address = (void*)GetProcAddress(pHnd, symbol);
+    FARPROC address = GetProcAddress(pHnd, symbol);
 #endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
@@ -126,6 +126,6 @@ void* QLibraryPrivate::resolve_sys(const char* symbol)
     } else {
         errorString.clear();
     }
-    return address;
+    return QFunctionPointer(address);
 }
 QT_END_NAMESPACE

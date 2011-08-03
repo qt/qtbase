@@ -148,6 +148,8 @@ public:
 
     void clear();
 
+    QTabBar* tabBar() const;
+
 public Q_SLOTS:
     void setCurrentIndex(int index);
     void setCurrentWidget(QWidget *widget);
@@ -165,7 +167,6 @@ protected:
     void keyPressEvent(QKeyEvent *);
     void paintEvent(QPaintEvent *);
     void setTabBar(QTabBar *);
-    QTabBar* tabBar() const;
     void changeEvent(QEvent *);
     bool event(QEvent *);
     void initStyleOption(QStyleOptionTabWidgetFrame *option) const;

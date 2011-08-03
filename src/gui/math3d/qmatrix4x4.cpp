@@ -55,6 +55,20 @@ QT_BEGIN_NAMESPACE
     \since 4.6
     \ingroup painting-3D
 
+    The QMatrix4x4 class in general is treated as a row-major matrix, in that the
+    constructors and operator() functions take data in row-major format, as is
+    familiar in C-style usage.
+
+    Internally the data is stored as column-major format, so as to be optimal for
+    passing to OpenGL functions, which expect column-major data.
+
+    When using these functions be aware that they return data in \bold{column-major}
+    format:
+    \list
+    \o data()
+    \o constData()
+    \endlist
+
     \sa QVector3D, QGenericMatrix
 */
 
@@ -1725,6 +1739,7 @@ QRectF QMatrix4x4::mapRect(const QRectF& rect) const
     \fn const qreal *QMatrix4x4::data() const
 
     Returns a constant pointer to the raw data of this matrix.
+    This raw data is stored in column-major format.
 
     \sa constData()
 */
@@ -1733,6 +1748,7 @@ QRectF QMatrix4x4::mapRect(const QRectF& rect) const
     \fn const qreal *QMatrix4x4::constData() const
 
     Returns a constant pointer to the raw data of this matrix.
+    This raw data is stored in column-major format.
 
     \sa data()
 */

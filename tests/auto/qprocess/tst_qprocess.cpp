@@ -335,7 +335,7 @@ void tst_QProcess::crashTest()
     QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy spy2(process, SIGNAL(finished(int, QProcess::ExitStatus)));
 
-    QVERIFY(process->waitForFinished(5000));
+    QVERIFY(process->waitForFinished(30000));
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(*static_cast<const QProcess::ProcessError *>(spy.at(0).at(0).constData()), QProcess::Crashed);
@@ -372,7 +372,7 @@ void tst_QProcess::crashTest2()
 
     QObject::connect(process, SIGNAL(finished(int)), this, SLOT(exitLoopSlot()));
 
-    QTestEventLoop::instance().enterLoop(5);
+    QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
         QFAIL("Failed to detect crash : operation timed out");
 
@@ -673,7 +673,7 @@ void tst_QProcess::exitStatus()
     for (int i = 0; i < processList.count(); ++i) {
         process->start(processList.at(i));
         QVERIFY(process->waitForStarted(5000));
-        QVERIFY(process->waitForFinished(5000));
+        QVERIFY(process->waitForFinished(30000));
 
         QCOMPARE(process->exitStatus(), exitStatus.at(i));
     }

@@ -47,7 +47,6 @@
 class tst_QRawFont: public QObject
 {
     Q_OBJECT
-
 #if !defined(QT_NO_RAWFONT)
 private slots:
     void invalidRawFont();
@@ -94,6 +93,11 @@ private slots:
 
     void rawFontSetPixelSize_data();
     void rawFontSetPixelSize();
+
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    void multipleRawFontsFromData();
+#endif
+
 #endif // QT_NO_RAWFONT
 };
 
@@ -842,6 +846,25 @@ void tst_QRawFont::rawFontSetPixelSize()
     rawFont.setPixelSize(24);
     QCOMPARE(rawFont.pixelSize(), 24.0);
 }
+
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+void tst_QRawFont::multipleRawFontsFromData()
+{
+    QFile file(QString::fromLatin1(SRCDIR "testfont.ttf"));
+    QRawFont testFont;
+    if (file.open(QIODevice::ReadOnly)) {
+        testFont.loadFromData(file.readAll(), 11, QFont::PreferDefaultHinting);
+        file.close();
+    }
+    file.setFileName(QLatin1String(SRCDIR "testfont_bold_italic.ttf"));
+    QRawFont testFontBoldItalic;
+    if (file.open(QIODevice::ReadOnly))
+        testFontBoldItalic.loadFromData(file.readAll(), 11, QFont::PreferDefaultHinting);
+
+    QVERIFY(testFont.familyName() != (testFontBoldItalic.familyName())
+            || testFont.styleName() != (testFontBoldItalic.styleName()));
+}
+#endif
 
 #endif // QT_NO_RAWFONT
 

@@ -52,47 +52,64 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-#ifndef QT_NO_THREAD
+#if !defined(QT_NO_THREAD) && !defined(qdoc)
 
-class QAtomicInt;
-class QMutexData;
+class QMutexPrivate;
 
-class Q_CORE_EXPORT QMutex
+class Q_CORE_EXPORT QBasicMutex
 {
-    friend class QWaitCondition;
-    friend class QWaitConditionPrivate;
-
 public:
-    enum RecursionMode { NonRecursive, Recursive };
+    inline void lock() {
+        if (!fastTryLock())
+            lockInternal();
+    }
 
-    explicit QMutex(RecursionMode mode = NonRecursive);
-    ~QMutex();
+    inline void unlock() {
+        Q_ASSERT(d); //mutex must be locked
+        if (!d.testAndSetRelease(dummyLocked(), 0))
+            unlockInternal();
+    }
 
-    void lock();     //### Qt5: make inline;
-    inline void lockInline();
-    bool tryLock();  //### Qt5: make inline;
-    bool tryLock(int timeout);
-    inline bool tryLockInline();
-    void unlock();     //### Qt5: make inline;
-    inline void unlockInline();
+    bool tryLock(int timeout = 0) {
+        return fastTryLock() || lockInternal(timeout);
+    }
+
+    bool isRecursive();
 
 private:
-    void lockInternal();
+    inline bool fastTryLock() {
+        return d.testAndSetAcquire(0, dummyLocked());
+    }
+    bool lockInternal(int timeout = -1);
     void unlockInternal();
-    Q_DISABLE_COPY(QMutex)
 
-    QMutexData *d;
+    QBasicAtomicPointer<QMutexPrivate> d;
+    static inline QMutexPrivate *dummyLocked() {
+        return reinterpret_cast<QMutexPrivate *>(quintptr(1));
+    }
+
+    friend class QMutex;
+    friend class QMutexPrivate;
+};
+
+class Q_CORE_EXPORT QMutex : public QBasicMutex {
+public:
+    enum RecursionMode { NonRecursive, Recursive };
+    explicit QMutex(RecursionMode mode = NonRecursive);
+    ~QMutex();
+private:
+    Q_DISABLE_COPY(QMutex)
 };
 
 class Q_CORE_EXPORT QMutexLocker
 {
 public:
-    inline explicit QMutexLocker(QMutex *m)
+    inline explicit QMutexLocker(QBasicMutex *m)
     {
         Q_ASSERT_X((reinterpret_cast<quintptr>(m) & quintptr(1u)) == quintptr(0),
                    "QMutexLocker", "QMutex pointer is misaligned");
         if (m) {
-            m->lockInline();
+            m->lock();
             val = reinterpret_cast<quintptr>(m) | quintptr(1u);
         } else {
             val = 0;
@@ -104,7 +121,7 @@ public:
     {
         if ((val & quintptr(1u)) == quintptr(1u)) {
             val &= ~quintptr(1u);
-            mutex()->unlockInline();
+            mutex()->unlock();
         }
     }
 
@@ -112,7 +129,7 @@ public:
     {
         if (val) {
             if ((val & quintptr(1u)) == quintptr(0u)) {
-                mutex()->lockInline();
+                mutex()->lock();
                 val |= quintptr(1u);
             }
         }
@@ -138,54 +155,9 @@ private:
     quintptr val;
 };
 
-class QMutexData
-{
-    public:
-        QAtomicInt contenders;
-        const uint recursive : 1;
-        uint reserved : 31;
-    protected:
-        QMutexData(QMutex::RecursionMode mode);
-        ~QMutexData();
-};
-
-#ifdef QT_NO_DEBUG
-inline void QMutex::unlockInline()
-{
-    if (d->recursive) {
-        unlock();
-    } else if (!d->contenders.testAndSetRelease(1, 0)) {
-        unlockInternal();
-    }
-}
-
-inline bool QMutex::tryLockInline()
-{
-    if (d->recursive) {
-        return tryLock();
-    } else {
-        return d->contenders.testAndSetAcquire(0, 1);
-    }
-}
-
-inline void QMutex::lockInline()
-{
-    if (d->recursive) {
-        lock();
-    } else if(!tryLockInline()) {
-        lockInternal();
-    }
-}
-#else // QT_NO_DEBUG
-//in debug we do not use inline calls in order to allow debugging tools
-// to hook the mutex locking functions.
-inline void QMutex::unlockInline() { unlock(); }
-inline bool QMutex::tryLockInline() { return tryLock(); }
-inline void QMutex::lockInline() { lock(); }
-#endif // QT_NO_DEBUG
 
 
-#else // QT_NO_THREAD
+#else // QT_NO_THREAD or qdoc
 
 
 class Q_CORE_EXPORT QMutex
@@ -194,14 +166,11 @@ public:
     enum RecursionMode { NonRecursive, Recursive };
 
     inline explicit QMutex(RecursionMode mode = NonRecursive) { Q_UNUSED(mode); }
-    inline ~QMutex() {}
 
     static inline void lock() {}
-    static inline void lockInline() {}
     static inline bool tryLock(int timeout = 0) { Q_UNUSED(timeout); return true; }
-    static inline bool tryLockInline() { return true; }
     static inline void unlock() {}
-    static inline void unlockInline() {}
+    static inline bool isRecursive() { return true; }
 
 private:
     Q_DISABLE_COPY(QMutex)
@@ -221,7 +190,9 @@ private:
     Q_DISABLE_COPY(QMutexLocker)
 };
 
-#endif // QT_NO_THREAD
+typedef QMutex QBasicMutex;
+
+#endif // QT_NO_THREAD or qdoc
 
 QT_END_NAMESPACE
 

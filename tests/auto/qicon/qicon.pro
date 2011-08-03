@@ -28,5 +28,3 @@ wince* {
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
-
-CONFIG+=insignificant_test

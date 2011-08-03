@@ -76,9 +76,6 @@
 //TESTED_CLASS=
 //TESTED_FILES= gui/text/qscriptengine.cpp
 
-// This test depends on the fonts in the following package being installed:
-// http://people.freedesktop.org/~hausmann/harfbuzz-test-fonts-0.1.tar.bz2
-
 class tst_QTextScriptEngine : public QObject
 {
 Q_OBJECT
@@ -89,6 +86,7 @@ public:
 
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -111,14 +109,33 @@ private slots:
 
     void mirroredChars_data();
     void mirroredChars();
+
+private:
+    bool haveTestFonts;
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
+    : haveTestFonts(qgetenv("QT_HAVE_TEST_FONTS") == QByteArray("1"))
 {
 }
 
 tst_QTextScriptEngine::~tst_QTextScriptEngine()
 {
+}
+
+void tst_QTextScriptEngine::initTestCase()
+{
+#if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        qWarning(
+            "Some of these tests depend on the internals of some test fonts which are not freely "
+            "distributable.\n"
+            "These tests will be skipped.\n"
+            "If you have the fonts available, set QT_HAVE_TEST_FONTS=1 in your environment and "
+            "run the test again."
+        );
+    }
+#endif
 }
 
 void tst_QTextScriptEngine::init()
@@ -184,6 +201,10 @@ static bool shaping( const QFont &f, const ShapeTable *s)
 void tst_QTextScriptEngine::devanagari()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Devanagari).contains("Raghindi")) {
             QFont f("Raghindi");
@@ -233,7 +254,7 @@ void tst_QTextScriptEngine::devanagari()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Raghindi", SkipAll);
+	    QSKIP("couldn't find Raghindi", SkipAll);
 	}
     }
 
@@ -296,6 +317,10 @@ void tst_QTextScriptEngine::devanagari()
 void tst_QTextScriptEngine::bengali()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Bengali).contains("Akaash")) {
             QFont f("Akaash");
@@ -403,7 +428,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Akaash", SkipAll);
+	    QSKIP("couldn't find Akaash", SkipAll);
 	}
     }
     {
@@ -508,7 +533,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Mukti", SkipAll);
+	    QSKIP("couldn't find Mukti", SkipAll);
 	}
     }
     {
@@ -536,7 +561,7 @@ void tst_QTextScriptEngine::bengali()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Likhan", SkipAll);
+	    QSKIP("couldn't find Likhan", SkipAll);
 	}
     }
 #else
@@ -547,6 +572,10 @@ void tst_QTextScriptEngine::bengali()
 void tst_QTextScriptEngine::gurmukhi()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Gurmukhi).contains("Lohit Punjabi")) {
             QFont f("Lohit Punjabi");
@@ -563,7 +592,7 @@ void tst_QTextScriptEngine::gurmukhi()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Lohit Punjabi", SkipAll);
+	    QSKIP("couldn't find Lohit Punjabi", SkipAll);
 	}
     }
 #endif
@@ -572,6 +601,10 @@ void tst_QTextScriptEngine::gurmukhi()
 void tst_QTextScriptEngine::oriya()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Oriya).contains("utkal")) {
             QFont f("utkal");
@@ -600,7 +633,7 @@ void tst_QTextScriptEngine::oriya()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find utkal", SkipAll);
+	    QSKIP("couldn't find utkal", SkipAll);
 	}
     }
 #else
@@ -612,6 +645,10 @@ void tst_QTextScriptEngine::oriya()
 void tst_QTextScriptEngine::tamil()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Tamil).contains("AkrutiTml1")) {
             QFont f("AkrutiTml1");
@@ -677,7 +714,7 @@ void tst_QTextScriptEngine::tamil()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find AkrutiTml1", SkipAll);
+	    QSKIP("couldn't find AkrutiTml1", SkipAll);
 	}
     }
 #else
@@ -689,6 +726,10 @@ void tst_QTextScriptEngine::tamil()
 void tst_QTextScriptEngine::telugu()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Telugu).contains("Pothana2000")) {
             QFont f("Pothana2000");
@@ -725,7 +766,7 @@ void tst_QTextScriptEngine::telugu()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Pothana2000", SkipAll);
+	    QSKIP("couldn't find Pothana2000", SkipAll);
 	}
     }
 #else
@@ -772,7 +813,7 @@ void tst_QTextScriptEngine::kannada()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Sampige", SkipAll);
+	    QSKIP("couldn't find Sampige", SkipAll);
 	}
     }
     {
@@ -803,7 +844,7 @@ void tst_QTextScriptEngine::kannada()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Tunga", SkipAll);
+	    QSKIP("couldn't find Tunga", SkipAll);
 	}
     }
 #else
@@ -816,6 +857,10 @@ void tst_QTextScriptEngine::kannada()
 void tst_QTextScriptEngine::malayalam()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Malayalam).contains("AkrutiMal2")) {
             QFont f("AkrutiMal2");
@@ -864,7 +909,7 @@ void tst_QTextScriptEngine::malayalam()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find AkrutiMal2", SkipAll);
+	    QSKIP("couldn't find AkrutiMal2", SkipAll);
 	}
     }
     {
@@ -892,7 +937,7 @@ void tst_QTextScriptEngine::malayalam()
                 ++s;
             }
         } else {
-            QSKIP("couln't find Rachana", SkipAll);
+            QSKIP("couldn't find Rachana", SkipAll);
         }
     }
 
@@ -904,6 +949,10 @@ void tst_QTextScriptEngine::malayalam()
 void tst_QTextScriptEngine::sinhala()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Sinhala).contains("Malithi Web")) {
             QFont f("Malithi Web");
@@ -930,7 +979,7 @@ void tst_QTextScriptEngine::sinhala()
                 ++s;
             }
         } else {
-            QSKIP("couln't find Malithi Web", SkipAll);
+            QSKIP("couldn't find Malithi Web", SkipAll);
         }
     }
 #else
@@ -942,6 +991,10 @@ void tst_QTextScriptEngine::sinhala()
 void tst_QTextScriptEngine::khmer()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Khmer).contains("Khmer OS")) {
             QFont f("Khmer OS");
@@ -974,7 +1027,7 @@ void tst_QTextScriptEngine::khmer()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Khmer OS", SkipAll);
+	    QSKIP("couldn't find Khmer OS", SkipAll);
 	}
     }
 #else
@@ -985,6 +1038,10 @@ void tst_QTextScriptEngine::khmer()
 void tst_QTextScriptEngine::linearB()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Any).contains("Penuturesu")) {
             QFont f("Penuturesu");
@@ -1001,7 +1058,7 @@ void tst_QTextScriptEngine::linearB()
 		++s;
 	    }
 	} else {
-	    QSKIP("couln't find Penuturesu", SkipAll);
+	    QSKIP("couldn't find Penuturesu", SkipAll);
 	}
     }
 #else
@@ -1060,6 +1117,10 @@ static bool decomposedShaping( const QFont &f, const QChar &ch)
 void tst_QTextScriptEngine::greek()
 {
 #if defined(Q_WS_X11)
+    if (!haveTestFonts) {
+        QSKIP("Test fonts are not available", SkipAll);
+    }
+
     {
         if (QFontDatabase().families(QFontDatabase::Any).contains("DejaVu Sans")) {
             QFont f("DejaVu Sans");
@@ -1075,7 +1136,7 @@ void tst_QTextScriptEngine::greek()
                 QVERIFY( decomposedShaping(f, QChar(uc)) );
             }
         } else {
-            QSKIP("couln't find DejaVu Sans", SkipAll);
+            QSKIP("couldn't find DejaVu Sans", SkipAll);
         }
     }
 
@@ -1111,7 +1172,7 @@ void tst_QTextScriptEngine::greek()
                 ++s;
             }
         } else {
-            QSKIP("couln't find SBL_grk", SkipAll);
+            QSKIP("couldn't find SBL_grk", SkipAll);
         }
     }
 #else

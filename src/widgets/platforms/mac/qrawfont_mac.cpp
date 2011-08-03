@@ -55,7 +55,7 @@ void QRawFontPrivate::platformCleanUp()
 extern int qt_defaultDpi();
 
 void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData,
-                                           int pixelSize,
+                                           qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
     // Mac OS X ignores it

@@ -125,6 +125,11 @@ private:
         MethodScriptable = 0x40
     };
 
+    enum MetaObjectFlags {
+        DynamicMetaObject = 0x01,
+        RequiresVariantMetaObject = 0x02
+    };
+
     QMap<QByteArray, Method> methods;
     QMap<QByteArray, Property> properties;
     
@@ -152,6 +157,8 @@ struct QDBusMetaObjectPrivate
     int methodCount, methodData;
     int propertyCount, propertyData;
     int enumeratorCount, enumeratorData;
+    int constructorCount, constructorData; // since revision 2
+    int flags; // since revision 3
     
     // this is specific for QDBusMetaObject:
     int propertyDBusData;
@@ -416,7 +423,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     idata.resize(sizeof(QDBusMetaObjectPrivate) / sizeof(int));
 
     QDBusMetaObjectPrivate *header = reinterpret_cast<QDBusMetaObjectPrivate *>(idata.data());
-    header->revision = 1;
+    header->revision = 3;
     header->className = 0;
     header->classInfoCount = 0;
     header->classInfoData = 0;
@@ -426,6 +433,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     header->propertyData = header->methodData + header->methodCount * 5;
     header->enumeratorCount = 0;
     header->enumeratorData = 0;
+    header->constructorCount = 0;
+    header->constructorData = 0;
+    header->flags = RequiresVariantMetaObject;
     header->propertyDBusData = header->propertyData + header->propertyCount * 3;
     header->methodDBusData = header->propertyDBusData + header->propertyCount * intsPerProperty;
 

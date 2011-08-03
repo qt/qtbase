@@ -45,108 +45,9 @@
 #include "qthread.h"
 #include <private/qthread_p.h>
 #include <private/qcoreapplication_p.h>
+#include <private/qfreelist_p.h>
 
 QT_BEGIN_NAMESPACE
-
-// we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
-static const int TimerIdMask = 0x00ffffff;
-static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
-static const int TimerSerialCounter = TimerIdMask + 1;
-static const int MaxTimerId = TimerIdMask;
-
-static int FirstBucket[] = {
-     1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
-};
-
-enum {
-    FirstBucketOffset  = 0,
-    SecondBucketOffset = sizeof(FirstBucket) / sizeof(FirstBucket[0]),
-    ThirdBucketOffset  = 0x100,
-    FourthBucketOffset = 0x1000,
-    FifthBucketOffset  = 0x10000,
-    SixthBucketOffset  = 0x100000
-};
-
-enum {
-    FirstBucketSize  = SecondBucketOffset,
-    SecondBucketSize = ThirdBucketOffset - SecondBucketOffset,
-    ThirdBucketSize  = FourthBucketOffset - ThirdBucketOffset,
-    FourthBucketSize = FifthBucketOffset - FourthBucketOffset,
-    FifthBucketSize  = SixthBucketOffset - FifthBucketOffset,
-    SixthBucketSize  = MaxTimerId - SixthBucketOffset
-};
-
-static const int BucketSize[] = {
-    FirstBucketSize, SecondBucketSize, ThirdBucketSize,
-    FourthBucketSize, FifthBucketSize, SixthBucketSize
-};
-enum { NumberOfBuckets = sizeof(BucketSize) / sizeof(BucketSize[0]) };
-
-static const int BucketOffset[] = {
-    FirstBucketOffset, SecondBucketOffset, ThirdBucketOffset,
-    FourthBucketOffset, FifthBucketOffset, SixthBucketOffset
-};
-
-static QBasicAtomicPointer<int> timerIds[] =
-    { Q_BASIC_ATOMIC_INITIALIZER(FirstBucket),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
-      Q_BASIC_ATOMIC_INITIALIZER(0) };
-
-static void timerIdsDestructorFunction()
-{
-    // start at one, the first bucket is pre-allocated
-    for (int i = 1; i < NumberOfBuckets; ++i)
-        delete [] static_cast<int *>(timerIds[i]);
-}
-Q_DESTRUCTOR_FUNCTION(timerIdsDestructorFunction)
-
-static QBasicAtomicInt nextFreeTimerId = Q_BASIC_ATOMIC_INITIALIZER(1);
-
-// avoid the ABA-problem by using 7 of the top 8 bits of the timerId as a serial number
-static inline int prepareNewValueWithSerialNumber(int oldId, int newId)
-{
-    return (newId & TimerIdMask) | ((oldId + TimerSerialCounter) & TimerSerialMask);
-}
-
-namespace {
-    template<bool> struct QStaticAssertType;
-    template<> struct QStaticAssertType<true> { enum { Value = 1 }; };
-}
-#define q_static_assert(expr)     (void)QStaticAssertType<expr>::Value
-
-static inline int bucketOffset(int timerId)
-{
-    q_static_assert(sizeof BucketSize == sizeof BucketOffset);
-    q_static_assert(sizeof(timerIds) / sizeof(timerIds[0]) == NumberOfBuckets);
-
-    for (int i = 0; i < NumberOfBuckets; ++i) {
-        if (timerId < BucketSize[i])
-            return i;
-        timerId -= BucketSize[i];
-    }
-    qFatal("QAbstractEventDispatcher: INTERNAL ERROR, timer ID %d is too large", timerId);
-    return -1;
-}
-
-static inline int bucketIndex(int bucket, int timerId)
-{
-    return timerId - BucketOffset[bucket];
-}
-
-static inline int *allocateBucket(int bucket)
-{
-    // allocate a new bucket
-    const int size = BucketSize[bucket];
-    const int offset = BucketOffset[bucket];
-    int *b = new int[size];
-    for (int i = 0; i != size; ++i)
-        b[i] = offset + i + 1;
-    return b;
-}
 
 void QAbstractEventDispatcherPrivate::init()
 {
@@ -158,79 +59,54 @@ void QAbstractEventDispatcherPrivate::init()
     }
 }
 
-// Timer IDs are implemented using a free-list;
-// there's a vector initialized with:
-//    X[i] = i + 1
-// and nextFreeTimerId starts with 1.
-//
-// Allocating a timer ID involves taking the ID from
-//    X[nextFreeTimerId]
-// updating nextFreeTimerId to this value and returning the old value
-//
-// When the timer ID is allocated, its cell in the vector is unused (it's a
-// free list). As an added protection, we use the cell to store an invalid
-// (negative) value that we can later check for integrity.
-//
-// (continues below).
+// we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
+struct QtTimerIdFreeListConstants : public QFreeListDefaultConstants
+{
+    enum
+    {
+        InitialNextValue = 1,
+        BlockCount = 6,
+    };
+
+    static const int Sizes[BlockCount];
+};
+
+enum {
+    Offset0 = 0x00000000,
+    Offset1 = 0x00000040,
+    Offset2 = 0x00000100,
+    Offset3 = 0x00001000,
+    Offset4 = 0x00010000,
+    Offset5 = 0x00100000,
+
+    Size0 = Offset1  - Offset0,
+    Size1 = Offset2  - Offset1,
+    Size2 = Offset3  - Offset2,
+    Size3 = Offset4  - Offset3,
+    Size4 = Offset5  - Offset4,
+    Size5 = QtTimerIdFreeListConstants::MaxIndex - Offset5
+};
+
+const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstants::BlockCount] = {
+    Size0,
+    Size1,
+    Size2,
+    Size3,
+    Size4,
+    Size5
+};
+
+typedef QFreeList<void, QtTimerIdFreeListConstants> QtTimerIdFreeList;
+Q_GLOBAL_STATIC(QtTimerIdFreeList, timerIdFreeList)
+
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
-    int timerId, newTimerId;
-    int at, *b;
-    do {
-        timerId = nextFreeTimerId; //.loadAcquire(); // ### FIXME Proper memory ordering semantics
-
-        // which bucket are we looking in?
-        int which = timerId & TimerIdMask;
-        int bucket = bucketOffset(which);
-        at = bucketIndex(bucket, which);
-        b = timerIds[bucket];
-
-        if (!b) {
-            // allocate a new bucket
-            b = allocateBucket(bucket);
-            if (!timerIds[bucket].testAndSetRelease(0, b)) {
-                // another thread won the race to allocate the bucket
-                delete [] b;
-                b = timerIds[bucket];
-            }
-        }
-
-        newTimerId = prepareNewValueWithSerialNumber(timerId, b[at]);
-    } while (!nextFreeTimerId.testAndSetRelaxed(timerId, newTimerId));
-
-    b[at] = -timerId;
-
-    return timerId;
+    return timerIdFreeList()->next();
 }
 
-// Releasing a timer ID requires putting the current ID back in the vector;
-// we do it by setting:
-//    X[timerId] = nextFreeTimerId;
-// then we update nextFreeTimerId to the timer we've just released
-//
-// The extra code in allocateTimerId and releaseTimerId are ABA prevention
-// and bucket memory. The buckets are simply to make sure we allocate only
-// the necessary number of timers. See above.
-//
-// ABA prevention simply adds a value to 7 of the top 8 bits when resetting
-// nextFreeTimerId.
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
-    int which = timerId & TimerIdMask;
-    int bucket = bucketOffset(which);
-    int at = bucketIndex(bucket, which);
-    int *b = timerIds[bucket];
-
-    Q_ASSERT_X(timerId == -b[at], "QAbstractEventDispatcher::releaseTimerId",
-               "Internal error: timer ID not found");
-
-    int freeId, newTimerId;
-    do {
-        freeId = nextFreeTimerId;//.loadAcquire(); // ### FIXME Proper memory ordering semantics
-        b[at] = freeId & TimerIdMask;
-
-        newTimerId = prepareNewValueWithSerialNumber(freeId, timerId);
-    } while (!nextFreeTimerId.testAndSetRelease(freeId, newTimerId));
+    timerIdFreeList()->release(timerId);
 }
 
 /*!
