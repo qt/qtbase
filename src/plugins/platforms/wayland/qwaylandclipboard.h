@@ -48,7 +48,7 @@
 
 class QWaylandDisplay;
 class QWaylandSelection;
-class QWaylandMimeData;
+class QWaylandClipboardMimeData;
 struct wl_selection_offer;
 
 class QWaylandClipboardSignalEmitter : public QObject
@@ -90,7 +90,7 @@ private:
     static void forceRoundtrip(struct wl_display *display);
 
     QWaylandDisplay *mDisplay;
-    QWaylandMimeData *mMimeDataIn;
+    QWaylandClipboardMimeData *mMimeDataIn;
     QList<QWaylandSelection *> mSelections;
     QStringList mOfferedMimeTypes;
     struct wl_selection_offer *mOffer;

@@ -42,6 +42,7 @@
 #include "qwaylandclipboard.h"
 #include "qwaylanddisplay.h"
 #include "qwaylandinputdevice.h"
+#include "qwaylandmime.h"
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QApplication>
 #include <QtCore/QMimeData>
@@ -52,7 +53,7 @@
 
 static QWaylandClipboard *clipboard = 0;
 
-class QWaylandMimeData : public QInternalMimeData
+class QWaylandClipboardMimeData : public QInternalMimeData
 {
 public:
     void clearAll();
@@ -64,28 +65,28 @@ private:
     QStringList mFormatList;
 };
 
-void QWaylandMimeData::clearAll()
+void QWaylandClipboardMimeData::clearAll()
 {
     clear();
     mFormatList.clear();
 }
 
-void QWaylandMimeData::setFormats(const QStringList &formatList)
+void QWaylandClipboardMimeData::setFormats(const QStringList &formatList)
 {
     mFormatList = formatList;
 }
 
-bool QWaylandMimeData::hasFormat_sys(const QString &mimeType) const
+bool QWaylandClipboardMimeData::hasFormat_sys(const QString &mimeType) const
 {
     return formats().contains(mimeType);
 }
 
-QStringList QWaylandMimeData::formats_sys() const
+QStringList QWaylandClipboardMimeData::formats_sys() const
 {
     return mFormatList;
 }
 
-QVariant QWaylandMimeData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
+QVariant QWaylandClipboardMimeData::retrieveData_sys(const QString &mimeType, QVariant::Type type) const
 {
     return clipboard->retrieveData(mimeType, type);
 }
@@ -147,7 +148,7 @@ void QWaylandSelection::send(void *data,
     Q_UNUSED(selection);
     QWaylandSelection *self = static_cast<QWaylandSelection *>(data);
     QString mimeType = QString::fromLatin1(mime_type);
-    QByteArray content = self->mMimeData->data(mimeType);
+    QByteArray content = QWaylandMimeHelper::getByteArray(self->mMimeData, mimeType);
     if (!content.isEmpty()) {
         QFile f;
         if (f.open(fd, QIODevice::WriteOnly))
@@ -230,7 +231,7 @@ QMimeData *QWaylandClipboard::mimeData(QClipboard::Mode mode)
     if (!mSelections.isEmpty())
         return mSelections.last()->mMimeData;
     if (!mMimeDataIn)
-        mMimeDataIn = new QWaylandMimeData;
+        mMimeDataIn = new QWaylandClipboardMimeData;
     mMimeDataIn->clearAll();
     if (!mOfferedMimeTypes.isEmpty() && mOffer)
         mMimeDataIn->setFormats(mOfferedMimeTypes);
