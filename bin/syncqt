@@ -777,8 +777,8 @@ die "Cannot automatically detect/use provided path to QtBase's build directory!\
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
 
-my @ignore_headers = ();
 my $class_lib_map_contents = "";
+our @ignore_headers = ();
 our @ignore_for_master_contents = ();
 our @ignore_for_include_check = ();
 our @ignore_for_qt_begin_header_check = ();
