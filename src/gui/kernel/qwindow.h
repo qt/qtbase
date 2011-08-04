@@ -45,6 +45,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
 #include <QtCore/QMargins>
+#include <QtCore/QRect>
 
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
@@ -157,6 +158,16 @@ public:
     void setGeometry(const QRect &rect);
     QRect geometry() const;
 
+    inline int width() const { return geometry().width(); }
+    inline int height() const { return geometry().height(); }
+    inline int x() const { return geometry().x(); }
+    inline int y() const { return geometry().y(); }
+
+    inline QSize size() const { return geometry().size(); }
+    inline QPoint pos() const { return geometry().topLeft(); }
+
+    inline void resize(const QSize &size) { setGeometry(QRect(pos(), size)); }
+
     QMargins frameMargins() const;
 
     void setWindowIcon(const QImage &icon) const;
@@ -207,6 +218,8 @@ protected:
 #ifndef QT_NO_WHEELEVENT
     virtual void wheelEvent(QWheelEvent *);
 #endif
+
+    QWindow(QWindowPrivate &dd, QWindow *parent);
 
 private:
     QPlatformSurface *surfaceHandle() const;

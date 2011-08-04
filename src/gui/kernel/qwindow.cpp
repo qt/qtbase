@@ -80,6 +80,19 @@ QWindow::QWindow(QWindow *parent)
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
+QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
+    : QObject(dd, parent)
+    , QSurface(QSurface::Window)
+{
+    Q_D(QWindow);
+    d->parentWindow = parent;
+    if (parent)
+        d->screen = parent->screen();
+    if (!d->screen)
+        d->screen = QGuiApplication::primaryScreen();
+    QGuiApplicationPrivate::window_list.prepend(this);
+}
+
 QWindow::~QWindow()
 {
     if (QGuiApplicationPrivate::active_window == this)
