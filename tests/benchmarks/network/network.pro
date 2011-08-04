@@ -2,12 +2,16 @@ TEMPLATE = subdirs
 SUBDIRS = \
         access \
         kernel \
-        ssl \
         socket
 
 TRUSTED_BENCHMARKS += \
     kernel/qhostinfo \
-    socket/qtcpserver \
-    ssl/qsslsocket
+    socket/qtcpserver
+
+contains(QT_CONFIG, openssl) {
+   SUBDIRS += ssl
+   TRUSTED_BENCHMARKS += ssl/qsslsocket
+}
 
 include(../trusted-benchmarks.pri)
+
