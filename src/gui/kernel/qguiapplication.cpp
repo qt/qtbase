@@ -510,6 +510,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::ActivatedWindow:
         QGuiApplicationPrivate::processActivatedEvent(static_cast<QWindowSystemInterfacePrivate::ActivatedWindowEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::WindowStateChanged:
+        QGuiApplicationPrivate::processWindowStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowStateChangedEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Close:
         QGuiApplicationPrivate::processCloseEvent(
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
@@ -688,6 +691,15 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     QGuiApplicationPrivate::active_window = e->activated.data();
     if (self)
         self->notifyActiveWindowChange(previous);
+}
+
+void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
+{
+    if (QWindow *window  = wse->window.data()) {
+        QWindowStateChangeEvent e(window->windowState());
+        window->d_func()->windowState = wse->newState;
+        QGuiApplication::sendSpontaneousEvent(window, &e);
+    }
 }
 
 void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)

@@ -76,6 +76,7 @@ protected:
     void handleWheelEvent(QWheelEvent *);
     void handleDragEvent(QEvent *);
     void handleExposeEvent(QExposeEvent *);
+    void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
 
 private:
     void updateGeometry();

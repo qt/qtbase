@@ -99,6 +99,7 @@ public:
     static void handleEnterEvent(QWindow *w);
     static void handleLeaveEvent(QWindow *w);
     static void handleWindowActivated(QWindow *w);
+    static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
     static void handleMapEvent(QWindow *w);
     static void handleUnmapEvent(QWindow *w);

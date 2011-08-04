@@ -114,6 +114,10 @@ bool QWidgetWindow::event(QEvent *event)
         handleExposeEvent(static_cast<QExposeEvent *>(event));
         return true;
 
+    case QEvent::WindowStateChange:
+        handleWindowStateChangedEvent(static_cast<QWindowStateChangeEvent *>(event));
+        return true;
+
     default:
         break;
     }
@@ -383,6 +387,16 @@ void QWidgetWindow::handleDragEvent(QEvent *event)
 void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 {
     m_widget->d_func()->syncBackingStore(event->region());
+}
+
+void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event)
+{
+    // QWindow does currently not know 'active'.
+    Qt::WindowStates eventState = event->oldState();
+    if (m_widget->windowState() & Qt::WindowActive)
+        eventState |= Qt::WindowActive;
+    QWindowStateChangeEvent widgetEvent(eventState);
+    QGuiApplication::sendSpontaneousEvent(m_widget, &widgetEvent);
 }
 
 QT_END_NAMESPACE

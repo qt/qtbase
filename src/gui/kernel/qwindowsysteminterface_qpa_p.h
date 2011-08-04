@@ -55,6 +55,7 @@ public:
         Enter,
         Leave,
         ActivatedWindow,
+        WindowStateChanged,
         Mouse,
         Wheel,
         Key,
@@ -69,14 +70,14 @@ public:
 
     class WindowSystemEvent {
     public:
-        WindowSystemEvent(EventType t)
+        explicit WindowSystemEvent(EventType t)
             : type(t) { }
         EventType type;
     };
 
     class CloseEvent : public WindowSystemEvent {
     public:
-        CloseEvent(QWindow *w)
+        explicit CloseEvent(QWindow *w)
             : WindowSystemEvent(Close), window(w) { }
         QWeakPointer<QWindow> window;
     };
@@ -92,7 +93,7 @@ public:
 
     class EnterEvent : public WindowSystemEvent {
     public:
-        EnterEvent(QWindow *enter)
+        explicit EnterEvent(QWindow *enter)
             : WindowSystemEvent(Enter), enter(enter)
         { }
         QWeakPointer<QWindow> enter;
@@ -100,7 +101,7 @@ public:
 
     class LeaveEvent : public WindowSystemEvent {
     public:
-        LeaveEvent(QWindow *leave)
+        explicit LeaveEvent(QWindow *leave)
             : WindowSystemEvent(Leave), leave(leave)
         { }
         QWeakPointer<QWindow> leave;
@@ -108,10 +109,20 @@ public:
 
     class ActivatedWindowEvent : public WindowSystemEvent {
     public:
-        ActivatedWindowEvent(QWindow *activatedWindow)
+        explicit ActivatedWindowEvent(QWindow *activatedWindow)
             : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
         { }
         QWeakPointer<QWindow> activated;
+    };
+
+    class WindowStateChangedEvent : public WindowSystemEvent {
+    public:
+        WindowStateChangedEvent(QWindow *_window, Qt::WindowState _newState)
+            : WindowSystemEvent(WindowStateChanged), window(_window), newState(_newState)
+        { }
+
+        QWeakPointer<QWindow> window;
+        Qt::WindowState newState;
     };
 
     class UserEvent : public WindowSystemEvent {

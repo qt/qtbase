@@ -80,6 +80,13 @@ void QWindowSystemInterface::handleWindowActivated(QWindow *tlw)
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowState newState)
+{
+    QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
+        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(tlw, newState);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect)
 {
     QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);

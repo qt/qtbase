@@ -114,6 +114,7 @@ public:
     static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
 
     static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
+    static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
