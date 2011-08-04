@@ -41,4 +41,4 @@ symbian {
     LIBS+=-lefsrv
 }
 
-CONFIG+=insignificant_test
+mac*:CONFIG+=insignificant_test

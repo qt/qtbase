@@ -267,29 +267,29 @@ bool QLibraryPrivate::unload_sys()
 }
 
 #ifdef Q_OS_MAC
-Q_CORE_EXPORT void *qt_mac_resolve_sys(void *handle, const char *symbol)
+Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symbol)
 {
-    return dlsym(handle, symbol);
+    return QFunctionPointer(dlsym(handle, symbol));
 }
 #endif
 
-void* QLibraryPrivate::resolve_sys(const char* symbol)
+QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
 #if defined(QT_AOUT_UNDERSCORE)
     // older a.out systems add an underscore in front of symbols
     char* undrscr_symbol = new char[strlen(symbol)+2];
     undrscr_symbol[0] = '_';
     strcpy(undrscr_symbol+1, symbol);
-    void* address = dlsym(pHnd, undrscr_symbol);
+    QFunctionPointer address = QFunctionPointer(dlsym(pHnd, undrscr_symbol));
     delete [] undrscr_symbol;
 #elif defined(QT_HPUX_LD)
-    void* address = 0;
+    QFunctionPointer address = 0;
     if (shl_findsym((shl_t*)&pHnd, symbol, TYPE_UNDEFINED, &address) < 0)
         address = 0;
 #elif defined (QT_NO_DYNAMIC_LIBRARY)
-    void *address = 0;
+    QFunctionPointer address = 0;
 #else
-    void* address = dlsym(pHnd, symbol);
+    QFunctionPointer address = QFunctionPointer(dlsym(pHnd, symbol));
 #endif
     if (!address) {
         errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(

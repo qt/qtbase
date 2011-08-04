@@ -317,8 +317,6 @@ QT_BEGIN_NAMESPACE
     \value Vertical
     \value Wide
 
-    \omitvalue Single
-
     \sa decomposition()
 */
 
@@ -382,12 +380,6 @@ QT_BEGIN_NAMESPACE
     \value ByteOrderSwapped
     \value ParagraphSeparator
     \value LineSeparator
-
-    \omitvalue null
-    \omitvalue replacement
-    \omitvalue byteOrderMark
-    \omitvalue byteOrderSwapped
-    \omitvalue nbsp
 */
 
 /*!
@@ -957,7 +949,7 @@ QString QChar::decomposition(uint ucs4)
 
 /*!
     Returns the tag defining the composition of the character. Returns
-    QChar::Single if no decomposition exists.
+    QChar::NoDecomposition if no decomposition exists.
 */
 QChar::Decomposition QChar::decompositionTag() const
 {
@@ -967,7 +959,7 @@ QChar::Decomposition QChar::decompositionTag() const
 /*!
     \overload
     Returns the tag defining the composition of the UCS-4-encoded character
-    specified by \a ucs4. Returns QChar::Single if no decomposition exists.
+    specified by \a ucs4. Returns QChar::NoDecomposition if no decomposition exists.
 */
 QChar::Decomposition QChar::decompositionTag(uint ucs4)
 {
@@ -1231,7 +1223,6 @@ ushort QChar::toCaseFolded(ushort ucs2)
 {
     return ucs2 + qGetProp(ucs2)->caseFoldDiff;
 }
-
 
 /*!
     \fn char QChar::toLatin1() const

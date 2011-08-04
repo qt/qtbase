@@ -5,12 +5,6 @@ QT += widgets widgets-private core-private gui-private network
 RESOURCES += qimagereader.qrc
 !symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-!contains(QT_CONFIG, no-gif):DEFINES += QTEST_HAVE_GIF
-!contains(QT_CONFIG, no-jpeg):DEFINES += QTEST_HAVE_JPEG
-!contains(QT_CONFIG, no-mng):DEFINES += QTEST_HAVE_MNG
-!contains(QT_CONFIG, no-tiff):DEFINES += QTEST_HAVE_TIFF
-!contains(QT_CONFIG, no-svg):DEFINES += QTEST_HAVE_SVG
-
 win32-msvc:QMAKE_CXXFLAGS -= -Zm200
 win32-msvc:QMAKE_CXXFLAGS += -Zm800
 win32-msvc.net:QMAKE_CXXFLAGS -= -Zm300
@@ -40,5 +34,3 @@ symbian: {
         DEPLOYMENT += imagePlugins
     }
 }
-
-CONFIG+=insignificant_test

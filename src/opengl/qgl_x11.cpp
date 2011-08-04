@@ -347,13 +347,13 @@ static void find_trans_colors()
   QGLFormat UNIX/GLX-specific code
  *****************************************************************************/
 
-void* qglx_getProcAddress(const char* procName)
+void (*qglx_getProcAddress(const char* procName))()
 {
     // On systems where the GL driver is pluggable (like Mesa), we have to use
     // the glXGetProcAddressARB extension to resolve other function pointers as
     // the symbols wont be in the GL library, but rather in a plugin loaded by
     // the GL library.
-    typedef void* (*qt_glXGetProcAddressARB)(const char *);
+    typedef void (*(*qt_glXGetProcAddressARB)(const char *))();
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
     static bool triedResolvingGlxGetProcAddress = false;
     if (!triedResolvingGlxGetProcAddress) {
@@ -378,7 +378,7 @@ void* qglx_getProcAddress(const char* procName)
         }
     }
 
-    void *procAddress = 0;
+    void (*procAddress)() = 0;
     if (glXGetProcAddressARB)
         procAddress = glXGetProcAddressARB(procName);
 
@@ -387,7 +387,7 @@ void* qglx_getProcAddress(const char* procName)
     if (!procAddress) {
         void *handle = dlopen(NULL, RTLD_LAZY);
         if (handle) {
-            procAddress = dlsym(handle, procName);
+            procAddress = (void (*)())dlsym(handle, procName);
             dlclose(handle);
         }
     }

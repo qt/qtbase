@@ -316,7 +316,7 @@
     Now we construct the \c FlippablePad item, passing its column-row count to
     its constructor.
 
-    The pad is constrolled by three transformations, and we create one
+    The pad is controlled by three transformations, and we create one
     QGraphicsRotation object for each of these.
 
     \list

@@ -93,7 +93,7 @@ static _glXMakeContextCurrent qt_glXMakeContextCurrent = 0;
 #define glXGetFBConfigAttrib qt_glXGetFBConfigAttrib
 #define glXMakeContextCurrent qt_glXMakeContextCurrent
 
-extern void* qglx_getProcAddress(const char* procName); // in qgl_x11.cpp
+extern void (*qglx_getProcAddress(const char* procName))(); // in qgl_x11.cpp
 
 static bool qt_resolve_pbuffer_extensions()
 {

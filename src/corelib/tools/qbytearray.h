@@ -133,10 +133,10 @@ struct QByteArrayData
     inline const char *data() const { return d + sizeof(qptrdiff) + offset; }
 };
 
-template<int n> struct QConstByteArrayData
+template<int N> struct QConstByteArrayData
 {
     const QByteArrayData ba;
-    const char data[n];
+    const char data[N + 1];
 };
 
 template<int N> struct QConstByteArrayDataPtr
@@ -146,10 +146,10 @@ template<int N> struct QConstByteArrayDataPtr
 
 
 #if defined(Q_COMPILER_LAMBDA)
-#  define QByteArrayLiteral(str) ([]() { \
-        enum { Size = sizeof(str) }; \
+#  define QByteArrayLiteral(str) ([]() -> QConstByteArrayDataPtr<sizeof(str) - 1> { \
+        enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
     return holder; }())
 
@@ -160,9 +160,9 @@ template<int N> struct QConstByteArrayDataPtr
 
 #  define QByteArrayLiteral(str) \
     __extension__ ({ \
-        enum { Size = sizeof(str) }; \
+        enum { Size = sizeof(str) - 1 }; \
         static const QConstByteArrayData<Size> qbytearray_literal = \
-        { { Q_REFCOUNT_INITIALIZER(-1), Size -1, 0, 0, { 0 } }, str }; \
+        { { Q_REFCOUNT_INITIALIZER(-1), Size, 0, 0, { 0 } }, str }; \
         QConstByteArrayDataPtr<Size> holder = { &qbytearray_literal }; \
         holder; })
 #endif
@@ -439,10 +439,10 @@ inline int QByteArray::capacity() const
 { return d->alloc; }
 
 inline void QByteArray::reserve(int asize)
-{ if (d->ref != 1 || asize > d->alloc) realloc(asize); d->capacityReserved = true; }
+{ if (d->ref != 1 || asize > int(d->alloc)) realloc(asize); d->capacityReserved = true; }
 
 inline void QByteArray::squeeze()
-{ if (d->size < d->alloc) realloc(d->size); d->capacityReserved = false; }
+{ if (d->size < int(d->alloc)) realloc(d->size); d->capacityReserved = false; }
 
 class Q_CORE_EXPORT QByteRef {
     QByteArray &a;

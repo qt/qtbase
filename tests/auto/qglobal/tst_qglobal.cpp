@@ -130,10 +130,12 @@ void tst_QGlobal::qInternalCallbacks()
     QInternal::unregisterCallback(QInternal::DisconnectCallback, disconnect_callback);
 
     connect_info.reset();
+    QTest::ignoreMessage(QtWarningMsg, "Object::connect: No such signal QObject::mysignal(x)");
     ok = QObject::connect(&a, signal.toLatin1(), &b, slot.toLatin1(), Qt::AutoConnection);
     QVERIFY(!ok);
     QCOMPARE(connect_info.sender, (QObject *) 0);
 
+    QTest::ignoreMessage(QtWarningMsg, "Object::disconnect: No such signal QObject::mysignal(x)");
     ok = QObject::disconnect(&a, signal.toLatin1(), &b, slot.toLatin1());
     QVERIFY(!ok);
     QCOMPARE(connect_info.sender, (QObject *) 0);

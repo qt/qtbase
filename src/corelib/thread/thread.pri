@@ -24,8 +24,7 @@ SOURCES += thread/qatomic.cpp \
            thread/qthread.cpp \
            thread/qthreadstorage.cpp
 
-unix:!symbian:SOURCES += thread/qmutex_unix.cpp \
-                         thread/qthread_unix.cpp \
+unix:!symbian:SOURCES += thread/qthread_unix.cpp \
                          thread/qwaitcondition_unix.cpp
 
 symbian:SOURCES += thread/qmutex_symbian.cpp \
@@ -39,3 +38,9 @@ win32:SOURCES += thread/qmutex_win.cpp \
 integrity:SOURCES += thread/qmutex_unix.cpp \
                 thread/qthread_unix.cpp \
 		thread/qwaitcondition_unix.cpp
+
+unix: {
+    macx-*       { SOURCES += thread/qmutex_mac.cpp }
+    else:linux-* { SOURCES += thread/qmutex_linux.cpp }
+    else         { SOURCES += thread/qmutex_unix.cpp }
+}

@@ -2,7 +2,7 @@ load(exclusive_builds)
 ### Qt 5: remove "uic" and "resources" - or add "qt"
 CONFIG = lex yacc warn_on debug uic resources $$CONFIG
 
-exists($$_PRO_FILE_PWD_/sync.profile) {
+!build_pass:exists($$_PRO_FILE_PWD_/sync.profile) {
     PRO_BASENAME = $$basename(_PRO_FILE_)
 
     # Try to detect proper QTDIR path. We require QTDIR, as syncqt uses that to create qt_module.pri
@@ -31,7 +31,7 @@ exists($$_PRO_FILE_PWD_/sync.profile) {
 
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
 
-    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -outdir $$OUT_PWD $$_PRO_FILE_PWD_)
+    MSG = $$quote($$QMAKE_SYNCQT $$QTFWD -generator $$MAKEFILE_GENERATOR -outdir $$OUT_PWD $$_PRO_FILE_PWD_)
     !silent:message($$MSG)
     system($$MSG) {
         # success! Nothing to do

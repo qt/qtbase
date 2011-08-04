@@ -491,7 +491,7 @@ void tst_QWaitCondition::wakeOne()
         for (int y = 0; y < ThreadCount; ++y) {
             if (thread_exited[y])
                         continue;
-            if (thread[y].wait(exited > 0 ? 3 : 1000)) {
+            if (thread[y].wait(exited > 0 ? 10 : 1000)) {
                 thread_exited[y] = TRUE;
                 ++exited;
             }
@@ -535,7 +535,7 @@ void tst_QWaitCondition::wakeOne()
         for (int y = 0; y < ThreadCount; ++y) {
             if (thread_exited[y])
                         continue;
-            if (rwthread[y].wait(exited > 0 ? 3 : 1000)) {
+            if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
                 thread_exited[y] = TRUE;
                 ++exited;
             }
@@ -587,7 +587,7 @@ void tst_QWaitCondition::wakeOne()
         for (int y = 0; y < ThreadCount; ++y) {
             if (thread_exited[y])
                         continue;
-            if (thread[y].wait(exited > 0 ? 3 : 1000)) {
+            if (thread[y].wait(exited > 0 ? 10 : 1000)) {
                 thread_exited[y] = TRUE;
                 ++exited;
             }
@@ -633,7 +633,7 @@ void tst_QWaitCondition::wakeOne()
         for (int y = 0; y < ThreadCount; ++y) {
             if (thread_exited[y])
                         continue;
-            if (rwthread[y].wait(exited > 0 ? 3 : 1000)) {
+            if (rwthread[y].wait(exited > 0 ? 10 : 1000)) {
                 thread_exited[y] = TRUE;
                 ++exited;
             }

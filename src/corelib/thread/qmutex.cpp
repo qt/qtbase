@@ -49,7 +49,24 @@
 #include "qthread.h"
 #include "qmutex_p.h"
 
+#ifndef Q_OS_LINUX
+#include "private/qfreelist_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
+
+/*!
+    \class QBasicMutex
+    \brief QMutex POD
+    \internal
+
+    \ingroup thread
+
+    - Can be used as global static object.
+    - Always non-recursive
+    - Do not use tryLock with timeout > 0, else you can have a leak (see the ~QMutex destructor)
+*/
+
 
 /*!
     \class QMutex
@@ -122,8 +139,12 @@ QT_BEGIN_NAMESPACE
     \sa lock(), unlock()
 */
 QMutex::QMutex(RecursionMode mode)
-    : d(new QMutexPrivate(mode))
-{ }
+{
+    if (mode == Recursive)
+        d = new QRecursiveMutexPrivate;
+    else
+        d = 0;
+}
 
 /*!
     Destroys the mutex.
@@ -131,9 +152,18 @@ QMutex::QMutex(RecursionMode mode)
     \warning Destroying a locked mutex may result in undefined behavior.
 */
 QMutex::~QMutex()
-{ delete static_cast<QMutexPrivate *>(d); }
+{
+    if (isRecursive())
+        delete static_cast<QRecursiveMutexPrivate *>(d._q_value);
+    else if (d) {
+#ifndef Q_OS_LINUX
+        if (d->possiblyUnlocked && tryLock()) { unlock(); return; }
+#endif
+        qWarning("QMutex: destroying locked mutex");
+    }
+}
 
-/*!
+/*! \fn void QMutex::lock()
     Locks the mutex. If another thread has locked the mutex then this
     call will block until that thread has unlocked it.
 
@@ -145,40 +175,8 @@ QMutex::~QMutex()
 
     \sa unlock()
 */
-void QMutex::lock()
-{
-    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-    Qt::HANDLE self;
 
-    if (d->recursive) {
-        self = QThread::currentThreadId();
-        if (d->owner == self) {
-            ++d->count;
-            Q_ASSERT_X(d->count != 0, "QMutex::lock", "Overflow in recursion counter");
-            return;
-        }
-
-        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
-        if (!isLocked) {
-            // didn't get the lock, wait for it
-            isLocked = d->wait();
-            Q_ASSERT_X(isLocked, "QMutex::lock",
-                       "Internal error, infinite wait has timed out.");
-        }
-
-        d->owner = self;
-        ++d->count;
-        Q_ASSERT_X(d->count != 0, "QMutex::lock", "Overflow in recursion counter");
-        return;
-    }
-
-    bool isLocked = d->contenders.testAndSetAcquire(0, 1);
-    if (!isLocked) {
-        lockInternal();
-    }
-}
-
-/*!
+/*!\fn bool QMutex::trylock()
     Attempts to lock the mutex. If the lock was obtained, this function
     returns true. If another thread has locked the mutex, this
     function returns false immediately.
@@ -195,36 +193,9 @@ void QMutex::lock()
 
     \sa lock(), unlock()
 */
-bool QMutex::tryLock()
-{
-    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-    Qt::HANDLE self;
 
-    if (d->recursive) {
-        self = QThread::currentThreadId();
-        if (d->owner == self) {
-            ++d->count;
-            Q_ASSERT_X(d->count != 0, "QMutex::tryLock", "Overflow in recursion counter");
-            return true;
-        }
-
-        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
-        if (!isLocked) {
-            // some other thread has the mutex locked, or we tried to
-            // recursively lock an non-recursive mutex
-            return isLocked;
-        }
-
-        d->owner = self;
-        ++d->count;
-        Q_ASSERT_X(d->count != 0, "QMutex::tryLock", "Overflow in recursion counter");
-        return isLocked;
-    }
-
-    return d->contenders.testAndSetAcquire(0, 1);
-}
-
-/*! \overload
+/*! \fn bool QMutex::tryLock(int timeout)
+     \overload
 
     Attempts to lock the mutex. This function returns true if the lock
     was obtained; otherwise it returns false. If another thread has
@@ -247,81 +218,30 @@ bool QMutex::tryLock()
 
     \sa lock(), unlock()
 */
-bool QMutex::tryLock(int timeout)
-{
-    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-    Qt::HANDLE self;
-
-    if (d->recursive) {
-        self = QThread::currentThreadId();
-        if (d->owner == self) {
-            ++d->count;
-            Q_ASSERT_X(d->count != 0, "QMutex::tryLock", "Overflow in recursion counter");
-            return true;
-        }
-
-        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
-        if (!isLocked) {
-            // didn't get the lock, wait for it
-            isLocked = d->wait(timeout);
-            if (!isLocked)
-                return false;
-        }
-
-        d->owner = self;
-        ++d->count;
-        Q_ASSERT_X(d->count != 0, "QMutex::tryLock", "Overflow in recursion counter");
-        return true;
-    }
-
-    return (d->contenders.testAndSetAcquire(0, 1)
-            // didn't get the lock, wait for it
-            || d->wait(timeout));
-}
 
 
-/*!
+/*! \fn void QMutex::unlock()
     Unlocks the mutex. Attempting to unlock a mutex in a different
     thread to the one that locked it results in an error. Unlocking a
     mutex that is not locked results in undefined behavior.
 
     \sa lock()
 */
-void QMutex::unlock()
-{
-    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-    if (d->recursive) {
-        if (!--d->count) {
-            d->owner = 0;
-            if (!d->contenders.testAndSetRelease(1, 0))
-                d->wakeUp();
-        }
-    } else {
-        if (!d->contenders.testAndSetRelease(1, 0))
-            d->wakeUp();
-    }
-}
 
 /*!
-    \fn bool QMutex::locked()
+    \fn void QMutex::isRecursive()
+    \since 5.0
 
-    Returns true if the mutex is locked by another thread; otherwise
-    returns false.
+    Returns true if the mutex is recursive
 
-    It is generally a bad idea to use this function, because code
-    that uses it has a race condition. Use tryLock() and unlock()
-    instead.
-
-    \oldcode
-        bool isLocked = mutex.locked();
-    \newcode
-        bool isLocked = true;
-        if (mutex.tryLock()) {
-            mutex.unlock();
-            isLocked = false;
-        }
-    \endcode
 */
+bool QBasicMutex::isRecursive() {
+    QMutexPrivate *d = this->d;
+    if (quintptr(d) <= 0x3)
+        return false;
+    return d->recursive;
+}
+
 
 /*!
     \class QMutexLocker
@@ -418,96 +338,217 @@ void QMutex::unlock()
     \sa unlock()
 */
 
+#ifndef Q_OS_LINUX //linux implementation is in qmutex_linux.cpp
 /*!
-    \fn QMutex::QMutex(bool recursive)
-
-    Use the constructor that takes a RecursionMode parameter instead.
-*/
-
-/*!
-    \internal helper for lockInline()
+    \internal helper for lock()
  */
-void QMutex::lockInternal()
+bool QBasicMutex::lockInternal(int timeout)
 {
-    QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
+    while (!fastTryLock()) {
+        QMutexPrivate *d = this->d;
+        if (!d) // if d is 0, the mutex is unlocked
+            continue;
 
-    if (QThread::idealThreadCount() == 1) {
-        // don't spin on single cpu machines
-        bool isLocked = d->wait();
-        Q_ASSERT_X(isLocked, "QMutex::lock",
-                   "Internal error, infinite wait has timed out.");
-        Q_UNUSED(isLocked);
-        return;
-    }
-
-    QElapsedTimer elapsedTimer;
-    elapsedTimer.start();
-    do {
-        qint64 spinTime = elapsedTimer.nsecsElapsed();
-        if (spinTime > d->maximumSpinTime) {
-            // didn't get the lock, wait for it, since we're not going to gain anything by spinning more
-            elapsedTimer.start();
-            bool isLocked = d->wait();
-            Q_ASSERT_X(isLocked, "QMutex::lock",
-                       "Internal error, infinite wait has timed out.");
-            Q_UNUSED(isLocked);
-
-            qint64 maximumSpinTime = d->maximumSpinTime;
-            qint64 averageWaitTime = d->averageWaitTime;
-            qint64 actualWaitTime = elapsedTimer.nsecsElapsed();
-            if (actualWaitTime < (QMutexPrivate::MaximumSpinTimeThreshold * 3 / 2)) {
-                // measure the wait times
-                averageWaitTime = d->averageWaitTime = qMin((averageWaitTime + actualWaitTime) / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+        if (d == dummyLocked()) {
+            if (timeout == 0)
+                return false;
+            QMutexPrivate *newD = QMutexPrivate::allocate();
+            if (!this->d.testAndSetOrdered(d, newD)) {
+                //Either the mutex is already unlocked, or another thread already set it.
+                newD->deref();
+                continue;
             }
-
-            // adjust the spin count when spinning does not benefit contention performance
-            if ((spinTime + actualWaitTime) - qint64(QMutexPrivate::MaximumSpinTimeThreshold) >= qint64(QMutexPrivate::MaximumSpinTimeThreshold)) {
-                // long waits, stop spinning
-                d->maximumSpinTime = 0;
-            } else {
-                // allow spinning if wait times decrease, but never spin more than the average wait time (otherwise we may perform worse)
-                d->maximumSpinTime = qBound(qint64(averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
-            }
-            return;
+            d = newD;
+            //the d->refCount is already 1 the deref will occurs when we unlock
+        } else if (d->recursive) {
+             return static_cast<QRecursiveMutexPrivate *>(d)->lock(timeout);
         }
-        // be a good citizen... yielding lets something else run if there is something to run, but may also relieve memory pressure if not
-        QThread::yieldCurrentThread();
-    } while (d->contenders != 0 || !d->contenders.testAndSetAcquire(0, 1));
 
-    // spinning is working, do not change the spin time (unless we are using much less time than allowed to spin)
-    qint64 maximumSpinTime = d->maximumSpinTime;
-    qint64 spinTime = elapsedTimer.nsecsElapsed();
-    if (spinTime < maximumSpinTime / 2) {
-        // we are using much less time than we need, adjust the limit
-        d->maximumSpinTime = qBound(qint64(d->averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+        if (timeout == 0 && !d->possiblyUnlocked)
+            return false;
+
+        if (!d->ref())
+            continue; //that QMutexPrivate was already released
+
+        if (d != this->d) {
+            //Either the mutex is already unlocked, or relocked with another mutex
+            d->deref();
+            continue;
+        }
+
+        int old_waiters;
+        do {
+            old_waiters = d->waiters;
+            if (old_waiters == -QMutexPrivate::BigNumber) {
+                // we are unlocking, and the thread that unlocks is about to change d to 0
+                // we try to aquire the mutex by changing to dummyLocked()
+                if (this->d.testAndSetAcquire(d, dummyLocked())) {
+                    // Mutex aquired
+                    Q_ASSERT(d->waiters == -QMutexPrivate::BigNumber || d->waiters == 0);
+                    d->waiters = 0;
+                    d->deref();
+                    return true;
+                } else {
+                    Q_ASSERT(d != this->d); //else testAndSetAcquire should have succeeded
+                    // Mutex is likely to bo 0, we should continue the outer-loop,
+                    //  set old_waiters to the magic value of BigNumber
+                    old_waiters = QMutexPrivate::BigNumber;
+                    break;
+                }
+            }
+        } while (!d->waiters.testAndSetRelaxed(old_waiters, old_waiters + 1));
+
+        if (d != this->d) {
+            // Mutex was unlocked.
+            if (old_waiters != QMutexPrivate::BigNumber) {
+                //we did not break the previous loop
+                Q_ASSERT(d->waiters >= 1);
+                d->waiters.deref();
+            }
+            d->deref();
+            continue;
+        }
+
+        if (d->wait(timeout)) {
+            if (d->possiblyUnlocked && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+                d->deref();
+            d->derefWaiters(1);
+            //we got the lock. (do not deref)
+            Q_ASSERT(d == this->d);
+            return true;
+        } else {
+            Q_ASSERT(timeout >= 0);
+            //timeout
+            d->derefWaiters(1);
+            //There may be a race in which the mutex is unlocked right after we timed out,
+            // and before we deref the waiters, so maybe the mutex is actually unlocked.
+            if (!d->possiblyUnlocked.testAndSetRelaxed(false, true))
+                d->deref();
+            return false;
+        }
     }
+    Q_ASSERT(this->d);
+    return true;
 }
 
 /*!
     \internal
 */
-void QMutex::unlockInternal()
+void QBasicMutex::unlockInternal()
 {
-    static_cast<QMutexPrivate *>(d)->wakeUp();
+    QMutexPrivate *d = this->d;
+    Q_ASSERT(d); //we must be locked
+    Q_ASSERT(d != dummyLocked()); // testAndSetRelease(dummyLocked(), 0) failed
+
+    if (d->recursive) {
+        static_cast<QRecursiveMutexPrivate *>(d)->unlock();
+        return;
+    }
+
+    if (d->waiters.fetchAndAddRelease(-QMutexPrivate::BigNumber) == 0) {
+        //there is no one waiting on this mutex anymore, set the mutex as unlocked (d = 0)
+        if (this->d.testAndSetRelease(d, 0)) {
+            if (d->possiblyUnlocked && d->possiblyUnlocked.testAndSetRelaxed(true, false))
+                d->deref();
+        }
+        d->derefWaiters(0);
+    } else {
+        d->derefWaiters(0);
+        //there are thread waiting, transfer the lock.
+        d->wakeUp();
+    }
+    d->deref();
+}
+
+//The freelist managment
+namespace {
+struct FreeListConstants : QFreeListDefaultConstants {
+    enum { BlockCount = 4, MaxIndex=0xffff };
+    static const int Sizes[BlockCount];
+};
+const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
+    16,
+    128,
+    1024,
+    FreeListConstants::MaxIndex - (16-128-1024)
+};
+
+typedef QFreeList<QMutexPrivate, FreeListConstants> FreeList;
+Q_GLOBAL_STATIC(FreeList, freelist);
+}
+
+QMutexPrivate *QMutexPrivate::allocate()
+{
+    int i = freelist()->next();
+    QMutexPrivate *d = &(*freelist())[i];
+    d->id = i;
+    Q_ASSERT(d->refCount == 0);
+    Q_ASSERT(!d->recursive);
+    Q_ASSERT(!d->possiblyUnlocked);
+    Q_ASSERT(d->waiters == 0);
+    d->refCount = 1;
+    return d;
+}
+
+void QMutexPrivate::release()
+{
+    Q_ASSERT(!recursive);
+    Q_ASSERT(refCount == 0);
+    Q_ASSERT(!possiblyUnlocked);
+    Q_ASSERT(waiters == 0);
+    freelist()->release(id);
+}
+
+// atomically substract "value" to the waiters, and remove the QMutexPrivate::BigNumber flag
+void QMutexPrivate::derefWaiters(int value)
+{
+    int old_waiters;
+    int new_waiters;
+    do {
+        old_waiters = waiters;
+        new_waiters = old_waiters;
+        if (new_waiters < 0) {
+            new_waiters += QMutexPrivate::BigNumber;
+        }
+        new_waiters -= value;
+    } while (!waiters.testAndSetRelaxed(old_waiters, new_waiters));
+}
+#endif
+
+/*!
+   \internal
+ */
+bool QRecursiveMutexPrivate::lock(int timeout) {
+    Qt::HANDLE self = QThread::currentThreadId();
+    if (owner == self) {
+        ++count;
+        Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
+        return true;
+    }
+    bool success = true;
+    if (timeout == -1) {
+        mutex.lock();
+    } else {
+        success = mutex.tryLock(timeout);
+    }
+
+    if (success)
+        owner = self;
+    return success;
 }
 
 /*!
-   \fn QMutex::lockInline()
    \internal
-   inline version of QMutex::lock()
-*/
-
-/*!
-   \fn QMutex::unlockInline()
-   \internal
-   inline version of QMutex::unlock()
-*/
-
-/*!
-   \fn QMutex::tryLockInline()
-   \internal
-   inline version of QMutex::tryLock()
-*/
+ */
+void QRecursiveMutexPrivate::unlock()
+{
+    if (count > 0) {
+        count--;
+    } else {
+        owner = 0;
+        mutex.unlock();
+    }
+}
 
 
 QT_END_NAMESPACE

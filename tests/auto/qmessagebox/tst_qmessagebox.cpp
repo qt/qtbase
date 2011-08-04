@@ -127,9 +127,7 @@ private slots:
     void shortcut();
 
     void staticSourceCompat();
-    void staticBinaryCompat();
     void instanceSourceCompat();
-    void instanceBinaryCompat();
 
     void testSymbols();
     void incorrectDefaultButton();
@@ -407,19 +405,6 @@ void tst_QMessageBox::about()
 #endif
 }
 
-// Old message box enums
-const int Old_Ok = 1;
-const int Old_Cancel = 2;
-const int Old_Yes = 3;
-const int Old_No = 4;
-const int Old_Abort = 5;
-const int Old_Retry = 6;
-const int Old_Ignore = 7;
-const int Old_YesAll = 8;
-const int Old_NoAll = 9;
-const int Old_Default = 0x100;
-const int Old_Escape = 0x200;
-
 void tst_QMessageBox::staticSourceCompat()
 {
     int ret;
@@ -506,74 +491,6 @@ void tst_QMessageBox::instanceSourceCompat()
 #endif
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_R), 0);
     QCOMPARE(exec(&mb, Qt::ALT + Qt::Key_Z), 1);
-}
-
-void tst_QMessageBox::staticBinaryCompat()
-{
-    int ret;
-
-    // binary compat tests for < 4.2
-    keyToSend = Qt::Key_Enter;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes, Old_No, 0);
-    int expectedButton = int(Old_Yes);
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
-    if (qobject_cast<QMacStyle *>(qApp->style()))
-        expectedButton = int(Old_No);
-#elif !defined(QT_NO_STYLE_CLEANLOOKS)
-    if (qobject_cast<QCleanlooksStyle *>(qApp->style()))
-        expectedButton = int(Old_No);
-#endif
-    QCOMPARE(ret, expectedButton);
-    QCOMPARE(keyToSend, -1);
-
-    keyToSend = Qt::Key_Escape;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes | Old_Escape, Old_No, 0);
-    QCOMPARE(ret, int(Old_Yes));
-    QCOMPARE(keyToSend, -1);
-
-    keyToSend = Qt::Key_Enter;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes | Old_Default, Old_No, 0);
-    QCOMPARE(ret, int(Old_Yes));
-    QCOMPARE(keyToSend, -1);
-
-#if 0
-    keyToSend = Qt::Key_Escape;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes, Old_No | Old_Default, 0);
-    QCOMPARE(ret, -1);
-    QCOMPARE(keyToSend, -1);
-#endif
-
-    keyToSend = Qt::Key_Escape;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes | Old_Escape, Old_No | Old_Default, 0);
-    QCOMPARE(ret, Old_Yes);
-    QCOMPARE(keyToSend, -1);
-
-    keyToSend = Qt::Key_Escape;
-    sendKeySoon();
-    ret = QMessageBox::information(0, "title", "text", Old_Yes | Old_Default, Old_No | Old_Escape, 0);
-    QCOMPARE(ret, Old_No);
-    QCOMPARE(keyToSend, -1);
-
-}
-
-void tst_QMessageBox::instanceBinaryCompat()
-{
-     QMessageBox mb("Application name here",
-                    "Saving the file will overwrite the original file on the disk.\n"
-                    "Do you really want to save?",
-                    QMessageBox::Information,
-                    Old_Yes | Old_Default,
-                    Old_No,
-                    Old_Cancel | Old_Escape);
-    mb.setButtonText(Old_Yes, "Save");
-    mb.setButtonText(Old_No, "Discard");
-    QCOMPARE(exec(&mb, Qt::Key_Enter), int(Old_Yes));
-    QCOMPARE(exec(&mb, Qt::Key_Escape), int(Old_Cancel));
 }
 
 void tst_QMessageBox::testSymbols()

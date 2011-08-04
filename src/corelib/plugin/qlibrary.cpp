@@ -447,7 +447,7 @@ QLibraryPrivate::~QLibraryPrivate()
     }
 }
 
-void *QLibraryPrivate::resolve(const char *symbol)
+QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
 {
     if (!pHnd)
         return 0;
@@ -1129,7 +1129,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
     Note: In Symbian resolving with symbol names works only if the loaded
     library was built as STDDLL. Otherwise, the ordinals must be used.
 */
-void *QLibrary::resolve(const char *symbol)
+QFunctionPointer QLibrary::resolve(const char *symbol)
 {
     if (!isLoaded() && !load())
         return 0;
@@ -1152,7 +1152,7 @@ void *QLibrary::resolve(const char *symbol)
 
     \sa resolve()
 */
-void *QLibrary::resolve(const QString &fileName, const char *symbol)
+QFunctionPointer QLibrary::resolve(const QString &fileName, const char *symbol)
 {
     QLibrary library(fileName);
     return library.resolve(symbol);
@@ -1175,7 +1175,7 @@ void *QLibrary::resolve(const QString &fileName, const char *symbol)
 
     \sa resolve()
 */
-void *QLibrary::resolve(const QString &fileName, int verNum, const char *symbol)
+QFunctionPointer QLibrary::resolve(const QString &fileName, int verNum, const char *symbol)
 {
     QLibrary library(fileName, verNum);
     return library.resolve(symbol);
@@ -1199,7 +1199,7 @@ void *QLibrary::resolve(const QString &fileName, int verNum, const char *symbol)
 
     \sa resolve()
 */
-void *QLibrary::resolve(const QString &fileName, const QString &version, const char *symbol)
+QFunctionPointer QLibrary::resolve(const QString &fileName, const QString &version, const char *symbol)
 {
     QLibrary library(fileName, version);
     return library.resolve(symbol);

@@ -53,7 +53,7 @@ void QRawFontPrivate::platformCleanUp()
 {
 }
 
-void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, int pixelSize,
+void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, qreal pixelSize,
                                            QFont::HintingPreference hintingPreference)
 {
     Q_ASSERT(fontEngine == 0);

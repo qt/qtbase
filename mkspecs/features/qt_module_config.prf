@@ -186,6 +186,9 @@ DEFINES *= QT_USE_QSTRINGBUILDER
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
+qtPrepareTool(QMAKE_MOC, moc)
+qtPrepareTool(QMAKE_UIC, uic)
+qtPrepareTool(QMAKE_RCC, rcc)
 qtPrepareTool(QMAKE_LUPDATE, lupdate)
 qtPrepareTool(QMAKE_LRELEASE, lrelease)
 

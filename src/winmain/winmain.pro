@@ -1,7 +1,6 @@
 # Additional Qt project file for qtmain lib on Windows
 TEMPLATE = lib
 TARGET	 = qtmain
-DESTDIR	 = $$QMAKE_LIBDIR_QT
 QT       =
 
 CONFIG	+= staticlib warn_on
@@ -17,5 +16,6 @@ win32 {
 
 !win32:error("$$_FILE_ is intended only for Windows!")
 load(qt_module_config)
+DESTDIR = $$QMAKE_LIBDIR_QT
 wince*:QMAKE_POST_LINK =
 

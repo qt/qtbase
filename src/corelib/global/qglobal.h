@@ -281,7 +281,7 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_VXWORKS
 #elif defined(__MAKEDEPEND__)
 #else
-#  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
+#  error "Qt has not been ported to this OS - talk to qt-info@nokia.com"
 #endif
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WIN64) || defined(Q_OS_WINCE)
@@ -794,7 +794,7 @@ namespace QT_NAMESPACE {}
 #  define Q_CC_NOKIAX86
 
 #else
-#  error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
+#  error "Qt has not been tested with this compiler - talk to qt-info@nokia.com"
 #endif
 
 
@@ -1806,6 +1806,8 @@ Q_CORE_EXPORT void qt_message_output(QtMsgType, const char *buf);
 
 typedef void (*QtMsgHandler)(QtMsgType, const char *);
 Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
+
+typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
 #  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)

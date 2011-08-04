@@ -57,50 +57,80 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qatomic.h>
 
 #if defined(Q_OS_MAC)
 # include <mach/semaphore.h>
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-# include <e32std.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
-class QMutexPrivate : public QMutexData {
+class QMutexPrivate  {
 public:
-    QMutexPrivate(QMutex::RecursionMode mode);
     ~QMutexPrivate();
+    QMutexPrivate(QMutex::RecursionMode mode = QMutex::NonRecursive);
 
     bool wait(int timeout = -1);
     void wakeUp();
 
-    // 1ms = 1000000ns
-    enum { MaximumSpinTimeThreshold = 1000000 };
-    volatile qint64 maximumSpinTime;
-    volatile qint64 averageWaitTime;
-    Qt::HANDLE owner;
-    uint count;
+#if !defined(Q_OS_LINUX)
+    // Conrol the lifetime of the privates
+    QAtomicInt refCount;
+    int id;
 
+    bool ref() {
+        Q_ASSERT(refCount >= 0);
+        int c;
+        do {
+            c = refCount;
+            if (c == 0)
+                return false;
+        } while (!refCount.testAndSetRelaxed(c, c + 1));
+        Q_ASSERT(refCount >= 0);
+        return true;
+    }
+    void deref() {
+        Q_ASSERT(refCount >=0);
+        if (!refCount.deref())
+            release();
+        Q_ASSERT(refCount >=0);
+    }
+    void release();
+    static QMutexPrivate *allocate();
+
+    QAtomicInt waiters; //number of thread waiting
+    QAtomicInt possiblyUnlocked; //bool saying that a timed wait timed out
+    enum { BigNumber = 0x100000 }; //Must be bigger than the possible number of waiters (number of threads)
+    void derefWaiters(int value);
+#endif
+
+    // handle recursive mutex
+    bool recursive;
+
+    //platform specific stuff
 #if defined(Q_OS_MAC)
     semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX) && !defined(Q_OS_SYMBIAN)
-    volatile bool wakeup;
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX)
+    bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 #elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     HANDLE event;
-#elif defined(Q_OS_SYMBIAN)
-    RSemaphore lock;
 #endif
 };
 
-inline QMutexData::QMutexData(QMutex::RecursionMode mode)
-    : recursive(mode == QMutex::Recursive)
-{}
+class QRecursiveMutexPrivate : public QMutexPrivate
+{
+public:
+    QRecursiveMutexPrivate()
+        : QMutexPrivate(QMutex::Recursive), owner(0), count(0) {}
+    Qt::HANDLE owner;
+    uint count;
+    QMutex mutex;
 
-inline QMutexData::~QMutexData() {}
+    bool lock(int timeout);
+    void unlock();
+};
 
 QT_END_NAMESPACE
 

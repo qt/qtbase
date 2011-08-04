@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-void *qdbus_resolve_me(const char *name);
+void (*qdbus_resolve_me(const char *name))();
 
 #if !defined QT_LINKED_LIBDBUS
 
@@ -95,20 +95,19 @@ bool qdbus_loadLibDBus()
     return false;
 }
 
-void *qdbus_resolve_conditionally(const char *name)
+void (*qdbus_resolve_conditionally(const char *name))()
 {
     if (qdbus_loadLibDBus())
         return qdbus_libdbus->resolve(name);
     return 0;
 }
 
-void *qdbus_resolve_me(const char *name)
+void (*qdbus_resolve_me(const char *name))()
 {
-    void *ptr = 0;
     if (!qdbus_loadLibDBus())
         qFatal("Cannot find libdbus-1 in your system to resolve symbol '%s'.", name);
 
-    ptr = qdbus_libdbus->resolve(name);
+    QFunctionPointer ptr = qdbus_libdbus->resolve(name);
     if (!ptr)
         qFatal("Cannot resolve '%s' in your libdbus-1.", name);
 

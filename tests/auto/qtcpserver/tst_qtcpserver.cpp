@@ -575,7 +575,7 @@ void tst_QTcpServer::addressReusable()
     socket.connectToHost(QHostAddress::LocalHost, 49199);
     QVERIFY(socket.waitForConnected(5000));
 
-    QVERIFY(process.waitForFinished(5000));
+    QVERIFY(process.waitForFinished(30000));
 
     // Give the system some time.
     QTest::qSleep(10);

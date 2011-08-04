@@ -2577,7 +2577,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         chmod 755 "$outpath/bin/syncqt"
     fi
 
-    for i in elf2e32_qtwrapper createpackage patch_capabilities; do
+    for i in elf2e32_qtwrapper createpackage patch_capabilities qtmodule-configtests; do
         rm -f "$outpath/bin/$i"
         if [ -x "$relpath/bin/$i" ]; then
             mkdir -p "$outpath/bin"
@@ -2970,7 +2970,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     echo
     echo "      $XQMAKESPEC/qplatformdefs.h"
     echo
-    echo "   Please contact qt-bugs@trolltech.com."
+    echo "   Please contact qt-info@nokia.com."
     echo
     exit 2
 fi
@@ -6911,7 +6911,7 @@ fi
 # For "-carbon" builds: 32 bit x86/ppc.
 # For builds on snow leopard : compiler default (64-bit).
 # For builds on leopard : compiler default (32-bit).
-if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
+if [ "$CFG_ARCH" = "macosx" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
 	if [ "$CFG_MAC_CARBON" = "yes" ]; then
@@ -7150,7 +7150,7 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
-[ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
+[ "$CFG_ARCH" = "macosx" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
 if [ "$CFG_CLOCK_GETTIME" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG clock-gettime"
 fi
@@ -8617,7 +8617,7 @@ else
     echo "Building for:  $XPLATFORM"
 fi
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ ! -z "$CFG_MAC_ARCHS" ]; then
     echo "Architecture:  $CFG_ARCH ($CFG_MAC_ARCHS )"
 else
     echo "Architecture:  $CFG_ARCH"

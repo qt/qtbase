@@ -513,7 +513,7 @@ void QKeyMapperPrivate::clearMappings()
 
         // ### ???
         // if (keyboardLayoutName.isEmpty())
-        //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-bugs@trolltech.com"); ?
+        //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-info@nokia.com"); ?
 
         keyboardInputLocale = q_getKeyboardLocale(layoutName, variantName);
         keyboardInputDirection = keyboardInputLocale.textDirection();

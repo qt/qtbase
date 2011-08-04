@@ -1,0 +1,340 @@
+#!/usr/bin/perl
+######################################################################
+#
+# Runs any module configuration tests
+#
+# Called (currently) from syncqt, and expects a few arguments
+#
+# configtests $basedir $out_basedir $qtbasedir $quietmode
+#
+# Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+# Contact: Nokia Corporation (qt-info@nokia.com)
+#
+######################################################################
+
+use strict;
+use warnings;
+
+# use packages -------------------------------------------------------
+use File::Basename;
+use File::Path 'mkpath';
+use File::Spec::Functions;
+use Cwd;
+use Cwd 'abs_path';
+use Config;
+
+# Which file to look for the %configtests variable in
+my $configTestSource = "sync.profile";
+
+if ($#ARGV < 3) {
+    warn "Usage:\n";
+    warn "  $0 <module base directory> <module output directory> <QtBase directory> <generator spec>\n";
+    exit 1;
+}
+
+# These might be needed in sync.profile
+our $basedir = $ARGV[0];
+our $out_basedir = $ARGV[1];
+our $qtbasedir = $ARGV[2];
+my $generator = $ARGV[3];
+
+our %configtests;
+
+my $qmakeCachePath = catfile($out_basedir, ".qmake.cache");
+
+my $QMAKE = catfile($qtbasedir, "bin", ($^O =~ /win32/i) ? 'qmake.exe' : 'qmake');
+if (!-x $QMAKE) {
+    # try the qmake from the path (e.g. this is a shadow build)
+    $QMAKE = 'qmake';
+}
+
+# Need to use the right make
+# SYMBIAN_UNIX/MINGW should fall back to the non SYMBIAN ones
+my $MAKE = 'make'; # default, only works on unix
+if ($generator =~ /UNIX|XCODE/i) { # XCODE = make?
+    $MAKE = 'make';
+} elsif ($generator =~ /MINGW/i) {
+    $MAKE = 'mingw32-make';
+} elsif ($generator =~ /MSVC.NET|MSBUILD/i) {
+    $MAKE = 'nmake';
+} else {
+    # Unhandled (at least): BMAKE, GBUILD, SYMBIAN_ABLD, SYMBIAN_SBSV2
+    warn "Unrecognized generator spec ($generator) - assuming '$MAKE'\n";
+}
+
+######################################################################
+# Syntax:  fileContents(filename)
+# Params:  filename, string, filename of file to return contents
+#
+# Purpose: Get the contents of a file.
+# Returns: String with contents of the file, or empty string if file
+#          doens't exist.
+# Warning: Dies if it does exist but script cannot get read access.
+######################################################################
+sub fileContents {
+    my ($filename) = @_;
+    my $filecontents = "";
+    if (-e $filename) {
+        open(I, "< $filename") || die "Could not open $filename for reading, read block?";
+        local $/;
+        binmode I;
+        $filecontents = <I>;
+        close I;
+    }
+    return $filecontents;
+}
+
+######################################################################
+# Syntax:  loadConfigTests()
+#
+# Purpose: Loads the config tests from the source basedir into %configtests.
+# Returns: Nothing
+######################################################################
+sub loadConfigTests {
+    my $configprofile = catfile($basedir, $configTestSource);
+    my $result;
+    unless ($result = do $configprofile) {
+        die "configtests couldn't parse $configprofile: $@\n" if $@;
+        # We don't check for non null output, since that is valid
+    }
+}
+
+######################################################################
+# Syntax:  hashesAreDifferent
+#
+# Purpose: Compares two hashes. (must have same key=value for everything)
+# Returns: 0 if they are the same, 1 otherwise
+######################################################################
+sub hashesAreDifferent {
+    my %a = %{$_[0]};
+    my %b = %{$_[1]};
+
+    if (keys %a != keys %b) {
+        return 1;
+    }
+
+    my %cmp = map { $_ => 1 } keys %a;
+    for my $key (keys %b) {
+        last unless exists $cmp{$key};
+        last unless $a{$key} eq $b{$key};
+        delete $cmp{$key};
+    }
+    if (%cmp) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+######################################################################
+# Syntax:  executeSomething
+# Params:  A list of things.
+#
+# Purpose: Executes the first arg, passing the list.
+#          stderr is redirected to stdout, and the output is captured.
+# Returns: The output.
+######################################################################
+sub executeSomething {
+    my ($program, @args) = @_;
+
+    my $pid = open(KID_TO_READ, "-|");
+
+    my $output;
+
+    if ($pid) {   # parent
+        while (<KID_TO_READ>) {
+            $output = $output . $_;
+        }
+        close(KID_TO_READ) || $! == 0 || warn "\nFailed to execute $program: exited $?";
+    } else {
+        # redirect STDERR to STDOUT
+        open STDERR, ">&STDOUT";
+
+        # Exec something
+        exec ($program, @args) || die "\nCan't exec $program: $!\n";
+        # NOTREACHED
+    }
+
+    return $output;
+}
+
+######################################################################
+# Syntax:  executeTest()
+# Params: testName
+#
+# The testName variable controls the actual config test run - the
+# source is assumed to be in $basedir/config.tests/$testName, and
+# when 'qmake; make clean; make' is run, is expected to produce a file
+# $out_basedir/config.tests/$testName/$testName.  If this test passes,
+# then 'config_test_$testName = yes' will be written to $out_basedir/.qmake.cache
+#
+# Purpose: Runs a configuration time test.
+# Returns: 0 if the test fails, 1 if it passes, 2 if the test is skipped
+#          (e.g. .pro file has requires(x) and x is not satisfied)
+######################################################################
+sub executeTest {
+    my ($testName) = @_;
+
+    my $oldWorkingDir = getcwd();
+    my $ret = 0;
+
+    my @QMAKEARGS = ('CONFIG-=debug_and_release');
+
+    my $testOutDir = catdir($out_basedir, 'config.tests', $testName);
+
+    # Since we might be cross compiling, look for barename (Linux) and .exe (Win32/Symbian)
+    my $testOutFile1 = catfile($testOutDir, "$testName.exe");
+    my $testOutFile2 = catfile($testOutDir, $testName);
+
+    if (abs_path($basedir) eq abs_path($out_basedir)) {
+        chdir $testOutDir or die "\nUnable to change to config test directory ($testOutDir): $!\n";
+    } else { # shadow build
+        if (! -e $testOutDir) {
+            mkpath $testOutDir or die "\nUnable to create shadow build config test directory ($testOutDir): $!\n";
+        }
+        chdir $testOutDir or die "\nUnable to change to config test directory ($testOutDir): $!\n";
+
+        push (@QMAKEARGS, catdir($basedir, 'config.tests', $testName));
+    }
+
+    # First remove existing stuff (XXX this probably needs generator specific code, but hopefully
+    # the target removal below will suffice)
+    if (-e "Makefile") {
+        executeSomething($MAKE, 'distclean');
+    }
+
+    # and any targets that we might find that weren't distcleaned
+    unlink $testOutFile1, $testOutFile2;
+
+    # Run qmake && make
+    executeSomething($QMAKE, @QMAKEARGS);
+    my $makeOutput = executeSomething(($MAKE));
+
+    # If make prints "blah blah blah\nSkipped." we consider this a skipped test
+    if ($makeOutput !~ qr(^Skipped\.$)ms) {
+        # Check the test exists (can't reliably execute, especially for cross compilation)
+        if (-e $testOutFile1 or -e $testOutFile2) {
+            $ret = 1;
+        }
+    } else {
+        $ret = 2;
+    }
+
+    chdir $oldWorkingDir or die "\nUnable to restore working directory: $!\n";
+    return $ret;
+}
+
+# Now run configuration tests
+# %configtests is a map from config test name to a map of parameters
+# e.g:
+#
+# %configtests = (
+#    "simple" => {fatal => 1, message => "Missing required 'simple' component\n"},
+#    "failed" => {message => "You need to install the FAILED sdk for this to work\n"}
+# );
+#
+# Parameters and their defaults:
+#  - fatal [false] - whether failing this test should abort everything
+#  - message [""] - A special message to display if this test fails
+#
+loadConfigTests();
+
+# Only do this step for modules that have config tests
+# (qtbase doesn't). We try to preserve existing contents (and furthermore
+# only write to .qmake.cache if the tests change)
+if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
+    # Read any existing content
+    my $existingContents = fileContents($qmakeCachePath);
+    my %oldTestResults;
+    my %newTestResults;
+    my @fatalTestsEncountered;
+
+    # Parse the existing results so we can check if we change them
+    while ($existingContents =~ /^config_test_(.*) = (yes|no)$/gm) {
+        $oldTestResults{$1} = $2;
+    }
+
+    # Get the longest length test name so we can pretty print
+    use List::Util qw(max);
+    my $maxNameLength = max map { length $_ } keys %configtests;
+
+    # Turn off buffering
+    $| = 1;
+
+    # Now run the configuration tests
+    print "Configuration tests:\n";
+
+    while ((my $testName, my $testParameters) = each %configtests) {
+        printf "  % *s: ", $maxNameLength, $testName; # right aligned, yes/no lines up
+
+        my $fatalTest = $testParameters->{"fatal"} // 0;
+        my $message = $testParameters->{"message"};
+
+        my $testResult = executeTest($testName);
+        my @testResultStrings = ("no\n","yes\n","skipped\n");
+
+        $newTestResults{$testName} = (($testResult == 1) ? "yes" : "no"); # skipped = no
+
+        if ($testResult == 0) {
+            # Failed test
+            if ($fatalTest) {
+                print "no (fatal)\n";
+                # Report the fatality at the end, too
+                push (@fatalTestsEncountered, $testName);
+            } else {
+                print "no\n";
+            }
+            if (defined($message)) {
+                print $message;
+                print "\n" unless chop $message eq "\n";
+            }
+        } else {
+            # yes or skipped
+            print $testResultStrings[$testResult];
+        }
+    }
+
+    # Check if the test results are different
+    if (hashesAreDifferent(\%oldTestResults, \%newTestResults)) {
+        # Generate the new contents
+        my $newContents = $existingContents;
+
+        # Strip out any existing config test results
+        $newContents =~ s/^config_test_.*$//gms;
+        $newContents =~ s/^# Compile time test results.*$//gms;
+
+        # Add any remaining content and make sure we start on a new line
+        if ($newContents and chop $newContents ne '\n') {
+            $newContents = $newContents . "\n";
+        }
+
+        # Results and header
+        if (%newTestResults) {
+            $newContents = $newContents . '# Compile time test results ('.(localtime).")\n";
+
+            # Results
+            while ((my $testName, my $testResult) = each %newTestResults) {
+                $newContents = $newContents . "config_test_$testName = $testResult\n";
+            }
+        }
+
+        # and open the file
+        open my $cacheFileHandle, ">$qmakeCachePath" or die "Unable to open $qmakeCachePath for writing: $!\n";
+
+        print $cacheFileHandle $newContents;
+
+        close $cacheFileHandle or die "Unable to close $qmakeCachePath: $!\n";
+    }
+
+    # Now see if we have to die
+    if (@fatalTestsEncountered) {
+        if ($#fatalTestsEncountered == 0) {
+            warn "Mandatory configuration test (".$fatalTestsEncountered[0].") failed.\n\n";
+        } else {
+            warn "Mandatory configuration tests (". join (", ", @fatalTestsEncountered) . ") failed.\n\n";
+        }
+        exit -1;
+    }
+}
+
+exit 0;

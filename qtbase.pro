@@ -135,6 +135,11 @@ syncqt.files=$$QT_BUILD_TREE/bin/syncqt
 win32:syncqt.files=$$QT_BUILD_TREE/bin/syncqt.bat
 INSTALLS += syncqt
 
+#qtmodule-configtests
+configtests.path=$$[QT_INSTALL_BINS]
+configtests.files=$$QT_BUILD_TREE/bin/qtmodule-configtests
+INSTALLS += configtests
+
 #mkspecs
 mkspecs.path=$$[QT_INSTALL_DATA]/mkspecs
 mkspecs.files=$$QT_BUILD_TREE/mkspecs/qconfig.pri $$files($$QT_SOURCE_TREE/mkspecs/*)
