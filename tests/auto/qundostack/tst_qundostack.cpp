@@ -2970,6 +2970,11 @@ void tst_QUndoStack::undoLimit()
 void tst_QUndoStack::commandTextFormat()
 {
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+
+    if (QProcess::execute(binDir + "/lrelease -version") != 0) {
+        QSKIP("lrelease is missing or broken", SkipAll);
+    }
+
     QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundostack.ts"));
 
     QTranslator translator;
