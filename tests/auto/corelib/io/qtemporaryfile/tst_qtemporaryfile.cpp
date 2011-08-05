@@ -199,11 +199,12 @@ void tst_QTemporaryFile::fileTemplate()
 
     QCOMPARE(file.open(), true);
 
+    QString fileName = QFileInfo(file).fileName();
     if (prefix.length())
-        QCOMPARE(file.fileName().left(prefix.length()), prefix);
+        QCOMPARE(fileName.left(prefix.length()), prefix);
 
     if (suffix.length())
-        QCOMPARE(file.fileName().right(suffix.length()), suffix);
+        QCOMPARE(fileName.right(suffix.length()), suffix);
 }
 
 
@@ -716,20 +717,28 @@ void tst_QTemporaryFile::QTBUG_4796()
                 << file5.fileName()
                 << file6.fileName();
 
-            QVERIFY(file1.fileName().startsWith(fileTemplate1 + QLatin1Char('.')));
-            QVERIFY(file2.fileName().startsWith(fileTemplate2 + QLatin1Char('.')));
-            QVERIFY(file5.fileName().startsWith("test-XXXXXX/" + fileTemplate1 + QLatin1Char('.')));
-            QVERIFY(file6.fileName().startsWith("test-XXXXXX/" + prefix));
+            QDir currentDir;
+            QString fileName1 = currentDir.relativeFilePath(file1.fileName());
+            QString fileName2 = currentDir.relativeFilePath(file2.fileName());
+            QString fileName3 = currentDir.relativeFilePath(file3.fileName());
+            QString fileName4 = currentDir.relativeFilePath(file4.fileName());
+            QString fileName5 = currentDir.relativeFilePath(file5.fileName());
+            QString fileName6 = currentDir.relativeFilePath(file6.fileName());
+
+            QVERIFY(fileName1.startsWith(fileTemplate1 + QLatin1Char('.')));
+            QVERIFY(fileName2.startsWith(fileTemplate2 + QLatin1Char('.')));
+            QVERIFY(fileName5.startsWith("test-XXXXXX/" + fileTemplate1 + QLatin1Char('.')));
+            QVERIFY(fileName6.startsWith("test-XXXXXX/" + prefix));
 
             if (!prefix.isEmpty()) {
-                QVERIFY(file3.fileName().startsWith(prefix));
-                QVERIFY(file4.fileName().startsWith(prefix));
+                QVERIFY(fileName3.startsWith(prefix));
+                QVERIFY(fileName4.startsWith(prefix));
             }
 
             if (!suffix.isEmpty()) {
-                QVERIFY(file3.fileName().endsWith(suffix));
-                QVERIFY(file4.fileName().endsWith(suffix));
-                QVERIFY(file6.fileName().endsWith(suffix));
+                QVERIFY(fileName3.endsWith(suffix));
+                QVERIFY(fileName4.endsWith(suffix));
+                QVERIFY(fileName6.endsWith(suffix));
             }
         }
     }
