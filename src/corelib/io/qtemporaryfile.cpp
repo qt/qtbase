@@ -118,7 +118,7 @@ static int createFileFromTemplate(char *const path,
         char *rIter = placeholderEnd;
 
 #if defined(QT_BUILD_CORE_LIB)
-        qint64 pid = QCoreApplication::applicationPid();
+        quint64 pid = quint64(QCoreApplication::applicationPid());
         do {
             *--rIter = (pid % 10) + '0';
             pid /= 10;
