@@ -44,10 +44,8 @@
 #ifndef QT_NO_TEMPORARYFILE
 
 #include "qplatformdefs.h"
-#include "qabstractfileengine.h"
 #include "qstringbuilder.h"
 #include "private/qfile_p.h"
-#include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qsystemerror_p.h"
 
