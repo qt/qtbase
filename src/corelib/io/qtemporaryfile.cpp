@@ -61,6 +61,33 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+typedef ushort Char;
+
+static inline Char Latin1Char(char ch)
+{
+    return ushort(uchar(ch));
+}
+
+template <>
+struct QConcatenable<Char>
+{
+    typedef Char type;
+    typedef QString ConvertTo;
+    enum { ExactSize = true };
+    static int size(const Char &) { return 1; }
+
+    static inline void appendTo(const Char &u16, QChar *&out)
+    {
+        *out++ = QChar(u16);
+    }
+};
+
+#else // POSIX
+typedef char Char;
+typedef char Latin1Char;
+#endif
+
 struct Placeholder
 {
     Placeholder(int size)
@@ -134,23 +161,24 @@ struct QConcatenable<Placeholder>
     handle otherwise. In both cases, the string in \a path will be changed and
     contain the generated path name.
 */
-static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
+static int createFileFromTemplate(QFileSystemEntry::NativePath &path,
+        size_t pos, size_t length)
 {
     Q_ASSERT(length != 0);
     Q_ASSERT(pos < size_t(path.length()));
     Q_ASSERT(length < size_t(path.length()) - pos);
 
-    char *const placeholderStart = path.data() + pos;
-    char *const placeholderEnd = placeholderStart + length;
+    Char *const placeholderStart = (Char *)path.data() + pos;
+    Char *const placeholderEnd = placeholderStart + length;
 
     // Initialize placeholder with random chars + PID.
     {
-        char *rIter = placeholderEnd;
+        Char *rIter = placeholderEnd;
 
 #if defined(QT_BUILD_CORE_LIB)
         quint64 pid = quint64(QCoreApplication::applicationPid());
         do {
-            *--rIter = (pid % 10) + '0';
+            *--rIter = Latin1Char((pid % 10) + '0');
             pid /= 10;
         } while (rIter != placeholderStart && pid != 0);
 #endif
@@ -158,9 +186,9 @@ static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
         while (rIter != placeholderStart) {
             char ch = char((qrand() & 0xffff) % (26 + 26));
             if (ch < 26)
-                *--rIter = ch + 'A';
+                *--rIter = Latin1Char(ch + 'A');
             else
-                *--rIter = ch - 26 + 'a';
+                *--rIter = Latin1Char(ch - 26 + 'a');
         }
     }
 
@@ -177,18 +205,18 @@ static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
                 return -1;
         }
 #else
-        if (!QFileInfo(QString::fromLocal8Bit(path.constData(), path.length())).exists())
+        if (!QFileInfo(path).exists())
             return 1;
 #endif
 
         /* tricky little algorwwithm for backward compatibility */
-        for (char *iter = placeholderStart;;) {
+        for (Char *iter = placeholderStart;;) {
             // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
             // String progression: "ZZaiC" => "aabiC"
-            switch (*iter) {
+            switch (char(*iter)) {
                 case 'Z':
                     // Rollover, advance next character
-                    *iter = 'a';
+                    *iter = Latin1Char('a');
                     if (++iter == placeholderEnd)
                         return -1;
 
@@ -196,12 +224,12 @@ static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
 
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
-                    *iter = 'a';
+                    *iter = Latin1Char('a');
                     break;
 
                 case 'z':
                     // increment 'z' to 'A'
-                    *iter = 'A';
+                    *iter = Latin1Char('A');
                     break;
 
                 default:
@@ -314,8 +342,9 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         phLength = 0;
     }
 
-    QByteArray filename;
+    QFileSystemEntry::NativePath filename;
 
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     if (phLength < 6) {
         filename = qfilename.toLocal8Bit();
 
@@ -330,6 +359,16 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         phPos = prefix.length();
         filename = prefix % Placeholder(phLength) % suffix;
     }
+#else
+    if (phLength < 6) {
+        phPos = qfilename.length() + 1; // Account for added dot in prefix
+        phLength = 6;
+        filename = qfilename % Latin1Char('.') % Placeholder(phLength);
+    } else
+        filename = qfilename;
+
+    // No native separators, not a "native path"
+#endif
 
     int fd = createFileFromTemplate(filename, phPos, phLength);
 
@@ -356,7 +395,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (fd == -1)
         return false;
 
-    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename.constData(), filename.length()));
+    d->fileEntry = QFileSystemEntry(filename, QFileSystemEntry::FromInternalPath());
     if (QFSFileEngine::open(openMode)) {
         filePathIsTemplate = false;
         return true;
