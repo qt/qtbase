@@ -330,7 +330,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return true;
     }
 
-    d->fileEntry = QFileSystemEntry(template_);
+    d->fileEntry = QFileSystemEntry(template_, QFileSystemEntry::FromInternalPath());
     return false;
 #endif
 }
