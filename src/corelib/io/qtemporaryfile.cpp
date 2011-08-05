@@ -141,7 +141,7 @@ static int createFileFromTemplate(char *const path,
                 return -1;
         }
 #else
-        if (!QFileInfo(QLatin1String(path)).exists())
+        if (!QFileInfo(QString::fromLocal8Bit(path)).exists())
             return 1;
 #endif
 
