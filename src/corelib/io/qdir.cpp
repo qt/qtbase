@@ -794,14 +794,23 @@ QString QDir::convertSeparators(const QString &pathName)
 */
 QString QDir::toNativeSeparators(const QString &pathName)
 {
-    QString n(pathName);
 #if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
-    for (int i = 0; i < (int)n.length(); ++i) {
-        if (n[i] == QLatin1Char('/'))
-            n[i] = QLatin1Char('\\');
+    int i = pathName.indexOf(QLatin1Char('/'));
+    if (i != -1) {
+        QString n(pathName);
+
+        QChar * const data = n.data();
+        data[i++] = QLatin1Char('\\');
+
+        for (; i < n.length(); ++i) {
+            if (data[i] == QLatin1Char('/'))
+                data[i] = QLatin1Char('\\');
+        }
+
+        return n;
     }
 #endif
-    return n;
+    return pathName;
 }
 
 /*!
@@ -818,14 +827,23 @@ QString QDir::toNativeSeparators(const QString &pathName)
 */
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
-    QString n(pathName);
 #if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
-    for (int i = 0; i < (int)n.length(); ++i) {
-        if (n[i] == QLatin1Char('\\'))
-            n[i] = QLatin1Char('/');
+    int i = pathName.indexOf(QLatin1Char('\\'));
+    if (i != -1) {
+        QString n(pathName);
+
+        QChar * const data = n.data();
+        data[i++] = QLatin1Char('/');
+
+        for (; i < n.length(); ++i) {
+            if (data[i] == QLatin1Char('\\'))
+                data[i] = QLatin1Char('/');
+        }
+
+        return n;
     }
 #endif
-    return n;
+    return pathName;
 }
 
 /*!
