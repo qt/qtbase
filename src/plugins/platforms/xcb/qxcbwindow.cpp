@@ -276,8 +276,9 @@ void QXcbWindow::create()
                                    atom(QXcbAtom::WM_CLIENT_LEADER), XCB_ATOM_WINDOW, 32,
                                    1, &leader));
 
-    if (wasCreated)
-        setWindowFlags(window()->windowFlags());
+    setWindowFlags(window()->windowFlags());
+    setWindowTitle(window()->windowTitle());
+    setWindowState(window()->windowState());
 
     connection()->drag()->dndEnable(this, true);
 }
