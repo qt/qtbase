@@ -62,6 +62,7 @@ QPlatformWindow::QPlatformWindow(QWindow *window)
 {
     Q_D(QPlatformWindow);
     d->window = window;
+    d->rect = window->geometry();
 }
 
 /*!

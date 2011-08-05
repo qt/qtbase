@@ -56,6 +56,7 @@
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
 #include <QtGui/QSurfaceFormat>
+#include <QtGui/QGuiGLContext>
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
@@ -68,17 +69,14 @@ QWaylandIntegration::QWaylandIntegration()
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
     mDisplay = new QWaylandDisplay();
+
+    foreach (QPlatformScreen *screen, mDisplay->screens())
+        screenAdded(screen);
 }
 
 QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
 {
     return mNativeInterface;
-}
-
-QList<QPlatformScreen *>
-QWaylandIntegration::screens() const
-{
-    return mDisplay->screens();
 }
 
 bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -104,10 +102,10 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) cons
     return new QWaylandShmWindow(window);
 }
 
-QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(QGuiGLContext *context) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
-    return mDisplay->eglIntegration()->createPlatformGLContext(glFormat, share);
+    return mDisplay->eglIntegration()->createPlatformGLContext(context->format(), context->shareHandle());
 #else
     Q_UNUSED(glFormat);
     Q_UNUSED(share);

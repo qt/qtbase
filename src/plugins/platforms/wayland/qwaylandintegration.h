@@ -57,12 +57,10 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
+    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
