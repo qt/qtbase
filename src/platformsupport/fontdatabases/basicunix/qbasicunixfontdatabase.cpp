@@ -308,6 +308,33 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
                     };
 
             writingSystems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+
+            if (os2->usWeightClass == 0)
+                ;
+            else if (os2->usWeightClass < 350)
+                weight = QFont::Light;
+            else if (os2->usWeightClass < 450)
+                weight = QFont::Normal;
+            else if (os2->usWeightClass < 650)
+                weight = QFont::DemiBold;
+            else if (os2->usWeightClass < 750)
+                weight = QFont::Bold;
+            else if (os2->usWeightClass < 1000)
+                weight = QFont::Black;
+
+            if (os2->panose[2] >= 2) {
+                int w = os2->panose[2];
+                if (w <= 3)
+                    weight = QFont::Light;
+                else if (w <= 5)
+                    weight = QFont::Normal;
+                else if (w <= 7)
+                    weight = QFont::DemiBold;
+                else if (w <= 8)
+                    weight = QFont::Bold;
+                else if (w <= 10)
+                    weight = QFont::Black;
+            }
         }
 
         QString family = QString::fromAscii(face->family_name);
