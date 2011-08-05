@@ -45,6 +45,7 @@
 
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
+#include "qstringbuilder.h"
 #include "private/qfile_p.h"
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
@@ -59,6 +60,38 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+struct Placeholder
+{
+    Placeholder(int size)
+        : size_(size)
+    {
+    }
+
+    int size() const
+    {
+        return size_;
+    }
+
+private:
+    int size_;
+};
+
+template <>
+struct QConcatenable<Placeholder>
+{
+    typedef Placeholder type;
+    typedef QByteArray ConvertTo;
+    enum { ExactSize = true };
+    static int size(const Placeholder &p) { return p.size(); }
+
+    template <class CharT>
+    static inline void appendTo(const Placeholder &p, CharT *&out)
+    {
+        // Uninitialized
+        out += p.size();
+    }
+};
 
 /*
  * Copyright (c) 1987, 1993
@@ -258,7 +291,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    QString qfilename = d->fileEntry.filePath();
+    const QString qfilename = d->fileEntry.filePath();
 
     // Find placeholder string.
     uint phPos = qfilename.length();
@@ -281,22 +314,22 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         phLength = 0;
     }
 
-    QStringRef prefix, suffix;
-    if (phLength < 6) {
-        qfilename += QLatin1Char('.');
-        prefix = QStringRef(&qfilename);
-        phLength = 6;
-    } else {
-        prefix = qfilename.leftRef(phPos);
-        suffix = qfilename.midRef(phPos + phLength);
-    }
+    QByteArray filename;
 
-    QByteArray filename = prefix.toLocal8Bit();
-    phPos = filename.length();
-    if (suffix.isEmpty())
-        filename.resize(phPos + phLength);
-    else
-        filename.insert(phPos + phLength, suffix.toLocal8Bit());
+    if (phLength < 6) {
+        filename = qfilename.toLocal8Bit();
+
+        phPos = filename.length() + 1; // Account for added dot in prefix
+        phLength = 6;
+        filename = filename % '.' % Placeholder(phLength);
+    } else {
+        QByteArray prefix, suffix;
+        prefix = qfilename.leftRef(phPos).toLocal8Bit();
+        suffix = qfilename.midRef(phPos + phLength).toLocal8Bit();
+
+        phPos = prefix.length();
+        filename = prefix % Placeholder(phLength) % suffix;
+    }
 
     int fd = createFileFromTemplate(filename, phPos, phLength);
 
@@ -323,14 +356,13 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (fd == -1)
         return false;
 
-    QString template_ = d->fileEntry.filePath();
     d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename.constData(), filename.length()));
     if (QFSFileEngine::open(openMode)) {
         filePathIsTemplate = false;
         return true;
     }
 
-    d->fileEntry = QFileSystemEntry(template_, QFileSystemEntry::FromInternalPath());
+    d->fileEntry = QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath());
     return false;
 #endif
 }
