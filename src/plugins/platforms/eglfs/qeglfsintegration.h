@@ -64,7 +64,7 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const;
 
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
 private:
     QPlatformFontDatabase *mFontDb;

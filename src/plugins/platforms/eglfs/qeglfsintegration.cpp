@@ -101,7 +101,7 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
     return mFontDb;
 }
 
-QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
 {
     return createUnixEventDispatcher();
 }
