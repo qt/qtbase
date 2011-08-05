@@ -237,7 +237,7 @@ QFontEngine *QBasicUnixFontDatabase::fontEngine(const QFontDef &fontDef, QUnicod
     return engine;
 }
 
-QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const
+QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
