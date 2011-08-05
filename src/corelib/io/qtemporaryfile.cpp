@@ -96,18 +96,22 @@ QT_BEGIN_NAMESPACE
     \internal
 
     Generates a unique file path and returns a native handle to the open file.
-    \a path is used as a template when generating unique paths,
-    \a placeholderStart and \a placeholderEnd delimit the sub-string that will
-    be randomized.
+    \a path is used as a template when generating unique paths, \a pos
+    identifies the position of the first character that will be replaced in the
+    template and \a length the number of characters that may be substituted.
 
     Returns an open handle to the newly created file if successful, an invalid
     handle otherwise. In both cases, the string in \a path will be changed and
     contain the generated path name.
 */
-static int createFileFromTemplate(char *const path,
-        char *const placeholderStart, char *const placeholderEnd)
+static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
 {
-    Q_ASSERT(placeholderEnd > placeholderStart);
+    Q_ASSERT(length != 0);
+    Q_ASSERT(pos < size_t(path.length()));
+    Q_ASSERT(length < size_t(path.length()) - pos);
+
+    char *const placeholderStart = path.data() + pos;
+    char *const placeholderEnd = placeholderStart + length;
 
     // Initialize placeholder with random chars + PID.
     {
@@ -134,14 +138,16 @@ static int createFileFromTemplate(char *const path,
         // Atomically create file and obtain handle
 #ifndef Q_OS_WIN
         {
-            int fd = QT_OPEN(path, QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE, 0600);
+            int fd = QT_OPEN(path.constData(),
+                    QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
+                    0600);
             if (fd != -1)
                 return fd;
             if (errno != EEXIST)
                 return -1;
         }
 #else
-        if (!QFileInfo(QString::fromLocal8Bit(path)).exists())
+        if (!QFileInfo(QString::fromLocal8Bit(path.constData(), path.length())).exists())
             return 1;
 #endif
 
@@ -295,10 +301,9 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     else
         filename.insert(phPos + phLength, suffix.toLocal8Bit());
 
-    char *path = filename.data();
+    int fd = createFileFromTemplate(filename, phPos, phLength);
 
 #ifndef Q_OS_WIN
-    int fd = createFileFromTemplate(path, path + phPos, path + phPos + phLength);
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
@@ -308,7 +313,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length())); //note that filename is NOT a native path
+            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename.constData(), filename.length())); //note that filename is NOT a native path
             filePathIsTemplate = false;
             return true;
         }
@@ -318,13 +323,11 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (createFileFromTemplate(path, path + phPos, path + phPos + phLength) == -1) {
+    if (fd == -1)
         return false;
-    }
 
     QString template_ = d->fileEntry.filePath();
-    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(path, filename.length()));
-
+    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename.constData(), filename.length()));
     if (QFSFileEngine::open(openMode)) {
         filePathIsTemplate = false;
         return true;
