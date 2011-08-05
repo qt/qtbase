@@ -366,14 +366,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    const QString qfilename =
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
-        // Since the native encoding is out of our control, we need to process
-        // the path as UTF-16 before doing any conversions
-        d->fileEntry.filePath();
-#else
-        d->fileEntry.nativeFilePath();
-#endif
+    const QFileSystemEntry::NativePath qfilename = d->fileEntry.nativeFilePath();
 
     // Find placeholder string.
     uint phPos = qfilename.length();
@@ -382,7 +375,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     while (phPos != 0) {
         --phPos;
 
-        if (qfilename[phPos] == QLatin1Char('X')) {
+        if (qfilename[phPos] == Latin1Char('X')) {
             ++phLength;
             continue;
         }
@@ -390,7 +383,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         if (phLength >= 6
                 || qfilename[phPos] ==
 #if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
-                    QLatin1Char('/')
+                    '/'
 #else
                     QLatin1Char('\\')
 #endif
@@ -404,29 +397,12 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 
     QFileSystemEntry::NativePath filename;
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
-    if (phLength < 6) {
-        filename = qfilename.toLocal8Bit();
-
-        phPos = filename.length() + 1; // Account for added dot in prefix
-        phLength = 6;
-        filename = filename % '.' % Placeholder(phLength);
-    } else {
-        QByteArray prefix, suffix;
-        prefix = qfilename.leftRef(phPos).toLocal8Bit();
-        suffix = qfilename.midRef(phPos + phLength).toLocal8Bit();
-
-        phPos = prefix.length();
-        filename = prefix % Placeholder(phLength) % suffix;
-    }
-#else
     if (phLength < 6) {
         phPos = qfilename.length() + 1; // Account for added dot in prefix
         phLength = 6;
         filename = qfilename % Latin1Char('.') % Placeholder(phLength);
     } else
         filename = qfilename;
-#endif
 
     QSystemError error;
 #if defined(Q_OS_WIN)
