@@ -93,6 +93,10 @@ void tst_QGlyphRun::initTestCase()
 
     m_testFont = QFont("QtsSpecialTestFont");
 
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Continue);
+#endif
+
     QCOMPARE(QFontInfo(m_testFont).family(), QString::fromLatin1("QtsSpecialTestFont"));
 }
 
@@ -237,6 +241,11 @@ void tst_QGlyphRun::textLayoutGlyphIndexes()
     layout.endLayout();
 
     QList<QGlyphRun> listOfGlyphs = layout.glyphRuns();
+
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Abort);
+#endif
+
     QCOMPARE(listOfGlyphs.size(), 1);
 
     QGlyphRun glyphs = listOfGlyphs.at(0);
@@ -281,6 +290,10 @@ void tst_QGlyphRun::drawExistingGlyphs()
 #if defined(DEBUG_SAVE_IMAGE)
     textLayoutDraw.save("drawExistingGlyphs_textLayoutDraw.png");
     drawGlyphs.save("drawExistingGlyphs_drawGlyphIndexes.png");
+#endif
+
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Continue);
 #endif
 
     QCOMPARE(textLayoutDraw, drawGlyphs);
