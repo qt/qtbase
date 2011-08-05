@@ -49,12 +49,9 @@
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 
-#if !defined(Q_OS_WINCE)
-#  include <errno.h>
-#endif
-
-#if defined(Q_OS_UNIX)
-# include "private/qcore_unix_p.h"      // overrides QT_OPEN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#include "private/qcore_unix_p.h"       // overrides QT_OPEN
+#include <errno.h>
 #endif
 
 #if defined(QT_BUILD_CORE_LIB)
@@ -136,7 +133,7 @@ static int createFileFromTemplate(QByteArray &path, size_t pos, size_t length)
 
     for (;;) {
         // Atomically create file and obtain handle
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
         {
             int fd = QT_OPEN(path.constData(),
                     QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
@@ -303,7 +300,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 
     int fd = createFileFromTemplate(filename, phPos, phLength);
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
