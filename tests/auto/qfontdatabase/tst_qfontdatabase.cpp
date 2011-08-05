@@ -160,6 +160,13 @@ void tst_QFontDatabase::fixedPitch()
     if (!fdb.families().contains(font))
 	QSKIP( "Font not installed", SkipSingle);
 
+#ifdef Q_WS_QPA
+    if (fixedPitch) {
+        // fixedPitch() never returns true on qpa
+        QEXPECT_FAIL("", "QTBUG-20754 fails on qpa", Abort);
+    }
+#endif
+
     QCOMPARE(fdb.isFixedPitch(font), fixedPitch);
 
     QFont qfont(font);
@@ -229,6 +236,10 @@ void tst_QFontDatabase::addAppFont()
 
     QFontDatabase db;
 
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("memory font", "QTBUG-20754 fails on qpa", Abort);
+#endif
+
     const QStringList oldFamilies = db.families();
     QVERIFY(!oldFamilies.isEmpty());
 
@@ -261,6 +272,10 @@ void tst_QFontDatabase::addAppFont()
 
     const QStringList addedFamilies = QFontDatabase::applicationFontFamilies(id);
     QVERIFY(!addedFamilies.isEmpty());
+
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("font file", "QTBUG-20754 fails on qpa", Abort);
+#endif
 
     const QStringList newFamilies = db.families();
     QVERIFY(!newFamilies.isEmpty());
