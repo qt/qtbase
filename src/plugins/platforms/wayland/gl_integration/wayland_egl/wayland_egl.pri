@@ -1,5 +1,3 @@
-load(qpa/egl/convenience)
-
 LIBS += -lwayland-egl -lEGL
 INCLUDEPATH += $$PWD
 SOURCES += $$PWD/qwaylandeglintegration.cpp \
