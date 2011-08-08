@@ -55,6 +55,7 @@ class tst_QGlyphRun: public QObject
 #if !defined(QT_NO_RAWFONT)
 private slots:
     void initTestCase();
+    void init();
     void cleanupTestCase();
 
     void constructionAndDestruction();
@@ -78,6 +79,7 @@ private slots:
 private:
     int m_testFontId;
     QFont m_testFont;
+    bool m_testFont_ok;
 #endif // QT_NO_RAWFONT
 
 };
@@ -88,16 +90,27 @@ Q_DECLARE_METATYPE(QGlyphRun);
 
 void tst_QGlyphRun::initTestCase()
 {
+    m_testFont_ok = false;
+
     m_testFontId = QFontDatabase::addApplicationFont(SRCDIR "test.ttf");
     QVERIFY(m_testFontId >= 0);
 
     m_testFont = QFont("QtsSpecialTestFont");
 
 #ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Continue);
+    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Abort);
 #endif
 
     QCOMPARE(QFontInfo(m_testFont).family(), QString::fromLatin1("QtsSpecialTestFont"));
+
+    m_testFont_ok = true;
+}
+
+void tst_QGlyphRun::init()
+{
+    if (!m_testFont_ok) {
+        QSKIP("Test font is not working correctly", SkipAll);
+    }
 }
 
 void tst_QGlyphRun::cleanupTestCase()
@@ -242,10 +255,6 @@ void tst_QGlyphRun::textLayoutGlyphIndexes()
 
     QList<QGlyphRun> listOfGlyphs = layout.glyphRuns();
 
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Abort);
-#endif
-
     QCOMPARE(listOfGlyphs.size(), 1);
 
     QGlyphRun glyphs = listOfGlyphs.at(0);
@@ -290,10 +299,6 @@ void tst_QGlyphRun::drawExistingGlyphs()
 #if defined(DEBUG_SAVE_IMAGE)
     textLayoutDraw.save("drawExistingGlyphs_textLayoutDraw.png");
     drawGlyphs.save("drawExistingGlyphs_drawGlyphIndexes.png");
-#endif
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20760 fails on qpa", Continue);
 #endif
 
     QCOMPARE(textLayoutDraw, drawGlyphs);
