@@ -123,7 +123,18 @@ void QWindow::setVisible(bool visible)
 
     if (!d->platformWindow)
         create();
+
+    if (visible) {
+        QShowEvent showEvent;
+        QGuiApplication::sendEvent(this, &showEvent);
+    }
+
     d->platformWindow->setVisible(visible);
+
+    if (!visible) {
+        QHideEvent hideEvent;
+        QGuiApplication::sendEvent(this, &hideEvent);
+    }
 }
 
 bool QWindow::visible() const
@@ -515,12 +526,10 @@ void QWindow::resizeEvent(QResizeEvent *)
 
 void QWindow::showEvent(QShowEvent *)
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 void QWindow::hideEvent(QHideEvent *)
 {
-    qDebug() << "unimplemented:" << __FILE__ << __LINE__;
 }
 
 bool QWindow::event(QEvent *event)
@@ -566,6 +575,14 @@ bool QWindow::event(QEvent *event)
 
     case QEvent::Expose:
         exposeEvent(static_cast<QExposeEvent *>(event));
+        break;
+
+    case QEvent::Show:
+        showEvent(static_cast<QShowEvent *>(event));
+        break;
+
+    case QEvent::Hide:
+        hideEvent(static_cast<QHideEvent *>(event));
         break;
 
     default:

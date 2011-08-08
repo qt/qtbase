@@ -74,14 +74,4 @@ WId QEglFSWindow::winId() const
     return m_winid;
 }
 
-void QEglFSWindow::setVisible(bool visible)
-{
-    if (visible) {
-        QWindowSystemInterface::handleMapEvent(window());
-    } else {
-        QWindowSystemInterface::handleUnmapEvent(window());
-    }
-
-}
-
 QT_END_NAMESPACE
