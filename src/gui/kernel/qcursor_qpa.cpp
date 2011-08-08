@@ -107,11 +107,11 @@ void QCursorData::update()
 
 #endif //QT_NO_CURSOR
 
-extern int qt_last_x,qt_last_y;
+extern qreal qt_last_x,qt_last_y;
 
 QPoint QCursor::pos()
 {
-    return QPoint(qt_last_x, qt_last_y);
+    return QPointF(qt_last_x, qt_last_y).toPoint();
 }
 
 void QCursor::setPos(int x, int y)

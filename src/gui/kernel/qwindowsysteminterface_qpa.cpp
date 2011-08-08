@@ -115,12 +115,12 @@ void QWindowSystemInterface::handleCloseEvent(QWidget *tlw)
 
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
+void QWindowSystemInterface::handleMouseEvent(QWidget *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleMouseEvent(w, time, local, global, b);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
+void QWindowSystemInterface::handleMouseEvent(QWidget *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
 {
     if (tlw) {
         QWidgetData *data = qt_qwidget_data(tlw);
@@ -180,12 +180,12 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *tlw, ulong timestam
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
+void QWindowSystemInterface::handleWheelEvent(QWidget *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(w, time, local, global, d, o);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
+void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
 {
     if (tlw) {
         QWidgetData *data = qt_qwidget_data(tlw);

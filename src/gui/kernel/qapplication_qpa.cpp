@@ -76,8 +76,8 @@ QWidget *qt_button_down = 0;                     // widget got last button-down
 static bool app_do_modal = false;
 extern QWidgetList *qt_modal_stack;              // stack of modal widgets
 
-int qt_last_x = 0;
-int qt_last_y = 0;
+qreal qt_last_x = 0;
+qreal qt_last_y = 0;
 QPointer<QWidget> qt_last_mouse_receiver = 0;
 
 static Qt::MouseButtons buttons = Qt::NoButton;
@@ -621,7 +621,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
     QEvent::Type type;
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
-    if (e->globalPos != QPoint(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
+    if (e->globalPos != QPointF(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
         QWindowSystemInterfacePrivate::MouseEvent * newMouseEvent =
                 new QWindowSystemInterfacePrivate::MouseEvent(e->widget.data(), e->timestamp, e->localPos, e->globalPos, e->buttons);
         QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
@@ -630,8 +630,8 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
     QWidget * tlw = e->widget.data();
 
-    QPoint localPoint = e->localPos;
-    QPoint globalPoint = e->globalPos;
+    QPointF localPoint = e->localPos;
+    QPointF globalPoint = e->globalPos;
     QWidget *mouseWindow = tlw;
 
     Qt::MouseButton button = Qt::NoButton;
@@ -694,7 +694,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
     // find the tlw if we didn't get it from the plugin
     if (!mouseWindow) {
-        mouseWindow = QApplication::topLevelAt(globalPoint);
+        mouseWindow = QApplication::topLevelAt(globalPoint.toPoint());
     }
 
     if (!mouseWindow && !implicit_mouse_grabber)
@@ -702,13 +702,13 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
     if (mouseWindow && mouseWindow != tlw) {
         //we did not get a sensible localPoint from the window system, so let's calculate it
-        localPoint = mouseWindow->mapFromGlobal(globalPoint);
+        localPoint = mouseWindow->mapFromGlobal(globalPoint.toPoint());
     }
 
     // which child should have it?
     QWidget *mouseWidget = mouseWindow;
     if (mouseWindow) {
-        QWidget *w =  mouseWindow->childAt(localPoint);
+        QWidget *w =  mouseWindow->childAt(localPoint.toPoint());
         if (w) {
             mouseWidget = w;
         }
@@ -724,13 +724,13 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
         mouseWidget = implicit_mouse_grabber.data();
         mouseWindow = mouseWidget->window();
         if (mouseWindow != tlw)
-            localPoint = mouseWindow->mapFromGlobal(globalPoint);
+            localPoint = mouseWindow->mapFromGlobal(globalPoint.toPoint());
     }
 
     Q_ASSERT(mouseWidget);
 
     //localPoint is local to mouseWindow, but it needs to be local to mouseWidget
-    localPoint = mouseWidget->mapFrom(mouseWindow, localPoint);
+    localPoint = mouseWidget->mapFrom(mouseWindow, localPoint.toPoint());
 
     if (buttons == Qt::NoButton) {
         //qDebug() << "resetting mouse grabber";
@@ -760,7 +760,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
 #ifndef QT_NO_CONTEXTMENU
     if (type == QEvent::MouseButtonPress && button == Qt::RightButton && (openPopupCount == oldOpenPopupCount)) {
-        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint, globalPoint, QApplication::keyboardModifiers());
+        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint.toPoint(), globalPoint.toPoint(), QApplication::keyboardModifiers());
         QApplication::sendSpontaneousEvent(mouseWidget, &e);
     }
 #endif // QT_NO_CONTEXTMENU
@@ -772,7 +772,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
 //    QPoint localPoint = ev.pos();
-    QPoint globalPoint = e->globalPos;
+    QPointF globalPoint = e->globalPos;
 //    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
     QWidget *mouseWidget;
 
@@ -783,7 +783,7 @@ void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wheel
 
      // find the tlw if we didn't get it from the plugin
      if (!mouseWindow) {
-         mouseWindow = QApplication::topLevelAt(globalPoint);
+         mouseWindow = QApplication::topLevelAt(globalPoint.toPoint());
      }
 
      if (!mouseWindow)
@@ -795,11 +795,11 @@ void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wheel
          qDebug() << "modal blocked wheel event" << mouseWindow;
          return;
      }
-     QPoint p = mouseWindow->mapFromGlobal(globalPoint);
-     QWidget *w = mouseWindow->childAt(p);
+     QPointF p = mouseWindow->mapFromGlobal(globalPoint.toPoint());
+     QWidget *w = mouseWindow->childAt(p.toPoint());
      if (w) {
          mouseWidget = w;
-         p = mouseWidget->mapFromGlobal(globalPoint);
+         p = mouseWidget->mapFromGlobal(globalPoint.toPoint());
      }
 
      QWheelEvent ev(p, globalPoint, e->delta, buttons, QApplication::keyboardModifiers(),
