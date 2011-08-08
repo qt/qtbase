@@ -51,8 +51,13 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
     static int serialNo = 0;
     m_winid  = ++serialNo;
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
+    qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
+
+    QRect screenGeometry(screen()->availableGeometry());
+    if (w->geometry() != screenGeometry) {
+        QWindowSystemInterface::handleGeometryChange(w, screenGeometry);
+    }
 }
 
 void QEglFSWindow::setGeometry(const QRect &)
@@ -67,6 +72,16 @@ void QEglFSWindow::setGeometry(const QRect &)
 WId QEglFSWindow::winId() const
 {
     return m_winid;
+}
+
+void QEglFSWindow::setVisible(bool visible)
+{
+    if (visible) {
+        QWindowSystemInterface::handleMapEvent(window());
+    } else {
+        QWindowSystemInterface::handleUnmapEvent(window());
+    }
+
 }
 
 QT_END_NAMESPACE

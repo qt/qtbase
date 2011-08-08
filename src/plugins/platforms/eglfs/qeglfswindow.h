@@ -58,6 +58,8 @@ public:
     void setGeometry(const QRect &);
     WId winId() const;
 
+    void setVisible(bool visible);
+
 private:
     WId m_winid;
 };
