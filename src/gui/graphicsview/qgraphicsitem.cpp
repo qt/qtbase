@@ -3297,7 +3297,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     if (climb) {
-        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
+        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible() && f->d_ptr->focusScopeItem != f)
             f = f->d_ptr->focusScopeItem;
     }
 
