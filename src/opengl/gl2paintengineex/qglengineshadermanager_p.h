@@ -401,7 +401,7 @@ public:
     bool                useOpacityAttribute;
     bool                usePmvMatrixAttribute;
 
-    bool operator==(const QGLEngineShaderProg& other) {
+    bool operator==(const QGLEngineShaderProg& other) const {
         // We don't care about the program
         return ( mainVertexShader      == other.mainVertexShader &&
                  positionVertexShader  == other.positionVertexShader &&

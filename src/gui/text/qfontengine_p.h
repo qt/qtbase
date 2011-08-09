@@ -291,7 +291,7 @@ private:
     struct GlyphCacheEntry {
         void *context;
         QExplicitlySharedDataPointer<QFontEngineGlyphCache> cache;
-        bool operator==(const GlyphCacheEntry &other) { return context == other.context && cache == other.cache; }
+        bool operator==(const GlyphCacheEntry &other) const { return context == other.context && cache == other.cache; }
     };
 
     mutable QLinkedList<GlyphCacheEntry> m_glyphCaches;

@@ -249,8 +249,6 @@ public:
     inline bool operator!=(const QGradient &other) const
     { return !operator==(other); }
 
-    bool operator==(const QGradient &gradient); // ### Qt 5: remove
-
 private:
     friend class QLinearGradient;
     friend class QRadialGradient;

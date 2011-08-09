@@ -141,7 +141,7 @@ struct MacTimerInfo {
     QObject *obj;
     bool pending;
     CFRunLoopTimerRef runLoopTimer;
-    bool operator==(const MacTimerInfo &other)
+    bool operator==(const MacTimerInfo &other) const
     {
         return (id == other.id);
     }

@@ -352,8 +352,8 @@ public:
         // ### Qt 5: not sure this is necessary anymore
 #ifdef QT_STRICT_ITERATORS
     private:
-        inline bool operator==(const iterator &o) { return operator==(const_iterator(o)); }
-        inline bool operator!=(const iterator &o) { return operator!=(const_iterator(o)); }
+        inline bool operator==(const iterator &o) const { return operator==(const_iterator(o)); }
+        inline bool operator!=(const iterator &o) const { return operator!=(const_iterator(o)); }
 #endif
 
     private:
