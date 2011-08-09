@@ -61,8 +61,7 @@ QLinuxInputPlugin::QLinuxInputPlugin()
 QStringList QLinuxInputPlugin::keys() const
 {
     return (QStringList()
-            << QLatin1String("LinuxInputMouse")
-            << QLatin1String("LinuxInputKeyboard"));
+            << QLatin1String("LinuxInputMouse"));
 }
 
 QObject* QLinuxInputPlugin::create(const QString &key,
@@ -70,8 +69,6 @@ QObject* QLinuxInputPlugin::create(const QString &key,
 {
     if (!key.compare(QLatin1String("LinuxInputMouse"), Qt::CaseInsensitive))
         return new QLinuxInputMouseHandler(key, specification);
-    if (!key.compare(QLatin1String("LinuxInputKeyboard"), Qt::CaseInsensitive))
-        return new QLinuxInputKeyboardHandler(key, specification);
     return 0;
     }
 
