@@ -64,7 +64,6 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_screen(screen)
     , m_context(0)
 {
-    Q_XCB_NOOP(m_screen->connection());
     GLXContext shareGlxContext = 0;
     if (share)
         shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
@@ -72,28 +71,20 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
     m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, shareGlxContext, TRUE);
     m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
-    Q_XCB_NOOP(m_screen->connection());
 }
 
 QGLXContext::~QGLXContext()
 {
-    Q_XCB_NOOP(m_screen->connection());
     glXDestroyContext(DISPLAY_FROM_XCB(m_screen), m_context);
-    Q_XCB_NOOP(m_screen->connection());
 }
 
 bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface);
 
-    Q_XCB_NOOP(m_screen->connection());
-
     GLXDrawable glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
 
-    bool result = glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), glxDrawable, m_context);
-
-    Q_XCB_NOOP(m_screen->connection());
-    return result;
+    return glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), glxDrawable, m_context);
 }
 
 void QGLXContext::doneCurrent()
@@ -103,15 +94,12 @@ void QGLXContext::doneCurrent()
 
 void QGLXContext::swapBuffers(QPlatformSurface *surface)
 {
-    Q_XCB_NOOP(m_screen->connection());
     GLXDrawable glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
     glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), glxDrawable);
-    Q_XCB_NOOP(m_screen->connection());
 }
 
 void (*QGLXContext::getProcAddress(const QByteArray &procName)) ()
 {
-    Q_XCB_NOOP(m_screen->connection());
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
     static bool resolved = false;
