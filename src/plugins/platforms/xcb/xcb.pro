@@ -84,8 +84,10 @@ QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XCB
 
 CONFIG += qpa/genericunixfontdatabase
 
+contains(QT_CONFIG, dbus) {
 QT += dbus
 LIBS += -ldbus-1
+}
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
