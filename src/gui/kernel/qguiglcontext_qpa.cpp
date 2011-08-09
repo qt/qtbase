@@ -71,6 +71,7 @@ public:
         , platformGLContext(0)
         , shareContext(0)
         , screen(0)
+        , surface(0)
     {
     }
 
@@ -86,6 +87,7 @@ public:
     QPlatformGLContext *platformGLContext;
     QGuiGLContext *shareContext;
     QScreen *screen;
+    QSurface *surface;
 
     static void setCurrentContext(QGuiGLContext *context);
 };
@@ -229,6 +231,7 @@ bool QGuiGLContext::makeCurrent(QSurface *surface)
 
     if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
         QGuiGLContextPrivate::setCurrentContext(this);
+        d->surface = surface;
         return true;
     }
 
@@ -246,7 +249,19 @@ void QGuiGLContext::doneCurrent()
 
     d->platformGLContext->doneCurrent();
     QGuiGLContextPrivate::setCurrentContext(0);
+
+    d->surface = 0;
 }
+
+/*!
+    Returns the surface the context is current for.
+*/
+QSurface *QGuiGLContext::surface() const
+{
+    Q_D(const QGuiGLContext);
+    return d->surface;
+}
+
 
 void QGuiGLContext::swapBuffers(QSurface *surface)
 {

@@ -81,6 +81,8 @@ public:
     void swapBuffers(QSurface *surface);
     void (*getProcAddress(const QByteArray &procName)) ();
 
+    QSurface *surface() const;
+
     static QGuiGLContext *currentContext();
 
     QPlatformGLContext *handle() const;

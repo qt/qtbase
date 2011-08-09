@@ -1370,10 +1370,12 @@ void QGLFramebufferObject::blitFramebuffer(QGLFramebufferObject *target, const Q
         return;
 
     const QGLContext *ctx = QGLContext::currentContext();
-    if (!ctx)
+    if (!ctx || !ctx->contextHandle())
         return;
 
-    const int height = ctx->device()->height();
+    QSurface *surface = ctx->contextHandle()->surface();
+
+    const int height = static_cast<QWindow *>(surface)->height();
 
     const int sh = source ? source->height() : height;
     const int th = target ? target->height() : height;
