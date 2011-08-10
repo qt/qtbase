@@ -154,6 +154,9 @@ void QXcbWindow::create()
     QRect rect = window()->geometry();
     QPlatformWindow::setGeometry(rect);
 
+    rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
+    rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
+
     xcb_window_t xcb_parent_id = m_screen->root();
     if (parent())
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
