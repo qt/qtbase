@@ -50,6 +50,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QtDebug>
 #include <QtGui/private/qdnd_p.h>
+#include <QtCore/private/qcore_unix_p.h> // for QT_READ
 
 static QWaylandClipboard *clipboard = 0;
 
@@ -219,7 +220,7 @@ QVariant QWaylandClipboard::retrieveData(const QString &mimeType, QVariant::Type
     char buf[256];
     int n;
     close(pipefd[1]);
-    while ((n = read(pipefd[0], &buf, sizeof buf)) > 0)
+    while ((n = QT_READ(pipefd[0], &buf, sizeof buf)) > 0)
         content.append(buf, n);
     close(pipefd[0]);
     return content;
