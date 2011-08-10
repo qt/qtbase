@@ -140,7 +140,6 @@ private:
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter;
 
-    bool m_hasReceivedSyncRequest;
     Qt::WindowState m_windowState;
 
     bool m_mapped;

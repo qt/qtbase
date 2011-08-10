@@ -116,7 +116,6 @@ void QXcbWindow::create()
     destroy();
 
     m_windowState = Qt::WindowNoState;
-    m_hasReceivedSyncRequest = false;
     m_dirtyFrameMargins = true;
 
     Qt::WindowType type = window()->windowType();
@@ -1086,10 +1085,6 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             xcb_flush(xcb_connection());
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_SYNC_REQUEST)) {
             connection()->setTime(event->data.data32[1]);
-            if (!m_hasReceivedSyncRequest) {
-                m_hasReceivedSyncRequest = true;
-                printf("Window manager supports _NET_WM_SYNC_REQUEST, syncing resizes\n");
-            }
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
         } else {
