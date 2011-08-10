@@ -53,6 +53,8 @@ public:
     QIBusPlatformInputContext();
     ~QIBusPlatformInputContext();
 
+    bool isValid() const;
+
     void mouseHandler(int x, QMouseEvent *event);
     void reset(void);
     void update(void);

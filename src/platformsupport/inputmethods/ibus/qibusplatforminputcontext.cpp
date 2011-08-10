@@ -89,6 +89,11 @@ QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
     delete d;
 }
 
+bool QIBusPlatformInputContext::isValid() const
+{
+    return d->valid;
+}
+
 void QIBusPlatformInputContext::mouseHandler (int x, QMouseEvent *event)
 {
     QPlatformInputContext::mouseHandler (x, event);

@@ -49,7 +49,6 @@
 #include <private/qguiapplication_p.h>
 #include <stdio.h>
 
-#define XCB_USE_IBUS
 #if defined(XCB_USE_IBUS)
 #include "QtPlatformSupport/qibusplatforminputcontext.h"
 #endif

@@ -99,10 +99,14 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
 
-#if defined(XCB_USE_IBUS)
-    m_inputContext = new QIBusPlatformInputContext;
-#else
     m_inputContext = 0;
+#if defined(XCB_USE_IBUS)
+    QIBusPlatformInputContext *context = new QIBusPlatformInputContext;
+    if (context->isValid()) {
+        m_inputContext = context;
+    } else {
+        delete context;
+    }
 #endif
 }
 
