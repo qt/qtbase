@@ -142,6 +142,8 @@ public:
         return alignment;
     }
 
+    static void emitLastWindowClosed();
+
     QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     static QGuiApplicationPrivate *instance() { return self; }
@@ -170,6 +172,8 @@ public:
     static QList<QScreen *> screen_list;
 
     static QFont *app_font;
+
+    static bool quitOnLastWindowClosed;
 private:
     void init();
 

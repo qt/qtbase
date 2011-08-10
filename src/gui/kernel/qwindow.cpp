@@ -440,6 +440,7 @@ void QWindow::setWindowIcon(const QImage &icon) const
 void QWindow::destroy()
 {
     Q_D(QWindow);
+    setVisible(false);
     delete d->platformWindow;
     d->platformWindow = 0;
 }
@@ -569,9 +570,13 @@ bool QWindow::event(QEvent *event)
         break;
 #endif
 
-    case QEvent::Close:
+    case QEvent::Close: {
+        Q_D(QWindow);
+        bool wasVisible = visible();
         destroy();
-        break;
+        if (wasVisible);
+            d->maybeQuitOnLastWindowClosed();
+        break; }
 
     case QEvent::Expose:
         exposeEvent(static_cast<QExposeEvent *>(event));
@@ -628,6 +633,29 @@ void QWindow::wheelEvent(QWheelEvent *)
 Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
 {
     return window->d_func();
+}
+
+void QWindowPrivate::maybeQuitOnLastWindowClosed()
+{
+    Q_Q(QWindow);
+
+    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
+    bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
+
+    if (quitOnClose) {
+        QWindowList list = QGuiApplication::topLevelWindows();
+        bool lastWindowClosed = true;
+        for (int i = 0; i < list.size(); ++i) {
+            QWindow *w = list.at(i);
+            if (!w->visible() || w->parent())
+                continue;
+            lastWindowClosed = false;
+            break;
+        }
+        if (lastWindowClosed)
+            QGuiApplicationPrivate::emitLastWindowClosed();
+    }
+
 }
 
 QT_END_NAMESPACE

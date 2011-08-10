@@ -56,6 +56,8 @@ QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QWindow)
+
 public:
     QWindowPrivate()
         : QObjectPrivate()
@@ -76,6 +78,8 @@ public:
     ~QWindowPrivate()
     {
     }
+
+    void maybeQuitOnLastWindowClosed();
 
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;

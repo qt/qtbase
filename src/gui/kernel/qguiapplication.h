@@ -76,6 +76,8 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
 
+    Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
+
 public:
     QGuiApplication(int &argc, char **argv, int = ApplicationFlags);
     virtual ~QGuiApplication();
@@ -123,12 +125,16 @@ public:
 
     static QPlatformNativeInterface *platformNativeInterface();
 
+    static void setQuitOnLastWindowClosed(bool quit);
+    static bool quitOnLastWindowClosed();
+
     static int exec();
     bool notify(QObject *, QEvent *);
 
 Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
+    void lastWindowClosed();
 
 protected:
     bool event(QEvent *);
