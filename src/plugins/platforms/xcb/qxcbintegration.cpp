@@ -64,7 +64,6 @@
 #include <EGL/egl.h>
 #endif
 
-#define XCB_USE_IBUS
 #if defined(XCB_USE_IBUS)
 #include "QtPlatformSupport/qibusplatforminputcontext.h"
 #endif
@@ -100,7 +99,11 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
 
+#if defined(XCB_USE_IBUS)
     m_inputContext = new QIBusPlatformInputContext;
+#else
+    m_inputContext = 0;
+#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
