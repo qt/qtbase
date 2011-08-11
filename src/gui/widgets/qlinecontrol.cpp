@@ -1449,9 +1449,9 @@ bool QLineControl::processEvent(QEvent* ev)
         case QEvent::GraphicsSceneMouseRelease:
         case QEvent::GraphicsSceneMousePress:{
                QGraphicsSceneMouseEvent *gvEv = static_cast<QGraphicsSceneMouseEvent*>(ev);
-               QMouseEvent* mouse = new QMouseEvent(ev->type(),
+               QMouseEvent mouse(ev->type(),
                     gvEv->pos().toPoint(), gvEv->button(), gvEv->buttons(), gvEv->modifiers());
-               processMouseEvent(mouse); break;
+               processMouseEvent(&mouse); break;
         }
 #endif
         case QEvent::MouseButtonPress:
