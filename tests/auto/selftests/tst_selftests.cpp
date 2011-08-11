@@ -42,7 +42,7 @@
 
 #include <QtCore>
 #include <QtTest/QtTest>
-#include <QtXml/QXmlStreamReader>
+#include <QtCore/QXmlStreamReader>
 #include <private/cycle_p.h>
 
 class tst_Selftests: public QObject
