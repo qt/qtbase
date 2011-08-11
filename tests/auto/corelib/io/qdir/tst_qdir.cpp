@@ -418,9 +418,15 @@ void tst_QDir::QDir_default()
 void tst_QDir::compare()
 {
     // operator==
+
+    // Not using QCOMPARE to test result of QDir::operator==
+
     QDir dir;
     dir.makeAbsolute();
     QVERIFY(dir == QDir::currentPath());
+
+    QVERIFY(QDir() == QDir(QDir::currentPath()));
+    QVERIFY(QDir("../") == QDir(QDir::currentPath() + "/.."));
 }
 
 static QStringList filterLinks(const QStringList &list)

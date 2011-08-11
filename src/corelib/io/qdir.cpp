@@ -1599,9 +1599,9 @@ bool QDir::operator==(const QDir &dir) const
     if (d->filters == other->filters
        && d->sort == other->sort
        && d->nameFilters == other->nameFilters) {
-        d->resolveAbsoluteEntry();
-        other->resolveAbsoluteEntry();
-        return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+
+        // Fallback to expensive canonical path computation
+        return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
     }
     return false;
 }

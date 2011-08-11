@@ -418,6 +418,7 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     if (fileinfo.size() != size()) //if the size isn't the same...
         return false;
 
+   // Fallback to expensive canonical path computation
    return canonicalFilePath().compare(fileinfo.canonicalFilePath(), sensitive) == 0;
 }
 
