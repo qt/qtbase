@@ -2,7 +2,7 @@
 
 modules=`ls $QTDIR/include`
 
-files=`find * -name '*.h' -or -name '*.cpp' -or -name '*.C'`
+files=`find * -name '*.h' -or -name '*.cpp' -or -name '*.C' -or -name '*.cc' -or -name '*.CC'`
 
 echo $files
 
