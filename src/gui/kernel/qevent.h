@@ -183,21 +183,27 @@ public:
     enum TabletDevice { NoDevice, Puck, Stylus, Airbrush, FourDMouse,
                         XFreeEraser /*internal*/, RotationStylus };
     enum PointerType { UnknownPointer, Pen, Cursor, Eraser };
-    QTabletEvent(Type t, const QPoint &pos, const QPoint &globalPos, const QPointF &hiResGlobalPos,
+    QTabletEvent(Type t, const QPointF &pos, const QPointF &globalPos,
                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                  qreal tangentialPressure, qreal rotation, int z,
                  Qt::KeyboardModifiers keyState, qint64 uniqueID);
     ~QTabletEvent();
 
-    inline const QPoint &pos() const { return mPos; }
-    inline const QPoint &globalPos() const { return mGPos; }
-    inline const QPointF &hiResGlobalPos() const { return mHiResGlobalPos; }
-    inline int x() const { return mPos.x(); }
-    inline int y() const { return mPos.y(); }
-    inline int globalX() const { return mGPos.x(); }
-    inline int globalY() const { return mGPos.y(); }
-    inline qreal hiResGlobalX() const { return mHiResGlobalPos.x(); }
-    inline qreal hiResGlobalY() const { return mHiResGlobalPos.y(); }
+    inline const QPoint pos() const { return mPos.toPoint(); }
+    inline const QPoint globalPos() const { return mGPos.toPoint(); }
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED inline const QPointF &hiResGlobalPos() const { return mPos; }
+#endif
+
+    inline const QPointF &posF() const { return mPos; }
+    inline const QPointF &globalPosF() const { return mGPos; }
+
+    inline int x() const { return qRound(mPos.x()); }
+    inline int y() const { return qRound(mPos.y()); }
+    inline int globalX() const { return qRound(mGPos.x()); }
+    inline int globalY() const { return qRound(mGPos.y()); }
+    inline qreal hiResGlobalX() const { return mGPos.x(); }
+    inline qreal hiResGlobalY() const { return mGPos.y(); }
     inline TabletDevice device() const { return TabletDevice(mDev); }
     inline PointerType pointerType() const { return PointerType(mPointerType); }
     inline qint64 uniqueId() const { return mUnique; }
@@ -209,8 +215,7 @@ public:
     inline int yTilt() const { return mYT; }
 
 protected:
-    QPoint mPos, mGPos;
-    QPointF mHiResGlobalPos;
+    QPointF mPos, mGPos;
     int mDev, mPointerType, mXT, mYT, mZ;
     qreal mPress, mTangential, mRot;
     qint64 mUnique;
@@ -477,11 +482,12 @@ class QMimeData;
 class Q_GUI_EXPORT QDropEvent : public QEvent
 {
 public:
-    QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
+    QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeData *data,
                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = Drop);
     ~QDropEvent();
 
-    inline const QPoint &pos() const { return p; }
+    inline const QPoint pos() const { return p.toPoint(); }
+    inline const QPointF &posF() const { return p; }
     inline Qt::MouseButtons mouseButtons() const { return mouseState; }
     inline Qt::KeyboardModifiers keyboardModifiers() const { return modState; }
 
@@ -497,7 +503,7 @@ public:
 
 protected:
     friend class QApplication;
-    QPoint p;
+    QPointF p;
     Qt::MouseButtons mouseState;
     Qt::KeyboardModifiers modState;
     Qt::DropActions act;

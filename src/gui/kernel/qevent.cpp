@@ -1872,14 +1872,13 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
   \sa pos() globalPos() device() pressure() xTilt() yTilt() uniqueId(), rotation(), tangentialPressure(), z()
 */
 
-QTabletEvent::QTabletEvent(Type type, const QPoint &pos, const QPoint &globalPos,
-                           const QPointF &hiResGlobalPos, int device, int pointerType,
+QTabletEvent::QTabletEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+                           int device, int pointerType,
                            qreal pressure, int xTilt, int yTilt, qreal tangentialPressure,
                            qreal rotation, int z, Qt::KeyboardModifiers keyState, qint64 uniqueID)
     : QInputEvent(type, keyState),
       mPos(pos),
       mGPos(globalPos),
-      mHiResGlobalPos(hiResGlobalPos),
       mDev(device),
       mPointerType(pointerType),
       mXT(xTilt),
@@ -2208,7 +2207,7 @@ QDragMoveEvent::~QDragMoveEvent()
     The states of the mouse buttons and keyboard modifiers at the time of
     the drop are specified by \a buttons and \a modifiers.
 */ // ### pos is in which coordinate system?
-QDropEvent::QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeData *data,
+QDropEvent::QDropEvent(const QPointF& pos, Qt::DropActions actions, const QMimeData *data,
                        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type)
     : QEvent(type), p(pos), mouseState(buttons),
       modState(modifiers), act(actions),

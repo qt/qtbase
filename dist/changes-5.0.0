@@ -102,6 +102,9 @@ information about a particular change.
 
 - QSound has been moved from QtGui to QtMultimedia
 
+- QTabletEvent::QTabletEvent does not take a hiResGlobalPos argument anymore,
+  as all coordinates are floating point based now.
+
 - QTouchEvent:
 
   * The DeviceType enum and deviceType() have been deprecated due to

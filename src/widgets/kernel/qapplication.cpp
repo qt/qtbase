@@ -3700,11 +3700,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         {
             QWidget *w = static_cast<QWidget *>(receiver);
             QTabletEvent *tablet = static_cast<QTabletEvent*>(e);
-            QPoint relpos = tablet->pos();
+            QPointF relpos = tablet->posF();
             bool eventAccepted = tablet->isAccepted();
             while (w) {
-                QTabletEvent te(tablet->type(), relpos, tablet->globalPos(),
-                                tablet->hiResGlobalPos(), tablet->device(), tablet->pointerType(),
+                QTabletEvent te(tablet->type(), relpos, tablet->globalPosF(),
+                                tablet->device(), tablet->pointerType(),
                                 tablet->pressure(), tablet->xTilt(), tablet->yTilt(),
                                 tablet->tangentialPressure(), tablet->rotation(), tablet->z(),
                                 tablet->modifiers(), tablet->uniqueId());
@@ -3799,7 +3799,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 }
                 if (w->isWindow())
                     break;
-                dragEvent->p = w->mapToParent(dragEvent->p);
+                dragEvent->p = w->mapToParent(dragEvent->p.toPoint());
                 w = w->parentWidget();
             }
         }
@@ -3838,7 +3838,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
                 QWidget *origReciver = static_cast<QWidget *>(receiver);
                 while (origReciver && w != origReciver) {
-                    dragEvent->p = origReciver->mapToParent(dragEvent->p);
+                    dragEvent->p = origReciver->mapToParent(dragEvent->p.toPoint());
                     origReciver = origReciver->parentWidget();
                 }
             }
