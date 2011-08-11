@@ -45,6 +45,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include <QPlatformWindow>
+#include <QRect>
 
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
@@ -76,6 +77,9 @@ public:
 protected:
     void determineWindowClass();
     NSWindow *createWindow();
+    NSRect globalGeometry(const QRect localWindowGeometry) const;
+    QRect windowGeometry() const;
+    QCocoaWindow *parentCocoaWindow() const;
 private:
     friend class QCocoaBackingStore;
     NSWindow *m_nsWindow;

@@ -46,6 +46,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
 #include <QWindowSystemInterface>
+#include <QPlatformScreen>
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
@@ -68,8 +69,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
 
     if (tlw->surfaceType() == QWindow::OpenGLSurface) {
-        const QRect geo = window()->geometry();
-        NSRect glFrame = NSMakeRect(0, 0, geo.width(), geo.height());
+        NSRect glFrame = globalGeometry(window()->geometry());
         m_windowSurfaceView = [[NSOpenGLView alloc] initWithFrame : glFrame pixelFormat : QCocoaGLContext::createNSOpenGLPixelFormat() ];
         [m_contentView setAutoresizesSubviews : YES];
         [m_windowSurfaceView setAutoresizingMask : (NSViewWidthSizable | NSViewHeightSizable)];
@@ -90,8 +90,9 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
 
-    NSRect bounds = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+    NSRect bounds = globalGeometry(window()->geometry());
     [[m_nsWindow contentView]setFrameSize:bounds.size];
+    [m_nsWindow setFrameOrigin : bounds.origin];
 
     if (m_glContext)
         m_glContext->update();
@@ -100,6 +101,11 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 void QCocoaWindow::setVisible(bool visible)
 {
     if (visible) {
+        // The parent window might have moved while this window was hidden,
+        // update the window geometry if there is a parent.
+        if (window()->transientParent())
+            setGeometry(window()->geometry());
+
         [m_nsWindow makeKeyAndOrderFront:nil];
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     } else {
@@ -265,18 +271,7 @@ NSWindow * QCocoaWindow::createWindow()
             wattr |= QtMacCustomizeWindow;
     }
 */
-    // If we haven't created the desktop widget, you have to pass the rectangle
-    // in "cocoa coordinates" (i.e., top points to the lower left coordinate).
-    // Otherwise, we do the conversion for you. Since we are the only ones that
-    // create the desktop widget, this is OK (but confusing).
-/*
-    NSRect geo = NSMakeRect(crect.left(),
-                            (qt_root_win != 0) ? flipYCoordinate(crect.bottom() + 1) : crect.top(),
-                            crect.width(), crect.height());
-*/
-    QRect geo = window()->geometry();
-    NSRect frame = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
-
+    NSRect frame = globalGeometry(window()->geometry());
     QCocoaAutoReleasePool pool;
     NSWindow *window;
 
@@ -328,4 +323,48 @@ NSWindow * QCocoaWindow::createWindow()
     return window;
 }
 
+// Calculate the global screen geometry for the given local geometry, which
+// might be in the parent window coordinate system.
+NSRect QCocoaWindow::globalGeometry(const QRect localGeometry) const
+{
+    QRect finalGeometry = localGeometry;
+
+    if (QCocoaWindow *parent = parentCocoaWindow()) {
+        QRect parentGeometry = parent->windowGeometry();
+        finalGeometry.adjust(parentGeometry.x(), parentGeometry.y(), parentGeometry.x(), parentGeometry.y());
+
+        // Qt child window geometry assumes that the origin is at the
+        // top-left of the content area of the parent window. The title
+        // bar is not a part of this contet area, but is still included
+        // in the NSWindow height. Move the child window down to acccount
+        // for this if the parent window has a title bar.
+        const int titlebarHeight = 22;
+        if (!(window()->windowFlags() & Qt::FramelessWindowHint))
+            finalGeometry.adjust(0, titlebarHeight, 0, titlebarHeight);
+    }
+
+    // The final "y invert" to get OS X global geometry:
+    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window());
+    int flippedY = onScreen->geometry().height() - finalGeometry.y() - finalGeometry.height();
+    return NSMakeRect(finalGeometry.x(), flippedY, finalGeometry.width(), finalGeometry.height());
+}
+
+// Returns the current global screen geometry for the nswindow accociated with this window.
+QRect QCocoaWindow::windowGeometry() const
+{
+    NSRect rect = [m_nsWindow frame];
+    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window());
+    int flippedY = onScreen->geometry().height() - rect.origin.y - rect.size.height;  // account for nswindow inverted y.
+    QRect qRect = QRect(rect.origin.x, flippedY, rect.size.width, rect.size.height);
+    return qRect;
+}
+
+// Returns a pointer to the parent QCocoaWindow for this window, or 0 if there is none.
+QCocoaWindow *QCocoaWindow::parentCocoaWindow() const
+{
+    if (window() && window()->transientParent()) {
+        return static_cast<QCocoaWindow*>(window()->transientParent()->handle());
+    }
+    return 0;
+}
 
