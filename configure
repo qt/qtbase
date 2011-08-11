@@ -7311,7 +7311,7 @@ fi
 [ '!' -z "$L_FLAGS" ] && QMakeVar add QMAKE_LIBDIR_FLAGS "$L_FLAGS"
 [ '!' -z "$l_FLAGS" ] && QMakeVar add LIBS "$l_FLAGS"
 
-if [ "$PLATFORM_MAC" = "yes" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi
