@@ -80,6 +80,12 @@ QCocoaIntegration::QCocoaIntegration()
     [NSApplication sharedApplication];
 //    [[OurApplication alloc] init];
 
+    // Move the application window to front to avoid launching behind the terminal.
+    // Ignoring other apps is neccessary (we must ignore the terminal), but makes
+    // Qt apps play slightly less nice with other apps when lanching from Finder
+    // (See the activateIgnoringOtherApps docs.)
+    [[NSApplication sharedApplication] activateIgnoringOtherApps : YES];
+
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
         QCocoaScreen *screen = new QCocoaScreen(i);
