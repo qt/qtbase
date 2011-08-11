@@ -1,5 +1,5 @@
 load(qt_module)
-TARGET     = $$qtLibraryTarget(QtPlatformSupport)
+TARGET     = QtPlatformSupport
 QPRO_PWD   = $$PWD
 QT         += core-private gui-private
 TEMPLATE   = lib
@@ -9,7 +9,9 @@ CONFIG += module
 !mac:CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
-MODULE_PRI = ../modules/qt_platformssupport.pri
+MODULE_PRI = ../modules/qt_platformsupport.pri
+
+load(qt_module_config)
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 

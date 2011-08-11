@@ -4,6 +4,7 @@ QT.platformsupport.MINOR_VERSION = 0
 QT.platformsupport.PATCH_VERSION = 0
 
 QT.platformsupport.name = QtPlatformSupport
+QT.platformsupport.bins = $$QT_MODULE_BIN_BASE
 QT.platformsupport.includes = $$QT_MODULE_INCLUDE_BASE/QtPlatformSupport
 QT.platformsupport.private_includes = $$QT_MODULE_INCLUDE_BASE/QtPlatformSupport/$$QT.platformsupport.VERSION
 QT.platformsupport.sources = $$QT_MODULE_BASE/src/platformsupport
