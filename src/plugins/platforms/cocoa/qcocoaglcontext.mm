@@ -1,5 +1,6 @@
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoaautoreleasepool.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtPlatformSupport/private/cglconvenience_p.h>
@@ -9,6 +10,8 @@
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share)
     : m_format(format)
 {
+    QCocoaAutoReleasePool pool; // For the SG Canvas render thread.
+
     NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
     NSOpenGLContext *actualShare = share ? static_cast<QCocoaGLContext *>(share)->m_context : 0;
 
