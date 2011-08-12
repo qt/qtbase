@@ -883,12 +883,27 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     b.show();
     const QRect screen = QApplication::desktop()->screenGeometry(scrNumber);
 
-    b.move(10, screen.bottom()-b.height()-5);
+    QRect desiredGeometry = b.geometry();
+    desiredGeometry.moveTopLeft(QPoint(10, screen.bottom()-b.height()-5));
+
+    b.setGeometry(desiredGeometry);
     QTest::qWaitForWindowShown(&b);
+
+    if (b.geometry() != desiredGeometry) {
+        // We are trying to put the button very close to the edge of the screen,
+        // explicitly to test behavior when the popup menu goes off the screen.
+        // However a modern window manager is quite likely to reject this requested geometry
+        // (kwin in kde4 does, for example, since the button would probably appear behind
+        // or partially behind the taskbar).
+        // Your best bet is to run this test _without_ a WM.
+        QSKIP("Your window manager won't allow a window against the bottom of the screen", SkipAll);
+    }
+
     QTimer::singleShot(300,lastMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
     QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
 
+    // note: we're assuming that, if we previously got the desired geometry, we'll get it here too
     b.move(10, screen.bottom()-lastMenu->height()-5);
     QTimer::singleShot(300,lastMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
