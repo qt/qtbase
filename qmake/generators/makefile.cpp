@@ -784,7 +784,7 @@ MakefileGenerator::init()
             (*it) = Option::fixPathToLocalOS((*it));
     }
 
-    { //get the output_dir into the pwd
+    if(!project->isActiveConfig("no_include_pwd")) { //get the output_dir into the pwd
         if(Option::output_dir != qmake_getpwd())
             project->values("INCLUDEPATH").append(".");
     }
