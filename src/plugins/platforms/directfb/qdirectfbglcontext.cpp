@@ -41,7 +41,7 @@
 
 #include "qdirectfbglcontext.h"
 
-#include <directfb/directfbgl.h>
+#include <directfbgl.h>
 
 #include <QDebug>
 
