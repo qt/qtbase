@@ -531,16 +531,17 @@ int QTextDocumentPrivate::remove_block(int pos, int *blockFormat, int command, Q
     Q_ASSERT(b);
 
     if (blocks.size(b) == 1 && command == QTextUndoCommand::BlockAdded) {
-	Q_ASSERT((int)blocks.position(b) == pos);
-//  	qDebug("removing empty block");
-	// empty block remove the block itself
+        Q_ASSERT((int)blocks.position(b) == pos);
+        // qDebug("removing empty block");
+        // empty block remove the block itself
     } else {
-	// non empty block, merge with next one into this block
-//  	qDebug("merging block with next");
-	int n = blocks.next(b);
-	Q_ASSERT((int)blocks.position(n) == pos + 1);
-	blocks.setSize(b, blocks.size(b) + blocks.size(n) - 1);
-	b = n;
+        // non empty block, merge with next one into this block
+        // qDebug("merging block with next");
+        int n = blocks.next(b);
+        Q_ASSERT((int)blocks.position(n) == pos + 1);
+        blocks.setSize(b, blocks.size(b) + blocks.size(n) - 1);
+        blocks.fragment(b)->userState = blocks.fragment(n)->userState;
+        b = n;
     }
     *blockFormat = blocks.fragment(b)->format;
 
