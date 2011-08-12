@@ -827,6 +827,9 @@ void tst_QMenu::task258920_mouseBorder()
 #ifdef Q_OS_WINCE_WM
     QSKIP("Mouse move related signals for Windows Mobile unavailable", SkipAll);
 #endif
+#ifdef Q_WS_QPA
+    QSKIP("QTBUG-20753 QCursor::setPos() / QTest::mouseMove() doesn't work on qpa", SkipAll);
+#endif
     Menu258920 menu;
     // On Symbian, styleHint(QStyle::SH_Menu_MouseTracking) in QS60Style is false.
     // For other styles which inherit from QWindowsStyle, the value is true.
