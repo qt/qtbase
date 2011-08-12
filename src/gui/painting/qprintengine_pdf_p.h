@@ -67,6 +67,7 @@
 #include "private/qfontengine_p.h"
 #include "private/qpdf_p.h"
 #include "private/qpaintengine_p.h"
+#include "qprintengine.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +83,7 @@ class QPdfEngine;
 
 class QPdfEnginePrivate;
 
-class QPdfEngine : public QPdfBaseEngine
+class QPdfEngine : public QPdfBaseEngine, public QPrintEngine
 {
     Q_DECLARE_PRIVATE(QPdfEngine)
 public:
@@ -92,32 +93,22 @@ public:
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev);
     bool end();
-    void drawPixmap (const QRectF & rectangle, const QPixmap & pixmap, const QRectF & sr);
-    void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                   Qt::ImageConversionFlags flags = Qt::AutoColor);
-    void drawTiledPixmap (const QRectF & rectangle, const QPixmap & pixmap, const QPointF & point);
-
-    Type type() const;
     // end reimplementations QPaintEngine
 
     // reimplementations QPrintEngine
     bool abort() {return false;}
-    bool newPage();
     QPrinter::PrinterState printerState() const {return state;}
+
+    bool newPage();
+    int metric(QPaintDevice::PaintDeviceMetric) const;
+    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
+    QVariant property(PrintEnginePropertyKey key) const;
     // end reimplementations QPrintEngine
 
-    void setBrush();
-
-    // ### unused, should have something for this in QPrintEngine
-    void setAuthor(const QString &author);
-    QString author() const;
-
-    void setDevice(QIODevice* dev);
+    QPrinter::PrinterState state;
 
 private:
     Q_DISABLE_COPY(QPdfEngine)
-
-    QPrinter::PrinterState state;
 };
 
 class QPdfEnginePrivate : public QPdfBaseEnginePrivate
@@ -127,65 +118,12 @@ public:
     QPdfEnginePrivate(QPrinter::PrinterMode m);
     ~QPdfEnginePrivate();
 
-    void newPage();
-
-    int width() const {
-        QRect r = paperRect();
-        return qRound(r.width()*72./resolution);
-    }
-    int height() const {
-        QRect r = paperRect();
-        return qRound(r.height()*72./resolution);
-    }
-
-    void writeHeader();
-    void writeTail();
-
-    int addImage(const QImage &image, bool *bitmap, qint64 serial_no);
-    int addConstantAlphaObject(int brushAlpha, int penAlpha = 255);
-    int addBrushPattern(const QTransform &matrix, bool *specifyColor, int *gStateObject);
-
-    void drawTextItem(const QPointF &p, const QTextItemInt &ti);
-
-    QTransform pageMatrix() const;
+    bool openPrintDevice();
+    void closePrintDevice();
 
 private:
     Q_DISABLE_COPY(QPdfEnginePrivate)
 
-#ifdef USE_NATIVE_GRADIENTS
-    int gradientBrush(const QBrush &b, const QMatrix &matrix, int *gStateObject);
-#endif
-
-    void writeInfo();
-    void writePageRoot();
-    void writeFonts();
-    void embedFont(QFontSubset *font);
-
-    QVector<int> xrefPositions;
-    QDataStream* stream;
-    int streampos;
-
-    int writeImage(const QByteArray &data, int width, int height, int depth,
-                   int maskObject, int softMaskObject, bool dct = false);
-    void writePage();
-
-    int addXrefEntry(int object, bool printostr = true);
-    void printString(const QString &string);
-    void xprintf(const char* fmt, ...);
-    inline void write(const QByteArray &data) {
-        stream->writeRawData(data.constData(), data.size());
-        streampos += data.size();
-    }
-
-    int writeCompressed(const char *src, int len);
-    inline int writeCompressed(const QByteArray &data) { return writeCompressed(data.constData(), data.length()); }
-    int writeCompressed(QIODevice *dev);
-
-    // various PDF objects
-    int pageRoot, catalog, info, graphicsState, patternColorSpace;
-    QVector<uint> pages;
-    QHash<qint64, uint> imageCache;
-    QHash<QPair<uint, uint>, uint > alphaCache;
 };
 
 QT_END_NAMESPACE
