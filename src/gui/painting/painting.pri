@@ -24,6 +24,7 @@ HEADERS += \
         painting/qvectorpath_p.h \
         painting/qpathclipper_p.h \
         painting/qpdf_p.h \
+        painting/qpdfwriter.h \
         painting/qpen.h \
         painting/qpolygon.h \
         painting/qpolygonclipper_p.h \
@@ -64,6 +65,7 @@ SOURCES += \
         painting/qpainterpath.cpp \
         painting/qpathclipper.cpp \
         painting/qpdf.cpp \
+        painting/qpdfwriter.cpp \
         painting/qpen.cpp \
         painting/qpolygon.cpp \
         painting/qprintengine_pdf.cpp \
