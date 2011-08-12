@@ -1,7 +1,7 @@
 QPRO_PWD   = $$PWD
 TEMPLATE = lib
 TARGET = $$qtLibraryTarget(QtUiTools)
-QT = core xml
+QT = core
 
 CONFIG += qt staticlib module
 MODULE = uitools
@@ -56,5 +56,4 @@ unix|win32-g++* {
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS]/$$TARGET
    QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS]
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-   QMAKE_PKGCONFIG_REQUIRES += QtXml
 }

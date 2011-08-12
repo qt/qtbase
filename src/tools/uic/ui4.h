@@ -62,16 +62,7 @@
 #include <QtCore/QXmlStreamWriter>
 #include <QtCore/qglobal.h>
 
-#if defined(QT_UIC3)
- #define QUILOADER_QDOM_READ
-#endif
-
 QT_BEGIN_NAMESPACE
-
-#ifdef QUILOADER_QDOM_READ
- class QDomElement;
-#endif
-
 
 #define QDESIGNER_UILIB_EXTERN Q_DECL_EXPORT
 #define QDESIGNER_UILIB_IMPORT Q_DECL_IMPORT
@@ -174,9 +165,6 @@ public:
     ~DomUI();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -374,9 +362,6 @@ public:
     ~DomIncludes();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -408,9 +393,6 @@ public:
     ~DomInclude();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -451,9 +433,6 @@ public:
     ~DomResources();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -493,9 +472,6 @@ public:
     ~DomResource();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -528,9 +504,6 @@ public:
     ~DomActionGroup();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -585,9 +558,6 @@ public:
     ~DomAction();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -640,9 +610,6 @@ public:
     ~DomActionRef();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -675,9 +642,6 @@ public:
     ~DomButtonGroup();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -722,9 +686,6 @@ public:
     ~DomButtonGroups();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -756,9 +717,6 @@ public:
     ~DomImages();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -790,9 +748,6 @@ public:
     ~DomImage();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -835,9 +790,6 @@ public:
     ~DomImageData();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -878,9 +830,6 @@ public:
     ~DomCustomWidgets();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -912,9 +861,6 @@ public:
     ~DomHeader();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -947,9 +893,6 @@ public:
     ~DomCustomWidget();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1067,9 +1010,6 @@ public:
     ~DomProperties();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1101,9 +1041,6 @@ public:
     ~DomPropertyData();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1136,9 +1073,6 @@ public:
     ~DomSizePolicyData();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1179,9 +1113,6 @@ public:
     ~DomLayoutDefault();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1222,9 +1153,6 @@ public:
     ~DomLayoutFunction();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1265,9 +1193,6 @@ public:
     ~DomTabStops();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1299,9 +1224,6 @@ public:
     ~DomLayout();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1399,9 +1321,6 @@ public:
     ~DomLayoutItem();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1484,9 +1403,6 @@ public:
     ~DomRow();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1518,9 +1434,6 @@ public:
     ~DomColumn();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1552,9 +1465,6 @@ public:
     ~DomItem();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1607,9 +1517,6 @@ public:
     ~DomWidget();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1730,9 +1637,6 @@ public:
     ~DomSpacer();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1772,9 +1676,6 @@ public:
     ~DomColor();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1830,9 +1731,6 @@ public:
     ~DomGradientStop();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -1875,9 +1773,6 @@ public:
     ~DomGradient();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2013,9 +1908,6 @@ public:
     ~DomBrush();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2066,9 +1958,6 @@ public:
     ~DomColorRole();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2111,9 +2000,6 @@ public:
     ~DomColorGroup();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2150,9 +2036,6 @@ public:
     ~DomPalette();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2203,9 +2086,6 @@ public:
     ~DomFont();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2302,9 +2182,6 @@ public:
     ~DomPoint();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2345,9 +2222,6 @@ public:
     ~DomRect();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2402,9 +2276,6 @@ public:
     ~DomLocale();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2445,9 +2316,6 @@ public:
     ~DomSizePolicy();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2518,9 +2386,6 @@ public:
     ~DomSize();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2561,9 +2426,6 @@ public:
     ~DomDate();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2611,9 +2473,6 @@ public:
     ~DomTime();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2661,9 +2520,6 @@ public:
     ~DomDateTime();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2732,9 +2588,6 @@ public:
     ~DomStringList();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2766,9 +2619,6 @@ public:
     ~DomResourcePixmap();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2809,9 +2659,6 @@ public:
     ~DomResourceIcon();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2918,9 +2765,6 @@ public:
     ~DomString();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -2969,9 +2813,6 @@ public:
     ~DomPointF();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3012,9 +2853,6 @@ public:
     ~DomRectF();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3069,9 +2907,6 @@ public:
     ~DomSizeF();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3112,9 +2947,6 @@ public:
     ~DomChar();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3148,9 +2980,6 @@ public:
     ~DomUrl();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3185,9 +3014,6 @@ public:
     ~DomProperty();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3384,9 +3210,6 @@ public:
     ~DomConnections();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3418,9 +3241,6 @@ public:
     ~DomConnection();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3483,9 +3303,6 @@ public:
     ~DomConnectionHints();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3517,9 +3334,6 @@ public:
     ~DomConnectionHint();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3568,9 +3382,6 @@ public:
     ~DomScript();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3611,9 +3422,6 @@ public:
     ~DomWidgetData();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3645,9 +3453,6 @@ public:
     ~DomDesignerData();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3679,9 +3484,6 @@ public:
     ~DomSlots();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3718,9 +3520,6 @@ public:
     ~DomPropertySpecifications();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
@@ -3752,9 +3551,6 @@ public:
     ~DomStringPropertySpecification();
 
     void read(QXmlStreamReader &reader);
-#ifdef QUILOADER_QDOM_READ
-    void read(const QDomElement &node);
-#endif
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
