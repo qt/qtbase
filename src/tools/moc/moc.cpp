@@ -216,8 +216,8 @@ Type Moc::parseType()
             QByteArray templ = lexemUntil(RANGLE);
             for (int i = 0; i < templ.size(); ++i) {
                 type.name += templ.at(i);
-                if ((templ.at(i) == '<' && i < templ.size()-1 && templ.at(i+1) == ':')
-                    || (templ.at(i) == '>' && i < templ.size()-1 && templ.at(i+1) == '>')) {
+                if ((templ.at(i) == '<' && i+1 < templ.size() && templ.at(i+1) == ':')
+                    || (templ.at(i) == '>' && i+1 < templ.size() && templ.at(i+1) == '>')) {
                     type.name += ' ';
                 }
             }

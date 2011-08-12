@@ -183,7 +183,7 @@ QString QSqlResultPrivate::namedToPositionalBinding()
         QChar ch = sql.at(i);
         if (ch == QLatin1Char(':') && !inQuote
                 && (i == 0 || sql.at(i - 1) != QLatin1Char(':'))
-                && (i < n - 1 && qIsAlnum(sql.at(i + 1)))) {
+                && (i + 1 < n && qIsAlnum(sql.at(i + 1)))) {
             int pos = i + 2;
             while (pos < n && qIsAlnum(sql.at(pos)))
                 ++pos;
@@ -618,7 +618,7 @@ bool QSqlResult::prepare(const QString& query)
         QChar ch = query.at(i);
         if (ch == QLatin1Char(':') && !inQuote
                 && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
-                && (i < n - 1 && qIsAlnum(query.at(i + 1)))) {
+                && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
             int pos = i + 2;
             while (pos < n && qIsAlnum(query.at(pos)))
                 ++pos;

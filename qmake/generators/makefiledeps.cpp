@@ -499,7 +499,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                             } else if(*(buffer+x) == '*') { //c style comment
                                 for(++x; x < buffer_len; ++x) {
                                     if(*(buffer+x) == '*') {
-                                        if(x < buffer_len-1 && *(buffer + (x+1)) == '/') {
+                                        if(x+1 < buffer_len && *(buffer + (x+1)) == '/') {
                                             ++x;
                                             break;
                                         }

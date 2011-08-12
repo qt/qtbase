@@ -219,7 +219,7 @@ void GradientEditor::pointsUpdated()
 
     for (int i=0; i<points.size(); ++i) {
         qreal x = int(points.at(i).x());
-        if (i < points.size() - 1 && x == points.at(i+1).x())
+        if (i+1 < points.size() && x == points.at(i+1).x())
             continue;
         QColor color((0x00ff0000 & m_red_shade->colorAt(int(x))) >> 16,
                      (0x0000ff00 & m_green_shade->colorAt(int(x))) >> 8,

@@ -1970,7 +1970,7 @@ QString QDir::cleanPath(const QString &path)
     const QChar *p = name.unicode();
     for (int i = 0, last = -1, iwrite = 0; i < len; ++i) {
         if (p[i] == QLatin1Char('/')) {
-            while (i < len-1 && p[i+1] == QLatin1Char('/')) {
+            while (i+1 < len && p[i+1] == QLatin1Char('/')) {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) //allow unc paths
                 if (!i)
                     break;
@@ -1978,9 +1978,9 @@ QString QDir::cleanPath(const QString &path)
                 i++;
             }
             bool eaten = false;
-            if (i < len - 1 && p[i+1] == QLatin1Char('.')) {
+            if (i+1 < len && p[i+1] == QLatin1Char('.')) {
                 int dotcount = 1;
-                if (i < len - 2 && p[i+2] == QLatin1Char('.'))
+                if (i+2 < len && p[i+2] == QLatin1Char('.'))
                     dotcount++;
                 if (i == len - dotcount - 1) {
                     if (dotcount == 1) {

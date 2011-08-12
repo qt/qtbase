@@ -171,7 +171,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
 
     if (tabIndex > 0 && tabIndex - 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::PreviousIsSelected;
-    else if (tabIndex < totalTabs - 1 && tabIndex + 1 == d->currentIndex)
+    else if (tabIndex + 1 < totalTabs && tabIndex + 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::NextIsSelected;
     else
         option->selectedPosition = QStyleOptionTab::NotAdjacent;

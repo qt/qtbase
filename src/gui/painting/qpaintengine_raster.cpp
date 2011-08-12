@@ -3488,7 +3488,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x1 << ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }
@@ -3514,7 +3514,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
                     spans[n].y = y;
                     spans[n].coverage = 255;
                     int len = 1;
-                    while (src_x < w-1 && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
+                    while (src_x+1 < w && src[(src_x+1) >> 3] & (0x80 >> ((src_x+1) & 7))) {
                         ++src_x;
                         ++len;
                     }
