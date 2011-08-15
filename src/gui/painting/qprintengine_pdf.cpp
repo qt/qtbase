@@ -81,10 +81,10 @@ inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
     return f;
 }
 
-QPdfEngine::QPdfEngine(QPrinter::PrinterMode m)
-    : QPdfBaseEngine(*new QPdfEnginePrivate(m), qt_pdf_decide_features())
+QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m)
+    : QPdfEngine(*new QPdfPrintEnginePrivate(m), qt_pdf_decide_features())
 {
-    Q_D(QPdfEngine);
+    Q_D(QPdfPrintEngine);
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (QCUPSSupport::isAvailable()) {
         QCUPSSupport cups;
@@ -113,13 +113,13 @@ QPdfEngine::QPdfEngine(QPrinter::PrinterMode m)
     state = QPrinter::Idle;
 }
 
-QPdfEngine::~QPdfEngine()
+QPdfPrintEngine::~QPdfPrintEngine()
 {
 }
 
-bool QPdfEngine::begin(QPaintDevice *pdev)
+bool QPdfPrintEngine::begin(QPaintDevice *pdev)
 {
-    Q_D(QPdfEngine);
+    Q_D(QPdfPrintEngine);
 
     if (!d->openPrintDevice()) {
         state = QPrinter::Error;
@@ -127,14 +127,14 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
     }
     state = QPrinter::Active;
 
-    return QPdfBaseEngine::begin(pdev);
+    return QPdfEngine::begin(pdev);
 }
 
-bool QPdfEngine::end()
+bool QPdfPrintEngine::end()
 {
-    Q_D(QPdfEngine);
+    Q_D(QPdfPrintEngine);
 
-    QPdfBaseEngine::end();
+    QPdfEngine::end();
 
     d->closePrintDevice();
     state = QPrinter::Idle;
@@ -142,19 +142,19 @@ bool QPdfEngine::end()
     return true;
 }
 
-bool QPdfEngine::newPage()
+bool QPdfPrintEngine::newPage()
 {
-    return QPdfBaseEngine::newPage();
+    return QPdfEngine::newPage();
 }
 
-int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric m) const
+int QPdfPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
 {
-    return QPdfBaseEngine::metric(m);
+    return QPdfEngine::metric(m);
 }
 
-void QPdfEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
+void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     switch (int(key)) {
     case PPK_CollateCopies:
         d->collate = value.toBool();
@@ -240,9 +240,9 @@ void QPdfEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
     }
 }
 
-QVariant QPdfEngine::property(PrintEnginePropertyKey key) const
+QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
 {
-    Q_D(const QPdfBaseEngine);
+    Q_D(const QPdfEngine);
 
     QVariant ret;
     switch (int(key)) {
@@ -380,7 +380,7 @@ static void closeAllOpenFds()
 }
 #endif
 
-bool QPdfEnginePrivate::openPrintDevice()
+bool QPdfPrintEnginePrivate::openPrintDevice()
 {
     if(outDevice)
         return false;
@@ -521,7 +521,7 @@ bool QPdfEnginePrivate::openPrintDevice()
     return true;
 }
 
-void QPdfEnginePrivate::closePrintDevice()
+void QPdfPrintEnginePrivate::closePrintDevice()
 {
     if (!outDevice)
         return;
@@ -618,12 +618,12 @@ void QPdfEnginePrivate::closePrintDevice()
 
 
 
-QPdfEnginePrivate::QPdfEnginePrivate(QPrinter::PrinterMode m)
-    : QPdfBaseEnginePrivate(m)
+QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
+    : QPdfEnginePrivate(m)
 {
 }
 
-QPdfEnginePrivate::~QPdfEnginePrivate()
+QPdfPrintEnginePrivate::~QPdfPrintEnginePrivate()
 {
 }
 

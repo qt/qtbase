@@ -175,14 +175,14 @@ private:
 };
 
 
-class QPdfBaseEnginePrivate;
+class QPdfEnginePrivate;
 
-class QPdfBaseEngine : public QAlphaPaintEngine
+class QPdfEngine : public QAlphaPaintEngine
 {
-    Q_DECLARE_PRIVATE(QPdfBaseEngine)
+    Q_DECLARE_PRIVATE(QPdfEngine)
 public:
-    QPdfBaseEngine(QPdfBaseEnginePrivate &d, PaintEngineFeatures f);
-    ~QPdfBaseEngine() {}
+    QPdfEngine(QPdfEnginePrivate &d, PaintEngineFeatures f);
+    ~QPdfEngine() {}
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev);
@@ -218,12 +218,12 @@ private:
     void updateClipPath(const QPainterPath & path, Qt::ClipOperation op);
 };
 
-class QPdfBaseEnginePrivate : public QAlphaPaintEnginePrivate
+class QPdfEnginePrivate : public QAlphaPaintEnginePrivate
 {
-    Q_DECLARE_PUBLIC(QPdfBaseEngine)
+    Q_DECLARE_PUBLIC(QPdfEngine)
 public:
-    QPdfBaseEnginePrivate(QPrinter::PrinterMode m);
-    ~QPdfBaseEnginePrivate();
+    QPdfEnginePrivate(QPrinter::PrinterMode m);
+    ~QPdfEnginePrivate();
 
     inline uint requestObject() { return currentObject++; }
 

@@ -189,7 +189,7 @@ void QPrinterPrivate::createDefaultEngines()
         }
         break;
     case QPrinter::PdfFormat: {
-        QPdfEngine *pdfEngine = new QPdfEngine(printerMode);
+        QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
         paintEngine = pdfEngine;
         printEngine = pdfEngine;
     }

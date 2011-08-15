@@ -79,16 +79,16 @@ class QPen;
 class QPointF;
 class QRegion;
 class QFile;
-class QPdfEngine;
+class QPdfPrintEngine;
 
-class QPdfEnginePrivate;
+class QPdfPrintEnginePrivate;
 
-class QPdfEngine : public QPdfBaseEngine, public QPrintEngine
+class QPdfPrintEngine : public QPdfEngine, public QPrintEngine
 {
-    Q_DECLARE_PRIVATE(QPdfEngine)
+    Q_DECLARE_PRIVATE(QPdfPrintEngine)
 public:
-    QPdfEngine(QPrinter::PrinterMode m);
-    virtual ~QPdfEngine();
+    QPdfPrintEngine(QPrinter::PrinterMode m);
+    virtual ~QPdfPrintEngine();
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev);
@@ -108,21 +108,21 @@ public:
     QPrinter::PrinterState state;
 
 private:
-    Q_DISABLE_COPY(QPdfEngine)
+    Q_DISABLE_COPY(QPdfPrintEngine)
 };
 
-class QPdfEnginePrivate : public QPdfBaseEnginePrivate
+class QPdfPrintEnginePrivate : public QPdfEnginePrivate
 {
-    Q_DECLARE_PUBLIC(QPdfEngine)
+    Q_DECLARE_PUBLIC(QPdfPrintEngine)
 public:
-    QPdfEnginePrivate(QPrinter::PrinterMode m);
-    ~QPdfEnginePrivate();
+    QPdfPrintEnginePrivate(QPrinter::PrinterMode m);
+    ~QPdfPrintEnginePrivate();
 
     bool openPrintDevice();
     void closePrintDevice();
 
 private:
-    Q_DISABLE_COPY(QPdfEnginePrivate)
+    Q_DISABLE_COPY(QPdfPrintEnginePrivate)
 
 };
 

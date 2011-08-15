@@ -63,7 +63,7 @@
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #  include <private/qcups_p.h>
 #  include <cups/cups.h>
-#  include <private/qpdf_p.h>
+#  include <private/qprintengine_pdf_p.h>
 #else
 #  include <QtCore/qlibrary.h>
 #endif

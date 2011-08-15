@@ -936,17 +936,17 @@ void QPdfPage::streamImage(int w, int h, int object)
 }
 
 
-QPdfBaseEngine::QPdfBaseEngine(QPdfBaseEnginePrivate &dd, PaintEngineFeatures f)
+QPdfEngine::QPdfEngine(QPdfEnginePrivate &dd, PaintEngineFeatures f)
     : QAlphaPaintEngine(dd, f)
 {
 }
 
-void QPdfBaseEngine::drawPoints (const QPointF *points, int pointCount)
+void QPdfEngine::drawPoints (const QPointF *points, int pointCount)
 {
     if (!points)
         return;
 
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     QPainterPath p;
     for (int i=0; i!=pointCount;++i) {
         p.moveTo(points[i]);
@@ -959,12 +959,12 @@ void QPdfBaseEngine::drawPoints (const QPointF *points, int pointCount)
     d->hasBrush = hadBrush;
 }
 
-void QPdfBaseEngine::drawLines (const QLineF *lines, int lineCount)
+void QPdfEngine::drawLines (const QLineF *lines, int lineCount)
 {
     if (!lines)
         return;
 
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     QPainterPath p;
     for (int i=0; i!=lineCount;++i) {
         p.moveTo(lines[i].p1());
@@ -976,12 +976,12 @@ void QPdfBaseEngine::drawLines (const QLineF *lines, int lineCount)
     d->hasBrush = hadBrush;
 }
 
-void QPdfBaseEngine::drawRects (const QRectF *rects, int rectCount)
+void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
 {
     if (!rects)
         return;
 
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     if (d->useAlphaEngine) {
         QAlphaPaintEngine::drawRects(rects, rectCount);
         if (!continueCall())
@@ -1011,9 +1011,9 @@ void QPdfBaseEngine::drawRects (const QRectF *rects, int rectCount)
     }
 }
 
-void QPdfBaseEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
+void QPdfEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     if (d->useAlphaEngine) {
         QAlphaPaintEngine::drawPolygon(points, pointCount, mode);
@@ -1053,9 +1053,9 @@ void QPdfBaseEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
     d->hasBrush = hb;
 }
 
-void QPdfBaseEngine::drawPath (const QPainterPath &p)
+void QPdfEngine::drawPath (const QPainterPath &p)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     if (d->useAlphaEngine) {
         QAlphaPaintEngine::drawPath(p);
@@ -1086,11 +1086,11 @@ void QPdfBaseEngine::drawPath (const QPainterPath &p)
     }
 }
 
-void QPdfBaseEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, const QRectF &sr)
+void QPdfEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap, const QRectF &sr)
 {
     if (sr.isEmpty() || rectangle.isEmpty() || pixmap.isNull())
         return;
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     QBrush b = d->brush;
 
@@ -1117,11 +1117,11 @@ void QPdfBaseEngine::drawPixmap (const QRectF &rectangle, const QPixmap &pixmap,
     d->brush = b;
 }
 
-void QPdfBaseEngine::drawImage(const QRectF &rectangle, const QImage &image, const QRectF &sr, Qt::ImageConversionFlags)
+void QPdfEngine::drawImage(const QRectF &rectangle, const QImage &image, const QRectF &sr, Qt::ImageConversionFlags)
 {
     if (sr.isEmpty() || rectangle.isEmpty() || image.isNull())
         return;
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     QRect sourceRect = sr.toRect();
     QImage im = sourceRect != image.rect() ? image.copy(sourceRect) : image;
@@ -1139,9 +1139,9 @@ void QPdfBaseEngine::drawImage(const QRectF &rectangle, const QImage &image, con
     *d->currentPage << "Q\n";
 }
 
-void QPdfBaseEngine::drawTiledPixmap (const QRectF &rectangle, const QPixmap &pixmap, const QPointF &point)
+void QPdfEngine::drawTiledPixmap (const QRectF &rectangle, const QPixmap &pixmap, const QPointF &point)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     bool bitmap = (pixmap.depth() == 1);
     QBrush b = d->brush;
@@ -1169,9 +1169,9 @@ void QPdfBaseEngine::drawTiledPixmap (const QRectF &rectangle, const QPixmap &pi
     d->brushOrigin = bo;
 }
 
-void QPdfBaseEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
+void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     if (d->useAlphaEngine) {
         QAlphaPaintEngine::drawTextItem(p, textItem);
@@ -1206,9 +1206,9 @@ void QPdfBaseEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 }
 
 
-void QPdfBaseEngine::updateState(const QPaintEngineState &state)
+void QPdfEngine::updateState(const QPaintEngineState &state)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
 
     if (d->useAlphaEngine) {
         QAlphaPaintEngine::updateState(state);
@@ -1268,9 +1268,9 @@ void QPdfBaseEngine::updateState(const QPaintEngineState &state)
     setupGraphicsState(flags);
 }
 
-void QPdfBaseEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
+void QPdfEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     if (flags & DirtyClipPath)
         flags |= DirtyTransform|DirtyPen|DirtyBrush;
 
@@ -1311,9 +1311,9 @@ void QPdfBaseEngine::setupGraphicsState(QPaintEngine::DirtyFlags flags)
 
 extern QPainterPath qt_regionToPath(const QRegion &region);
 
-void QPdfBaseEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
+void QPdfEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     QPainterPath path = d->stroker.matrix.map(p);
     //qDebug() << "updateClipPath: " << d->stroker.matrix << p.boundingRect() << path.boundingRect() << op;
 
@@ -1359,9 +1359,9 @@ void QPdfBaseEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
     }
 }
 
-void QPdfBaseEngine::setPen()
+void QPdfEngine::setPen()
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     if (d->pen.style() == Qt::NoPen)
         return;
     QBrush b = d->pen.brush();
@@ -1416,9 +1416,9 @@ void QPdfBaseEngine::setPen()
 }
 
 
-void QPdfBaseEngine::setBrush()
+void QPdfEngine::setBrush()
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     Qt::BrushStyle style = d->brush.style();
     if (style == Qt::NoBrush)
         return;
@@ -1450,9 +1450,9 @@ void QPdfBaseEngine::setBrush()
 }
 
 
-bool QPdfBaseEngine::newPage()
+bool QPdfEngine::newPage()
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     if (!isActive())
         return false;
     d->newPage();
@@ -1464,16 +1464,16 @@ bool QPdfBaseEngine::newPage()
     return true;
 }
 
-QPaintEngine::Type QPdfBaseEngine::type() const
+QPaintEngine::Type QPdfEngine::type() const
 {
     return QPaintEngine::Pdf;
 }
 
 
 
-int QPdfBaseEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
+int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 {
-    Q_D(const QPdfBaseEngine);
+    Q_D(const QPdfEngine);
     int val;
     QRect r = d->fullPage ? d->paperRect() : d->pageRect();
     switch (metricType) {
@@ -1511,7 +1511,7 @@ int QPdfBaseEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 }
 
 
-QPdfBaseEnginePrivate::QPdfBaseEnginePrivate(QPrinter::PrinterMode m)
+QPdfEnginePrivate::QPdfEnginePrivate(QPrinter::PrinterMode m)
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
       useAlphaEngine(false),
       outDevice(0), fd(-1),
@@ -1540,9 +1540,9 @@ QPdfBaseEnginePrivate::QPdfBaseEnginePrivate(QPrinter::PrinterMode m)
     fullPage = false;
 }
 
-bool QPdfBaseEngine::begin(QPaintDevice *pdev)
+bool QPdfEngine::begin(QPaintDevice *pdev)
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     d->pdev = pdev;
 
     d->postscript = false;
@@ -1577,9 +1577,9 @@ bool QPdfBaseEngine::begin(QPaintDevice *pdev)
     return true;
 }
 
-bool QPdfBaseEngine::end()
+bool QPdfEngine::end()
 {
-    Q_D(QPdfBaseEngine);
+    Q_D(QPdfEngine);
     d->writeTail();
 
     d->stream->unsetDevice();
@@ -1593,14 +1593,14 @@ bool QPdfBaseEngine::end()
     return true;
 }
 
-QPdfBaseEnginePrivate::~QPdfBaseEnginePrivate()
+QPdfEnginePrivate::~QPdfEnginePrivate()
 {
     qDeleteAll(fonts);
     delete currentPage;
     delete stream;
 }
 
-QRect QPdfBaseEnginePrivate::paperRect() const
+QRect QPdfEnginePrivate::paperRect() const
 {
     int w;
     int h;
@@ -1626,7 +1626,7 @@ QRect QPdfBaseEnginePrivate::paperRect() const
         return QRect(0, 0, h, w);
 }
 
-QRect QPdfBaseEnginePrivate::pageRect() const
+QRect QPdfEnginePrivate::pageRect() const
 {
     if(fullPage)
         return paperRect();
@@ -1672,7 +1672,7 @@ QRect QPdfBaseEnginePrivate::pageRect() const
 }
 
 
-void QPdfBaseEnginePrivate::writeHeader()
+void QPdfEnginePrivate::writeHeader()
 {
     addXrefEntry(0,false);
 
@@ -1707,7 +1707,7 @@ void QPdfBaseEnginePrivate::writeHeader()
             "endobj\n");
 }
 
-void QPdfBaseEnginePrivate::writeInfo()
+void QPdfEnginePrivate::writeInfo()
 {
     info = addXrefEntry(-1);
     xprintf("<<\n/Title ");
@@ -1730,7 +1730,7 @@ void QPdfBaseEnginePrivate::writeInfo()
             "endobj\n");
 }
 
-void QPdfBaseEnginePrivate::writePageRoot()
+void QPdfEnginePrivate::writePageRoot()
 {
     addXrefEntry(pageRoot);
 
@@ -1752,7 +1752,7 @@ void QPdfBaseEnginePrivate::writePageRoot()
 }
 
 
-void QPdfBaseEnginePrivate::embedFont(QFontSubset *font)
+void QPdfEnginePrivate::embedFont(QFontSubset *font)
 {
     //qDebug() << "embedFont" << font->object_id;
     int fontObject = font->object_id;
@@ -1864,7 +1864,7 @@ void QPdfBaseEnginePrivate::embedFont(QFontSubset *font)
 }
 
 
-void QPdfBaseEnginePrivate::writeFonts()
+void QPdfEnginePrivate::writeFonts()
 {
     for (QHash<QFontEngine::FaceId, QFontSubset *>::iterator it = fonts.begin(); it != fonts.end(); ++it) {
         embedFont(*it);
@@ -1873,7 +1873,7 @@ void QPdfBaseEnginePrivate::writeFonts()
     fonts.clear();
 }
 
-void QPdfBaseEnginePrivate::writePage()
+void QPdfEnginePrivate::writePage()
 {
     if (pages.empty())
         return;
@@ -1957,7 +1957,7 @@ void QPdfBaseEnginePrivate::writePage()
     xprintf("%d\nendobj\n",len);
 }
 
-void QPdfBaseEnginePrivate::writeTail()
+void QPdfEnginePrivate::writeTail()
 {
     writePage();
     writeFonts();
@@ -1981,7 +1981,7 @@ void QPdfBaseEnginePrivate::writeTail()
             xrefPositions.size()-1, info, catalog, xrefPositions.last());
 }
 
-int QPdfBaseEnginePrivate::addXrefEntry(int object, bool printostr)
+int QPdfEnginePrivate::addXrefEntry(int object, bool printostr)
 {
     if (object < 0)
         object = requestObject();
@@ -1996,7 +1996,7 @@ int QPdfBaseEnginePrivate::addXrefEntry(int object, bool printostr)
     return object;
 }
 
-void QPdfBaseEnginePrivate::printString(const QString &string) {
+void QPdfEnginePrivate::printString(const QString &string) {
     // The 'text string' type in PDF is encoded either as PDFDocEncoding, or
     // Unicode UTF-16 with a Unicode byte order mark as the first character
     // (0xfeff), with the high-order byte first.
@@ -2017,7 +2017,7 @@ void QPdfBaseEnginePrivate::printString(const QString &string) {
 
 
 // For strings up to 10000 bytes only !
-void QPdfBaseEnginePrivate::xprintf(const char* fmt, ...)
+void QPdfEnginePrivate::xprintf(const char* fmt, ...)
 {
     if (!stream)
         return;
@@ -2037,7 +2037,7 @@ void QPdfBaseEnginePrivate::xprintf(const char* fmt, ...)
     streampos += bufsize;
 }
 
-int QPdfBaseEnginePrivate::writeCompressed(QIODevice *dev)
+int QPdfEnginePrivate::writeCompressed(QIODevice *dev)
 {
 #ifndef QT_NO_COMPRESS
     if (do_compress) {
@@ -2111,7 +2111,7 @@ int QPdfBaseEnginePrivate::writeCompressed(QIODevice *dev)
     }
 }
 
-int QPdfBaseEnginePrivate::writeCompressed(const char *src, int len)
+int QPdfEnginePrivate::writeCompressed(const char *src, int len)
 {
 #ifndef QT_NO_COMPRESS
     if(do_compress) {
@@ -2134,7 +2134,7 @@ int QPdfBaseEnginePrivate::writeCompressed(const char *src, int len)
     return len;
 }
 
-int QPdfBaseEnginePrivate::writeImage(const QByteArray &data, int width, int height, int depth,
+int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, int depth,
                                   int maskObject, int softMaskObject, bool dct)
 {
     int image = addXrefEntry(-1);
@@ -2182,7 +2182,7 @@ int QPdfBaseEnginePrivate::writeImage(const QByteArray &data, int width, int hei
 }
 
 #ifdef USE_NATIVE_GRADIENTS
-int QPdfBaseEnginePrivate::gradientBrush(const QBrush &b, const QMatrix &matrix, int *gStateObject)
+int QPdfEnginePrivate::gradientBrush(const QBrush &b, const QMatrix &matrix, int *gStateObject)
 {
     const QGradient *gradient = b.gradient();
     if (!gradient)
@@ -2281,7 +2281,7 @@ int QPdfBaseEnginePrivate::gradientBrush(const QBrush &b, const QMatrix &matrix,
 }
 #endif
 
-int QPdfBaseEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
+int QPdfEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
 {
     if (brushAlpha == 255 && penAlpha == 255)
         return 0;
@@ -2301,7 +2301,7 @@ int QPdfBaseEnginePrivate::addConstantAlphaObject(int brushAlpha, int penAlpha)
     return object;
 }
 
-int QPdfBaseEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, int *gStateObject)
+int QPdfEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyColor, int *gStateObject)
 {
     int paintType = 2; // Uncolored tiling
     int w = 8;
@@ -2390,7 +2390,7 @@ int QPdfBaseEnginePrivate::addBrushPattern(const QTransform &m, bool *specifyCol
 /*!
  * Adds an image to the pdf and return the pdf-object id. Returns -1 if adding the image failed.
  */
-int QPdfBaseEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_no)
+int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_no)
 {
     if (img.isNull())
         return -1;
@@ -2518,9 +2518,9 @@ int QPdfBaseEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 seri
     return object;
 }
 
-void QPdfBaseEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
+void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 {
-    Q_Q(QPdfBaseEngine);
+    Q_Q(QPdfEngine);
 
     if (ti.charFormat.isAnchor()) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
@@ -2682,7 +2682,7 @@ void QPdfBaseEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &t
     *currentPage << "ET\n";
 }
 
-QTransform QPdfBaseEnginePrivate::pageMatrix() const
+QTransform QPdfEnginePrivate::pageMatrix() const
 {
     qreal scale = 72./resolution;
     QTransform tmp(scale, 0.0, 0.0, -scale, 0.0, height());
@@ -2693,7 +2693,7 @@ QTransform QPdfBaseEnginePrivate::pageMatrix() const
     return tmp;
 }
 
-void QPdfBaseEnginePrivate::newPage()
+void QPdfEnginePrivate::newPage()
 {
     if (currentPage && currentPage->pageSize.isEmpty())
         currentPage->pageSize = QSize(width(), height());

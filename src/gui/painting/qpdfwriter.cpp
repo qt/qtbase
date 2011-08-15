@@ -51,7 +51,7 @@ public:
     QPdfWriterPrivate()
         : QObjectPrivate()
     {
-        engine = new QPdfEngine(QPrinter::HighResolution);
+        engine = new QPdfPrintEngine(QPrinter::HighResolution);
         output = 0;
     }
     ~QPdfWriterPrivate()
@@ -60,7 +60,7 @@ public:
         delete output;
     }
 
-    QPdfEngine *engine;
+    QPdfPrintEngine *engine;
     QFile *output;
 };
 
