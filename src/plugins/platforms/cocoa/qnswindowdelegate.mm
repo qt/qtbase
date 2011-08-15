@@ -75,7 +75,9 @@
 - (void)windowWillClose:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    QWindowSystemInterface::handleCloseEvent(m_cocoaWindow->window());
+    if (m_cocoaWindow) {
+        m_cocoaWindow->windowWillClose();
+    }
 }
 
 @end

@@ -82,6 +82,12 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     [m_nsWindow setDelegate:delegate];
     [m_nsWindow setAcceptsMouseMovedEvents:YES];
 
+    // Prevent Cocoa from releasing the window on close. Qt
+    // handles the close event asynchronously and we want to
+    // make sure that m_nsWindow stays valid until the
+    // QCocoaWindow is deleted by Qt.
+    [m_nsWindow setReleasedWhenClosed : NO];
+
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
 
     if (tlw->surfaceType() == QWindow::OpenGLSurface) {
@@ -99,7 +105,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
 QCocoaWindow::~QCocoaWindow()
 {
-
+    [m_nsWindow release];
 }
 
 void QCocoaWindow::setGeometry(const QRect &rect)
@@ -176,6 +182,12 @@ void QCocoaWindow::windowDidResize()
 
     if (m_glContext)
         m_glContext->update();
+}
+
+
+void QCocoaWindow::windowWillClose()
+{
+    QWindowSystemInterface::handleCloseEvent(window());
 }
 
 void QCocoaWindow::setCurrentContext(QCocoaGLContext *context)

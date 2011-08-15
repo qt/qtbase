@@ -76,6 +76,7 @@ public:
 
     void windowDidMove();
     void windowDidResize();
+    void windowWillClose();
 
     void setCurrentContext(QCocoaGLContext *context);
     QCocoaGLContext *currentContext() const;
