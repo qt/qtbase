@@ -213,12 +213,13 @@ QTextCodecCleanup::~QTextCodecCleanup()
     destroying_is_ok = true;
 #endif
 
-    for (QList<QTextCodec *>::const_iterator it = all->constBegin()
-            ; it != all->constEnd(); ++it) {
+    QList<QTextCodec *> *myAll = all;
+    all = 0; // Otherwise the d'tor destroys the iterator
+    for (QList<QTextCodec *>::const_iterator it = myAll->constBegin()
+            ; it != myAll->constEnd(); ++it) {
         delete *it;
     }
-    delete all;
-    all = 0;
+    delete myAll;
     localeMapper = 0;
 
 #ifdef Q_DEBUG_TEXTCODEC
