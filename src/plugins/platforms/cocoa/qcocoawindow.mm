@@ -53,8 +53,24 @@
 
 #include <QDebug>
 
+@implementation QNSWindow
+
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+
+- (BOOL)canBecomeMainWindow
+{
+    return YES;
+}
+
+@end
+
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
+    , m_windowAttributes(0)
+    , m_windowClass(0)
     , m_glContext(0)
 {
     QCocoaAutoReleasePool pool;
@@ -251,7 +267,7 @@ void QCocoaWindow::determineWindowClass()
 /*
 
 */
-NSWindow * QCocoaWindow::createWindow()
+QNSWindow * QCocoaWindow::createWindow()
 {
     // Determine if we need to add in our "custom window" attribute. Cocoa is rather clever
     // in deciding if we need the maximize button or not (i.e., it's resizeable, so you
@@ -272,7 +288,7 @@ NSWindow * QCocoaWindow::createWindow()
 */
     NSRect frame = globalGeometry(window()->geometry());
     QCocoaAutoReleasePool pool;
-    NSWindow *window;
+    QNSWindow *window;
 
     switch (m_windowClass) {
     case kMovableModalWindowClass:
