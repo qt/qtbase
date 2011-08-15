@@ -1171,24 +1171,26 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
     // Update focus scope item ptr in new scope.
     QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
     if (newFocusScopeItem && newParent) {
-        if (subFocusItem) {
-            // Find the subFocusItem's topmost focus scope.
-            QGraphicsItem *ancestorScope = 0;
-            QGraphicsItem *p = subFocusItem->d_ptr->parent;
-            while (p) {
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
-                    ancestorScope = p;
-                if (p->d_ptr->flags & QGraphicsItem::ItemIsPanel)
-                    break;
-                p = p->d_ptr->parent;
-            }
-            if (ancestorScope)
-                newFocusScopeItem = ancestorScope;
-        }
-
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
+                if (subFocusItem && subFocusItem != q_ptr) {
+                    // Find the subFocusItem's topmost focus scope within the new parent's focusscope
+                    QGraphicsItem *ancestorScope = 0;
+                    QGraphicsItem *p2 = subFocusItem->d_ptr->parent;
+                    while (p2 && p2 != p) {
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
+                            ancestorScope = p2;
+                        if (p2->d_ptr->flags & QGraphicsItem::ItemIsPanel)
+                            break;
+                        if (p2 == q_ptr)
+                            break;
+                        p2 = p2->d_ptr->parent;
+                    }
+                    if (ancestorScope)
+                        newFocusScopeItem = ancestorScope;
+                }
+
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
                 newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
@@ -3297,7 +3299,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     if (climb) {
-        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible() && f->d_ptr->focusScopeItem != f)
+        while (f->d_ptr->focusScopeItem && f->d_ptr->focusScopeItem->isVisible())
             f = f->d_ptr->focusScopeItem;
     }
 
