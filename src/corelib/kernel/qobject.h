@@ -78,8 +78,8 @@ class QObjectUserData;
 typedef QList<QObject*> QObjectList;
 
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
-                                           const QMetaObject &mo, QList<void *> *list);
-Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo);
+                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
 class
 #if defined(__INTEL_COMPILER) && defined(Q_OS_WIN)
@@ -155,11 +155,11 @@ public:
     void killTimer(int id);
 
     template<typename T>
-    inline T findChild(const QString &aName = QString()) const
-    { return static_cast<T>(qt_qFindChild_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject)); }
+    inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+    { return static_cast<T>(qt_qFindChild_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject, options)); }
 
     template<typename T>
-    inline QList<T> findChildren(const QString &aName = QString()) const
+    inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
         union {
@@ -167,13 +167,13 @@ public:
             QList<void *> *voidList;
         } u;
         u.typedList = &list;
-        qt_qFindChildren_helper(this, aName, 0, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
+        qt_qFindChildren_helper(this, aName, 0, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
         return list;
     }
 
 #ifndef QT_NO_REGEXP
     template<typename T>
-    inline QList<T> findChildren(const QRegExp &re) const
+    inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
         union {
@@ -181,7 +181,7 @@ public:
             QList<void *> *voidList;
         } u;
         u.typedList = &list;
-        qt_qFindChildren_helper(this, QString(), &re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
+        qt_qFindChildren_helper(this, QString(), &re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
         return list;
     }
 #endif

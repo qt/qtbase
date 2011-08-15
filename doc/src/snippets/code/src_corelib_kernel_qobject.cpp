@@ -434,6 +434,21 @@ hostNameLabel->setText(tr("Name:"));
 QString example = tr("Example");
 //! [40]
 
+//! [41]
+QPushButton *button = parentWidget->findChild<QPushButton *>("button1", Qt::FindDirectChildOnly);
+//! [41]
+
+
+//! [42]
+QListWidget *list = parentWidget->findChild<QListWidget *>(QString(), Qt::FindDirectChildOnly);
+//! [42]
+
+
+//! [43]
+QList<QPushButton *> childButtons = parentWidget.findChildren<QPushButton *>(QString(), Qt::FindDirectChildOnly);
+//! [43]
+
+
 //! [meta data]
 //: This is a comment for the translator.
 //= qtn_foo_bar

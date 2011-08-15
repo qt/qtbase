@@ -1293,7 +1293,11 @@ public:
         AnchorBottom
     };
 
-
+    enum FindChildOption {
+        FindDirectChildrenOnly = 0x0,
+        FindChildrenRecursively = 0x1
+    };
+    Q_DECLARE_FLAGS(FindChildOptions, FindChildOption)
 
     enum DropAction {
         CopyAction = 0x1,

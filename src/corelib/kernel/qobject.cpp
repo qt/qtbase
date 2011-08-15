@@ -1028,8 +1028,8 @@ QObjectPrivate::Connection::~Connection()
 
     \brief the name of this object
 
-    You can find an object by name (and type) using findChild(). You can
-    find a set of objects with findChildren().
+    You can find an object by name (and type) using findChild().
+    You can find a set of objects with findChildren().
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 5
 
@@ -1545,12 +1545,13 @@ void QObject::killTimer(int id)
 
 
 /*!
-    \fn T *QObject::findChild(const QString &name) const
+    \fn T *QObject::findChild(const QString &name, Qt::FindChildOptions options) const
 
     Returns the child of this object that can be cast into type T and
     that is called \a name, or 0 if there is no such object.
     Omitting the \a name argument causes all object names to be matched.
-    The search is performed recursively.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
 
     If there is more than one child matching the search, the most
     direct ancestor is returned. If there are several direct
@@ -1558,7 +1559,8 @@ void QObject::killTimer(int id)
     case, findChildren() should be used.
 
     This example returns a child \l{QPushButton} of \c{parentWidget}
-    named \c{"button1"}:
+    named \c{"button1"}, even if the button isn't a direct child of
+    the parent:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 10
 
@@ -1566,16 +1568,27 @@ void QObject::killTimer(int id)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 11
 
+    This example returns a child \l{QPushButton} of \c{parentWidget}
+    (its direct parent) named \c{"button1"}:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 41
+
+    This example returns a \l{QListWidget} child of \c{parentWidget},
+    its direct parent:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 42
+
     \sa findChildren()
 */
 
 /*!
-    \fn QList<T> QObject::findChildren(const QString &name) const
+    \fn QList<T> QObject::findChildren(const QString &name, Qt::FindChildOptions options) const
 
     Returns all children of this object with the given \a name that can be
     cast to type T, or an empty list if there are no such objects.
     Omitting the \a name argument causes all object names to be matched.
-    The search is performed recursively.
+    The search is performed recursively, unless \a options specifies the
+    option FindDirectChildrenOnly.
 
     The following example shows how to find a list of child \l{QWidget}s of
     the specified \c{parentWidget} named \c{widgetname}:
@@ -1586,11 +1599,15 @@ void QObject::killTimer(int id)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 13
 
+    This example returns all \c{QPushButton}s that are immediate children of \c{parentWidget}:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 43
+
     \sa findChild()
 */
 
 /*!
-    \fn QList<T> QObject::findChildren(const QRegExp &regExp) const
+    \fn QList<T> QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options) const
     \overload findChildren()
 
     Returns the children of this object that can be cast to type T
@@ -1650,7 +1667,7 @@ void QObject::killTimer(int id)
     \internal
 */
 void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
-                             const QMetaObject &mo, QList<void*> *list)
+                             const QMetaObject &mo, QList<void*> *list, Qt::FindChildOptions options)
 {
     if (!parent || !list)
         return;
@@ -1667,13 +1684,14 @@ void qt_qFindChildren_helper(const QObject *parent, const QString &name, const Q
                     list->append(obj);
             }
         }
-        qt_qFindChildren_helper(obj, name, re, mo, list);
+        if (options & Qt::FindChildrenRecursively)
+            qt_qFindChildren_helper(obj, name, re, mo, list, options);
     }
 }
 
 /*! \internal
  */
-QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo)
+QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options)
 {
     if (!parent)
         return 0;
@@ -1685,10 +1703,12 @@ QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const 
         if (mo.cast(obj) && (name.isNull() || obj->objectName() == name))
             return obj;
     }
-    for (i = 0; i < children.size(); ++i) {
-        obj = qt_qFindChild_helper(children.at(i), name, mo);
-        if (obj)
-            return obj;
+    if (options & Qt::FindChildrenRecursively) {
+        for (i = 0; i < children.size(); ++i) {
+            obj = qt_qFindChild_helper(children.at(i), name, mo, options);
+            if (obj)
+                return obj;
+        }
     }
     return 0;
 }
