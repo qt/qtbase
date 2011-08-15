@@ -339,8 +339,8 @@ QNSWindow * QCocoaWindow::createWindow()
         break;
     }
     default:
-        window  = [[NSWindow alloc] initWithContentRect:frame
-                                            styleMask:m_windowAttributes
+        window  = [[QNSWindow alloc] initWithContentRect:frame
+                                            styleMask:(NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask)
                                             backing:NSBackingStoreBuffered
                                             defer:YES];
         break;
