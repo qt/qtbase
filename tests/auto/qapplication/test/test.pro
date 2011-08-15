@@ -9,7 +9,7 @@ TARGET = ../tst_qapplication
 wince* {
   additional.files = ../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
-  someTest.files e= test.pro
+  someTest.files = test.pro
   someTest.path = test
   DEPLOYMENT += additional deploy someTest
 }
