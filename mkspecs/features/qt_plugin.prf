@@ -9,6 +9,8 @@ CONFIG += qt plugin
 win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release
 TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
+contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
 
 load(qt_targets)
 
