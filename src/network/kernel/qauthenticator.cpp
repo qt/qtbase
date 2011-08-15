@@ -395,7 +395,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     case Basic:
         if(realm.isEmpty())
             this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
-        if (user.isEmpty())
+        if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
     case Ntlm:
@@ -406,7 +406,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
             this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
-        if (user.isEmpty())
+        if (user.isEmpty() && password.isEmpty())
             phase = Done;
         break;
     }
