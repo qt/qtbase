@@ -647,6 +647,8 @@ void tst_QTemporaryFile::QTBUG_4796_data()
     QString unicode = QString::fromUtf8("\xc3\xa5\xc3\xa6\xc3\xb8");
 
     QTest::newRow("<empty>") << QString() << QString() << true;
+    QTest::newRow(".") << QString(".") << QString() << true;
+    QTest::newRow("..") << QString("..") << QString() << true;
     QTest::newRow("blaXXXXXX") << QString("bla") << QString() << true;
     QTest::newRow("XXXXXXbla") << QString() << QString("bla") << true;
     QTest::newRow("does-not-exist/qt_temp.XXXXXX") << QString("does-not-exist/qt_temp") << QString() << false;

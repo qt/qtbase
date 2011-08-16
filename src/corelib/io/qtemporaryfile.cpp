@@ -44,10 +44,10 @@
 #ifndef QT_NO_TEMPORARYFILE
 
 #include "qplatformdefs.h"
-#include "qstringbuilder.h"
 #include "private/qfile_p.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qsystemerror_p.h"
+#include "private/qfilesystemengine_p.h"
 
 #if defined(Q_OS_SYMBIAN)
 #include "private/qcore_symbian_p.h"
@@ -101,38 +101,6 @@ typedef char Char;
 typedef char Latin1Char;
 typedef int NativeFileHandle;
 #endif
-
-struct Placeholder
-{
-    Placeholder(int size)
-        : size_(size)
-    {
-    }
-
-    int size() const
-    {
-        return size_;
-    }
-
-private:
-    int size_;
-};
-
-template <>
-struct QConcatenable<Placeholder>
-{
-    typedef Placeholder type;
-    typedef QByteArray ConvertTo;
-    enum { ExactSize = true };
-    static int size(const Placeholder &p) { return p.size(); }
-
-    template <class CharT>
-    static inline void appendTo(const Placeholder &p, CharT *&out)
-    {
-        // Uninitialized
-        out += p.size();
-    }
-};
 
 /*
  * Copyright (c) 1987, 1993
@@ -366,43 +334,59 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    const QFileSystemEntry::NativePath qfilename = d->fileEntry.nativeFilePath();
+    QString qfilename = d->fileEntry.filePath();
 
-    // Find placeholder string.
+    // Ensure there is a placeholder mask
     uint phPos = qfilename.length();
     uint phLength = 0;
 
     while (phPos != 0) {
         --phPos;
 
-        if (qfilename[phPos] == Latin1Char('X')) {
+        if (qfilename[phPos] == QLatin1Char('X')) {
             ++phLength;
             continue;
         }
 
         if (phLength >= 6
-                || qfilename[phPos] ==
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
-                    '/'
-#else
-                    QLatin1Char('\\')
-#endif
-                ) {
+                || qfilename[phPos] == QLatin1Char('/')) {
             ++phPos;
             break;
         }
 
+        // start over
         phLength = 0;
     }
 
-    QFileSystemEntry::NativePath filename;
+    if (phLength < 6)
+        qfilename.append(QLatin1String(".XXXXXX"));
 
-    if (phLength < 6) {
-        phPos = qfilename.length() + 1; // Account for added dot in prefix
-        phLength = 6;
-        filename = qfilename % Latin1Char('.') % Placeholder(phLength);
-    } else
-        filename = qfilename;
+    // "Nativify" :-)
+    QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
+            QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath()))
+        .nativeFilePath();
+
+    // Find mask in native path
+    phPos = filename.length();
+    phLength = 0;
+    while (phPos != 0) {
+        --phPos;
+
+        if (filename[phPos] == Latin1Char('X')) {
+            ++phLength;
+            continue;
+        }
+
+        if (phLength >= 6) {
+            ++phPos;
+            break;
+        }
+
+        // start over
+        phLength = 0;
+    }
+
+    Q_ASSERT(phLength >= 6);
 
     QSystemError error;
 #if defined(Q_OS_WIN)
