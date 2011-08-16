@@ -3,6 +3,7 @@
     "QtOpenGL" => "$basedir/src/opengl",
     "QtOpenVG" => "$basedir/src/openvg",
     "QtCore" => "$basedir/src/corelib",
+    "QtV8" => "$basedir/src/v8",
     "QtXml" => "$basedir/src/xml",
     "QtSql" => "$basedir/src/sql",
     "QtNetwork" => "$basedir/src/network",
@@ -12,6 +13,10 @@
     "QtDesigner" => "$basedir/tools/uilib",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
+    "QtV8" => "../3rdparty/v8/include",
+);
+@allmoduleheadersprivate = (
+    "QtV8"
 );
 %classnames = (
     "qglobal.h" => "QtGlobal",
@@ -36,6 +41,7 @@
     "qtopenvgversion.h" => "QtOpenVGVersion",
     "qtsqlversion.h" => "QtSqlVersion",
     "qttestversion.h" => "QtTestVersion",
+    "qtv8version.h" => "QtV8Version",
     "qtxmlversion.h" => "QtXmlVersion",
 );
 %mastercontent = (
@@ -57,6 +63,7 @@
     "QtOpenVG" => "$basedir/src/modules/qt_openvg.pri",
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
+    "QtV8" => "$basedir/src/modules/qt_v8.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
     "QtUiTools" => "$basedir/src/modules/qt_uitools.pri",
     "QtDesigner" => "$basedir/src/modules/qt_uilib.pri",

@@ -708,6 +708,7 @@ CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
+CFG_V8=auto
 CFG_DECLARATIVE=auto
 CFG_DECLARATIVE_DEBUG=yes
 CFG_WEBKIT=auto # (yes|no|auto|debug)
@@ -2118,6 +2119,17 @@ while [ "$#" -gt 0 ]; do
         else
             if [ "$VAL" = "no" ]; then
                 CFG_SVG="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
+    v8)
+        if [ "$VAL" = "yes" ]; then
+            CFG_V8="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_V8="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -3896,6 +3908,9 @@ fi
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
+
+    -no-v8 ............. Do not build the V8 module.
+ +  -v8 ................ Build the V8 module.
 
     -no-declarative ..... Do not build the declarative module.
  +  -declarative ....... Build the declarative module.
@@ -7618,9 +7633,19 @@ fi
 #fi
 
 
+if [ "$CFG_V8" = "auto" ]; then
+    CFG_V8=yes
+fi
+
+if [ "$CFG_V8" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_V8"
+else
+    QT_CONFIG="$QT_CONFIG v8"
+fi
+
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
-    if [ "$CFG_SCRIPT" = "no" -o "$CFG_GUI" = "no" ]; then
-        echo "Error: QtDeclarative was requested, but it can't be built due to QtScript or QtGui being disabled."
+    if [ "$CFG_V8" = "no" -o "$CFG_GUI" = "no" ]; then
+        echo "Error: QtDeclarative was requested, but it can't be built due to QtV8 or QtGui being disabled."
         exit 1
     fi
 fi
@@ -8670,6 +8695,7 @@ if [ "$CFG_WEBKIT" != "no" ] || [ "$CFG_SCRIPT" != "no" ]; then
         echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
     fi
 fi
+echo "V8 module .............. $CFG_V8"
 echo "Declarative module ..... $CFG_DECLARATIVE"
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
     echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"

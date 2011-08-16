@@ -1,0 +1,15 @@
+From dc2cad4f8fc88c52fcea09b8d0262d35cd32dc44 Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Thu, 25 Aug 2011 11:09:58 +1000
+Subject: [PATCH 13/13] Remove execute flag from v8-debug.h
+
+---
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 include/v8-debug.h
+
+diff --git a/include/v8-debug.h b/include/v8-debug.h
+old mode 100755
+new mode 100644
+--
+1.7.2.3
+

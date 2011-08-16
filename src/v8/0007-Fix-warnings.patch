@@ -1,0 +1,46 @@
+From dac5d9db84cf20564621c679937ca7b9c6a8e880 Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Fri, 27 May 2011 13:04:15 +1000
+Subject: [PATCH 07/13] Fix warnings
+
+---
+ include/v8.h |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index 9aba4a8..8891dab 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -2415,7 +2415,7 @@ class V8EXPORT Extension {  // NOLINT
+             const char** deps = 0);
+   virtual ~Extension() { }
+   virtual v8::Handle<v8::FunctionTemplate>
+-      GetNativeFunction(v8::Handle<v8::String> name) {
++      GetNativeFunction(v8::Handle<v8::String>) {
+     return v8::Handle<v8::FunctionTemplate>();
+   }
+
+@@ -3721,13 +3721,13 @@ class Internals {
+     return *reinterpret_cast<T*>(addr);
+   }
+
+-  static inline bool CanCastToHeapObject(void* o) { return false; }
+-  static inline bool CanCastToHeapObject(Context* o) { return true; }
+-  static inline bool CanCastToHeapObject(String* o) { return true; }
+-  static inline bool CanCastToHeapObject(Object* o) { return true; }
+-  static inline bool CanCastToHeapObject(Message* o) { return true; }
+-  static inline bool CanCastToHeapObject(StackTrace* o) { return true; }
+-  static inline bool CanCastToHeapObject(StackFrame* o) { return true; }
++  static inline bool CanCastToHeapObject(void*) { return false; }
++  static inline bool CanCastToHeapObject(Context*) { return true; }
++  static inline bool CanCastToHeapObject(String*) { return true; }
++  static inline bool CanCastToHeapObject(Object*) { return true; }
++  static inline bool CanCastToHeapObject(Message*) { return true; }
++  static inline bool CanCastToHeapObject(StackTrace*) { return true; }
++  static inline bool CanCastToHeapObject(StackFrame*) { return true; }
+ };
+
+ }  // namespace internal
+--
+1.7.2.3
+
