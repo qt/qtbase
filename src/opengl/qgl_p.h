@@ -64,20 +64,13 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifndef QT_NO_EGL
-#include <QtGui/private/qegl_p.h>
-#endif
-
-#if defined(Q_WS_QPA)
 #include <QtGui/QGuiGLContext>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
 class QGLOverlayWidget;
 class QPixmap;
-class QPixmapFilter;
 #ifdef Q_WS_MAC
 # ifdef qDebug
 #   define old_qDebug qDebug
@@ -94,10 +87,6 @@ QT_END_INCLUDE_NAMESPACE
 #   undef old_qDebug
 # endif
 class QMacWindowChangeEvent;
-#endif
-
-#ifndef QT_NO_EGL
-class QEglContext;
 #endif
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -161,15 +150,6 @@ class Q_OPENGL_EXPORT QGLWidgetPrivate : public QWidgetPrivate
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
-#if defined(Q_WS_QWS)
-                       , wsurf(0)
-#endif
-#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
-                       , eglSurfaceWindowId(0)
-#endif
-#if defined(Q_OS_SYMBIAN)
-                       , eglSurfaceWindowId(0)
-#endif
     {
         isGLWidget = 1;
     }
@@ -195,24 +175,6 @@ public:
 #endif
 
     bool disable_clear_on_painter_begin;
-
-#if defined(Q_WS_WIN)
-    void updateColormap();
-    QGLContext *olcx;
-#elif defined(Q_WS_X11)
-    QGLOverlayWidget *olw;
-#ifndef QT_NO_EGL
-    void recreateEglSurface();
-    WId eglSurfaceWindowId;
-#endif
-#elif defined(Q_WS_MAC)
-    QGLContext *olcx;
-    void updatePaintDevice();
-#endif
-#ifdef Q_OS_SYMBIAN
-    void recreateEglSurface();
-    WId eglSurfaceWindowId;
-#endif
 };
 
 class QGLContextGroupResourceBase;
@@ -345,54 +307,9 @@ public:
     void syncGlState(); // Makes sure the GL context's state is what we think it is
     void swapRegion(const QRegion &region);
 
-#if defined(Q_WS_WIN)
-    void updateFormatVersion();
-#endif
-
-#if defined(Q_WS_WIN)
-    HGLRC rc;
-    HDC dc;
-    WId        win;
-    int pixelFormatId;
-    QGLCmap* cmap;
-    HBITMAP hbitmap;
-    HDC hbitmap_hdc;
-    Qt::HANDLE threadId;
-#endif
-#ifndef QT_NO_EGL
-    QEglContext *eglContext;
-    EGLSurface eglSurface;
-    void destroyEglSurfaceForDevice();
-    EGLSurface eglSurfaceForDevice() const;
-    static QEglProperties *extraWindowSurfaceCreationProps;
-    static void setExtraWindowSurfaceCreationProps(QEglProperties *props);
-#endif
-
-#if defined(Q_WS_QPA)
     QGuiGLContext *guiGlContext;
     void setupSharing();
 
-#elif defined(Q_WS_X11) || defined(Q_WS_MAC)
-    void* cx;
-#endif
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
-    void* vi;
-#endif
-#if defined(Q_WS_X11)
-    void* pbuf;
-    quint32 gpm;
-    int screen;
-    QHash<QPlatformPixmap*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmap*, const qint64 key,
-                                            QGLContext::BindOptions options);
-    static void destroyGlSurfaceForPixmap(QPlatformPixmap*);
-    static void unbindPixmapFromTexture(QPlatformPixmap*);
-#endif
-#if defined(Q_WS_MAC)
-    bool update;
-    void *tryFormat(const QGLFormat &format);
-    void clearDrawable();
-#endif
     QGLFormat glFormat;
     QGLFormat reqFormat;
     GLuint fbo;
@@ -417,10 +334,6 @@ public:
     uint workaround_brokenAlphaTexSubImage : 1;
     uint workaround_brokenAlphaTexSubImage_init : 1;
 
-#ifndef QT_NO_EGL
-    uint ownsEglContext : 1;
-#endif
-
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
@@ -441,14 +354,8 @@ public:
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
 
-#ifdef Q_WS_WIN
-    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
-#endif
-
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN) 
     static Q_OPENGL_EXPORT QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
-#endif
 
     static void setCurrentContext(QGLContext *context);
 };
@@ -514,21 +421,6 @@ Q_SIGNALS:
 private slots:
     void freeTexture_slot(QGLContext *context, QPlatformPixmap *boundPixmap, GLuint id) {
         Q_UNUSED(boundPixmap);
-#if defined(Q_WS_X11)
-        if (boundPixmap) {
-            QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-            context->makeCurrent();
-            // Although glXReleaseTexImage is a glX call, it must be called while there
-            // is a current context - the context the pixmap was bound to a texture in.
-            // Otherwise the release doesn't do anything and you get BadDrawable errors
-            // when you come to delete the context.
-            QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
-            glDeleteTextures(1, &id);
-            if (oldContext)
-                oldContext->makeCurrent();
-            return;
-        }
-#endif
         QGLShareContextScope scope(context);
         glDeleteTextures(1, &id);
     }
@@ -555,17 +447,12 @@ public:
           id(tx_id),
           target(tx_target),
           options(opt)
-#if defined(Q_WS_X11)
-        , boundPixmap(0)
-#endif
     {}
 
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
-#if !defined(Q_WS_X11)
             QPlatformPixmap *boundPixmap = 0;
-#endif
             context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
      }
@@ -575,10 +462,6 @@ public:
     GLenum target;
 
     QGLContext::BindOptions options;
-
-#if defined(Q_WS_X11)
-    QPlatformPixmap* boundPixmap;
-#endif
 
     bool canBindCompressedTexture
         (const char *buf, int len, const char *format, bool *hasAlpha);
@@ -655,26 +538,6 @@ QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
 }
 
 extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
-
-bool qt_gl_preferGL2Engine();
-
-inline GLenum qt_gl_preferredTextureFormat()
-{
-    return (QGLExtensions::glExtensions() & QGLExtensions::BGRATextureFormat) && QSysInfo::ByteOrder == QSysInfo::LittleEndian
-        ? GL_BGRA : GL_RGBA;
-}
-
-inline GLenum qt_gl_preferredTextureTarget()
-{
-#if defined(QT_OPENGL_ES_2)
-    return GL_TEXTURE_2D;
-#else
-    return (QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
-           && !qt_gl_preferGL2Engine()
-           ? GL_TEXTURE_RECTANGLE_NV
-           : GL_TEXTURE_2D;
-#endif
-}
 
 /*
    Base for resources that are shared in a context group.

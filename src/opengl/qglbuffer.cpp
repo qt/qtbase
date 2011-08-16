@@ -245,17 +245,7 @@ QGLBuffer::UsagePattern QGLBuffer::usagePattern() const
 void QGLBuffer::setUsagePattern(QGLBuffer::UsagePattern value)
 {
     Q_D(QGLBuffer);
-#if defined(QT_OPENGL_ES_1)
-    // OpenGL/ES 1.1 does not support GL_STREAM_DRAW, so use GL_STATIC_DRAW.
-    // OpenGL/ES 2.0 does support GL_STREAM_DRAW.
-    d->usagePattern = value;
-    if (value == StreamDraw)
-        d->actualUsagePattern = StaticDraw;
-    else
-        d->actualUsagePattern = value;
-#else
     d->usagePattern = d->actualUsagePattern = value;
-#endif
 }
 
 #undef ctx

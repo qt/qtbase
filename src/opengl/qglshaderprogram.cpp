@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_1)
-
 /*!
     \class QGLShaderProgram
     \brief The QGLShaderProgram class allows OpenGL shader programs to be linked and used.
@@ -3268,87 +3266,5 @@ bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
 
     return true;
 }
-
-
-
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-void QGLShaderProgram::setAttributeArray
-    (int location, QMacCompatGLenum type, const void *values, int tupleSize, int stride)
-{
-    setAttributeArray(location, GLenum(type), values, tupleSize, stride);
-}
-
-/*! \internal */
-void QGLShaderProgram::setAttributeArray
-    (const char *name, QMacCompatGLenum type, const void *values, int tupleSize, int stride)
-{
-    setAttributeArray(name, GLenum(type), values, tupleSize, stride);
-}
-
-/*! \internal */
-void QGLShaderProgram::setAttributeBuffer
-    (int location, QMacCompatGLenum type, int offset, int tupleSize, int stride)
-{
-    setAttributeBuffer(location, GLenum(type), offset, tupleSize, stride);
-}
-
-/*! \internal */
-void QGLShaderProgram::setAttributeBuffer
-    (const char *name, QMacCompatGLenum type, int offset, int tupleSize, int stride)
-{
-    setAttributeBuffer(name, GLenum(type), offset, tupleSize, stride);
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValue(int location, QMacCompatGLint value)
-{
-    setUniformValue(location, GLint(value));
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValue(int location, QMacCompatGLuint value)
-{
-    setUniformValue(location, GLuint(value));
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLint value)
-{
-    setUniformValue(name, GLint(value));
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLuint value)
-{
-    setUniformValue(name, GLuint(value));
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLint *values, int count)
-{
-    setUniformValueArray(location, (const GLint *)values, count);
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLuint *values, int count)
-{
-    setUniformValueArray(location, (const GLuint *)values, count);
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLint *values, int count)
-{
-    setUniformValueArray(name, (const GLint *)values, count);
-}
-
-/*! \internal */
-void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count)
-{
-    setUniformValueArray(name, (const GLuint *)values, count);
-}
-#endif
-
-#endif // !defined(QT_OPENGL_ES_1)
 
 QT_END_NAMESPACE

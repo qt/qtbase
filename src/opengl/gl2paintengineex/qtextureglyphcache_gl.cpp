@@ -43,10 +43,6 @@
 #include "qpaintengineex_opengl2_p.h"
 #include "private/qglengineshadersource_p.h"
 
-#if defined QT_OPENGL_ES_2 && !defined(QT_NO_EGL)
-#include "private/qeglcontext_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN

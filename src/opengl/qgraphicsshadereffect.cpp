@@ -40,11 +40,9 @@
 ****************************************************************************/
 
 #include "qgraphicsshadereffect_p.h"
-#if !defined(QT_OPENGL_ES_1)
 #include "qglshaderprogram.h"
 #include "gl2paintengineex/qglcustomshaderstage_p.h"
 #define QGL_HAVE_CUSTOM_SHADERS 1
-#endif
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qgraphicsitem.h>
 #include <private/qgraphicseffect_p.h>

@@ -81,8 +81,7 @@
 
     As of Qt 4.8, it's possible to render into a QGLPixelBuffer using
     a QPainter in a separate thread. Note that OpenGL 2.0 or OpenGL ES
-    2.0 is required for this to work. Also, under X11, it's necessary
-    to set the Qt::AA_X11InitThreads application attribute.
+    2.0 is required for this to work.
 
     Pbuffers are provided by the OpenGL \c pbuffer extension; call
     hasOpenGLPbuffer() to find out if the system provides pbuffers.
@@ -92,18 +91,12 @@
 
 #include <QtCore/qglobal.h>
 
-#if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
-#endif
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qfont_p.h>
 #include <qimage.h>
-
-#ifndef QT_OPENGL_ES_2
-#include <private/qpaintengine_opengl_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -149,20 +142,6 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
         glDevice.setPBuffer(q);
         qctx->d_func()->paintDevice = q;
         qctx->d_func()->valid = true;
-#if defined(Q_WS_WIN) && !defined(QT_OPENGL_ES)
-        qctx->d_func()->dc = dc;
-        qctx->d_func()->rc = ctx;
-#elif (defined(Q_WS_X11) && defined(QT_NO_EGL))
-        qctx->d_func()->cx = ctx;
-        qctx->d_func()->pbuf = (void *) pbuf;
-        qctx->d_func()->vi = 0;
-#elif defined(Q_WS_MAC)
-        qctx->d_func()->cx = ctx;
-        qctx->d_func()->vi = 0;
-#elif !defined(QT_NO_EGL)
-        qctx->d_func()->eglContext = ctx;
-        qctx->d_func()->eglSurface = pbuf;
-#endif
     }
 }
 
@@ -261,6 +240,8 @@ bool QGLPixelBuffer::doneCurrent()
 }
 
 /*!
+    \fn GLuint QGLPixelBuffer::generateDynamicTexture() const
+
     Generates and binds a 2D GL texture that is the same size as the
     pbuffer, and returns the texture's ID. This can be used in
     conjunction with bindToDynamicTexture() and
@@ -268,20 +249,6 @@ bool QGLPixelBuffer::doneCurrent()
 
     \sa size()
 */
-
-#if (defined(Q_WS_X11) || defined(Q_WS_WIN)) && defined(QT_NO_EGL)
-GLuint QGLPixelBuffer::generateDynamicTexture() const
-{
-    Q_D(const QGLPixelBuffer);
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, d->req_size.width(), d->req_size.height(), 0, GL_RGBA, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    return texture;
-}
-#endif
 
 /*! \fn bool QGLPixelBuffer::bindToDynamicTexture(GLuint texture_id)
 
@@ -353,13 +320,6 @@ void QGLPixelBuffer::updateDynamicTexture(GLuint texture_id) const
 #endif
 }
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-void QGLPixelBuffer::updateDynamicTexture(QMacCompatGLuint texture_id) const
-{
-    updateDynamicTexture(GLuint(texture_id));
-}
-#endif
-
 /*!
     Returns the size of the pbuffer.
 */
@@ -402,27 +362,12 @@ bool QGLPixelBuffer::isValid() const
     return !d->invalid;
 }
 
-#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_buffer_2_engine)
-#endif
-
-#ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_buffer_engine)
-#endif
 
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
-#if defined(QT_OPENGL_ES_1)
-    return qt_buffer_engine()->engine();
-#elif defined(QT_OPENGL_ES_2)
     return qt_buffer_2_engine()->engine();
-#else
-    if (qt_gl_preferGL2Engine())
-        return qt_buffer_2_engine()->engine();
-    else
-        return qt_buffer_engine()->engine();
-#endif
 }
 
 /*! \reimp */
@@ -493,15 +438,6 @@ GLuint QGLPixelBuffer::bindTexture(const QImage &image, GLenum target)
 #endif
 }
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-GLuint QGLPixelBuffer::bindTexture(const QImage &image, QMacCompatGLenum target)
-{
-    Q_D(QGLPixelBuffer);
-    return d->qctx->bindTexture(image, target, QMacCompatGLint(GL_RGBA8));
-}
-#endif
-
 /*! \overload
 
     Generates and binds a 2D GL texture based on \a pixmap.
@@ -519,15 +455,6 @@ GLuint QGLPixelBuffer::bindTexture(const QPixmap &pixmap, GLenum target)
     return d->qctx->bindTexture(pixmap, target, GL_RGBA);
 #endif
 }
-
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-GLuint QGLPixelBuffer::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target)
-{
-    Q_D(QGLPixelBuffer);
-    return d->qctx->bindTexture(pixmap, target, QMacCompatGLint(GL_RGBA8));
-}
-#endif
 
 /*! \overload
 
@@ -555,15 +482,6 @@ void QGLPixelBuffer::deleteTexture(GLuint texture_id)
     d->qctx->deleteTexture(texture_id);
 }
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-void QGLPixelBuffer::deleteTexture(QMacCompatGLuint texture_id)
-{
-    Q_D(QGLPixelBuffer);
-    d->qctx->deleteTexture(texture_id);
-}
-#endif
-
 /*!
     \since 4.4
 
@@ -579,15 +497,6 @@ void QGLPixelBuffer::drawTexture(const QRectF &target, GLuint textureId, GLenum 
     d->qctx->drawTexture(target, textureId, textureTarget);
 }
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-void QGLPixelBuffer::drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget)
-{
-    Q_D(QGLPixelBuffer);
-    d->qctx->drawTexture(target, textureId, textureTarget);
-}
-#endif
-
 /*!
     \since 4.4
 
@@ -601,15 +510,6 @@ void QGLPixelBuffer::drawTexture(const QPointF &point, GLuint textureId, GLenum 
     Q_D(QGLPixelBuffer);
     d->qctx->drawTexture(point, textureId, textureTarget);
 }
-
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-/*! \internal */
-void QGLPixelBuffer::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget)
-{
-    Q_D(QGLPixelBuffer);
-    d->qctx->drawTexture(point, textureId, textureTarget);
-}
-#endif
 
 /*!
     Returns the format of the pbuffer. The format may be different

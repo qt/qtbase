@@ -81,16 +81,6 @@ public:
     QGLFramebufferObject(const QSize &size, const QGLFramebufferObjectFormat &format);
     QGLFramebufferObject(int width, int height, const QGLFramebufferObjectFormat &format);
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    QGLFramebufferObject(const QSize &size, QMacCompatGLenum target = GL_TEXTURE_2D);
-    QGLFramebufferObject(int width, int height, QMacCompatGLenum target = GL_TEXTURE_2D);
-
-    QGLFramebufferObject(const QSize &size, Attachment attachment,
-                         QMacCompatGLenum target = GL_TEXTURE_2D, QMacCompatGLenum internal_format = GL_RGBA8);
-    QGLFramebufferObject(int width, int height, Attachment attachment,
-                         QMacCompatGLenum target = GL_TEXTURE_2D, QMacCompatGLenum internal_format = GL_RGBA8);
-#endif
-
     virtual ~QGLFramebufferObject();
 
     QGLFramebufferObjectFormat format() const;
@@ -114,10 +104,6 @@ public:
 
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    void drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-    void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-#endif
 
     static bool hasOpenGLFramebufferBlit();
     static void blitFramebuffer(QGLFramebufferObject *target, const QRect &targetRect,
@@ -159,11 +145,6 @@ public:
 
     void setInternalTextureFormat(GLenum internalTextureFormat);
     GLenum internalTextureFormat() const;
-
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    void setTextureTarget(QMacCompatGLenum target);
-    void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
-#endif
 
     bool operator==(const QGLFramebufferObjectFormat& other) const;
     bool operator!=(const QGLFramebufferObjectFormat& other) const;

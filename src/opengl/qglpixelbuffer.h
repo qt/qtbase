@@ -80,18 +80,6 @@ public:
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    bool bindToDynamicTexture(QMacCompatGLuint texture);
-    void updateDynamicTexture(QMacCompatGLuint texture_id) const;
-    GLuint bindTexture(const QImage &image, QMacCompatGLenum target = GL_TEXTURE_2D);
-    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum target = GL_TEXTURE_2D);
-
-    void drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-    void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-
-    void deleteTexture(QMacCompatGLuint texture_id);
-#endif
-
     QSize size() const;
     Qt::HANDLE handle() const;
     QImage toImage() const;

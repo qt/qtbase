@@ -2047,20 +2047,11 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
-    QGLContext *ctx = d->ctx;
 
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
     d->device->endPaint();
 
-#if defined(Q_WS_X11)
-    // On some (probably all) drivers, deleting an X pixmap which has been bound to a texture
-    // before calling glFinish/swapBuffers renders garbage. Presumably this is because X deletes
-    // the pixmap behind the driver's back before it's had a chance to use it. To fix this, we
-    // reference all QPixmaps which have been bound to stop them being deleted and only deref
-    // them here, after swapBuffers, where they can be safely deleted.
-    ctx->d_func()->boundPixmaps.clear();
-#endif
     d->ctx->d_ptr->active_engine = 0;
 
     d->resetGLState();
