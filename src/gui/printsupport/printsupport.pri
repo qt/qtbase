@@ -5,7 +5,8 @@ HEADERS += \
         $$PWD/qprinter.h \
         $$PWD/qprinter_p.h \
         $$PWD/qprinterinfo.h \
-        $$PWD/qprinterinfo_p.h
+        $$PWD/qprinterinfo_p.h \
+        $$PWD/qprintabletextdocument.h
 
 SOURCES += \
         $$PWD/qpaintengine_alpha.cpp \
@@ -13,6 +14,7 @@ SOURCES += \
         $$PWD/qprintengine_pdf.cpp \
         $$PWD/qprinter.cpp \
         $$PWD/qprinterinfo.cpp \
+        $$PWD/qprintabletextdocument.cpp
 
 unix:!symbian {
         HEADERS += \

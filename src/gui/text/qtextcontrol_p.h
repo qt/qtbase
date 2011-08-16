@@ -75,6 +75,7 @@ class QMimeData;
 class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;
+class QPagedPaintDevice;
 
 class Q_GUI_EXPORT QTextControl : public QObject
 {
@@ -171,9 +172,7 @@ public:
     bool isWordSelectionEnabled() const;
     void setWordSelectionEnabled(bool enabled);
 
-#ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const;
-#endif
+    void print(QPagedPaintDevice *printer) const;
 
     virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const;
     virtual QRectF blockBoundingRect(const QTextBlock &block) const;

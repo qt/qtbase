@@ -2426,7 +2426,6 @@ bool QWidgetTextControl::isWordSelectionEnabled() const
 #ifndef QT_NO_PRINTER
 void QWidgetTextControl::print(QPrinter *printer) const
 {
-#ifndef QT_NO_PRINTER
     Q_D(const QWidgetTextControl);
     if (!printer || !printer->isValid())
         return;
@@ -2448,7 +2447,6 @@ void QWidgetTextControl::print(QPrinter *printer) const
     }
     doc->print(printer);
     delete tempDoc;
-#endif
 }
 #endif // QT_NO_PRINTER
 
