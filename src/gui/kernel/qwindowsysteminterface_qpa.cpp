@@ -93,6 +93,11 @@ void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &new
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleSynchronousGeometryChange(QWindow *tlw, const QRect &newRect)
+{
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
+    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
+}
 
 void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
 {

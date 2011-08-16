@@ -95,6 +95,7 @@ public:
     static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);
+    static void handleSynchronousGeometryChange(QWindow *w, const QRect &newRect);
     static void handleCloseEvent(QWindow *w);
     static void handleEnterEvent(QWindow *w);
     static void handleLeaveEvent(QWindow *w);
