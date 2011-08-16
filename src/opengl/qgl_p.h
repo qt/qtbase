@@ -433,7 +433,6 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
-    QHash<QGLContextResourceBase *, void *> m_resources;
     QGLTextureDestroyer *texture_destroyer;
 
     QGLFunctions *functions;
@@ -726,69 +725,6 @@ public:
 
     T *value(const QGLContext *context) {
         T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
-        if (!resource) {
-            resource = new T(context);
-            insert(context, resource);
-        }
-        return resource;
-    }
-
-protected:
-    void freeResource(void *resource) {
-        delete reinterpret_cast<T *>(resource);
-    }
-};
-
-/*
-   Base for resources that are context specific.
-*/
-class Q_OPENGL_EXPORT QGLContextResourceBase
-{
-public:
-    virtual ~QGLContextResourceBase() {
-        for (int i = 0; i < m_contexts.size(); ++i)
-            m_contexts.at(i)->d_ptr->m_resources.remove(this);
-    }
-
-    void insert(const QGLContext *context, void *value) {
-        context->d_ptr->m_resources.insert(this, value);
-    }
-
-    void *value(const QGLContext *context) {
-        return context->d_ptr->m_resources.value(this, 0);
-    }
-    virtual void freeResource(void *value) = 0;
-
-protected:
-    QList<const QGLContext *> m_contexts;
-};
-
-/*
-   The QGLContextResource template is used to manage a resource for a
-   single GL context. Just before the context is destroyed (while it's
-   still the current context), or when the QGLContextResource object
-   itself is destroyed (implies potential context switches), the
-   resource will be freed.  The class used as the template class type
-   needs to have a constructor with the following signature: T(const
-   QGLContext *);
-*/
-template <class T>
-class QGLContextResource : public QGLContextResourceBase
-{
-public:
-    ~QGLContextResource() {
-        for (int i = 0; i < m_contexts.size(); ++i) {
-            const QGLContext *context = m_contexts.at(i);
-            T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
-            if (resource) {
-                QGLShareContextScope scope(context);
-                delete resource;
-            }
-        }
-    }
-
-    T *value(const QGLContext *context) {
-        T *resource = reinterpret_cast<T *>(QGLContextResourceBase::value(context));
         if (!resource) {
             resource = new T(context);
             insert(context, resource);

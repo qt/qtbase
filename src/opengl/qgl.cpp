@@ -2105,10 +2105,6 @@ QGLContext::~QGLContext()
 
 void QGLContextPrivate::cleanup()
 {
-    QHash<QGLContextResourceBase *, void *>::ConstIterator it;
-    for (it = m_resources.begin(); it != m_resources.end(); ++it)
-        it.key()->freeResource(it.value());
-    m_resources.clear();
 }
 
 #define ctx q_ptr
