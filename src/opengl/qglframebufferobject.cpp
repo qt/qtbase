@@ -55,8 +55,8 @@ QT_BEGIN_NAMESPACE
 
 extern Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
-#define QGL_FUNC_CONTEXT const QGLContext *ctx = d_ptr->fbo_guard.context();
-#define QGL_FUNCP_CONTEXT const QGLContext *ctx = fbo_guard.context();
+#define QGL_FUNC_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
+#define QGL_FUNCP_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
 
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
@@ -351,13 +351,7 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
 
 QGLContext *QGLFBOGLPaintDevice::context() const
 {
-    QGLContext *fboContext = const_cast<QGLContext *>(fbo->d_ptr->fbo_guard.context());
-    QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-
-    if (QGLContextPrivate::contextGroup(fboContext) == QGLContextPrivate::contextGroup(currentContext))
-        return currentContext;
-    else
-        return fboContext;
+    return const_cast<QGLContext *>(QGLContext::currentContext());
 }
 
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
@@ -407,13 +401,33 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
     return false;
 }
 
+namespace
+{
+    void freeFramebufferFunc(QGLContext *ctx, GLuint id)
+    {
+        Q_UNUSED(ctx);
+        glDeleteFramebuffers(1, &id);
+    }
+
+    void freeRenderbufferFunc(QGLContext *ctx, GLuint id)
+    {
+        Q_UNUSED(ctx);
+        glDeleteRenderbuffers(1, &id);
+    }
+
+    void freeTextureFunc(QGLContext *ctx, GLuint id)
+    {
+        Q_UNUSED(ctx);
+        glDeleteTextures(1, &id);
+    }
+}
+
 void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                                        QGLFramebufferObject::Attachment attachment,
                                        GLenum texture_target, GLenum internal_format,
                                        GLint samples, bool mipmap)
 {
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
-    fbo_guard.setContext(ctx);
 
     bool ext_detected = (QGLExtensions::glExtensions() & QGLExtensions::FramebufferObject);
     if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(ctx)))
@@ -427,9 +441,11 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     GLuint fbo = 0;
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
-    fbo_guard.setId(fbo);
 
-    glDevice.setFBO(q, attachment);
+    GLuint texture = 0;
+    GLuint color_buffer = 0;
+    GLuint depth_buffer = 0;
+    GLuint stencil_buffer = 0;
 
     QT_CHECK_GLERROR();
     // init texture
@@ -603,7 +619,21 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
-    if (!valid) {
+    if (valid) {
+        fbo_guard = createSharedResourceGuard(ctx, fbo, freeFramebufferFunc);
+        if (color_buffer)
+            color_buffer_guard = createSharedResourceGuard(ctx, color_buffer, freeRenderbufferFunc);
+        else
+            texture_guard = createSharedResourceGuard(ctx, texture, freeTextureFunc);
+        if (depth_buffer)
+            depth_buffer_guard = createSharedResourceGuard(ctx, depth_buffer, freeRenderbufferFunc);
+        if (stencil_buffer) {
+            if (stencil_buffer == depth_buffer)
+                stencil_buffer_guard = depth_buffer_guard;
+            else
+                stencil_buffer_guard = createSharedResourceGuard(ctx, stencil_buffer, freeRenderbufferFunc);
+        }
+    } else {
         if (color_buffer)
             glDeleteRenderbuffers(1, &color_buffer);
         else
@@ -613,7 +643,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         if (stencil_buffer && depth_buffer != stencil_buffer)
             glDeleteRenderbuffers(1, &stencil_buffer);
         glDeleteFramebuffers(1, &fbo);
-        fbo_guard.setId(0);
     }
     QT_CHECK_GLERROR();
 
@@ -622,6 +651,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     format.setAttachment(fbo_attachment);
     format.setInternalTextureFormat(internal_format);
     format.setMipmap(mipmap);
+
+    glDevice.setFBO(q, attachment);
 }
 
 /*!
@@ -849,23 +880,19 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, Attachment attachm
 QGLFramebufferObject::~QGLFramebufferObject()
 {
     Q_D(QGLFramebufferObject);
-    QGL_FUNC_CONTEXT;
 
     delete d->engine;
 
-    if (isValid() && ctx) {
-        QGLShareContextScope scope(ctx);
-        if (d->texture)
-            glDeleteTextures(1, &d->texture);
-        if (d->color_buffer)
-            glDeleteRenderbuffers(1, &d->color_buffer);
-        if (d->depth_buffer)
-            glDeleteRenderbuffers(1, &d->depth_buffer);
-        if (d->stencil_buffer && d->stencil_buffer != d->depth_buffer)
-            glDeleteRenderbuffers(1, &d->stencil_buffer);
-        GLuint fbo = d->fbo();
-        glDeleteFramebuffers(1, &fbo);
-    }
+    if (d->texture_guard)
+        d->texture_guard->free();
+    if (d->color_buffer_guard)
+        d->color_buffer_guard->free();
+    if (d->depth_buffer_guard)
+        d->depth_buffer_guard->free();
+    if (d->stencil_buffer_guard && d->stencil_buffer_guard != d->depth_buffer_guard)
+        d->stencil_buffer_guard->free();
+    if (d->fbo_guard)
+        d->fbo_guard->free();
 }
 
 /*!
@@ -889,7 +916,7 @@ QGLFramebufferObject::~QGLFramebufferObject()
 bool QGLFramebufferObject::isValid() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->valid && d->fbo_guard.context();
+    return d->valid && d->fbo_guard && d->fbo_guard->id();
 }
 
 /*!
@@ -972,7 +999,7 @@ bool QGLFramebufferObject::release()
 GLuint QGLFramebufferObject::texture() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->texture;
+    return d->texture_guard ? d->texture_guard->id() : 0;
 }
 
 /*!

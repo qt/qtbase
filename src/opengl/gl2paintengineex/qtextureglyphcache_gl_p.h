@@ -63,10 +63,11 @@ QT_BEGIN_NAMESPACE
 
 class QGL2PaintEngineExPrivate;
 
-struct QGLGlyphTexture
+struct QGLGlyphTexture : public QGLSharedResource
 {
     QGLGlyphTexture(const QGLContext *ctx)
-        : m_width(0)
+        : QGLSharedResource(ctx->contextHandle()->shareGroup())
+        , m_width(0)
         , m_height(0)
     {
         if (ctx && !ctx->d_ptr->workaround_brokenFBOReadBack)
@@ -77,19 +78,24 @@ struct QGLGlyphTexture
 #endif
     }
 
-    ~QGLGlyphTexture() {
-        const QGLContext *ctx = QGLContext::currentContext();
+    void freeResource(QGuiGLContext *context)
+    {
+        const QGLContext *ctx = QGLContext::fromGuiGLContext(context);
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
         qDebug("~QGLGlyphTexture() %p for context %p.", this, ctx);
 #endif
-        // At this point, the context group is made current, so it's safe to
-        // release resources without a makeCurrent() call
-        if (ctx) {
-            if (!ctx->d_ptr->workaround_brokenFBOReadBack)
-                glDeleteFramebuffers(1, &m_fbo);
-            if (m_width || m_height)
-                glDeleteTextures(1, &m_texture);
-        }
+        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+            glDeleteFramebuffers(1, &m_fbo);
+        if (m_width || m_height)
+            glDeleteTextures(1, &m_texture);
+    }
+
+    void invalidateResource()
+    {
+        m_texture = 0;
+        m_fbo = 0;
+        m_width = 0;
+        m_height = 0;
     }
 
     GLuint m_texture;
@@ -98,10 +104,10 @@ struct QGLGlyphTexture
     int m_height;
 };
 
-class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache, public QGLContextGroupResourceBase
+class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache
 {
 public:
-    QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
+    QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix);
     ~QGLTextureGlyphCache();
 
     virtual void createTextureData(int width, int height);
@@ -113,25 +119,24 @@ public:
 
     inline GLuint texture() const {
         QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
-        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource;
         return glyphTexture ? glyphTexture->m_texture : 0;
     }
 
     inline int width() const {
         QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
-        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource;
         return glyphTexture ? glyphTexture->m_width : 0;
     }
     inline int height() const {
         QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
-        QGLGlyphTexture *glyphTexture = that->m_textureResource.value(ctx);
+        QGLGlyphTexture *glyphTexture = that->m_textureResource;
         return glyphTexture ? glyphTexture->m_height : 0;
     }
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
 
-    void setContext(const QGLContext *context);
-    inline const QGLContext *context() const { return ctx; }
+    inline const QGuiGLContextGroup *contextGroup() const { return m_textureResource ? m_textureResource->group() : 0; }
 
     inline int serialNumber() const { return m_serialNumber; }
 
@@ -144,12 +149,9 @@ public:
 
     void clear();
 
-    void freeResource(void *) { ctx = 0; }
-
 private:
-    QGLContextGroupResource<QGLGlyphTexture> m_textureResource;
+    QGLGlyphTexture *m_textureResource;
 
-    const QGLContext *ctx;
     QGL2PaintEngineExPrivate *pex;
     QGLShaderProgram *m_blitProgram;
     FilterMode m_filterMode;

@@ -61,6 +61,7 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qatomic.h"
 #include "QtWidgets/private/qwidget_p.h"
+#include "QtGui/private/qguiglcontext_qpa_p.h"
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
@@ -177,9 +178,6 @@ public:
     bool disable_clear_on_painter_begin;
 };
 
-class QGLContextGroupResourceBase;
-class QGLSharedResourceGuard;
-
 // QGLContextPrivate has the responsibility of creating context groups.
 // QGLContextPrivate maintains the reference counter and destroys
 // context groups when needed.
@@ -193,9 +191,6 @@ public:
     bool isSharing() const { return m_shares.size() >= 2; }
     QList<const QGLContext *> shares() const { return m_shares; }
 
-    void addGuard(QGLSharedResourceGuard *guard);
-    void removeGuard(QGLSharedResourceGuard *guard);
-
     static void addShare(const QGLContext *context, const QGLContext *share);
     static void removeShare(const QGLContext *context);
 
@@ -205,11 +200,7 @@ private:
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
-    QHash<QGLContextGroupResourceBase *, void *> m_resources;
-    QGLSharedResourceGuard *m_guards; // double-linked list of active guards.
     QAtomicInt m_refs;
-
-    void cleanupResources(const QGLContext *ctx);
 
     friend class QGLContext;
     friend class QGLContextPrivate;
@@ -539,114 +530,69 @@ QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
 
 extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
 
-/*
-   Base for resources that are shared in a context group.
-*/
-class Q_OPENGL_EXPORT QGLContextGroupResourceBase
-{
-public:
-    QGLContextGroupResourceBase();
-    virtual ~QGLContextGroupResourceBase();
-    void insert(const QGLContext *context, void *value);
-    void *value(const QGLContext *context);
-    void cleanup(const QGLContext *context);
-    void cleanup(const QGLContext *context, void *value);
-    virtual void freeResource(void *value) = 0;
-
-protected:
-    QList<QGLContextGroup *> m_groups;
-
-private:
-    QAtomicInt active;
-};
-
-/*
-   The QGLContextGroupResource template is used to manage a resource
-   for a group of sharing GL contexts. When the last context in the
-   group is destroyed, or when the QGLContextGroupResource object
-   itself is destroyed (implies potential context switches), the
-   resource will be freed.
-
-   The class used as the template class type needs to have a
-   constructor with the following signature:
-     T(const QGLContext *);
-*/
-template <class T>
-class QGLContextGroupResource : public QGLContextGroupResourceBase
-{
-public:
-    ~QGLContextGroupResource() {
-        for (int i = 0; i < m_groups.size(); ++i) {
-            const QGLContext *context = m_groups.at(i)->context();
-            T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
-            if (resource) {
-                QGLShareContextScope scope(context);
-                delete resource;
-            }
-        }
-    }
-
-    T *value(const QGLContext *context) {
-        T *resource = reinterpret_cast<T *>(QGLContextGroupResourceBase::value(context));
-        if (!resource) {
-            resource = new T(context);
-            insert(context, resource);
-        }
-        return resource;
-    }
-
-protected:
-    void freeResource(void *resource) {
-        delete reinterpret_cast<T *>(resource);
-    }
-};
-
 // Put a guard around a GL object identifier and its context.
 // When the context goes away, a shared context will be used
 // in its place.  If there are no more shared contexts, then
 // the identifier is returned as zero - it is assumed that the
 // context destruction cleaned up the identifier in this case.
-class Q_OPENGL_EXPORT QGLSharedResourceGuard
+class Q_OPENGL_EXPORT QGLSharedResourceGuardBase : public QGLSharedResource
 {
 public:
-    QGLSharedResourceGuard(const QGLContext *context)
-        : m_group(0), m_id(0), m_next(0), m_prev(0)
+    QGLSharedResourceGuardBase(QGLContext *context, GLuint id)
+        : QGLSharedResource(context->contextHandle()->shareGroup())
+        , m_id(id)
     {
-        setContext(context);
     }
-    QGLSharedResourceGuard(const QGLContext *context, GLuint id)
-        : m_group(0), m_id(id), m_next(0), m_prev(0)
-    {
-        setContext(context);
-    }
-    ~QGLSharedResourceGuard();
-
-    const QGLContext *context() const
-    {
-        return m_group ? m_group->context() : 0;
-    }
-
-    void setContext(const QGLContext *context);
 
     GLuint id() const
     {
         return m_id;
     }
 
-    void setId(GLuint id)
+protected:
+    void invalidateResource()
     {
-        m_id = id;
+        m_id = 0;
+    }
+
+    void freeResource(QGuiGLContext *context)
+    {
+        if (m_id) {
+            freeResource(QGLContext::fromGuiGLContext(context), m_id);
+        }
+    }
+
+    virtual void freeResource(QGLContext *ctx, GLuint id) = 0;
+
+private:
+    GLuint m_id;
+};
+
+template <typename Func>
+class QGLSharedResourceGuard : public QGLSharedResourceGuardBase
+{
+public:
+    QGLSharedResourceGuard(QGLContext *context, GLuint id, Func func)
+        : QGLSharedResourceGuardBase(context, id)
+        , m_func(func)
+    {
+    }
+
+protected:
+    void freeResource(QGLContext *ctx, GLuint id)
+    {
+        m_func(ctx, id);
     }
 
 private:
-    QGLContextGroup *m_group;
-    GLuint m_id;
-    QGLSharedResourceGuard *m_next;
-    QGLSharedResourceGuard *m_prev;
-
-    friend class QGLContextGroup;
+    Func m_func;
 };
 
+template <typename Func>
+QGLSharedResourceGuardBase *createSharedResourceGuard(QGLContext *context, GLuint id, Func cleanupFunc)
+{
+    return new QGLSharedResourceGuard<Func>(context, id, cleanupFunc);
+}
 
 class QGLExtensionMatcher
 {

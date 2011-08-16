@@ -189,15 +189,15 @@ class QGLShaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGLShader)
 public:
-    QGLShaderPrivate(const QGLContext *context, QGLShader::ShaderType type)
-        : shaderGuard(context)
+    QGLShaderPrivate(const QGLContext *, QGLShader::ShaderType type)
+        : shaderGuard(0)
         , shaderType(type)
         , compiled(false)
     {
     }
     ~QGLShaderPrivate();
 
-    QGLSharedResourceGuard shaderGuard;
+    QGLSharedResourceGuardBase *shaderGuard;
     QGLShader::ShaderType shaderType;
     bool compiled;
     QString log;
@@ -207,22 +207,28 @@ public:
     void deleteShader();
 };
 
-#define ctx shaderGuard.context()
+namespace {
+    void freeShaderFunc(QGLContext *ctx, GLuint id)
+    {
+        Q_UNUSED(ctx);
+        glDeleteShader(id);
+    }
+}
+
+#define ctx QGLContext::currentContext()
 
 QGLShaderPrivate::~QGLShaderPrivate()
 {
-    if (shaderGuard.id()) {
-        QGLShareContextScope scope(shaderGuard.context());
-        glDeleteShader(shaderGuard.id());
-    }
+    if (shaderGuard)
+        shaderGuard->free();
 }
 
 bool QGLShaderPrivate::create()
 {
-    const QGLContext *context = shaderGuard.context();
+    QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
     if (!context)
         return false;
-    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
+    if (qt_resolve_glsl_extensions(context)) {
         GLuint shader;
         if (shaderType == QGLShader::Vertex)
             shader = glCreateShader(GL_VERTEX_SHADER);
@@ -234,7 +240,7 @@ bool QGLShaderPrivate::create()
             qWarning() << "QGLShader: could not create shader";
             return false;
         }
-        shaderGuard.setId(shader);
+        shaderGuard = createSharedResourceGuard(context, shader, freeShaderFunc);
         return true;
     } else {
         return false;
@@ -243,7 +249,7 @@ bool QGLShaderPrivate::create()
 
 bool QGLShaderPrivate::compile(QGLShader *q)
 {
-    GLuint shader = shaderGuard.id();
+    GLuint shader = shaderGuard ? shaderGuard->id() : 0;
     if (!shader)
         return false;
     glCompileShader(shader);
@@ -286,14 +292,11 @@ bool QGLShaderPrivate::compile(QGLShader *q)
 
 void QGLShaderPrivate::deleteShader()
 {
-    if (shaderGuard.id()) {
-        glDeleteShader(shaderGuard.id());
-        shaderGuard.setId(0);
+    if (shaderGuard) {
+        shaderGuard->free();
+        shaderGuard = 0;
     }
 }
-
-#undef ctx
-#define ctx d->shaderGuard.context()
 
 /*!
     Constructs a new QGLShader object of the specified \a type
@@ -387,7 +390,7 @@ static const char redefineHighp[] =
 bool QGLShader::compileSourceCode(const char *source)
 {
     Q_D(QGLShader);
-    if (d->shaderGuard.id()) {
+    if (d->shaderGuard && d->shaderGuard->id()) {
         QVarLengthArray<const char *, 4> src;
         QVarLengthArray<GLint, 4> srclen;
         int headerLen = 0;
@@ -420,7 +423,7 @@ bool QGLShader::compileSourceCode(const char *source)
 #endif
         src.append(source + headerLen);
         srclen.append(GLint(qstrlen(source + headerLen)));
-        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), srclen.data());
+        glShaderSource(d->shaderGuard->id(), src.size(), src.data(), srclen.data());
         return d->compile(this);
     } else {
         return false;
@@ -480,7 +483,7 @@ bool QGLShader::compileSourceFile(const QString& fileName)
 QByteArray QGLShader::sourceCode() const
 {
     Q_D(const QGLShader);
-    GLuint shader = d->shaderGuard.id();
+    GLuint shader = d->shaderGuard ? d->shaderGuard->id() : 0;
     if (!shader)
         return QByteArray();
     GLint size = 0;
@@ -525,22 +528,17 @@ QString QGLShader::log() const
 GLuint QGLShader::shaderId() const
 {
     Q_D(const QGLShader);
-    return d->shaderGuard.id();
+    return d->shaderGuard ? d->shaderGuard->id() : 0;
 }
 
-
-
-
-
 #undef ctx
-#define ctx programGuard.context()
 
 class QGLShaderProgramPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGLShaderProgram)
 public:
-    QGLShaderProgramPrivate(const QGLContext *context)
-        : programGuard(context)
+    QGLShaderProgramPrivate(const QGLContext *)
+        : programGuard(0)
         , linked(false)
         , inited(false)
         , removingShaders(false)
@@ -551,7 +549,7 @@ public:
     }
     ~QGLShaderProgramPrivate();
 
-    QGLSharedResourceGuard programGuard;
+    QGLSharedResourceGuardBase *programGuard;
     bool linked;
     bool inited;
     bool removingShaders;
@@ -567,12 +565,19 @@ public:
     bool hasShader(QGLShader::ShaderType type) const;
 };
 
+namespace {
+    void freeProgramFunc(QGLContext *ctx, GLuint id)
+    {
+        Q_UNUSED(ctx);
+        glDeleteProgram(id);
+    }
+}
+
+
 QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
 {
-    if (programGuard.id()) {
-        QGLShareContextScope scope(programGuard.context());
-        glDeleteProgram(programGuard.id());
-    }
+    if (programGuard)
+        programGuard->free();
 }
 
 bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
@@ -584,8 +589,7 @@ bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
     return false;
 }
 
-#undef ctx
-#define ctx d->programGuard.context()
+#define ctx QGLContext::currentContext()
 
 /*!
     Constructs a new shader program and attaches it to \a parent.
@@ -623,24 +627,21 @@ QGLShaderProgram::~QGLShaderProgram()
 bool QGLShaderProgram::init()
 {
     Q_D(QGLShaderProgram);
-    if (d->programGuard.id() || d->inited)
+    if ((d->programGuard && d->programGuard->id()) || d->inited)
         return true;
     d->inited = true;
-    const QGLContext *context = d->programGuard.context();
-    if (!context) {
-        context = QGLContext::currentContext();
-        d->programGuard.setContext(context);
-    }
-
+    QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
     if (!context)
         return false;
-    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
+    if (qt_resolve_glsl_extensions(context)) {
         GLuint program = glCreateProgram();
         if (!program) {
             qWarning() << "QGLShaderProgram: could not create shader program";
             return false;
         }
-        d->programGuard.setId(program);
+        if (d->programGuard)
+            delete d->programGuard;
+        d->programGuard = createSharedResourceGuard(context, program, freeProgramFunc);
         return true;
     } else {
         qWarning() << "QGLShaderProgram: shader programs are not supported";
@@ -667,15 +668,14 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
         return false;
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
-    if (d->programGuard.id() && shader) {
-        if (!QGLContext::areSharing(shader->d_func()->shaderGuard.context(),
-                                    d->programGuard.context())) {
+    if (d->programGuard && d->programGuard->id() && shader) {
+        if (!shader->d_func()->shaderGuard || !shader->d_func()->shaderGuard->id())
+            return false;
+        if (d->programGuard->group() != shader->d_func()->shaderGuard->group()) {
             qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
             return false;
         }
-        if (!shader->d_func()->shaderGuard.id())
-            return false;
-        glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
+        glAttachShader(d->programGuard->id(), shader->d_func()->shaderGuard->id());
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
         connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
@@ -784,14 +784,17 @@ bool QGLShaderProgram::addShaderFromSourceFile
 /*!
     Removes \a shader from this shader program.  The object is not deleted.
 
+    The shader program must be valid in the current QGLContext.
+
     \sa addShader(), link(), removeAllShaders()
 */
 void QGLShaderProgram::removeShader(QGLShader *shader)
 {
     Q_D(QGLShaderProgram);
-    if (d->programGuard.id() && shader && shader->d_func()->shaderGuard.id()) {
-        QGLShareContextScope scope(d->programGuard.context());
-        glDetachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
+    if (d->programGuard && d->programGuard->id()
+        && shader && shader->d_func()->shaderGuard)
+    {
+        glDetachShader(d->programGuard->id(), shader->d_func()->shaderGuard->id());
     }
     d->linked = false;  // Program needs to be relinked.
     if (shader) {
@@ -826,8 +829,11 @@ void QGLShaderProgram::removeAllShaders()
     Q_D(QGLShaderProgram);
     d->removingShaders = true;
     foreach (QGLShader *shader, d->shaders) {
-        if (d->programGuard.id() && shader && shader->d_func()->shaderGuard.id())
-            glDetachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
+        if (d->programGuard && d->programGuard->id()
+            && shader && shader->d_func()->shaderGuard)
+        {
+            glDetachShader(d->programGuard->id(), shader->d_func()->shaderGuard->id());
+        }
     }
     foreach (QGLShader *shader, d->anonShaders) {
         // Delete shader objects that were created anonymously.
@@ -856,7 +862,7 @@ void QGLShaderProgram::removeAllShaders()
 bool QGLShaderProgram::link()
 {
     Q_D(QGLShaderProgram);
-    GLuint program = d->programGuard.id();
+    GLuint program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
 
@@ -946,13 +952,13 @@ QString QGLShaderProgram::log() const
 bool QGLShaderProgram::bind()
 {
     Q_D(QGLShaderProgram);
-    GLuint program = d->programGuard.id();
+    GLuint program = d->programGuard ? d->programGuard->id() : 0;
     if (!program)
         return false;
     if (!d->linked && !link())
         return false;
 #ifndef QT_NO_DEBUG
-    if (!QGLContext::areSharing(d->programGuard.context(), QGLContext::currentContext())) {
+    if (d->programGuard->group() != QGuiGLContextGroup::currentContextGroup()) {
         qWarning("QGLShaderProgram::bind: program is not valid in the current context.");
         return false;
     }
@@ -974,7 +980,7 @@ void QGLShaderProgram::release()
 {
 #ifndef QT_NO_DEBUG
     Q_D(QGLShaderProgram);
-    if (!QGLContext::areSharing(d->programGuard.context(), QGLContext::currentContext()))
+    if (d->programGuard->group() != QGuiGLContextGroup::currentContextGroup())
         qWarning("QGLShaderProgram::release: program is not valid in the current context.");
 #endif
 #if defined(QT_OPENGL_ES_2)
@@ -996,7 +1002,7 @@ void QGLShaderProgram::release()
 GLuint QGLShaderProgram::programId() const
 {
     Q_D(const QGLShaderProgram);
-    GLuint id = d->programGuard.id();
+    GLuint id = d->programGuard ? d->programGuard->id() : 0;
     if (id)
         return id;
 
@@ -1005,7 +1011,7 @@ GLuint QGLShaderProgram::programId() const
     // themselves, particularly those using program binaries.
     if (!const_cast<QGLShaderProgram *>(this)->init())
         return 0;
-    return d->programGuard.id();
+    return d->programGuard ? d->programGuard->id() : 0;
 }
 
 /*!
@@ -1022,9 +1028,9 @@ GLuint QGLShaderProgram::programId() const
 void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 {
     Q_D(QGLShaderProgram);
-    if (!init())
+    if (!init() || !d->programGuard || !d->programGuard->id())
         return;
-    glBindAttribLocation(d->programGuard.id(), location, name);
+    glBindAttribLocation(d->programGuard->id(), location, name);
     d->linked = false;  // Program needs to be relinked.
 }
 
@@ -1074,8 +1080,8 @@ void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 int QGLShaderProgram::attributeLocation(const char *name) const
 {
     Q_D(const QGLShaderProgram);
-    if (d->linked) {
-        return glGetAttribLocation(d->programGuard.id(), name);
+    if (d->linked && d->programGuard && d->programGuard->id()) {
+        return glGetAttribLocation(d->programGuard->id(), name);
     } else {
         qWarning() << "QGLShaderProgram::attributeLocation(" << name
                    << "): shader program is not linked";
@@ -1752,8 +1758,8 @@ int QGLShaderProgram::uniformLocation(const char *name) const
 {
     Q_D(const QGLShaderProgram);
     Q_UNUSED(d);
-    if (d->linked) {
-        return glGetUniformLocation(d->programGuard.id(), name);
+    if (d->linked && d->programGuard && d->programGuard->id()) {
+        return glGetUniformLocation(d->programGuard->id(), name);
     } else {
         qWarning() << "QGLShaderProgram::uniformLocation(" << name
                    << "): shader program is not linked";

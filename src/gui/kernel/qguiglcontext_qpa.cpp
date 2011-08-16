@@ -41,6 +41,7 @@
 
 #include "qplatformglcontext_qpa.h"
 #include "qguiglcontext_qpa.h"
+#include "qguiglcontext_qpa_p.h"
 #include "qwindow.h"
 
 #include <QtCore/QThreadStorage>
@@ -62,35 +63,6 @@ public:
 };
 
 static QThreadStorage<QGuiGLThreadContext *> qwindow_context_storage;
-
-class QGuiGLContextPrivate
-{
-public:
-    QGuiGLContextPrivate()
-        : qGLContextHandle(0)
-        , platformGLContext(0)
-        , shareContext(0)
-        , screen(0)
-        , surface(0)
-    {
-    }
-
-    virtual ~QGuiGLContextPrivate()
-    {
-        //do not delete the QGLContext handle here as it is deleted in
-        //QWidgetPrivate::deleteTLSysExtra()
-    }
-    void *qGLContextHandle;
-    void (*qGLContextDeleteFunction)(void *handle);
-
-    QSurfaceFormat requestedFormat;
-    QPlatformGLContext *platformGLContext;
-    QGuiGLContext *shareContext;
-    QScreen *screen;
-    QSurface *surface;
-
-    static void setCurrentContext(QGuiGLContext *context);
-};
 
 void QGuiGLContextPrivate::setCurrentContext(QGuiGLContext *context)
 {
@@ -118,6 +90,11 @@ QGuiGLContext* QGuiGLContext::currentContext()
     return 0;
 }
 
+bool QGuiGLContext::areSharing(QGuiGLContext *first, QGuiGLContext *second)
+{
+    return first->shareGroup() == second->shareGroup();
+}
+
 QPlatformGLContext *QGuiGLContext::handle() const
 {
     Q_D(const QGuiGLContext);
@@ -136,7 +113,7 @@ QPlatformGLContext *QGuiGLContext::shareHandle() const
   Creates a new GL context instance, you need to call create() before it can be used.
 */
 QGuiGLContext::QGuiGLContext()
-    : d_ptr(new QGuiGLContextPrivate())
+    : QObject(*new QGuiGLContextPrivate())
 {
     Q_D(QGuiGLContext);
     d->screen = QGuiApplication::primaryScreen();
@@ -174,7 +151,7 @@ void QGuiGLContext::setScreen(QScreen *screen)
 /*!
   Attempts to create the GL context with the desired parameters.
 
-  Returns true if the native context was successfully created and is ready to be used.d
+  Returns true if the native context was successfully created and is ready to be used.
 */
 bool QGuiGLContext::create()
 {
@@ -183,6 +160,8 @@ bool QGuiGLContext::create()
     Q_D(QGuiGLContext);
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformGLContext(this);
     d->platformGLContext->setContext(this);
+    d->shareGroup = d->shareContext ? d->shareContext->shareGroup() : new QGuiGLContextGroup;
+    d->shareGroup->d_func()->addContext(this);
     return d->platformGLContext;
 }
 
@@ -191,6 +170,9 @@ void QGuiGLContext::destroy()
     Q_D(QGuiGLContext);
     if (QGuiGLContext::currentContext() == this)
         doneCurrent();
+    if (d->shareGroup)
+        d->shareGroup->d_func()->removeContext(this);
+    d->shareGroup = 0;
     delete d->platformGLContext;
     d->platformGLContext = 0;
 }
@@ -232,6 +214,9 @@ bool QGuiGLContext::makeCurrent(QSurface *surface)
     if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
         QGuiGLContextPrivate::setCurrentContext(this);
         d->surface = surface;
+
+        d->shareGroup->d_func()->deletePendingResources(this);
+
         return true;
     }
 
@@ -246,6 +231,9 @@ void QGuiGLContext::doneCurrent()
     Q_D(QGuiGLContext);
     if (!d->platformGLContext)
         return;
+
+    if (QGuiGLContext::currentContext() == this)
+        d->shareGroup->d_func()->deletePendingResources(this);
 
     d->platformGLContext->doneCurrent();
     QGuiGLContextPrivate::setCurrentContext(0);
@@ -293,6 +281,12 @@ QSurfaceFormat QGuiGLContext::format() const
     return d->platformGLContext->format();
 }
 
+QGuiGLContextGroup *QGuiGLContext::shareGroup() const
+{
+    Q_D(const QGuiGLContext);
+    return d->shareGroup;
+}
+
 QGuiGLContext *QGuiGLContext::shareContext() const
 {
     Q_D(const QGuiGLContext);
@@ -331,3 +325,176 @@ void QGuiGLContext::deleteQGLContext()
         d->qGLContextHandle = 0;
     }
 }
+
+QGuiGLContextGroup::QGuiGLContextGroup()
+    : QObject(*new QGuiGLContextGroupPrivate())
+{
+}
+
+QGuiGLContextGroup::~QGuiGLContextGroup()
+{
+    Q_D(QGuiGLContextGroup);
+
+    QList<QGLSharedResource *>::iterator it = d->m_sharedResources.begin();
+    QList<QGLSharedResource *>::iterator end = d->m_sharedResources.end();
+
+    while (it != end) {
+        (*it)->invalidateResource();
+        (*it)->m_group = 0;
+        ++it;
+    }
+
+    qDeleteAll(d->m_pendingDeletion.begin(), d->m_pendingDeletion.end());
+}
+
+QList<QGuiGLContext *> QGuiGLContextGroup::shares() const
+{
+    Q_D(const QGuiGLContextGroup);
+    return d->m_shares;
+}
+
+QGuiGLContextGroup *QGuiGLContextGroup::currentContextGroup()
+{
+    QGuiGLContext *current = QGuiGLContext::currentContext();
+    return current ? current->shareGroup() : 0;
+}
+
+void QGuiGLContextGroupPrivate::addContext(QGuiGLContext *ctx)
+{
+    QMutexLocker locker(&m_mutex);
+    m_refs.ref();
+    m_shares << ctx;
+}
+
+void QGuiGLContextGroupPrivate::removeContext(QGuiGLContext *ctx)
+{
+    Q_Q(QGuiGLContextGroup);
+
+    QMutexLocker locker(&m_mutex);
+    m_shares.removeOne(ctx);
+
+    if (ctx == m_context && !m_shares.isEmpty())
+        m_context = m_shares.first();
+
+    if (!m_refs.deref())
+        q->deleteLater();
+}
+
+void QGuiGLContextGroupPrivate::deletePendingResources(QGuiGLContext *ctx)
+{
+    QMutexLocker locker(&m_mutex);
+
+    QList<QGLSharedResource *>::iterator it = m_pendingDeletion.begin();
+    QList<QGLSharedResource *>::iterator end = m_pendingDeletion.end();
+    while (it != end) {
+        (*it)->freeResource(ctx);
+        delete *it;
+        ++it;
+    }
+    m_pendingDeletion.clear();
+}
+
+QGLSharedResource::QGLSharedResource(QGuiGLContextGroup *group)
+    : m_group(group)
+{
+    QMutexLocker locker(&m_group->d_func()->m_mutex);
+    m_group->d_func()->m_sharedResources << this;
+}
+
+QGLSharedResource::~QGLSharedResource()
+{
+}
+
+// schedule the resource for deletion at an appropriate time
+void QGLSharedResource::free()
+{
+    if (!m_group) {
+        delete this;
+        return;
+    }
+
+    QMutexLocker locker(&m_group->d_func()->m_mutex);
+    m_group->d_func()->m_sharedResources.removeOne(this);
+    m_group->d_func()->m_pendingDeletion << this;
+
+    // can we delete right away?
+    QGuiGLContext *current = QGuiGLContext::currentContext();
+    if (current && current->shareGroup() == m_group) {
+        m_group->d_func()->deletePendingResources(current);
+    }
+}
+
+QGLMultiGroupSharedResource::QGLMultiGroupSharedResource()
+    : active(0)
+{
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Creating context group resource object %p.", this);
+#endif
+}
+
+QGLMultiGroupSharedResource::~QGLMultiGroupSharedResource()
+{
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
+#endif
+    for (int i = 0; i < m_groups.size(); ++i) {
+        QGuiGLContext *context = m_groups.at(i)->shares().first();
+        QGLSharedResource *resource = value(context);
+        if (resource)
+            resource->free();
+        m_groups.at(i)->d_func()->m_resources.remove(this);
+        active.deref();
+    }
+#ifndef QT_NO_DEBUG
+    if (active != 0) {
+        qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
+                 "          This is possibly caused by a leaked QGLWidget, \n"
+                 "          QGLFramebufferObject or QGLPixelBuffer.");
+    }
+#endif
+}
+
+void QGLMultiGroupSharedResource::insert(QGuiGLContext *context, QGLSharedResource *value)
+{
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
+#endif
+    QGuiGLContextGroup *group = context->shareGroup();
+    Q_ASSERT(!group->d_func()->m_resources.contains(this));
+    group->d_func()->m_resources.insert(this, value);
+    m_groups.append(group);
+    active.ref();
+}
+
+QGLSharedResource *QGLMultiGroupSharedResource::value(QGuiGLContext *context)
+{
+    QGuiGLContextGroup *group = context->shareGroup();
+    return group->d_func()->m_resources.value(this, 0);
+}
+
+void QGLMultiGroupSharedResource::cleanup(QGuiGLContext *ctx)
+{
+    QGLSharedResource *resource = value(ctx);
+
+    if (resource != 0) {
+        resource->free();
+
+        QGuiGLContextGroup *group = ctx->shareGroup();
+        group->d_func()->m_resources.remove(this);
+        m_groups.removeOne(group);
+        active.deref();
+    }
+}
+
+void QGLMultiGroupSharedResource::cleanup(QGuiGLContext *ctx, QGLSharedResource *value)
+{
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
+#endif
+    value->free();
+    active.deref();
+
+    QGuiGLContextGroup *group = ctx->shareGroup();
+    m_groups.removeOne(group);
+}
+

@@ -51,6 +51,7 @@ qpa {
                 kernel/qplatformwindow_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qguiglcontext_qpa.h \
+                kernel/qguiglcontext_qpa_p.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \

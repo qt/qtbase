@@ -65,6 +65,8 @@
 
 /*! \fn void QPlatformGLContext::swapBuffers()
     Reimplement in subclass to native swap buffers calls
+
+    The implementation must support being called in a thread different than the gui-thread.
 */
 
 /*! \fn void *QPlatformGLContext::getProcAddress(const QString &procName)

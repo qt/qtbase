@@ -374,7 +374,6 @@ private:
     friend class QGLTextureGlyphCache;
     friend struct QGLGlyphTexture;
     friend class QGLContextGroup;
-    friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
     friend class QGLExtensions;
     friend class QGLTexture;

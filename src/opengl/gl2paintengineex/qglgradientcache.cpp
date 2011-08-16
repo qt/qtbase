@@ -51,19 +51,40 @@ class QGL2GradientCacheWrapper
 public:
     QGL2GradientCache *cacheForContext(const QGLContext *context) {
         QMutexLocker lock(&m_mutex);
-        return m_resource.value(context);
+        return m_resource.value<QGL2GradientCache>(context->contextHandle());
     }
 
 private:
-    QGLContextGroupResource<QGL2GradientCache> m_resource;
+    QGLMultiGroupSharedResource m_resource;
     QMutex m_mutex;
 };
 
 Q_GLOBAL_STATIC(QGL2GradientCacheWrapper, qt_gradient_caches)
 
+QGL2GradientCache::QGL2GradientCache(QGuiGLContext *ctx)
+    : QGLSharedResource(ctx->shareGroup())
+{
+}
+
+QGL2GradientCache::~QGL2GradientCache()
+{
+    cache.clear();
+}
+
 QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
 {
     return qt_gradient_caches()->cacheForContext(context);
+}
+
+void QGL2GradientCache::invalidateResource()
+{
+    QMutexLocker lock(&m_mutex);
+    cache.clear();
+}
+
+void QGL2GradientCache::freeResource(QGuiGLContext *)
+{
+    cleanCache();
 }
 
 void QGL2GradientCache::cleanCache()

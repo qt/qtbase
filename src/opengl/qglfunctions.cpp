@@ -41,6 +41,7 @@
 
 #include "qglfunctions.h"
 #include "qgl_p.h"
+#include "QtGui/private/qguiglcontext_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -139,16 +140,27 @@ QT_BEGIN_NAMESPACE
 */
 
 // Hidden private fields for additional extension data.
-struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate
+struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QGLSharedResource
 {
-    QGLFunctionsPrivateEx(const QGLContext *context = 0)
-        : QGLFunctionsPrivate(context)
+    QGLFunctionsPrivateEx(QGuiGLContext *context)
+        : QGLFunctionsPrivate(QGLContext::fromGuiGLContext(context))
+        , QGLSharedResource(context->shareGroup())
         , m_features(-1) {}
+
+    void invalidateResource()
+    {
+        m_features = -1;
+    }
+
+    void freeResource(QGuiGLContext *)
+    {
+        // no gl resources to free
+    }
 
     int m_features;
 };
 
-Q_GLOBAL_STATIC(QGLContextGroupResource<QGLFunctionsPrivateEx>, qt_gl_functions_resource)
+Q_GLOBAL_STATIC(QGLMultiGroupSharedResource, qt_gl_functions_resource)
 
 static QGLFunctionsPrivateEx *qt_gl_functions(const QGLContext *context = 0)
 {
@@ -157,13 +169,7 @@ static QGLFunctionsPrivateEx *qt_gl_functions(const QGLContext *context = 0)
     Q_ASSERT(context);
     QGLFunctionsPrivateEx *funcs =
         reinterpret_cast<QGLFunctionsPrivateEx *>
-            (qt_gl_functions_resource()->value(context));
-#if QT_VERSION < 0x040800
-    if (!funcs) {
-        funcs = new QGLFunctionsPrivateEx();
-        qt_gl_functions_resource()->insert(context, funcs);
-    }
-#endif
+            (qt_gl_functions_resource()->value<QGLFunctionsPrivateEx>(context->contextHandle()));
     return funcs;
 }
 

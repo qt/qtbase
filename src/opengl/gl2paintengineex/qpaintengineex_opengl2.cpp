@@ -1580,10 +1580,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     QGLTextureGlyphCache *cache =
             (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
-    if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
-        cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
+    if (!cache || cache->cacheType() != glyphType || cache->contextGroup() == 0) {
+        cache = new QGLTextureGlyphCache(glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
-        cache->insert(ctx, cache);
         recreateVertexArrays = true;
     }
 

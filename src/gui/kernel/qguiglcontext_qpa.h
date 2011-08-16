@@ -54,12 +54,34 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QGuiGLContextPrivate;
+class QGuiGLContextGroupPrivate;
 class QPlatformGLContext;
 class QSurface;
 
-class Q_GUI_EXPORT QGuiGLContext
+class Q_GUI_EXPORT QGuiGLContextGroup : public QObject
 {
-Q_DECLARE_PRIVATE(QGuiGLContext);
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QGuiGLContextGroup)
+public:
+    ~QGuiGLContextGroup();
+
+    QList<QGuiGLContext *> shares() const;
+
+    static QGuiGLContextGroup *currentContextGroup();
+
+private:
+    QGuiGLContextGroup();
+
+    friend class QGuiGLContext;
+    friend class QGLContextGroupResourceBase;
+    friend class QGLSharedResource;
+    friend class QGLMultiGroupSharedResource;
+};
+
+class Q_GUI_EXPORT QGuiGLContext : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QGuiGLContext);
 public:
     QGuiGLContext();
     ~QGuiGLContext();
@@ -73,6 +95,7 @@ public:
 
     QSurfaceFormat format() const;
     QGuiGLContext *shareContext() const;
+    QGuiGLContextGroup *shareGroup() const;
     QScreen *screen() const;
 
     bool makeCurrent(QSurface *surface);
@@ -84,15 +107,15 @@ public:
     QSurface *surface() const;
 
     static QGuiGLContext *currentContext();
+    static bool areSharing(QGuiGLContext *first, QGuiGLContext *second);
 
     QPlatformGLContext *handle() const;
     QPlatformGLContext *shareHandle() const;
 
 private:
-    QScopedPointer<QGuiGLContextPrivate> d_ptr;
-
     //hack to make it work with QGLContext::CurrentContext
     friend class QGLContext;
+    friend class QGLContextResourceBase;
     friend class QWidgetPrivate;
 
     void *qGLContextHandle() const;
@@ -100,8 +123,6 @@ private:
     void deleteQGLContext();
 
     void destroy();
-
-    Q_DISABLE_COPY(QGuiGLContext);
 };
 
 QT_END_NAMESPACE

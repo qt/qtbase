@@ -1476,40 +1476,14 @@ Q_GLOBAL_STATIC(QGLContextGroupList, qt_context_groups)
  *****************************************************************************/
 
 QGLContextGroup::QGLContextGroup(const QGLContext *context)
-    : m_context(context), m_guards(0), m_refs(1)
+    : m_context(context), m_refs(1)
 {
     qt_context_groups()->append(this);
 }
 
 QGLContextGroup::~QGLContextGroup()
 {
-    // Clear any remaining QGLSharedResourceGuard objects on the group.
-    QGLSharedResourceGuard *guard = m_guards;
-    while (guard != 0) {
-        guard->m_group = 0;
-        guard->m_id = 0;
-        guard = guard->m_next;
-    }
     qt_context_groups()->remove(this);
-}
-
-void QGLContextGroup::addGuard(QGLSharedResourceGuard *guard)
-{
-    if (m_guards)
-        m_guards->m_prev = guard;
-    guard->m_next = m_guards;
-    guard->m_prev = 0;
-    m_guards = guard;
-}
-
-void QGLContextGroup::removeGuard(QGLSharedResourceGuard *guard)
-{
-    if (guard->m_next)
-        guard->m_next->m_prev = guard->m_prev;
-    if (guard->m_prev)
-        guard->m_prev->m_next = guard->m_next;
-    else
-        m_guards = guard->m_next;
 }
 
 const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
@@ -1934,8 +1908,6 @@ QGLContext::~QGLContext()
 
     // clean up resources specific to this context
     d_ptr->cleanup();
-    // clean up resources belonging to this context's group
-    d_ptr->group->cleanupResources(this);
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
     reset();
@@ -5015,108 +4987,6 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
     // If there is only one context left, then make the list empty.
     if (group->m_shares.size() == 1)
         group->m_shares.clear();
-}
-
-QGLContextGroupResourceBase::QGLContextGroupResourceBase()
-    : active(0)
-{
-#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
-    qDebug("Creating context group resource object %p.", this);
-#endif
-}
-
-QGLContextGroupResourceBase::~QGLContextGroupResourceBase()
-{
-#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
-    qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
-#endif
-    for (int i = 0; i < m_groups.size(); ++i) {
-        m_groups.at(i)->m_resources.remove(this);
-        active.deref();
-    }
-#ifndef QT_NO_DEBUG
-    if (active != 0) {
-        qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
-                 "          This is possibly caused by a leaked QGLWidget, \n"
-                 "          QGLFramebufferObject or QGLPixelBuffer.");
-    }
-#endif
-}
-
-void QGLContextGroupResourceBase::insert(const QGLContext *context, void *value)
-{
-#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
-    qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
-#endif
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
-    Q_ASSERT(!group->m_resources.contains(this));
-    group->m_resources.insert(this, value);
-    m_groups.append(group);
-    active.ref();
-}
-
-void *QGLContextGroupResourceBase::value(const QGLContext *context)
-{
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
-    return group->m_resources.value(this, 0);
-}
-
-void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx)
-{
-    void *resource = value(ctx);
-
-    if (resource != 0) {
-        QGLShareContextScope scope(ctx);
-        freeResource(resource);
-
-        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
-        group->m_resources.remove(this);
-        m_groups.removeOne(group);
-        active.deref();
-    }
-}
-
-void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
-{
-#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
-    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
-#endif
-    QGLShareContextScope scope(ctx);
-    freeResource(value);
-    active.deref();
-
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
-    m_groups.removeOne(group);
-}
-
-void QGLContextGroup::cleanupResources(const QGLContext *context)
-{
-    // If there are still shares, then no cleanup to be done yet.
-    if (m_shares.size() > 1)
-        return;
-
-    // Iterate over all resources and free each in turn.
-    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
-    for (it = m_resources.begin(); it != m_resources.end(); ++it)
-        it.key()->cleanup(context, it.value());
-}
-
-QGLSharedResourceGuard::~QGLSharedResourceGuard()
-{
-    if (m_group)
-        m_group->removeGuard(this);
-}
-
-void QGLSharedResourceGuard::setContext(const QGLContext *context)
-{
-    if (m_group)
-        m_group->removeGuard(this);
-    if (context) {
-        m_group = QGLContextPrivate::contextGroup(context);
-        m_group->addGuard(this);
-    } else {
-        m_group = 0;
-    }
 }
 
 QSize QGLTexture::bindCompressedTexture
