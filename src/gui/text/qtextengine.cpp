@@ -1534,8 +1534,6 @@ void QTextEngine::itemize() const
     while (uc < e) {
         switch (*uc) {
         case QChar::ObjectReplacementCharacter:
-            if (analysis->bidiLevel % 2)
-                --analysis->bidiLevel;
             analysis->script = QUnicodeTables::Common;
             analysis->flags = QScriptAnalysis::Object;
             break;
