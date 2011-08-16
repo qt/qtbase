@@ -1321,11 +1321,112 @@ void QAccessibleTextEdit::addSelection(int startOffset, int endOffset)
 
 QString QAccessibleTextEdit::attributes(int offset, int *startOffset, int *endOffset)
 {
-    // TODO - wait for a definition of attributes
-    Q_UNUSED(offset);
-    Q_UNUSED(startOffset);
-    Q_UNUSED(endOffset);
-    return QString();
+    /* The list of attributes can be found at:
+     http://linuxfoundation.org/collaborate/workgroups/accessibility/iaccessible2/textattributes
+    */
+
+    if (offset >= characterCount()) {
+        *startOffset = -1;
+        *endOffset = -1;
+        return QString();
+    }
+
+    QMap<QString, QString> attrs;
+
+    QTextCursor cursor = textEdit()->textCursor();
+
+    //cursor.charFormat returns the format of the previous character
+    cursor.setPosition(offset + 1);
+    QTextCharFormat charFormat = cursor.charFormat();
+
+    cursor.setPosition(offset);
+    QTextBlockFormat blockFormat = cursor.blockFormat();
+
+    QTextCharFormat charFormatComp;
+    QTextBlockFormat blockFormatComp;
+
+    *startOffset = offset;
+    cursor.setPosition(*startOffset);
+    while (*startOffset > 0) {
+        charFormatComp = cursor.charFormat();
+        cursor.setPosition(*startOffset - 1);
+        blockFormatComp = cursor.blockFormat();
+        if ((charFormat == charFormatComp) && (blockFormat == blockFormatComp))
+            (*startOffset)--;
+        else
+            break;
+    }
+
+    int limit = characterCount() + 1;
+    *endOffset = offset + 1;
+    cursor.setPosition(*endOffset);
+    while (*endOffset < limit) {
+        blockFormatComp = cursor.blockFormat();
+        cursor.setPosition(*endOffset + 1);
+        charFormatComp = cursor.charFormat();
+        if ((charFormat == charFormatComp) && (cursor.blockFormat() == blockFormatComp))
+            (*endOffset)++;
+        else
+            break;
+    }
+
+    QString family = charFormat.fontFamily();
+    if (!family.isEmpty()) {
+        family = family.replace('\\',"\\\\");
+        family = family.replace(':',"\\:");
+        family = family.replace(',',"\\,");
+        family = family.replace('=',"\\=");
+        family = family.replace(';',"\\;");
+        family = family.replace('\"',"\\\"");
+        attrs["font-family"] = '"'+family+'"';
+    }
+
+    int fontSize = int(charFormat.fontPointSize());
+    if (fontSize)
+        attrs["font-size"] = QString::number(fontSize).append("pt");
+
+    //Different weight values are not handled
+    attrs["font-weight"] = (charFormat.fontWeight() > QFont::Normal) ? "bold" : "normal";
+
+    QFont::Style style = charFormat.font().style();
+    attrs["font-style"] = (style == QFont::StyleItalic) ? "italic" : ((style == QFont::StyleOblique) ? "oblique": "normal");
+
+    attrs["text-underline-style"] = charFormat.font().underline() ? "solid" : "none";
+
+    QTextCharFormat::VerticalAlignment alignment = charFormat.verticalAlignment();
+    attrs["text-position"] = (alignment == QTextCharFormat::AlignSubScript) ? "sub" : ((alignment == QTextCharFormat::AlignSuperScript) ? "super" : "baseline" );
+
+    QBrush background = charFormat.background();
+    if (background.style() == Qt::SolidPattern) {
+        attrs["background-color"] = QString("rgb(%1,%2,%3)").arg(background.color().red()).arg(background.color().green()).arg(background.color().blue());
+    }
+
+    QBrush foreground = charFormat.foreground();
+    if (foreground.style() == Qt::SolidPattern) {
+        attrs["color"] = QString("rgb(%1,%2,%3)").arg(foreground.color().red()).arg(foreground.color().green()).arg(foreground.color().blue());
+    }
+
+    switch (blockFormat.alignment() & (Qt::AlignLeft | Qt::AlignRight | Qt::AlignHCenter | Qt::AlignJustify)) {
+    case Qt::AlignLeft:
+        attrs["text-align"] = "left";
+        break;
+    case Qt::AlignRight:
+        attrs["text-align"] = "right";
+        break;
+    case Qt::AlignHCenter:
+        attrs["text-align"] = "center";
+        break;
+    case Qt::AlignJustify:
+        attrs["text-align"] = "left";
+        break;
+    }
+
+    QString result;
+    foreach (const QString &attributeName, attrs.keys()) {
+        result.append(attributeName).append(':').append(attrs[attributeName]).append(';');
+    }
+
+    return result;
 }
 
 int QAccessibleTextEdit::cursorPosition()

@@ -230,6 +230,7 @@ private slots:
     void navigateHierarchy();
     void navigateSlider();
     void navigateCovered();
+    void textAttributes();
     void hideShowTest();
 
     void userActionCount();
@@ -860,6 +861,60 @@ void tst_QAccessibility::accessibleName()
 
     delete toplevel;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::textAttributes()
+{
+    QTextEdit textEdit;
+    int startOffset;
+    int endOffset;
+    QString attributes;
+    QString text("<html><head></head><body>"
+                 "Hello, <b>this</b> is an <i><b>example</b> text</i>."
+                 "<span style=\"font-family: monospace\">Multiple fonts are used.</span>"
+                 "Multiple <span style=\"font-size: 8pt\">text sizes</span> are used."
+                 "Let's give some color to <span style=\"color:#f0f1f2; background-color:#14f01e\">Qt</span>."
+                 "</body></html>");
+
+    textEdit.setText(text);
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&textEdit);
+
+    QAccessibleTextInterface *textInterface=interface->textInterface();
+
+    QVERIFY(textInterface);
+    QCOMPARE(textInterface->characterCount(), 112);
+
+    attributes = textInterface->attributes(10, &startOffset, &endOffset);
+    QCOMPARE(startOffset, 7);
+    QCOMPARE(endOffset, 11);
+    attributes.prepend(';');
+    QVERIFY(attributes.contains(QLatin1String(";font-weight:bold;")));
+
+    attributes = textInterface->attributes(18, &startOffset, &endOffset);
+    QCOMPARE(startOffset, 18);
+    QCOMPARE(endOffset, 25);
+    attributes.prepend(';');
+    QVERIFY(attributes.contains(QLatin1String(";font-weight:bold;")));
+    QVERIFY(attributes.contains(QLatin1String(";font-style:italic;")));
+
+    attributes = textInterface->attributes(34, &startOffset, &endOffset);
+    QCOMPARE(startOffset, 31);
+    QCOMPARE(endOffset, 55);
+    attributes.prepend(';');
+    QVERIFY(attributes.contains(QLatin1String(";font-family:\"monospace\";")));
+
+    attributes = textInterface->attributes(65, &startOffset, &endOffset);
+    QCOMPARE(startOffset, 64);
+    QCOMPARE(endOffset, 74);
+    attributes.prepend(';');
+    QVERIFY(attributes.contains(QLatin1String(";font-size:8pt;")));
+
+    attributes = textInterface->attributes(110, &startOffset, &endOffset);
+    QCOMPARE(startOffset, 109);
+    QCOMPARE(endOffset, 111);
+    attributes.prepend(';');
+    QVERIFY(attributes.contains(QLatin1String(";background-color:rgb(20,240,30);")));
+    QVERIFY(attributes.contains(QLatin1String(";color:rgb(240,241,242);")));
 }
 
 void tst_QAccessibility::hideShowTest()
