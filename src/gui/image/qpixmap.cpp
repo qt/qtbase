@@ -46,7 +46,6 @@
 #include "qimagepixmapcleanuphooks_p.h"
 
 #include "qbitmap.h"
-#include "qcolormap.h"
 #include "qimage.h"
 #include "qpainter.h"
 #include "qdatastream.h"

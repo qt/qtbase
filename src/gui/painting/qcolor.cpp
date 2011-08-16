@@ -42,7 +42,6 @@
 #include "qcolor.h"
 #include "qcolor_p.h"
 #include "qnamespace.h"
-#include "qcolormap.h"
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qdebug.h"

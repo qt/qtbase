@@ -41,7 +41,7 @@
 
 #include <qdebug.h>
 #include "qnativeimage_p.h"
-#include "qcolormap.h"
+#include "private/qguiapplication_p.h"
 #include "qscreen.h"
 
 #include "private/qpaintengine_raster_p.h"
@@ -141,7 +141,7 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
-    if (QColormap::instance().depth() == 16)
+    if (QGuiApplication::primaryScreen()->depth() == 16)
         return QImage::Format_RGB16;
     return QImage::Format_RGB32;
 }

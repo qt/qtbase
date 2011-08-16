@@ -6,7 +6,6 @@ HEADERS += \
         painting/qbrush.h \
         painting/qcolor.h \
         painting/qcolor_p.h \
-        painting/qcolormap.h \
         painting/qcosmeticstroker_p.h \
         painting/qemulationpaintengine_p.h \
         painting/qmatrix.h \
