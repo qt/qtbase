@@ -42,7 +42,7 @@
 #ifndef QPRINTERINFO_UNIX_P_H
 #define QPRINTERINFO_UNIX_P_H
 
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qprinter.h>
 #include <QtCore/qstringlist.h>
 
 #ifndef QT_NO_NIS

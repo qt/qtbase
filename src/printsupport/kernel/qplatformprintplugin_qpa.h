@@ -39,10 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QPAGESETUPDIALOG_H
-#define QPAGESETUPDIALOG_H
+#ifndef QPLATFORMPRINTERSUPPORTPLUGIN_H
+#define QPLATFORMPRINTERSUPPORTPLUGIN_H
 
-#include <QtWidgets/qabstractpagesetupdialog.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
 
 QT_BEGIN_HEADER
 
@@ -50,63 +62,33 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifndef QT_NO_PRINTDIALOG
+class QPlatformPrinterSupport;
 
-class QPageSetupDialogPrivate;
-
-class Q_WIDGETS_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
+struct QPlatformPrinterSupportFactoryInterface : public QFactoryInterface
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QPageSetupDialog)
-    Q_ENUMS(PageSetupDialogOption)
-    Q_PROPERTY(PageSetupDialogOptions options READ options WRITE setOptions)
-
-public:
-    enum PageSetupDialogOption {
-        None                    = 0x00000000, // internal
-        DontUseSheet            = 0x00000001,
-        OwnsPrinter             = 0x80000000  // internal
-    };
-
-    Q_DECLARE_FLAGS(PageSetupDialogOptions, PageSetupDialogOption)
-
-    explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = 0);
-    explicit QPageSetupDialog(QWidget *parent = 0);
-
-    // obsolete
-    void addEnabledOption(PageSetupDialogOption option);
-    void setEnabledOptions(PageSetupDialogOptions options);
-    PageSetupDialogOptions enabledOptions() const;
-    bool isOptionEnabled(PageSetupDialogOption option) const;
-
-    void setOption(PageSetupDialogOption option, bool on = true);
-    bool testOption(PageSetupDialogOption option) const;
-    void setOptions(PageSetupDialogOptions options);
-    PageSetupDialogOptions options() const;
-
-#if defined(Q_WS_MAC) || defined(Q_OS_WIN)
-    virtual void setVisible(bool visible);
-#endif
-    virtual int exec();
-
-#ifdef Q_NO_USING_KEYWORD
-#ifndef Q_QDOC
-    void open() { QDialog::open(); }
-#endif
-#else
-    using QDialog::open;
-#endif
-    void open(QObject *receiver, const char *member);
-
-#ifdef qdoc
-    QPrinter *printer();
-#endif
+    virtual QPlatformPrinterSupport *create(const QString &key) = 0;
 };
 
-#endif // QT_NO_PRINTDIALOG
+#define QPlatformPrinterSupportFactoryInterface_iid "org.qt-project.QPlatformPrinterSupportFactoryInterface"
+
+Q_DECLARE_INTERFACE(QPlatformPrinterSupportFactoryInterface, QPlatformPrinterSupportFactoryInterface_iid)
+
+class Q_GUI_EXPORT QPlatformPrinterSupportPlugin : public QObject, public QPlatformPrinterSupportFactoryInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(QPlatformPrinterSupportFactoryInterface:QFactoryInterface)
+public:
+    explicit QPlatformPrinterSupportPlugin(QObject *parent = 0);
+    ~QPlatformPrinterSupportPlugin();
+
+    virtual QStringList keys() const = 0;
+    virtual QPlatformPrinterSupport *create(const QString &key) = 0;
+
+    static QPlatformPrinterSupport *get();
+};
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPAGESETUPDIALOG_H
+#endif // QPLATFORMPRINTERSUPPORTPLUGIN_H

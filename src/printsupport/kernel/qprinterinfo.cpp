@@ -31,7 +31,7 @@
 #ifndef QT_NO_PRINTER
 
 #include <private/qguiapplication_p.h>
-#include <QtGui/QPlatformPrinterSupport>
+#include <QtPrintSupport/QPlatformPrinterSupport>
 
 QT_BEGIN_NAMESPACE
 

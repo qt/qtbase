@@ -39,61 +39,81 @@
 **
 ****************************************************************************/
 
-#ifndef QABSTRACTPRINTDIALOG_P_H
-#define QABSTRACTPRINTDIALOG_P_H
+#ifndef QPRINTENGINE_H
+#define QPRINTENGINE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qvariant.h>
+#include <QtPrintSupport/qprinter.h>
 
-#include "private/qdialog_p.h"
-
-#ifndef QT_NO_PRINTDIALOG
-
-#include "QtWidgets/qabstractprintdialog.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Gui)
+
 #ifndef QT_NO_PRINTER
 
-class QPrinter;
-class QPrinterPrivate;
-
-class QAbstractPrintDialogPrivate : public QDialogPrivate
+class Q_GUI_EXPORT QPrintEngine
 {
-    Q_DECLARE_PUBLIC(QAbstractPrintDialog)
-
 public:
-    QAbstractPrintDialogPrivate()
-        : printer(0), pd(0), ownsPrinter(false)
-        , options(QAbstractPrintDialog::PrintToFile | QAbstractPrintDialog::PrintPageRange |
-                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize)
-    {
-    }
+    virtual ~QPrintEngine() {}
+    enum PrintEnginePropertyKey {
+        PPK_CollateCopies,
+        PPK_ColorMode,
+        PPK_Creator,
+        PPK_DocumentName,
+        PPK_FullPage,
+        PPK_NumberOfCopies,
+        PPK_Orientation,
+        PPK_OutputFileName,
+        PPK_PageOrder,
+        PPK_PageRect,
+        PPK_PageSize,
+        PPK_PaperRect,
+        PPK_PaperSource,
+        PPK_PrinterName,
+        PPK_PrinterProgram,
+        PPK_Resolution,
+        PPK_SelectionOption,
+        PPK_SupportedResolutions,
 
-    QPrinter *printer;
-    QPrinterPrivate *pd;
-    bool ownsPrinter;
-    QPointer<QObject> receiverToDisconnectOnClose;
-    QByteArray memberToDisconnectOnClose;
+        PPK_WindowsPageSize,
+        PPK_FontEmbedding,
+        PPK_SuppressSystemPrintStatus,
 
-    QAbstractPrintDialog::PrintDialogOptions options;
+        PPK_Duplex,
 
-    virtual void setTabs(const QList<QWidget *> &) {}
-    void setPrinter(QPrinter *newPrinter);
+        PPK_PaperSources,
+        PPK_CustomPaperSize,
+        PPK_PageMargins,
+        PPK_CopyCount,
+        PPK_SupportsMultipleCopies,
+        PPK_PaperSize = PPK_PageSize,
+
+        PPK_CustomBase = 0xff00
+    };
+
+    virtual void setProperty(PrintEnginePropertyKey key, const QVariant &value) = 0;
+    virtual QVariant property(PrintEnginePropertyKey key) const = 0;
+
+    virtual bool newPage() = 0;
+    virtual bool abort() = 0;
+
+    virtual int metric(QPaintDevice::PaintDeviceMetric) const = 0;
+
+    virtual QPrinter::PrinterState printerState() const = 0;
+
+#ifdef Q_WS_WIN
+    virtual HDC getPrinterDC() const { return 0; }
+    virtual void releasePrinterDC(HDC) const { }
+#endif
+
 };
 
-#endif //QT_NO_PRINTER
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTDIALOG
+QT_END_HEADER
 
-#endif // QABSTRACTPRINTDIALOG_P_H
+#endif // QPRINTENGINE_H

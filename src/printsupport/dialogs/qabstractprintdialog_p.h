@@ -39,46 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMPRINTINGSUPPORT_H
-#define QPLATFORMPRINTINGSUPPORT_H
+#ifndef QABSTRACTPRINTDIALOG_P_H
+#define QABSTRACTPRINTDIALOG_P_H
 
-#include <QtGui/qprinter.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "private/qdialog_p.h"
+
+#ifndef QT_NO_PRINTDIALOG
+
+#include "QtPrintSupport/qabstractprintdialog.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
 #ifndef QT_NO_PRINTER
 
-class QPrintEngine;
+class QPrinter;
+class QPrinterPrivate;
 
-class Q_GUI_EXPORT QPlatformPrinterSupport
+class QAbstractPrintDialogPrivate : public QDialogPrivate
 {
+    Q_DECLARE_PUBLIC(QAbstractPrintDialog)
+
 public:
-    QPlatformPrinterSupport();
-    virtual ~QPlatformPrinterSupport();
+    QAbstractPrintDialogPrivate()
+        : printer(0), pd(0), ownsPrinter(false)
+        , options(QAbstractPrintDialog::PrintToFile | QAbstractPrintDialog::PrintPageRange |
+                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize)
+    {
+    }
 
-    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    QPrinter *printer;
+    QPrinterPrivate *pd;
+    bool ownsPrinter;
+    QPointer<QObject> receiverToDisconnectOnClose;
+    QByteArray memberToDisconnectOnClose;
 
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QPrinterInfo defaultPrinter();
+    QAbstractPrintDialog::PrintDialogOptions options;
 
-protected:
-     static QPrinterInfo printerInfo(const QString &printerName, bool isDefault = false);
-     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
-     static bool printerInfoIsDefault(const QPrinterInfo &p);
-     static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
-     static void setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index);
+    virtual void setTabs(const QList<QWidget *> &) {}
+    void setPrinter(QPrinter *newPrinter);
 };
 
-#endif // QT_NO_PRINTER
+#endif //QT_NO_PRINTER
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_PRINTDIALOG
 
-#endif // QPLATFORMPRINTINGSUPPORT_H
+#endif // QABSTRACTPRINTDIALOG_P_H

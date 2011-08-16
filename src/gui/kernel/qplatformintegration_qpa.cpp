@@ -43,7 +43,6 @@
 
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
-#include <QtGui/QPlatformPrinterSupport>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qdnd_p.h>
@@ -209,12 +208,7 @@ QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(QGuiGLContext 
 
 QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
 {
-    static QPlatformPrinterSupport *ps = 0;
-#ifndef QT_NO_PRINTER
-    if (!ps)
-        ps = new QPlatformPrinterSupport;
-#endif
-    return ps;
+    return 0;
 }
 
 /*!

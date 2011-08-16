@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,33 +39,53 @@
 **
 ****************************************************************************/
 
-#include "qgenericunixprintersupport_p.h"
+#ifndef QPRINTERINFO_H
+#define QPRINTERINFO_H
 
-#include <QtPrintSupport/QPrinterInfo>
-#include <private/qcups_p.h>
+#include <QtCore/QList>
+
+#include <QtPrintSupport/QPrinter>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QList<QPrinter::PaperSize> QGenericUnixPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
-{
-#ifndef QT_NO_CUPS
-    return QCUPSSupport::getCupsPrinterPaperSizes(QPlatformPrinterSupport::printerInfoCupsPrinterIndex(printerInfo));
-#else
-    return QList<QPrinter::PaperSize>();
-#endif
-}
+QT_MODULE(Gui)
 
-QList<QPrinterInfo> QGenericUnixPrinterSupport::availablePrinters()
+#ifndef QT_NO_PRINTER
+class QPrinterInfoPrivate;
+class QPrinterInfoPrivateDeleter;
+class Q_GUI_EXPORT QPrinterInfo
 {
-    QList<QPrinterInfo> printers;
-#ifndef QT_NO_CUPS
-    foreach (const QCUPSSupport::Printer &p,  QCUPSSupport::availableUnixPrinters()) {
-        QPrinterInfo printer(QPlatformPrinterSupport::printerInfo(p.name, p.isDefault));
-        QPlatformPrinterSupport::setPrinterInfoCupsPrinterIndex(&printer, p.cupsPrinterIndex);
-        printers.append(printer);
-    }
-#endif
-    return printers;
-}
+public:
+    QPrinterInfo();
+    QPrinterInfo(const QPrinterInfo &other);
+    QPrinterInfo(const QPrinter &printer);
+    ~QPrinterInfo();
+
+    QPrinterInfo &operator=(const QPrinterInfo &other);
+
+    QString printerName() const;
+    bool isNull() const;
+    bool isDefault() const;
+    QList<QPrinter::PaperSize> supportedPaperSizes() const;
+
+    static QList<QPrinterInfo> availablePrinters();
+    static QPrinterInfo defaultPrinter();
+
+private:
+    QPrinterInfo(const QString &name);
+
+private:
+    friend class QPlatformPrinterSupport;
+    Q_DECLARE_PRIVATE(QPrinterInfo)
+    QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
+};
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPRINTERINFO_H

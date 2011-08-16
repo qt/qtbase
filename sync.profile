@@ -1,6 +1,7 @@
 %modules = ( # path to module name map
     "QtGui" => "$basedir/src/gui",
     "QtWidgets" => "$basedir/src/widgets",
+    "QtPrintSupport" => "$basedir/src/printsupport",
     "QtOpenGL" => "$basedir/src/opengl",
     "QtCore" => "$basedir/src/corelib",
     "QtXml" => "$basedir/src/xml",
@@ -42,6 +43,7 @@
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",
     "gui" => "#include <QtGui/QtGui>\n",
+    "printsupport" => "#include <QtPrintSupport/QtPrintSupport>\n",
     "widgets" => "#include <QtWidgets/QtWidgets>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
@@ -53,6 +55,7 @@
     "QtCore" => "$basedir/src/modules/qt_core.pri",
     "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
     "QtGui" => "$basedir/src/modules/qt_gui.pri",
+    "QtPrintSupport" => "$basedir/src/modules/qt_printsupport.pri",
     "QtWidgets" => "$basedir/src/modules/qt_widgets.pri",
     "QtNetwork" => "$basedir/src/modules/qt_network.pri",
     "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",

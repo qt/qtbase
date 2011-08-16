@@ -51,11 +51,11 @@
 #include <QtGui/qevent.h>
 #include <QtWidgets/qfilesystemmodel.h>
 #include <QtWidgets/qstyleditemdelegate.h>
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qprinter.h>
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
-#include "qfscompleter_p.h"
+#include "private/qfscompleter_p.h"
 #include "ui_qprintpropertieswidget.h"
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"

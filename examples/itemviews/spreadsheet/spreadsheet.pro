@@ -7,7 +7,7 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += widgets
+QT += widgets printsupport
 CONFIG += qt warn_on
 #unix:contains(QT_CONFIG, dbus):QT += dbus widgets
 

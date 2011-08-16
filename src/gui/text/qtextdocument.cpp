@@ -55,7 +55,6 @@
 
 #include "qtexthtmlparser_p.h"
 #include "qpainter.h"
-#include "qprinter.h"
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdir.h>
@@ -63,7 +62,6 @@
 #include "private/qdataurl_p.h"
 
 #include "qtextdocument_p.h"
-#include <private/qprinter_p.h>
 #include <private/qabstracttextdocumentlayout_p.h>
 #include "qpagedpaintdevice.h"
 

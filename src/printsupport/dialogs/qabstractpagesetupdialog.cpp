@@ -45,7 +45,7 @@
 #ifndef QT_NO_PRINTDIALOG
 
 #include <QtCore/qcoreapplication.h>
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qprinter.h>
 
 QT_BEGIN_NAMESPACE
 

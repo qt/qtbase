@@ -58,8 +58,8 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "QtGui/qprinter.h"
-#include "QtGui/qprintengine.h"
+#include "QtPrintSupport/qprinter.h"
+#include "QtPrintSupport/qprintengine.h"
 #include "QtCore/qpointer.h"
 
 #include <limits.h>

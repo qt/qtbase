@@ -57,7 +57,6 @@
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
-#include "qprinter.h"
 #include "qtextdocumentwriter.h"
 #include "private/qtextcursor_p.h"
 #include "qpagedpaintdevice.h"

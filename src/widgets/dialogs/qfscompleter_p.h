@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 /*!
     QCompleter that can deal with QFileSystemModel
   */
-class QFSCompleter :  public QCompleter {
+class Q_WIDGETS_EXPORT QFSCompleter :  public QCompleter {
 public:
     QFSCompleter(QFileSystemModel *model, QObject *parent = 0)
         : QCompleter(model, parent), proxyModel(0), sourceModel(model)

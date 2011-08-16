@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qprintengine.h>
+#include <QtPrintSupport/qprintengine.h>
 
 #include <qiodevice.h>
 #include <qfile.h>

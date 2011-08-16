@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "QtGui/qprintengine.h"
+#include "QtPrintSupport/qprintengine.h"
 
 #ifndef QT_NO_PRINTER
 #include "QtCore/qmap.h"

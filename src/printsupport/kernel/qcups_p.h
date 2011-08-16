@@ -55,7 +55,7 @@
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qpair.h"
-#include "QtGui/qprinter.h"
+#include "QtPrintSupport/qprinter.h"
 
 #ifndef QT_NO_CUPS
 #include <QtCore/qlibrary.h>

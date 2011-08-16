@@ -8,7 +8,7 @@ echo $files
 
 for module in $modules; do
 # once we change other things, change the line from == "QtWidgets" to != "Qt" to get everything fixed
-    if [ $module == "QtWidgets" ]; then
+    if [ $module == "QtWidgets" ] || [ $module == "QtPrintSupport" ]; then
         echo $module ":"
         includes=`ls $QTDIR/include/$module`
         for i in $includes; do

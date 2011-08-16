@@ -43,7 +43,7 @@
 #define QPRINTPREVIEWWIDGET_H
 
 #include <QtWidgets/qwidget.h>
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qprinter.h>
 
 #ifndef QT_NO_PRINTPREVIEWWIDGET
 

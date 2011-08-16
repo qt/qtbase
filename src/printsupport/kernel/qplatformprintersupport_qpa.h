@@ -39,68 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QPREVIEWPAINTENGINE_P_H
-#define QPREVIEWPAINTENGINE_P_H
+#ifndef QPLATFORMPRINTINGSUPPORT_H
+#define QPLATFORMPRINTINGSUPPORT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of QPreviewPrinter and friends.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-//
+#include <QtPrintSupport/qprinter.h>
 
-#include <QtGui/qpaintengine.h>
-#include <QtGui/qprintengine.h>
-
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QPreviewPaintEnginePrivate;
+QT_MODULE(Gui)
 
-class QPreviewPaintEngine : public QPaintEngine, public QPrintEngine
+#ifndef QT_NO_PRINTER
+
+class QPrintEngine;
+
+class Q_GUI_EXPORT QPlatformPrinterSupport
 {
-    Q_DECLARE_PRIVATE(QPreviewPaintEngine)
 public:
-    QPreviewPaintEngine();
-    ~QPreviewPaintEngine();
+    QPlatformPrinterSupport();
+    virtual ~QPlatformPrinterSupport();
 
-    bool begin(QPaintDevice *dev);
-    bool end();
+    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
+    virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
+    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
 
-    void updateState(const QPaintEngineState &state);
+    virtual QList<QPrinterInfo> availablePrinters();
+    virtual QPrinterInfo defaultPrinter();
 
-    void drawPath(const QPainterPath &path);
-    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
-    void drawTextItem(const QPointF &p, const QTextItem &textItem);
-
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &p);
-
-    QList<const QPicture *> pages();
-
-    QPaintEngine::Type type() const { return Picture; }
-
-    void setProxyEngines(QPrintEngine *printEngine, QPaintEngine *paintEngine);
-
-    void setProperty(PrintEnginePropertyKey key, const QVariant &value);
-    QVariant property(PrintEnginePropertyKey key) const;
-
-    bool newPage();
-    bool abort();
-
-    int metric(QPaintDevice::PaintDeviceMetric) const;
-
-    QPrinter::PrinterState printerState() const;
+protected:
+     static QPrinterInfo printerInfo(const QString &printerName, bool isDefault = false);
+     static void setPrinterInfoDefault(QPrinterInfo *p, bool isDefault);
+     static bool printerInfoIsDefault(const QPrinterInfo &p);
+     static int printerInfoCupsPrinterIndex(const QPrinterInfo &p);
+     static void setPrinterInfoCupsPrinterIndex(QPrinterInfo *p, int index);
 };
+
+#endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTPREVIEWWIDGET
+QT_END_HEADER
 
-#endif
+#endif // QPLATFORMPRINTINGSUPPORT_H

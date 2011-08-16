@@ -164,7 +164,7 @@ private:
 class QPdfWriter;
 class QPdfEnginePrivate;
 
-class QPdfEngine : public QPaintEngine
+class Q_GUI_EXPORT QPdfEngine : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPdfEngine)
     friend class QPdfWriter;
@@ -210,7 +210,7 @@ private:
     void updateClipPath(const QPainterPath & path, Qt::ClipOperation op);
 };
 
-class QPdfEnginePrivate : public QPaintEnginePrivate
+class Q_GUI_EXPORT QPdfEnginePrivate : public QPaintEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPdfEngine)
 public:

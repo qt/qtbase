@@ -42,7 +42,7 @@
 #ifndef QPRINTDIALOG_H
 #define QPRINTDIALOG_H
 
-#include <QtWidgets/qabstractprintdialog.h>
+#include <QtPrintSupport/qabstractprintdialog.h>
 
 QT_BEGIN_HEADER
 

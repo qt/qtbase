@@ -49,7 +49,7 @@
 #include "qdialogbuttonbox.h"
 #include <ui_qpagesetupwidget.h>
 
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qprinter.h>
 #include <private/qabstractpagesetupdialog_p.h>
 #include <private/qprinter_p.h>
 

@@ -39,12 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QPRINTERINFO_H
-#define QPRINTERINFO_H
+#ifndef QPAGESETUPDIALOG_H
+#define QPAGESETUPDIALOG_H
 
-#include <QtCore/QList>
-
-#include <QtGui/QPrinter>
+#include <QtPrintSupport/qabstractpagesetupdialog.h>
 
 QT_BEGIN_HEADER
 
@@ -52,40 +50,63 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifndef QT_NO_PRINTER
-class QPrinterInfoPrivate;
-class QPrinterInfoPrivateDeleter;
-class Q_GUI_EXPORT QPrinterInfo
+#ifndef QT_NO_PRINTDIALOG
+
+class QPageSetupDialogPrivate;
+
+class Q_WIDGETS_EXPORT QPageSetupDialog : public QAbstractPageSetupDialog
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPageSetupDialog)
+    Q_ENUMS(PageSetupDialogOption)
+    Q_PROPERTY(PageSetupDialogOptions options READ options WRITE setOptions)
+
 public:
-    QPrinterInfo();
-    QPrinterInfo(const QPrinterInfo &other);
-    QPrinterInfo(const QPrinter &printer);
-    ~QPrinterInfo();
+    enum PageSetupDialogOption {
+        None                    = 0x00000000, // internal
+        DontUseSheet            = 0x00000001,
+        OwnsPrinter             = 0x80000000  // internal
+    };
 
-    QPrinterInfo &operator=(const QPrinterInfo &other);
+    Q_DECLARE_FLAGS(PageSetupDialogOptions, PageSetupDialogOption)
 
-    QString printerName() const;
-    bool isNull() const;
-    bool isDefault() const;
-    QList<QPrinter::PaperSize> supportedPaperSizes() const;
+    explicit QPageSetupDialog(QPrinter *printer, QWidget *parent = 0);
+    explicit QPageSetupDialog(QWidget *parent = 0);
 
-    static QList<QPrinterInfo> availablePrinters();
-    static QPrinterInfo defaultPrinter();
+    // obsolete
+    void addEnabledOption(PageSetupDialogOption option);
+    void setEnabledOptions(PageSetupDialogOptions options);
+    PageSetupDialogOptions enabledOptions() const;
+    bool isOptionEnabled(PageSetupDialogOption option) const;
 
-private:
-    QPrinterInfo(const QString &name);
+    void setOption(PageSetupDialogOption option, bool on = true);
+    bool testOption(PageSetupDialogOption option) const;
+    void setOptions(PageSetupDialogOptions options);
+    PageSetupDialogOptions options() const;
 
-private:
-    friend class QPlatformPrinterSupport;
-    Q_DECLARE_PRIVATE(QPrinterInfo)
-    QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
+#if defined(Q_WS_MAC) || defined(Q_OS_WIN)
+    virtual void setVisible(bool visible);
+#endif
+    virtual int exec();
+
+#ifdef Q_NO_USING_KEYWORD
+#ifndef Q_QDOC
+    void open() { QDialog::open(); }
+#endif
+#else
+    using QDialog::open;
+#endif
+    void open(QObject *receiver, const char *member);
+
+#ifdef qdoc
+    QPrinter *printer();
+#endif
 };
 
-#endif // QT_NO_PRINTER
+#endif // QT_NO_PRINTDIALOG
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPRINTERINFO_H
+#endif // QPAGESETUPDIALOG_H

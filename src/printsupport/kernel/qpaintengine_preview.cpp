@@ -44,7 +44,7 @@
 #include <private/qpaintengine_p.h>
 #include <private/qpicture_p.h>
 
-#include <QtGui/qprintengine.h>
+#include <QtPrintSupport/qprintengine.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpicture.h>
 

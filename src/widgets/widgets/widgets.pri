@@ -81,8 +81,8 @@ HEADERS += \
         widgets/qwidgetlinecontrol_p.h \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
-        widgets/qplaintextedit_p.h \
-        widgets/qprintpreviewwidget.h
+        widgets/qplaintextedit_p.h
+
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -142,8 +142,7 @@ SOURCES += \
         widgets/qwidgettextcontrol.cpp \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
-        widgets/qplaintextedit.cpp \
-        widgets/qprintpreviewwidget.cpp
+        widgets/qplaintextedit.cpp
 
 !qpa:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \

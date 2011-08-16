@@ -50,8 +50,8 @@
 #include <QtWidgets/qcombobox.h>
 #include <QtWidgets/qlabel.h>
 #include <QtWidgets/qlineedit.h>
-#include <QtWidgets/qpagesetupdialog.h>
-#include <QtGui/qprinter.h>
+#include <QtPrintSupport/qpagesetupdialog.h>
+#include <QtPrintSupport/qprinter.h>
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qtoolbutton.h>
 #include <QtGui/qvalidator.h>
