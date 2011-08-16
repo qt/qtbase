@@ -21,6 +21,7 @@ include(text/text.pri)
 include(painting/painting.pri)
 include(util/util.pri)
 include(math3d/math3d.pri)
+include(printsupport/printsupport.pri)
 
 include(egl/egl.pri)
 

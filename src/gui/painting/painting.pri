@@ -14,8 +14,6 @@ HEADERS += \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
         painting/qpaintengine_p.h \
-        painting/qpaintengine_alpha_p.h \
-        painting/qpaintengine_preview_p.h \
         painting/qpaintengineex_p.h \
         painting/qpainter.h \
         painting/qpainter_p.h \
@@ -28,11 +26,6 @@ HEADERS += \
         painting/qpen.h \
         painting/qpolygon.h \
         painting/qpolygonclipper_p.h \
-        painting/qprintengine.h \
-        painting/qprinter.h \
-        painting/qprinter_p.h \
-        painting/qprinterinfo.h \
-        painting/qprinterinfo_p.h \
         painting/qrasterizer_p.h \
         painting/qregion.h \
         painting/qstroker_p.h \
@@ -45,6 +38,7 @@ HEADERS += \
 
 SOURCES += \
         painting/qbackingstore.cpp \
+        painting/qcolormap_qpa.cpp \
         painting/qbezier.cpp \
         painting/qblendfunctions.cpp \
         painting/qbrush.cpp \
@@ -57,9 +51,8 @@ SOURCES += \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
         painting/qpaintdevice.cpp \
+        painting/qpaintdevice_qpa.cpp \
         painting/qpaintengine.cpp \
-        painting/qpaintengine_alpha.cpp \
-        painting/qpaintengine_preview.cpp \
         painting/qpaintengineex.cpp \
         painting/qpainter.cpp \
         painting/qpainterpath.cpp \
@@ -68,9 +61,6 @@ SOURCES += \
         painting/qpdfwriter.cpp \
         painting/qpen.cpp \
         painting/qpolygon.cpp \
-        painting/qprintengine_pdf.cpp \
-        painting/qprinter.cpp \
-        painting/qprinterinfo.cpp \
         painting/qrasterizer.cpp \
         painting/qregion.cpp \
         painting/qstroker.cpp \
@@ -97,77 +87,7 @@ SOURCES += \
                 painting/qpaintengine_blitter_p.h       \
                 painting/qblittable_p.h                 \
 
-win32:!qpa {
-        HEADERS += painting/qprintengine_win_p.h
 
-        SOURCES += \
-                painting/qcolormap_win.cpp \
-                painting/qpaintdevice_win.cpp \
-                painting/qprintengine_win.cpp
-
-        !win32-borland:!wince*:LIBS += -lmsimg32
-}
-
-
-unix:x11 {
-        HEADERS += \
-                painting/qpaintengine_x11_p.h
-
-        SOURCES += \
-                painting/qcolormap_x11.cpp \
-                painting/qpaintdevice_x11.cpp \
-                painting/qpaintengine_x11.cpp
-}
-
-!qpa:!x11:mac {
-        HEADERS += \
-                painting/qpaintengine_mac_p.h \
-                painting/qprintengine_mac_p.h
-
-        SOURCES += \
-                painting/qcolormap_mac.cpp \
-                painting/qpaintdevice_mac.cpp \
-                painting/qpaintengine_mac.cpp \
-                painting/qprinterinfo_mac.cpp
-        OBJECTIVE_SOURCES += \
-                painting/qprintengine_mac.mm \
-}
-
-unix:!symbian {
-        HEADERS += \
-                painting/qprinterinfo_unix_p.h
-        SOURCES += \
-                painting/qprinterinfo_unix.cpp
-}
-
-qpa {
-        HEADERS += painting/qplatformprintersupport_qpa.h
-        SOURCES += \
-                painting/qcolormap_qpa.cpp \
-                painting/qpaintdevice_qpa.cpp \
-                painting/qplatformprintersupport_qpa.cpp
-}
-
-symbian {
-        SOURCES += \
-				painting/qpaintengine_s60.cpp \
-                painting/qregion_s60.cpp \
-                painting/qcolormap_s60.cpp
-
-        HEADERS += \
-                painting/qpaintengine_s60_p.h
-}
-
-x11|qpa:!win32 {
-        contains(QT_CONFIG,qtopia) {
-            DEFINES += QT_NO_CUPS QT_NO_LPR
-        } else {
-            SOURCES += painting/qcups.cpp
-            HEADERS += painting/qcups_p.h
-        }
-} else {
-        DEFINES += QT_NO_CUPS QT_NO_LPR
-}
 
 if(mmx|3dnow|sse|sse2|iwmmxt) {
     HEADERS += painting/qdrawhelper_x86_p.h \
