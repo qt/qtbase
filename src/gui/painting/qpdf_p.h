@@ -56,7 +56,7 @@
 #include "QtCore/qstring.h"
 #include "QtCore/qvector.h"
 #include "private/qstroker_p.h"
-#include "private/qpaintengine_alpha_p.h"
+#include "private/qpaintengine_p.h"
 #include "private/qfontengine_p.h"
 #include "private/qfontsubset_p.h"
 
@@ -164,7 +164,7 @@ private:
 
 class QPdfEnginePrivate;
 
-class QPdfEngine : public QAlphaPaintEngine
+class QPdfEngine : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPdfEngine)
 public:
@@ -209,7 +209,7 @@ private:
     void updateClipPath(const QPainterPath & path, Qt::ClipOperation op);
 };
 
-class QPdfEnginePrivate : public QAlphaPaintEnginePrivate
+class QPdfEnginePrivate : public QPaintEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPdfEngine)
 public:
@@ -259,7 +259,6 @@ public:
     bool hasBrush;
     bool simplePen;
     qreal opacity;
-    bool useAlphaEngine;
 
     QHash<QFontEngine::FaceId, QFontSubset *> fonts;
 

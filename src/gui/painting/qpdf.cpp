@@ -928,12 +928,12 @@ void QPdfPage::streamImage(int w, int h, int object)
 
 
 QPdfEngine::QPdfEngine(QPdfEnginePrivate &dd)
-    : QAlphaPaintEngine(dd, qt_pdf_decide_features())
+    : QPaintEngine(dd, qt_pdf_decide_features())
 {
 }
 
 QPdfEngine::QPdfEngine()
-    : QAlphaPaintEngine(*new QPdfEnginePrivate(), qt_pdf_decide_features())
+    : QPaintEngine(*new QPdfEnginePrivate(), qt_pdf_decide_features())
 {
 }
 
@@ -985,11 +985,6 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
         return;
 
     Q_D(QPdfEngine);
-    if (d->useAlphaEngine) {
-        QAlphaPaintEngine::drawRects(rects, rectCount);
-        if (!continueCall())
-            return;
-    }
 
     if (d->clipEnabled && d->allClipped)
         return;
@@ -1017,12 +1012,6 @@ void QPdfEngine::drawRects (const QRectF *rects, int rectCount)
 void QPdfEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QPdfEngine);
-
-    if (d->useAlphaEngine) {
-        QAlphaPaintEngine::drawPolygon(points, pointCount, mode);
-        if (!continueCall())
-            return;
-    }
 
     if (!points || !pointCount)
         return;
@@ -1059,12 +1048,6 @@ void QPdfEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawM
 void QPdfEngine::drawPath (const QPainterPath &p)
 {
     Q_D(QPdfEngine);
-
-    if (d->useAlphaEngine) {
-        QAlphaPaintEngine::drawPath(p);
-        if (!continueCall())
-            return;
-    }
 
     if (d->clipEnabled && d->allClipped)
         return;
@@ -1176,12 +1159,6 @@ void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QPdfEngine);
 
-    if (d->useAlphaEngine) {
-        QAlphaPaintEngine::drawTextItem(p, textItem);
-        if (!continueCall())
-            return;
-    }
-
     if (!d->hasPen || (d->clipEnabled && d->allClipped))
         return;
 
@@ -1212,12 +1189,6 @@ void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 void QPdfEngine::updateState(const QPaintEngineState &state)
 {
     Q_D(QPdfEngine);
-
-    if (d->useAlphaEngine) {
-        QAlphaPaintEngine::updateState(state);
-        if (!continueCall())
-            return;
-    }
 
     QPaintEngine::DirtyFlags flags = state.state();
 
@@ -1334,31 +1305,6 @@ void QPdfEngine::updateClipPath(const QPainterPath &p, Qt::ClipOperation op)
         path = d->stroker.matrix.map(path);
         d->clips.clear();
         d->clips.append(path);
-    }
-
-    if (d->useAlphaEngine) {
-        // if we have an alpha region, we have to subtract that from the
-        // any existing clip region since that region will be filled in
-        // later with images
-        QPainterPath alphaClip = qt_regionToPath(alphaClipping());
-        if (!alphaClip.isEmpty()) {
-            if (!d->clipEnabled) {
-                QRect r = d->fullPage ? d->paperRect() : d->pageRect();
-                QPainterPath dev;
-                dev.addRect(QRect(0, 0, r.width(), r.height()));
-                if (path.isEmpty())
-                    path = dev;
-                else
-                    path = path.intersected(dev);
-                d->clipEnabled = true;
-            } else {
-                path = painter()->clipPath();
-                path = d->stroker.matrix.map(path);
-            }
-            path = path.subtracted(alphaClip);
-            d->clips.clear();
-            d->clips.append(path);
-        }
     }
 }
 
@@ -1517,7 +1463,6 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
-      useAlphaEngine(false),
       outDevice(0), fd(-1),
       fullPage(false), embedFonts(true),
       landscape(false),
