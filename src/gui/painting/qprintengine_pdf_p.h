@@ -71,8 +71,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// #define USE_NATIVE_GRADIENTS
-
 class QImage;
 class QDataStream;
 class QPen;
@@ -80,6 +78,20 @@ class QPointF;
 class QRegion;
 class QFile;
 class QPdfPrintEngine;
+
+#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
+#define PPK_CupsPageRect QPrintEngine::PrintEnginePropertyKey(0xfe01)
+#define PPK_CupsPaperRect QPrintEngine::PrintEnginePropertyKey(0xfe02)
+#define PPK_CupsStringPageSize QPrintEngine::PrintEnginePropertyKey(0xfe03)
+
+namespace QPdf {
+
+    struct PaperSize {
+        int width, height; // in postscript points
+    };
+    Q_GUI_EXPORT PaperSize paperSize(QPrinter::PaperSize paperSize);
+    Q_GUI_EXPORT const char *paperSizeToString(QPrinter::PaperSize paperSize);
+}
 
 class QPdfPrintEnginePrivate;
 
@@ -121,9 +133,27 @@ public:
     bool openPrintDevice();
     void closePrintDevice();
 
+    void updatePaperSize();
+
 private:
     Q_DISABLE_COPY(QPdfPrintEnginePrivate)
 
+    QString printerName;
+    QString printProgram;
+    QString selectionOption;
+    QStringList cupsOptions;
+    QString cupsStringPageSize;
+
+    QPrinter::DuplexMode duplex;
+    bool collate;
+    int copies;
+    QPrinter::PageOrder pageOrder;
+    QPrinter::PaperSource paperSource;
+
+    QPrinter::PaperSize printerPaperSize;
+    QRect cupsPaperRect;
+    QRect cupsPageRect;
+    QSizeF customPaperSize; // in postscript points
 };
 
 QT_END_NAMESPACE

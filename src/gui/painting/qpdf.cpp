@@ -66,7 +66,20 @@ static const bool interpolateImages = false;
 
 QT_BEGIN_NAMESPACE
 
-extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
+inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
+{
+    QPaintEngine::PaintEngineFeatures f = QPaintEngine::AllFeatures;
+    f &= ~(QPaintEngine::PorterDuff | QPaintEngine::PerspectiveTransform
+           | QPaintEngine::ObjectBoundingModeGradients
+#ifndef USE_NATIVE_GRADIENTS
+           | QPaintEngine::LinearGradientFill
+#endif
+           | QPaintEngine::RadialGradientFill
+           | QPaintEngine::ConicalGradientFill);
+    return f;
+}
+
+
 
 /* also adds a space at the end of the number */
 const char *qt_real_to_string(qreal val, char *buf) {
@@ -900,28 +913,6 @@ const char *QPdf::toHex(uchar u, char *buffer)
     return buffer;
 }
 
-#define Q_MM(n) int((n * 720 + 127) / 254)
-#define Q_IN(n) int(n * 72)
-
-static const char * const psToStr[QPrinter::NPaperSize+1] =
-{
-    "A4", "B5", "Letter", "Legal", "Executive",
-    "A0", "A1", "A2", "A3", "A5", "A6", "A7", "A8", "A9", "B0", "B1",
-    "B10", "B2", "B3", "B4", "B6", "B7", "B8", "B9", "C5E", "Comm10E",
-    "DLE", "Folio", "Ledger", "Tabloid", 0
-};
-
-QPdf::PaperSize QPdf::paperSize(QPrinter::PaperSize paperSize)
-{
-    QSizeF s = qt_paperSizeToQSizeF(paperSize);
-    PaperSize p = { Q_MM(s.width()), Q_MM(s.height()) };
-    return p;
-}
-
-const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
-{
-    return psToStr[paperSize];
-}
 
 QPdfPage::QPdfPage()
     : QPdf::ByteStream(true) // Enable file backing
@@ -936,10 +927,22 @@ void QPdfPage::streamImage(int w, int h, int object)
 }
 
 
-QPdfEngine::QPdfEngine(QPdfEnginePrivate &dd, PaintEngineFeatures f)
-    : QAlphaPaintEngine(dd, f)
+QPdfEngine::QPdfEngine(QPdfEnginePrivate &dd)
+    : QAlphaPaintEngine(dd, qt_pdf_decide_features())
 {
 }
+
+QPdfEngine::QPdfEngine()
+    : QAlphaPaintEngine(*new QPdfEnginePrivate(), qt_pdf_decide_features())
+{
+}
+
+void QPdfEngine::setOutputFilename(const QString &filename)
+{
+    Q_D(QPdfEngine);
+    d->outputFileName = filename;
+}
+
 
 void QPdfEngine::drawPoints (const QPointF *points, int pointCount)
 {
@@ -1368,7 +1371,7 @@ void QPdfEngine::setPen()
     Q_ASSERT(b.style() == Qt::SolidPattern && b.isOpaque());
 
     QColor rgba = b.color();
-    if (d->colorMode == QPrinter::GrayScale) {
+    if (d->grayscale) {
         qreal gray = qGray(rgba.rgba())/255.;
         *d->currentPage << gray << gray << gray;
     } else {
@@ -1430,7 +1433,7 @@ void QPdfEngine::setBrush()
     *d->currentPage << (patternObject ? "/PCSp cs " : "/CSp cs ");
     if (specifyColor) {
         QColor rgba = d->brush.color();
-        if (d->colorMode == QPrinter::GrayScale) {
+        if (d->grayscale) {
             qreal gray = qGray(rgba.rgba())/255.;
             *d->currentPage << gray << gray << gray;
         } else {
@@ -1475,7 +1478,7 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 {
     Q_D(const QPdfEngine);
     int val;
-    QRect r = d->fullPage ? d->paperRect() : d->pageRect();
+    QRect r = d->pageRect();
     switch (metricType) {
     case QPaintDevice::PdmWidth:
         val = r.width();
@@ -1504,29 +1507,25 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
         val = 32;
         break;
     default:
-        qWarning("QPrinter::metric: Invalid metric command");
+        qWarning("QPdfWriter::metric: Invalid metric command");
         return 0;
     }
     return val;
 }
 
+#define Q_MM(n) int((n * 720 + 127) / 254)
 
-QPdfEnginePrivate::QPdfEnginePrivate(QPrinter::PrinterMode m)
+QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
       useAlphaEngine(false),
       outDevice(0), fd(-1),
-      duplex(QPrinter::DuplexNone), collate(false), fullPage(false), embedFonts(true), copies(1),
-      pageOrder(QPrinter::FirstPageFirst), orientation(QPrinter::Portrait),
-      paperSize(QPrinter::A4), colorMode(QPrinter::Color), paperSource(QPrinter::Auto),
-      hasCustomPageMargins(false),
-      leftMargin(0), topMargin(0), rightMargin(0), bottomMargin(0)
+      fullPage(false), embedFonts(true),
+      landscape(false),
+      grayscale(false),
+      paperSize(Q_MM(210), Q_MM(297)), // A4
+      leftMargin(10), topMargin(10), rightMargin(10), bottomMargin(10) // ~3.5 mm
 {
-    resolution = 72;
-    if (m == QPrinter::HighResolution)
-        resolution = 1200;
-    else if (m == QPrinter::ScreenResolution)
-        resolution = qt_defaultDpi();
-
+    resolution = 1200;
     postscript = false;
     currentObject = 1;
     currentPage = 0;
@@ -1535,15 +1534,25 @@ QPdfEnginePrivate::QPdfEnginePrivate(QPrinter::PrinterMode m)
     streampos = 0;
 
     stream = new QDataStream;
-    pageOrder = QPrinter::FirstPageFirst;
-    orientation = QPrinter::Portrait;
-    fullPage = false;
 }
 
 bool QPdfEngine::begin(QPaintDevice *pdev)
 {
     Q_D(QPdfEngine);
     d->pdev = pdev;
+
+    if (!d->outDevice) {
+        if (!d->outputFileName.isEmpty()) {
+            QFile *file = new QFile(d->outputFileName);
+            if (!file->open(QFile::WriteOnly|QFile::Truncate)) {
+                delete file;
+                return false;
+            }
+            d->outDevice = file;
+        } else {
+            return false;
+        }
+    }
 
     d->postscript = false;
     d->currentObject = 1;
@@ -1589,6 +1598,19 @@ bool QPdfEngine::end()
     delete d->currentPage;
     d->currentPage = 0;
 
+    if (d->outDevice) {
+        d->outDevice->close();
+        if (d->fd >= 0)
+    #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
+            ::_close(d->fd);
+    #else
+            ::close(d->fd);
+    #endif
+        d->fd = -1;
+        delete d->outDevice;
+        d->outDevice = 0;
+    }
+
     setActive(false);
     return true;
 }
@@ -1602,25 +1624,10 @@ QPdfEnginePrivate::~QPdfEnginePrivate()
 
 QRect QPdfEnginePrivate::paperRect() const
 {
-    int w;
-    int h;
-    if (paperSize == QPrinter::Custom) {
-        w = qRound(customPaperSize.width()*resolution/72.);
-        h = qRound(customPaperSize.height()*resolution/72.);
-    } else {
-        if (!cupsPaperRect.isNull()) {
-            QRect r = cupsPaperRect;
-            w = r.width();
-            h = r.height();
-        } else{
-            QPdf::PaperSize s = QPdf::paperSize(paperSize);
-            w = s.width;
-            h = s.height;
-        }
-        w = qRound(w*resolution/72.);
-        h = qRound(h*resolution/72.);
-    }
-    if (orientation == QPrinter::Portrait)
+    int w = qRound(paperSize.width()*resolution/72.);
+    int h = qRound(paperSize.height()*resolution/72.);
+
+    if (!landscape)
         return QRect(0, 0, w, h);
     else
         return QRect(0, 0, h, w);
@@ -1628,46 +1635,14 @@ QRect QPdfEnginePrivate::paperRect() const
 
 QRect QPdfEnginePrivate::pageRect() const
 {
-    if(fullPage)
-        return paperRect();
+    QRect r = paperRect();
 
-    QRect r;
-
-    if (!hasCustomPageMargins && !cupsPageRect.isNull()) {
-        r = cupsPageRect;
-        if (r == cupsPaperRect) {
-            // if cups doesn't define any margins, give it at least approx 3.5 mm
-            r = QRect(10, 10, r.width() - 20, r.height() - 20);
-        }
-    } else {
-        QPdf::PaperSize s;
-        if (paperSize == QPrinter::Custom) {
-            s.width = qRound(customPaperSize.width());
-            s.height = qRound(customPaperSize.height());
-        } else {
-            s = QPdf::paperSize(paperSize);
-        }
-        if (hasCustomPageMargins)
-            r = QRect(0, 0, s.width, s.height);
-        else
-            r = QRect(72/3, 72/3, s.width - 2*72/3, s.height - 2*72/3);
-    }
-
-    int x = qRound(r.left()*resolution/72.);
-    int y = qRound(r.top()*resolution/72.);
-    int w = qRound(r.width()*resolution/72.);
-    int h = qRound(r.height()*resolution/72.);
-    if (orientation == QPrinter::Portrait)
-        r = QRect(x, y, w, h);
-    else
-        r = QRect(y, x, h, w);
-
-    if (hasCustomPageMargins) {
+    if(!fullPage)
         r.adjust(qRound(leftMargin*(resolution/72.)),
                  qRound(topMargin*(resolution/72.)),
                  -qRound(rightMargin*(resolution/72.)),
                  -qRound(bottomMargin*(resolution/72.)));
-    }
+
     return r;
 }
 
@@ -2437,7 +2412,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
         bool hasAlpha = false;
         bool hasMask = false;
 
-        if (QImageWriter::supportedImageFormats().contains("jpeg") && colorMode != QPrinter::GrayScale) {
+        if (QImageWriter::supportedImageFormats().contains("jpeg") && !grayscale) {
             QBuffer buffer(&imageData);
             QImageWriter writer(&buffer, "jpeg");
             writer.setQuality(94);
@@ -2459,13 +2434,13 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
                 }
             }
         } else {
-            imageData.resize(colorMode == QPrinter::GrayScale ? w * h : 3 * w * h);
+            imageData.resize(grayscale ? w * h : 3 * w * h);
             uchar *data = (uchar *)imageData.data();
             softMaskData.resize(w * h);
             uchar *sdata = (uchar *)softMaskData.data();
             for (int y = 0; y < h; ++y) {
                 const QRgb *rgb = (const QRgb *)image.scanLine(y);
-                if (colorMode == QPrinter::GrayScale) {
+                if (grayscale) {
                     for (int x = 0; x < w; ++x) {
                         *(data++) = qGray(*rgb);
                         uchar alpha = qAlpha(*rgb);
@@ -2511,7 +2486,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, qint64 serial_n
             }
             maskObject = writeImage(mask, w, h, 1, 0, 0);
         }
-        object = writeImage(imageData, w, h, colorMode == QPrinter::GrayScale ? 8 : 32,
+        object = writeImage(imageData, w, h, grayscale ? 8 : 32,
                             maskObject, softMaskObject, dct);
     }
     imageCache.insert(serial_no, object);

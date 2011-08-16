@@ -52,12 +52,7 @@
 #include <limits.h>
 #include <math.h>
 
-#if defined(Q_OS_WINCE)
-#include "qwinfunctions_wince.h"
-#endif
-
 #include "qprintengine_pdf_p.h"
-#include "private/qdrawhelper_p.h"
 
 #ifdef Q_OS_UNIX
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
@@ -67,22 +62,34 @@ QT_BEGIN_NAMESPACE
 
 //#define FONT_DUMP
 
+extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
 
-inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
+#define Q_MM(n) int((n * 720 + 127) / 254)
+#define Q_IN(n) int(n * 72)
+
+static const char * const psToStr[QPrinter::NPaperSize+1] =
 {
-    QPaintEngine::PaintEngineFeatures f = QPaintEngine::AllFeatures;
-    f &= ~(QPaintEngine::PorterDuff | QPaintEngine::PerspectiveTransform
-           | QPaintEngine::ObjectBoundingModeGradients
-#ifndef USE_NATIVE_GRADIENTS
-           | QPaintEngine::LinearGradientFill
-#endif
-           | QPaintEngine::RadialGradientFill
-           | QPaintEngine::ConicalGradientFill);
-    return f;
+    "A4", "B5", "Letter", "Legal", "Executive",
+    "A0", "A1", "A2", "A3", "A5", "A6", "A7", "A8", "A9", "B0", "B1",
+    "B10", "B2", "B3", "B4", "B6", "B7", "B8", "B9", "C5E", "Comm10E",
+    "DLE", "Folio", "Ledger", "Tabloid", 0
+};
+
+QPdf::PaperSize QPdf::paperSize(QPrinter::PaperSize paperSize)
+{
+    QSizeF s = qt_paperSizeToQSizeF(paperSize);
+    PaperSize p = { Q_MM(s.width()), Q_MM(s.height()) };
+    return p;
 }
 
+const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
+{
+    return psToStr[paperSize];
+}
+
+
 QPdfPrintEngine::QPdfPrintEngine(QPrinter::PrinterMode m)
-    : QPdfEngine(*new QPdfPrintEnginePrivate(m), qt_pdf_decide_features())
+    : QPdfEngine(*new QPdfPrintEnginePrivate(m))
 {
     Q_D(QPdfPrintEngine);
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
@@ -154,13 +161,14 @@ int QPdfPrintEngine::metric(QPaintDevice::PaintDeviceMetric m) const
 
 void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
 {
-    Q_D(QPdfEngine);
+    Q_D(QPdfPrintEngine);
+
     switch (int(key)) {
     case PPK_CollateCopies:
         d->collate = value.toBool();
         break;
     case PPK_ColorMode:
-        d->colorMode = QPrinter::ColorMode(value.toInt());
+        d->grayscale = (QPrinter::ColorMode(value.toInt()) == QPrinter::GrayScale);
         break;
     case PPK_Creator:
         d->creator = value.toString();
@@ -176,7 +184,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->copies = value.toInt();
         break;
     case PPK_Orientation:
-        d->orientation = QPrinter::Orientation(value.toInt());
+        d->landscape = (QPrinter::Orientation(value.toInt()) == QPrinter::Landscape);
         break;
     case PPK_OutputFileName:
         d->outputFileName = value.toString();
@@ -185,7 +193,8 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->pageOrder = QPrinter::PageOrder(value.toInt());
         break;
     case PPK_PaperSize:
-        d->paperSize = QPrinter::PaperSize(value.toInt());
+        d->printerPaperSize = QPrinter::PaperSize(value.toInt());
+        d->updatePaperSize();
         break;
     case PPK_PaperSource:
         d->paperSource = QPrinter::PaperSource(value.toInt());
@@ -221,8 +230,9 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->cupsStringPageSize = value.toString();
         break;
     case PPK_CustomPaperSize:
-        d->paperSize = QPrinter::Custom;
+        d->printerPaperSize = QPrinter::Custom;
         d->customPaperSize = value.toSizeF();
+        d->updatePaperSize();
         break;
     case PPK_PageMargins:
     {
@@ -232,7 +242,6 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->topMargin = margins.at(1).toReal();
         d->rightMargin = margins.at(2).toReal();
         d->bottomMargin = margins.at(3).toReal();
-        d->hasCustomPageMargins = true;
         break;
     }
     default:
@@ -242,7 +251,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
 
 QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
 {
-    Q_D(const QPdfEngine);
+    Q_D(const QPdfPrintEngine);
 
     QVariant ret;
     switch (int(key)) {
@@ -250,7 +259,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->collate;
         break;
     case PPK_ColorMode:
-        ret = d->colorMode;
+        ret = d->grayscale ? QPrinter::GrayScale : QPrinter::Color;
         break;
     case PPK_Creator:
         ret = d->creator;
@@ -281,7 +290,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
             ret = d->copies;
         break;
     case PPK_Orientation:
-        ret = d->orientation;
+        ret = d->landscape ? QPrinter::Landscape : QPrinter::Portrait;
         break;
     case PPK_OutputFileName:
         ret = d->outputFileName;
@@ -340,14 +349,8 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PageMargins:
     {
         QList<QVariant> margins;
-        if (d->hasCustomPageMargins) {
-            margins << d->leftMargin << d->topMargin
-                    << d->rightMargin << d->bottomMargin;
-        } else {
-            const qreal defaultMargin = 10; // ~3.5 mm
-            margins << defaultMargin << defaultMargin
-                    << defaultMargin << defaultMargin;
-        }
+        margins << d->leftMargin << d->topMargin
+                << d->rightMargin << d->bottomMargin;
         ret = margins;
         break;
     }
@@ -382,7 +385,7 @@ static void closeAllOpenFds()
 
 bool QPdfPrintEnginePrivate::openPrintDevice()
 {
-    if(outDevice)
+    if (outDevice)
         return false;
 
     if (!outputFileName.isEmpty()) {
@@ -470,13 +473,13 @@ bool QPdfPrintEnginePrivate::openPrintDevice()
                 for (i = 0; i < lphack.size(); ++i)
                     lpargs[i+1] = (char *)lphack.at(i).constData();
 #ifndef Q_OS_OSF
-                if (QPdf::paperSizeToString(paperSize)) {
+                if (QPdf::paperSizeToString(printerPaperSize)) {
                     char dash_o[] = "-o";
                     lpargs[++i] = dash_o;
-                    lpargs[++i] = const_cast<char *>(QPdf::paperSizeToString(paperSize));
+                    lpargs[++i] = const_cast<char *>(QPdf::paperSizeToString(printerPaperSize));
                     lpargs[++i] = dash_o;
                     media = "media=";
-                    media += QPdf::paperSizeToString(paperSize);
+                    media += QPdf::paperSizeToString(printerPaperSize);
                     lpargs[++i] = media.data();
                 }
 #endif
@@ -523,19 +526,6 @@ bool QPdfPrintEnginePrivate::openPrintDevice()
 
 void QPdfPrintEnginePrivate::closePrintDevice()
 {
-    if (!outDevice)
-        return;
-    outDevice->close();
-    if (fd >= 0)
-#if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-        ::_close(fd);
-#else
-        ::close(fd);
-#endif
-    fd = -1;
-    delete outDevice;
-    outDevice = 0;
-
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (!cupsTempFile.isEmpty()) {
         QString tempFile = cupsTempFile;
@@ -575,7 +565,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
             switch(duplex) {
             case QPrinter::DuplexNone: break;
             case QPrinter::DuplexAuto:
-                if (orientation == QPrinter::Portrait)
+                if (!landscape)
                     options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
                 else
                     options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
@@ -589,7 +579,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
             }
         }
 
-        if (QCUPSSupport::cupsVersion() >= 10300 && orientation == QPrinter::Landscape) {
+        if (QCUPSSupport::cupsVersion() >= 10300 && landscape) {
             options.append(QPair<QByteArray, QByteArray>("landscape", ""));
         }
 
@@ -619,8 +609,19 @@ void QPdfPrintEnginePrivate::closePrintDevice()
 
 
 QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
-    : QPdfEnginePrivate(m)
+    : QPdfEnginePrivate(),
+      duplex(QPrinter::DuplexNone),
+      collate(false),
+      copies(1),
+      pageOrder(QPrinter::FirstPageFirst),
+      paperSource(QPrinter::Auto),
+      printerPaperSize(QPrinter::A4)
 {
+    resolution = 72;
+    if (m == QPrinter::HighResolution)
+        resolution = 1200;
+    else if (m == QPrinter::ScreenResolution)
+        resolution = qt_defaultDpi();
 }
 
 QPdfPrintEnginePrivate::~QPdfPrintEnginePrivate()
@@ -628,6 +629,18 @@ QPdfPrintEnginePrivate::~QPdfPrintEnginePrivate()
 }
 
 
+void QPdfPrintEnginePrivate::updatePaperSize()
+{
+    if (printerPaperSize == QPrinter::Custom) {
+        paperSize = customPaperSize;
+    } else if (!cupsPaperRect.isNull()) {
+        QRect r = cupsPaperRect;
+        paperSize = r.size();
+    } else{
+        QPdf::PaperSize s = QPdf::paperSize(printerPaperSize);
+        paperSize = QSize(s.width, s.height);
+    }
+}
 
 
 QT_END_NAMESPACE

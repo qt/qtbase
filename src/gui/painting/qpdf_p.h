@@ -60,15 +60,9 @@
 #include "private/qfontengine_p.h"
 #include "private/qfontsubset_p.h"
 
-// ### remove!
-#include <qprinter.h>
+// #define USE_NATIVE_GRADIENTS
 
 QT_BEGIN_NAMESPACE
-
-#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
-#define PPK_CupsPageRect QPrintEngine::PrintEnginePropertyKey(0xfe01)
-#define PPK_CupsPaperRect QPrintEngine::PrintEnginePropertyKey(0xfe02)
-#define PPK_CupsStringPageSize QPrintEngine::PrintEnginePropertyKey(0xfe03)
 
 const char *qt_real_to_string(qreal val, char *buf);
 const char *qt_int_to_string(int val, char *buf);
@@ -147,13 +141,6 @@ namespace QPdf {
     const char *toHex(ushort u, char *buffer);
     const char *toHex(uchar u, char *buffer);
 
-
-    struct PaperSize {
-        int width, height; // in postscript points
-    };
-    Q_GUI_EXPORT PaperSize paperSize(QPrinter::PaperSize paperSize);
-    Q_GUI_EXPORT const char *paperSizeToString(QPrinter::PaperSize paperSize);
-
 }
 
 
@@ -181,8 +168,12 @@ class QPdfEngine : public QAlphaPaintEngine
 {
     Q_DECLARE_PRIVATE(QPdfEngine)
 public:
-    QPdfEngine(QPdfEnginePrivate &d, PaintEngineFeatures f);
+    QPdfEngine();
+    QPdfEngine(QPdfEnginePrivate &d);
     ~QPdfEngine() {}
+
+    void setOutputFilename(const QString &filename);
+    inline void setResolution(int resolution);
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev);
@@ -222,7 +213,7 @@ class QPdfEnginePrivate : public QAlphaPaintEnginePrivate
 {
     Q_DECLARE_PUBLIC(QPdfEngine)
 public:
-    QPdfEnginePrivate(QPrinter::PrinterMode m);
+    QPdfEnginePrivate();
     ~QPdfEnginePrivate();
 
     inline uint requestObject() { return currentObject++; }
@@ -280,29 +271,16 @@ public:
 
     // printer options
     QString outputFileName;
-    QString printerName;
-    QString printProgram;
-    QString selectionOption;
     QString title;
     QString creator;
-    QPrinter::DuplexMode duplex;
-    bool collate;
     bool fullPage;
     bool embedFonts;
-    int copies;
     int resolution;
-    QPrinter::PageOrder pageOrder;
-    QPrinter::Orientation orientation;
-    QPrinter::PaperSize paperSize;
-    QPrinter::ColorMode colorMode;
-    QPrinter::PaperSource paperSource;
+    bool landscape;
+    bool grayscale;
 
-    QStringList cupsOptions;
-    QRect cupsPaperRect;
-    QRect cupsPageRect;
-    QString cupsStringPageSize;
-    QSizeF customPaperSize; // in postscript points
-    bool hasCustomPageMargins;
+    // in postscript points
+    QSizeF paperSize;
     qreal leftMargin, topMargin, rightMargin, bottomMargin;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
@@ -345,6 +323,12 @@ private:
     QHash<qint64, uint> imageCache;
     QHash<QPair<uint, uint>, uint > alphaCache;
 };
+
+void QPdfEngine::setResolution(int resolution)
+{
+    Q_D(QPdfEngine);
+    d->resolution = resolution;
+}
 
 QT_END_NAMESPACE
 

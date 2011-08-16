@@ -41,7 +41,7 @@
 
 #include <qpdfwriter.h>
 #include <QtCore/private/qobject_p.h>
-#include "private/qprintengine_pdf_p.h"
+#include "private/qpdf_p.h"
 #include <QtCore/qfile.h>
 
 
@@ -51,7 +51,7 @@ public:
     QPdfWriterPrivate()
         : QObjectPrivate()
     {
-        engine = new QPdfPrintEngine(QPrinter::HighResolution);
+        engine = new QPdfEngine();
         output = 0;
     }
     ~QPdfWriterPrivate()
@@ -60,7 +60,7 @@ public:
         delete output;
     }
 
-    QPdfPrintEngine *engine;
+    QPdfEngine *engine;
     QFile *output;
 };
 
@@ -69,7 +69,7 @@ QPdfWriter::QPdfWriter(const QString &filename)
 {
     Q_D(QPdfWriter);
 
-    d->engine->setProperty(QPrintEngine::PPK_OutputFileName, filename);
+    d->engine->setOutputFilename(filename);
 }
 
 QPdfWriter::QPdfWriter(QIODevice *device)
