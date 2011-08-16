@@ -55,8 +55,6 @@
 
 #include "private/qfontengine_p.h"
 
-#ifndef QT_NO_PRINTER
-
 QT_BEGIN_NAMESPACE
 
 class QFontSubset
@@ -71,8 +69,6 @@ public:
     }
 
     QByteArray toTruetype() const;
-    QByteArray toType1() const;
-    QByteArray type1AddedGlyphs() const;
     QByteArray widthArray() const;
     QByteArray createToUnicodeMap() const;
     QVector<int> getReverseMap() const;
@@ -93,7 +89,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTER
 
 #endif // QFONTSUBSET_P_H
