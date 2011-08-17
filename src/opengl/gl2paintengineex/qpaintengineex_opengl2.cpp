@@ -2048,11 +2048,12 @@ bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
 
+    QGLContext *ctx = d->ctx;
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
     d->device->endPaint();
 
-    d->ctx->d_ptr->active_engine = 0;
+    ctx->d_ptr->active_engine = 0;
 
     d->resetGLState();
 

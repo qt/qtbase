@@ -4394,9 +4394,6 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         return;
     }
 
-    // this changes what paintEngine() returns
-    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
-    engine = paintEngine();
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4495,9 +4492,6 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         return;
     }
 
-    // this changes what paintEngine() returns
-    qgl_engine_selector()->setPreferredPaintEngine(QPaintEngine::OpenGL);
-    engine = paintEngine();
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);

@@ -100,12 +100,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_2)
-extern void qgl_cleanup_glyph_cache(QGLContext *);
-#else
-void qgl_cleanup_glyph_cache(QGLContext *) {}
-#endif
-
 extern Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 
@@ -200,7 +194,6 @@ QGLPixelBuffer::~QGLPixelBuffer()
     QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
     if (current != d->qctx)
         makeCurrent();
-    qgl_cleanup_glyph_cache(d->qctx);
     d->cleanup();
     delete d->qctx;
     if (current && current != d->qctx)
