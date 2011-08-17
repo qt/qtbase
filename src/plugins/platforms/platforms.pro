@@ -13,3 +13,5 @@ contains(QT_CONFIG, xcb) {
 mac {
     SUBDIRS += cocoa
 }
+
+win32: SUBDIRS += windows
