@@ -1728,6 +1728,13 @@ void tst_QLineEdit::passwordEchoDelay()
     QApplication::sendEvent(testWidget, &ev);
     QCOMPARE(testWidget->displayText(), QString(7, fillChar) + QLatin1Char('7'));
 
+    testWidget->setCursorPosition(3);
+    QCOMPARE(testWidget->displayText(), QString(7, fillChar) + QLatin1Char('7'));
+    QTest::keyPress(testWidget, 'a');
+    QCOMPARE(testWidget->displayText(), QString(3, fillChar) + QLatin1Char('a') + QString(5, fillChar));
+    QTest::keyPress(testWidget, Qt::Key_Backspace);
+    QCOMPARE(testWidget->displayText(), QString(8, fillChar));
+
     // restore clean state
     testWidget->setEchoMode(QLineEdit::Normal);
 }

@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_GUI_PASSWORD_ECHO_DELAY
-static int qt_passwordEchoDelay = QT_GUI_PASSWORD_ECHO_DELAY;
+static const int qt_passwordEchoDelay = QT_GUI_PASSWORD_ECHO_DELAY;
 #endif
 
 /*!
@@ -115,8 +115,8 @@ void QLineControl::updateDisplayText(bool forceUpdate)
     if (m_echoMode == QLineEdit::Password) {
         str.fill(m_passwordCharacter);
 #ifdef QT_GUI_PASSWORD_ECHO_DELAY
-        if (m_passwordEchoTimer != 0 && !str.isEmpty()) {
-            int cursor = m_text.length() - 1;
+        if (m_passwordEchoTimer != 0 && m_cursor > 0 && m_cursor <= m_text.length()) {
+            int cursor = m_cursor - 1;
             QChar uc = m_text.at(cursor);
             str[cursor] = uc;
             if (cursor > 0 && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
