@@ -101,8 +101,6 @@ class QGLContextPrivate;
 // Namespace class:
 namespace QGL
 {
-    Q_OPENGL_EXPORT void setPreferredPaintEngine(QPaintEngine::Type engineType);
-
     enum FormatOption {
         DoubleBuffer            = 0x0001,
         DepthBuffer             = 0x0002,
