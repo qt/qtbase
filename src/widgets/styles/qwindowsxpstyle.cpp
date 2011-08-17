@@ -196,9 +196,12 @@ HRGN XPThemeData::mask(QWidget *widget)
         return 0;
 
     HRGN hrgn;
-    QBackingStore *backingStore = widget->backingStore();
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    HDC dc = 0;
+    if (widget) {
+        QBackingStore *backingStore = widget->backingStore();
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    }
     RECT nativeRect = toRECT(rect);
     pGetThemeBackgroundRegion(handle(), dc, partId, stateId, &nativeRect, &hrgn);
     return hrgn;
@@ -211,6 +214,32 @@ QPixmap *QWindowsXPStylePrivate::tabbody = 0;
 QMap<QString,HTHEME> *QWindowsXPStylePrivate::handleMap = 0;
 bool QWindowsXPStylePrivate::use_xp = false;
 QBasicAtomicInt QWindowsXPStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
+
+static void qt_add_rect(HRGN &winRegion, QRect r)
+{
+    HRGN rgn = CreateRectRgn(r.left(), r.top(), r.x() + r.width(), r.y() + r.height());
+    if (rgn) {
+        HRGN dest = CreateRectRgn(0,0,0,0);
+        int result = CombineRgn(dest, winRegion, rgn, RGN_OR);
+        if (result) {
+            DeleteObject(winRegion);
+            winRegion = dest;
+        }
+        DeleteObject(rgn);
+    }
+}
+
+static HRGN qt_hrgn_from_qregion(const QRegion &region)
+{
+    HRGN hRegion = CreateRectRgn(0,0,0,0);
+    if (region.rectCount() == 1) {
+        qt_add_rect(hRegion, region.boundingRect());
+        return hRegion;
+    }
+    foreach (const QRect &rect, region.rects())
+        qt_add_rect(hRegion, rect);
+    return hRegion;
+}
 
 /* \internal
     Checks if the theme engine can/should be used, or if we should
@@ -657,9 +686,13 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
         translucentToplevel = win->testAttribute(Qt::WA_TranslucentBackground);
     }
 
-    QBackingStore *backingStore = themeData.widget->backingStore();
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore ));
+    HDC dc = 0;
+    if (themeData.widget) {
+        QBackingStore *backingStore = themeData.widget->backingStore();
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore ));
+    }
+
     bool useFallback = dc == 0
                        || painter->opacity() != 1.0
                        || themeData.rotate
@@ -684,9 +717,12 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
 {
     QPainter *painter = themeData.painter;
-    QBackingStore *backingStore= themeData.widget->backingStore();
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    HDC dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    HDC dc = 0;
+    if (themeData.widget) {
+        QBackingStore *backingStore = themeData.widget->backingStore();
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        dc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    }
 
     QPoint redirectionDelta(int(painter->deviceMatrix().dx()),
                             int(painter->deviceMatrix().dy()));
@@ -699,7 +735,8 @@ void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
         sysRgn &= area;
     if (painter->hasClipping())
         sysRgn &= painter->clipRegion().translated(redirectionDelta);
-    SelectClipRgn(dc, sysRgn.handle());
+    HRGN hrgn = qt_hrgn_from_qregion(sysRgn);
+    SelectClipRgn(dc, hrgn);
 
 #ifdef DEBUG_XP_STYLE
         printf("---[ DIRECT PAINTING ]------------------> Name(%-10s) Part(%d) State(%d)\n",
@@ -744,13 +781,17 @@ void QWindowsXPStylePrivate::drawBackgroundDirectly(XPThemeData &themeData)
             }
 
             // Set the clip region, if used..
-            if (themeData.noBorder || themeData.noContent)
-                SelectClipRgn(dc, extraClip.handle());
+            if (themeData.noBorder || themeData.noContent) {
+                DeleteObject(hrgn);
+                hrgn = qt_hrgn_from_qregion(extraClip);
+                SelectClipRgn(dc, hrgn);
+            }
         }
 
         pDrawThemeBackground(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawRECT), &(drawOptions.rcClip));
     }
     SelectClipRgn(dc, 0);
+    DeleteObject(hrgn);
 }
 
 /*! \internal
@@ -916,9 +957,11 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         } else {
             // Set the clip region, if used..
             if (addBorderContentClipping) {
-                SelectClipRgn(dc, extraClip.handle());
+                HRGN hrgn = qt_hrgn_from_qregion(extraClip);
+                SelectClipRgn(dc, hrgn);
                 // Compensate for the noBorder area difference (noContent has the same area)
                 drawOptions.rcClip = themeData.toRECT(rect.adjusted(dx, dy, dr, db));
+                DeleteObject(hrgn);
             }
 
             pDrawThemeBackground(themeData.handle(), dc, themeData.partId, themeData.stateId, &(drawOptions.rcClip), 0);

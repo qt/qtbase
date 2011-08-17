@@ -353,7 +353,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
 
     if (!wizard->windowIcon().isNull()) {
         QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
-        HICON hIcon = wizard->windowIcon().pixmap(iconSize()).toWinHICON();
+        HICON hIcon = 0; //###FIXME wizard->windowIcon().pixmap(iconSize()).toWinHICON();
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
     }

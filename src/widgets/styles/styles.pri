@@ -40,7 +40,6 @@ contains( styles, all ) {
 }
 
 x11|qpa|!macx-*:styles -= mac
-win32:qpa:styles -= windowsxp windowsvista
 
 x11{
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE
