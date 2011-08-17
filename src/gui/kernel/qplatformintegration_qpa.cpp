@@ -200,18 +200,6 @@ QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(QGuiGLContext 
 }
 
 /*!
-
-    Returns the platform's printing support.
-
-    \since 5.0
-*/
-
-QPlatformPrinterSupport *QPlatformIntegration::printerSupport() const
-{
-    return 0;
-}
-
-/*!
   Returns the platforms input context.
 
   The default implementation returns 0, implying no input method support.

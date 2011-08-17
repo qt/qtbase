@@ -48,8 +48,6 @@
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
 
-#include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
-
 #include <xcb/xcb.h>
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -79,8 +77,7 @@
 #include <QtGui/QScreen>
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
-    : m_printerSupport(new QGenericUnixPrinterSupport)
-    , m_eventDispatcher(createUnixEventDispatcher())
+    : m_eventDispatcher(createUnixEventDispatcher())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -181,11 +178,6 @@ QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
 QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
 {
     return m_nativeInterface;
-}
-
-QPlatformPrinterSupport *QXcbIntegration::printerSupport() const
-{
-    return m_printerSupport;
 }
 
 QPlatformClipboard *QXcbIntegration::clipboard() const

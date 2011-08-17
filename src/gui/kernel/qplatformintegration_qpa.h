@@ -58,7 +58,6 @@ class QPlatformBackingStore;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
-class QPlatformPrinterSupport;
 class QPlatformDrag;
 class QPlatformGLContext;
 class QGuiGLFormat;
@@ -97,8 +96,6 @@ public:
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
-
-    virtual QPlatformPrinterSupport *printerSupport() const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);

@@ -52,7 +52,7 @@
 
 #ifndef QT_NO_PRINTER
 
-#include <private/qguiapplication_p.h>
+#include "qplatformprintplugin_qpa.h"
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
 #if defined (Q_WS_WIN)
@@ -158,19 +158,24 @@ Q_GUI_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientation,
 void QPrinterPrivate::createDefaultEngines()
 {
     QPrinter::OutputFormat realOutputFormat = outputFormat;
-#if !defined (QTOPIA_PRINTENGINE)
 #if defined (Q_OS_UNIX) && ! defined (Q_WS_MAC)
     if(outputFormat == QPrinter::NativeFormat) {
         realOutputFormat = QPrinter::PdfFormat;
     }
 #endif
-#endif
 
     switch (realOutputFormat) {
     case QPrinter::NativeFormat: {
 #if defined (Q_WS_QPA)
-        printEngine = QGuiApplicationPrivate::platformIntegration()->printerSupport()->createNativePrintEngine(printerMode);
-        paintEngine = QGuiApplicationPrivate::platformIntegration()->printerSupport()->createPaintEngine(printEngine, printerMode);
+        QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+        if (ps) {
+            printEngine = ps->createNativePrintEngine(printerMode);
+            paintEngine = ps->createPaintEngine(printEngine, printerMode);
+        } else {
+            QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
+            paintEngine = pdfEngine;
+            printEngine = pdfEngine;
+        }
 #elif defined (Q_WS_WIN)
         QWin32PrintEngine *winEngine = new QWin32PrintEngine(printerMode);
         paintEngine = winEngine;
@@ -179,10 +184,6 @@ void QPrinterPrivate::createDefaultEngines()
         QMacPrintEngine *macEngine = new QMacPrintEngine(printerMode);
         paintEngine = macEngine;
         printEngine = macEngine;
-#elif defined (QTOPIA_PRINTENGINE)
-        QtopiaPrintEngine *qwsEngine = new QtopiaPrintEngine(printerMode);
-        paintEngine = qwsEngine;
-        printEngine = qwsEngine;
 #elif defined (Q_OS_UNIX)
         Q_ASSERT(false);
 #endif

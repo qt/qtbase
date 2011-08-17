@@ -69,7 +69,6 @@ public:
 
     QPlatformNativeInterface *nativeInterface()const;
 
-    QPlatformPrinterSupport *printerSupport() const;
     QPlatformClipboard *clipboard() const;
     QPlatformDrag *drag() const;
 
@@ -80,7 +79,6 @@ private:
 
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;
-    QPlatformPrinterSupport *m_printerSupport;
 
     QPlatformInputContext *m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;

@@ -30,7 +30,7 @@
 
 #ifndef QT_NO_PRINTER
 
-#include <private/qguiapplication_p.h>
+#include "qplatformprintplugin_qpa.h"
 #include <QtPrintSupport/QPlatformPrinterSupport>
 
 QT_BEGIN_NAMESPACE
@@ -176,7 +176,7 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     const Q_D(QPrinterInfo);
     if (!isNull() && !d->hasPaperSizes) {
-        d->paperSizes = QGuiApplicationPrivate::platformIntegration()->printerSupport()->supportedPaperSizes(*this);
+        d->paperSizes = QPlatformPrinterSupportPlugin::get()->supportedPaperSizes(*this);
         d->hasPaperSizes = true;
     }
     return d->paperSizes;
@@ -184,12 +184,18 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
-    return QGuiApplicationPrivate::platformIntegration()->printerSupport()->availablePrinters();
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (!ps)
+        return QList<QPrinterInfo>();
+    return ps->availablePrinters();
 }
 
 QPrinterInfo QPrinterInfo::defaultPrinter()
 {
-    return QGuiApplicationPrivate::platformIntegration()->printerSupport()->defaultPrinter();
+    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
+    if (!ps)
+        return QPrinterInfo();
+    return QPlatformPrinterSupportPlugin::get()->defaultPrinter();
 }
 
 #endif //Q_WS_QPA
