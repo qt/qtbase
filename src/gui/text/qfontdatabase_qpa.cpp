@@ -292,7 +292,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     if (!engine) {
         if (!request.family.isEmpty()) {
             QStringList fallbacks = fallbackFamilies(request.family,QFont::Style(request.style),QFont::StyleHint(request.styleHint),QUnicodeTables::Script(script));
-            for (int i = 0; i < fallbacks.size(); i++) {
+            for (int i = 0; !engine && i < fallbacks.size(); i++) {
                 QFontDef def = request;
                 def.family = fallbacks.at(i);
                 QFontCache::Key key(def,script);
@@ -306,7 +306,6 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
                     engine = loadEngine(script, def, desc.family, desc.foundry, desc.style, desc.size);
                     if (engine) {
                         initFontDef(desc, def, &engine->fontDef);
-                        break;
                     }
                 }
             }
