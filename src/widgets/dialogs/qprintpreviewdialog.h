@@ -54,6 +54,7 @@ QT_MODULE(Gui)
 
 class QGraphicsView;
 class QPrintPreviewDialogPrivate;
+class QPrinter;
 
 class Q_WIDGETS_EXPORT QPrintPreviewDialog : public QDialog
 {

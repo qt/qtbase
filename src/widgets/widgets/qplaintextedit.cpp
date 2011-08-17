@@ -2512,7 +2512,6 @@ bool QPlainTextEdit::canPaste() const
     return d->control->canPaste();
 }
 
-#ifndef QT_NO_PRINTER
 /*!
     Convenience function to print the text edit's document to the given \a printer. This
     is equivalent to calling the print method on the document directly except that this
@@ -2520,12 +2519,11 @@ bool QPlainTextEdit::canPaste() const
 
     \sa QTextDocument::print()
 */
-void QPlainTextEdit::print(QPrinter *printer) const
+void QPlainTextEdit::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QPlainTextEdit);
     d->control->print(printer);
 }
-#endif // QT _NO_PRINTER
 
 /*! \property QPlainTextEdit::tabChangesFocus
   \brief whether \gui Tab changes focus or is accepted as input

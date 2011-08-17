@@ -62,7 +62,7 @@
 #include "qtextlist.h"
 #include "private/qwidgettextcontrol_p.h"
 #include "qgraphicssceneevent.h"
-#include "qprinter.h"
+#include "qpagedpaintdevice.h"
 #include "qtextdocumentwriter.h"
 #include "private/qtextcursor_p.h"
 
@@ -2423,14 +2423,15 @@ bool QWidgetTextControl::isWordSelectionEnabled() const
     return d->wordSelectionEnabled;
 }
 
-#ifndef QT_NO_PRINTER
-void QWidgetTextControl::print(QPrinter *printer) const
+void QWidgetTextControl::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QWidgetTextControl);
-    if (!printer || !printer->isValid())
+    if (!printer)
         return;
     QTextDocument *tempDoc = 0;
     const QTextDocument *doc = d->doc;
+#if 0
+    // ####
     if (printer->printRange() == QPrinter::Selection) {
         if (!d->cursor.hasSelection())
             return;
@@ -2445,10 +2446,10 @@ void QWidgetTextControl::print(QPrinter *printer) const
         // copy the custom object handlers
         doc->documentLayout()->d_func()->handlers = d->doc->documentLayout()->d_func()->handlers;
     }
+#endif
     doc->print(printer);
     delete tempDoc;
 }
-#endif // QT_NO_PRINTER
 
 QMimeData *QWidgetTextControl::createMimeDataFromSelection() const
 {

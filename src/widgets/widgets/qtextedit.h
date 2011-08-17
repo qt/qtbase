@@ -66,6 +66,7 @@ class QTextDocument;
 class QMenu;
 class QTextEditPrivate;
 class QMimeData;
+class QPagedPaintDevice;
 
 class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
 {
@@ -232,9 +233,7 @@ public:
 
     bool canPaste() const;
 
-#ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const;
-#endif
+    void print(QPagedPaintDevice *printer) const;
 
 public Q_SLOTS:
     void setFontPointSize(qreal s);

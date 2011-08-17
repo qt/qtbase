@@ -64,7 +64,7 @@ class QTextDocument;
 class QMenu;
 class QPlainTextEditPrivate;
 class QMimeData;
-
+class QPagedPaintDevice;
 
 class Q_WIDGETS_EXPORT QPlainTextEdit : public QAbstractScrollArea
 {
@@ -177,9 +177,7 @@ public:
 
     bool canPaste() const;
 
-#ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const;
-#endif
+    void print(QPagedPaintDevice *printer) const;
 
     int blockCount() const;
 
