@@ -367,7 +367,7 @@ void QPageSetupWidget::setupPrinter() const
         QRect paperRect = m_cups->paperRect(cupsPageSize);
         engine->setProperty(PPK_CupsPaperRect, paperRect);
 
-        for(ps = 0; ps < QPrinter::NPaperSize; ++ps) {
+        for(ps = 0; ps < QPrinter::NPageSize; ++ps) {
             QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
             if (size.width == paperRect.width() && size.height == paperRect.height())
                 break;

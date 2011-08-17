@@ -154,6 +154,8 @@ private:
     QRect cupsPaperRect;
     QRect cupsPageRect;
     QSizeF customPaperSize; // in postscript points
+
+    int fd;
 };
 
 QT_END_NAMESPACE

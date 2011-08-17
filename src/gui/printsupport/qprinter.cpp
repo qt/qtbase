@@ -393,47 +393,6 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 */
 
 /*!
-  \enum QPrinter::PageSize
-
-  \obsolete
-  Use QPrinter::PaperSize instead.
-
-  \value A0 841 x 1189 mm
-  \value A1 594 x 841 mm
-  \value A2 420 x 594 mm
-  \value A3 297 x 420 mm
-  \value A4 210 x 297 mm, 8.26 x 11.69 inches
-  \value A5 148 x 210 mm
-  \value A6 105 x 148 mm
-  \value A7 74 x 105 mm
-  \value A8 52 x 74 mm
-  \value A9 37 x 52 mm
-  \value B0 1030 x 1456 mm
-  \value B1 728 x 1030 mm
-  \value B10 32 x 45 mm
-  \value B2 515 x 728 mm
-  \value B3 364 x 515 mm
-  \value B4 257 x 364 mm
-  \value B5 182 x 257 mm, 7.17 x 10.13 inches
-  \value B6 128 x 182 mm
-  \value B7 91 x 128 mm
-  \value B8 64 x 91 mm
-  \value B9 45 x 64 mm
-  \value C5E 163 x 229 mm
-  \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
-  \value DLE 110 x 220 mm
-  \value Executive 7.5 x 10 inches, 191 x 254 mm
-  \value Folio 210 x 330 mm
-  \value Ledger 432 x 279 mm
-  \value Legal 8.5 x 14 inches, 216 x 356 mm
-  \value Letter 8.5 x 11 inches, 216 x 279 mm
-  \value Tabloid 279 x 432 mm
-  \value Custom Unknown, or a user defined size.
-
-  \omitvalue NPageSize
-  */
-
-/*!
   \enum QPrinter::PaperSize
   \since 4.4
 
@@ -591,7 +550,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
     Creates a new printer object with the given \a mode.
 */
 QPrinter::QPrinter(PrinterMode mode)
-    : QPaintDevice(),
+    : QPagedPaintDevice(),
       d_ptr(new QPrinterPrivate(this))
 {
     init(mode);
@@ -611,7 +570,7 @@ QPrinter::QPrinter(PrinterMode mode)
     Creates a new printer object with the given \a printer and \a mode.
 */
 QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
-    : QPaintDevice(),
+    : QPagedPaintDevice(),
       d_ptr(new QPrinterPrivate(this))
 {
     init(mode);
@@ -1082,16 +1041,7 @@ QPrinter::PaperSize QPrinter::paperSize() const
 */
 void QPrinter::setPaperSize(PaperSize newPaperSize)
 {
-    Q_D(QPrinter);
-    if (d->paintEngine->type() != QPaintEngine::Pdf)
-        ABORT_IF_ACTIVE("QPrinter::setPaperSize");
-    if (newPaperSize < 0 || newPaperSize >= NPaperSize) {
-        qWarning("QPrinter::setPaperSize: Illegal paper size %d", newPaperSize);
-        return;
-    }
-    d->printEngine->setProperty(QPrintEngine::PPK_PaperSize, newPaperSize);
-    d->addToManualSetList(QPrintEngine::PPK_PaperSize);
-    d->hasUserSetPageSize = true;
+    setPageSize(newPaperSize);
 }
 
 /*!
@@ -1117,7 +1067,18 @@ QPrinter::PageSize QPrinter::pageSize() const
 
 void QPrinter::setPageSize(PageSize newPageSize)
 {
-    setPaperSize(newPageSize);
+    QPagedPaintDevice::setPageSize(newPageSize);
+
+    Q_D(QPrinter);
+    if (d->paintEngine->type() != QPaintEngine::Pdf)
+        ABORT_IF_ACTIVE("QPrinter::setPaperSize");
+    if (newPageSize < 0 || newPageSize >= NPageSize) {
+        qWarning("QPrinter::setPaperSize: Illegal paper size %d", newPageSize);
+        return;
+    }
+    d->printEngine->setProperty(QPrintEngine::PPK_PaperSize, newPageSize);
+    d->addToManualSetList(QPrintEngine::PPK_PaperSize);
+    d->hasUserSetPageSize = true;
 }
 
 /*!
@@ -1134,8 +1095,21 @@ void QPrinter::setPaperSize(const QSizeF &paperSize, QPrinter::Unit unit)
     if (d->paintEngine->type() != QPaintEngine::Pdf)
         ABORT_IF_ACTIVE("QPrinter::setPaperSize");
     const qreal multiplier = qt_multiplierForUnit(unit, resolution());
-    QSizeF size(paperSize.width() * multiplier, paperSize.height() * multiplier);
-    d->printEngine->setProperty(QPrintEngine::PPK_CustomPaperSize, size);
+    QSizeF size(paperSize.width() * multiplier * 25.4/72., paperSize.height() * multiplier * 25.4/72.);
+    setPageSizeMM(size);
+}
+
+/*!
+  \reimp
+  */
+void QPrinter::setPageSizeMM(const QSizeF &size)
+{
+    Q_D(QPrinter);
+
+    QPagedPaintDevice::setPageSizeMM(size);
+
+    QSizeF s = size * 72./25.4;
+    d->printEngine->setProperty(QPrintEngine::PPK_CustomPaperSize, s);
     d->addToManualSetList(QPrintEngine::PPK_CustomPaperSize);
     d->hasUserSetPageSize = true;
 }
@@ -2263,7 +2237,7 @@ QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size)
 */
 QPrinter::PaperSize qSizeFTopaperSize(const QSizeF& size)
 {
-    for (int i = 0; i < static_cast<int>(QPrinter::NPaperSize); ++i) {
+    for (int i = 0; i < static_cast<int>(QPrinter::NPageSize); ++i) {
         if (qt_paperSizes[i][0] >= size.width() - 1 &&
                 qt_paperSizes[i][0] <= size.width() + 1 &&
                 qt_paperSizes[i][1] >= size.height() - 1 &&

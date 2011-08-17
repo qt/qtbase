@@ -44,7 +44,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
-#include <QtGui/qpaintdevice.h>
+#include <QtGui/qpagedpaintdevice.h>
 
 QT_BEGIN_HEADER
 
@@ -63,7 +63,7 @@ class QPaintEngine;
 class QPrintEngine;
 class QPrinterInfo;
 
-class Q_GUI_EXPORT QPrinter : public QPaintDevice
+class Q_GUI_EXPORT QPrinter : public QPagedPaintDevice
 {
     Q_DECLARE_PRIVATE(QPrinter)
 public:
@@ -78,16 +78,8 @@ public:
     enum Orientation { Portrait, Landscape };
 
 #ifndef Q_QDOC
-    enum PageSize { A4, B5, Letter, Legal, Executive,
-                    A0, A1, A2, A3, A5, A6, A7, A8, A9, B0, B1,
-                    B10, B2, B3, B4, B6, B7, B8, B9, C5E, Comm10E,
-                    DLE, Folio, Ledger, Tabloid, Custom, NPageSize = Custom, NPaperSize = Custom };
     typedef PageSize PaperSize;
 #else
-    enum PageSize { A4, B5, Letter, Legal, Executive,
-                    A0, A1, A2, A3, A5, A6, A7, A8, A9, B0, B1,
-                    B10, B2, B3, B4, B6, B7, B8, B9, C5E, Comm10E,
-                    DLE, Folio, Ledger, Tabloid, Custom, NPageSize = Custom };
     enum PaperSize { A4, B5, Letter, Legal, Executive,
                      A0, A1, A2, A3, A5, A6, A7, A8, A9, B0, B1,
                      B10, B2, B3, B4, B6, B7, B8, B9, C5E, Comm10E,
@@ -168,6 +160,8 @@ public:
 
     void setPageSize(PageSize);
     PageSize pageSize() const;
+
+    void setPageSizeMM(const QSizeF &size);
 
     void setPaperSize(PaperSize);
     PaperSize paperSize() const;

@@ -161,12 +161,13 @@ public:
 private:
 };
 
-
+class QPdfWriter;
 class QPdfEnginePrivate;
 
 class QPdfEngine : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPdfEngine)
+    friend class QPdfWriter;
 public:
     QPdfEngine();
     QPdfEngine(QPdfEnginePrivate &d);
@@ -266,7 +267,7 @@ public:
 
     // the device the output is in the end streamed to.
     QIODevice *outDevice;
-    int fd;
+    bool ownsDevice;
 
     // printer options
     QString outputFileName;

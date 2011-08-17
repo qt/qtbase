@@ -1463,7 +1463,7 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
-      outDevice(0), fd(-1),
+      outDevice(0), ownsDevice(false),
       fullPage(false), embedFonts(true),
       landscape(false),
       grayscale(false),
@@ -1497,6 +1497,7 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
         } else {
             return false;
         }
+        d->ownsDevice = true;
     }
 
     d->postscript = false;
@@ -1543,15 +1544,8 @@ bool QPdfEngine::end()
     delete d->currentPage;
     d->currentPage = 0;
 
-    if (d->outDevice) {
+    if (d->outDevice && d->ownsDevice) {
         d->outDevice->close();
-        if (d->fd >= 0)
-    #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-            ::_close(d->fd);
-    #else
-            ::close(d->fd);
-    #endif
-        d->fd = -1;
         delete d->outDevice;
         d->outDevice = 0;
     }

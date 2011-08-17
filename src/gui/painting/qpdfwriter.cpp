@@ -64,6 +64,21 @@ public:
     QFile *output;
 };
 
+
+/*! \class QPdfWriter
+
+    \brief The QPdfWriter class is a class to generate PDFs
+    that can be used as a paint device.
+
+    \ingroup painting
+
+    QPdfWriter generates PDF out of a series of drawing commands using QPainter.
+    The newPage() method can be used to create several pages.
+  */
+
+/*!
+  Constructs a PDF writer that will write the pdf to \a filename.
+  */
 QPdfWriter::QPdfWriter(const QString &filename)
     : QObject(*new QPdfWriterPrivate)
 {
@@ -72,25 +87,92 @@ QPdfWriter::QPdfWriter(const QString &filename)
     d->engine->setOutputFilename(filename);
 }
 
+/*!
+  Constructs a PDF writer that will write the pdf to \a device.
+  */
 QPdfWriter::QPdfWriter(QIODevice *device)
     : QObject(*new QPdfWriterPrivate)
 {
     Q_D(QPdfWriter);
 
-    // ####
-//    d->engine->setDevice(device);
+    d->engine->d_func()->outDevice = device;
 }
 
+/*!
+  Destroys the pdf writer.
+  */
 QPdfWriter::~QPdfWriter()
 {
 
 }
 
+/*!
+  Returns the title of the document.
+  */
+QString QPdfWriter::title() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->d_func()->title;
+}
+
+/*!
+  Sets the title of the document being created.
+  */
+void QPdfWriter::setTitle(const QString &title)
+{
+    Q_D(QPdfWriter);
+    d->engine->d_func()->title = title;
+}
+
+/*!
+  Returns the creator of the document.
+  */
+QString QPdfWriter::creator() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->d_func()->creator;
+}
+
+/*!
+  Sets the creator of the document.
+  */
+void QPdfWriter::setCreator(const QString &creator)
+{
+    Q_D(QPdfWriter);
+    d->engine->d_func()->creator = creator;
+}
+
+
+/*!
+  \reimp
+  */
 QPaintEngine *QPdfWriter::paintEngine() const
 {
     Q_D(const QPdfWriter);
 
     return d->engine;
+}
+
+/*!
+  \reimp
+  */
+void QPdfWriter::setPageSize(PageSize size)
+{
+    Q_D(const QPdfWriter);
+
+    QPagedPaintDevice::setPageSize(size);
+    d->engine->d_func()->paperSize = pageSizeMM() * 25.4/72.;
+}
+
+/*!
+  \reimp
+  */
+void QPdfWriter::setPageSizeMM(const QSizeF &size)
+{
+    Q_D(const QPdfWriter);
+
+    QPagedPaintDevice::setPageSizeMM(size);
+    d->engine->d_func()->paperSize = pageSizeMM() * 25.4/72.;
 }
 
 /*!
@@ -104,9 +186,12 @@ int QPdfWriter::metric(PaintDeviceMetric id) const
     return d->engine->metric(id);
 }
 
-void QPdfWriter::newPage()
+/*!
+  \reimp
+*/
+bool QPdfWriter::newPage()
 {
     Q_D(QPdfWriter);
 
-    d->engine->newPage();
+    return d->engine->newPage();
 }

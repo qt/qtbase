@@ -11,6 +11,7 @@ HEADERS += \
         painting/qmatrix.h \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
+        painting/qpagedpaintdevice.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
         painting/qpaintengine_p.h \
@@ -50,6 +51,7 @@ SOURCES += \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
+        painting/qpagedpaintdevice.cpp \
         painting/qpaintdevice.cpp \
         painting/qpaintdevice_qpa.cpp \
         painting/qpaintengine.cpp \

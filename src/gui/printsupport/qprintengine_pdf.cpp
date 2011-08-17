@@ -67,7 +67,7 @@ extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
 #define Q_MM(n) int((n * 720 + 127) / 254)
 #define Q_IN(n) int(n * 72)
 
-static const char * const psToStr[QPrinter::NPaperSize+1] =
+static const char * const psToStr[QPrinter::NPageSize+1] =
 {
     "A4", "B5", "Letter", "Legal", "Executive",
     "A0", "A1", "A2", "A3", "A5", "A6", "A7", "A8", "A9", "B0", "B1",
@@ -526,6 +526,19 @@ bool QPdfPrintEnginePrivate::openPrintDevice()
 
 void QPdfPrintEnginePrivate::closePrintDevice()
 {
+    if (outDevice) {
+        outDevice->close();
+        if (fd >= 0)
+    #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
+            ::_close(fd);
+    #else
+            ::close(fd);
+    #endif
+        fd = -1;
+        delete outDevice;
+        outDevice = 0;
+    }
+
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (!cupsTempFile.isEmpty()) {
         QString tempFile = cupsTempFile;
@@ -615,7 +628,8 @@ QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
       copies(1),
       pageOrder(QPrinter::FirstPageFirst),
       paperSource(QPrinter::Auto),
-      printerPaperSize(QPrinter::A4)
+      printerPaperSize(QPrinter::A4),
+      fd(-1)
 {
     resolution = 72;
     if (m == QPrinter::HighResolution)

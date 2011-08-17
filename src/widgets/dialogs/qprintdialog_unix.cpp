@@ -970,7 +970,7 @@ void QUnixPrintWidgetPrivate::setCupsProperties()
         QRect paperRect = cups->paperRect(cupsPageSize);
         engine->setProperty(PPK_CupsPaperRect, paperRect);
 
-        for (int ps = 0; ps < QPrinter::NPaperSize; ++ps) {
+        for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
             QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
             if (size.width == paperRect.width() && size.height == paperRect.height())
                 printer->setPaperSize(static_cast<QPrinter::PaperSize>(ps));

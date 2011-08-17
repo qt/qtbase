@@ -43,7 +43,7 @@
 #define QPDFWRITER_H
 
 #include <QtCore/qobject.h>
-#include <QtCore/qiodevice.h>
+#include <QtGui/qpagedpaintdevice.h>
 
 QT_BEGIN_HEADER
 
@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 
 class QPdfWriterPrivate;
 
-class Q_GUI_EXPORT QPdfWriter : public QObject, public QPaintDevice
+class Q_GUI_EXPORT QPdfWriter : public QObject, public QPagedPaintDevice
 {
     Q_OBJECT
 public:
@@ -61,7 +61,16 @@ public:
     QPdfWriter(QIODevice *device);
     ~QPdfWriter();
 
-    void newPage();
+    QString title() const;
+    void setTitle(const QString &title);
+
+    QString creator() const;
+    void setCreator(const QString &creator);
+
+    bool newPage();
+
+    void setPageSize(PageSize size);
+    void setPageSizeMM(const QSizeF &size);
 
 protected:
     QPaintEngine *paintEngine() const;
