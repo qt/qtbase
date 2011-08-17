@@ -721,10 +721,8 @@ void tst_QGridLayout::spacingsAndMargins()
     QSize topsize = toplevel.size();
     QSize minimumsize = vbox.totalMinimumSize();
 
-#if defined(Q_WS_QWS)
     if (topsize.width() < minimumsize.width() || topsize.height() < minimumsize.height())
         QSKIP("The screen is too small to run this test case", SkipSingle);
-#endif
 
 // We are relying on the order here...
     for (int pi = 0; pi < sizehinters.count(); ++pi) {
