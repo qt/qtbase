@@ -1395,6 +1395,11 @@ void QApplication::restoreOverrideCursor()
 }
 #endif // QT_NO_CURSOR
 
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
+}
+
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
 #ifndef QT_MAC_USE_COCOA

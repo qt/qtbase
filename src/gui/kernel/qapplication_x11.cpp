@@ -3061,6 +3061,21 @@ void QApplicationPrivate::_q_alertTimeOut()
     }
 }
 
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    Window root;
+    Window child;
+    int root_x, root_y, win_x, win_y;
+    uint keybstate;
+    for (int i = 0; i < ScreenCount(X11->display); ++i) {
+        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
+                          &root_x, &root_y, &win_x, &win_y, &keybstate))
+            return X11->translateModifiers(keybstate & 0x00ff);
+    }
+    return 0;
+
+}
+
 /*****************************************************************************
   Special lookup functions for windows that have been reparented recently
  *****************************************************************************/

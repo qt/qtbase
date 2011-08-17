@@ -2707,6 +2707,11 @@ void QApplication::alert(QWidget *, int)
 {
 }
 
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return keyboardModifiers(); // TODO proper implementation
+}
+
 int QApplication::qwsProcessEvent(QWSEvent* event)
 {
     Q_D(QApplication);

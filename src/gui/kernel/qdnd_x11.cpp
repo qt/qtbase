@@ -1112,21 +1112,6 @@ void qt_xdnd_send_leave()
     waiting_for_status = false;
 }
 
-// TODO: remove and use QApplication::currentKeyboardModifiers() in Qt 4.8.
-static Qt::KeyboardModifiers currentKeyboardModifiers()
-{
-    Window root;
-    Window child;
-    int root_x, root_y, win_x, win_y;
-    uint keybstate;
-    for (int i = 0; i < ScreenCount(X11->display); ++i) {
-        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
-                          &root_x, &root_y, &win_x, &win_y, &keybstate))
-            return X11->translateModifiers(keybstate & 0x00ff);
-    }
-    return 0;
-}
-
 void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
 {
     DEBUG("xdndHandleDrop");
@@ -1175,7 +1160,7 @@ void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
 
         // Drop coming from another app? Update keyboard modifiers.
         if (!qt_xdnd_dragging) {
-            QApplicationPrivate::modifier_buttons = currentKeyboardModifiers();
+            QApplicationPrivate::modifier_buttons = QApplication::queryKeyboardModifiers();
         }
 
         QDropEvent de(qt_xdnd_current_position, possible_actions, dropData,

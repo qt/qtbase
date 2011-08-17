@@ -1319,6 +1319,11 @@ Qt::KeyboardModifiers qt_win_getKeyboardModifiers()
     return modifiers;
 }
 
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return qt_win_getKeyboardModifiers();
+}
+
 /*****************************************************************************
   Routines to find a Qt widget from a screen position
  *****************************************************************************/
