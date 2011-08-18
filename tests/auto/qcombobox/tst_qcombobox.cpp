@@ -2487,6 +2487,10 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     int selection;
     GET_SELECTION(selection);
 
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20753 QCursor::setPos doesn't work for qpa", Abort);
+#endif
+
     //since we moved the mouse is in the middle it should even be around 5;
     QVERIFY(selection > 3);
 
