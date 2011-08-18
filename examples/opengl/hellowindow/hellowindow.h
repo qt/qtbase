@@ -2,6 +2,7 @@
 
 #include <QtOpenGL/qgl.h>
 #include <QtOpenGL/qglshaderprogram.h>
+#include <QtOpenGL/qglframebufferobject.h>
 
 #include <QTime>
 
@@ -9,11 +10,13 @@ class QGuiGLContext;
 
 class Renderer : public QObject
 {
+    Q_OBJECT
 public:
-    Renderer();
+    Renderer(const QSurfaceFormat &format, Renderer *share = 0);
 
-    QSurfaceFormat format() const;
+    QSurfaceFormat format() const { return m_format; }
 
+public slots:
     void render(QSurface *surface, const QColor &color, const QSize &viewSize);
 
 private:
@@ -45,14 +48,16 @@ class HelloWindow : public QWindow
 public:
     HelloWindow(Renderer *renderer);
 
+    void updateColor();
+
+signals:
+    void needRender(QSurface *surface, const QColor &color, const QSize &viewSize);
+
 private slots:
     void render();
 
-protected:
-    void mousePressEvent(QMouseEvent *);
-
 private:
-    void updateColor();
+    void mousePressEvent(QMouseEvent *);
 
     int m_colorIndex;
     QColor m_color;

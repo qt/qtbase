@@ -6,20 +6,15 @@
 
 #include <qmath.h>
 
-Renderer::Renderer()
+Renderer::Renderer(const QSurfaceFormat &format, Renderer *share)
     : m_initialized(false)
+    , m_format(format)
 {
-    m_format.setDepthBufferSize(16);
-    m_format.setSamples(4);
-
     m_context = new QGuiGLContext;
-    m_context->setFormat(m_format);
+    m_context->setFormat(format);
+    if (share)
+        m_context->setShareContext(share->m_context);
     m_context->create();
-}
-
-QSurfaceFormat Renderer::format() const
-{
-    return m_format;
 }
 
 HelloWindow::HelloWindow(Renderer *renderer)
@@ -27,11 +22,11 @@ HelloWindow::HelloWindow(Renderer *renderer)
     , m_renderer(renderer)
 {
     setSurfaceType(QWindow::OpenGLSurface);
-    setWindowTitle(QLatin1String("Hello Window"));
-
-    setFormat(renderer->format());
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
     setGeometry(QRect(10, 10, 640, 480));
+
+    setFormat(renderer->format());
 
     create();
 
@@ -39,12 +34,20 @@ HelloWindow::HelloWindow(Renderer *renderer)
     connect(timer, SIGNAL(timeout()), this, SLOT(render()));
     timer->start(10);
 
+    connect(this, SIGNAL(needRender(QSurface *, const QColor &, const QSize &)),
+            renderer, SLOT(render(QSurface *, const QColor &, const QSize &)));
+
     updateColor();
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)
 {
     updateColor();
+}
+
+void HelloWindow::render()
+{
+    emit needRender(this, m_color, size());
 }
 
 void HelloWindow::updateColor()
@@ -60,11 +63,6 @@ void HelloWindow::updateColor()
     m_colorIndex++;
     if (m_colorIndex >= int(sizeof(colors) / sizeof(colors[0])))
         m_colorIndex = 0;
-}
-
-void HelloWindow::render()
-{
-    m_renderer->render(this, m_color, geometry().size());
 }
 
 void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewSize)
