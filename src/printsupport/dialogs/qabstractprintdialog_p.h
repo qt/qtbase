@@ -74,7 +74,8 @@ public:
     QAbstractPrintDialogPrivate()
         : printer(0), pd(0), ownsPrinter(false)
         , options(QAbstractPrintDialog::PrintToFile | QAbstractPrintDialog::PrintPageRange |
-                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize)
+                QAbstractPrintDialog::PrintCollateCopies | QAbstractPrintDialog::PrintShowPageSize),
+          minPage(0), maxPage(INT_MAX)
     {
     }
 
@@ -88,6 +89,8 @@ public:
 
     virtual void setTabs(const QList<QWidget *> &) {}
     void setPrinter(QPrinter *newPrinter);
+    int minPage;
+    int maxPage;
 };
 
 #endif //QT_NO_PRINTER

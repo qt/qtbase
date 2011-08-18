@@ -64,6 +64,7 @@
 #include "qtextdocument_p.h"
 #include <private/qabstracttextdocumentlayout_p.h>
 #include "qpagedpaintdevice.h"
+#include "private/qpagedpaintdevice_p.h"
 
 #include <limits.h>
 
@@ -1717,16 +1718,18 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     if (!printer)
         return;
 
-    // ###
-//    if (!d->title.isEmpty())
-//        printer->setDocName(d->title);
-
     bool documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
                              && d->pageSize.height() != INT_MAX;
 
+    QPagedPaintDevicePrivate *pd = QPagedPaintDevicePrivate::get(printer);
+
     // ### set page size to paginated size?
-//    if (!documentPaginated && !printer->fullPage() && !printer->d_func()->hasCustomPageMargins)
-//        printer->setPageMargins(23.53, 23.53, 23.53, 23.53, QPrinter::Millimeter);
+    QPagedPaintDevice::Margins m = printer->margins();
+    if (!documentPaginated && m.left == 0. && m.right == 0. && m.top == 0. && m.bottom == 0.) {
+        m.left = m.right = m.top = m.bottom = 2.;
+        printer->setMargins(m);
+    }
+    // ### use the margins correctly
 
     QPainter p(printer);
 
@@ -1796,10 +1799,8 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         clonedDoc->setPageSize(body.size());
     }
 
-    int fromPage = 0;
-    int toPage = 0;
-//    int fromPage = printer->fromPage();
-//    int toPage = printer->toPage();
+    int fromPage = pd->fromPage;
+    int toPage = pd->toPage;
     bool ascending = true;
 
     if (fromPage == 0 && toPage == 0) {

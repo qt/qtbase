@@ -195,3 +195,18 @@ bool QPdfWriter::newPage()
 
     return d->engine->newPage();
 }
+
+
+/*!
+  \reimp
+  */
+void QPdfWriter::setMargins(const Margins &m)
+{
+    Q_D(QPdfWriter);
+
+    const qreal multiplier = 72./25.4;
+    d->engine->d_func()->leftMargin = m.left*multiplier;
+    d->engine->d_func()->rightMargin = m.right*multiplier;
+    d->engine->d_func()->topMargin = m.top*multiplier;
+    d->engine->d_func()->bottomMargin = m.bottom*multiplier;
+}

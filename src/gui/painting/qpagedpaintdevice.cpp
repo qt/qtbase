@@ -46,6 +46,7 @@ class QPagedPaintDevicePrivate
 public:
     QPagedPaintDevice::PageSize pageSize;
     QSizeF pageSizeMM;
+    QPagedPaintDevice::Margins margins;
 };
 
 static const struct {
@@ -102,7 +103,6 @@ static const struct {
 QPagedPaintDevice::QPagedPaintDevice()
     : d(new QPagedPaintDevicePrivate)
 {
-    setPageSize(A4);
 }
 
 /*!
@@ -201,3 +201,27 @@ QSizeF QPagedPaintDevice::pageSizeMM() const
     return d->pageSizeMM;
 }
 
+/*!
+  Sets the margins to be used to \a margins.
+
+  Margins are specified in millimeters.
+
+  The margins are purely a hint to the drawing method. They don't affect the
+  coordinate system or clipping.
+
+  \sa margins
+  */
+void QPagedPaintDevice::setMargins(const Margins &margins)
+{
+    d->margins = margins;
+}
+
+/*!
+  returns the current margins of the paint device. The default is 0.
+
+  /sa setMargins
+  */
+QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
+{
+    return d->margins;
+}

@@ -39,52 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QPDFWRITER_H
-#define QPDFWRITER_H
+#ifndef QPAGEDPAINTDEVICE_P_H
+#define QPAGEDPAINTDEVICE_P_H
 
-#include <QtCore/qobject.h>
-#include <QtGui/qpagedpaintdevice.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <qpagedpaintdevice.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QPdfWriterPrivate;
-
-class Q_GUI_EXPORT QPdfWriter : public QObject, public QPagedPaintDevice
+class Q_GUI_EXPORT QPagedPaintDevicePrivate
 {
-    Q_OBJECT
 public:
-    QPdfWriter(const QString &filename);
-    QPdfWriter(QIODevice *device);
-    ~QPdfWriter();
+    QPagedPaintDevicePrivate()
+        : pageSize(QPagedPaintDevice::A4),
+          pageSizeMM(210, 297),
+          fromPage(0),
+          toPage(0),
+          pageOrderAscending(true),
+          printSelectionOnly(false)
+    {
+        margins.left = margins.right = margins.top = margins.bottom = 0;
+    }
 
-    QString title() const;
-    void setTitle(const QString &title);
+    static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
 
-    QString creator() const;
-    void setCreator(const QString &creator);
+    QPagedPaintDevice::PageSize pageSize;
+    QSizeF pageSizeMM;
+    QPagedPaintDevice::Margins margins;
 
-    bool newPage();
-
-    void setPageSize(PageSize size);
-    void setPageSizeMM(const QSizeF &size);
-
-    void setMargins(const Margins &m);
-
-protected:
-    QPaintEngine *paintEngine() const;
-    int metric(PaintDeviceMetric id) const;
-
-private:
-    Q_DISABLE_COPY(QPdfWriter)
-    Q_DECLARE_PRIVATE(QPdfWriter)
+    // These are currently required to keep QPrinter functionality working in QTextDocument::print()
+    int fromPage;
+    int toPage;
+    bool pageOrderAscending;
+    bool printSelectionOnly;
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

@@ -246,6 +246,8 @@ public:
     void setPrintRange(PrintRange range);
     PrintRange printRange() const;
 
+    void setMargins(const Margins &m);
+
     void setPageMargins(qreal left, qreal top, qreal right, qreal bottom, Unit unit);
     void getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, Unit unit) const;
 

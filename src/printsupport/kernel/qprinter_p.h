@@ -79,10 +79,6 @@ public:
         , paintEngine(0)
         , q_ptr(printer)
         , printRange(QPrinter::AllPages)
-        , minPage(1)
-        , maxPage(INT_MAX)
-        , fromPage(0)
-        , toPage(0)
         , use_default_engine(true)
         , validPrinter(false)
         , hasCustomPageMargins(false)
@@ -116,7 +112,6 @@ public:
     QPrinter *q_ptr;
 
     QPrinter::PrintRange printRange;
-    int minPage, maxPage, fromPage, toPage;
 
     uint use_default_engine : 1;
     uint had_default_engines : 1;

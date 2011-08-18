@@ -12,6 +12,7 @@ HEADERS += \
         painting/qmemrotate_p.h \
         painting/qoutlinemapper_p.h \
         painting/qpagedpaintdevice.h \
+        painting/qpagedpaintdevice_p.h \
         painting/qpaintdevice.h \
         painting/qpaintengine.h \
         painting/qpaintengine_p.h \

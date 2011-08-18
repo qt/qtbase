@@ -63,6 +63,7 @@
 #include "private/qwidgettextcontrol_p.h"
 #include "qgraphicssceneevent.h"
 #include "qpagedpaintdevice.h"
+#include "private/qpagedpaintdevice_p.h"
 #include "qtextdocumentwriter.h"
 #include "private/qtextcursor_p.h"
 
@@ -2430,9 +2431,7 @@ void QWidgetTextControl::print(QPagedPaintDevice *printer) const
         return;
     QTextDocument *tempDoc = 0;
     const QTextDocument *doc = d->doc;
-#if 0
-    // ####
-    if (printer->printRange() == QPrinter::Selection) {
+    if (QPagedPaintDevicePrivate::get(printer)->printSelectionOnly) {
         if (!d->cursor.hasSelection())
             return;
         tempDoc = new QTextDocument(const_cast<QTextDocument *>(doc));
@@ -2446,7 +2445,6 @@ void QWidgetTextControl::print(QPagedPaintDevice *printer) const
         // copy the custom object handlers
         doc->documentLayout()->d_func()->handlers = d->doc->documentLayout()->d_func()->handlers;
     }
-#endif
     doc->print(printer);
     delete tempDoc;
 }

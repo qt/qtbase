@@ -31,7 +31,18 @@ public:
     virtual void setPageSizeMM(const QSizeF &size);
     QSizeF pageSizeMM() const;
 
-private:
+    struct Margins {
+        qreal left;
+        qreal right;
+        qreal top;
+        qreal bottom;
+    };
+
+    virtual void setMargins(const Margins &margins);
+    Margins margins() const;
+
+protected:
+    friend class QPagedPaintDevicePrivate;
     QPagedPaintDevicePrivate *d;
 };
 

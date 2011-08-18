@@ -54,6 +54,7 @@
 
 #include "qplatformprintplugin_qpa.h"
 #include <QtPrintSupport/QPlatformPrinterSupport>
+#include <private/qpagedpaintdevice_p.h>
 
 #if defined (Q_WS_WIN)
 #include <private/qprintengine_win_p.h>
@@ -1153,6 +1154,8 @@ QSizeF QPrinter::paperSize(Unit unit) const
 
 void QPrinter::setPageOrder(PageOrder pageOrder)
 {
+    d->pageOrderAscending = (pageOrder == FirstPageFirst);
+
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setPageOrder");
     d->printEngine->setProperty(QPrintEngine::PPK_PageOrder, pageOrder);
@@ -1659,15 +1662,27 @@ QRect QPrinter::paperRect() const
 */
 void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, QPrinter::Unit unit)
 {
+    const qreal multiplier = qt_multiplierForUnit(unit, resolution()) * 25.4/72.;
+    Margins m = { left*multiplier, right*multiplier, top*multiplier, bottom*multiplier };
+    setMargins(m);
+}
+
+/*!
+  reimp
+  */
+void QPrinter::setMargins(const Margins &m)
+{
     Q_D(QPrinter);
-    const qreal multiplier = qt_multiplierForUnit(unit, resolution());
+
+    const qreal multiplier = 72./25.4;
     QList<QVariant> margins;
-    margins << (left * multiplier) << (top * multiplier)
-            << (right * multiplier) << (bottom * multiplier);
+    margins << (m.left * multiplier) << (m.top * multiplier)
+            << (m.right * multiplier) << (m.bottom * multiplier);
     d->printEngine->setProperty(QPrintEngine::PPK_PageMargins, margins);
     d->addToManualSetList(QPrintEngine::PPK_PageMargins);
     d->hasCustomPageMargins = true;
 }
+
 
 /*!
     \since 4.4
@@ -1972,7 +1987,6 @@ void QPrinter::setPrinterSelectionOption(const QString &option)
 
 int QPrinter::fromPage() const
 {
-    Q_D(const QPrinter);
     return d->fromPage;
 }
 
@@ -1997,7 +2011,6 @@ int QPrinter::fromPage() const
 
 int QPrinter::toPage() const
 {
-    Q_D(const QPrinter);
     return d->toPage;
 }
 
@@ -2020,18 +2033,12 @@ int QPrinter::toPage() const
 
 void QPrinter::setFromTo(int from, int to)
 {
-    Q_D(QPrinter);
     if (from > to) {
         qWarning() << "QPrinter::setFromTo: 'from' must be less than or equal to 'to'";
         from = to;
     }
     d->fromPage = from;
     d->toPage = to;
-
-    if (d->minPage == 0 && d->maxPage == 0) {
-        d->minPage = 1;
-        d->maxPage = to;
-    }
 }
 
 /*!
@@ -2041,6 +2048,8 @@ void QPrinter::setFromTo(int from, int to)
 */
 void QPrinter::setPrintRange( PrintRange range )
 {
+    d->printSelectionOnly = (range == Selection);
+
     Q_D(QPrinter);
     d->printRange = range;
 }
