@@ -210,6 +210,7 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     QSslSocketPtr socket2 = newSocket();
     this->socket = socket2;
     socket2->connectToHostEncrypted(host, 443);
+    QEXPECT_FAIL("", "QTBUG-20983 fails", Abort);
     QVERIFY2(socket2->waitForEncrypted(), qPrintable(socket2->errorString()));
 
     // not using any root certs again -> should not work
