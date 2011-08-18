@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
-SUBDIRS=\
-    qsharedmemory \
-    qsystemsemaphore \
-#    lackey \ should be moved to QtScript
+# lackey depends on qtscript and the tests depend on lackey :(
+#SUBDIRS=\
+#    qsharedmemory \
+#    qsystemsemaphore \
+#    lackey
