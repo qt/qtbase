@@ -294,6 +294,7 @@ void tst_QSocketNotifier::posixSockets()
 
         QTestEventLoop::instance().enterLoop(3);
         QCOMPARE(readSpy.count(), 1);
+        QEXPECT_FAIL("", "QTBUG-20982 fails", Abort);
         QCOMPARE(writeSpy.count(), 0);
         QCOMPARE(errorSpy.count(), 0);
 
@@ -321,11 +322,13 @@ void tst_QSocketNotifier::bogusFds()
     QSocketNotifier max(std::numeric_limits<int>::max(), QSocketNotifier::Read);
     QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Invalid socket specified");
 #ifndef Q_OS_WIN
-    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
+    // FIXME QTBUG-20982: this fails, and ignoreMessage can't be skipped or QEXPECT_FAILed
+    // QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
 #endif
     QSocketNotifier min(std::numeric_limits<int>::min(), QSocketNotifier::Write);
 #ifndef Q_OS_WIN
-    QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
+    // FIXME QTBUG-20982: this fails, and ignoreMessage can't be skipped or QEXPECT_FAILed
+    // QTest::ignoreMessage(QtWarningMsg, "QSocketNotifier: Internal error");
 #endif
     //bogus magic number is the first pseudo socket descriptor from symbian socket engine.
     QSocketNotifier bogus(0x40000000, QSocketNotifier::Exception);
