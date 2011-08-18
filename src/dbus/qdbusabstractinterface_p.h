@@ -77,6 +77,7 @@ public:
     QString path;
     QString interface;
     mutable QDBusError lastError;
+    int timeout;
 
     // this is set during creation and never changed
     // it can't be const because QDBusInterfacePrivate has one more check

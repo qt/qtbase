@@ -117,6 +117,13 @@ public Q_SLOTS: // METHODS
         return reply;
     }
 
+    inline QDBusPendingReply<int> sleepMethod(int in0)
+    {
+        QList<QVariant> argumentList;
+        argumentList << qVariantFromValue(in0);
+        return asyncCallWithArgumentList(QLatin1String("sleepMethod"), argumentList);
+    }
+
     inline QDBusPendingReply<QString> stringMethod()
     {
         QList<QVariant> argumentList;

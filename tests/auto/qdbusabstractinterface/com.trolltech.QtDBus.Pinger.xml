@@ -15,6 +15,10 @@
        <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="RegisteredType"/>
     </signal>
     <method name="voidMethod" />
+    <method name="sleepMethod">
+       <arg type="i" />
+       <arg type="i" direction="out"/>
+    </method>
     <method name="stringMethod">
        <arg type="s" direction="out"/>
     </method>

@@ -95,6 +95,9 @@ public:
 
     QDBusError lastError() const;
 
+    void setTimeout(int timeout);
+    int timeout() const;
+
     QDBusMessage call(const QString &method,
                       const QVariant &arg1 = QVariant(),
                       const QVariant &arg2 = QVariant(),
