@@ -87,6 +87,9 @@ void *qcgl_createNSOpenGLPixelFormat()
     {
         NSOpenGLPFADoubleBuffer,
         NSOpenGLPFADepthSize, 32,
+        NSOpenGLPFAMultisample,
+        NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
+        NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute) 8,
         0
     };
 
