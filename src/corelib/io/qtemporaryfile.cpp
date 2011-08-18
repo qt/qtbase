@@ -72,20 +72,6 @@ static inline Char Latin1Char(char ch)
     return ushort(uchar(ch));
 }
 
-template <>
-struct QConcatenable<Char>
-{
-    typedef Char type;
-    typedef QString ConvertTo;
-    enum { ExactSize = true };
-    static int size(const Char &) { return 1; }
-
-    static inline void appendTo(const Char &u16, QChar *&out)
-    {
-        *out++ = QChar(u16);
-    }
-};
-
 # ifdef Q_OS_WIN
 typedef HANDLE NativeFileHandle;
 # else // Q_OS_SYMBIAN
