@@ -11,3 +11,4 @@ QT = core-private gui-private
 
 requires(mac)
 
+CONFIG+=insignificant_test  # QTBUG-20984, fails unstably
