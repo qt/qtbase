@@ -122,6 +122,10 @@ void tst_QSystemTrayIcon::getSetCheck()
 
 void tst_QSystemTrayIcon::supportsMessages()
 {
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20978 QSystemTrayIcon is unimplemented for qpa", Abort);
+#endif
+
 #if !defined(Q_WS_QWS)
     QCOMPARE(QSystemTrayIcon::supportsMessages(), true );
 #else
