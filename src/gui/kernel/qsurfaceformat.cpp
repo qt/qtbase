@@ -337,7 +337,7 @@ void QSurfaceFormat::setGreenBufferSize(int size)
 
 void QSurfaceFormat::setBlueBufferSize(int size)
 {
-    if (d->blueBufferSize = size) {
+    if (d->blueBufferSize != size) {
         detach();
         d->blueBufferSize = size;
     }
