@@ -47,9 +47,9 @@
 class QSurfaceFormatPrivate
 {
 public:
-    QSurfaceFormatPrivate()
+    explicit QSurfaceFormatPrivate(QSurfaceFormat::FormatOptions _opts = 0)
         : ref(1)
-        , opts(QSurfaceFormat::DoubleBuffer)
+        , opts(_opts)
         , redBufferSize(-1)
         , greenBufferSize(-1)
         , blueBufferSize(-1)
@@ -58,6 +58,7 @@ public:
         , stencilSize(-1)
         , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
+        , profile(QSurfaceFormat::NoProfile)
     {
     }
 
@@ -71,7 +72,8 @@ public:
           depthSize(other->depthSize),
           stencilSize(other->stencilSize),
           swapBehavior(other->swapBehavior),
-          numSamples(other->numSamples)
+          numSamples(other->numSamples),
+          profile(other->profile)
     {
     }
 
@@ -85,17 +87,16 @@ public:
     int stencilSize;
     QSurfaceFormat::SwapBehavior swapBehavior;
     int numSamples;
+    QSurfaceFormat::OpenGLContextProfile profile;
 };
 
-QSurfaceFormat::QSurfaceFormat()
+QSurfaceFormat::QSurfaceFormat() : d(new QSurfaceFormatPrivate)
 {
-    d = new QSurfaceFormatPrivate;
 }
 
-QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options)
+QSurfaceFormat::QSurfaceFormat(QSurfaceFormat::FormatOptions options) :
+    d(new QSurfaceFormatPrivate(options))
 {
-    d = new QSurfaceFormatPrivate;
-    d->opts = options;
 }
 
 /*!
@@ -168,10 +169,15 @@ QSurfaceFormat::~QSurfaceFormat()
 
 void QSurfaceFormat::setStereo(bool enable)
 {
+    QSurfaceFormat::FormatOptions newOptions = d->opts;
     if (enable) {
-        d->opts |= QSurfaceFormat::StereoBuffers;
+        newOptions |= QSurfaceFormat::StereoBuffers;
     } else {
-        d->opts &= ~QSurfaceFormat::StereoBuffers;
+        newOptions &= ~QSurfaceFormat::StereoBuffers;
+    }
+    if (int(newOptions) != int(d->opts)) {
+        detach();
+        d->opts = newOptions;
     }
 }
 
@@ -196,8 +202,10 @@ int QSurfaceFormat::samples() const
 */
 void QSurfaceFormat::setSamples(int numSamples)
 {
-    detach();
-    d->numSamples = numSamples;
+    if (d->numSamples != numSamples) {
+        detach();
+        d->numSamples = numSamples;
+    }
 }
 
 /*!
@@ -208,8 +216,11 @@ void QSurfaceFormat::setSamples(int numSamples)
 
 void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
-    detach();
-    d->opts |= opt;
+    const QSurfaceFormat::FormatOptions newOptions = d->opts | opt;
+    if (int(newOptions) != int(d->opts)) {
+        detach();
+        d->opts = newOptions;
+    }
 }
 
 /*!
@@ -230,8 +241,10 @@ bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 */
 void QSurfaceFormat::setDepthBufferSize(int size)
 {
-    detach();
-    d->depthSize = size;
+    if (d->depthSize != size) {
+        detach();
+        d->depthSize = size;
+    }
 }
 
 /*!
@@ -246,8 +259,12 @@ int QSurfaceFormat::depthBufferSize() const
 
 void QSurfaceFormat::setSwapBehavior(SwapBehavior behavior)
 {
-    d->swapBehavior = behavior;
+    if (d->swapBehavior != behavior) {
+        detach();
+        d->swapBehavior = behavior;
+    }
 }
+
 
 QSurfaceFormat::SwapBehavior QSurfaceFormat::swapBehavior() const
 {
@@ -266,8 +283,10 @@ bool QSurfaceFormat::hasAlpha() const
 */
 void QSurfaceFormat::setStencilBufferSize(int size)
 {
-    detach();
-    d->stencilSize = size;
+    if (d->stencilSize != size) {
+        detach();
+        d->stencilSize = size;
+    }
 }
 
 /*!
@@ -302,22 +321,47 @@ int QSurfaceFormat::alphaBufferSize() const
 
 void QSurfaceFormat::setRedBufferSize(int size)
 {
-    d->redBufferSize = size;
+    if (d->redBufferSize != size) {
+        detach();
+        d->redBufferSize = size;
+    }
 }
 
 void QSurfaceFormat::setGreenBufferSize(int size)
 {
-    d->greenBufferSize = size;
+    if (d->greenBufferSize != size) {
+        detach();
+        d->greenBufferSize = size;
+    }
 }
 
 void QSurfaceFormat::setBlueBufferSize(int size)
 {
-    d->blueBufferSize = size;
+    if (d->blueBufferSize = size) {
+        detach();
+        d->blueBufferSize = size;
+    }
 }
 
 void QSurfaceFormat::setAlphaBufferSize(int size)
 {
-    d->alphaBufferSize = size;
+    if (d->alphaBufferSize != size) {
+        detach();
+        d->alphaBufferSize = size;
+    }
+}
+
+void QSurfaceFormat::setProfile(OpenGLContextProfile profile)
+{
+    if (d->profile != profile) {
+        detach();
+        d->profile = profile;
+    }
+}
+
+QSurfaceFormat::OpenGLContextProfile QSurfaceFormat::profile() const
+{
+    return d->profile;
 }
 
 bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
@@ -330,7 +374,8 @@ bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)
         && a.d->alphaBufferSize == b.d->alphaBufferSize
         && a.d->depthSize == b.d->depthSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapBehavior == b.d->swapBehavior);
+        && a.d->swapBehavior == b.d->swapBehavior
+        && a.d->profile == b.d->profile);
 }
 
 
@@ -361,6 +406,7 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
                   << ", stencilBufferSize " << d->stencilSize
                   << ", samples " << d->numSamples
                   << ", swapBehavior " << d->swapBehavior
+                  << ", profile  " << d->profile
                   << ')';
 
     return dbg.space();

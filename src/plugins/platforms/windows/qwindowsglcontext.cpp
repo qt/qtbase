@@ -572,10 +572,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     }
     if ((staticContext.majorVersion == 3 && staticContext.minorVersion >= 2)
          || staticContext.majorVersion > 3) {
-        const QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
-        // format.profile(): TODO: Not implemented yet.
-        Q_UNUSED(format);
-        switch (profile) {
+        switch (format.profile()) {
         case QSurfaceFormat::NoProfile:
             break;
         case QSurfaceFormat::CoreProfile:
