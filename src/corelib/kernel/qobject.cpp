@@ -147,6 +147,7 @@ private:
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::objectNameChanged)(QAbstractDeclarativeData *, QObject *) = 0;
+void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -3269,6 +3270,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
     computeOffsets(m, &signalOffset, &methodOffset);
 
     int signal_index = signalOffset + local_signal_index;
+
+    if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
+        QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender, 
+                                                methodOffset + local_signal_index, argv);
 
     if (!sender->d_func()->isSignalConnected(signal_index))
         return; // nothing connected to these signals, and no spy
