@@ -105,8 +105,6 @@ QTextCodec *QString::codecForCStrings;
 #ifdef QT_USE_ICU
 // qlocale_icu.cpp
 extern bool qt_ucol_strcoll(const QChar *source, int sourceLength, const QChar *target, int targetLength, int *result);
-extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
-extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
 #endif
 
 
@@ -4878,7 +4876,10 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
 
     \snippet doc/src/snippets/qstring/main.cpp 75
 
-    \sa toUpper()
+    The case conversion will always happen in the 'C' locale. For locale dependent
+    case folding use QLocale::toLower()
+
+    \sa toUpper(), QLocale::toLower()
 */
 
 QString QString::toLower() const
@@ -4888,15 +4889,6 @@ QString QString::toLower() const
         return *this;
     if (!d->size)
         return *this;
-
-#ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToLower(*this, &result, QLocale()))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
-#endif
 
     const ushort *e = d->data() + d->size;
 
@@ -4978,7 +4970,10 @@ QString QString::toCaseFolded() const
 
     \snippet doc/src/snippets/qstring/main.cpp 81
 
-    \sa toLower()
+    The case conversion will always happen in the 'C' locale. For locale dependent
+    case folding use QLocale::toUpper()
+
+    \sa toLower(), QLocale::toLower()
 */
 
 QString QString::toUpper() const
@@ -4988,15 +4983,6 @@ QString QString::toUpper() const
         return *this;
     if (!d->size)
         return *this;
-
-#ifdef QT_USE_ICU
-    {
-        QString result;
-        if (qt_u_strToUpper(*this, &result, QLocale()))
-            return result;
-        // else fall through and use Qt's toUpper
-    }
-#endif
 
     const ushort *e = d->data() + d->size;
 

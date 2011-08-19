@@ -88,6 +88,8 @@ Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
 
 #ifdef QT_USE_ICU
 extern bool qt_initIcu(const QString &localeName);
+extern bool qt_u_strToUpper(const QString &str, QString *out, const QLocale &locale);
+extern bool qt_u_strToLower(const QString &str, QString *out, const QLocale &locale);
 #endif
 
 /******************************************************************************
@@ -2168,6 +2170,42 @@ Qt::LayoutDirection QLocale::textDirection() const
         return Qt::RightToLeft;
 
     return Qt::LeftToRight;
+}
+
+/*!
+  \since 4.8
+
+  Returns an uppercase copy of \a str.
+*/
+QString QLocale::toUpper(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToUpper(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toUpper();
+}
+
+/*!
+  \since 4.8
+
+  Returns a lowercase copy of \a str.
+*/
+QString QLocale::toLower(const QString &str) const
+{
+#ifdef QT_USE_ICU
+    {
+        QString result;
+        if (qt_u_strToLower(str, &result, *this))
+            return result;
+        // else fall through and use Qt's toUpper
+    }
+#endif
+    return str.toLower();
 }
 
 
