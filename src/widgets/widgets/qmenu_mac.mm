@@ -454,11 +454,11 @@ static QKeySequence qt_mac_menu_merge_accel(QMacMenuAction *action)
     return ret;
 }
 
-void Q_GUI_EXPORT qt_mac_set_menubar_icons(bool b)
+void Q_WIDGETS_EXPORT qt_mac_set_menubar_icons(bool b)
 { QApplication::instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !b); }
-void Q_GUI_EXPORT qt_mac_set_native_menubar(bool b)
+void Q_WIDGETS_EXPORT qt_mac_set_native_menubar(bool b)
 {  QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, !b); }
-void Q_GUI_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !b; }
+void Q_WIDGETS_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !b; }
 
 /*****************************************************************************
   QMenu bindings

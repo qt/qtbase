@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QColor;
 class QColormapPrivate;
 
-class Q_GUI_EXPORT QColormap
+class Q_WIDGETS_EXPORT QColormap
 {
 public:
     enum Mode { Direct, Indexed, Gray };
