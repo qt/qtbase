@@ -40,7 +40,6 @@ HEADERS += \
 
 SOURCES += \
         painting/qbackingstore.cpp \
-        painting/qcolormap_qpa.cpp \
         painting/qbezier.cpp \
         painting/qblendfunctions.cpp \
         painting/qbrush.cpp \
