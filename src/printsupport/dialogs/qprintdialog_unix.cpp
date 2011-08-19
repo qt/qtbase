@@ -1280,7 +1280,9 @@ QT_END_NAMESPACE
 
 #include "moc_qprintdialog.cpp"
 #include "qprintdialog_unix.moc"
+#ifndef Q_OS_MAC
 #include "qrc_qprintdialog.cpp"
+#endif
 
 #endif // QT_NO_PRINTDIALOG
 
