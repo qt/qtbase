@@ -42,7 +42,6 @@
 #include "qwindowsnativeimage.h"
 #include "qwindowscontext.h"
 
-#include <QtGui/QColorMap>
 #include <QtGui/private/qpaintengine_p.h>
 #include <QtGui/private/qpaintengine_raster_p.h>
 

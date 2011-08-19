@@ -54,7 +54,7 @@ QT_MODULE(Gui)
 
 class QPrintEngine;
 
-class Q_GUI_EXPORT QPlatformPrinterSupport
+class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupport
 {
 public:
     QPlatformPrinterSupport();

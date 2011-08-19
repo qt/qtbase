@@ -89,8 +89,8 @@ namespace QPdf {
     struct PaperSize {
         int width, height; // in postscript points
     };
-    Q_GUI_EXPORT PaperSize paperSize(QPrinter::PaperSize paperSize);
-    Q_GUI_EXPORT const char *paperSizeToString(QPrinter::PaperSize paperSize);
+    Q_PRINTSUPPORT_EXPORT PaperSize paperSize(QPrinter::PaperSize paperSize);
+    Q_PRINTSUPPORT_EXPORT const char *paperSizeToString(QPrinter::PaperSize paperSize);
 }
 
 class QPdfPrintEnginePrivate;

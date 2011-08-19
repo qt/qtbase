@@ -56,7 +56,7 @@ class QGraphicsView;
 class QPrintPreviewDialogPrivate;
 class QPrinter;
 
-class Q_WIDGETS_EXPORT QPrintPreviewDialog : public QDialog
+class Q_PRINTSUPPORT_EXPORT QPrintPreviewDialog : public QDialog
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPrintPreviewDialog)

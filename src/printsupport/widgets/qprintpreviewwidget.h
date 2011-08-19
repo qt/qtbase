@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 
 class QPrintPreviewWidgetPrivate;
 
-class Q_WIDGETS_EXPORT QPrintPreviewWidget : public QWidget
+class Q_PRINTSUPPORT_EXPORT QPrintPreviewWidget : public QWidget
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPrintPreviewWidget)

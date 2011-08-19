@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QIODevice;
 class QPdfWriterPrivate;
 
 class Q_GUI_EXPORT QPdfWriter : public QObject, public QPagedPaintDevice

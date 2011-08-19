@@ -27,7 +27,6 @@ SOURCES += \
     qwindowscontext.cpp \
     qwindowsbackingstore.cpp \
     qwindowsscreen.cpp \
-    qwindowsprintersupport.cpp \
     qwindowskeymapper.cpp \
     qwindowsfontengine.cpp \
     qwindowsfontdatabase.cpp \
@@ -48,7 +47,6 @@ HEADERS += \
     qwindowscontext.h \
     qwindowsbackingstore.h \
     qwindowsscreen.h \
-    qwindowsprintersupport.h \
     qwindowskeymapper.h \
     qwindowsfontengine.h \
     qwindowsfontdatabase.h \

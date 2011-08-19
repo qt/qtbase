@@ -53,7 +53,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_PRINTER
 
-class Q_GUI_EXPORT QPrintEngine
+class Q_PRINTSUPPORT_EXPORT QPrintEngine
 {
 public:
     virtual ~QPrintEngine() {}

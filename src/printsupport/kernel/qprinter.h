@@ -63,7 +63,7 @@ class QPaintEngine;
 class QPrintEngine;
 class QPrinterInfo;
 
-class Q_GUI_EXPORT QPrinter : public QPagedPaintDevice
+class Q_PRINTSUPPORT_EXPORT QPrinter : public QPagedPaintDevice
 {
     Q_DECLARE_PRIVATE(QPrinter)
 public:

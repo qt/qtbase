@@ -10,7 +10,7 @@ SRC_SUBDIRS += src_corelib
 !cross_compile {
     win32:!wince*: SRC_SUBDIRS += src_tools_idc
 }
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_printsupport src_widgets src_testlib src_platformsupport
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
@@ -60,8 +60,8 @@ src_platformsupport.target = sub-platformsupport
 !wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib
-   src_printsupport.depends = src_corelib src_gui
-   src_widgets.depends = src_corelib src_gui src_printsupport src_tools_uic
+   src_printsupport.depends = src_corelib src_gui src_widgets
+   src_widgets.depends = src_corelib src_gui src_tools_uic
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
    src_uitools.depends = src_corelib src_widgets

@@ -70,7 +70,7 @@ class QPrintEngine;
 class QPreviewPaintEngine;
 class QPicture;
 
-class Q_GUI_EXPORT QPrinterPrivate
+class Q_PRINTSUPPORT_EXPORT QPrinterPrivate
 {
     Q_DECLARE_PUBLIC(QPrinter)
 public:

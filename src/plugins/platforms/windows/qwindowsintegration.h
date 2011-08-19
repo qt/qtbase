@@ -67,7 +67,6 @@ public:
     virtual QPlatformDrag *drag() const;
     virtual QPlatformInputContext *inputContext() const;
     virtual QPlatformNativeInterface *nativeInterface() const;
-    virtual QPlatformPrinterSupport *printerSupport() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
 
     static QWindowsIntegration *instance();

@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
 
-class Q_GUI_EXPORT QCUPSSupport
+class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
 public:
     struct Printer

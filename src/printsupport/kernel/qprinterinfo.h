@@ -55,7 +55,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_PRINTER
 class QPrinterInfoPrivate;
 class QPrinterInfoPrivateDeleter;
-class Q_GUI_EXPORT QPrinterInfo
+class Q_PRINTSUPPORT_EXPORT QPrinterInfo
 {
 public:
     QPrinterInfo();

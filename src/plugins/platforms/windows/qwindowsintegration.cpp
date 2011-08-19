@@ -46,7 +46,6 @@
 #include "qwindowsglcontext.h"
 #include "qwindowsscreen.h"
 #include "qwindowsfontdatabase.h"
-#include "qwindowsprintersupport.h"
 #include "qwindowsguieventdispatcher.h"
 #include "qwindowsclipboard.h"
 #include "qwindowsdrag.h"
@@ -131,7 +130,6 @@ struct QWindowsIntegrationPrivate
 
     const bool m_openGL;
     QWindowsContext m_context;
-    QWindowsPrinterSupport m_printerSupport;
     QWindowsFontDatabase m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
     QWindowsClipboard m_clipboard;
@@ -230,13 +228,6 @@ QPlatformGLContext
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     return &d->m_fontDatabase;
-}
-
-QPlatformPrinterSupport *QWindowsIntegration::printerSupport() const
-{
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__;
-    return &d->m_printerSupport;
 }
 
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const

@@ -58,6 +58,10 @@
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 #endif
 
+#ifdef Q_OS_WIN
+#include <io.h> // _close.
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define FONT_DUMP

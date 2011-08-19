@@ -73,7 +73,7 @@ struct QPlatformPrinterSupportFactoryInterface : public QFactoryInterface
 
 Q_DECLARE_INTERFACE(QPlatformPrinterSupportFactoryInterface, QPlatformPrinterSupportFactoryInterface_iid)
 
-class Q_GUI_EXPORT QPlatformPrinterSupportPlugin : public QObject, public QPlatformPrinterSupportFactoryInterface
+class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupportPlugin : public QObject, public QPlatformPrinterSupportFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QPlatformPrinterSupportFactoryInterface:QFactoryInterface)
