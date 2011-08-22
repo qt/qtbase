@@ -147,8 +147,7 @@ Q_SIGNALS:
     void finished();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
     void headerChanged();
-    // FIXME we need to change this to qint64!
-    void dataReadProgress(int done, int total);
+    void dataReadProgress(qint64 done, qint64 total);
     void dataSendProgress(qint64 done, qint64 total);
     void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 #ifndef QT_NO_NETWORKPROXY
