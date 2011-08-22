@@ -11,7 +11,8 @@ OBJECTIVE_SOURCES += main.mm \
     qnswindowdelegate.mm \
     qcocoaglcontext.mm \
     qcocoanativeinterface.mm \
-    qcocoaeventdispatcher.mm
+    qcocoaeventdispatcher.mm \
+    qcocoamenuloader.mm
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -21,7 +22,10 @@ HEADERS += qcocoaintegration.h \
     qnswindowdelegate.h \
     qcocoaglcontext.h \
     qcocoanativeinterface.h \
-    qcocoaeventdispatcher.h
+    qcocoaeventdispatcher.h \
+    qcocoamenuloader.h
+
+RESOURCES += qcocoaresources.qrc
 
 #add libz for freetype.
 LIBS += -lz -framework Cocoa

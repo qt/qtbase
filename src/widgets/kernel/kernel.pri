@@ -211,7 +211,6 @@ qpa {
                 kernel/qcocoaview_mac.mm \
                 kernel/qcocoawindow_mac.mm \
                 kernel/qcocoawindowdelegate_mac.mm \
-                kernel/qcocoamenuloader_mac.mm \
                 kernel/qcocoaapplication_mac.mm \
                 kernel/qcocoaapplicationdelegate_mac.mm \
                 kernel/qt_cocoa_helpers_mac.mm \

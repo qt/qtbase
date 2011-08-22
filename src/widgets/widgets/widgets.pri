@@ -158,8 +158,7 @@ SOURCES += \
 mac {
     OBJECTIVE_SOURCES += widgets/qmenu_mac.mm \
                          widgets/qcocoamenu_mac.mm \
-                         platforms/mac/qt_widget_helpers_mac.mm \
-                         platforms/mac/qcocoamenuloader_mac.mm
+                         platforms/mac/qt_widget_helpers_mac.mm
 }
 
 wince*: {

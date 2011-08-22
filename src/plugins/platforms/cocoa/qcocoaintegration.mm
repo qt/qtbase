@@ -44,8 +44,9 @@
 #include "qcocoawindow.h"
 #include "qcocoabackingstore.h"
 #include "qcocoanativeinterface.h"
-
+#include "qcocoamenuloader.h"
 #include "qcocoaeventdispatcher.h"
+
 #include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -85,6 +86,10 @@ QCocoaIntegration::QCocoaIntegration()
     // Qt apps play slightly less nice with other apps when lanching from Finder
     // (See the activateIgnoringOtherApps docs.)
     [[NSApplication sharedApplication] activateIgnoringOtherApps : YES];
+
+    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
+    qt_mac_loadMenuNib(qtMenuLoader);
+    [[NSApplication sharedApplication] setMenu:[qtMenuLoader menu]];
 
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
