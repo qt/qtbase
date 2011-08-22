@@ -574,7 +574,7 @@ bool QWindow::event(QEvent *event)
         Q_D(QWindow);
         bool wasVisible = visible();
         destroy();
-        if (wasVisible);
+        if (wasVisible)
             d->maybeQuitOnLastWindowClosed();
         break; }
 
