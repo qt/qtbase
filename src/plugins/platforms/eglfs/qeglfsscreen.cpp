@@ -90,7 +90,7 @@ static struct AttrInfo attrs[] = {
 class QEglFSContext : public QEGLPlatformContext
 {
 public:
-    QEglFSContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display,
+    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                   EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API)
         : QEGLPlatformContext(format, share, display, eglClientVersion, eglApi)
     {
@@ -238,7 +238,7 @@ QImage::Format QEglFSScreen::format() const
         createAndSetPlatformContext();
     return m_format;
 }
-QPlatformGLContext *QEglFSScreen::platformContext() const
+QPlatformOpenGLContext *QEglFSScreen::platformContext() const
 {
     if (!m_platformContext) {
         QEglFSScreen *that = const_cast<QEglFSScreen *>(this);

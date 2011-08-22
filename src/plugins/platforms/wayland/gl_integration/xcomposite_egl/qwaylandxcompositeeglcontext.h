@@ -42,7 +42,7 @@
 #ifndef QWAYLANDXCOMPOSITEEGLCONTEXT_H
 #define QWAYLANDXCOMPOSITEEGLCONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #include "qwaylandxcompositeeglintegration.h"
 
@@ -53,7 +53,7 @@ class QWaylandXCompositeEGLWindow;
 class QWaylandXCompositeEGLContext : public QEGLPlatformContext
 {
 public:
-    QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display);
+    QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
 
     void swapBuffers(QPlatformSurface *surface);
 

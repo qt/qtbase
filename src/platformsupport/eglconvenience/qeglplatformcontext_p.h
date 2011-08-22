@@ -43,13 +43,13 @@
 #define QEGLPLATFORMCONTEXT_H
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <EGL/egl.h>
 
-class QEGLPlatformContext : public QPlatformGLContext
+class QEGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
-    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display,
+    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                         EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API);
     ~QEGLPlatformContext();
 

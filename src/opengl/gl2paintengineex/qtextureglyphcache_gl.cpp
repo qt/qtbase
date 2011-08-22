@@ -59,7 +59,7 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, con
     , m_serialNumber(qgltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
-    qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, QGuiGLContext::currentContext());
+    qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, QOpenGLContext::currentContext());
 #endif
     m_vertexCoordinateArray[0] = -1.0f;
     m_vertexCoordinateArray[1] = -1.0f;

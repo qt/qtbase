@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_OPENGL_EXPORT QVertexIndexVector
+class QVertexIndexVector
 {
 public:
     enum Type {
@@ -111,7 +111,7 @@ private:
     QVector<quint16> indices16;
 };
 
-struct Q_OPENGL_EXPORT QTriangleSet
+struct QTriangleSet
 {
     inline QTriangleSet() { }
     inline QTriangleSet(const QTriangleSet &other) : vertices(other.vertices), indices(other.indices) { }
@@ -122,7 +122,7 @@ struct Q_OPENGL_EXPORT QTriangleSet
     QVertexIndexVector indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
-struct Q_OPENGL_EXPORT QPolylineSet
+struct QPolylineSet
 {
     inline QPolylineSet() { }
     inline QPolylineSet(const QPolylineSet &other) : vertices(other.vertices), indices(other.indices) { }
@@ -139,9 +139,9 @@ struct Q_OPENGL_EXPORT QPolylineSet
 // 'lod' is the level of detail. Default is 1. Curves are split into more lines when 'lod' is higher.
 QTriangleSet qTriangulate(const qreal *polygon, int count, uint hint = QVectorPath::PolygonHint | QVectorPath::OddEvenFill, const QTransform &matrix = QTransform());
 QTriangleSet qTriangulate(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
-QTriangleSet Q_OPENGL_EXPORT qTriangulate(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
+QTriangleSet qTriangulate(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 QPolylineSet qPolyline(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
-QPolylineSet Q_OPENGL_EXPORT qPolyline(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
+QPolylineSet qPolyline(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 
 QT_END_NAMESPACE
 

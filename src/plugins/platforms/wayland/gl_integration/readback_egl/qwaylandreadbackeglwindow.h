@@ -54,7 +54,7 @@ public:
 
     WindowType windowType() const;
 
-    QPlatformGLContext *glContext() const;
+    QPlatformOpenGLContext *glContext() const;
 
     void setGeometry(const QRect &rect);
 

@@ -43,7 +43,7 @@
 
 #include "qeglfsbackingstore.h"
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QScreen>
 
 #include <QtOpenGL/private/qglpaintdevice_p.h>
@@ -62,7 +62,7 @@ public:
     }
 
     QSize size() const { return m_screen->geometry().size(); }
-    QGLContext* context() const { return QGLContext::fromGuiGLContext(m_screen->platformContext()->context()); }
+    QGLContext* context() const { return QGLContext::fromOpenGLContext(m_screen->platformContext()->context()); }
 
     QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 

@@ -44,7 +44,7 @@
 
 #include "qxlibwindow.h"
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/qsurfaceformat.h>
 
 #include <QtCore/QMutex>
@@ -54,10 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLXContext : public QPlatformGLContext
+class QGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QGLXContext(QXlibScreen *xd, const QSurfaceFormat &format, QPlatformGLContext *share);
+    QGLXContext(QXlibScreen *xd, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QGLXContext();
 
     QSurfaceFormat format() const;

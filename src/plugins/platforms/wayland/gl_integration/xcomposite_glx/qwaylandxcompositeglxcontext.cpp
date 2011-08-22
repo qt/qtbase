@@ -47,7 +47,7 @@
 
 #include <QRegion>
 
-QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen)
+QWaylandXCompositeGLXContext::QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, Display *display, int screen)
     : m_display(display)
 {
     qDebug("creating XComposite-GLX context");

@@ -56,7 +56,7 @@
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
 #include <QtGui/QSurfaceFormat>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
@@ -104,10 +104,10 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) cons
     return new QWaylandShmWindow(window);
 }
 
-QPlatformGLContext *QWaylandIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QWaylandIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
-    return mDisplay->eglIntegration()->createPlatformGLContext(context->format(), context->shareHandle());
+    return mDisplay->eglIntegration()->createPlatformOpenGLContext(context->format(), context->shareHandle());
 #else
     Q_UNUSED(glFormat);
     Q_UNUSED(share);

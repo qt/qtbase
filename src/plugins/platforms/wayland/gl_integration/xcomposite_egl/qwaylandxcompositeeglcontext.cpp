@@ -48,7 +48,7 @@
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display)
+QWaylandXCompositeEGLContext::QWaylandXCompositeEGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
     : QEGLPlatformContext(format, share, display)
 {
 }

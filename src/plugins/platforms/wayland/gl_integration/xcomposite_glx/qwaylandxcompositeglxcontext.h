@@ -42,7 +42,7 @@
 #ifndef QWAYLANDXCOMPOSITEGLXCONTEXT_H
 #define QWAYLANDXCOMPOSITEGLXCONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #include "qwaylandxcompositeglxintegration.h"
 #include <QtPlatformSupport/private/qglxconvenience_p.h>
@@ -50,10 +50,10 @@
 class QWaylandXCompositeGLXWindow;
 class QWaylandShmBuffer;
 
-class QWaylandXCompositeGLXContext : public QPlatformGLContext
+class QWaylandXCompositeGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen);
+    QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, Display *display, int screen);
 
     QSurfaceFormat format() const;
 

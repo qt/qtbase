@@ -50,7 +50,7 @@
 #include <X11/Xutil.h>
 #include <GL/glx.h>
 
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 
 #include "qglxintegration.h"
 #include <QtPlatformSupport/private/qglxconvenience_p.h>
@@ -59,8 +59,8 @@
 #include <dlfcn.h>
 #endif
 
-QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformGLContext *share)
-    : QPlatformGLContext()
+QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
     , m_screen(screen)
     , m_context(0)
 {

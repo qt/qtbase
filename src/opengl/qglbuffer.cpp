@@ -334,7 +334,7 @@ bool QGLBuffer::read(int offset, void *data, int count)
 {
 #if !defined(QT_OPENGL_ES)
     Q_D(QGLBuffer);
-    if (!glGetBufferSubData || !d->guard.id())
+    if (!glGetBufferSubData || !d->guard->id())
         return false;
     while (glGetError() != GL_NO_ERROR) ; // Clear error state.
     glGetBufferSubData(d->type, offset, count, data);
@@ -421,7 +421,7 @@ bool QGLBuffer::bind()
     Q_D(const QGLBuffer);
     GLuint bufferId = d->guard ? d->guard->id() : 0;
     if (bufferId) {
-        if (d->guard->group() != QGuiGLContextGroup::currentContextGroup()) {
+        if (d->guard->group() != QOpenGLContextGroup::currentContextGroup()) {
 #ifndef QT_NO_DEBUG
             qWarning("QGLBuffer::bind: buffer is not valid in the current context");
 #endif

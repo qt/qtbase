@@ -217,8 +217,8 @@ QPlatformBackingStore *QWindowsIntegration::createPlatformBackingStore(QWindow *
     return new QWindowsBackingStore(window);
 }
 
-QPlatformGLContext
-    *QWindowsIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext
+    *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     if (QWindowsContext::verboseIntegration)
         qDebug() << __FUNCTION__ << context->format();

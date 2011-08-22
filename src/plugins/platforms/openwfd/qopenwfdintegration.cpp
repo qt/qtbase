@@ -50,7 +50,7 @@
 #include <QtPlatformSupport/private/qgenericunixprintersupport_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -107,7 +107,7 @@ QPlatformWindow *QOpenWFDIntegration::createPlatformWindow(QWindow *window) cons
     return new QOpenWFDWindow(window);
 }
 
-QPlatformGLContext *QOpenWFDIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QOpenWFDIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QOpenWFDScreen *screen = static_cast<QOpenWFDScreen *>(context->screen()->handle());
 

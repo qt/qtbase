@@ -778,7 +778,7 @@ QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
 */
 
 QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContext,
-                                     QGuiGLContext *context) :
+                                     QOpenGLContext *context) :
     m_staticContext(staticContext),
     m_context(context),
     m_pixelFormat(0), m_extensionsUsed(false)
@@ -843,7 +843,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         }
         // Create context with sharing, again preferably using ARB.
         HGLRC sharingRenderingContext = 0;
-        if (const QPlatformGLContext *sc = context->shareHandle())
+        if (const QPlatformOpenGLContext *sc = context->shareHandle())
             sharingRenderingContext = static_cast<const QWindowsGLContext *>(sc)->renderingContext();
 
         if (m_extensionsUsed)

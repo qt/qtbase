@@ -94,7 +94,7 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
     if (!dev)
         return;
 
-    // Find the QGLScreen for this paint device.
+    // Find the QOpenGLScreen for this paint device.
     QPlatformScreen *screen = screenForDevice(dev);
     if (!screen)
         return;

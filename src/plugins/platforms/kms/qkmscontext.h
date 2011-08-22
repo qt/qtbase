@@ -42,7 +42,7 @@
 #ifndef QKMSCONTEXT_H
 #define QKMSCONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 #include <EGL/egl.h>
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QKmsDevice;
 
-class QKmsContext : public QPlatformGLContext
+class QKmsContext : public QPlatformOpenGLContext
 {
 public:
     QKmsContext(QKmsDevice *device);

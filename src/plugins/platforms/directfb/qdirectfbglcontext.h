@@ -42,11 +42,11 @@
 #ifndef QDIRECTFBGLCONTEXT_H
 #define QDIRECTFBGLCONTEXT_H
 
-#include <QPlatformGLContext>
+#include <QPlatformOpenGLContext>
 
 #include "qdirectfbconvenience.h"
 
-class QDirectFbGLContext : public QPlatformGLContext
+class QDirectFbGLContext : public QPlatformOpenGLContext
 {
 public:
     explicit QDirectFbGLContext(IDirectFBGL *glContext);

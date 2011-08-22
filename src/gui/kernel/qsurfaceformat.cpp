@@ -44,6 +44,14 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/QDebug>
 
+#ifdef major
+#undef major
+#endif
+
+#ifdef minor
+#undef minor
+#endif
+
 class QSurfaceFormatPrivate
 {
 public:
@@ -59,6 +67,8 @@ public:
         , swapBehavior(QSurfaceFormat::DefaultSwapBehavior)
         , numSamples(-1)
         , profile(QSurfaceFormat::NoProfile)
+        , major(1)
+        , minor(1)
     {
     }
 
@@ -73,7 +83,9 @@ public:
           stencilSize(other->stencilSize),
           swapBehavior(other->swapBehavior),
           numSamples(other->numSamples),
-          profile(other->profile)
+          profile(other->profile),
+          major(other->major),
+          minor(other->minor)
     {
     }
 
@@ -88,6 +100,8 @@ public:
     QSurfaceFormat::SwapBehavior swapBehavior;
     int numSamples;
     QSurfaceFormat::OpenGLContextProfile profile;
+    int major;
+    int minor;
 };
 
 QSurfaceFormat::QSurfaceFormat() : d(new QSurfaceFormatPrivate)
@@ -351,6 +365,12 @@ void QSurfaceFormat::setAlphaBufferSize(int size)
     }
 }
 
+/*!
+   Sets the desired OpenGL context profile.
+
+   This setting is ignored if the requested OpenGL version is
+   less than 3.2.
+*/
 void QSurfaceFormat::setProfile(OpenGLContextProfile profile)
 {
     if (d->profile != profile) {
@@ -362,6 +382,38 @@ void QSurfaceFormat::setProfile(OpenGLContextProfile profile)
 QSurfaceFormat::OpenGLContextProfile QSurfaceFormat::profile() const
 {
     return d->profile;
+}
+
+/*!
+    Sets the desired major OpenGL version.
+*/
+void QSurfaceFormat::setMajorVersion(int major)
+{
+    d->major = major;
+}
+
+/*!
+    Returns the major OpenGL version.
+*/
+int QSurfaceFormat::majorVersion() const
+{
+    return d->major;
+}
+
+/*!
+    Sets the desired minor OpenGL version.
+*/
+void QSurfaceFormat::setMinorVersion(int minor)
+{
+    d->minor = minor;
+}
+
+/*!
+    Returns the minor OpenGL version.
+*/
+int QSurfaceFormat::minorVersion() const
+{
+    return d->minor;
 }
 
 bool operator==(const QSurfaceFormat& a, const QSurfaceFormat& b)

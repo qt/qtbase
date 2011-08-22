@@ -48,7 +48,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QPlatformFontDatabase>
 
 #include <GLES2/gl2.h>

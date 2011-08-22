@@ -45,7 +45,7 @@
 #include <qdebug.h>
 #include <private/qgl_p.h>
 #include <private/qfont_p.h>
-#include <private/qpaintengineex_opengl2_p.h>
+#include <gl2paintengineex/qpaintengineex_opengl2_p.h>
 
 #include <qglframebufferobject.h>
 #include <qlibrary.h>
@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 #define QGL_FUNC_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
 #define QGL_FUNCP_CONTEXT const QGLContext *ctx = QGLContext::currentContext();

@@ -192,10 +192,10 @@ QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::Pix
     return new QRasterPlatformPixmap(type);
 }
 
-QPlatformGLContext *QPlatformIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     Q_UNUSED(context);
-    qWarning("This plugin does not support createPlatformGLContext!");
+    qWarning("This plugin does not support createPlatformOpenGLContext!");
     return 0;
 }
 

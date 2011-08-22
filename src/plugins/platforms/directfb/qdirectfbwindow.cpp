@@ -169,4 +169,3 @@ WId QDirectFbWindow::winId() const
     m_dfbWindow->GetID(m_dfbWindow, &id);
     return WId(id);
 }
-

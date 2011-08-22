@@ -106,7 +106,7 @@ void QWaylandReadbackEglContext::makeCurrent()
 
 void QWaylandReadbackEglContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
+    QPlatformOpenGLContext::doneCurrent();
     eglMakeCurrent(mEglIntegration->eglDisplay(),EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
 }
 

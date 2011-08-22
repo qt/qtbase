@@ -57,7 +57,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 

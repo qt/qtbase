@@ -75,7 +75,7 @@ QWaylandWindow * QWaylandXCompositeEGLIntegration::createEglWindow(QWindow *wind
     return new QWaylandXCompositeEGLWindow(window,this);
 }
 
-QPlatformGLContext *QWaylandXCompositeEGLIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformOpenGLContext *QWaylandXCompositeEGLIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
     return new QWaylandXCompositeEGLContext(glFormat, share, eglDisplay());
 }

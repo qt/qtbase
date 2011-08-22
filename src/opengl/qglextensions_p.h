@@ -855,10 +855,10 @@ struct QGLExtensionFuncs
 #endif
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);
-bool Q_OPENGL_EXPORT qt_resolve_buffer_extensions(QGLContext *ctx);
+bool qt_resolve_buffer_extensions(QGLContext *ctx);
 
 bool qt_resolve_version_1_3_functions(QGLContext *ctx);
-bool Q_OPENGL_EXPORT qt_resolve_version_2_0_functions(QGLContext *ctx);
+bool qt_resolve_version_2_0_functions(QGLContext *ctx);
 bool qt_resolve_stencil_face_extension(QGLContext *ctx);
 bool qt_resolve_frag_program_extensions(QGLContext *ctx);
 

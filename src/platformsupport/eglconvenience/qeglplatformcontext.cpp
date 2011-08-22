@@ -47,7 +47,7 @@
 
 #include <EGL/egl.h>
 
-QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformGLContext *share, EGLDisplay display,
+QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                                          EGLint eglClientVersion, EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglApi(eglApi)

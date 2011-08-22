@@ -1,6 +1,6 @@
 #include "hellowindow.h"
 
-#include <QGuiGLContext>
+#include <QOpenGLContext>
 
 #include <QTimer>
 
@@ -10,7 +10,7 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share)
     : m_initialized(false)
     , m_format(format)
 {
-    m_context = new QGuiGLContext;
+    m_context = new QOpenGLContext;
     m_context->setFormat(format);
     if (share)
         m_context->setShareContext(share->m_context);
@@ -91,11 +91,11 @@ void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewS
     modelview.rotate(m_fAngle, 0.0f, 0.0f, 1.0f);
     modelview.translate(0.0f, -0.2f, 0.0f);
 
-    program.bind();
-    program.setUniformValue(matrixUniform, modelview);
-    program.setUniformValue(colorUniform, color);
+    m_program->bind();
+    m_program->setUniformValue(matrixUniform, modelview);
+    m_program->setUniformValue(colorUniform, color);
     paintQtLogo();
-    program.release();
+    m_program->release();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -107,20 +107,20 @@ void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewS
 
 void Renderer::paintQtLogo()
 {
-    program.enableAttributeArray(normalAttr);
-    program.enableAttributeArray(vertexAttr);
-    program.setAttributeArray(vertexAttr, vertices.constData());
-    program.setAttributeArray(normalAttr, normals.constData());
+    m_program->enableAttributeArray(normalAttr);
+    m_program->enableAttributeArray(vertexAttr);
+    m_program->setAttributeArray(vertexAttr, vertices.constData());
+    m_program->setAttributeArray(normalAttr, normals.constData());
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-    program.disableAttributeArray(normalAttr);
-    program.disableAttributeArray(vertexAttr);
+    m_program->disableAttributeArray(normalAttr);
+    m_program->disableAttributeArray(vertexAttr);
 }
 
 void Renderer::initialize()
 {
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
-    QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
+    QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     const char *vsrc =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec3 normal;\n"
@@ -138,7 +138,7 @@ void Renderer::initialize()
         "}\n";
     vshader->compileSourceCode(vsrc);
 
-    QGLShader *fshader = new QGLShader(QGLShader::Fragment, this);
+    QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
     const char *fsrc =
         "varying mediump vec4 color;\n"
         "void main(void)\n"
@@ -147,14 +147,15 @@ void Renderer::initialize()
         "}\n";
     fshader->compileSourceCode(fsrc);
 
-    program.addShader(vshader);
-    program.addShader(fshader);
-    program.link();
+    m_program = new QOpenGLShaderProgram;
+    m_program->addShader(vshader);
+    m_program->addShader(fshader);
+    m_program->link();
 
-    vertexAttr = program.attributeLocation("vertex");
-    normalAttr = program.attributeLocation("normal");
-    matrixUniform = program.uniformLocation("matrix");
-    colorUniform = program.uniformLocation("sourceColor");
+    vertexAttr = m_program->attributeLocation("vertex");
+    normalAttr = m_program->attributeLocation("normal");
+    matrixUniform = m_program->uniformLocation("matrix");
+    colorUniform = m_program->uniformLocation("sourceColor");
 
     m_fAngle = 0;
     createGeometry();

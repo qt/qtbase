@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QPlatformBackingStore;
-class QPlatformGLContext;
+class QPlatformOpenGLContext;
 class QPlatformScreenPrivate;
 class QPlatformWindow;
 class QScreen;

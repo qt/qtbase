@@ -73,7 +73,7 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #endif
 
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
@@ -125,7 +125,7 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 class QEGLXcbPlatformContext : public QEGLPlatformContext
 {
 public:
-    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share, EGLDisplay display)
+    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share, EGLDisplay display)
         : QEGLPlatformContext(glFormat, share, display)
     {
     }
@@ -137,7 +137,7 @@ public:
 };
 #endif
 
-QPlatformGLContext *QXcbIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
 #if defined(XCB_USE_GLX)

@@ -47,7 +47,7 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qwindow.h>
-#include <QtGui/qplatformglcontext_qpa.h>
+#include <QtGui/qplatformopenglcontext_qpa.h>
 
 QT_BEGIN_HEADER
 

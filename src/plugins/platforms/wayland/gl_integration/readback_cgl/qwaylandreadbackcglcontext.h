@@ -42,7 +42,7 @@
 #ifndef QWAYLANDREADBACKCGLCONTEXT_H
 #define QWAYLANDREADBACKCGLCONTEXT_H
 
-#include <QPlatformGLContext>
+#include <QPlatformOpenGLContext>
 
 #include "qwaylandreadbackcglintegration.h"
 
@@ -51,10 +51,10 @@
 class QWaylandReadbackCGLWindow;
 class QWaylandShmBuffer;
 
-class QWaylandReadbackCGLContext : public QPlatformGLContext
+class QWaylandReadbackCGLContext : public QPlatformOpenGLContext
 {
 public:
-    QWaylandReadbackCGLContext(QPlatformGLContext *share);
+    QWaylandReadbackCGLContext(QPlatformOpenGLContext *share);
 
     QSurfaceFormat format() const;
 

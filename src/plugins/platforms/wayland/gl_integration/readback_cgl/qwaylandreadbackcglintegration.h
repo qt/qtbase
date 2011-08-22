@@ -61,7 +61,7 @@ public:
     void initialize();
 
     QWaylandWindow *createEglWindow(QWindow *window);
-    QPlatformGLContext *createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const;
     QWaylandDisplay *waylandDisplay() const;
 
 private:

@@ -136,7 +136,7 @@ protected:
 private:
     friend class QPixmap;
     friend class QImagePixmapCleanupHooks; // Needs to set is_cached
-    friend class QGLTextureCache; //Needs to check the reference count
+    friend class QOpenGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPlatformPixmap>;
 
     QAtomicInt ref;

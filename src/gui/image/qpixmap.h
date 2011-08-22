@@ -182,7 +182,7 @@ private:
     friend class QBitmap;
     friend class QPaintDevice;
     friend class QPainter;
-    friend class QGLWidget;
+    friend class QOpenGLWidget;
     friend class QWidgetPrivate;
     friend class QRasterBuffer;
 #if !defined(QT_NO_DATASTREAM)

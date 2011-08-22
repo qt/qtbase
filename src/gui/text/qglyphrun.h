@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHRUN_H
-#define QGLYPHRUN_H
+#ifndef QOpenGLYPHRUN_H
+#define QOpenGLYPHRUN_H
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qvector.h>
@@ -113,4 +113,4 @@ QT_END_HEADER
 
 #endif // QT_NO_RAWFONT
 
-#endif // QGLYPHS_H
+#endif // QOpenGLYPHS_H

@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QKmsContext::QKmsContext(QKmsDevice *device)
-    : QPlatformGLContext(),
+    : QPlatformOpenGLContext(),
       m_device(device)
 {
 }
@@ -72,7 +72,7 @@ bool QKmsContext::makeCurrent(QPlatformSurface *surface)
 
 void QKmsContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
+    QPlatformOpenGLContext::doneCurrent();
     bool ok = eglMakeCurrent(m_device->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE,
                              EGL_NO_CONTEXT);
     if (!ok)

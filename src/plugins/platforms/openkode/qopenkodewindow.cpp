@@ -235,7 +235,7 @@ WId QOpenKODEWindow::winId() const
     return i++;
 }
 
-QPlatformGLContext *QOpenKODEWindow::glContext() const
+QPlatformOpenGLContext *QOpenKODEWindow::glContext() const
 {
     return m_platformGlContext;
 }

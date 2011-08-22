@@ -41,7 +41,7 @@
 
 #include "qglfunctions.h"
 #include "qgl_p.h"
-#include "QtGui/private/qguiglcontext_qpa_p.h"
+#include "QtGui/private/qopenglcontext_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -140,11 +140,11 @@ QT_BEGIN_NAMESPACE
 */
 
 // Hidden private fields for additional extension data.
-struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QGLSharedResource
+struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QOpenGLSharedResource
 {
-    QGLFunctionsPrivateEx(QGuiGLContext *context)
-        : QGLFunctionsPrivate(QGLContext::fromGuiGLContext(context))
-        , QGLSharedResource(context->shareGroup())
+    QGLFunctionsPrivateEx(QOpenGLContext *context)
+        : QGLFunctionsPrivate(QGLContext::fromOpenGLContext(context))
+        , QOpenGLSharedResource(context->shareGroup())
         , m_features(-1) {}
 
     void invalidateResource()
@@ -152,7 +152,7 @@ struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QGLSharedResou
         m_features = -1;
     }
 
-    void freeResource(QGuiGLContext *)
+    void freeResource(QOpenGLContext *)
     {
         // no gl resources to free
     }
@@ -160,7 +160,7 @@ struct QGLFunctionsPrivateEx : public QGLFunctionsPrivate, public QGLSharedResou
     int m_features;
 };
 
-Q_GLOBAL_STATIC(QGLMultiGroupSharedResource, qt_gl_functions_resource)
+Q_GLOBAL_STATIC(QOpenGLMultiGroupSharedResource, qt_gl_functions_resource)
 
 static QGLFunctionsPrivateEx *qt_gl_functions(const QGLContext *context = 0)
 {

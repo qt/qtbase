@@ -63,10 +63,10 @@ QT_BEGIN_NAMESPACE
 
 class QGL2PaintEngineExPrivate;
 
-struct QGLGlyphTexture : public QGLSharedResource
+struct QGLGlyphTexture : public QOpenGLSharedResource
 {
     QGLGlyphTexture(const QGLContext *ctx)
-        : QGLSharedResource(ctx->contextHandle()->shareGroup())
+        : QOpenGLSharedResource(ctx->contextHandle()->shareGroup())
         , m_width(0)
         , m_height(0)
     {
@@ -78,9 +78,9 @@ struct QGLGlyphTexture : public QGLSharedResource
 #endif
     }
 
-    void freeResource(QGuiGLContext *context)
+    void freeResource(QOpenGLContext *context)
     {
-        const QGLContext *ctx = QGLContext::fromGuiGLContext(context);
+        const QGLContext *ctx = QGLContext::fromOpenGLContext(context);
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
         qDebug("~QGLGlyphTexture() %p for context %p.", this, ctx);
 #endif
@@ -136,7 +136,7 @@ public:
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
 
-    inline const QGuiGLContextGroup *contextGroup() const { return m_textureResource ? m_textureResource->group() : 0; }
+    inline const QOpenGLContextGroup *contextGroup() const { return m_textureResource ? m_textureResource->group() : 0; }
 
     inline int serialNumber() const { return m_serialNumber; }
 

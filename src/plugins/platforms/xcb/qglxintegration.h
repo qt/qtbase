@@ -45,17 +45,17 @@
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QSurfaceFormat>
 
 #include <QtCore/QMutex>
 
 #include <GL/glx.h>
 
-class QGLXContext : public QPlatformGLContext
+class QGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QGLXContext(QXcbScreen *xd, const QSurfaceFormat &format, QPlatformGLContext *share);
+    QGLXContext(QXcbScreen *xd, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QGLXContext();
 
     bool makeCurrent(QPlatformSurface *surface);

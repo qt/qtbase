@@ -44,7 +44,7 @@
 #include "qwaylandshmbackingstore.h"
 #include "qwaylandreadbackcglwindow.h"
 
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtCore/QDebug>
 
 #include <OpenGL/OpenGL.h>
@@ -53,8 +53,8 @@
 
 #include <QtPlatformSupport/private/cglconvenience_p.h>
 
-QWaylandReadbackCGLContext::QWaylandReadbackCGLContext(QPlatformGLContext *share)
-    : QPlatformGLContext()
+QWaylandReadbackCGLContext::QWaylandReadbackCGLContext(QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
 {
     Q_UNUSED(share);
     m_glContext = qcgl_createGlContext();
@@ -82,7 +82,7 @@ void QWaylandReadbackCGLContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_UNUSED(surface);
 
-    if (QGuiGLContext::currentContext()->handle() != this) {
+    if (QOpenGLContext::currentContext()->handle() != this) {
         makeCurrent(surface);
     }
     CGLFlushDrawable(m_glContext);

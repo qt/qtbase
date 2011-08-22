@@ -134,9 +134,9 @@ QDri2Context::QDri2Context(QXcbWindow *window)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERER,d->depth);
 
     //restore the old current context
-    const QPlatformGLContext *currentContext = QPlatformGLContext::currentContext();
+    const QPlatformOpenGLContext *currentContext = QPlatformOpenGLContext::currentContext();
     if (currentContext)
-        const_cast<QPlatformGLContext*>(currentContext)->makeCurrent();
+        const_cast<QPlatformOpenGLContext*>(currentContext)->makeCurrent();
 }
 
 QDri2Context::~QDri2Context()

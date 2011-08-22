@@ -316,7 +316,7 @@ private:
     friend class QStackTextEngine;
     friend class QTextLine;
     friend struct QScriptLine;
-    friend class QGLContext;
+    friend class QOpenGLContext;
     friend class QWin32PaintEngine;
     friend class QAlphaPaintEngine;
     friend class QPainterPath;

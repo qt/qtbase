@@ -48,7 +48,7 @@
 
 #include <QtCore/QDebug>
 
-#include <QtGui/qguiglcontext_qpa.h>
+#include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 
 #if defined(XCB_USE_EGL)
@@ -74,7 +74,7 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
-void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QGuiGLContext *context)
+void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
@@ -174,7 +174,7 @@ void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
 
 }
 
-void * QXcbNativeInterface::eglContextForContext(QGuiGLContext *context)
+void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
 #if defined(XCB_USE_EGL)
@@ -183,7 +183,7 @@ void * QXcbNativeInterface::eglContextForContext(QGuiGLContext *context)
 #endif
 #if 0
     Q_ASSERT(window);
-    QPlatformGLContext *platformContext = window->glContext()->handle();
+    QPlatformOpenGLContext *platformContext = window->glContext()->handle();
     if (!platformContext) {
         qDebug() << "QWindow" << window << "does not have a glContext"
                  << "cannot return EGLContext";

@@ -55,14 +55,14 @@ public:
     }
 
 private:
-    QGLMultiGroupSharedResource m_resource;
+    QOpenGLMultiGroupSharedResource m_resource;
     QMutex m_mutex;
 };
 
 Q_GLOBAL_STATIC(QGL2GradientCacheWrapper, qt_gradient_caches)
 
-QGL2GradientCache::QGL2GradientCache(QGuiGLContext *ctx)
-    : QGLSharedResource(ctx->shareGroup())
+QGL2GradientCache::QGL2GradientCache(QOpenGLContext *ctx)
+    : QOpenGLSharedResource(ctx->shareGroup())
 {
 }
 
@@ -82,7 +82,7 @@ void QGL2GradientCache::invalidateResource()
     cache.clear();
 }
 
-void QGL2GradientCache::freeResource(QGuiGLContext *)
+void QGL2GradientCache::freeResource(QOpenGLContext *)
 {
     cleanCache();
 }

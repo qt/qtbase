@@ -145,7 +145,7 @@ private:
 
     GC createGC();
 
-    QPlatformGLContext *mGLContext;
+    QPlatformOpenGLContext *mGLContext;
     QXlibScreen *mScreen;
     Qt::WindowFlags mWindowFlags;
 

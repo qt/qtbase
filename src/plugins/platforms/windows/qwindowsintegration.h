@@ -60,7 +60,7 @@ public:
     virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     virtual QPlatformClipboard *clipboard() const;

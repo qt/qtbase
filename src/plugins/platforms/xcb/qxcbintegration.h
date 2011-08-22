@@ -57,7 +57,7 @@ public:
     ~QXcbIntegration();
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     bool hasCapability(Capability cap) const;

@@ -24,6 +24,7 @@ contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
 
 qpa {
     SUBDIRS += hellowindow
+    SUBDIRS += paintedwindow
 }
 
 # install

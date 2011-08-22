@@ -59,7 +59,7 @@ public:
     bool hasCapability(Capability cap) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
     //This should not be a factory interface, but rather a accessor
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;

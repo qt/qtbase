@@ -59,7 +59,7 @@ public:
         WFDPipeline
     };
 
-    void *nativeResourceForContext(const QByteArray &resourceString, QGuiGLContext *context);
+    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
     WFDHandle wfdDeviceForWindow(QWindow *window);
@@ -67,7 +67,7 @@ public:
     WFDHandle wfdPortForWindow(QWindow *window);
     WFDHandle wfdPipelineForWindow(QWindow *window);
 
-    void *eglContextForContext(QGuiGLContext *context);
+    void *eglContextForContext(QOpenGLContext *context);
 
 private:
     static QOpenWFDScreen *qPlatformScreenForWindow(QWindow *window);

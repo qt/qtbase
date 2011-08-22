@@ -44,7 +44,7 @@
 #include "qpaintengineex_opengl2_p.h"
 #include "qglshadercache_p.h"
 
-#include <QtGui/private/qguiglcontext_qpa_p.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
@@ -54,12 +54,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLEngineSharedShadersResource : public QGLSharedResource
+class QGLEngineSharedShadersResource : public QOpenGLSharedResource
 {
 public:
-    QGLEngineSharedShadersResource(QGuiGLContext *ctx)
-        : QGLSharedResource(ctx->shareGroup())
-        , m_shaders(new QGLEngineSharedShaders(QGLContext::fromGuiGLContext(ctx)))
+    QGLEngineSharedShadersResource(QOpenGLContext *ctx)
+        : QOpenGLSharedResource(ctx->shareGroup())
+        , m_shaders(new QGLEngineSharedShaders(QGLContext::fromOpenGLContext(ctx)))
     {
     }
 
@@ -74,7 +74,7 @@ public:
         m_shaders = 0;
     }
 
-    void freeResource(QGuiGLContext *)
+    void freeResource(QOpenGLContext *)
     {
     }
 
@@ -88,16 +88,16 @@ class QGLShaderStorage
 {
 public:
     QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
-        QGLMultiGroupSharedResource *&shaders = m_storage.localData();
+        QOpenGLMultiGroupSharedResource *&shaders = m_storage.localData();
         if (!shaders)
-            shaders = new QGLMultiGroupSharedResource;
+            shaders = new QOpenGLMultiGroupSharedResource;
         QGLEngineSharedShadersResource *resource =
             shaders->value<QGLEngineSharedShadersResource>(context->contextHandle());
         return resource ? resource->shaders() : 0;
     }
 
 private:
-    QThreadStorage<QGLMultiGroupSharedResource *> m_storage;
+    QThreadStorage<QOpenGLMultiGroupSharedResource *> m_storage;
 };
 
 Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);

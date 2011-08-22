@@ -84,7 +84,7 @@ QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWindow *window)
     return new QWaylandEglWindow(window);
 }
 
-QPlatformGLContext *QWaylandEglIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformOpenGLContext *QWaylandEglIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
     return new QWaylandGLContext(m_eglDisplay, glFormat, share);
 }

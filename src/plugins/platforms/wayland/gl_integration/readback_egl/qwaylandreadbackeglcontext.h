@@ -42,14 +42,14 @@
 #ifndef QWAYLANDREADBACKEGLGLCONTEXT_H
 #define QWAYLANDREADBACKEGLGLCONTEXT_H
 
-#include <QPlatformGLContext>
+#include <QPlatformOpenGLContext>
 
 #include "qwaylandreadbackeglintegration.h"
 #include "qwaylandreadbackeglwindow.h"
 
 class QWaylandShmBuffer;
 
-class QWaylandReadbackEglContext : public QPlatformGLContext
+class QWaylandReadbackEglContext : public QPlatformOpenGLContext
 {
 public:
     QWaylandReadbackEglContext(QWaylandReadbackEglIntegration *eglIntegration, QWaylandReadbackEglWindow *window);

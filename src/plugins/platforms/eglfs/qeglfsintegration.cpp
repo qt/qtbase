@@ -49,7 +49,7 @@
 
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QSurfaceFormat>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
 #include <EGL/egl.h>
@@ -93,7 +93,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
     return new QEglFSBackingStore(window);
 }
 
-QPlatformGLContext *QEglFSIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     return static_cast<QEglFSScreen *>(context->screen()->handle())->platformContext();
 }

@@ -47,12 +47,12 @@
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QSurfaceFormat>
 #include <QtCore/QMutex>
 
-QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformGLContext *share)
-    : QPlatformGLContext()
+QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
     , m_eglDisplay(eglDisplay)
     , m_config(q_configFromGLFormat(m_eglDisplay, format, true))
     , m_format(q_glFormatFromConfig(m_eglDisplay, m_config))

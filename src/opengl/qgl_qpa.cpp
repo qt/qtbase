@@ -45,7 +45,7 @@
 #include <QDebug>
 
 #include <private/qapplication_p.h>
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QSurfaceFormat>
 
@@ -110,9 +110,9 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
 
 void QGLContextPrivate::setupSharing() {
     Q_Q(QGLContext);
-    QGuiGLContext *sharedContext = guiGlContext->shareContext();
+    QOpenGLContext *sharedContext = guiGlContext->shareContext();
     if (sharedContext) {
-        QGLContext *actualSharedContext = QGLContext::fromGuiGLContext(sharedContext);
+        QGLContext *actualSharedContext = QGLContext::fromOpenGLContext(sharedContext);
         sharing = true;
         QGLContextGroup::addShare(q, actualSharedContext);
     }
@@ -149,8 +149,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         }
 
         delete d->guiGlContext;
-        QGuiGLContext *shareGlContext = shareContext ? shareContext->d_func()->guiGlContext : 0;
-        d->guiGlContext = new QGuiGLContext;
+        QOpenGLContext *shareGlContext = shareContext ? shareContext->d_func()->guiGlContext : 0;
+        d->guiGlContext = new QOpenGLContext;
         d->guiGlContext->setFormat(winFormat);
         d->guiGlContext->setShareContext(shareGlContext);
         d->valid = d->guiGlContext->create();
@@ -286,7 +286,7 @@ class QGLTemporaryContextPrivate
 {
 public:
     QWindow *window;
-    QGuiGLContext *context;
+    QOpenGLContext *context;
 
     QGLContext *oldContext;
 };
@@ -301,7 +301,7 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->window->setGeometry(QRect(0, 0, 3, 3));
     d->window->create();
 
-    d->context = new QGuiGLContext;
+    d->context = new QOpenGLContext;
     d->context->create();
     d->context->makeCurrent(d->window);
 }
@@ -378,7 +378,7 @@ void QGLWidget::setColormap(const QGLColormap & c)
     Q_UNUSED(c);
 }
 
-QGLContext::QGLContext(QGuiGLContext *context)
+QGLContext::QGLContext(QOpenGLContext *context)
     : d_ptr(new QGLContextPrivate(this))
 {
     Q_D(QGLContext);
@@ -389,7 +389,7 @@ QGLContext::QGLContext(QGuiGLContext *context)
     d->setupSharing();
 }
 
-QGuiGLContext *QGLContext::contextHandle() const
+QOpenGLContext *QGLContext::contextHandle() const
 {
     Q_D(const QGLContext);
     return d->guiGlContext;
@@ -398,7 +398,7 @@ QGuiGLContext *QGLContext::contextHandle() const
 /*!
     Returns a OpenGL context for the window context specified by \a windowContext
 */
-QGLContext *QGLContext::fromGuiGLContext(QGuiGLContext *context)
+QGLContext *QGLContext::fromOpenGLContext(QOpenGLContext *context)
 {
     if (!context)
         return 0;

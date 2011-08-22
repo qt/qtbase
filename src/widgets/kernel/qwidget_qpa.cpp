@@ -49,7 +49,7 @@
 #include "QtWidgets/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
 #include "QtGui/qsurfaceformat.h"
-#include "QtGui/qplatformglcontext_qpa.h"
+#include "QtGui/qplatformopenglcontext_qpa.h"
 #include "QtGui/private/qwindow_p.h"
 
 #include <QtGui/QPlatformCursor>
@@ -813,7 +813,7 @@ void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
         //the toplevel might have a context with a "qglcontext associated with it. We need to
-        //delete the qglcontext before we delete the qplatformglcontext.
+        //delete the qglcontext before we delete the qplatformopenglcontext.
         //One unfortunate thing about this is that we potentially create a glContext just to
         //delete it straight afterwards.
         if (extra->topextra->window) {

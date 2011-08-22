@@ -61,8 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPlatformGLContext *share)
-    : QPlatformGLContext()
+QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
     , m_screen(screen)
     , m_context(0)
 {
@@ -105,7 +105,7 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 
 void QGLXContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
+    QPlatformOpenGLContext::doneCurrent();
     glXMakeCurrent(m_screen->display()->nativeDisplay(), 0, 0);
 }
 

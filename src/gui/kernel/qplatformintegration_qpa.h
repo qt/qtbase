@@ -59,7 +59,7 @@ class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
 class QPlatformDrag;
-class QPlatformGLContext;
+class QPlatformOpenGLContext;
 class QGuiGLFormat;
 class QAbstractEventDispatcher;
 class QPlatformInputContext;
@@ -80,7 +80,7 @@ public:
     virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
     virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
-    virtual QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;

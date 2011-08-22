@@ -49,14 +49,16 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QGuiGLContext;
+class QOpenGLContext;
 class QSurfaceFormatPrivate;
 
 class Q_GUI_EXPORT QSurfaceFormat
 {
 public:
     enum FormatOption {
-        StereoBuffers           = 0x0001
+        StereoBuffers            = 0x0001,
+        DebugContext             = 0x0002,
+        DeprecatedFunctions      = 0x0004
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
@@ -104,6 +106,12 @@ public:
 
     void setProfile(OpenGLContextProfile profile);
     OpenGLContextProfile profile() const;
+
+    void setMajorVersion(int majorVersion);
+    int majorVersion() const;
+
+    void setMinorVersion(int minorVersion);
+    int minorVersion() const;
 
     bool stereo() const;
     void setStereo(bool enable);

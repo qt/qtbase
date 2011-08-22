@@ -11,4 +11,5 @@ QT.gui.libs = $$QT_MODULE_LIB_BASE
 QT.gui.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.gui.imports = $$QT_MODULE_IMPORT_BASE
 QT.gui.depends = core
+QT.gui.CONFIG = opengl
 QT.gui.DEFINES = QT_GUI_LIB

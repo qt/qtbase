@@ -59,7 +59,7 @@ public:
         EglContext
     };
 
-    void *nativeResourceForContext(const QByteArray &resourceString, QGuiGLContext *context);
+    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
     void *displayForWindow(QWindow *window);
@@ -68,7 +68,7 @@ public:
     void *screenForWindow(QWindow *window);
     void *graphicsDeviceForWindow(QWindow *window);
 
-    void *eglContextForContext(QGuiGLContext *context);
+    void *eglContextForContext(QOpenGLContext *context);
 
 private:
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);

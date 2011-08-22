@@ -91,7 +91,7 @@
 
 #include <QtCore/qglobal.h>
 
-#include <private/qpaintengineex_opengl2_p.h>
+#include <gl2paintengineex/qpaintengineex_opengl2_p.h>
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
@@ -100,7 +100,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 
 QGLContext* QGLPBufferGLPaintDevice::context() const

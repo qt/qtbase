@@ -338,8 +338,8 @@ public:
 
     static const QGLContext* currentContext();
 
-    static QGLContext *fromGuiGLContext(QGuiGLContext *platformContext);
-    QGuiGLContext *contextHandle() const;
+    static QGLContext *fromOpenGLContext(QOpenGLContext *platformContext);
+    QOpenGLContext *contextHandle() const;
 
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
@@ -359,7 +359,7 @@ protected:
     static QGLContext* currentCtx;
 
 private:
-    QGLContext(QGuiGLContext *windowContext);
+    QGLContext(QOpenGLContext *windowContext);
 
     QScopedPointer<QGLContextPrivate> d_ptr;
 

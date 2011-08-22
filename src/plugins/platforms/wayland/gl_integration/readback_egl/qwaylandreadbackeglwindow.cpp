@@ -57,7 +57,7 @@ QWaylandWindow::WindowType QWaylandReadbackEglWindow::windowType() const
     return QWaylandWindow::Egl;
 }
 
-QPlatformGLContext *QWaylandReadbackEglWindow::glContext() const
+QPlatformOpenGLContext *QWaylandReadbackEglWindow::glContext() const
 {
     if (!mContext) {
         QWaylandReadbackEglWindow *that = const_cast<QWaylandReadbackEglWindow *>(this);

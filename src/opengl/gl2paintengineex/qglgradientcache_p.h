@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGL2GradientCache : public QGLSharedResource
+class QGL2GradientCache : public QOpenGLSharedResource
 {
     struct CacheInfo
     {
@@ -76,14 +76,14 @@ class QGL2GradientCache : public QGLSharedResource
 public:
     static QGL2GradientCache *cacheForContext(const QGLContext *context);
 
-    QGL2GradientCache(QGuiGLContext *);
+    QGL2GradientCache(QOpenGLContext *);
     ~QGL2GradientCache();
 
     GLuint getBuffer(const QGradient &gradient, qreal opacity);
     inline int paletteSize() const { return 1024; }
 
     void invalidateResource();
-    void freeResource(QGuiGLContext *ctx);
+    void freeResource(QOpenGLContext *ctx);
 
 private:
     inline int maxCacheSize() const { return 60; }

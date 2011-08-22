@@ -44,7 +44,7 @@
 #include "qwaylandshmbackingstore.h"
 #include "qwaylandreadbackglxwindow.h"
 
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtCore/QDebug>
 
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
@@ -70,7 +70,7 @@ static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
 }
 
 QWaylandReadbackGlxContext::QWaylandReadbackGlxContext(const QSurfaceFormat &format,
-        QPlatformGLContext *share, Display *display, int screen)
+        QPlatformOpenGLContext *share, Display *display, int screen)
     : m_display(display)
 {
     GLXFBConfig config = qglx_findConfig(display, screen, format, GLX_PIXMAP_BIT);
@@ -101,8 +101,8 @@ void QWaylandReadbackGlxContext::doneCurrent()
 
 void QWaylandReadbackGlxContext::swapBuffers(QPlatformSurface *surface)
 {
-    // #### makeCurrent() directly on the platform context doesn't update QGuiGLContext::currentContext()
-    if (QGuiGLContext::currentContext()->handle() != this)
+    // #### makeCurrent() directly on the platform context doesn't update QOpenGLContext::currentContext()
+    if (QOpenGLContext::currentContext()->handle() != this)
         makeCurrent(surface);
 
     QWaylandReadbackGlxWindow *w = static_cast<QWaylandReadbackGlxWindow *>(surface);

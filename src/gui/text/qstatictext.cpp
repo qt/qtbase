@@ -139,7 +139,7 @@ QT_BEGIN_NAMESPACE
     can be used to indicate that the QStaticText should use additional caches, if possible,
     to improve performance at the expense of memory. In particular, setting the performance hint
     AggressiveCaching on the QStaticText will improve performance when using the OpenGL graphics
-    system or when drawing to a QGLWidget.
+    system or when drawing to a QOpenGLWidget.
 
     \value ModerateCaching Do basic caching for high performance at a low memory cost.
     \value AggressiveCaching Use additional caching when available. This may improve performance

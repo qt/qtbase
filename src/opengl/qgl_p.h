@@ -61,11 +61,11 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qatomic.h"
 #include "QtWidgets/private/qwidget_p.h"
-#include "QtGui/private/qguiglcontext_qpa_p.h"
+#include "QtGui/private/qopenglcontext_p.h"
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 
 QT_BEGIN_NAMESPACE
 
@@ -209,7 +209,7 @@ private:
 
 // Get the context that resources for "ctx" will transfer to once
 // "ctx" is destroyed.  Returns null if nothing is sharing with ctx.
-Q_OPENGL_EXPORT const QGLContext *qt_gl_transfer_context(const QGLContext *);
+const QGLContext *qt_gl_transfer_context(const QGLContext *);
 
 // GL extension definitions
 class QGLExtensions {
@@ -298,7 +298,7 @@ public:
     void syncGlState(); // Makes sure the GL context's state is what we think it is
     void swapRegion(const QRegion &region);
 
-    QGuiGLContext *guiGlContext;
+    QOpenGLContext *guiGlContext;
     void setupSharing();
 
     QGLFormat glFormat;
@@ -528,18 +528,18 @@ QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
     return m_cache.object(cacheKey);
 }
 
-extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
+extern QPaintEngine* qt_qgl_paint_engine();
 
 // Put a guard around a GL object identifier and its context.
 // When the context goes away, a shared context will be used
 // in its place.  If there are no more shared contexts, then
 // the identifier is returned as zero - it is assumed that the
 // context destruction cleaned up the identifier in this case.
-class Q_OPENGL_EXPORT QGLSharedResourceGuardBase : public QGLSharedResource
+class QGLSharedResourceGuardBase : public QOpenGLSharedResource
 {
 public:
     QGLSharedResourceGuardBase(QGLContext *context, GLuint id)
-        : QGLSharedResource(context->contextHandle()->shareGroup())
+        : QOpenGLSharedResource(context->contextHandle()->shareGroup())
         , m_id(id)
     {
     }
@@ -555,10 +555,10 @@ protected:
         m_id = 0;
     }
 
-    void freeResource(QGuiGLContext *context)
+    void freeResource(QOpenGLContext *context)
     {
         if (m_id) {
-            freeResource(QGLContext::fromGuiGLContext(context), m_id);
+            freeResource(QGLContext::fromOpenGLContext(context), m_id);
         }
     }
 

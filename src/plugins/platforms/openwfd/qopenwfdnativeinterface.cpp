@@ -68,7 +68,7 @@ public:
 
 Q_GLOBAL_STATIC(QOpenWFDResourceMap, qOpenWFDResourceMap)
 
-void *QOpenWFDNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QGuiGLContext *context)
+void *QOpenWFDNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qOpenWFDResourceMap()->value(lowerCaseResource);
@@ -134,7 +134,7 @@ void *QOpenWFDNativeInterface::eglDisplayForWindow(QWindow *window)
     return openWFDwindow->port()->device()->eglDisplay();
 }
 
-void * QOpenWFDNativeInterface::eglContextForContext(QGuiGLContext *context)
+void * QOpenWFDNativeInterface::eglContextForContext(QOpenGLContext *context)
 {
     QOpenWFDGLContext *openWFDContext = static_cast<QOpenWFDGLContext *>(context->handle());
     return openWFDContext->eglContext();

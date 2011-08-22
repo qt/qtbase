@@ -45,8 +45,8 @@
 #include "array.h"
 #include "qtwindows_additional.h"
 
-#include <QtGui/QPlatformGLContext>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QPlatformOpenGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtCore/QSharedPointer>
 
 QT_BEGIN_NAMESPACE
@@ -125,13 +125,13 @@ public:
 
 QDebug operator<<(QDebug d, const QOpenGLStaticContext &);
 
-class QWindowsGLContext : public QPlatformGLContext
+class QWindowsGLContext : public QPlatformOpenGLContext
 {
 public:
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 
     explicit QWindowsGLContext(const QOpenGLStaticContextPtr &staticContext,
-                               QGuiGLContext *context);
+                               QOpenGLContext *context);
     virtual ~QWindowsGLContext();
     bool isValid() const                  { return m_renderingContext; }
     virtual QSurfaceFormat format() const { return m_obtainedFormat; }
@@ -151,7 +151,7 @@ private:
     inline void releaseDCs();
 
     const QOpenGLStaticContextPtr m_staticContext;
-    QGuiGLContext *m_context;
+    QOpenGLContext *m_context;
     QSurfaceFormat m_obtainedFormat;
     HGLRC m_renderingContext;
     Array<QOpenGLContextData> m_windowContexts;

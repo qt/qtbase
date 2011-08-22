@@ -60,7 +60,7 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QPlatformGLContext *createPlatformGLContext(QGuiGLContext *context) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
     QPlatformFontDatabase *fontDatabase() const;
 

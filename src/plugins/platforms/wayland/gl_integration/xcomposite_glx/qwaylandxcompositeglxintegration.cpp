@@ -78,7 +78,7 @@ QWaylandWindow * QWaylandXCompositeGLXIntegration::createEglWindow(QWindow *wind
     return new QWaylandXCompositeGLXWindow(window, this);
 }
 
-QPlatformGLContext *QWaylandXCompositeGLXIntegration::createPlatformGLContext(const QSurfaceFormat &glFormat, QPlatformGLContext *share) const
+QPlatformOpenGLContext *QWaylandXCompositeGLXIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
     return new QWaylandXCompositeGLXContext(glFormat, share, mDisplay, mScreen);
 }

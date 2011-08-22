@@ -83,7 +83,7 @@ QPlatformBackingStore *QXlibIntegration::createPlatformBackingStore(QWindow *win
     return new QXlibBackingStore(window);
 }
 
-QPlatformGLContext *QXlibIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QXlibIntegration::createPlatformGLContext(QOpenGLContext *context) const
 {
     QXlibScreen *screen = static_cast<QXlibScreen *>(context->screen()->handle());
 

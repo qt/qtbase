@@ -42,7 +42,7 @@
 #ifndef QWAYLANDREADBACKGLXCONTEXT_H
 #define QWAYLANDREADBACKGLXCONTEXT_H
 
-#include <QPlatformGLContext>
+#include <QPlatformOpenGLContext>
 #include <QSurfaceFormat>
 
 #include "qwaylandreadbackglxintegration.h"
@@ -52,10 +52,10 @@
 class QWaylandReadbackGlxWindow;
 class QWaylandShmBuffer;
 
-class QWaylandReadbackGlxContext : public QPlatformGLContext
+class QWaylandReadbackGlxContext : public QPlatformOpenGLContext
 {
 public:
-    QWaylandReadbackGlxContext(const QSurfaceFormat &format, QPlatformGLContext *share, Display *display, int screen);
+    QWaylandReadbackGlxContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, Display *display, int screen);
 
     QSurfaceFormat format() const;
 

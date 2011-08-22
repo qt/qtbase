@@ -1,12 +1,12 @@
 #include <QWindow>
 
-#include <QtOpenGL/qgl.h>
-#include <QtOpenGL/qglshaderprogram.h>
-#include <QtOpenGL/qglframebufferobject.h>
+#include <QtGui/qopengl.h>
+#include <QtGui/qopenglshaderprogram.h>
 
+#include <QColor>
 #include <QTime>
 
-class QGuiGLContext;
+class QOpenGLContext;
 
 class Renderer : public QObject
 {
@@ -31,7 +31,6 @@ private:
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
     QVector<QVector3D> vertices;
     QVector<QVector3D> normals;
-    QGLShaderProgram program;
     int vertexAttr;
     int normalAttr;
     int matrixUniform;
@@ -39,7 +38,8 @@ private:
 
     bool m_initialized;
     QSurfaceFormat m_format;
-    QGuiGLContext *m_context;
+    QOpenGLContext *m_context;
+    QOpenGLShaderProgram *m_program;
 };
 
 class HelloWindow : public QWindow

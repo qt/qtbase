@@ -49,9 +49,9 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
-                kernel/qplatformglcontext_qpa.h \
-                kernel/qguiglcontext_qpa.h \
-                kernel/qguiglcontext_qpa_p.h \
+                kernel/qplatformopenglcontext_qpa.h \
+                kernel/qopenglcontext.h \
+                kernel/qopenglcontext_p.h \
                 kernel/qplatformcursor_qpa.h \
                 kernel/qplatformclipboard_qpa.h \
                 kernel/qplatformnativeinterface_qpa.h \
@@ -73,8 +73,8 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa.cpp \
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
-                kernel/qplatformglcontext_qpa.cpp \
-                kernel/qguiglcontext_qpa.cpp \
+                kernel/qplatformopenglcontext_qpa.cpp \
+                kernel/qopenglcontext.cpp \
                 kernel/qplatformcursor_qpa.cpp \
                 kernel/qplatformclipboard_qpa.cpp \
                 kernel/qplatformnativeinterface_qpa.cpp \

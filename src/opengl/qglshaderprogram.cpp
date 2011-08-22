@@ -958,7 +958,7 @@ bool QGLShaderProgram::bind()
     if (!d->linked && !link())
         return false;
 #ifndef QT_NO_DEBUG
-    if (d->programGuard->group() != QGuiGLContextGroup::currentContextGroup()) {
+    if (d->programGuard->group() != QOpenGLContextGroup::currentContextGroup()) {
         qWarning("QGLShaderProgram::bind: program is not valid in the current context.");
         return false;
     }
@@ -980,7 +980,7 @@ void QGLShaderProgram::release()
 {
 #ifndef QT_NO_DEBUG
     Q_D(QGLShaderProgram);
-    if (d->programGuard->group() != QGuiGLContextGroup::currentContextGroup())
+    if (d->programGuard->group() != QOpenGLContextGroup::currentContextGroup())
         qWarning("QGLShaderProgram::release: program is not valid in the current context.");
 #endif
 #if defined(QT_OPENGL_ES_2)
@@ -990,9 +990,6 @@ void QGLShaderProgram::release()
         glUseProgram(0);
 #endif
 }
-
-#undef ctx
-#define ctx d->programGuard.context()
 
 /*!
     Returns the OpenGL identifier associated with this shader program.

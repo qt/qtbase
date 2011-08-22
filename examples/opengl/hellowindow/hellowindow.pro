@@ -6,8 +6,6 @@ TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
 
-QT += opengl widgets
-
 # Input
 HEADERS += hellowindow.h
 SOURCES += hellowindow.cpp main.cpp

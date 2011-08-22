@@ -42,11 +42,11 @@
 #ifndef QOPENWFDGLCONTEXT_H
 #define QOPENWFDGLCONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #include "qopenwfddevice.h"
 
-class QOpenWFDGLContext : public QPlatformGLContext
+class QOpenWFDGLContext : public QPlatformOpenGLContext
 {
 public:
     QOpenWFDGLContext(QOpenWFDDevice *device);

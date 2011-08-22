@@ -2,8 +2,8 @@
 #define QCOCOAGLCONTEXT_H
 
 #include <QtCore/QWeakPointer>
-#include <QtGui/QPlatformGLContext>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QPlatformOpenGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
 
 #undef slots
@@ -11,10 +11,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaGLContext : public QPlatformGLContext
+class QCocoaGLContext : public QPlatformOpenGLContext
 {
 public:
-    QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share);
+    QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
 
     QSurfaceFormat format() const;
 

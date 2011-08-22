@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformGLContext *share)
+QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : m_format(format)
 {
     QCocoaAutoReleasePool pool; // For the SG Canvas render thread.

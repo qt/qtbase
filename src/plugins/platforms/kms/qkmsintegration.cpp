@@ -50,7 +50,7 @@
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/QGuiGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
 QT_BEGIN_NAMESPACE
@@ -91,7 +91,7 @@ bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QPlatformGLContext *QKmsIntegration::createPlatformGLContext(QGuiGLContext *context) const
+QPlatformOpenGLContext *QKmsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QKmsScreen *screen = static_cast<QKmsScreen *>(context->screen()->handle());
     return new QKmsContext(screen->device());

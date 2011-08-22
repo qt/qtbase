@@ -45,7 +45,7 @@
 #include "qopenwfdscreen.h"
 
 QOpenWFDGLContext::QOpenWFDGLContext(QOpenWFDDevice *device)
-    : QPlatformGLContext()
+    : QPlatformOpenGLContext()
     , mWfdDevice(device)
 {
 }

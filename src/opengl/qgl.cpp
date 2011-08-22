@@ -55,7 +55,7 @@
 
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
@@ -1501,11 +1501,15 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
 QGLContextPrivate::QGLContextPrivate(QGLContext *context)
     : internal_context(false)
     , q_ptr(context)
+    , texture_destroyer(0)
     , functions(0)
 {
     group = new QGLContextGroup(context);
-    texture_destroyer = new QGLTextureDestroyer;
-    texture_destroyer->moveToThread(qApp->thread());
+
+    if (qApp) {
+        texture_destroyer = new QGLTextureDestroyer;
+        texture_destroyer->moveToThread(qApp->thread());
+    }
 }
 
 QGLContextPrivate::~QGLContextPrivate()
@@ -1605,7 +1609,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
     img = img.mirrored();
 }
 
-Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
     QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
@@ -3076,8 +3080,8 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
-    if (const QGuiGLContext *threadContext = QGuiGLContext::currentContext()) {
-        return QGLContext::fromGuiGLContext(const_cast<QGuiGLContext *>(threadContext));
+    if (const QOpenGLContext *threadContext = QOpenGLContext::currentContext()) {
+        return QGLContext::fromOpenGLContext(const_cast<QOpenGLContext *>(threadContext));
     }
     return 0;
 }
@@ -4664,7 +4668,7 @@ void QGLWidget::drawTexture(const QPointF &point, GLuint textureId, GLenum textu
 
 Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_gl_2_engine)
 
-Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
+QPaintEngine* qt_qgl_paint_engine()
 {
     return qt_gl_2_engine()->engine();
 }
@@ -4934,12 +4938,12 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 
 Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
 
-Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
+void qt_set_gl_library_name(const QString& name)
 {
     qt_gl_lib_name()->operator=(name);
 }
 
-Q_OPENGL_EXPORT const QString qt_gl_library_name()
+const QString qt_gl_library_name()
 {
     if (qt_gl_lib_name()->isNull()) {
 # if defined(QT_OPENGL_ES_2)
