@@ -868,9 +868,8 @@ static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
         const CGRect bounds = CGDisplayBounds(displays[i]);
         // Translate to display-local coordinates
         QRect displayRect = rect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
-        // Adjust for inverted y axis.
-        displayRect.moveTop(qRound(bounds.size.height) - displayRect.y() - rect.height());
-        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i], bounds);
+        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
+            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
         QPixmap pix = QPixmap::fromMacCGImageRef(image);
         QPainter painter(&windowPixmap);
         painter.drawPixmap(-bounds.origin.x, -bounds.origin.y, pix);
