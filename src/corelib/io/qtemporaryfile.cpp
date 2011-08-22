@@ -135,7 +135,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 {
     Q_ASSERT(length != 0);
     Q_ASSERT(pos < size_t(path.length()));
-    Q_ASSERT(length < size_t(path.length()) - pos);
+    Q_ASSERT(length <= size_t(path.length()) - pos);
 
     Char *const placeholderStart = (Char *)path.data() + pos;
     Char *const placeholderEnd = placeholderStart + length;
