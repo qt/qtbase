@@ -666,9 +666,11 @@ QFontEngineMultiQPA::QFontEngineMultiQPA(QFontEngine *fe, int _script, const QSt
     : QFontEngineMulti(fallbacks.size() + 1),
       fallbackFamilies(fallbacks), script(_script)
 {
+    Q_ASSERT(fe && fe->type() != QFontEngine::Multi);
     engines[0] = fe;
     fe->ref.ref();
     fontDef = engines[0]->fontDef;
+    setObjectName(QStringLiteral("QFontEngineMultiQPA"));
 }
 
 void QFontEngineMultiQPA::loadEngine(int at)
