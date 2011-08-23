@@ -42,13 +42,22 @@
 #ifndef QPLATFORMINPUTCONTEXT_H
 #define QPLATFORMINPUTCONTEXT_H
 
-#include <qsharedpointer.h>
+#include <QtCore/QWeakPointer>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class QWindow;
 class QMouseEvent;
 
 class Q_GUI_EXPORT QPlatformInputContext
 {
 public:
     QPlatformInputContext();
+    virtual ~QPlatformInputContext();
 
     virtual void reset();
     virtual void update();
@@ -56,11 +65,16 @@ public:
     virtual void mouseHandler(int x, QMouseEvent *event);
 
     QObject *focusObject() const;
-    virtual void setFocusObject(QObject *o);
+    virtual void setFocusObject(QObject *object);
 
 //    virtual QList<QAction *> actions();
 private:
-    QWeakPointer<QObject> focus;
+    QWeakPointer<QObject> m_focusObject;
+    QWeakPointer<QWindow> m_focusWindow;
 };
 
-#endif
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMINPUTCONTEXT_H

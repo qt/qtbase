@@ -40,9 +40,16 @@
 ****************************************************************************/
 
 #include <qplatforminputcontext_qpa.h>
+
 #include <QtGui/QMouseEvent>
 
+QT_BEGIN_NAMESPACE
+
 QPlatformInputContext::QPlatformInputContext()
+{
+}
+
+QPlatformInputContext::~QPlatformInputContext()
 {
 }
 
@@ -64,10 +71,12 @@ void QPlatformInputContext::mouseHandler(int, QMouseEvent *event)
 
 QObject *QPlatformInputContext::focusObject() const
 {
-    return focus.data();
+    return m_focusObject.data();
 }
 
-void QPlatformInputContext::setFocusObject(QObject *o)
+void QPlatformInputContext::setFocusObject(QObject *object)
 {
-    focus = o;
+    m_focusObject = object;
 }
+
+QT_END_NAMESPACE
