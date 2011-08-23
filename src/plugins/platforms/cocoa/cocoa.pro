@@ -12,7 +12,8 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaglcontext.mm \
     qcocoanativeinterface.mm \
     qcocoaeventdispatcher.mm \
-    qcocoamenuloader.mm
+    qcocoamenuloader.mm \
+    qcocoahelpers.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -23,7 +24,9 @@ HEADERS += qcocoaintegration.h \
     qcocoaglcontext.h \
     qcocoanativeinterface.h \
     qcocoaeventdispatcher.h \
-    qcocoamenuloader.h
+    qcocoamenuloader.h \
+    qcocoahelpers.h \
+
 
 RESOURCES += qcocoaresources.qrc
 

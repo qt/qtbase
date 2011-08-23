@@ -46,6 +46,7 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoamenuloader.h"
 #include "qcocoaeventdispatcher.h"
+#include "qcocoahelpers.h"
 
 #include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 
@@ -81,12 +82,20 @@ QCocoaIntegration::QCocoaIntegration()
     [NSApplication sharedApplication];
 //    [[OurApplication alloc] init];
 
+    // Applications launched from plain executables (without an app
+    // bundle) are "background" applications that does not take keybaord
+    // focus or have a dock icon or task switcher entry. Qt Gui apps generally
+    // wants to be foreground applications so change the process type. (But
+    // see the function implementation for exceptions.)
+    qt_mac_transformProccessToForegroundApplication();
+
     // Move the application window to front to avoid launching behind the terminal.
     // Ignoring other apps is neccessary (we must ignore the terminal), but makes
     // Qt apps play slightly less nice with other apps when lanching from Finder
     // (See the activateIgnoringOtherApps docs.)
     [[NSApplication sharedApplication] activateIgnoringOtherApps : YES];
 
+    // Load the application menu. This menu contains Preferences, Hide, Quit.
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
     qt_mac_loadMenuNib(qtMenuLoader);
     [[NSApplication sharedApplication] setMenu:[qtMenuLoader menu]];
