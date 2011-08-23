@@ -119,9 +119,7 @@ SUBDIRS=\
     qpainterpath \
     qpainterpathstroker \
     qpalette \
-    qparallelanimationgroup \
     qpathclipper \
-    qpauseanimation \
     qpen \
     qpicture \
     qpixmapcache \
@@ -133,7 +131,6 @@ SUBDIRS=\
     qprocess \
     qprogressbar \
     qprogressdialog \
-    qpropertyanimation \
     qpushbutton \
     qquaternion \
     qradiobutton \

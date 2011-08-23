@@ -1,13 +1,9 @@
-# The tests in this .pro file _MUST_ use QtCore only (i.e. QT=core).
-# The test system is allowed to run these tests before the test of Qt has
-# been compiled.
-
 TEMPLATE=subdirs
 SUBDIRS=\
+   corelib \
    collections \
    exceptionsafety \
    q_func_info \
-   qanimationgroup \
    qatomicint \
    qatomicpointer \
    qbitarray \
@@ -62,7 +58,6 @@ SUBDIRS=\
    qscopedpointer \
    qscopedvaluerollback \
    qsemaphore \
-   qsequentialanimationgroup \
    qset \
    qsharedpointer \
    qsignalspy \

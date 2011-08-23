@@ -40,12 +40,12 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
+#include "../../../../shared/util.h"
 
 #include <QtCore/qpropertyanimation.h>
 #include <QtCore/qvariantanimation.h>
 #include <QtWidgets/qwidget.h>
-#include "../../shared/util.h"
+#include "../../../../shared/util.h"
 
 //TESTED_CLASS=QPropertyAnimation
 //TESTED_FILES=
