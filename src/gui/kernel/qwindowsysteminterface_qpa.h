@@ -105,7 +105,7 @@ public:
     static void handleMapEvent(QWindow *w);
     static void handleUnmapEvent(QWindow *w);
 
-    static void handleExposeEvent(QWindow *w, const QRegion &region);
+    static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
     // Drag and drop. These events are sent immediately.
     static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);

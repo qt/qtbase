@@ -276,10 +276,10 @@ void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &region)
+void QWindowSystemInterface::handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region)
 {
     QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
-    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags)

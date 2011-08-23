@@ -121,8 +121,10 @@ void QCocoaWindow::setVisible(bool visible)
         if (window()->transientParent())
             setGeometry(window()->geometry());
 
+        // Make sure the QWindow has a frame ready before we show the NSWindow.
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
+
         [m_nsWindow makeKeyAndOrderFront:nil];
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
     } else {
         [m_nsWindow orderOut:nil];
     }
@@ -319,7 +321,7 @@ QNSWindow * QCocoaWindow::createWindow()
         panel = [[NSPanel alloc] initWithContentRect:frame
                                    styleMask:m_windowAttributes
                                    backing:NSBackingStoreBuffered
-                                   defer:YES];
+                                   defer:NO]; // see window case below
 //  ### crashes
 //        [panel setFloatingPanel:needFloating];
 //        [panel setWorksWhenModal:worksWhenModal];
@@ -330,7 +332,8 @@ QNSWindow * QCocoaWindow::createWindow()
         window  = [[QNSWindow alloc] initWithContentRect:frame
                                             styleMask:(NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask)
                                             backing:NSBackingStoreBuffered
-                                            defer:YES];
+                                            defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
+                                                       // before the window is shown and needs a proper window.).
         break;
     }
 

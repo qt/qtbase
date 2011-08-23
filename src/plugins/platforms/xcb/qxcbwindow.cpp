@@ -1074,7 +1074,7 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
-    QWindowSystemInterface::handleExposeEvent(window(), rect);
+    QWindowSystemInterface::handleSynchronousExposeEvent(window(), rect);
 }
 
 void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)

@@ -902,7 +902,7 @@ void QWindowsWindow::handleWmPaint(HWND hwnd, UINT,
         if (QWindowsContext::verboseIntegration)
             qDebug() << __FUNCTION__ << this << window() << updateRect;
 
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(updateRect));
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRegion(updateRect));
         clearFlag(WithinWmPaint);
         m_hdc = 0;
         EndPaint(hwnd, &ps);

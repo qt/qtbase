@@ -125,7 +125,7 @@ void QWaylandWindow::attach(QWaylandBuffer *buffer)
     mBuffer = buffer;
     if (mSurface) {
         wl_surface_attach(mSurface, buffer->buffer(),0,0);
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
 }
 

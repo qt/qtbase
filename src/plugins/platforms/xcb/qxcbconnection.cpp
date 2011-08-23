@@ -472,7 +472,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 
     switch (response_type) {
     case XCB_EXPOSE:
-        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleSynchronousExposeEvent);
     case XCB_BUTTON_PRESS:
         HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
     case XCB_BUTTON_RELEASE:
