@@ -27,7 +27,6 @@ HEADERS = qbenchmark.h \
     qtestelement.h \
     qtestevent.h \
     qtesteventloop.h \
-    qtestfilelogger.h \
     qtest_global.h \
     qtest_gui.h \
     qtest.h \
@@ -60,8 +59,7 @@ SOURCES = qtestcase.cpp \
     qtestxunitstreamer.cpp \
     qtestxmlstreamer.cpp \
     qtestlightxmlstreamer.cpp \
-    qtestlogger.cpp \
-    qtestfilelogger.cpp
+    qtestlogger.cpp
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
     QTESTLIB_MAKEDLL \

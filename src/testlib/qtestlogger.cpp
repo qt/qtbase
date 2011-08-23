@@ -44,7 +44,6 @@
 #include "qtestxunitstreamer.h"
 #include "qtestxmlstreamer.h"
 #include "qtestlightxmlstreamer.h"
-#include "qtestfilelogger.h"
 
 #include "QtTest/qtestcase.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -56,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QTestLogger::QTestLogger(int fm)
     :listOfTestcases(0), currentLogElement(0), errorLogElement(0),
-    logFormatter(0), format( (TestLoggerFormat)fm ), filelogger(new QTestFileLogger),
+    logFormatter(0), format( (TestLoggerFormat)fm ),
     testCounter(0), passCounter(0),
     failureCounter(0), errorCounter(0),
     warningCounter(0), skipCounter(0),
@@ -75,7 +74,6 @@ QTestLogger::~QTestLogger()
         delete listOfTestcases;
 
     delete logFormatter;
-    delete filelogger;
 }
 
 void QTestLogger::startLogging(const char *filename)
@@ -83,21 +81,17 @@ void QTestLogger::startLogging(const char *filename)
     QAbstractTestLogger::startLogging(filename);
 
     switch(format){
-    case TLF_LightXml:{
+    case TLF_LightXml:
         logFormatter = new QTestLightXmlStreamer(this);
-        filelogger->init();
         break;
-    }case TLF_XML:{
+    case TLF_XML:
         logFormatter = new QTestXmlStreamer(this);
-        filelogger->init();
         break;
-    }case TLF_XunitXml:{
+    case TLF_XunitXml:
         logFormatter = new QTestXunitStreamer(this);
         delete errorLogElement;
         errorLogElement = new QTestElement(QTest::LET_SystemError);
-        filelogger->init();
         break;
-    }
     }
 }
 
@@ -165,10 +159,6 @@ void QTestLogger::stopLogging()
 
 void QTestLogger::enterTestFunction(const char *function)
 {
-    char buf[1024];
-    QTest::qt_snprintf(buf, sizeof(buf), "Entered test-function: %s\n", function);
-    filelogger->flush(buf);
-
     currentLogElement = new QTestElement(QTest::LET_TestCase);
     currentLogElement->addAttribute(QTest::AI_Name, function);
     currentLogElement->addToList(&listOfTestcases);

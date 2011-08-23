@@ -59,7 +59,6 @@ QT_BEGIN_NAMESPACE
 
 class QTestBasicStreamer;
 class QTestElement;
-class QTestFileLogger;
 
 class QTestLogger : public QAbstractTestLogger
 {
@@ -111,7 +110,6 @@ class QTestLogger : public QAbstractTestLogger
         QTestElement *errorLogElement;
         QTestBasicStreamer *logFormatter;
         TestLoggerFormat format;
-        QTestFileLogger *filelogger;
 
         int testCounter;
         int passCounter;
