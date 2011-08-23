@@ -112,8 +112,6 @@ tests/auto/qprocess/fileWriterProcess.txt
 .com.apple.timemachine.supported
 tests/auto/qlibrary/libmylib.so*
 tests/auto/qresourceengine/runtime_resource.rcc
-tools/qtestlib/chart/chart*
-tools/qtestlib/updater/updater*
 tools/activeqt/testcon/testcon.tlb
 translations/*.qm
 translations/*_untranslated.ts
