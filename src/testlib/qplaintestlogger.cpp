@@ -71,85 +71,46 @@ QT_BEGIN_NAMESPACE
 namespace QTest {
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-
     static CRITICAL_SECTION outputCriticalSection;
-    static HANDLE hConsole = INVALID_HANDLE_VALUE;
-    static WORD consoleAttributes = 0;
-
-    static const char *qWinColoredMsg(int prefix, int color, const char *msg)
-    {
-        if (!hConsole)
-            return msg;
-
-        WORD attr = consoleAttributes & ~(FOREGROUND_GREEN | FOREGROUND_BLUE
-                  | FOREGROUND_RED | FOREGROUND_INTENSITY);
-        if (prefix)
-            attr |= FOREGROUND_INTENSITY;
-        if (color == 32)
-            attr |= FOREGROUND_GREEN;
-        if (color == 36)
-            attr |= FOREGROUND_BLUE | FOREGROUND_GREEN;
-        if (color == 31)
-            attr |= FOREGROUND_RED | FOREGROUND_INTENSITY;
-        if (color == 37)
-            attr |= FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-        if (color == 33)
-            attr |= FOREGROUND_RED | FOREGROUND_GREEN;
-        SetConsoleTextAttribute(hConsole, attr);
-        printf(msg);
-        SetConsoleTextAttribute(hConsole, consoleAttributes);
-        return "";
-    }
-
-# define COLORED_MSG(prefix, color, msg) colored ? qWinColoredMsg(prefix, color, msg) : msg
-#else
-# define COLORED_MSG(prefix, color, msg) colored && QAbstractTestLogger::isTtyOutput() ? "\033["#prefix";"#color"m" msg "\033[0m" : msg
 #endif
 
     static const char *incidentType2String(QAbstractTestLogger::IncidentTypes type)
     {
-        static bool colored = (!qgetenv("QTEST_COLORED").isEmpty());
         switch (type) {
         case QAbstractTestLogger::Pass:
-            return COLORED_MSG(0, 32, "PASS   "); //green
+            return "PASS   ";
         case QAbstractTestLogger::XFail:
-            return COLORED_MSG(1, 32, "XFAIL  "); //light green
+            return "XFAIL  ";
         case QAbstractTestLogger::Fail:
-            return COLORED_MSG(0, 31, "FAIL!  "); //red
+            return "FAIL!  ";
         case QAbstractTestLogger::XPass:
-            return COLORED_MSG(0, 31, "XPASS  "); //red, too
+            return "XPASS  ";
         }
         return "??????";
     }
 
     static const char *benchmarkResult2String()
     {
-        static bool colored = (!qgetenv("QTEST_COLORED").isEmpty());
-        return COLORED_MSG(0, 36, "RESULT "); // cyan
+        return "RESULT ";
     }
 
     static const char *messageType2String(QAbstractTestLogger::MessageTypes type)
     {
-#ifdef Q_OS_WIN
-        static bool colored = (!qgetenv("QTEST_COLORED").isEmpty());
-#else
-        static bool colored = ::getenv("QTEST_COLORED");
-#endif
         switch (type) {
         case QAbstractTestLogger::Skip:
-            return COLORED_MSG(0, 37, "SKIP   "); //white
+            return "SKIP   ";
         case QAbstractTestLogger::Warn:
-            return COLORED_MSG(0, 33, "WARNING"); // yellow
+            return "WARNING";
         case QAbstractTestLogger::QWarning:
-            return COLORED_MSG(1, 33, "QWARN  ");
+            return "QWARN  ";
         case QAbstractTestLogger::QDebug:
-            return COLORED_MSG(1, 33, "QDEBUG ");
+            return "QDEBUG ";
         case QAbstractTestLogger::QSystem:
-            return COLORED_MSG(1, 33, "QSYSTEM");
+            return "QSYSTEM";
         case QAbstractTestLogger::QFatal:
-            return COLORED_MSG(0, 31, "QFATAL "); // red
+            return "QFATAL ";
         case QAbstractTestLogger::Info:
-            return "INFO   "; // no coloring
+            return "INFO   ";
         }
         return "??????";
     }
@@ -388,15 +349,6 @@ QPlainTestLogger::QPlainTestLogger()
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     InitializeCriticalSection(&QTest::outputCriticalSection);
-    QTest::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (QTest::hConsole != INVALID_HANDLE_VALUE) {
-        CONSOLE_SCREEN_BUFFER_INFO info;
-        if (GetConsoleScreenBufferInfo(QTest::hConsole, &info)) {
-            QTest::consoleAttributes = info.wAttributes;
-        } else {
-            QTest::hConsole = INVALID_HANDLE_VALUE;
-        }
-    }
 #endif
 }
 

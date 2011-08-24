@@ -67,19 +67,6 @@ void QAbstractTestLogger::outputString(const char *msg)
     ::fflush(QTest::stream);
 }
 
-bool QAbstractTestLogger::isTtyOutput()
-{
-    QTEST_ASSERT(QTest::stream);
-
-#if defined(Q_OS_WIN) || defined(Q_OS_INTEGRITY)
-    return true;
-#else
-    static bool ttyoutput = isatty(fileno(QTest::stream));
-    return ttyoutput;
-#endif
-}
-
-
 void QAbstractTestLogger::startLogging(const char *filename)
 {
     QTEST_ASSERT(!QTest::stream);

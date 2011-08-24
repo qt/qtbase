@@ -98,7 +98,6 @@ public:
     virtual void registerRandomSeed(unsigned int seed) = 0;
 
     static void outputString(const char *msg);
-    static bool isTtyOutput();
 };
 
 struct QTestCharBuffer
