@@ -3,7 +3,6 @@ SUBDIRS=\
    corelib \
    collections \
    exceptionsafety \
-   q_func_info \
    qatomicint \
    qatomicpointer \
    qbitarray \
@@ -25,10 +24,7 @@ SUBDIRS=\
    qexplicitlyshareddatapointer \
    qfileinfo \
    qfilesystemwatcher \
-   qflags \
    qfreelist \
-   qgetputenv \
-   qglobal \
    qhash \
    qlibrary \
    qline \
@@ -38,7 +34,6 @@ SUBDIRS=\
    qmetatype \
    qmutex \
    qmutexlocker \
-   qnumeric \
    qobject \
    qobjectrace \
    qplugin \
@@ -46,7 +41,6 @@ SUBDIRS=\
    qpoint \
    qprocessenvironment \
    qqueue \
-   qrand \
    qreadlocker \
    qreadwritelock \
    qrect \

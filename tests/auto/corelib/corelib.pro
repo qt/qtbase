@@ -2,4 +2,5 @@ TEMPLATE=subdirs
 SUBDIRS=\
    animation \
    codecs \
-   concurrent
+   concurrent \
+   global
