@@ -58,17 +58,17 @@ public:
         EglContext
     };
 
-    void *nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget);
+    void *nativeResourceForWidget(const QByteArray &resourceString, QWindow *widget);
 
-    void *displayForWidget(QWidget *widget);
-    void *eglDisplayForWidget(QWidget *widget);
-    void *connectionForWidget(QWidget *widget);
-    void *screenForWidget(QWidget *widget);
-    void *graphicsDeviceForWidget(QWidget *widget);
-    void *eglContextForWidget(QWidget *widget);
+    void *displayForWidget(QWindow *widget);
+    void *eglDisplayForWidget(QWindow *widget);
+    void *connectionForWidget(QWindow *widget);
+    void *screenForWidget(QWindow *widget);
+    void *graphicsDeviceForWidget(QWindow *widget);
+    void *eglContextForWidget(QWindow *widget);
 
 private:
-    static QXlibScreen *qPlatformScreenForWidget(QWidget *widget);
+    static QXlibScreen *qPlatformScreenForWidget(QWindow *widget);
 };
 
 

@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
 #include "qxlibnativeinterface.h"
 
 #include "qxlibdisplay.h"
-#include <QtGui/private/qapplication_p.h>
+#include "qscreen.h"
 
 class QXlibResourceMap : public QMap<QByteArray, QXlibNativeInterface::ResourceType>
 {
@@ -62,7 +63,7 @@ public:
 Q_GLOBAL_STATIC(QXlibResourceMap, qXlibResourceMap)
 
 
-void * QXlibNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
+void * QXlibNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWindow *widget)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qXlibResourceMap()->value(lowerCaseResource);
@@ -92,42 +93,37 @@ void * QXlibNativeInterface::nativeResourceForWidget(const QByteArray &resourceS
     return result;
 }
 
-void * QXlibNativeInterface::displayForWidget(QWidget *widget)
+void * QXlibNativeInterface::displayForWidget(QWindow *widget)
 {
     return qPlatformScreenForWidget(widget)->display()->nativeDisplay();
 }
 
-void * QXlibNativeInterface::eglDisplayForWidget(QWidget *widget)
+void * QXlibNativeInterface::eglDisplayForWidget(QWindow *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QXlibNativeInterface::screenForWidget(QWidget *widget)
+void * QXlibNativeInterface::screenForWidget(QWindow *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QXlibNativeInterface::graphicsDeviceForWidget(QWidget *widget)
+void * QXlibNativeInterface::graphicsDeviceForWidget(QWindow *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-void * QXlibNativeInterface::eglContextForWidget(QWidget *widget)
+void * QXlibNativeInterface::eglContextForWidget(QWindow *widget)
 {
     Q_UNUSED(widget);
     return 0;
 }
 
-QXlibScreen * QXlibNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+QXlibScreen * QXlibNativeInterface::qPlatformScreenForWidget(QWindow *widget)
 {
-    QXlibScreen *screen;
-    if (widget) {
-        screen = static_cast<QXlibScreen *>(QPlatformScreen::platformScreenForWidget(widget));
-    }else {
-        screen = static_cast<QXlibScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
-    }
-    return screen;
+    QScreen *screen = widget ? widget->screen() : QGuiApplication::primaryScreen();
+    return static_cast<QXlibScreen *>(screen->handle());
 }

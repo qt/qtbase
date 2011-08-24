@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
 #include "qxlibstatic.h"
 #include "qxlibscreen.h"
 #include "qxlibdisplay.h"
 
 #include <qplatformdefs.h>
+#include <QtGui/qscreen.h>
 
-#include <QtGui/private/qapplication_p.h>
 #include <QtCore/QBuffer>
 #include <QtCore/QLibrary>
 
@@ -258,7 +259,7 @@ public:
         , xfixes_eventbase(0)
         , xfixes_errorbase(0)
     {
-        QXlibScreen *screen = qobject_cast<QXlibScreen *> (QApplicationPrivate::platformIntegration()->screens().at(0));
+        QXlibScreen *screen = static_cast<QXlibScreen *> (QGuiApplication::primaryScreen()->handle());
         Q_ASSERT(screen);
 
         initializeAllAtoms(screen);

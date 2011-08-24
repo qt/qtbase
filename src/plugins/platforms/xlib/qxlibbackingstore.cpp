@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qxlibwindowsurface.h"
+#include "qxlibbackingstore.h"
 #include "qxlibintegration.h"
 
 #include <QtCore/qdebug.h>
@@ -56,7 +56,6 @@
 # include <X11/extensions/XShm.h>
 
 QT_BEGIN_NAMESPACE
-
 
 struct QXlibShmImageInfo {
     QXlibShmImageInfo(Display *xdisplay) :  image(0), display(xdisplay) {}
@@ -80,13 +79,15 @@ void QXlibShmImageInfo::destroy()
 }
 #endif
 
-void QXlibWindowSurface::resizeShmImage(int width, int height)
+void QXlibBackingStore::resizeShmImage(int width, int height)
 {
     QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(window());
-    QXlibWindow *win = static_cast<QXlibWindow*>(window()->platformWindow());
+    QXlibWindow *win = static_cast<QXlibWindow*>(window()->handle());
+
+    QImage::Format format = win->depth() == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
 
 #ifdef DONT_USE_MIT_SHM
-    shm_img = QImage(width, height, win->format());
+    shm_img = QImage(width, height, format);
 #else
 
     if (image_info)
@@ -110,69 +111,68 @@ void QXlibWindowSurface::resizeShmImage(int width, int height)
 
     Q_ASSERT(shm_attach_status == True);
 
-    shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, win->format() );
+    shm_img = QImage((uchar*) image->data, image->width, image->height, image->bytes_per_line, format);
 #endif
     painted = false;
 }
 
 
-void QXlibWindowSurface::resizeBuffer(QSize s)
+void QXlibBackingStore::resizeBuffer(QSize s)
 {
     if (shm_img.size() != s)
         resizeShmImage(s.width(), s.height());
 }
 
-QSize QXlibWindowSurface::bufferSize() const
+QSize QXlibBackingStore::bufferSize() const
 {
     return shm_img.size();
 }
 
-QXlibWindowSurface::QXlibWindowSurface (QWidget *window)
-    : QWindowSurface(window),
+QXlibBackingStore::QXlibBackingStore(QWindow *window)
+    : QPlatformBackingStore(window),
       painted(false), image_info(0)
 {
-    xw = static_cast<QXlibWindow*>(window->platformWindow());
+    xw = static_cast<QXlibWindow*>(window->handle());
 //    qDebug() << "QTestLiteWindowSurface::QTestLiteWindowSurface:" << xw->window;
 }
 
-QXlibWindowSurface::~QXlibWindowSurface()
+QXlibBackingStore::~QXlibBackingStore()
 {
     delete image_info;
 }
 
-QPaintDevice *QXlibWindowSurface::paintDevice()
+QPaintDevice *QXlibBackingStore::paintDevice()
 {
     return &shm_img;
 }
 
 
-void QXlibWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QXlibBackingStore::flush(QWindow *w, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
     if (!painted)
         return;
 
-    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(widget);
+    QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(w);
     GC gc = xw->graphicsContext();
     Window window = xw->xWindow();
 #ifdef DONT_USE_MIT_SHM
     // just convert the image every time...
     if (!shm_img.isNull()) {
-        QXlibWindow *win = static_cast<QXlibWindow*>(window()->platformWindow());
+        QXlibWindow *win = static_cast<QXlibWindow*>(w->handle());
 
         QImage image = shm_img;
         //img.convertToFormat(
-        XImage *xi = XCreateImage(screen->display(), win->visual(), win->depth(), ZPixmap,
+        XImage *xi = XCreateImage(screen->display()->nativeDisplay(), win->visual(), win->depth(), ZPixmap,
                                   0, (char *) image.scanLine(0), image.width(), image.height(),
                                   32, image.bytesPerLine());
 
         int x = 0;
         int y = 0;
 
-        /*int r =*/  XPutImage(screen->display(), window, gc, xi, 0, 0, x, y, image.width(), image.height());
+        /*int r =*/  XPutImage(screen->display()->nativeDisplay(), window, gc, xi, 0, 0, x, y, image.width(), image.height());
 
         xi->data = 0; // QImage owns these bits
         XDestroyImage(xi);
@@ -195,26 +195,15 @@ void QXlibWindowSurface::flush(QWidget *widget, const QRegion &region, const QPo
 #endif
 }
 
-// from qwindowsurface.cpp
-extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
-
-bool QXlibWindowSurface::scroll(const QRegion &area, int dx, int dy)
+void QXlibBackingStore::resize(const QSize &size, const QRegion &)
 {
-    if (shm_img.isNull())
-        return false;
-
-    const QVector<QRect> rects = area.rects();
-    for (int i = 0; i < rects.size(); ++i)
-        qt_scrollRectInImage(shm_img, rects.at(i), QPoint(dx, dy));
-
-    return true;
+    resizeBuffer(size);
 }
 
 
-void QXlibWindowSurface::beginPaint(const QRegion &region)
+void QXlibBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    resizeBuffer(size());
 
     if (shm_img.hasAlphaChannel()) {
         QPainter p(&shm_img);
@@ -227,9 +216,8 @@ void QXlibWindowSurface::beginPaint(const QRegion &region)
     }
 }
 
-void QXlibWindowSurface::endPaint(const QRegion &region)
+void QXlibBackingStore::endPaint()
 {
-    Q_UNUSED(region);
     painted = true; //there is content in the buffer
 }
 QT_END_NAMESPACE

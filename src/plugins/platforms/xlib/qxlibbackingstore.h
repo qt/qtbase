@@ -42,8 +42,8 @@
 #ifndef QWINDOWSURFACE_TESTLITE_H
 #define QWINDOWSURFACE_TESTLITE_H
 
-#include <QtGui/private/qwindowsurface_p.h>
-
+#include <QtGui/qplatformbackingstore_qpa.h>
+#include <QtGui/QImage>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,18 +52,19 @@ class QXlibIntegration;
 class QXlibScreen;
 class QXlibShmImageInfo;
 
-class QXlibWindowSurface : public QWindowSurface
+class QXlibBackingStore : public QPlatformBackingStore
 {
 public:
-    QXlibWindowSurface (QWidget *window);
-    ~QXlibWindowSurface();
+    QXlibBackingStore (QWindow *window);
+    ~QXlibBackingStore();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    bool scroll(const QRegion &area, int dx, int dy);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+
+    void resize(const QSize &size, const QRegion &staticContents);
 
     void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
+    void endPaint();
 
 private:
     bool painted;

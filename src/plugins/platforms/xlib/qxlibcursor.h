@@ -53,7 +53,7 @@ class QXlibCursor : QPlatformCursor
 public:
     QXlibCursor(QXlibScreen *screen);
 
-    void changeCursor(QCursor * cursor, QWidget * widget);
+    void changeCursor(QCursor * cursor, QWindow * widget);
 private:
 
     Cursor createCursorBitmap(QCursor * cursor);

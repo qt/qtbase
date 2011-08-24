@@ -45,7 +45,7 @@
 #include "qxlibwindow.h"
 
 #include <QtGui/QPlatformGLContext>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/qsurfaceformat.h>
 
 #include <QtCore/QMutex>
 
@@ -57,25 +57,23 @@ QT_BEGIN_NAMESPACE
 class QGLXContext : public QPlatformGLContext
 {
 public:
-    QGLXContext(Window window, QXlibScreen *xd, const QPlatformWindowFormat &format);
+    QGLXContext(QXlibScreen *xd, const QSurfaceFormat &format, QPlatformGLContext *share);
     ~QGLXContext();
 
-    virtual void makeCurrent();
-    virtual void doneCurrent();
-    virtual void swapBuffers();
-    virtual void* getProcAddress(const QString& procName);
+    QSurfaceFormat format() const;
+    void swapBuffers(QPlatformSurface *surface);
+    bool makeCurrent(QPlatformSurface *surface);
+    void doneCurrent();
+    virtual void (*getProcAddress(const QByteArray& procName))();
 
     GLXContext glxContext() const {return m_context;}
 
-    QPlatformWindowFormat platformWindowFormat() const;
+    QSurfaceFormat surfaceFormat() const;
 
 private:
     QXlibScreen  *m_screen;
-    Drawable    m_drawable;
     GLXContext  m_context;
-    QPlatformWindowFormat m_windowFormat;
-
-    QGLXContext (QXlibScreen *screen, Drawable drawable, GLXContext context);
+    QSurfaceFormat m_windowFormat;
 };
 
 QT_END_NAMESPACE

@@ -987,7 +987,7 @@ static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
     }
 }
 
-void QXlibKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev)
+void QXlibKeyboard::handleKeyEvent(QWindow *widget, QEvent::Type type, XKeyEvent *ev)
 {
     int qtcode = 0;
     Qt::KeyboardModifiers modifiers = translateModifiers(ev->state);

@@ -54,10 +54,7 @@ public:
 QStringList QXlibIntegrationPlugin::keys() const
 {
     QStringList list;
-    list << "Xlib";
-#ifndef QT_NO_OPENGL
-    list << "XlibGL";
-#endif
+    list << "xlib";
     return list;
 }
 
@@ -66,10 +63,6 @@ QPlatformIntegration* QXlibIntegrationPlugin::create(const QString& system, cons
     Q_UNUSED(paramList);
     if (system.toLower() == "xlib")
         return new QXlibIntegration;
-#ifndef QT_NO_OPENGL
-    if (system.toLower() == "xlibgl")
-        return new QXlibIntegration(true);
-#endif
 
     return 0;
 }

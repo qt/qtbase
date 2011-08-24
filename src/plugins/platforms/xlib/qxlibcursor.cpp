@@ -57,12 +57,11 @@ QXlibCursor::QXlibCursor(QXlibScreen *screen)
 {
 }
 
-void QXlibCursor::changeCursor(QCursor *cursor, QWidget *widget)
+void QXlibCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     QXlibWindow *w = 0;
-    if (widget) {
-        QWidget *window = widget->window();
-        w = static_cast<QXlibWindow*>(window->platformWindow());
+    if (window) {
+        w = static_cast<QXlibWindow*>(window->handle());
     } else {
         // No X11 cursor control when there is no widget under the cursor
         return;

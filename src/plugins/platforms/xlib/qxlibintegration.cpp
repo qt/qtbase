@@ -39,10 +39,13 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
 #include "qxlibintegration.h"
-#include "qxlibwindowsurface.h"
+#include "qxlibbackingstore.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
+#include <QtGui/qguiglcontext_qpa.h>
+#include <QtGui/qscreen.h>
 
 #include "qxlibwindow.h"
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -51,83 +54,49 @@
 #include "qxlibclipboard.h"
 #include "qxlibdisplay.h"
 #include "qxlibnativeinterface.h"
-
-#if !defined(QT_NO_OPENGL)
-#if !defined(QT_OPENGL_ES_2)
-#include <GL/glx.h>
-#else
-#include <EGL/egl.h>
-#endif //!defined(QT_OPENGL_ES_2)
-#include <private/qwindowsurface_gl_p.h>
-#include <qplatformpixmap_gl_p.h>
-#endif //QT_NO_OPENGL
+#include "qglxintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-QXlibIntegration::QXlibIntegration(bool useOpenGL)
-    : mUseOpenGL(useOpenGL)
-    , mFontDb(new QGenericUnixFontDatabase())
+QXlibIntegration::QXlibIntegration()
+    : mFontDb(new QGenericUnixFontDatabase())
     , mClipboard(0)
     , mNativeInterface(new QXlibNativeInterface)
 {
+    mEventDispatcher = createUnixEventDispatcher();
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+
     mPrimaryScreen = new QXlibScreen();
     mScreens.append(mPrimaryScreen);
+    screenAdded(mPrimaryScreen);
 }
 
-bool QXlibIntegration::hasCapability(QPlatformIntegration::Capability cap) const
+bool QXlibIntegration::hasCapability(QPlatformIntegration::Capability) const
 {
-    switch (cap) {
-    case ThreadedPixmaps: return true;
-    case OpenGL: return hasOpenGL();
-    default: return QPlatformIntegration::hasCapability(cap);
-    }
+    return true;
 }
 
-QPlatformPixmap *QXlibIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
+QPlatformBackingStore *QXlibIntegration::createPlatformBackingStore(QWindow *window) const
 {
-#ifndef QT_NO_OPENGL
-    if (mUseOpenGL)
-        return new QGLPlatformPixmap(type);
-#endif
-    return new QRasterPlatformPixmap(type);
+    return new QXlibBackingStore(window);
 }
 
-QWindowSurface *QXlibIntegration::createWindowSurface(QWidget *widget, WId) const
+QPlatformGLContext *QXlibIntegration::createPlatformGLContext(QGuiGLContext *context) const
 {
-#ifndef QT_NO_OPENGL
-    if (mUseOpenGL)
-        return new QGLWindowSurface(widget);
-#endif
-    return new QXlibWindowSurface(widget);
+    QXlibScreen *screen = static_cast<QXlibScreen *>(context->screen()->handle());
+
+    return new QGLXContext(screen, context->format(), context->shareHandle());
 }
 
 
-QPlatformWindow *QXlibIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
+QPlatformWindow *QXlibIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QXlibWindow(widget);
+    return new QXlibWindow(window);
 }
 
-QAbstractEventDispatcher *QXlibIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QXlibIntegration::guiThreadEventDispatcher() const
 {
-    return createUnixEventDispatcher();
-}
-
-QPixmap QXlibIntegration::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    QImage image;
-    QWidget *widget = QWidget::find(window);
-    if (widget) {
-        QXlibScreen *screen = QXlibScreen::testLiteScreenForWidget(widget);
-        image = screen->grabWindow(window,x,y,width,height);
-    } else {
-        for (int i = 0; i < mScreens.size(); i++) {
-            QXlibScreen *screen = static_cast<QXlibScreen *>(mScreens[i]);
-            if (screen->rootWindow() == window) {
-                image = screen->grabWindow(window,x,y,width,height);
-            }
-        }
-    }
-    return QPixmap::fromImage(image);
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QXlibIntegration::fontDatabase() const
@@ -148,30 +117,6 @@ QPlatformClipboard * QXlibIntegration::clipboard() const
 QPlatformNativeInterface * QXlibIntegration::nativeInterface() const
 {
     return mNativeInterface;
-}
-
-bool QXlibIntegration::hasOpenGL() const
-{
-#if !defined(QT_NO_OPENGL)
-#if !defined(QT_OPENGL_ES_2)
-    QXlibScreen *screen = static_cast<QXlibScreen *>(mScreens.at(0));
-    return glXQueryExtension(screen->display()->nativeDisplay(), 0, 0) != 0;
-#else
-    static bool eglHasbeenInitialized = false;
-    static bool wasEglInitialized = false;
-    if (!eglHasbeenInitialized) {
-        eglHasbeenInitialized = true;
-        QXlibScreen *screen = static_cast<QXlibScreen *>(mScreens.at(0));
-        EGLint major, minor;
-        eglBindAPI(EGL_OPENGL_ES_API);
-        EGLDisplay disp = eglGetDisplay(screen->display()->nativeDisplay());
-        wasEglInitialized = eglInitialize(disp,&major,&minor);
-        screen->setEglDisplay(disp);
-    }
-    return wasEglInitialized;
-#endif
-#endif
-    return false;
 }
 
 QT_END_NAMESPACE
