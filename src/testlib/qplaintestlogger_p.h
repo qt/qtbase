@@ -63,7 +63,7 @@ public:
     QPlainTestLogger();
     ~QPlainTestLogger();
 
-    void startLogging();
+    void startLogging(const char *filename);
     void stopLogging();
 
     void enterTestFunction(const char *function);

@@ -82,7 +82,7 @@ public:
     QAbstractTestLogger() {}
     virtual ~QAbstractTestLogger() {}
 
-    virtual void startLogging();
+    virtual void startLogging(const char *filename);
     virtual void stopLogging();
 
     virtual void enterTestFunction(const char *function) = 0;

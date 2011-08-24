@@ -78,9 +78,9 @@ QTestLogger::~QTestLogger()
     delete filelogger;
 }
 
-void QTestLogger::startLogging()
+void QTestLogger::startLogging(const char *filename)
 {
-    QAbstractTestLogger::startLogging();
+    QAbstractTestLogger::startLogging(filename);
 
     switch(format){
     case TLF_LightXml:{

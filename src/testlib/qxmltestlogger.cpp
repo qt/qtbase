@@ -102,9 +102,9 @@ QXmlTestLogger::~QXmlTestLogger()
 {
 }
 
-void QXmlTestLogger::startLogging()
+void QXmlTestLogger::startLogging(const char *filename)
 {
-    QAbstractTestLogger::startLogging();
+    QAbstractTestLogger::startLogging(filename);
     QTestCharBuffer buf;
 
     if (xmlmode == QXmlTestLogger::Complete) {

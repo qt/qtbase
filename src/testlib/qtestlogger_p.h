@@ -74,7 +74,7 @@ class QTestLogger : public QAbstractTestLogger
             TLF_XunitXml = 2
         };
 
-        void startLogging();
+        void startLogging(const char *filename);
         void stopLogging();
 
         void enterTestFunction(const char *function);

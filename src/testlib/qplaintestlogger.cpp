@@ -407,9 +407,9 @@ QPlainTestLogger::~QPlainTestLogger()
 #endif
 }
 
-void QPlainTestLogger::startLogging()
+void QPlainTestLogger::startLogging(const char *filename)
 {
-    QAbstractTestLogger::startLogging();
+    QAbstractTestLogger::startLogging(filename);
 
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {
