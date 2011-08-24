@@ -79,6 +79,9 @@ typedef struct tagUPDATELAYEREDWINDOWINFO {
 #define PFD_DIRECT3D_ACCELERATED    0x00004000
 #define PFD_SUPPORT_COMPOSITION     0x00008000
 
+// IME.
+#define IMR_CONFIRMRECONVERTSTRING      0x0005
+
 #endif // if defined(Q_CC_MINGW)
 
 /* Touch is supported from Windows 7 onwards and data structures

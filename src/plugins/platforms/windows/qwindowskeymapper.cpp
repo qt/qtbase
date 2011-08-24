@@ -732,8 +732,7 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
         return true;
     if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
         updateKeyMap(msg);
-    translateKeyEventInternal(widget, msg, false);
-    return true;
+    return translateKeyEventInternal(widget, msg, false);
 }
 
 bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &msg, bool /* grab */)

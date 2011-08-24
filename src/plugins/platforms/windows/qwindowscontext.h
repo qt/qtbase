@@ -106,6 +106,7 @@ public:
     static int verboseFonts;
     static int verboseGL;
     static int verboseOLE;
+    static int verboseInputMethods;
 
     explicit QWindowsContext(bool isOpenGL);
     ~QWindowsContext();

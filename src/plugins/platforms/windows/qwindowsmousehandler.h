@@ -66,6 +66,7 @@ public:
                              LRESULT *result);
 
     static inline Qt::MouseButtons keyStateToMouseButtons(int);
+    static inline int mouseButtonsToKeyState(Qt::MouseButtons);
 
     QWindow *windowUnderMouse() const { return m_windowUnderMouse.data(); }
 
@@ -91,6 +92,22 @@ Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)
     if (wParam & MK_XBUTTON2)
         mb |= Qt::XButton2;
     return mb;
+}
+
+int QWindowsMouseHandler::mouseButtonsToKeyState(Qt::MouseButtons mb)
+{
+    int result = 0;
+    if (mb & Qt::LeftButton)
+        result |= MK_LBUTTON;
+    if (mb & Qt::MiddleButton)
+        result |= MK_MBUTTON;
+    if (mb & Qt::RightButton)
+        result |= MK_RBUTTON;
+    if (mb & Qt::XButton1)
+        result |= MK_XBUTTON1;
+    if (mb & Qt::XButton2)
+        result |= MK_XBUTTON2;
+    return result;
 }
 
 QT_END_NAMESPACE

@@ -46,6 +46,7 @@
 #include "qwindowsmousehandler.h"
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
+#include "qwindowsinputcontext.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -72,6 +73,7 @@ int QWindowsContext::verboseBackingStore = 0;
 int QWindowsContext::verboseFonts = 0;
 int QWindowsContext::verboseGL = 0;
 int QWindowsContext::verboseOLE = 0;
+int QWindowsContext::verboseInputMethods = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
 static inline int componentVerbose(const char *v, const char *keyWord)
@@ -240,6 +242,7 @@ QWindowsContext::QWindowsContext(bool isOpenGL) :
         QWindowsContext::verboseFonts = componentVerbose(v, "fonts");
         QWindowsContext::verboseGL = componentVerbose(v, "gl");
         QWindowsContext::verboseOLE = componentVerbose(v, "ole");
+        QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
     }
 }
 
@@ -603,8 +606,21 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::DeactivateWindowEvent:
         QWindowSystemInterface::handleWindowActivated(0);
         return true;
+    case QtWindows::InputMethodStartCompositionEvent:
+        return QWindowsInputContext::instance()->startComposition(hwnd);
+    case QtWindows::InputMethodCompositionEvent:
+        return QWindowsInputContext::instance()->composition(hwnd, lParam);
+    case QtWindows::InputMethodEndCompositionEvent:
+        return QWindowsInputContext::instance()->endComposition(hwnd);
+    case QtWindows::InputMethodRequest:
+        return QWindowsInputContext::instance()->handleIME_Request(wParam, lParam, result);
+    case QtWindows::InputMethodOpenCandidateWindowEvent:
+    case QtWindows::InputMethodCloseCandidateWindowEvent:
+        // TODO: Release/regrab mouse if a popup has mouse grab.
+        return false;
     case QtWindows::ClipboardEvent:
     case QtWindows::DestroyEvent:
+
     case QtWindows::UnknownEvent:
         return false;
     default:

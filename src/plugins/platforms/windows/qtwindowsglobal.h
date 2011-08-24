@@ -88,6 +88,12 @@ enum WindowsEventType // Simplify event types
     ClipboardEvent = ClipboardEventFlag + 1,
     ActivateApplicationEvent = ApplicationEventFlag + 1,
     DeactivateApplicationEvent = ApplicationEventFlag + 2,
+    InputMethodStartCompositionEvent = InputMethodEventFlag + 1,
+    InputMethodCompositionEvent = InputMethodEventFlag + 2,
+    InputMethodEndCompositionEvent = InputMethodEventFlag + 3,
+    InputMethodOpenCandidateWindowEvent = InputMethodEventFlag + 4,
+    InputMethodCloseCandidateWindowEvent = InputMethodEventFlag + 5,
+    InputMethodRequest = InputMethodEventFlag + 6,
     UnknownEvent = 542
 };
 
@@ -143,6 +149,23 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_RENDERALLFORMATS:
     case WM_DESTROYCLIPBOARD:
         return QtWindows::ClipboardEvent;
+    case WM_IME_STARTCOMPOSITION:
+        return QtWindows::InputMethodStartCompositionEvent;
+    case WM_IME_ENDCOMPOSITION:
+        return QtWindows::InputMethodEndCompositionEvent;
+    case WM_IME_COMPOSITION:
+        return QtWindows::InputMethodCompositionEvent;
+    case WM_IME_REQUEST:
+        return QtWindows::InputMethodRequest;
+    case WM_IME_NOTIFY:
+         switch (int(wParamIn)) {
+         case IMN_OPENCANDIDATE:
+             return QtWindows::InputMethodOpenCandidateWindowEvent;
+         case IMN_CLOSECANDIDATE:
+             return QtWindows::InputMethodCloseCandidateWindowEvent;
+         default:
+             break;
+         }
     default:
         break;
     }
