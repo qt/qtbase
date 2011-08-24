@@ -822,16 +822,35 @@ const QAccessibleInterface *other, int otherChild) const
     is returned.
 
     The returned value indicates the relation of the called object to
-    the \a other object, e.g. if this object is a child of \a other
-    the return value will be \c Child.
+    the \a other object, e.g. if this object is a label for \a other
+    the return value will be \c Label.
+
+    Usually parent-child relations are not returned.
 
     The return value is a combination of the bit flags in the
     QAccessible::Relation enumeration.
 
     All objects provide this information.
 
-    \sa indexOfChild(), navigate()
+    \sa relations(), indexOfChild(), navigate()
 */
+QAccessible::Relation QAccessibleInterface::relationTo(int,
+            const QAccessibleInterface *, int) const
+{
+    return Unrelated;
+}
+
+/*!
+    Returns the meaningful relations to other widgets. Usually this will not return parent/child
+    relations, unless they are handled in a specific way such as in tree views.
+    It will typically return the labelled-by and label relations.
+
+    \sa relationTo(), navigate()
+*/
+QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterface::relations() const
+{
+    return QVector<QPair<QAccessibleInterface*, Relation> >();
+}
 
 /*!
     \fn int QAccessibleInterface::childAt(int x, int y) const

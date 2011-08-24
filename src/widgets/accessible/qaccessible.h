@@ -379,7 +379,9 @@ public:
 
     // relations
     virtual Relation relationTo(int child, const QAccessibleInterface *other,
-                                int otherChild) const = 0;
+                                int otherChild) const;
+    virtual QVector<QPair<QAccessibleInterface*, Relation> > relations() const;
+
     virtual int childAt(int x, int y) const = 0;
 
     // navigation
