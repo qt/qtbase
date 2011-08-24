@@ -87,9 +87,6 @@ class QTestLogger : public QAbstractTestLogger
         void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
-        void setLogFormat(TestLoggerFormat fm);
-        TestLoggerFormat logFormat();
-
         int passCount() const;
         int failureCount() const;
         int errorCount() const;

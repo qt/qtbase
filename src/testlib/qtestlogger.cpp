@@ -358,16 +358,6 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
     }
 }
 
-void QTestLogger::setLogFormat(TestLoggerFormat fm)
-{
-    format = fm;
-}
-
-QTestLogger::TestLoggerFormat QTestLogger::logFormat()
-{
-    return format;
-}
-
 int QTestLogger::passCount() const
 {
     return passCounter;
