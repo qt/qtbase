@@ -175,13 +175,13 @@ namespace QTest {
             QTest::testLogger = new QPlainTestLogger;
             break;
         case QTestLog::XML:
-            if(QTest::flushMode == QTestLog::FLushOn)
+            if (QTest::flushMode == QTestLog::FlushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
             break;
         case QTestLog::LightXML:
-            if(QTest::flushMode == QTestLog::FLushOn)
+            if (QTest::flushMode == QTestLog::FlushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);

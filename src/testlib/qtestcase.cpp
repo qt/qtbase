@@ -1109,8 +1109,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QTestLog::setLogMode(QTestLog::XML);
         } else if (strcmp(argv[i], "-lightxml") == 0) {
             QTestLog::setLogMode(QTestLog::LightXML);
-        }else if(strcmp(argv[i], "-flush") == 0){
-            QTestLog::setFlushMode(QTestLog::FLushOn);
+        } else if (strcmp(argv[i], "-flush") == 0){
+            QTestLog::setFlushMode(QTestLog::FlushOn);
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
