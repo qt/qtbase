@@ -6,7 +6,7 @@ TEMPLATE   = lib
 DESTDIR    = $$QMAKE_LIBDIR_QT
 
 CONFIG += module
-!mac:CONFIG += staticlib
+CONFIG += staticlib
 mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
 MODULE_PRI = ../modules/qt_platformsupport.pri

@@ -46,9 +46,9 @@
 #include <QString>
 #include <OpenGL/OpenGL.h>
 
-Q_GUI_EXPORT void (*qcgl_getProcAddress(const QByteArray &procName))();
-Q_GUI_EXPORT QSurfaceFormat qcgl_surfaceFormat();
-Q_GUI_EXPORT void *qcgl_createNSOpenGLPixelFormat();
-Q_GUI_EXPORT CGLContextObj qcgl_createGlContext();
+void (*qcgl_getProcAddress(const QByteArray &procName))();
+QSurfaceFormat qcgl_surfaceFormat();
+void *qcgl_createNSOpenGLPixelFormat();
+CGLContextObj qcgl_createGlContext();
 
 #endif // QMACGLCONVENIENCE_H

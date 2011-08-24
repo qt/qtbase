@@ -40,8 +40,4 @@
 ****************************************************************************/
 
 class QAbstractEventDispatcher;
-#ifdef Q_OS_MAC
-Q_GUI_EXPORT QAbstractEventDispatcher* createUnixEventDispatcher();
-#else
 QAbstractEventDispatcher* createUnixEventDispatcher();
-#endif
