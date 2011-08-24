@@ -172,7 +172,7 @@ void QXcbWindow::create()
 
     m_requestedFormat = window()->format();
 
-#if defined(XCB_USE_GLX) || defined(XCB_USE_EGL)
+#if (defined(XCB_USE_GLX) || defined(XCB_USE_EGL)) && defined(XCB_USE_XLIB)
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
         || window()->format().hasAlpha())
     {

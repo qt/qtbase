@@ -71,7 +71,7 @@ contains(QT_CONFIG, opengl) {
             DEFINES += XCB_USE_EGL
             LIBS += -lEGL
             HEADERS += qxcbeglsurface.h
-        } else {
+        } else:contains(QT_CONFIG, xcb-xlib) {
             DEFINES += XCB_USE_GLX
             HEADERS += qglxintegration.h
             SOURCES += qglxintegration.cpp
