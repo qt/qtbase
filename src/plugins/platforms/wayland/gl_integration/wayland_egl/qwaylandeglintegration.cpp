@@ -62,6 +62,11 @@ QWaylandEglIntegration::~QWaylandEglIntegration()
 
 void QWaylandEglIntegration::initialize()
 {
+    QByteArray eglPlatform = qgetenv("EGL_PLATFORM");
+    if (eglPlatform.isEmpty()) {
+        setenv("EGL_PLATFORM","wayland",true);
+    }
+
     EGLint major,minor;
     m_eglDisplay = eglGetDisplay(m_waylandDisplay);
     if (m_eglDisplay == NULL) {
