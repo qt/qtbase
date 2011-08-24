@@ -87,16 +87,6 @@ class QTestLogger : public QAbstractTestLogger
         void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
-        int passCount() const;
-        int failureCount() const;
-        int errorCount() const;
-        int warningCount() const;
-        int skipCount() const;
-        int systemCount() const;
-        int qdebugCount() const;
-        int qwarnCount() const;
-        int qfatalCount() const;
-        int infoCount() const;
         void registerRandomSeed(unsigned int seed);
         unsigned int randomSeed() const;
         bool hasRandomSeed() const;
@@ -109,16 +99,8 @@ class QTestLogger : public QAbstractTestLogger
         TestLoggerFormat format;
 
         int testCounter;
-        int passCounter;
         int failureCounter;
         int errorCounter;
-        int warningCounter;
-        int skipCounter;
-        int systemCounter;
-        int qdebugCounter;
-        int qwarnCounter;
-        int qfatalCounter;
-        int infoCounter;
         unsigned int randomSeed_;
         bool hasRandomSeed_;
 };
