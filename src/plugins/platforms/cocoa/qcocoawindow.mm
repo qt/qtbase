@@ -179,12 +179,12 @@ void QCocoaWindow::windowDidMove()
 
 void QCocoaWindow::windowDidResize()
 {
+    if (m_glContext)
+        m_glContext->update();
+
     NSRect rect = [[m_nsWindow contentView]frame];
     QRect geo(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
     QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
-
-    if (m_glContext)
-        m_glContext->update();
 }
 
 
