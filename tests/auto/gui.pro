@@ -166,7 +166,6 @@ SUBDIRS=\
     qtableview \
     qtablewidget \
     qtcpsocket \
-    qtessellator \
     qtextblock \
     qtextcodec \
     qtextcursor \
