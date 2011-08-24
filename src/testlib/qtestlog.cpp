@@ -251,6 +251,7 @@ void QTestLog::addPass(const char *msg)
 void QTestLog::addFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(QTest::testLogger);
+    QTEST_ASSERT(msg);
 
     QTest::testLogger->addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
@@ -353,6 +354,8 @@ int QTestLog::verboseLevel()
 
 void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
 {
+    QTEST_ASSERT(msg);
+
     QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, msg);
 
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
