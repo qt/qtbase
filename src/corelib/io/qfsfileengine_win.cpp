@@ -550,7 +550,7 @@ QString QFSFileEngine::currentPath(const QString &fileName)
     return ret;
 #else
     Q_UNUSED(fileName);
-    return QFileSystemEngine::currentPath();
+    return QFileSystemEngine::currentPath().filePath();
 #endif
 }
 
