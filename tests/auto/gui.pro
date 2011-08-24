@@ -167,7 +167,6 @@ SUBDIRS=\
     qtablewidget \
     qtcpsocket \
     qtextblock \
-    qtextcodec \
     qtextcursor \
     qtextdocumentfragment \
     qtextdocumentlayout \
