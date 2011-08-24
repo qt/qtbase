@@ -1304,7 +1304,7 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
     }
     xcb_grab_keyboard_cookie_t cookie = xcb_grab_keyboard(xcb_connection(), false,
                                                           m_window, XCB_TIME_CURRENT_TIME,
-                                                          GrabModeAsync, GrabModeAsync);
+                                                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
     xcb_generic_error_t *err;
     xcb_grab_keyboard_reply_t *reply = xcb_grab_keyboard_reply(xcb_connection(), cookie, &err);
     bool result = !(err || !reply || reply->status != XCB_GRAB_STATUS_SUCCESS);
@@ -1320,9 +1320,10 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
         return true;
     }
     xcb_grab_pointer_cookie_t cookie = xcb_grab_pointer(xcb_connection(), false, m_window,
-                                                        (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
-                                                         | EnterWindowMask | LeaveWindowMask | PointerMotionMask),
-                                                        GrabModeAsync, GrabModeAsync,
+                                                        (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
+                                                         | XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW
+                                                         | XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
+                                                        XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
                                                         XCB_WINDOW_NONE, XCB_CURSOR_NONE,
                                                         XCB_TIME_CURRENT_TIME);
     xcb_generic_error_t *err;
