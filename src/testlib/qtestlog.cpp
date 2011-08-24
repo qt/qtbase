@@ -45,6 +45,7 @@
 #include "QtTest/private/qtestresult_p.h"
 #include "QtTest/private/qabstracttestlogger_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
+#include "QtTest/private/qtestlogger_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
@@ -52,9 +53,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-
-
-#include "qtestlogger_p.h"
 
 QT_BEGIN_NAMESPACE
 
