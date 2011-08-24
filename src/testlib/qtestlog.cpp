@@ -191,14 +191,6 @@ namespace QTest {
 
 }
 
-QTestLog::QTestLog()
-{
-}
-
-QTestLog::~QTestLog()
-{
-}
-
 void QTestLog::enterTestFunction(const char* function)
 {
     QTEST_ASSERT(QTest::testLogger);
