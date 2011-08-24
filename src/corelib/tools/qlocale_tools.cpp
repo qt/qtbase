@@ -50,6 +50,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef Q_OS_WINCE
+#   include "qfunctions_wince.h"    // for _control87
+#endif
+
 #if defined(Q_OS_LINUX) && !defined(__UCLIBC__)
 #    include <fenv.h>
 #endif
