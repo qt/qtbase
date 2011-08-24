@@ -50,9 +50,8 @@ QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
     image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 }
 
-void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
+void QDirectFBCursor::changeCursor(QCursor * cursor, QWindow * window)
 {
-    Q_UNUSED(widget);
     int xSpot;
     int ySpot;
     QPixmap map;

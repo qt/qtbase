@@ -47,7 +47,6 @@
 #include <QWindowSystemInterface>
 #include <QMouseEvent>
 #include <QEvent>
-#include <QApplication>
 
 #include <directfb.h>
 
@@ -82,9 +81,9 @@ void QDirectFbInput::stopInputEventLoop()
     m_waitStop.acquire();
 }
 
-void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
+void QDirectFbInput::addWindow(DFBWindowID id, QWindow *qt_window)
 {
-    m_tlwMap.insert(id,tlw);
+    m_tlwMap.insert(id,qt_window);
     IDirectFBWindow *window;
     m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer,id,&window);
 
@@ -152,7 +151,7 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     } else if (event.window.type == DWET_BUTTONUP) {
         window->UngrabPointer(window);
     }
-    QWidget *tlw = m_tlwMap.value(event.window.window_id);
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons);
 }
 
@@ -161,7 +160,7 @@ void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
     QPoint p(event.window.cx, event.window.cy);
     QPoint globalPos = globalPoint(event);
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-    QWidget *tlw = m_tlwMap.value(event.window.window_id);
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleWheelEvent(tlw, timestamp, p, globalPos,
                                           event.window.step*120,
                                           Qt::Vertical);
@@ -178,13 +177,13 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     QChar character;
     if (DFB_KEY_TYPE(event.window.key_symbol) == DIKT_UNICODE)
         character = QChar(event.window.key_symbol);
-    QWidget *tlw = m_tlwMap.value(event.window.window_id);
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleKeyEvent(tlw, timestamp, type, key, modifiers, character);
 }
 
 void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
 {
-    QWidget *tlw = m_tlwMap.value(event.window.window_id);
+    QWindow *tlw = m_tlwMap.value(event.window.window_id);
     switch (event.window.type) {
     case DWET_ENTER:
         QWindowSystemInterface::handleEnterEvent(tlw);

@@ -56,7 +56,6 @@ class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
 {
-Q_OBJECT
 public:
     QDirectFbScreen(int display);
     ~QDirectFbScreen();
@@ -86,19 +85,17 @@ public:
     ~QDirectFbIntegration();
 
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
-    QList<QPlatformScreen *> mScreens;
     QDirectFbInput *mInput;
     QThread *mInputRunner;
     QPlatformFontDatabase *mFontDb;
+    QAbstractEventDispatcher *mEventDispatcher;
 };
 
 QT_END_NAMESPACE

@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QDirectFbWindow : public QPlatformWindow
 {
 public:
-    QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler);
+    QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler);
     ~QDirectFbWindow();
 
     void setGeometry(const QRect &rect);
@@ -65,13 +65,9 @@ public:
     void lower();
     WId winId() const;
 
-    QPlatformGLContext *glContext() const;
-
 private:
     IDirectFBWindow *m_dfbWindow;
     QDirectFbInput *m_inputHandler;
-
-    QPlatformGLContext *m_context;
 };
 
 QT_END_NAMESPACE

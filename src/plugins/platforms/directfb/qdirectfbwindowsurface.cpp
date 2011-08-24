@@ -49,20 +49,20 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window, WId wId)
-    : QWindowSurface(window), m_pixmap(0), m_pmdata(0), m_dfbSurface(0)
+QDirectFbWindowSurface::QDirectFbWindowSurface(QWindow *window)
+    : QPlatformBackingStore(window), m_pixmap(0), m_pmdata(0), m_dfbSurface(0)
 {
 
     IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
 
-    DFBWindowID id(wId);
+    DFBWindowID id(window->winId());
     IDirectFBWindow *dfbWindow;
 
     layer->GetWindow(layer,id,&dfbWindow);
 
     dfbWindow->GetSurface(dfbWindow,&m_dfbSurface);
 //WRONGSIZE
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->rect().size(), m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface);
     m_pmdata = new QDirectFbBlitterPlatformPixmap;
     m_pmdata->setBlittable(blitter);
     m_pixmap = new QPixmap(m_pmdata);
@@ -78,9 +78,8 @@ QPaintDevice *QDirectFbWindowSurface::paintDevice()
     return m_pixmap;
 }
 
-void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QDirectFbWindowSurface::flush(QWindow *, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
     m_pmdata->blittable()->unlock();
 
     QVector<QRect> rects = region.rects();
@@ -91,9 +90,9 @@ void QDirectFbWindowSurface::flush(QWidget *widget, const QRegion &region, const
     }
 }
 
-void QDirectFbWindowSurface::resize(const QSize &size)
+void QDirectFbWindowSurface::resize(const QSize &size, const QRegion& reg)
 {
-    QWindowSurface::resize(size);
+    QPlatformBackingStore::resize(size, reg);
 
     //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
     m_dfbSurface->AddRef(m_dfbSurface);

@@ -57,7 +57,7 @@ class QDirectFbInput : public QObject
     Q_OBJECT
 public:
     QDirectFbInput(QObject *parent);
-    void addWindow(DFBWindowID id, QWidget *tlw);
+    void addWindow(DFBWindowID id, QWindow *window);
     void removeWindow(WId wId);
 
 public slots:
@@ -80,7 +80,7 @@ private:
     bool m_shouldStop;
     QSemaphore m_waitStop;
 
-    QHash<DFBWindowID,QWidget *>m_tlwMap;
+    QHash<DFBWindowID,QWindow *>m_tlwMap;
 };
 
 #endif // QDIRECTFBINPUT_H

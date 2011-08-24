@@ -49,10 +49,9 @@
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
-#include <private/qwindowsurface_raster_p.h>
-#include <private/qpixmap_raster_p.h>
-
 #include <QtGui/private/qpixmap_blitter_p.h>
+#include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformpixmap_qpa.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
@@ -85,7 +84,10 @@ QDirectFbScreen::~QDirectFbScreen()
 
 QDirectFbIntegration::QDirectFbIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
+    , mEventDispatcher(createUnixEventDispatcher())
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
     char **argv = new char*[argc];
@@ -101,8 +103,9 @@ QDirectFbIntegration::QDirectFbIntegration()
     delete[] argv;
 
 
+
     QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
-    mScreens.append(primaryScreen);
+    screenAdded(primaryScreen);
 
     mInputRunner = new QThread;
     mInput = new QDirectFbInput(0);
@@ -126,21 +129,20 @@ QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::Pix
         return new QDirectFbBlitterPlatformPixmap;
 }
 
-QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
     QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
-    return new QDirectFbWindow(widget,input);
+    return new QDirectFbWindow(window,input);
 }
 
-QAbstractEventDispatcher *QDirectFbIntegration::createEventDispatcher() const
+QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
 {
-    return createUnixEventDispatcher();
+    return mEventDispatcher;
 }
 
-QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QDirectFbWindowSurface(widget,winId);
+    return new QDirectFbWindowSurface(window);
 }
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
