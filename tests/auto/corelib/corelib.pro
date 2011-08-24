@@ -3,4 +3,5 @@ SUBDIRS=\
    animation \
    codecs \
    concurrent \
-   global
+   global \
+   io

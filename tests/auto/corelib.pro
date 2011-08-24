@@ -6,7 +6,6 @@ SUBDIRS=\
    qatomicint \
    qatomicpointer \
    qbitarray \
-   qbuffer \
    qbytearray \
    qbytearraymatcher \
    qcache \
@@ -16,14 +15,10 @@ SUBDIRS=\
    qcryptographichash \
    qdate \
    qdatetime \
-   qdebug \
-   qdiriterator \
    qeasingcurve \
    qelapsedtimer \
    qevent \
    qexplicitlyshareddatapointer \
-   qfileinfo \
-   qfilesystemwatcher \
    qfreelist \
    qhash \
    qlibrary \
@@ -39,13 +34,11 @@ SUBDIRS=\
    qplugin \
    qpluginloader \
    qpoint \
-   qprocessenvironment \
    qqueue \
    qreadlocker \
    qreadwritelock \
    qrect \
    qregexp \
-   qresourceengine \
    qringbuffer \
    qscopedpointer \
    qscopedvaluerollback \
@@ -65,7 +58,6 @@ SUBDIRS=\
    qstringlist \
    qstringmatcher \
    qstringref \
-   qtemporaryfile \
    qtextboundaryfinder \
    qthread \
    qthreadonce \
@@ -75,7 +67,6 @@ SUBDIRS=\
    qtimer \
    qtmd5 \
    qtokenautomaton \
-   qurl \
    quuid \
    qvarlengtharray \
    qvector \
@@ -83,10 +74,4 @@ SUBDIRS=\
    qwineventnotifier \
    qwritelocker \
    selftests \
-   utf8 \
-   qfilesystementry \
-   qabstractfileengine
-
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
-    qfileinfo \
-
+   utf8

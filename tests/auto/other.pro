@@ -8,11 +8,8 @@ SUBDIRS=\
            qalgorithms \
            qcombobox \
            qcssparser \
-           qdatastream \
-           qdir \
            qfocusevent \
            qimage \
-           qiodevice \
            qitemmodel \
            qlayout \
            qmdiarea \
@@ -22,7 +19,6 @@ SUBDIRS=\
            qpainter \
            qpixmap \
            qprinter \
-           qsettings \
            qsplitter \
            qtabwidget \
            qtextbrowser \

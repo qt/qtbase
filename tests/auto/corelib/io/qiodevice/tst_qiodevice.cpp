@@ -44,7 +44,7 @@
 #include <QtNetwork/QtNetwork>
 #include <QtTest/QtTest>
 
-#include "../network-settings.h"
+#include "../../../network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

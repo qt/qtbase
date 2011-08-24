@@ -51,7 +51,7 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QtDebug>
 #include <QtCore/QString>
-#include "../../shared/util.h"
+#include "../../../../shared/util.h"
 
 #if !defined(Q_OS_SYMBIAN)
 # include <cctype>

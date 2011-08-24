@@ -76,7 +76,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include "../network-settings.h"
+#include "../../../network-settings.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""

@@ -60,7 +60,7 @@
 #include <QTextCodec>
 #include <QProcess>
 
-#include "../network-settings.h"
+#include "../../../network-settings.h"
 
 static const char *TestFileName = "testfile";
 

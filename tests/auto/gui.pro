@@ -45,7 +45,6 @@ SUBDIRS=\
     qdoublevalidator \
     qdrag \
     qerrormessage \
-    qfile \
     qfiledialog \
     qfiledialog2 \
     qfileiconprovider \
@@ -129,7 +128,6 @@ SUBDIRS=\
     qpointer \
     qpolygon \
     qprinterinfo \
-    qprocess \
     qprogressbar \
     qprogressdialog \
     qpushbutton \
@@ -177,7 +175,6 @@ SUBDIRS=\
     qtextobject \
     qtextpiecetable \
     qtextscriptengine \
-    qtextstream \
     qtexttable \
     qtipc \
     qtoolbar \

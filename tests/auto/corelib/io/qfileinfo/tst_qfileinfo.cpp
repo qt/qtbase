@@ -68,9 +68,9 @@
 #include <f32file.h>
 #include <private/qcore_symbian_p.h>
 #endif
-#include "../network-settings.h"
+#include "../../../network-settings.h"
 #include <private/qfileinfo_p.h>
-#include "../../shared/filesystem.h"
+#include "../../../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
