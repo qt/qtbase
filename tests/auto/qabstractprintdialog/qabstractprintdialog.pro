@@ -3,7 +3,7 @@
 ############################################################
 
 load(qttest_p4)
-QT += widgets
+QT += widgets printsupport
 SOURCES += tst_qabstractprintdialog.cpp
 
 
