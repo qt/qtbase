@@ -27,8 +27,6 @@ SUBDIRS=\
    qfilesystemwatcher \
    qflags \
    qfreelist \
-   qfuture \
-   qfuturewatcher \
    qgetputenv \
    qglobal \
    qhash \
@@ -73,16 +71,10 @@ SUBDIRS=\
    qstringlist \
    qstringmatcher \
    qstringref \
-   qtconcurrentfilter \
-   qtconcurrentiteratekernel \
-   qtconcurrentmap \
-   qtconcurrentrun \
-   qtconcurrentthreadengine \
    qtemporaryfile \
    qtextboundaryfinder \
    qthread \
    qthreadonce \
-   qthreadpool \
    qthreadstorage \
    qtime \
    qtimeline \
@@ -100,13 +92,6 @@ SUBDIRS=\
    utf8 \
    qfilesystementry \
    qabstractfileengine
-
-symbian:SUBDIRS -= \
-   qtconcurrentfilter \
-   qtconcurrentiteratekernel \
-   qtconcurrentmap \
-   qtconcurrentrun \
-   qtconcurrentthreadengine \
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfileinfo \

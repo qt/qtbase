@@ -1,4 +1,5 @@
 TEMPLATE=subdirs
 SUBDIRS=\
    animation \
-   codecs
+   codecs \
+   concurrent
