@@ -47,7 +47,7 @@
 #include <directfb.h>
 
 QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
-    : QPlatformWindow(tlw), m_inputHandler(inputhandler), m_context(0)
+    : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
     IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     DFBDisplayLayerConfig layerConfig;

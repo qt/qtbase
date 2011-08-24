@@ -74,8 +74,7 @@ public:
     IDirectFBDisplayLayer *m_layer;
 
 private:
-    QDirectFBCursor * cursor;
-
+    QDirectFBCursor *m_cursor;
 };
 
 class QDirectFbIntegration : public QPlatformIntegration
@@ -92,10 +91,10 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
-    QDirectFbInput *mInput;
-    QThread *mInputRunner;
-    QPlatformFontDatabase *mFontDb;
-    QAbstractEventDispatcher *mEventDispatcher;
+    QDirectFbInput *m_input;
+    QThread *m_inputRunner;
+    QPlatformFontDatabase *m_fontDb;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFbScreen::QDirectFbScreen(int display)
-    :QPlatformScreen()
+    : QPlatformScreen()
 {
     m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
@@ -75,18 +75,19 @@ QDirectFbScreen::QDirectFbScreen(int display)
     m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
     m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
 
-    cursor = new QDirectFBCursor(this);
+    m_cursor = new QDirectFBCursor(this);
 }
 
 QDirectFbScreen::~QDirectFbScreen()
 {
+#warning "Delete the cursor?"
 }
 
 QDirectFbIntegration::QDirectFbIntegration()
-    : mFontDb(new QGenericUnixFontDatabase())
-    , mEventDispatcher(createUnixEventDispatcher())
+    : m_fontDb(new QGenericUnixFontDatabase())
+    , m_eventDispatcher(createUnixEventDispatcher())
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
@@ -107,18 +108,18 @@ QDirectFbIntegration::QDirectFbIntegration()
     QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
     screenAdded(primaryScreen);
 
-    mInputRunner = new QThread;
-    mInput = new QDirectFbInput(0);
-    mInput->moveToThread(mInputRunner);
-    QObject::connect(mInputRunner,SIGNAL(started()),mInput,SLOT(runInputEventLoop()));
-    mInputRunner->start();
+    m_inputRunner = new QThread;
+    m_input = new QDirectFbInput(0);
+    m_input->moveToThread(m_inputRunner);
+    QObject::connect(m_inputRunner,SIGNAL(started()),m_input,SLOT(runInputEventLoop()));
+    m_inputRunner->start();
 }
 
 QDirectFbIntegration::~QDirectFbIntegration()
 {
-    mInput->stopInputEventLoop();
-    delete mInputRunner;
-    delete mInput;
+    m_input->stopInputEventLoop();
+    delete m_inputRunner;
+    delete m_input;
 }
 
 QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
@@ -131,13 +132,13 @@ QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::Pix
 
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
+    QDirectFbInput *input = const_cast<QDirectFbInput *>(m_input);//gah
     return new QDirectFbWindow(window,input);
 }
 
 QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
 {
-    return mEventDispatcher;
+    return m_eventDispatcher;
 }
 
 QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow *window) const
@@ -147,7 +148,7 @@ QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow 
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return m_fontDb;
 }
 
 QT_END_NAMESPACE
