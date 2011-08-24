@@ -167,6 +167,7 @@ public:
     inline QPoint pos() const { return geometry().topLeft(); }
 
     inline void resize(const QSize &size) { setGeometry(QRect(pos(), size)); }
+    inline void resize(int w, int h) { setGeometry(QRect(x(), y(), w, h)); }
 
     QMargins frameMargins() const;
 
