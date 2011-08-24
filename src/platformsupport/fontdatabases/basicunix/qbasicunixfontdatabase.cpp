@@ -47,6 +47,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDir>
+#include <QtCore/QUuid>
 
 #undef QT_NO_FREETYPE
 #include <QtGui/private/qfontengine_ft_p.h>
@@ -235,6 +236,71 @@ QFontEngine *QBasicUnixFontDatabase::fontEngine(const QFontDef &fontDef, QUnicod
     }
 
     return engine;
+}
+
+namespace {
+
+    class QFontEngineFTRawData: public QFontEngineFT
+    {
+    public:
+        QFontEngineFTRawData(const QFontDef &fontDef) : QFontEngineFT(fontDef)
+        {
+        }
+
+        void updateFamilyNameAndStyle()
+        {
+            fontDef.family = QString::fromAscii(freetype->face->family_name);
+
+            if (freetype->face->style_flags & FT_STYLE_FLAG_ITALIC)
+                fontDef.style = QFont::StyleItalic;
+
+            if (freetype->face->style_flags & FT_STYLE_FLAG_BOLD)
+                fontDef.weight = QFont::Bold;
+        }
+
+        bool initFromData(const QByteArray &fontData)
+        {
+            FaceId faceId;
+            faceId.filename = "";
+            faceId.index = 0;
+            faceId.uuid = QUuid::createUuid().toByteArray();
+
+            return init(faceId, true, Format_None, fontData);
+        }
+    };
+
+}
+
+QFontEngine *QBasicUnixFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize,
+                                                QFont::HintingPreference hintingPreference)
+{
+    QFontDef fontDef;
+    fontDef.pixelSize = pixelSize;
+
+    QFontEngineFTRawData *fe = new QFontEngineFTRawData(fontDef);
+    if (!fe->initFromData(fontData)) {
+        delete fe;
+        return 0;
+    }
+
+    fe->updateFamilyNameAndStyle();
+
+    switch (hintingPreference) {
+    case QFont::PreferNoHinting:
+        fe->setDefaultHintStyle(QFontEngineFT::HintNone);
+        break;
+    case QFont::PreferFullHinting:
+        fe->setDefaultHintStyle(QFontEngineFT::HintFull);
+        break;
+    case QFont::PreferVerticalHinting:
+        fe->setDefaultHintStyle(QFontEngineFT::HintLight);
+        break;
+    default:
+        // Leave it as it is
+        break;
+    }
+
+    return fe;
 }
 
 QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
