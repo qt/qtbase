@@ -411,9 +411,10 @@ void QWindow::setSizeIncrement(const QSize &size)
 void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
-    d->geometry = rect;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(rect);
+    } else {
+        d->geometry = rect;
     }
 }
 

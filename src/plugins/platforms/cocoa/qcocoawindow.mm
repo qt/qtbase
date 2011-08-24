@@ -100,6 +100,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
         m_windowSurfaceView = m_contentView;
     }
 
+    setGeometry(tlw->geometry());
+
     [m_nsWindow setContentView:m_contentView];
 }
 
@@ -112,8 +114,9 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
 
-    NSRect bounds = globalGeometry(window()->geometry());
+    NSRect bounds = globalGeometry(rect);
     [[m_nsWindow contentView]setFrameSize:bounds.size];
+    [m_nsWindow setContentSize : bounds.size];
     [m_nsWindow setFrameOrigin : bounds.origin];
 
     if (m_glContext)
