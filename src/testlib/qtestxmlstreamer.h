@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #ifndef QTESTXMLSTREAMER_H
-#define QTESXMLSTREAMER_H
+#define QTESTXMLSTREAMER_H
 
 #include <QtTest/qtestbasicstreamer.h>
 
