@@ -26,3 +26,5 @@ wince* {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+
+qpa:contains(QT_CONFIG,xcb):CONFIG+=insignificant_test
