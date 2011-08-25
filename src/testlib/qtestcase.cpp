@@ -1959,7 +1959,7 @@ bool QTest::qVerify(bool statement, const char *statementStr, const char *descri
 void QTest::qSkip(const char *message, QTest::SkipMode mode,
                  const char *file, int line)
 {
-    QTestResult::addSkip(message, mode, file, line);
+    QTestResult::addSkip(message, file, line);
     if (mode == QTest::SkipAll)
         QTestResult::setSkipCurrentTest(true);
 }

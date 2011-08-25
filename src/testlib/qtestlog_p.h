@@ -72,8 +72,7 @@ public:
     static void addFail(const char *msg, const char *file, int line);
     static void addXFail(const char *msg, const char *file, int line);
     static void addXPass(const char *msg, const char *file, int line);
-    static void addSkip(const char *msg, QTest::SkipMode mode,
-                        const char *file, int line);
+    static void addSkip(const char *msg, const char *file, int line);
     static void addBenchmarkResult(const QBenchmarkResult &result);
     static void addIgnoreMessage(QtMsgType type, const char *msg);
     static int unhandledIgnoreMessages();

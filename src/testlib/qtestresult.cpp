@@ -285,12 +285,11 @@ void QTestResult::addFailure(const char *message, const char *file, int line)
     ++QTest::fails;
 }
 
-void QTestResult::addSkip(const char *message, QTest::SkipMode mode,
-                          const char *file, int line)
+void QTestResult::addSkip(const char *message, const char *file, int line)
 {
     clearExpectFail();
 
-    QTestLog::addSkip(message, mode, file, line);
+    QTestLog::addSkip(message, file, line);
     ++QTest::skips;
 }
 

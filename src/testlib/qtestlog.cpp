@@ -275,8 +275,7 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
     QTest::testLogger->addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
-void QTestLog::addSkip(const char *msg, QTest::SkipMode /*mode*/,
-                       const char *file, int line)
+void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
