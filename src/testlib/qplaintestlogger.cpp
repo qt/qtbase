@@ -115,81 +115,6 @@ namespace QTest {
         return "??????";
     }
 
-    static void outputMessage(const char *str)
-    {
-#if defined(Q_OS_WINCE)
-        QString strUtf16 = QString::fromLatin1(str);
-        const int maxOutputLength = 255;
-        do {
-            QString tmp = strUtf16.left(maxOutputLength);
-            OutputDebugString((wchar_t*)tmp.utf16());
-            strUtf16.remove(0, maxOutputLength);
-        } while (!strUtf16.isEmpty());
-        if (QTestLog::outputFileName())
-#elif defined(Q_OS_WIN)
-        EnterCriticalSection(&outputCriticalSection);
-        // OutputDebugString is not threadsafe
-        OutputDebugStringA(str);
-        LeaveCriticalSection(&outputCriticalSection);
-#elif defined(Q_OS_SYMBIAN)
-        // RDebug::Print has a cap of 256 characters so break it up
-        TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-        _LIT(format, "[QTestLib] %S");
-        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
-        HBufC* hbuffer = HBufC::New(maxBlockSize);
-        if(hbuffer) {
-            for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
-                int size = Min(maxBlockSize, ptr.Length() - i);
-                hbuffer->Des().Copy(ptr.Mid(i, size));
-                RDebug::Print(format, hbuffer);
-            }
-            delete hbuffer;
-        }
-        else {
-            // fast, no allocations, but truncates silently
-            RDebug::RawPrint(format);
-            TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-            RDebug::RawPrint(ptr);
-            RDebug::RawPrint(_L8("\n"));
-        }
-#endif
-        QAbstractTestLogger::outputString(str);
-    }
-
-    static void printMessage(const char *type, const char *msg, const char *file = 0, int line = 0)
-    {
-        QTEST_ASSERT(type);
-        QTEST_ASSERT(msg);
-
-        QTestCharBuffer buf;
-
-        const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
-            : "UnknownTestFunc";
-        const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-        const char *gtag = QTestResult::currentGlobalDataTag()
-                         ? QTestResult::currentGlobalDataTag()
-                         : "";
-        const char *filler = (tag[0] && gtag[0]) ? ":" : "";
-        if (file) {
-            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
-#ifdef Q_OS_WIN
-                          "%s(%d) : failure location\n"
-#else
-                          "   Loc: [%s(%d)]\n"
-#endif
-                          , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                          msg[0] ? " " : "", msg, file, line);
-        } else {
-            QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
-                    type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                    msg[0] ? " " : "", msg);
-        }
-        // In colored mode, printf above stripped our nonprintable control characters.
-        // Put them back.
-        memcpy(buf.data(), type, strlen(type));
-        outputMessage(buf.data());
-    }
-
     template <typename T>
     static int countSignificantDigits(T num)
     {
@@ -274,74 +199,149 @@ namespace QTest {
         int size = result.count();
         return size;
     }
+}
 
-//    static void printBenchmarkResult(const char *bmtag, int value, int iterations)
-    static void printBenchmarkResult(const QBenchmarkResult &result)
-    {
-        const char *bmtag = QTest::benchmarkResult2String();
-
-        char buf1[1024];
-        QTest::qt_snprintf(
-            buf1, sizeof(buf1), "%s: %s::%s",
-            bmtag,
-            QTestResult::currentTestObjectName(),
-            result.context.slotName.toAscii().data());
-
-        char bufTag[1024];
-        bufTag[0] = 0;
-        QByteArray tag = result.context.tag.toAscii();
-        if (tag.isEmpty() == false) {
-            QTest::qt_snprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
+void QPlainTestLogger::outputMessage(const char *str)
+{
+#if defined(Q_OS_WINCE)
+    QString strUtf16 = QString::fromLatin1(str);
+    const int maxOutputLength = 255;
+    do {
+        QString tmp = strUtf16.left(maxOutputLength);
+        OutputDebugString((wchar_t*)tmp.utf16());
+        strUtf16.remove(0, maxOutputLength);
+    } while (!strUtf16.isEmpty());
+    if (QTestLog::outputFileName())
+#elif defined(Q_OS_WIN)
+    EnterCriticalSection(&QTest::outputCriticalSection);
+    // OutputDebugString is not threadsafe
+    OutputDebugStringA(str);
+    LeaveCriticalSection(&QTest::outputCriticalSection);
+#elif defined(Q_OS_SYMBIAN)
+    // RDebug::Print has a cap of 256 characters so break it up
+    TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
+    _LIT(format, "[QTestLib] %S");
+    const int maxBlockSize = 256 - ((const TDesC &)format).Length();
+    HBufC* hbuffer = HBufC::New(maxBlockSize);
+    if (hbuffer) {
+        for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
+            int size = Min(maxBlockSize, ptr.Length() - i);
+            hbuffer->Des().Copy(ptr.Mid(i, size));
+            RDebug::Print(format, hbuffer);
         }
-
-
-        char fillFormat[8];
-        int fillLength = 5;
-        QTest::qt_snprintf(
-            fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
-        char fill[1024];
-        QTest::qt_snprintf(fill, sizeof(fill), fillFormat, "");
-
-        const char * unitText = QTest::benchmarkMetricUnit(result.metric);
-
-        qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
-        char resultBuffer[100] = "";
-        formatResult(resultBuffer, 100, valuePerIteration, countSignificantDigits(result.value));
-
-        char buf2[1024];
-        QTest::qt_snprintf(
-            buf2, sizeof(buf2), "%s %s",
-            resultBuffer,
-            unitText);
-
-        char buf2_[1024];
-        QByteArray iterationText = " per iteration";
-        Q_ASSERT(result.iterations > 0);
-        QTest::qt_snprintf(
-            buf2_,
-            sizeof(buf2_), "%s",
-            iterationText.data());
-
-        char buf3[1024];
-        Q_ASSERT(result.iterations > 0);
-        formatResult(resultBuffer, 100, result.value, countSignificantDigits(result.value));
-        QTest::qt_snprintf(
-            buf3, sizeof(buf3), " (total: %s, iterations: %d)",
-            resultBuffer,
-            result.iterations);
-
-        char buf[1024];
-
-        if (result.setByMacro) {
-            QTest::qt_snprintf(
-                buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
-        } else {
-            QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
-        }
-
-        memcpy(buf, bmtag, strlen(bmtag));
-        outputMessage(buf);
+        delete hbuffer;
     }
+    else {
+        // fast, no allocations, but truncates silently
+        RDebug::RawPrint(format);
+        TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
+        RDebug::RawPrint(ptr);
+        RDebug::RawPrint(_L8("\n"));
+    }
+#endif
+    outputString(str);
+}
+
+void QPlainTestLogger::printMessage(const char *type, const char *msg, const char *file, int line)
+{
+    QTEST_ASSERT(type);
+    QTEST_ASSERT(msg);
+
+    QTestCharBuffer buf;
+
+    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
+        : "UnknownTestFunc";
+    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    const char *gtag = QTestResult::currentGlobalDataTag()
+                     ? QTestResult::currentGlobalDataTag()
+                     : "";
+    const char *filler = (tag[0] && gtag[0]) ? ":" : "";
+    if (file) {
+        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
+#ifdef Q_OS_WIN
+                      "%s(%d) : failure location\n"
+#else
+                      "   Loc: [%s(%d)]\n"
+#endif
+                      , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
+                      msg[0] ? " " : "", msg, file, line);
+    } else {
+        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
+                type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
+                msg[0] ? " " : "", msg);
+    }
+    // In colored mode, printf above stripped our nonprintable control characters.
+    // Put them back.
+    memcpy(buf.data(), type, strlen(type));
+    outputMessage(buf.data());
+}
+
+//void QPlainTestLogger::printBenchmarkResult(const char *bmtag, int value, int iterations)
+void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
+{
+    const char *bmtag = QTest::benchmarkResult2String();
+
+    char buf1[1024];
+    QTest::qt_snprintf(
+        buf1, sizeof(buf1), "%s: %s::%s",
+        bmtag,
+        QTestResult::currentTestObjectName(),
+        result.context.slotName.toAscii().data());
+
+    char bufTag[1024];
+    bufTag[0] = 0;
+    QByteArray tag = result.context.tag.toAscii();
+    if (tag.isEmpty() == false) {
+        QTest::qt_snprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
+    }
+
+
+    char fillFormat[8];
+    int fillLength = 5;
+    QTest::qt_snprintf(
+        fillFormat, sizeof(fillFormat), ":\n%%%ds", fillLength);
+    char fill[1024];
+    QTest::qt_snprintf(fill, sizeof(fill), fillFormat, "");
+
+    const char * unitText = QTest::benchmarkMetricUnit(result.metric);
+
+    qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    char resultBuffer[100] = "";
+    QTest::formatResult(resultBuffer, 100, valuePerIteration, QTest::countSignificantDigits(result.value));
+
+    char buf2[1024];
+    QTest::qt_snprintf(
+        buf2, sizeof(buf2), "%s %s",
+        resultBuffer,
+        unitText);
+
+    char buf2_[1024];
+    QByteArray iterationText = " per iteration";
+    Q_ASSERT(result.iterations > 0);
+    QTest::qt_snprintf(
+        buf2_,
+        sizeof(buf2_), "%s",
+        iterationText.data());
+
+    char buf3[1024];
+    Q_ASSERT(result.iterations > 0);
+    QTest::formatResult(resultBuffer, 100, result.value, QTest::countSignificantDigits(result.value));
+    QTest::qt_snprintf(
+        buf3, sizeof(buf3), " (total: %s, iterations: %d)",
+        resultBuffer,
+        result.iterations);
+
+    char buf[1024];
+
+    if (result.setByMacro) {
+        QTest::qt_snprintf(
+            buf, sizeof(buf), "%s%s%s%s%s%s\n", buf1, bufTag, fill, buf2, buf2_, buf3);
+    } else {
+        QTest::qt_snprintf(buf, sizeof(buf), "%s%s%s%s\n", buf1, bufTag, fill, buf2);
+    }
+
+    memcpy(buf, bmtag, strlen(bmtag));
+    outputMessage(buf);
 }
 
 QPlainTestLogger::QPlainTestLogger()
@@ -380,7 +380,7 @@ void QPlainTestLogger::startLogging(const char *filename)
                              ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
         }
     }
-    QTest::outputMessage(buf);
+    outputMessage(buf);
 }
 
 void QPlainTestLogger::stopLogging()
@@ -397,7 +397,7 @@ void QPlainTestLogger::stopLogging()
                          QTestResult::passCount(), QTestResult::failCount(),
                          QTestResult::skipCount(), QTestResult::currentTestObjectName());
     }
-    QTest::outputMessage(buf);
+    outputMessage(buf);
 
     QAbstractTestLogger::stopLogging();
 }
@@ -406,7 +406,7 @@ void QPlainTestLogger::stopLogging()
 void QPlainTestLogger::enterTestFunction(const char * /*function*/)
 {
     if (QTestLog::verboseLevel() >= 1)
-        QTest::printMessage(QTest::messageType2String(Info), "entering");
+        printMessage(QTest::messageType2String(Info), "entering");
 }
 
 void QPlainTestLogger::leaveTestFunction()
@@ -420,13 +420,13 @@ void QPlainTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Pass && QTestLog::verboseLevel() < 0)
         return;
 
-    QTest::printMessage(QTest::incidentType2String(type), description, file, line);
+    printMessage(QTest::incidentType2String(type), description, file, line);
 }
 
 void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
-//    QTest::printBenchmarkResult(QTest::benchmarkResult2String(), value, iterations);
-    QTest::printBenchmarkResult(result);
+//    printBenchmarkResult(QTest::benchmarkResult2String(), value, iterations);
+    printBenchmarkResult(result);
 }
 
 void QPlainTestLogger::addMessage(MessageTypes type, const char *message,
@@ -437,7 +437,7 @@ void QPlainTestLogger::addMessage(MessageTypes type, const char *message,
        && QTestLog::verboseLevel() < 0)
         return;
 
-    QTest::printMessage(QTest::messageType2String(type), message, file, line);
+    printMessage(QTest::messageType2String(type), message, file, line);
 }
 
 void QPlainTestLogger::registerRandomSeed(unsigned int seed)

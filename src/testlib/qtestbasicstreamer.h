@@ -65,8 +65,8 @@ class QTestBasicStreamer
 
         void outputString(const char *msg) const;
 
-        void setLogger(const QTestLogger *tstLogger);
-        const QTestLogger *logger() const;
+        void setLogger(QTestLogger *tstLogger);
+        QTestLogger *logger() const;
 
     protected:
         virtual void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
@@ -78,7 +78,7 @@ class QTestBasicStreamer
         virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
 
     private:
-        const QTestLogger *testLogger;
+        QTestLogger *testLogger;
 };
 
 QT_END_NAMESPACE

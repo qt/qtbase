@@ -154,12 +154,12 @@ void QTestBasicStreamer::outputString(const char *msg) const
     testLogger->outputString(msg);
 }
 
-void QTestBasicStreamer::setLogger(const QTestLogger *tstLogger)
+void QTestBasicStreamer::setLogger(QTestLogger *tstLogger)
 {
     testLogger = tstLogger;
 }
 
-const QTestLogger *QTestBasicStreamer::logger() const
+QTestLogger *QTestBasicStreamer::logger() const
 {
     return testLogger;
 }

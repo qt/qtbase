@@ -54,32 +54,27 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QTest
-{
-    static FILE *stream = 0;
-}
-
 void QAbstractTestLogger::outputString(const char *msg)
 {
-    QTEST_ASSERT(QTest::stream);
+    QTEST_ASSERT(stream);
 
-    ::fputs(msg, QTest::stream);
-    ::fflush(QTest::stream);
+    ::fputs(msg, stream);
+    ::fflush(stream);
 }
 
 void QAbstractTestLogger::startLogging(const char *filename)
 {
-    QTEST_ASSERT(!QTest::stream);
+    QTEST_ASSERT(!stream);
 
     if (!filename) {
-        QTest::stream = stdout;
+        stream = stdout;
         return;
     }
 #if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
-    if (::fopen_s(&QTest::stream, filename, "wt")) {
+    if (::fopen_s(&stream, filename, "wt")) {
 #else
-    QTest::stream = ::fopen(filename, "wt");
-    if (!QTest::stream) {
+    stream = ::fopen(filename, "wt");
+    if (!stream) {
 #endif
         printf("Unable to open file for logging: %s", filename);
         ::exit(1);
@@ -88,9 +83,9 @@ void QAbstractTestLogger::startLogging(const char *filename)
 
 void QAbstractTestLogger::stopLogging()
 {
-    QTEST_ASSERT(QTest::stream);
-    if (QTest::stream != stdout) {
-        fclose(QTest::stream);
+    QTEST_ASSERT(stream);
+    if (stream != stdout) {
+        fclose(stream);
     } else {
 #ifdef Q_OS_SYMBIAN
         // Convenience sleep for Symbian and TRK. Without this sleep depending on the timing the
@@ -99,7 +94,7 @@ void QAbstractTestLogger::stopLogging()
         User::AfterHighRes(2*1000*1000);
 #endif
     }
-    QTest::stream = 0;
+    stream = 0;
 }
 
 namespace QTest

@@ -54,6 +54,7 @@
 //
 
 #include <qglobal.h>
+#include <stdio.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +80,7 @@ public:
         Info
     };
 
-    QAbstractTestLogger() {}
+    QAbstractTestLogger() : stream(0) {}
     virtual ~QAbstractTestLogger() {}
 
     virtual void startLogging(const char *filename);
@@ -97,7 +98,10 @@ public:
 
     virtual void registerRandomSeed(unsigned int seed) = 0;
 
-    static void outputString(const char *msg);
+    void outputString(const char *msg);
+
+private:
+    FILE *stream;
 };
 
 struct QTestCharBuffer
