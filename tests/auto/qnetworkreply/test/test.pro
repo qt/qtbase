@@ -3,6 +3,8 @@ QT -= gui
 SOURCES  += ../tst_qnetworkreply.cpp
 TARGET = ../tst_qnetworkreply
 
+qpa:contains(QT_CONFIG,xcb): CONFIG+=insignificant_test  # unstable, QTBUG-21102
+
 win32 {
   CONFIG(debug, debug|release) {
     TARGET = ../../debug/tst_qnetworkreply
