@@ -168,28 +168,28 @@ namespace QTest {
         }
     }
 
-void initLogger()
-{
-    switch (QTest::logMode) {
+    void initLogger()
+    {
+        switch (QTest::logMode) {
         case QTestLog::Plain:
             QTest::testLogger = new QPlainTestLogger;
             break;
-        case QTestLog::XML:{
+        case QTestLog::XML:
             if(QTest::flushMode == QTestLog::FLushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
             break;
-        }case QTestLog::LightXML:{
+        case QTestLog::LightXML:
             if(QTest::flushMode == QTestLog::FLushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
             break;
-        }case QTestLog::XunitXML:
+        case QTestLog::XunitXML:
             QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
         }
-}
+    }
 
 }
 
