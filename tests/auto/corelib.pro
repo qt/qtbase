@@ -11,7 +11,6 @@ SUBDIRS=\
    qcache \
    qchar \
    qcontiguouscache \
-   qcoreapplication \
    qcryptographichash \
    qdate \
    qdatetime \
@@ -24,11 +23,8 @@ SUBDIRS=\
    qline \
    qmap \
    qmargins \
-   qmath \
-   qmetatype \
    qmutex \
    qmutexlocker \
-   qobject \
    qobjectrace \
    qplugin \
    qpluginloader \
@@ -63,14 +59,12 @@ SUBDIRS=\
    qthreadstorage \
    qtime \
    qtimeline \
-   qtimer \
    qtmd5 \
    qtokenautomaton \
    quuid \
    qvarlengtharray \
    qvector \
    qwaitcondition \
-   qwineventnotifier \
    qwritelocker \
    selftests \
    utf8

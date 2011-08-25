@@ -8,7 +8,6 @@ SUBDIRS=\
     qabstractnetworkcache \
     qabstractsocket \
     qauthenticator \
-    qeventloop \
     qftp \
     qhostaddress \
     qhostinfo \
@@ -31,7 +30,6 @@ SUBDIRS=\
     qnetworkrequest \
     qnetworksession \
     qobjectperformance \
-    qsocketnotifier \
     qsocks5socketengine \
     qsslcertificate \
     qsslcipher \
@@ -51,6 +49,5 @@ SUBDIRS=\
     qhttpnetworkconnection \
     qhttpnetworkreply \
     qhttpsocketengine \
-    qsocketnotifier \
     qsocks5socketengine \
 

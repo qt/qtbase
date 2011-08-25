@@ -4,4 +4,5 @@ SUBDIRS=\
    codecs \
    concurrent \
    global \
-   io
+   io \
+   kernel

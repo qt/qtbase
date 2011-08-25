@@ -59,7 +59,7 @@
 #include <unistd.h>
 #endif
 
-#include "../../shared/util.h"
+#include "../../../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

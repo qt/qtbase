@@ -8,7 +8,6 @@ SUBDIRS=\
            qalgorithms \
            qcombobox \
            qfocusevent \
-           qitemmodel \
            qlayout \
            qmdiarea \
            qmenu \
@@ -18,7 +17,6 @@ SUBDIRS=\
            qtextbrowser \
            qtextedit \
            qtoolbutton \
-           qvariant \
            qwidget \
            qworkspace \
            windowsmobile

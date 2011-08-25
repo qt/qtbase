@@ -10,7 +10,6 @@ SUBDIRS=\
     languagechange \
     modeltest \
     qabstractbutton \
-    qabstractitemmodel \
     qabstractitemview \
     qabstractprintdialog \
     qabstractproxymodel \
@@ -90,12 +89,9 @@ SUBDIRS=\
     qmainwindow \
     qmdisubwindow \
     qmessagebox \
-    qmetaobject \
-    qmimedata \
     qnetworkaccessmanager_and_qprogressdialog \
     qopengl \
     qplaintextedit \
-    qpointer \
     qprogressbar \
     qprogressdialog \
     qpushbutton \
@@ -106,7 +102,6 @@ SUBDIRS=\
     qscroller \
     qsharedpointer_and_qwidget \
     qsidebar \
-    qsignalmapper \
     qsizegrip \
     qslider \
     qsortfilterproxymodel \
@@ -127,12 +122,10 @@ SUBDIRS=\
     qtableview \
     qtablewidget \
     qtcpsocket \
-    qtipc \
     qtoolbar \
     qtoolbox \
     qtooltip \
     qtransformedscreen \
-    qtranslator \
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
