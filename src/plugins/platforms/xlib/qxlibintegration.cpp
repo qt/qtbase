@@ -66,6 +66,8 @@ QXlibIntegration::QXlibIntegration()
     mEventDispatcher = createUnixEventDispatcher();
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
+    XInitThreads();
+
     mPrimaryScreen = new QXlibScreen();
     mScreens.append(mPrimaryScreen);
     screenAdded(mPrimaryScreen);
