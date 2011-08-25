@@ -60,6 +60,7 @@
 #include <private/qabstractitemmodel_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
+#include <qaccessible2.h>
 #endif
 #include <private/qsoftkeymanager_p.h>
 #ifndef QT_NO_GESTURE
@@ -682,6 +683,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                    this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                   this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
@@ -712,6 +715,8 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                 this, SLOT(_q_headerDataChanged()));
         connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(rowsInserted(QModelIndex,int,int)));
+        connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         connect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
                 this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
         connect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
@@ -1095,6 +1100,14 @@ void QAbstractItemView::reset()
     setRootIndex(QModelIndex());
     if (d->selectionModel)
         d->selectionModel->reset();
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(this)->table2Interface()->modelReset();
+        QAccessible::updateAccessibility(this, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
 
 /*!
@@ -2849,7 +2862,7 @@ void QAbstractItemView::editorDestroyed(QObject *editor)
 */
 void QAbstractItemView::setHorizontalStepsPerItem(int steps)
 {
-    Q_UNUSED(steps);
+    Q_UNUSED(steps)
     // do nothing
 }
 
@@ -2878,7 +2891,7 @@ int QAbstractItemView::horizontalStepsPerItem() const
 */
 void QAbstractItemView::setVerticalStepsPerItem(int steps)
 {
-    Q_UNUSED(steps);
+    Q_UNUSED(steps)
     // do nothing
 }
 
@@ -3311,12 +3324,24 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     rows are those under the given \a parent from \a start to \a end
     inclusive.
 */
-void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &, int, int)
+void QAbstractItemViewPrivate::_q_rowsRemoved(const QModelIndex &index, int start, int end)
 {
+    Q_UNUSED(index)
+    Q_UNUSED(start)
+    Q_UNUSED(end)
+
     Q_Q(QAbstractItemView);
     if (q->isVisible())
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsRemoved(index, start, end);
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
 
 /*!
@@ -3379,27 +3404,72 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
     rows are those under the given \a parent from \a start to \a end
     inclusive.
 */
-void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &, int, int)
+void QAbstractItemViewPrivate::_q_columnsRemoved(const QModelIndex &index, int start, int end)
 {
+    Q_UNUSED(index)
+    Q_UNUSED(start)
+    Q_UNUSED(end)
+
     Q_Q(QAbstractItemView);
     if (q->isVisible())
         q->updateEditorGeometries();
     q->setState(QAbstractItemView::NoState);
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsRemoved(index, start, end);
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
+
 
 /*!
     \internal
 
     This slot is called when rows have been inserted.
 */
-void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &, int, int)
+void QAbstractItemViewPrivate::_q_rowsInserted(const QModelIndex &index, int start, int end)
 {
+    Q_UNUSED(index)
+    Q_UNUSED(start)
+    Q_UNUSED(end)
+
+    Q_Q(QAbstractItemView);
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(q)->table2Interface()->rowsInserted(index, start, end);
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
+}
+
+/*!
+    \internal
+
+    This slot is called when columns have been inserted.
+*/
+void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &index, int start, int end)
+{
+    Q_UNUSED(index)
+    Q_UNUSED(start)
+    Q_UNUSED(end)
+
     Q_Q(QAbstractItemView);
     if (q->isVisible())
         q->updateEditorGeometries();
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(q)->table2Interface()->columnsInserted(index, start, end);
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
-
-
 
 /*!
     \internal
@@ -3417,7 +3487,16 @@ void QAbstractItemViewPrivate::_q_modelDestroyed()
 */
 void QAbstractItemViewPrivate::_q_layoutChanged()
 {
+    Q_Q(QAbstractItemView);
     doDelayedItemsLayout();
+#ifndef QT_NO_ACCESSIBILITY
+#ifdef Q_WS_X11
+    if (QAccessible::isActive()) {
+        QAccessible::queryAccessibleInterface(q)->table2Interface()->modelReset();
+        QAccessible::updateAccessibility(q, 0, QAccessible::TableModelChanged);
+    }
+#endif
+#endif
 }
 
 /*!
@@ -3742,7 +3821,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
 QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::multiSelectionCommand(
     const QModelIndex &index, const QEvent *event) const
 {
-    Q_UNUSED(index);
+    Q_UNUSED(index)
 
     if (event) {
         switch (event->type()) {

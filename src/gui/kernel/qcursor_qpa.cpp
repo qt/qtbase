@@ -108,19 +108,11 @@ void QCursorData::update()
 
 #endif //QT_NO_CURSOR
 
-extern int qt_last_x;
-extern int qt_last_y;
+extern qreal qt_last_x,qt_last_y;
 
 QPoint QCursor::pos()
 {
-    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
-    int cursorCount = cursors.count();
-    for (int i = 0; i < cursorCount; ++i) {
-        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
-        if (cursor)
-            return cursor.data()->pos();
-    }
-    return QPoint(qt_last_x, qt_last_y);
+    return QPointF(qt_last_x, qt_last_y).toPoint();
 }
 
 void QCursor::setPos(int x, int y)

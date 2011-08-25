@@ -108,6 +108,7 @@ public:
     void init();
 
     virtual void _q_rowsRemoved(const QModelIndex &parent, int start, int end);
+    virtual void _q_rowsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsRemoved(const QModelIndex &parent, int start, int end);
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);

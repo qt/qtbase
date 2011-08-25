@@ -474,6 +474,7 @@ private slots:
     void QTBUG_12112_focusItem();
     void QTBUG_13473_sceneposchange();
     void QTBUG_16374_crashInDestructor();
+    void QTBUG_20699_focusScopeCrash();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -11254,6 +11255,37 @@ void tst_QGraphicsItem::QTBUG_16374_crashInDestructor()
 
     view.show();
     QTest::qWaitForWindowShown(&view);
+}
+
+void tst_QGraphicsItem::QTBUG_20699_focusScopeCrash()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsPixmapItem fs;
+    fs.setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+    scene.addItem(&fs);
+    QGraphicsPixmapItem* fs2 = new QGraphicsPixmapItem(&fs);
+    fs2->setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+    QGraphicsPixmapItem* fi2 = new QGraphicsPixmapItem(&fs);
+    fi2->setFlags(QGraphicsItem::ItemIsFocusable);
+    QGraphicsPixmapItem* fi = new QGraphicsPixmapItem(fs2);
+    fi->setFlags(QGraphicsItem::ItemIsFocusable);
+    fs.setFocus();
+    fi->setFocus();
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    fi->setParentItem(fi2);
+    fi->setFocus();
+    fs.setFocus();
+    fi->setParentItem(fs2);
+    fi->setFocus();
+    fs2->setFocus();
+    fs.setFocus();
+    fi->setParentItem(fi2);
+    fi->setFocus();
+    fs.setFocus();
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

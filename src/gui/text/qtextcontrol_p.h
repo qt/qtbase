@@ -215,6 +215,7 @@ Q_SIGNALS:
     void cursorPositionChanged();
 
     // control signals
+    void updateCursorRequest(const QRectF &rect = QRectF());
     void updateRequest(const QRectF &rect = QRectF());
     void documentSizeChanged(const QSizeF &);
     void blockCountChanged(int newBlockCount);
@@ -246,6 +247,8 @@ public:
     bool setFocusToAnchor(const QTextCursor &newCursor);
     bool setFocusToNextOrPreviousAnchor(bool next);
     bool findNextPrevAnchor(const QTextCursor& from, bool next, QTextCursor& newAnchor);
+
+    bool cursorOn() const;
 
 protected:
     virtual void timerEvent(QTimerEvent *e);

@@ -791,9 +791,7 @@ void tst_QStyleSheetStyle::focusColors()
             frame.setLayout(layout);
 
             frame.show();
-#ifdef Q_WS_X11
-            qt_x11_wait_for_window_manager(&frame);
-#endif
+            QTest::qWaitForWindowShown(&frame);
             QApplication::setActiveWindow(&frame);
             widget->setFocus();
             QApplication::processEvents();
@@ -855,14 +853,16 @@ void tst_QStyleSheetStyle::hoverColors()
         QCursor::setPos(QPoint(0,0));
 #endif
 
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(&frame);
-#endif
+        QTest::qWaitForWindowShown(&frame);
         QApplication::setActiveWindow(&frame);
         QTest::qWait(60);
         //move the mouse inside the widget, it should be colored
         QTest::mouseMove ( widget, QPoint(5,5));
         QTest::qWait(60);
+
+#ifdef Q_WS_QPA
+        QEXPECT_FAIL("", "QCursor::setPos / QTest::mouseMove is not implemented on qpa", Abort);
+#endif
 
         QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
@@ -959,9 +959,7 @@ void tst_QStyleSheetStyle::background()
         QWidget* widget = widgets[c];
 
         widget->show();
-#ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(widget);
-#endif
+        QTest::qWaitForWindowShown(widget);
 
         QImage image(widget->width(), widget->height(), QImage::Format_ARGB32);
         widget->render(&image);
@@ -1302,9 +1300,7 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
     layout.addWidget(new QGroupBox("some text", &w));
 
     w.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&w);
-#endif
+    QTest::qWaitForWindowShown(&w);
     //workaround the fact that the label sizehint is one pixel different the first time.
     label.setIndent(0); //force to recompute the sizeHint:
     w.setFocus();

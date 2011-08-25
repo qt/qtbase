@@ -80,6 +80,9 @@
 #if defined(Q_WS_S60)
 #include "private/qt_s60_p.h"
 #endif
+#ifndef QT_NO_ACCESSIBILITY
+#include "qaccessible.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1018,6 +1021,9 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
         }
         q->update();
     }
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+#endif
 }
 
 void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int end)
@@ -1271,6 +1277,9 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
     Q_Q(QComboBox);
     emit q->currentIndexChanged(index.row());
     emit q->currentIndexChanged(itemText(index));
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(q, 0, QAccessible::NameChanged);
+#endif
 }
 
 QString QComboBoxPrivate::itemText(const QModelIndex &index) const
@@ -2635,6 +2644,9 @@ void QComboBox::clear()
 {
     Q_D(QComboBox);
     d->model->removeRows(0, d->model->rowCount(d->root), d->root);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!
@@ -2651,6 +2663,9 @@ void QComboBox::clearEditText()
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->clear();
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!
@@ -2661,6 +2676,9 @@ void QComboBox::setEditText(const QString &text)
     Q_D(QComboBox);
     if (d->lineEdit)
         d->lineEdit->setText(text);
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
 }
 
 /*!

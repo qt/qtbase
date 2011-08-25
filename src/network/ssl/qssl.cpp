@@ -82,9 +82,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QSsl::AlternateNameEntryType
+    \enum QSsl::AlternativeNameEntryType
 
-    Describes the key types for alternate name entries in QSslCertificate.
+    Describes the key types for alternative name entries in QSslCertificate.
 
     \value EmailEntry An email entry; the entry contains an email address that
     the certificate is valid for.
@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     \value DnsEntry A DNS host name entry; the entry contains a host name
     entry that the certificate is valid for. The entry may contain wildcards.
 
-    \sa QSslCertificate::alternateSubjectNames()
+    \sa QSslCertificate::subjectAlternativeNames()
 
 */
 

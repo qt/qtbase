@@ -359,7 +359,7 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
     exp.rotate(angle, axis);
     QTransform expected = exp.toTransform(1024.0f);
 
-#ifdef Q_OS_LINUX
+#if defined(MAY_HIT_QTBUG_20661)
     // These failures possibly relate to the float vs qreal issue mentioned
     // in the comment above fuzzyCompare().
     if (sizeof(qreal) == sizeof(double)) {

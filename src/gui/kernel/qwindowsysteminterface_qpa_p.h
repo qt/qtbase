@@ -135,20 +135,20 @@ public:
 
     class MouseEvent : public UserEvent {
     public:
-        MouseEvent(QWindow * w, ulong time, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
+        MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
             : UserEvent(w, time, Mouse), localPos(local), globalPos(global), buttons(b) { }
-        QPoint localPos;
-        QPoint globalPos;
+        QPointF localPos;
+        QPointF globalPos;
         Qt::MouseButtons buttons;
     };
 
     class WheelEvent : public UserEvent {
     public:
-        WheelEvent(QWindow *w, ulong time, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
+        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
             : UserEvent(w, time, Wheel), delta(d), localPos(local), globalPos(global), orient(o) { }
         int delta;
-        QPoint localPos;
-        QPoint globalPos;
+        QPointF localPos;
+        QPointF globalPos;
         Qt::Orientation orient;
     };
 

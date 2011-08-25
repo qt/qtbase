@@ -114,12 +114,12 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
 
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleMouseEvent(w, time, local, global, b);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
+void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b);
@@ -162,12 +162,12 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestam
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
+void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(w, time, local, global, d, o);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
+void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
 {
     QWindowSystemInterfacePrivate::WheelEvent *e =
             new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o);

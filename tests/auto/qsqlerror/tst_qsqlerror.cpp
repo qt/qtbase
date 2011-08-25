@@ -61,6 +61,7 @@ public:
 private slots:
     void getSetCheck();
     void construction();
+    void operators();
 };
 
 tst_QSqlError::tst_QSqlError()
@@ -124,6 +125,21 @@ void tst_QSqlError::construction()
    QSqlError obj4;
    QVERIFY(!obj4.isValid());
 }
+
+void tst_QSqlError::operators()
+{
+   QSqlError error1;
+   QSqlError error2;
+   QSqlError error3;
+
+   error1.setType(QSqlError::NoError);
+   error2.setType(QSqlError::NoError);
+   error3.setType(QSqlError::UnknownError);
+
+   QVERIFY(error1 == error2);
+   QVERIFY(error1 != error3);
+}
+
 
 QTEST_MAIN(tst_QSqlError)
 #include "tst_qsqlerror.moc"

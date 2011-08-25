@@ -48,6 +48,7 @@
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qmap.h>
 #include <QtNetwork/qssl.h>
 
 typedef struct x509_st X509; // ### check if this works
@@ -65,7 +66,6 @@ class QIODevice;
 class QSslError;
 class QSslKey;
 class QStringList;
-template <typename T, typename U> class QMultiMap;
 
 class QSslCertificatePrivate;
 class Q_NETWORK_EXPORT QSslCertificate
@@ -106,7 +106,11 @@ public:
     QStringList subjectInfo(const QByteArray &attribute) const;
     QList<QByteArray> subjectInfoAttributes() const;
     QList<QByteArray> issuerInfoAttributes() const;
-    QMultiMap<QSsl::AlternateNameEntryType, QString> alternateSubjectNames() const;
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED inline QMultiMap<QSsl::AlternateNameEntryType, QString>
+                  alternateSubjectNames() const { return subjectAlternativeNames(); }
+#endif
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> subjectAlternativeNames() const;
     QDateTime effectiveDate() const;
     QDateTime expiryDate() const;
     QSslKey publicKey() const;

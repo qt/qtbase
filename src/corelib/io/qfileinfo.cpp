@@ -366,7 +366,7 @@ QFileInfo::~QFileInfo()
 }
 
 /*!
-    \fn bool QFileInfo::operator!=(const QFileInfo &fileinfo)
+    \fn bool QFileInfo::operator!=(const QFileInfo &fileinfo) const
 
     Returns true if this QFileInfo object refers to a different file
     than the one specified by \a fileinfo; otherwise returns false.
@@ -380,7 +380,19 @@ QFileInfo::~QFileInfo()
 */
 
 /*!
-    \overload
+    Returns true if this QFileInfo object refers to a file in the same
+    location as \a fileinfo; otherwise returns false.
+
+    Note that the result of comparing two empty QFileInfo objects,
+    containing no file references, is undefined.
+
+    \warning This will not compare two different symbolic links
+    pointing to the same file.
+
+    \warning Long and short file names that refer to the same file on Windows
+    are treated as if they referred to different files.
+
+    \sa operator!=()
 */
 bool QFileInfo::operator==(const QFileInfo &fileinfo) const
 {
@@ -407,26 +419,6 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
         return false;
 
    return canonicalFilePath().compare(fileinfo.canonicalFilePath(), sensitive) == 0;
-}
-
-/*!
-    Returns true if this QFileInfo object refers to a file in the same
-    location as \a fileinfo; otherwise returns false.
-
-    Note that the result of comparing two empty QFileInfo objects,
-    containing no file references, is undefined.
-
-    \warning This will not compare two different symbolic links
-    pointing to the same file.
-
-    \warning Long and short file names that refer to the same file on Windows
-    are treated as if they referred to different files.
-
-    \sa operator!=()
-*/
-bool QFileInfo::operator==(const QFileInfo &fileinfo)
-{
-    return const_cast<const QFileInfo *>(this)->operator==(fileinfo);
 }
 
 /*!

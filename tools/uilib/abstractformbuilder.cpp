@@ -62,7 +62,7 @@
 #  include <private/qlayout_p.h> // Compiling within Designer
 #endif
 
-#include <QtXml/QXmlStreamReader>
+#include <QtCore/QXmlStreamReader>
 
 #include <QtCore/qdebug.h>
 

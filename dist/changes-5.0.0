@@ -20,6 +20,10 @@ information about a particular change.
 - QLibrary::resolve() now returns a function pointer instead of a void
   pointer.
 
+- QSslCertificate::alternateSubjectNames() is deprecated (but can be enabled
+  via QT_DISABLE_DEPRECATED_BEFORE), use
+  QSslCertificate::subjectAlternativeNames() instead.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

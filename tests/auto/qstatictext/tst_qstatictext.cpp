@@ -60,6 +60,8 @@ private:
     bool supportsTransformations() const;
 
 private slots:
+    void initTestCase();
+
     void init();
     void cleanup();
 
@@ -99,7 +101,19 @@ private slots:
 
     void underlinedColor_qtbug20159();
     void textDocumentColor();
+
+private:
+    QImage const    m_whiteSquare;
 };
+
+void tst_QStaticText::initTestCase()
+{
+    // a "blank" square; we compare against in our testfunctions to verify
+    // that we have actually painted something
+    QPixmap pm(1000, 1000);
+    pm.fill(Qt::white);
+    const_cast<QImage&>(m_whiteSquare) = pm.toImage();
+}
 
 void tst_QStaticText::init()
 {
@@ -169,6 +183,7 @@ void tst_QStaticText::drawToPoint()
         p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -208,6 +223,7 @@ void tst_QStaticText::drawToRect()
     imageDrawStaticText.save("drawToRect_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);   
 }
 
@@ -235,6 +251,17 @@ void tst_QStaticText::prepareToCorrectData()
         text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12  - QFontMetricsF(p.font()).ascent()), text);
     }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("prepareToCorrectData_imageDrawText.png");
+    imageDrawStaticText.save("prepareToCorrectData_imageDrawStaticText.png");
+#endif
+
+#ifdef Q_WS_QPA
+    QEXPECT_FAIL("", "QTBUG-20977 fails on qpa", Abort);
+#endif
+
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
 
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
@@ -264,6 +291,7 @@ void tst_QStaticText::prepareToWrongData()
         p.drawStaticText(QPointF(11, 12  - QFontMetricsF(p.font()).ascent()), text);
     }
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -304,6 +332,7 @@ void tst_QStaticText::setFont()
     imageDrawStaticText.save("setFont_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -326,6 +355,7 @@ void tst_QStaticText::setTextWidth()
         p.drawStaticText(QPointF(11, 12), text);
     }
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -352,6 +382,7 @@ void tst_QStaticText::translatedPainter()
         p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -399,6 +430,8 @@ void tst_QStaticText::rotatedPainter()
     imageDrawStaticText.save("rotatedPainter_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
+
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -426,6 +459,8 @@ void tst_QStaticText::scaledPainter()
 
         p.drawStaticText(QPointF(11, 12 - QFontMetricsF(p.font()).ascent()), text);
     }
+
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
 
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
@@ -508,6 +543,8 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
     imageDrawStaticText.save("rotatedScaledAndPainter_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
+
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -550,6 +587,8 @@ void tst_QStaticText::transformationChanged()
     imageDrawStaticText.save("transformationChanged_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
+
     if (!supportsTransformations())
       QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -586,6 +625,7 @@ void tst_QStaticText::plainTextVsRichText()
     imageRichText.save("plainTextVsRichText_imageRichText.png");
 #endif
 
+    QVERIFY(imagePlainText.toImage() != m_whiteSquare);
     QCOMPARE(imagePlainText, imageRichText);
 }
 
@@ -706,6 +746,7 @@ void tst_QStaticText::drawStruckOutText()
     imageDrawStaticText.save("drawStruckOutText_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawText, imageDrawStaticText);
 }
 
@@ -740,6 +781,7 @@ void tst_QStaticText::drawOverlinedText()
     imageDrawStaticText.save("drawOverlinedText_imageDrawStaticText.png");
 #endif
 
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
     QCOMPARE(imageDrawText, imageDrawStaticText);
 }
 

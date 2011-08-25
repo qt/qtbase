@@ -91,8 +91,8 @@ bool QGuiApplicationPrivate::app_do_modal = false;
 
 QPalette *QGuiApplicationPrivate::app_pal = 0;        // default application palette
 
-int qt_last_x = 0;
-int qt_last_y = 0;
+qreal qt_last_x = 0;
+qreal qt_last_y = 0;
 
 Qt::MouseButtons QGuiApplicationPrivate::buttons = Qt::NoButton;
 ulong QGuiApplicationPrivate::mousePressTime = 0;
@@ -554,7 +554,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QEvent::Type type;
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
-    if (e->globalPos != QPoint(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
+    if (e->globalPos != QPointF(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
         QWindowSystemInterfacePrivate::MouseEvent * newMouseEvent =
                 new QWindowSystemInterfacePrivate::MouseEvent(e->window.data(), e->timestamp, e->localPos, e->globalPos, e->buttons);
         QWindowSystemInterfacePrivate::windowSystemEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
@@ -563,8 +563,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     QWindow *window = e->window.data();
 
-    QPoint localPoint = e->localPos;
-    QPoint globalPoint = e->globalPos;
+    QPointF localPoint = e->localPos;
+    QPointF globalPoint = e->globalPos;
 
     Qt::MouseButton button = Qt::NoButton;
 
@@ -629,7 +629,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     if (!e->window)
         return;
 
-    QPoint globalPoint = e->globalPos;
+    QPointF globalPoint = e->globalPos;
 
     qt_last_x = globalPoint.x();
     qt_last_y = globalPoint.y();

@@ -317,7 +317,7 @@ public:
     QString text() const;
 
 #if !defined(QT_NO_RAWFONT)
-    QList<QGlyphRun> glyphRuns() const;
+    QList<QGlyphRun> glyphRuns(int from = -1, int length = -1) const;
 #endif
 
 private:

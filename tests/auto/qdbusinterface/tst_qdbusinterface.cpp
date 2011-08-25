@@ -200,6 +200,7 @@ private slots:
     void invalidAfterServiceOwnerChanged();
     void introspect();
     void introspectUnknownTypes();
+    void introspectVirtualObject();
     void callMethod();
     void invokeMethod();
     void invokeMethodWithReturn();
@@ -361,7 +362,6 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
 
 void tst_QDBusInterface::introspect()
 {
-    QDBusConnection con = QDBusConnection::sessionBus();
     QDBusInterface iface(QDBusConnection::sessionBus().baseService(), QLatin1String("/"),
                          TEST_INTERFACE_NAME);
 
@@ -394,6 +394,75 @@ void tst_QDBusInterface::introspectUnknownTypes()
     QVERIFY(mo->indexOfProperty("prop1") != -1);
     int pidx = mo->indexOfProperty("prop1");
     QCOMPARE(mo->property(pidx).typeName(), "QDBusRawType<0x7e>*");
+
+
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), "/unknownTypes", "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    qDebug() << "REPL: " << reply.arguments();
+
+}
+
+
+class VirtualObject: public QDBusVirtualObject
+{
+    Q_OBJECT
+public:
+    VirtualObject() :success(true) {}
+
+    QString introspect(const QString &path) const {
+        if (path == "/some/path/superNode")
+            return "zitroneneis";
+        if (path == "/some/path/superNode/foo")
+            return  "  <interface name=\"com.trolltech.QtDBus.VirtualObject\">\n"
+                    "    <method name=\"klingeling\" />\n"
+                    "  </interface>\n" ;
+        return QString();
+    }
+
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) {
+        ++callCount;
+        lastMessage = message;
+
+        if (success) {
+            QDBusMessage reply = message.createReply(replyArguments);
+            connection.send(reply);
+        }
+        emit messageReceived(message);
+        return success;
+    }
+signals:
+    void messageReceived(const QDBusMessage &message) const;
+
+public:
+    mutable QDBusMessage lastMessage;
+    QVariantList replyArguments;
+    mutable int callCount;
+    bool success;
+};
+
+void tst_QDBusInterface::introspectVirtualObject()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+    VirtualObject obj;
+
+    obj.success = false;
+
+    QString path = "/some/path/superNode";
+    QVERIFY(con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+
+    QDBusMessage message = QDBusMessage::createMethodCall(con.baseService(), path, "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply = con.call(message, QDBus::Block, 5000);
+    QVERIFY(reply.arguments().at(0).toString().contains(
+        QRegExp("<node>.*zitroneneis.*<interface name=") ));
+
+    QDBusMessage message2 = QDBusMessage::createMethodCall(con.baseService(), path + "/foo", "org.freedesktop.DBus.Introspectable", "Introspect");
+    QDBusMessage reply2 = con.call(message2, QDBus::Block, 5000);
+    QVERIFY(reply2.arguments().at(0).toString().contains(
+        QRegExp("<node>.*<interface name=\"com.trolltech.QtDBus.VirtualObject\">"
+                ".*<method name=\"klingeling\" />\n"
+                ".*</interface>.*<interface name=") ));
 }
 
 void tst_QDBusInterface::callMethod()

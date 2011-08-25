@@ -103,6 +103,17 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     if (!iface)
         return;
 
+    // updates for List/Table/Tree should send child
+    if (who) {
+        QAccessibleInterface *child;
+        iface->navigate(QAccessible::Child, who, &child);
+        if (child) {
+            delete iface;
+            iface = child;
+            who = 0;
+        }
+    }
+
     for (int i = 0; i < bridges()->count(); ++i)
         bridges()->at(i)->notifyAccessibilityUpdate(reason, iface, who);
     delete iface;

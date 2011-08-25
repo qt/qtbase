@@ -262,7 +262,7 @@ if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
     $| = 1;
 
     # Now run the configuration tests
-    print "Configuration tests:\n";
+    print "Configuration tests:\n" if (%configtests);
 
     while ((my $testName, my $testParameters) = each %configtests) {
         printf "  % *s: ", $maxNameLength, $testName; # right aligned, yes/no lines up

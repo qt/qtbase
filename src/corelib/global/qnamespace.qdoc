@@ -2111,6 +2111,13 @@
 */
 
 /*!
+    \enum Qt::FindChildOption
+
+    \value FindDirectChildrenOnly    Looks only at the direct children of the object.
+    \value FindChildrenRecursively   Looks at all children of the object (recursive search).
+*/
+
+/*!
     \enum Qt::DropAction
 
     \value CopyAction       Copy the data to the target.

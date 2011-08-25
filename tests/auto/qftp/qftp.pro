@@ -18,3 +18,5 @@ wince*: {
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+
+CONFIG+=insignificant_test  # uses live qt-test-server, inherently unstable

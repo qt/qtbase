@@ -1076,9 +1076,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         " -minimumvalue n : Sets the minimum acceptable measurement value\n"
         " -iterations  n  : Sets the number of accumulation iterations.\n"
         " -median  n      : Sets the number of median iterations.\n"
-        " -vb             : Print out verbose benchmarking information.\n"
-         "\n"
-        " -help      : This help\n";
+        " -vb             : Print out verbose benchmarking information.\n";
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0
@@ -1086,6 +1084,17 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             printf(" Usage: %s [options] [testfunction[:testdata]]...\n"
                    "    By default, all testfunctions will be run.\n\n"
                    "%s", argv[0], testOptions);
+
+            if (qml) {
+                printf ("\nqmltest related options:\n"
+                        " -import    : Specify an import directory.\n"
+                        " -input     : Specify the root directory for test cases.\n"
+                        " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
+                        );
+            }
+
+            printf("\n"
+                   " -help      : This help\n");
             exit(0);
         } else if (strcmp(argv[i], "-functions") == 0) {
             if (qml) {
@@ -1228,6 +1237,16 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             }
         } else if (argv[i][0] == '-') {
             printf("Unknown option: '%s'\n\n%s", argv[i], testOptions);
+            if (qml) {
+                printf ("\nqmltest related options:\n"
+                        " -import    : Specify an import directory.\n"
+                        " -input     : Specify the root directory for test cases.\n"
+                        " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
+                        );
+            }
+
+            printf("\n"
+                   " -help      : This help\n");
             exit(1);
         } else if (qml) {
             // We can't check the availability of test functions until

@@ -48,8 +48,10 @@
 #include <QQuaternion>
 #include <QVector2D>
 
+QT_BEGIN_NAMESPACE
 class QBasicTimer;
 class QGLShaderProgram;
+QT_END_NAMESPACE
 
 class GeometryEngine;
 

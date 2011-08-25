@@ -91,7 +91,10 @@ public:
     void setStrikeOut(bool strikeOut);
     bool strikeOut() const;
 
+    void setBoundingRect(const QRectF &boundingRect);
     QRectF boundingRect() const;
+
+    bool isEmpty() const;
 
 private:
     friend class QGlyphRunPrivate;

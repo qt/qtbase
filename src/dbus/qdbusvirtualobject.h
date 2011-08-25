@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the QtDBus module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,56 +39,43 @@
 **
 ****************************************************************************/
 
+#ifndef QDBUSTREENODE_H
+#define QDBUSTREENODE_H
 
-#ifndef QSSL_H
-#define QSSL_H
+#include <QtDBus/qdbusmacros.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qobject.h>
 
-#include <QtCore/qglobal.h>
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
+QT_MODULE(DBus)
 
-namespace QSsl {
-    enum KeyType {
-        PrivateKey,
-        PublicKey
-    };
+class QDBusMessage;
+class QDBusConnection;
 
-    enum EncodingFormat {
-        Pem,
-        Der
-    };
+class QDBusVirtualObjectPrivate;
+class Q_DBUS_EXPORT QDBusVirtualObject : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QDBusVirtualObject(QObject *parent = 0);
+    virtual ~QDBusVirtualObject();
 
-    enum KeyAlgorithm {
-        Rsa,
-        Dsa
-    };
+    virtual QString introspect(const QString &path) const = 0;
+    virtual bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) = 0;
 
-    enum AlternativeNameEntryType {
-        EmailEntry,
-        DnsEntry
-    };
-
-#if QT_DEPRECATED_SINCE(5,0)
-    typedef AlternativeNameEntryType AlternateNameEntryType;
-#endif
-
-    enum SslProtocol {
-        SslV3,
-        SslV2,
-        TlsV1, // ### Qt 5: rename to TlsV1_0 or so
-        AnyProtocol,
-        TlsV1SslV3,
-        SecureProtocols,
-        UnknownProtocol = -1
-    };
-}
+private:
+    Q_DECLARE_PRIVATE(QDBusVirtualObject)
+    Q_DISABLE_COPY(QDBusVirtualObject)
+};
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QSSL_H
+#endif // QT_NO_DBUS
+#endif

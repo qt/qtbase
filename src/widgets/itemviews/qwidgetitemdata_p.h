@@ -62,7 +62,7 @@ public:
     inline QWidgetItemData(int r, QVariant v) : role(r), value(v) {}
     int role;
     QVariant value;
-    inline bool operator==(const QWidgetItemData &other) { return role == other.role && value == other.value; }
+    inline bool operator==(const QWidgetItemData &other) const { return role == other.role && value == other.value; }
 };
 
 #ifndef QT_NO_DATASTREAM

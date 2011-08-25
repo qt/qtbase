@@ -608,6 +608,11 @@ void tst_QUndoGroup::addStackAndDie()
 void tst_QUndoGroup::commandTextFormat()
 {
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+
+    if (QProcess::execute(binDir + "/lrelease -version") != 0) {
+        QSKIP("lrelease is missing or broken", SkipAll);
+    }
+
     QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundogroup.ts"));
 
     QTranslator translator;
