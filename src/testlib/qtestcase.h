@@ -109,7 +109,7 @@ do {\
 } while (0)
 
 #define QWARN(msg)\
-    QTest::qWarn(msg)
+    QTest::qWarn(msg, __FILE__, __LINE__)
 
 class QObject;
 class QTestData;
@@ -139,7 +139,7 @@ namespace QTest
     Q_TESTLIB_EXPORT void qSkip(const char *message, SkipMode mode, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);
-    Q_TESTLIB_EXPORT void qWarn(const char *message);
+    Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = 0, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
 
     Q_TESTLIB_EXPORT void *qData(const char *tagName, int typeId);

@@ -1963,9 +1963,9 @@ bool QTest::qExpectFail(const char *dataIndex, const char *comment,
 
 /*! \internal
  */
-void QTest::qWarn(const char *message)
+void QTest::qWarn(const char *message, const char *file, int line)
 {
-    QTestLog::warn(message);
+    QTestLog::warn(message, file, line);
 }
 
 /*!

@@ -77,7 +77,7 @@ public:
     static int unhandledIgnoreMessages();
     static void printUnhandledIgnoreMessages();
 
-    static void warn(const char *msg);
+    static void warn(const char *msg, const char *file, int line);
     static void info(const char *msg, const char *file, int line);
 
     static void startLogging();

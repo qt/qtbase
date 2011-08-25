@@ -385,12 +385,12 @@ bool QTestLog::loggerUsingStdout()
     return QTest::loggerUsingStdout;
 }
 
-void QTestLog::warn(const char *msg)
+void QTestLog::warn(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
     if (QTest::TestLoggers::loggerCount() > 0)
-        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, msg);
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, msg, file, line);
 }
 
 void QTestLog::info(const char *msg, const char *file, int line)
