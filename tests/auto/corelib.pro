@@ -19,15 +19,12 @@ SUBDIRS=\
    qexplicitlyshareddatapointer \
    qfreelist \
    qhash \
-   qlibrary \
    qline \
    qmap \
    qmargins \
    qmutex \
    qmutexlocker \
    qobjectrace \
-   qplugin \
-   qpluginloader \
    qpoint \
    qqueue \
    qreadlocker \
@@ -61,7 +58,6 @@ SUBDIRS=\
    qtimeline \
    qtmd5 \
    qtokenautomaton \
-   quuid \
    qvarlengtharray \
    qvector \
    qwaitcondition \

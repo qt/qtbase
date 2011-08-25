@@ -5,4 +5,5 @@ SUBDIRS=\
    concurrent \
    global \
    io \
-   kernel
+   kernel \
+   plugin
