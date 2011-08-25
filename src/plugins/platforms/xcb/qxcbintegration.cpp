@@ -81,6 +81,10 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
+#ifdef XCB_USE_XLIB
+    XInitThreads();
+#endif
+
     m_connections << new QXcbConnection;
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
