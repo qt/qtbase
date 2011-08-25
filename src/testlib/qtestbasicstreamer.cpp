@@ -43,8 +43,6 @@
 #include "qtestlogger_p.h"
 #include "qtestelement.h"
 #include "qtestelementattribute.h"
-#include "QtTest/private/qtestlog_p.h"
-#include "qtestassert.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,11 +52,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-namespace QTest
-{
-    static FILE *stream = 0;
-}
 
 QTestBasicStreamer::QTestBasicStreamer()
     :testLogger(0)
@@ -158,51 +151,7 @@ void QTestBasicStreamer::outputElementAttributes(const QTestElement* element, QT
 
 void QTestBasicStreamer::outputString(const char *msg) const
 {
-    QTEST_ASSERT(QTest::stream);
-
-    ::fputs(msg, QTest::stream);
-    ::fflush(QTest::stream);
-}
-
-void QTestBasicStreamer::startStreaming()
-{
-    QTEST_ASSERT(!QTest::stream);
-
-    const char *out = QTestLog::outputFileName();
-    if (!out) {
-        QTest::stream = stdout;
-        return;
-    }
-    #if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
-    if (::fopen_s(&QTest::stream, out, "wt")) {
-        #else
-        QTest::stream = ::fopen(out, "wt");
-        if (!QTest::stream) {
-            #endif
-            printf("Unable to open file for logging: %s", out);
-            ::exit(1);
-        }
-}
-
-bool QTestBasicStreamer::isTtyOutput()
-{
-    QTEST_ASSERT(QTest::stream);
-
-#if defined(Q_OS_WIN) || defined(Q_OS_INTEGRITY)
-    return true;
-#else
-    static bool ttyoutput = isatty(fileno(QTest::stream));
-    return ttyoutput;
-#endif
-}
-
-void QTestBasicStreamer::stopStreaming()
-{
-    QTEST_ASSERT(QTest::stream);
-    if (QTest::stream != stdout)
-        fclose(QTest::stream);
-
-    QTest::stream = 0;
+    testLogger->outputString(msg);
 }
 
 void QTestBasicStreamer::setLogger(const QTestLogger *tstLogger)

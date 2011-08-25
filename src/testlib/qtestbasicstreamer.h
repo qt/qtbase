@@ -64,9 +64,6 @@ class QTestBasicStreamer
         virtual void output(QTestElement *element) const;
 
         void outputString(const char *msg) const;
-        bool isTtyOutput();
-        void startStreaming();
-        void stopStreaming();
 
         void setLogger(const QTestLogger *tstLogger);
         const QTestLogger *logger() const;
