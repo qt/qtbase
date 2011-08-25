@@ -1,7 +1,5 @@
 TARGET = qxlib
 
-DEFINES += MYX11_DEBUG
-
 load(qt_plugin)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
