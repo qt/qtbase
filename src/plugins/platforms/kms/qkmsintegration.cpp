@@ -86,6 +86,7 @@ bool QKmsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
+    case ThreadedOpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

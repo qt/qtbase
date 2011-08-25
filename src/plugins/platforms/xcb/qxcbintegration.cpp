@@ -159,6 +159,12 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     switch (cap) {
     case ThreadedPixmaps: return true;
     case OpenGL: return true;
+    case ThreadedOpenGL:
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+        return true;
+#else
+        return false;
+#endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

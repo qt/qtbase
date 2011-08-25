@@ -70,6 +70,8 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL: return true;
+    case ThreadedOpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
