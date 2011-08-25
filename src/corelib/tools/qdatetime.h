@@ -46,6 +46,17 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qsharedpointer.h>
 
+// windows.h defines these identifiers, so undefine it
+// ### figure out where in Qt we include it too soon
+#ifdef max
+# undef max
+#endif
+#ifdef min
+# undef min
+#endif
+
+#include <limits>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -59,11 +70,11 @@ public:
         StandaloneFormat
     };
 public:
-    QDate() { jd = 0; }
+    QDate() { jd = nullJd(); }
     QDate(int y, int m, int d);
 
-    bool isNull() const { return jd == 0; }
-    bool isValid() const;
+    bool isNull() const { return !isValid(); }
+    bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
 
     int year() const;
     int month() const;
@@ -93,10 +104,10 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
 
     void getDate(int *year, int *month, int *day);
 
-    QDate addDays(int days) const;
+    QDate addDays(qint64 days) const;
     QDate addMonths(int months) const;
     QDate addYears(int years) const;
-    int daysTo(const QDate &) const;
+    qint64 daysTo(const QDate &) const;
 
     bool operator==(const QDate &other) const { return jd == other.jd; }
     bool operator!=(const QDate &other) const { return jd != other.jd; }
@@ -113,11 +124,16 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
 
-    static inline QDate fromJulianDay(int jd) { QDate d; d.jd = jd; return d; }
-    inline int toJulianDay() const { return jd; }
+    static inline QDate fromJulianDay(qint64 jd)
+    { QDate d; if (jd >= minJd() && jd <= maxJd()) d.jd = jd; return d; }
+    inline qint64 toJulianDay() const { return jd; }
 
 private:
-    uint jd;
+    static inline qint64 nullJd() { return std::numeric_limits<qint64>::min(); }
+    static inline qint64 minJd() { return std::numeric_limits<qint64>::min() / 2; }
+    static inline qint64 maxJd() { return (std::numeric_limits<qint64>::max()) / 2; }
+
+    qint64 jd;
 
     friend class QDateTime;
     friend class QDateTimePrivate;
@@ -220,7 +236,7 @@ public:
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
     QString toString(const QString &format) const;
 #endif
-    QDateTime addDays(int days) const;
+    QDateTime addDays(qint64 days) const;
     QDateTime addMonths(int months) const;
     QDateTime addYears(int years) const;
     QDateTime addSecs(int secs) const;
@@ -228,7 +244,7 @@ public:
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
     inline QDateTime toUTC() const { return toTimeSpec(Qt::UTC); }
-    int daysTo(const QDateTime &) const;
+    qint64 daysTo(const QDateTime &) const;
     int secsTo(const QDateTime &) const;
     qint64 msecsTo(const QDateTime &) const;
 

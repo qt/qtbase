@@ -883,22 +883,22 @@ void tst_QDateTime::daysTo()
     QDateTime dt2(QDate(1760, 2, 2), QTime());
     QDateTime dt3(QDate(1760, 3, 2), QTime());
 
-    QCOMPARE(dt1.daysTo(dt2), 31);
+    QCOMPARE(dt1.daysTo(dt2), (qint64) 31);
     QCOMPARE(dt1.addDays(31), dt2);
 
-    QCOMPARE(dt2.daysTo(dt3), 29);
+    QCOMPARE(dt2.daysTo(dt3), (qint64) 29);
     QCOMPARE(dt2.addDays(29), dt3);
 
-    QCOMPARE(dt1.daysTo(dt3), 60);
+    QCOMPARE(dt1.daysTo(dt3), (qint64) 60);
     QCOMPARE(dt1.addDays(60), dt3);
 
-    QCOMPARE(dt2.daysTo(dt1), -31);
+    QCOMPARE(dt2.daysTo(dt1), (qint64) -31);
     QCOMPARE(dt2.addDays(-31), dt1);
 
-    QCOMPARE(dt3.daysTo(dt2), -29);
+    QCOMPARE(dt3.daysTo(dt2), (qint64) -29);
     QCOMPARE(dt3.addDays(-29), dt2);
 
-    QCOMPARE(dt3.daysTo(dt1), -60);
+    QCOMPARE(dt3.daysTo(dt1), (qint64) -60);
     QCOMPARE(dt3.addDays(-60), dt1);
 }
 

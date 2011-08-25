@@ -247,6 +247,12 @@ QtCore
     0 and QDate::shortMonthName() will return QString().
   * Adding days to a null QDate or seconds to a null QTime will no longer return
     a valid QDate/QTime.
+  * QDate stores the Julian Day as a qint64 extending date support across a
+    more interesting range, see the class documentation for details.
+    * Conversion to YMD form dates is only accurate between to 4800 BCE to
+      1.4 million CE
+    * The QDate::addDays() and QDateTime::addDays() methods now take a qint64
+    * The QDate::daysTo() and QDateTime::daysTo() methods now return a qint64
 
 
 * QIntValidator and QDoubleValidator no longer fall back to using the C locale if
