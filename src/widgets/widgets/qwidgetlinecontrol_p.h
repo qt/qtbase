@@ -71,6 +71,10 @@
 
 QT_BEGIN_HEADER
 
+#ifdef DrawText
+#  undef DrawText
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
