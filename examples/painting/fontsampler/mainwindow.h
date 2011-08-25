@@ -44,6 +44,7 @@
 #include "ui_mainwindowbase.h"
 
 QT_BEGIN_NAMESPACE
+class QPrinter;
 class QTextEdit;
 class QTreeWidget;
 class QTreeWidgetItem;

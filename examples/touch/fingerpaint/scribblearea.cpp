@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QPrinter>
+#include <QPrintDialog>
 
 #include "scribblearea.h"
 

@@ -54,7 +54,7 @@ void GraphicsView::keyPressEvent(QKeyEvent *e)
     emit keyPressed(Qt::Key(e->key()));
 }
 
-void GraphicsView::resizeEvent(QResizeEvent *event)
+void GraphicsView::resizeEvent(QResizeEvent *)
 {
     fitInView(scene()->sceneRect());
 }

@@ -42,6 +42,9 @@
 #include "view.h"
 
 #include <QtWidgets>
+#include <QPrinter>
+#include <QPrintDialog>
+
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif

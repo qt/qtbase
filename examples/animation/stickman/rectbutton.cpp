@@ -51,7 +51,7 @@ RectButton::~RectButton()
 }
 
 
-void RectButton::mousePressEvent (QGraphicsSceneMouseEvent *event)
+void RectButton::mousePressEvent (QGraphicsSceneMouseEvent *)
 {
     emit clicked();
 }
@@ -63,7 +63,7 @@ QRectF RectButton::boundingRect() const
 }
 
 
-void RectButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void RectButton::paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option */, QWidget * /* widget */)
 {
     painter->setBrush(Qt::gray);
     painter->drawRoundedRect(boundingRect(), 5, 5);

@@ -43,7 +43,7 @@
 /*
  * QThread derived class with additional capability to move a QObject to the
  * new thread, to stop the thread and move the QObject back to the thread where
- *it came from. 
+ *it came from.
  */
 
 Thread::Thread( QObject *parent)
@@ -68,7 +68,6 @@ void Thread::launchWorker(QObject *worker)
 {
     worker = worker;
     start();
-    int i=0;
     worker->moveToThread(this);
     shutDownHelper->moveToThread(this);
     connect(shutDownHelper, SIGNAL(mapped(int) ), this, SLOT(stopExecutor()), Qt::DirectConnection );

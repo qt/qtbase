@@ -53,7 +53,7 @@ public:
     }
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event)
+    virtual void resizeEvent(QResizeEvent *)
     {
 #if defined(Q_OS_SYMBIAN)
         fitInView(sceneRect(), Qt::KeepAspectRatio);

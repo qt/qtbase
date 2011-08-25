@@ -16,7 +16,7 @@ symbian: TARGET = imageviewerexample
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qmng qgif
 }
-QT += widgets
+QT += widgets printsupport
 maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)
