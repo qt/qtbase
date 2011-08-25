@@ -44,6 +44,7 @@
 
 #include <QtGui/qguiapplication.h>
 
+#include <QtCore/QPointF>
 #include <QtCore/private/qcoreapplication_p.h>
 
 #include <QtCore/private/qthread_p.h>
@@ -156,6 +157,7 @@ public:
     static int mousePressX;
     static int mousePressY;
     static int mouse_double_click_distance;
+    static QPointF lastCursorPosition;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;

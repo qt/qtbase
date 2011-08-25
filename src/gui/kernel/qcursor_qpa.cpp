@@ -42,6 +42,7 @@
 #include <qcursor.h>
 #include <private/qcursor_p.h>
 #include <qplatformcursor_qpa.h>
+#include <private/qguiapplication_p.h>
 #include <qbitmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -108,11 +109,9 @@ void QCursorData::update()
 
 #endif //QT_NO_CURSOR
 
-extern qreal qt_last_x,qt_last_y;
-
 QPoint QCursor::pos()
 {
-    return QPointF(qt_last_x, qt_last_y).toPoint();
+    return QGuiApplicationPrivate::lastCursorPosition.toPoint();
 }
 
 void QCursor::setPos(int x, int y)

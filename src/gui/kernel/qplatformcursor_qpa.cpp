@@ -43,6 +43,7 @@
 #include <QPainter>
 #include <QBitmap>
 #include <QGuiApplication>
+#include <private/qguiapplication_p.h>
 
 #include <QDebug>
 
@@ -98,13 +99,10 @@ QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
     QPlatformCursorPrivate::instances.append(this);
 }
 
-extern int qt_last_x;
-extern int qt_last_y;
-
 QPoint QPlatformCursor::pos() const
 {
     // As a fallback return the last mouse position seen by QGuiApplication.
-    return QPoint(qt_last_x, qt_last_y);
+    return QGuiApplicationPrivate::lastCursorPosition.toPoint();
 }
 
 void QPlatformCursor::setPos(const QPoint &pos)
