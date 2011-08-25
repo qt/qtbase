@@ -750,6 +750,7 @@ CFG_DECORATION_PLUGIN=
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
+CFG_XCB_LIMITED=yes
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -6248,6 +6249,11 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 QT_CONFIG="$QT_CONFIG xcb-render"
             fi
 
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                CFG_XCB_LIMITED=no
+                QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
+            fi
+
             if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
                 QT_CONFIG="$QT_CONFIG xcb-xlib"
             fi
@@ -8760,7 +8766,11 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 echo "ICD support ............ $CFG_ICD"
 echo "libICU support ......... $CFG_ICU"
-echo "Xcb support ............ $CFG_XCB"
+if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
+    echo "Xcb support ............ limited (old version)"
+else
+    echo "Xcb support ............ $CFG_XCB"
+fi
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"

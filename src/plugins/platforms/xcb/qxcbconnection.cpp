@@ -53,6 +53,7 @@
 #include <QtAlgorithms>
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
+#include <QTimer>
 
 #include <stdio.h>
 #include <errno.h>
@@ -114,12 +115,18 @@ QXcbConnection::QXcbConnection(const char *displayName)
     if (m_connection)
         printf("Successfully connected to display %s\n", m_displayName.constData());
 
+    m_reader = new QXcbEventReader(m_connection);
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    connect(m_reader, SIGNAL(eventPending()), this, SLOT(processXcbEvents()), Qt::QueuedConnection);
+    m_reader->start();
+#else
     QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
     connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
 
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
     connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
     connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
+#endif
 
     xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
 
@@ -136,6 +143,12 @@ QXcbConnection::QXcbConnection(const char *displayName)
         m_screens << new QXcbScreen(this, it.data, screenNumber++);
         xcb_screen_next(&it);
     }
+
+    m_connectionEventListener = xcb_generate_id(m_connection);
+    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
+                      m_connectionEventListener, m_screens.at(0)->root(),
+                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                      m_screens.at(0)->screen()->root_visual, 0, 0);
 
     initializeXFixes();
     initializeXRender();
@@ -156,6 +169,12 @@ QXcbConnection::~QXcbConnection()
     delete m_clipboard;
 
     qDeleteAll(m_screens);
+
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
+    m_reader->wait();
+#endif
+    delete m_reader;
 
 #ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);
@@ -531,16 +550,72 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
     m_peekFuncs.append(f);
 }
 
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+void QXcbEventReader::run()
+{
+    xcb_generic_event_t *event;
+    while (m_connection && (event = xcb_wait_for_event(m_connection))) {
+        m_mutex.lock();
+        addEvent(event);
+        while (m_connection && (event = xcb_poll_for_queued_event(m_connection)))
+            addEvent(event);
+        m_mutex.unlock();
+        emit eventPending();
+    }
+
+    for (int i = 0; i < m_events.size(); ++i)
+        free(m_events.at(i));
+}
+#endif
+
+void QXcbEventReader::addEvent(xcb_generic_event_t *event)
+{
+    if ((event->response_type & ~0x80) == XCB_CLIENT_MESSAGE
+        && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
+        m_connection = 0;
+    m_events << event;
+}
+
+QList<xcb_generic_event_t *> *QXcbEventReader::lock()
+{
+    m_mutex.lock();
+#ifndef XCB_POLL_FOR_QUEUED_EVENT
+    while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection))
+        m_events << event;
+#endif
+    return &m_events;
+}
+
+void QXcbEventReader::unlock()
+{
+    m_mutex.unlock();
+}
+
+void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom, uint id)
+{
+    xcb_client_message_event_t event;
+    memset(&event, 0, sizeof(event));
+
+    event.response_type = XCB_CLIENT_MESSAGE;
+    event.format = 32;
+    event.sequence = 0;
+    event.window = m_connectionEventListener;
+    event.type = atom;
+    event.data.data32[0] = id;
+
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    xcb_flush(xcb_connection());
+}
+
 void QXcbConnection::processXcbEvents()
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
-        eventqueue.append(event);
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
 
-    for(int i = 0; i < eventqueue.size(); ++i) {
-        xcb_generic_event_t *event = eventqueue.at(i);
+    for(int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
         if (!event)
             continue;
-        eventqueue[i] = 0;
+        (*eventqueue)[i] = 0;
 
         uint response_type = event->response_type & ~0x80;
 
@@ -562,7 +637,9 @@ void QXcbConnection::processXcbEvents()
         free(event);
     }
 
-    eventqueue.clear();
+    eventqueue->clear();
+
+    m_reader->unlock();
 
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
@@ -591,19 +668,21 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
     window->handleClientMessageEvent(event);
 }
 
-
 xcb_generic_event_t *QXcbConnection::checkEvent(int type)
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
-        eventqueue.append(event);
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
 
-    for (int i = 0; i < eventqueue.size(); ++i) {
-        xcb_generic_event_t *event = eventqueue.at(i);
+    for (int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
         if (event->response_type == type) {
-            eventqueue[i] = 0;
+            (*eventqueue)[i] = 0;
+            m_reader->unlock();
             return event;
         }
     }
+
+    m_reader->unlock();
+
     return 0;
 }
 
@@ -645,6 +724,8 @@ static const char * xcb_atomnames = {
 
     "_QT_SCROLL_DONE\0"
     "_QT_INPUT_ENCODING\0"
+
+    "_QT_CLOSE_CONNECTION\0"
 
     "_MOTIF_WM_HINTS\0"
 

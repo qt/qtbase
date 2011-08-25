@@ -46,7 +46,9 @@
 
 #include <QHash>
 #include <QList>
+#include <QMutex>
 #include <QObject>
+#include <QThread>
 #include <QVector>
 
 #define Q_XCB_DEBUG
@@ -99,6 +101,9 @@ namespace QXcbAtom {
 
         _QT_SCROLL_DONE,
         _QT_INPUT_ENCODING,
+
+        // Qt/XCB specific
+        _QT_CLOSE_CONNECTION,
 
         _MOTIF_WM_HINTS,
 
@@ -222,6 +227,33 @@ namespace QXcbAtom {
     };
 }
 
+class QXcbEventReader : public QThread
+{
+    Q_OBJECT
+public:
+    QXcbEventReader(xcb_connection_t *connection)
+        : m_connection(connection)
+    {
+    }
+
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    void run();
+#endif
+
+    QList<xcb_generic_event_t *> *lock();
+    void unlock();
+
+signals:
+    void eventPending();
+
+private:
+    void addEvent(xcb_generic_event_t *event);
+
+    QMutex m_mutex;
+    QList<xcb_generic_event_t *> m_events;
+    xcb_connection_t *m_connection;
+};
+
 class QAbstractEventDispatcher;
 class QXcbConnection : public QObject
 {
@@ -314,6 +346,8 @@ private:
 
     QByteArray m_displayName;
 
+    xcb_window_t m_connectionEventListener;
+
     QXcbKeyboard *m_keyboard;
     QXcbClipboard *m_clipboard;
     QXcbDrag *m_drag;
@@ -322,7 +356,7 @@ private:
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;
 #endif
-
+    QXcbEventReader *m_reader;
 #ifdef XCB_USE_DRI2
     uint32_t m_dri2_major;
     uint32_t m_dri2_minor;
@@ -345,7 +379,6 @@ private:
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
 #endif
-    QVector<xcb_generic_event_t *> eventqueue;
 
     WindowMapper m_mapper;
 
@@ -359,16 +392,17 @@ private:
 template<typename T>
 xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection()))
-        eventqueue.append(event);
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
 
-    for (int i = 0; i < eventqueue.size(); ++i) {
-        xcb_generic_event_t *event = eventqueue.at(i);
+    for (int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
         if (checker.check(event)) {
-            eventqueue[i] = 0;
+            (*eventqueue)[i] = 0;
+            m_reader->unlock();
             return event;
         }
     }
+    m_reader->unlock();
     return 0;
 }
 

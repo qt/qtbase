@@ -37,6 +37,9 @@ HEADERS = \
         qxcbcursor.h \
         qxcbimage.h
 
+contains(QT_CONFIG, xcb-poll-for-queued-event) {
+    DEFINES += XCB_POLL_FOR_QUEUED_EVENT
+}
 
 # needed by GLX, Xcursor, XLookupString, ...
 contains(QT_CONFIG, xcb-xlib) {
