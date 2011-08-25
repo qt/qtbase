@@ -1538,14 +1538,6 @@ bool QGradient::operator==(const QGradient &gradient) const
 }
 
 /*!
-    \internal
-*/
-bool QGradient::operator==(const QGradient &gradient)
-{
-    return const_cast<const QGradient *>(this)->operator==(gradient);
-}
-
-/*!
     \class QLinearGradient
     \ingroup painting
 

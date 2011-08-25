@@ -45,19 +45,6 @@
 
 #include <QtGui>
 
-static void qSleep(int msec)
-{
-
-    struct Thread : public QThread
-    {
-        static void wait(int msec)
-        {
-            QThread::msleep(msec);
-        }
-    };
-    Thread::wait(msec);
-}
-
 struct Statistics {
     Statistics() : output(0),
         setGeometryCount(0), currentBenchmarkIteration(0), relayoutClicked(false), sleepMsecs(0)
@@ -70,7 +57,7 @@ struct Statistics {
     QLabel *output;
     void sleep()
     {
-        qSleep(sleepMsecs);
+        QThread::msleep(sleepMsecs);
     }
     int currentBenchmarkIteration;
     bool relayoutClicked;

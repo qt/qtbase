@@ -1435,7 +1435,7 @@ bool QSslSocketBackendPrivate::isMatchingHostname(const QSslCertificate &cert, c
         }
     }
 
-    foreach (const QString &altName, cert.alternateSubjectNames().values(QSsl::DnsEntry)) {
+    foreach (const QString &altName, cert.subjectAlternativeNames().values(QSsl::DnsEntry)) {
         if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
             return true;
         }

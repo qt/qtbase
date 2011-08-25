@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXml module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,35 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef OLD_QXMLSTREAM_H
-#define OLD_QXMLSTREAM_H
+#ifndef QWAYLANDMIME_H
+#define QWAYLANDMIME_H
 
-#include <QtCore/qxmlstream.h>
+#include <QString>
+#include <QByteArray>
+#include <QMimeData>
 
-QT_BEGIN_HEADER
+class QWaylandMimeHelper
+{
+public:
+    static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType);
+};
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Xml)
-
-#if 0
-// make syncqt generate forwarding headers for this file too
-#pragma qt_class(QXmlStreamAttribute)
-#pragma qt_class(QXmlStreamAttributes)
-#pragma qt_class(QXmlStreamEntityDeclaration)
-#pragma qt_class(QXmlStreamEntityDeclarations)
-#pragma qt_class(QXmlStreamEntityResolver)
-#pragma qt_class(QXmlStreamNamespaceDeclaration)
-#pragma qt_class(QXmlStreamNamespaceDeclarations)
-#pragma qt_class(QXmlStreamNotationDeclaration)
-#pragma qt_class(QXmlStreamNotationDeclarations)
-#pragma qt_class(QXmlStreamReader)
-#pragma qt_class(QXmlStreamStringRef)
-#pragma qt_class(QXmlStreamWriter)
 #endif
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // OLD_QXMLSTREAM_H

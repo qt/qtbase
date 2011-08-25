@@ -604,8 +604,8 @@ void tst_QFont::serializeSpacing()
 
 void tst_QFont::lastResortFont()
 {
-#ifdef Q_WS_QWS
-    QSKIP("QFont::lastResortFont() may abort with qFatal() on QWS", SkipAll);
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+    QSKIP("QFont::lastResortFont() may abort with qFatal() on QWS/QPA", SkipAll);
     // ...if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
     // This happens on our CI machines which run QWS autotests.
 #endif

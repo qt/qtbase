@@ -42,6 +42,7 @@
 #include "qaccessible2.h"
 #include "qapplication.h"
 #include "qclipboard.h"
+#include "qtextboundaryfinder.h"
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -131,6 +132,117 @@ QT_BEGIN_NAMESPACE
 
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
+
+
+/*!
+  \internal
+*/
+QString Q_GUI_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+        int *startOffset, int *endOffset, const QString& text)
+{
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = text.length();
+        return text;
+    }
+
+    QTextBoundaryFinder boundary(type, text);
+    boundary.setPosition(offset);
+
+    if (!boundary.isAtBoundary()) {
+        boundary.toPreviousBoundary();
+    }
+    boundary.toPreviousBoundary();
+    *startOffset = boundary.position();
+    boundary.toNextBoundary();
+    *endOffset = boundary.position();
+
+    return text.mid(*startOffset, *endOffset - *startOffset);
+}
+
+/*!
+  \internal
+*/
+QString Q_GUI_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+        int *startOffset, int *endOffset, const QString& text)
+{
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = text.length();
+        return text;
+    }
+
+    QTextBoundaryFinder boundary(type, text);
+    boundary.setPosition(offset);
+
+    boundary.toNextBoundary();
+    *startOffset = boundary.position();
+    boundary.toNextBoundary();
+    *endOffset = boundary.position();
+
+    return text.mid(*startOffset, *endOffset - *startOffset);
+}
+
+/*!
+  \internal
+*/
+QString Q_GUI_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+        int *startOffset, int *endOffset, const QString& text)
+{
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = text.length();
+        return text;
+    }
+
+    QTextBoundaryFinder boundary(type, text);
+    boundary.setPosition(offset);
+
+    if (!boundary.isAtBoundary()) {
+        boundary.toPreviousBoundary();
+    }
+    *startOffset = boundary.position();
+    boundary.toNextBoundary();
+    *endOffset = boundary.position();
+
+    return text.mid(*startOffset, *endOffset - *startOffset);
+}
 
 QAccessibleSimpleEditableTextInterface::QAccessibleSimpleEditableTextInterface(
                 QAccessibleInterface *accessibleInterface)

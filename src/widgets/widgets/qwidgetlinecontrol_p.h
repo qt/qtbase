@@ -64,6 +64,10 @@
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
+#include "QtWidgets/qaccessible.h"
+#include "QtCore/qthread.h"
+
+#include "qplatformdefs.h"
 
 QT_BEGIN_HEADER
 
@@ -84,6 +88,13 @@ public:
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
+#ifdef QT_GUI_PASSWORD_ECHO_DELAY
+        , m_passwordEchoTimer(0)
+#endif
+#if defined(Q_WS_MAC)
+        , m_threadChecks(false)
+        , m_textLayoutThread(0)
+ #endif
     {
         init(txt);
     }
@@ -319,10 +330,26 @@ public:
 
     bool processEvent(QEvent *ev);
 
-    QTextLayout *textLayout()
+    QTextLayout *textLayout() const
     {
+#if defined(Q_WS_MAC)
+        if (m_threadChecks && QThread::currentThread() != m_textLayoutThread)
+            redoTextLayout();
+#endif
         return &m_textLayout;
     }
+
+#if defined(Q_WS_MAC)
+    void setThreadChecks(bool threadChecks)
+    {
+        m_threadChecks = threadChecks;
+    }
+
+    bool threadChecks() const
+    {
+        return m_threadChecks;
+    }
+#endif
 
 private:
     void init(const QString &txt);
@@ -420,11 +447,17 @@ private:
     QString stripString(const QString &str) const;
     int findInMask(int pos, bool forward, bool findSeparator, QChar searchChar = QChar()) const;
 
-    // complex text layout
-    QTextLayout m_textLayout;
+    // complex text layout (must be mutable so it can be reshaped at will)
+    mutable QTextLayout m_textLayout;
 
     bool m_passwordEchoEditing;
     QChar m_passwordCharacter;
+
+    int redoTextLayout() const;
+#if defined(Q_WS_MAC)
+    bool m_threadChecks;
+    mutable QThread *m_textLayoutThread;
+#endif
 
 Q_SIGNALS:
     void cursorPositionChanged(int, int);

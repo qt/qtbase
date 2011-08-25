@@ -95,9 +95,9 @@ private slots:
     void copyAndAssign();
     void digest_data();
     void digest();
-    void alternateSubjectNames_data();
+    void subjectAlternativeNames_data();
     void utf8SubjectNames();
-    void alternateSubjectNames();
+    void subjectAlternativeNames();
     void publicKey_data();
     void publicKey();
     void toPemOrDer_data();
@@ -203,7 +203,7 @@ void tst_QSslCertificate::emptyConstructor()
     QCOMPARE(certificate.digest(), QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5));
     QCOMPARE(certificate.issuerInfo(QSslCertificate::Organization), QStringList());
     QCOMPARE(certificate.subjectInfo(QSslCertificate::Organization), QStringList());
-    QCOMPARE(certificate.alternateSubjectNames(),(QMultiMap<QSsl::AlternateNameEntryType, QString>()));
+    QCOMPARE(certificate.subjectAlternativeNames(),(QMultiMap<QSsl::AlternativeNameEntryType, QString>()));
 #ifndef QT_NO_TEXTSTREAM
     QCOMPARE(certificate.effectiveDate(), QDateTime());
     QCOMPARE(certificate.expiryDate(), QDateTime());
@@ -272,7 +272,7 @@ void tst_QSslCertificate::compareCertificates(
         QCOMPARE(cert1.issuerInfo(subjectInfo), cert2.issuerInfo(subjectInfo));
         QCOMPARE(cert1.subjectInfo(subjectInfo), cert2.subjectInfo(subjectInfo));
     }
-    QCOMPARE(cert1.alternateSubjectNames(), cert2.alternateSubjectNames());
+    QCOMPARE(cert1.subjectAlternativeNames(), cert2.subjectAlternativeNames());
     QCOMPARE(cert1.effectiveDate(), cert2.effectiveDate());
     QCOMPARE(cert1.expiryDate(), cert2.expiryDate());
     QCOMPARE(cert1.version(), cert2.version());
@@ -352,7 +352,7 @@ void tst_QSslCertificate::digest()
                  certificate.digest(QCryptographicHash::Sha1));
 }
 
-void tst_QSslCertificate::alternateSubjectNames_data()
+void tst_QSslCertificate::subjectAlternativeNames_data()
 {
     QTest::addColumn<QString>("certFilePath");
     QTest::addColumn<QSsl::EncodingFormat>("format");
@@ -368,7 +368,7 @@ void tst_QSslCertificate::alternateSubjectNames_data()
     }
 }
 
-void tst_QSslCertificate::alternateSubjectNames()
+void tst_QSslCertificate::subjectAlternativeNames()
 {
     if (!QSslSocket::supportsSsl())
         return;
@@ -383,11 +383,11 @@ void tst_QSslCertificate::alternateSubjectNames()
 
     QByteArray fileContents = readFile(subjAltNameFilePath);
 
-    const QMultiMap<QSsl::AlternateNameEntryType, QString> altSubjectNames =
-        certificate.alternateSubjectNames();
+    const QMultiMap<QSsl::AlternativeNameEntryType, QString> altSubjectNames =
+        certificate.subjectAlternativeNames();
 
     // verify that each entry in subjAltNames is present in fileContents
-    QMapIterator<QSsl::AlternateNameEntryType, QString> it(altSubjectNames);
+    QMapIterator<QSsl::AlternativeNameEntryType, QString> it(altSubjectNames);
     while (it.hasNext()) {
         it.next();
         QString type;
@@ -404,7 +404,7 @@ void tst_QSslCertificate::alternateSubjectNames()
     // verify that each entry in fileContents is present in subjAltNames
     QRegExp rx(QLatin1String("(email|DNS):([^,\\r\\n]+)"));
     for (int pos = 0; (pos = rx.indexIn(fileContents, pos)) != -1; pos += rx.matchedLength()) {
-        QSsl::AlternateNameEntryType key;
+        QSsl::AlternativeNameEntryType key;
         if (rx.cap(1) == QLatin1String("email"))
             key = QSsl::EmailEntry;
         else if (rx.cap(1) == QLatin1String("DNS"))
@@ -811,7 +811,7 @@ void tst_QSslCertificate::nulInSan()
     const QSslCertificate &cert = certList.at(0);
     QVERIFY(!cert.isNull());
 
-    QMultiMap<QSsl::AlternateNameEntryType, QString> san = cert.alternateSubjectNames();
+    QMultiMap<QSsl::AlternativeNameEntryType, QString> san = cert.subjectAlternativeNames();
     QVERIFY(!san.isEmpty());
 
     QString dnssan = san.value(QSsl::DnsEntry);
@@ -929,7 +929,6 @@ void tst_QSslCertificate::verify()
     toVerify = QSslCertificate::fromPath(SRCDIR "verify-certs/test-ocsp-good-cert.pem");
 
     errors = QSslCertificate::verify(toVerify);
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
     errors.clear();
 
@@ -965,12 +964,10 @@ void tst_QSslCertificate::verify()
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-is-ca-cert.pem").first();
     toVerify << QSslCertificate::fromPath(SRCDIR "verify-certs/test-intermediate-ca-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with hostname validation
     errors = QSslCertificate::verify(toVerify, QLatin1String("example.com"));
-    QEXPECT_FAIL("", "QTBUG-20582 fails since ~5am, 27th July 2011", Continue);
     VERIFY_VERBOSE(errors.count() == 0);
 
     // Recheck the above with a bad hostname

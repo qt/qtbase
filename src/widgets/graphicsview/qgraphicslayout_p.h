@@ -98,9 +98,9 @@ public:
     inline QStyle *style() const { return m_style; }
     inline QWidget *widget() const { return m_widget; }
 
-    inline bool operator==(const QLayoutStyleInfo &other)
+    inline bool operator==(const QLayoutStyleInfo &other) const
         { return m_style == other.m_style && m_widget == other.m_widget; }
-    inline bool operator!=(const QLayoutStyleInfo &other)
+    inline bool operator!=(const QLayoutStyleInfo &other) const
         { return !(*this == other); }
 
     inline void setDefaultSpacing(Qt::Orientation o, qreal spacing){

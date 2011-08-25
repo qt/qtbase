@@ -611,7 +611,7 @@ void tst_QHostInfo::resultsReady(const QHostInfo &hi)
     lookupDone = true;
     lookupResults = hi;
     lookupsDoneCounter++;
-    QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
+    QTestEventLoop::instance().exitLoop();
 }
 
 void tst_QHostInfo::abortHostLookup()

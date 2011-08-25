@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtNetwork module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,56 +39,45 @@
 **
 ****************************************************************************/
 
+#include "qwaylandmime.h"
+#include <QImage>
+#include <QColor>
+#include <QUrl>
+#include <QBuffer>
+#include <QImageWriter>
 
-#ifndef QSSL_H
-#define QSSL_H
-
-#include <QtCore/qglobal.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Network)
-
-namespace QSsl {
-    enum KeyType {
-        PrivateKey,
-        PublicKey
-    };
-
-    enum EncodingFormat {
-        Pem,
-        Der
-    };
-
-    enum KeyAlgorithm {
-        Rsa,
-        Dsa
-    };
-
-    enum AlternativeNameEntryType {
-        EmailEntry,
-        DnsEntry
-    };
-
-#if QT_DEPRECATED_SINCE(5,0)
-    typedef AlternativeNameEntryType AlternateNameEntryType;
-#endif
-
-    enum SslProtocol {
-        SslV3,
-        SslV2,
-        TlsV1, // ### Qt 5: rename to TlsV1_0 or so
-        AnyProtocol,
-        TlsV1SslV3,
-        SecureProtocols,
-        UnknownProtocol = -1
-    };
+QByteArray QWaylandMimeHelper::getByteArray(QMimeData *mimeData, const QString &mimeType)
+{
+    QByteArray content;
+    if (mimeType == QLatin1String("text/plain")) {
+        content = mimeData->text().toUtf8();
+    } else if (mimeData->hasImage()
+               && (mimeType == QLatin1String("application/x-qt-image")
+                   || mimeType.startsWith("image/"))) {
+        QImage image = qvariant_cast<QImage>(mimeData->imageData());
+        if (!image.isNull()) {
+            QBuffer buf;
+            buf.open(QIODevice::ReadWrite);
+            QByteArray fmt = "BMP";
+            if (mimeType.startsWith("image/")) {
+                QByteArray imgFmt = mimeType.mid(6).toUpper().toAscii();
+                if (QImageWriter::supportedImageFormats().contains(imgFmt))
+                    fmt = imgFmt;
+            }
+            QImageWriter wr(&buf, fmt);
+            wr.write(image);
+            content = buf.buffer();
+        }
+    } else if (mimeType == QLatin1String("application/x-color")) {
+        content = qvariant_cast<QColor>(mimeData->colorData()).name().toAscii();
+    } else if (mimeType == QLatin1String("text/uri-list")) {
+        QList<QUrl> urls = mimeData->urls();
+        for (int i = 0; i < urls.count(); ++i) {
+            content.append(urls.at(i).toEncoded());
+            content.append('\n');
+        }
+    } else {
+        content = mimeData->data(mimeType);
+    }
+    return content;
 }
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QSSL_H

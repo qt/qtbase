@@ -2508,23 +2508,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
     echo
 fi
 
-# detect build style
-if [ "$CFG_DEBUG" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
-        CFG_DEBUG_RELEASE=yes
-        CFG_DEBUG=yes
-    elif [ "$CFG_DEV" = "yes" ]; then
-        CFG_DEBUG_RELEASE=no
-        CFG_DEBUG=yes
-    else
-        CFG_DEBUG_RELEASE=no
-        CFG_DEBUG=no
-    fi
-fi
-if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG build_all"
-fi
-
 if [ "$CFG_SILENT" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG silent"
 fi
@@ -3240,6 +3223,23 @@ fi
 #-------------------------------------------------------------------------------
 # tests that don't need qmake (must be run before displaying help)
 #-------------------------------------------------------------------------------
+
+# detect build style
+if [ "$CFG_DEBUG" = "auto" ]; then
+    if [ "$CFG_ARCH" = "macosx" -o "$XPLATFORM_MINGW" = "yes" ]; then
+        CFG_DEBUG_RELEASE=yes
+        CFG_DEBUG=yes
+    elif [ "$CFG_DEV" = "yes" ]; then
+        CFG_DEBUG_RELEASE=no
+        CFG_DEBUG=yes
+    else
+        CFG_DEBUG_RELEASE=no
+        CFG_DEBUG=no
+    fi
+fi
+if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG build_all"
+fi
 
 if [ -z "$PKG_CONFIG" ]; then
     # See if PKG_CONFIG is set in the mkspec:
@@ -7068,10 +7068,10 @@ fi
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QMakeVar add QMAKE_CFLAGS -g
     QMakeVar add QMAKE_CXXFLAGS -g
-    QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info"
+    QT_CONFIG="$QT_CONFIG separate_debug_info"
 fi
 if [ "$CFG_SEPARATE_DEBUG_INFO_NOCOPY" = "yes" ] ; then
-    QMAKE_CONFIG="$QMAKE_CONFIG separate_debug_info_nocopy"
+    QT_CONFIG="$QT_CONFIG separate_debug_info_nocopy"
 fi
 [ "$CFG_MMX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mmx"
 [ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"

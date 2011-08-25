@@ -689,6 +689,101 @@ void tst_QObject::findChildren()
     tl = o.findChildren<QTimer *>("t1");
     QCOMPARE(tl.size(), 1);
     QCOMPARE(tl.at(0), &t1);
+
+    // Find direct child/children
+
+    op = o.findChild<QObject*>("o1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &o1);
+    op = o.findChild<QObject*>("o2", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &o2);
+    op = o.findChild<QObject*>("o11", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("o12", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("o111", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("t1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(&t1));
+    op = o.findChild<QObject*>("t121", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QTimer*>("t1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(&t1));
+    op = o.findChild<QTimer*>("t121", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QTimer*>("o12", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("o", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("harry", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+    op = o.findChild<QObject*>("o1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &o1);
+
+    l = o.findChildren<QObject*>("o1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 1);
+    QCOMPARE(l.at(0), &o1);
+    l = o.findChildren<QObject*>("o2", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 1);
+    QCOMPARE(l.at(0), &o2);
+    l = o.findChildren<QObject*>("o11", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    l = o.findChildren<QObject*>("o12", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    l = o.findChildren<QObject*>("o111", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    l = o.findChildren<QObject*>("t1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 1);
+    QCOMPARE(l.at(0), static_cast<QObject *>(&t1));
+    l = o.findChildren<QObject*>("t121", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    tl = o.findChildren<QTimer*>("t1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 1);
+    QCOMPARE(tl.at(0), &t1);
+    tl = o.findChildren<QTimer*>("t121", Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 0);
+    l = o.findChildren<QObject*>("o", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    l = o.findChildren<QObject*>("harry", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+    tl = o.findChildren<QTimer*>("o12", Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 0);
+    l = o.findChildren<QObject*>("o1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 1);
+    QCOMPARE(l.at(0), &o1);
+
+    l = o.findChildren<QObject*>(QRegExp("o.*"), Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 2);
+    QVERIFY(l.contains(&o1));
+    QVERIFY(l.contains(&o2));
+    l = o.findChildren<QObject*>(QRegExp("t.*"), Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 1);
+    QVERIFY(l.contains(&t1));
+    tl = o.findChildren<QTimer*>(QRegExp(".*"), Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 2);
+    QVERIFY(tl.contains(&t1));
+    tl = o.findChildren<QTimer*>(QRegExp("o.*"), Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 0);
+    l = o.findChildren<QObject*>(QRegExp("harry"), Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+
+    // empty and null string check
+    op = o.findChild<QObject*>(QString(), Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &o1);
+    op = o.findChild<QObject*>("", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, &unnamed);
+    op = o.findChild<QObject*>("unnamed", Qt::FindDirectChildrenOnly);
+    QCOMPARE(op, static_cast<QObject *>(0));
+
+    l = o.findChildren<QObject*>(QString(), Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 5);
+    l = o.findChildren<QObject*>("", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 2);
+    l = o.findChildren<QObject*>("unnamed", Qt::FindDirectChildrenOnly);
+    QCOMPARE(l.size(), 0);
+
+    tl = o.findChildren<QTimer *>("t1", Qt::FindDirectChildrenOnly);
+    QCOMPARE(tl.size(), 1);
+    QCOMPARE(tl.at(0), &t1);
 }
 
 

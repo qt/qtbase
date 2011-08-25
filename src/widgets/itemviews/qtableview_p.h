@@ -167,6 +167,11 @@ public:
         return horizontalHeader->logicalIndex(visualCol);
     }
 
+    inline int accessibleTable2Index(const QModelIndex &index) const {
+        return (index.row() + (horizontalHeader ? 1 : 0)) * (index.model()->columnCount() + (verticalHeader ? 1 : 0))
+            + index.column() + (verticalHeader ? 1 : 0) + 1;
+    }
+
     int sectionSpanEndLogical(const QHeaderView *header, int logical, int span) const;
     int sectionSpanSize(const QHeaderView *header, int logical, int span) const;
     bool spanContainsSection(const QHeaderView *header, int logical, int spanLogical, int span) const;

@@ -3164,10 +3164,16 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
+#ifdef Q_WS_X11
+            Q_D(QTableView);
+            int entry = d->accessibleTable2Index(current);
+            QAccessible::updateAccessibility(this, entry, QAccessible::Focus);
+#else
             int entry = visualIndex(current) + 1;
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Focus);
+#endif
         }
     }
 #endif
@@ -3180,22 +3186,33 @@ void QTableView::currentChanged(const QModelIndex &current, const QModelIndex &p
 void QTableView::selectionChanged(const QItemSelection &selected,
                                   const QItemSelection &deselected)
 {
+    Q_D(QTableView);
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = d->accessibleTable2Index(sel);
+            QAccessible::updateAccessibility(this, entry, QAccessible::Selection);
+#else
             int entry = visualIndex(sel);
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::Selection);
+#endif
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
+#ifdef Q_WS_X11
+            int entry = d->accessibleTable2Index(sel);
+            QAccessible::updateAccessibility(this, entry, QAccessible::SelectionRemove);
+#else
             int entry = visualIndex(sel);
             if (horizontalHeader())
                 ++entry;
             QAccessible::updateAccessibility(viewport(), entry, QAccessible::SelectionRemove);
+#endif
         }
     }
 #endif

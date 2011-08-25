@@ -101,6 +101,10 @@ public:
     // default argument causes thread to block indefinately
     bool wait(unsigned long time = ULONG_MAX);
 
+    static void sleep(unsigned long);
+    static void msleep(unsigned long);
+    static void usleep(unsigned long);
+
 Q_SIGNALS:
     void started();
     void finished();
@@ -111,10 +115,6 @@ protected:
     int exec();
 
     static void setTerminationEnabled(bool enabled = true);
-
-    static void sleep(unsigned long);
-    static void msleep(unsigned long);
-    static void usleep(unsigned long);
 
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = 0);

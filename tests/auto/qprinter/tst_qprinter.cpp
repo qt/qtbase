@@ -423,8 +423,8 @@ void tst_QPrinter::testMargins()
 
 void tst_QPrinter::testNonExistentPrinter()
 {
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_MAC)
-    QSKIP("QPrinter::testNonExistentPrinter() is not relevant for X11/Embedded/Mac", SkipAll);
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_MAC)
+    QSKIP("QPrinter::testNonExistentPrinter() is not relevant for this platform", SkipAll);
 #else
     QPrinter printer;
     QPainter painter;

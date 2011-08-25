@@ -83,6 +83,7 @@ public:
       , glyphIndexes(other.glyphIndexes)
       , glyphPositions(other.glyphPositions)
       , rawFont(other.rawFont)
+      , boundingRect(other.boundingRect)
       , overline(other.overline)
       , underline(other.underline)
       , strikeOut(other.strikeOut)
@@ -96,6 +97,7 @@ public:
     QVector<quint32> glyphIndexes;
     QVector<QPointF> glyphPositions;
     QRawFont rawFont;
+    QRectF boundingRect;
 
     uint overline  : 1;
     uint underline : 1;

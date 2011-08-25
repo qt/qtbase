@@ -72,6 +72,17 @@ QtGui
    like UltraLight. [QTBUG-19366]
  - Visual text cursor movement behavior is added to QTextEdit and QLineEdit controls,
    which can be used as an optional mode for bi-directional text editing. [QTBUG-13859]
+ - Accessibility: Fix potential crash in QDockWidget.
+ - Accessibility: Fix crash when asking for relations of child accessibles.
+ - Accessibility: More consistency in reporting names (especially when widget is invisible).
+ - Accessibility: Make focus handling more consistent.
+ - Accessibility: Send updates when text changes.
+ - Accessibility: Add IAccessible2 events.
+ - Accessibility: Fix crash when accessing ItemViews during initialization.
+ - Accessibility: Make QTabWidget child hierarchy consistent.
+ - Accessibility: Report correct window title and application name.
+ - Accessibility: Return text attributes for QTextEdit.
+
 
 QtNetwork
 ---------

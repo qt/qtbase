@@ -62,8 +62,8 @@ QT_MODULE(Gui)
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
-    static void handleMouseEvent(QWindow *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
-    static void handleMouseEvent(QWindow *w, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
+    static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
+    static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
 
     static void handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static void handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
@@ -79,8 +79,8 @@ public:
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1);
 
-    static void handleWheelEvent(QWindow *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
-    static void handleWheelEvent(QWindow *w, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
+    static void handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
+    static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
 
     struct TouchPoint {
         int id;                 // for application use

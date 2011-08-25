@@ -344,6 +344,9 @@ void tst_QMenuBar::accel()
 
     // create a popup menu with menu items set the accelerators later...
     initSimpleMenubar();
+
+    // shortcuts won't work unless the window is active
+    QTRY_VERIFY( QApplication::activeWindow() );
 //    QTest::keyClick( 0, Qt::Key_A, AltKey );
     QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
     QTest::qWait(300);

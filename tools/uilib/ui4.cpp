@@ -40,9 +40,6 @@
 ****************************************************************************/
 #include "ui4_p.h"
 
-#ifdef QUILOADER_QDOM_READ
-#include <QtXml/QDomElement>
-#endif
 
 QT_BEGIN_NAMESPACE
 #ifdef QFORMINTERNAL_NAMESPACE
@@ -139,126 +136,126 @@ void DomUI::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("version")) {
+        if (name == QStringLiteral("version")) {
             setAttributeVersion(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("language")) {
+        if (name == QStringLiteral("language")) {
             setAttributeLanguage(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("displayname")) {
+        if (name == QStringLiteral("displayname")) {
             setAttributeDisplayname(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("stdsetdef")) {
+        if (name == QStringLiteral("stdsetdef")) {
             setAttributeStdsetdef(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("stdSetDef")) {
+        if (name == QStringLiteral("stdSetDef")) {
             setAttributeStdSetDef(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("author")) {
+            if (tag == QStringLiteral("author")) {
                 setElementAuthor(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("comment")) {
+            if (tag == QStringLiteral("comment")) {
                 setElementComment(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("exportmacro")) {
+            if (tag == QStringLiteral("exportmacro")) {
                 setElementExportMacro(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("class")) {
+            if (tag == QStringLiteral("class")) {
                 setElementClass(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("widget")) {
+            if (tag == QStringLiteral("widget")) {
                 DomWidget *v = new DomWidget();
                 v->read(reader);
                 setElementWidget(v);
                 continue;
             }
-            if (tag == QLatin1String("layoutdefault")) {
+            if (tag == QStringLiteral("layoutdefault")) {
                 DomLayoutDefault *v = new DomLayoutDefault();
                 v->read(reader);
                 setElementLayoutDefault(v);
                 continue;
             }
-            if (tag == QLatin1String("layoutfunction")) {
+            if (tag == QStringLiteral("layoutfunction")) {
                 DomLayoutFunction *v = new DomLayoutFunction();
                 v->read(reader);
                 setElementLayoutFunction(v);
                 continue;
             }
-            if (tag == QLatin1String("pixmapfunction")) {
+            if (tag == QStringLiteral("pixmapfunction")) {
                 setElementPixmapFunction(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("customwidgets")) {
+            if (tag == QStringLiteral("customwidgets")) {
                 DomCustomWidgets *v = new DomCustomWidgets();
                 v->read(reader);
                 setElementCustomWidgets(v);
                 continue;
             }
-            if (tag == QLatin1String("tabstops")) {
+            if (tag == QStringLiteral("tabstops")) {
                 DomTabStops *v = new DomTabStops();
                 v->read(reader);
                 setElementTabStops(v);
                 continue;
             }
-            if (tag == QLatin1String("images")) {
+            if (tag == QStringLiteral("images")) {
                 DomImages *v = new DomImages();
                 v->read(reader);
                 setElementImages(v);
                 continue;
             }
-            if (tag == QLatin1String("includes")) {
+            if (tag == QStringLiteral("includes")) {
                 DomIncludes *v = new DomIncludes();
                 v->read(reader);
                 setElementIncludes(v);
                 continue;
             }
-            if (tag == QLatin1String("resources")) {
+            if (tag == QStringLiteral("resources")) {
                 DomResources *v = new DomResources();
                 v->read(reader);
                 setElementResources(v);
                 continue;
             }
-            if (tag == QLatin1String("connections")) {
+            if (tag == QStringLiteral("connections")) {
                 DomConnections *v = new DomConnections();
                 v->read(reader);
                 setElementConnections(v);
                 continue;
             }
-            if (tag == QLatin1String("designerdata")) {
+            if (tag == QStringLiteral("designerdata")) {
                 DomDesignerData *v = new DomDesignerData();
                 v->read(reader);
                 setElementDesignerdata(v);
                 continue;
             }
-            if (tag == QLatin1String("slots")) {
+            if (tag == QStringLiteral("slots")) {
                 DomSlots *v = new DomSlots();
                 v->read(reader);
                 setElementSlots(v);
                 continue;
             }
-            if (tag == QLatin1String("buttongroups")) {
+            if (tag == QStringLiteral("buttongroups")) {
                 DomButtonGroups *v = new DomButtonGroups();
                 v->read(reader);
                 setElementButtonGroups(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -274,211 +271,91 @@ void DomUI::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomUI::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("version")))
-        setAttributeVersion(node.attribute(QLatin1String("version")));
-    if (node.hasAttribute(QLatin1String("language")))
-        setAttributeLanguage(node.attribute(QLatin1String("language")));
-    if (node.hasAttribute(QLatin1String("displayname")))
-        setAttributeDisplayname(node.attribute(QLatin1String("displayname")));
-    if (node.hasAttribute(QLatin1String("stdsetdef")))
-        setAttributeStdsetdef(node.attribute(QLatin1String("stdsetdef")).toInt());
-    if (node.hasAttribute(QLatin1String("stdSetDef")))
-        setAttributeStdSetDef(node.attribute(QLatin1String("stdSetDef")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("author")) {
-                setElementAuthor(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("comment")) {
-                setElementComment(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("exportmacro")) {
-                setElementExportMacro(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("class")) {
-                setElementClass(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("widget")) {
-                DomWidget *v = new DomWidget();
-                v->read(e);
-                setElementWidget(v);
-                continue;
-            }
-            if (tag == QLatin1String("layoutdefault")) {
-                DomLayoutDefault *v = new DomLayoutDefault();
-                v->read(e);
-                setElementLayoutDefault(v);
-                continue;
-            }
-            if (tag == QLatin1String("layoutfunction")) {
-                DomLayoutFunction *v = new DomLayoutFunction();
-                v->read(e);
-                setElementLayoutFunction(v);
-                continue;
-            }
-            if (tag == QLatin1String("pixmapfunction")) {
-                setElementPixmapFunction(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("customwidgets")) {
-                DomCustomWidgets *v = new DomCustomWidgets();
-                v->read(e);
-                setElementCustomWidgets(v);
-                continue;
-            }
-            if (tag == QLatin1String("tabstops")) {
-                DomTabStops *v = new DomTabStops();
-                v->read(e);
-                setElementTabStops(v);
-                continue;
-            }
-            if (tag == QLatin1String("images")) {
-                DomImages *v = new DomImages();
-                v->read(e);
-                setElementImages(v);
-                continue;
-            }
-            if (tag == QLatin1String("includes")) {
-                DomIncludes *v = new DomIncludes();
-                v->read(e);
-                setElementIncludes(v);
-                continue;
-            }
-            if (tag == QLatin1String("resources")) {
-                DomResources *v = new DomResources();
-                v->read(e);
-                setElementResources(v);
-                continue;
-            }
-            if (tag == QLatin1String("connections")) {
-                DomConnections *v = new DomConnections();
-                v->read(e);
-                setElementConnections(v);
-                continue;
-            }
-            if (tag == QLatin1String("designerdata")) {
-                DomDesignerData *v = new DomDesignerData();
-                v->read(e);
-                setElementDesignerdata(v);
-                continue;
-            }
-            if (tag == QLatin1String("slots")) {
-                DomSlots *v = new DomSlots();
-                v->read(e);
-                setElementSlots(v);
-                continue;
-            }
-            if (tag == QLatin1String("buttongroups")) {
-                DomButtonGroups *v = new DomButtonGroups();
-                v->read(e);
-                setElementButtonGroups(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomUI::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("ui") : tagName.toLower());
 
     if (hasAttributeVersion())
-        writer.writeAttribute(QLatin1String("version"), attributeVersion());
+        writer.writeAttribute(QStringLiteral("version"), attributeVersion());
 
     if (hasAttributeLanguage())
-        writer.writeAttribute(QLatin1String("language"), attributeLanguage());
+        writer.writeAttribute(QStringLiteral("language"), attributeLanguage());
 
     if (hasAttributeDisplayname())
-        writer.writeAttribute(QLatin1String("displayname"), attributeDisplayname());
+        writer.writeAttribute(QStringLiteral("displayname"), attributeDisplayname());
 
     if (hasAttributeStdsetdef())
-        writer.writeAttribute(QLatin1String("stdsetdef"), QString::number(attributeStdsetdef()));
+        writer.writeAttribute(QStringLiteral("stdsetdef"), QString::number(attributeStdsetdef()));
 
     if (hasAttributeStdSetDef())
-        writer.writeAttribute(QLatin1String("stdsetdef"), QString::number(attributeStdSetDef()));
+        writer.writeAttribute(QStringLiteral("stdsetdef"), QString::number(attributeStdSetDef()));
 
     if (m_children & Author) {
-        writer.writeTextElement(QLatin1String("author"), m_author);
+        writer.writeTextElement(QStringLiteral("author"), m_author);
     }
 
     if (m_children & Comment) {
-        writer.writeTextElement(QLatin1String("comment"), m_comment);
+        writer.writeTextElement(QStringLiteral("comment"), m_comment);
     }
 
     if (m_children & ExportMacro) {
-        writer.writeTextElement(QLatin1String("exportmacro"), m_exportMacro);
+        writer.writeTextElement(QStringLiteral("exportmacro"), m_exportMacro);
     }
 
     if (m_children & Class) {
-        writer.writeTextElement(QLatin1String("class"), m_class);
+        writer.writeTextElement(QStringLiteral("class"), m_class);
     }
 
     if (m_children & Widget) {
-        m_widget->write(writer, QLatin1String("widget"));
+        m_widget->write(writer, QStringLiteral("widget"));
     }
 
     if (m_children & LayoutDefault) {
-        m_layoutDefault->write(writer, QLatin1String("layoutdefault"));
+        m_layoutDefault->write(writer, QStringLiteral("layoutdefault"));
     }
 
     if (m_children & LayoutFunction) {
-        m_layoutFunction->write(writer, QLatin1String("layoutfunction"));
+        m_layoutFunction->write(writer, QStringLiteral("layoutfunction"));
     }
 
     if (m_children & PixmapFunction) {
-        writer.writeTextElement(QLatin1String("pixmapfunction"), m_pixmapFunction);
+        writer.writeTextElement(QStringLiteral("pixmapfunction"), m_pixmapFunction);
     }
 
     if (m_children & CustomWidgets) {
-        m_customWidgets->write(writer, QLatin1String("customwidgets"));
+        m_customWidgets->write(writer, QStringLiteral("customwidgets"));
     }
 
     if (m_children & TabStops) {
-        m_tabStops->write(writer, QLatin1String("tabstops"));
+        m_tabStops->write(writer, QStringLiteral("tabstops"));
     }
 
     if (m_children & Images) {
-        m_images->write(writer, QLatin1String("images"));
+        m_images->write(writer, QStringLiteral("images"));
     }
 
     if (m_children & Includes) {
-        m_includes->write(writer, QLatin1String("includes"));
+        m_includes->write(writer, QStringLiteral("includes"));
     }
 
     if (m_children & Resources) {
-        m_resources->write(writer, QLatin1String("resources"));
+        m_resources->write(writer, QStringLiteral("resources"));
     }
 
     if (m_children & Connections) {
-        m_connections->write(writer, QLatin1String("connections"));
+        m_connections->write(writer, QStringLiteral("connections"));
     }
 
     if (m_children & Designerdata) {
-        m_designerdata->write(writer, QLatin1String("designerdata"));
+        m_designerdata->write(writer, QStringLiteral("designerdata"));
     }
 
     if (m_children & Slots) {
-        m_slots->write(writer, QLatin1String("slots"));
+        m_slots->write(writer, QStringLiteral("slots"));
     }
 
     if (m_children & ButtonGroups) {
-        m_buttonGroups->write(writer, QLatin1String("buttongroups"));
+        m_buttonGroups->write(writer, QStringLiteral("buttongroups"));
     }
 
     if (!m_text.isEmpty())
@@ -836,13 +713,13 @@ void DomIncludes::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("include")) {
+            if (tag == QStringLiteral("include")) {
                 DomInclude *v = new DomInclude();
                 v->read(reader);
                 m_include.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -858,36 +735,13 @@ void DomIncludes::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomIncludes::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("include")) {
-                DomInclude *v = new DomInclude();
-                v->read(e);
-                m_include.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomIncludes::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("includes") : tagName.toLower());
 
     for (int i = 0; i < m_include.size(); ++i) {
         DomInclude* v = m_include[i];
-        v->write(writer, QLatin1String("include"));
+        v->write(writer, QStringLiteral("include"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -905,7 +759,7 @@ void DomInclude::clear(bool clear_all)
 {
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_location = false;
     m_has_attr_impldecl = false;
     }
@@ -918,7 +772,7 @@ DomInclude::DomInclude()
     m_children = 0;
     m_has_attr_location = false;
     m_has_attr_impldecl = false;
-    m_text = QLatin1String("");
+    m_text.clear();
 }
 
 DomInclude::~DomInclude()
@@ -930,22 +784,22 @@ void DomInclude::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == QStringLiteral("location")) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("impldecl")) {
+        if (name == QStringLiteral("impldecl")) {
             setAttributeImpldecl(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -961,37 +815,15 @@ void DomInclude::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomInclude::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("location")))
-        setAttributeLocation(node.attribute(QLatin1String("location")));
-    if (node.hasAttribute(QLatin1String("impldecl")))
-        setAttributeImpldecl(node.attribute(QLatin1String("impldecl")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomInclude::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("include") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QLatin1String("location"), attributeLocation());
+        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
 
     if (hasAttributeImpldecl())
-        writer.writeAttribute(QLatin1String("impldecl"), attributeImpldecl());
+        writer.writeAttribute(QStringLiteral("impldecl"), attributeImpldecl());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1029,24 +861,24 @@ void DomResources::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("include")) {
+            if (tag == QStringLiteral("include")) {
                 DomResource *v = new DomResource();
                 v->read(reader);
                 m_include.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1062,42 +894,16 @@ void DomResources::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomResources::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("include")) {
-                DomResource *v = new DomResource();
-                v->read(e);
-                m_include.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomResources::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("resources") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     for (int i = 0; i < m_include.size(); ++i) {
         DomResource* v = m_include[i];
-        v->write(writer, QLatin1String("include"));
+        v->write(writer, QStringLiteral("include"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1137,18 +943,18 @@ void DomResource::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == QStringLiteral("location")) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1164,32 +970,12 @@ void DomResource::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomResource::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("location")))
-        setAttributeLocation(node.attribute(QLatin1String("location")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomResource::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("resource") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QLatin1String("location"), attributeLocation());
+        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1239,42 +1025,42 @@ void DomActionGroup::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("action")) {
+            if (tag == QStringLiteral("action")) {
                 DomAction *v = new DomAction();
                 v->read(reader);
                 m_action.append(v);
                 continue;
             }
-            if (tag == QLatin1String("actiongroup")) {
+            if (tag == QStringLiteral("actiongroup")) {
                 DomActionGroup *v = new DomActionGroup();
                 v->read(reader);
                 m_actionGroup.append(v);
                 continue;
             }
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("attribute")) {
+            if (tag == QStringLiteral("attribute")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1290,72 +1076,28 @@ void DomActionGroup::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomActionGroup::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("action")) {
-                DomAction *v = new DomAction();
-                v->read(e);
-                m_action.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("actiongroup")) {
-                DomActionGroup *v = new DomActionGroup();
-                v->read(e);
-                m_actionGroup.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("attribute")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_attribute.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomActionGroup::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("actiongroup") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     for (int i = 0; i < m_action.size(); ++i) {
         DomAction* v = m_action[i];
-        v->write(writer, QLatin1String("action"));
+        v->write(writer, QStringLiteral("action"));
     }
     for (int i = 0; i < m_actionGroup.size(); ++i) {
         DomActionGroup* v = m_actionGroup[i];
-        v->write(writer, QLatin1String("actiongroup"));
+        v->write(writer, QStringLiteral("actiongroup"));
     }
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_attribute.size(); ++i) {
         DomProperty* v = m_attribute[i];
-        v->write(writer, QLatin1String("attribute"));
+        v->write(writer, QStringLiteral("attribute"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1423,34 +1165,34 @@ void DomAction::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("menu")) {
+        if (name == QStringLiteral("menu")) {
             setAttributeMenu(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("attribute")) {
+            if (tag == QStringLiteral("attribute")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1466,57 +1208,23 @@ void DomAction::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomAction::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-    if (node.hasAttribute(QLatin1String("menu")))
-        setAttributeMenu(node.attribute(QLatin1String("menu")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("attribute")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_attribute.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomAction::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("action") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (hasAttributeMenu())
-        writer.writeAttribute(QLatin1String("menu"), attributeMenu());
+        writer.writeAttribute(QStringLiteral("menu"), attributeMenu());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_attribute.size(); ++i) {
         DomProperty* v = m_attribute[i];
-        v->write(writer, QLatin1String("attribute"));
+        v->write(writer, QStringLiteral("attribute"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1562,18 +1270,18 @@ void DomActionRef::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1589,32 +1297,12 @@ void DomActionRef::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomActionRef::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomActionRef::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("actionref") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1656,30 +1344,30 @@ void DomButtonGroup::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("attribute")) {
+            if (tag == QStringLiteral("attribute")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1695,52 +1383,20 @@ void DomButtonGroup::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomButtonGroup::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("attribute")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_attribute.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomButtonGroup::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("buttongroup") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_attribute.size(); ++i) {
         DomProperty* v = m_attribute[i];
-        v->write(writer, QLatin1String("attribute"));
+        v->write(writer, QStringLiteral("attribute"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1790,13 +1446,13 @@ void DomButtonGroups::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("buttongroup")) {
+            if (tag == QStringLiteral("buttongroup")) {
                 DomButtonGroup *v = new DomButtonGroup();
                 v->read(reader);
                 m_buttonGroup.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1812,36 +1468,13 @@ void DomButtonGroups::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomButtonGroups::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("buttongroup")) {
-                DomButtonGroup *v = new DomButtonGroup();
-                v->read(e);
-                m_buttonGroup.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomButtonGroups::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("buttongroups") : tagName.toLower());
 
     for (int i = 0; i < m_buttonGroup.size(); ++i) {
         DomButtonGroup* v = m_buttonGroup[i];
-        v->write(writer, QLatin1String("buttongroup"));
+        v->write(writer, QStringLiteral("buttongroup"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1885,13 +1518,13 @@ void DomImages::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("image")) {
+            if (tag == QStringLiteral("image")) {
                 DomImage *v = new DomImage();
                 v->read(reader);
                 m_image.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -1907,36 +1540,13 @@ void DomImages::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomImages::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("image")) {
-                DomImage *v = new DomImage();
-                v->read(e);
-                m_image.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomImages::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("images") : tagName.toLower());
 
     for (int i = 0; i < m_image.size(); ++i) {
         DomImage* v = m_image[i];
-        v->write(writer, QLatin1String("image"));
+        v->write(writer, QStringLiteral("image"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -1980,24 +1590,24 @@ void DomImage::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("data")) {
+            if (tag == QStringLiteral("data")) {
                 DomImageData *v = new DomImageData();
                 v->read(reader);
                 setElementData(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2013,41 +1623,15 @@ void DomImage::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomImage::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("data")) {
-                DomImageData *v = new DomImageData();
-                v->read(e);
-                setElementData(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomImage::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("image") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (m_children & Data) {
-        m_data->write(writer, QLatin1String("data"));
+        m_data->write(writer, QStringLiteral("data"));
     }
 
     if (!m_text.isEmpty())
@@ -2082,7 +1666,7 @@ void DomImageData::clear(bool clear_all)
 {
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_format = false;
     m_has_attr_length = false;
     m_attr_length = 0;
@@ -2097,7 +1681,7 @@ DomImageData::DomImageData()
     m_has_attr_format = false;
     m_has_attr_length = false;
     m_attr_length = 0;
-    m_text = QLatin1String("");
+    m_text.clear();
 }
 
 DomImageData::~DomImageData()
@@ -2109,22 +1693,22 @@ void DomImageData::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("format")) {
+        if (name == QStringLiteral("format")) {
             setAttributeFormat(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("length")) {
+        if (name == QStringLiteral("length")) {
             setAttributeLength(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2140,37 +1724,15 @@ void DomImageData::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomImageData::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("format")))
-        setAttributeFormat(node.attribute(QLatin1String("format")));
-    if (node.hasAttribute(QLatin1String("length")))
-        setAttributeLength(node.attribute(QLatin1String("length")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomImageData::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("imagedata") : tagName.toLower());
 
     if (hasAttributeFormat())
-        writer.writeAttribute(QLatin1String("format"), attributeFormat());
+        writer.writeAttribute(QStringLiteral("format"), attributeFormat());
 
     if (hasAttributeLength())
-        writer.writeAttribute(QLatin1String("length"), QString::number(attributeLength()));
+        writer.writeAttribute(QStringLiteral("length"), QString::number(attributeLength()));
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -2208,13 +1770,13 @@ void DomCustomWidgets::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("customwidget")) {
+            if (tag == QStringLiteral("customwidget")) {
                 DomCustomWidget *v = new DomCustomWidget();
                 v->read(reader);
                 m_customWidget.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2230,36 +1792,13 @@ void DomCustomWidgets::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomCustomWidgets::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("customwidget")) {
-                DomCustomWidget *v = new DomCustomWidget();
-                v->read(e);
-                m_customWidget.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomCustomWidgets::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("customwidgets") : tagName.toLower());
 
     for (int i = 0; i < m_customWidget.size(); ++i) {
         DomCustomWidget* v = m_customWidget[i];
-        v->write(writer, QLatin1String("customwidget"));
+        v->write(writer, QStringLiteral("customwidget"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -2277,7 +1816,7 @@ void DomHeader::clear(bool clear_all)
 {
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_location = false;
     }
 
@@ -2288,7 +1827,7 @@ DomHeader::DomHeader()
 {
     m_children = 0;
     m_has_attr_location = false;
-    m_text = QLatin1String("");
+    m_text.clear();
 }
 
 DomHeader::~DomHeader()
@@ -2300,18 +1839,18 @@ void DomHeader::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("location")) {
+        if (name == QStringLiteral("location")) {
             setAttributeLocation(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2327,32 +1866,12 @@ void DomHeader::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomHeader::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("location")))
-        setAttributeLocation(node.attribute(QLatin1String("location")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomHeader::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("header") : tagName.toLower());
 
     if (hasAttributeLocation())
-        writer.writeAttribute(QLatin1String("location"), attributeLocation());
+        writer.writeAttribute(QStringLiteral("location"), attributeLocation());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -2416,69 +1935,69 @@ void DomCustomWidget::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("class")) {
+            if (tag == QStringLiteral("class")) {
                 setElementClass(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("extends")) {
+            if (tag == QStringLiteral("extends")) {
                 setElementExtends(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("header")) {
+            if (tag == QStringLiteral("header")) {
                 DomHeader *v = new DomHeader();
                 v->read(reader);
                 setElementHeader(v);
                 continue;
             }
-            if (tag == QLatin1String("sizehint")) {
+            if (tag == QStringLiteral("sizehint")) {
                 DomSize *v = new DomSize();
                 v->read(reader);
                 setElementSizeHint(v);
                 continue;
             }
-            if (tag == QLatin1String("addpagemethod")) {
+            if (tag == QStringLiteral("addpagemethod")) {
                 setElementAddPageMethod(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("container")) {
+            if (tag == QStringLiteral("container")) {
                 setElementContainer(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("sizepolicy")) {
+            if (tag == QStringLiteral("sizepolicy")) {
                 DomSizePolicyData *v = new DomSizePolicyData();
                 v->read(reader);
                 setElementSizePolicy(v);
                 continue;
             }
-            if (tag == QLatin1String("pixmap")) {
+            if (tag == QStringLiteral("pixmap")) {
                 setElementPixmap(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("script")) {
+            if (tag == QStringLiteral("script")) {
                 DomScript *v = new DomScript();
                 v->read(reader);
                 setElementScript(v);
                 continue;
             }
-            if (tag == QLatin1String("properties")) {
+            if (tag == QStringLiteral("properties")) {
                 DomProperties *v = new DomProperties();
                 v->read(reader);
                 setElementProperties(v);
                 continue;
             }
-            if (tag == QLatin1String("slots")) {
+            if (tag == QStringLiteral("slots")) {
                 DomSlots *v = new DomSlots();
                 v->read(reader);
                 setElementSlots(v);
                 continue;
             }
-            if (tag == QLatin1String("propertyspecifications")) {
+            if (tag == QStringLiteral("propertyspecifications")) {
                 DomPropertySpecifications *v = new DomPropertySpecifications();
                 v->read(reader);
                 setElementPropertyspecifications(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2494,135 +2013,56 @@ void DomCustomWidget::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomCustomWidget::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("class")) {
-                setElementClass(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("extends")) {
-                setElementExtends(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("header")) {
-                DomHeader *v = new DomHeader();
-                v->read(e);
-                setElementHeader(v);
-                continue;
-            }
-            if (tag == QLatin1String("sizehint")) {
-                DomSize *v = new DomSize();
-                v->read(e);
-                setElementSizeHint(v);
-                continue;
-            }
-            if (tag == QLatin1String("addpagemethod")) {
-                setElementAddPageMethod(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("container")) {
-                setElementContainer(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("sizepolicy")) {
-                DomSizePolicyData *v = new DomSizePolicyData();
-                v->read(e);
-                setElementSizePolicy(v);
-                continue;
-            }
-            if (tag == QLatin1String("pixmap")) {
-                setElementPixmap(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("script")) {
-                DomScript *v = new DomScript();
-                v->read(e);
-                setElementScript(v);
-                continue;
-            }
-            if (tag == QLatin1String("properties")) {
-                DomProperties *v = new DomProperties();
-                v->read(e);
-                setElementProperties(v);
-                continue;
-            }
-            if (tag == QLatin1String("slots")) {
-                DomSlots *v = new DomSlots();
-                v->read(e);
-                setElementSlots(v);
-                continue;
-            }
-            if (tag == QLatin1String("propertyspecifications")) {
-                DomPropertySpecifications *v = new DomPropertySpecifications();
-                v->read(e);
-                setElementPropertyspecifications(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomCustomWidget::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("customwidget") : tagName.toLower());
 
     if (m_children & Class) {
-        writer.writeTextElement(QLatin1String("class"), m_class);
+        writer.writeTextElement(QStringLiteral("class"), m_class);
     }
 
     if (m_children & Extends) {
-        writer.writeTextElement(QLatin1String("extends"), m_extends);
+        writer.writeTextElement(QStringLiteral("extends"), m_extends);
     }
 
     if (m_children & Header) {
-        m_header->write(writer, QLatin1String("header"));
+        m_header->write(writer, QStringLiteral("header"));
     }
 
     if (m_children & SizeHint) {
-        m_sizeHint->write(writer, QLatin1String("sizehint"));
+        m_sizeHint->write(writer, QStringLiteral("sizehint"));
     }
 
     if (m_children & AddPageMethod) {
-        writer.writeTextElement(QLatin1String("addpagemethod"), m_addPageMethod);
+        writer.writeTextElement(QStringLiteral("addpagemethod"), m_addPageMethod);
     }
 
     if (m_children & Container) {
-        writer.writeTextElement(QLatin1String("container"), QString::number(m_container));
+        writer.writeTextElement(QStringLiteral("container"), QString::number(m_container));
     }
 
     if (m_children & SizePolicy) {
-        m_sizePolicy->write(writer, QLatin1String("sizepolicy"));
+        m_sizePolicy->write(writer, QStringLiteral("sizepolicy"));
     }
 
     if (m_children & Pixmap) {
-        writer.writeTextElement(QLatin1String("pixmap"), m_pixmap);
+        writer.writeTextElement(QStringLiteral("pixmap"), m_pixmap);
     }
 
     if (m_children & Script) {
-        m_script->write(writer, QLatin1String("script"));
+        m_script->write(writer, QStringLiteral("script"));
     }
 
     if (m_children & Properties) {
-        m_properties->write(writer, QLatin1String("properties"));
+        m_properties->write(writer, QStringLiteral("properties"));
     }
 
     if (m_children & Slots) {
-        m_slots->write(writer, QLatin1String("slots"));
+        m_slots->write(writer, QStringLiteral("slots"));
     }
 
     if (m_children & Propertyspecifications) {
-        m_propertyspecifications->write(writer, QLatin1String("propertyspecifications"));
+        m_propertyspecifications->write(writer, QStringLiteral("propertyspecifications"));
     }
 
     if (!m_text.isEmpty())
@@ -2870,13 +2310,13 @@ void DomProperties::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomPropertyData *v = new DomPropertyData();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2892,36 +2332,13 @@ void DomProperties::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomProperties::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomPropertyData *v = new DomPropertyData();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomProperties::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("properties") : tagName.toLower());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomPropertyData* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -2961,18 +2378,18 @@ void DomPropertyData::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("type")) {
+        if (name == QStringLiteral("type")) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -2988,32 +2405,12 @@ void DomPropertyData::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomPropertyData::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("type")))
-        setAttributeType(node.attribute(QLatin1String("type")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomPropertyData::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("propertydata") : tagName.toLower());
 
     if (hasAttributeType())
-        writer.writeAttribute(QLatin1String("type"), attributeType());
+        writer.writeAttribute(QStringLiteral("type"), attributeType());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -3051,15 +2448,15 @@ void DomSizePolicyData::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("hordata")) {
+            if (tag == QStringLiteral("hordata")) {
                 setElementHorData(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("verdata")) {
+            if (tag == QStringLiteral("verdata")) {
                 setElementVerData(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3075,41 +2472,16 @@ void DomSizePolicyData::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSizePolicyData::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("hordata")) {
-                setElementHorData(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("verdata")) {
-                setElementVerData(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSizePolicyData::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("sizepolicydata") : tagName.toLower());
 
     if (m_children & HorData) {
-        writer.writeTextElement(QLatin1String("hordata"), QString::number(m_horData));
+        writer.writeTextElement(QStringLiteral("hordata"), QString::number(m_horData));
     }
 
     if (m_children & VerData) {
-        writer.writeTextElement(QLatin1String("verdata"), QString::number(m_verData));
+        writer.writeTextElement(QStringLiteral("verdata"), QString::number(m_verData));
     }
 
     if (!m_text.isEmpty())
@@ -3172,22 +2544,22 @@ void DomLayoutDefault::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("spacing")) {
+        if (name == QStringLiteral("spacing")) {
             setAttributeSpacing(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("margin")) {
+        if (name == QStringLiteral("margin")) {
             setAttributeMargin(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3203,37 +2575,15 @@ void DomLayoutDefault::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomLayoutDefault::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("spacing")))
-        setAttributeSpacing(node.attribute(QLatin1String("spacing")).toInt());
-    if (node.hasAttribute(QLatin1String("margin")))
-        setAttributeMargin(node.attribute(QLatin1String("margin")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomLayoutDefault::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("layoutdefault") : tagName.toLower());
 
     if (hasAttributeSpacing())
-        writer.writeAttribute(QLatin1String("spacing"), QString::number(attributeSpacing()));
+        writer.writeAttribute(QStringLiteral("spacing"), QString::number(attributeSpacing()));
 
     if (hasAttributeMargin())
-        writer.writeAttribute(QLatin1String("margin"), QString::number(attributeMargin()));
+        writer.writeAttribute(QStringLiteral("margin"), QString::number(attributeMargin()));
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -3269,22 +2619,22 @@ void DomLayoutFunction::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("spacing")) {
+        if (name == QStringLiteral("spacing")) {
             setAttributeSpacing(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("margin")) {
+        if (name == QStringLiteral("margin")) {
             setAttributeMargin(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3300,37 +2650,15 @@ void DomLayoutFunction::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomLayoutFunction::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("spacing")))
-        setAttributeSpacing(node.attribute(QLatin1String("spacing")));
-    if (node.hasAttribute(QLatin1String("margin")))
-        setAttributeMargin(node.attribute(QLatin1String("margin")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomLayoutFunction::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("layoutfunction") : tagName.toLower());
 
     if (hasAttributeSpacing())
-        writer.writeAttribute(QLatin1String("spacing"), attributeSpacing());
+        writer.writeAttribute(QStringLiteral("spacing"), attributeSpacing());
 
     if (hasAttributeMargin())
-        writer.writeAttribute(QLatin1String("margin"), attributeMargin());
+        writer.writeAttribute(QStringLiteral("margin"), attributeMargin());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -3366,11 +2694,11 @@ void DomTabStops::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("tabstop")) {
+            if (tag == QStringLiteral("tabstop")) {
                 m_tabStop.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3386,34 +2714,13 @@ void DomTabStops::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomTabStops::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("tabstop")) {
-                m_tabStop.append(e.text());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomTabStops::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("tabstops") : tagName.toLower());
 
     for (int i = 0; i < m_tabStop.size(); ++i) {
         QString v = m_tabStop[i];
-        writer.writeTextElement(QLatin1String("tabstop"), v);
+        writer.writeTextElement(QStringLiteral("tabstop"), v);
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -3477,60 +2784,60 @@ void DomLayout::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("class")) {
+        if (name == QStringLiteral("class")) {
             setAttributeClass(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("stretch")) {
+        if (name == QStringLiteral("stretch")) {
             setAttributeStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("rowstretch")) {
+        if (name == QStringLiteral("rowstretch")) {
             setAttributeRowStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("columnstretch")) {
+        if (name == QStringLiteral("columnstretch")) {
             setAttributeColumnStretch(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("rowminimumheight")) {
+        if (name == QStringLiteral("rowminimumheight")) {
             setAttributeRowMinimumHeight(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("columnminimumwidth")) {
+        if (name == QStringLiteral("columnminimumwidth")) {
             setAttributeColumnMinimumWidth(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("attribute")) {
+            if (tag == QStringLiteral("attribute")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            if (tag == QLatin1String("item")) {
+            if (tag == QStringLiteral("item")) {
                 DomLayoutItem *v = new DomLayoutItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3546,92 +2853,42 @@ void DomLayout::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomLayout::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("class")))
-        setAttributeClass(node.attribute(QLatin1String("class")));
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-    if (node.hasAttribute(QLatin1String("stretch")))
-        setAttributeStretch(node.attribute(QLatin1String("stretch")));
-    if (node.hasAttribute(QLatin1String("rowstretch")))
-        setAttributeRowStretch(node.attribute(QLatin1String("rowstretch")));
-    if (node.hasAttribute(QLatin1String("columnstretch")))
-        setAttributeColumnStretch(node.attribute(QLatin1String("columnstretch")));
-    if (node.hasAttribute(QLatin1String("rowminimumheight")))
-        setAttributeRowMinimumHeight(node.attribute(QLatin1String("rowminimumheight")));
-    if (node.hasAttribute(QLatin1String("columnminimumwidth")))
-        setAttributeColumnMinimumWidth(node.attribute(QLatin1String("columnminimumwidth")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("attribute")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_attribute.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("item")) {
-                DomLayoutItem *v = new DomLayoutItem();
-                v->read(e);
-                m_item.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomLayout::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("layout") : tagName.toLower());
 
     if (hasAttributeClass())
-        writer.writeAttribute(QLatin1String("class"), attributeClass());
+        writer.writeAttribute(QStringLiteral("class"), attributeClass());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (hasAttributeStretch())
-        writer.writeAttribute(QLatin1String("stretch"), attributeStretch());
+        writer.writeAttribute(QStringLiteral("stretch"), attributeStretch());
 
     if (hasAttributeRowStretch())
-        writer.writeAttribute(QLatin1String("rowstretch"), attributeRowStretch());
+        writer.writeAttribute(QStringLiteral("rowstretch"), attributeRowStretch());
 
     if (hasAttributeColumnStretch())
-        writer.writeAttribute(QLatin1String("columnstretch"), attributeColumnStretch());
+        writer.writeAttribute(QStringLiteral("columnstretch"), attributeColumnStretch());
 
     if (hasAttributeRowMinimumHeight())
-        writer.writeAttribute(QLatin1String("rowminimumheight"), attributeRowMinimumHeight());
+        writer.writeAttribute(QStringLiteral("rowminimumheight"), attributeRowMinimumHeight());
 
     if (hasAttributeColumnMinimumWidth())
-        writer.writeAttribute(QLatin1String("columnminimumwidth"), attributeColumnMinimumWidth());
+        writer.writeAttribute(QStringLiteral("columnminimumwidth"), attributeColumnMinimumWidth());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_attribute.size(); ++i) {
         DomProperty* v = m_attribute[i];
-        v->write(writer, QLatin1String("attribute"));
+        v->write(writer, QStringLiteral("attribute"));
     }
     for (int i = 0; i < m_item.size(); ++i) {
         DomLayoutItem* v = m_item[i];
-        v->write(writer, QLatin1String("item"));
+        v->write(writer, QStringLiteral("item"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -3713,52 +2970,52 @@ void DomLayoutItem::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("row")) {
+        if (name == QStringLiteral("row")) {
             setAttributeRow(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("column")) {
+        if (name == QStringLiteral("column")) {
             setAttributeColumn(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("rowspan")) {
+        if (name == QStringLiteral("rowspan")) {
             setAttributeRowSpan(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("colspan")) {
+        if (name == QStringLiteral("colspan")) {
             setAttributeColSpan(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("alignment")) {
+        if (name == QStringLiteral("alignment")) {
             setAttributeAlignment(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("widget")) {
+            if (tag == QStringLiteral("widget")) {
                 DomWidget *v = new DomWidget();
                 v->read(reader);
                 setElementWidget(v);
                 continue;
             }
-            if (tag == QLatin1String("layout")) {
+            if (tag == QStringLiteral("layout")) {
                 DomLayout *v = new DomLayout();
                 v->read(reader);
                 setElementLayout(v);
                 continue;
             }
-            if (tag == QLatin1String("spacer")) {
+            if (tag == QStringLiteral("spacer")) {
                 DomSpacer *v = new DomSpacer();
                 v->read(reader);
                 setElementSpacer(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3774,90 +3031,44 @@ void DomLayoutItem::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomLayoutItem::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("row")))
-        setAttributeRow(node.attribute(QLatin1String("row")).toInt());
-    if (node.hasAttribute(QLatin1String("column")))
-        setAttributeColumn(node.attribute(QLatin1String("column")).toInt());
-    if (node.hasAttribute(QLatin1String("rowspan")))
-        setAttributeRowSpan(node.attribute(QLatin1String("rowspan")).toInt());
-    if (node.hasAttribute(QLatin1String("colspan")))
-        setAttributeColSpan(node.attribute(QLatin1String("colspan")).toInt());
-    if (node.hasAttribute(QLatin1String("alignment")))
-        setAttributeAlignment(node.attribute(QLatin1String("alignment")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("widget")) {
-                DomWidget *v = new DomWidget();
-                v->read(e);
-                setElementWidget(v);
-                continue;
-            }
-            if (tag == QLatin1String("layout")) {
-                DomLayout *v = new DomLayout();
-                v->read(e);
-                setElementLayout(v);
-                continue;
-            }
-            if (tag == QLatin1String("spacer")) {
-                DomSpacer *v = new DomSpacer();
-                v->read(e);
-                setElementSpacer(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomLayoutItem::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("layoutitem") : tagName.toLower());
 
     if (hasAttributeRow())
-        writer.writeAttribute(QLatin1String("row"), QString::number(attributeRow()));
+        writer.writeAttribute(QStringLiteral("row"), QString::number(attributeRow()));
 
     if (hasAttributeColumn())
-        writer.writeAttribute(QLatin1String("column"), QString::number(attributeColumn()));
+        writer.writeAttribute(QStringLiteral("column"), QString::number(attributeColumn()));
 
     if (hasAttributeRowSpan())
-        writer.writeAttribute(QLatin1String("rowspan"), QString::number(attributeRowSpan()));
+        writer.writeAttribute(QStringLiteral("rowspan"), QString::number(attributeRowSpan()));
 
     if (hasAttributeColSpan())
-        writer.writeAttribute(QLatin1String("colspan"), QString::number(attributeColSpan()));
+        writer.writeAttribute(QStringLiteral("colspan"), QString::number(attributeColSpan()));
 
     if (hasAttributeAlignment())
-        writer.writeAttribute(QLatin1String("alignment"), attributeAlignment());
+        writer.writeAttribute(QStringLiteral("alignment"), attributeAlignment());
 
     switch (kind()) {
         case Widget: {
             DomWidget* v = elementWidget();
             if (v != 0) {
-                v->write(writer, QLatin1String("widget"));
+                v->write(writer, QStringLiteral("widget"));
             }
             break;
         }
         case Layout: {
             DomLayout* v = elementLayout();
             if (v != 0) {
-                v->write(writer, QLatin1String("layout"));
+                v->write(writer, QStringLiteral("layout"));
             }
             break;
         }
         case Spacer: {
             DomSpacer* v = elementSpacer();
             if (v != 0) {
-                v->write(writer, QLatin1String("spacer"));
+                v->write(writer, QStringLiteral("spacer"));
             }
             break;
         }
@@ -3942,13 +3153,13 @@ void DomRow::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -3964,36 +3175,13 @@ void DomRow::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomRow::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomRow::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("row") : tagName.toLower());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4037,13 +3225,13 @@ void DomColumn::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4059,36 +3247,13 @@ void DomColumn::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomColumn::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomColumn::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("column") : tagName.toLower());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4142,34 +3307,34 @@ void DomItem::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("row")) {
+        if (name == QStringLiteral("row")) {
             setAttributeRow(attribute.value().toString().toInt());
             continue;
         }
-        if (name == QLatin1String("column")) {
+        if (name == QStringLiteral("column")) {
             setAttributeColumn(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("item")) {
+            if (tag == QStringLiteral("item")) {
                 DomItem *v = new DomItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4185,57 +3350,23 @@ void DomItem::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomItem::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("row")))
-        setAttributeRow(node.attribute(QLatin1String("row")).toInt());
-    if (node.hasAttribute(QLatin1String("column")))
-        setAttributeColumn(node.attribute(QLatin1String("column")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("item")) {
-                DomItem *v = new DomItem();
-                v->read(e);
-                m_item.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomItem::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("item") : tagName.toLower());
 
     if (hasAttributeRow())
-        writer.writeAttribute(QLatin1String("row"), QString::number(attributeRow()));
+        writer.writeAttribute(QStringLiteral("row"), QString::number(attributeRow()));
 
     if (hasAttributeColumn())
-        writer.writeAttribute(QLatin1String("column"), QString::number(attributeColumn()));
+        writer.writeAttribute(QStringLiteral("column"), QString::number(attributeColumn()));
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_item.size(); ++i) {
         DomItem* v = m_item[i];
-        v->write(writer, QLatin1String("item"));
+        v->write(writer, QStringLiteral("item"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4339,106 +3470,106 @@ void DomWidget::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("class")) {
+        if (name == QStringLiteral("class")) {
             setAttributeClass(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("native")) {
+        if (name == QStringLiteral("native")) {
             setAttributeNative((attribute.value().toString() == QLatin1String("true") ? true : false));
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("class")) {
+            if (tag == QStringLiteral("class")) {
                 m_class.append(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            if (tag == QLatin1String("script")) {
+            if (tag == QStringLiteral("script")) {
                 DomScript *v = new DomScript();
                 v->read(reader);
                 m_script.append(v);
                 continue;
             }
-            if (tag == QLatin1String("widgetdata")) {
+            if (tag == QStringLiteral("widgetdata")) {
                 DomWidgetData *v = new DomWidgetData();
                 v->read(reader);
                 m_widgetData.append(v);
                 continue;
             }
-            if (tag == QLatin1String("attribute")) {
+            if (tag == QStringLiteral("attribute")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_attribute.append(v);
                 continue;
             }
-            if (tag == QLatin1String("row")) {
+            if (tag == QStringLiteral("row")) {
                 DomRow *v = new DomRow();
                 v->read(reader);
                 m_row.append(v);
                 continue;
             }
-            if (tag == QLatin1String("column")) {
+            if (tag == QStringLiteral("column")) {
                 DomColumn *v = new DomColumn();
                 v->read(reader);
                 m_column.append(v);
                 continue;
             }
-            if (tag == QLatin1String("item")) {
+            if (tag == QStringLiteral("item")) {
                 DomItem *v = new DomItem();
                 v->read(reader);
                 m_item.append(v);
                 continue;
             }
-            if (tag == QLatin1String("layout")) {
+            if (tag == QStringLiteral("layout")) {
                 DomLayout *v = new DomLayout();
                 v->read(reader);
                 m_layout.append(v);
                 continue;
             }
-            if (tag == QLatin1String("widget")) {
+            if (tag == QStringLiteral("widget")) {
                 DomWidget *v = new DomWidget();
                 v->read(reader);
                 m_widget.append(v);
                 continue;
             }
-            if (tag == QLatin1String("action")) {
+            if (tag == QStringLiteral("action")) {
                 DomAction *v = new DomAction();
                 v->read(reader);
                 m_action.append(v);
                 continue;
             }
-            if (tag == QLatin1String("actiongroup")) {
+            if (tag == QStringLiteral("actiongroup")) {
                 DomActionGroup *v = new DomActionGroup();
                 v->read(reader);
                 m_actionGroup.append(v);
                 continue;
             }
-            if (tag == QLatin1String("addaction")) {
+            if (tag == QStringLiteral("addaction")) {
                 DomActionRef *v = new DomActionRef();
                 v->read(reader);
                 m_addAction.append(v);
                 continue;
             }
-            if (tag == QLatin1String("zorder")) {
+            if (tag == QStringLiteral("zorder")) {
                 m_zOrder.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4454,178 +3585,74 @@ void DomWidget::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomWidget::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("class")))
-        setAttributeClass(node.attribute(QLatin1String("class")));
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-    if (node.hasAttribute(QLatin1String("native")))
-        setAttributeNative((node.attribute(QLatin1String("native")) == QLatin1String("true") ? true : false));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("class")) {
-                m_class.append(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("script")) {
-                DomScript *v = new DomScript();
-                v->read(e);
-                m_script.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("widgetdata")) {
-                DomWidgetData *v = new DomWidgetData();
-                v->read(e);
-                m_widgetData.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("attribute")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_attribute.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("row")) {
-                DomRow *v = new DomRow();
-                v->read(e);
-                m_row.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("column")) {
-                DomColumn *v = new DomColumn();
-                v->read(e);
-                m_column.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("item")) {
-                DomItem *v = new DomItem();
-                v->read(e);
-                m_item.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("layout")) {
-                DomLayout *v = new DomLayout();
-                v->read(e);
-                m_layout.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("widget")) {
-                DomWidget *v = new DomWidget();
-                v->read(e);
-                m_widget.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("action")) {
-                DomAction *v = new DomAction();
-                v->read(e);
-                m_action.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("actiongroup")) {
-                DomActionGroup *v = new DomActionGroup();
-                v->read(e);
-                m_actionGroup.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("addaction")) {
-                DomActionRef *v = new DomActionRef();
-                v->read(e);
-                m_addAction.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("zorder")) {
-                m_zOrder.append(e.text());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomWidget::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("widget") : tagName.toLower());
 
     if (hasAttributeClass())
-        writer.writeAttribute(QLatin1String("class"), attributeClass());
+        writer.writeAttribute(QStringLiteral("class"), attributeClass());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (hasAttributeNative())
-        writer.writeAttribute(QLatin1String("native"), (attributeNative() ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeAttribute(QStringLiteral("native"), (attributeNative() ? QLatin1String("true") : QLatin1String("false")));
 
     for (int i = 0; i < m_class.size(); ++i) {
         QString v = m_class[i];
-        writer.writeTextElement(QLatin1String("class"), v);
+        writer.writeTextElement(QStringLiteral("class"), v);
     }
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     for (int i = 0; i < m_script.size(); ++i) {
         DomScript* v = m_script[i];
-        v->write(writer, QLatin1String("script"));
+        v->write(writer, QStringLiteral("script"));
     }
     for (int i = 0; i < m_widgetData.size(); ++i) {
         DomWidgetData* v = m_widgetData[i];
-        v->write(writer, QLatin1String("widgetdata"));
+        v->write(writer, QStringLiteral("widgetdata"));
     }
     for (int i = 0; i < m_attribute.size(); ++i) {
         DomProperty* v = m_attribute[i];
-        v->write(writer, QLatin1String("attribute"));
+        v->write(writer, QStringLiteral("attribute"));
     }
     for (int i = 0; i < m_row.size(); ++i) {
         DomRow* v = m_row[i];
-        v->write(writer, QLatin1String("row"));
+        v->write(writer, QStringLiteral("row"));
     }
     for (int i = 0; i < m_column.size(); ++i) {
         DomColumn* v = m_column[i];
-        v->write(writer, QLatin1String("column"));
+        v->write(writer, QStringLiteral("column"));
     }
     for (int i = 0; i < m_item.size(); ++i) {
         DomItem* v = m_item[i];
-        v->write(writer, QLatin1String("item"));
+        v->write(writer, QStringLiteral("item"));
     }
     for (int i = 0; i < m_layout.size(); ++i) {
         DomLayout* v = m_layout[i];
-        v->write(writer, QLatin1String("layout"));
+        v->write(writer, QStringLiteral("layout"));
     }
     for (int i = 0; i < m_widget.size(); ++i) {
         DomWidget* v = m_widget[i];
-        v->write(writer, QLatin1String("widget"));
+        v->write(writer, QStringLiteral("widget"));
     }
     for (int i = 0; i < m_action.size(); ++i) {
         DomAction* v = m_action[i];
-        v->write(writer, QLatin1String("action"));
+        v->write(writer, QStringLiteral("action"));
     }
     for (int i = 0; i < m_actionGroup.size(); ++i) {
         DomActionGroup* v = m_actionGroup[i];
-        v->write(writer, QLatin1String("actiongroup"));
+        v->write(writer, QStringLiteral("actiongroup"));
     }
     for (int i = 0; i < m_addAction.size(); ++i) {
         DomActionRef* v = m_addAction[i];
-        v->write(writer, QLatin1String("addaction"));
+        v->write(writer, QStringLiteral("addaction"));
     }
     for (int i = 0; i < m_zOrder.size(); ++i) {
         QString v = m_zOrder[i];
-        writer.writeTextElement(QLatin1String("zorder"), v);
+        writer.writeTextElement(QStringLiteral("zorder"), v);
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4747,24 +3774,24 @@ void DomSpacer::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4780,42 +3807,16 @@ void DomSpacer::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSpacer::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSpacer::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("spacer") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -4863,30 +3864,30 @@ void DomColor::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("alpha")) {
+        if (name == QStringLiteral("alpha")) {
             setAttributeAlpha(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("red")) {
+            if (tag == QStringLiteral("red")) {
                 setElementRed(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("green")) {
+            if (tag == QStringLiteral("green")) {
                 setElementGreen(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("blue")) {
+            if (tag == QStringLiteral("blue")) {
                 setElementBlue(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -4902,55 +3903,23 @@ void DomColor::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomColor::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("alpha")))
-        setAttributeAlpha(node.attribute(QLatin1String("alpha")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("red")) {
-                setElementRed(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("green")) {
-                setElementGreen(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("blue")) {
-                setElementBlue(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomColor::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("color") : tagName.toLower());
 
     if (hasAttributeAlpha())
-        writer.writeAttribute(QLatin1String("alpha"), QString::number(attributeAlpha()));
+        writer.writeAttribute(QStringLiteral("alpha"), QString::number(attributeAlpha()));
 
     if (m_children & Red) {
-        writer.writeTextElement(QLatin1String("red"), QString::number(m_red));
+        writer.writeTextElement(QStringLiteral("red"), QString::number(m_red));
     }
 
     if (m_children & Green) {
-        writer.writeTextElement(QLatin1String("green"), QString::number(m_green));
+        writer.writeTextElement(QStringLiteral("green"), QString::number(m_green));
     }
 
     if (m_children & Blue) {
-        writer.writeTextElement(QLatin1String("blue"), QString::number(m_blue));
+        writer.writeTextElement(QStringLiteral("blue"), QString::number(m_blue));
     }
 
     if (!m_text.isEmpty())
@@ -5024,24 +3993,24 @@ void DomGradientStop::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("position")) {
+        if (name == QStringLiteral("position")) {
             setAttributePosition(attribute.value().toString().toDouble());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("color")) {
+            if (tag == QStringLiteral("color")) {
                 DomColor *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5057,41 +4026,15 @@ void DomGradientStop::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomGradientStop::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("position")))
-        setAttributePosition(node.attribute(QLatin1String("position")).toDouble());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("color")) {
-                DomColor *v = new DomColor();
-                v->read(e);
-                setElementColor(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomGradientStop::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("gradientstop") : tagName.toLower());
 
     if (hasAttributePosition())
-        writer.writeAttribute(QLatin1String("position"), QString::number(attributePosition(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("position"), QString::number(attributePosition(), 'f', 15));
 
     if (m_children & Color) {
-        m_color->write(writer, QLatin1String("color"));
+        m_color->write(writer, QStringLiteral("color"));
     }
 
     if (!m_text.isEmpty())
@@ -5196,72 +4139,72 @@ void DomGradient::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("startx")) {
+        if (name == QStringLiteral("startx")) {
             setAttributeStartX(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("starty")) {
+        if (name == QStringLiteral("starty")) {
             setAttributeStartY(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("endx")) {
+        if (name == QStringLiteral("endx")) {
             setAttributeEndX(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("endy")) {
+        if (name == QStringLiteral("endy")) {
             setAttributeEndY(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("centralx")) {
+        if (name == QStringLiteral("centralx")) {
             setAttributeCentralX(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("centraly")) {
+        if (name == QStringLiteral("centraly")) {
             setAttributeCentralY(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("focalx")) {
+        if (name == QStringLiteral("focalx")) {
             setAttributeFocalX(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("focaly")) {
+        if (name == QStringLiteral("focaly")) {
             setAttributeFocalY(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("radius")) {
+        if (name == QStringLiteral("radius")) {
             setAttributeRadius(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("angle")) {
+        if (name == QStringLiteral("angle")) {
             setAttributeAngle(attribute.value().toString().toDouble());
             continue;
         }
-        if (name == QLatin1String("type")) {
+        if (name == QStringLiteral("type")) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("spread")) {
+        if (name == QStringLiteral("spread")) {
             setAttributeSpread(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("coordinatemode")) {
+        if (name == QStringLiteral("coordinatemode")) {
             setAttributeCoordinateMode(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("gradientstop")) {
+            if (tag == QStringLiteral("gradientstop")) {
                 DomGradientStop *v = new DomGradientStop();
                 v->read(reader);
                 m_gradientStop.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5277,102 +4220,52 @@ void DomGradient::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomGradient::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("startx")))
-        setAttributeStartX(node.attribute(QLatin1String("startx")).toDouble());
-    if (node.hasAttribute(QLatin1String("starty")))
-        setAttributeStartY(node.attribute(QLatin1String("starty")).toDouble());
-    if (node.hasAttribute(QLatin1String("endx")))
-        setAttributeEndX(node.attribute(QLatin1String("endx")).toDouble());
-    if (node.hasAttribute(QLatin1String("endy")))
-        setAttributeEndY(node.attribute(QLatin1String("endy")).toDouble());
-    if (node.hasAttribute(QLatin1String("centralx")))
-        setAttributeCentralX(node.attribute(QLatin1String("centralx")).toDouble());
-    if (node.hasAttribute(QLatin1String("centraly")))
-        setAttributeCentralY(node.attribute(QLatin1String("centraly")).toDouble());
-    if (node.hasAttribute(QLatin1String("focalx")))
-        setAttributeFocalX(node.attribute(QLatin1String("focalx")).toDouble());
-    if (node.hasAttribute(QLatin1String("focaly")))
-        setAttributeFocalY(node.attribute(QLatin1String("focaly")).toDouble());
-    if (node.hasAttribute(QLatin1String("radius")))
-        setAttributeRadius(node.attribute(QLatin1String("radius")).toDouble());
-    if (node.hasAttribute(QLatin1String("angle")))
-        setAttributeAngle(node.attribute(QLatin1String("angle")).toDouble());
-    if (node.hasAttribute(QLatin1String("type")))
-        setAttributeType(node.attribute(QLatin1String("type")));
-    if (node.hasAttribute(QLatin1String("spread")))
-        setAttributeSpread(node.attribute(QLatin1String("spread")));
-    if (node.hasAttribute(QLatin1String("coordinatemode")))
-        setAttributeCoordinateMode(node.attribute(QLatin1String("coordinatemode")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("gradientstop")) {
-                DomGradientStop *v = new DomGradientStop();
-                v->read(e);
-                m_gradientStop.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomGradient::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("gradient") : tagName.toLower());
 
     if (hasAttributeStartX())
-        writer.writeAttribute(QLatin1String("startx"), QString::number(attributeStartX(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("startx"), QString::number(attributeStartX(), 'f', 15));
 
     if (hasAttributeStartY())
-        writer.writeAttribute(QLatin1String("starty"), QString::number(attributeStartY(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("starty"), QString::number(attributeStartY(), 'f', 15));
 
     if (hasAttributeEndX())
-        writer.writeAttribute(QLatin1String("endx"), QString::number(attributeEndX(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("endx"), QString::number(attributeEndX(), 'f', 15));
 
     if (hasAttributeEndY())
-        writer.writeAttribute(QLatin1String("endy"), QString::number(attributeEndY(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("endy"), QString::number(attributeEndY(), 'f', 15));
 
     if (hasAttributeCentralX())
-        writer.writeAttribute(QLatin1String("centralx"), QString::number(attributeCentralX(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("centralx"), QString::number(attributeCentralX(), 'f', 15));
 
     if (hasAttributeCentralY())
-        writer.writeAttribute(QLatin1String("centraly"), QString::number(attributeCentralY(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("centraly"), QString::number(attributeCentralY(), 'f', 15));
 
     if (hasAttributeFocalX())
-        writer.writeAttribute(QLatin1String("focalx"), QString::number(attributeFocalX(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("focalx"), QString::number(attributeFocalX(), 'f', 15));
 
     if (hasAttributeFocalY())
-        writer.writeAttribute(QLatin1String("focaly"), QString::number(attributeFocalY(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("focaly"), QString::number(attributeFocalY(), 'f', 15));
 
     if (hasAttributeRadius())
-        writer.writeAttribute(QLatin1String("radius"), QString::number(attributeRadius(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("radius"), QString::number(attributeRadius(), 'f', 15));
 
     if (hasAttributeAngle())
-        writer.writeAttribute(QLatin1String("angle"), QString::number(attributeAngle(), 'f', 15));
+        writer.writeAttribute(QStringLiteral("angle"), QString::number(attributeAngle(), 'f', 15));
 
     if (hasAttributeType())
-        writer.writeAttribute(QLatin1String("type"), attributeType());
+        writer.writeAttribute(QStringLiteral("type"), attributeType());
 
     if (hasAttributeSpread())
-        writer.writeAttribute(QLatin1String("spread"), attributeSpread());
+        writer.writeAttribute(QStringLiteral("spread"), attributeSpread());
 
     if (hasAttributeCoordinateMode())
-        writer.writeAttribute(QLatin1String("coordinatemode"), attributeCoordinateMode());
+        writer.writeAttribute(QStringLiteral("coordinatemode"), attributeCoordinateMode());
 
     for (int i = 0; i < m_gradientStop.size(); ++i) {
         DomGradientStop* v = m_gradientStop[i];
-        v->write(writer, QLatin1String("gradientstop"));
+        v->write(writer, QStringLiteral("gradientstop"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -5426,36 +4319,36 @@ void DomBrush::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("brushstyle")) {
+        if (name == QStringLiteral("brushstyle")) {
             setAttributeBrushStyle(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("color")) {
+            if (tag == QStringLiteral("color")) {
                 DomColor *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            if (tag == QLatin1String("texture")) {
+            if (tag == QStringLiteral("texture")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 setElementTexture(v);
                 continue;
             }
-            if (tag == QLatin1String("gradient")) {
+            if (tag == QStringLiteral("gradient")) {
                 DomGradient *v = new DomGradient();
                 v->read(reader);
                 setElementGradient(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5471,70 +4364,32 @@ void DomBrush::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomBrush::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("brushstyle")))
-        setAttributeBrushStyle(node.attribute(QLatin1String("brushstyle")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("color")) {
-                DomColor *v = new DomColor();
-                v->read(e);
-                setElementColor(v);
-                continue;
-            }
-            if (tag == QLatin1String("texture")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                setElementTexture(v);
-                continue;
-            }
-            if (tag == QLatin1String("gradient")) {
-                DomGradient *v = new DomGradient();
-                v->read(e);
-                setElementGradient(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomBrush::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("brush") : tagName.toLower());
 
     if (hasAttributeBrushStyle())
-        writer.writeAttribute(QLatin1String("brushstyle"), attributeBrushStyle());
+        writer.writeAttribute(QStringLiteral("brushstyle"), attributeBrushStyle());
 
     switch (kind()) {
         case Color: {
             DomColor* v = elementColor();
             if (v != 0) {
-                v->write(writer, QLatin1String("color"));
+                v->write(writer, QStringLiteral("color"));
             }
             break;
         }
         case Texture: {
             DomProperty* v = elementTexture();
             if (v != 0) {
-                v->write(writer, QLatin1String("texture"));
+                v->write(writer, QStringLiteral("texture"));
             }
             break;
         }
         case Gradient: {
             DomGradient* v = elementGradient();
             if (v != 0) {
-                v->write(writer, QLatin1String("gradient"));
+                v->write(writer, QStringLiteral("gradient"));
             }
             break;
         }
@@ -5619,24 +4474,24 @@ void DomColorRole::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("role")) {
+        if (name == QStringLiteral("role")) {
             setAttributeRole(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("brush")) {
+            if (tag == QStringLiteral("brush")) {
                 DomBrush *v = new DomBrush();
                 v->read(reader);
                 setElementBrush(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5652,41 +4507,15 @@ void DomColorRole::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomColorRole::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("role")))
-        setAttributeRole(node.attribute(QLatin1String("role")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("brush")) {
-                DomBrush *v = new DomBrush();
-                v->read(e);
-                setElementBrush(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomColorRole::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("colorrole") : tagName.toLower());
 
     if (hasAttributeRole())
-        writer.writeAttribute(QLatin1String("role"), attributeRole());
+        writer.writeAttribute(QStringLiteral("role"), attributeRole());
 
     if (m_children & Brush) {
-        m_brush->write(writer, QLatin1String("brush"));
+        m_brush->write(writer, QStringLiteral("brush"));
     }
 
     if (!m_text.isEmpty())
@@ -5751,19 +4580,19 @@ void DomColorGroup::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("colorrole")) {
+            if (tag == QStringLiteral("colorrole")) {
                 DomColorRole *v = new DomColorRole();
                 v->read(reader);
                 m_colorRole.append(v);
                 continue;
             }
-            if (tag == QLatin1String("color")) {
+            if (tag == QStringLiteral("color")) {
                 DomColor *v = new DomColor();
                 v->read(reader);
                 m_color.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5779,46 +4608,17 @@ void DomColorGroup::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomColorGroup::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("colorrole")) {
-                DomColorRole *v = new DomColorRole();
-                v->read(e);
-                m_colorRole.append(v);
-                continue;
-            }
-            if (tag == QLatin1String("color")) {
-                DomColor *v = new DomColor();
-                v->read(e);
-                m_color.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomColorGroup::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("colorgroup") : tagName.toLower());
 
     for (int i = 0; i < m_colorRole.size(); ++i) {
         DomColorRole* v = m_colorRole[i];
-        v->write(writer, QLatin1String("colorrole"));
+        v->write(writer, QStringLiteral("colorrole"));
     }
     for (int i = 0; i < m_color.size(); ++i) {
         DomColor* v = m_color[i];
-        v->write(writer, QLatin1String("color"));
+        v->write(writer, QStringLiteral("color"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -5876,25 +4676,25 @@ void DomPalette::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("active")) {
+            if (tag == QStringLiteral("active")) {
                 DomColorGroup *v = new DomColorGroup();
                 v->read(reader);
                 setElementActive(v);
                 continue;
             }
-            if (tag == QLatin1String("inactive")) {
+            if (tag == QStringLiteral("inactive")) {
                 DomColorGroup *v = new DomColorGroup();
                 v->read(reader);
                 setElementInactive(v);
                 continue;
             }
-            if (tag == QLatin1String("disabled")) {
+            if (tag == QStringLiteral("disabled")) {
                 DomColorGroup *v = new DomColorGroup();
                 v->read(reader);
                 setElementDisabled(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -5910,55 +4710,20 @@ void DomPalette::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomPalette::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("active")) {
-                DomColorGroup *v = new DomColorGroup();
-                v->read(e);
-                setElementActive(v);
-                continue;
-            }
-            if (tag == QLatin1String("inactive")) {
-                DomColorGroup *v = new DomColorGroup();
-                v->read(e);
-                setElementInactive(v);
-                continue;
-            }
-            if (tag == QLatin1String("disabled")) {
-                DomColorGroup *v = new DomColorGroup();
-                v->read(e);
-                setElementDisabled(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomPalette::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("palette") : tagName.toLower());
 
     if (m_children & Active) {
-        m_active->write(writer, QLatin1String("active"));
+        m_active->write(writer, QStringLiteral("active"));
     }
 
     if (m_children & Inactive) {
-        m_inactive->write(writer, QLatin1String("inactive"));
+        m_inactive->write(writer, QStringLiteral("inactive"));
     }
 
     if (m_children & Disabled) {
-        m_disabled->write(writer, QLatin1String("disabled"));
+        m_disabled->write(writer, QStringLiteral("disabled"));
     }
 
     if (!m_text.isEmpty())
@@ -6075,47 +4840,47 @@ void DomFont::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("family")) {
+            if (tag == QStringLiteral("family")) {
                 setElementFamily(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("pointsize")) {
+            if (tag == QStringLiteral("pointsize")) {
                 setElementPointSize(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("weight")) {
+            if (tag == QStringLiteral("weight")) {
                 setElementWeight(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("italic")) {
+            if (tag == QStringLiteral("italic")) {
                 setElementItalic((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            if (tag == QLatin1String("bold")) {
+            if (tag == QStringLiteral("bold")) {
                 setElementBold((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            if (tag == QLatin1String("underline")) {
+            if (tag == QStringLiteral("underline")) {
                 setElementUnderline((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            if (tag == QLatin1String("strikeout")) {
+            if (tag == QStringLiteral("strikeout")) {
                 setElementStrikeOut((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            if (tag == QLatin1String("antialiasing")) {
+            if (tag == QStringLiteral("antialiasing")) {
                 setElementAntialiasing((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            if (tag == QLatin1String("stylestrategy")) {
+            if (tag == QStringLiteral("stylestrategy")) {
                 setElementStyleStrategy(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("kerning")) {
+            if (tag == QStringLiteral("kerning")) {
                 setElementKerning((reader.readElementText() == QLatin1String("true") ? true : false));
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6131,105 +4896,48 @@ void DomFont::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomFont::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("family")) {
-                setElementFamily(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("pointsize")) {
-                setElementPointSize(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("weight")) {
-                setElementWeight(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("italic")) {
-                setElementItalic((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-            if (tag == QLatin1String("bold")) {
-                setElementBold((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-            if (tag == QLatin1String("underline")) {
-                setElementUnderline((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-            if (tag == QLatin1String("strikeout")) {
-                setElementStrikeOut((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-            if (tag == QLatin1String("antialiasing")) {
-                setElementAntialiasing((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-            if (tag == QLatin1String("stylestrategy")) {
-                setElementStyleStrategy(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("kerning")) {
-                setElementKerning((e.text() == QLatin1String("true") ? true : false));
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomFont::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("font") : tagName.toLower());
 
     if (m_children & Family) {
-        writer.writeTextElement(QLatin1String("family"), m_family);
+        writer.writeTextElement(QStringLiteral("family"), m_family);
     }
 
     if (m_children & PointSize) {
-        writer.writeTextElement(QLatin1String("pointsize"), QString::number(m_pointSize));
+        writer.writeTextElement(QStringLiteral("pointsize"), QString::number(m_pointSize));
     }
 
     if (m_children & Weight) {
-        writer.writeTextElement(QLatin1String("weight"), QString::number(m_weight));
+        writer.writeTextElement(QStringLiteral("weight"), QString::number(m_weight));
     }
 
     if (m_children & Italic) {
-        writer.writeTextElement(QLatin1String("italic"), (m_italic ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("italic"), (m_italic ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (m_children & Bold) {
-        writer.writeTextElement(QLatin1String("bold"), (m_bold ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("bold"), (m_bold ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (m_children & Underline) {
-        writer.writeTextElement(QLatin1String("underline"), (m_underline ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("underline"), (m_underline ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (m_children & StrikeOut) {
-        writer.writeTextElement(QLatin1String("strikeout"), (m_strikeOut ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("strikeout"), (m_strikeOut ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (m_children & Antialiasing) {
-        writer.writeTextElement(QLatin1String("antialiasing"), (m_antialiasing ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("antialiasing"), (m_antialiasing ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (m_children & StyleStrategy) {
-        writer.writeTextElement(QLatin1String("stylestrategy"), m_styleStrategy);
+        writer.writeTextElement(QStringLiteral("stylestrategy"), m_styleStrategy);
     }
 
     if (m_children & Kerning) {
-        writer.writeTextElement(QLatin1String("kerning"), (m_kerning ? QLatin1String("true") : QLatin1String("false")));
+        writer.writeTextElement(QStringLiteral("kerning"), (m_kerning ? QLatin1String("true") : QLatin1String("false")));
     }
 
     if (!m_text.isEmpty())
@@ -6386,7 +5094,7 @@ void DomPoint::read(QXmlStreamReader &reader)
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6401,31 +5109,6 @@ void DomPoint::read(QXmlStreamReader &reader)
         }
     }
 }
-
-#ifdef QUILOADER_QDOM_READ
-void DomPoint::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QString(QLatin1Char('x'))) {
-                setElementX(e.text().toInt());
-                continue;
-            }
-            if (tag == QString(QLatin1Char('y'))) {
-                setElementY(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
 
 void DomPoint::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
@@ -6509,15 +5192,15 @@ void DomRect::read(QXmlStreamReader &reader)
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("width")) {
+            if (tag == QStringLiteral("width")) {
                 setElementWidth(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("height")) {
+            if (tag == QStringLiteral("height")) {
                 setElementHeight(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6533,39 +5216,6 @@ void DomRect::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomRect::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QString(QLatin1Char('x'))) {
-                setElementX(e.text().toInt());
-                continue;
-            }
-            if (tag == QString(QLatin1Char('y'))) {
-                setElementY(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("width")) {
-                setElementWidth(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("height")) {
-                setElementHeight(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomRect::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("rect") : tagName.toLower());
@@ -6579,11 +5229,11 @@ void DomRect::write(QXmlStreamWriter &writer, const QString &tagName) const
     }
 
     if (m_children & Width) {
-        writer.writeTextElement(QLatin1String("width"), QString::number(m_width));
+        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width));
     }
 
     if (m_children & Height) {
-        writer.writeTextElement(QLatin1String("height"), QString::number(m_height));
+        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height));
     }
 
     if (!m_text.isEmpty())
@@ -6664,22 +5314,22 @@ void DomLocale::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("language")) {
+        if (name == QStringLiteral("language")) {
             setAttributeLanguage(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("country")) {
+        if (name == QStringLiteral("country")) {
             setAttributeCountry(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6695,37 +5345,15 @@ void DomLocale::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomLocale::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("language")))
-        setAttributeLanguage(node.attribute(QLatin1String("language")));
-    if (node.hasAttribute(QLatin1String("country")))
-        setAttributeCountry(node.attribute(QLatin1String("country")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomLocale::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("locale") : tagName.toLower());
 
     if (hasAttributeLanguage())
-        writer.writeAttribute(QLatin1String("language"), attributeLanguage());
+        writer.writeAttribute(QStringLiteral("language"), attributeLanguage());
 
     if (hasAttributeCountry())
-        writer.writeAttribute(QLatin1String("country"), attributeCountry());
+        writer.writeAttribute(QStringLiteral("country"), attributeCountry());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -6769,38 +5397,38 @@ void DomSizePolicy::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("hsizetype")) {
+        if (name == QStringLiteral("hsizetype")) {
             setAttributeHSizeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("vsizetype")) {
+        if (name == QStringLiteral("vsizetype")) {
             setAttributeVSizeType(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("hsizetype")) {
+            if (tag == QStringLiteral("hsizetype")) {
                 setElementHSizeType(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("vsizetype")) {
+            if (tag == QStringLiteral("vsizetype")) {
                 setElementVSizeType(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("horstretch")) {
+            if (tag == QStringLiteral("horstretch")) {
                 setElementHorStretch(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("verstretch")) {
+            if (tag == QStringLiteral("verstretch")) {
                 setElementVerStretch(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6816,68 +5444,30 @@ void DomSizePolicy::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSizePolicy::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("hsizetype")))
-        setAttributeHSizeType(node.attribute(QLatin1String("hsizetype")));
-    if (node.hasAttribute(QLatin1String("vsizetype")))
-        setAttributeVSizeType(node.attribute(QLatin1String("vsizetype")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("hsizetype")) {
-                setElementHSizeType(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("vsizetype")) {
-                setElementVSizeType(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("horstretch")) {
-                setElementHorStretch(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("verstretch")) {
-                setElementVerStretch(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSizePolicy::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("sizepolicy") : tagName.toLower());
 
     if (hasAttributeHSizeType())
-        writer.writeAttribute(QLatin1String("hsizetype"), attributeHSizeType());
+        writer.writeAttribute(QStringLiteral("hsizetype"), attributeHSizeType());
 
     if (hasAttributeVSizeType())
-        writer.writeAttribute(QLatin1String("vsizetype"), attributeVSizeType());
+        writer.writeAttribute(QStringLiteral("vsizetype"), attributeVSizeType());
 
     if (m_children & HSizeType) {
-        writer.writeTextElement(QLatin1String("hsizetype"), QString::number(m_hSizeType));
+        writer.writeTextElement(QStringLiteral("hsizetype"), QString::number(m_hSizeType));
     }
 
     if (m_children & VSizeType) {
-        writer.writeTextElement(QLatin1String("vsizetype"), QString::number(m_vSizeType));
+        writer.writeTextElement(QStringLiteral("vsizetype"), QString::number(m_vSizeType));
     }
 
     if (m_children & HorStretch) {
-        writer.writeTextElement(QLatin1String("horstretch"), QString::number(m_horStretch));
+        writer.writeTextElement(QStringLiteral("horstretch"), QString::number(m_horStretch));
     }
 
     if (m_children & VerStretch) {
-        writer.writeTextElement(QLatin1String("verstretch"), QString::number(m_verStretch));
+        writer.writeTextElement(QStringLiteral("verstretch"), QString::number(m_verStretch));
     }
 
     if (!m_text.isEmpty())
@@ -6960,15 +5550,15 @@ void DomSize::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("width")) {
+            if (tag == QStringLiteral("width")) {
                 setElementWidth(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("height")) {
+            if (tag == QStringLiteral("height")) {
                 setElementHeight(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -6984,41 +5574,16 @@ void DomSize::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSize::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("width")) {
-                setElementWidth(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("height")) {
-                setElementHeight(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSize::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("size") : tagName.toLower());
 
     if (m_children & Width) {
-        writer.writeTextElement(QLatin1String("width"), QString::number(m_width));
+        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width));
     }
 
     if (m_children & Height) {
-        writer.writeTextElement(QLatin1String("height"), QString::number(m_height));
+        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height));
     }
 
     if (!m_text.isEmpty())
@@ -7081,19 +5646,19 @@ void DomDate::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("year")) {
+            if (tag == QStringLiteral("year")) {
                 setElementYear(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("month")) {
+            if (tag == QStringLiteral("month")) {
                 setElementMonth(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("day")) {
+            if (tag == QStringLiteral("day")) {
                 setElementDay(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7109,49 +5674,20 @@ void DomDate::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomDate::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("year")) {
-                setElementYear(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("month")) {
-                setElementMonth(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("day")) {
-                setElementDay(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomDate::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("date") : tagName.toLower());
 
     if (m_children & Year) {
-        writer.writeTextElement(QLatin1String("year"), QString::number(m_year));
+        writer.writeTextElement(QStringLiteral("year"), QString::number(m_year));
     }
 
     if (m_children & Month) {
-        writer.writeTextElement(QLatin1String("month"), QString::number(m_month));
+        writer.writeTextElement(QStringLiteral("month"), QString::number(m_month));
     }
 
     if (m_children & Day) {
-        writer.writeTextElement(QLatin1String("day"), QString::number(m_day));
+        writer.writeTextElement(QStringLiteral("day"), QString::number(m_day));
     }
 
     if (!m_text.isEmpty())
@@ -7225,19 +5761,19 @@ void DomTime::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("hour")) {
+            if (tag == QStringLiteral("hour")) {
                 setElementHour(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("minute")) {
+            if (tag == QStringLiteral("minute")) {
                 setElementMinute(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("second")) {
+            if (tag == QStringLiteral("second")) {
                 setElementSecond(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7253,49 +5789,20 @@ void DomTime::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomTime::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("hour")) {
-                setElementHour(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("minute")) {
-                setElementMinute(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("second")) {
-                setElementSecond(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomTime::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("time") : tagName.toLower());
 
     if (m_children & Hour) {
-        writer.writeTextElement(QLatin1String("hour"), QString::number(m_hour));
+        writer.writeTextElement(QStringLiteral("hour"), QString::number(m_hour));
     }
 
     if (m_children & Minute) {
-        writer.writeTextElement(QLatin1String("minute"), QString::number(m_minute));
+        writer.writeTextElement(QStringLiteral("minute"), QString::number(m_minute));
     }
 
     if (m_children & Second) {
-        writer.writeTextElement(QLatin1String("second"), QString::number(m_second));
+        writer.writeTextElement(QStringLiteral("second"), QString::number(m_second));
     }
 
     if (!m_text.isEmpty())
@@ -7375,31 +5882,31 @@ void DomDateTime::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("hour")) {
+            if (tag == QStringLiteral("hour")) {
                 setElementHour(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("minute")) {
+            if (tag == QStringLiteral("minute")) {
                 setElementMinute(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("second")) {
+            if (tag == QStringLiteral("second")) {
                 setElementSecond(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("year")) {
+            if (tag == QStringLiteral("year")) {
                 setElementYear(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("month")) {
+            if (tag == QStringLiteral("month")) {
                 setElementMonth(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("day")) {
+            if (tag == QStringLiteral("day")) {
                 setElementDay(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7415,73 +5922,32 @@ void DomDateTime::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomDateTime::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("hour")) {
-                setElementHour(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("minute")) {
-                setElementMinute(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("second")) {
-                setElementSecond(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("year")) {
-                setElementYear(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("month")) {
-                setElementMonth(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("day")) {
-                setElementDay(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomDateTime::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("datetime") : tagName.toLower());
 
     if (m_children & Hour) {
-        writer.writeTextElement(QLatin1String("hour"), QString::number(m_hour));
+        writer.writeTextElement(QStringLiteral("hour"), QString::number(m_hour));
     }
 
     if (m_children & Minute) {
-        writer.writeTextElement(QLatin1String("minute"), QString::number(m_minute));
+        writer.writeTextElement(QStringLiteral("minute"), QString::number(m_minute));
     }
 
     if (m_children & Second) {
-        writer.writeTextElement(QLatin1String("second"), QString::number(m_second));
+        writer.writeTextElement(QStringLiteral("second"), QString::number(m_second));
     }
 
     if (m_children & Year) {
-        writer.writeTextElement(QLatin1String("year"), QString::number(m_year));
+        writer.writeTextElement(QStringLiteral("year"), QString::number(m_year));
     }
 
     if (m_children & Month) {
-        writer.writeTextElement(QLatin1String("month"), QString::number(m_month));
+        writer.writeTextElement(QStringLiteral("month"), QString::number(m_month));
     }
 
     if (m_children & Day) {
-        writer.writeTextElement(QLatin1String("day"), QString::number(m_day));
+        writer.writeTextElement(QStringLiteral("day"), QString::number(m_day));
     }
 
     if (!m_text.isEmpty())
@@ -7584,11 +6050,11 @@ void DomStringList::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("string")) {
+            if (tag == QStringLiteral("string")) {
                 m_string.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7604,34 +6070,13 @@ void DomStringList::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomStringList::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("string")) {
-                m_string.append(e.text());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomStringList::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("stringlist") : tagName.toLower());
 
     for (int i = 0; i < m_string.size(); ++i) {
         QString v = m_string[i];
-        writer.writeTextElement(QLatin1String("string"), v);
+        writer.writeTextElement(QStringLiteral("string"), v);
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -7649,7 +6094,7 @@ void DomResourcePixmap::clear(bool clear_all)
 {
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_resource = false;
     m_has_attr_alias = false;
     }
@@ -7662,7 +6107,7 @@ DomResourcePixmap::DomResourcePixmap()
     m_children = 0;
     m_has_attr_resource = false;
     m_has_attr_alias = false;
-    m_text = QLatin1String("");
+    m_text.clear();
 }
 
 DomResourcePixmap::~DomResourcePixmap()
@@ -7674,22 +6119,22 @@ void DomResourcePixmap::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("resource")) {
+        if (name == QStringLiteral("resource")) {
             setAttributeResource(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("alias")) {
+        if (name == QStringLiteral("alias")) {
             setAttributeAlias(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7705,37 +6150,15 @@ void DomResourcePixmap::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomResourcePixmap::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("resource")))
-        setAttributeResource(node.attribute(QLatin1String("resource")));
-    if (node.hasAttribute(QLatin1String("alias")))
-        setAttributeAlias(node.attribute(QLatin1String("alias")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomResourcePixmap::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("resourcepixmap") : tagName.toLower());
 
     if (hasAttributeResource())
-        writer.writeAttribute(QLatin1String("resource"), attributeResource());
+        writer.writeAttribute(QStringLiteral("resource"), attributeResource());
 
     if (hasAttributeAlias())
-        writer.writeAttribute(QLatin1String("alias"), attributeAlias());
+        writer.writeAttribute(QStringLiteral("alias"), attributeAlias());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -7755,7 +6178,7 @@ void DomResourceIcon::clear(bool clear_all)
     delete m_selectedOn;
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_theme = false;
     m_has_attr_resource = false;
     }
@@ -7776,7 +6199,7 @@ DomResourceIcon::DomResourceIcon()
     m_children = 0;
     m_has_attr_theme = false;
     m_has_attr_resource = false;
-    m_text = QLatin1String("");
+    m_text.clear();
     m_normalOff = 0;
     m_normalOn = 0;
     m_disabledOff = 0;
@@ -7804,70 +6227,70 @@ void DomResourceIcon::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("theme")) {
+        if (name == QStringLiteral("theme")) {
             setAttributeTheme(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("resource")) {
+        if (name == QStringLiteral("resource")) {
             setAttributeResource(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("normaloff")) {
+            if (tag == QStringLiteral("normaloff")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementNormalOff(v);
                 continue;
             }
-            if (tag == QLatin1String("normalon")) {
+            if (tag == QStringLiteral("normalon")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementNormalOn(v);
                 continue;
             }
-            if (tag == QLatin1String("disabledoff")) {
+            if (tag == QStringLiteral("disabledoff")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementDisabledOff(v);
                 continue;
             }
-            if (tag == QLatin1String("disabledon")) {
+            if (tag == QStringLiteral("disabledon")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementDisabledOn(v);
                 continue;
             }
-            if (tag == QLatin1String("activeoff")) {
+            if (tag == QStringLiteral("activeoff")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementActiveOff(v);
                 continue;
             }
-            if (tag == QLatin1String("activeon")) {
+            if (tag == QStringLiteral("activeon")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementActiveOn(v);
                 continue;
             }
-            if (tag == QLatin1String("selectedoff")) {
+            if (tag == QStringLiteral("selectedoff")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementSelectedOff(v);
                 continue;
             }
-            if (tag == QLatin1String("selectedon")) {
+            if (tag == QStringLiteral("selectedon")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementSelectedOn(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -7883,116 +6306,46 @@ void DomResourceIcon::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomResourceIcon::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("theme")))
-        setAttributeTheme(node.attribute(QLatin1String("theme")));
-    if (node.hasAttribute(QLatin1String("resource")))
-        setAttributeResource(node.attribute(QLatin1String("resource")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("normaloff")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementNormalOff(v);
-                continue;
-            }
-            if (tag == QLatin1String("normalon")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementNormalOn(v);
-                continue;
-            }
-            if (tag == QLatin1String("disabledoff")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementDisabledOff(v);
-                continue;
-            }
-            if (tag == QLatin1String("disabledon")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementDisabledOn(v);
-                continue;
-            }
-            if (tag == QLatin1String("activeoff")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementActiveOff(v);
-                continue;
-            }
-            if (tag == QLatin1String("activeon")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementActiveOn(v);
-                continue;
-            }
-            if (tag == QLatin1String("selectedoff")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementSelectedOff(v);
-                continue;
-            }
-            if (tag == QLatin1String("selectedon")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementSelectedOn(v);
-                continue;
-            }
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomResourceIcon::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("resourceicon") : tagName.toLower());
 
     if (hasAttributeTheme())
-        writer.writeAttribute(QLatin1String("theme"), attributeTheme());
+        writer.writeAttribute(QStringLiteral("theme"), attributeTheme());
 
     if (hasAttributeResource())
-        writer.writeAttribute(QLatin1String("resource"), attributeResource());
+        writer.writeAttribute(QStringLiteral("resource"), attributeResource());
 
     if (m_children & NormalOff) {
-        m_normalOff->write(writer, QLatin1String("normaloff"));
+        m_normalOff->write(writer, QStringLiteral("normaloff"));
     }
 
     if (m_children & NormalOn) {
-        m_normalOn->write(writer, QLatin1String("normalon"));
+        m_normalOn->write(writer, QStringLiteral("normalon"));
     }
 
     if (m_children & DisabledOff) {
-        m_disabledOff->write(writer, QLatin1String("disabledoff"));
+        m_disabledOff->write(writer, QStringLiteral("disabledoff"));
     }
 
     if (m_children & DisabledOn) {
-        m_disabledOn->write(writer, QLatin1String("disabledon"));
+        m_disabledOn->write(writer, QStringLiteral("disabledon"));
     }
 
     if (m_children & ActiveOff) {
-        m_activeOff->write(writer, QLatin1String("activeoff"));
+        m_activeOff->write(writer, QStringLiteral("activeoff"));
     }
 
     if (m_children & ActiveOn) {
-        m_activeOn->write(writer, QLatin1String("activeon"));
+        m_activeOn->write(writer, QStringLiteral("activeon"));
     }
 
     if (m_children & SelectedOff) {
-        m_selectedOff->write(writer, QLatin1String("selectedoff"));
+        m_selectedOff->write(writer, QStringLiteral("selectedoff"));
     }
 
     if (m_children & SelectedOn) {
-        m_selectedOn->write(writer, QLatin1String("selectedon"));
+        m_selectedOn->write(writer, QStringLiteral("selectedon"));
     }
 
     if (!m_text.isEmpty())
@@ -8181,7 +6534,7 @@ void DomString::clear(bool clear_all)
 {
 
     if (clear_all) {
-    m_text = QLatin1String("");
+    m_text.clear();
     m_has_attr_notr = false;
     m_has_attr_comment = false;
     m_has_attr_extraComment = false;
@@ -8196,7 +6549,7 @@ DomString::DomString()
     m_has_attr_notr = false;
     m_has_attr_comment = false;
     m_has_attr_extraComment = false;
-    m_text = QLatin1String("");
+    m_text.clear();
 }
 
 DomString::~DomString()
@@ -8208,26 +6561,26 @@ void DomString::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("notr")) {
+        if (name == QStringLiteral("notr")) {
             setAttributeNotr(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("comment")) {
+        if (name == QStringLiteral("comment")) {
             setAttributeComment(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("extracomment")) {
+        if (name == QStringLiteral("extracomment")) {
             setAttributeExtraComment(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8243,42 +6596,18 @@ void DomString::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomString::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("notr")))
-        setAttributeNotr(node.attribute(QLatin1String("notr")));
-    if (node.hasAttribute(QLatin1String("comment")))
-        setAttributeComment(node.attribute(QLatin1String("comment")));
-    if (node.hasAttribute(QLatin1String("extracomment")))
-        setAttributeExtraComment(node.attribute(QLatin1String("extracomment")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text = QLatin1String("");
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomString::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("string") : tagName.toLower());
 
     if (hasAttributeNotr())
-        writer.writeAttribute(QLatin1String("notr"), attributeNotr());
+        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
 
     if (hasAttributeComment())
-        writer.writeAttribute(QLatin1String("comment"), attributeComment());
+        writer.writeAttribute(QStringLiteral("comment"), attributeComment());
 
     if (hasAttributeExtraComment())
-        writer.writeAttribute(QLatin1String("extracomment"), attributeExtraComment());
+        writer.writeAttribute(QStringLiteral("extracomment"), attributeExtraComment());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -8324,7 +6653,7 @@ void DomPointF::read(QXmlStreamReader &reader)
                 setElementY(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8339,31 +6668,6 @@ void DomPointF::read(QXmlStreamReader &reader)
         }
     }
 }
-
-#ifdef QUILOADER_QDOM_READ
-void DomPointF::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QString(QLatin1Char('x'))) {
-                setElementX(e.text().toDouble());
-                continue;
-            }
-            if (tag == QString(QLatin1Char('y'))) {
-                setElementY(e.text().toDouble());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
 
 void DomPointF::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
@@ -8447,15 +6751,15 @@ void DomRectF::read(QXmlStreamReader &reader)
                 setElementY(reader.readElementText().toDouble());
                 continue;
             }
-            if (tag == QLatin1String("width")) {
+            if (tag == QStringLiteral("width")) {
                 setElementWidth(reader.readElementText().toDouble());
                 continue;
             }
-            if (tag == QLatin1String("height")) {
+            if (tag == QStringLiteral("height")) {
                 setElementHeight(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8471,39 +6775,6 @@ void DomRectF::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomRectF::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QString(QLatin1Char('x'))) {
-                setElementX(e.text().toDouble());
-                continue;
-            }
-            if (tag == QString(QLatin1Char('y'))) {
-                setElementY(e.text().toDouble());
-                continue;
-            }
-            if (tag == QLatin1String("width")) {
-                setElementWidth(e.text().toDouble());
-                continue;
-            }
-            if (tag == QLatin1String("height")) {
-                setElementHeight(e.text().toDouble());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomRectF::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("rectf") : tagName.toLower());
@@ -8517,11 +6788,11 @@ void DomRectF::write(QXmlStreamWriter &writer, const QString &tagName) const
     }
 
     if (m_children & Width) {
-        writer.writeTextElement(QLatin1String("width"), QString::number(m_width, 'f', 15));
+        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width, 'f', 15));
     }
 
     if (m_children & Height) {
-        writer.writeTextElement(QLatin1String("height"), QString::number(m_height, 'f', 15));
+        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height, 'f', 15));
     }
 
     if (!m_text.isEmpty())
@@ -8604,15 +6875,15 @@ void DomSizeF::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("width")) {
+            if (tag == QStringLiteral("width")) {
                 setElementWidth(reader.readElementText().toDouble());
                 continue;
             }
-            if (tag == QLatin1String("height")) {
+            if (tag == QStringLiteral("height")) {
                 setElementHeight(reader.readElementText().toDouble());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8628,41 +6899,16 @@ void DomSizeF::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSizeF::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("width")) {
-                setElementWidth(e.text().toDouble());
-                continue;
-            }
-            if (tag == QLatin1String("height")) {
-                setElementHeight(e.text().toDouble());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSizeF::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("sizef") : tagName.toLower());
 
     if (m_children & Width) {
-        writer.writeTextElement(QLatin1String("width"), QString::number(m_width, 'f', 15));
+        writer.writeTextElement(QStringLiteral("width"), QString::number(m_width, 'f', 15));
     }
 
     if (m_children & Height) {
-        writer.writeTextElement(QLatin1String("height"), QString::number(m_height, 'f', 15));
+        writer.writeTextElement(QStringLiteral("height"), QString::number(m_height, 'f', 15));
     }
 
     if (!m_text.isEmpty())
@@ -8721,11 +6967,11 @@ void DomChar::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("unicode")) {
+            if (tag == QStringLiteral("unicode")) {
                 setElementUnicode(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8741,33 +6987,12 @@ void DomChar::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomChar::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("unicode")) {
-                setElementUnicode(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomChar::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("char") : tagName.toLower());
 
     if (m_children & Unicode) {
-        writer.writeTextElement(QLatin1String("unicode"), QString::number(m_unicode));
+        writer.writeTextElement(QStringLiteral("unicode"), QString::number(m_unicode));
     }
 
     if (!m_text.isEmpty())
@@ -8817,13 +7042,13 @@ void DomUrl::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("string")) {
+            if (tag == QStringLiteral("string")) {
                 DomString *v = new DomString();
                 v->read(reader);
                 setElementString(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -8839,35 +7064,12 @@ void DomUrl::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomUrl::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("string")) {
-                DomString *v = new DomString();
-                v->read(e);
-                setElementString(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomUrl::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("url") : tagName.toLower());
 
     if (m_children & String) {
-        m_string->write(writer, QLatin1String("string"));
+        m_string->write(writer, QStringLiteral("string"));
     }
 
     if (!m_text.isEmpty())
@@ -9028,196 +7230,196 @@ void DomProperty::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("stdset")) {
+        if (name == QStringLiteral("stdset")) {
             setAttributeStdset(attribute.value().toString().toInt());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("bool")) {
+            if (tag == QStringLiteral("bool")) {
                 setElementBool(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("color")) {
+            if (tag == QStringLiteral("color")) {
                 DomColor *v = new DomColor();
                 v->read(reader);
                 setElementColor(v);
                 continue;
             }
-            if (tag == QLatin1String("cstring")) {
+            if (tag == QStringLiteral("cstring")) {
                 setElementCstring(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("cursor")) {
+            if (tag == QStringLiteral("cursor")) {
                 setElementCursor(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("cursorshape")) {
+            if (tag == QStringLiteral("cursorshape")) {
                 setElementCursorShape(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("enum")) {
+            if (tag == QStringLiteral("enum")) {
                 setElementEnum(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("font")) {
+            if (tag == QStringLiteral("font")) {
                 DomFont *v = new DomFont();
                 v->read(reader);
                 setElementFont(v);
                 continue;
             }
-            if (tag == QLatin1String("iconset")) {
+            if (tag == QStringLiteral("iconset")) {
                 DomResourceIcon *v = new DomResourceIcon();
                 v->read(reader);
                 setElementIconSet(v);
                 continue;
             }
-            if (tag == QLatin1String("pixmap")) {
+            if (tag == QStringLiteral("pixmap")) {
                 DomResourcePixmap *v = new DomResourcePixmap();
                 v->read(reader);
                 setElementPixmap(v);
                 continue;
             }
-            if (tag == QLatin1String("palette")) {
+            if (tag == QStringLiteral("palette")) {
                 DomPalette *v = new DomPalette();
                 v->read(reader);
                 setElementPalette(v);
                 continue;
             }
-            if (tag == QLatin1String("point")) {
+            if (tag == QStringLiteral("point")) {
                 DomPoint *v = new DomPoint();
                 v->read(reader);
                 setElementPoint(v);
                 continue;
             }
-            if (tag == QLatin1String("rect")) {
+            if (tag == QStringLiteral("rect")) {
                 DomRect *v = new DomRect();
                 v->read(reader);
                 setElementRect(v);
                 continue;
             }
-            if (tag == QLatin1String("set")) {
+            if (tag == QStringLiteral("set")) {
                 setElementSet(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("locale")) {
+            if (tag == QStringLiteral("locale")) {
                 DomLocale *v = new DomLocale();
                 v->read(reader);
                 setElementLocale(v);
                 continue;
             }
-            if (tag == QLatin1String("sizepolicy")) {
+            if (tag == QStringLiteral("sizepolicy")) {
                 DomSizePolicy *v = new DomSizePolicy();
                 v->read(reader);
                 setElementSizePolicy(v);
                 continue;
             }
-            if (tag == QLatin1String("size")) {
+            if (tag == QStringLiteral("size")) {
                 DomSize *v = new DomSize();
                 v->read(reader);
                 setElementSize(v);
                 continue;
             }
-            if (tag == QLatin1String("string")) {
+            if (tag == QStringLiteral("string")) {
                 DomString *v = new DomString();
                 v->read(reader);
                 setElementString(v);
                 continue;
             }
-            if (tag == QLatin1String("stringlist")) {
+            if (tag == QStringLiteral("stringlist")) {
                 DomStringList *v = new DomStringList();
                 v->read(reader);
                 setElementStringList(v);
                 continue;
             }
-            if (tag == QLatin1String("number")) {
+            if (tag == QStringLiteral("number")) {
                 setElementNumber(reader.readElementText().toInt());
                 continue;
             }
-            if (tag == QLatin1String("float")) {
+            if (tag == QStringLiteral("float")) {
                 setElementFloat(reader.readElementText().toFloat());
                 continue;
             }
-            if (tag == QLatin1String("double")) {
+            if (tag == QStringLiteral("double")) {
                 setElementDouble(reader.readElementText().toDouble());
                 continue;
             }
-            if (tag == QLatin1String("date")) {
+            if (tag == QStringLiteral("date")) {
                 DomDate *v = new DomDate();
                 v->read(reader);
                 setElementDate(v);
                 continue;
             }
-            if (tag == QLatin1String("time")) {
+            if (tag == QStringLiteral("time")) {
                 DomTime *v = new DomTime();
                 v->read(reader);
                 setElementTime(v);
                 continue;
             }
-            if (tag == QLatin1String("datetime")) {
+            if (tag == QStringLiteral("datetime")) {
                 DomDateTime *v = new DomDateTime();
                 v->read(reader);
                 setElementDateTime(v);
                 continue;
             }
-            if (tag == QLatin1String("pointf")) {
+            if (tag == QStringLiteral("pointf")) {
                 DomPointF *v = new DomPointF();
                 v->read(reader);
                 setElementPointF(v);
                 continue;
             }
-            if (tag == QLatin1String("rectf")) {
+            if (tag == QStringLiteral("rectf")) {
                 DomRectF *v = new DomRectF();
                 v->read(reader);
                 setElementRectF(v);
                 continue;
             }
-            if (tag == QLatin1String("sizef")) {
+            if (tag == QStringLiteral("sizef")) {
                 DomSizeF *v = new DomSizeF();
                 v->read(reader);
                 setElementSizeF(v);
                 continue;
             }
-            if (tag == QLatin1String("longlong")) {
+            if (tag == QStringLiteral("longlong")) {
                 setElementLongLong(reader.readElementText().toLongLong());
                 continue;
             }
-            if (tag == QLatin1String("char")) {
+            if (tag == QStringLiteral("char")) {
                 DomChar *v = new DomChar();
                 v->read(reader);
                 setElementChar(v);
                 continue;
             }
-            if (tag == QLatin1String("url")) {
+            if (tag == QStringLiteral("url")) {
                 DomUrl *v = new DomUrl();
                 v->read(reader);
                 setElementUrl(v);
                 continue;
             }
-            if (tag == QLatin1String("uint")) {
+            if (tag == QStringLiteral("uint")) {
                 setElementUInt(reader.readElementText().toUInt());
                 continue;
             }
-            if (tag == QLatin1String("ulonglong")) {
+            if (tag == QStringLiteral("ulonglong")) {
                 setElementULongLong(reader.readElementText().toULongLong());
                 continue;
             }
-            if (tag == QLatin1String("brush")) {
+            if (tag == QStringLiteral("brush")) {
                 DomBrush *v = new DomBrush();
                 v->read(reader);
                 setElementBrush(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -9233,405 +7435,209 @@ void DomProperty::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomProperty::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-    if (node.hasAttribute(QLatin1String("stdset")))
-        setAttributeStdset(node.attribute(QLatin1String("stdset")).toInt());
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("bool")) {
-                setElementBool(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("color")) {
-                DomColor *v = new DomColor();
-                v->read(e);
-                setElementColor(v);
-                continue;
-            }
-            if (tag == QLatin1String("cstring")) {
-                setElementCstring(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("cursor")) {
-                setElementCursor(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("cursorshape")) {
-                setElementCursorShape(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("enum")) {
-                setElementEnum(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("font")) {
-                DomFont *v = new DomFont();
-                v->read(e);
-                setElementFont(v);
-                continue;
-            }
-            if (tag == QLatin1String("iconset")) {
-                DomResourceIcon *v = new DomResourceIcon();
-                v->read(e);
-                setElementIconSet(v);
-                continue;
-            }
-            if (tag == QLatin1String("pixmap")) {
-                DomResourcePixmap *v = new DomResourcePixmap();
-                v->read(e);
-                setElementPixmap(v);
-                continue;
-            }
-            if (tag == QLatin1String("palette")) {
-                DomPalette *v = new DomPalette();
-                v->read(e);
-                setElementPalette(v);
-                continue;
-            }
-            if (tag == QLatin1String("point")) {
-                DomPoint *v = new DomPoint();
-                v->read(e);
-                setElementPoint(v);
-                continue;
-            }
-            if (tag == QLatin1String("rect")) {
-                DomRect *v = new DomRect();
-                v->read(e);
-                setElementRect(v);
-                continue;
-            }
-            if (tag == QLatin1String("set")) {
-                setElementSet(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("locale")) {
-                DomLocale *v = new DomLocale();
-                v->read(e);
-                setElementLocale(v);
-                continue;
-            }
-            if (tag == QLatin1String("sizepolicy")) {
-                DomSizePolicy *v = new DomSizePolicy();
-                v->read(e);
-                setElementSizePolicy(v);
-                continue;
-            }
-            if (tag == QLatin1String("size")) {
-                DomSize *v = new DomSize();
-                v->read(e);
-                setElementSize(v);
-                continue;
-            }
-            if (tag == QLatin1String("string")) {
-                DomString *v = new DomString();
-                v->read(e);
-                setElementString(v);
-                continue;
-            }
-            if (tag == QLatin1String("stringlist")) {
-                DomStringList *v = new DomStringList();
-                v->read(e);
-                setElementStringList(v);
-                continue;
-            }
-            if (tag == QLatin1String("number")) {
-                setElementNumber(e.text().toInt());
-                continue;
-            }
-            if (tag == QLatin1String("float")) {
-                setElementFloat(e.text().toFloat());
-                continue;
-            }
-            if (tag == QLatin1String("double")) {
-                setElementDouble(e.text().toDouble());
-                continue;
-            }
-            if (tag == QLatin1String("date")) {
-                DomDate *v = new DomDate();
-                v->read(e);
-                setElementDate(v);
-                continue;
-            }
-            if (tag == QLatin1String("time")) {
-                DomTime *v = new DomTime();
-                v->read(e);
-                setElementTime(v);
-                continue;
-            }
-            if (tag == QLatin1String("datetime")) {
-                DomDateTime *v = new DomDateTime();
-                v->read(e);
-                setElementDateTime(v);
-                continue;
-            }
-            if (tag == QLatin1String("pointf")) {
-                DomPointF *v = new DomPointF();
-                v->read(e);
-                setElementPointF(v);
-                continue;
-            }
-            if (tag == QLatin1String("rectf")) {
-                DomRectF *v = new DomRectF();
-                v->read(e);
-                setElementRectF(v);
-                continue;
-            }
-            if (tag == QLatin1String("sizef")) {
-                DomSizeF *v = new DomSizeF();
-                v->read(e);
-                setElementSizeF(v);
-                continue;
-            }
-            if (tag == QLatin1String("longlong")) {
-                setElementLongLong(e.text().toLongLong());
-                continue;
-            }
-            if (tag == QLatin1String("char")) {
-                DomChar *v = new DomChar();
-                v->read(e);
-                setElementChar(v);
-                continue;
-            }
-            if (tag == QLatin1String("url")) {
-                DomUrl *v = new DomUrl();
-                v->read(e);
-                setElementUrl(v);
-                continue;
-            }
-            if (tag == QLatin1String("uint")) {
-                setElementUInt(e.text().toUInt());
-                continue;
-            }
-            if (tag == QLatin1String("ulonglong")) {
-                setElementULongLong(e.text().toULongLong());
-                continue;
-            }
-            if (tag == QLatin1String("brush")) {
-                DomBrush *v = new DomBrush();
-                v->read(e);
-                setElementBrush(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomProperty::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("property") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (hasAttributeStdset())
-        writer.writeAttribute(QLatin1String("stdset"), QString::number(attributeStdset()));
+        writer.writeAttribute(QStringLiteral("stdset"), QString::number(attributeStdset()));
 
     switch (kind()) {
         case Bool: {
-            writer.writeTextElement(QLatin1String("bool"), elementBool());
+            writer.writeTextElement(QStringLiteral("bool"), elementBool());
             break;
         }
         case Color: {
             DomColor* v = elementColor();
             if (v != 0) {
-                v->write(writer, QLatin1String("color"));
+                v->write(writer, QStringLiteral("color"));
             }
             break;
         }
         case Cstring: {
-            writer.writeTextElement(QLatin1String("cstring"), elementCstring());
+            writer.writeTextElement(QStringLiteral("cstring"), elementCstring());
             break;
         }
         case Cursor: {
-            writer.writeTextElement(QLatin1String("cursor"), QString::number(elementCursor()));
+            writer.writeTextElement(QStringLiteral("cursor"), QString::number(elementCursor()));
             break;
         }
         case CursorShape: {
-            writer.writeTextElement(QLatin1String("cursorShape"), elementCursorShape());
+            writer.writeTextElement(QStringLiteral("cursorShape"), elementCursorShape());
             break;
         }
         case Enum: {
-            writer.writeTextElement(QLatin1String("enum"), elementEnum());
+            writer.writeTextElement(QStringLiteral("enum"), elementEnum());
             break;
         }
         case Font: {
             DomFont* v = elementFont();
             if (v != 0) {
-                v->write(writer, QLatin1String("font"));
+                v->write(writer, QStringLiteral("font"));
             }
             break;
         }
         case IconSet: {
             DomResourceIcon* v = elementIconSet();
             if (v != 0) {
-                v->write(writer, QLatin1String("iconset"));
+                v->write(writer, QStringLiteral("iconset"));
             }
             break;
         }
         case Pixmap: {
             DomResourcePixmap* v = elementPixmap();
             if (v != 0) {
-                v->write(writer, QLatin1String("pixmap"));
+                v->write(writer, QStringLiteral("pixmap"));
             }
             break;
         }
         case Palette: {
             DomPalette* v = elementPalette();
             if (v != 0) {
-                v->write(writer, QLatin1String("palette"));
+                v->write(writer, QStringLiteral("palette"));
             }
             break;
         }
         case Point: {
             DomPoint* v = elementPoint();
             if (v != 0) {
-                v->write(writer, QLatin1String("point"));
+                v->write(writer, QStringLiteral("point"));
             }
             break;
         }
         case Rect: {
             DomRect* v = elementRect();
             if (v != 0) {
-                v->write(writer, QLatin1String("rect"));
+                v->write(writer, QStringLiteral("rect"));
             }
             break;
         }
         case Set: {
-            writer.writeTextElement(QLatin1String("set"), elementSet());
+            writer.writeTextElement(QStringLiteral("set"), elementSet());
             break;
         }
         case Locale: {
             DomLocale* v = elementLocale();
             if (v != 0) {
-                v->write(writer, QLatin1String("locale"));
+                v->write(writer, QStringLiteral("locale"));
             }
             break;
         }
         case SizePolicy: {
             DomSizePolicy* v = elementSizePolicy();
             if (v != 0) {
-                v->write(writer, QLatin1String("sizepolicy"));
+                v->write(writer, QStringLiteral("sizepolicy"));
             }
             break;
         }
         case Size: {
             DomSize* v = elementSize();
             if (v != 0) {
-                v->write(writer, QLatin1String("size"));
+                v->write(writer, QStringLiteral("size"));
             }
             break;
         }
         case String: {
             DomString* v = elementString();
             if (v != 0) {
-                v->write(writer, QLatin1String("string"));
+                v->write(writer, QStringLiteral("string"));
             }
             break;
         }
         case StringList: {
             DomStringList* v = elementStringList();
             if (v != 0) {
-                v->write(writer, QLatin1String("stringlist"));
+                v->write(writer, QStringLiteral("stringlist"));
             }
             break;
         }
         case Number: {
-            writer.writeTextElement(QLatin1String("number"), QString::number(elementNumber()));
+            writer.writeTextElement(QStringLiteral("number"), QString::number(elementNumber()));
             break;
         }
         case Float: {
-            writer.writeTextElement(QLatin1String("float"), QString::number(elementFloat(), 'f', 8));
+            writer.writeTextElement(QStringLiteral("float"), QString::number(elementFloat(), 'f', 8));
             break;
         }
         case Double: {
-            writer.writeTextElement(QLatin1String("double"), QString::number(elementDouble(), 'f', 15));
+            writer.writeTextElement(QStringLiteral("double"), QString::number(elementDouble(), 'f', 15));
             break;
         }
         case Date: {
             DomDate* v = elementDate();
             if (v != 0) {
-                v->write(writer, QLatin1String("date"));
+                v->write(writer, QStringLiteral("date"));
             }
             break;
         }
         case Time: {
             DomTime* v = elementTime();
             if (v != 0) {
-                v->write(writer, QLatin1String("time"));
+                v->write(writer, QStringLiteral("time"));
             }
             break;
         }
         case DateTime: {
             DomDateTime* v = elementDateTime();
             if (v != 0) {
-                v->write(writer, QLatin1String("datetime"));
+                v->write(writer, QStringLiteral("datetime"));
             }
             break;
         }
         case PointF: {
             DomPointF* v = elementPointF();
             if (v != 0) {
-                v->write(writer, QLatin1String("pointf"));
+                v->write(writer, QStringLiteral("pointf"));
             }
             break;
         }
         case RectF: {
             DomRectF* v = elementRectF();
             if (v != 0) {
-                v->write(writer, QLatin1String("rectf"));
+                v->write(writer, QStringLiteral("rectf"));
             }
             break;
         }
         case SizeF: {
             DomSizeF* v = elementSizeF();
             if (v != 0) {
-                v->write(writer, QLatin1String("sizef"));
+                v->write(writer, QStringLiteral("sizef"));
             }
             break;
         }
         case LongLong: {
-            writer.writeTextElement(QLatin1String("longLong"), QString::number(elementLongLong()));
+            writer.writeTextElement(QStringLiteral("longLong"), QString::number(elementLongLong()));
             break;
         }
         case Char: {
             DomChar* v = elementChar();
             if (v != 0) {
-                v->write(writer, QLatin1String("char"));
+                v->write(writer, QStringLiteral("char"));
             }
             break;
         }
         case Url: {
             DomUrl* v = elementUrl();
             if (v != 0) {
-                v->write(writer, QLatin1String("url"));
+                v->write(writer, QStringLiteral("url"));
             }
             break;
         }
         case UInt: {
-            writer.writeTextElement(QLatin1String("UInt"), QString::number(elementUInt()));
+            writer.writeTextElement(QStringLiteral("UInt"), QString::number(elementUInt()));
             break;
         }
         case ULongLong: {
-            writer.writeTextElement(QLatin1String("uLongLong"), QString::number(elementULongLong()));
+            writer.writeTextElement(QStringLiteral("uLongLong"), QString::number(elementULongLong()));
             break;
         }
         case Brush: {
             DomBrush* v = elementBrush();
             if (v != 0) {
-                v->write(writer, QLatin1String("brush"));
+                v->write(writer, QStringLiteral("brush"));
             }
             break;
         }
@@ -10052,13 +8058,13 @@ void DomConnections::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("connection")) {
+            if (tag == QStringLiteral("connection")) {
                 DomConnection *v = new DomConnection();
                 v->read(reader);
                 m_connection.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10074,36 +8080,13 @@ void DomConnections::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomConnections::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("connection")) {
-                DomConnection *v = new DomConnection();
-                v->read(e);
-                m_connection.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomConnections::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("connections") : tagName.toLower());
 
     for (int i = 0; i < m_connection.size(); ++i) {
         DomConnection* v = m_connection[i];
-        v->write(writer, QLatin1String("connection"));
+        v->write(writer, QStringLiteral("connection"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10147,29 +8130,29 @@ void DomConnection::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("sender")) {
+            if (tag == QStringLiteral("sender")) {
                 setElementSender(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("signal")) {
+            if (tag == QStringLiteral("signal")) {
                 setElementSignal(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("receiver")) {
+            if (tag == QStringLiteral("receiver")) {
                 setElementReceiver(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("slot")) {
+            if (tag == QStringLiteral("slot")) {
                 setElementSlot(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("hints")) {
+            if (tag == QStringLiteral("hints")) {
                 DomConnectionHints *v = new DomConnectionHints();
                 v->read(reader);
                 setElementHints(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10185,67 +8168,28 @@ void DomConnection::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomConnection::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("sender")) {
-                setElementSender(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("signal")) {
-                setElementSignal(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("receiver")) {
-                setElementReceiver(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("slot")) {
-                setElementSlot(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("hints")) {
-                DomConnectionHints *v = new DomConnectionHints();
-                v->read(e);
-                setElementHints(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomConnection::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("connection") : tagName.toLower());
 
     if (m_children & Sender) {
-        writer.writeTextElement(QLatin1String("sender"), m_sender);
+        writer.writeTextElement(QStringLiteral("sender"), m_sender);
     }
 
     if (m_children & Signal) {
-        writer.writeTextElement(QLatin1String("signal"), m_signal);
+        writer.writeTextElement(QStringLiteral("signal"), m_signal);
     }
 
     if (m_children & Receiver) {
-        writer.writeTextElement(QLatin1String("receiver"), m_receiver);
+        writer.writeTextElement(QStringLiteral("receiver"), m_receiver);
     }
 
     if (m_children & Slot) {
-        writer.writeTextElement(QLatin1String("slot"), m_slot);
+        writer.writeTextElement(QStringLiteral("slot"), m_slot);
     }
 
     if (m_children & Hints) {
-        m_hints->write(writer, QLatin1String("hints"));
+        m_hints->write(writer, QStringLiteral("hints"));
     }
 
     if (!m_text.isEmpty())
@@ -10350,13 +8294,13 @@ void DomConnectionHints::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("hint")) {
+            if (tag == QStringLiteral("hint")) {
                 DomConnectionHint *v = new DomConnectionHint();
                 v->read(reader);
                 m_hint.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10372,36 +8316,13 @@ void DomConnectionHints::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomConnectionHints::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("hint")) {
-                DomConnectionHint *v = new DomConnectionHint();
-                v->read(e);
-                m_hint.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomConnectionHints::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("connectionhints") : tagName.toLower());
 
     for (int i = 0; i < m_hint.size(); ++i) {
         DomConnectionHint* v = m_hint[i];
-        v->write(writer, QLatin1String("hint"));
+        v->write(writer, QStringLiteral("hint"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10445,11 +8366,11 @@ void DomConnectionHint::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("type")) {
+        if (name == QStringLiteral("type")) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
@@ -10464,7 +8385,7 @@ void DomConnectionHint::read(QXmlStreamReader &reader)
                 setElementY(reader.readElementText().toInt());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10480,40 +8401,12 @@ void DomConnectionHint::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomConnectionHint::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("type")))
-        setAttributeType(node.attribute(QLatin1String("type")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QString(QLatin1Char('x'))) {
-                setElementX(e.text().toInt());
-                continue;
-            }
-            if (tag == QString(QLatin1Char('y'))) {
-                setElementY(e.text().toInt());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomConnectionHint::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("connectionhint") : tagName.toLower());
 
     if (hasAttributeType())
-        writer.writeAttribute(QLatin1String("type"), attributeType());
+        writer.writeAttribute(QStringLiteral("type"), attributeType());
 
     if (m_children & X) {
         writer.writeTextElement(QString(QLatin1Char('x')), QString::number(m_x));
@@ -10579,22 +8472,22 @@ void DomScript::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("source")) {
+        if (name == QStringLiteral("source")) {
             setAttributeSource(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("language")) {
+        if (name == QStringLiteral("language")) {
             setAttributeLanguage(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10610,37 +8503,15 @@ void DomScript::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomScript::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("source")))
-        setAttributeSource(node.attribute(QLatin1String("source")));
-    if (node.hasAttribute(QLatin1String("language")))
-        setAttributeLanguage(node.attribute(QLatin1String("language")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomScript::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("script") : tagName.toLower());
 
     if (hasAttributeSource())
-        writer.writeAttribute(QLatin1String("source"), attributeSource());
+        writer.writeAttribute(QStringLiteral("source"), attributeSource());
 
     if (hasAttributeLanguage())
-        writer.writeAttribute(QLatin1String("language"), attributeLanguage());
+        writer.writeAttribute(QStringLiteral("language"), attributeLanguage());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10678,13 +8549,13 @@ void DomWidgetData::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10700,36 +8571,13 @@ void DomWidgetData::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomWidgetData::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomWidgetData::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("widgetdata") : tagName.toLower());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10773,13 +8621,13 @@ void DomDesignerData::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("property")) {
+            if (tag == QStringLiteral("property")) {
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10795,36 +8643,13 @@ void DomDesignerData::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomDesignerData::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("property")) {
-                DomProperty *v = new DomProperty();
-                v->read(e);
-                m_property.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomDesignerData::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("designerdata") : tagName.toLower());
 
     for (int i = 0; i < m_property.size(); ++i) {
         DomProperty* v = m_property[i];
-        v->write(writer, QLatin1String("property"));
+        v->write(writer, QStringLiteral("property"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10868,15 +8693,15 @@ void DomSlots::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("signal")) {
+            if (tag == QStringLiteral("signal")) {
                 m_signal.append(reader.readElementText());
                 continue;
             }
-            if (tag == QLatin1String("slot")) {
+            if (tag == QStringLiteral("slot")) {
                 m_slot.append(reader.readElementText());
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10892,42 +8717,17 @@ void DomSlots::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomSlots::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("signal")) {
-                m_signal.append(e.text());
-                continue;
-            }
-            if (tag == QLatin1String("slot")) {
-                m_slot.append(e.text());
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomSlots::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("slots") : tagName.toLower());
 
     for (int i = 0; i < m_signal.size(); ++i) {
         QString v = m_signal[i];
-        writer.writeTextElement(QLatin1String("signal"), v);
+        writer.writeTextElement(QStringLiteral("signal"), v);
     }
     for (int i = 0; i < m_slot.size(); ++i) {
         QString v = m_slot[i];
-        writer.writeTextElement(QLatin1String("slot"), v);
+        writer.writeTextElement(QStringLiteral("slot"), v);
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -10977,13 +8777,13 @@ void DomPropertySpecifications::read(QXmlStreamReader &reader)
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            if (tag == QLatin1String("stringpropertyspecification")) {
+            if (tag == QStringLiteral("stringpropertyspecification")) {
                 DomStringPropertySpecification *v = new DomStringPropertySpecification();
                 v->read(reader);
                 m_stringpropertyspecification.append(v);
                 continue;
             }
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -10999,36 +8799,13 @@ void DomPropertySpecifications::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomPropertySpecifications::read(const QDomElement &node)
-{
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-            if (tag == QLatin1String("stringpropertyspecification")) {
-                DomStringPropertySpecification *v = new DomStringPropertySpecification();
-                v->read(e);
-                m_stringpropertyspecification.append(v);
-                continue;
-            }
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomPropertySpecifications::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("propertyspecifications") : tagName.toLower());
 
     for (int i = 0; i < m_stringpropertyspecification.size(); ++i) {
         DomStringPropertySpecification* v = m_stringpropertyspecification[i];
-        v->write(writer, QLatin1String("stringpropertyspecification"));
+        v->write(writer, QStringLiteral("stringpropertyspecification"));
     }
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);
@@ -11072,26 +8849,26 @@ void DomStringPropertySpecification::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
-        if (name == QLatin1String("name")) {
+        if (name == QStringLiteral("name")) {
             setAttributeName(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("type")) {
+        if (name == QStringLiteral("type")) {
             setAttributeType(attribute.value().toString());
             continue;
         }
-        if (name == QLatin1String("notr")) {
+        if (name == QStringLiteral("notr")) {
             setAttributeNotr(attribute.value().toString());
             continue;
         }
-        reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
+        reader.raiseError(QStringLiteral("Unexpected attribute ") + name.toString());
     }
 
     for (bool finished = false; !finished && !reader.hasError();) {
         switch (reader.readNext()) {
         case QXmlStreamReader::StartElement : {
             const QString tag = reader.name().toString().toLower();
-            reader.raiseError(QLatin1String("Unexpected element ") + tag);
+            reader.raiseError(QStringLiteral("Unexpected element ") + tag);
         }
             break;
         case QXmlStreamReader::EndElement :
@@ -11107,42 +8884,18 @@ void DomStringPropertySpecification::read(QXmlStreamReader &reader)
     }
 }
 
-#ifdef QUILOADER_QDOM_READ
-void DomStringPropertySpecification::read(const QDomElement &node)
-{
-    if (node.hasAttribute(QLatin1String("name")))
-        setAttributeName(node.attribute(QLatin1String("name")));
-    if (node.hasAttribute(QLatin1String("type")))
-        setAttributeType(node.attribute(QLatin1String("type")));
-    if (node.hasAttribute(QLatin1String("notr")))
-        setAttributeNotr(node.attribute(QLatin1String("notr")));
-
-    for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
-        if (!n.isElement())
-            continue;
-        QDomElement e = n.toElement();
-        QString tag = e.tagName().toLower();
-    }
-    m_text.clear();
-    for (QDomNode child = node.firstChild(); !child.isNull(); child = child.nextSibling()) {
-        if (child.isText())
-            m_text.append(child.nodeValue());
-     }
-}
-#endif
-
 void DomStringPropertySpecification::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("stringpropertyspecification") : tagName.toLower());
 
     if (hasAttributeName())
-        writer.writeAttribute(QLatin1String("name"), attributeName());
+        writer.writeAttribute(QStringLiteral("name"), attributeName());
 
     if (hasAttributeType())
-        writer.writeAttribute(QLatin1String("type"), attributeType());
+        writer.writeAttribute(QStringLiteral("type"), attributeType());
 
     if (hasAttributeNotr())
-        writer.writeAttribute(QLatin1String("notr"), attributeNotr());
+        writer.writeAttribute(QStringLiteral("notr"), attributeNotr());
 
     if (!m_text.isEmpty())
         writer.writeCharacters(m_text);

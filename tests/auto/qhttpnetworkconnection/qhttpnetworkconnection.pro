@@ -9,3 +9,5 @@ symbian: TARGET.CAPABILITY = NetworkServices
 symbian: {
   INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 }
+
+CONFIG+=insignificant_test  # QTBUG-20981, crashes sometimes
