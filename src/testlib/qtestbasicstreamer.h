@@ -58,14 +58,13 @@ struct QTestCharBuffer;
 class QTestBasicStreamer
 {
     public:
-        QTestBasicStreamer();
+        QTestBasicStreamer(QTestLogger *logger);
         virtual ~QTestBasicStreamer();
 
         virtual void output(QTestElement *element) const;
 
         void outputString(const char *msg) const;
 
-        void setLogger(QTestLogger *tstLogger);
         QTestLogger *logger() const;
 
     protected:

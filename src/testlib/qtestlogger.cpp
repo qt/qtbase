@@ -84,23 +84,21 @@ void QTestLogger::startLogging(const char *filename)
 
     switch(format){
     case TLF_LightXml:{
-        logFormatter = new QTestLightXmlStreamer;
+        logFormatter = new QTestLightXmlStreamer(this);
         filelogger->init();
         break;
     }case TLF_XML:{
-        logFormatter = new QTestXmlStreamer;
+        logFormatter = new QTestXmlStreamer(this);
         filelogger->init();
         break;
     }case TLF_XunitXml:{
-        logFormatter = new QTestXunitStreamer;
+        logFormatter = new QTestXunitStreamer(this);
         delete errorLogElement;
         errorLogElement = new QTestElement(QTest::LET_SystemError);
         filelogger->init();
         break;
     }
     }
-
-    logFormatter->setLogger(this);
 }
 
 void QTestLogger::stopLogging()

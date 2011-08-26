@@ -53,8 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestXmlStreamer::QTestXmlStreamer()
-    :QTestBasicStreamer()
+QTestXmlStreamer::QTestXmlStreamer(QTestLogger *logger)
+    : QTestBasicStreamer(logger)
 {
 }
 
