@@ -532,7 +532,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         // Force uppercase drive letters.
         ret[0] = ret.at(0).toUpper();
     }
-    return QFileSystemEntry(ret);
+    return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
 //static
