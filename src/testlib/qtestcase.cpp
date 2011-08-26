@@ -2187,7 +2187,7 @@ Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2
                              toString(t1), toString(t2), actual, expected, file, line);
 }
 
-#define COMPARE_IMPL2(TYPE, FORMAT) \
+#define TO_STRING_IMPL(TYPE, FORMAT) \
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
@@ -2195,23 +2195,23 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
     return msg; \
 }
 
-COMPARE_IMPL2(short, %hd)
-COMPARE_IMPL2(ushort, %hu)
-COMPARE_IMPL2(int, %d)
-COMPARE_IMPL2(uint, %u)
-COMPARE_IMPL2(long, %ld)
-COMPARE_IMPL2(ulong, %lu)
+TO_STRING_IMPL(short, %hd)
+TO_STRING_IMPL(ushort, %hu)
+TO_STRING_IMPL(int, %d)
+TO_STRING_IMPL(uint, %u)
+TO_STRING_IMPL(long, %ld)
+TO_STRING_IMPL(ulong, %lu)
 #if defined(Q_OS_WIN)
-COMPARE_IMPL2(qint64, %I64d)
-COMPARE_IMPL2(quint64, %I64u)
+TO_STRING_IMPL(qint64, %I64d)
+TO_STRING_IMPL(quint64, %I64u)
 #else
-COMPARE_IMPL2(qint64, %lld)
-COMPARE_IMPL2(quint64, %llu)
+TO_STRING_IMPL(qint64, %lld)
+TO_STRING_IMPL(quint64, %llu)
 #endif
-COMPARE_IMPL2(bool, %d)
-COMPARE_IMPL2(char, %c)
-COMPARE_IMPL2(float, %g)
-COMPARE_IMPL2(double, %lg)
+TO_STRING_IMPL(bool, %d)
+TO_STRING_IMPL(char, %c)
+TO_STRING_IMPL(float, %g)
+TO_STRING_IMPL(double, %lg)
 
 /*! \internal
  */
