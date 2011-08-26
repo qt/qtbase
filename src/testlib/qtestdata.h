@@ -69,7 +69,7 @@ public:
 
 private:
     friend class QTestTable;
-    QTestData(const char *tag = 0, QTestTable *parent = 0);
+    QTestData(const char *tag, QTestTable *parent);
 
     Q_DISABLE_COPY(QTestData)
 
