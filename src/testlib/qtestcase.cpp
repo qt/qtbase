@@ -1223,8 +1223,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-        } else if (strcmp(argv[i], "-chart") == 0) {
-            fprintf(stderr, "Warning: `-chart' option is not available\n");
         } else if (strcmp(argv[i], "-qws") == 0) {
             // do nothing
         } else if (strcmp(argv[i], "-graphicssystem") == 0) {
