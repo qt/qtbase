@@ -2305,6 +2305,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                         continue;
 
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                    multiFontEngine->ensureEngineAt(which);
                     glyphRuns.append(glyphRunWithInfo(multiFontEngine->engine(which),
                                                       subLayout, pos, flags, x, width));
                     for (int i = 0; i < subLayout.numGlyphs; i++) {
@@ -2317,6 +2318,7 @@ QList<QGlyphRun> QTextLine::glyphRuns(int from, int length) const
                 }
 
                 QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
+                multiFontEngine->ensureEngineAt(which);
                 QGlyphRun glyphRun = glyphRunWithInfo(multiFontEngine->engine(which),
                                                       subLayout, pos, flags, x, width);
                 if (!glyphRun.isEmpty())
