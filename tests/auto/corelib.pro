@@ -3,51 +3,9 @@ SUBDIRS=\
    corelib \
    collections \
    exceptionsafety \
-   qbitarray \
-   qbytearray \
-   qbytearraymatcher \
-   qcache \
-   qchar \
-   qcontiguouscache \
-   qcryptographichash \
-   qdate \
-   qdatetime \
-   qeasingcurve \
-   qelapsedtimer \
-   qexplicitlyshareddatapointer \
-   qfreelist \
-   qhash \
-   qline \
-   qmap \
-   qmargins \
    qobjectrace \
-   qpoint \
-   qqueue \
-   qrect \
-   qregexp \
-   qringbuffer \
-   qscopedpointer \
-   qscopedvaluerollback \
-   qset \
-   qsharedpointer \
    qsignalspy \
-   qsize \
-   qsizef \
-   qstl \
-   qstring \
-   qstringbuilder1 \
-   qstringbuilder2 \
-   qstringbuilder3 \
-   qstringbuilder4 \
-   qstringlist \
-   qstringmatcher \
-   qstringref \
-   qtextboundaryfinder \
-   qtime \
-   qtimeline \
    qtmd5 \
    qtokenautomaton \
-   qvarlengtharray \
-   qvector \
    selftests \
    utf8

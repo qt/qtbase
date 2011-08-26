@@ -80,10 +80,8 @@ SUBDIRS=\
     qlabel \
     qlcdnumber \
     qlineedit \
-    qlist \
     qlistview \
     qlistwidget \
-    qlocale \
     #qlocalsocket \  # FIXME: uses qtscript (QTBUG-19242)
     qmacstyle \
     qmainwindow \

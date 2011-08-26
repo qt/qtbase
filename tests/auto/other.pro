@@ -5,7 +5,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
-           qalgorithms \
            qcombobox \
            qfocusevent \
            qlayout \

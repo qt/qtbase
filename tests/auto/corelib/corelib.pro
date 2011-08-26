@@ -8,4 +8,5 @@ SUBDIRS=\
    kernel \
    plugin \
    statemachine \
-   thread
+   thread \
+   tools
