@@ -308,6 +308,7 @@ QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, con
     Q_UNUSED(family);
     Q_UNUSED(style);
     Q_UNUSED(script);
+    Q_UNUSED(styleHint);
     return QStringList();
 }
 

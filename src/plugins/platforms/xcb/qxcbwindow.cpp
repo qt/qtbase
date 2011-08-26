@@ -122,7 +122,6 @@ QXcbWindow::QXcbWindow(QWindow *window)
 
 void QXcbWindow::create()
 {
-    bool wasCreated = (m_window != 0);
     destroy();
 
     m_windowState = Qt::WindowNoState;

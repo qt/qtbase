@@ -54,6 +54,8 @@
 
 #include <QtDBus>
 
+enum { debug = 0 };
+
 class QIBusPlatformInputContextPrivate
 {
 public:
@@ -127,7 +129,8 @@ void QIBusPlatformInputContext::update()
     QGuiApplication::sendEvent(o, &query);
     QRect r = query.value().toRect();
     if(r.isValid()) {
-        qDebug() << "mocroFocus" << r;
+        if (debug)
+            qDebug() << "microFocus" << r;
         d->context->SetCursorLocation(r.x(), r.y(), r.width(), r.height());
     }
 }
@@ -139,7 +142,8 @@ void QIBusPlatformInputContext::setFocusObject(QObject *object)
     if (!d->valid)
         return;
 
-    qDebug() << "setFocusObject" << object;
+    if (debug)
+        qDebug() << "setFocusObject" << object;
     if (object)
         d->context->FocusIn();
     else
@@ -152,9 +156,11 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
     const QDBusArgument arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
-    qDebug() << arg.currentSignature();
+    if (debug)
+        qDebug() << arg.currentSignature();
     t.fromDBusArgument(arg);
-    qDebug() << "commit text:" << t.text;
+    if (debug)
+        qDebug() << "commit text:" << t.text;
 
     QInputMethodEvent event;
     event.setCommitString(t.text);
@@ -167,7 +173,8 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
 
     QIBusText t;
     t.fromDBusArgument(arg);
-    qDebug() << "preedit text:" << t.text;
+    if (debug)
+        qDebug() << "preedit text:" << t.text;
 
     QList<QInputMethodEvent::Attribute> attributes = t.attributes.imAttributes();
     attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
@@ -221,7 +228,7 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
       valid(false)
 {
     if (!connection || !connection->isConnected()) {
-        qDebug() << "not connected";
+        qDebug("QIBusPlatformInputContext: not connected.");
         return;
     }
 
@@ -229,20 +236,20 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
                          QLatin1String("/org/freedesktop/IBus"),
                          *connection);
     if (!bus->isValid()) {
-        qDebug() << "invalid bus";
+        qWarning("QIBusPlatformInputContext: invalid bus.");
         return;
     }
 
     QDBusReply<QDBusObjectPath> ic = bus->CreateInputContext(QLatin1String("QIBusInputContext"));
     if (!ic.isValid()) {
-        qDebug() << "CreateInputContext failed";
+        qWarning("QIBusPlatformInputContext: CreateInputContext failed.");
         return;
     }
 
     context = new QIBusInputContextProxy(QLatin1String("org.freedesktop.IBus"), ic.value().path(), *connection);
 
     if (!context->isValid()) {
-        qDebug() << "invalid input context";
+        qWarning("QIBusPlatformInputContext: invalid input context.");
         return;
     }
 
@@ -252,11 +259,12 @@ QIBusPlatformInputContextPrivate::QIBusPlatformInputContextPrivate()
         IBUS_CAP_LOOKUP_TABLE       = 1 << 2,
         IBUS_CAP_FOCUS              = 1 << 3,
         IBUS_CAP_PROPERTY           = 1 << 4,
-        IBUS_CAP_SURROUNDING_TEXT   = 1 << 5,
+        IBUS_CAP_SURROUNDING_TEXT   = 1 << 5
     };
     context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS);
 
-    qDebug() << ">>>> valid!";
+    if (debug)
+        qDebug(">>>> valid!");
     valid = true;
 }
 
@@ -273,14 +281,15 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
     int pos2 = display.indexOf('.', pos);
     if (pos2 > 0)
         displayNumber = display.mid(pos, pos2 - pos);
-    qDebug() << "host=" << host << "displayNumber" << displayNumber;
+    if (debug)
+        qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
     QFile file(QDir::homePath() + QLatin1String("/.config/ibus/bus/") +
                QLatin1String(QDBusConnection::localMachineId()) +
                QLatin1Char('-') + QString::fromLocal8Bit(host) + QLatin1Char('-') + QString::fromLocal8Bit(displayNumber));
 
     if (!file.exists()) {
-        qDebug() << "ibus config file does not exist";
+        qWarning("QIBusPlatformInputContext: ibus config file '%s' does not exist.", qPrintable(file.fileName()));
         return 0;
     }
 
@@ -300,7 +309,8 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
             pid = line.mid(sizeof("IBUS_DAEMON_PID=") - 1).toInt();
     }
 
-    qDebug() << "IBUS_ADDRESS=" << address << "PID=" << pid;
+    if (debug)
+        qDebug() << "IBUS_ADDRESS=" << address << "PID=" << pid;
     if (address.isEmpty() || pid < 0 || kill(pid, 0) != 0)
         return 0;
 

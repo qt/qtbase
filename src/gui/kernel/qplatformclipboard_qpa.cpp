@@ -104,6 +104,7 @@ bool QPlatformClipboard::supportsMode(QClipboard::Mode mode) const
 
 bool QPlatformClipboard::ownsMode(QClipboard::Mode mode) const
 {
+    Q_UNUSED(mode);
     return false;
 }
 

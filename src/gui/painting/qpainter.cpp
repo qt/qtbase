@@ -7420,8 +7420,9 @@ void QPainter::setRedirected(const QPaintDevice *device,
                              const QPoint &offset)
 {
     Q_ASSERT(device != 0);
-
-    qWarning() << "QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead";
+    Q_UNUSED(replacement)
+    Q_UNUSED(offset)
+    qWarning("QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
 }
 
 /*!
@@ -7443,7 +7444,8 @@ void QPainter::setRedirected(const QPaintDevice *device,
  */
 void QPainter::restoreRedirected(const QPaintDevice *device)
 {
-    qWarning() << "QPainter::restoreRedirected(): ignoring call to deprecated function, use QWidget::render() instead";
+    Q_UNUSED(device)
+    qWarning("QPainter::restoreRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
 }
 
 /*!
@@ -7465,6 +7467,8 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
 */
 QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 {
+    Q_UNUSED(device)
+    Q_UNUSED(offset)
     return 0;
 }
 
