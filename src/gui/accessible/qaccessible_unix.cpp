@@ -96,7 +96,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     }
 
     initialize();
-    if (bridges()->isEmpty())
+    if (!bridges() || bridges()->isEmpty())
         return;
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
