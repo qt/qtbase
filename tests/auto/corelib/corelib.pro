@@ -7,4 +7,5 @@ SUBDIRS=\
    io \
    kernel \
    plugin \
-   statemachine
+   statemachine \
+   thread
