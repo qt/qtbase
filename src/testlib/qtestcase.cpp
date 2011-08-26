@@ -1273,9 +1273,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                     QString::fromLatin1(argv[i] + colon + 1);
             }
         } else {
-			if (!QTest::testFuncs) {
-		        QTest::testFuncs = new QTest::TestFunction[512];
-			}
+            if (!QTest::testFuncs) {
+                QTest::testFuncs = new QTest::TestFunction[512];
+            }
 
             int colon = -1;
             char buf[512], *data=0;
@@ -1299,8 +1299,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 exit(1);
             }
             testFuncs[testFuncCount].set(idx, data);
-			testFuncCount++;
-			QTEST_ASSERT(QTest::testFuncCount < 512);
+            testFuncCount++;
+            QTEST_ASSERT(QTest::testFuncCount < 512);
         }
     }
 
