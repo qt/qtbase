@@ -12,3 +12,5 @@ QT.printsupport.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.printsupport.imports = $$QT_MODULE_IMPORT_BASE
 QT.printsupport.depends = core gui widgets
 QT.printsupport.DEFINES = QT_PRINTSUPPORT_LIB
+# To be implemented:
+win32: QT.printsupport.DEFINES *= QT_NO_PRINTER

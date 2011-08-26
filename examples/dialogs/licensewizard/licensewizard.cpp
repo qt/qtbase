@@ -352,10 +352,12 @@ void ConclusionPage::setVisible(bool visible)
 
 void ConclusionPage::printButtonClicked()
 {
+#ifndef QT_NO_PRINTER
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec())
         QMessageBox::warning(this, tr("Print License"),
                              tr("As an environmentally friendly measure, the "
                                 "license text will not actually be printed."));
+#endif
 }
