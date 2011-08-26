@@ -271,7 +271,7 @@ OutputSequence blockingMapped(const InputSequence &sequence, MapFunctor map)
     return blockingMappedReduced<OutputSequence>
         (sequence,
          QtPrivate::createFunctionWrapper(map),
-         &OutputSequence::push_back,
+         QtPrivate::PushBackWrapper(),
          QtConcurrent::OrderedReduce);
 }
 
@@ -282,7 +282,7 @@ typename QtPrivate::MapResultType<InputSequence, MapFunctor>::ResultType blockin
     return blockingMappedReduced<OutputSequence>
         (sequence,
          QtPrivate::createFunctionWrapper(map),
-         &OutputSequence::push_back,
+         QtPrivate::PushBackWrapper(),
          QtConcurrent::OrderedReduce);
 }
 
@@ -293,7 +293,7 @@ Sequence blockingMapped(Iterator begin, Iterator end, MapFunctor map)
     return blockingMappedReduced<Sequence>
         (begin, end,
          QtPrivate::createFunctionWrapper(map),
-         &Sequence::push_back,
+         QtPrivate::PushBackWrapper(),
          QtConcurrent::OrderedReduce);
 }
 
@@ -304,7 +304,7 @@ typename QtPrivate::MapResultType<Iterator, MapFunctor>::ResultType blockingMapp
     return blockingMappedReduced<OutputSequence>
         (begin, end,
          QtPrivate::createFunctionWrapper(map),
-         &OutputSequence::push_back,
+         QtPrivate::PushBackWrapper(),
          QtConcurrent::OrderedReduce);
 }
 

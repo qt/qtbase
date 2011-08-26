@@ -102,10 +102,9 @@ namespace QtConcurrent {
 
 namespace QtConcurrent {
 
-template <typename Sequence, typename KeepFunctor, typename T, typename C, typename U>
-ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, T (C::*reduce)(U))
+template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
+ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce)
 {
-    typedef MemberFunctionWrapper1<T, C, U> ReduceFunctor;
     typedef typename Sequence::const_iterator Iterator;
     typedef FilterKernel<Sequence, KeepFunctor, ReduceFunctor> KernelType;
     return startThreadEngine(new KernelType(sequence, keep, reduce));
@@ -115,7 +114,7 @@ ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, T
 template <typename Sequence, typename KeepFunctor>
 QFuture<void> filter(Sequence &sequence, KeepFunctor keep)
 {
-    return filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back);
+    return filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::PushBackWrapper());
 }
 
 // filteredReduced() on sequences
@@ -184,7 +183,7 @@ QFuture<typename qValueType<Iterator>::value_type> filtered(Iterator begin, Iter
 template <typename Sequence, typename KeepFunctor>
 void blockingFilter(Sequence &sequence, KeepFunctor keep)
 {
-    filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back).startBlocking();
+    filterInternal(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::PushBackWrapper()).startBlocking();
 }
 
 // blocking filteredReduced() on sequences
@@ -246,18 +245,17 @@ typename QtPrivate::ReduceResultType<ReduceFunctor>::ResultType blockingFiltered
 template <typename Sequence, typename KeepFunctor>
 Sequence blockingFiltered(const Sequence &sequence, KeepFunctor keep)
 {
-    return blockingFilteredReduced(sequence, QtPrivate::createFunctionWrapper(keep), &Sequence::push_back, OrderedReduce);
+    return startFilteredReduced<Sequence>(sequence, QtPrivate::createFunctionWrapper(keep), QtPrivate::PushBackWrapper(), OrderedReduce).startBlocking();
 }
 
 // blocking filtered() on iterators
 template <typename OutputSequence, typename Iterator, typename KeepFunctor>
 OutputSequence blockingFiltered(Iterator begin, Iterator end, KeepFunctor keep)
 {
-    return blockingFilteredReduced(begin,
-                                   end,
-                                   QtPrivate::createFunctionWrapper(keep),
-                                   &OutputSequence::push_back,
-                                   OrderedReduce);
+    return startFilteredReduced<OutputSequence>(begin, end,
+        QtPrivate::createFunctionWrapper(keep),
+        QtPrivate::PushBackWrapper(),
+        OrderedReduce).startBlocking();
 }
 
 } // namespace QtConcurrent

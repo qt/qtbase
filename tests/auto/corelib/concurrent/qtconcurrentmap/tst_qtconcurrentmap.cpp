@@ -2320,11 +2320,6 @@ void tst_QtConcurrentMap::stlContainers()
 {
 #ifdef QT_NO_STL
     QSKIP("Qt compiled without STL support", SkipAll);
-#elif defined(Q_COMPILER_RVALUE_REFS)
-    //mapped uses &Container::push_back,  but in c++0x, std::vector has two overload of it
-    // meaning it is not possible to take the address of that function anymore.
-    QSKIP("mapped do not work with c++0x stl vector", SkipAll);
-#else
     std::vector<int> vector;
     vector.push_back(1);
     vector.push_back(2);
