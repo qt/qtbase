@@ -111,7 +111,6 @@ SUBDIRS=\
     qstackedwidget \
     qstandarditem \
     qstandarditemmodel \
-    qstatemachine \
     qstatusbar \
     qstringlistmodel \
     qstyle \

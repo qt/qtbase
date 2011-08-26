@@ -6,4 +6,5 @@ SUBDIRS=\
    global \
    io \
    kernel \
-   plugin
+   plugin \
+   statemachine

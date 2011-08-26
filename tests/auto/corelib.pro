@@ -40,7 +40,6 @@ SUBDIRS=\
    qsignalspy \
    qsize \
    qsizef \
-   qstate \
    qstl \
    qstring \
    qstringbuilder1 \
