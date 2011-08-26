@@ -1127,9 +1127,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
     QRect rect(xpos, ypos, event->width, event->height);
 
-    if (rect == geometry())
-        return;
-
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
