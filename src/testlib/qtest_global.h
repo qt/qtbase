@@ -50,9 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-#ifdef QTEST_EMBED
-# define Q_TESTLIB_EXPORT
-#elif !defined(QT_SHARED) && !(defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT))
+#if !defined(QT_SHARED) && !(defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT))
 # define Q_TESTLIB_EXPORT
 #else
 # ifdef QTESTLIB_MAKEDLL
