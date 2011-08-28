@@ -58,8 +58,6 @@ class tst_MakeTestSelfTest: public QObject
     Q_OBJECT
 
 private slots:
-    void tests_auto_pro();
-
     void tests_pro_files();
     void tests_pro_files_data();
 
@@ -77,30 +75,6 @@ private:
 bool looks_like_testcase(QString const&,QString*);
 bool looks_like_subdirs(QString const&);
 QStringList find_test_class(QString const&);
-
-/*
-    Verify that auto.pro only contains other .pro files (and not directories).
-    We enforce this so that we can process every .pro file other than auto.pro
-    independently and get all the tests.
-    If tests were allowed to appear directly in auto.pro, we'd have the problem
-    that we need to somehow run these tests from auto.pro while preventing
-    recursion into the other .pro files.
-*/
-void tst_MakeTestSelfTest::tests_auto_pro()
-{
-    QStringList subdirsList = find_subdirs(SRCDIR "/../auto.pro", Flat);
-    if (QTest::currentTestFailed()) {
-        return;
-    }
-
-    foreach (QString const& subdir, subdirsList) {
-        QVERIFY2(subdir.endsWith(".pro"), qPrintable(QString(
-            "auto.pro contains a subdir `%1'.\n"
-            "auto.pro must _only_ contain other .pro files, not actual subdirs.\n"
-            "Please move `%1' into some other .pro file referenced by auto.pro."
-        ).arg(subdir)));
-    }
-}
 
 /* Verify that all tests are listed somewhere in one of the autotest .pro files */
 void tst_MakeTestSelfTest::tests_pro_files()
