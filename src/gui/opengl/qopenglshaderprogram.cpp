@@ -47,6 +47,8 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
+#include <QtGui/qtransform.h>
+#include <QtGui/QColor>
 
 QT_BEGIN_NAMESPACE
 

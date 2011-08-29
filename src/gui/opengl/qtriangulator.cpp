@@ -2508,7 +2508,7 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 //                                qTriangulate                                //
 //============================================================================//
 
-QTriangleSet qTriangulate(const qreal *polygon,
+Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
                           int count, uint hint, const QTransform &matrix)
 {
     QTriangleSet triangleSet;
@@ -2531,7 +2531,7 @@ QTriangleSet qTriangulate(const qreal *polygon,
     return triangleSet;
 }
 
-QTriangleSet qTriangulate(const QVectorPath &path,
+Q_GUI_EXPORT QTriangleSet qTriangulate(const QVectorPath &path,
                           const QTransform &matrix, qreal lod)
 {
     QTriangleSet triangleSet;

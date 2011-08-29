@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
+#include <QtWidgets/QApplication>
 #include <QtOpenGL/QtOpenGL>
 #include "tst_qglthreads.h"
 

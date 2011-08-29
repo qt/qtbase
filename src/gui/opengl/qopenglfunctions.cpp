@@ -2332,7 +2332,7 @@ static void QOPENGLF_APIENTRY qopenglfResolveRenderbufferStorageMultisample(GLen
         (target, samples, internalFormat, width, height);
 }
 
-static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data)
+static void QOPENGLF_APIENTRY qopenglfResolveGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data)
 {
     RESOLVE_FUNC_VOID(ResolveEXT, GetBufferSubData)
         (target, offset, size, data);

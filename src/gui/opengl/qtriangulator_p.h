@@ -137,8 +137,8 @@ struct Q_GUI_EXPORT QPolylineSet
 // integers, the polygon is triangulated, and then scaled back by 1/32.
 // 'hint' should be a combination of QVectorPath::Hints.
 // 'lod' is the level of detail. Default is 1. Curves are split into more lines when 'lod' is higher.
-QTriangleSet qTriangulate(const qreal *polygon, int count, uint hint = QVectorPath::PolygonHint | QVectorPath::OddEvenFill, const QTransform &matrix = QTransform());
-QTriangleSet qTriangulate(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
+QTriangleSet Q_GUI_EXPORT qTriangulate(const qreal *polygon, int count, uint hint = QVectorPath::PolygonHint | QVectorPath::OddEvenFill, const QTransform &matrix = QTransform());
+QTriangleSet Q_GUI_EXPORT qTriangulate(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 QTriangleSet Q_GUI_EXPORT qTriangulate(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 QPolylineSet qPolyline(const QVectorPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);
 QPolylineSet Q_GUI_EXPORT qPolyline(const QPainterPath &path, const QTransform &matrix = QTransform(), qreal lod = 1);

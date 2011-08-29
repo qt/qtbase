@@ -72,7 +72,7 @@ typedef ptrdiff_t GLsizeiptrARB;
 typedef char GLchar;
 #endif
 
-struct QOpenGLExtensionsPrivate;
+class QOpenGLExtensionsPrivate;
 
 class Q_GUI_EXPORT QOpenGLExtensions : public QOpenGLFunctions
 {
@@ -122,7 +122,7 @@ public:
                                           GLenum internalFormat,
                                           GLsizei width, GLsizei height);
 
-    void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
+    void glGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
 
 private:
     static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != 0; }
@@ -130,9 +130,10 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLExtensions::OpenGLExtensions)
 
-struct QOpenGLExtensionsPrivate : public QOpenGLFunctionsPrivate
+class QOpenGLExtensionsPrivate : public QOpenGLFunctionsPrivate
 {
-    QOpenGLExtensionsPrivate(QOpenGLContext *ctx);
+public:
+    explicit QOpenGLExtensionsPrivate(QOpenGLContext *ctx);
 
     GLvoid* (QOPENGLF_APIENTRYP MapBuffer)(GLenum target, GLenum access);
     GLboolean (QOPENGLF_APIENTRYP UnmapBuffer)(GLenum target);
@@ -142,7 +143,7 @@ struct QOpenGLExtensionsPrivate : public QOpenGLFunctionsPrivate
     void (QOPENGLF_APIENTRYP RenderbufferStorageMultisample)(GLenum target, GLsizei samples,
                                           GLenum internalFormat,
                                           GLsizei width, GLsizei height);
-    void (QOPENGLF_APIENTRYP GetBufferSubData)(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
+    void (QOPENGLF_APIENTRYP GetBufferSubData)(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data);
 };
 
 inline GLvoid *QOpenGLExtensions::glMapBuffer(GLenum target, GLenum access)
@@ -183,7 +184,7 @@ inline void QOpenGLExtensions::glRenderbufferStorageMultisample(GLenum target, G
     Q_OPENGL_FUNCTIONS_DEBUG
 }
 
-inline void QOpenGLExtensions::glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data)
+inline void QOpenGLExtensions::glGetBufferSubData(GLenum target, qopengl_GLintptr offset, qopengl_GLsizeiptr size, GLvoid *data)
 {
     Q_D(QOpenGLExtensions);
     Q_ASSERT(QOpenGLExtensions::isInitialized(d));

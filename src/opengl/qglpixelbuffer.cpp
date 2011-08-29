@@ -91,7 +91,7 @@
 
 #include <QtCore/qglobal.h>
 
-#include <gl2paintengineex/qpaintengineex_opengl2_p.h>
+#include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>

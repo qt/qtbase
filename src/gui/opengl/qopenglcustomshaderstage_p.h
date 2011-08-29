@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QPainter;
 class QOpenGLCustomShaderStagePrivate;
 class Q_GUI_EXPORT QOpenGLCustomShaderStage
 {

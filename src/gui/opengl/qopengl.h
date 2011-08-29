@@ -63,6 +63,9 @@ typedef GLfloat GLdouble;
 # if defined(Q_OS_MAC)
 #  include <OpenGL/gl.h>
 # else
+#  if defined(Q_OS_WIN)
+#    include <QtCore/qt_windows.h>
+#  endif
 #  include <GL/gl.h>
 # endif
 #endif

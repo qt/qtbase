@@ -64,9 +64,10 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGL2PaintEngineExPrivate;
 
-struct QOpenGLGlyphTexture : public QOpenGLSharedResource
+class QOpenGLGlyphTexture : public QOpenGLSharedResource
 {
-    QOpenGLGlyphTexture(QOpenGLContext *ctx)
+public:
+    explicit QOpenGLGlyphTexture(QOpenGLContext *ctx)
         : QOpenGLSharedResource(ctx->shareGroup())
         , m_width(0)
         , m_height(0)

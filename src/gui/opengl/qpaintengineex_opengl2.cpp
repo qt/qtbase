@@ -122,7 +122,7 @@ QOpenGL2PaintEngineExPrivate::~QOpenGL2PaintEngineExPrivate()
 
 void QOpenGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
 {
-//    glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
+//    funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT); //### Is it always this texture unit?
     if (id != GLuint(-1) && id == lastTextureUsed)
         return;
 
@@ -196,7 +196,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         // Get the image data for the pattern
         QImage texImage = qt_imageForBrush(style, false);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         //ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QOpenGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
@@ -209,7 +209,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         // for opacity to the cache.
         GLuint texId = QOpenGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         glBindTexture(GL_TEXTURE_2D, texId);
 
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
@@ -226,7 +226,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         QOpenGLTexture *tex = 0;//ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                 //                     QOpenGLContext::InternalBindOption |
                                 //                     QOpenGLContext::CanFlipNativePixmapBindOption);
@@ -582,7 +582,7 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
 void QOpenGL2PaintEngineExPrivate::resetGLState()
 {
     glDisable(GL_BLEND);
-    glActiveTexture(GL_TEXTURE0);
+    funcs.glActiveTexture(GL_TEXTURE0);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
@@ -1356,7 +1356,7 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QOpenGLTexture *texture = 0;
 //        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
 
@@ -1392,7 +1392,7 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
     QOpenGLTexture *texture = 0;//ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, bindOptions);
     GLuint id = texture->id();
@@ -1731,7 +1731,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
-            glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+            funcs.glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         } else {
             // Other brush styles need two passes.
 
@@ -1748,7 +1748,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
-            glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+            funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
@@ -1783,7 +1783,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
     QOpenGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QOpenGLTextureGlyphCache::Linear:QOpenGLTextureGlyphCache::Nearest;
     if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
 
-        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
         if (lastMaskTextureUsed != cache->texture()) {
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             lastMaskTextureUsed = cache->texture();
@@ -1903,7 +1903,7 @@ void QOpenGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFra
         allOpaque &= (opacity >= 0.99f);
     }
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QOpenGLTexture *texture = 0;//ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
                                 //                     QOpenGLContext::InternalBindOption
                                 //                     | QOpenGLContext::CanFlipNativePixmapBindOption);

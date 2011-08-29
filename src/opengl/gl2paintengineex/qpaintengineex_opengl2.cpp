@@ -78,7 +78,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qstatictext_p.h>
-#include <private/qtriangulator_p.h>
+#include <QtGui/private/qtriangulator_p.h>
 
 #include "qglengineshadermanager_p.h"
 #include "qgl2pexvertexarray_p.h"

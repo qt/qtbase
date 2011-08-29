@@ -45,9 +45,8 @@
 #include <qdebug.h>
 #include <private/qgl_p.h>
 #include <private/qfont_p.h>
-#include <gl2paintengineex/qpaintengineex_opengl2_p.h>
+#include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 
-#include <qglframebufferobject.h>
 #include <qlibrary.h>
 #include <qimage.h>
 
