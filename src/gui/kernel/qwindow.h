@@ -155,6 +155,7 @@ public:
     void setBaseSize(const QSize &size);
     void setSizeIncrement(const QSize &size);
 
+    void setGeometry(int x, int y, int w, int h) { setGeometry(QRect(x, y, w, h)); }
     void setGeometry(const QRect &rect);
     QRect geometry() const;
 
@@ -165,6 +166,9 @@ public:
 
     inline QSize size() const { return geometry().size(); }
     inline QPoint pos() const { return geometry().topLeft(); }
+
+    inline void move(const QPoint &pt) { setGeometry(QRect(pt, size())); }
+    inline void move(int x, int y) { move(QPoint(x, y)); }
 
     inline void resize(const QSize &size) { setGeometry(QRect(pos(), size)); }
     inline void resize(int w, int h) { setGeometry(QRect(x(), y(), w, h)); }
@@ -182,6 +186,9 @@ public:
 
     QScreen *screen() const;
     void setScreen(QScreen *screen);
+
+    QPoint mapToGlobal(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const;
 
 public Q_SLOTS:
     inline void show() { setVisible(true); }

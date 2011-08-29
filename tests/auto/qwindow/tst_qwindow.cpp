@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,80 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOW_QPA_P_H
-#define QWINDOW_QPA_P_H
+#include <qwindow.h>
+#include <qtest.h>
 
-#include <QtGui/qwindow.h>
-
-#include <QtCore/private/qobject_p.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-#define QWINDOWSIZE_MAX ((1<<24)-1)
-
-class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
+class tst_QWindow: public QObject
 {
-    Q_DECLARE_PUBLIC(QWindow)
+    Q_OBJECT
 
-public:
-    QWindowPrivate()
-        : QObjectPrivate()
-        , surfaceType(QWindow::RasterSurface)
-        , windowFlags(Qt::Window)
-        , parentWindow(0)
-        , platformWindow(0)
-        , visible(false)
-        , windowState(Qt::WindowNoState)
-        , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
-        , modality(Qt::NonModal)
-        , transientParent(0)
-        , screen(0)
-    {
-        isWindow = true;
-    }
-
-    ~QWindowPrivate()
-    {
-    }
-
-    void maybeQuitOnLastWindowClosed();
-
-    QPoint globalPosition() const {
-        Q_Q(const QWindow);
-        QPoint offset = q->pos();
-        for (const QWindow *p = q->parent(); p; p = p->parent())
-            offset += p->pos();
-        return offset;
-    }
-
-
-    QWindow::SurfaceType surfaceType;
-    Qt::WindowFlags windowFlags;
-    QWindow *parentWindow;
-    QPlatformWindow *platformWindow;
-    bool visible;
-    QSurfaceFormat requestedFormat;
-    QString windowTitle;
-    QRect geometry;
-    Qt::WindowState windowState;
-
-    QSize minimumSize;
-    QSize maximumSize;
-    QSize baseSize;
-    QSize sizeIncrement;
-
-    Qt::WindowModality modality;
-    QPointer<QWindow> transientParent;
-    QScreen *screen;
+private slots:
+    void mapGlobal();
 };
 
 
-QT_END_NAMESPACE
+void tst_QWindow::mapGlobal()
+{
+    QWindow a;
+    QWindow b(&a);
+    QWindow c(&b);
 
-QT_END_HEADER
+    a.setGeometry(10, 10, 300, 300);
+    b.setGeometry(20, 20, 200, 200);
+    c.setGeometry(40, 40, 100, 100);
 
-#endif // QWINDOW_QPA_P_H
+    QCOMPARE(a.mapToGlobal(QPoint(100, 100)), QPoint(110, 110));
+    QCOMPARE(b.mapToGlobal(QPoint(100, 100)), QPoint(130, 130));
+    QCOMPARE(c.mapToGlobal(QPoint(100, 100)), QPoint(170, 170));
+
+    QCOMPARE(a.mapFromGlobal(QPoint(100, 100)), QPoint(90, 90));
+    QCOMPARE(b.mapFromGlobal(QPoint(100, 100)), QPoint(70, 70));
+    QCOMPARE(c.mapFromGlobal(QPoint(100, 100)), QPoint(30, 30));
+}
+
+#include <tst_qwindow.moc>
+QTEST_MAIN(tst_QWindow);

@@ -631,6 +631,41 @@ void QWindow::wheelEvent(QWheelEvent *)
 }
 #endif //QT_NO_WHEELEVENT
 
+
+
+/*!
+    \fn QPoint QWindow::mapToGlobal(const QPoint &pos) const
+
+    Translates the window coordinate \a pos to global screen
+    coordinates. For example, \c{mapToGlobal(QPoint(0,0))} would give
+    the global coordinates of the top-left pixel of the window.
+
+    \sa mapFromGlobal()
+*/
+
+QPoint QWindow::mapToGlobal(const QPoint &pos) const
+{
+    return pos + d_func()->globalPosition();
+}
+
+
+
+/*!
+    \fn QPoint QWindow::mapFromGlobal(const QPoint &pos) const
+
+    Translates the global screen coordinate \a pos to window
+    coordinates.
+
+    \sa mapToGlobal()
+*/
+
+QPoint QWindow::mapFromGlobal(const QPoint &pos) const
+{
+    return pos - d_func()->globalPosition();
+}
+
+
+
 Q_GUI_EXPORT QWindowPrivate *qt_window_private(QWindow *window)
 {
     return window->d_func();
