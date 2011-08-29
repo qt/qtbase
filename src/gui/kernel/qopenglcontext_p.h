@@ -124,6 +124,8 @@ public:
     void addContext(QOpenGLContext *ctx);
     void removeContext(QOpenGLContext *ctx);
 
+    void cleanup();
+
     void deletePendingResources(QOpenGLContext *ctx);
 
     QOpenGLContext *m_context;

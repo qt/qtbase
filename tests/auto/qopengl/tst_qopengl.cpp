@@ -146,7 +146,24 @@ void tst_QOpenGL::sharedResourceCleanup()
     QCOMPARE(tracker.freeResourceCalls, 1);
     QCOMPARE(tracker.destructorCalls, 1);
 
+    tracker.reset();
+
+    resource = new SharedResource(&tracker);
+
+    // this should cause invalidateResource() to be called
     delete ctx2;
+
+    QCOMPARE(tracker.invalidateResourceCalls, 1);
+    QCOMPARE(tracker.freeResourceCalls, 0);
+    QCOMPARE(tracker.destructorCalls, 0);
+
+    // should have no effect other than destroying the resource,
+    // as it has already been invalidated
+    resource->free();
+
+    QCOMPARE(tracker.invalidateResourceCalls, 1);
+    QCOMPARE(tracker.freeResourceCalls, 0);
+    QCOMPARE(tracker.destructorCalls, 1);
 }
 
 static bool fuzzyComparePixels(const QRgb testPixel, const QRgb refPixel, const char* file, int line, int x = -1, int y = -1)

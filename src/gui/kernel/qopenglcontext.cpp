@@ -360,17 +360,7 @@ QOpenGLContextGroup::QOpenGLContextGroup()
 QOpenGLContextGroup::~QOpenGLContextGroup()
 {
     Q_D(QOpenGLContextGroup);
-
-    QList<QOpenGLSharedResource *>::iterator it = d->m_sharedResources.begin();
-    QList<QOpenGLSharedResource *>::iterator end = d->m_sharedResources.end();
-
-    while (it != end) {
-        (*it)->invalidateResource();
-        (*it)->m_group = 0;
-        ++it;
-    }
-
-    qDeleteAll(d->m_pendingDeletion.begin(), d->m_pendingDeletion.end());
+    d->cleanup();
 }
 
 QList<QOpenGLContext *> QOpenGLContextGroup::shares() const
@@ -402,8 +392,27 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
     if (ctx == m_context && !m_shares.isEmpty())
         m_context = m_shares.first();
 
-    if (!m_refs.deref())
+    if (!m_refs.deref()) {
+        cleanup();
         q->deleteLater();
+    }
+}
+
+void QOpenGLContextGroupPrivate::cleanup()
+{
+    QList<QOpenGLSharedResource *>::iterator it = m_sharedResources.begin();
+    QList<QOpenGLSharedResource *>::iterator end = m_sharedResources.end();
+
+    while (it != end) {
+        (*it)->invalidateResource();
+        (*it)->m_group = 0;
+        ++it;
+    }
+
+    m_sharedResources.clear();
+
+    qDeleteAll(m_pendingDeletion.begin(), m_pendingDeletion.end());
+    m_pendingDeletion.clear();
 }
 
 void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
