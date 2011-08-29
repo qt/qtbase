@@ -9,4 +9,5 @@ SUBDIRS=\
    plugin \
    statemachine \
    thread \
-   tools
+   tools \
+   xml

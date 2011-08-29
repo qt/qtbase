@@ -3,6 +3,4 @@ SUBDIRS=\
            qdom \
            qxml \
            qxmlinputsource \
-           qxmlsimplereader \
-           qxmlstream \
-
+           qxmlsimplereader
