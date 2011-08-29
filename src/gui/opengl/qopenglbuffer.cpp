@@ -186,8 +186,6 @@ QOpenGLBuffer::QOpenGLBuffer(const QOpenGLBuffer &other)
     d_ptr->ref.ref();
 }
 
-#define ctx QOpenGLContext::currentContext();
-
 /*!
     Destroys this buffer object, including the storage being
     used in the GL server.
@@ -250,8 +248,6 @@ void QOpenGLBuffer::setUsagePattern(QOpenGLBuffer::UsagePattern value)
     d->usagePattern = d->actualUsagePattern = value;
 }
 
-#undef ctx
-
 namespace {
     void freeBufferFunc(QOpenGLFunctions *funcs, GLuint id)
     {
@@ -293,8 +289,6 @@ bool QOpenGLBuffer::create()
     }
     return false;
 }
-
-#define ctx QOpenGLContext::currentContext()
 
 /*!
     Returns true if this buffer has been created; false otherwise.
@@ -455,8 +449,6 @@ void QOpenGLBuffer::release()
         d->funcs->glBindBuffer(d->type, 0);
 }
 
-#undef ctx
-
 /*!
     Releases the buffer associated with \a type in the current
     QOpenGLContext.
@@ -473,12 +465,9 @@ void QOpenGLBuffer::release()
 void QOpenGLBuffer::release(QOpenGLBuffer::Type type)
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
-    if (ctx) {
-        QOpenGLFunctions(ctx).glBindBuffer(GLenum(type), 0);
-    }
+    if (ctx)
+        ctx->functions()->glBindBuffer(GLenum(type), 0);
 }
-
-#define ctx QOpenGLContext::currentContext()
 
 /*!
     Returns the GL identifier associated with this buffer; zero if
@@ -491,10 +480,6 @@ GLuint QOpenGLBuffer::bufferId() const
     Q_D(const QOpenGLBuffer);
     return d->guard ? d->guard->id() : 0;
 }
-
-#ifndef GL_BUFFER_SIZE
-#define GL_BUFFER_SIZE 0x8764
-#endif
 
 /*!
     Returns the size of the data in this buffer, for reading operations.

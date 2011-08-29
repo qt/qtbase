@@ -55,9 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QOPENGL_FUNC_CONTEXT QOpenGLContext *ctx = QOpenGLContext::currentContext();
-#define QOPENGL_FUNCP_CONTEXT QOpenGLContext *ctx = QOpenGLContext::currentContext();
-
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
 {                                                         \
@@ -358,10 +355,10 @@ QOpenGLContextGroup *QOpenGLFBOGLPaintDevice::group() const
 
 bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus() const
 {
-    QOPENGL_FUNCP_CONTEXT;
+    QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx)
         return false;   // Context no longer exists.
-    GLenum status = QOpenGLFunctions(ctx).glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    GLenum status = ctx->functions()->glCheckFramebufferStatus(GL_FRAMEBUFFER);
     switch(status) {
     case GL_NO_ERROR:
     case GL_FRAMEBUFFER_COMPLETE:
@@ -384,7 +381,6 @@ bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus() const
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attached images must have same dimensions.");
         break;
-#if 1
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attached images must have same format.");
         break;
@@ -397,7 +393,6 @@ bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus() const
     case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
         qDebug("QOpenGLFramebufferObject: Framebuffer incomplete, attachments must have same number of samples per pixel.");
         break;
-#endif
     default:
         qDebug() <<"QOpenGLFramebufferObject: An undefined error has occurred: "<< status;
         break;
@@ -937,12 +932,11 @@ bool QOpenGLFramebufferObject::bind()
     if (!isValid())
 	return false;
     Q_D(QOpenGLFramebufferObject);
-    QOPENGL_FUNC_CONTEXT;
-    if (!ctx)
-        return false; // Context no longer exists.
     QOpenGLContext *current = QOpenGLContext::currentContext();
+    if (!current)
+        return false;
 #ifdef QT_DEBUG
-    if (!current || current->shareGroup() != d->fbo_guard->group())
+    if (current->shareGroup() != d->fbo_guard->group())
         qWarning("QOpenGLFramebufferObject::bind() called from incompatible context");
 #endif
     d->funcs.glBindFramebuffer(GL_FRAMEBUFFER, d->fbo());
@@ -965,15 +959,14 @@ bool QOpenGLFramebufferObject::release()
 {
     if (!isValid())
 	return false;
-    QOPENGL_FUNC_CONTEXT;
-    if (!ctx)
-        return false;   // Context no longer exists.
 
     QOpenGLContext *current = QOpenGLContext::currentContext();
+    if (!current)
+        return false;
 
 #ifdef QT_DEBUG
     Q_D(QOpenGLFramebufferObject);
-    if (!current || current->shareGroup() != d->fbo_guard->group())
+    if (current->shareGroup() != d->fbo_guard->group())
         qWarning("QOpenGLFramebufferObject::release() called from incompatible context");
 #endif
 

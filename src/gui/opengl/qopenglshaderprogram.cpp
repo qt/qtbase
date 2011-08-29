@@ -145,46 +145,6 @@ QT_BEGIN_NAMESPACE
            Language (GLSL), based on the GL_EXT_geometry_shader4 extension.
 */
 
-#ifndef GL_FRAGMENT_SHADER
-#define GL_FRAGMENT_SHADER 0x8B30
-#endif
-#ifndef GL_VERTEX_SHADER
-#define GL_VERTEX_SHADER 0x8B31
-#endif
-#ifndef GL_COMPILE_STATUS
-#define GL_COMPILE_STATUS 0x8B81
-#endif
-#ifndef GL_LINK_STATUS
-#define GL_LINK_STATUS 0x8B82
-#endif
-#ifndef GL_INFO_LOG_LENGTH
-#define GL_INFO_LOG_LENGTH 0x8B84
-#endif
-#ifndef GL_ACTIVE_UNIFORMS
-#define GL_ACTIVE_UNIFORMS 0x8B86
-#endif
-#ifndef GL_ACTIVE_UNIFORM_MAX_LENGTH
-#define GL_ACTIVE_UNIFORM_MAX_LENGTH 0x8B87
-#endif
-#ifndef GL_ACTIVE_ATTRIBUTES
-#define GL_ACTIVE_ATTRIBUTES 0x8B89
-#endif
-#ifndef GL_ACTIVE_ATTRIBUTE_MAX_LENGTH
-#define GL_ACTIVE_ATTRIBUTE_MAX_LENGTH 0x8B8A
-#endif
-#ifndef GL_CURRENT_VERTEX_ATTRIB
-#define GL_CURRENT_VERTEX_ATTRIB 0x8626
-#endif
-#ifndef GL_SHADER_SOURCE_LENGTH
-#define GL_SHADER_SOURCE_LENGTH 0x8B88
-#endif
-#ifndef GL_SHADER_BINARY_FORMATS
-#define GL_SHADER_BINARY_FORMATS          0x8DF8
-#endif
-#ifndef GL_NUM_SHADER_BINARY_FORMATS
-#define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
-#endif
-
 class QOpenGLShaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QOpenGLShader)
@@ -2997,8 +2957,6 @@ void QOpenGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4
     setUniformValueArray(uniformLocation(name), values, count);
 }
 
-#undef ctx
-
 /*!
     Returns the hardware limit for how many vertices a geometry shader
     can output.
@@ -3132,10 +3090,6 @@ void QOpenGLShaderProgram::shaderDestroyed()
     if (shader && !d->removingShaders)
         removeShader(shader);
 }
-
-
-#undef ctx
-#undef context
 
 /*!
     Returns true if shader programs of type \a type are supported on
