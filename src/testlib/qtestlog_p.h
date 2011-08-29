@@ -63,7 +63,7 @@ class Q_TESTLIB_EXPORT QTestLog
 {
 public:
     enum LogMode { Plain = 0, XML, LightXML, XunitXML };
-    enum FlushMode { NoFlush = 0, FLushOn };
+    enum FlushMode { NoFlush = 0, FlushOn };
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();
@@ -72,8 +72,7 @@ public:
     static void addFail(const char *msg, const char *file, int line);
     static void addXFail(const char *msg, const char *file, int line);
     static void addXPass(const char *msg, const char *file, int line);
-    static void addSkip(const char *msg, QTest::SkipMode mode,
-                        const char *file, int line);
+    static void addSkip(const char *msg, const char *file, int line);
     static void addBenchmarkResult(const QBenchmarkResult &result);
     static void addIgnoreMessage(QtMsgType type, const char *msg);
     static int unhandledIgnoreMessages();

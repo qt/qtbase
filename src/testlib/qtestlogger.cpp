@@ -44,7 +44,6 @@
 #include "qtestxunitstreamer.h"
 #include "qtestxmlstreamer.h"
 #include "qtestlightxmlstreamer.h"
-#include "qtestfilelogger.h"
 
 #include "QtTest/qtestcase.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -55,15 +54,16 @@
 QT_BEGIN_NAMESPACE
 
 QTestLogger::QTestLogger(int fm)
-    :listOfTestcases(0), currentLogElement(0), errorLogElement(0),
-    logFormatter(0), format( (TestLoggerFormat)fm ), filelogger(new QTestFileLogger),
-    testCounter(0), passCounter(0),
-    failureCounter(0), errorCounter(0),
-    warningCounter(0), skipCounter(0),
-    systemCounter(0), qdebugCounter(0),
-    qwarnCounter(0), qfatalCounter(0),
-    infoCounter(0), randomSeed_(0),
-    hasRandomSeed_(false)
+    : listOfTestcases(0)
+    , currentLogElement(0)
+    , errorLogElement(0)
+    , logFormatter(0)
+    , format( (TestLoggerFormat)fm )
+    , testCounter(0)
+    , failureCounter(0)
+    , errorCounter(0)
+    , randomSeed_(0)
+    , hasRandomSeed_(false)
 {
 }
 
@@ -75,31 +75,25 @@ QTestLogger::~QTestLogger()
         delete listOfTestcases;
 
     delete logFormatter;
-    delete filelogger;
 }
 
-void QTestLogger::startLogging()
+void QTestLogger::startLogging(const char *filename)
 {
+    QAbstractTestLogger::startLogging(filename);
+
     switch(format){
-    case TLF_LightXml:{
-        logFormatter = new QTestLightXmlStreamer;
-        filelogger->init();
+    case TLF_LightXml:
+        logFormatter = new QTestLightXmlStreamer(this);
         break;
-    }case TLF_XML:{
-        logFormatter = new QTestXmlStreamer;
-        filelogger->init();
+    case TLF_XML:
+        logFormatter = new QTestXmlStreamer(this);
         break;
-    }case TLF_XunitXml:{
-        logFormatter = new QTestXunitStreamer;
+    case TLF_XunitXml:
+        logFormatter = new QTestXunitStreamer(this);
         delete errorLogElement;
         errorLogElement = new QTestElement(QTest::LET_SystemError);
-        filelogger->init();
         break;
     }
-    }
-
-    logFormatter->setLogger(this);
-    logFormatter->startStreaming();
 }
 
 void QTestLogger::stopLogging()
@@ -161,15 +155,11 @@ void QTestLogger::stopLogging()
         logFormatter->output(iterator);
     }
 
-    logFormatter->stopStreaming();
+    QAbstractTestLogger::stopLogging();
 }
 
 void QTestLogger::enterTestFunction(const char *function)
 {
-    char buf[1024];
-    QTest::qt_snprintf(buf, sizeof(buf), "Entered test-function: %s\n", function);
-    filelogger->flush(buf);
-
     currentLogElement = new QTestElement(QTest::LET_TestCase);
     currentLogElement->addAttribute(QTest::AI_Name, function);
     currentLogElement->addToList(&listOfTestcases);
@@ -193,11 +183,9 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         typeBuf = "xpass";
         break;
     case QAbstractTestLogger::Pass:
-        ++passCounter;
         typeBuf = "pass";
         break;
     case QAbstractTestLogger::XFail:
-        ++passCounter;
         typeBuf = "xfail";
         break;
     case QAbstractTestLogger::Fail:
@@ -271,7 +259,6 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
 void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
 {
     QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
-//    printf("element %i", benchmarkElement->elementType());
 
     benchmarkElement->addAttribute(
         QTest::AI_Metric,
@@ -313,31 +300,24 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
 
     switch (type) {
     case QAbstractTestLogger::Warn:
-        ++warningCounter;
         typeBuf = "warn";
         break;
     case QAbstractTestLogger::QSystem:
-        ++systemCounter;
         typeBuf = "system";
         break;
     case QAbstractTestLogger::QDebug:
-        ++qdebugCounter;
         typeBuf = "qdebug";
         break;
     case QAbstractTestLogger::QWarning:
-        ++qwarnCounter;
         typeBuf = "qwarn";
         break;
     case QAbstractTestLogger::QFatal:
-        ++qfatalCounter;
         typeBuf = "qfatal";
         break;
     case QAbstractTestLogger::Skip:
-        ++skipCounter;
         typeBuf = "skip";
         break;
     case QAbstractTestLogger::Info:
-        ++infoCounter;
         typeBuf = "info";
         break;
     default:
@@ -367,66 +347,6 @@ void QTestLogger::addMessage(MessageTypes type, const char *message, const char 
         systemErrorElement->addAttribute(QTest::AI_Description, message);
         errorLogElement->addLogElement(systemErrorElement);
     }
-}
-
-void QTestLogger::setLogFormat(TestLoggerFormat fm)
-{
-    format = fm;
-}
-
-QTestLogger::TestLoggerFormat QTestLogger::logFormat()
-{
-    return format;
-}
-
-int QTestLogger::passCount() const
-{
-    return passCounter;
-}
-
-int QTestLogger::failureCount() const
-{
-    return failureCounter;
-}
-
-int QTestLogger::errorCount() const
-{
-    return errorCounter;
-}
-
-int QTestLogger::warningCount() const
-{
-    return warningCounter;
-}
-
-int QTestLogger::skipCount() const
-{
-    return skipCounter;
-}
-
-int QTestLogger::systemCount() const
-{
-    return systemCounter;
-}
-
-int QTestLogger::qdebugCount() const
-{
-    return qdebugCounter;
-}
-
-int QTestLogger::qwarnCount() const
-{
-    return qwarnCounter;
-}
-
-int QTestLogger::qfatalCount() const
-{
-    return qfatalCounter;
-}
-
-int QTestLogger::infoCount() const
-{
-    return infoCounter;
 }
 
 void QTestLogger::registerRandomSeed(unsigned int seed)

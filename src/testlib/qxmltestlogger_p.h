@@ -66,7 +66,7 @@ public:
     QXmlTestLogger(XmlMode mode = Complete);
     ~QXmlTestLogger();
 
-    void startLogging();
+    void startLogging(const char *filename);
     void stopLogging();
 
     void enterTestFunction(const char *function);

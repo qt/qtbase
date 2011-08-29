@@ -3172,11 +3172,36 @@ bool QApplication::desktopSettingsAware()
     one of the above events. If no keys are being held Qt::NoModifier is
     returned.
 
-    \sa mouseButtons()
+    \sa mouseButtons(), queryKeyboardModifiers()
 */
 
 Qt::KeyboardModifiers QApplication::keyboardModifiers()
 {
+    return QApplicationPrivate::modifier_buttons;
+}
+
+/*!
+    \fn Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+
+    Queries and returns the state of the modifier keys on the keyboard.
+    Unlike keyboardModifiers, this method returns the actual keys held
+    on the input device at the time of calling the method.
+
+    It does not rely on the keypress events having been received by this
+    process, which makes it possible to check the modifiers while moving
+    a window, for instance. Note that in most cases, you should use
+    keyboardModifiers(), which is faster and more accurate since it contains
+    the state of the modifiers as they were when the currently processed
+    event was received.
+
+    \sa keyboardModifiers()
+
+    \since 4.8
+*/
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    qWarning("queryKeyboardModifiers() doesn't have a QPA implementation");
     return QApplicationPrivate::modifier_buttons;
 }
 

@@ -63,7 +63,7 @@ public:
     QPlainTestLogger();
     ~QPlainTestLogger();
 
-    void startLogging();
+    void startLogging(const char *filename);
     void stopLogging();
 
     void enterTestFunction(const char *function);
@@ -79,6 +79,10 @@ public:
 private:
     unsigned int randomSeed;
     bool hasRandomSeed;
+
+    void printMessage(const char *type, const char *msg, const char *file = 0, int line = 0);
+    void outputMessage(const char *str);
+    void printBenchmarkResult(const QBenchmarkResult &result);
 };
 
 QT_END_NAMESPACE

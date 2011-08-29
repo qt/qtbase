@@ -267,7 +267,7 @@ if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
     while ((my $testName, my $testParameters) = each %configtests) {
         printf "  % *s: ", $maxNameLength, $testName; # right aligned, yes/no lines up
 
-        my $fatalTest = $testParameters->{"fatal"} // 0;
+        my $fatalTest = $testParameters->{"fatal"};
         my $message = $testParameters->{"message"};
 
         my $testResult = executeTest($testName);

@@ -93,8 +93,7 @@ public:
     static void setCurrentTestFunction(const char *func);
     static void setCurrentTestLocation(TestLocation loc);
     static void setCurrentTestObject(const char *name);
-    static void addSkip(const char *message, QTest::SkipMode mode,
-                        const char *file, int line);
+    static void addSkip(const char *message, const char *file, int line);
     static bool expectFail(const char *dataIndex, const char *comment,
                            QTest::TestFailMode mode, const char *file, int line);
     static bool verify(bool statement, const char *statementStr, const char *extraInfo,

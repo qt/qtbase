@@ -52,8 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestLightXmlStreamer::QTestLightXmlStreamer()
-    :QTestBasicStreamer()
+QTestLightXmlStreamer::QTestLightXmlStreamer(QTestLogger *logger)
+    : QTestBasicStreamer(logger)
 {
 }
 

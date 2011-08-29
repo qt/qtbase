@@ -45,6 +45,7 @@
 #include "QtTest/private/qtestresult_p.h"
 #include "QtTest/private/qabstracttestlogger_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
+#include "QtTest/private/qtestlogger_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
@@ -52,9 +53,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-
-
-#include "qtestlogger_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -168,37 +166,29 @@ namespace QTest {
         }
     }
 
-void initLogger()
-{
-    switch (QTest::logMode) {
+    void initLogger()
+    {
+        switch (QTest::logMode) {
         case QTestLog::Plain:
             QTest::testLogger = new QPlainTestLogger;
             break;
-        case QTestLog::XML:{
-            if(QTest::flushMode == QTestLog::FLushOn)
+        case QTestLog::XML:
+            if (QTest::flushMode == QTestLog::FlushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
             break;
-        }case QTestLog::LightXML:{
-            if(QTest::flushMode == QTestLog::FLushOn)
+        case QTestLog::LightXML:
+            if (QTest::flushMode == QTestLog::FlushOn)
                 QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
             else
                 QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
             break;
-        }case QTestLog::XunitXML:
+        case QTestLog::XunitXML:
             QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
         }
-}
+    }
 
-}
-
-QTestLog::QTestLog()
-{
-}
-
-QTestLog::~QTestLog()
-{
 }
 
 void QTestLog::enterTestFunction(const char* function)
@@ -253,6 +243,7 @@ void QTestLog::addPass(const char *msg)
 void QTestLog::addFail(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(QTest::testLogger);
+    QTEST_ASSERT(msg);
 
     QTest::testLogger->addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
@@ -275,8 +266,7 @@ void QTestLog::addXPass(const char *msg, const char *file, int line)
     QTest::testLogger->addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
-void QTestLog::addSkip(const char *msg, QTest::SkipMode /*mode*/,
-                       const char *file, int line)
+void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
@@ -296,7 +286,7 @@ void QTestLog::startLogging(unsigned int randomSeed)
     QTEST_ASSERT(!QTest::testLogger);
     QTest::initLogger();
     QTest::testLogger->registerRandomSeed(randomSeed);
-    QTest::testLogger->startLogging();
+    QTest::testLogger->startLogging(QTest::outFile);
     QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
 }
 
@@ -304,7 +294,7 @@ void QTestLog::startLogging()
 {
     QTEST_ASSERT(!QTest::testLogger);
     QTest::initLogger();
-    QTest::testLogger->startLogging();
+    QTest::testLogger->startLogging(QTest::outFile);
     QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
 }
 
@@ -356,6 +346,8 @@ int QTestLog::verboseLevel()
 
 void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
 {
+    QTEST_ASSERT(msg);
+
     QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, msg);
 
     QTest::IgnoreResultList *list = QTest::ignoreResultList;

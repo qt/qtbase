@@ -972,12 +972,6 @@ void seedRandom()
     }
 }
 
-int qTestRandomSeed()
-{
-    Q_ASSERT(QTest::seedSet);
-    return QTest::seed;
-}
-
 template<typename T>
 void swap(T * array, int pos, int otherPos)
 {
@@ -1018,12 +1012,12 @@ Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
-static void qPrintTestSlots()
+static void qPrintTestSlots(FILE *stream)
 {
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
         if (isValidSlot(sl))
-            printf("%s\n", sl.signature());
+            fprintf(stream, "%s\n", sl.signature());
     }
 }
 
@@ -1032,7 +1026,7 @@ static int qToInt(char *str)
     char *pEnd;
     int l = (int)strtol(str, &pEnd, 10);
     if (*pEnd != 0) {
-        printf("Invalid numeric parameter: '%s'\n", str);
+        fprintf(stderr, "Invalid numeric parameter: '%s'\n", str);
         exit(1);
     }
     return l;
@@ -1100,7 +1094,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             if (qml) {
                 QTest::printAvailableFunctions = true;
             } else {
-                qPrintTestSlots();
+                qPrintTestSlots(stdout);
                 exit(0);
             }
         } else if(strcmp(argv[i], "-xunitxml") == 0){
@@ -1109,8 +1103,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QTestLog::setLogMode(QTestLog::XML);
         } else if (strcmp(argv[i], "-lightxml") == 0) {
             QTestLog::setLogMode(QTestLog::LightXML);
-        }else if(strcmp(argv[i], "-flush") == 0){
-            QTestLog::setFlushMode(QTestLog::FLushOn);
+        } else if (strcmp(argv[i], "-flush") == 0){
+            QTestLog::setFlushMode(QTestLog::FlushOn);
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
@@ -1121,35 +1115,35 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QSignalDumper::startDump();
         } else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
-                printf("-o needs an extra parameter specifying the filename\n");
+                fprintf(stderr, "-o needs an extra parameter specifying the filename\n");
                 exit(1);
             } else {
                 QTestLog::redirectOutput(argv[++i]);
             }
         } else if (strcmp(argv[i], "-eventdelay") == 0) {
             if (i + 1 >= argc) {
-                printf("-eventdelay needs an extra parameter to indicate the delay(ms)\n");
+                fprintf(stderr, "-eventdelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::eventDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-keydelay") == 0) {
             if (i + 1 >= argc) {
-                printf("-keydelay needs an extra parameter to indicate the delay(ms)\n");
+                fprintf(stderr, "-keydelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::keyDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-mousedelay") == 0) {
             if (i + 1 >= argc) {
-                printf("-mousedelay needs an extra parameter to indicate the delay(ms)\n");
+                fprintf(stderr, "-mousedelay needs an extra parameter to indicate the delay(ms)\n");
                 exit(1);
             } else {
                 QTest::mouseDelay = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-maxwarnings") == 0) {
             if (i + 1 >= argc) {
-                printf("-maxwarnings needs an extra parameter with the amount of warnings\n");
+                fprintf(stderr, "-maxwarnings needs an extra parameter with the amount of warnings\n");
                 exit(1);
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
@@ -1166,10 +1160,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 if (QFileInfo(QDir::currentPath()).isWritable()) {
                     QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::CallgrindParentProcess);
                 } else {
-                    printf("WARNING: Current directory not writable. Using the walltime measurer.\n");
+                    fprintf(stderr, "WARNING: Current directory not writable. Using the walltime measurer.\n");
                 }
             else {
-                printf("WARNING: Valgrind not found or too old. Make sure it is installed and in your path. "
+                fprintf(stderr, "WARNING: Valgrind not found or too old. Make sure it is installed and in your path. "
                        "Using the walltime measurer.\n");
             }
         } else if (strcmp(argv[i], "-callgrindchild") == 0) { // "private" option
@@ -1194,28 +1188,28 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 QTest::seed = longSeed;
             }
             if (!argumentOk) {
-                printf("-seed needs an extra positive integer parameter to specify the seed\n");
+                fprintf(stderr, "-seed needs an extra positive integer parameter to specify the seed\n");
                 exit(1);
             } else {
                 QTest::seedSet = true;
             }
         } else if (strcmp(argv[i], "-minimumvalue") == 0) {
             if (i + 1 >= argc) {
-                printf("-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
+                fprintf(stderr, "-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->walltimeMinimum = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-iterations") == 0) {
             if (i + 1 >= argc) {
-                printf("-iterations needs an extra parameter to indicate the number of iterations\n");
+                fprintf(stderr, "-iterations needs an extra parameter to indicate the number of iterations\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->iterationCount = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-median") == 0) {
             if (i + 1 >= argc) {
-                printf("-median needs an extra parameter to indicate the number of median iterations\n");
+                fprintf(stderr, "-median needs an extra parameter to indicate the number of median iterations\n");
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->medianIterationCount = qToInt(argv[++i]);
@@ -1223,30 +1217,28 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-        } else if (strcmp(argv[i], "-chart") == 0) {
-            fprintf(stderr, "Warning: `-chart' option is not available\n");
         } else if (strcmp(argv[i], "-qws") == 0) {
             // do nothing
         } else if (strcmp(argv[i], "-graphicssystem") == 0) {
             // do nothing
             if (i + 1 >= argc) {
-                printf("-graphicssystem needs an extra parameter specifying the graphics system\n");
+                fprintf(stderr, "-graphicssystem needs an extra parameter specifying the graphics system\n");
                 exit(1);
             } else {
                 ++i;
             }
         } else if (argv[i][0] == '-') {
-            printf("Unknown option: '%s'\n\n%s", argv[i], testOptions);
+            fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
             if (qml) {
-                printf ("\nqmltest related options:\n"
-                        " -import    : Specify an import directory.\n"
-                        " -input     : Specify the root directory for test cases.\n"
-                        " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
-                        );
+                fprintf(stderr, "\nqmltest related options:\n"
+                                " -import    : Specify an import directory.\n"
+                                " -input     : Specify the root directory for test cases.\n"
+                                " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
+                       );
             }
 
-            printf("\n"
-                   " -help      : This help\n");
+            fprintf(stderr, "\n"
+                            " -help      : This help\n");
             exit(1);
         } else if (qml) {
             // We can't check the availability of test functions until
@@ -1275,9 +1267,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                     QString::fromLatin1(argv[i] + colon + 1);
             }
         } else {
-			if (!QTest::testFuncs) {
-		        QTest::testFuncs = new QTest::TestFunction[512];
-			}
+            if (!QTest::testFuncs) {
+                QTest::testFuncs = new QTest::TestFunction[512];
+            }
 
             int colon = -1;
             char buf[512], *data=0;
@@ -1295,19 +1287,19 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QTest::qt_snprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
             int idx = QTest::currentTestObject->metaObject()->indexOfMethod(buf);
             if (idx < 0 || !isValidSlot(QTest::currentTestObject->metaObject()->method(idx))) {
-                printf("Unknown testfunction: '%s'\n", buf);
-                printf("Available testfunctions:\n");
-                qPrintTestSlots();
+                fprintf(stderr, "Unknown testfunction: '%s'\n", buf);
+                fprintf(stderr, "Available testfunctions:\n");
+                qPrintTestSlots(stderr);
                 exit(1);
             }
             testFuncs[testFuncCount].set(idx, data);
-			testFuncCount++;
-			QTEST_ASSERT(QTest::testFuncCount < 512);
+            testFuncCount++;
+            QTEST_ASSERT(QTest::testFuncCount < 512);
         }
     }
 
     if (QTest::seedSet && !QTest::randomOrder) {
-        printf("-seed requires -random\n");
+        fprintf(stderr, "-seed requires -random\n");
         exit(1);
     }
 }
@@ -1466,8 +1458,8 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
                 if (!*data)
                     data = 0;
                 else {
-                    printf("Unknown testdata for function %s: '%s'\n", slotName, data);
-                    printf("Function has no testdata.\n");
+                    fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
+                    fprintf(stderr, "Function has no testdata.\n");
                     return false;
                 }
             }
@@ -1492,10 +1484,10 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
         }
 
         if (data && !foundFunction) {
-            printf("Unknown testdata for function %s: '%s'\n", slotName, data);
-            printf("Available testdata:\n");
+            fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
+            fprintf(stderr, "Available testdata:\n");
             for(int i = 0; i < table.dataCount(); ++i)
-                printf("%s\n", table.testData(i)->dataTag());
+                fprintf(stderr, "%s\n", table.testData(i)->dataTag());
             return false;
         }
 
@@ -1899,10 +1891,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
      }
 #endif
 
-#if defined(QTEST_NOEXITCODE)
-    return 0;
-#else
-
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess)
         return callgrindChildExitCode;
@@ -1910,8 +1898,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     // make sure our exit code is never going above 127
     // since that could wrap and indicate 0 test fails
     return qMin(QTestResult::failCount(), 127);
-
-#endif
 }
 
 /*!
@@ -1959,7 +1945,7 @@ bool QTest::qVerify(bool statement, const char *statementStr, const char *descri
 void QTest::qSkip(const char *message, QTest::SkipMode mode,
                  const char *file, int line)
 {
-    QTestResult::addSkip(message, mode, file, line);
+    QTestResult::addSkip(message, file, line);
     if (mode == QTest::SkipAll)
         QTestResult::setSkipCurrentTest(true);
 }
@@ -2195,7 +2181,7 @@ Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2
                              toString(t1), toString(t2), actual, expected, file, line);
 }
 
-#define COMPARE_IMPL2(TYPE, FORMAT) \
+#define TO_STRING_IMPL(TYPE, FORMAT) \
 template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
@@ -2203,23 +2189,23 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
     return msg; \
 }
 
-COMPARE_IMPL2(short, %hd)
-COMPARE_IMPL2(ushort, %hu)
-COMPARE_IMPL2(int, %d)
-COMPARE_IMPL2(uint, %u)
-COMPARE_IMPL2(long, %ld)
-COMPARE_IMPL2(ulong, %lu)
+TO_STRING_IMPL(short, %hd)
+TO_STRING_IMPL(ushort, %hu)
+TO_STRING_IMPL(int, %d)
+TO_STRING_IMPL(uint, %u)
+TO_STRING_IMPL(long, %ld)
+TO_STRING_IMPL(ulong, %lu)
 #if defined(Q_OS_WIN)
-COMPARE_IMPL2(qint64, %I64d)
-COMPARE_IMPL2(quint64, %I64u)
+TO_STRING_IMPL(qint64, %I64d)
+TO_STRING_IMPL(quint64, %I64u)
 #else
-COMPARE_IMPL2(qint64, %lld)
-COMPARE_IMPL2(quint64, %llu)
+TO_STRING_IMPL(qint64, %lld)
+TO_STRING_IMPL(quint64, %llu)
 #endif
-COMPARE_IMPL2(bool, %d)
-COMPARE_IMPL2(char, %c)
-COMPARE_IMPL2(float, %g)
-COMPARE_IMPL2(double, %lg)
+TO_STRING_IMPL(bool, %d)
+TO_STRING_IMPL(char, %c)
+TO_STRING_IMPL(float, %g)
+TO_STRING_IMPL(double, %lg)
 
 /*! \internal
  */

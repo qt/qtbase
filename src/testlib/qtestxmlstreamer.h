@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #ifndef QTESTXMLSTREAMER_H
-#define QTESXMLSTREAMER_H
+#define QTESTXMLSTREAMER_H
 
 #include <QtTest/qtestbasicstreamer.h>
 
@@ -56,7 +56,7 @@ class QTestElementAttribute;
 class QTestXmlStreamer: public QTestBasicStreamer
 {
     public:
-        QTestXmlStreamer();
+        QTestXmlStreamer(QTestLogger *logger);
         ~QTestXmlStreamer();
 
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
