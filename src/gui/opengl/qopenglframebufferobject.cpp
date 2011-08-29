@@ -964,8 +964,8 @@ bool QOpenGLFramebufferObject::release()
     if (!current)
         return false;
 
-#ifdef QT_DEBUG
     Q_D(QOpenGLFramebufferObject);
+#ifdef QT_DEBUG
     if (current->shareGroup() != d->fbo_guard->group())
         qWarning("QOpenGLFramebufferObject::release() called from incompatible context");
 #endif
