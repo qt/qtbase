@@ -18,6 +18,6 @@ exists($$(QTDIR)/tools/designer/src/lib/uilib/uilib.pri) {
 } else {
     CONFIG += uitools
 }
-QT += xml
+QT += xml widgets
 LIBS += -framework ApplicationServices -framework Carbon
 

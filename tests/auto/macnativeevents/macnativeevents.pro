@@ -7,7 +7,7 @@ TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
 LIBS += -framework Carbon
-
+QT += widgets
 HEADERS += qnativeevents.h nativeeventlist.h expectedeventlist.h
 SOURCES += qnativeevents.cpp qnativeevents_mac.cpp 
 SOURCES += expectedeventlist.cpp nativeeventlist.cpp

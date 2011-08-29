@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += gui-private
+QT += gui-private widgets
 
 INCLUDEPATH += .
 SOURCES += tst_qmdiarea.cpp
