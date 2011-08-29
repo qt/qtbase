@@ -698,6 +698,15 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     \overload
 */
 
+/*! \fn QVector::const_iterator QVector::cbegin() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the first item
+    in the vector.
+
+    \sa begin(), cend()
+*/
+
 /*! \fn QVector::const_iterator QVector::constBegin() const
 
     Returns a const \l{STL-style iterator} pointing to the first item
@@ -717,6 +726,15 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
 /*! \fn QVector::const_iterator QVector::end() const
 
     \overload
+*/
+
+/*! \fn QVector::const_iterator QVector::cend() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the imaginary
+    item after the last item in the vector.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QVector::const_iterator QVector::constEnd() const

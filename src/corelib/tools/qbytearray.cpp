@@ -799,6 +799,12 @@ const QConstByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALIZ
     \internal
 */
 
+/*! \fn QByteArray::const_iterator QByteArray::cbegin() const
+    \since 5.0
+
+    \internal
+*/
+
 /*! \fn QByteArray::const_iterator QByteArray::constBegin() const
 
     \internal
@@ -810,6 +816,12 @@ const QConstByteArrayData<1> QByteArray::shared_empty = { { Q_REFCOUNT_INITIALIZ
 */
 
 /*! \fn QByteArray::const_iterator QByteArray::end() const
+
+    \internal
+*/
+
+/*! \fn QByteArray::const_iterator QByteArray::cend() const
+    \since 5.0
 
     \internal
 */

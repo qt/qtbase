@@ -180,9 +180,11 @@ public:
     // stl style
     inline iterator begin() { detach(); return e->n; }
     inline const_iterator begin() const { return e->n; }
+    inline const_iterator cbegin() const { return e->n; }
     inline const_iterator constBegin() const { return e->n; }
     inline iterator end() { detach(); return e; }
     inline const_iterator end() const { return e; }
+    inline const_iterator cend() const { return e; }
     inline const_iterator constEnd() const { return e; }
     iterator insert(iterator before, const T &t);
     iterator erase(iterator pos);

@@ -358,9 +358,11 @@ public:
     typedef const_iterator ConstIterator;
     iterator begin();
     const_iterator begin() const;
+    const_iterator cbegin() const;
     const_iterator constBegin() const;
     iterator end();
     const_iterator end() const;
+    const_iterator cend() const;
     const_iterator constEnd() const;
 
     // stl compatibility
@@ -492,11 +494,15 @@ inline QByteArray::iterator QByteArray::begin()
 { detach(); return d->data(); }
 inline QByteArray::const_iterator QByteArray::begin() const
 { return d->data(); }
+inline QByteArray::const_iterator QByteArray::cbegin() const
+{ return d->data(); }
 inline QByteArray::const_iterator QByteArray::constBegin() const
 { return d->data(); }
 inline QByteArray::iterator QByteArray::end()
 { detach(); return d->data() + d->size; }
 inline QByteArray::const_iterator QByteArray::end() const
+{ return d->data() + d->size; }
+inline QByteArray::const_iterator QByteArray::cend() const
 { return d->data() + d->size; }
 inline QByteArray::const_iterator QByteArray::constEnd() const
 { return d->data() + d->size; }

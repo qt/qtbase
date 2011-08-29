@@ -164,9 +164,11 @@ public:
     // STL style
     inline iterator begin() { return q_hash.begin(); }
     inline const_iterator begin() const { return q_hash.begin(); }
+    inline const_iterator cbegin() const { return q_hash.begin(); }
     inline const_iterator constBegin() const { return q_hash.constBegin(); }
     inline iterator end() { return q_hash.end(); }
     inline const_iterator end() const { return q_hash.end(); }
+    inline const_iterator cend() const { return q_hash.end(); }
     inline const_iterator constEnd() const { return q_hash.constEnd(); }
     iterator erase(iterator i)
         { return q_hash.erase(reinterpret_cast<typename Hash::iterator &>(i)); }

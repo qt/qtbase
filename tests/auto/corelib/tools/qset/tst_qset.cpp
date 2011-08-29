@@ -393,9 +393,9 @@ void tst_QSet::begin()
 
     {
         QSet<int>::const_iterator i = set1.constBegin();
-        QSet<int>::const_iterator j = set1.constBegin();
+        QSet<int>::const_iterator j = set1.cbegin();
         QSet<int>::const_iterator k = set2.constBegin();
-        QSet<int>::const_iterator ell = set2.constBegin();
+        QSet<int>::const_iterator ell = set2.cbegin();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
@@ -407,9 +407,9 @@ void tst_QSet::begin()
 
     {
         QSet<int>::const_iterator i = set1.constBegin();
-        QSet<int>::const_iterator j = set1.constBegin();
+        QSet<int>::const_iterator j = set1.cbegin();
         QSet<int>::const_iterator k = set2.constBegin();
-        QSet<int>::const_iterator ell = set2.constBegin();
+        QSet<int>::const_iterator ell = set2.cbegin();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
@@ -421,9 +421,9 @@ void tst_QSet::begin()
 
     {
         QSet<int>::const_iterator i = set1.constBegin();
-        QSet<int>::const_iterator j = set1.constBegin();
+        QSet<int>::const_iterator j = set1.cbegin();
         QSet<int>::const_iterator k = set2.constBegin();
-        QSet<int>::const_iterator ell = set2.constBegin();
+        QSet<int>::const_iterator ell = set2.cbegin();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
@@ -439,9 +439,9 @@ void tst_QSet::end()
 
     {
         QSet<int>::const_iterator i = set1.constEnd();
-        QSet<int>::const_iterator j = set1.constEnd();
+        QSet<int>::const_iterator j = set1.cend();
         QSet<int>::const_iterator k = set2.constEnd();
-        QSet<int>::const_iterator ell = set2.constEnd();
+        QSet<int>::const_iterator ell = set2.cend();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
@@ -456,9 +456,9 @@ void tst_QSet::end()
 
     {
         QSet<int>::const_iterator i = set1.constEnd();
-        QSet<int>::const_iterator j = set1.constEnd();
+        QSet<int>::const_iterator j = set1.cend();
         QSet<int>::const_iterator k = set2.constEnd();
-        QSet<int>::const_iterator ell = set2.constEnd();
+        QSet<int>::const_iterator ell = set2.cend();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
@@ -473,9 +473,9 @@ void tst_QSet::end()
 
     {
         QSet<int>::const_iterator i = set1.constEnd();
-        QSet<int>::const_iterator j = set1.constEnd();
+        QSet<int>::const_iterator j = set1.cend();
         QSet<int>::const_iterator k = set2.constEnd();
-        QSet<int>::const_iterator ell = set2.constEnd();
+        QSet<int>::const_iterator ell = set2.cend();
 
         QVERIFY(i == j);
         QVERIFY(k == ell);

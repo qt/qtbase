@@ -558,9 +558,11 @@ public:
     typedef const_iterator ConstIterator;
     iterator begin();
     const_iterator begin() const;
+    const_iterator cbegin() const;
     const_iterator constBegin() const;
     iterator end();
     const_iterator end() const;
+    const_iterator cend() const;
     const_iterator constEnd() const;
 
     // STL compatibility
@@ -904,11 +906,15 @@ inline QString::iterator QString::begin()
 { detach(); return reinterpret_cast<QChar*>(d->data()); }
 inline QString::const_iterator QString::begin() const
 { return reinterpret_cast<const QChar*>(d->data()); }
+inline QString::const_iterator QString::cbegin() const
+{ return reinterpret_cast<const QChar*>(d->data()); }
 inline QString::const_iterator QString::constBegin() const
 { return reinterpret_cast<const QChar*>(d->data()); }
 inline QString::iterator QString::end()
 { detach(); return reinterpret_cast<QChar*>(d->data() + d->size); }
 inline QString::const_iterator QString::end() const
+{ return reinterpret_cast<const QChar*>(d->data() + d->size); }
+inline QString::const_iterator QString::cend() const
 { return reinterpret_cast<const QChar*>(d->data() + d->size); }
 inline QString::const_iterator QString::constEnd() const
 { return reinterpret_cast<const QChar*>(d->data() + d->size); }

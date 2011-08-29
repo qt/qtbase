@@ -245,9 +245,11 @@ public:
 #endif
     inline iterator begin() { detach(); return p->array; }
     inline const_iterator begin() const { return p->array; }
+    inline const_iterator cbegin() const { return p->array; }
     inline const_iterator constBegin() const { return p->array; }
     inline iterator end() { detach(); return p->array + d->size; }
     inline const_iterator end() const { return p->array + d->size; }
+    inline const_iterator cend() const { return p->array + d->size; }
     inline const_iterator constEnd() const { return p->array + d->size; }
     iterator insert(iterator before, int n, const T &x);
     inline iterator insert(iterator before, const T &x) { return insert(before, 1, x); }

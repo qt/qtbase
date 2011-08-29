@@ -330,6 +330,15 @@ const QLinkedListData QLinkedListData::shared_null = {
     \overload
 */
 
+/*! \fn QLinkedList::const_iterator QLinkedList::cbegin() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the first item
+    in the list.
+
+    \sa begin(), cend()
+*/
+
 /*! \fn QLinkedList::const_iterator QLinkedList::constBegin() const
 
     Returns a const \l{STL-style iterator} pointing to the first item
@@ -349,6 +358,15 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn QLinkedList::const_iterator QLinkedList::end() const
 
     \overload
+*/
+
+/*! \fn QLinkedList::const_iterator QLinkedList::cend() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the imaginary
+    item after the last item in the list.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QLinkedList::const_iterator QLinkedList::constEnd() const

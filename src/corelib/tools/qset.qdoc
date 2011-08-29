@@ -343,6 +343,15 @@
     item in the set.  
 */
 
+/*! \fn QSet::const_iterator QSet::cbegin() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} positioned at the first
+    item in the set.
+
+    \sa begin(), cend()
+*/
+
 /*! \fn QSet::const_iterator QSet::constBegin() const
 
     Returns a const \l{STL-style iterator} positioned at the first
@@ -365,6 +374,15 @@
 
     Returns a non-const \l{STL-style iterator} pointing to the
     imaginary item after the last item in the set.
+*/
+
+/*! \fn QSet::const_iterator QSet::cend() const
+    \since 5.0
+
+    Returns a const \l{STL-style iterator} pointing to the imaginary
+    item after the last item in the set.
+
+    \sa cbegin(), end()
 */
 
 /*! \fn QSet::const_iterator QSet::constEnd() const
