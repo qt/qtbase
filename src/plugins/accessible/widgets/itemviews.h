@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 class QAccessibleTable2Cell;
 class QAccessibleTable2HeaderCell;
 
-class QAccessibleTable2: public QAccessibleTable2Interface, public QAccessibleObjectEx
+class QAccessibleTable2 :public QAccessibleTable2Interface, public QAccessibleObject
 {
     Q_ACCESSIBLE_OBJECT
 public:

@@ -67,7 +67,7 @@ extern QStyleOptionSlider Q_GUI_EXPORT qt_qsliderStyleOption(QSlider *slider);
 
 #ifndef QT_NO_SPINBOX
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
-: QAccessibleWidgetEx(w, SpinBox)
+: QAccessibleWidget(w, SpinBox)
 {
     Q_ASSERT(abstractSpinBox());
 }
@@ -134,7 +134,7 @@ int QAccessibleAbstractSpinBox::navigate(RelationFlag rel, int entry, QAccessibl
     default:
         break;
     }
-    return QAccessibleWidgetEx::navigate(rel, entry, target);
+    return QAccessibleWidget::navigate(rel, entry, target);
 }
 
 /*! \reimp */
@@ -158,7 +158,7 @@ QString QAccessibleAbstractSpinBox::text(Text t, int child) const
     default:
         break;
     }
-    return QAccessibleWidgetEx::text(t, 0);
+    return QAccessibleWidget::text(t, 0);
 }
 
 /*! \reimp */
@@ -173,7 +173,7 @@ QAccessible::Role QAccessibleAbstractSpinBox::role(int child) const
     default:
         break;
     }
-    return QAccessibleWidgetEx::role(child);
+    return QAccessibleWidget::role(child);
 }
 
 /*! \reimp */
@@ -194,7 +194,7 @@ bool QAccessibleAbstractSpinBox::doAction(int action, int child, const QVariantL
             break;
         }
     }
-    return QAccessibleWidgetEx::doAction(action, 0, params);
+    return QAccessibleWidget::doAction(action, 0, params);
 }
 
 QVariant QAccessibleAbstractSpinBox::currentValue()
@@ -225,17 +225,17 @@ QVariant QAccessibleAbstractSpinBox::minimumValue()
     return abstractSpinBox()->property("minimum");
 }
 
-QVariant QAccessibleAbstractSpinBox::invokeMethodEx(Method method, int child, const QVariantList &params)
+QVariant QAccessibleAbstractSpinBox::invokeMethod(Method method, int child, const QVariantList &params)
 {
     switch (method) {
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
         return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
+                    QAccessibleWidget::invokeMethod(method, child, params)));
     }
     default:
-        return QAccessibleWidgetEx::invokeMethodEx(method, child, params);
+        return QAccessibleWidget::invokeMethod(method, child, params);
     }
 }
 
@@ -324,7 +324,7 @@ bool QAccessibleSpinBox::doAction(int action, int child, const QVariantList &par
 
 // ================================== QAccessibleDoubleSpinBox ==================================
 QAccessibleDoubleSpinBox::QAccessibleDoubleSpinBox(QWidget *widget)
-    : QAccessibleWidgetEx(widget, SpinBox)
+    : QAccessibleWidget(widget, SpinBox)
 {
     Q_ASSERT(qobject_cast<QDoubleSpinBox *>(widget));
     addControllingSignal(QLatin1String("valueChanged(double)"));
@@ -378,7 +378,7 @@ QRect QAccessibleDoubleSpinBox::rect(int child) const
 int QAccessibleDoubleSpinBox::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
     if (entry <= 0)
-        return QAccessibleWidgetEx::navigate(relation, entry, target);
+        return QAccessibleWidget::navigate(relation, entry, target);
 
     *target = 0;
     switch (relation) {
@@ -395,10 +395,10 @@ int QAccessibleDoubleSpinBox::navigate(RelationFlag relation, int entry, QAccess
     default:
         break;
     }
-    return QAccessibleWidgetEx::navigate(relation, entry, target);
+    return QAccessibleWidget::navigate(relation, entry, target);
 }
 
-QVariant QAccessibleDoubleSpinBox::invokeMethodEx(QAccessible::Method, int, const QVariantList &)
+QVariant QAccessibleDoubleSpinBox::invokeMethod(QAccessible::Method, int, const QVariantList &)
 {
     return QVariant();
 }
@@ -420,7 +420,7 @@ QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
     default:
         break;
     }
-    return QAccessibleWidgetEx::text(textType, 0);
+    return QAccessibleWidget::text(textType, 0);
 }
 
 /*! \reimp */
@@ -435,13 +435,13 @@ QAccessible::Role QAccessibleDoubleSpinBox::role(int child) const
     default:
         break;
     }
-    return QAccessibleWidgetEx::role(child);
+    return QAccessibleWidget::role(child);
 }
 
 /*! \reimp */
 QAccessible::State QAccessibleDoubleSpinBox::state(int child) const
 {
-    State state = QAccessibleWidgetEx::state(child);
+    State state = QAccessibleWidget::state(child);
     switch (child) {
     case ValueUp:
         if (doubleSpinBox()->value() >= doubleSpinBox()->maximum())
@@ -482,7 +482,7 @@ QAccessible::State QAccessibleDoubleSpinBox::state(int child) const
 
 /*!
   Constructs a QAccessibleScrollBar object for \a w.
-  \a name is propagated to the QAccessibleWidgetEx constructor.
+  \a name is propagated to the QAccessibleWidget constructor.
 */
 QAccessibleScrollBar::QAccessibleScrollBar(QWidget *w)
 : QAccessibleAbstractSlider(w, ScrollBar)
@@ -636,7 +636,7 @@ QAccessible::State QAccessibleScrollBar::state(int child) const
 
 /*!
   Constructs a QAccessibleScrollBar object for \a w.
-  \a name is propagated to the QAccessibleWidgetEx constructor.
+  \a name is propagated to the QAccessibleWidget constructor.
 */
 QAccessibleSlider::QAccessibleSlider(QWidget *w)
 : QAccessibleAbstractSlider(w)
@@ -789,22 +789,22 @@ QString QAccessibleSlider::actionText(int /*action*/, Text /*t*/, int /*child*/)
 }
 
 QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)
-    : QAccessibleWidgetEx(w, r)
+    : QAccessibleWidget(w, r)
 {
     Q_ASSERT(qobject_cast<QAbstractSlider *>(w));
 }
 
-QVariant QAccessibleAbstractSlider::invokeMethodEx(Method method, int child, const QVariantList &params)
+QVariant QAccessibleAbstractSlider::invokeMethod(Method method, int child, const QVariantList &params)
 {
     switch (method) {
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
         return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
-                    QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
+                    QAccessibleWidget::invokeMethod(method, child, params)));
     }
     default:
-        return QAccessibleWidgetEx::invokeMethodEx(method, child, params);
+        return QAccessibleWidget::invokeMethod(method, child, params);
     }
 }
 
@@ -838,7 +838,7 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
 #ifndef QT_NO_DIAL
 // ======================================= QAccessibleDial ======================================
 QAccessibleDial::QAccessibleDial(QWidget *widget)
-    : QAccessibleWidgetEx(widget, Dial)
+    : QAccessibleWidget(widget, Dial)
 {
     Q_ASSERT(qobject_cast<QDial *>(widget));
     addControllingSignal(QLatin1String("valueChanged(int)"));
@@ -851,7 +851,7 @@ QRect QAccessibleDial::rect(int child) const
         return rect;
     switch (child) {
     case Self:
-        return QAccessibleWidgetEx::rect(child);
+        return QAccessibleWidget::rect(child);
     case SpeedoMeter: {
         // Mixture from qcommonstyle.cpp (focus rect).
         int width = dial()->width();
@@ -937,7 +937,7 @@ QString QAccessibleDial::text(Text textType, int child) const
             return QDial::tr("SliderHandle");
         }
     }
-    return QAccessibleWidgetEx::text(textType, child);
+    return QAccessibleWidget::text(textType, child);
 }
 
 QAccessible::Role QAccessibleDial::role(int child) const
@@ -946,18 +946,18 @@ QAccessible::Role QAccessibleDial::role(int child) const
         return Slider;
     else if (child == SliderHandle)
         return Indicator;
-    return QAccessibleWidgetEx::role(child);
+    return QAccessibleWidget::role(child);
 }
 
 QAccessible::State QAccessibleDial::state(int child) const
 {
-    const State parentState = QAccessibleWidgetEx::state(0);
+    const State parentState = QAccessibleWidget::state(0);
     if (child == SliderHandle)
         return parentState | HotTracked;
     return parentState;
 }
 
-QVariant QAccessibleDial::invokeMethodEx(Method, int, const QVariantList &)
+QVariant QAccessibleDial::invokeMethod(Method, int, const QVariantList &)
 {
     return QVariant();
 }

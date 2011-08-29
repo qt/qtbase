@@ -55,7 +55,7 @@ class QLineEdit;
 class QToolButton;
 class QProgressBar;
 
-class QAccessibleButton : public QAccessibleWidgetEx, public QAccessibleActionInterface
+class QAccessibleButton : public QAccessibleWidget, public QAccessibleActionInterface
 {
     Q_ACCESSIBLE_OBJECT
     Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
@@ -111,7 +111,7 @@ protected:
 };
 #endif // QT_NO_TOOLBUTTON
 
-class QAccessibleDisplay : public QAccessibleWidgetEx, public QAccessibleImageInterface
+class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -130,7 +130,7 @@ public:
 };
 
 #ifndef QT_NO_LINEEDIT
-class QAccessibleLineEdit : public QAccessibleWidgetEx, public QAccessibleTextInterface,
+class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface,
                             public QAccessibleSimpleEditableTextInterface
 {
     Q_ACCESSIBLE_OBJECT
@@ -140,7 +140,7 @@ public:
     QString text(Text t, int child) const;
     void setText(Text t, int control, const QString &text);
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);

@@ -224,9 +224,9 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QAbstractButton")) {
         iface = new QAccessibleButton(widget, PushButton);
     } else if (classname == QLatin1String("QDialog")) {
-        iface = new QAccessibleWidgetEx(widget, Dialog);
+        iface = new QAccessibleWidget(widget, Dialog);
     } else if (classname == QLatin1String("QMessageBox")) {
-        iface = new QAccessibleWidgetEx(widget, AlertMessage);
+        iface = new QAccessibleWidget(widget, AlertMessage);
 #ifndef QT_NO_MAINWINDOW
     } else if (classname == QLatin1String("QMainWindow")) {
         iface = new QAccessibleMainWindow(widget);
@@ -236,13 +236,13 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QGroupBox")) {
         iface = new QAccessibleDisplay(widget, Grouping);
     } else if (classname == QLatin1String("QStatusBar")) {
-        iface = new QAccessibleWidgetEx(widget, StatusBar);
+        iface = new QAccessibleWidget(widget, StatusBar);
 #ifndef QT_NO_PROGRESSBAR
     } else if (classname == QLatin1String("QProgressBar")) {
         iface = new QAccessibleProgressBar(widget);
 #endif
     } else if (classname == QLatin1String("QToolBar")) {
-        iface = new QAccessibleWidgetEx(widget, ToolBar, widget->windowTitle());
+        iface = new QAccessibleWidget(widget, ToolBar, widget->windowTitle());
 #ifndef QT_NO_MENUBAR
     } else if (classname == QLatin1String("QMenuBar")) {
         iface = new QAccessibleMenuBar(widget);
@@ -285,14 +285,14 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
         iface = new QAccessibleTabBar(widget);
 #endif
     } else if (classname == QLatin1String("QWorkspaceChild")) {
-        iface = new QAccessibleWidgetEx(widget, Window);
+        iface = new QAccessibleWidget(widget, Window);
     } else if (classname == QLatin1String("QSizeGrip")) {
-        iface = new QAccessibleWidgetEx(widget, Grip);
+        iface = new QAccessibleWidget(widget, Grip);
 #ifndef QT_NO_SPLITTER
     } else if (classname == QLatin1String("QSplitter")) {
-        iface = new QAccessibleWidgetEx(widget, Splitter);
+        iface = new QAccessibleWidget(widget, Splitter);
     } else if (classname == QLatin1String("QSplitterHandle")) {
-        iface = new QAccessibleWidgetEx(widget, Grip);
+        iface = new QAccessibleWidget(widget, Grip);
 #endif
 #ifndef QT_NO_TEXTEDIT
     } else if (classname == QLatin1String("QTextEdit")) {
@@ -328,7 +328,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
 #endif
 #ifndef QT_NO_RUBBERBAND
     } else if (classname == QLatin1String("QRubberBand")) {
-        iface = new QAccessibleWidgetEx(widget, QAccessible::Border);
+        iface = new QAccessibleWidget(widget, QAccessible::Border);
 #endif
 #ifndef QT_NO_TEXTBROWSER
     } else if (classname == QLatin1String("QTextBrowser")) {

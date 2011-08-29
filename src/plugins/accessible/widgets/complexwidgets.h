@@ -60,7 +60,7 @@ class QAbstractScrollArea;
 class QScrollArea;
 
 #ifndef QT_NO_SCROLLAREA
-class QAccessibleAbstractScrollArea : public QAccessibleWidgetEx
+class QAccessibleAbstractScrollArea : public QAccessibleWidget
 {
 public:
     explicit QAccessibleAbstractScrollArea(QWidget *widget);
@@ -77,7 +77,7 @@ public:
     QString text(Text textType, int child) const;
     void setText(Text textType, int child, const QString &text);
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     bool isValid() const;
@@ -103,7 +103,7 @@ public:
 #endif // QT_NO_SCROLLAREA
 
 #ifndef QT_NO_ITEMVIEWS
-class QAccessibleHeader : public QAccessibleWidgetEx
+class QAccessibleHeader : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -229,7 +229,7 @@ private:
 #endif
 
 #ifndef QT_NO_TABBAR
-class QAccessibleTabBar : public QAccessibleWidgetEx
+class QAccessibleTabBar : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -255,7 +255,7 @@ private:
 #endif // QT_NO_TABBAR
 
 #ifndef QT_NO_COMBOBOX
-class QAccessibleComboBox : public QAccessibleWidgetEx
+class QAccessibleComboBox : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:

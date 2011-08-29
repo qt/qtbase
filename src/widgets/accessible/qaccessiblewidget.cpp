@@ -953,63 +953,7 @@ QAccessible::State QAccessibleWidget::state(int child) const
     return state;
 }
 
-// ### Qt 5: remove me - binary compatibility hack
-QAccessibleWidgetEx::QAccessibleWidgetEx(QWidget *o, Role role, const QString& name)
-    : QAccessibleObjectEx(o)
-{
-    Q_ASSERT(widget());
-    d = new QAccessibleWidgetPrivate();
-    d->role = role;
-    d->name = name;
-    d->asking = 0;
-}
-
-int QAccessibleWidgetEx::childCount() const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::childCount(); }
-int QAccessibleWidgetEx::indexOfChild(const QAccessibleInterface *child) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::indexOfChild(child); }
-QAccessible::Relation QAccessibleWidgetEx::relationTo(int child, const QAccessibleInterface *other, int otherChild) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::relationTo(child, other, otherChild); }
-
-int QAccessibleWidgetEx::childAt(int x, int y) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::childAt(x, y); }
-QRect QAccessibleWidgetEx::rect(int child) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::rect(child); }
-int QAccessibleWidgetEx::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::navigate(rel, entry, target); }
-
-QString QAccessibleWidgetEx::text(Text t, int child) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::text(t, child); }
-QAccessible::Role QAccessibleWidgetEx::role(int child) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::role(child); }
-QAccessible::State QAccessibleWidgetEx::state(int child) const
-{ return (reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::state(child))
-    | HasInvokeExtension; }
-
-QString QAccessibleWidgetEx::actionText(int action, Text t, int child) const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::actionText(action, t, child); }
-bool QAccessibleWidgetEx::doAction(int action, int child, const QVariantList &params)
-{ return reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::doAction(action, child, params); }
-
-QAccessibleWidgetEx::~QAccessibleWidgetEx()
-{ delete d; }
-QWidget *QAccessibleWidgetEx::widget() const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::widget(); }
-QObject *QAccessibleWidgetEx::parentObject() const
-{ return reinterpret_cast<const QAccessibleWidget *>(this)->QAccessibleWidget::parentObject(); }
-
-void QAccessibleWidgetEx::addControllingSignal(const QString &signal)
-{ reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::addControllingSignal(signal); }
-void QAccessibleWidgetEx::setValue(const QString &value)
-{ reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::setValue(value); }
-void QAccessibleWidgetEx::setDescription(const QString &desc)
-{ reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::setDescription(desc); }
-void QAccessibleWidgetEx::setHelp(const QString &help)
-{ reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::setHelp(help); }
-void QAccessibleWidgetEx::setAccelerator(const QString &accel)
-{ reinterpret_cast<QAccessibleWidget *>(this)->QAccessibleWidget::setAccelerator(accel); }
-
-QVariant QAccessibleWidgetEx::invokeMethodEx(Method method, int child, const QVariantList & /*params*/)
+QVariant QAccessibleWidget::invokeMethod(Method method, int child, const QVariantList & /*params*/)
 {
     if (child)
         return QVariant();

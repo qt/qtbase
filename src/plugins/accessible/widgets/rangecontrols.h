@@ -58,7 +58,7 @@ class QDoubleSpinBox;
 class QDial;
 
 #ifndef QT_NO_SPINBOX
-class QAccessibleAbstractSpinBox: public QAccessibleWidgetEx, public QAccessibleValueInterface
+class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleValueInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -81,7 +81,7 @@ public:
 
     bool doAction(int action, int child, const QVariantList &params);
 
-    QVariant invokeMethodEx(Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
     // QAccessibleValueInterface
     QVariant currentValue();
@@ -106,7 +106,7 @@ protected:
     QSpinBox *spinBox() const;
 };
 
-class QAccessibleDoubleSpinBox : public QAccessibleWidgetEx
+class QAccessibleDoubleSpinBox : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDoubleSpinBox(QWidget *widget);
@@ -121,7 +121,7 @@ public:
     int childCount() const;
     QRect rect(int child) const;
     int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     QString text(Text t, int child) const;
     Role role(int child) const;
     State state(int child) const;
@@ -131,13 +131,13 @@ protected:
 };
 #endif // QT_NO_SPINBOX
 
-class QAccessibleAbstractSlider: public QAccessibleWidgetEx, public QAccessibleValueInterface
+class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleValueInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleAbstractSlider(QWidget *w, Role r = Slider);
 
-    QVariant invokeMethodEx(Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
     // QAccessibleValueInterface
     QVariant currentValue();
@@ -205,7 +205,7 @@ protected:
 #endif // QT_NO_SLIDER
 
 #ifndef QT_NO_DIAL
-class QAccessibleDial : public QAccessibleWidgetEx
+class QAccessibleDial : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDial(QWidget *w);
@@ -221,7 +221,7 @@ public:
     QString text(Text textType, int child) const;
     Role role(int child) const;
     State state(int child) const;
-    QVariant invokeMethodEx(Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
 protected:
     QDial *dial() const;

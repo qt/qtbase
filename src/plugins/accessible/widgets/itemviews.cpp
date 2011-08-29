@@ -107,7 +107,7 @@ QAccessibleInterface *QAccessibleTable2::childFromLogical(int logicalIndex) cons
 }
 
 QAccessibleTable2::QAccessibleTable2(QWidget *w)
-    : QAccessibleObjectEx(w)
+    : QAccessibleObject(w)
 {
     view = qobject_cast<QAbstractItemView *>(w);
     Q_ASSERT(view);
@@ -368,7 +368,7 @@ QAccessible::Role QAccessibleTable2::role(int child) const
 QAccessible::State QAccessibleTable2::state(int child) const
 {
     Q_ASSERT(child == 0);
-    return QAccessible::Normal | HasInvokeExtension;
+    return QAccessible::Normal;
 }
 
 int QAccessibleTable2::childAt(int x, int y) const

@@ -66,7 +66,7 @@ class QDockWidgetLayout;
 class QMainWindow;
 
 #ifndef QT_NO_TEXTEDIT
-class QAccessibleTextEdit : public QAccessibleWidgetEx, public QAccessibleTextInterface,
+class QAccessibleTextEdit : public QAccessibleWidget, public QAccessibleTextInterface,
                             public QAccessibleEditableTextInterface
 {
     Q_ACCESSIBLE_OBJECT
@@ -77,7 +77,7 @@ public:
     void setText(Text t, int control, const QString &text);
     Role role(int child) const;
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 
     QRect rect(int child) const;
     int childAt(int x, int y) const;
@@ -122,13 +122,13 @@ private:
 };
 #endif // QT_NO_TEXTEDIT
 
-class QAccessibleStackedWidget : public QAccessibleWidgetEx
+class QAccessibleStackedWidget : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleStackedWidget(QWidget *widget);
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
@@ -138,7 +138,7 @@ protected:
     QStackedWidget *stackedWidget() const;
 };
 
-class QAccessibleToolBox : public QAccessibleWidgetEx
+class QAccessibleToolBox : public QAccessibleWidget
 {
     Q_ACCESSIBLE_OBJECT
 public:
@@ -147,7 +147,7 @@ public:
     QString text(Text textType, int child) const;
     void setText(Text textType, int child, const QString &text);
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -157,13 +157,13 @@ protected:
 };
 
 #ifndef QT_NO_MDIAREA
-class QAccessibleMdiArea : public QAccessibleWidgetEx
+class QAccessibleMdiArea : public QAccessibleWidget
 {
 public:
     explicit QAccessibleMdiArea(QWidget *widget);
 
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -172,7 +172,7 @@ protected:
     QMdiArea *mdiArea() const;
 };
 
-class QAccessibleMdiSubWindow : public QAccessibleWidgetEx
+class QAccessibleMdiSubWindow : public QAccessibleWidget
 {
 public:
     explicit QAccessibleMdiSubWindow(QWidget *widget);
@@ -180,7 +180,7 @@ public:
     QString text(Text textType, int child) const;
     void setText(Text textType, int child, const QString &text);
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -193,13 +193,13 @@ protected:
 #endif // QT_NO_MDIAREA
 
 #ifndef QT_NO_WORKSPACE
-class QAccessibleWorkspace : public QAccessibleWidgetEx
+class QAccessibleWorkspace : public QAccessibleWidget
 {
 public:
     explicit QAccessibleWorkspace(QWidget *widget);
 
     State state(int child) const;
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -209,12 +209,12 @@ protected:
 };
 #endif
 
-class QAccessibleDialogButtonBox : public QAccessibleWidgetEx
+class QAccessibleDialogButtonBox : public QAccessibleWidget
 {
 public:
     explicit QAccessibleDialogButtonBox(QWidget *widget);
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
 };
 
 #ifndef QT_NO_TEXTBROWSER
@@ -228,12 +228,12 @@ public:
 #endif // QT_NO_TEXTBROWSER
 
 #ifndef QT_NO_CALENDARWIDGET
-class QAccessibleCalendarWidget : public QAccessibleWidgetEx
+class QAccessibleCalendarWidget : public QAccessibleWidget
 {
 public:
     explicit QAccessibleCalendarWidget(QWidget *widget);
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
@@ -250,7 +250,7 @@ private:
 #endif // QT_NO_CALENDARWIDGET
 
 #ifndef QT_NO_DOCKWIDGET
-class QAccessibleDockWidget: public QAccessibleWidgetEx
+class QAccessibleDockWidget: public QAccessibleWidget
 {
 public:
     explicit QAccessibleDockWidget(QWidget *widget);
@@ -262,7 +262,7 @@ public:
     State state(int child) const;
     int childAt(int x, int y) const;
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     QDockWidget *dockWidget() const;
 };
 
@@ -296,12 +296,12 @@ public:
 #endif // QT_NO_DOCKWIDGET
 
 #ifndef QT_NO_MAINWINDOW
-class QAccessibleMainWindow : public QAccessibleWidgetEx
+class QAccessibleMainWindow : public QAccessibleWidget
 {
 public:
     explicit QAccessibleMainWindow(QWidget *widget);
 
-    QVariant invokeMethodEx(QAccessible::Method method, int child, const QVariantList &params);
+    QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     int childCount() const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *iface) const;

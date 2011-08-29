@@ -76,34 +76,8 @@ protected:
     virtual ~QAccessibleObject();
 
 private:
-    friend class QAccessibleObjectEx;
     QAccessibleObjectPrivate *d;
     Q_DISABLE_COPY(QAccessibleObject)
-};
-
-class Q_WIDGETS_EXPORT QAccessibleObjectEx : public QAccessibleInterfaceEx
-{
-public:
-    explicit QAccessibleObjectEx(QObject *object);
-
-    bool isValid() const;
-    QObject *object() const;
-
-    // properties
-    QRect rect(int child) const;
-    void setText(Text t, int child, const QString &text);
-
-    // actions
-    int userActionCount(int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-    QString actionText(int action, Text t, int child) const;
-
-protected:
-    virtual ~QAccessibleObjectEx();
-
-private:
-    QAccessibleObjectPrivate *d;
-    Q_DISABLE_COPY(QAccessibleObjectEx)
 };
 
 class Q_WIDGETS_EXPORT QAccessibleApplication : public QAccessibleObject

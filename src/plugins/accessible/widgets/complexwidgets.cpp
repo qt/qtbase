@@ -1114,7 +1114,7 @@ QAccessible::State QAccessibleItemView::state(int child) const
 bool QAccessibleItemView::isValid() const
 {
     if (atViewport())
-        return QAccessibleWidgetEx::isValid();
+        return QAccessibleWidget::isValid();
     else
         return QAccessibleAbstractScrollArea::isValid();
 }
@@ -1353,7 +1353,7 @@ void QAccessibleItemView::cellAtIndex(int index, int *row, int *column, int *rSp
   Constructs a QAccessibleHeader object for \a w.
 */
 QAccessibleHeader::QAccessibleHeader(QWidget *w)
-: QAccessibleWidgetEx(w)
+: QAccessibleWidget(w)
 {
     Q_ASSERT(header());
     addControllingSignal(QLatin1String("sectionClicked(int)"));
@@ -1369,7 +1369,7 @@ QHeaderView *QAccessibleHeader::header() const
 QRect QAccessibleHeader::rect(int child) const
 {
     if (!child)
-        return QAccessibleWidgetEx::rect(0);
+        return QAccessibleWidget::rect(0);
 
     QHeaderView *h = header();
     QPoint zero = h->mapToGlobal(QPoint(0, 0));
@@ -1411,7 +1411,7 @@ QString QAccessibleHeader::text(Text t, int child) const
         }
     }
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, child);
+        str = QAccessibleWidget::text(t, child);
     return str;
 }
 
@@ -1424,7 +1424,7 @@ QAccessible::Role QAccessibleHeader::role(int) const
 /*! \reimp */
 QAccessible::State QAccessibleHeader::state(int child) const
 {
-    State state = QAccessibleWidgetEx::state(child);
+    State state = QAccessibleWidget::state(child);
 
     if (child) {
         int section = child - 1;
@@ -1455,7 +1455,7 @@ QAccessible::State QAccessibleHeader::state(int child) const
   Constructs a QAccessibleTabBar object for \a w.
 */
 QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
-: QAccessibleWidgetEx(w)
+: QAccessibleWidget(w)
 {
     Q_ASSERT(tabBar());
 }
@@ -1483,7 +1483,7 @@ QAbstractButton *QAccessibleTabBar::button(int child) const
 QRect QAccessibleTabBar::rect(int child) const
 {
     if (!child || !tabBar()->isVisible())
-        return QAccessibleWidgetEx::rect(0);
+        return QAccessibleWidget::rect(0);
 
     QPoint tp = tabBar()->mapToGlobal(QPoint(0,0));
     QRect rec;
@@ -1530,7 +1530,7 @@ QString QAccessibleTabBar::text(Text t, int child) const
     }
 
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, child);;
+        str = QAccessibleWidget::text(t, child);;
     return str;
 }
 
@@ -1547,7 +1547,7 @@ QAccessible::Role QAccessibleTabBar::role(int child) const
 /*! \reimp */
 QAccessible::State QAccessibleTabBar::state(int child) const
 {
-    State st = QAccessibleWidgetEx::state(0);
+    State st = QAccessibleWidget::state(0);
 
     if (!child)
         return st;
@@ -1663,7 +1663,7 @@ QVector<int> QAccessibleTabBar::selection() const
   Constructs a QAccessibleComboBox object for \a w.
 */
 QAccessibleComboBox::QAccessibleComboBox(QWidget *w)
-: QAccessibleWidgetEx(w, ComboBox)
+: QAccessibleWidget(w, ComboBox)
 {
     Q_ASSERT(comboBox());
 }
@@ -1698,7 +1698,7 @@ QRect QAccessibleComboBox::rect(int child) const
         sc = QStyle::SC_ComboBoxArrow;
         break;
     default:
-        return QAccessibleWidgetEx::rect(child);
+        return QAccessibleWidget::rect(child);
     }
 
     if (sc != QStyle::SC_None) {
@@ -1734,7 +1734,7 @@ int QAccessibleComboBox::navigate(RelationFlag rel, int entry, QAccessibleInterf
     default:
         break;
     }
-    return QAccessibleWidgetEx::navigate(rel, entry, target);
+    return QAccessibleWidget::navigate(rel, entry, target);
 }
 
 /*! \reimp */
@@ -1780,7 +1780,7 @@ QString QAccessibleComboBox::text(Text t, int child) const
         if (child == OpenList)
             str = QComboBox::tr("Open");
         else
-            str = QAccessibleWidgetEx::text(t, 0);
+            str = QAccessibleWidget::text(t, 0);
         break;
 #endif
     case Value:
@@ -1799,7 +1799,7 @@ QString QAccessibleComboBox::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, 0);
+        str = QAccessibleWidget::text(t, 0);
     return str;
 }
 
@@ -1823,7 +1823,7 @@ QAccessible::Role QAccessibleComboBox::role(int child) const
 /*! \reimp */
 QAccessible::State QAccessibleComboBox::state(int /*child*/) const
 {
-    return QAccessibleWidgetEx::state(0);
+    return QAccessibleWidget::state(0);
 }
 
 /*! \reimp */
@@ -1864,7 +1864,7 @@ static inline void removeInvisibleWidgetsFromList(QWidgetList *list)
 #ifndef QT_NO_SCROLLAREA
 // ======================= QAccessibleAbstractScrollArea =======================
 QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
-    : QAccessibleWidgetEx(widget, Client)
+    : QAccessibleWidget(widget, Client)
 {
     Q_ASSERT(qobject_cast<QAbstractScrollArea *>(widget));
 }
@@ -1872,7 +1872,7 @@ QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
 QString QAccessibleAbstractScrollArea::text(Text textType, int child) const
 {
     if (child == Self)
-        return QAccessibleWidgetEx::text(textType, 0);
+        return QAccessibleWidget::text(textType, 0);
     QWidgetList children = accessibleChildren();
     if (child < 1 || child > children.count())
         return QString();
@@ -1889,7 +1889,7 @@ void QAccessibleAbstractScrollArea::setText(Text textType, int child, const QStr
     if (text.isEmpty())
         return;
     if (child == 0) {
-        QAccessibleWidgetEx::setText(textType, 0, text);
+        QAccessibleWidget::setText(textType, 0, text);
         return;
     }
     QWidgetList children = accessibleChildren();
@@ -1905,19 +1905,19 @@ void QAccessibleAbstractScrollArea::setText(Text textType, int child, const QStr
 QAccessible::State QAccessibleAbstractScrollArea::state(int child) const
 {
     if (child == Self)
-        return QAccessibleWidgetEx::state(child);
+        return QAccessibleWidget::state(child);
     QWidgetList children = accessibleChildren();
     if (child < 1 || child > children.count())
-        return QAccessibleWidgetEx::state(Self);
+        return QAccessibleWidget::state(Self);
     QAccessibleInterface *childInterface = queryAccessibleInterface(children.at(child - 1));
     if (!childInterface)
-        return QAccessibleWidgetEx::state(Self);
+        return QAccessibleWidget::state(Self);
     QAccessible::State returnState = childInterface->state(0);
     delete childInterface;
     return returnState;
 }
 
-QVariant QAccessibleAbstractScrollArea::invokeMethodEx(QAccessible::Method, int, const QVariantList &)
+QVariant QAccessibleAbstractScrollArea::invokeMethod(QAccessible::Method, int, const QVariantList &)
 {
     return QVariant();
 }
@@ -1939,7 +1939,7 @@ int QAccessibleAbstractScrollArea::indexOfChild(const QAccessibleInterface *chil
 
 bool QAccessibleAbstractScrollArea::isValid() const
 {
-    return (QAccessibleWidgetEx::isValid() && abstractScrollArea() && abstractScrollArea()->viewport());
+    return (QAccessibleWidget::isValid() && abstractScrollArea() && abstractScrollArea()->viewport());
 }
 
 int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
@@ -2052,7 +2052,7 @@ int QAccessibleAbstractScrollArea::navigate(RelationFlag relation, int entry, QA
             break;
         }
     } else {
-        return QAccessibleWidgetEx::navigate(relation, entry, target);
+        return QAccessibleWidget::navigate(relation, entry, target);
     }
 
     if (qobject_cast<const QScrollBar *>(targetWidget))
@@ -2066,7 +2066,7 @@ QRect QAccessibleAbstractScrollArea::rect(int child) const
     if (!abstractScrollArea()->isVisible())
         return QRect();
     if (child == Self)
-        return QAccessibleWidgetEx::rect(child);
+        return QAccessibleWidget::rect(child);
     QWidgetList children = accessibleChildren();
     if (child < 1 || child > children.count())
         return QRect();

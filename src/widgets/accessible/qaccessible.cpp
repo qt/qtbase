@@ -1153,13 +1153,13 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 QVariant QAccessibleInterface::invokeMethod(Method method, int child, const QVariantList &params)
 {
-    if (!(state(0) & HasInvokeExtension))
-        return QVariant();
-
-    return static_cast<QAccessibleInterfaceEx *>(this)->invokeMethodEx(method, child, params);
+    Q_UNUSED(method)
+    Q_UNUSED(child)
+    Q_UNUSED(params)
+    return QVariant();
 }
 
-QVariant QAccessibleInterfaceEx::virtual_hook(const QVariant &)
+QVariant QAccessibleInterface::virtual_hook(const QVariant &)
 {
     return QVariant();
 }
@@ -1167,9 +1167,7 @@ QVariant QAccessibleInterfaceEx::virtual_hook(const QVariant &)
 /*! \internal */
 QAccessible2Interface *QAccessibleInterface::cast_helper(QAccessible2::InterfaceType t)
 {
-    if (state(0) & HasInvokeExtension)
-        return static_cast<QAccessibleInterfaceEx *>(this)->interface_cast(t);
-    return 0;
+    return interface_cast(t);
 }
 
 QT_END_NAMESPACE

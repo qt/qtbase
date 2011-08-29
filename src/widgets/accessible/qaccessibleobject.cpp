@@ -380,29 +380,6 @@ QString QAccessibleApplication::actionText(int action, Text text, int child) con
     return QAccessibleObject::actionText(action, text, child);
 }
 
-// ### Qt 5: remove me - binary compatibility hack
-QAccessibleObjectEx::QAccessibleObjectEx(QObject *object)
-{
-    d = new QAccessibleObjectPrivate;
-    d->object = object;
-}
-bool QAccessibleObjectEx::isValid() const
-{ return reinterpret_cast<const QAccessibleObject *>(this)->QAccessibleObject::isValid(); }
-QObject *QAccessibleObjectEx::object() const
-{ return reinterpret_cast<const QAccessibleObject *>(this)->QAccessibleObject::object(); }
-QRect QAccessibleObjectEx::rect(int child) const
-{ return reinterpret_cast<const QAccessibleObject *>(this)->QAccessibleObject::rect(child); }
-void QAccessibleObjectEx::setText(Text t, int child, const QString &text)
-{ reinterpret_cast<QAccessibleObject *>(this)->QAccessibleObject::setText(t, child, text); }
-int QAccessibleObjectEx::userActionCount(int child) const
-{ return reinterpret_cast<const QAccessibleObject *>(this)->QAccessibleObject::userActionCount(child); }
-bool QAccessibleObjectEx::doAction(int action, int child, const QVariantList &params)
-{ return reinterpret_cast<QAccessibleObject *>(this)->QAccessibleObject::doAction(action, child, params); }
-QString QAccessibleObjectEx::actionText(int action, Text t, int child) const
-{ return reinterpret_cast<const QAccessibleObject *>(this)->QAccessibleObject::actionText(action, t, child); }
-QAccessibleObjectEx::~QAccessibleObjectEx()
-{ delete d; }
-
 QT_END_NAMESPACE
 
 #endif //QT_NO_ACCESSIBILITY

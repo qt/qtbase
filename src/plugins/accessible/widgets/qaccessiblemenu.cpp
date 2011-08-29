@@ -56,7 +56,7 @@ QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
 QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
 
 QAccessibleMenu::QAccessibleMenu(QWidget *w)
-: QAccessibleWidgetEx(w)
+: QAccessibleWidget(w)
 {
     Q_ASSERT(menu());
 }
@@ -74,7 +74,7 @@ int QAccessibleMenu::childCount() const
 QRect QAccessibleMenu::rect(int child) const
 {
     if (!child || child > childCount())
-        return QAccessibleWidgetEx::rect(child);
+        return QAccessibleWidget::rect(child);
 
     QRect r = menu()->actionGeometry(menu()->actions()[child - 1]);
     QPoint tlp = menu()->mapToGlobal(QPoint(0,0));
@@ -92,7 +92,7 @@ int QAccessibleMenu::childAt(int x, int y) const
 
 QString QAccessibleMenu::text(Text t, int child) const
 {
-    QString tx = QAccessibleWidgetEx::text(t, child);
+    QString tx = QAccessibleWidget::text(t, child);
     if (tx.size())
         return tx;
 
@@ -126,7 +126,7 @@ QAccessible::Role QAccessibleMenu::role(int child) const
 
 QAccessible::State QAccessibleMenu::state(int child) const
 {
-    State s = QAccessibleWidgetEx::state(child);
+    State s = QAccessibleWidget::state(child);
     if (!child)
         return s;
 
@@ -160,7 +160,7 @@ QString QAccessibleMenu::actionText(int action, QAccessible::Text text, int chil
         return QMenu::tr("Execute");
      }
 
-    return QAccessibleWidgetEx::actionText(action, text, child);
+    return QAccessibleWidget::actionText(action, text, child);
 }
 
 bool QAccessibleMenu::doAction(int act, int child, const QVariantList &)
@@ -212,11 +212,11 @@ int QAccessibleMenu::navigate(RelationFlag relation, int entry, QAccessibleInter
                 delete iface;
             }
         } else {
-            return QAccessibleWidgetEx::navigate(relation, entry, target); 
+            return QAccessibleWidget::navigate(relation, entry, target);
         }
         break;}
     default:
-        return QAccessibleWidgetEx::navigate(relation, entry, target);
+        return QAccessibleWidget::navigate(relation, entry, target);
     }
 
 
@@ -241,7 +241,7 @@ int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child ) const
 
 #ifndef QT_NO_MENUBAR
 QAccessibleMenuBar::QAccessibleMenuBar(QWidget *w)
-: QAccessibleWidgetEx(w)
+: QAccessibleWidget(w)
 {
     Q_ASSERT(menuBar());
 }
@@ -259,7 +259,7 @@ int QAccessibleMenuBar::childCount() const
 QRect QAccessibleMenuBar::rect(int child) const
 {
     if (!child)
-        return QAccessibleWidgetEx::rect(child);
+        return QAccessibleWidget::rect(child);
 
     QRect r = menuBar()->actionGeometry(menuBar()->actions()[child - 1]);
     QPoint tlp = menuBar()->mapToGlobal(QPoint(0,0));
@@ -296,7 +296,7 @@ int QAccessibleMenuBar::navigate(RelationFlag relation, int entry, QAccessibleIn
         }
         break;
     default:
-        return QAccessibleWidgetEx::navigate(relation, entry, target);
+        return QAccessibleWidget::navigate(relation, entry, target);
     }
 
 
@@ -336,7 +336,7 @@ QString QAccessibleMenuBar::text(Text t, int child) const
         }
     }
     if (str.isEmpty())
-        str = QAccessibleWidgetEx::text(t, child);
+        str = QAccessibleWidget::text(t, child);
     return str;
 }
 
@@ -353,7 +353,7 @@ QAccessible::Role QAccessibleMenuBar::role(int child) const
 
 QAccessible::State QAccessibleMenuBar::state(int child) const
 {
-    State s = QAccessibleWidgetEx::state(child);
+    State s = QAccessibleWidget::state(child);
     if (!child)
         return s;
 
@@ -385,7 +385,7 @@ QString QAccessibleMenuBar::actionText(int action, QAccessible::Text text, int c
         return QMenu::tr("Execute");
     }
 
-    return QAccessibleWidgetEx::actionText(action, text, child);
+    return QAccessibleWidget::actionText(action, text, child);
 }
 
 bool QAccessibleMenuBar::doAction(int act, int child, const QVariantList &)
