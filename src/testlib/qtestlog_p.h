@@ -82,7 +82,6 @@ public:
     static void info(const char *msg, const char *file, int line);
 
     static void startLogging();
-    static void startLogging(unsigned int randomSeed);
     static void stopLogging();
 
     static void setLogMode(LogMode mode);

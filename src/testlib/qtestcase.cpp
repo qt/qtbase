@@ -869,10 +869,7 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
-    static bool randomOrder = false;
     static int keyVerbose = -1;
-    static unsigned int seed = 0;
-    static bool seedSet = false;
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     static bool noCrashHandler = false;
 #endif
@@ -958,37 +955,6 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
     return keyDelay;
 }
 
-void seedRandom()
-{
-    static bool randomSeeded = false;
-    if (!randomSeeded) {
-        if (!QTest::seedSet) {
-            QElapsedTimer timer;
-            timer.start();
-            QTest::seed = timer.msecsSinceReference();
-        }
-        qsrand(QTest::seed);
-        randomSeeded = true;
-    }
-}
-
-template<typename T>
-void swap(T * array, int pos, int otherPos)
-{
-    T tmp = array[pos];
-    array[pos] = array[otherPos];
-    array[otherPos] = tmp;
-}
-
-template<typename T>
-static void randomizeList(T * array, int size)
-{
-    for (int i = 0; i != size; i++) {
-        int pos = qrand() % size;
-        swap(array, pos, i);
-    }
-}
-
 static bool isValidSlot(const QMetaMethod &sl)
 {
     if (sl.access() != QMetaMethod::Private || !sl.parameterTypes().isEmpty()
@@ -1046,9 +1012,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -v1        : Print enter messages for each testfunction\n"
          " -v2        : Also print out each QVERIFY/QCOMPARE/QTEST\n"
          " -vs        : Print every signal emitted\n"
-         " -random    : Run testcases within each test in random order\n"
-         " -seed n    : Positive integer to be used as seed for -random. If not specified,\n"
-         "              the current time will be used as seed.\n"
          " -eventdelay ms    : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
          " -keydelay ms      : Set default delay for keyboard simulation to ms milliseconds\n"
          " -mousedelay ms    : Set default delay for mouse simulation to ms milliseconds\n"
@@ -1177,22 +1140,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #endif
         } else if (strcmp(argv[i], "-eventcounter") == 0) {
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::EventCounter);
-        } else if (strcmp(argv[i], "-random") == 0) {
-            QTest::randomOrder = true;
-        } else if (strcmp(argv[i], "-seed") == 0) {
-            bool argumentOk = false;
-            if (i + 1 < argc) {
-                char * endpt = 0;
-                long longSeed = strtol(argv[++i], &endpt, 10);
-                argumentOk = (*endpt == '\0' && longSeed >= 0);
-                QTest::seed = longSeed;
-            }
-            if (!argumentOk) {
-                fprintf(stderr, "-seed needs an extra positive integer parameter to specify the seed\n");
-                exit(1);
-            } else {
-                QTest::seedSet = true;
-            }
         } else if (strcmp(argv[i], "-minimumvalue") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "-minimumvalue needs an extra parameter to indicate the minimum time(ms)\n");
@@ -1296,11 +1243,6 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             testFuncCount++;
             QTEST_ASSERT(QTest::testFuncCount < 512);
         }
-    }
-
-    if (QTest::seedSet && !QTest::randomOrder) {
-        fprintf(stderr, "-seed requires -random\n");
-        exit(1);
     }
 }
 
@@ -1596,11 +1538,7 @@ static void qInvokeTestMethods(QObject *testObject)
 {
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
-    if (QTest::randomOrder) {
-        QTestLog::startLogging(QTest::seed);
-    } else {
-        QTestLog::startLogging();
-    }
+    QTestLog::startLogging();
     QTestResult::setCurrentTestFunction("initTestCase");
     QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
     QTestTable::globalTestTable();
@@ -1617,8 +1555,6 @@ static void qInvokeTestMethods(QObject *testObject)
         if(!QTestResult::skipCurrentTest() && !previousFailed) {
 
             if (QTest::testFuncs) {
-                if (QTest::randomOrder)
-                    randomizeList(QTest::testFuncs, QTest::testFuncCount);
                 for (int i = 0; i != QTest::testFuncCount; i++) {
                     if (!qInvokeTestMethod(metaObject->method(QTest::testFuncs[i].function()).signature(),
                                                               QTest::testFuncs[i].data())) {
@@ -1631,8 +1567,6 @@ static void qInvokeTestMethods(QObject *testObject)
                 QMetaMethod *testMethods = new QMetaMethod[methodCount];
                 for (int i = 0; i != methodCount; i++)
                     testMethods[i] = metaObject->method(i);
-                if (QTest::randomOrder)
-                    randomizeList(testMethods, methodCount);
                 for (int i = 0; i != methodCount; i++) {
                     if (!isValidSlot(testMethods[i]))
                         continue;
@@ -1840,9 +1774,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     QTestResult::setCurrentTestObject(metaObject->className());
     qtest_qParseArgs(argc, argv, false);
-    if (QTest::randomOrder) {
-        seedRandom();
-    }
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
         const QStringList origAppArgs(QCoreApplication::arguments());
