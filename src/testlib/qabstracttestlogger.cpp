@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "QtTest/private/qabstracttestlogger_p.h"
-#include "QtTest/private/qtestlog_p.h"
 #include "QtTest/qtestassert.h"
 
 #include "QtCore/qbytearray.h"
@@ -55,57 +54,38 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QTest
-{
-    static FILE *stream = 0;
-}
-
 void QAbstractTestLogger::outputString(const char *msg)
 {
-    QTEST_ASSERT(QTest::stream);
+    QTEST_ASSERT(stream);
 
-    ::fputs(msg, QTest::stream);
-    ::fflush(QTest::stream);
+    ::fputs(msg, stream);
+    ::fflush(stream);
 }
 
-bool QAbstractTestLogger::isTtyOutput()
+void QAbstractTestLogger::startLogging(const char *filename)
 {
-    QTEST_ASSERT(QTest::stream);
+    QTEST_ASSERT(!stream);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_INTEGRITY)
-    return true;
-#else
-    static bool ttyoutput = isatty(fileno(QTest::stream));
-    return ttyoutput;
-#endif
-}
-
-
-void QAbstractTestLogger::startLogging()
-{
-    QTEST_ASSERT(!QTest::stream);
-
-    const char *out = QTestLog::outputFileName();
-    if (!out) {
-        QTest::stream = stdout;
+    if (!filename) {
+        stream = stdout;
         return;
     }
 #if defined(_MSC_VER) && _MSC_VER >= 1400 && !defined(Q_OS_WINCE)
-    if (::fopen_s(&QTest::stream, out, "wt")) {
+    if (::fopen_s(&stream, filename, "wt")) {
 #else
-    QTest::stream = ::fopen(out, "wt");
-    if (!QTest::stream) {
+    stream = ::fopen(filename, "wt");
+    if (!stream) {
 #endif
-        printf("Unable to open file for logging: %s", out);
+        fprintf(stderr, "Unable to open file for logging: %s", filename);
         ::exit(1);
     }
 }
 
 void QAbstractTestLogger::stopLogging()
 {
-    QTEST_ASSERT(QTest::stream);
-    if (QTest::stream != stdout) {
-        fclose(QTest::stream);
+    QTEST_ASSERT(stream);
+    if (stream != stdout) {
+        fclose(stream);
     } else {
 #ifdef Q_OS_SYMBIAN
         // Convenience sleep for Symbian and TRK. Without this sleep depending on the timing the
@@ -114,7 +94,7 @@ void QAbstractTestLogger::stopLogging()
         User::AfterHighRes(2*1000*1000);
 #endif
     }
-    QTest::stream = 0;
+    stream = 0;
 }
 
 namespace QTest

@@ -438,6 +438,11 @@ public:
     QFontEngine *engine(int at) const
     {Q_ASSERT(at < engines.size()); return engines.at(at); }
 
+    inline void ensureEngineAt(int at)
+    {
+        if (at >= engines.size() || engines.at(at) == 0)
+            loadEngine(at);
+    }
 
 protected:
     friend class QPSPrintEnginePrivate;

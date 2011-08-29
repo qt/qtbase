@@ -111,6 +111,8 @@ private slots:
     void makeAsyncComplexCallPeer();
     void makeAsyncMultiOutCallPeer();
 
+    void callWithTimeout();
+
     void stringPropRead();
     void stringPropWrite();
     void variantPropRead();
@@ -456,6 +458,96 @@ void tst_QDBusAbstractInterface::makeAsyncMultiOutCallPeer()
     QCOMPARE(r.value(), targetObj.multiOutMethod(expectedValue));
     QCOMPARE(r.argumentAt<1>(), expectedValue);
     QCoreApplication::instance()->processEvents();
+}
+
+static const char server_serviceName[] = "com.trolltech.autotests.dbusserver";
+static const char server_objectPath[] = "/com/trolltech/server";
+static const char server_interfaceName[] = "com.trolltech.QtDBus.Pinger";
+
+class DBusServerThread : public QThread
+{
+public:
+    DBusServerThread() {
+        start();
+        m_ready.acquire();
+    }
+    ~DBusServerThread() {
+        quit();
+        wait();
+    }
+
+    void run()
+    {
+        QDBusConnection con = QDBusConnection::connectToBus(QDBusConnection::SessionBus, "ThreadConnection");
+        if (!con.isConnected())
+            qWarning("Error registering to DBus");
+        if (!con.registerService(server_serviceName))
+            qWarning("Error registering service name");
+        Interface targetObj;
+        con.registerObject(server_objectPath, &targetObj, QDBusConnection::ExportScriptableContents);
+        m_ready.release();
+        exec();
+
+        QDBusConnection::disconnectFromBus( con.name() );
+    }
+private:
+    QSemaphore m_ready;
+};
+
+void tst_QDBusAbstractInterface::callWithTimeout()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY2(con.isConnected(), "Not connected to D-Bus");
+
+    DBusServerThread serverThread;
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(server_serviceName,
+                                                      server_objectPath, server_interfaceName, "sleepMethod");
+    msg << 100;
+
+    {
+       // Call with no timeout -> works
+        QDBusMessage reply = con.call(msg);
+        QCOMPARE((int)reply.type(), (int)QDBusMessage::ReplyMessage);
+        QCOMPARE(reply.arguments().at(0).toInt(), 42);
+    }
+
+    {
+        // Call with 1 sec timeout -> fails
+        QDBusMessage reply = con.call(msg, QDBus::Block, 1);
+        QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
+    }
+
+    // Now using QDBusInterface
+
+    QDBusInterface iface(server_serviceName, server_objectPath, server_interfaceName, con);
+    {
+        // Call with no timeout
+        QDBusMessage reply = iface.call("sleepMethod", 100);
+        QCOMPARE(reply.type(), QDBusMessage::ReplyMessage);
+        QCOMPARE(reply.arguments().at(0).toInt(), 42);
+    }
+    {
+        // Call with 1 sec timeout -> fails
+        iface.setTimeout(1);
+        QDBusMessage reply = iface.call("sleepMethod", 100);
+        QCOMPARE(reply.type(), QDBusMessage::ErrorMessage);
+    }
+
+    // Now using generated code
+    com::trolltech::QtDBus::Pinger p(server_serviceName, server_objectPath, QDBusConnection::sessionBus());
+    {
+        // Call with no timeout
+        QDBusReply<int> reply = p.sleepMethod(100);
+        QVERIFY(reply.isValid());
+        QCOMPARE(int(reply), 42);
+    }
+    {
+        // Call with 1 sec timeout -> fails
+        p.setTimeout(1);
+        QDBusReply<int> reply = p.sleepMethod(100);
+        QVERIFY(!reply.isValid());
+    }
 }
 
 void tst_QDBusAbstractInterface::stringPropRead()

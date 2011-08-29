@@ -58,18 +58,14 @@ struct QTestCharBuffer;
 class QTestBasicStreamer
 {
     public:
-        QTestBasicStreamer();
+        QTestBasicStreamer(QTestLogger *logger);
         virtual ~QTestBasicStreamer();
 
         virtual void output(QTestElement *element) const;
 
         void outputString(const char *msg) const;
-        bool isTtyOutput();
-        void startStreaming();
-        void stopStreaming();
 
-        void setLogger(const QTestLogger *tstLogger);
-        const QTestLogger *logger() const;
+        QTestLogger *logger() const;
 
     protected:
         virtual void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
@@ -81,7 +77,7 @@ class QTestBasicStreamer
         virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
 
     private:
-        const QTestLogger *testLogger;
+        QTestLogger *testLogger;
 };
 
 QT_END_NAMESPACE

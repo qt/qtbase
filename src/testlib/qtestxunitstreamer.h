@@ -55,7 +55,7 @@ class QTestLogger;
 class QTestXunitStreamer: public QTestBasicStreamer
 {
     public:
-        QTestXunitStreamer();
+        QTestXunitStreamer(QTestLogger *logger);
         ~QTestXunitStreamer();
 
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;

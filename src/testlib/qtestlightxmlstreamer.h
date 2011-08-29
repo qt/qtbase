@@ -56,7 +56,7 @@ class QTestElementAttribute;
 class QTestLightXmlStreamer: public QTestBasicStreamer
 {
     public:
-        QTestLightXmlStreamer();
+        QTestLightXmlStreamer(QTestLogger *logger);
         ~QTestLightXmlStreamer();
 
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
