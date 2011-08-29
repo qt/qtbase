@@ -43,6 +43,7 @@
 #define QOPENGLCONTEXT_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 
 #include <QtGui/QSurfaceFormat>

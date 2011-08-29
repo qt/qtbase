@@ -115,6 +115,7 @@ SUBDIRS=\
     qmovie \
     qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
+    qopengl \
     qpaintengine \
     qpainterpath \
     qpainterpathstroker \
