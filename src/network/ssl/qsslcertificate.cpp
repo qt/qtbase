@@ -901,6 +901,7 @@ static const char *certificate_blacklist[] = {
     "92:39:d5:34:8f:40:d1:69:5a:74:54:70:e1:f2:3f:43",
     "b0:b7:13:3e:d0:96:f9:b5:6f:ae:91:c8:74:bd:3a:c0",
     "d8:f3:5f:4e:b7:87:2b:2d:ab:06:92:e3:15:38:2f:b0",
+    "05:e2:e6:a4:cd:09:ea:54:d6:65:b0:75:fe:22:a2:56",
     0
 };
 
