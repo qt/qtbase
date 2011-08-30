@@ -282,6 +282,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
+    dictionary[ "V8" ]              = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
@@ -991,6 +992,10 @@ void Configure::parseCmdLine()
             dictionary[ "WEBKIT" ] = "yes";
         } else if (configCmdLine.at(i) == "-webkit-debug") {
             dictionary[ "WEBKIT" ] = "debug";
+        } else if (configCmdLine.at(i) == "-no-v8") {
+            dictionary[ "V8" ] = "no";
+        } else if (configCmdLine.at(i) == "-v8") {
+            dictionary[ "V8" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-declarative") {
             dictionary[ "DECLARATIVE" ] = "no";
         } else if (configCmdLine.at(i) == "-declarative") {
@@ -1876,6 +1881,8 @@ bool Configure::displayHelp()
         desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
         desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
+        desc("V8", "no",        "-no-v8",               "Do not build the V8 module.");
+        desc("V8", "yes",       "-v8",                  "Build the V8 module.");
         desc("DECLARATIVE", "no",    "-no-declarative", "Do not build the declarative module");
         desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
         desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
@@ -2190,7 +2197,7 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "DECLARATIVE") {
+    } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS" || part == "V8" || part == "DECLARATIVE") {
         available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-msvc2010") || (dictionary.value("QMAKESPEC") == "win32-g++");
@@ -2333,8 +2340,10 @@ void Configure::autoDetection()
         dictionary["PHONON"] = checkAvailability("PHONON") ? "yes" : "no";
     if (dictionary["WEBKIT"] == "auto")
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
+    if (dictionary["V8"] == "auto")
+        dictionary["V8"] = checkAvailability("V8") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
-        dictionary["DECLARATIVE"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
+        dictionary["DECLARATIVE"] = dictionary["V8"] == "yes" ? "yes" : "no";
     if (dictionary["DECLARATIVE_DEBUG"] == "auto")
         dictionary["DECLARATIVE_DEBUG"] = dictionary["DECLARATIVE"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2392,9 +2401,9 @@ bool Configure::verifyConfiguration()
             if (!(l.contains(dictionary["ARM_FPU_TYPE"])))
                     cout << QString("WARNING: Using unsupported fpu flag: %1").arg(dictionary["ARM_FPU_TYPE"]) << endl;
     }
-    if (dictionary["DECLARATIVE"] == "yes" && dictionary["SCRIPT"] == "no") {
+    if (dictionary["DECLARATIVE"] == "yes" && dictionary["V8"] == "no") {
         cout << "WARNING: To be able to compile QtDeclarative we need to also compile the" << endl
-             << "QtScript module. If you continue, we will turn on the QtScript module." << endl
+             << "V8 module. If you continue, we will turn on the V8 module." << endl
              << "(Press any key to continue..)";
         if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
             exit(0);      // Exit cleanly for Ctrl+C
@@ -2754,8 +2763,8 @@ void Configure::generateOutputVars()
 
 // No longer needed after modularization
 //    if (dictionary["DECLARATIVE"] == "yes") {
-//        if (dictionary[ "SCRIPT" ] == "no") {
-//            cout << "QtDeclarative was requested, but it can't be built due to QtScript being "
+//        if (dictionary[ "V8" ] == "no") {
+//            cout << "QtDeclarative was requested, but it can't be built due to V8 being "
 //                    "disabled." << endl;
 //            dictionary[ "DONE" ] = "error";
 //        }
@@ -3186,6 +3195,7 @@ void Configure::generateConfigfiles()
         if (dictionary["OPENSSL"] == "linked")       qconfigList += "QT_LINKED_OPENSSL";
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
+        if (dictionary["V8"] == "no")                qconfigList += "QT_NO_V8";
         if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
         if (dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
@@ -3480,6 +3490,7 @@ void Configure::displayConfig()
         if (declarative == "yes")
             cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     }
+    cout << "V8 support.................." << dictionary[ "V8" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;

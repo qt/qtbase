@@ -13,7 +13,9 @@ SRC_SUBDIRS += src_corelib
 SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
+
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
+!contains(QT_CONFIG, no-v8): SRC_SUBDIRS += src_v8
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins
@@ -30,6 +32,8 @@ src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_corelib.subdir = $$QT_SOURCE_TREE/src/corelib
 src_corelib.target = sub-corelib
+src_v8.subdir = $$QT_SOURCE_TREE/src/v8
+src_v8.target = sub-v8
 src_xml.subdir = $$QT_SOURCE_TREE/src/xml
 src_xml.target = sub-xml
 src_uitools.subdir = $$QT_SOURCE_TREE/src/uitools

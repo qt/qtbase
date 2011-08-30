@@ -33,7 +33,7 @@ $qtbasedir = dirname(dirname($0)) if (!$qtbasedir);
 $qtbasedir =~ s=\\=/=g if (defined $qtbasedir);
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, %classnames, %mastercontent, %modulepris);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %mastercontent, %modulepris);
 
 # global variables (modified by options)
 my $isunix = 0;
@@ -792,6 +792,8 @@ loadSyncProfile(\$basedir, \$out_basedir);
 
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
+my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
+
 $isunix = checkUnix; #cache checkUnix
 
 # create path
@@ -827,6 +829,9 @@ foreach my $lib (@modules_to_sync) {
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});
+
+    my $allheadersprivate = 0;
+    $allheadersprivate = 1 if $allmoduleheadersprivate{$lib};
 
     #information used after the syncing
     my $pri_install_classes = "";
@@ -955,7 +960,7 @@ foreach my $lib (@modules_to_sync) {
                     my $header_copies = 0;
                     #figure out if it is a public header
                     my $public_header = $header;
-                    if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                    if($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                         $public_header = 0;
                     } else {
                         foreach (@ignore_for_master_contents) {

@@ -1834,6 +1834,18 @@ void tst_QMatrixNxN::inverted4x4_data()
     QTest::newRow("invertible")
         << (void *)invertible.v << (void *)inverted.v << true;
 
+    static Matrix4 const invertible2 = {
+        {1.0f, 2.0f, 4.0f, 2.0f,
+         8.0f, 3.0f, 5.0f, 3.0f,
+         6.0f, 7.0f, 9.0f, 4.0f,
+         0.0f, 0.0f, 0.0f, 1.0f}
+    };
+    static Matrix4 inverted2;
+    m4Inverse(invertible2, inverted2);
+
+    QTest::newRow("invertible2")
+        << (void *)invertible2.v << (void *)inverted2.v << true;
+
     static Matrix4 const translate = {
         {1.0f, 0.0f, 0.0f, 2.0f,
          0.0f, 1.0f, 0.0f, 3.0f,
@@ -1907,12 +1919,12 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     m2.rotate(45.0, 1.0, 0.0, 0.0);
     m2.translate(10.0, 0.0, 0.0);
 
-    // Use optimize() to drop the internal flags that
+    // Use operator() to drop the internal flags that
     // mark the matrix as orthonormal.  This will force inverted()
     // to compute m3.inverted() the long way.  We can then compare
     // the result to what the faster algorithm produces on m2.
     QMatrix4x4 m3 = m2;
-    m3.optimize();
+    m3(0, 0);
     bool invertible;
     QVERIFY(qFuzzyCompare(m2.inverted(&invertible), m3.inverted()));
     QVERIFY(invertible);
@@ -1920,7 +1932,7 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     QMatrix4x4 m4;
     m4.rotate(45.0, 0.0, 1.0, 0.0);
     QMatrix4x4 m5 = m4;
-    m5.optimize();
+    m5(0, 0);
     QVERIFY(qFuzzyCompare(m4.inverted(), m5.inverted()));
 
     QMatrix4x4 m6;
@@ -1928,7 +1940,7 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     m1.translate(-20.0, 20.0, 15.0);
     m1.rotate(25, 1.0, 0.0, 0.0);
     QMatrix4x4 m7 = m6;
-    m7.optimize();
+    m7(0, 0);
     QVERIFY(qFuzzyCompare(m6.inverted(), m7.inverted()));
 }
 
@@ -2449,6 +2461,11 @@ void tst_QMatrixNxN::normalMatrix_data()
          0.0f, 7.0f, 0.0f, 5.0f,
          0.0f, 0.0f, 9.0f, -3.0f,
          0.0f, 0.0f, 0.0f, 1.0f};
+    static qreal const rotateValues[16] =
+        {0.0f, 0.0f, 1.0f, 0.0f,
+         1.0f, 0.0f, 0.0f, 0.0f,
+         0.0f, 1.0f, 0.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
     static qreal const nullScaleValues1[16] =
         {0.0f, 0.0f, 0.0f, 4.0f,
          0.0f, 7.0f, 0.0f, 5.0f,
@@ -2468,6 +2485,7 @@ void tst_QMatrixNxN::normalMatrix_data()
     QTest::newRow("translate") << (void *)translateValues;
     QTest::newRow("scale") << (void *)scaleValues;
     QTest::newRow("both") << (void *)bothValues;
+    QTest::newRow("rotate") << (void *)rotateValues;
     QTest::newRow("null scale 1") << (void *)nullScaleValues1;
     QTest::newRow("null scale 2") << (void *)nullScaleValues2;
     QTest::newRow("null scale 3") << (void *)nullScaleValues3;
@@ -2844,11 +2862,13 @@ void tst_QMatrixNxN::convertGeneric()
 
 // Copy of "flagBits" in qmatrix4x4.h.
 enum {
-    Identity        = 0x0001,   // Identity matrix
-    General         = 0x0002,   // General matrix, unknown contents
-    Translation     = 0x0004,   // Contains a simple translation
-    Scale           = 0x0008,   // Contains a simple scale
-    Rotation        = 0x0010    // Contains a simple rotation
+    Identity        = 0x0000, // Identity matrix
+    Translation     = 0x0001, // Contains a translation
+    Scale           = 0x0002, // Contains a scale
+    Rotation2D      = 0x0004, // Contains a rotation about the Z axis
+    Rotation        = 0x0008, // Contains an arbitrary rotation
+    Perspective     = 0x0010, // Last row is different from (0, 0, 0, 1)
+    General         = 0x001f  // General matrix, unknown contents
 };
 
 // Structure that allows direct access to "flagBits" for testing.
@@ -2886,17 +2906,73 @@ void tst_QMatrixNxN::optimize_data()
         0.0f, 0.0f, 1.0f, 4.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-    QTest::newRow("scale")
+    QTest::newRow("translate")
         << (void *)translateValues << (int)Translation;
 
-    static qreal bothValues[16] = {
+    static qreal scaleTranslateValues[16] = {
         1.0f, 0.0f, 0.0f, 2.0f,
         0.0f, 2.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 4.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-    QTest::newRow("both")
-        << (void *)bothValues << (int)(Scale | Translation);
+    QTest::newRow("scaleTranslate")
+        << (void *)scaleTranslateValues << (int)(Scale | Translation);
+
+    static qreal rotateValues[16] = {
+        0.0f, 1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("rotate")
+        << (void *)rotateValues << (int)Rotation2D;
+
+    // Left-handed system, not a simple rotation.
+    static qreal scaleRotateValues[16] = {
+        0.0f, 1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("scaleRotate")
+        << (void *)scaleRotateValues << (int)(Scale | Rotation2D);
+
+    static qreal matrix2x2Values[16] = {
+        1.0f, 2.0f, 0.0f, 0.0f,
+        8.0f, 3.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 9.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("matrix2x2")
+        << (void *)matrix2x2Values << (int)(Scale | Rotation2D);
+
+    static qreal matrix3x3Values[16] = {
+        1.0f, 2.0f, 4.0f, 0.0f,
+        8.0f, 3.0f, 5.0f, 0.0f,
+        6.0f, 7.0f, 9.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("matrix3x3")
+        << (void *)matrix3x3Values << (int)(Scale | Rotation2D | Rotation);
+
+    static qreal rotateTranslateValues[16] = {
+        0.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f, 0.0f, 0.0f, 2.0f,
+        0.0f, 0.0f, 1.0f, 3.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("rotateTranslate")
+        << (void *)rotateTranslateValues << (int)(Translation | Rotation2D);
+
+    // Left-handed system, not a simple rotation.
+    static qreal scaleRotateTranslateValues[16] = {
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f, 2.0f,
+        0.0f, 0.0f, 1.0f, 3.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    QTest::newRow("scaleRotateTranslate")
+        << (void *)scaleRotateTranslateValues << (int)(Translation | Scale | Rotation2D);
 
     static qreal belowValues[16] = {
         1.0f, 0.0f, 0.0f, 0.0f,
@@ -3240,7 +3316,6 @@ void tst_QMatrixNxN::mapVector()
     QFETCH(void *, mValues);
 
     QMatrix4x4 m1((const qreal *)mValues);
-    m1.optimize();
 
     QVector3D v(3.5f, -1.0f, 2.5f);
 
@@ -3250,10 +3325,15 @@ void tst_QMatrixNxN::mapVector()
          v.x() * m1(2, 0) + v.y() * m1(2, 1) + v.z() * m1(2, 2));
 
     QVector3D actual = m1.mapVector(v);
+    m1.optimize();
+    QVector3D actual2 = m1.mapVector(v);
 
     QVERIFY(fuzzyCompare(actual.x(), expected.x()));
     QVERIFY(fuzzyCompare(actual.y(), expected.y()));
     QVERIFY(fuzzyCompare(actual.z(), expected.z()));
+    QVERIFY(fuzzyCompare(actual2.x(), expected.x()));
+    QVERIFY(fuzzyCompare(actual2.y(), expected.y()));
+    QVERIFY(fuzzyCompare(actual2.z(), expected.z()));
 }
 
 class tst_QMatrixNxN4x4Properties : public QObject

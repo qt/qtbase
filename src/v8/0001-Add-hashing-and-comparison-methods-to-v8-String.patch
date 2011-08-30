@@ -1,0 +1,343 @@
+From e13ce09287a56c920d5ffdc5d4662d49f1838f16 Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Mon, 23 May 2011 15:47:20 +1000
+Subject: [PATCH 01/13] Add hashing and comparison methods to v8::String
+
+This allows us to more rapidly search for a v8::String inside
+a hash of QStrings.
+---
+ include/v8.h      |   44 ++++++++++++++++++++++++++++++
+ src/api.cc        |   43 +++++++++++++++++++++++++++++
+ src/heap-inl.h    |    2 +
+ src/heap.cc       |    3 ++
+ src/objects-inl.h |    1 +
+ src/objects.cc    |   77 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/objects.h     |   15 +++++++++-
+ 7 files changed, 182 insertions(+), 3 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index d15d024..bbd29e9 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -994,6 +994,48 @@ class String : public Primitive {
+   V8EXPORT int Utf8Length() const;
+
+   /**
++   * Returns the hash of this string.
++   */
++  V8EXPORT uint32_t Hash() const;
++
++  struct CompleteHashData {
++    CompleteHashData() : length(0), hash(0), symbol_id(0) {}
++    int length;
++    uint32_t hash;
++    uint32_t symbol_id;
++  };
++
++  /**
++   * Returns the "complete" hash of the string.  This is
++   * all the information about the string needed to implement
++   * a very efficient hash keyed on the string.
++   *
++   * The members of CompleteHashData are:
++   *    length: The length of the string.  Equivalent to Length()
++   *    hash: The hash of the string.  Equivalent to Hash()
++   *    symbol_id: If the string is a sequential symbol, the symbol
++   *        id, otherwise 0.  If the symbol ids of two strings are
++   *        the same (and non-zero) the two strings are identical.
++   *        If the symbol ids are different the strings may still be
++   *        identical, but an Equals() check must be performed.
++   */
++  V8EXPORT CompleteHashData CompleteHash() const;
++
++  /**
++   * Compute a hash value for the passed UTF16 string
++   * data.
++   */
++  V8EXPORT static uint32_t ComputeHash(uint16_t *string, int length);
++  V8EXPORT static uint32_t ComputeHash(char *string, int length);
++
++  /**
++   * Returns true if this string is equal to the external
++   * string data provided.
++   */
++  V8EXPORT bool Equals(uint16_t *string, int length);
++  V8EXPORT bool Equals(char *string, int length);
++
++  /**
+    * Write the contents of the string to an external buffer.
+    * If no arguments are given, expects the buffer to be large
+    * enough to hold the entire string and NULL terminator. Copies
+@@ -1023,6 +1065,8 @@ class String : public Primitive {
+     HINT_MANY_WRITES_EXPECTED = 1
+   };
+
++  V8EXPORT uint16_t GetCharacter(int index);
++
+   V8EXPORT int Write(uint16_t* buffer,
+                      int start = 0,
+                      int length = -1,
+diff --git a/src/api.cc b/src/api.cc
+index a2373cd..381935b 100644
+--- a/src/api.cc
++++ b/src/api.cc
+@@ -3284,6 +3284,49 @@ int String::Utf8Length() const {
+   return str->Utf8Length();
+ }
+
++uint32_t String::Hash() const {
++  i::Handle<i::String> str = Utils::OpenHandle(this);
++  if (IsDeadCheck(str->GetIsolate(), "v8::String::Hash()")) return 0;
++  return str->Hash();
++}
++
++String::CompleteHashData String::CompleteHash() const {
++  i::Handle<i::String> str = Utils::OpenHandle(this);
++  if (IsDeadCheck(str->GetIsolate(), "v8::String::CompleteHash()")) return CompleteHashData();
++  CompleteHashData result;
++  result.length = str->length();
++  result.hash = str->Hash();
++  if (str->IsSeqString())
++      result.symbol_id = i::SeqString::cast(*str)->symbol_id();
++  return result;
++}
++
++uint32_t String::ComputeHash(uint16_t *string, int length) {
++  return i::HashSequentialString<i::uc16>(string, length) >> i::String::kHashShift;
++}
++
++uint32_t String::ComputeHash(char *string, int length) {
++  return i::HashSequentialString<char>(string, length) >> i::String::kHashShift;
++}
++
++uint16_t String::GetCharacter(int index)
++{
++  i::Handle<i::String> str = Utils::OpenHandle(this);
++  return str->Get(index);
++}
++
++bool String::Equals(uint16_t *string, int length) {
++  i::Handle<i::String> str = Utils::OpenHandle(this);
++  if (IsDeadCheck(str->GetIsolate(), "v8::String::Equals()")) return 0;
++  return str->SlowEqualsExternal(string, length);
++}
++
++bool String::Equals(char *string, int length)
++{
++  i::Handle<i::String> str = Utils::OpenHandle(this);
++  if (IsDeadCheck(str->GetIsolate(), "v8::String::Equals()")) return 0;
++  return str->SlowEqualsExternal(string, length);
++}
+
+ int String::WriteUtf8(char* buffer,
+                       int capacity,
+diff --git a/src/heap-inl.h b/src/heap-inl.h
+index 99737ed..f4fce7b 100644
+--- a/src/heap-inl.h
++++ b/src/heap-inl.h
+@@ -93,6 +93,7 @@ MaybeObject* Heap::AllocateAsciiSymbol(Vector<const char> str,
+   String* answer = String::cast(result);
+   answer->set_length(str.length());
+   answer->set_hash_field(hash_field);
++  SeqString::cast(answer)->set_symbol_id(0);
+
+   ASSERT_EQ(size, answer->Size());
+
+@@ -126,6 +127,7 @@ MaybeObject* Heap::AllocateTwoByteSymbol(Vector<const uc16> str,
+   String* answer = String::cast(result);
+   answer->set_length(str.length());
+   answer->set_hash_field(hash_field);
++  SeqString::cast(answer)->set_symbol_id(0);
+
+   ASSERT_EQ(size, answer->Size());
+
+diff --git a/src/heap.cc b/src/heap.cc
+index 2b6c11f..930c97b 100644
+--- a/src/heap.cc
++++ b/src/heap.cc
+@@ -3519,6 +3519,7 @@ MaybeObject* Heap::AllocateInternalSymbol(unibrow::CharacterStream* buffer,
+   String* answer = String::cast(result);
+   answer->set_length(chars);
+   answer->set_hash_field(hash_field);
++  SeqString::cast(result)->set_symbol_id(0);
+
+   ASSERT_EQ(size, answer->Size());
+
+@@ -3561,6 +3562,7 @@ MaybeObject* Heap::AllocateRawAsciiString(int length, PretenureFlag pretenure) {
+   HeapObject::cast(result)->set_map(ascii_string_map());
+   String::cast(result)->set_length(length);
+   String::cast(result)->set_hash_field(String::kEmptyHashField);
++  SeqString::cast(result)->set_symbol_id(0);
+   ASSERT_EQ(size, HeapObject::cast(result)->Size());
+   return result;
+ }
+@@ -3596,6 +3598,7 @@ MaybeObject* Heap::AllocateRawTwoByteString(int length,
+   HeapObject::cast(result)->set_map(string_map());
+   String::cast(result)->set_length(length);
+   String::cast(result)->set_hash_field(String::kEmptyHashField);
++  SeqString::cast(result)->set_symbol_id(0);
+   ASSERT_EQ(size, HeapObject::cast(result)->Size());
+   return result;
+ }
+diff --git a/src/objects-inl.h b/src/objects-inl.h
+index 65aec5d..c82080d 100644
+--- a/src/objects-inl.h
++++ b/src/objects-inl.h
+@@ -1924,6 +1924,7 @@ INT_ACCESSORS(ExternalArray, length, kLengthOffset)
+
+
+ SMI_ACCESSORS(String, length, kLengthOffset)
++SMI_ACCESSORS(SeqString, symbol_id, kSymbolIdOffset)
+
+
+ uint32_t String::hash_field() {
+diff --git a/src/objects.cc b/src/objects.cc
+index df61956..dc4b260 100644
+--- a/src/objects.cc
++++ b/src/objects.cc
+@@ -5346,6 +5346,66 @@ static inline bool CompareStringContentsPartial(Isolate* isolate,
+   }
+ }
+
++bool String::SlowEqualsExternal(uc16 *string, int length) {
++  int len = this->length();
++  if (len != length) return false;
++  if (len == 0) return true;
++
++  // We know the strings are both non-empty. Compare the first chars
++  // before we try to flatten the strings.
++  if (this->Get(0) != string[0]) return false;
++
++  String* lhs = this->TryFlattenGetString();
++
++  if (lhs->IsFlat()) {
++    if (lhs->IsAsciiRepresentation()) {
++      Vector<const char> vec1 = lhs->ToAsciiVector();
++      VectorIterator<char> buf1(vec1);
++      VectorIterator<uc16> ib(string, length);
++      return CompareStringContents(&buf1, &ib);
++    } else {
++      Vector<const uc16> vec1 = lhs->ToUC16Vector();
++      Vector<const uc16> vec2(string, length);
++      return CompareRawStringContents(vec1, vec2);
++    }
++  } else {
++    Isolate* isolate = GetIsolate();
++    isolate->objects_string_compare_buffer_a()->Reset(0, lhs);
++    VectorIterator<uc16> ib(string, length);
++    return CompareStringContents(isolate->objects_string_compare_buffer_a(), &ib);
++  }
++}
++
++bool String::SlowEqualsExternal(char *string, int length)
++{
++  int len = this->length();
++  if (len != length) return false;
++  if (len == 0) return true;
++
++  // We know the strings are both non-empty. Compare the first chars
++  // before we try to flatten the strings.
++  if (this->Get(0) != string[0]) return false;
++
++  String* lhs = this->TryFlattenGetString();
++
++  if (StringShape(lhs).IsSequentialAscii()) {
++      const char* str1 = SeqAsciiString::cast(lhs)->GetChars();
++      return CompareRawStringContents(Vector<const char>(str1, len),
++                                      Vector<const char>(string, len));
++  }
++
++  if (lhs->IsFlat()) {
++      Vector<const uc16> vec1 = lhs->ToUC16Vector();
++      VectorIterator<const uc16> buf1(vec1);
++      VectorIterator<char> buf2(string, length);
++      return CompareStringContents(&buf1, &buf2);
++  } else {
++    Isolate* isolate = GetIsolate();
++    isolate->objects_string_compare_buffer_a()->Reset(0, lhs);
++    VectorIterator<char> ib(string, length);
++    return CompareStringContents(isolate->objects_string_compare_buffer_a(), &ib);
++  }
++}
+
+ bool String::SlowEquals(String* other) {
+   // Fast check: negative check with lengths.
+@@ -8655,9 +8715,24 @@ class AsciiSymbolKey : public SequentialSymbolKey<char> {
+
+   MaybeObject* AsObject() {
+     if (hash_field_ == 0) Hash();
+-    return HEAP->AllocateAsciiSymbol(string_, hash_field_);
++    MaybeObject *result = HEAP->AllocateAsciiSymbol(string_, hash_field_);
++    if (!result->IsFailure() && result->ToObjectUnchecked()->IsSeqString()) {
++        while (true) {
++            Atomic32 my_symbol_id = next_symbol_id;
++            if (my_symbol_id > Smi::kMaxValue)
++                break;
++            if (my_symbol_id == NoBarrier_CompareAndSwap(&next_symbol_id, my_symbol_id, my_symbol_id + 1)) {
++                SeqString::cast(result->ToObjectUnchecked())->set_symbol_id(my_symbol_id);
++                break;
++            }
++        }
++    }
++    return result;
+   }
++
++  static Atomic32 next_symbol_id;
+ };
++Atomic32 AsciiSymbolKey::next_symbol_id = 1;
+
+
+ class TwoByteSymbolKey : public SequentialSymbolKey<uc16> {
+diff --git a/src/objects.h b/src/objects.h
+index e966b3d..6e26f57 100644
+--- a/src/objects.h
++++ b/src/objects.h
+@@ -5359,6 +5359,9 @@ class String: public HeapObject {
+   bool IsAsciiEqualTo(Vector<const char> str);
+   bool IsTwoByteEqualTo(Vector<const uc16> str);
+
++  bool SlowEqualsExternal(uc16 *string, int length);
++  bool SlowEqualsExternal(char *string, int length);
++
+   // Return a UTF8 representation of the string.  The string is null
+   // terminated but may optionally contain nulls.  Length is returned
+   // in length_output if length_output is not a null pointer  The string
+@@ -5610,9 +5613,17 @@ class String: public HeapObject {
+ class SeqString: public String {
+  public:
+
++  // Get and set the symbol id of the string
++  inline int symbol_id();
++  inline void set_symbol_id(int value);
++
+   // Casting.
+   static inline SeqString* cast(Object* obj);
+
++  // Layout description.
++  static const int kSymbolIdOffset = String::kSize;
++  static const int kSize = kSymbolIdOffset + kPointerSize;
++
+  private:
+   DISALLOW_IMPLICIT_CONSTRUCTORS(SeqString);
+ };
+@@ -5647,7 +5658,7 @@ class SeqAsciiString: public SeqString {
+   }
+
+   // Layout description.
+-  static const int kHeaderSize = String::kSize;
++  static const int kHeaderSize = SeqString::kSize;
+   static const int kAlignedSize = POINTER_SIZE_ALIGN(kHeaderSize);
+
+   // Maximal memory usage for a single sequential ASCII string.
+@@ -5701,7 +5712,7 @@ class SeqTwoByteString: public SeqString {
+   }
+
+   // Layout description.
+-  static const int kHeaderSize = String::kSize;
++  static const int kHeaderSize = SeqString::kSize;
+   static const int kAlignedSize = POINTER_SIZE_ALIGN(kHeaderSize);
+
+   // Maximal memory usage for a single sequential two-byte string.
+--
+1.7.2.3
+
