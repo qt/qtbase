@@ -226,6 +226,9 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!d->platformGLContext)
         return false;
 
+    if (thread() != QThread::currentThread())
+        qFatal("Cannot make QOpenGLContext current in a different thread");
+
     if (!surface) {
         doneCurrent();
         return true;
