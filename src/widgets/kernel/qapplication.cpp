@@ -486,7 +486,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-QString QApplicationPrivate::qmljs_debug_arguments;
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -5619,11 +5618,6 @@ QGestureManager* QGestureManager::instance()
     return qAppPriv->gestureManager;
 }
 #endif // QT_NO_GESTURES
-
-QString QApplicationPrivate::qmljsDebugArgumentsString()
-{
-    return qmljs_debug_arguments;
-}
 
 QT_END_NAMESPACE
 

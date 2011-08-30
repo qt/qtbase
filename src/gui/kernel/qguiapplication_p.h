@@ -176,6 +176,10 @@ public:
     static QFont *app_font;
 
     static bool quitOnLastWindowClosed;
+
+    QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
+    inline QString qmljsDebugArgumentsString() { return qmljs_debug_arguments; }
+
 private:
     void init();
 
