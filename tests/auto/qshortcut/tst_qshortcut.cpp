@@ -1124,7 +1124,8 @@ void tst_QShortcut::context()
 // ------------------------------------------------------------------
 void tst_QShortcut::clearAllShortcuts()
 {
-    qDeleteAll(shortcuts);
+    QList<QShortcut *> shortcutsCpy = shortcuts;
+    qDeleteAll(shortcutsCpy);
     shortcuts.clear();
 }
 
