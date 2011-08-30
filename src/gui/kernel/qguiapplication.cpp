@@ -546,9 +546,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
 
 void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
-    if (!e->window)
-        return;
-
     QEvent::Type type;
     // move first
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
@@ -560,6 +557,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     }
 
     QWindow *window = e->window.data();
+
+    if (!window)
+        window = QGuiApplication::topLevelAt(e->globalPos.toPoint());
 
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
