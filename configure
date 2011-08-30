@@ -7014,6 +7014,10 @@ fi'`
 
     [ -f "$outpath/config.status" ] && rm -f "$outpath/config.status"
     echo "#!/bin/sh" > "$outpath/config.status"
+    [ -n "$PKG_CONFIG_SYSROOT_DIR" ] && \
+        echo "export PKG_CONFIG_SYSROOT_DIR=$PKG_CONFIG_SYSROOT_DIR" >> "$outpath/config.status"
+    [ -n "$PKG_CONFIG_LIBDIR" ] && \
+        echo "export PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR" >> "$outpath/config.status"
     echo "if [ \"\$#\" -gt 0 ]; then" >> "$outpath/config.status"
     echo "  $CONFIG_STATUS \"\$@\"" >> "$outpath/config.status"
     echo "else" >> "$outpath/config.status"
