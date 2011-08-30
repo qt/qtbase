@@ -8,5 +8,5 @@
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

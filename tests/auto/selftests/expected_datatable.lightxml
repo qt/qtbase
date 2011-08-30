@@ -3,16 +3,16 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="singleTestFunction1">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="singleTestFunction2">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="fiveTablePasses">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="fiveTableFailures">
 <Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/datatable/tst_datatable.cpp" line="91">
@@ -48,5 +48,5 @@
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

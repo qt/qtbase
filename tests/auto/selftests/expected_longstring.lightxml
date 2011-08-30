@@ -3,7 +3,7 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="failWithLongString">
 <Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/longstring/tst_longstring.cpp" line="67">
@@ -19,5 +19,5 @@ Aenean posuere, tortor sed cursus feugiat, nunc augue blandit nunc, eu sollicitu
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

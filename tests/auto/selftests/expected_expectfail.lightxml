@@ -3,7 +3,7 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="expectAndContinue">
 <Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/expectfail/tst_expectfail.cpp" line="60">
@@ -31,5 +31,5 @@
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

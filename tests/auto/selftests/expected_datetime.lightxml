@@ -3,7 +3,7 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="dateTime">
 <Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/datetime/tst_datetime.cpp" line="66">
@@ -23,5 +23,5 @@
 </Incident>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
