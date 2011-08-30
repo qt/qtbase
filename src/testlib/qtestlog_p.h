@@ -63,7 +63,6 @@ class Q_TESTLIB_EXPORT QTestLog
 {
 public:
     enum LogMode { Plain = 0, XML, LightXML, XunitXML };
-    enum FlushMode { NoFlush = 0, FlushOn };
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();
@@ -95,7 +94,6 @@ public:
 
     static void setMaxWarnings(int max);
 
-    static void setFlushMode(FlushMode mode);
 private:
     QTestLog();
     ~QTestLog();

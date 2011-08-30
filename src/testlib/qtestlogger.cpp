@@ -42,8 +42,6 @@
 #include "qtestlogger_p.h"
 #include "qtestelement.h"
 #include "qtestxunitstreamer.h"
-#include "qtestxmlstreamer.h"
-#include "qtestlightxmlstreamer.h"
 
 #include "QtTest/qtestcase.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -53,12 +51,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestLogger::QTestLogger(int fm)
+QTestLogger::QTestLogger()
     : listOfTestcases(0)
     , currentLogElement(0)
     , errorLogElement(0)
     , logFormatter(0)
-    , format( (TestLoggerFormat)fm )
     , testCounter(0)
     , failureCounter(0)
     , errorCounter(0)
@@ -67,11 +64,7 @@ QTestLogger::QTestLogger(int fm)
 
 QTestLogger::~QTestLogger()
 {
-    if(format == TLF_XunitXml)
-        delete currentLogElement;
-    else
-        delete listOfTestcases;
-
+    delete currentLogElement;
     delete logFormatter;
 }
 
@@ -79,71 +72,57 @@ void QTestLogger::startLogging(const char *filename)
 {
     QAbstractTestLogger::startLogging(filename);
 
-    switch(format){
-    case TLF_LightXml:
-        logFormatter = new QTestLightXmlStreamer(this);
-        break;
-    case TLF_XML:
-        logFormatter = new QTestXmlStreamer(this);
-        break;
-    case TLF_XunitXml:
-        logFormatter = new QTestXunitStreamer(this);
-        delete errorLogElement;
-        errorLogElement = new QTestElement(QTest::LET_SystemError);
-        break;
-    }
+    logFormatter = new QTestXunitStreamer(this);
+    delete errorLogElement;
+    errorLogElement = new QTestElement(QTest::LET_SystemError);
 }
 
 void QTestLogger::stopLogging()
 {
     QTestElement *iterator = listOfTestcases;
 
-    if(format == TLF_XunitXml ){
-        char buf[10];
+    char buf[10];
 
-        currentLogElement = new QTestElement(QTest::LET_TestSuite);
-        currentLogElement->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
+    currentLogElement = new QTestElement(QTest::LET_TestSuite);
+    currentLogElement->addAttribute(QTest::AI_Name, QTestResult::currentTestObjectName());
 
-        QTest::qt_snprintf(buf, sizeof(buf), "%i", testCounter);
-        currentLogElement->addAttribute(QTest::AI_Tests, buf);
+    QTest::qt_snprintf(buf, sizeof(buf), "%i", testCounter);
+    currentLogElement->addAttribute(QTest::AI_Tests, buf);
 
-        QTest::qt_snprintf(buf, sizeof(buf), "%i", failureCounter);
-        currentLogElement->addAttribute(QTest::AI_Failures, buf);
+    QTest::qt_snprintf(buf, sizeof(buf), "%i", failureCounter);
+    currentLogElement->addAttribute(QTest::AI_Failures, buf);
 
-        QTest::qt_snprintf(buf, sizeof(buf), "%i", errorCounter);
-        currentLogElement->addAttribute(QTest::AI_Errors, buf);
+    QTest::qt_snprintf(buf, sizeof(buf), "%i", errorCounter);
+    currentLogElement->addAttribute(QTest::AI_Errors, buf);
 
-        QTestElement *property;
-        QTestElement *properties = new QTestElement(QTest::LET_Properties);
+    QTestElement *property;
+    QTestElement *properties = new QTestElement(QTest::LET_Properties);
 
-        property = new QTestElement(QTest::LET_Property);
-        property->addAttribute(QTest::AI_Name, "QTestVersion");
-        property->addAttribute(QTest::AI_PropertyValue, QTEST_VERSION_STR);
-        properties->addLogElement(property);
+    property = new QTestElement(QTest::LET_Property);
+    property->addAttribute(QTest::AI_Name, "QTestVersion");
+    property->addAttribute(QTest::AI_PropertyValue, QTEST_VERSION_STR);
+    properties->addLogElement(property);
 
-        property = new QTestElement(QTest::LET_Property);
-        property->addAttribute(QTest::AI_Name, "QtVersion");
-        property->addAttribute(QTest::AI_PropertyValue, qVersion());
-        properties->addLogElement(property);
+    property = new QTestElement(QTest::LET_Property);
+    property->addAttribute(QTest::AI_Name, "QtVersion");
+    property->addAttribute(QTest::AI_PropertyValue, qVersion());
+    properties->addLogElement(property);
 
-        currentLogElement->addLogElement(properties);
+    currentLogElement->addLogElement(properties);
 
-        currentLogElement->addLogElement(iterator);
+    currentLogElement->addLogElement(iterator);
 
-        /* For correct indenting, make sure every testcase knows its parent */
-        QTestElement* testcase = iterator;
-        while (testcase) {
-            testcase->setParent(currentLogElement);
-            testcase = testcase->nextElement();
-        }
-
-        currentLogElement->addLogElement(errorLogElement);
-
-        QTestElement *it = currentLogElement;
-        logFormatter->output(it);
-    }else{
-        logFormatter->output(iterator);
+    /* For correct indenting, make sure every testcase knows its parent */
+    QTestElement* testcase = iterator;
+    while (testcase) {
+        testcase->setParent(currentLogElement);
+        testcase = testcase->nextElement();
     }
+
+    currentLogElement->addLogElement(errorLogElement);
+
+    QTestElement *it = currentLogElement;
+    logFormatter->output(it);
 
     QAbstractTestLogger::stopLogging();
 }
@@ -187,8 +166,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         break;
     }
 
-    if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass
-            || ((format != TLF_XunitXml) && (type == QAbstractTestLogger::XFail))) {
+    if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
         if(file)
@@ -241,7 +219,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         Since XFAIL does not add a failure to the testlog in xunitxml, add a message, so we still
         have some information about the expected failure.
     */
-    if (format == TLF_XunitXml && type == QAbstractTestLogger::XFail) {
+    if (type == QAbstractTestLogger::XFail) {
         QTestLogger::addMessage(QAbstractTestLogger::Info, description, file, line);
     }
 }

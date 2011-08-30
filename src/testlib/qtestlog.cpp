@@ -83,7 +83,6 @@ namespace QTest {
     static IgnoreResultList *ignoreResultList = 0;
 
     static QTestLog::LogMode logMode = QTestLog::Plain;
-    static QTestLog::FlushMode flushMode = QTestLog::NoFlush;
     static int verbosity = 0;
     static int maxWarnings = 2002;
 
@@ -173,22 +172,16 @@ namespace QTest {
             QTest::testLogger = new QPlainTestLogger;
             break;
         case QTestLog::XML:
-            if (QTest::flushMode == QTestLog::FlushOn)
-                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
-            else
-                QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
+            QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
             break;
         case QTestLog::LightXML:
-            if (QTest::flushMode == QTestLog::FlushOn)
-                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
-            else
-                QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
+            QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
             break;
         case QTestLog::XunitXML:
-            QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
+            QTest::testLogger = new QTestLogger();
+            break;
         }
     }
-
 }
 
 void QTestLog::enterTestFunction(const char* function)
@@ -366,11 +359,6 @@ const char *QTestLog::outputFileName()
 void QTestLog::setMaxWarnings(int m)
 {
     QTest::maxWarnings = m <= 0 ? INT_MAX : m + 2;
-}
-
-void QTestLog::setFlushMode(FlushMode mode)
-{
-    QTest::flushMode = mode;
 }
 
 QT_END_NAMESPACE

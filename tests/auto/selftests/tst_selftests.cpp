@@ -173,12 +173,10 @@ Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringLis
 static QList<Logger> allLoggers()
 {
     return QList<Logger>()
-        << Logger("plain",          "txt",      QStringList())
-        << Logger("xml",            "xml",      QStringList() << "-xml")
-        << Logger("xml flush",      "xml",      QStringList() << "-xml" << "-flush")
-        << Logger("xunitxml",       "xunitxml", QStringList() << "-xunitxml")
-        << Logger("lightxml",       "lightxml", QStringList() << "-lightxml")
-        << Logger("lightxml flush", "lightxml", QStringList() << "-lightxml" << "-flush")
+        << Logger("plain",    "txt",      QStringList())
+        << Logger("xml",      "xml",      QStringList() << "-xml")
+        << Logger("xunitxml", "xunitxml", QStringList() << "-xunitxml")
+        << Logger("lightxml", "lightxml", QStringList() << "-lightxml")
     ;
 }
 

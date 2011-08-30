@@ -63,15 +63,8 @@ class QTestElement;
 class QTestLogger : public QAbstractTestLogger
 {
     public:
-        QTestLogger(int fm = 0);
+        QTestLogger();
         ~QTestLogger();
-
-        enum TestLoggerFormat
-        {
-            TLF_XML = 0,
-            TLF_LightXml = 1,
-            TLF_XunitXml = 2
-        };
 
         void startLogging(const char *filename);
         void stopLogging();
@@ -92,7 +85,6 @@ class QTestLogger : public QAbstractTestLogger
         QTestElement *currentLogElement;
         QTestElement *errorLogElement;
         QTestBasicStreamer *logFormatter;
-        TestLoggerFormat format;
 
         int testCounter;
         int failureCounter;

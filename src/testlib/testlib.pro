@@ -31,12 +31,10 @@ HEADERS = qbenchmark.h \
     qtest_gui.h \
     qtest.h \
     qtestkeyboard.h \
-    qtestlightxmlstreamer.h \
     qtestmouse.h \
     qtestspontaneevent.h \
     qtestsystem.h \
     qtesttouch.h \
-    qtestxmlstreamer.h \
     qtestxunitstreamer.h
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \
@@ -57,8 +55,6 @@ SOURCES = qtestcase.cpp \
     qtestelementattribute.cpp \
     qtestbasicstreamer.cpp \
     qtestxunitstreamer.cpp \
-    qtestxmlstreamer.cpp \
-    qtestlightxmlstreamer.cpp \
     qtestlogger.cpp
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
