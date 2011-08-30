@@ -1,0 +1,25 @@
+From 0af1e15a3d6b28923c262a02a5ace35812c8f5d6 Mon Sep 17 00:00:00 2001
+From: Simon Hausmann <simon.hausmann@nokia.com>
+Date: Thu, 4 Aug 2011 21:28:38 +0200
+Subject: [PATCH 15/16] Fix source compatibility where the String::Equals
+ overloads would shadow the Value::Equals function,
+ breaking the build.
+
+---
+ include/v8.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index 4194d4a..5e1ce50 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -1048,6 +1048,7 @@ class String : public Primitive {
+    */
+   V8EXPORT bool Equals(uint16_t *string, int length);
+   V8EXPORT bool Equals(char *string, int length);
++  inline bool Equals(Handle<Value> that) const { return v8::Value::Equals(that); }
+
+   /**
+    * Write the contents of the string to an external buffer.
+--
+1.7.6

@@ -1,7 +1,7 @@
 From dac5d9db84cf20564621c679937ca7b9c6a8e880 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 27 May 2011 13:04:15 +1000
-Subject: [PATCH 07/13] Fix warnings
+Subject: [PATCH 07/16] Fix warnings
 
 ---
  include/v8.h |   16 ++++++++--------
@@ -42,5 +42,5 @@ index 9aba4a8..8891dab 100644
 
  }  // namespace internal
 --
-1.7.2.3
+1.7.6
 

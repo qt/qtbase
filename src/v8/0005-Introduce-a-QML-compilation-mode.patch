@@ -1,7 +1,7 @@
 From fd7d475e298e5b63cd6383c78cc900635c82aa38 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 18:26:19 +1000
-Subject: [PATCH 05/13] Introduce a QML compilation mode
+Subject: [PATCH 05/16] Introduce a QML compilation mode
 
 In QML mode, there is a second global object - known as the QML
 global object.  During property resolution, if a property is not
@@ -1773,5 +1773,5 @@ index 4c17720..aa284ed 100644
  static inline Operand StackSpaceOperand(int index) {
  #ifdef _WIN64
 --
-1.7.2.3
+1.7.6
 

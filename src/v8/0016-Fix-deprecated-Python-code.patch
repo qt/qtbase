@@ -1,0 +1,50 @@
+From 97cb46d421faebd2b139570bcf9aaf2d5eadc333 Mon Sep 17 00:00:00 2001
+From: Kent Hansen <kent.hansen@nokia.com>
+Date: Fri, 2 Sep 2011 12:03:09 +0200
+Subject: [PATCH 16/16] Fix deprecated Python code
+
+Needed to make the scripts run on Python 3, which is the
+default python interpreter on some newer distros.
+
+Patch from http://code.google.com/p/v8/issues/detail?id=1391
+---
+ tools/js2c.py  |    4 ++--
+ tools/jsmin.py |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/tools/js2c.py b/tools/js2c.py
+index 2da132f..d13d53d 100755
+--- a/tools/js2c.py
++++ b/tools/js2c.py
+@@ -187,14 +187,14 @@ def ReadMacros(lines):
+       macro_match = MACRO_PATTERN.match(line)
+       if macro_match:
+         name = macro_match.group(1)
+-        args = map(string.strip, macro_match.group(2).split(','))
++        args = args = [match.strip() for match in macro_match.group(2).split(',')]
+         body = macro_match.group(3).strip()
+         macros.append((re.compile("\\b%s\\(" % name), TextMacro(args, body)))
+       else:
+         python_match = PYTHON_MACRO_PATTERN.match(line)
+         if python_match:
+           name = python_match.group(1)
+-          args = map(string.strip, python_match.group(2).split(','))
++          args = [match.strip() for match in python_match.group(2).split(',')]
+           body = python_match.group(3).strip()
+           fun = eval("lambda " + ",".join(args) + ': ' + body)
+           macros.append((re.compile("\\b%s\\(" % name), PythonMacro(args, fun)))
+diff --git a/tools/jsmin.py b/tools/jsmin.py
+index 646bf14..395441b 100644
+--- a/tools/jsmin.py
++++ b/tools/jsmin.py
+@@ -154,7 +154,7 @@ class JavaScriptMinifier(object):
+       return var_name
+     while True:
+       identifier_first_char = self.identifier_counter % 52
+-      identifier_second_char = self.identifier_counter / 52
++      identifier_second_char = self.identifier_counter // 52
+       new_identifier = self.CharFromNumber(identifier_first_char)
+       if identifier_second_char != 0:
+         new_identifier = (
+--
+1.7.6

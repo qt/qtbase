@@ -1,7 +1,7 @@
 From bec11b8b7f89d135e7d9a823ac4fe98c70d017cf Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 27 Jun 2011 14:57:28 +1000
-Subject: [PATCH 08/13] Add custom object compare callback
+Subject: [PATCH 08/16] Add custom object compare callback
 
 A global custom object comparison callback can be set with:
     V8::SetUserObjectComparisonCallbackFunction()
@@ -485,5 +485,5 @@ index d923494..10b9b56 100644
    ASSERT(GetCondition() == equal);
    __ subq(rax, rdx);
 --
-1.7.2.3
+1.7.6
 

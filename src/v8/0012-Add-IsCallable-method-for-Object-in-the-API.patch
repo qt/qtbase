@@ -1,7 +1,8 @@
 From 472c04c9e7a64e8734c76d2cf97a7cc5b773b788 Mon Sep 17 00:00:00 2001
-From: ager@chromium.org <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
+From: "ager@chromium.org"
+ <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
 Date: Mon, 9 May 2011 15:24:48 +0000
-Subject: [PATCH 12/13] Add IsCallable method for Object in the API
+Subject: [PATCH 12/16] Add IsCallable method for Object in the API
 
 Patch by Peter Varga.
 
@@ -112,5 +113,5 @@ index 1334f63..45db5a1 100644
    return v8::HandleScope::NumberOfHandles();
  }
 --
-1.7.2.3
+1.7.6
 

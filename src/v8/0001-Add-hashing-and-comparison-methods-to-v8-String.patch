@@ -1,7 +1,7 @@
 From e13ce09287a56c920d5ffdc5d4662d49f1838f16 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:47:20 +1000
-Subject: [PATCH 01/13] Add hashing and comparison methods to v8::String
+Subject: [PATCH 01/16] Add hashing and comparison methods to v8::String
 
 This allows us to more rapidly search for a v8::String inside
 a hash of QStrings.
@@ -339,5 +339,5 @@ index e966b3d..6e26f57 100644
 
    // Maximal memory usage for a single sequential two-byte string.
 --
-1.7.2.3
+1.7.6
 
