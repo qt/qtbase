@@ -214,6 +214,11 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
 /*!
   If surface is 0 this is equivalent to calling doneCurrent().
+
+  Do not call this function from a different thread than the one the QOpenGLContext instance lives in. If
+  you wish to use QOpenGLContext from a different thread you should first call make sure it's not current
+  in the current thread, by calling doneCurrent() if necessary. Then call moveToThread(otherThread)
+  before using it in the other thread.
 */
 bool QOpenGLContext::makeCurrent(QSurface *surface)
 {
@@ -414,6 +419,28 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
     }
 }
 
+/*!
+    \class QOpenGLSharedResource
+    \internal
+    \since 5.0
+    \brief The QOpenGLSharedResource class is used to keep track of resources that
+    are shared between OpenGL contexts (like textures, framebuffer objects, shader
+    programs, etc), and clean them up in a safe way when they're no longer needed.
+
+    The QOpenGLSharedResource instance should never be deleted, instead free()
+    should be called when it's no longer needed. Thus it will be put on a queue
+    and freed at an appropriate time (when a context in the share group becomes
+    current).
+
+    The sub-class needs to implement two pure virtual functions. The first,
+    freeResource() must be implemented to actually do the freeing, for example
+    call glDeleteTextures() on a texture id. Qt makes sure a valid context in
+    the resource's share group is current at the time. The other, invalidateResource(),
+    is called by Qt in the circumstance when the last context in the share group is
+    destroyed before free() has been called. The implementation of invalidateResource()
+    should set any identifiers to 0 or set a flag to prevent them from being used
+    later on.
+*/
 QOpenGLSharedResource::QOpenGLSharedResource(QOpenGLContextGroup *group)
     : m_group(group)
 {
@@ -444,6 +471,15 @@ void QOpenGLSharedResource::free()
     }
 }
 
+/*!
+    \class QOpenGLSharedResourceGuard
+    \internal
+    \since 5.0
+    \brief The QOpenGLSharedResourceGuard class is a convenience sub-class of
+    QOpenGLSharedResource to be used to track a single OpenGL object with a
+    GLuint identifier. The constructor takes a function pointer to a function
+    that will be used to free the resource if and when necessary.
+*/
 void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
 {
     if (m_id) {
@@ -453,6 +489,21 @@ void QOpenGLSharedResourceGuard::freeResource(QOpenGLContext *context)
     }
 }
 
+/*!
+    \class QOpenGLMultiGroupSharedResource
+    \internal
+    \since 5.0
+    \brief The QOpenGLMultiGroupSharedResource keeps track of a shared resource
+    that might be needed from multiple contexts, like a glyph cache or gradient
+    cache. One instance of the object is created for each group when
+    necessary. The shared resource instance should have a constructor that
+    takes a QOpenGLContext *. To get an instance for a given context one calls
+    T *QOpenGLMultiGroupSharedResource::value<T>(context), where T is a sub-class
+    of QOpenGLSharedResource.
+
+    You should not call free() on QOpenGLSharedResources owned by a
+    QOpenGLMultiGroupSharedResource instance.
+*/
 QOpenGLMultiGroupSharedResource::QOpenGLMultiGroupSharedResource()
     : active(0)
 {
