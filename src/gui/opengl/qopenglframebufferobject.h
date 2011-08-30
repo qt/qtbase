@@ -45,6 +45,8 @@
 #include <QtGui/qopengl.h>
 #include <QtGui/qpaintdevice.h>
 
+#include <QtCore/qscopedpointer.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
