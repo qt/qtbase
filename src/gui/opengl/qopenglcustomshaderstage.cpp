@@ -41,7 +41,7 @@
 
 #include "qopenglcustomshaderstage_p.h"
 #include "qopenglengineshadermanager_p.h"
-#include "qpaintengineex_opengl2_p.h"
+#include "qopenglpaintengine_p.h"
 #include <private/qpainter_p.h>
 
 QT_BEGIN_NAMESPACE

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qtextureglyphcache_gl_p.h"
-#include "qpaintengineex_opengl2_p.h"
+#include "qopengltextureglyphcache_p.h"
+#include "qopenglpaintengine_p.h"
 #include "private/qopenglengineshadersource_p.h"
 
 QT_BEGIN_NAMESPACE

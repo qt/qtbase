@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTRIANGULATINGSTROKER_P_H
-#define QTRIANGULATINGSTROKER_P_H
+#ifndef QOPENGLTRIANGULATINGSTROKER_P_H
+#define QOPENGLTRIANGULATINGSTROKER_P_H
 
 #include <private/qdatabuffer_p.h>
 #include <qvarlengtharray.h>

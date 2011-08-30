@@ -41,7 +41,7 @@
 
 #include "qopenglengineshadermanager_p.h"
 #include "qopenglengineshadersource_p.h"
-#include "qpaintengineex_opengl2_p.h"
+#include "qopenglpaintengine_p.h"
 #include "qopenglshadercache_p.h"
 
 #include <QtGui/private/qopenglcontext_p.h>

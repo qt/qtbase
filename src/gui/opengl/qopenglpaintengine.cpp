@@ -65,7 +65,7 @@
 // #define QT_OPENGL_CACHE_AS_VBOS
 
 #include "qopenglgradientcache_p.h"
-#include "qpaintengineex_opengl2_p.h"
+#include "qopenglpaintengine_p.h"
 
 #include <string.h> //for memcpy
 #include <qmath.h>
@@ -84,8 +84,8 @@
 
 #include "qopenglengineshadermanager_p.h"
 #include "qopengl2pexvertexarray_p.h"
-#include "qtriangulatingstroker_p.h"
-#include "qtextureglyphcache_gl_p.h"
+#include "qopengltriangulatingstroker_p.h"
+#include "qopengltextureglyphcache_p.h"
 
 #include <QDebug>
 

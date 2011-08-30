@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTEXTUREGLYPHCACHE_GL_P_H
-#define QTEXTUREGLYPHCACHE_GL_P_H
+#ifndef QOPENTEXTUREGLYPHCACHE_P_H
+#define QOPENTEXTUREGLYPHCACHE_P_H
 
 //
 //  W A R N I N G

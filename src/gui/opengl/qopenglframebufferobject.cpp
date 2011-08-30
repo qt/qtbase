@@ -47,7 +47,7 @@
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
 #include <private/qfont_p.h>
-#include <private/qpaintengineex_opengl2_p.h>
+#include <private/qopenglpaintengine_p.h>
 
 #include <qwindow.h>
 #include <qlibrary.h>

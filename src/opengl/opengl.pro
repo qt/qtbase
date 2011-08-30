@@ -56,7 +56,6 @@ HEADERS +=  qglshaderprogram.h \
             gl2paintengineex/qglengineshadersource_p.h \
             gl2paintengineex/qglcustomshaderstage_p.h \
             gl2paintengineex/qtriangulatingstroker_p.h \
-            gl2paintengineex/qrbtree_p.h \
             gl2paintengineex/qtextureglyphcache_gl_p.h \
             gl2paintengineex/qglshadercache_p.h \
             gl2paintengineex/qglshadercache_meego_p.h

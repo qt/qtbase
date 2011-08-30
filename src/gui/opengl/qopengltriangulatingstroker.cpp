@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtriangulatingstroker_p.h"
+#include "qopengltriangulatingstroker_p.h"
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE

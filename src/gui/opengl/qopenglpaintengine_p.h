@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSCONTEXT_OPENGL2_P_H
-#define QGRAPHICSCONTEXT_OPENGL2_P_H
+#ifndef QOPENGLPAINTENGINE_P_H
+#define QOPENGLPAINTENGINE_P_H
 
 //
 //  W A R N I N G
@@ -61,7 +61,7 @@
 #include <private/qopenglpaintdevice_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
-#include <private/qtriangulatingstroker_p.h>
+#include <private/qopengltriangulatingstroker_p.h>
 
 #include <private/qopenglextensions_p.h>
 
