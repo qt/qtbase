@@ -90,16 +90,6 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
 
-    if (tlw->surfaceType() == QWindow::OpenGLSurface) {
-        NSRect glFrame = globalGeometry(window()->geometry());
-        m_windowSurfaceView = [[NSOpenGLView alloc] initWithFrame : glFrame pixelFormat : QCocoaGLContext::createNSOpenGLPixelFormat() ];
-        [m_contentView setAutoresizesSubviews : YES];
-        [m_windowSurfaceView setAutoresizingMask : (NSViewWidthSizable | NSViewHeightSizable)];
-        [m_contentView addSubview : m_windowSurfaceView];
-    } else {
-        m_windowSurfaceView = m_contentView;
-    }
-
     setGeometry(tlw->geometry());
 
     [m_nsWindow setContentView:m_contentView];
@@ -164,11 +154,6 @@ WId QCocoaWindow::winId() const
 NSView *QCocoaWindow::contentView() const
 {
     return [m_nsWindow contentView];
-}
-
-NSView *QCocoaWindow::windowSurfaceView() const
-{
-    return m_windowSurfaceView;
 }
 
 void QCocoaWindow::windowDidMove()

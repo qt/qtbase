@@ -72,7 +72,6 @@ public:
 
     WId winId() const;
     NSView *contentView() const;
-    NSView *windowSurfaceView() const;
 
     void windowDidMove();
     void windowDidResize();
@@ -92,7 +91,6 @@ private:
     friend class QCocoaBackingStore;
     QNSWindow *m_nsWindow;
     QNSView *m_contentView;
-    NSView *m_windowSurfaceView;
     quint32 m_windowAttributes;
     quint32 m_windowClass;
     QCocoaGLContext *m_glContext;

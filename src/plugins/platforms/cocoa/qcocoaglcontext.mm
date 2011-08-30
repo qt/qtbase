@@ -39,6 +39,8 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 
 bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 {
+    QCocoaAutoReleasePool pool;
+
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
@@ -61,7 +63,7 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     cocoaWindow->setCurrentContext(this);
 
-    NSView *view = cocoaWindow->windowSurfaceView();
+    NSView *view = cocoaWindow->contentView();
     [m_context setView:view];
 }
 
