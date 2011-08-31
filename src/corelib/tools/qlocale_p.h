@@ -122,7 +122,7 @@ public:
 
 private:
     QSystemLocale(bool);
-    friend QSystemLocale *QSystemLocale_globalSystemLocale();
+    friend class QSystemLocaleSingleton;
 };
 #endif
 
