@@ -287,36 +287,6 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
 {
 }
 
-void QApplication::setCursorFlashTime(int msecs)
-{
-    QApplicationPrivate::cursor_flash_time = msecs;
-}
-
-int QApplication::cursorFlashTime()
-{
-    return QApplicationPrivate::cursor_flash_time;
-}
-
-void QApplication::setDoubleClickInterval(int ms)
-{
-    QApplicationPrivate::mouse_double_click_time = ms;
-}
-
-int QApplication::doubleClickInterval()
-{
-    return QApplicationPrivate::mouse_double_click_time;
-}
-
-void QApplication::setKeyboardInputInterval(int ms)
-{
-    QApplicationPrivate::keyboard_input_time = ms;
-}
-
-int QApplication::keyboardInputInterval()
-{
-    return QApplicationPrivate::keyboard_input_time;
-}
-
 #ifndef QT_NO_WHEELEVENT
 void QApplication::setWheelScrollLines(int lines)
 {

@@ -75,9 +75,6 @@ public:
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
-    static int keyboard_input_time;
-    static int mouse_double_click_time;
-
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
 
@@ -174,6 +171,8 @@ public:
     static QList<QScreen *> screen_list;
 
     static QFont *app_font;
+
+    QStyleHints *styleHints;
 
     static bool quitOnLastWindowClosed;
 

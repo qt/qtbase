@@ -422,9 +422,6 @@ public:
     static QWidget *active_window;
     static QIcon *app_icon;
     static bool obey_desktop_settings;
-    static int  cursor_flash_time;
-    static int  mouse_double_click_time;
-    static int  keyboard_input_time;
 #ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
 #endif

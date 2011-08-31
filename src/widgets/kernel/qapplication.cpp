@@ -68,6 +68,8 @@
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtGui/qstylehints.h>
+
 
 #include "qinputcontext.h"
 #include "private/qkeymapper_p.h"
@@ -456,9 +458,6 @@ QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input foc
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
 bool QApplicationPrivate::obey_desktop_settings = true;        // use winsys resources
-int QApplicationPrivate::cursor_flash_time = 1000;        // text caret flash time
-int QApplicationPrivate::mouse_double_click_time = 400;        // mouse dbl click limit
-int QApplicationPrivate::keyboard_input_time = 400; // keyboard input interval
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
@@ -466,16 +465,6 @@ bool qt_is_gui_used;
 bool Q_WIDGETS_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
-static int drag_time = 500;
-#ifndef QT_GUI_DRAG_DISTANCE
-#define QT_GUI_DRAG_DISTANCE 4
-#endif
-#ifdef Q_OS_SYMBIAN
-// The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
-static int drag_distance = 12; //XXX move to qplatformdefs.h
-#else
-static int drag_distance = QT_GUI_DRAG_DISTANCE;
-#endif
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
 bool QApplicationPrivate::animate_ui = true;
 bool QApplicationPrivate::animate_menu = false;
@@ -1117,12 +1106,7 @@ QApplication::~QApplication()
 #endif //QT_NO_SESSIONMANAGER
 
     QApplicationPrivate::obey_desktop_settings = true;
-    QApplicationPrivate::cursor_flash_time = 1000;
-    QApplicationPrivate::mouse_double_click_time = 400;
-    QApplicationPrivate::keyboard_input_time = 400;
 
-    drag_time = 500;
-    drag_distance = 4;
     QApplicationPrivate::app_strut = QSize(0, 0);
     QApplicationPrivate::animate_ui = true;
     QApplicationPrivate::animate_menu = false;
@@ -3419,7 +3403,7 @@ void QApplication::saveState(QSessionManager &manager)
 
 void QApplication::setStartDragTime(int ms)
 {
-    drag_time = ms;
+    Q_UNUSED(ms)
 }
 
 /*!
@@ -3441,7 +3425,7 @@ void QApplication::setStartDragTime(int ms)
 
 int QApplication::startDragTime()
 {
-    return drag_time;
+    return qApp->styleHints()->startDragTime();
 }
 
 /*
@@ -3452,7 +3436,7 @@ int QApplication::startDragTime()
 
 void QApplication::setStartDragDistance(int l)
 {
-    drag_distance = l;
+    Q_UNUSED(l);
 }
 
 /*!
@@ -3478,7 +3462,7 @@ void QApplication::setStartDragDistance(int l)
 
 int QApplication::startDragDistance()
 {
-    return drag_distance;
+    return qApp->styleHints()->startDragTime();
 }
 
 /*!
@@ -5038,6 +5022,16 @@ bool QApplication::keypadNavigationEnabled()
     We recommend that widgets do not cache this value as it may change at any
     time if the user changes the global desktop settings.
 */
+void QApplication::setCursorFlashTime(int msecs)
+{
+    Q_UNUSED(msecs);
+}
+
+int QApplication::cursorFlashTime()
+{
+    return qApp->styleHints()->cursorFlashTime();
+}
+
 
 /*!
     \property QApplication::doubleClickInterval
@@ -5045,9 +5039,19 @@ bool QApplication::keypadNavigationEnabled()
     from two consecutive mouse clicks
 
     The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
-    operating system's value is used. However, on Windows and Symbian OS,
-    calling this function sets the double click interval for all applications.
+    operating system's value is used.
+
+    Setting the interval is not supported anymore in Qt 5.
 */
+void QApplication::setDoubleClickInterval(int ms)
+{
+    Q_UNUSED(ms);
+}
+
+int QApplication::doubleClickInterval()
+{
+    return qApp->styleHints()->mouseDoubleClickInterval();
+}
 
 /*!
     \property QApplication::keyboardInputInterval
@@ -5058,6 +5062,15 @@ bool QApplication::keypadNavigationEnabled()
     The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
     operating system's value is used.
 */
+void QApplication::setKeyboardInputInterval(int ms)
+{
+    Q_UNUSED(ms);
+}
+
+int QApplication::keyboardInputInterval()
+{
+    return qApp->styleHints()->keyboardInputInterval();
+}
 
 /*!
     \property QApplication::wheelScrollLines

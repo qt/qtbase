@@ -209,6 +209,25 @@ QPlatformInputContext *QPlatformIntegration::inputContext() const
     return 0;
 }
 
+QVariant QPlatformIntegration::styleHint(StyleHint hint) const
+{
+    switch (hint) {
+    case CursorFlashTime:
+        return 1000;
+    case KeyboardInputInterval:
+        return 400;
+    case MouseDoubleClickInterval:
+        return 400;
+    case StartDragDistance:
+        return 10;
+    case StartDragTime:
+        return 500;
+    }
+
+    return 0;
+}
+
+
 /*!
   Should be called by the implementation whenever a new screen is added.
 

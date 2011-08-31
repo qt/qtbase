@@ -20,7 +20,8 @@ HEADERS += \
         kernel/qpalette.h \
         kernel/qsessionmanager.h \
         kernel/qwindowdefs.h \
-        kernel/qscreen.h
+        kernel/qscreen.h \
+        kernel/qstylehints.h
 
 SOURCES += \
         kernel/qclipboard.cpp \
@@ -34,7 +35,8 @@ SOURCES += \
         kernel/qmime.cpp \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
-        kernel/qscreen.cpp
+        kernel/qscreen.cpp \
+        kernel/qstylehints.cpp
 
 qpa {
 	HEADERS += \

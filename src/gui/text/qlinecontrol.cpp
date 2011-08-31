@@ -56,12 +56,11 @@
 #include "qlist.h"
 #endif
 #include "qguiapplication.h"
+#include "qstylehints.h"
 
 QT_BEGIN_NAMESPACE
 
-// ### these should come from the application
-const int startDragDistance = 10;
-const int cursorFlashTime = 2000;
+// ### these should come from QStyleHints
 const int textCursorWidth = 1;
 const bool fullWidthSelection = true;
 
@@ -1394,8 +1393,7 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
     switch (ev->type()) {
         case QEvent::MouseButtonPress:{
             if (m_tripleClickTimer
-                && (ev->pos() - m_tripleClick).manhattanLength()
-                    < startDragDistance) {
+                && (ev->pos() - m_tripleClick).manhattanLength() < qApp->styleHints()->startDragDistance()) {
                 selectAll();
                 return;
             }
@@ -1412,7 +1410,7 @@ void QLineControl::processMouseEvent(QMouseEvent* ev)
                 selectWordAtPos(xToPos(ev->pos().x()));
                 if (m_tripleClickTimer)
                     killTimer(m_tripleClickTimer);
-                m_tripleClickTimer = startTimer(QGuiApplication::doubleClickInterval());
+                m_tripleClickTimer = startTimer(qApp->styleHints()->mouseDoubleClickInterval());
                 m_tripleClick = ev->pos();
             }
             break;

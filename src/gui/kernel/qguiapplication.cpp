@@ -58,6 +58,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
+#include <QtGui/qstylehints.h>
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -82,8 +83,6 @@ Q_GUI_EXPORT bool qt_is_gui_used = true;
 Qt::MouseButtons QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
-int QGuiApplicationPrivate::keyboard_input_time = 400;
-int QGuiApplicationPrivate::mouse_double_click_time = 400;
 QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
@@ -401,6 +400,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     cleanupThreadData();
 
+    delete styleHints;
+
     delete platform_integration;
     platform_integration = 0;
 }
@@ -432,26 +433,6 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 Qt::MouseButtons QGuiApplication::mouseButtons()
 {
     return QGuiApplicationPrivate::mouse_buttons;
-}
-
-void QGuiApplication::setDoubleClickInterval(int ms)
-{
-    QGuiApplicationPrivate::mouse_double_click_time = ms;
-}
-
-int QGuiApplication::doubleClickInterval()
-{
-    return QGuiApplicationPrivate::mouse_double_click_time;
-}
-
-void QGuiApplication::setKeyboardInputInterval(int ms)
-{
-    QGuiApplicationPrivate::keyboard_input_time = ms;
-}
-
-int QGuiApplication::keyboardInputInterval()
-{
-    return QGuiApplicationPrivate::keyboard_input_time;
 }
 
 QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
@@ -588,7 +569,8 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         }
         buttons = e->buttons;
         if (button & e->buttons) {
-            if ((e->timestamp - mousePressTime) < static_cast<ulong>(QGuiApplication::doubleClickInterval()) && button == mousePressButton) {
+            if ((e->timestamp - mousePressTime) < static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval()) &&
+                    button == mousePressButton) {
                 type = QEvent::MouseButtonDblClick;
                 mousePressButton = Qt::NoButton;
             }
@@ -1170,6 +1152,27 @@ void QGuiApplication::restoreOverrideCursor()
     qGuiApp->d_func()->cursor_list.removeFirst();
 }
 #endif// QT_NO_CURSOR
+
+/*!
+  \since 5.0
+
+  returns the style hints.
+
+  The style hints encapsulate a set of platform dependent properties
+  such as double click intervals, full width selection and others.
+
+  The hints can be used to integrate tighter with the underlying platform.
+
+  \sa QStyleHints
+  */
+QStyleHints *QGuiApplication::styleHints() const
+{
+    Q_D(const QGuiApplication);
+    if (!d->styleHints)
+        const_cast<QGuiApplicationPrivate *>(d)->styleHints = new QStyleHints();
+    return d->styleHints;
+}
+
 
 
 // Returns the current platform used by keyBindings

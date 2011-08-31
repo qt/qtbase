@@ -70,10 +70,9 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 #include <qurl.h>
+#include <qstylehints.h>
 
-// ### these should come from the application
-const int startDragDistance = 10;
-const int cursorFlashTime = 2000;
+// ### these should come from QStyleHints
 const int textCursorWidth = 1;
 const bool fullWidthSelection = true;
 
@@ -635,8 +634,8 @@ void QTextControlPrivate::setBlinkingCursorEnabled(bool enable)
 {
     Q_Q(QTextControl);
 
-    if (enable && cursorFlashTime > 0)
-        cursorBlinkTimer.start(cursorFlashTime / 2, q);
+    if (enable && qApp->styleHints()->cursorFlashTime() > 0)
+        cursorBlinkTimer.start(qApp->styleHints()->cursorFlashTime() / 2, q);
     else
         cursorBlinkTimer.stop();
 
@@ -1452,7 +1451,7 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
 #endif
 
     if (trippleClickTimer.isActive()
-        && ((pos - trippleClickPoint).toPoint().manhattanLength() < startDragDistance)) {
+        && ((pos - trippleClickPoint).toPoint().manhattanLength() < qApp->styleHints()->startDragDistance())) {
 
         cursor.movePosition(QTextCursor::StartOfBlock);
         cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
@@ -1550,7 +1549,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
     const int oldCursorPos = cursor.position();
 
     if (mightStartDrag) {
-        if ((mousePos.toPoint() - dragStartPos).manhattanLength() > startDragDistance)
+        if ((mousePos.toPoint() - dragStartPos).manhattanLength() > qApp->styleHints()->startDragDistance())
             startDrag();
         return;
     }
@@ -1697,7 +1696,7 @@ void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton butto
     selectedWordOnDoubleClick = cursor;
 
     trippleClickPoint = pos;
-    trippleClickTimer.start(QGuiApplication::doubleClickInterval(), q);
+    trippleClickTimer.start(qApp->styleHints()->mouseDoubleClickInterval(), q);
     if (doEmit) {
         selectionChanged();
 #ifndef QT_NO_CLIPBOARD

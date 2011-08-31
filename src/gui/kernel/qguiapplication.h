@@ -58,6 +58,7 @@ class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
 class QPalette;
 class QScreen;
+class QStyleHints;
 
 #if defined(qApp)
 #undef qApp
@@ -73,8 +74,6 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
 {
     Q_OBJECT
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection)
-    Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
-    Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
 
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed WRITE setQuitOnLastWindowClosed)
 
@@ -108,12 +107,6 @@ public:
     static Qt::KeyboardModifiers keyboardModifiers();
     static Qt::MouseButtons mouseButtons();
 
-    static void setDoubleClickInterval(int);
-    static int doubleClickInterval();
-
-    static void setKeyboardInputInterval(int);
-    static int keyboardInputInterval();
-
     static void setLayoutDirection(Qt::LayoutDirection direction);
     static Qt::LayoutDirection layoutDirection();
 
@@ -122,6 +115,8 @@ public:
 
     static QLocale keyboardInputLocale();
     static Qt::LayoutDirection keyboardInputDirection();
+
+    QStyleHints *styleHints() const;
 
     static QPlatformNativeInterface *platformNativeInterface();
 

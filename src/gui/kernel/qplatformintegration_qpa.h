@@ -98,6 +98,16 @@ public:
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
 
+    enum StyleHint {
+        CursorFlashTime,
+        KeyboardInputInterval,
+        MouseDoubleClickInterval,
+        StartDragDistance,
+        StartDragTime
+    };
+
+    virtual QVariant styleHint(StyleHint hint) const;
+
 protected:
     void screenAdded(QPlatformScreen *screen);
 };
