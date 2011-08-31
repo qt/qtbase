@@ -172,7 +172,8 @@ QGuiApplication::~QGuiApplication()
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
-    : QCoreApplicationPrivate(argc, argv, flags)
+    : QCoreApplicationPrivate(argc, argv, flags),
+      styleHints(0)
 {
     self = this;
 }
