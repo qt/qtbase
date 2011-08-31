@@ -10,7 +10,7 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share)
     : m_initialized(false)
     , m_format(format)
 {
-    m_context = new QOpenGLContext;
+    m_context = new QOpenGLContext(this);
     m_context->setFormat(format);
     if (share)
         m_context->setShareContext(share->m_context);
