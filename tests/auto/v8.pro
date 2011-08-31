@@ -1,3 +1,3 @@
-TEMPLATE = subdirs
-SUBDIRS = \
+TEMPLATE=subdirs
+SUBDIRS=\
     v8

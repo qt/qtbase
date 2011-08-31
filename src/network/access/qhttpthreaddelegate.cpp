@@ -310,7 +310,7 @@ void QHttpThreadDelegate::startRequest()
                 this, SLOT(finishedWithErrorSlot(QNetworkReply::NetworkError,QString)));
         // some signals are only interesting when normal asynchronous style is used
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-        connect(httpReply,SIGNAL(dataReadProgress(int, int)), this, SLOT(dataReadProgressSlot(int,int)));
+        connect(httpReply,SIGNAL(dataReadProgress(qint64, qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
         connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
                 this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
 #ifndef QT_NO_OPENSSL
@@ -507,7 +507,7 @@ void QHttpThreadDelegate::synchronousHeaderChangedSlot()
 }
 
 
-void QHttpThreadDelegate::dataReadProgressSlot(int done, int total)
+void QHttpThreadDelegate::dataReadProgressSlot(qint64 done, qint64 total)
 {
     // If we don't have a download buffer don't attempt to go this codepath
     // It is not used by QNetworkAccessHttpBackend

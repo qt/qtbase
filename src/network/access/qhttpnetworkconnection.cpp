@@ -189,28 +189,35 @@ bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *sock
     int i = indexOf(socket);
     int otherSocket = (i == 0 ? 1 : 0);
 
-    if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
-        if (channels[otherSocket].isSocketBusy() && (channels[otherSocket].state != QHttpNetworkConnectionChannel::ClosingState)) {
-            // this was the first socket to fail.
-            channels[i].close();
-            emitError = false;
-        }
-        else {
-            // Both connection attempts has failed.
+    if (channelCount == 1) {
+        if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress)
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
-            channels[i].close();
-            emitError = true;
-        }
+        channels[0].close();
+        emitError = true;
     } else {
-        if ((networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (channels[i].networkLayerPreference != QAbstractSocket::IPv4Protocol)
-            || (networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (channels[i].networkLayerPreference != QAbstractSocket::IPv6Protocol)) {
-            // First connection worked so this is the second one to complete and it failed.
-            channels[i].close();
-            QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
-            emitError = false;
+        if (networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+            if (channels[otherSocket].isSocketBusy() && (channels[otherSocket].state != QHttpNetworkConnectionChannel::ClosingState)) {
+                // this was the first socket to fail.
+                channels[i].close();
+                emitError = false;
+            }
+            else {
+                // Both connection attempts has failed.
+                networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
+                channels[i].close();
+                emitError = true;
+            }
+        } else {
+            if ((networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (channels[i].networkLayerPreference != QAbstractSocket::IPv4Protocol)
+                || (networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (channels[i].networkLayerPreference != QAbstractSocket::IPv6Protocol)) {
+                // First connection worked so this is the second one to complete and it failed.
+                channels[i].close();
+                QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+                emitError = false;
+            }
+            if (networkLayerState == QHttpNetworkConnectionPrivate::Unknown)
+                qWarning() << "We got a connection error when networkLayerState is Unknown";
         }
-        if (networkLayerState == QHttpNetworkConnectionPrivate::Unknown)
-            qWarning() << "We got a connection error when networkLayerState is Unknown";
     }
     return emitError;
 }
@@ -917,10 +924,6 @@ void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
 // lookup as then the hostinfo will already be in the cache.
 void QHttpNetworkConnectionPrivate::startHostInfoLookup()
 {
-    // At this time all channels should be unconnected.
-    Q_ASSERT(!channels[0].isSocketBusy());
-    Q_ASSERT(!channels[1].isSocketBusy());
-
     networkLayerState = InProgress;
 
     // check if we already now can descide if this is IPv4 or IPv6
@@ -989,17 +992,23 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(QHostInfo info)
 // connection will then be disconnected.
 void QHttpNetworkConnectionPrivate::startNetworkLayerStateLookup()
 {
-    // At this time all channels should be unconnected.
-    Q_ASSERT(!channels[0].isSocketBusy());
-    Q_ASSERT(!channels[1].isSocketBusy());
+    if (channelCount > 1) {
+        // At this time all channels should be unconnected.
+        Q_ASSERT(!channels[0].isSocketBusy());
+        Q_ASSERT(!channels[1].isSocketBusy());
 
-    networkLayerState = InProgress;
+        networkLayerState = InProgress;
 
-    channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
-    channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
+        channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
+        channels[1].networkLayerPreference = QAbstractSocket::IPv6Protocol;
 
-    channels[0].ensureConnection(); // Possibly delay this one..
-    channels[1].ensureConnection();
+        channels[0].ensureConnection(); // Possibly delay this one..
+        channels[1].ensureConnection();
+    } else {
+        networkLayerState = InProgress;
+        channels[0].networkLayerPreference = QAbstractSocket::AnyIPProtocol;
+        channels[0].ensureConnection();
+    }
 }
 
 

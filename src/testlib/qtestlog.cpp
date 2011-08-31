@@ -281,15 +281,6 @@ void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
     QTest::testLogger->addBenchmarkResult(result);
 }
 
-void QTestLog::startLogging(unsigned int randomSeed)
-{
-    QTEST_ASSERT(!QTest::testLogger);
-    QTest::initLogger();
-    QTest::testLogger->registerRandomSeed(randomSeed);
-    QTest::testLogger->startLogging(QTest::outFile);
-    QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
-}
-
 void QTestLog::startLogging()
 {
     QTEST_ASSERT(!QTest::testLogger);

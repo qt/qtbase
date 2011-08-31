@@ -87,10 +87,6 @@ class QTestLogger : public QAbstractTestLogger
         void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
-        void registerRandomSeed(unsigned int seed);
-        unsigned int randomSeed() const;
-        bool hasRandomSeed() const;
-
     private:
         QTestElement *listOfTestcases;
         QTestElement *currentLogElement;
@@ -101,8 +97,6 @@ class QTestLogger : public QAbstractTestLogger
         int testCounter;
         int failureCounter;
         int errorCounter;
-        unsigned int randomSeed_;
-        bool hasRandomSeed_;
 };
 
 QT_END_NAMESPACE

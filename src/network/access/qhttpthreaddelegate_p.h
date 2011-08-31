@@ -154,7 +154,7 @@ protected slots:
     void synchronousFinishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
     void headerChangedSlot();
     void synchronousHeaderChangedSlot();
-    void dataReadProgressSlot(int done, int total);
+    void dataReadProgressSlot(qint64 done, qint64 total);
     void cacheCredentialsSlot(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 #ifndef QT_NO_OPENSSL
     void sslErrorsSlot(const QList<QSslError> &errors);

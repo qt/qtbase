@@ -165,13 +165,8 @@ void QTestLightXmlStreamer::formatBeforeAttributes(const QTestElement *element, 
 void QTestLightXmlStreamer::output(QTestElement *element) const
 {
     QTestCharBuffer buf;
-    if (logger()->hasRandomSeed()) {
-        QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n    <RandomSeed>%d</RandomSeed>\n",
-                       qVersion(), QTEST_VERSION_STR, logger()->randomSeed() );
-    } else {
-        QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
+    QTest::qt_asprintf(&buf, "<Environment>\n    <QtVersion>%s</QtVersion>\n    <QTestVersion>%s</QTestVersion>\n",
                        qVersion(), QTEST_VERSION_STR );
-    }
     outputString(buf.constData());
 
     QTest::qt_asprintf(&buf, "</Environment>\n");

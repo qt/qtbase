@@ -1,7 +1,7 @@
 HEADERS       = shapeitem.h \
                 sortingbox.h
 SOURCES       = main.cpp \
-                shapeItem.cpp \
+                shapeitem.cpp \
                 sortingbox.cpp
 RESOURCES     = tooltips.qrc
 

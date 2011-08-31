@@ -75,11 +75,8 @@ public:
 
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
-    void registerRandomSeed(unsigned int seed);
-private:
-    unsigned int randomSeed;
-    bool hasRandomSeed;
 
+private:
     void printMessage(const char *type, const char *msg, const char *file = 0, int line = 0);
     void outputMessage(const char *str);
     void printBenchmarkResult(const QBenchmarkResult &result);

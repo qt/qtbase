@@ -79,8 +79,6 @@ public:
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
-    void registerRandomSeed(unsigned int seed);
-
     static int xmlCdata(QTestCharBuffer *dest, char const* src);
     static int xmlQuote(QTestCharBuffer *dest, char const* src);
     static int xmlCdata(QTestCharBuffer *dest, char const* src, size_t n);
@@ -88,8 +86,6 @@ public:
 
 private:
     XmlMode xmlmode;
-    unsigned int randomSeed;
-    bool hasRandomSeed;
 };
 
 QT_END_NAMESPACE
