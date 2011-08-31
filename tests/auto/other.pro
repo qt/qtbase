@@ -7,22 +7,15 @@ SUBDIRS=\
            lancelot \
            qalgorithms \
            qcombobox \
-           qcssparser \
            qfocusevent \
-           qimage \
            qitemmodel \
            qlayout \
            qmdiarea \
            qmenu \
            qmenubar \
-           qmouseevent \
-           qpainter \
-           qpixmap \
-           qprinter \
            qsplitter \
            qtabwidget \
            qtextbrowser \
-           qtextdocument \
            qtextedit \
            qtoolbutton \
            qvariant \
@@ -32,7 +25,6 @@ SUBDIRS=\
 
 contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
 
-contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac:!qpa {
     SUBDIRS += macgui \
                macnativeevents \
@@ -56,6 +48,4 @@ symbian {
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
            qcombobox \
-           qcssparser \
            qtextedit \
-

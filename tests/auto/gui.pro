@@ -5,6 +5,7 @@
 #
 TEMPLATE=subdirs
 SUBDIRS=\
+    gui \
     gestures \
     languagechange \
     modeltest \
@@ -16,17 +17,13 @@ SUBDIRS=\
     qabstractscrollarea \
     qabstractslider \
     qabstractspinbox \
-    qabstracttextdocumentlayout \
     qaction \
     qactiongroup \
     qapplication \
     qboxlayout \
-    qbrush \
     qbuttongroup \
     qcalendarwidget \
     qcheckbox \
-    qclipboard \
-    qcolor \
     qcolordialog \
     qcolumnview \
     qcommandlinkbutton \
@@ -34,7 +31,6 @@ SUBDIRS=\
     qcomplextext \
     qdatawidgetmapper \
     qdatetimeedit \
-    qdesktopservices \
     qdesktopwidget \
     qdial \
     qdialog \
@@ -43,21 +39,15 @@ SUBDIRS=\
     qdockwidget \
     qdoublespinbox \
     qdoublevalidator \
-    qdrag \
     qerrormessage \
     qfiledialog \
     qfiledialog2 \
     qfileiconprovider \
-    qfileopenevent \
     qfilesystemmodel \
     qfocusframe \
-    qfont \
     qfontcombobox \
-    qfontdatabase \
     qfontdialog \
-    qfontmetrics \
     qformlayout \
-    qglyphrun \
     qgraphicsanchorlayout \
     qgraphicsanchorlayout1 \
     qgraphicseffect \
@@ -79,14 +69,8 @@ SUBDIRS=\
     qgraphicswidget \
     qgridlayout \
     qgroupbox \
-    qguivariant \
     qheaderview \
-    qicoimageformat \
-    qicon \
     qidentityproxymodel \
-    qimageiohandler \
-    qimagereader \
-    qimagewriter \
     qinputcontext \
     qinputdialog \
     qintvalidator \
@@ -94,7 +78,6 @@ SUBDIRS=\
     qitemeditorfactory \
     qitemselectionmodel \
     qitemview \
-    qkeysequence \
     qlabel \
     qlcdnumber \
     qlineedit \
@@ -105,42 +88,23 @@ SUBDIRS=\
     #qlocalsocket \  # FIXME: uses qtscript (QTBUG-19242)
     qmacstyle \
     qmainwindow \
-    qmatrixnxn \
     qmdisubwindow \
     qmessagebox \
     qmetaobject \
     qmimedata \
-    qmouseevent_modal \
-    qmovie \
-    qvolatileimage \
     qnetworkaccessmanager_and_qprogressdialog \
     qopengl \
-    qpaintengine \
-    qpainterpath \
-    qpainterpathstroker \
-    qpalette \
-    qpathclipper \
-    qpen \
-    qpicture \
-    qpixmapcache \
-    qpixmapfilter \
     qplaintextedit \
     qpointer \
-    qpolygon \
-    qprinterinfo \
     qprogressbar \
     qprogressdialog \
     qpushbutton \
-    qquaternion \
     qradiobutton \
-    qrawfont \
     qregexpvalidator \
-    qregion \
     qscrollarea \
     qscrollbar \
     qscroller \
     qsharedpointer_and_qwidget \
-    qshortcut \
     qsidebar \
     qsignalmapper \
     qsizegrip \
@@ -153,35 +117,20 @@ SUBDIRS=\
     qstandarditem \
     qstandarditemmodel \
     qstatemachine \
-    qstatictext \
     qstatusbar \
     qstringlistmodel \
     qstyle \
     qstyleoption \
     qstylesheetstyle \
-    qsyntaxhighlighter \
     qsystemtrayicon \
     qtabbar \
     qtableview \
     qtablewidget \
     qtcpsocket \
-    qtextblock \
-    qtextcursor \
-    qtextdocumentfragment \
-    qtextdocumentlayout \
-    qtextformat \
-    qtextlayout \
-    qtextlist \
-    qtextobject \
-    qtextpiecetable \
-    qtextscriptengine \
-    qtexttable \
     qtipc \
     qtoolbar \
     qtoolbox \
     qtooltip \
-    qtouchevent \
-    qtransform \
     qtransformedscreen \
     qtranslator \
     qtreeview \
@@ -189,12 +138,10 @@ SUBDIRS=\
     qtreewidgetitemiterator \
     qundogroup \
     qundostack \
-    qvectornd \
     qwidget_window \
     qwidgetaction \
     qwindowsurface \
     qwizard \
-    qwmatrix \
     qwsembedwidget \
     qwsinputmethod \
     qwswindowsystem \
@@ -212,15 +159,10 @@ win32:SUBDIRS -= qtextpiecetable
            qlistwidget \
            qmainwindow \
            qnetworkreply \
-           qpathclipper \
-           qpixmapcache \
            qsidebar \
            qstylesheetstyle \
-           qtextlayout \
-           qtextpiecetable \
            qtipc \
            qtoolbar \
-           qstatictext \
 
 symbian:SUBDIRS -= \
     qsystemtrayicon \

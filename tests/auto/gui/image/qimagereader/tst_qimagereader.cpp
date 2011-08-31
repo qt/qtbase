@@ -55,7 +55,7 @@
 #include <QTcpServer>
 #include <QTimer>
 
-#include "../platformquirks.h"
+#include "../../../platformquirks.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."

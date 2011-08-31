@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include "../../shared/util.h"
+#include "../../../../shared/util.h"
 
 #include <qpainter.h>
 #include <qapplication.h>
