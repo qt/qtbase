@@ -56,6 +56,7 @@
 
 #include "private/qhostinfo_p.h"
 #include "private/qsslsocket_openssl_p.h"
+#include "private/qsslsocket_openssl_symbols_p.h"
 
 #include "../network-settings.h"
 
@@ -146,6 +147,7 @@ private slots:
     void peerCertificate();
     void peerCertificateChain();
     void privateKey();
+    void privateKeyOpaque();
     void protocol();
     void protocolServerSide_data();
     void protocolServerSide();
@@ -762,6 +764,34 @@ void tst_QSslSocket::peerCertificateChain()
 
 void tst_QSslSocket::privateKey()
 {
+}
+
+void tst_QSslSocket::privateKeyOpaque()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QFile file(SRCDIR "certs/fluke.key");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+    QVERIFY(!key.isNull());
+
+    EVP_PKEY *pkey = q_EVP_PKEY_new();
+    q_EVP_PKEY_set1_RSA(pkey, reinterpret_cast<RSA *>(key.handle()));
+
+    // This test does not make 100% sense yet. We just set some local CA/cert/key and use it
+    // to authenticate ourselves against the server. The server does not actually check this
+    // values. This test should just run the codepath inside qsslsocket_openssl.cpp
+
+    QSslSocketPtr socket = newSocket();
+    QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
+    socket->setCaCertificates(localCert);
+    socket->setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+    socket->setPrivateKey(QSslKey(reinterpret_cast<Qt::HANDLE>(pkey)));
+
+    socket->setPeerVerifyMode(QSslSocket::QueryPeer);
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    QVERIFY(socket->waitForEncrypted(10000));
 }
 
 void tst_QSslSocket::protocol()
