@@ -17,6 +17,8 @@
     <Description><![CDATA[Compared values are not the same
    Actual (operandA): http://example.com
    Expected (operandB): ]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/datetime/tst_datetime.cpp" line="74">
     <Description><![CDATA[Compared values are not the same
    Actual (operandA): 
    Expected (operandB): http://example.com]]></Description>

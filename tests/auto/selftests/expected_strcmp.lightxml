@@ -9,10 +9,16 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="compareByteArray">
-<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="88">
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="88">
     <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="95">
     <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="xfail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="102">
     <Description><![CDATA[Next test should fail]]></Description>
+</Incident>
+<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/strcmp/tst_strcmp.cpp" line="109">
     <Description><![CDATA[Compared values are not the same
    Actual (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
    Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ...]]></Description>

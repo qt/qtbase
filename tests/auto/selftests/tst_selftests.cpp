@@ -173,11 +173,12 @@ Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringLis
 static QList<Logger> allLoggers()
 {
     return QList<Logger>()
-        << Logger("plain",      "txt",      QStringList())
-        << Logger("xml",        "xml",      QStringList() << "-xml")
-        << Logger("xml flush",  "xml",      QStringList() << "-xml" << "-flush")
-        << Logger("xunitxml",   "xunitxml", QStringList() << "-xunitxml")
-        << Logger("lightxml",   "lightxml", QStringList() << "-lightxml")
+        << Logger("plain",          "txt",      QStringList())
+        << Logger("xml",            "xml",      QStringList() << "-xml")
+        << Logger("xml flush",      "xml",      QStringList() << "-xml" << "-flush")
+        << Logger("xunitxml",       "xunitxml", QStringList() << "-xunitxml")
+        << Logger("lightxml",       "lightxml", QStringList() << "-lightxml")
+        << Logger("lightxml flush", "lightxml", QStringList() << "-lightxml" << "-flush")
     ;
 }
 
@@ -416,11 +417,12 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
         const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
 
         if (line.contains("ASSERT") && output != expected) {
-            QEXPECT_FAIL("assert",          "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xml",      "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xml flush","QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert lightxml", "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xunitxml", "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert",                "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xml",            "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xml flush",      "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert lightxml",       "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert lightxml flush", "QTestLib prints out the absolute path.", Continue);
+            QEXPECT_FAIL("assert xunitxml",       "QTestLib prints out the absolute path.", Continue);
         }
 
         /* On some platforms we compile without RTTI, and as a result we never throw an exception. */

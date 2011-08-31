@@ -6,7 +6,6 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testWarnings">
-<Incident type="pass" file="" line="0">
 <Message type="qwarn" file="" line="0">
     <Description><![CDATA[Warning]]></Description>
 </Message>
@@ -25,16 +24,16 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Baba]]></Description>
 </Message>
-</Incident>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testMissingWarnings">
-<Incident type="fail" file="" line="0">
 <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning0"]]></Description>
 </Message>
 <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
 </Message>
+<Incident type="fail" file="" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>
 </Incident>
 </TestFunction>

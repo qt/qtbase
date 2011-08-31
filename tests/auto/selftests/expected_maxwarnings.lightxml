@@ -6,7 +6,6 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="warn">
-<Incident type="pass" file="" line="0">
 <Message type="qwarn" file="" line="0">
     <Description><![CDATA[0]]></Description>
 </Message>
@@ -6013,7 +6012,7 @@
 <Message type="system" file="" line="0">
     <Description><![CDATA[Maximum amount of warnings exceeded. Use -maxwarnings to override.]]></Description>
 </Message>
-</Incident>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
