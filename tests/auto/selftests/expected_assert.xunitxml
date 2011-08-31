@@ -7,10 +7,10 @@
   <testcase result="pass" name="initTestCase"/>
   <testcase result="pass" name="testNumber1"/>
   <testcase result="fail" name="testNumber2">
-    <!-- message="ASSERT: &quot;false&quot; in file /local/user_builds/qt/4.6/tests/auto/selftests/assert/tst_assert.cpp, line 62" type="qfatal" -->
+    <!-- message="ASSERT: &quot;false&quot; in file tst_assert.cpp, line 62" type="qfatal" -->
     <failure message="Received a fatal error." result="fail"/>
   </testcase>
   <system-err>
-<![CDATA[ASSERT: "false" in file /local/user_builds/qt/4.6/tests/auto/selftests/assert/tst_assert.cpp, line 62]]>
+<![CDATA[ASSERT: "false" in file tst_assert.cpp, line 62]]>
   </system-err>
 </testsuite>
