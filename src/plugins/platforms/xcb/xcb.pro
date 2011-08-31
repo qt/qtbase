@@ -53,29 +53,25 @@ contains(QT_CONFIG, xcb-render) {
     LIBS += -lxcb-render -lxcb-render-util
 }
 
-contains(QT_CONFIG, opengl) {
-    QT += opengl
-
 #    DEFINES += XCB_USE_DRI2
-    contains(DEFINES, XCB_USE_DRI2) {
-        LIBS += -lxcb-dri2 -lEGL
+contains(DEFINES, XCB_USE_DRI2) {
+    LIBS += -lxcb-dri2 -lEGL
 
-        CONFIG += link_pkgconfig
-        PKGCONFIG += libdrm
+    CONFIG += link_pkgconfig
+    PKGCONFIG += libdrm
 
-        HEADERS += qdri2context.h
-        SOURCES += qdri2context.cpp
+    HEADERS += qdri2context.h
+    SOURCES += qdri2context.cpp
 
-    } else {
-        contains(QT_CONFIG, opengles2) {
-            DEFINES += XCB_USE_EGL
-            LIBS += -lEGL
-            HEADERS += qxcbeglsurface.h
-        } else:contains(QT_CONFIG, xcb-xlib) {
-            DEFINES += XCB_USE_GLX
-            HEADERS += qglxintegration.h
-            SOURCES += qglxintegration.cpp
-        }
+} else {
+    contains(QT_CONFIG, opengles2) {
+        DEFINES += XCB_USE_EGL
+        LIBS += -lEGL
+        HEADERS += qxcbeglsurface.h
+    } else:contains(QT_CONFIG, xcb-xlib) {
+        DEFINES += XCB_USE_GLX
+        HEADERS += qglxintegration.h
+        SOURCES += qglxintegration.cpp
     }
 }
 
