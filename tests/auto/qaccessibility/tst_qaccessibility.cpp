@@ -46,6 +46,10 @@
 #include <QtGui>
 #include <math.h>
 
+#if defined(Q_OS_WIN) && defined(interface)
+#   undef interface
+#endif
+
 
 #include "QtTest/qtestaccessible.h"
 

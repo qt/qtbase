@@ -564,7 +564,7 @@ void tst_QPainter::qt_format_text_boundingRect()
 			QCOMPARE(pbr, br);
 		    }
 #endif
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(QT_NO_PRINTER) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 		    {
 			QPrinter printer(QPrinter::HighResolution);
 			if (printer.printerName().isEmpty()) {

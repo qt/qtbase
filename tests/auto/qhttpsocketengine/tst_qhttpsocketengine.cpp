@@ -40,9 +40,11 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-
-#include <qcoreapplication.h>
+#include <QtTest/QTest>
+#include <QtTest/QTestEventLoop>
+#include <QtCore/QQueue>
+#include <QtCore/QString>
+#include <QtCore/QCoreApplication>
 
 #include <private/qhttpsocketengine_p.h>
 #include <qhostinfo.h>
