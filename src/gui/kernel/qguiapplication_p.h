@@ -180,6 +180,9 @@ private:
     void init();
 
     static QGuiApplicationPrivate *self;
+
+    QMap<int, QWeakPointer<QWindow> > windowForTouchPointId;
+    QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
 };
 
 QT_END_NAMESPACE

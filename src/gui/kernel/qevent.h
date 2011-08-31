@@ -738,6 +738,8 @@ public:
 
     private:
         QTouchEventTouchPointPrivate *d;
+        friend class QGuiApplication;
+        friend class QGuiApplicationPrivate;
         friend class QApplication;
         friend class QApplicationPrivate;
     };
@@ -771,6 +773,8 @@ protected:
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
 };

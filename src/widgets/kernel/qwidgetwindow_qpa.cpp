@@ -83,6 +83,12 @@ bool QWidgetWindow::event(QEvent *event)
         handleMouseEvent(static_cast<QMouseEvent *>(event));
         return true;
 
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        handleTouchEvent(static_cast<QTouchEvent *>(event));
+        return true;
+
     case QEvent::Move:
         handleMoveEvent(static_cast<QMoveEvent *>(event));
         return true;
@@ -255,6 +261,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPos(), event->modifiers());
         QGuiApplication::sendSpontaneousEvent(receiver, &e);
     }
+}
+
+void QWidgetWindow::handleTouchEvent(QTouchEvent *event)
+{
+    QApplicationPrivate::translateRawTouchEvent(m_widget, event->deviceType(), event->touchPoints());
 }
 
 void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
