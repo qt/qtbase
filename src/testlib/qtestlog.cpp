@@ -45,7 +45,7 @@
 #include "QtTest/private/qtestresult_p.h"
 #include "QtTest/private/qabstracttestlogger_p.h"
 #include "QtTest/private/qplaintestlogger_p.h"
-#include "QtTest/private/qtestlogger_p.h"
+#include "QtTest/private/qxunittestlogger_p.h"
 #include "QtTest/private/qxmltestlogger_p.h"
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
@@ -178,7 +178,7 @@ namespace QTest {
             QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
             break;
         case QTestLog::XunitXML:
-            QTest::testLogger = new QTestLogger();
+            QTest::testLogger = new QXunitTestLogger();
             break;
         }
     }

@@ -52,20 +52,20 @@ QT_MODULE(Test)
 
 class QTestElement;
 class QTestElementAttribute;
-class QTestLogger;
+class QXunitTestLogger;
 struct QTestCharBuffer;
 
 class QTestBasicStreamer
 {
     public:
-        QTestBasicStreamer(QTestLogger *logger);
+        QTestBasicStreamer(QXunitTestLogger *logger);
         virtual ~QTestBasicStreamer();
 
         virtual void output(QTestElement *element) const;
 
         void outputString(const char *msg) const;
 
-        QTestLogger *logger() const;
+        QXunitTestLogger *logger() const;
 
     protected:
         virtual void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
@@ -77,7 +77,7 @@ class QTestBasicStreamer
         virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
 
     private:
-        QTestLogger *testLogger;
+        QXunitTestLogger *testLogger;
 };
 
 QT_END_NAMESPACE

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qtestbasicstreamer.h"
-#include "qtestlogger_p.h"
+#include "qxunittestlogger_p.h"
 #include "qtestelement.h"
 #include "qtestelementattribute.h"
 #include "qtestassert.h"
@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestBasicStreamer::QTestBasicStreamer(QTestLogger *logger)
+QTestBasicStreamer::QTestBasicStreamer(QXunitTestLogger *logger)
     :testLogger(logger)
 {
     QTEST_ASSERT(testLogger);
@@ -156,7 +156,7 @@ void QTestBasicStreamer::outputString(const char *msg) const
     testLogger->outputString(msg);
 }
 
-QTestLogger *QTestBasicStreamer::logger() const
+QXunitTestLogger *QTestBasicStreamer::logger() const
 {
     return testLogger;
 }

@@ -60,11 +60,11 @@ QT_BEGIN_NAMESPACE
 class QTestBasicStreamer;
 class QTestElement;
 
-class QTestLogger : public QAbstractTestLogger
+class QXunitTestLogger : public QAbstractTestLogger
 {
     public:
-        QTestLogger();
-        ~QTestLogger();
+        QXunitTestLogger();
+        ~QXunitTestLogger();
 
         void startLogging(const char *filename);
         void stopLogging();

@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestXunitStreamer::QTestXunitStreamer(QTestLogger *logger)
+QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
     : QTestBasicStreamer(logger)
 {}
 

@@ -50,12 +50,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
-class QTestLogger;
+class QXunitTestLogger;
 
 class QTestXunitStreamer: public QTestBasicStreamer
 {
     public:
-        QTestXunitStreamer(QTestLogger *logger);
+        QTestXunitStreamer(QXunitTestLogger *logger);
         ~QTestXunitStreamer();
 
         void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
