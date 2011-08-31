@@ -525,8 +525,9 @@ void tst_QMessageBox::testSymbols()
     button = QMessageBox::Escape;
     button = QMessageBox::FlagMask;
 
-    mb1.setText("Foo");
-    QCOMPARE(mb1.text(), "Foo");
+    const QString text = QStringLiteral("Foo");
+    mb1.setText(text);
+    QCOMPARE(mb1.text(), text);
 
     icon = mb1.icon();
     QVERIFY(icon == QMessageBox::NoIcon);
@@ -537,26 +538,28 @@ void tst_QMessageBox::testSymbols()
     mb1.setIconPixmap(iconPixmap);
     QVERIFY(mb1.icon() == QMessageBox::NoIcon);
 
-    QCOMPARE(mb1.buttonText(QMessageBox::Ok), "OK");
+    QCOMPARE(mb1.buttonText(QMessageBox::Ok), QLatin1String("OK"));
     QCOMPARE(mb1.buttonText(QMessageBox::Cancel), QString());
     QCOMPARE(mb1.buttonText(QMessageBox::Ok | QMessageBox::Default), QString());
 
-    mb2.setButtonText(QMessageBox::Cancel, "Foo");
-    mb2.setButtonText(QMessageBox::Ok, "Bar");
-    mb2.setButtonText(QMessageBox::Ok | QMessageBox::Default, "Baz");
+    const QString button1 = QStringLiteral("Bar");
+    mb2.setButtonText(QMessageBox::Cancel, QStringLiteral("Foo"));
+    mb2.setButtonText(QMessageBox::Ok, button1);
+    mb2.setButtonText(QMessageBox::Ok | QMessageBox::Default, QStringLiteral("Baz"));
 
     QCOMPARE(mb2.buttonText(QMessageBox::Cancel), QString());
-    QCOMPARE(mb2.buttonText(QMessageBox::Ok), "Bar");
+    QCOMPARE(mb2.buttonText(QMessageBox::Ok), button1);
 
     QVERIFY(mb3b.buttonText(QMessageBox::Yes).endsWith("Yes"));
     QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
     QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
 
-    mb3b.setButtonText(QMessageBox::Yes, "Blah");
-    mb3b.setButtonText(QMessageBox::YesAll, "Zoo");
-    mb3b.setButtonText(QMessageBox::Ok, "Zoo");
+    const QString button2 = QStringLiteral("Blah");
+    mb3b.setButtonText(QMessageBox::Yes, button2);
+    mb3b.setButtonText(QMessageBox::YesAll, QStringLiteral("Zoo"));
+    mb3b.setButtonText(QMessageBox::Ok, QStringLiteral("Zoo"));
 
-    QCOMPARE(mb3b.buttonText(QMessageBox::Yes), "Blah");
+    QCOMPARE(mb3b.buttonText(QMessageBox::Yes), button2);
     QCOMPARE(mb3b.buttonText(QMessageBox::YesAll), QString());
     QCOMPARE(mb3b.buttonText(QMessageBox::Ok), QString());
 

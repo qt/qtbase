@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += gui-private
+QT += gui-private widgets
 
 SOURCES  += tst_qvolatileimage.cpp
 

@@ -3017,6 +3017,7 @@ signals:
     void work();
 };
 
+namespace QObjectTest { // Do not clash with WinAPI 'DeleteObject'
 class DeleteObject : public QObject
 {
     Q_OBJECT
@@ -3036,12 +3037,13 @@ public slots:
 signals:
     void relayedSignal();
 };
+} // namespace QObjectTest
 
 void tst_QObject::deleteSelfInSlot()
 {
     {
         SenderObject sender;
-        DeleteObject *receiver = new DeleteObject();
+        QObjectTest::DeleteObject *receiver = new QObjectTest::DeleteObject();
         receiver->connect(&sender,
                           SIGNAL(signal1()),
                           SLOT(deleteSelf()),
@@ -3052,7 +3054,7 @@ void tst_QObject::deleteSelfInSlot()
         thread.connect(receiver, SIGNAL(destroyed()), SLOT(quit()), Qt::DirectConnection);
         thread.start();
 
-        QPointer<DeleteObject> p = receiver;
+        QPointer<QObjectTest::DeleteObject> p = receiver;
         sender.emitSignal1();
         QVERIFY(p.isNull());
 
@@ -3061,7 +3063,7 @@ void tst_QObject::deleteSelfInSlot()
 
     {
         SenderObject sender;
-        DeleteObject *receiver = new DeleteObject();
+        QObjectTest::DeleteObject *receiver = new QObjectTest::DeleteObject();
         receiver->connect(&sender,
                           SIGNAL(signal1()),
                           SLOT(relaySignalAndProcessEvents()),
@@ -3076,7 +3078,7 @@ void tst_QObject::deleteSelfInSlot()
         thread.connect(receiver, SIGNAL(destroyed()), SLOT(quit()), Qt::DirectConnection);
         thread.start();
 
-        QPointer<DeleteObject> p = receiver;
+        QPointer<QObjectTest::DeleteObject> p = receiver;
         sender.emitSignal1();
         QVERIFY(p.isNull());
 
@@ -3085,9 +3087,9 @@ void tst_QObject::deleteSelfInSlot()
 
     {
         EmitThread sender;
-        DeleteObject *receiver = new DeleteObject();
+        QObjectTest::DeleteObject *receiver = new QObjectTest::DeleteObject();
         connect(&sender, SIGNAL(work()), receiver, SLOT(deleteSelf()), Qt::DirectConnection);
-        QPointer<DeleteObject> p = receiver;
+        QPointer<QObjectTest::DeleteObject> p = receiver;
         sender.start();
         QVERIFY(sender.wait(10000));
         QVERIFY(p.isNull());

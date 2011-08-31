@@ -55,6 +55,11 @@
 
 using namespace QtConcurrent;
 
+// COM interface macro.
+#if defined(Q_OS_WIN) && defined(interface)
+#  undef interface
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 

@@ -77,7 +77,7 @@ QT_END_NAMESPACE
 
 static inline bool tabAllWidgets()
 {
-#if !defined(Q_WS_WIN)
+#if !defined(Q_OS_WIN)
     if (qApp->style()->inherits("QMacStyle"))
         return qt_tab_all_widgets;
 #endif

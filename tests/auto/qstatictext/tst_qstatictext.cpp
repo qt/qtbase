@@ -55,9 +55,8 @@
 class tst_QStaticText: public QObject
 {
     Q_OBJECT
-
-private:
-    bool supportsTransformations() const;
+public:
+    tst_QStaticText() {}
 
 private slots:
     void initTestCase();
@@ -103,6 +102,8 @@ private slots:
     void textDocumentColor();
 
 private:
+    bool supportsTransformations() const;
+
     QImage const    m_whiteSquare;
 };
 

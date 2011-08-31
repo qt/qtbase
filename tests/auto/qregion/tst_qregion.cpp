@@ -94,9 +94,6 @@ private slots:
 
     void isEmpty_data();
     void isEmpty();
-#ifdef Q_OS_WIN
-    void handle();
-#endif
 #if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
     void clipRectangles();
 #endif
@@ -864,16 +861,6 @@ void tst_QRegion::isEmpty()
     QCOMPARE(region.boundingRect(), QRect());
     QVERIFY(region.rects().isEmpty());
 }
-
-#ifdef Q_OS_WIN
-void tst_QRegion::handle()
-{
-    QRegion r;
-    HRGN hrgn = r.handle();
-    QRegion r2(QRect(0,0,10,10));
-    hrgn = r2.handle();
-}
-#endif
 
 #if defined(Q_WS_X11) && defined(QT_BUILD_INTERNAL)
 void tst_QRegion::clipRectangles()

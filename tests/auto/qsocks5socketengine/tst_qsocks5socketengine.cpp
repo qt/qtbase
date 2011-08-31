@@ -40,9 +40,13 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
+#include <QtTest/QTestEventLoop>
 
-#include <qcoreapplication.h>
+#include <QtCore/QQueue>
+#include <QtCore/QString>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QMetaType>
 
 #include <private/qsocks5socketengine_p.h>
 #include <qhostinfo.h>

@@ -1388,7 +1388,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
             wchar_t errstr[0x100];
             DWORD count = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
                 0, err, 0, errstr, 0x100, 0);
-            QString error(QString::fromUtf16(errstr, count));
+            QString error(QString::fromWCharArray(errstr, count));
             qWarning() << error;
             //we need at least one data set for the test not to assert fail when skipping _data function
             QDir target("target");

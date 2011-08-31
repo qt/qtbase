@@ -112,7 +112,7 @@ void tst_QTransform::cleanup()
     // No cleanup is required.
 }
 
-#ifdef Q_OS_WIN32
+#if defined(Q_OS_WIN) && !defined(M_PI)
 #define M_PI 3.14159265897932384626433832795f
 #endif
 
@@ -740,10 +740,10 @@ void tst_QTransform::inverted_data()
 
     QTest::newRow("big") << big;
 
-    QTransform small;
-    small.scale(1/s, 1/s);
+    QTransform smallTransform;
+    smallTransform.scale(1/s, 1/s);
 
-    QTest::newRow("small") << small;
+    QTest::newRow("small") << smallTransform;
 }
 
 void tst_QTransform::inverted()

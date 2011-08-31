@@ -54,5 +54,5 @@ int main()
             PostQuitMessage(0);
     }
     
-    return msg.wParam;
+    return int(msg.wParam);
 }

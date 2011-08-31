@@ -44,6 +44,11 @@
 
 #include <qbytearraymatcher.h>
 
+// COM interface
+#if defined(Q_OS_WIN) && defined(interface)
+#    undef interface
+#endif
+
 class tst_QByteArrayMatcher : public QObject
 {
     Q_OBJECT

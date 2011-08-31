@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <paintcommands.h>
+#include "paintcommands.h"
 #include <QPainter>
 #include <QLibraryInfo>
 #include <baselineprotocol.h>

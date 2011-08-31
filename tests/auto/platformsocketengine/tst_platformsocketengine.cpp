@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 
 #ifdef Q_OS_WIN
 #include <winsock2.h>

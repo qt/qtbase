@@ -2231,7 +2231,7 @@ void tst_QtConcurrentMap::exceptions()
     try  {
         QList<int> list = QList<int>() << 1 << 2 << 3;
         QtConcurrent::map(list, throwMapper).waitForFinished();
-    } catch (Exception &e) {
+    } catch (const Exception &) {
         caught = true;
     }
     if (!caught)

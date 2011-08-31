@@ -1499,8 +1499,10 @@ void tst_QtConcurrentFilter::noDetatch()
 
 void tst_QtConcurrentFilter::stlContainers()
 {
-#ifdef QT_NO_STL
+#if defined(QT_NO_STL)
     QSKIP("Qt compiled without STL support", SkipAll);
+#elif defined(_MSC_VER) && _MSC_VER >= 1600
+    QSKIP("Test does not compile with MSVC 2010 (see QTBUG-18996)", SkipAll);
 #else
     std::vector<int> vector;
     vector.push_back(1);

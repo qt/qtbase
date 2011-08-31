@@ -445,7 +445,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
             QtConcurrentExceptionThrower *e = new QtConcurrentExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (Exception &e) {
+        } catch (const Exception &) {
             caught = true;
         }
         if (!caught)
@@ -459,7 +459,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             QtConcurrentExceptionThrower e(QThread::currentThread());
             e.startBlocking();
-        } catch (Exception &e) {
+        } catch (const Exception &) {
             caught = true;
         }
 
@@ -473,7 +473,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             QtConcurrentExceptionThrower e(0);
             e.startBlocking();
-        } catch (Exception &e) {
+        } catch (const Exception &) {
             caught = true;
         }
 
@@ -488,7 +488,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
             UnrelatedExceptionThrower *e = new UnrelatedExceptionThrower();
             QFuture<void> f = e->startAsynchronously();
             f.waitForFinished();
-        } catch (QtConcurrent::UnhandledException &e) {
+        } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
         if (!caught)
@@ -502,7 +502,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             UnrelatedExceptionThrower e(QThread::currentThread());
             e.startBlocking();
-        } catch (QtConcurrent::UnhandledException &e) {
+        } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
 
@@ -516,7 +516,7 @@ void tst_QtConcurrentThreadEngine::exceptions()
         try  {
             UnrelatedExceptionThrower e(0);
             e.startBlocking();
-        } catch (QtConcurrent::UnhandledException &e) {
+        } catch (const QtConcurrent::UnhandledException &) {
             caught = true;
         }
 

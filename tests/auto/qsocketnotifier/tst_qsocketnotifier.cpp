@@ -40,9 +40,12 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
+#include <QtTest/QSignalSpy>
+#include <QtTest/QTestEventLoop>
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QTimer>
 #include <QtCore/QSocketNotifier>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -55,9 +58,14 @@
 #endif
 #ifdef Q_OS_UNIX
 #include <private/qnet_unix_p.h>
+#include <sys/select.h>
 #endif
 #include <limits>
-#include <sys/select.h>
+
+#if defined (Q_CC_MSVC) && defined(max)
+#  undef max
+#  undef min
+#endif // Q_CC_MSVC
 
 class tst_QSocketNotifier : public QObject
 {
