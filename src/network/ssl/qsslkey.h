@@ -73,6 +73,7 @@ public:
             QSsl::EncodingFormat format = QSsl::Pem,
             QSsl::KeyType type = QSsl::PrivateKey,
             const QByteArray &passPhrase = QByteArray());
+    explicit QSslKey(Qt::HANDLE handle, QSsl::KeyType type = QSsl::PrivateKey);
     QSslKey(const QSslKey &other);
     ~QSslKey();
     QSslKey &operator=(const QSslKey &other);

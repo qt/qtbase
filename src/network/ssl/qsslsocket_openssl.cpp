@@ -364,20 +364,27 @@ init_context:
             return false;
         }
 
-        // Load private key
-        pkey = q_EVP_PKEY_new();
-        // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
-        // this lead to a memory leak. Now we use the *_set1_* functions which do not
-        // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
-        if (configuration.privateKey.algorithm() == QSsl::Rsa)
-            q_EVP_PKEY_set1_RSA(pkey, (RSA *)configuration.privateKey.handle());
-        else
-            q_EVP_PKEY_set1_DSA(pkey, (DSA *)configuration.privateKey.handle());
+        if (configuration.privateKey.algorithm() == QSsl::Opaque) {
+            pkey = reinterpret_cast<EVP_PKEY *>(configuration.privateKey.handle());
+        } else {
+            // Load private key
+            pkey = q_EVP_PKEY_new();
+            // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
+            // this lead to a memory leak. Now we use the *_set1_* functions which do not
+            // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
+            if (configuration.privateKey.algorithm() == QSsl::Rsa)
+                q_EVP_PKEY_set1_RSA(pkey, (RSA *)configuration.privateKey.handle());
+            else
+                q_EVP_PKEY_set1_DSA(pkey, (DSA *)configuration.privateKey.handle());
+        }
+
         if (!q_SSL_CTX_use_PrivateKey(ctx, pkey)) {
             q->setErrorString(QSslSocket::tr("Error loading private key, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
+        if (configuration.privateKey.algorithm() == QSsl::Opaque)
+            pkey = 0; // Don't free the private key, it belongs to QSslKey
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(ctx)) {
@@ -1383,7 +1390,6 @@ void QSslSocketBackendPrivate::disconnected()
         q_EVP_PKEY_free(pkey);
         pkey = 0;
     }
-
 }
 
 QSslCipher QSslSocketBackendPrivate::sessionCipher() const
