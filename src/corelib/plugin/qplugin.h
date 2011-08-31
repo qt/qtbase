@@ -117,8 +117,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
     static const char qt_plugin_verification_data[] = \
       "pattern=""QT_PLUGIN_VERIFICATION_DATA""\n" \
       "version="QT_VERSION_STR"\n" \
-      "debug="QPLUGIN_DEBUG_STR"\n" \
-      "buildkey="QT_BUILD_KEY;
+      "debug="QPLUGIN_DEBUG_STR;
 
 #  if defined (Q_OF_ELF) && defined (Q_CC_GNU)
 #  define Q_PLUGIN_VERIFICATION_SECTION \

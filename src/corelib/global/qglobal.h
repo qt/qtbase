@@ -301,9 +301,6 @@ namespace QT_NAMESPACE {}
 #ifdef QT_AUTODETECT_COCOA
 #  ifdef Q_OS_MAC64
 #    define QT_MAC_USE_COCOA 1
-#    define QT_BUILD_KEY QT_BUILD_KEY_COCOA
-#  else
-#    define QT_BUILD_KEY QT_BUILD_KEY_CARBON
 #  endif
 #endif
 
@@ -1196,10 +1193,6 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 */
 
 class QDataStream;
-
-#ifndef QT_BUILD_KEY
-#define QT_BUILD_KEY "unspecified"
-#endif
 
 #if defined(Q_WS_MAC)
 #  ifndef QMAC_QMENUBAR_NO_EVENT
