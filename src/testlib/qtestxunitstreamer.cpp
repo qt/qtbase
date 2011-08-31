@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "qtestxunitstreamer.h"
+#include "qxunittestlogger_p.h"
 #include "qtestelement.h"
+#include "qtestelementattribute.h"
+#include "qtestassert.h"
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -49,8 +52,10 @@
 QT_BEGIN_NAMESPACE
 
 QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
-    : QTestBasicStreamer(logger)
-{}
+    : testLogger(logger)
+{
+    QTEST_ASSERT(testLogger);
+}
 
 QTestXunitStreamer::~QTestXunitStreamer()
 {}
@@ -165,8 +170,10 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTes
 
 void QTestXunitStreamer::output(QTestElement *element) const
 {
+    QTEST_ASSERT(element);
+
     outputString("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-    QTestBasicStreamer::output(element);
+    outputElements(element);
 }
 
 void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
@@ -187,9 +194,6 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
             formatStart(element, &buf);
             outputString(buf.data());
 
-            formatBeforeAttributes(element, &buf);
-            outputString(buf.data());
-
             outputElementAttributes(element, element->attributes());
 
             formatAfterAttributes(element, &buf);
@@ -205,5 +209,19 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
     }
 }
 
-QT_END_NAMESPACE
+void QTestXunitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
+{
+    QTestCharBuffer buf;
+    while(attribute){
+        formatAttributes(element, attribute, &buf);
+        outputString(buf.data());
+        attribute = attribute->nextElement();
+    }
+}
 
+void QTestXunitStreamer::outputString(const char *msg) const
+{
+    testLogger->outputString(msg);
+}
+
+QT_END_NAMESPACE

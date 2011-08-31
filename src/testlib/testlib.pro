@@ -18,7 +18,6 @@ HEADERS = qbenchmark.h \
     qsignalspy.h \
     qtestaccessible.h \
     qtestassert.h \
-    qtestbasicstreamer.h \
     qtestcase.h \
     qtestcoreelement.h \
     qtestcorelist.h \
@@ -53,7 +52,6 @@ SOURCES = qtestcase.cpp \
     qbenchmarkmetric.cpp \
     qtestelement.cpp \
     qtestelementattribute.cpp \
-    qtestbasicstreamer.cpp \
     qtestxunitstreamer.cpp \
     qxunittestlogger.cpp
 DEFINES *= QT_NO_CAST_TO_ASCII \

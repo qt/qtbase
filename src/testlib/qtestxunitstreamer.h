@@ -42,7 +42,7 @@
 #ifndef QTESTXUNITSTREAMER_H
 #define QTESTXUNITSTREAMER_H
 
-#include <QtTest/qtestbasicstreamer.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
@@ -50,9 +50,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
+class QTestElement;
+class QTestElementAttribute;
 class QXunitTestLogger;
+struct QTestCharBuffer;
 
-class QTestXunitStreamer: public QTestBasicStreamer
+class QTestXunitStreamer
 {
     public:
         QTestXunitStreamer(QXunitTestLogger *logger);
@@ -64,10 +67,15 @@ class QTestXunitStreamer: public QTestBasicStreamer
         void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
         void output(QTestElement *element) const;
         void outputElements(QTestElement *element, bool isChildElement = false) const;
+        void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
+
+        void outputString(const char *msg) const;
 
     private:
         void displayXunitXmlHeader() const;
         static void indentForElement(const QTestElement* element, char* buf, int size);
+
+        QXunitTestLogger *testLogger;
 };
 
 QT_END_NAMESPACE

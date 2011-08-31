@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTestBasicStreamer;
+class QTestXunitStreamer;
 class QTestElement;
 
 class QXunitTestLogger : public QAbstractTestLogger
@@ -84,7 +84,7 @@ class QXunitTestLogger : public QAbstractTestLogger
         QTestElement *listOfTestcases;
         QTestElement *currentLogElement;
         QTestElement *errorLogElement;
-        QTestBasicStreamer *logFormatter;
+        QTestXunitStreamer *logFormatter;
 
         int testCounter;
         int failureCounter;
