@@ -40,10 +40,13 @@
 ****************************************************************************/
 
 #include "qwaylandnativeinterface.h"
-
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
+
+#include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
+
 #include <QtGui/private/qapplication_p.h>
+#include <QDebug>
 
 void *QWaylandNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
 {
@@ -69,4 +72,33 @@ QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWidget(QWidget *widg
         screen = static_cast<QWaylandScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
     }
     return screen;
+}
+
+QVariantMap QWaylandNativeInterface::windowProperties(QPlatformWindow *window) const
+{
+    return m_windowProperties.value(window);
+}
+
+QVariant QWaylandNativeInterface::windowProperty(QPlatformWindow *window, const QString &name) const
+{
+    const QVariantMap properties = m_windowProperties.value(window);
+    return properties.value(name);
+}
+
+QVariant QWaylandNativeInterface::windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const
+{
+    const QVariantMap properties = m_windowProperties.value(window);
+    return properties.value(name, defaultValue);
+}
+
+void QWaylandNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
+{
+    QVariantMap props = m_windowProperties.value(window);
+    props.insert(name, value);
+    m_windowProperties.insert(window, props);
+
+    QWaylandWindow *wlWindow = static_cast<QWaylandWindow*>(window);
+    QWaylandWindowManagerIntegration::instance()->setWindowProperty(wlWindow, name, value);
+
+    emit windowPropertyChanged(window, name);
 }

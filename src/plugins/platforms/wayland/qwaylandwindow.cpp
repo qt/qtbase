@@ -147,6 +147,9 @@ void QWaylandWindow::newSurfaceCreated()
         // do not damage the surface here, as this leads to graphical corruptions in the compositor until
         // the first frame has been rendered
     }
+#ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
+    QWaylandWindowManagerIntegration::instance()->flushPropertyChanges(this);
+#endif
 }
 
 void QWaylandWindow::frameCallback(struct wl_surface *surface, void *data, uint32_t time)

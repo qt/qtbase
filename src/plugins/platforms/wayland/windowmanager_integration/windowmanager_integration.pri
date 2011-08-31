@@ -3,7 +3,7 @@ DEFINES += QT_WAYLAND_WINDOWMANAGER_SUPPORT
 contains(DEFINES, QT_WAYLAND_WINDOWMANAGER_SUPPORT) {
 
     HEADERS += \
-        $$PWD/qwaylandwindowmanager-client-protocol.h \
+        $$PWD/wayland-windowmanager-client-protocol.h \
         $$PWD/qwaylandwindowmanagerintegration.h
 
     SOURCES += \

@@ -43,6 +43,8 @@
 #define QPLATFORMNATIVEINTERFACE_QPA_H
 
 #include <QtGui/qwindowdefs.h>
+#include <QtCore/QObject>
+#include <QtCore/QVariant>
 
 QT_BEGIN_HEADER
 
@@ -51,11 +53,22 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QWidget;
+class QPlatformWindow;
 
-class Q_GUI_EXPORT QPlatformNativeInterface
+class Q_GUI_EXPORT QPlatformNativeInterface : public QObject
 {
+    Q_OBJECT
 public:
     virtual void *nativeResourceForWidget(const QByteArray &resource, QWidget *widget);
+
+    virtual QVariantMap windowProperties(QPlatformWindow *window) const;
+    virtual QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
+    virtual QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
+    virtual void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
+
+Q_SIGNALS:
+    void windowPropertyChanged(QPlatformWindow *window, const QString &propertyName);
+
 };
 
 QT_END_NAMESPACE
