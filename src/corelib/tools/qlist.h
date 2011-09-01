@@ -334,7 +334,7 @@ private:
     Node *detach_helper_grow(int i, int n);
     void detach_helper(int alloc);
     void detach_helper();
-    void free(QListData::Data *d);
+    void dealloc(QListData::Data *d);
 
     void node_construct(Node *n, const T &t);
     void node_destruct(Node *n);
@@ -422,7 +422,7 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
         QListData::Data *o = l.d;
         o->ref.ref();
         if (!d->ref.deref())
-            free(d);
+            dealloc(d);
         d = o;
         if (!d->sharable)
             detach_helper();
@@ -679,7 +679,7 @@ Q_OUTOFLINE_TEMPLATE typename QList<T>::Node *QList<T>::detach_helper_grow(int i
     }
 
     if (!x->ref.deref())
-        free(x);
+        dealloc(x);
 
     return reinterpret_cast<Node *>(p.begin() + i);
 }
@@ -698,7 +698,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper(int alloc)
     }
 
     if (!x->ref.deref())
-        free(x);
+        dealloc(x);
 }
 
 template <typename T>
@@ -711,7 +711,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T>::~QList()
 {
     if (!d->ref.deref())
-        free(d);
+        dealloc(d);
 }
 
 template <typename T>
@@ -732,9 +732,8 @@ Q_OUTOFLINE_TEMPLATE bool QList<T>::operator==(const QList<T> &l) const
     return true;
 }
 
-// ### Qt 5: rename freeData() to avoid confusion with std::free()
 template <typename T>
-Q_OUTOFLINE_TEMPLATE void QList<T>::free(QListData::Data *data)
+Q_OUTOFLINE_TEMPLATE void QList<T>::dealloc(QListData::Data *data)
 {
     node_destruct(reinterpret_cast<Node *>(data->array + data->begin),
                   reinterpret_cast<Node *>(data->array + data->end));
