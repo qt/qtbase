@@ -1001,38 +1001,40 @@ static int qToInt(char *str)
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 {
     const char *testOptions =
-         " options:\n"
-         " -functions : Returns a list of current testfunctions\n"
-         " -xunitxml  : Outputs results as XML XUnit document\n"
-         " -xml       : Outputs results as XML document\n"
-         " -lightxml  : Outputs results as stream of XML tags\n"
-         " -o filename: Writes all output into a file\n"
-         " -silent    : Only outputs warnings and failures\n"
-         " -v1        : Print enter messages for each testfunction\n"
-         " -v2        : Also print out each QVERIFY/QCOMPARE/QTEST\n"
-         " -vs        : Print every signal emitted\n"
-         " -eventdelay ms    : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
-         " -keydelay ms      : Set default delay for keyboard simulation to ms milliseconds\n"
-         " -mousedelay ms    : Set default delay for mouse simulation to ms milliseconds\n"
-         " -keyevent-verbose : Turn on verbose messages for keyboard simulation\n"
-         " -maxwarnings n    : Sets the maximum amount of messages to output.\n"
-         "                     0 means unlimited, default: 2000\n"
+         " Output options:\n"
+         " -xunitxml           : Outputs results as XML XUnit document\n"
+         " -xml                : Outputs results as XML document\n"
+         " -lightxml           : Outputs results as stream of XML tags\n"
+         " -o filename         : Writes all output into a file\n"
+         " -silent             : Only outputs warnings and failures\n"
+         " -v1                 : Print enter messages for each testfunction\n"
+         " -v2                 : Also print out each QVERIFY/QCOMPARE/QTEST\n"
+         " -vs                 : Print every signal emitted\n"
+         "\n"
+         " Testing options:\n"
+         " -functions          : Returns a list of current testfunctions\n"
+         " -eventdelay ms      : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
+         " -keydelay ms        : Set default delay for keyboard simulation to ms milliseconds\n"
+         " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
+         " -keyevent-verbose   : Turn on verbose messages for keyboard simulation\n"
+         " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
+         "                       0 means unlimited, default: 2000\n"
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-         " -nocrashhandler   : Disables the crash handler\n"
+         " -nocrashhandler     : Disables the crash handler\n"
 #endif
          "\n"
-         " Benchmark related options:\n"
+         " Benchmarking options:\n"
 #ifdef QTESTLIB_USE_VALGRIND
-        " -callgrind      : Use callgrind to time benchmarks\n"
+         " -callgrind          : Use callgrind to time benchmarks\n"
 #endif
 #ifdef HAVE_TICK_COUNTER
-        " -tickcounter    : Use CPU tick counters to time benchmarks\n"
+         " -tickcounter        : Use CPU tick counters to time benchmarks\n"
 #endif
-        " -eventcounter   : Counts events received during benchmarks\n"
-        " -minimumvalue n : Sets the minimum acceptable measurement value\n"
-        " -iterations  n  : Sets the number of accumulation iterations.\n"
-        " -median  n      : Sets the number of median iterations.\n"
-        " -vb             : Print out verbose benchmarking information.\n";
+         " -eventcounter       : Counts events received during benchmarks\n"
+         " -minimumvalue n     : Sets the minimum acceptable measurement value\n"
+         " -iterations  n      : Sets the number of accumulation iterations.\n"
+         " -median  n          : Sets the number of median iterations.\n"
+         " -vb                 : Print out verbose benchmarking information.\n";
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0
@@ -1042,15 +1044,16 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                    "%s", argv[0], testOptions);
 
             if (qml) {
-                printf ("\nqmltest related options:\n"
-                        " -import    : Specify an import directory.\n"
-                        " -input     : Specify the root directory for test cases.\n"
-                        " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
+                printf ("\n"
+                        " QmlTest options:\n"
+                        " -import             : Specify an import directory.\n"
+                        " -input              : Specify the root directory for test cases.\n"
+                        " -qtquick1           : Run with QtQuick 1 rather than QtQuick 2.\n"
                         );
             }
 
             printf("\n"
-                   " -help      : This help\n");
+                   " -help               : This help\n");
             exit(0);
         } else if (strcmp(argv[i], "-functions") == 0) {
             if (qml) {
