@@ -46,7 +46,6 @@ QT_BEGIN_NAMESPACE
 
 void QFont::initialize()
 {
-    QApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
 }
 
 void QFont::cleanup()
