@@ -4,6 +4,8 @@ INCLUDEPATH += $$PWD
 DEFINES += QT_DESIGNER
 !contains(QT_CONFIG, script): DEFINES += QT_FORMBUILDER_NO_SCRIPT
 
+QT += gui widgets
+
 # Input
 HEADERS += \
     $$PWD/ui4_p.h \
