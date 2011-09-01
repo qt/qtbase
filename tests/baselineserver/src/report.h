@@ -86,6 +86,7 @@ private:
     int numItems;
     int numMismatches;
     QTextStream out;
+    bool hasOverride;
 };
 
 #endif // REPORT_H
