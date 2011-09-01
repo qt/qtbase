@@ -7650,7 +7650,7 @@ if [ "$CFG_DECLARATIVE" = "yes" ]; then
     fi
 fi
 if [ "$CFG_DECLARATIVE" = "auto" ]; then
-    if [ "$CFG_SCRIPT" = "no" -o "$CFG_GUI" = "no" ]; then
+    if [ "$CFG_V8" = "no" -o "$CFG_GUI" = "no" ]; then
             CFG_DECLARATIVE=no
     else
             CFG_DECLARATIVE=yes
