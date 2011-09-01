@@ -73,7 +73,7 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove: {
         QMouseEvent *me = static_cast<QMouseEvent *>(e);
-        return new QMouseEvent(me->type(), QPoint(0, 0), me->globalPos(), me->button(), me->buttons(), me->modifiers());
+        return new QMouseEvent(me->type(), QPoint(0, 0), me->windowPos(), me->screenPos(), me->button(), me->buttons(), me->modifiers());
     }
 #ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMousePress:
@@ -83,7 +83,7 @@ static QMouseEvent *copyMouseEvent(QEvent *e)
 #if 1
         QEvent::Type met = me->type() == QEvent::GraphicsSceneMousePress ? QEvent::MouseButtonPress :
                            (me->type() == QEvent::GraphicsSceneMouseRelease ? QEvent::MouseButtonRelease : QEvent::MouseMove);
-        return new QMouseEvent(met, QPoint(0, 0), me->screenPos(), me->button(), me->buttons(), me->modifiers());
+        return new QMouseEvent(met, QPoint(0, 0), QPoint(0, 0), me->screenPos(), me->button(), me->buttons(), me->modifiers());
 #else
         QGraphicsSceneMouseEvent *copy = new QGraphicsSceneMouseEvent(me->type());
         copy->setPos(me->pos());
@@ -237,7 +237,7 @@ public:
             QPoint farFarAway(-QWIDGETSIZE_MAX, -QWIDGETSIZE_MAX);
 
             qFGDebug() << "QFG: sending a fake mouse release at far-far-away to " << mouseTarget;
-            QMouseEvent re(QEvent::MouseButtonRelease, QPoint(), farFarAway,
+            QMouseEvent re(QEvent::MouseButtonRelease, QPoint(), farFarAway, farFarAway,
                            mouseButton, QApplication::mouseButtons() & ~mouseButton,
                            QApplication::keyboardModifiers());
             sendMouseEvent(&re, RegrabMouseAfterwards);
@@ -287,7 +287,9 @@ protected:
 #endif // QT_NO_GRAPHICSVIEW
 
             if (me) {
-                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPos()), me->globalPos(), me->button(), me->buttons(), me->modifiers());
+                QMouseEvent copy(me->type(), mouseTarget->mapFromGlobal(me->globalPos()),
+                                 mouseTarget->topLevelWidget()->mapFromGlobal(me->globalPos()), me->screenPos(),
+                                 me->button(), me->buttons(), me->modifiers());
                 qt_sendSpontaneousEvent(mouseTarget, &copy);
             }
 

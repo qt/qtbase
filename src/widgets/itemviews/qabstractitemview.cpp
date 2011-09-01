@@ -1880,8 +1880,8 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
         || !d->isIndexEnabled(index)
         || (d->pressedIndex != index)) {
         QMouseEvent me(QEvent::MouseButtonPress,
-                       event->pos(), event->button(),
-                       event->buttons(), event->modifiers());
+                       event->localPos(), event->windowPos(), event->screenPos(),
+                       event->button(), event->buttons(), event->modifiers());
         mousePressEvent(&me);
         return;
     }

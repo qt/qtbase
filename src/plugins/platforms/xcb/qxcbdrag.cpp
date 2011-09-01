@@ -191,7 +191,8 @@ void QXcbDrag::startDrag()
                             atom(QXcbAtom::XdndTypelist),
                             XCB_ATOM_ATOM, 32, drag_types.size(), (const void *)drag_types.constData());
 
-    QMouseEvent me(QEvent::MouseMove, QCursor::pos(), QCursor::pos(), Qt::LeftButton,
+    QPointF pos = QCursor::pos();
+    QMouseEvent me(QEvent::MouseMove, pos, pos, pos, Qt::LeftButton,
                    QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
     move(&me);
 
@@ -1044,7 +1045,8 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event, bool)
 void QXcbDrag::timerEvent(QTimerEvent* e)
 {
     if (e->timerId() == heartbeat && source_sameanswer.isNull()) {
-        QMouseEvent me(QEvent::MouseMove, QCursor::pos(), QCursor::pos(), Qt::LeftButton,
+        QPointF pos = QCursor::pos();
+        QMouseEvent me(QEvent::MouseMove, pos, pos, pos, Qt::LeftButton,
                        QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
         move(&me);
     } else if (e->timerId() == transaction_expiry_timer) {

@@ -149,33 +149,50 @@ QInputEvent::~QInputEvent()
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
     or QEvent::MouseMove.
 
-    The \a position is the mouse cursor's position relative to the
-    receiving widget.
+    The \a localPos is the mouse cursor's position relative to the
+    receiving widget or item. The window position is set to the same value
+    as \a localPos.
     The \a button that caused the event is given as a value from
     the Qt::MouseButton enum. If the event \a type is
     \l MouseMove, the appropriate button for this event is Qt::NoButton.
     The mouse and keyboard states at the time of the event are specified by
     \a buttons and \a modifiers.
 
-    The globalPos() is initialized to QCursor::pos(), which may not
+    The screenPos() is initialized to QCursor::pos(), which may not
     be appropriate. Use the other constructor to specify the global
     position explicitly.
 */
-
-QMouseEvent::QMouseEvent(Type type, const QPointF &position, Qt::MouseButton button,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), p(position), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons)
 {
-    g = QCursor::pos();
+    s = QCursor::pos();
 }
+
 
 /*!
-    \internal
-*/
-QMouseEvent::~QMouseEvent()
-{
-}
+    Constructs a mouse event object.
 
+    The \a type parameter must be QEvent::MouseButtonPress,
+    QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
+    or QEvent::MouseMove.
+
+    The \a localPos is the mouse cursor's position relative to the
+    receiving widget or item. The cursor's position in screen coordinates is
+    specified by \a screenPos. The window position is set to the same value
+    as \a localPos. The \a button that caused the event is
+    given as a value from the \l Qt::MouseButton enum. If the event \a
+    type is \l MouseMove, the appropriate button for this event is
+    Qt::NoButton. \a buttons is the state of all buttons at the
+    time of the event, \a modifiers the state of all keyboard
+    modifiers.
+
+*/
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
+                         Qt::MouseButton button, Qt::MouseButtons buttons,
+                         Qt::KeyboardModifiers modifiers)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), s(screenPos), b(button), mouseState(buttons)
+{}
 
 /*!
     Constructs a mouse event object.
@@ -194,30 +211,59 @@ QMouseEvent::~QMouseEvent()
     modifiers.
 
 */
-QMouseEvent::QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), p(pos), g(globalPos), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons)
 {}
 
 /*!
-    \fn bool QMouseEvent::hasExtendedInfo() const
     \internal
+*/
+QMouseEvent::~QMouseEvent()
+{
+}
+
+
+/*!
+    \fn QPointF QMouseEvent::localPos() const
+
+    \since 5.0
+
+    Returns the position of the mouse cursor as a QPointF, relative to the
+    widget or item that received the event.
+
+    If you move the widget as a result of the mouse event, use the
+    screen position returned by screenPos() to avoid a shaking
+    motion.
+
+    \sa x() y() windowPos() screenPos()
 */
 
 /*!
-    \fn QPointF QMouseEvent::posF() const
+    \fn QPointF QMouseEvent::windowPos() const
 
-    \since 4.4
+    \since 5.0
 
     Returns the position of the mouse cursor as a QPointF, relative to the
-    widget that received the event.
+    window that received the event.
 
     If you move the widget as a result of the mouse event, use the
     global position returned by globalPos() to avoid a shaking
     motion.
 
-    \sa x() y() pos() globalPos()
+    \sa x() y() pos() localPos() screenPos()
+*/
+
+/*!
+    \fn QPointF QMouseEvent::screenPos() const
+
+    \since 5.0
+
+    Returns the position of the mouse cursor as a QPointF, relative to the
+    screen that received the event.
+
+    \sa x() y() pos() localPos() screenPos()
 */
 
 /*!

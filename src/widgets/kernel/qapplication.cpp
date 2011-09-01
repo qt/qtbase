@@ -3054,16 +3054,15 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
         return; // Mouse cursor not inside the widget's top-level.
 
     const QPoint globalPos(QCursor::pos());
-    QPoint pos = tlw->mapFromGlobal(globalPos);
+    QPoint windowPos = tlw->mapFromGlobal(globalPos);
 
     // Find the current widget under the mouse. If this function was called from
     // the widget's destructor, we have to make sure childAt() doesn't take into
     // account widgets that are about to be destructed.
-    QWidget *widgetUnderCursor = tlw->d_func()->childAt_helper(pos, widget->data->in_destructor);
+    QWidget *widgetUnderCursor = tlw->d_func()->childAt_helper(windowPos, widget->data->in_destructor);
     if (!widgetUnderCursor)
         widgetUnderCursor = tlw;
-    else
-        pos = widgetUnderCursor->mapFrom(tlw, pos);
+    QPoint pos = widgetUnderCursor->mapFrom(tlw, windowPos);
 
     if (widgetInShow && widgetUnderCursor != widget && !widget->isAncestorOf(widgetUnderCursor))
         return; // Mouse cursor not inside the widget or any of its children.
@@ -3072,7 +3071,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
         qt_button_down = 0;
 
     // Send enter/leave events followed by a mouse move on the entered widget.
-    QMouseEvent e(QEvent::MouseMove, pos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+    QMouseEvent e(QEvent::MouseMove, pos, windowPos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
@@ -3788,7 +3787,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
             QPointer<QWidget> pw = w;
             while (w) {
-                QMouseEvent me(mouse->type(), relpos, mouse->globalPos(), mouse->button(), mouse->buttons(),
+                QMouseEvent me(mouse->type(), relpos, mouse->windowPos(), mouse->globalPos(), mouse->button(), mouse->buttons(),
                                mouse->modifiers());
                 me.spont = mouse->spontaneous();
                 // throw away any mouse-tracking-only mouse events

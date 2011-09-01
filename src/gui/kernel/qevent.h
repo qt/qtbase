@@ -89,22 +89,32 @@ public:
     QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
+    QMouseEvent(Type type, const QPointF &pos, const QPointF &windowPos, const QPointF &globalPos,
+                Qt::MouseButton button, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers);
     ~QMouseEvent();
 
-    inline QPoint pos() const { return p.toPoint(); }
-    inline QPoint globalPos() const { return g.toPoint(); }
-    inline int x() const { return qRound(p.x()); }
-    inline int y() const { return qRound(p.y()); }
-    inline int globalX() const { return qRound(g.x()); }
-    inline int globalY() const { return qRound(g.y()); }
+#ifndef QT_NO_INTEGER_EVENT_COORDINATES
+    inline QPoint pos() const { return l.toPoint(); }
+    inline QPoint globalPos() const { return s.toPoint(); }
+    inline int x() const { return qRound(l.x()); }
+    inline int y() const { return qRound(l.y()); }
+    inline int globalX() const { return qRound(s.x()); }
+    inline int globalY() const { return qRound(s.y()); }
+#endif
+    const QPointF &localPos() const { return l; }
+    const QPointF &windowPos() const { return w; }
+    const QPointF &screenPos() const { return s; }
+
     inline Qt::MouseButton button() const { return b; }
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
-    const QPointF &posF() const { return p; }
-    const QPointF &globalPosF() const { return g; }
+#if QT_DEPRECATED_SINCE(5, 0)
+    Q_DEPRECATED inline QPointF posF() const { return l; }
+#endif
 
 protected:
-    QPointF p, g;
+    QPointF l, w, s;
     Qt::MouseButton b;
     Qt::MouseButtons mouseState;
 };
@@ -115,8 +125,10 @@ public:
     QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QHoverEvent();
 
+#ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return p.toPoint(); }
     inline QPoint oldPos() const { return op.toPoint(); }
+#endif
 
     inline const QPointF &posF() const { return p; }
     inline const QPointF &oldPosF() const { return op; }
@@ -138,18 +150,20 @@ public:
     ~QWheelEvent();
 
     inline int delta() const { return d; }
+#ifndef QT_NO_INTEGER_EVENT_COORDINATES
     inline QPoint pos() const { return p.toPoint(); }
     inline QPoint globalPos()   const { return g.toPoint(); }
     inline int x() const { return p.x(); }
     inline int y() const { return p.y(); }
     inline int globalX() const { return g.x(); }
     inline int globalY() const { return g.y(); }
+#endif
+    inline const QPointF &posF() const { return p; }
+    inline const QPointF &globalPosF()   const { return g; }
 
     inline Qt::MouseButtons buttons() const { return mouseState; }
     Qt::Orientation orientation() const { return o; }
 
-    inline const QPointF &posF() const { return p; }
-    inline const QPointF &globalPosF()   const { return g; }
 
 protected:
     QPointF p;

@@ -1800,7 +1800,8 @@ bool QWidgetTextControlPrivate::sendMouseEventToInputContext(
                 return true;
         }
         if (ctx) {
-            QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos), globalPos,
+            QMouseEvent ev(eventType, contextWidget->mapFromGlobal(globalPos),
+                           contextWidget->topLevelWidget()->mapFromGlobal(globalPos), globalPos,
                            button, buttons, modifiers);
             ctx->mouseHandler(cursorPos, &ev);
             e->setAccepted(ev.isAccepted());

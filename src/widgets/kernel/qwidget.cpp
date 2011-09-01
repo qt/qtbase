@@ -8713,8 +8713,9 @@ bool QWidget::event(QEvent *event)
             break;
 
         QMouseEvent mouseEvent(eventType,
-                               touchPoint.pos().toPoint(),
-                               touchPoint.screenPos().toPoint(),
+                               touchPoint.pos(),
+                               touchPoint.scenePos(),
+                               touchPoint.screenPos(),
                                Qt::LeftButton,
                                Qt::LeftButton,
                                touchEvent->modifiers());

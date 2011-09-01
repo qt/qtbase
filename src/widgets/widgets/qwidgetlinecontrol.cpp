@@ -1412,7 +1412,7 @@ bool QWidgetLineControl::processEvent(QEvent* ev)
         case QEvent::GraphicsSceneMousePress:{
                QGraphicsSceneMouseEvent *gvEv = static_cast<QGraphicsSceneMouseEvent*>(ev);
                QMouseEvent mouse(ev->type(),
-                    gvEv->pos().toPoint(), gvEv->button(), gvEv->buttons(), gvEv->modifiers());
+                    gvEv->pos(), gvEv->pos(), gvEv->screenPos(), gvEv->button(), gvEv->buttons(), gvEv->modifiers());
                processMouseEvent(&mouse); break;
         }
 #endif

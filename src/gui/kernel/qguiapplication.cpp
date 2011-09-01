@@ -590,7 +590,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
 
     if (window) {
-        QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
+        QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
 #ifndef QT_NO_CURSOR
         QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
         for (int i = 0; i < cursors.count(); ++i)
