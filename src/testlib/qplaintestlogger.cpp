@@ -211,7 +211,7 @@ void QPlainTestLogger::outputMessage(const char *str)
         OutputDebugString((wchar_t*)tmp.utf16());
         strUtf16.remove(0, maxOutputLength);
     } while (!strUtf16.isEmpty());
-    if (QTestLog::outputFileName())
+    if (stream != stdout)
 #elif defined(Q_OS_WIN)
     EnterCriticalSection(&QTest::outputCriticalSection);
     // OutputDebugString is not threadsafe

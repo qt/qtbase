@@ -98,7 +98,7 @@ public:
 
     void outputString(const char *msg);
 
-private:
+protected:
     FILE *stream;
 };
 
