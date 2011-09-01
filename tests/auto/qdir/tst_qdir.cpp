@@ -1109,6 +1109,11 @@ void tst_QDir::absolutePath_data()
     QTest::newRow("4") << "c:/machine/share/dir1" << "c:/machine/share/dir1";
     QTest::newRow("5") << "c:\\machine\\share\\dir1" << "c:/machine/share/dir1";
 #endif
+    //test dirty paths are cleaned (QTBUG-19995)
+    QTest::newRow("/home/qt/.") << QDir::rootPath() + "home/qt/." << QDir::rootPath() + "home/qt";
+    QTest::newRow("/system/data/../config") << QDir::rootPath() + "system/data/../config" << QDir::rootPath() + "system/config";
+    QTest::newRow("//home//qt/") << QDir::rootPath() + "/home//qt/" << QDir::rootPath() + "home/qt";
+    QTest::newRow("foo/../bar") << "foo/../bar" << QDir::currentPath() + "/bar";
     QTest::newRow("resource") << ":/prefix/foo.bar" << ":/prefix/foo.bar";
 }
 
@@ -1870,6 +1875,14 @@ void tst_QDir::equalityOperator_data()
 
     QTest::newRow("relativepaths") << "entrylist/" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << "./entrylist" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("QTBUG-20495") << QDir::currentPath() + "/entrylist/.." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << "." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("QTBUG-20495-root") << QDir::rootPath() + "tmp/.." << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << QDir::rootPath() << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << true;
 
     QTest::newRow("diff-filters") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
