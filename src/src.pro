@@ -8,7 +8,7 @@ SRC_SUBDIRS += src_corelib src_network src_sql src_testlib src_xml src_uitools
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 !contains(QT_CONFIG, no-gui): SRC_SUBDIRS += src_gui
-!contains(QT_CONFIG, no-v8): SRC_SUBDIRS += src_v8
+contains(QT_CONFIG, v8): SRC_SUBDIRS += src_v8
 
 !wince*:!symbian-abld:!symbian-sbsv2:include(tools/tools.pro)
 
