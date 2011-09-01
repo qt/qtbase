@@ -115,7 +115,7 @@ void QXmlTestLogger::startLogging(const char *filename)
         outputString(buf.constData());
     }
 
-   QTest::qt_asprintf(&buf,
+    QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
                 "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"

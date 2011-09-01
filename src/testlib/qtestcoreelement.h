@@ -87,10 +87,7 @@ QTestCoreElement<ElementType>::~QTestCoreElement()
 template <class ElementType>
 void QTestCoreElement<ElementType>::addAttribute(const QTest::AttributeIndex attributeIndex, const char *value)
 {
-    if(attributeIndex == -1)
-        return;
-
-    if (attribute(attributeIndex))
+    if (attributeIndex == -1 || attribute(attributeIndex))
         return;
 
     QTestElementAttribute *testAttribute = new QTestElementAttribute;
@@ -108,7 +105,7 @@ template <class ElementType>
 const char *QTestCoreElement<ElementType>::attributeValue(QTest::AttributeIndex index) const
 {
     const QTestElementAttribute *attrb = attribute(index);
-    if(attrb)
+    if (attrb)
         return attrb->value();
 
     return 0;
@@ -118,7 +115,7 @@ template <class ElementType>
 const char *QTestCoreElement<ElementType>::attributeName(QTest::AttributeIndex index) const
 {
     const QTestElementAttribute *attrb = attribute(index);
-    if(attrb)
+    if (attrb)
         return attrb->name();
 
     return 0;
@@ -139,7 +136,7 @@ const char *QTestCoreElement<ElementType>::elementName() const
         "system-err"
     };
 
-    if(type != QTest::LET_Undefined)
+    if (type != QTest::LET_Undefined)
         return xmlElementNames[type];
 
     return 0;
@@ -155,8 +152,8 @@ template <class ElementType>
 const QTestElementAttribute *QTestCoreElement<ElementType>::attribute(QTest::AttributeIndex index) const
 {
     QTestElementAttribute *iterator = listOfAttributes;
-    while(iterator){
-        if(iterator->index() == index)
+    while (iterator) {
+        if (iterator->index() == index)
             return iterator;
 
         iterator = iterator->nextElement();

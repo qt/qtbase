@@ -238,7 +238,7 @@ qint64 QBenchmarkCallgrindMeasurer::checkpoint()
 }
 
 qint64 QBenchmarkCallgrindMeasurer::stop()
-{	
+{
     return checkpoint();
 }
 
@@ -249,17 +249,17 @@ bool QBenchmarkCallgrindMeasurer::isMeasurementAccepted(qint64 measurement)
 }
 
 int QBenchmarkCallgrindMeasurer::adjustIterationCount(int)
-{ 
+{
     return 1;
 }
 
 int QBenchmarkCallgrindMeasurer::adjustMedianCount(int)
-{ 
+{
     return 1;
 }
 
 bool QBenchmarkCallgrindMeasurer::needsWarmupIteration()
-{ 
+{
     return true;
 }
 

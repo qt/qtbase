@@ -1059,7 +1059,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 qPrintTestSlots(stdout);
                 exit(0);
             }
-        } else if(strcmp(argv[i], "-xunitxml") == 0){
+        } else if (strcmp(argv[i], "-xunitxml") == 0) {
             QTestLog::setLogMode(QTestLog::XunitXML);
         } else if (strcmp(argv[i], "-xml") == 0) {
             QTestLog::setLogMode(QTestLog::XML);
@@ -1189,7 +1189,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             // we load the QML files.  So just store the data for now.
             int colon = -1;
             int offset;
-            for(offset = 0; *(argv[i]+offset); ++offset) {
+            for (offset = 0; *(argv[i]+offset); ++offset) {
                 if (*(argv[i]+offset) == ':') {
                     if (*(argv[i]+offset+1) == ':') {
                         // "::" is used as a test name separator.
@@ -1218,13 +1218,13 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             int colon = -1;
             char buf[512], *data=0;
             int off;
-            for(off = 0; *(argv[i]+off); ++off) {
+            for (off = 0; *(argv[i]+off); ++off) {
                 if (*(argv[i]+off) == ':') {
                     colon = off;
                     break;
                 }
             }
-            if(colon != -1) {
+            if (colon != -1) {
                 data = qstrdup(argv[i]+colon+1);
             }
             QTest::qt_snprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
@@ -1425,7 +1425,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
         if (data && !foundFunction) {
             fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
             fprintf(stderr, "Available testdata:\n");
-            for(int i = 0; i < table.dataCount(); ++i)
+            for (int i = 0; i < table.dataCount(); ++i)
                 fprintf(stderr, "%s\n", table.testData(i)->dataTag());
             return false;
         }
@@ -1476,7 +1476,7 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
  */
 char *toHexRepresentation(const char *ba, int length)
 {
-    if(length == 0)
+    if (length == 0)
         return qstrdup("");
 
     /* We output at maximum about maxLen characters in order to avoid
@@ -1490,7 +1490,7 @@ char *toHexRepresentation(const char *ba, int length)
     const int len = qMin(maxLen, length);
     char *result = 0;
 
-    if(length > maxLen) {
+    if (length > maxLen) {
         const int size = len * 3 + 4;
         result = new char[size];
 
@@ -1511,7 +1511,7 @@ char *toHexRepresentation(const char *ba, int length)
     int i = 0;
     int o = 0;
 
-    while(true) {
+    while (true) {
         const char at = ba[i];
 
         result[o] = toHex[(at >> 4) & 0x0F];
@@ -1520,7 +1520,7 @@ char *toHexRepresentation(const char *ba, int length)
 
         ++i;
         ++o;
-        if(i == len)
+        if (i == len)
             break;
         else {
             result[o] = ' ';
@@ -1549,7 +1549,7 @@ static void qInvokeTestMethods(QObject *testObject)
         const bool previousFailed = QTestResult::testFailed();
         QTestResult::finishedCurrentTestFunction();
 
-        if(!QTestResult::skipCurrentTest() && !previousFailed) {
+        if (!QTestResult::skipCurrentTest() && !previousFailed) {
 
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
@@ -1722,18 +1722,18 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 #ifdef Q_WS_MAC
-     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
+    bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
 #ifdef QT_MAC_USE_COCOA
-     IOPMAssertionID powerID;
+    IOPMAssertionID powerID;
 #endif
 #endif
 #ifndef QT_NO_EXCEPTIONS
     try {
 #endif
 
- #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
- #endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
+#endif
 
 #ifdef Q_WS_MAC
     // Starting with Qt 4.4, applications launched from the command line
@@ -1742,13 +1742,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     if (macNeedsActivate) {
         ProcessSerialNumber psn = { 0, kCurrentProcess };
         SetFrontProcess(&psn);
-#  ifdef QT_MAC_USE_COCOA
+#ifdef QT_MAC_USE_COCOA
         IOReturn ok = IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, &powerID);
         if (ok != kIOReturnSuccess)
             macNeedsActivate = false; // no need to release the assertion on exit.
-#  else
+#else
         UpdateSystemActivity(1); // Wake the display.
-#  endif
+#endif
     }
 #endif
 
@@ -1810,7 +1810,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          throw;
          return 1;
      }
-#  endif
+#endif
 
     currentTestObject = 0;
 #ifdef QT_MAC_USE_COCOA
@@ -1843,7 +1843,7 @@ int QTest::qExec(QObject *testObject, const QStringList &arguments)
     QVector<QByteArray> args;
     args.reserve(argc);
 
-    for(int i = 0; i < argc; ++i)
+    for (int i = 0; i < argc; ++i)
     {
         args.append(arguments.at(i).toLocal8Bit().constData());
         argv[i] = args.last().data();

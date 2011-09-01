@@ -169,7 +169,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
     if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
-        if(file)
+        if (file)
             failureElement->addAttribute(QTest::AI_File, file);
         else
             failureElement->addAttribute(QTest::AI_File, "");
@@ -207,7 +207,7 @@ void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
         currentLogElement->addAttribute(QTest::AI_Result, typeBuf);
     }
 
-    if(file)
+    if (file)
         currentLogElement->addAttribute(QTest::AI_File, file);
     else
         currentLogElement->addAttribute(QTest::AI_File, "");
@@ -297,7 +297,7 @@ void QXunitTestLogger::addMessage(MessageTypes type, const char *message, const 
     errorElement->addAttribute(QTest::AI_Description, message);
     addTag(errorElement);
 
-    if(file)
+    if (file)
         errorElement->addAttribute(QTest::AI_File, file);
     else
         errorElement->addAttribute(QTest::AI_File, "");
