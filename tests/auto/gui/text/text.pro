@@ -28,5 +28,6 @@ win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
            qcssparser \
+           qstatictext \
            qtextlayout \
            qtextpiecetable \
