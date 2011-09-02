@@ -54,7 +54,9 @@
 //
 
 #include "qrawfont.h"
+
 #include "qfontengine_p.h"
+#include <QtCore/qthread.h>
 #include <QtCore/qthreadstorage.h>
 
 #if !defined(QT_NO_RAWFONT)
@@ -94,6 +96,12 @@ public:
     {
         Q_ASSERT(ref == 0);
         cleanUp();
+    }
+
+    inline bool isValid() const
+    {
+        Q_ASSERT(thread == 0 || thread == QThread::currentThread());
+        return fontEngine != 0;
     }
 
     void cleanUp();
