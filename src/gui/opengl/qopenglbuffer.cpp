@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpenGLBuffer
     \brief The QOpenGLBuffer class provides functions for creating and managing GL buffer objects.
-    \since 4.7
+    \since 5.0
     \ingroup painting-3D
 
     Buffer objects are created in the GL server so that the

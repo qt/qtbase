@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpenGLFunctions
     \brief The QOpenGLFunctions class provides cross-platform access to the OpenGL/ES 2.0 API.
-    \since 4.8
+    \since 5.0
     \ingroup painting-3D
 
     OpenGL/ES 2.0 defines a subset of the OpenGL specification that is

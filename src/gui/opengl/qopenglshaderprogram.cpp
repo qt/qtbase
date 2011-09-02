@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpenGLShader
     \brief The QOpenGLShader class allows OpenGL shaders to be compiled.
-    \since 4.6
+    \since 5.0
     \ingroup painting-3D
 
     This class supports shaders written in the OpenGL Shading Language (GLSL)
@@ -1407,7 +1407,6 @@ void QOpenGLShaderProgram::setAttributeArray
 
     \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
     \sa disableAttributeArray(), setAttributeBuffer()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setAttributeArray
     (int location, GLenum type, const void *values, int tupleSize, int stride)
@@ -1526,7 +1525,6 @@ void QOpenGLShaderProgram::setAttributeArray
 
     \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
     \sa disableAttributeArray(), setAttributeBuffer()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setAttributeArray
     (const char *name, GLenum type, const void *values, int tupleSize, int stride)
@@ -1551,7 +1549,6 @@ void QOpenGLShaderProgram::setAttributeArray
     setAttributeValue() for \a location will be used.
 
     \sa setAttributeArray()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setAttributeBuffer
     (int location, GLenum type, int offset, int tupleSize, int stride)
@@ -1583,7 +1580,6 @@ void QOpenGLShaderProgram::setAttributeBuffer
     setAttributeValue() for \a name will be used.
 
     \sa setAttributeArray()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setAttributeBuffer
     (const char *name, GLenum type, int offset, int tupleSize, int stride)
@@ -2370,7 +2366,6 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const QMatrix4x4& v
     in column-major order.
 
     \sa setAttributeValue()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setUniformValue(int location, const GLfloat value[2][2])
 {
@@ -2388,7 +2383,6 @@ void QOpenGLShaderProgram::setUniformValue(int location, const GLfloat value[2][
     in column-major order.
 
     \sa setAttributeValue()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setUniformValue(int location, const GLfloat value[3][3])
 {
@@ -2424,7 +2418,6 @@ void QOpenGLShaderProgram::setUniformValue(int location, const GLfloat value[4][
     in column-major order.
 
     \sa setAttributeValue()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const GLfloat value[2][2])
 {
@@ -2439,7 +2432,6 @@ void QOpenGLShaderProgram::setUniformValue(const char *name, const GLfloat value
     in column-major order.
 
     \sa setAttributeValue()
-    \since 4.7
 */
 void QOpenGLShaderProgram::setUniformValue(const char *name, const GLfloat value[3][3])
 {
@@ -2963,8 +2955,6 @@ void QOpenGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4
     Returns the hardware limit for how many vertices a geometry shader
     can output.
 
-    \since 4.7
-
     \sa setGeometryOutputVertexCount()
 */
 int QOpenGLShaderProgram::maxGeometryOutputVertices() const
@@ -2977,8 +2967,6 @@ int QOpenGLShaderProgram::maxGeometryOutputVertices() const
 /*!
     Sets the maximum number of vertices the current geometry shader
     program will produce, if active, to \a count.
-
-    \since 4.7
 
     This parameter takes effect the next time the program is linked.
 */
@@ -2998,8 +2986,6 @@ void QOpenGLShaderProgram::setGeometryOutputVertexCount(int count)
 /*!
     Returns the maximum number of vertices the current geometry shader
     program will produce, if active.
-
-    \since 4.7
 
     This parameter takes effect the ntext time the program is linked.
 */
@@ -3024,8 +3010,6 @@ void QOpenGLShaderProgram::setGeometryInputType(GLenum inputType)
     Returns the geometry shader input type, if active.
 
     This parameter takes effect the next time the program is linked.
-
-    \since 4.7
  */
 
 GLenum QOpenGLShaderProgram::geometryInputType() const
@@ -3039,8 +3023,6 @@ GLenum QOpenGLShaderProgram::geometryInputType() const
     \a outputType.
 
     This parameter takes effect the next time the program is linked.
-
-    \since 4.7
 */
 void QOpenGLShaderProgram::setGeometryOutputType(GLenum outputType)
 {
@@ -3052,8 +3034,6 @@ void QOpenGLShaderProgram::setGeometryOutputType(GLenum outputType)
     Returns the geometry shader output type, if active.
 
     This parameter takes effect the next time the program is linked.
-
-    \since 4.7
  */
 GLenum QOpenGLShaderProgram::geometryOutputType() const
 {
@@ -3099,8 +3079,6 @@ void QOpenGLShaderProgram::shaderDestroyed()
 
     The \a context is used to resolve the GLSL extensions.
     If \a context is null, then QOpenGLContext::currentContext() is used.
-
-    \since 4.7
 */
 bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
 {

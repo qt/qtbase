@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLFramebufferObjectFormat class specifies the format of an OpenGL
     framebuffer object.
 
-    \since 4.6
+    \since 5.0
 
     \ingroup painting-3D
 
@@ -194,8 +194,6 @@ int QOpenGLFramebufferObjectFormat::samples() const
 }
 
 /*!
-    \since 4.8
-
     Enables mipmapping if \a enabled is true; otherwise disables it.
 
     Mipmapping is disabled by default.
@@ -214,8 +212,6 @@ void QOpenGLFramebufferObjectFormat::setMipmap(bool enabled)
 }
 
 /*!
-    \since 4.8
-
     Returns true if mipmapping is enabled.
 
     \sa setMipmap()
@@ -657,7 +653,7 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *q, const QS
 /*!
     \class QOpenGLFramebufferObject
     \brief The QOpenGLFramebufferObject class encapsulates an OpenGL framebuffer object.
-    \since 4.2
+    \since 5.0
 
     \ingroup painting-3D
 
@@ -736,7 +732,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *q, const QS
 
 /*!
     \enum QOpenGLFramebufferObject::Attachment
-    \since 4.3
 
     This enum type is used to configure the depth and stencil buffers
     attached to the framebuffer object when it is created.
@@ -1244,8 +1239,6 @@ QOpenGLFramebufferObject::Attachment QOpenGLFramebufferObject::attachment() cons
 }
 
 /*!
-    \since 4.5
-
     Returns true if the framebuffer object is currently bound to a context,
     otherwise false is returned.
 */
@@ -1260,8 +1253,6 @@ bool QOpenGLFramebufferObject::isBound() const
 /*!
     \fn bool QOpenGLFramebufferObject::hasOpenGLFramebufferBlit()
 
-    \since 4.6
-
     Returns true if the OpenGL \c{GL_EXT_framebuffer_blit} extension
     is present on this system; otherwise returns false.
 
@@ -1273,8 +1264,6 @@ bool QOpenGLFramebufferObject::hasOpenGLFramebufferBlit()
 }
 
 /*!
-    \since 4.6
-
     Blits from the \a sourceRect rectangle in the \a source framebuffer
     object to the \a targetRect rectangle in the \a target framebuffer object.
 
