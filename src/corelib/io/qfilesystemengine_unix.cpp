@@ -218,7 +218,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
-    if (entry.isAbsolute())
+    if (entry.isAbsolute() && entry.isClean())
         return entry;
 
     QByteArray orig = entry.nativeFilePath();
