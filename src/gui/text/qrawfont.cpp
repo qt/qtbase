@@ -284,6 +284,12 @@ bool QRawFont::operator==(const QRawFont &other) const
 }
 
 /*!
+    \fn bool QRawFont::operator!=(const QRawFont &other) const
+
+    Returns true if this QRawFont is not equal to \a other. Otherwise, returns false.
+*/
+
+/*!
    Returns the ascent of this QRawFont in pixel units.
 
    \sa QFontMetricsF::ascent()
