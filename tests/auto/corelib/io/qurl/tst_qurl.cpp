@@ -2421,8 +2421,8 @@ void tst_QUrl::nameprep_testsuite_data()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern void qt_nameprep(QString *source, int from);
-extern bool qt_check_std3rules(const QChar *, int);
+Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
+Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
 QT_END_NAMESPACE
 #endif
 
