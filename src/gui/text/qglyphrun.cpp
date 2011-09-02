@@ -157,13 +157,11 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
 }
 
 /*!
+    \fn bool QGlyphRun::operator!=(const QGlyphRun &other) const
+
     Compares \a other to this QGlyphRun object. Returns true if any of the list of glyph
     indexes, the list of positions or the font are different, otherwise returns false.
 */
-bool QGlyphRun::operator!=(const QGlyphRun &other) const
-{
-    return !(*this == other);
-}
 
 /*!
     Returns the font selected for this QGlyphRun object.

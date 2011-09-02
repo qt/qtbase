@@ -79,8 +79,10 @@ public:
     void clear();
 
     QGlyphRun &operator=(const QGlyphRun &other);
+
     bool operator==(const QGlyphRun &other) const;
-    bool operator!=(const QGlyphRun &other) const;
+    inline bool operator!=(const QGlyphRun &other) const
+    { return !operator==(other); }
 
     void setOverline(bool overline);
     bool overline() const;
