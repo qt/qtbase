@@ -43,7 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtSql/QtSql>
 
-#include "../qsqldatabase/tst_databases.h"
+#include "../../kernel/qsqldatabase/tst_databases.h"
 
 const QString reltest1(qTableName("reltest1", __FILE__)),
         reltest2(qTableName("reltest2", __FILE__)),

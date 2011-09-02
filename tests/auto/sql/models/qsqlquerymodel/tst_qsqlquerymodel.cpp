@@ -53,7 +53,7 @@
 #include <qsqlquerymodel.h>
 #include <qsortfilterproxymodel.h>
 
-#include "../qsqldatabase/tst_databases.h"
+#include "../../kernel/qsqldatabase/tst_databases.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

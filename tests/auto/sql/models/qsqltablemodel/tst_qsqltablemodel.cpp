@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include "../qsqldatabase/tst_databases.h"
+#include "../../kernel/qsqldatabase/tst_databases.h"
 #include <QtSql>
 
 const QString test(qTableName("test", __FILE__)),

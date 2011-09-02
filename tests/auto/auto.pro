@@ -4,7 +4,7 @@ SUBDIRS += \
     corelib.pro \
     gui.pro \
     network.pro \
-    sql.pro \
+    sql \
     xml.pro \
     other.pro
 
