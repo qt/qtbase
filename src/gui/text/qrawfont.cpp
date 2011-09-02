@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
    A QRawFont object represents a single, physical instance of a given font in a given pixel size.
    I.e. in the typical case it represents a set of TrueType or OpenType font tables and uses a
-   user specified pixel size to convert metrics into logical pixel units. In can be used in
+   user specified pixel size to convert metrics into logical pixel units. It can be used in
    combination with the QGlyphRun class to draw specific glyph indexes at specific positions, and
    also have accessors to some relevant data in the physical font.
 
