@@ -141,14 +141,18 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
         return false;
     }
 
-    for (int i=0; i<qMax(d->glyphIndexDataSize, d->glyphPositionDataSize); ++i) {
-        if (i < d->glyphIndexDataSize && d->glyphIndexData[i] != other.d->glyphIndexData[i])
-           return false;
-
-        if (i < d->glyphPositionDataSize && d->glyphPositionData[i] != other.d->glyphPositionData[i])
-           return false;
+    if (d->glyphIndexData != other.d->glyphIndexData) {
+        for (int i = 0; i < d->glyphIndexDataSize; ++i) {
+            if (d->glyphIndexData[i] != other.d->glyphIndexData[i])
+               return false;
+        }
     }
-
+    if (d->glyphPositionData != other.d->glyphPositionData) {
+        for (int i = 0; i < d->glyphPositionDataSize; ++i) {
+            if (d->glyphPositionData[i] != other.d->glyphPositionData[i])
+               return false;
+        }
+    }
 
     return (d->overline == other.d->overline
             && d->underline == other.d->underline
