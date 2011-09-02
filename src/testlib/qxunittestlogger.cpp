@@ -51,8 +51,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QXunitTestLogger::QXunitTestLogger()
-    : listOfTestcases(0)
+QXunitTestLogger::QXunitTestLogger(const char *filename)
+    : QAbstractTestLogger(filename)
+    , listOfTestcases(0)
     , currentLogElement(0)
     , errorLogElement(0)
     , logFormatter(0)
@@ -68,9 +69,9 @@ QXunitTestLogger::~QXunitTestLogger()
     delete logFormatter;
 }
 
-void QXunitTestLogger::startLogging(const char *filename)
+void QXunitTestLogger::startLogging()
 {
-    QAbstractTestLogger::startLogging(filename);
+    QAbstractTestLogger::startLogging();
 
     logFormatter = new QTestXunitStreamer(this);
     delete errorLogElement;

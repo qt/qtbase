@@ -87,7 +87,6 @@ namespace QTest {
     static int maxWarnings = 2002;
 
     static QAbstractTestLogger *testLogger = 0;
-    static const char *outFile = 0;
 
     static QtMsgHandler oldMessageHandler;
 
@@ -161,24 +160,6 @@ namespace QTest {
             QTestResult::addFailure("Received a fatal error.", "Unknown file", 0);
             QTestLog::leaveTestFunction();
             QTestLog::stopLogging();
-            break;
-        }
-    }
-
-    void initLogger()
-    {
-        switch (QTest::logMode) {
-        case QTestLog::Plain:
-            QTest::testLogger = new QPlainTestLogger;
-            break;
-        case QTestLog::XML:
-            QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
-            break;
-        case QTestLog::LightXML:
-            QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
-            break;
-        case QTestLog::XunitXML:
-            QTest::testLogger = new QXunitTestLogger();
             break;
         }
     }
@@ -276,9 +257,8 @@ void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
 
 void QTestLog::startLogging()
 {
-    QTEST_ASSERT(!QTest::testLogger);
-    QTest::initLogger();
-    QTest::testLogger->startLogging(QTest::outFile);
+    QTEST_ASSERT(QTest::testLogger);
+    QTest::testLogger->startLogging();
     QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
 }
 
@@ -290,6 +270,27 @@ void QTestLog::stopLogging()
     QTest::testLogger->stopLogging();
     delete QTest::testLogger;
     QTest::testLogger = 0;
+}
+
+void QTestLog::initLogger(LogMode mode, const char *filename)
+{
+    QTest::logMode = mode;
+
+    switch (mode) {
+    case QTestLog::Plain:
+        QTest::testLogger = new QPlainTestLogger(filename);
+        break;
+    case QTestLog::XML:
+        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete, filename);
+        break;
+    case QTestLog::LightXML:
+        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light, filename);
+        break;
+    case QTestLog::XunitXML:
+        QTest::testLogger = new QXunitTestLogger(filename);
+        break;
+    }
+    QTEST_ASSERT(QTest::testLogger);
 }
 
 void QTestLog::warn(const char *msg)
@@ -306,11 +307,6 @@ void QTestLog::info(const char *msg, const char *file, int line)
 
     if (QTest::testLogger)
         QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg, file, line);
-}
-
-void QTestLog::setLogMode(LogMode mode)
-{
-    QTest::logMode = mode;
 }
 
 QTestLog::LogMode QTestLog::logMode()
@@ -342,18 +338,6 @@ void QTestLog::addIgnoreMessage(QtMsgType type, const char *msg)
     while (list->next)
         list = list->next;
     list->next = item;
-}
-
-void QTestLog::redirectOutput(const char *fileName)
-{
-    QTEST_ASSERT(fileName);
-
-    QTest::outFile = fileName;
-}
-
-const char *QTestLog::outputFileName()
-{
-    return QTest::outFile;
 }
 
 void QTestLog::setMaxWarnings(int m)

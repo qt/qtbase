@@ -63,10 +63,10 @@ class QTestElement;
 class QXunitTestLogger : public QAbstractTestLogger
 {
     public:
-        QXunitTestLogger();
+        QXunitTestLogger(const char *filename);
         ~QXunitTestLogger();
 
-        void startLogging(const char *filename);
+        void startLogging();
         void stopLogging();
 
         void enterTestFunction(const char *function);

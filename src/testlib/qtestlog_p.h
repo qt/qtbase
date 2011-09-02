@@ -83,14 +83,12 @@ public:
     static void startLogging();
     static void stopLogging();
 
-    static void setLogMode(LogMode mode);
+    static void initLogger(LogMode mode, const char *filename);
+
     static LogMode logMode();
 
     static void setVerboseLevel(int level);
     static int verboseLevel();
-
-    static void redirectOutput(const char *fileName);
-    static const char *outputFileName();
 
     static void setMaxWarnings(int max);
 

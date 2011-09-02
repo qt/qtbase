@@ -1000,6 +1000,9 @@ static int qToInt(char *str)
 
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 {
+    QTestLog::LogMode logFormat = QTestLog::Plain;
+    const char *logFilename = 0;
+
     const char *testOptions =
          " Output options:\n"
          " -xunitxml           : Outputs results as XML XUnit document\n"
@@ -1063,11 +1066,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 exit(0);
             }
         } else if (strcmp(argv[i], "-xunitxml") == 0) {
-            QTestLog::setLogMode(QTestLog::XunitXML);
+            logFormat = QTestLog::XunitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
-            QTestLog::setLogMode(QTestLog::XML);
+            logFormat = QTestLog::XML;
         } else if (strcmp(argv[i], "-lightxml") == 0) {
-            QTestLog::setLogMode(QTestLog::LightXML);
+            logFormat = QTestLog::LightXML;
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
@@ -1081,7 +1084,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 fprintf(stderr, "-o needs an extra parameter specifying the filename\n");
                 exit(1);
             } else {
-                QTestLog::redirectOutput(argv[++i]);
+                logFilename = argv[++i];
             }
         } else if (strcmp(argv[i], "-eventdelay") == 0) {
             if (i + 1 >= argc) {
@@ -1244,6 +1247,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QTEST_ASSERT(QTest::testFuncCount < 512);
         }
     }
+
+    // Create the logger
+    QTestLog::initLogger(logFormat, logFilename);
 }
 
 QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
