@@ -83,9 +83,10 @@ public:
     static void startLogging();
     static void stopLogging();
 
-    static void initLogger(LogMode mode, const char *filename);
+    static void addLogger(LogMode mode, const char *filename);
 
-    static LogMode logMode();
+    static int loggerCount();
+    static bool loggerUsingStdout();
 
     static void setVerboseLevel(int level);
     static int verboseLevel();

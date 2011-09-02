@@ -82,11 +82,102 @@ namespace QTest {
 
     static IgnoreResultList *ignoreResultList = 0;
 
-    static QTestLog::LogMode logMode = QTestLog::Plain;
+    struct LoggerList
+    {
+        QAbstractTestLogger *logger;
+        LoggerList *next;
+    };
+
+    class TestLoggers
+    {
+    public:
+        static void addLogger(QAbstractTestLogger *logger)
+        {
+            LoggerList *l = new LoggerList;
+            l->logger = logger;
+            l->next = loggers;
+            loggers = l;
+        }
+
+        static void destroyLoggers()
+        {
+            while (loggers) {
+                LoggerList *l = loggers;
+                loggers = loggers->next;
+                delete l->logger;
+                delete l;
+            }
+        }
+
+#define FOREACH_LOGGER(operation) \
+        LoggerList *l = loggers; \
+        while (l) { \
+            QAbstractTestLogger *logger = l->logger; \
+            Q_UNUSED(logger); \
+            operation; \
+            l = l->next; \
+        }
+
+        static void startLogging()
+        {
+            FOREACH_LOGGER(logger->startLogging());
+        }
+
+        static void stopLogging()
+        {
+            FOREACH_LOGGER(logger->stopLogging());
+        }
+
+        static void enterTestFunction(const char *function)
+        {
+            FOREACH_LOGGER(logger->enterTestFunction(function));
+        }
+
+        static void leaveTestFunction()
+        {
+            FOREACH_LOGGER(logger->leaveTestFunction());
+        }
+
+        static void addIncident(QAbstractTestLogger::IncidentTypes type, const char *description,
+                                const char *file = 0, int line = 0)
+        {
+            FOREACH_LOGGER(logger->addIncident(type, description, file, line));
+        }
+
+        static void addBenchmarkResult(const QBenchmarkResult &result)
+        {
+            FOREACH_LOGGER(logger->addBenchmarkResult(result));
+        }
+
+        static void addMessage(QAbstractTestLogger::MessageTypes type, const char *message,
+                               const char *file = 0, int line = 0)
+        {
+            FOREACH_LOGGER(logger->addMessage(type, message, file, line));
+        }
+
+        static void outputString(const char *msg)
+        {
+            FOREACH_LOGGER(logger->outputString(msg));
+        }
+
+        static int loggerCount()
+        {
+            int count = 0;
+            FOREACH_LOGGER(++count);
+            return count;
+        }
+
+    private:
+        static LoggerList *loggers;
+    };
+
+#undef FOREACH_LOGGER
+
+    LoggerList *TestLoggers::loggers = 0;
+    static bool loggerUsingStdout = false;
+
     static int verbosity = 0;
     static int maxWarnings = 2002;
-
-    static QAbstractTestLogger *testLogger = 0;
 
     static QtMsgHandler oldMessageHandler;
 
@@ -118,11 +209,11 @@ namespace QTest {
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
-        if (!msg || !QTest::testLogger) {
+        if (!msg || QTest::TestLoggers::loggerCount() == 0) {
             // if this goes wrong, something is seriously broken.
             qInstallMsgHandler(oldMessageHandler);
             QTEST_ASSERT(msg);
-            QTEST_ASSERT(QTest::testLogger);
+            QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
         }
 
         if (handleIgnoredMessage(type, msg))
@@ -134,7 +225,7 @@ namespace QTest {
                 return;
 
             if (!counter.deref()) {
-                QTest::testLogger->addMessage(QAbstractTestLogger::QSystem,
+                QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem,
                         "Maximum amount of warnings exceeded. Use -maxwarnings to override.");
                 return;
             }
@@ -142,16 +233,16 @@ namespace QTest {
 
         switch (type) {
         case QtDebugMsg:
-            QTest::testLogger->addMessage(QAbstractTestLogger::QDebug, msg);
+            QTest::TestLoggers::addMessage(QAbstractTestLogger::QDebug, msg);
             break;
         case QtCriticalMsg:
-            QTest::testLogger->addMessage(QAbstractTestLogger::QSystem, msg);
+            QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem, msg);
             break;
         case QtWarningMsg:
-            QTest::testLogger->addMessage(QAbstractTestLogger::QWarning, msg);
+            QTest::TestLoggers::addMessage(QAbstractTestLogger::QWarning, msg);
             break;
         case QtFatalMsg:
-            QTest::testLogger->addMessage(QAbstractTestLogger::QFatal, msg);
+            QTest::TestLoggers::addMessage(QAbstractTestLogger::QFatal, msg);
             /* Right now, we're inside the custom message handler and we're
              * being qt_message_output in qglobal.cpp. After we return from
              * this function, it will proceed with calling exit() and abort()
@@ -167,10 +258,9 @@ namespace QTest {
 
 void QTestLog::enterTestFunction(const char* function)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(function);
 
-    QTest::testLogger->enterTestFunction(function);
+    QTest::TestLoggers::enterTestFunction(function);
 }
 
 int QTestLog::unhandledIgnoreMessages()
@@ -186,21 +276,17 @@ int QTestLog::unhandledIgnoreMessages()
 
 void QTestLog::leaveTestFunction()
 {
-    QTEST_ASSERT(QTest::testLogger);
-
     QTest::IgnoreResultList::clearList(QTest::ignoreResultList);
-    QTest::testLogger->leaveTestFunction();
+    QTest::TestLoggers::leaveTestFunction();
 }
 
 void QTestLog::printUnhandledIgnoreMessages()
 {
-    QTEST_ASSERT(QTest::testLogger);
-
     char msg[1024];
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
         QTest::qt_snprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
-        QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg);
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
 
         list = list->next;
     }
@@ -208,110 +294,110 @@ void QTestLog::printUnhandledIgnoreMessages()
 
 void QTestLog::addPass(const char *msg)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 
-    QTest::testLogger->addIncident(QAbstractTestLogger::Pass, msg);
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::Pass, msg);
 }
 
 void QTestLog::addFail(const char *msg, const char *file, int line)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 
-    QTest::testLogger->addIncident(QAbstractTestLogger::Fail, msg, file, line);
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::Fail, msg, file, line);
 }
 
 void QTestLog::addXFail(const char *msg, const char *file, int line)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
-    QTest::testLogger->addIncident(QAbstractTestLogger::XFail, msg, file, line);
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::XFail, msg, file, line);
 }
 
 void QTestLog::addXPass(const char *msg, const char *file, int line)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
-    QTest::testLogger->addIncident(QAbstractTestLogger::XPass, msg, file, line);
+    QTest::TestLoggers::addIncident(QAbstractTestLogger::XPass, msg, file, line);
 }
 
 void QTestLog::addSkip(const char *msg, const char *file, int line)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
     QTEST_ASSERT(file);
 
-    QTest::testLogger->addMessage(QAbstractTestLogger::Skip, msg, file, line);
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Skip, msg, file, line);
 }
 
 void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
 {
-    QTEST_ASSERT(QTest::testLogger);
-    QTest::testLogger->addBenchmarkResult(result);
+    QTest::TestLoggers::addBenchmarkResult(result);
 }
 
 void QTestLog::startLogging()
 {
-    QTEST_ASSERT(QTest::testLogger);
-    QTest::testLogger->startLogging();
+    QTest::TestLoggers::startLogging();
     QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
 }
 
 void QTestLog::stopLogging()
 {
     qInstallMsgHandler(QTest::oldMessageHandler);
-
-    QTEST_ASSERT(QTest::testLogger);
-    QTest::testLogger->stopLogging();
-    delete QTest::testLogger;
-    QTest::testLogger = 0;
+    QTest::TestLoggers::stopLogging();
+    QTest::TestLoggers::destroyLoggers();
+    QTest::loggerUsingStdout = false;
 }
 
-void QTestLog::initLogger(LogMode mode, const char *filename)
+void QTestLog::addLogger(LogMode mode, const char *filename)
 {
-    QTest::logMode = mode;
+    if (filename && strcmp(filename, "-") == 0)
+        filename = 0;
+    if (!filename)
+        QTest::loggerUsingStdout = true;
 
+    QAbstractTestLogger *logger = 0;
     switch (mode) {
     case QTestLog::Plain:
-        QTest::testLogger = new QPlainTestLogger(filename);
+        logger = new QPlainTestLogger(filename);
         break;
     case QTestLog::XML:
-        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete, filename);
+        logger = new QXmlTestLogger(QXmlTestLogger::Complete, filename);
         break;
     case QTestLog::LightXML:
-        QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light, filename);
+        logger = new QXmlTestLogger(QXmlTestLogger::Light, filename);
         break;
     case QTestLog::XunitXML:
-        QTest::testLogger = new QXunitTestLogger(filename);
+        logger = new QXunitTestLogger(filename);
         break;
     }
-    QTEST_ASSERT(QTest::testLogger);
+    QTEST_ASSERT(logger);
+    QTest::TestLoggers::addLogger(logger);
+}
+
+int QTestLog::loggerCount()
+{
+    return QTest::TestLoggers::loggerCount();
+}
+
+bool QTestLog::loggerUsingStdout()
+{
+    return QTest::loggerUsingStdout;
 }
 
 void QTestLog::warn(const char *msg)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 
-    QTest::testLogger->addMessage(QAbstractTestLogger::Warn, msg);
+    if (QTest::TestLoggers::loggerCount() > 0)
+        QTest::TestLoggers::addMessage(QAbstractTestLogger::Warn, msg);
 }
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(msg);
 
-    if (QTest::testLogger)
-        QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg, file, line);
-}
-
-QTestLog::LogMode QTestLog::logMode()
-{
-    return QTest::logMode;
+    QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg, file, line);
 }
 
 void QTestLog::setVerboseLevel(int level)

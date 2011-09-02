@@ -182,26 +182,106 @@ struct LoggerSet
 // running each subtest.
 static QList<LoggerSet> allLoggerSets()
 {
-    // For the plain text logger, we'll test logging to file and to standard
-    // output.  For all other loggers (XML), we'll tell testlib to redirect to
-    // file.  The reason is that tests are allowed to print to standard output,
-    // and that means the test log is no longer guaranteed to be valid XML.
+    // Note that in order to test XML output to standard output, the subtests
+    // must not send output directly to stdout, bypassing Qt's output mechanisms
+    // (e.g. via printf), otherwise the output may not be well-formed XML.
     return QList<LoggerSet>()
-        << LoggerSet("stdout txt",
+        // Test with old-style options for a single logger
+        << LoggerSet("old stdout txt",
                      QStringList() << "stdout txt",
-                     QStringList())
-        << LoggerSet("txt",
+                     QStringList()
+                    )
+        << LoggerSet("old txt",
                      QStringList() << "txt",
-                     QStringList() << "-o" << logName("txt"))
-        << LoggerSet("xml",
+                     QStringList() << "-o" << logName("txt")
+                    )
+        << LoggerSet("old stdout xml",
+                     QStringList() << "stdout xml",
+                     QStringList() << "-xml"
+                    )
+        << LoggerSet("old xml",
                      QStringList() << "xml",
-                     QStringList() << "-xml" << "-o" << logName("xml"))
-        << LoggerSet("xunitxml",
+                     QStringList() << "-xml" << "-o" << logName("xml")
+                    )
+        << LoggerSet("old stdout xunitxml",
+                     QStringList() << "stdout xunitxml",
+                     QStringList() << "-xunitxml"
+                    )
+        << LoggerSet("old xunitxml",
                      QStringList() << "xunitxml",
-                     QStringList() << "-xunitxml" << "-o" << logName("xunitxml"))
-        << LoggerSet("lightxml",
+                     QStringList() << "-xunitxml" << "-o" << logName("xunitxml")
+                    )
+        << LoggerSet("old stdout lightxml",
+                     QStringList() << "stdout lightxml",
+                     QStringList() << "-lightxml"
+                    )
+        << LoggerSet("old lightxml",
                      QStringList() << "lightxml",
-                     QStringList() << "-lightxml" << "-o" << logName("lightxml"))
+                     QStringList() << "-lightxml" << "-o" << logName("lightxml")
+                    )
+        // Test with new-style options for a single logger
+        << LoggerSet("new stdout txt",
+                     QStringList() << "stdout txt",
+                     QStringList() << "-o" << "-,txt"
+                    )
+        << LoggerSet("new txt",
+                     QStringList() << "txt",
+                     QStringList() << "-o" << logName("txt")+",txt"
+                    )
+        << LoggerSet("new stdout xml",
+                     QStringList() << "stdout xml",
+                     QStringList() << "-o" << "-,xml"
+                    )
+        << LoggerSet("new xml",
+                     QStringList() << "xml",
+                     QStringList() << "-o" << logName("xml")+",xml"
+                    )
+        << LoggerSet("new stdout xunitxml",
+                     QStringList() << "stdout xunitxml",
+                     QStringList() << "-o" << "-,xunitxml"
+                    )
+        << LoggerSet("new xunitxml",
+                     QStringList() << "xunitxml",
+                     QStringList() << "-o" << logName("xunitxml")+",xunitxml"
+                    )
+        << LoggerSet("new stdout lightxml",
+                     QStringList() << "stdout lightxml",
+                     QStringList() << "-o" << "-,lightxml"
+                    )
+        << LoggerSet("new lightxml",
+                     QStringList() << "lightxml",
+                     QStringList() << "-o" << logName("lightxml")+",lightxml"
+                    )
+        // Test with two loggers (don't test all 32 combinations, just a sample)
+        << LoggerSet("stdout txt + txt",
+                     QStringList() << "stdout txt" << "txt",
+                     QStringList() << "-o" << "-,txt"
+                                   << "-o" << logName("txt")+",txt"
+                    )
+        << LoggerSet("xml + stdout txt",
+                     QStringList() << "xml" << "stdout txt",
+                     QStringList() << "-o" << logName("xml")+",xml"
+                                   << "-o" << "-,txt"
+                    )
+        << LoggerSet("txt + xunitxml",
+                     QStringList() << "txt" << "xunitxml",
+                     QStringList() << "-o" << logName("txt")+",txt"
+                                   << "-o" << logName("xunitxml")+",xunitxml"
+                    )
+        << LoggerSet("lightxml + stdout xunitxml",
+                     QStringList() << "lightxml" << "stdout xunitxml",
+                     QStringList() << "-o" << logName("lightxml")+",lightxml"
+                                   << "-o" << "-,xunitxml"
+                    )
+        // All loggers at the same time
+        << LoggerSet("all loggers",
+                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml",
+                     QStringList() << "-o" << logName("txt")+",txt"
+                                   << "-o" << logName("xml")+",xml"
+                                   << "-o" << logName("lightxml")+",lightxml"
+                                   << "-o" << "-,txt"
+                                   << "-o" << logName("xunitxml")+",xunitxml"
+                    )
     ;
 }
 
@@ -299,7 +379,7 @@ void tst_Selftests::runSubTest_data()
             // standard output, either because they execute multiple test
             // objects or because they internally supply arguments to
             // themselves.
-            if (loggerSet.name != "stdout txt") {
+            if (loggerSet.name != "old stdout txt" && loggerSet.name != "new stdout txt") {
                 if (subtest == "differentexec") {
                     continue;
                 }
@@ -441,11 +521,27 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             // __FILE__, while others do not.
             if (line.contains("ASSERT") && output != expected) {
                 const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
-                QEXPECT_FAIL("assert stdout txt",     msg, Continue);
-                QEXPECT_FAIL("assert txt",            msg, Continue);
-                QEXPECT_FAIL("assert xml",            msg, Continue);
-                QEXPECT_FAIL("assert lightxml",       msg, Continue);
-                QEXPECT_FAIL("assert xunitxml",       msg, Continue);
+                QEXPECT_FAIL("assert old stdout txt",             msg, Continue);
+                QEXPECT_FAIL("assert old txt",                    msg, Continue);
+                QEXPECT_FAIL("assert old stdout xml",             msg, Continue);
+                QEXPECT_FAIL("assert old xml",                    msg, Continue);
+                QEXPECT_FAIL("assert old stdout lightxml",        msg, Continue);
+                QEXPECT_FAIL("assert old lightxml",               msg, Continue);
+                QEXPECT_FAIL("assert old stdout xunitxml",        msg, Continue);
+                QEXPECT_FAIL("assert old xunitxml",               msg, Continue);
+                QEXPECT_FAIL("assert new stdout txt",             msg, Continue);
+                QEXPECT_FAIL("assert new txt",                    msg, Continue);
+                QEXPECT_FAIL("assert new stdout xml",             msg, Continue);
+                QEXPECT_FAIL("assert new xml",                    msg, Continue);
+                QEXPECT_FAIL("assert new stdout lightxml",        msg, Continue);
+                QEXPECT_FAIL("assert new lightxml",               msg, Continue);
+                QEXPECT_FAIL("assert new stdout xunitxml",        msg, Continue);
+                QEXPECT_FAIL("assert new xunitxml",               msg, Continue);
+                QEXPECT_FAIL("assert stdout txt + txt",           msg, Continue);
+                QEXPECT_FAIL("assert xml + stdout txt",           msg, Continue);
+                QEXPECT_FAIL("assert txt + xunitxml",             msg, Continue);
+                QEXPECT_FAIL("assert lightxml + stdout xunitxml", msg, Continue);
+                QEXPECT_FAIL("assert all loggers",                msg, Continue);
             }
 
             if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)

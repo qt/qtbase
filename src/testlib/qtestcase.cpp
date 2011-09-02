@@ -1004,11 +1004,28 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
     const char *logFilename = 0;
 
     const char *testOptions =
-         " Output options:\n"
-         " -xunitxml           : Outputs results as XML XUnit document\n"
-         " -xml                : Outputs results as XML document\n"
-         " -lightxml           : Outputs results as stream of XML tags\n"
-         " -o filename         : Writes all output into a file\n"
+         " New-style logging options:\n"
+         " -o filename,format  : Output results to file in the specified format\n"
+         "                       Use - to output to stdout\n"
+         "                       Valid formats are:\n"
+         "                         txt      : Plain text\n"
+         "                         xunitxml : XML XUnit document\n"
+         "                         xml      : XML document\n"
+         "                         lightxml : A stream of XML tags\n"
+         "\n"
+         "     *** Multiple loggers can be specified, but at most one can log to stdout.\n"
+         "\n"
+         " Old-style logging options:\n"
+         " -o filename         : Write the output into file\n"
+         " -txt                : Output results in Plain Text\n"
+         " -xunitxml           : Output results as XML XUnit document\n"
+         " -xml                : Output results as XML document\n"
+         " -lightxml           : Output results as stream of XML tags\n"
+         "\n"
+         "     *** If no output file is specified, stdout is assumed.\n"
+         "     *** If no output format is specified, -txt is assumed.\n"
+         "\n"
+         " Detail options:\n"
          " -silent             : Only outputs warnings and failures\n"
          " -v1                 : Print enter messages for each testfunction\n"
          " -v2                 : Also print out each QVERIFY/QCOMPARE/QTEST\n"
@@ -1065,6 +1082,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 qPrintTestSlots(stdout);
                 exit(0);
             }
+        } else if (strcmp(argv[i], "-txt") == 0) {
+            logFormat = QTestLog::Plain;
         } else if (strcmp(argv[i], "-xunitxml") == 0) {
             logFormat = QTestLog::XunitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
@@ -1081,11 +1100,38 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QSignalDumper::startDump();
         } else if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "-o needs an extra parameter specifying the filename\n");
+                fprintf(stderr, "-o needs an extra parameter specifying the filename and optional format\n");
                 exit(1);
-            } else {
-                logFilename = argv[++i];
             }
+            ++i;
+            // Do we have the old or new style -o option?
+            char *filename = new char[strlen(argv[i])+1];
+            char *format = new char[strlen(argv[i])+1];
+            if (sscanf(argv[i], "%[^,],%s", filename, format) == 1) {
+                // Old-style
+                logFilename = argv[i];
+            } else {
+                // New-style
+                if (strcmp(format, "txt") == 0)
+                    logFormat = QTestLog::Plain;
+                else if (strcmp(format, "lightxml") == 0)
+                    logFormat = QTestLog::LightXML;
+                else if (strcmp(format, "xml") == 0)
+                    logFormat = QTestLog::XML;
+                else if (strcmp(format, "xunitxml") == 0)
+                    logFormat = QTestLog::XunitXML;
+                else {
+                    fprintf(stderr, "output format must be one of txt, lightxml, xml or xunitxml\n");
+                    exit(1);
+                }
+                if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {
+                    fprintf(stderr, "only one logger can log to stdout\n");
+                    exit(1);
+                }
+                QTestLog::addLogger(logFormat, filename);
+            }
+            delete [] filename;
+            delete [] format;
         } else if (strcmp(argv[i], "-eventdelay") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "-eventdelay needs an extra parameter to indicate the delay(ms)\n");
@@ -1248,8 +1294,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
         }
     }
 
-    // Create the logger
-    QTestLog::initLogger(logFormat, logFilename);
+    // If no loggers were created by the long version of the -o command-line
+    // option, create a logger using whatever filename and format were
+    // set using the old-style command-line options.
+    if (QTestLog::loggerCount() == 0)
+        QTestLog::addLogger(logFormat, logFilename);
 }
 
 QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
