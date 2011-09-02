@@ -47,6 +47,7 @@
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
 #include <QtGui/QWindow>
+#include <QtGui/QWindowSystemInterface>
 
 QWaylandEglWindow::QWaylandEglWindow(QWindow *window)
     : QWaylandWindow(window)
@@ -77,8 +78,10 @@ QWaylandWindow::WindowType QWaylandEglWindow::windowType() const
 void QWaylandEglWindow::setGeometry(const QRect &rect)
 {
     QWaylandWindow::setGeometry(rect);
-    if (m_waylandEglWindow)
+    if (m_waylandEglWindow){
         wl_egl_window_resize(m_waylandEglWindow, rect.width(), rect.height(), 0, 0);
+        QWindowSystemInterface::handleGeometryChange(window(), rect);
+    }
 }
 
 void QWaylandEglWindow::newSurfaceCreated()
