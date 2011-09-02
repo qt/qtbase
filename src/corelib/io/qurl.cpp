@@ -2942,15 +2942,13 @@ static bool isBidirectionalL(uint uc)
 
 #ifdef QT_BUILD_INTERNAL
 // export for tst_qurl.cpp
-Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
-Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len);
+#define Q_URLTEST_EXPORT Q_AUTOTEST_EXPORT
 #else
 // non-test build, keep the symbols for ourselves
-static void qt_nameprep(QString *source, int from);
-static bool qt_check_std3rules(const QChar *uc, int len);
+#define Q_URLTEST_EXPORT static
 #endif
 
-void qt_nameprep(QString *source, int from)
+Q_URLTEST_EXPORT void qt_nameprep(QString *source, int from)
 {
     QChar *src = source->data(); // causes a detach, so we're sure the only one using it
     QChar *out = src + from;
@@ -3041,7 +3039,7 @@ void qt_nameprep(QString *source, int from)
     }
 }
 
-bool qt_check_std3rules(const QChar *uc, int len)
+Q_URLTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
 {
     if (len > 63)
         return false;
@@ -3108,7 +3106,7 @@ static inline void appendEncode(QString* output, uint& delta, uint& bias, uint& 
     ++h;
 }
 
-static void toPunycodeHelper(const QChar *s, int ucLength, QString *output)
+Q_URLTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output)
 {
     uint n = initial_n;
     uint delta = 0;
@@ -3194,6 +3192,76 @@ static void toPunycodeHelper(const QChar *s, int ucLength, QString *output)
     return;
 }
 
+Q_URLTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
+{
+    uint n = initial_n;
+    uint i = 0;
+    uint bias = initial_bias;
+
+    // strip any ACE prefix
+    int start = pc.startsWith(QLatin1String("xn--")) ? 4 : 0;
+    if (!start)
+        return pc;
+
+    // find the last delimiter character '-' in the input array. copy
+    // all data before this delimiter directly to the output array.
+    int delimiterPos = pc.lastIndexOf(QChar(0x2d));
+    QString output = delimiterPos < 4 ?
+                     QString() : pc.mid(start, delimiterPos - start);
+
+    // if a delimiter was found, skip to the position after it;
+    // otherwise start at the front of the input string. everything
+    // before the delimiter is assumed to be basic code points.
+    uint cnt = delimiterPos + 1;
+
+    // loop through the rest of the input string, inserting non-basic
+    // characters into output as we go.
+    while (cnt < (uint) pc.size()) {
+        uint oldi = i;
+        uint w = 1;
+
+        // find the next index for inserting a non-basic character.
+        for (uint k = base; cnt < (uint) pc.size(); k += base) {
+            // grab a character from the punycode input and find its
+            // delta digit (each digit code is part of the
+            // variable-length integer delta)
+            uint digit = pc.at(cnt++).unicode();
+            if (digit - 48 < 10) digit -= 22;
+            else if (digit - 65 < 26) digit -= 65;
+            else if (digit - 97 < 26) digit -= 97;
+            else digit = base;
+
+            // reject out of range digits
+            if (digit >= base || digit > (Q_MAXINT - i) / w)
+                return QStringLiteral("");
+
+            i += (digit * w);
+
+            // detect threshold to stop reading delta digits
+            uint t;
+            if (k <= bias) t = tmin;
+            else if (k >= bias + tmax) t = tmax;
+            else t = k - bias;
+            if (digit < t) break;
+
+            w *= (base - t);
+        }
+
+        // find new bias and calculate the next non-basic code
+        // character.
+        bias = adapt(i - oldi, output.length() + 1, oldi == 0);
+        n += i / (output.length() + 1);
+
+        // allow the deltas to wrap around
+        i %= (output.length() + 1);
+
+        // insert the character n at position i
+        output.insert((uint) i, QChar((ushort) n));
+        ++i;
+    }
+
+    return output;
+}
 
 static const char * const idn_whitelist[] = {
     "ac", "ar", "at",
@@ -3378,11 +3446,11 @@ static QString qt_ACE_do(const QString &domain, AceOperation op)
             aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);
-            toPunycodeHelper(result.constData() + prevLen, result.size() - prevLen, &aceForm);
+            qt_punycodeEncoder(result.constData() + prevLen, result.size() - prevLen, &aceForm);
 
             // We use resize()+memcpy() here because we're overwriting the data we've copied
             if (isIdnEnabled) {
-                QString tmp = QUrl::fromPunycode(aceForm.toLatin1());
+                QString tmp = qt_punycodeDecoder(aceForm);
                 if (tmp.isEmpty())
                     return QString(); // shouldn't happen, since we've just punycode-encoded it
                 result.resize(prevLen + tmp.size());
@@ -5828,6 +5896,7 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
 }
 
 /*!
+    \fn QByteArray QUrl::toPunycode(const QString &uc)
     \obsolete
     Returns a \a uc in Punycode encoding.
 
@@ -5835,14 +5904,9 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
     names, as defined in RFC3492. If you want to convert a domain name from
     Unicode to its ASCII-compatible representation, use toAce().
 */
-QByteArray QUrl::toPunycode(const QString &uc)
-{
-    QString output;
-    toPunycodeHelper(uc.constData(), uc.size(), &output);
-    return output.toLatin1();
-}
 
 /*!
+    \fn QString QUrl::fromPunycode(const QByteArray &pc)
     \obsolete
     Returns the Punycode decoded representation of \a pc.
 
@@ -5851,76 +5915,6 @@ QByteArray QUrl::toPunycode(const QString &uc)
     its ASCII-compatible encoding to the Unicode representation, use
     fromAce().
 */
-QString QUrl::fromPunycode(const QByteArray &pc)
-{
-    uint n = initial_n;
-    uint i = 0;
-    uint bias = initial_bias;
-
-    // strip any ACE prefix
-    int start = pc.startsWith("xn--") ? 4 : 0;
-    if (!start)
-        return QString::fromLatin1(pc);
-
-    // find the last delimiter character '-' in the input array. copy
-    // all data before this delimiter directly to the output array.
-    int delimiterPos = pc.lastIndexOf(0x2d);
-    QString output = delimiterPos < 4 ?
-                     QString() : QString::fromLatin1(pc.constData() + start, delimiterPos - start);
-
-    // if a delimiter was found, skip to the position after it;
-    // otherwise start at the front of the input string. everything
-    // before the delimiter is assumed to be basic code points.
-    uint cnt = delimiterPos + 1;
-
-    // loop through the rest of the input string, inserting non-basic
-    // characters into output as we go.
-    while (cnt < (uint) pc.size()) {
-        uint oldi = i;
-        uint w = 1;
-
-        // find the next index for inserting a non-basic character.
-        for (uint k = base; cnt < (uint) pc.size(); k += base) {
-            // grab a character from the punycode input and find its
-            // delta digit (each digit code is part of the
-            // variable-length integer delta)
-            uint digit = pc.at(cnt++);
-            if (digit - 48 < 10) digit -= 22;
-            else if (digit - 65 < 26) digit -= 65;
-            else if (digit - 97 < 26) digit -= 97;
-            else digit = base;
-
-            // reject out of range digits
-            if (digit >= base || digit > (Q_MAXINT - i) / w)
-                return QLatin1String("");
-
-            i += (digit * w);
-
-            // detect threshold to stop reading delta digits
-            uint t;
-            if (k <= bias) t = tmin;
-            else if (k >= bias + tmax) t = tmax;
-            else t = k - bias;
-            if (digit < t) break;
-
-            w *= (base - t);
-        }
-
-        // find new bias and calculate the next non-basic code
-        // character.
-        bias = adapt(i - oldi, output.length() + 1, oldi == 0);
-        n += i / (output.length() + 1);
-
-        // allow the deltas to wrap around
-        i %= (output.length() + 1);
-
-        // insert the character n at position i
-        output.insert((uint) i, QChar((ushort) n));
-        ++i;
-    }
-
-    return output;
-}
 
 /*!
     \since 4.2

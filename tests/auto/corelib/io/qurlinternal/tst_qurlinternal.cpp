@@ -1,0 +1,750 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this
+** file. Please review the following information to ensure the GNU Lesser
+** General Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights. These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU General
+** Public License version 3.0 as published by the Free Software Foundation
+** and appearing in the file LICENSE.GPL included in the packaging of this
+** file. Please review the following information to ensure the GNU General
+** Public License version 3.0 requirements will be met:
+** http://www.gnu.org/copyleft/gpl.html.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms and
+** conditions contained in a signed written agreement between you and Nokia.
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include <QtCore/QUrl>
+#include <QtTest/QtTest>
+
+#include "private/qtldurl_p.h"
+
+QT_BEGIN_NAMESPACE
+Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
+Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
+Q_CORE_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
+Q_CORE_EXPORT QString qt_punycodeDecoder(const QString &pc);
+QT_END_NAMESPACE
+
+// For testsuites
+#define IDNA_ACE_PREFIX "xn--"
+#define IDNA_SUCCESS 1
+#define STRINGPREP_NO_UNASSIGNED 1
+#define STRINGPREP_CONTAINS_UNASSIGNED 2
+#define STRINGPREP_CONTAINS_PROHIBITED 3
+#define STRINGPREP_BIDI_BOTH_L_AND_RAL 4
+#define STRINGPREP_BIDI_LEADTRAIL_NOT_RAL 5
+
+struct ushortarray {
+    ushortarray(unsigned short *array = 0)
+    {
+        if (array)
+            memcpy(points, array, sizeof(points));
+    }
+
+    unsigned short points[100];
+};
+
+Q_DECLARE_METATYPE(ushortarray)
+Q_DECLARE_METATYPE(QUrl::FormattingOptions)
+
+class tst_QUrlInternal : public QObject
+{
+    Q_OBJECT
+
+private Q_SLOTS:
+    // IDNA internals
+    void idna_testsuite_data();
+    void idna_testsuite();
+    void nameprep_testsuite_data();
+    void nameprep_testsuite();
+    void nameprep_highcodes_data();
+    void nameprep_highcodes();
+    void ace_testsuite_data();
+    void ace_testsuite();
+    void std3violations_data();
+    void std3violations();
+    void std3deviations_data();
+    void std3deviations();
+};
+
+void tst_QUrlInternal::idna_testsuite_data()
+{
+    QTest::addColumn<int>("numchars");
+    QTest::addColumn<ushortarray>("unicode");
+    QTest::addColumn<QByteArray>("punycode");
+    QTest::addColumn<int>("allowunassigned");
+    QTest::addColumn<int>("usestd3asciirules");
+    QTest::addColumn<int>("toasciirc");
+    QTest::addColumn<int>("tounicoderc");
+
+    unsigned short d1[] = { 0x0644, 0x064A, 0x0647, 0x0645, 0x0627, 0x0628, 0x062A, 0x0643,
+                            0x0644, 0x0645, 0x0648, 0x0634, 0x0639, 0x0631, 0x0628, 0x064A,
+                            0x061F };
+    QTest::newRow("Arabic (Egyptian)") << 17 << ushortarray(d1)
+                                    << QByteArray(IDNA_ACE_PREFIX "egbpdaj6bu4bxfgehfvwxn")
+                                    << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d2[] = { 0x4ED6, 0x4EEC, 0x4E3A, 0x4EC0, 0x4E48, 0x4E0D, 0x8BF4, 0x4E2D,
+                            0x6587 };
+    QTest::newRow("Chinese (simplified)") << 9 << ushortarray(d2)
+                                       << QByteArray(IDNA_ACE_PREFIX "ihqwcrb4cv8a8dqg056pqjye")
+                                       << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d3[] = { 0x4ED6, 0x5011, 0x7232, 0x4EC0, 0x9EBD, 0x4E0D, 0x8AAA, 0x4E2D,
+                            0x6587 };
+    QTest::newRow("Chinese (traditional)") << 9 << ushortarray(d3)
+                                        << QByteArray(IDNA_ACE_PREFIX "ihqwctvzc91f659drss3x8bo0yb")
+                                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d4[] = { 0x0050, 0x0072, 0x006F, 0x010D, 0x0070, 0x0072, 0x006F, 0x0073,
+                            0x0074, 0x011B, 0x006E, 0x0065, 0x006D, 0x006C, 0x0075, 0x0076,
+                            0x00ED, 0x010D, 0x0065, 0x0073, 0x006B, 0x0079 };
+    QTest::newRow("Czech") << 22 << ushortarray(d4)
+                        << QByteArray(IDNA_ACE_PREFIX "Proprostnemluvesky-uyb24dma41a")
+                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d5[] = { 0x05DC, 0x05DE, 0x05D4, 0x05D4, 0x05DD, 0x05E4, 0x05E9, 0x05D5,
+                            0x05D8, 0x05DC, 0x05D0, 0x05DE, 0x05D3, 0x05D1, 0x05E8, 0x05D9,
+                            0x05DD, 0x05E2, 0x05D1, 0x05E8, 0x05D9, 0x05EA };
+    QTest::newRow("Hebrew") << 22 << ushortarray(d5)
+                         << QByteArray(IDNA_ACE_PREFIX "4dbcagdahymbxekheh6e0a7fei0b")
+                         << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d6[] = { 0x092F, 0x0939, 0x0932, 0x094B, 0x0917, 0x0939, 0x093F, 0x0928,
+                            0x094D, 0x0926, 0x0940, 0x0915, 0x094D, 0x092F, 0x094B, 0x0902,
+                            0x0928, 0x0939, 0x0940, 0x0902, 0x092C, 0x094B, 0x0932, 0x0938,
+                            0x0915, 0x0924, 0x0947, 0x0939, 0x0948, 0x0902 };
+    QTest::newRow("Hindi (Devanagari)") << 30 << ushortarray(d6)
+                                     << QByteArray(IDNA_ACE_PREFIX "i1baa7eci9glrd9b2ae1bj0hfcgg6iyaf8o0a1dig0cd")
+                                     << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d7[] = { 0x306A, 0x305C, 0x307F, 0x3093, 0x306A, 0x65E5, 0x672C, 0x8A9E,
+                            0x3092, 0x8A71, 0x3057, 0x3066, 0x304F, 0x308C, 0x306A, 0x3044,
+                            0x306E, 0x304B };
+    QTest::newRow("Japanese (kanji and hiragana)") << 18 << ushortarray(d7)
+                                                << QByteArray(IDNA_ACE_PREFIX "n8jok5ay5dzabd5bym9f0cm5685rrjetr6pdxa")
+                                                << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d8[] = { 0x043F, 0x043E, 0x0447, 0x0435, 0x043C, 0x0443, 0x0436, 0x0435,
+                            0x043E, 0x043D, 0x0438, 0x043D, 0x0435, 0x0433, 0x043E, 0x0432,
+                            0x043E, 0x0440, 0x044F, 0x0442, 0x043F, 0x043E, 0x0440, 0x0443,
+                            0x0441, 0x0441, 0x043A, 0x0438 };
+    QTest::newRow("Russian (Cyrillic)") << 28 << ushortarray(d8)
+                                     << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
+                                     << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d9[] = { 0x0050, 0x006F, 0x0072, 0x0071, 0x0075, 0x00E9, 0x006E, 0x006F,
+                            0x0070, 0x0075, 0x0065, 0x0064, 0x0065, 0x006E, 0x0073, 0x0069,
+                            0x006D, 0x0070, 0x006C, 0x0065, 0x006D, 0x0065, 0x006E, 0x0074,
+                            0x0065, 0x0068, 0x0061, 0x0062, 0x006C, 0x0061, 0x0072, 0x0065,
+                            0x006E, 0x0045, 0x0073, 0x0070, 0x0061, 0x00F1, 0x006F, 0x006C };
+    QTest::newRow("Spanish") << 40 << ushortarray(d9)
+                          << QByteArray(IDNA_ACE_PREFIX "PorqunopuedensimplementehablarenEspaol-fmd56a")
+                          << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d10[] = { 0x0054, 0x1EA1, 0x0069, 0x0073, 0x0061, 0x006F, 0x0068, 0x1ECD,
+                             0x006B, 0x0068, 0x00F4, 0x006E, 0x0067, 0x0074, 0x0068, 0x1EC3,
+                             0x0063, 0x0068, 0x1EC9, 0x006E, 0x00F3, 0x0069, 0x0074, 0x0069,
+                             0x1EBF, 0x006E, 0x0067, 0x0056, 0x0069, 0x1EC7, 0x0074 };
+    QTest::newRow("Vietnamese") << 31 << ushortarray(d10)
+                             << QByteArray(IDNA_ACE_PREFIX "TisaohkhngthchnitingVit-kjcr8268qyxafd2f1b9g")
+                             << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d11[] = { 0x0033, 0x5E74, 0x0042, 0x7D44, 0x91D1, 0x516B, 0x5148, 0x751F };
+    QTest::newRow("Japanese") << 8 << ushortarray(d11)
+                           << QByteArray(IDNA_ACE_PREFIX "3B-ww4c5e180e575a65lsy2b")
+                           << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    // this test does NOT include nameprepping, so the capitals will remain
+    unsigned short d12[] = { 0x5B89, 0x5BA4, 0x5948, 0x7F8E, 0x6075, 0x002D, 0x0077, 0x0069,
+                             0x0074, 0x0068, 0x002D, 0x0053, 0x0055, 0x0050, 0x0045, 0x0052,
+                             0x002D, 0x004D, 0x004F, 0x004E, 0x004B, 0x0045, 0x0059, 0x0053 };
+    QTest::newRow("Japanese2") << 24 << ushortarray(d12)
+                            << QByteArray(IDNA_ACE_PREFIX "-with-SUPER-MONKEYS-pc58ag80a8qai00g7n9n")
+                            << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d13[] = { 0x0048, 0x0065, 0x006C, 0x006C, 0x006F, 0x002D, 0x0041, 0x006E,
+                             0x006F, 0x0074, 0x0068, 0x0065, 0x0072, 0x002D, 0x0057, 0x0061,
+                             0x0079, 0x002D, 0x305D, 0x308C, 0x305E, 0x308C, 0x306E, 0x5834,
+                             0x6240 };
+    QTest::newRow("Japanese3") << 25 << ushortarray(d13)
+                            << QByteArray(IDNA_ACE_PREFIX "Hello-Another-Way--fc4qua05auwb3674vfr0b")
+                            << 0 << 0 << IDNA_SUCCESS;
+
+    unsigned short d14[] = { 0x3072, 0x3068, 0x3064, 0x5C4B, 0x6839, 0x306E, 0x4E0B, 0x0032 };
+    QTest::newRow("Japanese4") << 8 << ushortarray(d14)
+                            << QByteArray(IDNA_ACE_PREFIX "2-u9tlzr9756bt3uc0v")
+                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d15[] = { 0x004D, 0x0061, 0x006A, 0x0069, 0x3067, 0x004B, 0x006F, 0x0069,
+                             0x3059, 0x308B, 0x0035, 0x79D2, 0x524D };
+    QTest::newRow("Japanese5") << 13 << ushortarray(d15)
+                            << QByteArray(IDNA_ACE_PREFIX "MajiKoi5-783gue6qz075azm5e")
+                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d16[] = { 0x30D1, 0x30D5, 0x30A3, 0x30FC, 0x0064, 0x0065, 0x30EB, 0x30F3, 0x30D0 };
+    QTest::newRow("Japanese6") << 9 << ushortarray(d16)
+                            << QByteArray(IDNA_ACE_PREFIX "de-jg4avhby1noc0d")
+                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d17[] = { 0x305D, 0x306E, 0x30B9, 0x30D4, 0x30FC, 0x30C9, 0x3067 };
+    QTest::newRow("Japanese7") << 7 << ushortarray(d17)
+                            << QByteArray(IDNA_ACE_PREFIX "d9juau41awczczp")
+                            << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d18[] = { 0x03b5, 0x03bb, 0x03bb, 0x03b7, 0x03bd, 0x03b9, 0x03ba, 0x03ac };
+    QTest::newRow("Greek") << 8 << ushortarray(d18)
+                        << QByteArray(IDNA_ACE_PREFIX "hxargifdar")
+                        << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d19[] = { 0x0062, 0x006f, 0x006e, 0x0121, 0x0075, 0x0073, 0x0061, 0x0127,
+                             0x0127, 0x0061 };
+    QTest::newRow("Maltese (Malti)") << 10 << ushortarray(d19)
+                                  << QByteArray(IDNA_ACE_PREFIX "bonusaa-5bb1da")
+                                  << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+
+    unsigned short d20[] = {0x043f, 0x043e, 0x0447, 0x0435, 0x043c, 0x0443, 0x0436, 0x0435,
+                            0x043e, 0x043d, 0x0438, 0x043d, 0x0435, 0x0433, 0x043e, 0x0432,
+                            0x043e, 0x0440, 0x044f, 0x0442, 0x043f, 0x043e, 0x0440, 0x0443,
+                            0x0441, 0x0441, 0x043a, 0x0438 };
+    QTest::newRow("Russian (Cyrillic)") << 28 << ushortarray(d20)
+                                     << QByteArray(IDNA_ACE_PREFIX "b1abfaaepdrnnbgefbadotcwatmq2g4l")
+                                     << 0 << 0 << IDNA_SUCCESS << IDNA_SUCCESS;
+}
+
+void tst_QUrlInternal::idna_testsuite()
+{
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(int, numchars);
+    QFETCH(ushortarray, unicode);
+    QFETCH(QByteArray, punycode);
+
+    QString result;
+    qt_punycodeEncoder((QChar*)unicode.points, numchars, &result);
+    QCOMPARE(result.toLatin1(), punycode);
+    QCOMPARE(qt_punycodeDecoder(result), QString::fromUtf16(unicode.points, numchars));
+#endif
+}
+
+void tst_QUrlInternal::nameprep_testsuite_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+    QTest::addColumn<QString>("profile");
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("rc");
+
+    QTest::newRow("Map to nothing")
+        << QString::fromUtf8("foo\xC2\xAD\xCD\x8F\xE1\xA0\x86\xE1\xA0\x8B"
+                             "bar""\xE2\x80\x8B\xE2\x81\xA0""baz\xEF\xB8\x80\xEF\xB8\x88"
+                             "\xEF\xB8\x8F\xEF\xBB\xBF")
+        << QString::fromUtf8("foobarbaz")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding ASCII U+0043 U+0041 U+0046 U+0045")
+        << QString::fromUtf8("CAFE")
+        << QString::fromUtf8("cafe")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding 8bit U+00DF (german sharp s)")
+        << QString::fromUtf8("\xC3\x9F")
+        << QString("ss")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding U+0130 (turkish capital I with dot)")
+        << QString::fromUtf8("\xC4\xB0")
+        << QString::fromUtf8("i\xcc\x87")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding multibyte U+0143 U+037A")
+        << QString::fromUtf8("\xC5\x83\xCD\xBA")
+        << QString::fromUtf8("\xC5\x84 \xCE\xB9")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding U+2121 U+33C6 U+1D7BB")
+        << QString::fromUtf8("\xE2\x84\xA1\xE3\x8F\x86\xF0\x9D\x9E\xBB")
+        << QString::fromUtf8("telc\xE2\x88\x95""kg\xCF\x83")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Normalization of U+006a U+030c U+00A0 U+00AA")
+        << QString::fromUtf8("\x6A\xCC\x8C\xC2\xA0\xC2\xAA")
+        << QString::fromUtf8("\xC7\xB0 a")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Case folding U+1FB7 and normalization")
+        << QString::fromUtf8("\xE1\xBE\xB7")
+        << QString::fromUtf8("\xE1\xBE\xB6\xCE\xB9")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Self-reverting case folding U+01F0 and normalization")
+//        << QString::fromUtf8("\xC7\xF0") ### typo in the original testsuite
+        << QString::fromUtf8("\xC7\xB0")
+        << QString::fromUtf8("\xC7\xB0")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Self-reverting case folding U+0390 and normalization")
+        << QString::fromUtf8("\xCE\x90")
+        << QString::fromUtf8("\xCE\x90")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Self-reverting case folding U+03B0 and normalization")
+        << QString::fromUtf8("\xCE\xB0")
+        << QString::fromUtf8("\xCE\xB0")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Self-reverting case folding U+1E96 and normalization")
+        << QString::fromUtf8("\xE1\xBA\x96")
+        << QString::fromUtf8("\xE1\xBA\x96")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Self-reverting case folding U+1F56 and normalization")
+        << QString::fromUtf8("\xE1\xBD\x96")
+        << QString::fromUtf8("\xE1\xBD\x96")
+        << QString() << 0 << 0;
+
+    QTest::newRow("ASCII space character U+0020")
+        << QString::fromUtf8("\x20")
+        << QString::fromUtf8("\x20")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Non-ASCII 8bit space character U+00A0")
+        << QString::fromUtf8("\xC2\xA0")
+        << QString::fromUtf8("\x20")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Non-ASCII multibyte space character U+1680")
+        << QString::fromUtf8("\xE1\x9A\x80")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Non-ASCII multibyte space character U+2000")
+        << QString::fromUtf8("\xE2\x80\x80")
+        << QString::fromUtf8("\x20")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Zero Width Space U+200b")
+        << QString::fromUtf8("\xE2\x80\x8b")
+        << QString()
+        << QString() << 0 << 0;
+
+    QTest::newRow("Non-ASCII multibyte space character U+3000")
+        << QString::fromUtf8("\xE3\x80\x80")
+        << QString::fromUtf8("\x20")
+        << QString() << 0 << 0;
+
+    QTest::newRow("ASCII control characters U+0010 U+007F")
+        << QString::fromUtf8("\x10\x7F")
+        << QString::fromUtf8("\x10\x7F")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Non-ASCII 8bit control character U+0085")
+        << QString::fromUtf8("\xC2\x85")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Non-ASCII multibyte control character U+180E")
+        << QString::fromUtf8("\xE1\xA0\x8E")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Zero Width No-Break Space U+FEFF")
+        << QString::fromUtf8("\xEF\xBB\xBF")
+        << QString()
+        << QString() << 0 << 0;
+
+    QTest::newRow("Non-ASCII control character U+1D175")
+        << QString::fromUtf8("\xF0\x9D\x85\xB5")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Plane 0 private use character U+F123")
+        << QString::fromUtf8("\xEF\x84\xA3")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Plane 15 private use character U+F1234")
+        << QString::fromUtf8("\xF3\xB1\x88\xB4")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Plane 16 private use character U+10F234")
+        << QString::fromUtf8("\xF4\x8F\x88\xB4")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Non-character code point U+8FFFE")
+        << QString::fromUtf8("\xF2\x8F\xBF\xBE")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Non-character code point U+10FFFF")
+        << QString::fromUtf8("\xF4\x8F\xBF\xBF")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Surrogate code U+DF42")
+        << QString::fromUtf8("\xED\xBD\x82")
+        << QString()
+        << QString("Nameprep") << 0 <<  STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Non-plain text character U+FFFD")
+        << QString::fromUtf8("\xEF\xBF\xBD")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Ideographic description character U+2FF5")
+        << QString::fromUtf8("\xE2\xBF\xB5")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Display property character U+0341")
+        << QString::fromUtf8("\xCD\x81")
+        << QString::fromUtf8("\xCC\x81")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Left-to-right mark U+200E")
+        << QString::fromUtf8("\xE2\x80\x8E")
+        << QString::fromUtf8("\xCC\x81")
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Deprecated U+202A")
+        << QString::fromUtf8("\xE2\x80\xAA")
+        << QString::fromUtf8("\xCC\x81")
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Language tagging character U+E0001")
+        << QString::fromUtf8("\xF3\xA0\x80\x81")
+        << QString::fromUtf8("\xCC\x81")
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Language tagging character U+E0042")
+        << QString::fromUtf8("\xF3\xA0\x81\x82")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
+    QTest::newRow("Bidi: RandALCat character U+05BE and LCat characters")
+        << QString::fromUtf8("foo\xD6\xBE""bar")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_BIDI_BOTH_L_AND_RAL;
+
+    QTest::newRow("Bidi: RandALCat character U+FD50 and LCat characters")
+        << QString::fromUtf8("foo\xEF\xB5\x90""bar")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_BIDI_BOTH_L_AND_RAL;
+
+    QTest::newRow("Bidi: RandALCat character U+FB38 and LCat characters")
+        << QString::fromUtf8("foo\xEF\xB9\xB6""bar")
+        << QString::fromUtf8("foo \xd9\x8e""bar")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Bidi: RandALCat without trailing RandALCat U+0627 U+0031")
+        << QString::fromUtf8("\xD8\xA7\x31")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_BIDI_LEADTRAIL_NOT_RAL;
+
+    QTest::newRow("Bidi: RandALCat character U+0627 U+0031 U+0628")
+        << QString::fromUtf8("\xD8\xA7\x31\xD8\xA8")
+        << QString::fromUtf8("\xD8\xA7\x31\xD8\xA8")
+        << QString() << 0 << 0;
+
+    QTest::newRow("Unassigned code point U+E0002")
+        << QString::fromUtf8("\xF3\xA0\x80\x82")
+        << QString()
+        << QString("Nameprep") << STRINGPREP_NO_UNASSIGNED << STRINGPREP_CONTAINS_UNASSIGNED;
+
+    QTest::newRow("Larger test (shrinking)")
+        << QString::fromUtf8("X\xC2\xAD\xC3\x9F\xC4\xB0\xE2\x84\xA1\x6a\xcc\x8c\xc2\xa0\xc2"
+                             "\xaa\xce\xb0\xe2\x80\x80")
+        << QString::fromUtf8("xssi\xcc\x87""tel\xc7\xb0 a\xce\xb0 ")
+        << QString("Nameprep") << 0 << 0;
+
+    QTest::newRow("Larger test (expanding)")
+        << QString::fromUtf8("X\xC3\x9F\xe3\x8c\x96\xC4\xB0\xE2\x84\xA1\xE2\x92\x9F\xE3\x8c\x80")
+        << QString::fromUtf8("xss\xe3\x82\xad\xe3\x83\xad\xe3\x83\xa1\xe3\x83\xbc\xe3\x83\x88"
+                             "\xe3\x83\xab""i\xcc\x87""tel\x28""d\x29\xe3\x82\xa2\xe3\x83\x91"
+                             "\xe3\x83\xbc\xe3\x83\x88")
+        << QString() << 0 << 0;
+}
+
+void tst_QUrlInternal::nameprep_testsuite()
+{
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(QString, in);
+    QFETCH(QString, out);
+    QFETCH(QString, profile);
+
+    QEXPECT_FAIL("Left-to-right mark U+200E",
+                 "Investigate further", Continue);
+    QEXPECT_FAIL("Deprecated U+202A",
+                 "Investigate further", Continue);
+    QEXPECT_FAIL("Language tagging character U+E0001",
+                 "Investigate further", Continue);
+    qt_nameprep(&in, 0);
+    QCOMPARE(in, out);
+#endif
+}
+
+void tst_QUrlInternal::nameprep_highcodes_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+    QTest::addColumn<QString>("profile");
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("rc");
+
+    {
+        QChar st[] = { '-', 0xd801, 0xdc1d, 'a' };
+        QChar se[] = { '-', 0xd801, 0xdc45, 'a' };
+        QTest::newRow("highcodes (U+1041D)")
+            << QString(st, sizeof(st)/sizeof(st[0]))
+            << QString(se, sizeof(se)/sizeof(se[0]))
+            << QString() << 0 << 0;
+    }
+    {
+        QChar st[] = { 0x011C, 0xd835, 0xdf6e, 0x0110 };
+        QChar se[] = { 0x011D, 0x03C9, 0x0111 };
+        QTest::newRow("highcodes (U+1D76E)")
+            << QString(st, sizeof(st)/sizeof(st[0]))
+            << QString(se, sizeof(se)/sizeof(se[0]))
+            << QString() << 0 << 0;
+    }
+    {
+        QChar st[] = { 'D', 0xdb40, 0xdc20, 'o', 0xd834, 0xdd7a, '\'', 0x2060, 'h' };
+        QChar se[] = { 'd', 'o', '\'', 'h' };
+        QTest::newRow("highcodes (D, U+E0020, o, U+1D17A, ', U+2060, h)")
+            << QString(st, sizeof(st)/sizeof(st[0]))
+            << QString(se, sizeof(se)/sizeof(se[0]))
+            << QString() << 0 << 0;
+    }
+}
+
+void tst_QUrlInternal::nameprep_highcodes()
+{
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(QString, in);
+    QFETCH(QString, out);
+    QFETCH(QString, profile);
+
+    qt_nameprep(&in, 0);
+    QCOMPARE(in, out);
+#endif
+}
+
+void tst_QUrlInternal::ace_testsuite_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("toace");
+    QTest::addColumn<QString>("fromace");
+    QTest::addColumn<QString>("unicode");
+
+    QTest::newRow("ascii-lower") << "fluke" << "fluke" << "fluke" << "fluke";
+    QTest::newRow("ascii-mixed") << "FLuke" << "fluke" << "fluke" << "fluke";
+    QTest::newRow("ascii-upper") << "FLUKE" << "fluke" << "fluke" << "fluke";
+
+    QTest::newRow("asciifolded") << QString::fromLatin1("stra\337e") << "strasse" << "." << "strasse";
+    QTest::newRow("asciifolded-dotcom") << QString::fromLatin1("stra\337e.example.com") << "strasse.example.com" << "." << "strasse.example.com";
+    QTest::newRow("greek-mu") << QString::fromLatin1("\265V")
+                              <<"xn--v-lmb"
+                              << "."
+                              << QString::fromUtf8("\316\274v");
+
+    QTest::newRow("non-ascii-lower") << QString::fromLatin1("alqualond\353")
+                                     << "xn--alqualond-34a"
+                                     << "."
+                                     << QString::fromLatin1("alqualond\353");
+    QTest::newRow("non-ascii-mixed") << QString::fromLatin1("Alqualond\353")
+                                     << "xn--alqualond-34a"
+                                     << "."
+                                     << QString::fromLatin1("alqualond\353");
+    QTest::newRow("non-ascii-upper") << QString::fromLatin1("ALQUALOND\313")
+                                     << "xn--alqualond-34a"
+                                     << "."
+                                     << QString::fromLatin1("alqualond\353");
+
+    QTest::newRow("idn-lower") << "xn--alqualond-34a" << "xn--alqualond-34a"
+                               << QString::fromLatin1("alqualond\353")
+                               << QString::fromLatin1("alqualond\353");
+    QTest::newRow("idn-mixed") << "Xn--alqualond-34a" << "xn--alqualond-34a"
+                               << QString::fromLatin1("alqualond\353")
+                               << QString::fromLatin1("alqualond\353");
+    QTest::newRow("idn-mixed2") << "XN--alqualond-34a" << "xn--alqualond-34a"
+                                << QString::fromLatin1("alqualond\353")
+                                << QString::fromLatin1("alqualond\353");
+    QTest::newRow("idn-mixed3") << "xn--ALQUALOND-34a" << "xn--alqualond-34a"
+                                << QString::fromLatin1("alqualond\353")
+                                << QString::fromLatin1("alqualond\353");
+    QTest::newRow("idn-mixed4") << "xn--alqualond-34A" << "xn--alqualond-34a"
+                                << QString::fromLatin1("alqualond\353")
+                                << QString::fromLatin1("alqualond\353");
+    QTest::newRow("idn-upper") << "XN--ALQUALOND-34A" << "xn--alqualond-34a"
+                               << QString::fromLatin1("alqualond\353")
+                               << QString::fromLatin1("alqualond\353");
+
+    QTest::newRow("separator-3002") << QString::fromUtf8("example\343\200\202com")
+                                    << "example.com" << "." << "example.com";
+
+    QString egyptianIDN =
+        QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                          "\243\330\252\330\265\330\247\331\204\330\247\330\252.\331\205"
+                          "\330\265\330\261");
+    QTest::newRow("egyptian-tld-ace")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-unicode")
+        << egyptianIDN
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix1")
+        << QString::fromUtf8("\331\210\330\262\330\247\330\261\330\251\055\330\247\331\204\330"
+                             "\243\330\252\330\265\330\247\331\204\330\247\330\252.xn--wgbh1c")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+    QTest::newRow("egyptian-tld-mix2")
+        << QString::fromUtf8("xn----rmckbbajlc6dj7bxne2c.\331\205\330\265\330\261")
+        << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
+        << "."
+        << egyptianIDN;
+}
+
+void tst_QUrlInternal::ace_testsuite()
+{
+    static const char canonsuffix[] = ".troll.no";
+    QFETCH(QString, in);
+    QFETCH(QString, toace);
+    QFETCH(QString, fromace);
+    QFETCH(QString, unicode);
+
+    const char *suffix = canonsuffix;
+    if (toace.contains('.'))
+        suffix = 0;
+
+    QString domain = in + suffix;
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
+    if (fromace != ".")
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
+
+    domain = in + (suffix ? ".troll.No" : "");
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
+    if (fromace != ".")
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
+
+    domain = in + (suffix ? ".troll.NO" : "");
+    QCOMPARE(QString::fromLatin1(QUrl::toAce(domain)), toace + suffix);
+    if (fromace != ".")
+        QCOMPARE(QUrl::fromAce(domain.toLatin1()), fromace + suffix);
+    QCOMPARE(QUrl::fromAce(QUrl::toAce(domain)), unicode + suffix);
+}
+
+void tst_QUrlInternal::std3violations_data()
+{
+    QTest::addColumn<QString>("source");
+    QTest::addColumn<bool>("validUrl");
+
+    QTest::newRow("too-long") << "this-domain-is-far-too-long-for-its-own-good-and-should-have-been-limited-to-63-chars" << false;
+    QTest::newRow("dash-begin") << "-x-foo" << false;
+    QTest::newRow("dash-end") << "x-foo-" << false;
+    QTest::newRow("dash-begin-end") << "-foo-" << false;
+
+    QTest::newRow("control") << "\033foo" << false;
+    QTest::newRow("bang") << "foo!" << false;
+    QTest::newRow("plus") << "foo+bar" << false;
+    QTest::newRow("dot") << "foo.bar";
+    QTest::newRow("startingdot") << ".bar" << false;
+    QTest::newRow("startingdot2") << ".example.com" << false;
+    QTest::newRow("slash") << "foo/bar" << true;
+    QTest::newRow("colon") << "foo:80" << true;
+    QTest::newRow("question") << "foo?bar" << true;
+    QTest::newRow("at") << "foo@bar" << true;
+    QTest::newRow("backslash") << "foo\\bar" << false;
+
+    // these characters are transformed by NFKC to non-LDH characters
+    QTest::newRow("dot-like") << QString::fromUtf8("foo\342\200\244bar") << false;  // U+2024 ONE DOT LEADER
+    QTest::newRow("slash-like") << QString::fromUtf8("foo\357\274\217bar") << false;    // U+FF0F FULLWIDTH SOLIDUS
+
+    // The following should be invalid but isn't
+    // the DIVISON SLASH doesn't case-fold to a slash
+    // is this a problem with RFC 3490?
+    //QTest::newRow("slash-like2") << QString::fromUtf8("foo\342\210\225bar") << false; // U+2215 DIVISION SLASH
+}
+
+void tst_QUrlInternal::std3violations()
+{
+    QFETCH(QString, source);
+
+#ifdef QT_BUILD_INTERNAL
+    {
+        QString prepped = source;
+        qt_nameprep(&prepped, 0);
+        QVERIFY(!qt_check_std3rules(prepped.constData(), prepped.length()));
+    }
+#endif
+
+    if (source.contains('.'))
+        return; // this test ends here
+
+    QUrl url;
+    url.setHost(source);
+    QVERIFY(url.host().isEmpty());
+
+    QFETCH(bool, validUrl);
+    if (validUrl)
+        return;  // test ends here for these cases
+
+    url = QUrl("http://" + source + "/some/path");
+    QVERIFY(!url.isValid());
+}
+
+void tst_QUrlInternal::std3deviations_data()
+{
+    QTest::addColumn<QString>("source");
+
+    QTest::newRow("ending-dot") << "example.com.";
+    QTest::newRow("ending-dot3002") << QString("example.com") + QChar(0x3002);
+    QTest::newRow("underline") << "foo_bar";  //QTBUG-7434
+}
+
+void tst_QUrlInternal::std3deviations()
+{
+    QFETCH(QString, source);
+    QVERIFY(!QUrl::toAce(source).isEmpty());
+
+    QUrl url;
+    url.setHost(source);
+    QVERIFY(!url.host().isEmpty());
+}
+
+QTEST_APPLESS_MAIN(tst_QUrlInternal)
+
+#include "tst_qurlinternal.moc"

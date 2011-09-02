@@ -201,8 +201,13 @@ public:
     static QByteArray toPercentEncoding(const QString &,
                                         const QByteArray &exclude = QByteArray(),
                                         const QByteArray &include = QByteArray());
-    static QString fromPunycode(const QByteArray &);
-    static QByteArray toPunycode(const QString &);
+#if QT_DEPRECATED_SINCE(5,0)
+    QT_DEPRECATED static QString fromPunycode(const QByteArray &punycode)
+    { return fromAce(punycode); }
+    QT_DEPRECATED static QByteArray toPunycode(const QString &string)
+    { return toAce(string); }
+#endif
+
     static QString fromAce(const QByteArray &);
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
