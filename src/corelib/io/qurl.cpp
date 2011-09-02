@@ -5193,7 +5193,7 @@ QList<QPair<QByteArray, QByteArray> > QUrl::encodedQueryItems() const
 bool QUrl::hasQueryItem(const QString &key) const
 {
     if (!d) return false;
-    return hasEncodedQueryItem(toPercentEncoding(key, queryExcludeChars));
+    return hasEncodedQueryItem(key.toUtf8().toPercentEncoding(queryExcludeChars));
 }
 
 /*!
@@ -5239,7 +5239,7 @@ bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
 QString QUrl::queryItemValue(const QString &key) const
 {
     if (!d) return QString();
-    QByteArray tmp = encodedQueryItemValue(toPercentEncoding(key, queryExcludeChars));
+    QByteArray tmp = encodedQueryItemValue(key.toUtf8().toPercentEncoding(queryExcludeChars));
     return fromPercentEncodingMutable(&tmp);
 }
 
@@ -5289,7 +5289,7 @@ QStringList QUrl::allQueryItemValues(const QString &key) const
     if (!d) return QStringList();
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
 
-    QByteArray encodedKey = toPercentEncoding(key, queryExcludeChars);
+    QByteArray encodedKey = key.toUtf8().toPercentEncoding(queryExcludeChars);
     QStringList values;
 
     int pos = 0;
@@ -5353,7 +5353,7 @@ QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) const
 void QUrl::removeQueryItem(const QString &key)
 {
     if (!d) return;
-    removeEncodedQueryItem(toPercentEncoding(key, queryExcludeChars));
+    removeEncodedQueryItem(key.toUtf8().toPercentEncoding(queryExcludeChars));
 }
 
 /*!
@@ -5399,7 +5399,7 @@ void QUrl::removeEncodedQueryItem(const QByteArray &key)
 void QUrl::removeAllQueryItems(const QString &key)
 {
     if (!d) return;
-    removeAllEncodedQueryItems(toPercentEncoding(key, queryExcludeChars));
+    removeAllEncodedQueryItems(key.toUtf8().toPercentEncoding(queryExcludeChars));
 }
 
 /*!
@@ -5726,8 +5726,7 @@ QString QUrl::toString(FormattingOptions options) const
 
     if (!(options & QUrl::RemoveQuery) && d->hasQuery) {
         url += QLatin1Char('?');
-        // query is already encoded, but possibly more than necessary.
-        url += toPrettyPercentEncoding(fromPercentEncoding(d->query), true);
+        url += QString::fromUtf8(QByteArray::fromPercentEncoding(d->query));
     }
     if (!(options & QUrl::RemoveFragment) && d->hasFragment) {
         url += QLatin1Char('#');
@@ -5808,7 +5807,7 @@ QByteArray QUrl::toEncoded(FormattingOptions options) const
 */
 QString QUrl::fromPercentEncoding(const QByteArray &input)
 {
-    return fromPercentEncodingHelper(input);
+    return QString::fromUtf8(QByteArray::fromPercentEncoding(input));
 }
 
 /*!
@@ -5825,7 +5824,7 @@ QString QUrl::fromPercentEncoding(const QByteArray &input)
 */
 QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclude, const QByteArray &include)
 {
-    return toPercentEncodingHelper(input, exclude.constData(), include.constData());
+    return input.toUtf8().toPercentEncoding(exclude, include);
 }
 
 /*!

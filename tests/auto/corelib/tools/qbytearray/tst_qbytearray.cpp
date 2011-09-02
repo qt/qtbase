@@ -123,6 +123,12 @@ private slots:
     void toFromHex_data();
     void toFromHex();
     void toFromPercentEncoding();
+    void fromPercentEncoding_data();
+    void fromPercentEncoding();
+    void toPercentEncoding_data();
+    void toPercentEncoding();
+    void toPercentEncoding2_data();
+    void toPercentEncoding2();
 
     void compare_data();
     void compare();
@@ -1338,6 +1344,91 @@ void tst_QByteArray::toFromPercentEncoding()
     QVERIFY(arr.toPercentEncoding().isNull());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isEmpty());
     QVERIFY(QByteArray::fromPercentEncoding(QByteArray()).isNull());
+}
+
+void tst_QByteArray::fromPercentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("encodedString");
+    QTest::addColumn<QByteArray>("decodedString");
+
+    QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
+    QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QByteArray("file name");
+    QTest::newRow("JustEncoded") << QByteArray("%20") << QByteArray(" ");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http://qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QByteArray("http://qt nokia com");
+    QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
+    QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QByteArray("Française");
+}
+
+void tst_QByteArray::fromPercentEncoding()
+{
+    QFETCH(QByteArray, encodedString);
+    QFETCH(QByteArray, decodedString);
+
+    QCOMPARE(QByteArray::fromPercentEncoding(encodedString), decodedString);
+}
+
+void tst_QByteArray::toPercentEncoding_data()
+{
+    QTest::addColumn<QByteArray>("decodedString");
+    QTest::addColumn<QByteArray>("encodedString");
+
+    QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
+    QTest::newRow("NormalStringEncoded") << QByteArray("file name") << QByteArray("file%20name");
+    QTest::newRow("JustEncoded") << QByteArray(" ") << QByteArray("%20");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
+    QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
+    QTest::newRow("Task27166") << QByteArray("Française") << QByteArray("Fran%C3%A7aise");
+}
+
+void tst_QByteArray::toPercentEncoding()
+{
+    QFETCH(QByteArray, decodedString);
+    QFETCH(QByteArray, encodedString);
+
+    QCOMPARE(decodedString.toPercentEncoding("/.").constData(), encodedString.constData());
+}
+
+void tst_QByteArray::toPercentEncoding2_data()
+{
+    QTest::addColumn<QByteArray>("original");
+    QTest::addColumn<QByteArray>("encoded");
+    QTest::addColumn<QByteArray>("excludeInEncoding");
+    QTest::addColumn<QByteArray>("includeInEncoding");
+
+    QTest::newRow("test_01") << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+                          << QByteArray("abcdevghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678-._~")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_02") << QByteArray("{\t\n\r^\"abc}")
+                          << QByteArray("%7B%09%0A%0D%5E%22abc%7D")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_03") << QByteArray("://?#[]@!$&'()*+,;=")
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+                          << QByteArray("")
+                          << QByteArray("");
+    QTest::newRow("test_04") << QByteArray("://?#[]@!$&'()*+,;=")
+                          << QByteArray("%3A%2F%2F%3F%23%5B%5D%40!$&'()*+,;=")
+                          << QByteArray("!$&'()*+,;=")
+                          << QByteArray("");
+    QTest::newRow("test_05") << QByteArray("abcd")
+                          << QByteArray("a%62%63d")
+                          << QByteArray("")
+                          << QByteArray("bc");
+}
+
+void tst_QByteArray::toPercentEncoding2()
+{
+    QFETCH(QByteArray, original);
+    QFETCH(QByteArray, encoded);
+    QFETCH(QByteArray, excludeInEncoding);
+    QFETCH(QByteArray, includeInEncoding);
+
+    QByteArray encodedData = original.toPercentEncoding(excludeInEncoding, includeInEncoding);
+    QCOMPARE(encodedData.constData(), encoded.constData());
+    QCOMPARE(original, QByteArray::fromPercentEncoding(encodedData));
 }
 
 void tst_QByteArray::compare_data()
