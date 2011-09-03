@@ -28,6 +28,7 @@ HEADERS +=  \
         io/qresource_iterator_p.h \
         io/qstandardpaths.h \
         io/qurl.h \
+        io/qurlquery.h \
         io/qurltlds_p.h \
         io/qtldurl_p.h \
         io/qsettings.h \
@@ -65,6 +66,7 @@ SOURCES += \
         io/qresource_iterator.cpp \
         io/qstandardpaths.cpp \
         io/qurl.cpp \
+        io/qurlquery.cpp \
         io/qurlrecode.cpp \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
