@@ -520,6 +520,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
             cursorPositionChanged = true;
         }
     }
+
 #ifndef QT_NO_IM
     setPreeditArea(m_cursor, event->preeditString());
 #endif //QT_NO_IM
@@ -688,6 +689,8 @@ bool QLineControl::finishChange(int validateFromState, bool update, bool edited)
         m_selDirty = false;
         emit selectionChanged();
     }
+    if (m_cursor == m_lastCursorPos)
+        updateMicroFocus();
     emitCursorPositionChanged();
     return true;
 }
