@@ -65,6 +65,7 @@ SOURCES += \
         io/qresource_iterator.cpp \
         io/qstandardpaths.cpp \
         io/qurl.cpp \
+        io/qurlrecode.cpp \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \

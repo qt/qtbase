@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -49,6 +50,9 @@ Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
 Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
 Q_CORE_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
 Q_CORE_EXPORT QString qt_punycodeDecoder(const QString &pc);
+Q_CORE_EXPORT QString qt_tolerantParsePercentEncoding(const QString &url);
+Q_CORE_EXPORT QString qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
+                                   const ushort *tableModifications = 0);
 QT_END_NAMESPACE
 
 // For testsuites
@@ -72,6 +76,7 @@ struct ushortarray {
 
 Q_DECLARE_METATYPE(ushortarray)
 Q_DECLARE_METATYPE(QUrl::FormattingOptions)
+Q_DECLARE_METATYPE(QUrl::ComponentFormattingOptions)
 
 class tst_QUrlInternal : public QObject
 {
@@ -91,6 +96,14 @@ private Q_SLOTS:
     void std3violations();
     void std3deviations_data();
     void std3deviations();
+
+    // percent-encoding internals
+    void correctEncodedMistakes_data();
+    void correctEncodedMistakes();
+    void encodingRecode_data();
+    void encodingRecode();
+    void encodingRecodeInvalidUtf8_data();
+    void encodingRecodeInvalidUtf8();
 };
 
 void tst_QUrlInternal::idna_testsuite_data()
@@ -743,6 +756,208 @@ void tst_QUrlInternal::std3deviations()
     QUrl url;
     url.setHost(source);
     QVERIFY(!url.host().isEmpty());
+}
+
+void tst_QUrlInternal::correctEncodedMistakes_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("null") << QString() << QString();
+    QTest::newRow("empty") << "" << "";
+
+    // these contain one invalid percent
+    QTest::newRow("%") << QString("%") << QString("%25");
+    QTest::newRow("3%") << QString("3%") << QString("3%25");
+    QTest::newRow("13%") << QString("13%") << QString("13%25");
+    QTest::newRow("13%!") << QString("13%!") << QString("13%25!");
+    QTest::newRow("13%!!") << QString("13%!!") << QString("13%25!!");
+    QTest::newRow("13%a") << QString("13%a") << QString("13%25a");
+    QTest::newRow("13%az") << QString("13%az") << QString("13%25az");
+
+    // two invalid percents
+    QTest::newRow("13%%") << "13%%" << "13%25%25";
+    QTest::newRow("13%a%a") << "13%a%a" << "13%25a%25a";
+    QTest::newRow("13%az%az") << "13%az%az" << "13%25az%25az";
+
+    // these are correct (idempotent)
+    QTest::newRow("13%25") << QString("13%25")  << QString("13%25");
+    QTest::newRow("13%25%25") << QString("13%25%25")  << QString("13%25%25");
+
+    // these contain one invalid and one valid
+    // the code assumes they are all invalid
+    QTest::newRow("13%13..%") << "13%13..%" << "13%2513..%25";
+    QTest::newRow("13%..%13") << "13%..%13" << "13%25..%2513";
+
+    // three percents, one invalid
+    QTest::newRow("%01%02%3") << "%01%02%3" << "%2501%2502%253";
+}
+
+void tst_QUrlInternal::correctEncodedMistakes()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+
+    QString output = qt_tolerantParsePercentEncoding(input);
+    QCOMPARE(output, expected);
+    QCOMPARE(output.isNull(), expected.isNull());
+}
+
+static void addUtf8Data(const char *name, const char *data)
+{
+    QString encoded = QByteArray(data).toPercentEncoding();
+    QString decoded = QString::fromUtf8(data);
+
+    QTest::newRow(QByteArray("decode-") + name) << encoded << QUrl::ComponentFormattingOptions(QUrl::DecodeUnicode) << decoded;
+    QTest::newRow(QByteArray("encode-") + name) << decoded << QUrl::ComponentFormattingOptions(QUrl::FullyEncoded) << encoded;
+}
+
+void tst_QUrlInternal::encodingRecode_data()
+{
+    typedef QUrl::ComponentFormattingOptions F;
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<F>("encodingMode");
+    QTest::addColumn<QString>("expected");
+
+    // -- idempotent tests --
+    for (int i = 0; i < 0x10; ++i) {
+        QByteArray code = QByteArray::number(i, 16);
+        F mode = QUrl::ComponentFormattingOption(i << 12);
+
+        QTest::newRow("null-0x" + code) << QString() << mode << QString();
+        QTest::newRow("empty-0x" + code) << "" << mode << "";
+
+        //    unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+        // Unreserved characters are never encoded
+        QTest::newRow("alpha-0x" + code) << "abcABCZZzz" << mode << "abcABCZZzz";
+        QTest::newRow("digits-0x" + code) << "01234567890" << mode << "01234567890";
+        QTest::newRow("otherunreserved-0x" + code) << "-._~" << mode << "-._~";
+
+        // Control characters are always encoded
+        // Use uppercase because the output is also uppercased
+        QTest::newRow("control-nul-0x" + code) << "%00" << mode << "%00";
+        QTest::newRow("control-0x" + code) << "%0D%0A%1F%1A%7F" << mode << "%0D%0A%1F%1A%7F";
+
+        // The percent is always encoded
+        QTest::newRow("percent-0x" + code) << "25%2525" << mode << "25%2525";
+
+        // mixed control and unreserved
+        QTest::newRow("control-unreserved-0x" + code) << "Foo%00Bar%0D%0Abksp%7F" << mode << "Foo%00Bar%0D%0Abksp%7F";
+    }
+
+    //    gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+    //    sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+    //                  / "*" / "+" / "," / ";" / "="
+    // in the default operation, delimiters don't get encoded or decoded
+    static const char delimiters[] =  ":/?#[]@" "!$&'()*+,;=";
+    for (const char *c = delimiters; *c; ++c) {
+        QByteArray code = QByteArray::number(*c, 16);
+        QString encoded = QString("abc%") + code.toUpper() + "def" ;
+        QString decoded = QString("abc") + *c + "def" ;
+        QTest::newRow("delimiter-encoded-" + code) << encoded << F(QUrl::FullyEncoded) << encoded;
+        QTest::newRow("delimiter-decoded-" + code) << decoded << F(QUrl::FullyEncoded) << decoded;
+    }
+
+    // encode control characters
+    QTest::newRow("encode-control") << "\1abc\2\033esc" << F(QUrl::MostDecoded) << "%01abc%02%1Besc";
+    QTest::newRow("encode-nul") << QString::fromLatin1("abc\0def", 7) << F(QUrl::MostDecoded) << "abc%00def";
+
+    // space
+    QTest::newRow("space-leave-decoded") << "Hello World " << F(QUrl::DecodeSpaces) << "Hello World ";
+    QTest::newRow("space-leave-encoded") << "Hello%20World%20" << F(QUrl::FullyEncoded) << "Hello%20World%20";
+    QTest::newRow("space-encode") << "Hello World " << F(QUrl::FullyEncoded) << "Hello%20World%20";
+    QTest::newRow("space-decode") << "Hello%20World%20" << F(QUrl::DecodeSpaces) << "Hello World ";
+
+    // decode unreserved
+    QTest::newRow("unreserved-decode") << "%66%6f%6f%42a%72" << F(QUrl::FullyEncoded) << "fooBar";
+
+    // mix encoding with decoding
+    QTest::newRow("encode-control-decode-space") << "\1\2%200" << F(QUrl::DecodeSpaces) << "%01%02 0";
+    QTest::newRow("decode-space-encode-control") << "%20\1\2" << F(QUrl::DecodeSpaces) << " %01%02";
+
+    // decode and encode valid UTF-8 data
+    // invalid is tested in encodingRecodeInvalidUtf8
+    addUtf8Data("utf8-2char-1", "\xC2\x80"); // U+0080
+    addUtf8Data("utf8-2char-2", "\xDF\xBF"); // U+07FF
+    addUtf8Data("utf8-3char-1", "\xE0\xA0\x80"); // U+0800
+    addUtf8Data("utf8-3char-2", "\xED\x9F\xBF"); // U+D7FF
+    addUtf8Data("utf8-3char-3", "\xEE\x80\x80"); // U+E000
+    addUtf8Data("utf8-3char-4", "\xEF\xBF\xBD"); // U+FFFD
+    addUtf8Data("utf8-2char-1", "\xF0\x90\x80\x80"); // U+10000
+    addUtf8Data("utf8-4char-2", "\xF4\x8F\xBF\xBD"); // U+10FFFD
+
+    // longer UTF-8 sequences, mixed with unreserved
+    addUtf8Data("utf8-string-1", "R\xc3\xa9sum\xc3\xa9");
+    addUtf8Data("utf8-string-2", "\xDF\xBF\xE0\xA0\x80""A");
+    addUtf8Data("utf8-string-3", "\xE0\xA0\x80\xDF\xBF...");
+
+    // special cases: stuff we can encode, but not decode
+    QTest::newRow("unicode-noncharacter") << QString(QChar(0xffff)) << F(QUrl::FullyEncoded) << "%EF%BF%BF";
+    QTest::newRow("unicode-lo-surrogate") << QString(QChar(0xD800)) << F(QUrl::FullyEncoded) << "%ED%A0%80";
+    QTest::newRow("unicode-hi-surrogate") << QString(QChar(0xDC00)) << F(QUrl::FullyEncoded) << "%ED%B0%80";
+
+    // a couple of Unicode strings with leading spaces
+    QTest::newRow("space-unicode") << QString::fromUtf8(" \xc2\xa0") << F(QUrl::FullyEncoded) << "%20%C2%A0";
+    QTest::newRow("space-space-unicode") << QString::fromUtf8("  \xc2\xa0") << F(QUrl::FullyEncoded) << "%20%20%C2%A0";
+    QTest::newRow("space-space-space-unicode") << QString::fromUtf8("   \xc2\xa0") << F(QUrl::FullyEncoded) << "%20%20%20%C2%A0";
+
+    // hex case testing
+    QTest::newRow("FF") << "%FF" << F(QUrl::FullyEncoded) << "%FF";
+    QTest::newRow("Ff") << "%Ff" << F(QUrl::FullyEncoded) << "%FF";
+    QTest::newRow("fF") << "%fF" << F(QUrl::FullyEncoded) << "%FF";
+    QTest::newRow("ff") << "%ff" << F(QUrl::FullyEncoded) << "%FF";
+
+    // decode UTF-8 mixed with non-UTF-8 and unreserved
+    QTest::newRow("utf8-mix-1") << "%80%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%80\xC2\x80");
+    QTest::newRow("utf8-mix-2") << "%C2%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%C2\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "%E0%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("%E0\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "A%C2%80" << F(QUrl::DecodeUnicode) << QString::fromUtf8("A\xC2\x80");
+    QTest::newRow("utf8-mix-3") << "%C2%80A" << F(QUrl::DecodeUnicode) << QString::fromUtf8("\xC2\x80""A");
+}
+
+void tst_QUrlInternal::encodingRecode()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+    QFETCH(QUrl::ComponentFormattingOptions, encodingMode);
+
+    // ensure the string is properly percent-encoded
+    QVERIFY2(input == qt_tolerantParsePercentEncoding(input), "Test data is not properly encoded");
+    QVERIFY2(expected == qt_tolerantParsePercentEncoding(expected), "Test data is not properly encoded");
+
+    QString output = qt_urlRecode(input, encodingMode);
+    QCOMPARE(output, expected);
+    QCOMPARE(output.isNull(), expected.isNull());
+}
+
+void tst_QUrlInternal::encodingRecodeInvalidUtf8_data()
+{
+    QTest::addColumn<QByteArray>("utf8");
+    QTest::addColumn<QString>("utf16");
+
+    extern void loadInvalidUtf8Rows();
+    loadInvalidUtf8Rows();
+
+    extern void loadNonCharactersRows();
+    loadNonCharactersRows();
+
+    QTest::newRow("utf8-mix-4") << QByteArray("\xE0!A2\x80");
+    QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2!80");
+    QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2\x33");
+}
+
+void tst_QUrlInternal::encodingRecodeInvalidUtf8()
+{
+    QFETCH(QByteArray, utf8);
+    QString input = utf8.toPercentEncoding();
+
+    QString output;
+    output = qt_urlRecode(input, QUrl::DecodeUnicode);
+    QCOMPARE(output, input);
+
+    // this is just control
+    output = qt_urlRecode(input, QUrl::FullyEncoded);
+    QCOMPARE(output, input);
 }
 
 QTEST_APPLESS_MAIN(tst_QUrlInternal)

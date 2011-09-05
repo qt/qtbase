@@ -82,6 +82,18 @@ public:
     };
     Q_DECLARE_FLAGS(FormattingOptions, FormattingOption)
 
+    enum ComponentFormattingOption {
+        FullyEncoded = 0x000000,
+        DecodeSpaces = 0x100000,
+        DecodeUnambiguousDelimiters = 0x200000,
+        DecodeAllDelimiters = DecodeUnambiguousDelimiters | 0x400000,
+        DecodeUnicode = 0x800000,
+
+        PrettyDecoded = DecodeSpaces | DecodeUnambiguousDelimiters | DecodeUnicode,
+        MostDecoded = PrettyDecoded | DecodeAllDelimiters
+    };
+    Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
+
     QUrl();
 #ifdef QT_NO_URL_CAST_FROM_STRING
     explicit
@@ -236,6 +248,7 @@ inline uint qHash(const QUrl &url)
 
 Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrl)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
 
 #ifndef QT_NO_DATASTREAM
