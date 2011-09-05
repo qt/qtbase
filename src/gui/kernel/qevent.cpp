@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QInputEvent::QInputEvent(Type type, Qt::KeyboardModifiers modifiers)
-    : QEvent(type), modState(modifiers)
+    : QEvent(type), modState(modifiers), ts(0)
 {}
 
 /*!

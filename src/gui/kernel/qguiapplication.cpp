@@ -591,6 +591,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     if (window) {
         QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, QGuiApplication::keyboardModifiers());
+        ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
         QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
         for (int i = 0; i < cursors.count(); ++i)
@@ -618,6 +619,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     if (window) {
          QWheelEvent ev(e->localPos, e->globalPos, e->delta, buttons, QGuiApplication::keyboardModifiers(),
                         e->orient);
+         ev.setTimestamp(e->timestamp);
          QGuiApplication::sendSpontaneousEvent(window, &ev);
          return;
      }
@@ -638,9 +640,11 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     if (e->nativeScanCode || e->nativeVirtualKey || e->nativeModifiers) {
         QKeyEventEx ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount,
                        e->nativeScanCode, e->nativeVirtualKey, e->nativeModifiers);
+        ev.setTimestamp(e->timestamp);
         QGuiApplication::sendSpontaneousEvent(target, &ev);
     } else {
         QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
+        ev.setTimestamp(e->timestamp);
         QGuiApplication::sendSpontaneousEvent(target, &ev);
     }
 }
@@ -843,6 +847,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                QGuiApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
+        touchEvent.setTimestamp(e->timestamp);
 
         for (int i = 0; i < touchEvent.touchPoints().count(); ++i) {
             QTouchEvent::TouchPoint &touchPoint = touchEvent._touchPoints[i];

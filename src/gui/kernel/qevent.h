@@ -77,8 +77,11 @@ public:
     ~QInputEvent();
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
     inline void setModifiers(Qt::KeyboardModifiers amodifiers) { modState = amodifiers; }
+    inline ulong timestamp() const { return ts; }
+    inline void setTimestamp(ulong atimestamp) { ts = atimestamp; }
 protected:
     Qt::KeyboardModifiers modState;
+    ulong ts;
 };
 
 class Q_GUI_EXPORT QMouseEvent : public QInputEvent
