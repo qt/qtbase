@@ -694,6 +694,8 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
         m_selDirty = false;
         emit selectionChanged();
     }
+    if (m_cursor == m_lastCursorPos)
+        updateMicroFocus();
     emitCursorPositionChanged();
     return true;
 }
