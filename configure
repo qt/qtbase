@@ -7320,7 +7320,7 @@ if [ '!' -z "$I_FLAGS" ]; then
 fi
 
 # turn off exceptions for the compilers that support it
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 3- -d-`
 elif [ "$XPLATFORM" != "$PLATFORM" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
