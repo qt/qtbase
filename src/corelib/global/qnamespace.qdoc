@@ -2390,7 +2390,7 @@
     will imply to use the layout direction set on the parent widget or QApplication. This
     has the same effect as QWidget::unsetLayoutDirection().
 
-    When LayoutDirectoinAuto is used in conjunction with text layouting, it will imply that the text
+    When LayoutDirectionAuto is used in conjunction with text layouting, it will imply that the text
     directionality is determined from the content of the string to be layouted.
 
     \sa QApplication::setLayoutDirection(), QWidget::setLayoutDirection(), QTextOption::setTextDirection(), QString::isRightToLeft()
