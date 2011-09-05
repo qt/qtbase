@@ -69,7 +69,7 @@
 #include "qmessagebox.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
-
+#include <QtGui/qinputpanel.h>
 
 #include "qinputcontext.h"
 #include "private/qkeymapper_p.h"
@@ -3754,13 +3754,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
-#ifndef QT_NO_IM
-                QInputContext *ic = w->inputContext();
-                if (ic
-                        && w->testAttribute(Qt::WA_InputMethodEnabled)
-                        && ic->filterEvent(mouse))
-                    return true;
-#endif
 
                 if (e->type() == QEvent::MouseButtonPress) {
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
@@ -4117,17 +4110,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
+        inputPanel()->open();
+        break;
     case QEvent::CloseSoftwareInputPanel:
-#ifndef QT_NO_IM
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            QInputContext *ic = w->inputContext();
-            if (ic && ic->filterEvent(e)) {
-                break;
-            }
-        }
-#endif
-        res = d->notify_helper(receiver, e);
+        inputPanel()->close();
         break;
 
 #ifndef QT_NO_GESTURES

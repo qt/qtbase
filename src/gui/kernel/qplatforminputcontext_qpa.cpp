@@ -40,8 +40,7 @@
 ****************************************************************************/
 
 #include <qplatforminputcontext_qpa.h>
-
-#include <QtGui/QMouseEvent>
+#include <qguiapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,26 +56,37 @@ void QPlatformInputContext::reset()
 {
 }
 
-void QPlatformInputContext::update()
+void QPlatformInputContext::update(Qt::InputMethodQueries)
 {
 }
 
-void QPlatformInputContext::mouseHandler(int, QMouseEvent *event)
+void QPlatformInputContext::invokeAction(QInputPanel::Action action, int cursorPosition)
 {
     // Default behavior for simple ephemeral input contexts. Some
     // complex input contexts should not be reset here.
-    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+    if (action == QInputPanel::Click)
         reset();
 }
 
-QObject *QPlatformInputContext::focusObject() const
+QRectF QPlatformInputContext::keyboardRect() const
 {
-    return m_focusObject.data();
+    return QRectF();
 }
 
-void QPlatformInputContext::setFocusObject(QObject *object)
+void QPlatformInputContext::emitKeyboardRectChanged() const
 {
-    m_focusObject = object;
+    emit qApp->inputPanel()->keyboardRectChanged();
 }
+
+bool QPlatformInputContext::isAnimating()
+{
+    return false;
+}
+
+void QPlatformInputContext::emitAnimatingChanged()
+{
+    emit qApp->inputPanel()->animatingChanged();
+}
+
 
 QT_END_NAMESPACE

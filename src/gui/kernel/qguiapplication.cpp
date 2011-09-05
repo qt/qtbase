@@ -60,6 +60,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QGenericPluginFactory>
 #include <QtGui/qstylehints.h>
+#include <QtGui/qinputpanel.h>
 
 #include <QWindowSystemInterface>
 #include "private/qwindowsysteminterface_qpa_p.h"
@@ -174,7 +175,8 @@ QGuiApplication::~QGuiApplication()
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
     : QCoreApplicationPrivate(argc, argv, flags),
-      styleHints(0)
+      styleHints(0),
+      inputPanel(0)
 {
     self = this;
 }
@@ -403,6 +405,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     cleanupThreadData();
 
     delete styleHints;
+    delete inputPanel;
 
     delete platform_integration;
     platform_integration = 0;
@@ -1185,6 +1188,25 @@ QStyleHints *QGuiApplication::styleHints() const
     return d->styleHints;
 }
 
+
+/*!
+  \since 5.0
+
+  returns the input panel.
+
+  The input panel returns properties about the state and position of
+  the virtual keyboard. It also provides information about the position of the
+  current focused input element.
+
+  \sa QInputPanel
+  */
+QInputPanel *QGuiApplication::inputPanel() const
+{
+    Q_D(const QGuiApplication);
+    if (!d->inputPanel)
+        const_cast<QGuiApplicationPrivate *>(d)->inputPanel = new QInputPanel();
+    return d->inputPanel;
+}
 
 
 // Returns the current platform used by keyBindings

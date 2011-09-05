@@ -62,12 +62,11 @@
 #include "qplatformdefs.h"
 
 #include "qapplication.h"
-#include "private/qguiapplication_p.h"
-#include "qplatformintegration_qpa.h"
-#include "qplatforminputcontext_qpa.h"
 #include "qmenu.h"
 #include "qtextformat.h"
 #include "qpalette.h"
+#include <QtGui/qinputpanel.h>
+#include <QtGui/qevent.h>
 
 #include <stdlib.h>
 #include <limits.h>
@@ -172,10 +171,7 @@ QInputContext::~QInputContext()
 */
 QWidget *QInputContext::focusWidget() const
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (ic)
-        return qobject_cast<QWidget *>(ic->focusObject());
-    return 0;
+    return qobject_cast<QWidget *>(qApp->inputPanel()->inputItem());
 }
 
 
@@ -189,10 +185,7 @@ QWidget *QInputContext::focusWidget() const
 */
 void QInputContext::setFocusWidget(QWidget *widget)
 {
-    Q_ASSERT(!widget || widget->testAttribute(Qt::WA_InputMethodEnabled));
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (ic)
-        ic->setFocusObject(widget);
+    qApp->inputPanel()->setInputItem(widget);
 }
 
 /*!
@@ -209,50 +202,6 @@ void QInputContext::setFocusWidget(QWidget *widget)
     \sa sendEvent()
 */
 
-/*!
-    This function can be reimplemented in a subclass to filter input
-    events.
-
-    Return true if the \a event has been consumed. Otherwise, the
-    unfiltered \a event will be forwarded to widgets as ordinary
-    way. Although the input events have accept() and ignore()
-    methods, leave it untouched.
-
-    \a event is currently restricted to events of these types:
-
-    \list
-        \i CloseSoftwareInputPanel
-        \i KeyPress
-        \i KeyRelease
-        \i MouseButtonDblClick
-        \i MouseButtonPress
-        \i MouseButtonRelease
-        \i MouseMove
-        \i RequestSoftwareInputPanel
-    \endlist
-
-    But some input method related events such as QWheelEvent or
-    QTabletEvent may be added in future.
-
-    The filtering opportunity is always given to the input context as
-    soon as possible. It has to be taken place before any other key
-    event consumers such as eventfilters and accelerators because some
-    input methods require quite various key combination and
-    sequences. It often conflicts with accelerators and so on, so we
-    must give the input context the filtering opportunity first to
-    ensure all input methods work properly regardless of application
-    design.
-
-    Ordinary input methods require discrete key events to work
-    properly, so Qt's key compression is always disabled for any input
-    contexts.
-
-    \sa QKeyEvent, x11FilterEvent()
-*/
-bool QInputContext::filterEvent(const QEvent * /*event*/)
-{
-    return false;
-}
 
 /*!
   Sends an input method event specified by \a event to the current focus
@@ -271,14 +220,8 @@ bool QInputContext::filterEvent(const QEvent * /*event*/)
 */
 void QInputContext::sendEvent(const QInputMethodEvent &event)
 {
-    // route events over input context parents to make chaining possible.
-    QInputContext *p = qobject_cast<QInputContext *>(parent());
-    if (p) {
-        p->sendEvent(event);
-        return;
-    }
 
-    QWidget *focus = focusWidget();
+    QObject *focus = qApp->inputPanel()->inputItem();
     if (!focus)
 	return;
 
@@ -306,9 +249,8 @@ void QInputContext::sendEvent(const QInputMethodEvent &event)
 */
 void QInputContext::mouseHandler(int x, QMouseEvent *event)
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (ic)
-        ic->mouseHandler(x, event);
+    if (event->type() == QEvent::MouseButtonRelease)
+        qApp->inputPanel()->invokeAction(QInputPanel::Click, x);
 }
 
 
@@ -331,9 +273,7 @@ QFont QInputContext::font() const
 */
 void QInputContext::update()
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (ic)
-        ic->update();
+    qApp->inputPanel()->update(Qt::ImQueryAll);
 }
 
 /*!
@@ -343,8 +283,7 @@ void QInputContext::update()
 */
 void QInputContext::widgetDestroyed(QWidget *widget)
 {
-    if (widget == focusWidget())
-        setFocusWidget(0);
+    // nothing to be done here, as we use a weak pointer in the input panel
 }
 
 /*!
@@ -369,9 +308,7 @@ void QInputContext::widgetDestroyed(QWidget *widget)
 */
 void QInputContext::reset()
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
-    if (ic)
-        ic->reset();
+    qApp->inputPanel()->reset();
 }
 
 
@@ -463,58 +400,6 @@ QTextFormat QInputContext::standardFormat(StandardFormat s) const
     }
     return fmt;
 }
-
-#ifdef Q_WS_X11
-/*!
-    This function may be overridden only if input method is depending
-    on X11 and you need raw XEvent. Otherwise, this function must not.
-
-    This function is designed to filter raw key events for XIM, but
-    other input methods may use this to implement some special
-    features such as distinguishing Shift_L and Shift_R.
-
-    Return true if the \a event has been consumed. Otherwise, the
-    unfiltered \a event will be translated into QEvent and forwarded
-    to filterEvent(). Filtering at both x11FilterEvent() and
-    filterEvent() in single input method is allowed.
-
-    \a keywidget is a client widget into which a text is inputted. \a
-    event is inputted XEvent.
-
-    \sa filterEvent()
-*/
-bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
-{
-    return false;
-}
-#endif // Q_WS_X11
-
-#ifdef Q_OS_SYMBIAN
-/*!
-    \since 4.6
-
-    This function may be overridden only if input method is depending
-    on Symbian and you need raw Symbian events. Otherwise, this function must not.
-
-    This function is designed to filter raw key events on Symbian, but
-    other input methods may use this to implement some special
-    features.
-
-    Return true if the \a event has been consumed. Otherwise, the
-    unfiltered \a event will be translated into QEvent and forwarded
-    to filterEvent(). Filtering at both symbianFilterEvent() and
-    filterEvent() in single input method is allowed.
-
-    \a keywidget is a client widget into which a text is inputted. \a
-    event is inputted QSymbianEvent.
-
-    \sa filterEvent()
-*/
-bool QInputContext::symbianFilterEvent(QWidget * /*keywidget*/, const QSymbianEvent * /*event*/)
-{
-    return false;
-}
-#endif // Q_OS_SYMBIAN
 
 QT_END_NAMESPACE
 

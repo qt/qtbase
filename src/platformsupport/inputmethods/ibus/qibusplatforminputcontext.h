@@ -55,16 +55,16 @@ public:
 
     bool isValid() const;
 
-    void mouseHandler(int x, QMouseEvent *event);
+    void invokeAction(QInputPanel::Action a, int x);
     void reset(void);
-    void update(void);
-    void setFocusObject(QObject *object);
+    void update(Qt::InputMethodQueries);
 
     bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
     void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
+    void inputItemChanged();
 
 private:
     QIBusPlatformInputContextPrivate *d;

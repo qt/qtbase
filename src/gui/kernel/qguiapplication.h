@@ -59,6 +59,7 @@ class QPlatformNativeInterface;
 class QPalette;
 class QScreen;
 class QStyleHints;
+class QInputPanel;
 
 #if defined(qApp)
 #undef qApp
@@ -113,10 +114,12 @@ public:
     static inline bool isRightToLeft() { return layoutDirection() == Qt::RightToLeft; }
     static inline bool isLeftToRight() { return layoutDirection() == Qt::LeftToRight; }
 
+    // ### move to QInputPanel
     static QLocale keyboardInputLocale();
     static Qt::LayoutDirection keyboardInputDirection();
 
     QStyleHints *styleHints() const;
+    QInputPanel *inputPanel() const;
 
     static QPlatformNativeInterface *platformNativeInterface();
 

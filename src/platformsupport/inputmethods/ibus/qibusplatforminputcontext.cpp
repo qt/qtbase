@@ -84,6 +84,8 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
         connect(d->context, SIGNAL(CommitText(QDBusVariant)), SLOT(commitText(QDBusVariant)));
         connect(d->context, SIGNAL(UpdatePreeditText(QDBusVariant,uint,bool)), this, SLOT(updatePreeditText(QDBusVariant,uint,bool)));
     }
+    QInputPanel *p = qApp->inputPanel();
+    connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
 }
 
 QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
@@ -96,9 +98,9 @@ bool QIBusPlatformInputContext::isValid() const
     return d->valid;
 }
 
-void QIBusPlatformInputContext::mouseHandler (int x, QMouseEvent *event)
+void QIBusPlatformInputContext::invokeAction(QInputPanel::Action a, int x)
 {
-    QPlatformInputContext::mouseHandler (x, event);
+    QPlatformInputContext::invokeAction(a, x);
 
     if (!d->valid)
         return;
@@ -114,14 +116,14 @@ void QIBusPlatformInputContext::reset()
     d->context->Reset();
 }
 
-void QIBusPlatformInputContext::update()
+void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 {
-    QPlatformInputContext::update();
+    QPlatformInputContext::update(q);
 
     if (!d->valid)
         return;
 
-    QObject *o = focusObject();
+    QObject *o = qApp->inputPanel()->inputItem();
     if (!o)
         return;
 
@@ -135,16 +137,15 @@ void QIBusPlatformInputContext::update()
     }
 }
 
-void QIBusPlatformInputContext::setFocusObject(QObject *object)
+void QIBusPlatformInputContext::inputItemChanged()
 {
-    QPlatformInputContext::setFocusObject(object);
-
     if (!d->valid)
         return;
 
+    QObject *input = qApp->inputPanel()->inputItem();
     if (debug)
-        qDebug() << "setFocusObject" << object;
-    if (object)
+        qDebug() << "setFocusObject" << input;
+    if (input)
         d->context->FocusIn();
     else
         d->context->FocusOut();
@@ -153,6 +154,10 @@ void QIBusPlatformInputContext::setFocusObject(QObject *object)
 
 void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 {
+    QObject *input = qApp->inputPanel()->inputItem();
+    if (!input)
+        return;
+
     const QDBusArgument arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
@@ -164,11 +169,15 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
 
     QInputMethodEvent event;
     event.setCommitString(t.text);
-    QCoreApplication::sendEvent(focusObject(), &event);
+    QCoreApplication::sendEvent(input, &event);
 }
 
 void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint cursorPos, bool visible)
 {
+    QObject *input = qApp->inputPanel()->inputItem();
+    if (!input)
+        return;
+
     const QDBusArgument arg = text.variant().value<QDBusArgument>();
 
     QIBusText t;
@@ -180,7 +189,7 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     attributes += QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, cursorPos, visible ? 1 : 0, QVariant());
 
     QInputMethodEvent event(t.text, attributes);
-    QCoreApplication::sendEvent(focusObject(), &event);
+    QCoreApplication::sendEvent(input, &event);
 }
 
 

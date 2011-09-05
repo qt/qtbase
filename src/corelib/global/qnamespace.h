@@ -1234,24 +1234,36 @@ public:
     };
 
     enum InputMethodQuery {
-        ImMicroFocus,
-        ImFont,
-        ImCursorPosition,
-        ImSurroundingText,
-        ImCurrentSelection,
-        ImMaximumTextLength,
-        ImAnchorPosition,
-        ImHints
+        ImEnabled = 0x1,
+        ImMicroFocus = 0x2,
+        ImFont = 0x4,
+        ImCursorPosition = 0x8,
+        ImSurroundingText = 0x10,
+        ImCurrentSelection = 0x20,
+        ImMaximumTextLength = 0x40,
+        ImAnchorPosition = 0x80,
+        ImHints = 0x100,
+        ImPreferredLanguage = 0x200,
+
+        ImPlatformData = 0x80000000,
+        ImQueryAll = 0xffffffff
     };
+    Q_DECLARE_FLAGS(InputMethodQueries, InputMethodQuery)
 
     enum InputMethodHint {
         ImhNone = 0x0,
+
         ImhHiddenText = 0x1,
-        ImhNoAutoUppercase = 0x2,
-        ImhPreferNumbers = 0x4,
-        ImhPreferUppercase = 0x8,
-        ImhPreferLowercase = 0x10,
-        ImhNoPredictiveText = 0x20,
+        ImhSensitiveData = 0x2,
+        ImhNoAutoUppercase = 0x4,
+        ImhPreferNumbers = 0x8,
+        ImhPreferUppercase = 0x10,
+        ImhPreferLowercase = 0x20,
+        ImhNoPredictiveText = 0x40,
+
+        ImhDate = 0x80,
+        ImhTime = 0x100,
+        ImhMultiLine = 0x200,
 
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,

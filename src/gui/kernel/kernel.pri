@@ -13,6 +13,8 @@ HEADERS += \
         kernel/qdnd_p.h \
         kernel/qevent.h \
         kernel/qevent_p.h \
+        kernel/qinputpanel.h \
+        kernel/qinputpanel_p.h \
         kernel/qkeysequence.h \
         kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
@@ -29,6 +31,7 @@ SOURCES += \
         kernel/qdrag.cpp \
         kernel/qdnd.cpp \
         kernel/qevent.cpp \
+        kernel/qinputpanel.cpp \
         kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qkeymapper_qpa.cpp \

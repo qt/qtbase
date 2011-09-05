@@ -42,7 +42,7 @@
 #ifndef QPLATFORMINPUTCONTEXT_H
 #define QPLATFORMINPUTCONTEXT_H
 
-#include <QtCore/QWeakPointer>
+#include <qinputpanel.h>
 
 QT_BEGIN_HEADER
 
@@ -60,17 +60,14 @@ public:
     virtual ~QPlatformInputContext();
 
     virtual void reset();
-    virtual void update();
+    virtual void update(Qt::InputMethodQueries);
+    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
 
-    virtual void mouseHandler(int x, QMouseEvent *event);
+    virtual QRectF keyboardRect() const;
+    void emitKeyboardRectChanged() const;
 
-    QObject *focusObject() const;
-    virtual void setFocusObject(QObject *object);
-
-//    virtual QList<QAction *> actions();
-private:
-    QWeakPointer<QObject> m_focusObject;
-    QWeakPointer<QWindow> m_focusWindow;
+    virtual bool isAnimating();
+    void emitAnimatingChanged();
 };
 
 QT_END_NAMESPACE

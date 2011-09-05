@@ -102,14 +102,6 @@ public:
 
     virtual QList<QAction *> actions();
 
-#if defined(Q_WS_X11)
-    virtual bool x11FilterEvent( QWidget *keywidget, XEvent *event );
-#endif // Q_WS_X11
-#if defined(Q_OS_SYMBIAN)
-    virtual bool symbianFilterEvent( QWidget *keywidget, const QSymbianEvent *event );
-#endif // Q_OS_SYMBIAN
-    virtual bool filterEvent( const QEvent *event );
-
     void sendEvent(const QInputMethodEvent &event);
 
     virtual bool isComposing() const { return false; }

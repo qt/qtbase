@@ -173,6 +173,7 @@ public:
     static QFont *app_font;
 
     QStyleHints *styleHints;
+    QInputPanel *inputPanel;
 
     static bool quitOnLastWindowClosed;
 
