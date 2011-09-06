@@ -7625,7 +7625,7 @@ fi
 
 
 case "$CFG_ARCH" in
-i386|x86_64|arm) ;;
+i386|x86_64|arm|macosx) ;;
 *) canBuildV8="no";;
 esac
 
