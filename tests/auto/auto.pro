@@ -5,7 +5,7 @@ SUBDIRS += \
     gui.pro \
     network.pro \
     sql \
-    xml.pro \
+    xml \
     other.pro
 
 !cross_compile:                             SUBDIRS += host.pro
