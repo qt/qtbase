@@ -80,10 +80,10 @@ public:
         Info
     };
 
-    QAbstractTestLogger() : stream(0) {}
-    virtual ~QAbstractTestLogger() {}
+    QAbstractTestLogger(const char *filename);
+    virtual ~QAbstractTestLogger();
 
-    virtual void startLogging(const char *filename);
+    virtual void startLogging();
     virtual void stopLogging();
 
     virtual void enterTestFunction(const char *function) = 0;
@@ -98,7 +98,7 @@ public:
 
     void outputString(const char *msg);
 
-private:
+protected:
     FILE *stream;
 };
 

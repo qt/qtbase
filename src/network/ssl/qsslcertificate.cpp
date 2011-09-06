@@ -892,23 +892,24 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromDer(const QByteAr
 // These certificates are known to be fraudulent and were created during the comodo
 // compromise. See http://www.comodo.com/Comodo-Fraud-Incident-2011-03-23.html
 static const char *certificate_blacklist[] = {
-    "04:7e:cb:e9:fc:a5:5f:7b:d0:9e:ae:36:e1:0c:ae:1e",
-    "f5:c8:6a:f3:61:62:f1:3a:64:f5:4f:6d:c9:58:7c:06",
-    "d7:55:8f:da:f5:f1:10:5b:b2:13:28:2b:70:77:29:a3",
-    "39:2a:43:4f:0e:07:df:1f:8a:a3:05:de:34:e0:c2:29",
-    "3e:75:ce:d4:6b:69:30:21:21:88:30:ae:86:a8:2a:71",
-    "e9:02:8b:95:78:e4:15:dc:1a:71:0a:2b:88:15:44:47",
-    "92:39:d5:34:8f:40:d1:69:5a:74:54:70:e1:f2:3f:43",
-    "b0:b7:13:3e:d0:96:f9:b5:6f:ae:91:c8:74:bd:3a:c0",
-    "d8:f3:5f:4e:b7:87:2b:2d:ab:06:92:e3:15:38:2f:b0",
-    "05:e2:e6:a4:cd:09:ea:54:d6:65:b0:75:fe:22:a2:56",
+    "04:7e:cb:e9:fc:a5:5f:7b:d0:9e:ae:36:e1:0c:ae:1e", "mail.google.com", // Comodo
+    "f5:c8:6a:f3:61:62:f1:3a:64:f5:4f:6d:c9:58:7c:06", "www.google.com", // Comodo
+    "d7:55:8f:da:f5:f1:10:5b:b2:13:28:2b:70:77:29:a3", "login.yahoo.com", // Comodo
+    "39:2a:43:4f:0e:07:df:1f:8a:a3:05:de:34:e0:c2:29", "login.yahoo.com", // Comodo
+    "3e:75:ce:d4:6b:69:30:21:21:88:30:ae:86:a8:2a:71", "login.yahoo.com", // Comodo
+    "e9:02:8b:95:78:e4:15:dc:1a:71:0a:2b:88:15:44:47", "login.skype.com", // Comodo
+    "92:39:d5:34:8f:40:d1:69:5a:74:54:70:e1:f2:3f:43", "addons.mozilla.org", // Comodo
+    "b0:b7:13:3e:d0:96:f9:b5:6f:ae:91:c8:74:bd:3a:c0", "login.live.com", // Comodo
+    "d8:f3:5f:4e:b7:87:2b:2d:ab:06:92:e3:15:38:2f:b0", "global trustee", // Comodo
+    "05:e2:e6:a4:cd:09:ea:54:d6:65:b0:75:fe:22:a2:56", "*.google.com", // DigiNotar
     0
 };
 
 bool QSslCertificatePrivate::isBlacklisted(const QSslCertificate &certificate)
 {
     for (int a = 0; certificate_blacklist[a] != 0; a++) {
-        if (certificate.serialNumber() == certificate_blacklist[a])
+        if (certificate.serialNumber() == certificate_blacklist[a++] &&
+            certificate.subjectInfo(QSslCertificate::CommonName).contains(QString::fromUtf8(certificate_blacklist[a])))
             return true;
     }
     return false;

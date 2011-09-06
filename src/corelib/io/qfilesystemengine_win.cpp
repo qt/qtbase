@@ -508,11 +508,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     if (!entry.isRelative()) {
 #if !defined(Q_OS_WINCE)
-        if (entry.isAbsolute()
-            && !entry.filePath().contains(QLatin1String("/../"))
-            && !entry.filePath().contains(QLatin1String("/./"))
-            && !entry.filePath().endsWith(QLatin1String("/.."))
-            && !entry.filePath().endsWith(QLatin1String("/."))) {
+        if (entry.isAbsolute() && entry.isClean()) {
             ret = entry.filePath();
         }  else {
             ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));

@@ -780,7 +780,6 @@ CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=no
 CFG_NAS=no
 CFG_QWS_DEPTHS=all
-CFG_USER_BUILD_KEY=
 CFG_ACCESSIBILITY=auto
 CFG_QT3SUPPORT=no
 CFG_ENDIAN=auto
@@ -1058,7 +1057,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-depths|-make|-nomake|-platform|-xplatform|-sdk|-arch|-host-arch|-mysql_config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1320,9 +1319,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
-        ;;
-    buildkey)
-        CFG_USER_BUILD_KEY="$VAL"
         ;;
     sxe)
 	CFG_SXE="$VAL"
@@ -3721,7 +3717,7 @@ if [ "$OPT_HELP" = "yes" ]; then
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
         [-translationdir <dir>] [-sysconfdir <dir>] [-examplesdir <dir>]
-        [-buildkey <key>] [-release] [-debug] [-debug-and-release]
+        [-release] [-debug] [-debug-and-release]
         [-developer-build] [-shared] [-static] [-no-fast] [-fast] [-no-largefile]
         [-largefile] [-no-exceptions] [-exceptions] [-no-accessibility]
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
@@ -3798,12 +3794,6 @@ cat <<EOF
                             (default PREFIX/etc/settings)
     -examplesdir <dir> .... Examples will be installed to <dir>
                             (default PREFIX/examples)
-
- You may use these options to turn on strict plugin loading.
-
-    -buildkey <key> .... Build the Qt library and plugins using the specified
-                         <key>.  When the library loads plugins, it will only
-                         load those that have a matching key.
 
 Configure options:
 
@@ -7611,7 +7601,7 @@ if [ "$CFG_DECLARATIVE" = "yes" ]; then
     fi
 fi
 if [ "$CFG_DECLARATIVE" = "auto" ]; then
-    if [ "$CFG_SCRIPT" = "no" -o "$CFG_GUI" = "no" ]; then
+    if [ "$CFG_V8" = "no" -o "$CFG_GUI" = "no" ]; then
             CFG_DECLARATIVE=no
     else
             CFG_DECLARATIVE=yes
@@ -7696,226 +7686,6 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
 fi
 
 #-------------------------------------------------------------------------------
-# generate QT_BUILD_KEY
-#-------------------------------------------------------------------------------
-
-# some compilers generate binary incompatible code between different versions,
-# so we need to generate a build key that is different between these compilers
-COMPAT_COMPILER=
-case "$COMPILER" in
-g++*)
-    # GNU C++
-    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -dumpversion 2>/dev/null`
-
-    case "$COMPILER_VERSION" in
-    *.*.*)
-        QT_GCC_MAJOR_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\1,'`
-        QT_GCC_MINOR_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\2,'`
-        QT_GCC_PATCH_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*,\3,'`
-        ;;
-    *.*)
-        QT_GCC_MAJOR_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\).*,\1,'`
-        QT_GCC_MINOR_VERSION=`echo $COMPILER_VERSION | sed 's,^\([0-9]*\)\.\([0-9]*\).*,\2,'`
-        QT_GCC_PATCH_VERSION=0
-        ;;
-    esac
-
-    case "$COMPILER_VERSION" in
-    2.95.*)
-        COMPILER_VERSION="2.95.*"
-        ;;
-    3.*)
-        COMPILER_VERSION="3.*"
-        ;;
-    4.*)
-        COMPILER_VERSION="4"
-        ;;
-    *)
-        ;;
-    esac
-    [ '!' -z "$COMPILER_VERSION" ] && COMPILER="g++-${COMPILER_VERSION}"
-    ;;
-icc*)
-    # The Intel CC compiler on Unix systems matches the ABI of the g++
-    # that is found on PATH
-    COMPAT_COMPILER="icc"
-    COMPILER="g++-4"
-    case "`g++ -dumpversion` 2>/dev/null" in
-    2.95.*)
-        COMPILER="g++-2.95.*"
-        ;;
-    3.*)
-a        COMPILER="g++-3.*"
-        ;;
-    *)
-        ;;
-    esac
-    ;;
-*)
-    #
-    ;;
-esac
-
-# QT_CONFIG can contain the following:
-#
-# Things that affect the Qt API/ABI:
-#
-#   Options:
-#     minimal-config small-config medium-config large-config full-config
-#
-#   Different edition modules:
-#     gui network canvas table xml opengl sql
-#
-# Things that do not affect the Qt API/ABI:
-#     stl
-#     system-jpeg no-jpeg jpeg
-#     system-mng no-mng mng
-#     system-png no-png png
-#     system-zlib no-zlib zlib
-#     system-libtiff no-libtiff
-#     no-gif gif
-#     debug release
-#     dll staticlib
-#
-#     nocrosscompiler
-#     GNUmake
-#     largefile
-#     nis
-#     nas
-#     tablet
-#     ipv6
-#
-#     X11     : x11sm xinerama xcursor xfixes xrandr xrender mitshm fontconfig xkb
-#     Embedded: embedded qpa freetype
-#
-ALL_OPTIONS=
-BUILD_CONFIG=
-BUILD_OPTIONS=
-
-# determine the build options
-for config_option in $QMAKE_CONFIG $QT_CONFIG; do
-    SKIP="yes"
-    case "$config_option" in
-    *-config)
-        # take the last *-config setting.  this is the highest config being used,
-        # and is the one that we will use for tagging plugins
-        BUILD_CONFIG="$config_option"
-        ;;
-
-    *) # skip all other options since they don't affect the Qt API/ABI.
-        ;;
-    esac
-
-    if [ "$SKIP" = "no" ]; then
-        BUILD_OPTIONS="$BUILD_OPTIONS $config_option"
-    fi
-done
-
-# put the options that we are missing into .options
-rm -f .options
-for opt in `echo $ALL_OPTIONS`; do
-    SKIP="no"
-    if echo $BUILD_OPTIONS | grep $opt >/dev/null 2>&1; then
-        SKIP="yes"
-    fi
-    if [ "$SKIP" = "no" ]; then
-        echo "$opt" >> .options
-    fi
-done
-
-# reconstruct BUILD_OPTIONS with a sorted negative feature list
-# (ie. only things that are missing are will be put into the build key)
-BUILD_OPTIONS=
-if [ -f .options ]; then
-    for opt in `sort -f .options | uniq`; do
-        BUILD_OPTIONS="$BUILD_OPTIONS no-$opt"
-    done
-fi
-rm -f .options
-
-# QT_NO* defines affect the Qt API (and binary compatibility).  they need
-# to be included in the build key
-for build_option in $D_FLAGS; do
-    build_option=`echo $build_option | cut -d \" -f 2 -`
-    case "$build_option" in
-    QT_NO*)
-        echo "$build_option" >> .options
-        ;;
-    *)
-        # skip all other compiler defines
-        ;;
-    esac
-done
-
-# sort the compile time defines (helps ensure that changes in this configure
-# script don't affect the QT_BUILD_KEY generation)
-if [ -f .options ]; then
-    for opt in `sort -f .options | uniq`; do
-        BUILD_OPTIONS="$BUILD_OPTIONS $opt"
-    done
-fi
-rm -f .options
-
-BUILD_OPTIONS="$BUILD_CONFIG $BUILD_OPTIONS"
-# extract the operating system from the XPLATFORM
-TARGET_OPERATING_SYSTEM=`echo $XPLATFORM | cut -f 2- -d/ | cut -f -1 -d-`
-if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-    QT_BUILD_KEY_SYSTEM_PART="Symbian"
-else
-    QT_BUILD_KEY_SYSTEM_PART="$CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER"
-fi
-
-# when cross-compiling, don't include build-host information (build key is target specific)
-QT_BUILD_KEY="$CFG_USER_BUILD_KEY $QT_BUILD_KEY_SYSTEM_PART $BUILD_OPTIONS"
-if [ -n "$QT_NAMESPACE" ]; then
-    QT_BUILD_KEY="$QT_BUILD_KEY $QT_NAMESPACE"
-fi
-MAC_NEED_TWO_BUILD_KEYS="no"
-if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
-    QT_BUILD_KEY_CARBON=$QT_BUILD_KEY
-    TARGET_OPERATING_SYSTEM="$TARGET_OPERATING_SYSTEM-cocoa"
-    QT_BUILD_KEY_COCOA="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
-    if [ "$CFG_MAC_CARBON" = "no" ]; then
-        QT_BUILD_KEY=$QT_BUILD_KEY_COCOA
-    else
-        MAC_NEED_TWO_BUILD_KEYS="yes"
-    fi
-fi
-# don't break loading plugins build with an older version of Qt
-QT_BUILD_KEY_COMPAT=
-if [ "$QT_CROSS_COMPILE" = "no" ]; then
-    # previous versions of Qt used a build key built from the uname
-    QT_BUILD_KEY_COMPAT="$CFG_USER_BUILD_KEY $UNAME_MACHINE $UNAME_SYSTEM $COMPILER $BUILD_OPTIONS"
-    if [ -n "$QT_NAMESPACE" ]; then
-        QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
-    fi
-fi
-
-# is this compiler compatible with some other "standard" build key
-QT_BUILD_KEY_COMPAT_COMPILER=
-if [ ! -z "$COMPAT_COMPILER" ]; then
-    QT_BUILD_KEY_COMPAT_COMPILER="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPAT_COMPILER $BUILD_OPTIONS"
-    if [ -n "$QT_NAMESPACE" ]; then
-        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_COMPILER $QT_NAMESPACE"
-    fi
-fi
-
-# is this arch compatible with some other "standard" build key
-QT_BUILD_KEY_COMPAT_ARCH=
-if [ ! -z "$COMPAT_ARCH" ]; then
-    QT_BUILD_KEY_COMPAT_ARCH="$CFG_USER_BUILD_KEY $COMPAT_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
-    if [ -n "$QT_NAMESPACE" ]; then
-        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_ARCH $QT_NAMESPACE"
-    fi
-fi
-
-# strip out leading/trailing/extra whitespace
-QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
-QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
-QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
-QT_BUILD_KEY_COMPAT_ARCH=`echo $QT_BUILD_KEY_COMPAT_ARCH | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
-
-#-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
 #-------------------------------------------------------------------------------
 
@@ -7946,32 +7716,6 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #define Q_BIG_ENDIAN 4321
 #define Q_LITTLE_ENDIAN 1234
 EOF
-
-if [ "$MAC_NEED_TWO_BUILD_KEYS" = "no" ]; then
-    echo "#define QT_BUILD_KEY \"$QT_BUILD_KEY\"" \
-        >> "$outpath/src/corelib/global/qconfig.h.new"
-else
-    cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
-
-#define QT_BUILD_KEY_CARBON "$QT_BUILD_KEY_CARBON"
-#define QT_BUILD_KEY_COCOA "$QT_BUILD_KEY_COCOA"
-EOF
-fi
-
-if [ -n "$QT_BUILD_KEY_COMPAT" ]; then
-    echo "#define QT_BUILD_KEY_COMPAT \"$QT_BUILD_KEY_COMPAT\"" \
-        >> "$outpath/src/corelib/global/qconfig.h.new"
-fi
-if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
-    echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
-        >> "$outpath/src/corelib/global/qconfig.h.new"
-fi
-if [ -n "$QT_BUILD_KEY_COMPAT_ARCH" ]; then
-    echo "#define QT_BUILD_KEY_COMPAT3 \"$QT_BUILD_KEY_COMPAT_ARCH\"" \
-        >> "$outpath/src/corelib/global/qconfig.h.new"
-fi
-
-echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
 if [ "$CFG_HOST_ENDIAN" = "auto" ]; then

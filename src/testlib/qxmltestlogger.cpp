@@ -92,8 +92,8 @@ namespace QTest {
 }
 
 
-QXmlTestLogger::QXmlTestLogger(XmlMode mode )
-    : xmlmode(mode)
+QXmlTestLogger::QXmlTestLogger(XmlMode mode, const char *filename)
+    : QAbstractTestLogger(filename), xmlmode(mode)
 {
 }
 
@@ -101,9 +101,9 @@ QXmlTestLogger::~QXmlTestLogger()
 {
 }
 
-void QXmlTestLogger::startLogging(const char *filename)
+void QXmlTestLogger::startLogging()
 {
-    QAbstractTestLogger::startLogging(filename);
+    QAbstractTestLogger::startLogging();
     QTestCharBuffer buf;
 
     if (xmlmode == QXmlTestLogger::Complete) {
@@ -115,7 +115,7 @@ void QXmlTestLogger::startLogging(const char *filename)
         outputString(buf.constData());
     }
 
-   QTest::qt_asprintf(&buf,
+    QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
                 "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"

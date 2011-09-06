@@ -42,21 +42,37 @@
 #ifndef QWAYLANDWINDOWMANAGERINTEGRATION_H
 #define QWAYLANDWINDOWMANAGERINTEGRATION_H
 
-#include <QObject>
+#include <QtCore/QObject>
+#include <QtCore/QScopedPointer>
+
 #include "wayland-client.h"
 #include "qwaylanddisplay.h"
 
-class QWaylandWindowManagerIntegration
+class QWaylandWindow;
+
+class QWaylandWindowManagerIntegrationPrivate;
+
+class QWaylandWindowManagerIntegration : public QObject
 {
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QWaylandWindowManagerIntegration)
 public:
     explicit QWaylandWindowManagerIntegration(QWaylandDisplay *waylandDisplay);
     virtual ~QWaylandWindowManagerIntegration();
     static QWaylandWindowManagerIntegration *createIntegration(QWaylandDisplay *waylandDisplay);
     struct wl_windowmanager *windowManager() const;
 
+    static QWaylandWindowManagerIntegration *instance();
+
     void mapSurfaceToProcess(struct wl_surface *surface, long long processId);
     void mapClientToProcess(long long processId);
     void authenticateWithToken(const QByteArray &token = QByteArray());
+    void setWindowProperty(QWaylandWindow *window, const QString &propertyName, const QVariant &propertyValue);
+
+    void flushPropertyChanges(QWaylandWindow *windowToFlush);
+
+private slots:
+    void removeQueuedPropertiesForWindow();
 
 private:
     static void wlHandleListenerGlobal(wl_display *display, uint32_t id,
@@ -64,12 +80,17 @@ private:
 
     static void wlHandleOnScreenVisibilityChange(void *data, struct wl_windowmanager *wl_windowmanager, int visible);
     static void wlHandleScreenOrientationChange(void *data, struct wl_windowmanager *wl_windowmanager, int screenOrientation);
+    static void wlHandleWindowPropertyChange(void *data, struct wl_windowmanager *wl_windowmanager,
+                                             struct wl_surface *surface,
+                                             const char *propertyName, struct wl_array *propertyValue);
+
+    void handleWindowPropertyChange(QWaylandWindow *window, const QString &propertyName, const QVariant &propertyValue);
+
 private:
+    QScopedPointer<QWaylandWindowManagerIntegrationPrivate> d_ptr;
+    static QWaylandWindowManagerIntegration *m_instance;
 
-    QWaylandDisplay *mWaylandDisplay;
-    struct wl_windowmanager *mWaylandWindowManager;
-
-    static const struct wl_windowmanager_listener mWindowManagerListener;
+    static const struct wl_windowmanager_listener m_windowManagerListener;
 };
 
 #endif // QWAYLANDWINDOWMANAGERINTEGRATION_H

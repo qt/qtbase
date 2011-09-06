@@ -58,7 +58,7 @@
 #include <QtCore/qglobal.h>
 
 #if (defined(Q_OS_LINUX) || defined Q_OS_MAC) && !defined(QT_NO_PROCESS)
-#define QTESTLIB_USE_VALGRIND 
+#define QTESTLIB_USE_VALGRIND
 #else
 #undef QTESTLIB_USE_VALGRIND
 #endif
@@ -119,7 +119,7 @@ public:
         , valid(true)
     { }
 
-    bool operator<(const QBenchmarkResult &other) const 
+    bool operator<(const QBenchmarkResult &other) const
     {
         return (value / iterations) < (other.value / other.iterations);
     }

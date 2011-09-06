@@ -68,7 +68,6 @@ QT_BEGIN_NAMESPACE
 
 bool qt_debug_component();
 
-class QSettings;
 class QLibraryPrivate
 {
 public:
@@ -99,7 +98,7 @@ public:
     QString errorString;
     QLibrary::LoadHints loadHints;
 
-    bool isPlugin(QSettings *settings = 0);
+    bool isPlugin();
 
 
 private:

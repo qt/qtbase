@@ -1,7 +1,8 @@
 From 3d6d4249878f7960eac4c9c94e0f2529f9a58c4a Mon Sep 17 00:00:00 2001
-From: ager@chromium.org <ager@chromium.org>
+From: "ager@chromium.org" <ager@chromium.org>
 Date: Fri, 6 May 2011 11:07:52 +0000
-Subject: [PATCH 10/13] Implement CallAsConstructor method for Object in the API
+Subject: [PATCH 10/16] Implement CallAsConstructor method for Object in the
+ API
 
 Patch by Peter Varga.
 
@@ -393,5 +394,5 @@ index 693d51e..1334f63 100644
    }
  }
 --
-1.7.2.3
+1.7.6
 

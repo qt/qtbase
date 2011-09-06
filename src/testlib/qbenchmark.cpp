@@ -119,7 +119,6 @@ QBenchmarkTestMethodData *QBenchmarkTestMethodData::current;
 QBenchmarkTestMethodData::QBenchmarkTestMethodData()
 :resultAccepted(false), runOnce(false), iterationCount(-1)
 {
-   
 }
 
 QBenchmarkTestMethodData::~QBenchmarkTestMethodData()
@@ -134,7 +133,6 @@ void QBenchmarkTestMethodData::beginDataRun()
 
 void QBenchmarkTestMethodData::endDataRun()
 {
-
 }
 
 int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
@@ -164,7 +162,7 @@ void QBenchmarkTestMethodData::setResult(
         accepted = true;
     }
 
-    // Test the result directly without calling the measurer if the minimum time 
+    // Test the result directly without calling the measurer if the minimum time
     // has been specified on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
         accepted = (value > QBenchmarkGlobalData::current->walltimeMinimum);
@@ -196,7 +194,7 @@ QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runM
 {
     i = 0;
     if (runMode == RunOnce)
-        QBenchmarkTestMethodData::current->runOnce = true;    
+        QBenchmarkTestMethodData::current->runOnce = true;
     QTest::beginBenchmarkMeasurement();
 }
 
@@ -265,16 +263,16 @@ void QTest::beginBenchmarkMeasurement()
 quint64 QTest::endBenchmarkMeasurement()
 {
     // the clock is ticking before the line below, don't add code here.
-    return QBenchmarkGlobalData::current->measurer->stop();    
+    return QBenchmarkGlobalData::current->measurer->stop();
 }
 
 /*!
     Sets the benchmark result for this test function to \a result.
- 
+
     Use this function if you want to report benchmark results without
     using the QBENCHMARK macro. Use \a metric to specify how QTestLib
     should interpret the results.
- 
+
     The context for the result will be the test function name and any
     data tag from the _data function. This function can only be called
     once in each test function, subsequent calls will replace the

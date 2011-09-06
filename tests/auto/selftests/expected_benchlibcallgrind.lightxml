@@ -3,13 +3,12 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="twoHundredMillionInstructions">
-<Incident type="pass" file="" line="0">
 <BenchmarkResult metric="InstructionReads" tag="" value="200000000" iterations="1" />
-</Incident>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

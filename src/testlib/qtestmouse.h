@@ -76,7 +76,7 @@ namespace QTest
 
         if (delay == -1 || delay < defaultMouseDelay())
             delay = defaultMouseDelay();
-        if(delay > 0)
+        if (delay > 0)
             QTest::qWait(delay);
 
         if (pos.isNull())

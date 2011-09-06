@@ -3,16 +3,16 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testNumber1">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testNumber2">
-<Incident type="fail" file="Unknown file" line="0">
 <Message type="qfatal" file="" line="0">
-    <Description><![CDATA[ASSERT: "false" in file /local/user_builds/qt/4.6/tests/auto/selftests/assert/tst_assert.cpp, line 62]]></Description>
+    <Description><![CDATA[ASSERT: "false" in file tst_assert.cpp, line 62]]></Description>
 </Message>
+<Incident type="fail" file="Unknown file" line="0">
     <Description><![CDATA[Received a fatal error.]]></Description>
 </Incident>
 </TestFunction>

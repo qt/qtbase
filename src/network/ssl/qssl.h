@@ -63,6 +63,7 @@ namespace QSsl {
     };
 
     enum KeyAlgorithm {
+        Opaque,
         Rsa,
         Dsa
     };

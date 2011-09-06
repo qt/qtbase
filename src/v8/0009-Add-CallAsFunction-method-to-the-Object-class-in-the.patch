@@ -1,7 +1,8 @@
 From 4183b973ed3bd603784c798dfa63ba48f6b68003 Mon Sep 17 00:00:00 2001
-From: ager@chromium.org <ager@chromium.org>
+From: "ager@chromium.org" <ager@chromium.org>
 Date: Wed, 4 May 2011 13:03:08 +0000
-Subject: [PATCH 09/13] Add CallAsFunction method to the Object class in the API
+Subject: [PATCH 09/16] Add CallAsFunction method to the Object class in the
+ API
 
 Patch by Peter Varga.
 
@@ -282,5 +283,5 @@ index d7621d1..693d51e 100644
 
 
 --
-1.7.2.3
+1.7.6
 

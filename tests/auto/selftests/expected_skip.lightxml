@@ -3,7 +3,7 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="test">
 <Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="68">
@@ -16,15 +16,16 @@
 </Message>
 </TestFunction>
 <TestFunction name="singleSkip">
-<Incident type="pass" file="" line="0">
 <Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/skip/tst_skip.cpp" line="97">
+    <DataTag><![CDATA[local 1]]></DataTag>
     <Description><![CDATA[skipping one]]></Description>
 </Message>
 <Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[local 2]]></DataTag>
     <Description><![CDATA[this line should only be reached once (true)]]></Description>
 </Message>
-</Incident>
+<Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="pass" file="" line="0"/>
+<Incident type="pass" file="" line="0" />
 </TestFunction>

@@ -299,9 +299,10 @@ if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
         # Generate the new contents
         my $newContents = $existingContents;
 
-        # Strip out any existing config test results
-        $newContents =~ s/^config_test_.*$//gms;
-        $newContents =~ s/^# Compile time test results.*$//gms;
+        # Strip out any existing config test results or include statements
+        $newContents =~ s/^config_test_[^\$]*$//gm;
+        $newContents =~ s/^# Compile time test results[^\$]*$//gm;
+        $newContents =~ s/include\(\$\$PWD\/..\/.qmake.cache\)$//gm;
 
         # Add any remaining content and make sure we start on a new line
         if ($newContents and chop $newContents ne '\n') {
@@ -317,6 +318,12 @@ if (abs_path($out_basedir) ne abs_path($qtbasedir)) {
                 $newContents = $newContents . "config_test_$testName = $testResult\n";
             }
         }
+
+        # Remove blank lines
+        $newContents =~ s/^[\s]*$//gms;
+
+        # Include top level .qmake.cache
+        $newContents = $newContents . "include(\$\$PWD/../.qmake.cache)\n";
 
         # and open the file
         open my $cacheFileHandle, ">$qmakeCachePath" or die "Unable to open $qmakeCachePath for writing: $!\n";

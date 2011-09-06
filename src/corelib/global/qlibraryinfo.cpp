@@ -203,21 +203,6 @@ QLibraryInfo::licensedProducts()
 }
 
 /*!
-    Returns a unique key identifying this build of Qt and its
-    configurations. This key is not globally unique, rather only useful
-    for establishing of two configurations are compatible. This can be
-    used to compare with the \c QT_BUILD_KEY preprocessor symbol.
-
-    \sa location()
-*/
-
-QString
-QLibraryInfo::buildKey()
-{
-    return QString::fromLatin1(QT_BUILD_KEY);
-}
-
-/*!
     \since 4.6
     Returns the installation date for this build of Qt. The install date will
     usually be the last time that Qt sources were configured.
@@ -514,18 +499,6 @@ void qt_core_boilerplate()
            "Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
            "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
-           "Build key:           " QT_BUILD_KEY "\n"
-           "Compat build key:    "
-#ifdef QT_BUILD_KEY_COMPAT
-           "| " QT_BUILD_KEY_COMPAT " "
-#endif
-#ifdef QT_BUILD_KEY_COMPAT2
-           "| " QT_BUILD_KEY_COMPAT2 " "
-#endif
-#ifdef QT_BUILD_KEY_COMPAT3
-           "| " QT_BUILD_KEY_COMPAT3 " "
-#endif
-           "|\n"
            "Build date:          %s\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"

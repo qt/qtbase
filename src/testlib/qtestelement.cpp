@@ -44,9 +44,9 @@
 QT_BEGIN_NAMESPACE
 
 QTestElement::QTestElement(int type)
-    :QTestCoreElement<QTestElement>(type),
-    listOfChildren(0),
-    parent(0)
+    : QTestCoreElement<QTestElement>(type)
+    , listOfChildren(0)
+    , parent(0)
 {
 }
 
@@ -57,10 +57,10 @@ QTestElement::~QTestElement()
 
 bool QTestElement::addLogElement(QTestElement *element)
 {
-    if(!element)
+    if (!element)
         return false;
 
-    if(element->elementType() != QTest::LET_Undefined){
+    if (element->elementType() != QTest::LET_Undefined) {
         element->addToList(&listOfChildren);
         element->setParent(this);
         return true;

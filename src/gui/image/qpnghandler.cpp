@@ -58,6 +58,29 @@
 #include <pngconf.h>
 #endif
 
+#if PNG_LIBPNG_VER >= 10400 && PNG_LIBPNG_VER <= 10502 \
+        && defined(PNG_PEDANTIC_WARNINGS_SUPPORTED)
+/*
+    Versions 1.4.0 to 1.5.2 of libpng declare png_longjmp_ptr to
+    have a noreturn attribute if PNG_PEDANTIC_WARNINGS_SUPPORTED
+    is enabled, but most declarations of longjmp in the wild do
+    not add this attribute. This causes problems when the png_jmpbuf
+    macro expands to calling png_set_longjmp_fn with a mismatched
+    longjmp, as compilers such as Clang will treat this as an error.
+
+    To work around this we override the png_jmpbuf macro to cast
+    longjmp to a png_longjmp_ptr.
+*/
+#   undef png_jmpbuf
+#   ifdef PNG_SETJMP_SUPPORTED
+#       define png_jmpbuf(png_ptr) \
+            (*png_set_longjmp_fn((png_ptr), (png_longjmp_ptr)longjmp, sizeof(jmp_buf)))
+#   else
+#       define png_jmpbuf(png_ptr) \
+            (LIBPNG_WAS_COMPILED_WITH__PNG_NO_SETJMP)
+#   endif
+#endif
+
 #ifdef Q_OS_WINCE
 #define CALLBACK_CALL_TYPE        __cdecl
 #else

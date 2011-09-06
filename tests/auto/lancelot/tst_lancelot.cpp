@@ -62,6 +62,7 @@ public:
     tst_Lancelot();
 
     static bool simfail;
+    static PlatformInfo clientInfo;
 
 private:
     enum GraphicsEngine {
@@ -98,6 +99,7 @@ private slots:
 };
 
 bool tst_Lancelot::simfail = false;
+PlatformInfo tst_Lancelot::clientInfo;
 
 tst_Lancelot::tst_Lancelot()
 {
@@ -112,7 +114,7 @@ void tst_Lancelot::initTestCase()
 #if defined(Q_OS_SOMEPLATFORM)
     QSKIP("This test is not supported on this platform.", SkipAll);
 #endif
-    if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode))
+    if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode, clientInfo))
         QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 
 #if defined(USE_RUNTIME_DIR)
@@ -329,13 +331,26 @@ QTEST_MAIN(tst_Lancelot)
 
 int main(int argc, char *argv[])
 {
+    tst_Lancelot::clientInfo = PlatformInfo::localHostInfo();
+
     char *fargv[20];
     int fargc = 0;
     for (int i = 0; i < qMin(argc, 19); i++) {
-        if (!qstrcmp(argv[i], "-simfail"))
+        if (!qstrcmp(argv[i], "-simfail")) {
             tst_Lancelot::simfail = true;
-        else
+        } else if (!qstrcmp(argv[i], "-compareto") && i < argc-1) {
+            QString arg = QString::fromLocal8Bit(argv[++i]);
+            int split = arg.indexOf(QLC('='));
+            if (split < 0)
+                continue;
+            QString key = arg.left(split).trimmed();
+            QString value = arg.mid(split+1).trimmed();
+            if (key.isEmpty() || value.isEmpty())
+                continue;
+            tst_Lancelot::clientInfo.addOverride(key, value);
+        } else {
             fargv[fargc++] = argv[i];
+        }
     }
     fargv[fargc] = 0;
     return rmain(fargc, fargv);

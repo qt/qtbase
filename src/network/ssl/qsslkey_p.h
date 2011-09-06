@@ -67,6 +67,7 @@ public:
     inline QSslKeyPrivate()
         : rsa(0)
         , dsa(0)
+        , opaque(0)
     {
         clear();
     }
@@ -88,6 +89,7 @@ public:
     QSsl::KeyAlgorithm algorithm;
     RSA *rsa;
     DSA *dsa;
+    EVP_PKEY *opaque;
 
     QAtomicInt ref;
 

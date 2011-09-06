@@ -56,7 +56,6 @@ const QString PI_HostAddress(QLS("HostAddress"));
 const QString PI_OSName(QLS("OSName"));
 const QString PI_OSVersion(QLS("OSVersion"));
 const QString PI_QtVersion(QLS("QtVersion"));
-const QString PI_BuildKey(QLS("BuildKey"));
 const QString PI_GitCommit(QLS("GitCommit"));
 const QString PI_QMakeSpec(QLS("QMakeSpec"));
 const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
@@ -83,7 +82,7 @@ void BaselineProtocol::sysSleep(int ms)
 }
 
 PlatformInfo::PlatformInfo()
-    : QMap<QString, QString>(), replaceDefault(false)
+    : QMap<QString, QString>(), adHoc(true)
 {
 }
 
@@ -93,7 +92,6 @@ PlatformInfo PlatformInfo::localHostInfo()
     pi.insert(PI_HostName, QHostInfo::localHostName());
     pi.insert(PI_QtVersion, QLS(qVersion()));
     pi.insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
-    pi.insert(PI_BuildKey, QLibraryInfo::buildKey());
 #if defined(Q_OS_LINUX)
     pi.insert(PI_OSName, QLS("Linux"));
     QProcess uname;
@@ -134,11 +132,15 @@ PlatformInfo PlatformInfo::localHostInfo()
         pi.insert(PI_GitCommit, QLS("Unknown"));
 
     QByteArray gb = qgetenv("PULSE_GIT_BRANCH");
-    if (!gb.isEmpty())
+    if (!gb.isEmpty()) {
         pi.insert(PI_PulseGitBranch, QString::fromLatin1(gb));
+        pi.setAdHocRun(false);
+    }
     QByteArray tb = qgetenv("PULSE_TESTR_BRANCH");
-    if (!tb.isEmpty())
+    if (!tb.isEmpty()) {
         pi.insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
+        pi.setAdHocRun(false);
+    }
 
     return pi;
 }
@@ -147,43 +149,49 @@ PlatformInfo PlatformInfo::localHostInfo()
 PlatformInfo::PlatformInfo(const PlatformInfo &other)
     : QMap<QString, QString>(other)
 {
-    sigKeys = other.sigKeys;
-    replaceDefault = other.replaceDefault;
+    orides = other.orides;
+    adHoc = other.adHoc;
 }
 
 
 PlatformInfo &PlatformInfo::operator=(const PlatformInfo &other)
 {
     QMap<QString, QString>::operator=(other);
-    sigKeys = other.sigKeys;
-    replaceDefault = other.replaceDefault;
+    orides = other.orides;
+    adHoc = other.adHoc;
     return *this;
 }
 
 
-void PlatformInfo::addSignificantKeys(const QStringList &keys, bool replaceDefaultKeys)
+void PlatformInfo::addOverride(const QString& key, const QString& value)
 {
-    sigKeys = keys;
-    replaceDefault = replaceDefaultKeys;
+    orides.append(key);
+    orides.append(value);
 }
 
 
-QStringList PlatformInfo::addedKeys() const
+QStringList PlatformInfo::overrides() const
 {
-    return sigKeys;
+    return orides;
 }
 
 
-bool PlatformInfo::addedKeysReplaceDefault() const
+void PlatformInfo::setAdHocRun(bool isAdHoc)
 {
-    return replaceDefault;
+    adHoc = isAdHoc;
+}
+
+
+bool PlatformInfo::isAdHocRun() const
+{
+    return adHoc;
 }
 
 
 QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi)
 {
     stream << static_cast<const QMap<QString, QString>&>(pi);
-    stream << pi.sigKeys << pi.replaceDefault;
+    stream << pi.orides << pi.adHoc;
     return stream;
 }
 
@@ -191,7 +199,7 @@ QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi)
 QDataStream & operator>> (QDataStream &stream, PlatformInfo &pi)
 {
     stream >> static_cast<QMap<QString, QString>&>(pi);
-    stream >> pi.sigKeys >> pi.replaceDefault;
+    stream >> pi.orides >> pi.adHoc;
     return stream;
 }
 
@@ -346,7 +354,7 @@ BaselineProtocol::~BaselineProtocol()
 }
 
 
-bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
+bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const PlatformInfo& clientInfo)
 {
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
@@ -362,7 +370,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
         }
     }
 
-    PlatformInfo pi = PlatformInfo::localHostInfo();
+    PlatformInfo pi = clientInfo.isEmpty() ? PlatformInfo::localHostInfo() : clientInfo;
     pi.insert(PI_TestCase, testCase);
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);

@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "qtestxunitstreamer.h"
+#include "qxunittestlogger_p.h"
 #include "qtestelement.h"
+#include "qtestelementattribute.h"
+#include "qtestassert.h"
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtestresult_p.h"
@@ -48,9 +51,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QTestXunitStreamer::QTestXunitStreamer(QTestLogger *logger)
-    : QTestBasicStreamer(logger)
-{}
+QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
+    : testLogger(logger)
+{
+    QTEST_ASSERT(testLogger);
+}
 
 QTestXunitStreamer::~QTestXunitStreamer()
 {}
@@ -75,7 +80,7 @@ void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf
 
 void QTestXunitStreamer::formatStart(const QTestElement *element, QTestCharBuffer *formatted) const
 {
-    if(!element || !formatted )
+    if (!element || !formatted )
         return;
 
     char indent[20];
@@ -99,7 +104,7 @@ void QTestXunitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer 
     if (!element || !formatted )
         return;
 
-    if (!element->childElements()){
+    if (!element->childElements()) {
         formatted->data()[0] = '\0';
         return;
     }
@@ -112,7 +117,7 @@ void QTestXunitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer 
 
 void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
 {
-    if(!attribute || !formatted )
+    if (!attribute || !formatted )
         return;
 
     QTest::AttributeIndex attrindex = attribute->index();
@@ -144,7 +149,7 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
 
 void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
-    if(!element || !formatted )
+    if (!element || !formatted )
         return;
 
     // Errors are written as CDATA within system-err, comments elsewhere
@@ -157,7 +162,7 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTes
         return;
     }
 
-    if(!element->childElements())
+    if (!element->childElements())
         QTest::qt_asprintf(formatted, "/>\n");
     else
         QTest::qt_asprintf(formatted, ">\n");
@@ -165,8 +170,10 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTes
 
 void QTestXunitStreamer::output(QTestElement *element) const
 {
+    QTEST_ASSERT(element);
+
     outputString("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-    QTestBasicStreamer::output(element);
+    outputElements(element);
 }
 
 void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
@@ -183,11 +190,8 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
     while (element) {
         hasChildren = element->childElements();
 
-        if(element->elementType() != QTest::LET_Benchmark){
+        if (element->elementType() != QTest::LET_Benchmark) {
             formatStart(element, &buf);
-            outputString(buf.data());
-
-            formatBeforeAttributes(element, &buf);
             outputString(buf.data());
 
             outputElementAttributes(element, element->attributes());
@@ -195,7 +199,7 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
             formatAfterAttributes(element, &buf);
             outputString(buf.data());
 
-            if(hasChildren)
+            if (hasChildren)
                 outputElements(element->childElements(), true);
 
             formatEnd(element, &buf);
@@ -205,5 +209,19 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
     }
 }
 
-QT_END_NAMESPACE
+void QTestXunitStreamer::outputElementAttributes(const QTestElement* element, QTestElementAttribute *attribute) const
+{
+    QTestCharBuffer buf;
+    while (attribute) {
+        formatAttributes(element, attribute, &buf);
+        outputString(buf.data());
+        attribute = attribute->nextElement();
+    }
+}
 
+void QTestXunitStreamer::outputString(const char *msg) const
+{
+    testLogger->outputString(msg);
+}
+
+QT_END_NAMESPACE

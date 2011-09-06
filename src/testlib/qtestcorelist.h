@@ -70,8 +70,8 @@ class QTestCoreList
 
 template <class T>
 QTestCoreList<T>::QTestCoreList()
-:next(0)
-,prev(0)
+    : next(0)
+    , prev(0)
 {
 }
 
@@ -121,7 +121,7 @@ int QTestCoreList<T>::count()
     int numOfElements = 0;
     T *it = next;
 
-    while(it){
+    while (it) {
         ++numOfElements;
         it = it->nextElement();
     }

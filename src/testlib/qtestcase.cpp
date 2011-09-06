@@ -1000,40 +1000,44 @@ static int qToInt(char *str)
 
 Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 {
+    QTestLog::LogMode logFormat = QTestLog::Plain;
+    const char *logFilename = 0;
+
     const char *testOptions =
-         " options:\n"
-         " -functions : Returns a list of current testfunctions\n"
-         " -xunitxml  : Outputs results as XML XUnit document\n"
-         " -xml       : Outputs results as XML document\n"
-         " -lightxml  : Outputs results as stream of XML tags\n"
-         " -flush     : Flushes the results\n"
-         " -o filename: Writes all output into a file\n"
-         " -silent    : Only outputs warnings and failures\n"
-         " -v1        : Print enter messages for each testfunction\n"
-         " -v2        : Also print out each QVERIFY/QCOMPARE/QTEST\n"
-         " -vs        : Print every signal emitted\n"
-         " -eventdelay ms    : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
-         " -keydelay ms      : Set default delay for keyboard simulation to ms milliseconds\n"
-         " -mousedelay ms    : Set default delay for mouse simulation to ms milliseconds\n"
-         " -keyevent-verbose : Turn on verbose messages for keyboard simulation\n"
-         " -maxwarnings n    : Sets the maximum amount of messages to output.\n"
-         "                     0 means unlimited, default: 2000\n"
+         " Output options:\n"
+         " -xunitxml           : Outputs results as XML XUnit document\n"
+         " -xml                : Outputs results as XML document\n"
+         " -lightxml           : Outputs results as stream of XML tags\n"
+         " -o filename         : Writes all output into a file\n"
+         " -silent             : Only outputs warnings and failures\n"
+         " -v1                 : Print enter messages for each testfunction\n"
+         " -v2                 : Also print out each QVERIFY/QCOMPARE/QTEST\n"
+         " -vs                 : Print every signal emitted\n"
+         "\n"
+         " Testing options:\n"
+         " -functions          : Returns a list of current testfunctions\n"
+         " -eventdelay ms      : Set default delay for mouse and keyboard simulation to ms milliseconds\n"
+         " -keydelay ms        : Set default delay for keyboard simulation to ms milliseconds\n"
+         " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
+         " -keyevent-verbose   : Turn on verbose messages for keyboard simulation\n"
+         " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
+         "                       0 means unlimited, default: 2000\n"
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-         " -nocrashhandler   : Disables the crash handler\n"
+         " -nocrashhandler     : Disables the crash handler\n"
 #endif
          "\n"
-         " Benchmark related options:\n"
+         " Benchmarking options:\n"
 #ifdef QTESTLIB_USE_VALGRIND
-        " -callgrind      : Use callgrind to time benchmarks\n"
+         " -callgrind          : Use callgrind to time benchmarks\n"
 #endif
 #ifdef HAVE_TICK_COUNTER
-        " -tickcounter    : Use CPU tick counters to time benchmarks\n"
+         " -tickcounter        : Use CPU tick counters to time benchmarks\n"
 #endif
-        " -eventcounter   : Counts events received during benchmarks\n"
-        " -minimumvalue n : Sets the minimum acceptable measurement value\n"
-        " -iterations  n  : Sets the number of accumulation iterations.\n"
-        " -median  n      : Sets the number of median iterations.\n"
-        " -vb             : Print out verbose benchmarking information.\n";
+         " -eventcounter       : Counts events received during benchmarks\n"
+         " -minimumvalue n     : Sets the minimum acceptable measurement value\n"
+         " -iterations  n      : Sets the number of accumulation iterations.\n"
+         " -median  n          : Sets the number of median iterations.\n"
+         " -vb                 : Print out verbose benchmarking information.\n";
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "--help") == 0
@@ -1043,15 +1047,16 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                    "%s", argv[0], testOptions);
 
             if (qml) {
-                printf ("\nqmltest related options:\n"
-                        " -import    : Specify an import directory.\n"
-                        " -input     : Specify the root directory for test cases.\n"
-                        " -qtquick1  : Run with QtQuick 1 rather than QtQuick 2.\n"
+                printf ("\n"
+                        " QmlTest options:\n"
+                        " -import             : Specify an import directory.\n"
+                        " -input              : Specify the root directory for test cases.\n"
+                        " -qtquick1           : Run with QtQuick 1 rather than QtQuick 2.\n"
                         );
             }
 
             printf("\n"
-                   " -help      : This help\n");
+                   " -help               : This help\n");
             exit(0);
         } else if (strcmp(argv[i], "-functions") == 0) {
             if (qml) {
@@ -1060,14 +1065,12 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 qPrintTestSlots(stdout);
                 exit(0);
             }
-        } else if(strcmp(argv[i], "-xunitxml") == 0){
-            QTestLog::setLogMode(QTestLog::XunitXML);
+        } else if (strcmp(argv[i], "-xunitxml") == 0) {
+            logFormat = QTestLog::XunitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
-            QTestLog::setLogMode(QTestLog::XML);
+            logFormat = QTestLog::XML;
         } else if (strcmp(argv[i], "-lightxml") == 0) {
-            QTestLog::setLogMode(QTestLog::LightXML);
-        } else if (strcmp(argv[i], "-flush") == 0){
-            QTestLog::setFlushMode(QTestLog::FlushOn);
+            logFormat = QTestLog::LightXML;
         } else if (strcmp(argv[i], "-silent") == 0) {
             QTestLog::setVerboseLevel(-1);
         } else if (strcmp(argv[i], "-v1") == 0) {
@@ -1081,7 +1084,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 fprintf(stderr, "-o needs an extra parameter specifying the filename\n");
                 exit(1);
             } else {
-                QTestLog::redirectOutput(argv[++i]);
+                logFilename = argv[++i];
             }
         } else if (strcmp(argv[i], "-eventdelay") == 0) {
             if (i + 1 >= argc) {
@@ -1192,7 +1195,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             // we load the QML files.  So just store the data for now.
             int colon = -1;
             int offset;
-            for(offset = 0; *(argv[i]+offset); ++offset) {
+            for (offset = 0; *(argv[i]+offset); ++offset) {
                 if (*(argv[i]+offset) == ':') {
                     if (*(argv[i]+offset+1) == ':') {
                         // "::" is used as a test name separator.
@@ -1221,13 +1224,13 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             int colon = -1;
             char buf[512], *data=0;
             int off;
-            for(off = 0; *(argv[i]+off); ++off) {
+            for (off = 0; *(argv[i]+off); ++off) {
                 if (*(argv[i]+off) == ':') {
                     colon = off;
                     break;
                 }
             }
-            if(colon != -1) {
+            if (colon != -1) {
                 data = qstrdup(argv[i]+colon+1);
             }
             QTest::qt_snprintf(buf, qMin(512, off + 1), "%s", argv[i]); // copy text before the ':' into buf
@@ -1244,6 +1247,9 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QTEST_ASSERT(QTest::testFuncCount < 512);
         }
     }
+
+    // Create the logger
+    QTestLog::initLogger(logFormat, logFilename);
 }
 
 QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
@@ -1428,7 +1434,7 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
         if (data && !foundFunction) {
             fprintf(stderr, "Unknown testdata for function %s: '%s'\n", slotName, data);
             fprintf(stderr, "Available testdata:\n");
-            for(int i = 0; i < table.dataCount(); ++i)
+            for (int i = 0; i < table.dataCount(); ++i)
                 fprintf(stderr, "%s\n", table.testData(i)->dataTag());
             return false;
         }
@@ -1479,7 +1485,7 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
  */
 char *toHexRepresentation(const char *ba, int length)
 {
-    if(length == 0)
+    if (length == 0)
         return qstrdup("");
 
     /* We output at maximum about maxLen characters in order to avoid
@@ -1493,7 +1499,7 @@ char *toHexRepresentation(const char *ba, int length)
     const int len = qMin(maxLen, length);
     char *result = 0;
 
-    if(length > maxLen) {
+    if (length > maxLen) {
         const int size = len * 3 + 4;
         result = new char[size];
 
@@ -1514,7 +1520,7 @@ char *toHexRepresentation(const char *ba, int length)
     int i = 0;
     int o = 0;
 
-    while(true) {
+    while (true) {
         const char at = ba[i];
 
         result[o] = toHex[(at >> 4) & 0x0F];
@@ -1523,7 +1529,7 @@ char *toHexRepresentation(const char *ba, int length)
 
         ++i;
         ++o;
-        if(i == len)
+        if (i == len)
             break;
         else {
             result[o] = ' ';
@@ -1552,7 +1558,7 @@ static void qInvokeTestMethods(QObject *testObject)
         const bool previousFailed = QTestResult::testFailed();
         QTestResult::finishedCurrentTestFunction();
 
-        if(!QTestResult::skipCurrentTest() && !previousFailed) {
+        if (!QTestResult::skipCurrentTest() && !previousFailed) {
 
             if (QTest::testFuncs) {
                 for (int i = 0; i != QTest::testFuncCount; i++) {
@@ -1725,18 +1731,18 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
 
 #ifdef Q_WS_MAC
-     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
+    bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
 #ifdef QT_MAC_USE_COCOA
-     IOPMAssertionID powerID;
+    IOPMAssertionID powerID;
 #endif
 #endif
 #ifndef QT_NO_EXCEPTIONS
     try {
 #endif
 
- #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
- #endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
+#endif
 
 #ifdef Q_WS_MAC
     // Starting with Qt 4.4, applications launched from the command line
@@ -1745,13 +1751,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     if (macNeedsActivate) {
         ProcessSerialNumber psn = { 0, kCurrentProcess };
         SetFrontProcess(&psn);
-#  ifdef QT_MAC_USE_COCOA
+#ifdef QT_MAC_USE_COCOA
         IOReturn ok = IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, &powerID);
         if (ok != kIOReturnSuccess)
             macNeedsActivate = false; // no need to release the assertion on exit.
-#  else
+#else
         UpdateSystemActivity(1); // Wake the display.
-#  endif
+#endif
     }
 #endif
 
@@ -1813,7 +1819,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          throw;
          return 1;
      }
-#  endif
+#endif
 
     currentTestObject = 0;
 #ifdef QT_MAC_USE_COCOA
@@ -1846,7 +1852,7 @@ int QTest::qExec(QObject *testObject, const QStringList &arguments)
     QVector<QByteArray> args;
     args.reserve(argc);
 
-    for(int i = 0; i < argc; ++i)
+    for (int i = 0; i < argc; ++i)
     {
         args.append(arguments.at(i).toLocal8Bit().constData());
         argv[i] = args.last().data();

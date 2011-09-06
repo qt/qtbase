@@ -1,7 +1,7 @@
 From 7c9cfff80b7864d5687432d424074e51712c4a07 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:55:26 +1000
-Subject: [PATCH 02/13] Add a bit field 3 to Map
+Subject: [PATCH 02/16] Add a bit field 3 to Map
 
 Bit field 3 will be used to add QML specific map flags.
 ---
@@ -114,5 +114,5 @@ index 6e26f57..07e1089 100644
    static const int kCodeCacheEntrySize = 2;
    static const int kCodeCacheEntryNameOffset = 0;
 --
-1.7.2.3
+1.7.6
 

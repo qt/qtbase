@@ -114,9 +114,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
     QString orig = entry.filePath();
     const bool isAbsolute = entry.isAbsolute();
-    const bool isDirty = (orig.contains(QLatin1String("/../")) || orig.contains(QLatin1String("/./")) ||
-            orig.contains(QLatin1String("//")) ||
-            orig.endsWith(QLatin1String("/..")) || orig.endsWith(QLatin1String("/.")));
+    const bool isDirty = !entry.isClean();
     if (isAbsolute && !isDirty)
         return entry;
 

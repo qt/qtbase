@@ -24,6 +24,10 @@ information about a particular change.
   via QT_DISABLE_DEPRECATED_BEFORE), use
   QSslCertificate::subjectAlternativeNames() instead.
 
+- QLibraryInfo::buildKey() has been removed. Likewise, the QT_BUILD_KEY
+  preprocessor #define has also been removed. The build-key is obsolete
+  and is no longer necessary.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

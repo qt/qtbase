@@ -68,6 +68,8 @@ private slots:
     void absoluteOrRelative_data();
     void absoluteOrRelative();
 #endif
+    void isClean_data();
+    void isClean();
 };
 
 #if defined(WIN_STUFF)
@@ -382,6 +384,36 @@ void tst_QFileSystemEntry::absoluteOrRelative()
     QCOMPARE(fi.isRelative(), isRelative);
 }
 #endif
+
+void tst_QFileSystemEntry::isClean_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isClean");
+
+    QTest::newRow("simple") << "foo" << true;
+    QTest::newRow("complex") << "/foo/bar/bz" << true;
+    QTest::newRow(".file") << "/foo/.file" << true;
+    QTest::newRow("..file") << "/foo/..file" << true;
+    QTest::newRow("...") << "/foo/.../bar" << true;
+    QTest::newRow("./") << "./" << false;
+    QTest::newRow("../") << "../" << false;
+    QTest::newRow(".") << "." << false;
+    QTest::newRow("..") << ".." << false;
+    QTest::newRow("/.") << "/." << false;
+    QTest::newRow("/..") << "/.." << false;
+    QTest::newRow("/../") << "foo/../bar" << false;
+    QTest::newRow("/./") << "foo/./bar" << false;
+    QTest::newRow("//") << "foo//bar" << false;
+}
+
+void tst_QFileSystemEntry::isClean()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isClean);
+
+    QFileSystemEntry fi(path);
+    QCOMPARE(fi.isClean(), isClean);
+}
 
 QTEST_MAIN(tst_QFileSystemEntry)
 #include <tst_qfilesystementry.moc>

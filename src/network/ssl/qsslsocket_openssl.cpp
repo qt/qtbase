@@ -322,7 +322,7 @@ init_context:
         if (! caCertificate.isValid()) {
             expiredCerts.append(caCertificate);
         } else {
-            q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+            q_X509_STORE_add_cert(ctx->cert_store, reinterpret_cast<X509 *>(caCertificate.handle()));
         }
     }
 
@@ -335,7 +335,7 @@ init_context:
     // now add the expired certs
     if (addExpiredCerts) {
         foreach (const QSslCertificate &caCertificate, expiredCerts) {
-            q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+            q_X509_STORE_add_cert(ctx->cert_store, reinterpret_cast<X509 *>(caCertificate.handle()));
         }
     }
 
@@ -358,26 +358,33 @@ init_context:
         }
 
         // Load certificate
-        if (!q_SSL_CTX_use_certificate(ctx, (X509 *)configuration.localCertificate.handle())) {
+        if (!q_SSL_CTX_use_certificate(ctx, reinterpret_cast<X509 *>(configuration.localCertificate.handle()))) {
             q->setErrorString(QSslSocket::tr("Error loading local certificate, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
 
-        // Load private key
-        pkey = q_EVP_PKEY_new();
-        // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
-        // this lead to a memory leak. Now we use the *_set1_* functions which do not
-        // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
-        if (configuration.privateKey.algorithm() == QSsl::Rsa)
-            q_EVP_PKEY_set1_RSA(pkey, (RSA *)configuration.privateKey.handle());
-        else
-            q_EVP_PKEY_set1_DSA(pkey, (DSA *)configuration.privateKey.handle());
+        if (configuration.privateKey.algorithm() == QSsl::Opaque) {
+            pkey = reinterpret_cast<EVP_PKEY *>(configuration.privateKey.handle());
+        } else {
+            // Load private key
+            pkey = q_EVP_PKEY_new();
+            // before we were using EVP_PKEY_assign_R* functions and did not use EVP_PKEY_free.
+            // this lead to a memory leak. Now we use the *_set1_* functions which do not
+            // take ownership of the RSA/DSA key instance because the QSslKey already has ownership.
+            if (configuration.privateKey.algorithm() == QSsl::Rsa)
+                q_EVP_PKEY_set1_RSA(pkey, reinterpret_cast<RSA *>(configuration.privateKey.handle()));
+            else
+                q_EVP_PKEY_set1_DSA(pkey, reinterpret_cast<DSA *>(configuration.privateKey.handle()));
+        }
+
         if (!q_SSL_CTX_use_PrivateKey(ctx, pkey)) {
             q->setErrorString(QSslSocket::tr("Error loading private key, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
+        if (configuration.privateKey.algorithm() == QSsl::Opaque)
+            pkey = 0; // Don't free the private key, it belongs to QSslKey
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(ctx)) {
@@ -1383,7 +1390,6 @@ void QSslSocketBackendPrivate::disconnected()
         q_EVP_PKEY_free(pkey);
         pkey = 0;
     }
-
 }
 
 QSslCipher QSslSocketBackendPrivate::sessionCipher() const
@@ -1508,7 +1514,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
         if (!caCertificate.isValid()) {
             expiredCerts.append(caCertificate);
         } else {
-            q_X509_STORE_add_cert(certStore, (X509 *)caCertificate.handle());
+            q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));
         }
     }
 
@@ -1521,7 +1527,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
     // now add the expired certs
     if (addExpiredCerts) {
         foreach (const QSslCertificate &caCertificate, expiredCerts) {
-            q_X509_STORE_add_cert(certStore, (X509 *)caCertificate.handle());
+            q_X509_STORE_add_cert(certStore, reinterpret_cast<X509 *>(caCertificate.handle()));
         }
     }
 
@@ -1548,9 +1554,9 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
                 continue;
             }
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
-            q_sk_push( (_STACK *)intermediates, (X509 *)cert.handle());
+            q_sk_push( (_STACK *)intermediates, reinterpret_cast<X509 *>(cert.handle()));
 #else
-            q_sk_push( (STACK *)intermediates, (X509 *)cert.handle());
+            q_sk_push( (STACK *)intermediates, reinterpret_cast<X509 *>(cert.handle()));
 #endif
         }
     }
@@ -1562,7 +1568,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
         return errors;
     }
 
-    if (!q_X509_STORE_CTX_init(storeContext, certStore, (X509 *)certificateChain[0].handle(), intermediates)) {
+    if (!q_X509_STORE_CTX_init(storeContext, certStore, reinterpret_cast<X509 *>(certificateChain[0].handle()), intermediates)) {
         q_X509_STORE_CTX_free(storeContext);
         q_X509_STORE_free(certStore);
         errors << QSslError(QSslError::UnspecifiedError);

@@ -61,7 +61,6 @@ extern const QString PI_HostAddress;
 extern const QString PI_OSName;
 extern const QString PI_OSVersion;
 extern const QString PI_QtVersion;
-extern const QString PI_BuildKey;
 extern const QString PI_GitCommit;
 extern const QString PI_QMakeSpec;
 extern const QString PI_PulseGitBranch;
@@ -78,13 +77,14 @@ public:
 
     static PlatformInfo localHostInfo();
 
-    void addSignificantKeys(const QStringList& keys, bool replaceDefaultKeys=false);
-    QStringList addedKeys() const;
-    bool addedKeysReplaceDefault() const;
+    void addOverride(const QString& key, const QString& value);
+    QStringList overrides() const;
+    bool isAdHocRun() const;
+    void setAdHocRun(bool isAdHoc);
 
 private:
-    QStringList sigKeys;
-    bool replaceDefault;
+    QStringList orides;
+    bool adHoc;
     friend QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pi);
     friend QDataStream & operator>> (QDataStream &stream, PlatformInfo& pi);
 };
@@ -165,7 +165,7 @@ public:
     // For client:
 
     // For advanced client:
-    bool connect(const QString &testCase, bool *dryrun = 0);
+    bool connect(const QString &testCase, bool *dryrun = 0, const PlatformInfo& clientInfo = PlatformInfo());
     bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
     bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);

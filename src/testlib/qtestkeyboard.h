@@ -75,7 +75,7 @@ namespace QTest
 
         if (delay == -1 || delay < defaultKeyDelay())
             delay = defaultKeyDelay();
-        if(delay > 0)
+        if (delay > 0)
             QTest::qWait(delay);
 
         QKeyEvent a(press ? QEvent::KeyPress : QEvent::KeyRelease, code, modifier, text, repeat);
