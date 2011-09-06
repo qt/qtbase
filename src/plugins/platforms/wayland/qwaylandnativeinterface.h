@@ -43,7 +43,7 @@
 #define QWAYLANDNATIVEINTERFACE_H
 
 #include "qwaylandscreen.h"
-
+#include <QVariantMap>
 #include <QtGui/QPlatformNativeInterface>
 
 class QWaylandNativeInterface : public QPlatformNativeInterface
@@ -52,8 +52,16 @@ public:
     void *nativeResourceForWindow(const QByteArray &resourceString,
 				  QWindow *window);
 
+    QVariantMap windowProperties(QPlatformWindow *window) const;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
+    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
+
 private:
     static QWaylandScreen *qPlatformScreenForWindow(QWindow *window);
+
+private:
+    QHash<QPlatformWindow*, QVariantMap> m_windowProperties;
 };
 
 

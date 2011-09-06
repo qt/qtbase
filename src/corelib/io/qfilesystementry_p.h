@@ -91,6 +91,7 @@ public:
     QString completeSuffix() const;
     bool isAbsolute() const;
     bool isRelative() const;
+    bool isClean() const;
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     bool isDriveRoot() const;

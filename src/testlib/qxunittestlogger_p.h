@@ -39,49 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTBASICSTREAMER_H
-#define QTESTBASICSTREAMER_H
+#ifndef QTESTLOGGER_P_H
+#define QTESTLOGGER_P_H
 
-#include <QtCore/qglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <QtTest/private/qabstracttestlogger_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Test)
-
+class QTestXunitStreamer;
 class QTestElement;
-class QTestElementAttribute;
-class QTestLogger;
-struct QTestCharBuffer;
 
-class QTestBasicStreamer
+class QXunitTestLogger : public QAbstractTestLogger
 {
     public:
-        QTestBasicStreamer(QTestLogger *logger);
-        virtual ~QTestBasicStreamer();
+        QXunitTestLogger(const char *filename);
+        ~QXunitTestLogger();
 
-        virtual void output(QTestElement *element) const;
+        void startLogging();
+        void stopLogging();
 
-        void outputString(const char *msg) const;
+        void enterTestFunction(const char *function);
+        void leaveTestFunction();
 
-        QTestLogger *logger() const;
+        void addIncident(IncidentTypes type, const char *description,
+                     const char *file = 0, int line = 0);
+        void addBenchmarkResult(const QBenchmarkResult &result);
+        void addTag(QTestElement* element);
 
-    protected:
-        virtual void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
-        virtual void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
-        virtual void formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        virtual void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
-        virtual void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
-        virtual void outputElements(QTestElement *element, bool isChildElement = false) const;
-        virtual void outputElementAttributes(const QTestElement *element, QTestElementAttribute *attribute) const;
+        void addMessage(MessageTypes type, const char *message,
+                    const char *file = 0, int line = 0);
 
     private:
-        QTestLogger *testLogger;
+        QTestElement *listOfTestcases;
+        QTestElement *currentLogElement;
+        QTestElement *errorLogElement;
+        QTestXunitStreamer *logFormatter;
+
+        int testCounter;
+        int failureCounter;
+        int errorCounter;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif
+#endif // QTESTLOGGER_P_H

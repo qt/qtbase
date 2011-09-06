@@ -1,7 +1,7 @@
 From f890f0d1a1e5bd62711815489c87755a4f382436 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Wed, 25 May 2011 10:36:13 +1000
-Subject: [PATCH 06/13] Allow access to the calling script data
+Subject: [PATCH 06/16] Allow access to the calling script data
 
 ---
  include/v8.h |    1 +
@@ -44,5 +44,5 @@ index 39767f4..ff74efb 100644
  v8::Local<v8::Object> Context::Global() {
    if (IsDeadCheck(i::Isolate::Current(), "v8::Context::Global()")) {
 --
-1.7.2.3
+1.7.6
 

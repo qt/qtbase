@@ -63,10 +63,10 @@ class QXmlTestLogger : public QAbstractTestLogger
 public:
     enum XmlMode { Complete = 0, Light };
 
-    QXmlTestLogger(XmlMode mode = Complete);
+    QXmlTestLogger(XmlMode mode, const char *filename);
     ~QXmlTestLogger();
 
-    void startLogging(const char *filename);
+    void startLogging();
     void stopLogging();
 
     void enterTestFunction(const char *function);

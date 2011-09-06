@@ -54,18 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-void QAbstractTestLogger::outputString(const char *msg)
+QAbstractTestLogger::QAbstractTestLogger(const char *filename)
 {
-    QTEST_ASSERT(stream);
-
-    ::fputs(msg, stream);
-    ::fflush(stream);
-}
-
-void QAbstractTestLogger::startLogging(const char *filename)
-{
-    QTEST_ASSERT(!stream);
-
     if (!filename) {
         stream = stdout;
         return;
@@ -81,7 +71,7 @@ void QAbstractTestLogger::startLogging(const char *filename)
     }
 }
 
-void QAbstractTestLogger::stopLogging()
+QAbstractTestLogger::~QAbstractTestLogger()
 {
     QTEST_ASSERT(stream);
     if (stream != stdout) {
@@ -95,6 +85,22 @@ void QAbstractTestLogger::stopLogging()
 #endif
     }
     stream = 0;
+}
+
+void QAbstractTestLogger::outputString(const char *msg)
+{
+    QTEST_ASSERT(stream);
+
+    ::fputs(msg, stream);
+    ::fflush(stream);
+}
+
+void QAbstractTestLogger::startLogging()
+{
+}
+
+void QAbstractTestLogger::stopLogging()
+{
 }
 
 namespace QTest

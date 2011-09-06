@@ -181,7 +181,7 @@ void **QListData::append()
 }
 
 // ensures that enough space is available to append the list
-void **QListData::append2(const QListData& l)
+void **QListData::append(const QListData& l)
 {
     return append(l.d->end - l.d->begin);
 }

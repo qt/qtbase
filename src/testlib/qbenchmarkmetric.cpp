@@ -46,7 +46,7 @@
   \since 4.7
 
   This enum lists all the things that can be benchmarked.
-  
+
   \value FramesPerSecond        Frames per second
   \value BitsPerSecond          Bits per second
   \value BytesPerSecond         Bytes per second

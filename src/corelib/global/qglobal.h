@@ -1182,10 +1182,6 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 
 class QDataStream;
 
-#ifndef QT_BUILD_KEY
-#define QT_BUILD_KEY "unspecified"
-#endif
-
 #if defined(Q_WS_MAC)
 #  ifndef QMAC_QMENUBAR_NO_EVENT
 #    define QMAC_QMENUBAR_NO_EVENT

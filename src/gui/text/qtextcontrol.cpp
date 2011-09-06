@@ -685,20 +685,30 @@ void QTextControlPrivate::extendWordwiseSelection(int suggestedNewPosition, qrea
     if (!wordSelectionEnabled && (mouseXPosition < wordStartX || mouseXPosition > wordEndX))
         return;
 
-    // keep the already selected word even when moving to the left
-    // (#39164)
-    if (suggestedNewPosition < selectedWordOnDoubleClick.position())
-        cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
-    else
-        cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
+    if (wordSelectionEnabled) {
+        if (suggestedNewPosition < selectedWordOnDoubleClick.position()) {
+            cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
+            setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
+            setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+        }
+    } else {
+        // keep the already selected word even when moving to the left
+        // (#39164)
+        if (suggestedNewPosition < selectedWordOnDoubleClick.position())
+            cursor.setPosition(selectedWordOnDoubleClick.selectionEnd());
+        else
+            cursor.setPosition(selectedWordOnDoubleClick.selectionStart());
 
-    const qreal differenceToStart = mouseXPosition - wordStartX;
-    const qreal differenceToEnd = wordEndX - mouseXPosition;
+        const qreal differenceToStart = mouseXPosition - wordStartX;
+        const qreal differenceToEnd = wordEndX - mouseXPosition;
 
-    if (differenceToStart < differenceToEnd)
-        setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
-    else
-        setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+        if (differenceToStart < differenceToEnd)
+            setCursorPosition(wordStartPos, QTextCursor::KeepAnchor);
+        else
+            setCursorPosition(wordEndPos, QTextCursor::KeepAnchor);
+    }
 
     if (interactionFlags & Qt::TextSelectableByMouse) {
 #ifndef QT_NO_CLIPBOARD
@@ -1591,8 +1601,10 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
 #endif //QT_NO_IM
     } else {
         //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
-        if (cursor.position() != oldCursorPos)
+        if (cursor.position() != oldCursorPos) {
             emit q->cursorPositionChanged();
+            emit q->microFocusChanged();
+        }
     }
     selectionChanged(true);
     repaintOldAndNewSelection(oldSelection);
@@ -1636,8 +1648,10 @@ void QTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton button, c
 
     repaintOldAndNewSelection(oldSelection);
 
-    if (cursor.position() != oldCursorPos)
+    if (cursor.position() != oldCursorPos) {
         emit q->cursorPositionChanged();
+        emit q->microFocusChanged();
+    }
 
     if (interactionFlags & Qt::LinksAccessibleByMouse) {
         if (!(button & Qt::LeftButton))

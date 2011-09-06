@@ -266,18 +266,6 @@ bool QCoreApplicationPrivate::is_app_closing = false;
 // initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
 Q_CORE_EXPORT bool qt_locale_initialized = false;
 
-
-/*
-  Create an instance of Trolltech.conf. This ensures that the settings will not
-  be thrown out of QSetting's cache for unused settings.
-  */
-Q_GLOBAL_STATIC_WITH_ARGS(QSettings, staticTrolltechConf, (QSettings::UserScope, QLatin1String("Trolltech")))
-
-QSettings *QCoreApplicationPrivate::trolltechConf()
-{
-    return staticTrolltechConf();
-}
-
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
     QThreadData *currentThreadData = QThreadData::current();

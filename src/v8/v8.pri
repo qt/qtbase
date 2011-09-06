@@ -1,3 +1,10 @@
+isEmpty(QT_ARCH) {
+    # We're most likely being parsed in a fromfile() call, in which case the
+    # QMake environment isn't complete. Load qt_config in an attempt to set
+    # the variables we need (QT_ARCH and CONFIG, in particular).
+    load(qt_config)
+}
+
 equals(QT_ARCH, x86_64)|contains(CONFIG, x86_64):CONFIG += arch_x86_64
 else:equals(QT_ARCH, "i386"):CONFIG += arch_i386
 else:equals(QT_ARCH, "arm"):CONFIG += arch_arm

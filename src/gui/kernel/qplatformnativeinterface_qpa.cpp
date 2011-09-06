@@ -64,4 +64,45 @@ void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray 
     return 0;
 }
 
+/*!
+    Contains generic window properties that the platform may utilize.
+*/
+QVariantMap QPlatformNativeInterface::windowProperties(QPlatformWindow *window) const
+{
+    return QVariantMap();
+}
+
+/*!
+    Returns a window property with \a name.
+
+    If the property does not exist, returns a default-constructed value.
+*/
+QVariant QPlatformNativeInterface::windowProperty(QPlatformWindow *window, const QString &name) const
+{
+    Q_UNUSED(window);
+    Q_UNUSED(name);
+    return QVariant();
+}
+
+/*!
+    Returns a window property with \a name. If the value does not exist, defaultValue is returned.
+*/
+QVariant QPlatformNativeInterface::windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const
+{
+    Q_UNUSED(window);
+    Q_UNUSED(name);
+    Q_UNUSED(defaultValue);
+    return QVariant();
+}
+
+/*!
+    Sets a window property with \a name to \a value.
+*/
+void QPlatformNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
+{
+    Q_UNUSED(window);
+    Q_UNUSED(name);
+    Q_UNUSED(value);
+}
+
 QT_END_NAMESPACE

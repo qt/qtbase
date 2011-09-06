@@ -15,6 +15,17 @@ win32 {
   }
 }
 
+# OpenSSL support
+contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
+    symbian {
+        INCLUDEPATH *= $$OS_LAYER_SSL_SYSTEMINCLUDE
+    } else {
+        include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri)
+    }
+    # Add optional SSL libs
+    LIBS += $$OPENSSL_LIBS
+}
+
 wince* {
     DEFINES += SRCDIR=\\\"./\\\"
 

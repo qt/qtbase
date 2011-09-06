@@ -15,7 +15,7 @@ nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 
 contains(QT_CONFIG, no-gui): SRC_SUBDIRS -= src_gui
-!contains(QT_CONFIG, no-v8): SRC_SUBDIRS += src_v8
+contains(QT_CONFIG, v8): SRC_SUBDIRS += src_v8
 
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 SRC_SUBDIRS += src_plugins

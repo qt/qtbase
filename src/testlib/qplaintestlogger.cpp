@@ -211,7 +211,7 @@ void QPlainTestLogger::outputMessage(const char *str)
         OutputDebugString((wchar_t*)tmp.utf16());
         strUtf16.remove(0, maxOutputLength);
     } while (!strUtf16.isEmpty());
-    if (QTestLog::outputFileName())
+    if (stream != stdout)
 #elif defined(Q_OS_WIN)
     EnterCriticalSection(&QTest::outputCriticalSection);
     // OutputDebugString is not threadsafe
@@ -344,7 +344,8 @@ void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)
     outputMessage(buf);
 }
 
-QPlainTestLogger::QPlainTestLogger()
+QPlainTestLogger::QPlainTestLogger(const char *filename)
+    : QAbstractTestLogger(filename)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     InitializeCriticalSection(&QTest::outputCriticalSection);
@@ -358,9 +359,9 @@ QPlainTestLogger::~QPlainTestLogger()
 #endif
 }
 
-void QPlainTestLogger::startLogging(const char *filename)
+void QPlainTestLogger::startLogging()
 {
-    QAbstractTestLogger::startLogging(filename);
+    QAbstractTestLogger::startLogging();
 
     char buf[1024];
     if (QTestLog::verboseLevel() < 0) {

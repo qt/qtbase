@@ -59,7 +59,6 @@ public:
     static QString licensee();
     static QString licensedProducts();
 
-    static QString buildKey();
 #ifndef QT_NO_DATESTRING
     static QDate buildDate();
 #endif //QT_NO_DATESTRING

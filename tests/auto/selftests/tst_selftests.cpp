@@ -173,11 +173,10 @@ Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringLis
 static QList<Logger> allLoggers()
 {
     return QList<Logger>()
-        << Logger("plain",      "txt",      QStringList())
-        << Logger("xml",        "xml",      QStringList() << "-xml")
-        << Logger("xml flush",  "xml",      QStringList() << "-xml" << "-flush")
-        << Logger("xunitxml",   "xunitxml", QStringList() << "-xunitxml")
-        << Logger("lightxml",   "lightxml", QStringList() << "-lightxml")
+        << Logger("plain",    "txt",      QStringList())
+        << Logger("xml",      "xml",      QStringList() << "-xml")
+        << Logger("xunitxml", "xunitxml", QStringList() << "-xunitxml")
+        << Logger("lightxml", "lightxml", QStringList() << "-lightxml")
     ;
 }
 
@@ -415,12 +414,16 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
         const QString output(QString::fromLatin1(line));
         const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
 
+        // Q_ASSERT uses __FILE__.  Some compilers include the absolute path in
+        // __FILE__, while others do not.
         if (line.contains("ASSERT") && output != expected) {
-            QEXPECT_FAIL("assert",          "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xml",      "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xml flush","QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert lightxml", "QTestLib prints out the absolute path.", Continue);
-            QEXPECT_FAIL("assert xunitxml", "QTestLib prints out the absolute path.", Continue);
+            const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
+            QEXPECT_FAIL("assert",                msg, Continue);
+            QEXPECT_FAIL("assert xml",            msg, Continue);
+            QEXPECT_FAIL("assert xml flush",      msg, Continue);
+            QEXPECT_FAIL("assert lightxml",       msg, Continue);
+            QEXPECT_FAIL("assert lightxml flush", msg, Continue);
+            QEXPECT_FAIL("assert xunitxml",       msg, Continue);
         }
 
         /* On some platforms we compile without RTTI, and as a result we never throw an exception. */

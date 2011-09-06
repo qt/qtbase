@@ -126,6 +126,7 @@ src/openvg/qtopenvgversion.h
 src/sql/qtsqlversion.h
 src/testlib/qttestversion.h
 src/xml/qtxmlversion.h
+src/v8/qtv8version.h
 
 # Test generated files
 QObject.log

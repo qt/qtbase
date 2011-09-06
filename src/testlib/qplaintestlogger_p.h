@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
 class QPlainTestLogger : public QAbstractTestLogger
 {
 public:
-    QPlainTestLogger();
+    QPlainTestLogger(const char *filename);
     ~QPlainTestLogger();
 
-    void startLogging(const char *filename);
+    void startLogging();
     void stopLogging();
 
     void enterTestFunction(const char *function);

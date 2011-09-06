@@ -89,6 +89,11 @@ void QSslKeyPrivate::clear(bool deep)
             q_DSA_free(dsa);
         dsa = 0;
     }
+    if (opaque) {
+        if (deep)
+            q_EVP_PKEY_free(opaque);
+        opaque = 0;
+    }
 }
 
 /*!
@@ -265,6 +270,23 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 }
 
 /*!
+    Constructs a QSslKey from a valid native key \a handle.
+    \a type specifies whether the key is public or private.
+
+    QSslKey will take ownership for this key and you must not
+    free the key using the native library. The algorithm used
+    when creating a key from a handle will always be QSsl::Opaque.
+*/
+QSslKey::QSslKey(Qt::HANDLE handle, QSsl::KeyType type)
+    : d(new QSslKeyPrivate)
+{
+    d->opaque = reinterpret_cast<EVP_PKEY *>(handle);
+    d->algorithm = QSsl::Opaque;
+    d->type = type;
+    d->isNull = !d->opaque;
+}
+
+/*!
     Constructs an identical copy of \a other.
 */
 QSslKey::QSslKey(const QSslKey &other) : d(other.d)
@@ -315,8 +337,9 @@ void QSslKey::clear()
 */
 int QSslKey::length() const
 {
-    if (d->isNull)
+    if (d->isNull || d->algorithm == QSsl::Opaque)
         return -1;
+
     return (d->algorithm == QSsl::Rsa)
            ? q_BN_num_bits(d->rsa->n) : q_BN_num_bits(d->dsa->p);
 }
@@ -345,8 +368,9 @@ QSsl::KeyAlgorithm QSslKey::algorithm() const
 // ### autotest failure for non-empty passPhrase and private key
 QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 {
-    if (d->isNull)
+    if (d->isNull || d->algorithm == QSsl::Opaque)
         return QByteArray();
+
     return d->derFromPem(toPem(passPhrase));
 }
 
@@ -357,7 +381,7 @@ QByteArray QSslKey::toDer(const QByteArray &passPhrase) const
 */
 QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 {
-    if (!QSslSocket::supportsSsl() || d->isNull)
+    if (!QSslSocket::supportsSsl() || d->isNull || d->algorithm == QSsl::Opaque)
         return QByteArray();
 
     BIO *bio = q_BIO_new(q_BIO_s_mem());
@@ -417,7 +441,16 @@ QByteArray QSslKey::toPem(const QByteArray &passPhrase) const
 */
 Qt::HANDLE QSslKey::handle() const
 {
-    return (d->algorithm == QSsl::Rsa) ? Qt::HANDLE(d->rsa) : Qt::HANDLE(d->dsa);
+    switch (d->algorithm) {
+    case QSsl::Opaque:
+        return Qt::HANDLE(d->opaque);
+    case QSsl::Rsa:
+        return Qt::HANDLE(d->rsa);
+    case QSsl::Dsa:
+        return Qt::HANDLE(d->dsa);
+    default:
+        return Qt::HANDLE(NULL);
+    }
 }
 
 /*!
@@ -435,6 +468,8 @@ bool QSslKey::operator==(const QSslKey &other) const
         return false;
     if (length() != other.length())
         return false;
+    if (algorithm() == QSsl::Opaque)
+        return handle() == other.handle();
     return toDer() == other.toDer();
 }
 
@@ -450,7 +485,8 @@ QDebug operator<<(QDebug debug, const QSslKey &key)
 {
     debug << "QSslKey("
           << (key.type() == QSsl::PublicKey ? "PublicKey" : "PrivateKey")
-          << ", " << (key.algorithm() == QSsl::Rsa ? "RSA" : "DSA")
+          << ", " << (key.algorithm() == QSsl::Opaque ? "OPAQUE" :
+                      (key.algorithm() == QSsl::Rsa ? "RSA" : "DSA"))
           << ", " << key.length()
           << ')';
     return debug;

@@ -141,7 +141,6 @@ public:
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
     static int app_compile_version;
-    static QSettings *trolltechConf();
 };
 
 QT_END_NAMESPACE

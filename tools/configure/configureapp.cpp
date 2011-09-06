@@ -495,13 +495,6 @@ void Configure::parseCmdLine()
             dictionary[ "QCONFIG" ] = configCmdLine.at(i);
         }
 
-        else if (configCmdLine.at(i) == "-buildkey") {
-            ++i;
-            if (i == argCount)
-                break;
-            dictionary[ "USER_BUILD_KEY" ] = configCmdLine.at(i);
-        }
-
         else if (configCmdLine.at(i) == "-release") {
             dictionary[ "BUILD" ] = "release";
             if (dictionary[ "BUILDALL" ] == "auto")
@@ -1661,11 +1654,11 @@ QString Configure::locateFile(const QString &fileName)
 bool Configure::displayHelp()
 {
     if (dictionary[ "HELP" ] == "yes") {
-        desc("Usage: configure [-buildkey <key>]\n"
+        desc("Usage: configure\n"
 //      desc("Usage: configure [-prefix dir] [-bindir <dir>] [-libdir <dir>]\n"
 //                  "[-docdir <dir>] [-headerdir <dir>] [-plugindir <dir>]\n"
 //                  "[-importdir <dir>] [-datadir <dir>] [-translationdir <dir>]\n"
-//                  "[-examplesdir <dir>] [-buildkey <key>]\n"
+//                  "[-examplesdir <dir>]\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
                     "[-no-accessibility] [-accessibility] [-no-rtti] [-rtti]\n"
@@ -1711,10 +1704,6 @@ bool Configure::displayHelp()
         desc(                   "-translationdir <dir>","Translations of Qt programs will be installed to dir\n(default PREFIX/translations)\n");
         desc(                   "-examplesdir <dir>",   "Examples will be installed to dir\n(default PREFIX/examples)");
 */
-        desc(" You may use these options to turn on strict plugin loading:\n\n", 0, 1);
-
-        desc(                   "-buildkey <key>",      "Build the Qt library and plugins using the specified <key>.  "
-                                                        "When the library loads plugins, it will only load those that have a matching <key>.\n");
 
         desc("Configure options:\n\n");
 
@@ -2470,53 +2459,11 @@ void Configure::generateBuildKey()
     // Sorted defines that start with QT_NO_
     QStringList build_defines = qmakeDefines.filter(QRegExp("^QT_NO_"));
     build_defines.sort();
-
-    // Build up the QT_BUILD_KEY ifdef
-    QString buildKey = "QT_BUILD_KEY \"";
-    if (!dictionary["USER_BUILD_KEY"].isEmpty())
-        buildKey += dictionary["USER_BUILD_KEY"] + " ";
-
-    QString build32Key = buildKey + "Windows " + compiler + " %1 " + build_options.join(" ") + " " + build_defines.join(" ");
-    QString build64Key = buildKey + "Windows x64 " + compiler + " %1 " + build_options.join(" ") + " " + build_defines.join(" ");
-    QString buildSymbianKey = buildKey + "Symbian " + build_options.join(" ") + " " + build_defines.join(" ");
-    build32Key = build32Key.simplified();
-    build64Key = build64Key.simplified();
-    buildSymbianKey = buildSymbianKey.simplified();
-    build32Key.prepend("#   define ");
-    build64Key.prepend("#   define ");
-    buildSymbianKey.prepend("# define ");
-
-    QString buildkey = "#if defined(__SYMBIAN32__)\n"
-                       + buildSymbianKey + "\"\n"
-                       "#else\n"
-                       // Debug builds
-                       "# if !defined(QT_NO_DEBUG)\n"
-                       "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
-                       + build64Key.arg("debug") + "\"\n"
-                       "#  else\n"
-                       + build32Key.arg("debug") + "\"\n"
-                       "#  endif\n"
-                       "# else\n"
-                       // Release builds
-                       "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
-                       + build64Key.arg("release") + "\"\n"
-                       "#  else\n"
-                       + build32Key.arg("release") + "\"\n"
-                       "#  endif\n"
-                       "# endif\n"
-                       "#endif\n";
-
-    dictionary["BUILD_KEY"] = buildkey;
 }
 
 void Configure::generateOutputVars()
 {
     // Generate variables for output
-    // Build key ----------------------------------------------------
-    if (dictionary.contains("BUILD_KEY")) {
-        qmakeVars += dictionary.value("BUILD_KEY");
-    }
-
     QString build = dictionary[ "BUILD" ];
     bool buildAll = (dictionary[ "BUILDALL" ] == "yes");
     if (build == "debug") {
@@ -3140,8 +3087,6 @@ void Configure::generateConfigfiles()
         tmpStream << "#ifndef QT_EDITION" << endl;
         tmpStream << "#  define QT_EDITION " << dictionary["QT_EDITION"] << endl;
         tmpStream << "#endif" << endl;
-        tmpStream << endl;
-        tmpStream << dictionary["BUILD_KEY"];
         tmpStream << endl;
         if (dictionary["BUILDDEV"] == "yes") {
             dictionary["QMAKE_INTERNAL"] = "yes";

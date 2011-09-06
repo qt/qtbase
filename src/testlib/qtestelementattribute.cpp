@@ -50,37 +50,37 @@ QT_BEGIN_NAMESPACE
   This enum numbers the different tests.
 
   \value AI_Undefined
-        
+
   \value AI_Name
-        
+
   \value AI_Result
-        
+
   \value AI_Tests
-        
+
   \value AI_Failures
-        
+
   \value AI_Errors
-        
+
   \value AI_Type
-        
+
   \value AI_Description
-        
+
   \value AI_PropertyValue
-        
+
   \value AI_QTestVersion
-        
+
   \value AI_QtVersion
-        
+
   \value AI_File
-        
+
   \value AI_Line
-        
+
   \value AI_Metric
-        
+
   \value AI_Tag
-        
+
   \value AI_Value
-        
+
   \value AI_Iterations
 */
 
@@ -144,7 +144,7 @@ const char *QTestElementAttribute::name() const
         "iterations"
     };
 
-    if(attributeIndex != QTest::AI_Undefined)
+    if (attributeIndex != QTest::AI_Undefined)
         return AttributeNames[attributeIndex];
 
     return 0;
@@ -162,7 +162,7 @@ bool QTestElementAttribute::isNull() const
 
 bool QTestElementAttribute::setPair(QTest::AttributeIndex index, const char *value)
 {
-    if(!value)
+    if (!value)
         return false;
 
     delete[] attributeValue;

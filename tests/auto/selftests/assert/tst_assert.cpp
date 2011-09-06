@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+// Make sure we get a real Q_ASSERT even in release builds
+#ifdef QT_NO_DEBUG
+# undef QT_NO_DEBUG
+#endif
 
 #include <QtCore>
 #include <QtTest/QtTest>

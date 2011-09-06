@@ -724,6 +724,9 @@ public:
 
     Qt::LayoutDirection textDirection() const;
 
+    QString toUpper(const QString &str) const;
+    QString toLower(const QString &str) const;
+
     QString currencySymbol(CurrencySymbolFormat = CurrencySymbol) const;
     QString toCurrencyString(qlonglong, const QString &symbol = QString()) const;
     QString toCurrencyString(qulonglong, const QString &symbol = QString()) const;

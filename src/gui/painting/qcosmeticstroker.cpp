@@ -425,13 +425,12 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             swapped = true;
             qSwap(y1, y2);
             qSwap(x1, x2);
-            --x1; --x2; --y1; --y2;
         }
         int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
         int x = x1 << 10;
 
-        int y = (y1+32) >> 6;
-        int ys = (y2+32) >> 6;
+        int y = y1 >> 6;
+        int ys = y2 >> 6;
 
         if (y != ys) {
             x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
@@ -457,13 +456,12 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
             swapped = true;
             qSwap(x1, x2);
             qSwap(y1, y2);
-            --x1; --x2; --y1; --y2;
         }
         int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
         int y = y1 << 10;
 
-        int x = (x1+32) >> 6;
-        int xs = (x2+32) >> 6;
+        int x = x1 >> 6;
+        int xs = x2 >> 6;
 
         if (x != xs) {
             y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;
@@ -716,10 +714,11 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
 
     QCosmeticStroker::Point last = stroker->lastPixel;
 
-//    qDebug() << "stroke" << x1/64. << y1/64. << x2/64. << y2/64. << capString(caps);
+//    qDebug() << "stroke" << x1/64. << y1/64. << x2/64. << y2/64.;
 
     if (dx < dy) {
         // vertical
+        QCosmeticStroker::Direction dir = QCosmeticStroker::TopToBottom;
 
         bool swapped = false;
         if (y1 > y2) {
@@ -727,30 +726,31 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
             qSwap(y1, y2);
             qSwap(x1, x2);
             caps = swapCaps(caps);
-            --x1; --x2; --y1; --y2;
+            dir = QCosmeticStroker::BottomToTop;
         }
         int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
         int x = x1 << 10;
 
+        if ((stroker->lastDir ^ QCosmeticStroker::VerticalMask) == dir)
+            caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
+
         capAdjust(caps, y1, y2, x, xinc);
 
-        int y = (y1+32) >> 6;
-        int ys = (y2+32) >> 6;
+        int y = y1 >> 6;
+        int ys = y2 >> 6;
 
         if (y != ys) {
             x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
 
             // calculate first and last pixel and perform dropout control
-            QCosmeticStroker::Direction dir = QCosmeticStroker::TopToBottom;
             QCosmeticStroker::Point first;
             first.x = x >> 16;
             first.y = y;
             last.x = (x + (ys - y - 1)*xinc) >> 16;
             last.y = ys - 1;
-            if (swapped) {
+            if (swapped)
                 qSwap(first, last);
-                dir = QCosmeticStroker::BottomToTop;
-            }
+
             bool axisAligned = qAbs(xinc) < (1 << 14);
             if (stroker->lastPixel.x >= 0) {
                 if (first.x == stroker->lastPixel.x &&
@@ -765,7 +765,7 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 } else if (stroker->lastDir != dir &&
                            (((axisAligned && stroker->lastAxisAligned) &&
                              stroker->lastPixel.x != first.x && stroker->lastPixel.y != first.y) ||
-                            (qAbs(stroker->lastPixel.x - first.x) > 1 &&
+                            (qAbs(stroker->lastPixel.x - first.x) > 1 ||
                              qAbs(stroker->lastPixel.y - first.y) > 1))) {
                     // have a missing pixel, insert it
                     if (swapped) {
@@ -793,37 +793,39 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
         if (!dx)
             return;
 
+        QCosmeticStroker::Direction dir = QCosmeticStroker::LeftToRight;
+
         bool swapped = false;
         if (x1 > x2) {
             swapped = true;
             qSwap(x1, x2);
             qSwap(y1, y2);
             caps = swapCaps(caps);
-            --x1; --x2; --y1; --y2;
+            dir = QCosmeticStroker::RightToLeft;
         }
         int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
         int y = y1 << 10;
 
+        if ((stroker->lastDir ^ QCosmeticStroker::HorizontalMask) == dir)
+            caps |= swapped ? QCosmeticStroker::CapEnd : QCosmeticStroker::CapBegin;
+
         capAdjust(caps, x1, x2, y, yinc);
 
-        int x = (x1+32) >> 6;
-        int xs = (x2+32) >> 6;
-
+        int x = x1 >> 6;
+        int xs = x2 >> 6;
 
         if (x != xs) {
             y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;
 
             // calculate first and last pixel to perform dropout control
-            QCosmeticStroker::Direction dir = QCosmeticStroker::LeftToRight;
             QCosmeticStroker::Point first;
             first.x = x;
             first.y = y >> 16;
             last.x = xs - 1;
             last.y = (y + (xs - x - 1)*yinc) >> 16;
-            if (swapped) {
+            if (swapped)
                 qSwap(first, last);
-                dir = QCosmeticStroker::RightToLeft;
-            }
+
             bool axisAligned = qAbs(yinc) < (1 << 14);
             if (stroker->lastPixel.x >= 0) {
                 if (first.x == stroker->lastPixel.x && first.y == stroker->lastPixel.y) {
@@ -837,7 +839,7 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 } else if (stroker->lastDir != dir &&
                            (((axisAligned && stroker->lastAxisAligned) &&
                              stroker->lastPixel.x != first.x && stroker->lastPixel.y != first.y) ||
-                            (qAbs(stroker->lastPixel.x - first.x) > 1 &&
+                            (qAbs(stroker->lastPixel.x - first.x) > 1 ||
                              qAbs(stroker->lastPixel.y - first.y) > 1))) {
                     // have a missing pixel, insert it
                     if (swapped) {
