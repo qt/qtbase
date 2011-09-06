@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -88,8 +88,8 @@
 /*
 	Cocoa Application Categories
 */
-#include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
+#include "qglobal.h"
+
 #import <AppKit/AppKit.h>
 QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
@@ -114,4 +114,3 @@ void qt_redirectNSApplicationSendEvent();
 
 QT_END_NAMESPACE
 
-#endif

@@ -63,6 +63,10 @@ class QPlatformOpenGLContext;
 class QGuiGLFormat;
 class QAbstractEventDispatcher;
 class QPlatformInputContext;
+class QMenu;
+class QMenuBar;
+class QPlatformMenu;
+class QPlatformMenuBar;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -94,6 +98,9 @@ public:
     virtual QPlatformDrag *drag() const;
 #endif
     virtual QPlatformInputContext *inputContext() const;
+
+    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
+    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;

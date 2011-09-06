@@ -78,12 +78,9 @@ class QMenuBarPrivate : public QWidgetPrivate
 public:
     QMenuBarPrivate() : itemsDirty(0), currentAction(0), mouseDown(0),
                          closePopupMode(0), defaultPopDown(1), popupState(0), keyboardState(0), altPressed(0),
-                         nativeMenuBar(-1), doChildEffects(false)
+                         nativeMenuBar(-1), doChildEffects(false), platformMenuBar(0)
 #ifdef QT3_SUPPORT
                          , doAutoResize(false)
-#endif
-#ifdef Q_OS_MAC
-                         , mac_menubar(0)
 #endif
 
 #ifdef Q_WS_WINCE
@@ -96,9 +93,7 @@ public:
         { }
     ~QMenuBarPrivate()
         {
-#ifdef Q_OS_MAC
-            delete mac_menubar;
-#endif
+            delete platformMenuBar;
 #ifdef Q_WS_WINCE
             delete wce_menubar;
 #endif
@@ -173,35 +168,8 @@ public:
 #ifdef QT3_SUPPORT
     bool doAutoResize;
 #endif
-#ifdef Q_OS_MAC
-    //mac menubar binding
-    struct QMacMenuBarPrivate {
-        QList<QMacMenuAction*> actionItems;
-        OSMenuRef menu, apple_menu;
-        QMacMenuBarPrivate();
-        ~QMacMenuBarPrivate();
+    QPlatformMenuBar *platformMenuBar;
 
-        void addAction(QAction *, QMacMenuAction* =0);
-        void addAction(QMacMenuAction *, QMacMenuAction* =0);
-        void syncAction(QMacMenuAction *);
-        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
-        void removeAction(QMacMenuAction *);
-        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
-        inline QMacMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
-                QMacMenuAction *act = actionItems[i];
-                if(a == act->action)
-                    return act;
-            }
-            return 0;
-        }
-    } *mac_menubar;
-    static bool macUpdateMenuBarImmediatly();
-    bool macWidgetHasNativeMenubar(QWidget *widget);
-    void macCreateMenuBar(QWidget *);
-    void macDestroyMenuBar();
-    OSMenuRef macMenu();
-#endif
 #ifdef Q_WS_WINCE
     void wceCreateMenuBar(QWidget *);
     void wceDestroyMenuBar();

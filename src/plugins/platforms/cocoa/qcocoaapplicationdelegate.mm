@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -73,30 +73,14 @@
  **
  ****************************************************************************/
 
-#include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 
-#import <private/qcocoaapplicationdelegate_mac_p.h>
-#import <private/qcocoamenuloader_mac_p.h>
-#import <private/qcocoaapplication_mac_p.h>
-#include <private/qapplication_p.h>
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#include <private/qdesktopwidget_mac_p.h>
+#import "qcocoaapplicationdelegate.h"
+#import "qnswindowdelegate.h"
 #include <qevent.h>
 #include <qurl.h>
-#include <qapplication.h>
+#include <qdebug.h>
+#include <qguiapplication.h>
 
-QT_BEGIN_NAMESPACE
-extern void onApplicationChangedActivation(bool); // qapplication_mac.mm
-extern void qt_release_apple_event_handler(); //qapplication_mac.mm
-extern QPointer<QWidget> qt_last_mouse_receiver; // qapplication_mac.cpp
-extern QPointer<QWidget> qt_last_native_mouse_receiver; // qt_cocoa_helpers_mac.mm
-extern QPointer<QWidget> qt_button_down; // qapplication_mac.cpp
-
-QT_END_NAMESPACE
-
-QT_FORWARD_DECLARE_CLASS(QDesktopWidgetImplementation)
 QT_USE_NAMESPACE
 
 static QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *sharedCocoaApplicationDelegate = nil;
@@ -188,6 +172,7 @@ static void cleanupCocoaApplicationDelegate()
 // QApplicationPrivate::globalAppleEventProcessor in qapplication_mac.mm
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+/*
     Q_UNUSED(sender);
     // The reflection delegate gets precedence
     if (reflectionDelegate
@@ -212,17 +197,25 @@ static void cleanupCocoaApplicationDelegate()
     }
 
     return NSTerminateCancel;
+*/
+    return NSTerminateNow;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     Q_UNUSED(aNotification);
     inLaunch = false;
-    qt_release_apple_event_handler();
+    // qt_release_apple_event_handler();
+
+
+    // Insert code here to initialize your application
 }
+
+
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
+/*
     for (NSString *fileName in filenames) {
         QString qtFileName = qt_mac_NSStringToQString(fileName);
         if (inLaunch) {
@@ -240,6 +233,7 @@ static void cleanupCocoaApplicationDelegate()
     if (reflectionDelegate &&
         [reflectionDelegate respondsToSelector:@selector(application:openFiles:)])
         [reflectionDelegate application:sender openFiles:filenames];
+*/
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
@@ -255,6 +249,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
+/*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
         [reflectionDelegate applicationDidBecomeActive:notification];
@@ -272,10 +267,12 @@ static void cleanupCocoaApplicationDelegate()
         qt_last_native_mouse_receiver = widgetUnderMouse ?
             (widgetUnderMouse->internalWinId() ? widgetUnderMouse : widgetUnderMouse->nativeParentWidget()) : 0;
     }
+*/
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
+/*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
         [reflectionDelegate applicationDidResignActive:notification];
@@ -287,12 +284,13 @@ static void cleanupCocoaApplicationDelegate()
     qt_last_mouse_receiver = 0;
     qt_last_native_mouse_receiver = 0;
     qt_button_down = 0;
+*/
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    QDesktopWidgetImplementation::instance()->onResize();
+    //QDesktopWidgetImplementation::instance()->onResize();
 }
 
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate
@@ -331,24 +329,26 @@ static void cleanupCocoaApplicationDelegate()
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     Q_UNUSED(replyEvent);
-
+/*
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
     QUrl url(qt_mac_NSStringToQString(urlString));
     QFileOpenEvent qtEvent(url);
     qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
+*/
 }
 
 - (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     Q_UNUSED(event);
     Q_UNUSED(replyEvent);
+    qDebug() << "appleEventQuit";
+
     [NSApp terminate:self];
 }
 
 - (void)qtDispatcherToQAction:(id)sender
 {
-    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
+    //[[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
 }
 
 @end
-#endif

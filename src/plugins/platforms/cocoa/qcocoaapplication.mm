@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -73,12 +73,12 @@
 **
 ****************************************************************************/
 
-#include <qglobal.h>
-#ifdef QT_MAC_USE_COCOA
-#include <private/qcocoaapplication_mac_p.h>
-#include <private/qcocoaapplicationdelegate_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#include <private/qcocoaintrospection_p.h>
+#include <qcocoaapplication.h>
+
+#include <qcocoaapplicationdelegate.h>
+#include <qcocoahelpers.h>
+#include <qguiapplication.h>
+#include <qdebug.h>
 
 QT_USE_NAMESPACE
 
@@ -112,7 +112,8 @@ QT_USE_NAMESPACE
 
 - (void)qt_sendPostedMessage:(NSEvent *)event
 {
-    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+/*
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
     quint64 lower = [event data1];
     quint64 upper = [event data2];
@@ -134,10 +135,12 @@ QT_USE_NAMESPACE
     }
 
     delete args;
+*/
 }
 
 - (BOOL)qt_filterEvent:(NSEvent *)event
 {
+/*
     if (qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
         return true;
 
@@ -150,6 +153,7 @@ QT_USE_NAMESPACE
                 break;
         }
     }
+*/
     return false;
 }
 
@@ -200,6 +204,7 @@ QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent()
 {
+/*
     if ([NSApp isMemberOfClass:[QNSApplication class]]) {
         // No need to change implementation since Qt
         // already controls a subclass of NSApplication
@@ -216,7 +221,7 @@ void qt_redirectNSApplicationSendEvent()
             [QNSApplication class],
             @selector(qt_sendEvent_replacement:),
             @selector(qt_sendEvent_original:));
+ */
  }
 
 QT_END_NAMESPACE
-#endif

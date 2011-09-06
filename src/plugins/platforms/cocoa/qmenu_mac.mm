@@ -39,29 +39,30 @@
 **
 ****************************************************************************/
 
+#include "qmenu_mac.h"
+
 #include <Cocoa/Cocoa.h>
 
 #include "qmenu.h"
 #include "qhash.h"
 #include <qdebug.h>
 #include "qapplication.h"
-#include <private/qt_mac_p.h>
 #include "qregexp.h"
-#include "qmainwindow.h"
-#include "qdockwidget.h"
 #include "qtoolbar.h"
 #include "qevent.h"
 #include "qstyle.h"
 #include "qwidgetaction.h"
-#include "qmacnativewidget_mac.h"
 
-#include <private/qapplication_p.h>
-#include <private/qcocoaapplication_mac_p.h>
 #include <private/qmenu_p.h>
 #include <private/qmenubar_p.h>
-#include <private/qcocoamenuloader_mac_p.h>
-#include <private/qcocoamenu_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qguiapplication_p.h>
+
+#include "qcocoahelpers.h"
+#include "qcocoaapplication.h"
+#include "qcocoamenuloader.h"
+#include "qcocoamenu.h"
+#include "qcocoahelpers.h"
+#include "qcocoaautoreleasepool.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -78,23 +79,6 @@ int qt_mac_menus_open_count = 0;
 
 static OSMenuRef qt_mac_create_menu(QWidget *w);
 
-#ifndef QT_MAC_USE_COCOA
-static uint qt_mac_menu_static_cmd_id = 'QT00';
-const UInt32 kMenuCreatorQt = 'cute';
-enum {
-    kMenuPropertyQAction = 'QAcT',
-    kMenuPropertyQWidget = 'QWId',
-    kMenuPropertyCausedQWidget = 'QCAU',
-    kMenuPropertyMergeMenu = 'QApP',
-    kMenuPropertyMergeList = 'QAmL',
-    kMenuPropertyWidgetActionWidget = 'QWid',
-    kMenuPropertyWidgetMenu = 'QWMe',
-
-    kHICommandAboutQt = 'AOQT',
-    kHICommandCustomMerge = 'AQt0'
-};
-#endif
-
 static struct {
     QPointer<QMenuBar> qmenubar;
     bool modal;
@@ -107,7 +91,6 @@ static struct {
   Externals
  *****************************************************************************/
 extern OSViewRef qt_mac_hiview_for(const QWidget *w); //qwidget_mac.cpp
-extern HIViewRef qt_mac_hiview_for(OSWindowRef w); //qwidget_mac.cpp
 extern IconRef qt_mac_create_iconref(const QPixmap &px); //qpixmap_mac.cpp
 extern QWidget * mac_keyboard_grabber; //qwidget_mac.cpp
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication_xxx.cpp
@@ -132,7 +115,7 @@ static int qt_mac_CountMenuItems(OSMenuRef menu)
 
 void qt_mac_menu_collapseSeparators(NSMenu * theMenu, bool collapse)
 {
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
     if (collapse) {
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
@@ -192,23 +175,6 @@ static quint32 constructModifierMask(quint32 accel_key)
 {
     quint32 ret = 0;
     const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
-#ifndef QT_MAC_USE_COCOA
-    if ((accel_key & Qt::ALT) == Qt::ALT)
-        ret |= kMenuOptionModifier;
-    if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
-        ret |= kMenuShiftModifier;
-    if (dontSwap) {
-        if ((accel_key & Qt::META) != Qt::META)
-            ret |= kMenuNoCommandModifier;
-        if ((accel_key & Qt::CTRL) == Qt::CTRL)
-            ret |= kMenuControlModifier;
-    } else {
-        if ((accel_key & Qt::CTRL) != Qt::CTRL)
-            ret |= kMenuNoCommandModifier;
-        if ((accel_key & Qt::META) == Qt::META)
-            ret |= kMenuControlModifier;
-    }
-#else
     if ((accel_key & Qt::CTRL) == Qt::CTRL)
         ret |= (dontSwap ? NSControlKeyMask : NSCommandKeyMask);
     if ((accel_key & Qt::META) == Qt::META)
@@ -217,13 +183,12 @@ static quint32 constructModifierMask(quint32 accel_key)
         ret |= NSAlternateKeyMask;
     if ((accel_key & Qt::SHIFT) == Qt::SHIFT)
         ret |= NSShiftKeyMask;
-#endif
     return ret;
 }
 
 static void cancelAllMenuTracking()
 {
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     NSMenu *mainMenu = [NSApp mainMenu];
     [mainMenu cancelTracking];
     for (NSMenuItem *item in [mainMenu itemArray]) {
@@ -233,14 +198,15 @@ static void cancelAllMenuTracking()
     }
 }
 
-static bool actualMenuItemVisibility(const QMenuBarPrivate::QMacMenuBarPrivate *mbp,
-                                     const QMacMenuAction *action)
+static bool actualMenuItemVisibility(const QCocoaMenuBar *mbp,
+                                     const QCocoaMenuAction *action)
 {
     bool visible = action->action->isVisible();
     if (visible && action->action->text() == QString(QChar(0x14)))
         return false;
+
     if (visible && action->action->menu() && !action->action->menu()->actions().isEmpty() &&
-        !qt_mac_CountMenuItems(action->action->menu()->macMenu(mbp->apple_menu)) &&
+/* ###        !qt_mac_CountMenuItems(cocoaMenu->macMenu(mbp->apple_menu)) &&*/
         !qt_mac_watchingAboutToShow(action->action->menu())) {
         return false;
     }
@@ -261,11 +227,11 @@ static inline void syncNSMenuItemEnabled(NSMenuItem *menuItem, bool enabled)
     [menuItem setEnabled:enabled];
 }
 
-static inline void syncMenuBarItemsVisiblity(const QMenuBarPrivate::QMacMenuBarPrivate *mac_menubar)
+static inline void syncMenuBarItemsVisiblity(const QCocoaMenuBar *mac_menubar)
 {
-    const QList<QMacMenuAction *> &menubarActions = mac_menubar->actionItems;
+    const QList<QCocoaMenuAction *> &menubarActions = mac_menubar->actionItems;
     for (int i = 0; i < menubarActions.size(); ++i) {
-        const QMacMenuAction *action = menubarActions.at(i);
+        const QCocoaMenuAction *action = menubarActions.at(i);
         syncNSMenuItemVisiblity(action->menuItem, actualMenuItemVisibility(mac_menubar, action));
     }
 }
@@ -321,7 +287,7 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
 //toggling of modal state
 static void qt_mac_set_modal_state(OSMenuRef menu, bool on)
 {
-    OSMenuRef merge = QMenuPrivate::mergeMenuHash.value(menu);
+    OSMenuRef merge = QCocoaMenu::mergeMenuHash.value(menu);
     qt_mac_set_modal_state_helper_recursive(menu, merge, on);
     // I'm ignoring the special items now, since they should get handled via a syncAction()
 }
@@ -331,7 +297,7 @@ bool qt_mac_menubar_is_open()
     return qt_mac_menus_open_count > 0;
 }
 
-QMacMenuAction::~QMacMenuAction()
+QCocoaMenuAction::~QCocoaMenuAction()
 {
     [menu release];
     // Update the menu item if this action still owns it. For some items
@@ -352,7 +318,7 @@ QMacMenuAction::~QMacMenuAction()
     [menuItem release];
 }
 
-static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *action)
+static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QCocoaMenuAction *action)
 {
     if (qt_mac_no_menubar_merge || action->action->menu() || action->action->isSeparator()
             || action->action->menuRole() == QAction::NoRole)
@@ -408,7 +374,7 @@ static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *act
         break;
     }
 
-    if (QMenuMergeList *list = QMenuPrivate::mergeMenuItemsHash.value(merge)) {
+    if (QMenuMergeList *list = QCocoaMenu::mergeMenuItemsHash.value(merge)) {
         for(int i = 0; i < list->size(); ++i) {
             const QMenuMergeItem &item = list->at(i);
             if (item.menuItem == ret && item.action)
@@ -419,7 +385,7 @@ static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *act
     return ret;
 }
 
-static QString qt_mac_menu_merge_text(QMacMenuAction *action)
+static QString qt_mac_menu_merge_text(QCocoaMenuAction *action)
 {
     QString ret;
     extern QString qt_mac_applicationmenu_string(int type);
@@ -427,7 +393,7 @@ static QString qt_mac_menu_merge_text(QMacMenuAction *action)
     if (action->action->menuRole() == QAction::ApplicationSpecificRole)
         ret = action->action->text();
     else if (action->menuItem == [loader aboutMenuItem]) {
-        ret = qt_mac_applicationmenu_string(6).arg(qAppName());
+        ret = qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName());
     } else if (action->menuItem == [loader aboutQtMenuItem]) {
         if (action->action->text() == QString("About Qt"))
             ret = QMenuBar::tr("About Qt");
@@ -436,12 +402,12 @@ static QString qt_mac_menu_merge_text(QMacMenuAction *action)
     } else if (action->menuItem == [loader preferencesMenuItem]) {
         ret = qt_mac_applicationmenu_string(4);
     } else if (action->menuItem == [loader quitMenuItem]) {
-        ret = qt_mac_applicationmenu_string(5).arg(qAppName());
+        ret = qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName());
     }
     return ret;
 }
 
-static QKeySequence qt_mac_menu_merge_accel(QMacMenuAction *action)
+static QKeySequence qt_mac_menu_merge_accel(QCocoaMenuAction *action)
 {
     QKeySequence ret;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
@@ -463,15 +429,23 @@ void Q_WIDGETS_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge
 /*****************************************************************************
   QMenu bindings
  *****************************************************************************/
-QMenuPrivate::QMacMenuPrivate::QMacMenuPrivate() : menu(0)
+
+QCocoaMenuAction::QCocoaMenuAction()
+    : menuItem(0)
+    , ignore_accel(0), merged(0), menu(0)
+{
+
+}
+
+QCocoaMenu::QCocoaMenu(QMenu *a_qtMenu) : menu(0), qtMenu(a_qtMenu)
 {
 }
 
-QMenuPrivate::QMacMenuPrivate::~QMacMenuPrivate()
+QCocoaMenu::~QCocoaMenu()
 {
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     while (actionItems.size()) {
-        QMacMenuAction *action = actionItems.takeFirst();
+        QCocoaMenuAction *action = static_cast<QCocoaMenuAction *>(actionItems.takeFirst());
         if (QMenuMergeList *list = mergeMenuItemsHash.value(action->menu)) {
             int i = 0;
             while (i < list->size()) {
@@ -489,22 +463,23 @@ QMenuPrivate::QMacMenuPrivate::~QMacMenuPrivate()
     [menu release];
 }
 
-void
-QMenuPrivate::QMacMenuPrivate::addAction(QAction *a, QMacMenuAction *before, QMenuPrivate *qmenu)
+
+void QCocoaMenu::addAction(QAction *a, QAction *before)
 {
-    QMacMenuAction *action = new QMacMenuAction;
+    QCocoaMenuAction *action = new QCocoaMenuAction;
     action->action = a;
     action->ignore_accel = 0;
     action->merged = 0;
     action->menu = 0;
-    addAction(action, before, qmenu);
+
+    QCocoaMenuAction *cocoaBefore = findAction(before);
+    addAction(action, cocoaBefore);
 }
 
-void
-QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction *before, QMenuPrivate *qmenu)
+
+void QCocoaMenu::addAction(QCocoaMenuAction *action, QCocoaMenuAction *before)
 {
-    QMacCocoaAutoReleasePool pool;
-    Q_UNUSED(qmenu);
+    QCocoaAutoReleasePool pool;
     if (!action)
         return;
     int before_index = actionItems.indexOf(before);
@@ -521,7 +496,7 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
     /* When the action is considered a mergable action it
        will stay that way, until removed.. */
     if (!qt_mac_no_menubar_merge) {
-        OSMenuRef merge = QMenuPrivate::mergeMenuHash.value(menu);
+        OSMenuRef merge = QCocoaMenu::mergeMenuHash.value(menu);
         if (merge) {
             if (NSMenuItem *cmd = qt_mac_menu_merge_action(merge, action)) {
                 action->merged = 1;
@@ -533,10 +508,10 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
                 [cmd setTarget:nil];
                 [action->menuItem release];
                 action->menuItem = cmd;
-                QMenuMergeList *list = QMenuPrivate::mergeMenuItemsHash.value(merge);
+                QMenuMergeList *list = QCocoaMenu::mergeMenuItemsHash.value(merge);
                 if (!list) {
                     list = new QMenuMergeList;
-                    QMenuPrivate::mergeMenuItemsHash.insert(merge, list);
+                    QCocoaMenu::mergeMenuItemsHash.insert(merge, list);
                 }
                 list->append(QMenuMergeItem(cmd, action));
             }
@@ -552,48 +527,45 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
         } else {
             [menu addItem:newItem];
         }
-
-        QWidget *widget = qmenu ? qmenu->widgetItems.value(action->action) : 0;
-        if (widget) {
-            qWarning("QMacMenuPrivate: Widgets in menus not implemented.");
-#if 0
-
-            QMacNativeWidget *container = new QMacNativeWidget(0);
-            container->resize(widget->sizeHint());
-            widget->setAttribute(Qt::WA_LayoutUsesWidgetRect);
-            widget->setParent(container);
-
-            NSView *containerView = qt_mac_nativeview_for(container);
-            [containerView setAutoresizesSubviews:YES];
-            [containerView setAutoresizingMask:NSViewWidthSizable];
-            [qt_mac_nativeview_for(widget) setAutoresizingMask:NSViewWidthSizable];
-
-            [newItem setView:containerView];
-            container->show();
-            widget->show();
-#endif
-        }
-
     } else {
-        [newItem setEnabled:!QApplicationPrivate::modalState()];
+        [newItem setEnabled:YES];
+        // ###
+        //[newItem setEnabled:!QApplicationPrivate::modalState()];
+
     }
     [newItem setTag:long(static_cast<QAction *>(action->action))];
     syncAction(action);
 }
 
+void QCocoaMenu::syncAction(QAction *a)
+{
+    syncAction(findAction(a));
+}
+
+void QCocoaMenu::removeAction(QAction *a)
+{
+    removeAction(findAction(a));
+}
+
+QCocoaMenuAction *QCocoaMenu::findAction(QAction *action) const
+{
+    for (int i = 0; i < actionItems.size(); i++) {
+        QCocoaMenuAction *act = actionItems[i];
+        if (action == act->action)
+            return act;
+    }
+    return 0;
+}
+
+
 // return an autoreleased string given a QKeySequence (currently only looks at the first one).
 NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
 {
-    qWarning("Unimplemented: keySequenceToKeyEqivalent");
-    return @"";
-#if 0
     quint32 accel_key = (accel[0] & ~(Qt::MODIFIER_MASK | Qt::UNICODE_ACCEL));
-    extern QChar qtKey2CocoaKey(Qt::Key key);
-    QChar cocoa_key = qtKey2CocoaKey(Qt::Key(accel_key));
+    QChar cocoa_key = qt_mac_qtKey2CocoaKey(Qt::Key(accel_key));
     if (cocoa_key.isNull())
         cocoa_key = QChar(accel_key).toLower().unicode();
     return [NSString stringWithCharacters:&cocoa_key.unicode() length:1];
-#endif
 }
 
 // return the cocoa modifier mask for the QKeySequence (currently only looks at the first one).
@@ -602,8 +574,7 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
     return constructModifierMask(accel[0]);
 }
 
-void
-QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
+void QCocoaMenu::syncAction(QCocoaMenuAction *action)
 {
     if (!action)
         return;
@@ -612,7 +583,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     if (!item)
         return;
 
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     NSMenu *menu = [item menu];
     bool actionVisible = action->action->isVisible();
     [item setHidden:!actionVisible];
@@ -678,7 +649,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
                                  attributes:attributes] autorelease];
        [item setAttributedTitle: str];
     } else {
-        [item setTitle: qt_mac_QStringToNSString(finalString)];
+            [item setTitle: qt_mac_QStringToNSString(finalString)];
     }
 
     if (action->action->menuRole() == QAction::AboutRole || action->action->menuRole() == QAction::QuitRole)
@@ -698,7 +669,8 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     [nsimage release];
 
     if (action->action->menu()) { //submenu
-        NSMenu *subMenu  = static_cast<NSMenu *>(action->action->menu()->macMenu());
+        QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(action->action->menu()->platformMenu());
+        NSMenu *subMenu = cocoaMenu->macMenu();
         if ([subMenu supermenu] && [subMenu supermenu] != [item menu]) {
             // The menu is already a sub-menu of another one. Cocoa will throw an exception,
             // in such cases. For the time being, a new QMenu with same set of actions is the
@@ -722,12 +694,11 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     [item setState:action->action->isChecked() ?  NSOnState : NSOffState];
 }
 
-void
-QMenuPrivate::QMacMenuPrivate::removeAction(QMacMenuAction *action)
+void QCocoaMenu::removeAction(QCocoaMenuAction *action)
 {
     if (!action)
         return;
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     if (action->merged) {
         if (reinterpret_cast<QAction *>([action->menuItem tag]) == action->action) {
             QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
@@ -743,55 +714,45 @@ QMenuPrivate::QMacMenuPrivate::removeAction(QMacMenuAction *action)
     actionItems.removeAll(action);
 }
 
-OSMenuRef
-QMenuPrivate::macMenu(OSMenuRef merge)
+OSMenuRef QCocoaMenu::macMenu(OSMenuRef merge)
 {
-    Q_UNUSED(merge);
-    Q_Q(QMenu);
-    if (mac_menu && mac_menu->menu)
-        return mac_menu->menu;
-    if (!mac_menu)
-        mac_menu = new QMacMenuPrivate;
-    mac_menu->menu = qt_mac_create_menu(q);
+    if (menu)
+        return menu;
+    menu = qt_mac_create_menu(qtMenu);
     if (merge) {
-        mergeMenuHash.insert(mac_menu->menu, merge);
+        mergeMenuHash.insert(menu, merge);
     }
-    QList<QAction*> items = q->actions();
+    QList<QAction*> items = qtMenu->actions();
     for(int i = 0; i < items.count(); i++)
-        mac_menu->addAction(items[i], 0, this);
-    syncSeparatorsCollapsible(collapsibleSeparators);
-    return mac_menu->menu;
+        addAction(items[i], 0);
+    syncSeparatorsCollapsible(qtMenu->separatorsCollapsible());
+    return menu;
 }
 
 /*!
   \internal
 */
 void
-QMenuPrivate::syncSeparatorsCollapsible(bool collapse)
+QCocoaMenu::syncSeparatorsCollapsible(bool collapse)
 {
-    qt_mac_menu_collapseSeparators(mac_menu->menu, collapse);
+    qt_mac_menu_collapseSeparators(menu, collapse);
 }
-
-
 
 /*!
   \internal
 */
-void QMenuPrivate::setMacMenuEnabled(bool enable)
+void QCocoaMenu::setMenuEnabled(bool enable)
 {
-    if (!macMenu(0))
-        return;
-
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     if (enable) {
-        for (int i = 0; i < mac_menu->actionItems.count(); ++i) {
-            QMacMenuAction *menuItem = mac_menu->actionItems.at(i);
+        for (int i = 0; i < actionItems.count(); ++i) {
+            QCocoaMenuAction *menuItem = static_cast<QCocoaMenuAction *>(actionItems.at(i));
             if (menuItem && menuItem->action && menuItem->action->isEnabled()) {
                 [menuItem->menuItem setEnabled:true];
             }
         }
     } else {
-        NSMenu *menu = mac_menu->menu;
+        NSMenu *menu = menu;
         for (NSMenuItem *item in [menu itemArray]) {
             [item setEnabled:false];
         }
@@ -813,7 +774,7 @@ void QMenuPrivate::setMacMenuEnabled(bool enable)
 
     \sa QMenuBar::macMenu()
 */
-OSMenuRef QMenu::macMenu(OSMenuRef merge) { return d_func()->macMenu(merge); }
+/// OSMenuRef QMenu::macMenu(OSMenuRef merge) { return d_func()->macMenu(merge); }
 
 /*****************************************************************************
   QMenuBar bindings
@@ -821,31 +782,43 @@ OSMenuRef QMenu::macMenu(OSMenuRef merge) { return d_func()->macMenu(merge); }
 typedef QHash<QWidget *, QMenuBar *> MenuBarHash;
 Q_GLOBAL_STATIC(MenuBarHash, menubars)
 static QMenuBar *fallback = 0;
-QMenuBarPrivate::QMacMenuBarPrivate::QMacMenuBarPrivate() : menu(0), apple_menu(0)
+
+QCocoaMenuBar::QCocoaMenuBar(QMenuBar *a_qtMenuBar) : menu(0), apple_menu(0), qtMenuBar(a_qtMenuBar)
 {
+    macCreateMenuBar(qtMenuBar->parentWidget());
 }
 
-QMenuBarPrivate::QMacMenuBarPrivate::~QMacMenuBarPrivate()
+QCocoaMenuBar::~QCocoaMenuBar()
 {
-    for(QList<QMacMenuAction*>::Iterator it = actionItems.begin(); it != actionItems.end(); ++it)
+    for(QList<QCocoaMenuAction*>::Iterator it = actionItems.begin(); it != actionItems.end(); ++it)
         delete (*it);
     [apple_menu release];
     [menu release];
 }
-
-void
-QMenuBarPrivate::QMacMenuBarPrivate::addAction(QAction *a, QMacMenuAction *before)
+void QCocoaMenuBar::handleReparent(QWidget *newParent)
 {
-    if (a->isSeparator() || !menu)
-        return;
-    QMacMenuAction *action = new QMacMenuAction;
-    action->action = a;
-    action->ignore_accel = 1;
-    addAction(action, before);
+    if (macWidgetHasNativeMenubar(newParent)) {
+        // If the new parent got a native menubar from before, keep that
+        // menubar rather than replace it with this one (because a parents
+        // menubar has precedence over children menubars).
+        macDestroyMenuBar();
+        macCreateMenuBar(newParent);
+     }
+
 }
 
-void
-QMenuBarPrivate::QMacMenuBarPrivate::addAction(QMacMenuAction *action, QMacMenuAction *before)
+void QCocoaMenuBar::addAction(QAction *action, QAction *beforeAction)
+{
+    if (action->isSeparator() || !menu)
+        return;
+    QCocoaMenuAction *cocoaAction = new QCocoaMenuAction;
+    cocoaAction->action = action;
+    cocoaAction->ignore_accel = 1;
+    QCocoaMenuAction *cocoaBeforeAction = findAction(beforeAction);
+    addAction(cocoaAction, cocoaBeforeAction);
+}
+
+void QCocoaMenuBar::addAction(QCocoaMenuAction *action, QCocoaMenuAction *before)
 {
     if (!action || !menu)
         return;
@@ -860,7 +833,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::addAction(QMacMenuAction *action, QMacMenuA
     MenuItemIndex index = actionItems.size()-1;
 
     action->menu = menu;
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     [action->menu retain];
     NSMenuItem *newItem = createNSMenuItem(action->action->text());
     action->menuItem = newItem;
@@ -875,19 +848,24 @@ QMenuBarPrivate::QMacMenuBarPrivate::addAction(QMacMenuAction *action, QMacMenuA
     syncAction(action);
 }
 
-void
-QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
+
+void QCocoaMenuBar::syncAction(QCocoaMenuAction *action)
 {
     if (!action || !menu)
         return;
 
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     NSMenuItem *item = action->menuItem;
 
     OSMenuRef submenu = 0;
     bool release_submenu = false;
     if (action->action->menu()) {
-        if ((submenu = action->action->menu()->macMenu(apple_menu))) {
+        QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(action->action->menu()->platformMenu());
+        if (!cocoaMenu) {
+
+        }
+
+        if ((submenu = cocoaMenu->macMenu(apple_menu))) {
             if ([submenu supermenu] && [submenu supermenu] != [item menu])
                 return;
             else
@@ -908,17 +886,37 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
     }
 }
 
-void
-QMenuBarPrivate::QMacMenuBarPrivate::removeAction(QMacMenuAction *action)
+
+void QCocoaMenuBar::removeAction(QCocoaMenuAction *action)
 {
     if (!action || !menu)
         return;
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     [action->menu removeItem:action->menuItem];
     actionItems.removeAll(action);
 }
 
-bool QMenuBarPrivate::macWidgetHasNativeMenubar(QWidget *widget)
+void QCocoaMenuBar::syncAction(QAction *a)
+{
+    syncAction(findAction(a));
+}
+
+void QCocoaMenuBar::removeAction(QAction *a)
+{
+    removeAction(findAction(a));
+}
+
+QCocoaMenuAction *QCocoaMenuBar::findAction(QAction *action) const
+{
+    for (int i = 0; i < actionItems.size(); i++) {
+        QCocoaMenuAction *act = actionItems[i];
+        if (action == act->action)
+            return act;
+    }
+    return 0;
+}
+
+bool QCocoaMenuBar::macWidgetHasNativeMenubar(QWidget *widget)
 {
     // This function is different from q->isNativeMenuBar(), as
     // it returns true only if a native menu bar is actually
@@ -928,16 +926,14 @@ bool QMenuBarPrivate::macWidgetHasNativeMenubar(QWidget *widget)
     return menubars()->contains(widget->window());
 }
 
-void
-QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
+void QCocoaMenuBar::macCreateMenuBar(QWidget *parent)
 {
-    Q_Q(QMenuBar);
     static int dontUseNativeMenuBar = -1;
     // We call the isNativeMenuBar function here
     // because that will make sure that local overrides
     // are dealt with correctly. q->isNativeMenuBar() will, if not
     // overridden, depend on the attribute Qt::AA_DontUseNativeMenuBar:
-    bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
+    bool qt_mac_no_native_menubar = !qtMenuBar->isNativeMenuBar();
     if (qt_mac_no_native_menubar == false && dontUseNativeMenuBar < 0) {
         // The menubar is set to be native. Let's check (one time only
         // for all menubars) if this is OK with the rest of the environment.
@@ -947,65 +943,59 @@ QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
         bool environmentSaysNo = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
         dontUseNativeMenuBar = isPlugin || environmentSaysNo;
         QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, dontUseNativeMenuBar);
-        qt_mac_no_native_menubar = !q->isNativeMenuBar();
+        qt_mac_no_native_menubar = !qtMenuBar->isNativeMenuBar();
     }
     if (qt_mac_no_native_menubar == false) {
         // INVARIANT: Use native menubar.
-        QMenuBar::macUpdateMenuBar();
+        macUpdateMenuBar();
         if (!parent && !fallback) {
-            fallback = q;
-            mac_menubar = new QMacMenuBarPrivate;
+            fallback = qtMenuBar;
         } else if (parent && parent->isWindow()) {
-            menubars()->insert(q->window(), q);
-            mac_menubar = new QMacMenuBarPrivate;
+            menubars()->insert(qtMenuBar->window(), qtMenuBar);
         }
     }
 }
 
-void QMenuBarPrivate::macDestroyMenuBar()
+void QCocoaMenuBar::macDestroyMenuBar()
 {
-    Q_Q(QMenuBar);
-    QMacCocoaAutoReleasePool pool;
-    if (fallback == q)
+    QCocoaAutoReleasePool pool;
+    if (fallback == qtMenuBar)
         fallback = 0;
-    delete mac_menubar;
-    QWidget *tlw = q->window();
+    QWidget *tlw = qtMenuBar->window();
     menubars()->remove(tlw);
-    mac_menubar = 0;
 
-    if (!qt_mac_current_menubar.qmenubar || qt_mac_current_menubar.qmenubar == q) {
+    if (!qt_mac_current_menubar.qmenubar || qt_mac_current_menubar.qmenubar == qtMenuBar) {
         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
         [loader removeActionsFromAppMenu];
-        QMenuBar::macUpdateMenuBar();
+        QCocoaMenuBar::macUpdateMenuBar();
     }
 }
 
-OSMenuRef QMenuBarPrivate::macMenu()
+OSMenuRef QCocoaMenuBar::macMenu()
 {
-    Q_Q(QMenuBar);
-    if (!q->isNativeMenuBar() || !mac_menubar) {
+    if (!qtMenuBar->isNativeMenuBar()) {
         return 0;
-    } else if (!mac_menubar->menu) {
-        mac_menubar->menu = qt_mac_create_menu(q);
+    } else if (!menu) {
+        menu = qt_mac_create_menu(qtMenuBar);
         ProcessSerialNumber mine, front;
         if (GetCurrentProcess(&mine) == noErr && GetFrontProcess(&front) == noErr) {
-            if (!qt_mac_no_menubar_merge && !mac_menubar->apple_menu) {
-                mac_menubar->apple_menu = qt_mac_create_menu(q);
-                [mac_menubar->apple_menu setTitle:qt_mac_QStringToNSString(QString(QChar(0x14)))];
+            if (!qt_mac_no_menubar_merge && !apple_menu) {
+                apple_menu = qt_mac_create_menu(qtMenuBar);
+                [apple_menu setTitle:qt_mac_QStringToNSString(QString(QChar(0x14)))];
                 NSMenuItem *apple_menuItem = [[NSMenuItem alloc] init];
-                [apple_menuItem setSubmenu:mac_menubar->menu];
-                [mac_menubar->apple_menu addItem:apple_menuItem];
+                [apple_menuItem setSubmenu:menu];
+                [apple_menu addItem:apple_menuItem];
                 [apple_menuItem release];
             }
-            if (mac_menubar->apple_menu) {
-                QMenuPrivate::mergeMenuHash.insert(mac_menubar->menu, mac_menubar->apple_menu);
+            if (apple_menu) {
+                QCocoaMenu::mergeMenuHash.insert(menu, apple_menu);
             }
-            QList<QAction*> items = q->actions();
+            QList<QAction*> items = qtMenuBar->actions();
             for(int i = 0; i < items.count(); i++)
-                mac_menubar->addAction(items[i]);
+                addAction(items[i], 0);
         }
     }
-    return mac_menubar->menu;
+    return menu;
 }
 
 /*!
@@ -1019,7 +1009,7 @@ OSMenuRef QMenuBarPrivate::macMenu()
 
     \sa QMenu::macMenu()
 */
-OSMenuRef QMenuBar::macMenu() { return d_func()->macMenu(); }
+//OSMenuRef QMenuBar::macMenu() { return d_func()->macMenu(); }
 
 /* !
     \internal
@@ -1089,6 +1079,7 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
 static QWidget *findWindowThatShouldDisplayMenubar()
 {
     QWidget *w = qApp->activeWindow();
+
     if (!w) {
         // We have no active window on screen. Try to
         // find a window from the list of top levels:
@@ -1102,6 +1093,7 @@ static QWidget *findWindowThatShouldDisplayMenubar()
             }
         }
     }
+
     return w;
 }
 
@@ -1110,7 +1102,10 @@ static QMenuBar *findMenubarForWindow(QWidget *w)
     QMenuBar *mb = 0;
     if (w) {
         mb = menubars()->value(w);
-#ifndef QT_NO_MAINWINDOW
+
+#if 0
+// ###
+//#ifndef QT_NO_MAINWINDOW
         QDockWidget *dw = qobject_cast<QDockWidget *>(w);
         if (!mb && dw) {
             QMainWindow *mw = qobject_cast<QMainWindow *>(dw->parentWidget());
@@ -1136,7 +1131,7 @@ void qt_mac_clear_menubar()
     if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
         return;
 
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
     NSMenu *menu = [loader menu];
     [loader ensureAppMenuInMenu:menu];
@@ -1155,26 +1150,21 @@ void qt_mac_clear_menubar()
   active menu bar in the Menu Manager.
 
   \warning This function is not portable.
-
-  \sa QMenu::macMenu(), QMenuBar::macMenu()
 */
-bool QMenuBar::macUpdateMenuBar()
+void QCocoaMenuBar::macUpdateMenuBar()
 {
-    QMacCocoaAutoReleasePool pool;
-    qWarning("Unimplemented: QMenuBar::macUpdateMenuBar");
-    //qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar));
-
-    return true;
+    [getMenuLoader() performSelectorOnMainThread: @selector(qtUpdateMenubar) withObject: nil waitUntilDone: NO];
 }
 
-bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
+bool QCocoaMenuBar::macUpdateMenuBarImmediatly()
 {
     bool ret = false;
     cancelAllMenuTracking();
     QWidget *w = findWindowThatShouldDisplayMenubar();
     QMenuBar *mb = findMenubarForWindow(w);
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
 
+    // ###  extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
+    bool qt_mac_app_fullscreen = false;
     // We need to see if we are in full screen mode, if so we need to
     // switch the full screen mode to be able to show or hide the menubar.
     if(w && mb) {
@@ -1194,22 +1184,25 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
     }
 
     if (mb && mb->isNativeMenuBar()) {
-        bool modal = QApplicationPrivate::modalState();
-        QMacCocoaAutoReleasePool pool;
-        if (OSMenuRef menu = mb->macMenu()) {
+
+        // ###
+        bool modal = false;
+        //bool modal = QGuiApplicationPrivate::modalState();
+        QCocoaAutoReleasePool pool;
+        if (OSMenuRef menu = reinterpret_cast<QCocoaMenuBar *>(mb->platformMenuBar())->macMenu()) {
             QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
             [loader ensureAppMenuInMenu:menu];
             [NSApp setMainMenu:menu];
-            syncMenuBarItemsVisiblity(mb->d_func()->mac_menubar);
+            syncMenuBarItemsVisiblity(reinterpret_cast<QCocoaMenuBar *>(mb->platformMenuBar()));
 
-            if (OSMenuRef tmpMerge = QMenuPrivate::mergeMenuHash.value(menu)) {
+            if (OSMenuRef tmpMerge = QCocoaMenu::mergeMenuHash.value(menu)) {
                 if (QMenuMergeList *mergeList
-                        = QMenuPrivate::mergeMenuItemsHash.value(tmpMerge)) {
+                        = QCocoaMenu::mergeMenuItemsHash.value(tmpMerge)) {
                     const int mergeListSize = mergeList->size();
 
                     for (int i = 0; i < mergeListSize; ++i) {
                         const QMenuMergeItem &mergeItem = mergeList->at(i);
-                        // Ideally we would call QMenuPrivate::syncAction, but that requires finding
+                        // Ideally we would call QCocoaMenu::syncAction, but that requires finding
                         // the original QMen and likely doing more work than we need.
                         // For example, enabled is handled below.
                         [mergeItem.menuItem setTag:reinterpret_cast<long>(
@@ -1232,11 +1225,11 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
         const bool modal = qt_mac_should_disable_menu(qt_mac_current_menubar.qmenubar);
         if (modal != qt_mac_current_menubar.modal) {
             ret = true;
-            if (OSMenuRef menu = qt_mac_current_menubar.qmenubar->macMenu()) {
+            if (OSMenuRef menu = reinterpret_cast<QCocoaMenuBar *>(qt_mac_current_menubar.qmenubar->platformMenuBar())->macMenu()) {
                 QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
                 [loader ensureAppMenuInMenu:menu];
                 [NSApp setMainMenu:menu];
-                syncMenuBarItemsVisiblity(qt_mac_current_menubar.qmenubar->d_func()->mac_menubar);
+                syncMenuBarItemsVisiblity(reinterpret_cast<QCocoaMenuBar *>(qt_mac_current_menubar.qmenubar->platformMenuBar()));
                 qt_mac_set_modal_state(menu, modal);
             }
             qt_mac_current_menubar.modal = modal;
@@ -1249,10 +1242,10 @@ bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
     return ret;
 }
 
-QHash<OSMenuRef, OSMenuRef> QMenuPrivate::mergeMenuHash;
-QHash<OSMenuRef, QMenuMergeList*> QMenuPrivate::mergeMenuItemsHash;
+QHash<OSMenuRef, OSMenuRef> QCocoaMenu::mergeMenuHash;
+QHash<OSMenuRef, QMenuMergeList*> QCocoaMenu::mergeMenuItemsHash;
 
-bool QMenuPrivate::QMacMenuPrivate::merged(const QAction *action) const
+bool QCocoaMenu::merged(const QAction *action) const
 {
     if (OSMenuRef merge = mergeMenuHash.value(menu)) {
         if (QMenuMergeList *list = mergeMenuItemsHash.value(merge)) {
@@ -1271,14 +1264,11 @@ static OSMenuRef qt_mac_create_menu(QWidget *w)
 {
     OSMenuRef ret;
     if (QMenu *qmenu = qobject_cast<QMenu *>(w)){
-        ret = [[QT_MANGLE_NAMESPACE(QCocoaMenu) alloc] initWithQMenu:qmenu];
+        ret = [[QT_MANGLE_NAMESPACE(QNativeCocoaMenu) alloc] initWithQMenu:qmenu];
     } else {
         ret = [[NSMenu alloc] init];
     }
     return ret;
 }
 
-
-
 QT_END_NAMESPACE
-

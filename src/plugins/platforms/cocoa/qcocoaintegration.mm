@@ -47,6 +47,11 @@
 #include "qcocoamenuloader.h"
 #include "qcocoaeventdispatcher.h"
 #include "qcocoahelpers.h"
+#include "qcocoaapplication.h"
+#include "qcocoaapplicationdelegate.h"
+#include "qmenu_mac.h"
+
+#include <QtCore/qcoreapplication.h>
 
 #include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 
@@ -78,9 +83,7 @@ QCocoaIntegration::QCocoaIntegration()
 {
     mPool = new QCocoaAutoReleasePool;
 
-    //Make sure we have a nsapplication :)
-    [NSApplication sharedApplication];
-//    [[OurApplication alloc] init];
+    QNSApplication *cocoaApplication = [QNSApplication sharedApplication];
 
     // Applications launched from plain executables (without an app
     // bundle) are "background" applications that does not take keybaord
@@ -93,12 +96,24 @@ QCocoaIntegration::QCocoaIntegration()
     // Ignoring other apps is neccessary (we must ignore the terminal), but makes
     // Qt apps play slightly less nice with other apps when lanching from Finder
     // (See the activateIgnoringOtherApps docs.)
-    [[NSApplication sharedApplication] activateIgnoringOtherApps : YES];
+    [cocoaApplication activateIgnoringOtherApps : YES];
 
-    // Load the application menu. This menu contains Preferences, Hide, Quit.
-    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
-    qt_mac_loadMenuNib(qtMenuLoader);
-    [[NSApplication sharedApplication] setMenu:[qtMenuLoader menu]];
+    // ### For AA_MacPluginApplication we don't want to load the menu nib.
+    // Qt 4 also does not set the application delegate, so that behavior
+    // is matched here.
+    if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+
+        // Set app delegate, link to the current delegate (if any)
+        QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+        [newDelegate setReflectionDelegate:[cocoaApplication delegate]];
+        [cocoaApplication setDelegate:newDelegate];
+
+        // Load the application menu. This menu contains Preferences, Hide, Quit.
+        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
+        qt_mac_loadMenuNib(qtMenuLoader);
+        [cocoaApplication setMenu:[qtMenuLoader menu]];
+        [newDelegate setMenuLoader:qtMenuLoader];
+    }
 
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
@@ -147,6 +162,18 @@ QAbstractEventDispatcher *QCocoaIntegration::guiThreadEventDispatcher() const
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 {
     return mFontDb;
+}
+
+QPlatformMenu *QCocoaIntegration::createPlatformMenu(QMenu *menu) const
+{
+    // return new QCocoaMenu(menu);
+    return 0;
+}
+
+QPlatformMenuBar *QCocoaIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
+{
+    //return new QCocoaMenuBar(menuBar);
+    return 0;
 }
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const

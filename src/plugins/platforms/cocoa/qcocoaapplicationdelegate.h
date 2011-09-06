@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -87,9 +87,9 @@
 //
 
 
-#include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
+
+#include <qglobal.h>
 
 QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 
@@ -125,4 +125,3 @@ QT_FORWARD_DECLARE_CLASS(QApplicationPrivate);
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 @end
-#endif

@@ -42,6 +42,8 @@
 #include <Carbon/Carbon.h>
 
 #include "qnsview.h"
+#include "qcocoahelpers.h"
+
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QDebug>
 
@@ -276,44 +278,7 @@
 
 - (int) convertKeyCode : (QChar)keyChar
 {
-    if (keyChar.isLower())
-        keyChar = keyChar.toUpper();
-    int keyCode = keyChar.unicode();
-
-    int qtKeyCode = Qt::Key(keyCode); // default case, overrides below
-    switch (keyCode) {
-        case NSEnterCharacter: qtKeyCode = Qt::Key_Enter; break;
-        case NSBackspaceCharacter: qtKeyCode = Qt::Key_Backspace; break;
-        case NSTabCharacter: qtKeyCode = Qt::Key_Tab; break;
-        case NSNewlineCharacter:  qtKeyCode = Qt::Key_Return; break;
-        case NSCarriageReturnCharacter: qtKeyCode = Qt::Key_Return; break;
-        case NSBackTabCharacter: qtKeyCode = Qt::Key_Backtab; break;
-        case 27 : qtKeyCode = Qt::Key_Escape; break;
-        case NSDeleteCharacter : qtKeyCode = Qt::Key_Backspace; break; // Cocoa sends us delete when pressing backspace.
-        case NSUpArrowFunctionKey: qtKeyCode = Qt::Key_Up; break;
-        case NSDownArrowFunctionKey: qtKeyCode = Qt::Key_Down; break;
-        case NSLeftArrowFunctionKey: qtKeyCode = Qt::Key_Left; break;
-        case NSRightArrowFunctionKey: qtKeyCode = Qt::Key_Right; break;
-        case NSInsertFunctionKey: qtKeyCode = Qt::Key_Insert; break;
-        case NSDeleteFunctionKey: qtKeyCode = Qt::Key_Delete; break;
-        case NSHomeFunctionKey: qtKeyCode = Qt::Key_Home; break;
-        case NSEndFunctionKey: qtKeyCode = Qt::Key_End; break;
-        case NSPageUpFunctionKey: qtKeyCode = Qt::Key_PageUp; break;
-        case NSPageDownFunctionKey: qtKeyCode = Qt::Key_PageDown; break;
-        case NSPrintScreenFunctionKey: qtKeyCode = Qt::Key_Print; break;
-        case NSScrollLockFunctionKey: qtKeyCode = Qt::Key_ScrollLock; break;
-        case NSPauseFunctionKey: qtKeyCode = Qt::Key_Pause; break;
-        case NSSysReqFunctionKey: qtKeyCode = Qt::Key_SysReq; break;
-        case NSMenuFunctionKey: qtKeyCode = Qt::Key_Menu; break;
-        case NSHelpFunctionKey: qtKeyCode = Qt::Key_Help; break;
-        default : break;
-    }
-
-    // handle all function keys (F1-F35)
-    if (keyCode >= NSF1FunctionKey && keyCode <= NSF35FunctionKey)
-        qtKeyCode = Qt::Key_F1 + (keyCode - NSF1FunctionKey);
-
-    return qtKeyCode;
+    return qt_mac_cocoaKey2QtKey(keyChar);
 }
 
 - (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags

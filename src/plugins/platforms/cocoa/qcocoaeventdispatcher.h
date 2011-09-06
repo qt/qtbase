@@ -103,17 +103,6 @@ typedef struct _QCocoaModalSessionInfo {
     void *nswindow;
 } QCocoaModalSessionInfo;
 
-class Q_GUI_EXPORT QMacCocoaAutoReleasePool
-{
-private:
-    void *pool;
-public:
-    QMacCocoaAutoReleasePool();
-    ~QMacCocoaAutoReleasePool();
-
-    inline void *handle() const { return pool; }
-};
-
 class QCocoaEventDispatcherPrivate;
 class QCocoaEventDispatcher : public QEventDispatcherUNIX
 {

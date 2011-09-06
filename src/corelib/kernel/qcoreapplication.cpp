@@ -743,20 +743,6 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
-#ifdef Q_OS_MAC
-    // Turn on the no native menubar here, since we used to
-    // do this implicitly. We DO NOT flip it off if someone sets
-    // it to false.
-    // Ideally, we'd have magic that would be something along the lines of
-    // "follow MacPluginApplication" unless explicitly set.
-    // Considering this attribute isn't only at the beginning
-    // it's unlikely it will ever be a problem, but I want
-    // to have the behavior documented here.
-    if (attribute == Qt::AA_MacPluginApplication && on
-          && !testAttribute(Qt::AA_DontUseNativeMenuBar)) {
-        setAttribute(Qt::AA_DontUseNativeMenuBar, true);
-    }
-#endif
 }
 
 /*!

@@ -155,12 +155,6 @@ SOURCES += \
                          widgets/qmacnativewidget_mac.mm \
 }
 
-mac {
-    OBJECTIVE_SOURCES += widgets/qmenu_mac.mm \
-                         widgets/qcocoamenu_mac.mm \
-                         platforms/mac/qt_widget_helpers_mac.mm
-}
-
 wince*: {
     SOURCES += widgets/qmenu_wince.cpp
     HEADERS += widgets/qmenu_wince_resource_p.h

@@ -39,75 +39,50 @@
  **
  ****************************************************************************/
 
-#include <private/qt_widget_helpers_mac_p.h>
+#ifndef QPLATFORMMENU_H
+#define QPLATFORMMENU_H
 
-#include <QtCore>
-#include <QtGui>
+#include <qglobal.h>
+#include <qpointer.h>
+#include <QtWidgets/qaction.h>
 
-//
-// Globabal variables
-//
-bool qt_mac_app_fullscreen = false;
+QT_BEGIN_NAMESPACE
 
-//
-// QMacCocoaAutoReleasePool
-//
-QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
+class QMenuPrivate;
+class Q_WIDGETS_EXPORT QPlatformMenuAction
 {
-    pool = (void*)[[NSAutoreleasePool alloc] init];
-}
+public:
+    virtual ~QPlatformMenuAction();
+    QPointer<QAction> action;
+};
 
-QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
-{
-    [(NSAutoreleasePool*)pool release];
-}
+class Q_WIDGETS_EXPORT QPlatformMenu {
+public:
+    QPlatformMenu();
+    virtual ~QPlatformMenu();
 
-//
-// Functions
-//
-void * /*NSImage */qt_mac_create_nsimage(const QPixmap &pm)
-{
-    QMacCocoaAutoReleasePool pool;
-    qWarning("Unimplemented: qt_mac_create_nsimage");
-#if 0
-    if(QCFType<CGImageRef> image = pm.toMacCGImageRef()) {
-        NSImage *newImage = 0;
-        NSRect imageRect = NSMakeRect(0.0, 0.0, CGImageGetWidth(image), CGImageGetHeight(image));
-        newImage = [[NSImage alloc] initWithSize:imageRect.size];
-        [newImage lockFocus];
-        {
-            CGContextRef imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-            CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
-        }
-        [newImage unlockFocus];
-        return newImage;
-    }
+    virtual bool merged(const QAction *action) const = 0;
+
+    virtual void addAction(QAction *action, QAction *before) = 0;
+    virtual void removeAction(QAction *action) = 0;
+    virtual void syncAction(QAction *action) = 0;
+
+    virtual void setMenuEnabled(bool enable);
+    virtual void syncSeparatorsCollapsible(bool enable);
+};
+
+struct Q_WIDGETS_EXPORT QPlatformMenuBar {
+    QPlatformMenuBar();
+    virtual ~QPlatformMenuBar();
+
+    virtual void addAction(QAction *action, QAction *before = 0) = 0;
+    virtual void syncAction(QAction *action) = 0;
+    virtual void removeAction(QAction *action) = 0;
+
+    virtual void handleReparent(QWidget *newParent);
+};
+
+QT_END_NAMESPACE
+
 #endif
-    return 0;
-}
-
-
-QString qt_mac_removeMnemonics(const QString &original)
-{
-    QString returnText(original.size(), 0);
-    int finalDest = 0;
-    int currPos = 0;
-    int l = original.length();
-    while (l) {
-        if (original.at(currPos) == QLatin1Char('&')
-            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
-            ++currPos;
-            --l;
-            if (l == 0)
-                break;
-        }
-        returnText[finalDest] = original.at(currPos);
-        ++currPos;
-        ++finalDest;
-        --l;
-    }
-    returnText.truncate(finalDest);
-    return returnText;
-}
-
 

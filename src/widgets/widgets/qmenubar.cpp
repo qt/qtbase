@@ -55,6 +55,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qwhatsthis.h>
+#include "private/qguiapplication_p.h"
 
 #ifndef QT_NO_MENUBAR
 
@@ -728,11 +729,11 @@ void QMenuBarPrivate::init()
     Q_Q(QMenuBar);
     q->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     q->setAttribute(Qt::WA_CustomWhatsThis);
-#ifdef Q_OS_MAC
-    macCreateMenuBar(q->parentWidget());
-    if(mac_menubar)
+
+    platformMenuBar = QGuiApplicationPrivate::platformIntegration()->createPlatformMenuBar(q);
+
+    if (platformMenuBar)
         q->hide();
-#endif
 #ifdef Q_WS_WINCE
     if (qt_wince_is_mobile()) {
         wceCreateMenuBar(q->parentWidget());
@@ -808,10 +809,10 @@ QMenuBar::QMenuBar(QWidget *parent, const char *name) : QWidget(*new QMenuBarPri
 */
 QMenuBar::~QMenuBar()
 {
-#ifdef Q_OS_MAC
     Q_D(QMenuBar);
-    d->macDestroyMenuBar();
-#endif
+    delete d->platformMenuBar;
+    d->platformMenuBar = 0;
+
 #ifdef Q_WS_WINCE
     Q_D(QMenuBar);
     if (qt_wince_is_mobile())
@@ -1275,25 +1276,23 @@ void QMenuBar::actionEvent(QActionEvent *e)
 {
     Q_D(QMenuBar);
     d->itemsDirty = true;
-#if defined (Q_OS_MAC) || defined(Q_OS_WINCE) || defined(Q_WS_S60)
-    if (isNativeMenuBar()) {
-#ifdef Q_OS_MAC
-        QMenuBarPrivate::QMacMenuBarPrivate *nativeMenuBar = d->mac_menubar;
-#elif defined(Q_WS_S60)
+
+    if (d->platformMenuBar) {
+        QPlatformMenuBar *nativeMenuBar = d->platformMenuBar;
+#if defined(Q_WS_S60)
         QMenuBarPrivate::QSymbianMenuBarPrivate *nativeMenuBar = d->symbian_menubar;
-#else
+#elif defined(Q_WS_WINCE)
         QMenuBarPrivate::QWceMenuBarPrivate *nativeMenuBar = d->wce_menubar;
 #endif
         if (!nativeMenuBar)
             return;
         if(e->type() == QEvent::ActionAdded)
-            nativeMenuBar->addAction(e->action(), nativeMenuBar->findAction(e->before()));
+            nativeMenuBar->addAction(e->action(), e->before());
         else if(e->type() == QEvent::ActionRemoved)
             nativeMenuBar->removeAction(e->action());
         else if(e->type() == QEvent::ActionChanged)
             nativeMenuBar->syncAction(e->action());
     }
-#endif
 
     if(e->type() == QEvent::ActionAdded) {
         connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
@@ -1372,15 +1371,8 @@ void QMenuBarPrivate::handleReparent()
     oldParent = newParent;
     oldWindow = newWindow;
 
-#ifdef Q_OS_MAC
-    if (q->isNativeMenuBar() && !macWidgetHasNativeMenubar(newParent)) {
-        // If the new parent got a native menubar from before, keep that
-        // menubar rather than replace it with this one (because a parents
-        // menubar has precedence over children menubars).
-        macDestroyMenuBar();
-        macCreateMenuBar(newParent);
-    }
-#endif
+    if (platformMenuBar)
+        platformMenuBar->handleReparent(newParent);
 
 #ifdef Q_WS_WINCE
     if (qt_wince_is_mobile() && wce_menubar)
@@ -1925,27 +1917,18 @@ void QMenuBar::setNativeMenuBar(bool nativeMenuBar)
     Q_D(QMenuBar);
     if (d->nativeMenuBar == -1 || (nativeMenuBar != bool(d->nativeMenuBar))) {
         d->nativeMenuBar = nativeMenuBar;
-#ifdef Q_OS_MAC
+
         if (!d->nativeMenuBar) {
-            extern void qt_mac_clear_menubar();
-            qt_mac_clear_menubar();
-            d->macDestroyMenuBar();
-            const QList<QAction *> &menubarActions = actions();
-            for (int i = 0; i < menubarActions.size(); ++i) {
-                const QAction *action = menubarActions.at(i);
-                if (QMenu *menu = action->menu()) {
-                    delete menu->d_func()->mac_menu;
-                    menu->d_func()->mac_menu = 0;
-                }
-            }
+            delete d->platformMenuBar;
+            d->platformMenuBar = 0;
         } else {
-            d->macCreateMenuBar(parentWidget());
+            if (!d->platformMenuBar)
+                d->platformMenuBar = QGuiApplicationPrivate::platformIntegration()->createPlatformMenuBar(this);
         }
-        macUpdateMenuBar();
+
 	updateGeometry();
 	if (!d->nativeMenuBar && parentWidget())
 	    setVisible(true);
-#endif
     }
 }
 
@@ -1956,6 +1939,12 @@ bool QMenuBar::isNativeMenuBar() const
         return !QApplication::instance()->testAttribute(Qt::AA_DontUseNativeMenuBar);
     }
     return d->nativeMenuBar;
+}
+
+QPlatformMenuBar *QMenuBar::platformMenuBar()
+{
+    Q_D(const QMenuBar);
+    return d->platformMenuBar;
 }
 
 /*!

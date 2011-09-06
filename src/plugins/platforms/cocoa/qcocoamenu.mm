@@ -39,18 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qmacdefines_mac.h"
 #include "qapplication.h"
 #include "qvarlengtharray.h"
-#import <private/qcocoamenu_mac_p.h>
-#import <private/qcocoamenuloader_mac_p.h>
-#import <private/qcocoaapplication_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
+#import "qcocoamenu.h"
+#import "qcocoamenuloader.h"
+#import "qcocoaapplication.h"
+#include "qcocoahelpers.h"
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>
-#include <private/qcocoaapplication_mac_p.h>
-
-#include <QtWidgets/QMenu>
 
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QWidget)
@@ -61,14 +57,15 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QEvent)
 
 QT_BEGIN_NAMESPACE
-extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
 extern void qt_mac_menu_collapseSeparators(NSMenu *menu, bool collapse);
 void qt_mac_clear_status_text(QAction *action);
+extern void qt_mac_emit_menuSignals(QMenu *menu, bool show);
+extern void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaMenu)
+@implementation QT_MANGLE_NAMESPACE(QNativeCocoaMenu)
 
 - (id)initWithQMenu:(QMenu*)menu
 {
@@ -95,7 +92,7 @@ QT_USE_NAMESPACE
     }
 
     if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
-        QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QCocoaMenu) *>(menu)->qmenu;
+        QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *>(menu)->qmenu;
         previousAction = action;
         action->activate(QAction::Hover);
         qt_mac_menu_emit_hovered(qtmenu, action);
@@ -108,14 +105,14 @@ QT_USE_NAMESPACE
     while (QWidget *popup
                 = QApplication::activePopupWidget())
         popup->close();
-    QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QCocoaMenu) *>(menu)->qmenu;
+    QMenu *qtmenu = static_cast<QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *>(menu)->qmenu;
     qt_mac_emit_menuSignals(qtmenu, true);
     qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
 - (void)menuDidClose:(NSMenu*)menu
 {
-    qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, false);
+    qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QNativeCocoaMenu) *)menu)->qmenu, false);
     if (previousAction) {
         qt_mac_clear_status_text(previousAction);
         previousAction = 0;
@@ -206,7 +203,9 @@ NSString *qt_mac_removePrivateUnicode(NSString* string)
             QKeyEvent accel_ev(QEvent::ShortcutOverride, (key & (~Qt::KeyboardModifierMask)),
                                Qt::KeyboardModifiers(key & Qt::KeyboardModifierMask));
             accel_ev.ignore();
-            qt_sendSpontaneousEvent(widget, &accel_ev);
+
+// ###           qt_sendSpontaneousEvent(widget, &accel_ev);
+
             if (accel_ev.isAccepted()) {
                 qWarning("Unimplemented: qt_dispatchKeyEvent");
 #if 0
@@ -226,7 +225,7 @@ NSString *qt_mac_removePrivateUnicode(NSString* string)
      NSInteger index = [super indexOfItemWithTarget:anObject andAction:actionSelector];
      static SEL selForOFCP = NSSelectorFromString(@"orderFrontCharacterPalette:");
      if (index == -1 && selForOFCP == actionSelector) {
-         // Check if the 'orderFrontCharacterPalette' SEL exists for QCocoaMenuLoader object
+         // Check if the 'orderFrontCharacterPalette' SEL exists for QNativeCocoaMenuLoader object
          QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
          return [super indexOfItemWithTarget:loader andAction:actionSelector];
      }

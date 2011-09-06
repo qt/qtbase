@@ -110,34 +110,6 @@ void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)
     }
 }
 
-CGImageRef qt_mac_image_to_cgimage(const QImage &image)
-{
-    int bitsPerColor = 8;
-    int bitsPerPixel = 32;
-    if (image.depth() == 1) {
-        bitsPerColor = 1;
-        bitsPerPixel = 1;
-    }
-    QCFType<CGDataProviderRef> provider =
-        CGDataProviderCreateWithData(0, image.bits(), image.bytesPerLine() * image.height(),
-                                     0);
-
-    uint cgflags = kCGImageAlphaPremultipliedFirst;
-#ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    cgflags |= kCGBitmapByteOrder32Host;
-#endif
-
-    CGImageRef cgImage = CGImageCreate(image.width(), image.height(), bitsPerColor, bitsPerPixel,
-                                       image.bytesPerLine(),
-                                       QCoreGraphicsPaintEngine::macGenericColorSpace(),
-                                       cgflags, provider,
-                                       0,
-                                       0,
-                                       kCGRenderingIntentDefault);
-
-    return cgImage;
-}
-
 /*****************************************************************************
   QPixmap member functions
  *****************************************************************************/

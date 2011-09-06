@@ -41,10 +41,14 @@
 
 #include "qcocoamenuloader.h"
 
+#include "qmenu_mac.h"
+#include "qcocoahelpers.h"
+
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qdebug.h>
 
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
@@ -113,7 +117,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
     showAllItem = [[appMenu itemWithTitle:@"Show All"] retain];
 
     // Get the names in the nib to match the app name set by Qt.
-    const NSString *appName = reinterpret_cast<const NSString*>(QCFString::toCFStringRef(qAppName()));
+    const NSString *appName = reinterpret_cast<const NSString*>(QCFString::toCFStringRef(qt_mac_applicationName()));
     [quitItem setTitle:[[quitItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
                                                                    withString:const_cast<NSString *>(appName)]];
     [hideItem setTitle:[[hideItem title] stringByReplacingOccurrencesOfString:@"NewApplication"
@@ -269,28 +273,29 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 
 - (void)qtUpdateMenubar
 {
-    //    QMenuBarPrivate::macUpdateMenuBarImmediatly();
+    QCocoaMenuBar::macUpdateMenuBarImmediatly();
 }
 
 - (void)qtTranslateApplicationMenu
 {
-/*
+
+    qDebug() << "qtTranslateApplicationMenu";
+
 #ifndef QT_NO_TRANSLATION
     [servicesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(0))];
-    [hideItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(1).arg(qAppName()))];
+    [hideItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()))];
     [hideAllOthersItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(2))];
     [showAllItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(3))];
     [preferencesItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(4))];
-    [quitItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(5).arg(qAppName()))];
-    [aboutItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(6).arg(qAppName()))];
+    [quitItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()))];
+    [aboutItem setTitle: qt_mac_QStringToNSString(qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()))];
 #endif
-*/
 }
 
 - (IBAction)qtDispatcherToQAction:(id)sender
 {
-    /*
-    QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
+    //
+    //QScopedLoopLevelCounter loopLevelCounter(QApplicationPrivate::instance()->threadData);
     NSMenuItem *item = static_cast<NSMenuItem *>(sender);
     if (QAction *action = reinterpret_cast<QAction *>([item tag])) {
         action->trigger();
@@ -300,7 +305,6 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
         // normal QApplication::quit().
         qApp->quit();
     }
-*/
 }
 
  - (void)orderFrontCharacterPalette:(id)sender

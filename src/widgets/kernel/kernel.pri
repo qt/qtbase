@@ -174,12 +174,14 @@ qpa {
         HEADERS += \
                 kernel/qdesktopwidget_qpa_p.h \
                 kernel/qwidgetwindow_qpa_p.h \
+                kernel/qplatformmenu_qpa.h \
 
         SOURCES += \
                 kernel/qapplication_qpa.cpp \
                 kernel/qdesktopwidget_qpa.cpp \
                 kernel/qwidget_qpa.cpp \
                 kernel/qwidgetwindow_qpa.cpp \
+                kernel/qplatformmenu_qpa.cpp \
 }
 
 !qpa:!x11:mac {

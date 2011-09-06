@@ -83,37 +83,6 @@ void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 class QTornOffMenu;
 class QEventLoop;
 
-#ifdef Q_OS_MAC
-#  ifdef __OBJC__
-QT_END_NAMESPACE
-@class NSMenuItem;
-QT_BEGIN_NAMESPACE
-#  else
-typedef void NSMenuItem;
-#  endif //__OBJC__
-struct QMacMenuAction {
-    QMacMenuAction()
-       : menuItem(0)
-         , ignore_accel(0), merged(0), menu(0)
-    {
-    }
-    ~QMacMenuAction();
-    NSMenuItem *menuItem;
-    uchar ignore_accel : 1;
-    uchar merged : 1;
-    QPointer<QAction> action;
-    OSMenuRef menu;
-};
-
-struct QMenuMergeItem
-{
-    inline QMenuMergeItem(NSMenuItem *c, QMacMenuAction *a) : menuItem(c), action(a) { }
-    NSMenuItem *menuItem;
-    QMacMenuAction *action;
-};
-typedef QList<QMenuMergeItem> QMenuMergeList;
-#endif // Q_OS_MAC
-
 #ifdef Q_WS_WINCE
 struct QWceMenuAction {
     uint command;
@@ -144,13 +113,8 @@ public:
                       cancelAction(0),
 #endif
                       scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), sloppyAction(0), doChildEffects(false)
-#ifdef QT3_SUPPORT
-                      ,emitHighlighted(false)
-#endif
-#ifdef Q_OS_MAC
-                      ,mac_menu(0)
-#endif
+                      hasCheckableItems(0), sloppyAction(0), doChildEffects(false), platformMenu(0)
+
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
                       ,wce_menu(0)
 #endif
@@ -161,9 +125,7 @@ public:
     ~QMenuPrivate()
     {
         delete scroll;
-#ifdef Q_OS_MAC
-        delete mac_menu;
-#endif
+        delete platformMenu;
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
@@ -293,36 +255,7 @@ public:
     //menu fading/scrolling effects
     bool doChildEffects;
 
-#ifdef Q_OS_MAC
-    //mac menu binding
-    struct QMacMenuPrivate {
-        QList<QMacMenuAction*> actionItems;
-        OSMenuRef menu;
-        QMacMenuPrivate();
-        ~QMacMenuPrivate();
-
-        bool merged(const QAction *action) const;
-        void addAction(QAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);
-        void addAction(QMacMenuAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);
-        void syncAction(QMacMenuAction *);
-        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
-        void removeAction(QMacMenuAction *);
-        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
-        inline QMacMenuAction *findAction(QAction *a) {
-            for(int i = 0; i < actionItems.size(); i++) {
-                QMacMenuAction *act = actionItems[i];
-                if(a == act->action)
-                    return act;
-            }
-            return 0;
-        }
-    } *mac_menu;
-    OSMenuRef macMenu(OSMenuRef merge);
-    void setMacMenuEnabled(bool enable = true);
-    void syncSeparatorsCollapsible(bool collapsible);
-    static QHash<OSMenuRef, OSMenuRef> mergeMenuHash;
-    static QHash<OSMenuRef, QMenuMergeList*> mergeMenuItemsHash;
-#endif
+    QPlatformMenu *platformMenu;
 
     QPointer<QAction> actionAboutToTrigger;
 #ifdef QT3_SUPPORT

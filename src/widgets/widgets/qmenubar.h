@@ -110,11 +110,6 @@ public:
     void setCornerWidget(QWidget *w, Qt::Corner corner = Qt::TopRightCorner);
     QWidget *cornerWidget(Qt::Corner corner = Qt::TopRightCorner) const;
 
-#ifdef Q_OS_MAC
-    OSMenuRef macMenu();
-    static bool macUpdateMenuBar();
-#endif
-
 #ifdef Q_WS_WINCE
     void setDefaultAction(QAction *);
     QAction *defaultAction() const;
@@ -125,7 +120,7 @@ public:
 
     bool isNativeMenuBar() const;
     void setNativeMenuBar(bool nativeMenuBar);
-
+    QPlatformMenuBar *platformMenuBar();
 public Q_SLOTS:
     virtual void setVisible(bool visible);
 

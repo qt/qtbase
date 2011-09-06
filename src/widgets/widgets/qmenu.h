@@ -46,10 +46,7 @@
 #include <QtCore/qstring.h>
 #include <QtWidgets/qicon.h>
 #include <QtWidgets/qaction.h>
-#ifdef Q_OS_MAC
-#include "QtWidgets/qmacdefines_mac.h"
-#endif
-
+#include <QtWidgets/qplatformmenu_qpa.h>
 
 #ifdef QT3_SUPPORT
 #include <QtGui/qpixmap.h>
@@ -145,9 +142,7 @@ public:
     void setIcon(const QIcon &icon);
 
     void setNoReplayFor(QWidget *widget);
-#ifdef Q_OS_MAC
-    OSMenuRef macMenu(OSMenuRef merge=0);
-#endif
+    QPlatformMenu *platformMenu();
 
 #ifdef Q_WS_WINCE
     HMENU wceMenu();
@@ -418,15 +413,8 @@ private:
     friend class QComboBox;
     friend class QAction;
     friend class QToolButtonPrivate;
-
-#ifdef Q_OS_MAC
-    friend void qt_mac_trayicon_activate_action(QMenu *, QAction *action);
-    friend bool qt_mac_watchingAboutToShow(QMenu *);
-    friend OSStatus qt_mac_menu_event(EventHandlerCallRef, EventRef, void *);
-    friend bool qt_mac_activate_action(OSMenuRef, uint, QAction::ActionEvent, bool);
-    friend void qt_mac_emit_menuSignals(QMenu *, bool);
+    friend void qt_mac_emit_menuSignals(QMenu *menu, bool show);
     friend void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
-#endif
 };
 
 #endif // QT_NO_MENU

@@ -68,7 +68,7 @@ QT_FORWARD_DECLARE_CLASS(QAction)
 
 #endif
 
-@interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu <NSMenuDelegate>
+@interface QT_MANGLE_NAMESPACE(QNativeCocoaMenu) : NSMenu <NSMenuDelegate>
 {
     QMenu *qmenu;
     QAction *previousAction;

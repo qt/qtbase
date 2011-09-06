@@ -81,8 +81,9 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
+    QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
     QPlatformNativeInterface *nativeInterface() const;
 private:

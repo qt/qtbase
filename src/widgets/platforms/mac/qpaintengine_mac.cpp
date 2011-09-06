@@ -317,64 +317,6 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macGenericColorSpace()
     return macDisplayColorSpace();
 #endif
 }
-
-/*
-    Ideally, we should pass the widget in here, and use CGGetDisplaysWithRect() etc.
-    to support multiple displays correctly.
-*/
-CGColorSpaceRef QCoreGraphicsPaintEngine::macDisplayColorSpace(const QWidget *widget)
-{
-    CGColorSpaceRef colorSpace;
-
-    CGDirectDisplayID displayID;
-    CMProfileRef displayProfile = 0;
-    if (widget == 0) {
-        displayID = CGMainDisplayID();
-    } else {
-        const QRect &qrect = widget->window()->geometry();
-        CGRect rect = CGRectMake(qrect.x(), qrect.y(), qrect.width(), qrect.height());
-        CGDisplayCount throwAway;
-        CGDisplayErr dErr = CGGetDisplaysWithRect(rect, 1, &displayID, &throwAway);
-        if (dErr != kCGErrorSuccess)
-            return macDisplayColorSpace(0); // fall back on main display
-    }
-    if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
-        return colorSpace;
-
-    CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
-    if (err == noErr) {
-        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
-    } else if (widget) {
-        return macDisplayColorSpace(0); // fall back on main display
-    }
-
-    if (colorSpace == 0)
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-
-    m_displayColorSpaceHash.insert(displayID, colorSpace);
-    CMCloseProfile(displayProfile);
-    if (!m_postRoutineRegistered) {
-        m_postRoutineRegistered = true;
-        qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
-    }
-    return colorSpace;
-}
-
-void QCoreGraphicsPaintEngine::cleanUpMacColorSpaces()
-{
-    if (m_genericColorSpace) {
-        CFRelease(m_genericColorSpace);
-        m_genericColorSpace = 0;
-    }
-    QHash<CGDirectDisplayID, CGColorSpaceRef>::const_iterator it = m_displayColorSpaceHash.constBegin();
-    while (it != m_displayColorSpaceHash.constEnd()) {
-        if (it.value())
-            CFRelease(it.value());
-        ++it;
-    }
-    m_displayColorSpaceHash.clear();
-}
-
 void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
 {
     CGAffineTransform old_xform = CGAffineTransformIdentity;
@@ -988,48 +930,6 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
     qt_mac_drawCGImage(d->hd, &rect, image);
     if (doRestore)
         d->restoreGraphicsState();
-}
-
-static void drawImageReleaseData (void *info, const void *, size_t)
-{
-    delete static_cast<QImage *>(info);
-}
-
-CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0)
-{
-    QImage *image;
-    if (img.depth() != 32)
-        image = new QImage(img.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-    else
-        image = new QImage(img);
-
-    uint cgflags = kCGImageAlphaNone;
-    switch (image->format()) {
-    case QImage::Format_ARGB32_Premultiplied:
-        cgflags = kCGImageAlphaPremultipliedFirst;
-        break;
-    case QImage::Format_ARGB32:
-        cgflags = kCGImageAlphaFirst;
-        break;
-    case QImage::Format_RGB32:
-        cgflags = kCGImageAlphaNoneSkipFirst;
-    default:
-        break;
-    }
-#if defined(kCGBitmapByteOrder32Host) //only needed because CGImage.h added symbols in the minor version
-    cgflags |= kCGBitmapByteOrder32Host;
-#endif
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(image,
-                                                          static_cast<const QImage *>(image)->bits(),
-                                                          image->byteCount(),
-                                                          drawImageReleaseData);
-    if (imagePtr)
-        *imagePtr = image;
-    return CGImageCreate(image->width(), image->height(), 8, 32,
-                                        image->bytesPerLine(),
-                                        QCoreGraphicsPaintEngine::macGenericColorSpace(),
-                                        cgflags, dataProvider, 0, false, kCGRenderingIntentDefault);
-
 }
 
 void QCoreGraphicsPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRectF &sr,

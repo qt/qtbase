@@ -74,6 +74,8 @@
 ****************************************************************************/
 
 #include "qcocoaeventdispatcher.h"
+#include "qcocoaautoreleasepool.h"
+
 #include "qguiapplication.h"
 #include "qevent.h"
 #include "qhash.h"
@@ -84,8 +86,6 @@
 #include "private/qguiapplication_p.h"
 #include <qdebug.h>
 
-//#include <private/qcocoaapplication_mac_p.h>
-//#include "private/qt_cocoa_helpers_mac_p.h"
 #undef slots
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
@@ -103,17 +103,6 @@ static inline CFRunLoopRef mainRunLoop()
 {
     return CFRunLoopGetMain();
 }
-
-QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
-{
-    pool = (void*)[[NSAutoreleasePool alloc] init];
-}
-
-QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
-{
-    [(NSAutoreleasePool*)pool release];
-}
-
 
 /*****************************************************************************
   Timers stuff
@@ -541,7 +530,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         if (d->interrupt)
             break;
 
-        QMacCocoaAutoReleasePool pool;
+        QCocoaAutoReleasePool pool;
         NSEvent* event = 0;
 
         // First, send all previously excluded input events, if any:
@@ -776,7 +765,7 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
 //            continue;
 
         if (!info.session) {
-            QMacCocoaAutoReleasePool pool;
+            QCocoaAutoReleasePool pool;
             NSWindow *window = reinterpret_cast<NSWindow *>(info.window->handle()->winId());
             if (!window)
                 continue;
@@ -822,7 +811,7 @@ void QCocoaEventDispatcherPrivate::updateChildrenWorksWhenModal()
     // Make the dialog children of the window
     // active. And make the dialog children of
     // the previous modal dialog unactive again:
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     int size = cocoaModalSessionStack.size();
     if (size > 0){
         if (QWindow *prevModal = cocoaModalSessionStack[size-1].window)
@@ -843,7 +832,7 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
     // point they were marked as stopped), is that ending a session
     // when no other session runs below it on the stack will make cocoa
     // drop some events on the floor. 
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     int stackSize = cocoaModalSessionStack.size();
 
     for (int i=stackSize-1; i>=0; --i) {
@@ -1035,7 +1024,7 @@ void QCocoaEventDispatcherPrivate::cancelWaitForMoreEvents()
 {
     // In case the event dispatcher is waiting for more
     // events somewhere, we post a dummy event to wake it up:
-    QMacCocoaAutoReleasePool pool;
+    QCocoaAutoReleasePool pool;
     [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
         subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];

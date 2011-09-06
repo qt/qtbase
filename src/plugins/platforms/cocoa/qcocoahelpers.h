@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-#include <QtCore/private/qcore_mac_p.h>
-#include <Cocoa/Cocoa.h>
+#include <private/qt_mac_p.h>
 
+class QPixmap;
 class QString;
 
 // Conversion functions
@@ -71,10 +71,19 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
 { return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
 
+CGImageRef qt_mac_image_to_cgimage(const QImage &image);
+NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
+NSImage *qt_mac_create_nsimage(const QPixmap &pm);
+
+QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
+Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
+
 // Misc
-
 void qt_mac_transformProccessToForegroundApplication();
-
+QString qt_mac_removeMnemonics(const QString &original);
+CGColorSpaceRef qt_mac_genericColorSpace();
+CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
+QString qt_mac_applicationName();
 
 
 #endif //QCOCOAHELPERS_H

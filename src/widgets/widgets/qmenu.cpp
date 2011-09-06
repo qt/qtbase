@@ -164,6 +164,8 @@ void QMenuPrivate::init()
         scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
 
+    platformMenu = QGuiApplicationPrivate::platformIntegration()->createPlatformMenu(q);
+
 #ifdef QT_SOFTKEYS_ENABLED
     selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, q);
     cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Back, q);
@@ -2367,10 +2369,8 @@ void QMenu::changeEvent(QEvent *e)
         if (d->tornPopup) // torn-off menu
             d->tornPopup->setEnabled(isEnabled());
         d->menuAction->setEnabled(isEnabled());
-#ifdef Q_OS_MAC
-        if (d->mac_menu)
-            d->setMacMenuEnabled(isEnabled());
-#endif
+        if (d->platformMenu)
+            d->platformMenu->setMenuEnabled(isEnabled());
     }
     QWidget::changeEvent(e);
 }
@@ -2923,16 +2923,14 @@ void QMenu::actionEvent(QActionEvent *e)
         d->widgetItems.remove(e->action());
     }
 
-#ifdef Q_OS_MAC
-    if (d->mac_menu) {
+    if (d->platformMenu) {
         if (e->type() == QEvent::ActionAdded)
-            d->mac_menu->addAction(e->action(), d->mac_menu->findAction(e->before()), d);
+            d->platformMenu->addAction(e->action(), e->before());
         else if (e->type() == QEvent::ActionRemoved)
-            d->mac_menu->removeAction(e->action());
+            d->platformMenu->removeAction(e->action());
         else if (e->type() == QEvent::ActionChanged)
-            d->mac_menu->syncAction(e->action());
+            d->platformMenu->syncAction(e->action());
     }
-#endif
 
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
     if (!d->wce_menu)
@@ -3093,6 +3091,14 @@ void QMenu::setNoReplayFor(QWidget *noReplayFor)
 #endif
 }
 
+/*!\internal
+*/
+QPlatformMenu *QMenu::platformMenu()
+{
+
+    return d_func()->platformMenu;
+}
+
 /*!
   \property QMenu::separatorsCollapsible
   \since 4.2
@@ -3123,10 +3129,8 @@ void QMenu::setSeparatorsCollapsible(bool collapse)
         d->updateActionRects();
         update();
     }
-#ifdef Q_OS_MAC
-    if (d->mac_menu)
-        d->syncSeparatorsCollapsible(collapse);
-#endif
+    if (d->platformMenu)
+        d->platformMenu->syncSeparatorsCollapsible(collapse);
 }
 
 #ifdef QT3_SUPPORT

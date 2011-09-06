@@ -227,6 +227,17 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     return 0;
 }
 
+QPlatformMenu *QPlatformIntegration::createPlatformMenu(QMenu *menu) const
+{
+    Q_UNUSED(menu);
+    return 0;
+}
+
+QPlatformMenuBar *QPlatformIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
+{
+    Q_UNUSED(menuBar);
+    return 0;
+}
 
 /*!
   Should be called by the implementation whenever a new screen is added.
