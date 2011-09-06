@@ -125,15 +125,43 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 class QEGLXcbPlatformContext : public QEGLPlatformContext
 {
 public:
-    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share, EGLDisplay display)
+    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
+                           EGLDisplay display, QXcbConnection *c)
         : QEGLPlatformContext(glFormat, share, display)
+        , m_connection(c)
     {
+        Q_XCB_NOOP(m_connection);
+    }
+
+    void swapBuffers(QPlatformSurface *surface)
+    {
+        Q_XCB_NOOP(m_connection);
+        QEGLPlatformContext::swapBuffers(surface);
+        Q_XCB_NOOP(m_connection);
+    }
+
+    bool makeCurrent(QPlatformSurface *surface)
+    {
+        Q_XCB_NOOP(m_connection);
+        bool ret = QEGLPlatformContext::makeCurrent(surface);
+        Q_XCB_NOOP(m_connection);
+        return ret;
+    }
+
+    void doneCurrent()
+    {
+        Q_XCB_NOOP(m_connection);
+        QEGLPlatformContext::doneCurrent();
+        Q_XCB_NOOP(m_connection);
     }
 
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
     {
         return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
     }
+
+private:
+    QXcbConnection *m_connection;
 };
 #endif
 
@@ -143,7 +171,8 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 #if defined(XCB_USE_GLX)
     return new QGLXContext(screen, context->format(), context->shareHandle());
 #elif defined(XCB_USE_EGL)
-    return new QEGLXcbPlatformContext(context->format(), context->shareHandle(), screen->connection()->egl_display());
+    return new QEGLXcbPlatformContext(context->format(), context->shareHandle(),
+        screen->connection()->egl_display(), screen->connection());
 #elif defined(XCB_USE_DRI2)
     return new QDri2Context(context->format(), context->shareHandle());
 #endif

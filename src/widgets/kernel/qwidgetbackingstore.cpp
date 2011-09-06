@@ -1353,11 +1353,8 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         extra->staticContentsSize = data.crect.size();
     }
 
-#ifdef Q_WS_QPA //Dont even call q->p
-    QPaintEngine *engine = 0;
-#else
     QPaintEngine *engine = q->paintEngine();
-#endif
+
     // QGLWidget does not support partial updates if:
     // 1) The context is double buffered
     // 2) The context is single buffered and auto-fill background is enabled.
