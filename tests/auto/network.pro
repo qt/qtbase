@@ -4,50 +4,6 @@
 # been compiled.
 TEMPLATE=subdirs
 SUBDIRS=\
+    network \
     networkselftest \
-    qabstractnetworkcache \
-    qabstractsocket \
-    qauthenticator \
-    qftp \
-    qhostaddress \
-    qhostinfo \
-    qhttp \
-    qhttpnetworkconnection \
-    qhttpnetworkreply \
-    qhttpsocketengine \
-    platformsocketengine \
-    qnetworkaccessmanager \
-    qnetworkaddressentry \
-    qnetworkcachemetadata \
-    qnetworkconfiguration \
-    qnetworkconfigurationmanager \
-    qnetworkcookie \
-    qnetworkcookiejar \
-    qnetworkdiskcache \
-    qnetworkinterface \
-    qnetworkproxy \
-    qnetworkreply \
-    qnetworkrequest \
-    qnetworksession \
     qobjectperformance \
-    qsocks5socketengine \
-    qsslcertificate \
-    qsslcipher \
-    qsslerror \
-    qsslkey \
-    qsslsocket \
-    qsslsocket_onDemandCertificates_member \
-    qsslsocket_onDemandCertificates_static \
-    qtcpserver \
-    qudpsocket \
-#    qnetworkproxyfactory \ # Uses a hardcoded proxy configuration
-
-!contains(QT_CONFIG, private_tests): SUBDIRS -= \
-    platformsocketengine \
-    qauthenticator \
-    qhostinfo \
-    qhttpnetworkconnection \
-    qhttpnetworkreply \
-    qhttpsocketengine \
-    qsocks5socketengine \
-

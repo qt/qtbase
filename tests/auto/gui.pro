@@ -82,7 +82,6 @@ SUBDIRS=\
     qlineedit \
     qlistview \
     qlistwidget \
-    #qlocalsocket \  # FIXME: uses qtscript (QTBUG-19242)
     qmacstyle \
     qmainwindow \
     qmdisubwindow \
@@ -118,7 +117,6 @@ SUBDIRS=\
     qtabbar \
     qtableview \
     qtablewidget \
-    qtcpsocket \
     qtoolbar \
     qtoolbox \
     qtooltip \
