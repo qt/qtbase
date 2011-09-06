@@ -403,6 +403,11 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
         return true;
     if (d->isDefaultConstructed || fileinfo.d_ptr->isDefaultConstructed)
         return false;
+
+    // Assume files are the same if path is the same
+    if (d->fileEntry.filePath() == fileinfo.d_ptr->fileEntry.filePath())
+        return true;
+
     Qt::CaseSensitivity sensitive;
     if (d->fileEngine == 0 || fileinfo.d_ptr->fileEngine == 0) {
         if (d->fileEngine != fileinfo.d_ptr->fileEngine) // one is native, the other is a custom file-engine

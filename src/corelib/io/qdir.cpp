@@ -1600,8 +1600,23 @@ bool QDir::operator==(const QDir &dir) const
        && d->sort == other->sort
        && d->nameFilters == other->nameFilters) {
 
-        // Fallback to expensive canonical path computation
-        return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+        // Assume directories are the same if path is the same
+        if (d->dirEntry.filePath() == other->dirEntry.filePath())
+            return true;
+
+        if (exists()) {
+            if (!dir.exists())
+                return false; //can't be equal if only one exists
+            // Both exist, fallback to expensive canonical path computation
+            return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+        } else {
+            if (dir.exists())
+                return false; //can't be equal if only one exists
+            // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
+            d->resolveAbsoluteEntry();
+            other->resolveAbsoluteEntry();
+            return d->absoluteDirEntry.filePath().compare(other->absoluteDirEntry.filePath(), sensitive) == 0;
+        }
     }
     return false;
 }
