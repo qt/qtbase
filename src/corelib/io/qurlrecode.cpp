@@ -133,6 +133,18 @@ static inline ushort decodeNibble(ushort c)
            c >= 'A' ? c - 'A' + 0xA : c - '0';
 }
 
+// if the sequence at input is 2*HEXDIG, returns its decoding
+// returns -1 if it isn't.
+// assumes that the range has been checked already
+static inline ushort decodePercentEncoding(const ushort *input)
+{
+    ushort c1 = input[0];
+    ushort c2 = input[1];
+    if (!isHex(c1) || !isHex(c2))
+        return ushort(-1);
+    return decodeNibble(c1) << 4 | decodeNibble(c2);
+}
+
 static inline ushort encodeNibble(ushort c)
 {
     static const uchar hexnumbers[] = "0123456789ABCDEF";
@@ -170,16 +182,15 @@ static inline bool isUnicodeNonCharacter(uint ucs4)
 // returns true if we performed an UTF-8 decoding
 static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&input, const ushort *end, ushort decoded)
 {
+    int charsNeeded;
+    uint min_uc;
+    uint uc;
+
     if (decoded <= 0xC1) {
         // an UTF-8 first character must be at least 0xC0
         // however, all 0xC0 and 0xC1 first bytes can only produce overlong sequences
         return false;
-    }
-
-    int charsNeeded;
-    uint min_uc;
-    uint uc;
-    if (decoded < 0xe0) {
+    } else if (decoded < 0xe0) {
         charsNeeded = 1;
         min_uc = 0x80;
         uc = decoded & 0x1f;
@@ -194,7 +205,7 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
     } else {
         // the last Unicode character is U+10FFFF
         // it's encoded in UTF-8 as "\xF4\x8F\xBF\xBF"
-        // therefore, a byte outside the range 0xC0..0xF4 is not the UTF-8 first byte
+        // therefore, a byte higher than 0xF4 is not the UTF-8 first byte
         return false;
     }
 
@@ -206,7 +217,7 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
         return false;
 
     // first continuation character
-    decoded = (decodeNibble(input[3]) << 4) | decodeNibble(input[4]);
+    decoded = decodePercentEncoding(input + 3);
     if ((decoded & 0xc0) != 0x80)
         return false;
     uc <<= 6;
@@ -217,7 +228,7 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
             return false;
 
         // second continuation character
-        decoded = (decodeNibble(input[6]) << 4) | decodeNibble(input[7]);
+        decoded = decodePercentEncoding(input + 6);
         if ((decoded & 0xc0) != 0x80)
             return false;
         uc <<= 6;
@@ -228,7 +239,7 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
                 return false;
 
             // third continuation character
-            decoded = (decodeNibble(input[9]) << 4) | decodeNibble(input[10]);
+            decoded = decodePercentEncoding(input + 9);
             if ((decoded & 0xc0) != 0x80)
                 return false;
             uc <<= 6;
@@ -348,72 +359,82 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
     *output++ = encodeNibble(c & 0xf);
 }
 
-Q_AUTOTEST_EXPORT QString
-qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
-             const uchar *tableModifications)
+static QString recode(const QString &component, QUrl::ComponentFormattingOptions encoding,
+                      const uchar *actionTable, bool retryBadEncoding)
 {
-    uchar actionTable[sizeof defaultActionTable];
-    memcpy(actionTable, defaultActionTable, sizeof actionTable);
-    if (encoding & QUrl::DecodeSpaces)
-        actionTable[0] = DecodeCharacter; // decode
-
-    if (tableModifications) {
-        for (const ushort *p = tableModifications; *p; ++p)
-            actionTable[uchar(*p) - ' '] = *p >> 8;
-    }
-
     QString result = component;
     const ushort *input = reinterpret_cast<const ushort *>(component.constData());
     const ushort * const end = input + component.length();
     ushort *output = 0;
 
     while (input != end) {
-        register ushort c = *input++;
-        register ushort decoded;
-        if (c == '%') {
-            // our input is always valid, so there are two hex characters for us to read here
-            decoded = (decodeNibble(input[0]) << 4) | decodeNibble(input[1]);
+        register ushort c;
+        EncodingAction action;
+
+        // try a run where no change is necessary
+        while (input != end) {
+            c = *input++;
+            if (c < 0x20 || c >= 0x80) // also: (c - 0x20 < 0x60U)
+                goto non_trivial;
+            action = EncodingAction(actionTable[c - ' ']);
+            if (action == EncodeCharacter)
+                goto non_trivial;
+            if (output)
+                *output++ = c;
+        }
+        break;
+
+non_trivial:
+        register uint decoded;
+        if (c == '%' && retryBadEncoding) {
+            // always write "%25"
+            ensureDetached(result, output, input, end);
+            *output++ = '%';
+            *output++ = '2';
+            *output++ = '5';
+            continue;
+        } else if (c == '%') {
+            // check if the input is valid
+            if (input + 1 >= end || (decoded = decodePercentEncoding(input)) == ushort(-1)) {
+                // not valid, retry
+                result.clear();
+                return recode(component, encoding, actionTable, true);
+            }
+
+            if (decoded >= 0x80) {
+                // decode the UTF-8 sequence
+                if (encoding & QUrl::DecodeUnicode &&
+                        encodedUtf8ToUcs4(result, output, input, end, decoded))
+                    continue;
+
+                // decoding the encoded UTF-8 failed
+                action = LeaveCharacter;
+            } else if (decoded >= 0x20) {
+                action = EncodingAction(actionTable[decoded - ' ']);
+            }
         } else {
             decoded = c;
-        }
-
-        EncodingAction action;
-        if (decoded < 0x20) {
-            // always encode control characters
-            action = EncodeCharacter;
-        } else if (decoded < 0x80) {
-            // use the table
-            action = EncodingAction(actionTable[decoded - ' ']);
-        } else {
-            // non-ASCII
-            bool decodeUnicode = encoding & QUrl::DecodeUnicode;
-
-            // should we leave it like this?
-            if ((c != '%' && decodeUnicode) || (c == '%' && !decodeUnicode)) {
-                action = LeaveCharacter;
-            } else if (decodeUnicode) {
-                // c == '%': decode the UTF-8 sequence
-                if (encodedUtf8ToUcs4(result, output, input, end, decoded))
-                    continue;
-                action = LeaveCharacter;
-            } else {
-                // c != '%': encode the UTF-8 sequence
+            if (decoded >= 0x80 && (encoding & QUrl::DecodeUnicode) == 0) {
+                // encode the UTF-8 sequence
                 unicodeToEncodedUtf8(result, output, input, end, decoded);
+                continue;
+            } else if (decoded >= 0x80) {
+                if (output)
+                    *output++ = c;
                 continue;
             }
         }
+
+        if (decoded < 0x20)
+            action = EncodeCharacter;
 
         // there are six possibilities:
         //  current \ action  | DecodeCharacter | LeaveCharacter | EncodeCharacter
         //      decoded       |    1:leave      |    2:leave     |    3:encode
         //      encoded       |    4:decode     |    5:leave     |    6:leave
+        // cases 1 and 2 were handled before this section
 
-        if (c != '%' && (action == LeaveCharacter || action == DecodeCharacter)) {
-            // cases 1 and 2: it's decoded and we're leaving it as is
-            // there's always enough memory allocated for a single character
-            if (output)
-                *output++ = c;
-        } else if (c == '%' && (action == LeaveCharacter || action == EncodeCharacter)) {
+        if (c == '%' && action != DecodeCharacter) {
             // cases 5 and 6: it's encoded and we're leaving it as it is
             // except we're pedantic and we'll uppercase the hex
             if (output || !isUpperHex(input[0]) || !isUpperHex(input[1])) {
@@ -442,63 +463,31 @@ qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding
 }
 
 Q_AUTOTEST_EXPORT QString
-qt_tolerantParsePercentEncoding(const QString &url)
+qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
+             const ushort *tableModifications)
 {
-    // are there any '%'
-    int firstPercent = url.indexOf(QLatin1Char('%'));
-    if (firstPercent == -1) {
-        // none found, the string is fine
-        return url;
+    uchar actionTable[sizeof defaultActionTable];
+    if (encoding & QUrl::DecodeAllDelimiters) {
+        // reset the table
+        memset(actionTable, DecodeCharacter, sizeof actionTable);
+        if (!(encoding & QUrl::DecodeSpaces))
+            actionTable[0] = EncodeCharacter;
+
+        // these are always encoded
+        actionTable['%' - ' '] = EncodeCharacter;
+        actionTable[0x7F - ' '] = EncodeCharacter;
+    } else {
+        memcpy(actionTable, defaultActionTable, sizeof actionTable);
+        if (encoding & QUrl::DecodeSpaces)
+            actionTable[0] = DecodeCharacter; // decode
     }
 
-    // are there any invalid percents?
-    int nextPercent = firstPercent;
-    int percentCount = 0;
-
-    {
-        int len = url.length();
-        bool ok = true;
-        do {
-            ++percentCount;
-            if (nextPercent + 2 >= len ||
-                    !isHex(url.at(nextPercent + 1).unicode()) ||
-                    !isHex(url.at(nextPercent + 2).unicode())) {
-                ok = false;
-            }
-
-            nextPercent = url.indexOf(QLatin1Char('%'), nextPercent + 1);
-        } while (nextPercent != -1);
-
-        if (ok)
-            return url;
+    if (tableModifications) {
+        for (const ushort *p = tableModifications; *p; ++p)
+            actionTable[uchar(*p) - ' '] = *p >> 8;
     }
 
-    // we've found at least one invalid percent
-    // that means all of them are invalid
-    QString corrected(url.size() + percentCount * 2, Qt::Uninitialized);
-    ushort *output = reinterpret_cast<ushort *>(corrected.data());
-    const ushort *input = reinterpret_cast<const ushort *>(url.constData());
-    for (int i = 0; i <= firstPercent; ++i)
-        output[i] = input[i];
-
-    const ushort *const end = input + url.length();
-    output += firstPercent + 1;
-    input += firstPercent + 1;
-
-    // we've copied up to the first percent
-    // correct this one and all others
-    *output++ = '2';
-    *output++ = '5';
-    while (input != end) {
-        // copy verbatim until the next percent, inclusive
-        *output++ = *input;
-        if (*input == '%') {
-            *output++ = '2';
-            *output++ = '5';
-        }
-        ++input;
-    }
-    return corrected;
+    return recode(component, encoding, actionTable, false);
 }
 
 QT_END_NAMESPACE

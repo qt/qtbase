@@ -50,7 +50,6 @@ Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
 Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
 Q_CORE_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
 Q_CORE_EXPORT QString qt_punycodeDecoder(const QString &pc);
-Q_CORE_EXPORT QString qt_tolerantParsePercentEncoding(const QString &url);
 Q_CORE_EXPORT QString qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
                                    const ushort *tableModifications = 0);
 QT_END_NAMESPACE
@@ -791,6 +790,17 @@ void tst_QUrlInternal::correctEncodedMistakes_data()
 
     // three percents, one invalid
     QTest::newRow("%01%02%3") << "%01%02%3" << "%2501%2502%253";
+
+    // now mix bad percents with Unicode decoding
+    QTest::newRow("%C2%") << "%C2%" << "%25C2%25";
+    QTest::newRow("%C2%A") << "%C2%A" << "%25C2%25A";
+    QTest::newRow("%C2%Az") << "%C2%Az" << "%25C2%25Az";
+    QTest::newRow("%E2%A0%") << "%E2%A0%" << "%25E2%25A0%25";
+    QTest::newRow("%E2%A0%A") << "%E2%A0%A" << "%25E2%25A0%25A";
+    QTest::newRow("%E2%A0%Az") << "%E2%A0%Az" << "%25E2%25A0%25Az";
+    QTest::newRow("%F2%A0%A0%") << "%F2%A0%A0%" << "%25F2%25A0%25A0%25";
+    QTest::newRow("%F2%A0%A0%A") << "%F2%A0%A0%A" << "%25F2%25A0%25A0%25A";
+    QTest::newRow("%F2%A0%A0%Az") << "%F2%A0%A0%Az" << "%25F2%25A0%25A0%25Az";
 }
 
 void tst_QUrlInternal::correctEncodedMistakes()
@@ -798,7 +808,7 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QFETCH(QString, input);
     QFETCH(QString, expected);
 
-    QString output = qt_tolerantParsePercentEncoding(input);
+    QString output = qt_urlRecode(input, QUrl::DecodeUnicode);
     QCOMPARE(output, expected);
     QCOMPARE(output.isNull(), expected.isNull());
 }
@@ -920,10 +930,6 @@ void tst_QUrlInternal::encodingRecode()
     QFETCH(QString, input);
     QFETCH(QString, expected);
     QFETCH(QUrl::ComponentFormattingOptions, encodingMode);
-
-    // ensure the string is properly percent-encoded
-    QVERIFY2(input == qt_tolerantParsePercentEncoding(input), "Test data is not properly encoded");
-    QVERIFY2(expected == qt_tolerantParsePercentEncoding(expected), "Test data is not properly encoded");
 
     QString output = qt_urlRecode(input, encodingMode);
     QCOMPARE(output, expected);
