@@ -688,18 +688,18 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(parent.nbPaint, 1);
+    QTRY_VERIFY(parent.nbPaint >= 1);
     //we set an effect on the parent
     parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));
     //flush the events
     QApplication::processEvents();
     //new effect applied->repaint
-    QCOMPARE(parent.nbPaint, 2);
+    QVERIFY(parent.nbPaint >= 2);
     child.setVisible(true);
     //flush the events
     QApplication::processEvents();
     //a new child appears we need to redraw the effect.
-    QCOMPARE(parent.nbPaint, 3);
+    QVERIFY(parent.nbPaint >= 3);
 }
 
 void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
@@ -716,7 +716,7 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     else
         view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(item->nbPaint, 1);
+    QTRY_VERIFY(item->nbPaint >= 1);
 
     item->nbPaint = 0;
     item->setGraphicsEffect(new QGraphicsDropShadowEffect);
@@ -747,7 +747,7 @@ void tst_QGraphicsEffect::itemHasNoContents()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(child->nbPaint, 1);
+    QTRY_VERIFY(child->nbPaint >= 1);
 
     CustomEffect *effect = new CustomEffect;
     parent->setGraphicsEffect(effect);
