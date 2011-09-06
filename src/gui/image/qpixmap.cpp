@@ -92,7 +92,7 @@ static bool qt_pixmap_thread_test()
     return true;
 }
 
-void QPixmap::init(int w, int h, int type)
+void QPixmap::doInit(int w, int h, int type)
 {
     if ((w > 0 && h > 0) || type == QPlatformPixmap::BitmapType)
         data = QPlatformPixmap::create(w, h, (QPlatformPixmap::PixelType) type);
@@ -126,7 +126,7 @@ QPixmap::QPixmap()
     : QPaintDevice()
 {
     (void) qt_pixmap_thread_test();
-    init(0, 0, QPlatformPixmap::PixmapType);
+    doInit(0, 0, QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -147,9 +147,9 @@ QPixmap::QPixmap(int w, int h)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, QPlatformPixmap::PixmapType);
+        doInit(0, 0, QPlatformPixmap::PixmapType);
     else
-        init(w, h, QPlatformPixmap::PixmapType);
+        doInit(w, h, QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -166,9 +166,9 @@ QPixmap::QPixmap(const QSize &size)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, QPlatformPixmap::PixmapType);
+        doInit(0, 0, QPlatformPixmap::PixmapType);
     else
-        init(size.width(), size.height(), QPlatformPixmap::PixmapType);
+        doInit(size.width(), size.height(), QPlatformPixmap::PixmapType);
 }
 
 /*!
@@ -177,9 +177,9 @@ QPixmap::QPixmap(const QSize &size)
 QPixmap::QPixmap(const QSize &s, int type)
 {
     if (!qt_pixmap_thread_test())
-        init(0, 0, static_cast<QPlatformPixmap::PixelType>(type));
+        doInit(0, 0, static_cast<QPlatformPixmap::PixelType>(type));
     else
-        init(s.width(), s.height(), static_cast<QPlatformPixmap::PixelType>(type));
+        doInit(s.width(), s.height(), static_cast<QPlatformPixmap::PixelType>(type));
 }
 
 /*!
@@ -222,7 +222,7 @@ QPixmap::QPixmap(QPlatformPixmap *d)
 QPixmap::QPixmap(const QString& fileName, const char *format, Qt::ImageConversionFlags flags)
     : QPaintDevice()
 {
-    init(0, 0, QPlatformPixmap::PixmapType);
+    doInit(0, 0, QPlatformPixmap::PixmapType);
     if (!qt_pixmap_thread_test())
         return;
 
@@ -239,7 +239,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
     : QPaintDevice()
 {
     if (!qt_pixmap_thread_test()) {
-        init(0, 0, QPlatformPixmap::PixmapType);
+        doInit(0, 0, QPlatformPixmap::PixmapType);
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
@@ -268,7 +268,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
 QPixmap::QPixmap(const char * const xpm[])
     : QPaintDevice()
 {
-    init(0, 0, QPlatformPixmap::PixmapType);
+    doInit(0, 0, QPlatformPixmap::PixmapType);
     if (!xpm)
         return;
 

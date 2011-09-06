@@ -175,7 +175,7 @@ private:
     bool doImageIO(QImageWriter *io, int quality) const;
 
     QPixmap(const QSize &s, int type);
-    void init(int, int, int);
+    void doInit(int, int, int);
     void deref();
     Q_DUMMY_COMPARISON_OPERATOR(QPixmap)
     friend class QPlatformPixmap;
