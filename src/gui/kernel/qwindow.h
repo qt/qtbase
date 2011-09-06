@@ -81,6 +81,8 @@ public:
         Window
     };
 
+    virtual ~QSurface();
+
     SurfaceType surfaceType() const { return m_type; }
 
     virtual QSurfaceFormat format() const = 0;

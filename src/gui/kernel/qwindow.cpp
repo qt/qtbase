@@ -101,6 +101,10 @@ QWindow::~QWindow()
     destroy();
 }
 
+QSurface::~QSurface()
+{
+}
+
 void QWindow::setSurfaceType(SurfaceType surfaceType)
 {
     Q_D(QWindow);
