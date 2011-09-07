@@ -50,7 +50,7 @@ contains(QT_CONFIG, xcb-xlib) {
 # to support custom cursors with depth > 1
 contains(QT_CONFIG, xcb-render) {
     DEFINES += XCB_USE_RENDER
-    LIBS += -lxcb-render -lxcb-render-util
+    LIBS += -lxcb-render -lxcb-render-util -lXrender
 }
 
 #    DEFINES += XCB_USE_DRI2
