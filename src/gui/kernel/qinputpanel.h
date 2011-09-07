@@ -53,6 +53,7 @@ QT_MODULE(Gui)
 class QInputPanelPrivate;
 class QWindow;
 class QRectF;
+class QTransform;
 
 class Q_GUI_EXPORT QInputPanel : public QObject
 {
