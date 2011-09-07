@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += testlib
+QT       += testlib widgets
 
 TARGET = tst_baselineexample
 CONFIG   += console
@@ -15,4 +15,4 @@ TEMPLATE = app
 SOURCES += tst_baselineexample.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
-include($$PWD/../../baselineserver/shared/qbaselinetest.pri)
+include($$PWD/../../../baselineserver/shared/qbaselinetest.pri)

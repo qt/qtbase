@@ -5,7 +5,5 @@ SUBDIRS=\
    exceptionsafety \
    qobjectrace \
    qsignalspy \
-   qtmd5 \
-   qtokenautomaton \
    selftests \
    utf8

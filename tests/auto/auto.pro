@@ -6,7 +6,7 @@ SUBDIRS += \
     network.pro \
     sql \
     xml \
-    other.pro
+    other
 
 !cross_compile:                             SUBDIRS += host.pro
 contains(QT_CONFIG, opengl):                SUBDIRS += opengl.pro

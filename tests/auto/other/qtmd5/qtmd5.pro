@@ -1,4 +1,4 @@
-include(../solutions.pri)
+include(../../solutions.pri)
 
 !contains(DEFINES, QT_NO_SOLUTIONS) {
     include($${SOLUTIONBASEDIR}/utils/qtmd5/src/qtmd5.pri)
