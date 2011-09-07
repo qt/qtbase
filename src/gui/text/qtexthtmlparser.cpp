@@ -820,15 +820,11 @@ QString QTextHtmlParser::parseEntity()
             if (uc >= 0x80 && uc < 0x80 + (sizeof(windowsLatin1ExtendedCharacters)/sizeof(windowsLatin1ExtendedCharacters[0])))
                 uc = windowsLatin1ExtendedCharacters[uc - 0x80];
             QString str;
-            if (uc > 0xffff) {
-                // surrogate pair
-                uc -= 0x10000;
-                ushort high = uc/0x400 + 0xd800;
-                ushort low = uc%0x400 + 0xdc00;
-                str.append(QChar(high));
-                str.append(QChar(low));
+            if (QChar::requiresSurrogates(uc)) {
+                str += QChar(QChar::highSurrogate(uc));
+                str += QChar(QChar::lowSurrogate(uc));
             } else {
-                str.append(QChar(uc));
+                str = QChar(uc);
             }
             return str;
         }

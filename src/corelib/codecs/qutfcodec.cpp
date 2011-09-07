@@ -90,8 +90,8 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
     while (ch < end) {
         uint u = ch->unicode();
         if (surrogate_high >= 0) {
-            if (u >= 0xdc00 && u < 0xe000) {
-                u = (surrogate_high - 0xd800)*0x400 + (u - 0xdc00) + 0x10000;
+            if (ch->isLowSurrogate()) {
+                u = QChar::surrogateToUcs4(surrogate_high, u);
                 surrogate_high = -1;
             } else {
                 // high surrogate without low
@@ -101,13 +101,13 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
                 surrogate_high = -1;
                 continue;
             }
-        } else if (u >= 0xdc00 && u < 0xe000) {
+        } else if (ch->isLowSurrogate()) {
             // low surrogate without high
             *cursor = replacement;
             ++ch;
             ++invalid;
             continue;
-        } else if (u >= 0xd800 && u < 0xdc00) {
+        } else if (ch->isHighSurrogate()) {
             surrogate_high = u;
             ++ch;
             continue;

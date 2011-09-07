@@ -1381,11 +1381,11 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     QString p;
 
     if (key && key < Qt::Key_Escape && key != Qt::Key_Space) {
-        if (key < 0x10000) {
-            p = QChar(key & 0xffff).toUpper();
+        if (!QChar::requiresSurrogates(key)) {
+            p = QChar(ushort(key)).toUpper();
         } else {
-            p = QChar((key-0x10000)/0x400+0xd800);
-            p += QChar((key-0x10000)%400+0xdc00);
+            p += QChar(QChar::highSurrogate(key));
+            p += QChar(QChar::lowSurrogate(key));
         }
     } else if (key >= Qt::Key_F1 && key <= Qt::Key_F35) {
             p = nativeText ? QShortcut::tr("F%1").arg(key - Qt::Key_F1 + 1)
@@ -1418,11 +1418,11 @@ NonSymbol:
             // Or else characters like Qt::Key_aring may not get displayed
             // (Really depends on you locale)
             if (!keyname[i].name) {
-                if (key < 0x10000) {
-                    p = QChar(key & 0xffff).toUpper();
+                if (!QChar::requiresSurrogates(key)) {
+                    p = QChar(ushort(key)).toUpper();
                 } else {
-                    p = QChar((key-0x10000)/0x400+0xd800);
-                    p += QChar((key-0x10000)%400+0xdc00);
+                    p += QChar(QChar::highSurrogate(key));
+                    p += QChar(QChar::lowSurrogate(key));
                 }
             }
         }

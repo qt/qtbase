@@ -108,10 +108,10 @@ QByteArray QGb18030Codec::convertFromUnicode(const QChar *uc, int len, Converter
         int len;
         uchar buf[4];
         if (high >= 0) {
-            if (ch >= 0xdc00 && ch < 0xe000) {
+            if (uc[i].isLowSurrogate()) {
                 // valid surrogate pair
                 ++i;
-                uint u = (high-0xd800)*0x400+(ch-0xdc00)+0x10000;
+                uint u = QChar::surrogateToUcs4(high, uc[i].unicode());
                 len = qt_UnicodeToGb18030(u, buf);
                 if (len >= 2) {
                     for (int j=0; j<len; j++)
@@ -129,10 +129,10 @@ QByteArray QGb18030Codec::convertFromUnicode(const QChar *uc, int len, Converter
             }
         }
 
-        if (ch < 0x80) {
+        if (IsLatin(ch)) {
             // ASCII
             *cursor++ = ch;
-        } else if ((ch >= 0xd800 && ch < 0xdc00)) {
+        } else if (uc[i].isHighSurrogate()) {
             // surrogates area. check for correct encoding
             // we need at least one more character, first the high surrogate, then the low one
             high = ch;
@@ -181,7 +181,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
         uchar ch = chars[i];
         switch (nbuf) {
         case 0:
-            if (ch < 0x80) {
+            if (IsLatin(ch)) {
                 // ASCII
                 resultData[unicodeLen] = ch;
                 ++unicodeLen;
@@ -339,7 +339,7 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
         uchar ch = chars[i];
         switch (nbuf) {
         case 0:
-            if (ch < 0x80) {
+            if (IsLatin(ch)) {
                 // ASCII
                 resultData[unicodeLen] = ch;
                 ++unicodeLen;
@@ -487,7 +487,7 @@ QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterStat
         uchar ch = chars[i];
         switch (nbuf) {
         case 0:
-            if (ch < 0x80) {
+            if (IsLatin(ch)) {
                 // ASCII
                 resultData[unicodeLen] = ch;
                 ++unicodeLen;

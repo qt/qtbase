@@ -257,10 +257,8 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
 #if !defined(QT_NO_DEBUG)
         int surrogates = 0;
         const QChar *str = item->string;
-        for (int i = item->from; i < item->from + item->length - 1; ++i) {
-            surrogates += (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00
-                           && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-        }
+        for (int i = item->from; i < item->from + item->length - 1; ++i)
+            surrogates += (str[i].isHighSurrogate() && str[i+1].isLowSurrogate());
 #endif
         for (nextCharStop = item->from; nextCharStop < item->from + item->length; ++nextCharStop)
             if (item->charAttributes[nextCharStop].charStop)
@@ -328,10 +326,8 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
             if (charOffset < item->length - 1) {
                 QChar current = item->string[item->from + charOffset];
                 QChar next = item->string[item->from + charOffset + 1];
-                if (current.unicode() >= 0xd800 && current.unicode() < 0xdc00
-                    && next.unicode() >= 0xdc00 && next.unicode() < 0xe000) {
+                if (current.isHighSurrogate() && next.isLowSurrogate())
                     item->log_clusters[charOffset + 1] = currentClusterGlyph;
-                }
             }
         }
     }
@@ -738,15 +734,12 @@ QFontEngineMac::~QFontEngineMac()
 
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
-        uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
-            ++i;
-        }
+    uint ucs4 = str[i].unicode();
+    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
+        ++i;
+        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
     }
-    return uc;
+    return ucs4;
 }
 
 // Not used directly for shaping, only used to calculate m_averageCharWidth

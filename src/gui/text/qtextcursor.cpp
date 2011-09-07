@@ -1511,11 +1511,11 @@ void QTextCursor::deletePreviousChar()
     const QTextFragmentData * const frag = fragIt.value();
     int fpos = fragIt.position();
     QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
-    if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+    if (d->anchor > fpos && uc.isLowSurrogate()) {
         // second half of a surrogate, check if we have the first half as well,
         // if yes delete both at once
         uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
-        if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
+        if (uc.isHighSurrogate())
             --d->anchor;
     }
 

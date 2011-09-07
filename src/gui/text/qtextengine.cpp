@@ -993,8 +993,7 @@ static void heuristicSetGlyphAttributes(const QChar *uc, int length, QGlyphLayou
 
     int glyph_pos = 0;
     for (int i = 0; i < length; i++) {
-        if (uc[i].unicode() >= 0xd800 && uc[i].unicode() < 0xdc00 && i < length-1
-            && uc[i+1].unicode() >= 0xdc00 && uc[i+1].unicode() < 0xe000) {
+        if (uc[i].isHighSurrogate() && i < length-1 && uc[i+1].isLowSurrogate()) {
             logClusters[i] = glyph_pos;
             logClusters[++i] = glyph_pos;
         } else {

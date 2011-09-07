@@ -358,9 +358,7 @@ bool QFontEngineXLFD::stringToCMap(const QChar *s, int len, QGlyphLayout *glyphs
     QVarLengthArray<ushort> _s(len);
     QChar *str = (QChar *)_s.data();
     for (int i = 0; i < len; ++i) {
-        if (i < len - 1
-            && s[i].unicode() >= 0xd800 && s[i].unicode() < 0xdc00
-            && s[i+1].unicode() >= 0xdc00 && s[i].unicode() < 0xe000) {
+        if (s[i].isHighSurrogate() && i < len-1 && s[i+1].isLowSurrogate()) {
             *str = QChar();
             ++i;
         } else {

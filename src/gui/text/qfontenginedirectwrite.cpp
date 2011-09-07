@@ -269,15 +269,12 @@ QFixed QFontEngineDirectWrite::emSquareSize() const
 
 inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
-        uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
-            ++i;
-        }
+    uint ucs4 = str[i].unicode();
+    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
+        ++i;
+        ucs4 = QChar::surrogateToUcs4( ucs4, str[i].unicode());
     }
-    return uc;
+    return ucs4;
 }
 
 bool QFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
