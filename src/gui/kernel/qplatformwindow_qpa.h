@@ -48,6 +48,7 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qplatformopenglcontext_qpa.h>
+#include <QtGui/qplatformsurface_qpa.h>
 
 QT_BEGIN_HEADER
 

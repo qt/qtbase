@@ -61,7 +61,9 @@ qpa {
                 kernel/qguiapplication.h \
                 kernel/qguiapplication_p.h \
                 kernel/qwindow_p.h \
-                kernel/qwindow.h
+                kernel/qwindow.h \
+                kernel/qplatformsurface_qpa.h \
+                kernel/qsurface.h
 
 	SOURCES += \
                 kernel/qclipboard_qpa.cpp \
@@ -83,7 +85,9 @@ qpa {
                 kernel/qsessionmanager_qpa.cpp \
                 kernel/qsurfaceformat.cpp \
                 kernel/qguiapplication.cpp \
-                kernel/qwindow.cpp
+                kernel/qwindow.cpp \
+                kernel/qplatformsurface_qpa.cpp \
+                kernel/qsurface.cpp
 }
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

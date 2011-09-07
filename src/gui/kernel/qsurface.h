@@ -39,12 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMGLCONTEXT_H
-#define QPLATFORMGLCONTEXT_H
+#ifndef QSURFACE_H
+#define QSURFACE_H
 
 #include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
-#include <QtGui/qwindow.h>
 
 QT_BEGIN_HEADER
 
@@ -52,39 +51,32 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QPlatformOpenGLContextPrivate;
+class QPlatformSurface;
 
-class Q_GUI_EXPORT QPlatformOpenGLContext
+class Q_GUI_EXPORT QSurface
 {
-    Q_DECLARE_PRIVATE(QPlatformOpenGLContext)
 public:
-    QPlatformOpenGLContext();
-    virtual ~QPlatformOpenGLContext();
+    enum SurfaceType {
+        Window
+    };
+
+    virtual ~QSurface();
+
+    SurfaceType surfaceType() const;
 
     virtual QSurfaceFormat format() const = 0;
-
-    virtual void swapBuffers(QPlatformSurface *surface) = 0;
-
-    virtual bool makeCurrent(QPlatformSurface *surface) = 0;
-    virtual void doneCurrent() = 0;
-
-    virtual void (*getProcAddress(const QByteArray &procName)) () = 0;
-
-    QOpenGLContext *context() const;
+    virtual QPlatformSurface *surfaceHandle() const = 0;
 
 private:
-    friend class QOpenGLContext;
+    QSurface(SurfaceType type);
 
-    QScopedPointer<QPlatformOpenGLContextPrivate> d_ptr;
+    SurfaceType m_type;
 
-    void setContext(QOpenGLContext *context);
-
-    Q_DISABLE_COPY(QPlatformOpenGLContext)
+    friend class QWindow;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-
-#endif // QPLATFORMGLCONTEXT_H
+#endif //QSURFACE_H

@@ -47,6 +47,7 @@
 #include <QtCore/QMargins>
 #include <QtCore/QRect>
 
+#include <QtGui/qsurface.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindowdefs.h>
 
@@ -73,28 +74,6 @@ class QPlatformSurface;
 class QPlatformWindow;
 class QBackingStore;
 class QScreen;
-
-class Q_GUI_EXPORT QSurface
-{
-public:
-    enum SurfaceType {
-        Window
-    };
-
-    virtual ~QSurface();
-
-    SurfaceType surfaceType() const { return m_type; }
-
-    virtual QSurfaceFormat format() const = 0;
-    virtual QPlatformSurface *surfaceHandle() const = 0;
-
-private:
-    QSurface(SurfaceType type) : m_type(type) {}
-
-    SurfaceType m_type;
-
-    friend class QWindow;
-};
 
 class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 {
