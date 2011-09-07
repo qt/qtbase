@@ -66,13 +66,12 @@
 
 #ifndef QT_NO_QOBJECT
 #include "qcoreapplication.h"
+#endif
 
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #include "qt_windows.h"
 #include <private/qsystemlibrary_p.h>
-
-#endif // Q_OS_WIN
-#endif // QT_NO_QOBJECT
+#endif
 
 #ifdef Q_OS_VXWORKS
 #  include <ioLib.h>
@@ -1024,9 +1023,6 @@ static QString windowsConfigPath(int type)
 {
     QString result;
 
-#ifndef QT_NO_QOBJECT
-    // We can't use QLibrary if there is QT_NO_QOBJECT is defined
-    // This only happens when bootstrapping qmake.
 #ifndef Q_OS_WINCE
     QSystemLibrary library(QLatin1String("shell32"));
 #else
@@ -1039,8 +1035,6 @@ static QString windowsConfigPath(int type)
         SHGetSpecialFolderPath(0, path, type, FALSE);
         result = QString::fromWCharArray(path);
     }
-
-#endif // QT_NO_QOBJECT
 
     if (result.isEmpty()) {
         switch (type) {
