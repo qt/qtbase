@@ -2966,11 +2966,12 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
             AnchorData *ad = variables.at(i);
             ad->sizeAtPreferred = ad->result - g_offset;
         }
-
-        // Make sure we delete the simplex solver -before- we delete the
-        // constraints used by it.
-        delete simplex;
     }
+
+    // Make sure we delete the simplex solver -before- we delete the
+    // constraints used by it.
+    delete simplex;
+
     // Delete constraints and variables we created.
     qDeleteAll(preferredConstraints);
     qDeleteAll(preferredVariables);
