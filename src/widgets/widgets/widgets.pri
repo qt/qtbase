@@ -40,7 +40,6 @@ HEADERS += \
         widgets/qmenu_p.h \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
-        widgets/qmenudata.h \
         widgets/qprogressbar.h \
         widgets/qpushbutton.h \
         widgets/qpushbutton_p.h \
@@ -110,7 +109,6 @@ SOURCES += \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
-        widgets/qmenudata.cpp \
         widgets/qprogressbar.cpp \
         widgets/qpushbutton.cpp \
         widgets/qradiobutton.cpp \

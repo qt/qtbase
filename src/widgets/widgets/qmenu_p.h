@@ -258,9 +258,6 @@ public:
     QPlatformMenu *platformMenu;
 
     QPointer<QAction> actionAboutToTrigger;
-#ifdef QT3_SUPPORT
-    bool emitHighlighted;
-#endif
 
 #if defined(Q_WS_WINCE) && !defined(QT_NO_MENUBAR)
     struct QWceMenuPrivate {

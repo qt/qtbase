@@ -548,9 +548,6 @@ void QMenuBarPrivate::_q_actionHovered()
             QAccessible::updateAccessibility(q, actionIndex, QAccessible::Selection);
         }
 #endif //QT_NO_ACCESSIBILITY
-#ifdef QT3_SUPPORT
-        emit q->highlighted(q->findIdForAction(action));
-#endif
     }
 }
 
@@ -746,9 +743,6 @@ void QMenuBarPrivate::init()
 #endif
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
-#ifdef QT3_SUPPORT
-    doAutoResize = false;
-#endif
 #ifdef QT_SOFTKEYS_ENABLED
     menuBarAction = 0;
 #endif
@@ -791,18 +785,6 @@ QMenuBar::QMenuBar(QWidget *parent) : QWidget(*new QMenuBarPrivate, parent, 0)
     d->init();
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the constructors that doesn't take the \a name
-    argument and then use setObjectName() instead.
-*/
-QMenuBar::QMenuBar(QWidget *parent, const char *name) : QWidget(*new QMenuBarPrivate, parent, 0)
-{
-    Q_D(QMenuBar);
-    d->init();
-    setObjectName(QString::fromAscii(name));
-}
-#endif
 
 /*!
     Destroys the menu bar.
@@ -1412,38 +1394,6 @@ void QMenuBarPrivate::handleReparent()
 #endif // Q_WS_S60
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Sets whether the menu bar should automatically resize itself
-    when its parent widget is resized.
-
-    This feature is provided to help porting to Qt 4. We recommend
-    against using it in new code.
-
-    \sa autoGeometry()
-*/
-void QMenuBar::setAutoGeometry(bool b)
-{
-    Q_D(QMenuBar);
-    d->doAutoResize = b;
-}
-
-/*!
-    Returns true if the menu bar automatically resizes itself
-    when its parent widget is resized; otherwise returns false.
-
-    This feature is provided to help porting to Qt 4. We recommend
-    against using it in new code.
-
-    \sa setAutoGeometry()
-*/
-bool QMenuBar::autoGeometry() const
-{
-    Q_D(const QMenuBar);
-    return d->doAutoResize;
-}
-#endif
-
 /*!
   \reimp
 */
@@ -1504,15 +1454,6 @@ bool QMenuBar::event(QEvent *e)
     } break;
 #endif
     case QEvent::Show:
-#ifdef QT3_SUPPORT
-        if(QWidget *p = parentWidget()) {
-            // If itemsDirty == true, updateGeometries sends the MenubarUpdated event.
-            if (!d->itemsDirty) {
-                QMenubarUpdatedEvent menubarUpdated(this);
-                QApplication::sendEvent(p, &menubarUpdated);
-            }
-        }
-#endif
         d->_q_updateLayout();
     break;
     case QEvent::ShortcutOverride: {
@@ -1525,14 +1466,6 @@ bool QMenuBar::event(QEvent *e)
     }
     break;
 
-#ifdef QT3_SUPPORT
-    case QEvent::Hide: {
-        if(QWidget *p = parentWidget()) {
-            QMenubarUpdatedEvent menubarUpdated(this);
-            QApplication::sendEvent(p, &menubarUpdated);
-        }
-    } break;
-#endif
 
 #ifndef QT_NO_WHATSTHIS
     case QEvent::QueryWhatsThis:
@@ -1559,14 +1492,6 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
 {
     Q_D(QMenuBar);
     if (object == parent() && object) {
-#ifdef QT3_SUPPORT
-        if (d->doAutoResize && event->type() == QEvent::Resize) {
-            QResizeEvent *e = (QResizeEvent *)event;
-            int w = e->size().width();
-            setGeometry(0, y(), w, heightForWidth(w));
-            return false;
-        }
-#endif
         if (event->type() == QEvent::ParentChange) //GrandparentChange
             d->handleReparent();
     }
@@ -2026,100 +1951,6 @@ QAction *QMenuBar::defaultAction() const
     \sa triggered(), QAction::hovered()
 */
 
-
-#ifdef QT3_SUPPORT
-/*!
-    Use style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, this)
-    instead.
-*/
-int QMenuBar::frameWidth() const
-{
-    return style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
-}
-
-int QMenuBar::insertAny(const QIcon *icon, const QString *text, const QObject *receiver, const char *member,
-                        const QKeySequence *shortcut, const QMenu *popup, int id, int index)
-{
-    QAction *act = popup ? popup->menuAction() : new QAction(this);
-    if(id != -1)
-        static_cast<QMenuItem*>(act)->setId(id);
-    if(icon)
-        act->setIcon(*icon);
-    if(text)
-        act->setText(*text);
-    if(shortcut)
-        act->setShortcut(*shortcut);
-    if(receiver && member)
-        QObject::connect(act, SIGNAL(triggered(bool)), receiver, member);
-    if(index == -1 || index >= actions().count())
-        addAction(act);
-    else
-        insertAction(actions().value(index), act);
-    return findIdForAction(act);
-}
-
-/*!
-    \since 4.2
-
-    Use addSeparator() or insertAction() instead.
-
-    \oldcode
-        menuBar->insertSeparator();
-    \newcode
-        menuBar->addSeparator();
-    \endcode
-*/
-int QMenuBar::insertSeparator(int index)
-{
-    QAction *act = new QAction(this);
-    act->setSeparator(true);
-    if(index == -1 || index >= actions().count())
-        addAction(act);
-    else
-        insertAction(actions().value(index), act);
-    return findIdForAction(act);
-}
-
-/*!
-    Use QAction::setData() instead.
-*/
-bool QMenuBar::setItemParameter(int id, int param)
-{
-    if(QAction *act = findActionForId(id)) {
-        act->d_func()->param = param;
-        return true;
-    }
-    return false;
-}
-
-/*!
-    Use QAction::data() instead.
-*/
-int QMenuBar::itemParameter(int id) const
-{
-    if(QAction *act = findActionForId(id))
-        return act->d_func()->param;
-    return id;
-}
-
-QAction *QMenuBar::findActionForId(int id) const
-{
-    QList<QAction *> list = actions();
-    for (int i = 0; i < list.size(); ++i) {
-        QAction *act = list.at(i);
-        if (findIdForAction(act) == id)
-            return act;
-    }
-    return 0;
-}
-
-int QMenuBar::findIdForAction(QAction *act) const
-{
-    Q_ASSERT(act);
-    return act->d_func()->id;
-}
-#endif
-
 /*!
     \enum QMenuBar::Separator
 
@@ -2137,255 +1968,6 @@ int QMenuBar::findIdForAction(QAction *act) const
     Appends the action \a action to the menu bar's list of actions.
 
     \sa QMenu::addAction(), QWidget::addAction(), QWidget::actions()
-*/
-
-/*!
-    \fn uint QMenuBar::count() const
-
-    Use actions().count() instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QString &text, const QObject *receiver, const char* member, const QKeySequence& shortcut, int id, int index)
-
-    Use one of the insertAction() or addAction() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QIcon& icon, const QString &text, const QObject *receiver, const char* member, const QKeySequence& shortcut, int id, int index)
-
-    Use one of the insertAction() or addAction() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QPixmap &pixmap, const QObject *receiver, const char* member, const QKeySequence& shortcut, int id, int index)
-
-    Use one of the insertAction(), addAction(), insertMenu(), or
-    addMenu() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QString &text, int id, int index)
-
-    Use one of the insertAction() or addAction() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QIcon& icon, const QString &text, int id, int index)
-
-    Use one of the insertAction(), addAction(), insertMenu(), or
-    addMenu() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QString &text, QMenu *popup, int id, int index)
-
-    Use one of the insertMenu(), or addMenu() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QIcon& icon, const QString &text, QMenu *popup, int id, int index)
-
-    Use one of the insertMenu(), or addMenu() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QPixmap &pixmap, int id, int index)
-
-    Use one of the insertAction(), addAction(), insertMenu(), or
-    addMenu() overloads instead.
-*/
-
-/*!
-    \fn int QMenuBar::insertItem(const QPixmap &pixmap, QMenu *popup, int id, int index)
-
-    Use one of the insertMenu(), or addMenu() overloads instead.
-*/
-
-/*!
-    \fn void QMenuBar::removeItem(int id)
-
-    Use removeAction() instead.
-*/
-
-/*!
-    \fn void QMenuBar::removeItemAt(int index)
-
-    Use removeAction() instead.
-*/
-
-/*!
-    \fn QKeySequence QMenuBar::accel(int id) const
-
-    Use shortcut() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::setAccel(const QKeySequence& key, int id)
-
-    Use setShortcut() on the relevant QAction instead.
-*/
-
-/*!
-    \fn QIcon QMenuBar::iconSet(int id) const
-
-    Use icon() on the relevant QAction instead.
-*/
-
-/*!
-    \fn QString QMenuBar::text(int id) const
-
-    Use text() on the relevant QAction instead.
-*/
-
-/*!
-    \fn QPixmap QMenuBar::pixmap(int id) const
-
-    Use QPixmap(icon()) on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::setWhatsThis(int id, const QString &w)
-
-    Use setWhatsThis() on the relevant QAction instead.
-*/
-
-/*!
-    \fn QString QMenuBar::whatsThis(int id) const
-
-    Use whatsThis() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::changeItem(int id, const QString &text)
-
-    Use setText() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::changeItem(int id, const QPixmap &pixmap)
-
-    Use setText() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::changeItem(int id, const QIcon &icon, const QString &text)
-
-    Use setIcon() and setText() on the relevant QAction instead.
-*/
-
-/*!
-    \fn bool QMenuBar::isItemActive(int id) const
-
-    Use activeAction() instead.
-*/
-
-/*!
-    \fn bool QMenuBar::isItemEnabled(int id) const
-
-    Use isEnabled() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::setItemEnabled(int id, bool enable)
-
-    Use setEnabled() on the relevant QAction instead.
-*/
-
-/*!
-    \fn bool QMenuBar::isItemChecked(int id) const
-
-    Use isChecked() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::setItemChecked(int id, bool check)
-
-    Use setChecked() on the relevant QAction instead.
-*/
-
-/*!
-    \fn bool QMenuBar::isItemVisible(int id) const
-
-    Use isVisible() on the relevant QAction instead.
-*/
-
-/*!
-    \fn void QMenuBar::setItemVisible(int id, bool visible)
-
-    Use setVisible() on the relevant QAction instead.
-*/
-
-/*!
-    \fn int QMenuBar::indexOf(int id) const
-
-    Use actions().indexOf(action) on the relevant QAction instead.
-*/
-
-/*!
-    \fn int QMenuBar::idAt(int index) const
-
-    Use actions instead.
-*/
-
-/*!
-    \fn void QMenuBar::activateItemAt(int index)
-
-    Use activate() on the relevant QAction instead.
-*/
-
-/*!
-    \fn bool QMenuBar::connectItem(int id, const QObject *receiver, const char* member)
-
-    Use connect() on the relevant QAction instead.
-*/
-
-/*!
-    \fn bool QMenuBar::disconnectItem(int id,const QObject *receiver, const char* member)
-
-    Use disconnect() on the relevant QAction instead.
-*/
-
-/*!
-    \fn QMenuItem *QMenuBar::findItem(int id) const
-
-    Use actions instead.
-*/
-
-/*!
-    \fn Separator QMenuBar::separator() const
-
-    This function is provided only to make old code compile.
-*/
-
-/*!
-    \fn void QMenuBar::setSeparator(Separator sep)
-
-    This function is provided only to make old code compile.
-*/
-
-/*!
-    \fn QRect QMenuBar::itemRect(int index)
-
-    Use actionGeometry() on the relevant QAction instead.
-*/
-
-/*!
-    \fn int QMenuBar::itemAtPos(const QPoint &p)
-
-    There is no equivalent way to achieve this in Qt 4.
-*/
-
-/*!
-    \fn void QMenuBar::activated(int itemId);
-
-    Use triggered() instead.
-*/
-
-/*!
-    \fn void QMenuBar::highlighted(int itemId);
-
-    Use hovered() instead.
 */
 
 /*!
@@ -2459,22 +2041,6 @@ int QMenuBar::findIdForAction(QAction *act) const
 /*!
     \fn int QMenuBar::lineWidth() const
     \internal
-*/
-
-/*!
-    \fn void QMenuBar::setMargin(int margin)
-    Sets the width of the margin around the contents of the widget to \a margin.
-
-    Use QWidget::setContentsMargins() instead.
-    \sa margin(), QWidget::setContentsMargins()
-*/
-
-/*!
-    \fn int QMenuBar::margin() const
-    Returns the width of the margin around the contents of the widget.
-
-    Use QWidget::getContentsMargins() instead.
-    \sa setMargin(), QWidget::getContentsMargins()
 */
 
 /*!
