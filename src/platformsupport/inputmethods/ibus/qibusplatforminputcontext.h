@@ -65,6 +65,7 @@ public Q_SLOTS:
     void commitText(const QDBusVariant &text);
     void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
     void inputItemChanged();
+    void cursorRectChanged();
 
 private:
     QIBusPlatformInputContextPrivate *d;

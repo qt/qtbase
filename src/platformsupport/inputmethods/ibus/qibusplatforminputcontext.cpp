@@ -43,6 +43,7 @@
 #include <QtDebug>
 #include <QTextCharFormat>
 #include <QGuiApplication>
+#include <qwindow.h>
 #include <qevent.h>
 
 #include "qibusproxy.h"
@@ -86,6 +87,7 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
     }
     QInputPanel *p = qApp->inputPanel();
     connect(p, SIGNAL(inputItemChanged()), this, SLOT(inputItemChanged()));
+    connect(p, SIGNAL(cursorRectangleChanged()), this, SLOT(cursorRectChanged()));
 }
 
 QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
@@ -119,22 +121,22 @@ void QIBusPlatformInputContext::reset()
 void QIBusPlatformInputContext::update(Qt::InputMethodQueries q)
 {
     QPlatformInputContext::update(q);
+}
 
+void QIBusPlatformInputContext::cursorRectChanged()
+{
     if (!d->valid)
         return;
 
-    QObject *o = qApp->inputPanel()->inputItem();
-    if (!o)
+    QRect r = qApp->inputPanel()->cursorRectangle().toRect();
+    if(!r.isValid())
         return;
 
-    QInputMethodQueryEvent query(Qt::ImMicroFocus);
-    QGuiApplication::sendEvent(o, &query);
-    QRect r = query.value().toRect();
-    if(r.isValid()) {
-        if (debug)
-            qDebug() << "microFocus" << r;
-        d->context->SetCursorLocation(r.x(), r.y(), r.width(), r.height());
-    }
+    QWindow *inputWindow = qApp->inputPanel()->inputWindow();
+    r.moveTopLeft(inputWindow->mapToGlobal(r.topLeft()));
+    if (debug)
+        qDebug() << "microFocus" << r;
+    d->context->SetCursorLocation(r.x(), r.y(), r.width(), r.height());
 }
 
 void QIBusPlatformInputContext::inputItemChanged()

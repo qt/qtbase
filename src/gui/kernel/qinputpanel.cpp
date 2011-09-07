@@ -91,13 +91,17 @@ void QInputPanel::setInputItemTranform(const QTransform &transform)
 
 QRectF QInputPanel::cursorRectangle() const
 {
+    Q_D(const QInputPanel);
+
+    if (!d->inputItem)
+        return QRectF();
+
     QInputMethodQueryEvent query(Qt::ImMicroFocus);
-    QGuiApplication::sendEvent(inputItem(), &query);
+    QGuiApplication::sendEvent(d->inputItem.data(), &query);
     QRect r = query.value().toRect();
     if (!r.isValid())
         return QRect();
 
-    Q_D(const QInputPanel);
     return d->inputItemTransform.mapRect(r);
 }
 
@@ -147,6 +151,11 @@ bool QInputPanel::isAnimating() const
 
 void QInputPanel::update(Qt::InputMethodQueries queries)
 {
+    Q_D(QInputPanel);
+
+    if (!d->inputItem)
+        return;
+
     QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
     if (ic)
         ic->update(queries);

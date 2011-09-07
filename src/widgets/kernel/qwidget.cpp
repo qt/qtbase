@@ -83,15 +83,7 @@
 #include "qinputcontext.h"
 #include "qfileinfo.h"
 #include "private/qsoftkeymanager_p.h"
-
-#if defined (Q_WS_WIN)
-# include <private/qwininputcontext_p.h>
-#endif
-
-#if defined(Q_WS_X11)
-# include <private/qpaintengine_x11_p.h>
-# include "qx11info_x11.h"
-#endif
+#include <QtGui/qinputpanel.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -366,6 +358,17 @@ void QWidgetPrivate::scrollChildren(int dx, int dy)
                 QApplication::sendEvent(w, &e);
             }
         }
+    }
+}
+
+void QWidgetPrivate::updateWidgetTransform()
+{
+    Q_Q(QWidget);
+    if (q == qApp->inputPanel()->inputItem()) {
+        QTransform t;
+        QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
+        t.translate(p.x(), p.y());
+        qApp->inputPanel()->setInputItemTranform(t);
     }
 }
 
@@ -8357,11 +8360,6 @@ bool QWidget::event(QEvent *event)
             QInputMethodQueryEvent *query = static_cast<QInputMethodQueryEvent *>(event);
             QVariant v = inputMethodQuery(query->query());
 
-            if (query->query() == Qt::ImMicroFocus) {
-                QRect r = v.toRect();
-                v = QRect(mapToGlobal(r.topLeft()), r.size());
-            }
-
             query->setValue(v);
             query->accept();
             break;
@@ -8396,6 +8394,7 @@ bool QWidget::event(QEvent *event)
         QSoftKeyManager::updateSoftKeys();
 #endif
         focusInEvent((QFocusEvent*)event);
+        d->updateWidgetTransform();
         break;
 
     case QEvent::FocusOut:
@@ -8437,10 +8436,12 @@ bool QWidget::event(QEvent *event)
 
     case QEvent::Move:
         moveEvent((QMoveEvent*)event);
+        d->updateWidgetTransform();
         break;
 
     case QEvent::Resize:
         resizeEvent((QResizeEvent*)event);
+        d->updateWidgetTransform();
         break;
 
     case QEvent::Close:

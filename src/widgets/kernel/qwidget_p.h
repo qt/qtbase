@@ -504,6 +504,9 @@ public:
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
 
+    // tells the input panel about the widgets transform
+    void updateWidgetTransform();
+
     void reparentFocusWidgets(QWidget *oldtlw);
 
     static int pointToRect(const QPoint &p, const QRect &r);
