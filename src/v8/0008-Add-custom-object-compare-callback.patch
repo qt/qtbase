@@ -1,7 +1,7 @@
-From bec11b8b7f89d135e7d9a823ac4fe98c70d017cf Mon Sep 17 00:00:00 2001
+From a7c491e6e533110a17fe9f7d47cf92a1b2263180 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 27 Jun 2011 14:57:28 +1000
-Subject: [PATCH 08/16] Add custom object compare callback
+Subject: [PATCH 08/14] Add custom object compare callback
 
 A global custom object comparison callback can be set with:
     V8::SetUserObjectComparisonCallbackFunction()
@@ -28,15 +28,15 @@ instances.
  12 files changed, 218 insertions(+), 3 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 8891dab..d5d6972 100644
+index 99f4b9a..7544deb 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -2365,6 +2365,12 @@ class V8EXPORT ObjectTemplate : public Template {
+@@ -2366,6 +2366,12 @@ class V8EXPORT ObjectTemplate : public Template {
    bool HasExternalResource();
    void SetHasExternalResource(bool value);
-
+ 
 +  /**
-+   * Mark object instances of the template as using the user object
++   * Mark object instances of the template as using the user object 
 +   * comparison callback.
 +   */
 +  void MarkAsUseUserObjectComparison();
@@ -44,21 +44,21 @@ index 8891dab..d5d6972 100644
   private:
    ObjectTemplate();
    static Local<ObjectTemplate> New(Handle<FunctionTemplate> constructor);
-@@ -2565,6 +2571,10 @@ typedef void (*FailedAccessCheckCallback)(Local<Object> target,
+@@ -2566,6 +2572,10 @@ typedef void (*FailedAccessCheckCallback)(Local<Object> target,
                                            AccessType type,
                                            Local<Value> data);
-
+ 
 +// --- U s e r O b j e c t C o m p a r i s o n C a l l b a c k ---
-+typedef bool (*UserObjectComparisonCallback)(Local<Object> lhs,
++typedef bool (*UserObjectComparisonCallback)(Local<Object> lhs, 
 +                                             Local<Object> rhs);
 +
  // --- G a r b a g e C o l l e c t i o n  C a l l b a c k s
-
+ 
  /**
-@@ -2815,6 +2825,9 @@ class V8EXPORT V8 {
+@@ -2816,6 +2826,9 @@ class V8EXPORT V8 {
    /** Callback function for reporting failed access checks.*/
    static void SetFailedAccessCheckCallbackFunction(FailedAccessCheckCallback);
-
+ 
 +  /** Callback for user object comparisons */
 +  static void SetUserObjectComparisonCallbackFunction(UserObjectComparisonCallback);
 +
@@ -72,7 +72,7 @@ index ff74efb..2436031 100644
 @@ -1321,6 +1321,16 @@ void ObjectTemplate::SetHasExternalResource(bool value)
    }
  }
-
+ 
 +void ObjectTemplate::MarkAsUseUserObjectComparison()
 +{
 +  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
@@ -83,13 +83,13 @@ index ff74efb..2436031 100644
 +  EnsureConstructor(this);
 +  Utils::OpenHandle(this)->set_use_user_object_comparison(i::Smi::FromInt(1));
 +}
-
+ 
  // --- S c r i p t D a t a ---
-
+ 
 @@ -4632,6 +4642,15 @@ void V8::SetFailedAccessCheckCallbackFunction(
    isolate->SetFailedAccessCheckCallback(callback);
  }
-
+ 
 +void V8::SetUserObjectComparisonCallbackFunction(
 +      UserObjectComparisonCallback callback) {
 +  i::Isolate* isolate = i::Isolate::Current();
@@ -109,7 +109,7 @@ index a2626bf..749c9be 100644
 @@ -1563,6 +1563,36 @@ void CompareStub::Generate(MacroAssembler* masm) {
    // NOTICE! This code is only reached after a smi-fast-case check, so
    // it is certain that at least one operand isn't a smi.
-
+ 
 +  {
 +      Label not_user_equal, user_equal;
 +      __ and_(r2, r1, Operand(r0));
@@ -146,7 +146,7 @@ index a2626bf..749c9be 100644
 @@ -5802,10 +5832,18 @@ void ICCompareStub::GenerateObjects(MacroAssembler* masm) {
    __ tst(r2, Operand(kSmiTagMask));
    __ b(eq, &miss);
-
+ 
 -  __ CompareObjectType(r0, r2, r2, JS_OBJECT_TYPE);
 +  __ CompareObjectType(r0, r2, r3, JS_OBJECT_TYPE);
    __ b(ne, &miss);
@@ -161,7 +161,7 @@ index a2626bf..749c9be 100644
 +  __ and_(r2, r2, Operand(1 << Map::kUseUserObjectComparison));
 +  __ cmp(r2, Operand(1 << Map::kUseUserObjectComparison));
 +  __ b(eq, &miss);
-
+ 
    ASSERT(GetCondition() == eq);
    __ sub(r0, r0, Operand(r1));
 diff --git a/src/factory.cc b/src/factory.cc
@@ -169,11 +169,11 @@ index d530a75..6f8c7de 100644
 --- a/src/factory.cc
 +++ b/src/factory.cc
 @@ -998,6 +998,7 @@ Handle<JSFunction> Factory::CreateApiFunction(
-
+ 
    int internal_field_count = 0;
    bool has_external_resource = false;
 +  bool use_user_object_comparison = false;
-
+ 
    if (!obj->instance_template()->IsUndefined()) {
      Handle<ObjectTemplateInfo> instance_template =
 @@ -1007,6 +1008,8 @@ Handle<JSFunction> Factory::CreateApiFunction(
@@ -183,12 +183,12 @@ index d530a75..6f8c7de 100644
 +    use_user_object_comparison =
 +        !instance_template->use_user_object_comparison()->IsUndefined();
    }
-
+ 
    int instance_size = kPointerSize * internal_field_count;
 @@ -1051,6 +1054,11 @@ Handle<JSFunction> Factory::CreateApiFunction(
      map->set_has_external_resource(true);
    }
-
+ 
 +  // Mark as using user object comparison if needed
 +  if (use_user_object_comparison) {
 +    map->set_use_user_object_comparison(true);
@@ -204,7 +204,7 @@ index afa599e..0964ab9 100644
 @@ -3447,6 +3447,40 @@ void CompareStub::Generate(MacroAssembler* masm) {
      __ Assert(not_zero, "Unexpected smi operands.");
    }
-
+ 
 +  {
 +    NearLabel not_user_equal, user_equal;
 +    __ test(eax, Immediate(kSmiTagMask));
@@ -228,22 +228,22 @@ index afa599e..0964ab9 100644
 +    __ jmp(&not_user_equal);
 +
 +    __ bind(&user_equal);
-+
++   
 +    __ pop(ebx); // Return address.
 +    __ push(eax);
 +    __ push(edx);
 +    __ push(ebx);
 +    __ TailCallRuntime(Runtime::kUserObjectEquals, 2, 1);
-+
++   
 +    __ bind(&not_user_equal);
 +  }
 +
 +
    // NOTICE! This code is only reached after a smi-fast-case check, so
    // it is certain that at least one operand isn't a smi.
-
+ 
 @@ -5592,8 +5626,14 @@ void ICCompareStub::GenerateObjects(MacroAssembler* masm) {
-
+ 
    __ CmpObjectType(eax, JS_OBJECT_TYPE, ecx);
    __ j(not_equal, &miss, not_taken);
 +  __ test_b(FieldOperand(ecx, Map::kBitField3Offset),
@@ -254,7 +254,7 @@ index afa599e..0964ab9 100644
 +  __ test_b(FieldOperand(ecx, Map::kBitField3Offset),
 +            1 << Map::kUseUserObjectComparison);
 +  __ j(not_zero, &miss);
-
+ 
    ASSERT(GetCondition() == equal);
    __ sub(eax, Operand(edx));
 diff --git a/src/isolate.h b/src/isolate.h
@@ -264,19 +264,19 @@ index 35ffcb4..8130397 100644
 @@ -267,6 +267,9 @@ class ThreadLocalTop BASE_EMBEDDED {
    // Call back function to report unsafe JS accesses.
    v8::FailedAccessCheckCallback failed_access_check_callback_;
-
+ 
 +  // Call back function for user object comparisons
 +  v8::UserObjectComparisonCallback user_object_comparison_callback_;
 +
   private:
    void InitializeInternal();
-
+ 
 @@ -699,6 +702,11 @@ class Isolate {
    void SetFailedAccessCheckCallback(v8::FailedAccessCheckCallback callback);
    void ReportFailedAccessCheck(JSObject* receiver, v8::AccessType type);
-
+ 
 +  void SetUserObjectComparisonCallback(v8::UserObjectComparisonCallback callback);
-+  inline v8::UserObjectComparisonCallback UserObjectComparisonCallback() {
++  inline v8::UserObjectComparisonCallback UserObjectComparisonCallback() { 
 +      return thread_local_top()->user_object_comparison_callback_;
 +  }
 +
@@ -289,8 +289,8 @@ index 1c7f83e..1765441 100644
 +++ b/src/objects-inl.h
 @@ -2552,6 +2552,19 @@ bool Map::has_external_resource()
  }
-
-
+  
+ 
 +void Map::set_use_user_object_comparison(bool value) {
 +  if (value) {
 +    set_bit_field3(bit_field3() | (1 << kUseUserObjectComparison));
@@ -309,11 +309,11 @@ index 1c7f83e..1765441 100644
    if (value) {
 @@ -3050,6 +3063,8 @@ ACCESSORS(ObjectTemplateInfo, internal_field_count, Object,
            kInternalFieldCountOffset)
- ACCESSORS(ObjectTemplateInfo, has_external_resource, Object,
+ ACCESSORS(ObjectTemplateInfo, has_external_resource, Object, 
            kHasExternalResourceOffset)
-+ACCESSORS(ObjectTemplateInfo, use_user_object_comparison, Object,
++ACCESSORS(ObjectTemplateInfo, use_user_object_comparison, Object, 
 +          kUseUserObjectComparisonOffset)
-
+ 
  ACCESSORS(SignatureInfo, receiver, Object, kReceiverOffset)
  ACCESSORS(SignatureInfo, args, Object, kArgsOffset)
 diff --git a/src/objects.h b/src/objects.h
@@ -323,13 +323,13 @@ index edbc47a..e75e9f1 100644
 @@ -3724,6 +3724,11 @@ class Map: public HeapObject {
    inline void set_has_external_resource(bool value);
    inline bool has_external_resource();
-
+ 
 +
 +  // Tells whether the user object comparison callback should be used for
 +  // comparisons involving this object
 +  inline void set_use_user_object_comparison(bool value);
 +  inline bool use_user_object_comparison();
-
+  
    // Whether the named interceptor is a fallback interceptor or not
    inline void set_named_interceptor_is_fallback(bool value);
 @@ -3922,6 +3927,7 @@ class Map: public HeapObject {
@@ -337,7 +337,7 @@ index edbc47a..e75e9f1 100644
    static const int kNamedInterceptorIsFallback = 0;
    static const int kHasExternalResource = 1;
 +  static const int kUseUserObjectComparison = 2;
-
+ 
    // Layout of the default cache. It holds alternating name and code objects.
    static const int kCodeCacheEntrySize = 2;
 @@ -6442,6 +6448,7 @@ class ObjectTemplateInfo: public TemplateInfo {
@@ -345,9 +345,9 @@ index edbc47a..e75e9f1 100644
    DECL_ACCESSORS(internal_field_count, Object)
    DECL_ACCESSORS(has_external_resource, Object)
 +  DECL_ACCESSORS(use_user_object_comparison, Object)
-
+ 
    static inline ObjectTemplateInfo* cast(Object* obj);
-
+ 
 @@ -6459,7 +6466,8 @@ class ObjectTemplateInfo: public TemplateInfo {
    static const int kInternalFieldCountOffset =
        kConstructorOffset + kPointerSize;
@@ -356,16 +356,16 @@ index edbc47a..e75e9f1 100644
 +  static const int kUseUserObjectComparisonOffset = kHasExternalResourceOffset + kPointerSize;
 +  static const int kSize = kUseUserObjectComparisonOffset + kPointerSize;
  };
-
-
+ 
+ 
 diff --git a/src/runtime.cc b/src/runtime.cc
-index 827d954..d552ddb 100644
+index c13f92d..b50de80 100644
 --- a/src/runtime.cc
 +++ b/src/runtime.cc
 @@ -6279,6 +6279,29 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_StringEquals) {
  }
-
-
+ 
+ 
 +RUNTIME_FUNCTION(MaybeObject*, Runtime_UserObjectEquals) {
 +  NoHandleAllocation ha;
 +  ASSERT(args.length() == 2);
@@ -419,12 +419,12 @@ index e078ee9..c345383 100644
 @@ -387,6 +388,10 @@ void Isolate::SetFailedAccessCheckCallback(
    thread_local_top()->failed_access_check_callback_ = callback;
  }
-
+ 
 +void Isolate::SetUserObjectComparisonCallback(
 +    v8::UserObjectComparisonCallback callback) {
 +  thread_local_top()->user_object_comparison_callback_ = callback;
 +}
-
+ 
  void Isolate::ReportFailedAccessCheck(JSObject* receiver, v8::AccessType type) {
    if (!thread_local_top()->failed_access_check_callback_) return;
 diff --git a/src/x64/code-stubs-x64.cc b/src/x64/code-stubs-x64.cc
@@ -434,7 +434,7 @@ index d923494..10b9b56 100644
 @@ -2443,6 +2443,37 @@ void CompareStub::Generate(MacroAssembler* masm) {
      __ bind(&ok);
    }
-
+ 
 +  {
 +    NearLabel not_user_equal, user_equal;
 +    __ JumpIfSmi(rax, &not_user_equal);
@@ -456,13 +456,13 @@ index d923494..10b9b56 100644
 +    __ jmp(&not_user_equal);
 +
 +    __ bind(&user_equal);
-+
++   
 +    __ pop(rbx); // Return address.
 +    __ push(rax);
 +    __ push(rdx);
 +    __ push(rbx);
 +    __ TailCallRuntime(Runtime::kUserObjectEquals, 2, 1);
-+
++   
 +    __ bind(&not_user_equal);
 +  }
 +
@@ -470,7 +470,7 @@ index d923494..10b9b56 100644
    // value in rax, corresponding to result of comparing the two inputs.
    // NOTICE! This code is only reached after a smi-fast-case check, so
 @@ -4471,8 +4502,14 @@ void ICCompareStub::GenerateObjects(MacroAssembler* masm) {
-
+ 
    __ CmpObjectType(rax, JS_OBJECT_TYPE, rcx);
    __ j(not_equal, &miss, not_taken);
 +  __ testb(FieldOperand(rcx, Map::kBitField3Offset),
@@ -481,9 +481,9 @@ index d923494..10b9b56 100644
 +  __ testb(FieldOperand(rcx, Map::kBitField3Offset),
 +           Immediate(1 << Map::kUseUserObjectComparison));
 +  __ j(not_zero, &miss);
-
+ 
    ASSERT(GetCondition() == equal);
    __ subq(rax, rdx);
---
-1.7.6
+-- 
+1.7.4.4
 

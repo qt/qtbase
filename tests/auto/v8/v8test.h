@@ -49,6 +49,7 @@
 #endif
 
 bool v8test_eval();
+bool v8test_evalwithinwith();
 bool v8test_userobjectcompare();
 
 #endif // V8TEST_H

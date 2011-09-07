@@ -1,8 +1,7 @@
-From 472c04c9e7a64e8734c76d2cf97a7cc5b773b788 Mon Sep 17 00:00:00 2001
-From: "ager@chromium.org"
- <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
+From a338d96fe138fbffd4b45c7d13a54e068daa6e12 Mon Sep 17 00:00:00 2001
+From: ager@chromium.org <ager@chromium.org@ce2b1a6d-e550-0410-aec6-3dcde31c8c00>
 Date: Mon, 9 May 2011 15:24:48 +0000
-Subject: [PATCH 12/16] Add IsCallable method for Object in the API
+Subject: [PATCH 12/14] Add IsCallable method for Object in the API
 
 Patch by Peter Varga.
 
@@ -19,12 +18,12 @@ git-svn-id: https://v8.googlecode.com/svn/branches/bleeding_edge@7828 ce2b1a6d-e
  3 files changed, 61 insertions(+), 0 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 08b0ec2..4194d4a 100644
+index 43e00f5..5e1ce50 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -1763,6 +1763,13 @@ class Object : public Value {
+@@ -1764,6 +1764,13 @@ class Object : public Value {
    V8EXPORT int GetIndexedPropertiesExternalArrayDataLength();
-
+ 
    /**
 +   * Checks whether a callback is set by the
 +   * ObjectTemplate::SetCallAsFunctionHandler method.
@@ -33,7 +32,7 @@ index 08b0ec2..4194d4a 100644
 +  V8EXPORT bool IsCallable();
 +
 +  /**
-    * Call an Object as a function if a callback is set by the
+    * Call an Object as a function if a callback is set by the 
     * ObjectTemplate::SetCallAsFunctionHandler method.
     */
 diff --git a/src/api.cc b/src/api.cc
@@ -42,8 +41,8 @@ index bd435eb..a5a637f 100644
 +++ b/src/api.cc
 @@ -3265,6 +3265,17 @@ int v8::Object::GetIndexedPropertiesExternalArrayDataLength() {
  }
-
-
+ 
+ 
 +bool v8::Object::IsCallable() {
 +  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
 +  ON_BAILOUT(isolate, "v8::Object::IsCallable()", return false);
@@ -64,8 +63,8 @@ index 1334f63..45db5a1 100644
 +++ b/test/cctest/test-api.cc
 @@ -7263,6 +7263,49 @@ THREADED_TEST(CallAsFunction) {
  }
-
-
+ 
+ 
 +// Check whether a non-function object is callable.
 +THREADED_TEST(CallableObject) {
 +  v8::HandleScope scope;
@@ -112,6 +111,6 @@ index 1334f63..45db5a1 100644
  static int CountHandles() {
    return v8::HandleScope::NumberOfHandles();
  }
---
-1.7.6
+-- 
+1.7.4.4
 

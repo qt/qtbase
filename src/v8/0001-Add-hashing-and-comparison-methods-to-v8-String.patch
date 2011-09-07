@@ -1,27 +1,27 @@
-From e13ce09287a56c920d5ffdc5d4662d49f1838f16 Mon Sep 17 00:00:00 2001
+From 3dff2e903674d8ab5310d44281b57de36db659c9 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:47:20 +1000
-Subject: [PATCH 01/16] Add hashing and comparison methods to v8::String
+Subject: [PATCH 01/14] Add hashing and comparison methods to v8::String
 
 This allows us to more rapidly search for a v8::String inside
 a hash of QStrings.
 ---
- include/v8.h      |   44 ++++++++++++++++++++++++++++++
+ include/v8.h      |   45 +++++++++++++++++++++++++++++++
  src/api.cc        |   43 +++++++++++++++++++++++++++++
  src/heap-inl.h    |    2 +
  src/heap.cc       |    3 ++
  src/objects-inl.h |    1 +
  src/objects.cc    |   77 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
  src/objects.h     |   15 +++++++++-
- 7 files changed, 182 insertions(+), 3 deletions(-)
+ 7 files changed, 183 insertions(+), 3 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index d15d024..bbd29e9 100644
+index d15d024..be1ee71 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -994,6 +994,48 @@ class String : public Primitive {
+@@ -994,6 +994,49 @@ class String : public Primitive {
    V8EXPORT int Utf8Length() const;
-
+ 
    /**
 +   * Returns the hash of this string.
 +   */
@@ -35,7 +35,7 @@ index d15d024..bbd29e9 100644
 +  };
 +
 +  /**
-+   * Returns the "complete" hash of the string.  This is
++   * Returns the "complete" hash of the string.  This is 
 +   * all the information about the string needed to implement
 +   * a very efficient hash keyed on the string.
 +   *
@@ -43,7 +43,7 @@ index d15d024..bbd29e9 100644
 +   *    length: The length of the string.  Equivalent to Length()
 +   *    hash: The hash of the string.  Equivalent to Hash()
 +   *    symbol_id: If the string is a sequential symbol, the symbol
-+   *        id, otherwise 0.  If the symbol ids of two strings are
++   *        id, otherwise 0.  If the symbol ids of two strings are 
 +   *        the same (and non-zero) the two strings are identical.
 +   *        If the symbol ids are different the strings may still be
 +   *        identical, but an Equals() check must be performed.
@@ -63,15 +63,16 @@ index d15d024..bbd29e9 100644
 +   */
 +  V8EXPORT bool Equals(uint16_t *string, int length);
 +  V8EXPORT bool Equals(char *string, int length);
++  inline bool Equals(Handle<Value> that) const { return v8::Value::Equals(that); }
 +
 +  /**
     * Write the contents of the string to an external buffer.
     * If no arguments are given, expects the buffer to be large
     * enough to hold the entire string and NULL terminator. Copies
-@@ -1023,6 +1065,8 @@ class String : public Primitive {
+@@ -1023,6 +1066,8 @@ class String : public Primitive {
      HINT_MANY_WRITES_EXPECTED = 1
    };
-
+ 
 +  V8EXPORT uint16_t GetCharacter(int index);
 +
    V8EXPORT int Write(uint16_t* buffer,
@@ -84,7 +85,7 @@ index a2373cd..381935b 100644
 @@ -3284,6 +3284,49 @@ int String::Utf8Length() const {
    return str->Utf8Length();
  }
-
+ 
 +uint32_t String::Hash() const {
 +  i::Handle<i::String> str = Utils::OpenHandle(this);
 +  if (IsDeadCheck(str->GetIsolate(), "v8::String::Hash()")) return 0;
@@ -128,7 +129,7 @@ index a2373cd..381935b 100644
 +  if (IsDeadCheck(str->GetIsolate(), "v8::String::Equals()")) return 0;
 +  return str->SlowEqualsExternal(string, length);
 +}
-
+ 
  int String::WriteUtf8(char* buffer,
                        int capacity,
 diff --git a/src/heap-inl.h b/src/heap-inl.h
@@ -140,17 +141,17 @@ index 99737ed..f4fce7b 100644
    answer->set_length(str.length());
    answer->set_hash_field(hash_field);
 +  SeqString::cast(answer)->set_symbol_id(0);
-
+ 
    ASSERT_EQ(size, answer->Size());
-
+ 
 @@ -126,6 +127,7 @@ MaybeObject* Heap::AllocateTwoByteSymbol(Vector<const uc16> str,
    String* answer = String::cast(result);
    answer->set_length(str.length());
    answer->set_hash_field(hash_field);
 +  SeqString::cast(answer)->set_symbol_id(0);
-
+ 
    ASSERT_EQ(size, answer->Size());
-
+ 
 diff --git a/src/heap.cc b/src/heap.cc
 index 2b6c11f..930c97b 100644
 --- a/src/heap.cc
@@ -160,9 +161,9 @@ index 2b6c11f..930c97b 100644
    answer->set_length(chars);
    answer->set_hash_field(hash_field);
 +  SeqString::cast(result)->set_symbol_id(0);
-
+ 
    ASSERT_EQ(size, answer->Size());
-
+ 
 @@ -3561,6 +3562,7 @@ MaybeObject* Heap::AllocateRawAsciiString(int length, PretenureFlag pretenure) {
    HeapObject::cast(result)->set_map(ascii_string_map());
    String::cast(result)->set_length(length);
@@ -184,12 +185,12 @@ index 65aec5d..c82080d 100644
 --- a/src/objects-inl.h
 +++ b/src/objects-inl.h
 @@ -1924,6 +1924,7 @@ INT_ACCESSORS(ExternalArray, length, kLengthOffset)
-
-
+ 
+ 
  SMI_ACCESSORS(String, length, kLengthOffset)
 +SMI_ACCESSORS(SeqString, symbol_id, kSymbolIdOffset)
-
-
+ 
+ 
  uint32_t String::hash_field() {
 diff --git a/src/objects.cc b/src/objects.cc
 index df61956..dc4b260 100644
@@ -198,7 +199,7 @@ index df61956..dc4b260 100644
 @@ -5346,6 +5346,66 @@ static inline bool CompareStringContentsPartial(Isolate* isolate,
    }
  }
-
+ 
 +bool String::SlowEqualsExternal(uc16 *string, int length) {
 +  int len = this->length();
 +  if (len != length) return false;
@@ -259,11 +260,11 @@ index df61956..dc4b260 100644
 +    return CompareStringContents(isolate->objects_string_compare_buffer_a(), &ib);
 +  }
 +}
-
+ 
  bool String::SlowEquals(String* other) {
    // Fast check: negative check with lengths.
 @@ -8655,9 +8715,24 @@ class AsciiSymbolKey : public SequentialSymbolKey<char> {
-
+ 
    MaybeObject* AsObject() {
      if (hash_field_ == 0) Hash();
 -    return HEAP->AllocateAsciiSymbol(string_, hash_field_);
@@ -285,8 +286,8 @@ index df61956..dc4b260 100644
 +  static Atomic32 next_symbol_id;
  };
 +Atomic32 AsciiSymbolKey::next_symbol_id = 1;
-
-
+ 
+ 
  class TwoByteSymbolKey : public SequentialSymbolKey<uc16> {
 diff --git a/src/objects.h b/src/objects.h
 index e966b3d..6e26f57 100644
@@ -295,7 +296,7 @@ index e966b3d..6e26f57 100644
 @@ -5359,6 +5359,9 @@ class String: public HeapObject {
    bool IsAsciiEqualTo(Vector<const char> str);
    bool IsTwoByteEqualTo(Vector<const uc16> str);
-
+ 
 +  bool SlowEqualsExternal(uc16 *string, int length);
 +  bool SlowEqualsExternal(char *string, int length);
 +
@@ -305,14 +306,14 @@ index e966b3d..6e26f57 100644
 @@ -5610,9 +5613,17 @@ class String: public HeapObject {
  class SeqString: public String {
   public:
-
+ 
 +  // Get and set the symbol id of the string
 +  inline int symbol_id();
 +  inline void set_symbol_id(int value);
 +
    // Casting.
    static inline SeqString* cast(Object* obj);
-
+ 
 +  // Layout description.
 +  static const int kSymbolIdOffset = String::kSize;
 +  static const int kSize = kSymbolIdOffset + kPointerSize;
@@ -322,22 +323,22 @@ index e966b3d..6e26f57 100644
  };
 @@ -5647,7 +5658,7 @@ class SeqAsciiString: public SeqString {
    }
-
+ 
    // Layout description.
 -  static const int kHeaderSize = String::kSize;
 +  static const int kHeaderSize = SeqString::kSize;
    static const int kAlignedSize = POINTER_SIZE_ALIGN(kHeaderSize);
-
+ 
    // Maximal memory usage for a single sequential ASCII string.
 @@ -5701,7 +5712,7 @@ class SeqTwoByteString: public SeqString {
    }
-
+ 
    // Layout description.
 -  static const int kHeaderSize = String::kSize;
 +  static const int kHeaderSize = SeqString::kSize;
    static const int kAlignedSize = POINTER_SIZE_ALIGN(kHeaderSize);
-
+ 
    // Maximal memory usage for a single sequential two-byte string.
---
-1.7.6
+-- 
+1.7.4.4
 

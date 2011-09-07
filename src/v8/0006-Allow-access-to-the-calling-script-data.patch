@@ -1,7 +1,7 @@
-From f890f0d1a1e5bd62711815489c87755a4f382436 Mon Sep 17 00:00:00 2001
+From 1209b88e96f253cdc19aa4c95e011c84597844f0 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Wed, 25 May 2011 10:36:13 +1000
-Subject: [PATCH 06/16] Allow access to the calling script data
+Subject: [PATCH 06/14] Allow access to the calling script data
 
 ---
  include/v8.h |    1 +
@@ -9,15 +9,15 @@ Subject: [PATCH 06/16] Allow access to the calling script data
  2 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index a858eae..9aba4a8 100644
+index d78ab1f..2bc0ed1 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -3336,6 +3336,7 @@ class V8EXPORT Context {
+@@ -3337,6 +3337,7 @@ class V8EXPORT Context {
     */
    static Local<Context> GetCalling();
    static Local<Object> GetCallingQmlGlobal();
 +  static Local<Value> GetCallingScriptData();
-
+ 
    /**
     * Sets the security token for the context.  To access an object in
 diff --git a/src/api.cc b/src/api.cc
@@ -27,7 +27,7 @@ index 39767f4..ff74efb 100644
 @@ -3976,6 +3976,18 @@ v8::Local<v8::Object> Context::GetCallingQmlGlobal() {
    }
  }
-
+ 
 +v8::Local<v8::Value> Context::GetCallingScriptData()
 +{
 +  i::Isolate* isolate = i::Isolate::Current();
@@ -40,9 +40,9 @@ index 39767f4..ff74efb 100644
 +  i::Handle<i::Script> script(i::Script::cast(i::JSFunction::cast(it.frame()->function())->shared()->script()));
 +  return Utils::ToLocal(i::Handle<i::Object>(script->data()));
 +}
-
+ 
  v8::Local<v8::Object> Context::Global() {
    if (IsDeadCheck(i::Isolate::Current(), "v8::Context::Global()")) {
---
-1.7.6
+-- 
+1.7.4.4
 

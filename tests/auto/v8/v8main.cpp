@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
     v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
 
     RUN_TEST(eval);
+    RUN_TEST(evalwithinwith);
     RUN_TEST(userobjectcompare);
 
     return -1;

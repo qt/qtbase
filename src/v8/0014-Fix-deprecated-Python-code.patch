@@ -1,7 +1,7 @@
-From 97cb46d421faebd2b139570bcf9aaf2d5eadc333 Mon Sep 17 00:00:00 2001
+From ed5cc903d70f73780e5985e7d2de33f6b8d86402 Mon Sep 17 00:00:00 2001
 From: Kent Hansen <kent.hansen@nokia.com>
 Date: Fri, 2 Sep 2011 12:03:09 +0200
-Subject: [PATCH 16/16] Fix deprecated Python code
+Subject: [PATCH 14/14] Fix deprecated Python code
 
 Needed to make the scripts run on Python 3, which is the
 default python interpreter on some newer distros.
@@ -46,5 +46,6 @@ index 646bf14..395441b 100644
        new_identifier = self.CharFromNumber(identifier_first_char)
        if identifier_second_char != 0:
          new_identifier = (
---
-1.7.6
+-- 
+1.7.4.4
+

@@ -1,7 +1,7 @@
-From 3d6d4249878f7960eac4c9c94e0f2529f9a58c4a Mon Sep 17 00:00:00 2001
-From: "ager@chromium.org" <ager@chromium.org>
+From 3ba270e3b93d292dc53a675a21479bdb0b50bbbe Mon Sep 17 00:00:00 2001
+From: ager@chromium.org <ager@chromium.org>
 Date: Fri, 6 May 2011 11:07:52 +0000
-Subject: [PATCH 10/16] Implement CallAsConstructor method for Object in the
+Subject: [PATCH 10/14] Implement CallAsConstructor method for Object in the
  API
 
 Patch by Peter Varga.
@@ -21,10 +21,10 @@ git-svn-id: https://v8.googlecode.com/svn/branches/bleeding_edge@7803 ce2b1a6d-e
  5 files changed, 276 insertions(+), 8 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 8a8e1cd..84462b5 100644
+index 277153e..18527e1 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -1765,6 +1765,14 @@ class Object : public Value {
+@@ -1766,6 +1766,14 @@ class Object : public Value {
                                         int argc,
                                         Handle<Value> argv[]);
  
@@ -96,16 +96,16 @@ index e412e51..1a585d6 100644
 +  }
 +  return Local<v8::Object>();
  }
-
-
+ 
+ 
 diff --git a/src/execution.cc b/src/execution.cc
 index 894d741..afb352c 100644
 --- a/src/execution.cc
 +++ b/src/execution.cc
 @@ -297,6 +297,34 @@ Handle<Object> Execution::GetConstructorDelegate(Handle<Object> object) {
  }
-
-
+ 
+ 
 +Handle<Object> Execution::TryGetConstructorDelegate(
 +    Handle<Object> object,
 +    bool* has_pending_exception) {
@@ -148,8 +148,8 @@ index 0a0be51..ec2a195 100644
 +  static Handle<Object> TryGetConstructorDelegate(Handle<Object> object,
 +                                                  bool* has_pending_exception);
  };
-
-
+ 
+ 
 diff --git a/test/cctest/test-api.cc b/test/cctest/test-api.cc
 index 693d51e..1334f63 100644
 --- a/test/cctest/test-api.cc
@@ -157,7 +157,7 @@ index 693d51e..1334f63 100644
 @@ -6746,6 +6746,200 @@ THREADED_TEST(Constructor) {
    CHECK(value->BooleanValue());
  }
-
+ 
 +
 +static Handle<Value> ConstructorCallback(const Arguments& args) {
 +  ApiTestFuzzer::Fuzz();
@@ -365,7 +365,7 @@ index 693d51e..1334f63 100644
 +    CHECK_EQ("TypeError: Property 'obj2' of object #<Object> is not a function",
 +             *exception_value1);
      try_catch.Reset();
-
+ 
      // Call an object without call-as-function handler through the API
 @@ -7040,7 +7233,7 @@ THREADED_TEST(CallAsFunction) {
      CHECK(value.IsEmpty());
@@ -375,7 +375,7 @@ index 693d51e..1334f63 100644
 +    CHECK_EQ("TypeError: [object Object] is not a function", *exception_value2);
      try_catch.Reset();
    }
-
+ 
 @@ -7057,14 +7250,14 @@ THREADED_TEST(CallAsFunction) {
      value = CompileRun("obj3(22)");
      CHECK(try_catch.HasCaught());
@@ -383,7 +383,7 @@ index 693d51e..1334f63 100644
 -    CHECK_EQ(*exception_value1, "22");
 +    CHECK_EQ("22", *exception_value1);
      try_catch.Reset();
-
+ 
      v8::Handle<Value> args[] = { v8_num(23) };
      value = instance->CallAsFunction(instance, 1, args);
      CHECK(try_catch.HasCaught());
@@ -393,6 +393,6 @@ index 693d51e..1334f63 100644
      try_catch.Reset();
    }
  }
---
-1.7.6
+-- 
+1.7.4.4
 

@@ -81,6 +81,49 @@ cleanup:
     ENDTEST();
 }
 
+bool v8test_evalwithinwith()
+{
+    BEGINTEST();
+
+    HandleScope handle_scope;
+    Persistent<Context> context = Context::New();
+    Context::Scope context_scope(context);
+
+    Local<Object> qmlglobal = Object::New();
+    qmlglobal->Set(String::New("a"), Integer::New(1922));
+    // There was a bug that the "eval" lookup would incorrectly resolve
+    // to the QML global object
+    qmlglobal->Set(String::New("eval"), Integer::New(1922));
+
+#define SOURCE \
+    "(function() { " \
+    "    var b = { c: 10 }; " \
+    "    with (b) { " \
+    "        return eval(\"a\"); " \
+    "    } " \
+    "})"
+    Local<Script> script = Script::Compile(String::New(SOURCE), NULL, NULL, 
+                                           Handle<String>(), Script::QmlMode);
+#undef SOURCE
+
+    TryCatch tc;
+    Local<Value> result = script->Run(qmlglobal);
+
+    VERIFY(!tc.HasCaught());
+    VERIFY(result->IsFunction());
+
+    {
+    Local<Value> fresult = Handle<Function>::Cast(result)->Call(context->Global(), 0, 0);
+    VERIFY(!tc.HasCaught());
+    VERIFY(fresult->Int32Value() == 1922);
+    }
+
+cleanup:
+    context.Dispose();
+
+    ENDTEST();
+}
+
 static int userObjectComparisonCalled = 0;
 static bool userObjectComparisonReturn = false;
 static Local<Object> expectedLhs;

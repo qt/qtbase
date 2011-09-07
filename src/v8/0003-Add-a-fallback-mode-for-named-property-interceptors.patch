@@ -1,7 +1,7 @@
-From ae8688b53d67044f2c9b0cce25fc282b078610c1 Mon Sep 17 00:00:00 2001
+From 530ded6ea634bccb96652cd3e0cf67725449ed63 Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 16:21:02 +1000
-Subject: [PATCH 03/16] Add a "fallback" mode for named property interceptors
+Subject: [PATCH 03/14] Add a "fallback" mode for named property interceptors
 
 By default interceptors are called before the normal property
 resolution on objects.  When an interceptor is installed as a
@@ -24,10 +24,10 @@ declarations.
  9 files changed, 99 insertions(+), 18 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index bbd29e9..85452aa 100644
+index be1ee71..bb31ea0 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -2169,6 +2169,7 @@ class V8EXPORT FunctionTemplate : public Template {
+@@ -2170,6 +2170,7 @@ class V8EXPORT FunctionTemplate : public Template {
                                         NamedPropertyQuery query,
                                         NamedPropertyDeleter remover,
                                         NamedPropertyEnumerator enumerator,
@@ -35,10 +35,10 @@ index bbd29e9..85452aa 100644
                                         Handle<Value> data);
    void SetIndexedInstancePropertyHandler(IndexedPropertyGetter getter,
                                           IndexedPropertySetter setter,
-@@ -2253,6 +2254,13 @@ class V8EXPORT ObjectTemplate : public Template {
+@@ -2254,6 +2255,13 @@ class V8EXPORT ObjectTemplate : public Template {
                                 NamedPropertyEnumerator enumerator = 0,
                                 Handle<Value> data = Handle<Value>());
-
+ 
 +  void SetFallbackPropertyHandler(NamedPropertyGetter getter,
 +                                  NamedPropertySetter setter = 0,
 +                                  NamedPropertyQuery query = 0,
@@ -66,7 +66,7 @@ index 381935b..8b0b32a 100644
    if (remover != 0) SET_FIELD_WRAPPED(obj, set_deleter, remover);
    if (enumerator != 0) SET_FIELD_WRAPPED(obj, set_enumerator, enumerator);
 +  obj->set_is_fallback(i::Smi::FromInt(is_fallback));
-
+ 
    if (data.IsEmpty()) data = v8::Undefined();
    obj->set_data(*Utils::OpenHandle(*data));
 @@ -1143,6 +1145,33 @@ void ObjectTemplate::SetNamedPropertyHandler(NamedPropertyGetter getter,
@@ -102,7 +102,7 @@ index 381935b..8b0b32a 100644
 +                                                        true,
                                                          data);
  }
-
+ 
 diff --git a/src/factory.cc b/src/factory.cc
 index 7dee66f..dcdc645 100644
 --- a/src/factory.cc
@@ -131,11 +131,11 @@ index 326de86..dd3a86c 100644
 +                           bool skip_fallback_interceptor) {
    CALL_HEAP_FUNCTION(object->GetIsolate(),
 -                     object->SetProperty(*key, *value, attributes, strict_mode),
-+                     object->SetProperty(*key, *value, attributes, strict_mode,
++                     object->SetProperty(*key, *value, attributes, strict_mode, 
 +                                         skip_fallback_interceptor),
                       Object);
  }
-
+ 
 diff --git a/src/handles.h b/src/handles.h
 index 3839f37..4b42506 100644
 --- a/src/handles.h
@@ -147,7 +147,7 @@ index 3839f37..4b42506 100644
 -                           StrictModeFlag strict_mode);
 +                           StrictModeFlag strict_mode,
 +                           bool skip_fallback_interceptor = false);
-
+ 
  Handle<Object> SetProperty(Handle<Object> object,
                             Handle<Object> key,
 diff --git a/src/objects-inl.h b/src/objects-inl.h
@@ -156,8 +156,8 @@ index cce3edd..6aaca2f 100644
 +++ b/src/objects-inl.h
 @@ -2521,6 +2521,21 @@ bool Map::is_shared() {
  }
-
-
+ 
+ 
 +void Map::set_named_interceptor_is_fallback(bool value)
 +{
 +  if (value) {
@@ -181,7 +181,7 @@ index cce3edd..6aaca2f 100644
  ACCESSORS(InterceptorInfo, enumerator, Object, kEnumeratorOffset)
  ACCESSORS(InterceptorInfo, data, Object, kDataOffset)
 +ACCESSORS(InterceptorInfo, is_fallback, Smi, kFallbackOffset)
-
+ 
  ACCESSORS(CallHandlerInfo, callback, Object, kCallbackOffset)
  ACCESSORS(CallHandlerInfo, data, Object, kDataOffset)
 diff --git a/src/objects.cc b/src/objects.cc
@@ -200,20 +200,20 @@ index 79d7240..15e2cdb 100644
 +  LocalLookup(name, &result, skip_fallback_interceptor);
    return SetProperty(&result, name, value, attributes, strict_mode);
  }
-
+ 
 @@ -3148,7 +3149,8 @@ AccessorDescriptor* Map::FindAccessor(String* name) {
  }
-
-
+ 
+ 
 -void JSObject::LocalLookup(String* name, LookupResult* result) {
 +void JSObject::LocalLookup(String* name, LookupResult* result,
 +                           bool skip_fallback_interceptor) {
    ASSERT(name->IsString());
-
+ 
    Heap* heap = GetHeap();
 @@ -3174,22 +3176,30 @@ void JSObject::LocalLookup(String* name, LookupResult* result) {
    }
-
+ 
    // Check for lookup interceptor except when bootstrapping.
 -  if (HasNamedInterceptor() && !heap->isolate()->bootstrapper()->IsActive()) {
 +  bool wouldIntercept = HasNamedInterceptor() && !heap->isolate()->bootstrapper()->IsActive();
@@ -221,19 +221,19 @@ index 79d7240..15e2cdb 100644
      result->InterceptorResult(this);
      return;
    }
-
+ 
    LocalLookupRealNamedProperty(name, result);
 +
-+  if (wouldIntercept && !skip_fallback_interceptor && !result->IsProperty() &&
++  if (wouldIntercept && !skip_fallback_interceptor && !result->IsProperty() && 
 +      map()->named_interceptor_is_fallback()) {
 +    result->InterceptorResult(this);
 +    return;
 +  }
  }
-
-
+ 
+ 
 -void JSObject::Lookup(String* name, LookupResult* result) {
-+void JSObject::Lookup(String* name, LookupResult* result,
++void JSObject::Lookup(String* name, LookupResult* result, 
 +                      bool skip_fallback_interceptor) {
    // Ecma-262 3rd 8.6.2.4
    Heap* heap = GetHeap();
@@ -260,21 +260,21 @@ index 07e1089..a209cd0 100644
                                             String* key,
                                             Object* value,
 @@ -1637,8 +1638,8 @@ class JSObject: public HeapObject {
-
+ 
    // Lookup a property.  If found, the result is valid and has
    // detailed information.
 -  void LocalLookup(String* name, LookupResult* result);
 -  void Lookup(String* name, LookupResult* result);
 +  void LocalLookup(String* name, LookupResult* result, bool skip_fallback_interceptor = false);
 +  void Lookup(String* name, LookupResult* result, bool skip_fallback_interceptor = false);
-
+ 
    // The following lookup functions skip interceptors.
    void LocalLookupRealNamedProperty(String* name, LookupResult* result);
 @@ -3714,6 +3715,12 @@ class Map: public HeapObject {
    inline void set_is_access_check_needed(bool access_check_needed);
    inline bool is_access_check_needed();
-
-+
+ 
++ 
 +  // Whether the named interceptor is a fallback interceptor or not
 +  inline void set_named_interceptor_is_fallback(bool value);
 +  inline bool named_interceptor_is_fallback();
@@ -282,13 +282,13 @@ index 07e1089..a209cd0 100644
 +
    // [prototype]: implicit prototype object.
    DECL_ACCESSORS(prototype, Object)
-
+ 
 @@ -3904,6 +3911,7 @@ class Map: public HeapObject {
    static const int kHasExternalArrayElements = 6;
-
+ 
    // Bit positions for bit field 3
 +  static const int kNamedInterceptorIsFallback = 0;
-
+ 
    // Layout of the default cache. It holds alternating name and code objects.
    static const int kCodeCacheEntrySize = 2;
 @@ -6276,6 +6284,7 @@ class InterceptorInfo: public Struct {
@@ -296,9 +296,9 @@ index 07e1089..a209cd0 100644
    DECL_ACCESSORS(enumerator, Object)
    DECL_ACCESSORS(data, Object)
 +  DECL_ACCESSORS(is_fallback, Smi)
-
+ 
    static inline InterceptorInfo* cast(Object* obj);
-
+ 
 @@ -6295,7 +6304,8 @@ class InterceptorInfo: public Struct {
    static const int kDeleterOffset = kQueryOffset + kPointerSize;
    static const int kEnumeratorOffset = kDeleterOffset + kPointerSize;
@@ -306,7 +306,7 @@ index 07e1089..a209cd0 100644
 -  static const int kSize = kDataOffset + kPointerSize;
 +  static const int kFallbackOffset = kDataOffset + kPointerSize;
 +  static const int kSize = kFallbackOffset + kPointerSize;
-
+ 
   private:
    DISALLOW_IMPLICIT_CONSTRUCTORS(InterceptorInfo);
 diff --git a/src/runtime.cc b/src/runtime.cc
@@ -324,11 +324,11 @@ index 7335da8..660352c 100644
          // against the global object. The information will be used to
 @@ -1152,7 +1152,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DeclareGlobals) {
      }
-
+ 
      LookupResult lookup;
 -    global->LocalLookup(*name, &lookup);
 +    global->LocalLookup(*name, &lookup, true);
-
+ 
      PropertyAttributes attributes = is_const_property
          ? static_cast<PropertyAttributes>(base | READ_ONLY)
 @@ -1196,7 +1196,8 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_DeclareGlobals) {
@@ -340,7 +340,7 @@ index 7335da8..660352c 100644
 +                                         true));
      }
    }
-
+ 
 @@ -1343,7 +1344,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
    JSObject* real_holder = global;
    LookupResult lookup;
@@ -351,7 +351,7 @@ index 7335da8..660352c 100644
        // Determine if this is a redeclaration of something read-only.
        if (lookup.IsReadOnly()) {
 @@ -1400,7 +1401,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_InitializeVarGlobal) {
-
+ 
    global = isolate->context()->global();
    if (assign) {
 -    return global->SetProperty(*name, args[2], attributes, strict_mode);
@@ -359,6 +359,6 @@ index 7335da8..660352c 100644
    }
    return isolate->heap()->undefined_value();
  }
---
-1.7.6
+-- 
+1.7.4.4
 
