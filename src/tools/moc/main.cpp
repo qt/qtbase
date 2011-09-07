@@ -83,7 +83,8 @@ void error(const char *msg = "Invalid argument")
             "  -U<macro>          undefine macro\n"
             "  -i                 do not generate an #include statement\n"
             "  -p<path>           path prefix for included file\n"
-            "  -f[<file>]         force #include, optional file name\n"
+            "  -f[<file>]         force #include, optional file name (overwrite default)\n"
+            "  -b<file>           prepend #include <file> (preserve default include)\n"
             "  -nn                do not display notes\n"
             "  -nw                do not display warnings\n"
             "  @<file>            read additional options from file\n"
@@ -156,6 +157,7 @@ QByteArray composePreprocessorOutput(const Symbols &symbols) {
 int runMoc(int _argc, char **_argv)
 {
     bool autoInclude = true;
+    bool defaultInclude = true;
     Preprocessor pp;
     Moc moc;
     pp.macros["Q_MOC_RUN"];
@@ -226,8 +228,21 @@ int runMoc(int _argc, char **_argv)
                 break;
             moc.noInclude        = false;
             autoInclude = false;
-            if (opt[1])                        // -fsomething.h
+            if (opt[1]) {                       // -fsomething.h
                 moc.includeFiles.append(opt.mid(1));
+                defaultInclude = false;
+            }
+            break;
+        case 'b':
+            if (ignoreConflictingOptions)
+                break;
+            if (!more) {
+                if (!(n < argc-1))
+                    error("Missing file name for the -b option.");
+                moc.includeFiles.prepend(argv[++n]);
+            } else if (opt[1]) {
+                moc.includeFiles.prepend(opt.mid(1));
+            }
             break;
         case 'p': // include file path
             if (ignoreConflictingOptions)
@@ -341,7 +356,7 @@ int runMoc(int _argc, char **_argv)
         // spos >= -1 && ppos > spos => ppos >= 0
         moc.noInclude = (ppos > spos && tolower(filename[ppos + 1]) != 'h');
     }
-    if (moc.includeFiles.isEmpty()) {
+    if (defaultInclude) {
         if (moc.includePath.isEmpty()) {
             if (filename.size()) {
                 if (output.size())
