@@ -4110,10 +4110,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
     case QEvent::RequestSoftwareInputPanel:
-        inputPanel()->open();
+        inputPanel()->show();
         break;
     case QEvent::CloseSoftwareInputPanel:
-        inputPanel()->close();
+        inputPanel()->hide();
         break;
 
 #ifndef QT_NO_GESTURES

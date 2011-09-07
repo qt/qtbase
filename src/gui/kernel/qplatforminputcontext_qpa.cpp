@@ -75,7 +75,7 @@ QRectF QPlatformInputContext::keyboardRect() const
 
 void QPlatformInputContext::emitKeyboardRectChanged() const
 {
-    emit qApp->inputPanel()->keyboardRectChanged();
+    emit qApp->inputPanel()->keyboardRectangleChanged();
 }
 
 bool QPlatformInputContext::isAnimating()

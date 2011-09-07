@@ -60,9 +60,9 @@ class Q_GUI_EXPORT QInputPanel : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QInputPanel)
     Q_PROPERTY(QObject *inputItem READ inputItem WRITE setInputItem NOTIFY inputItemChanged)
-    Q_PROPERTY(QRectF cursorRect READ cursorRect NOTIFY cursorRectChanged)
-    Q_PROPERTY(QRectF keyboardRect READ keyboardRect NOTIFY keyboardRectChanged)
-    Q_PROPERTY(bool open READ isOpen WRITE setOpen NOTIFY openChanged)
+    Q_PROPERTY(QRectF cursorRectangle READ cursorRectangle NOTIFY cursorRectangleChanged)
+    Q_PROPERTY(QRectF keyboardRectangle READ keyboardRectangle NOTIFY keyboardRectangleChanged)
+    Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(bool animating READ isAnimating NOTIFY animatingChanged)
 
 public:
@@ -76,24 +76,24 @@ public:
     void setInputItemTranform(const QTransform &transform);
 
     // in window coordinates
-    QRectF cursorRect() const; // ### what if we have rotations for the item?
+    QRectF cursorRectangle() const; // ### what if we have rotations for the item?
 
     // keyboard geometry in window coords
-    QRectF keyboardRect();
+    QRectF keyboardRectangle();
 
     enum Action {
         Click,
         ContextMenu
     };
 
-    bool isOpen() const;
-    void setOpen(bool open);
+    bool visible() const;
+    void setVisible(bool visible);
 
     bool isAnimating() const;
 
 public Q_SLOTS:
-    void open();
-    void close();
+    void show();
+    void hide();
 
     void update(Qt::InputMethodQueries queries);
     void reset();
@@ -102,9 +102,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void inputItemChanged();
-    void cursorRectChanged();
-    void keyboardRectChanged();
-    void openChanged();
+    void cursorRectangleChanged();
+    void keyboardRectangleChanged();
+    void visibleChanged();
     void animatingChanged();
 
 private:

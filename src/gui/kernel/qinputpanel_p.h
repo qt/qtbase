@@ -54,11 +54,11 @@ class QInputPanelPrivate : public QObjectPrivate
 {
 public:
     inline QInputPanelPrivate()
-        : open(false)
+        : visible(false)
     {}
     QTransform inputItemTransform;
     QWeakPointer<QObject> inputItem;
-    bool open;
+    bool visible;
 };
 
 QT_END_NAMESPACE

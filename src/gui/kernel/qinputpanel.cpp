@@ -86,10 +86,11 @@ void QInputPanel::setInputItemTranform(const QTransform &transform)
 {
     Q_D(QInputPanel);
     d->inputItemTransform = transform;
-    emit cursorRectChanged();
+    emit cursorRectangleChanged();
+    emit keyboardRectangleChanged();
 }
 
-QRectF QInputPanel::cursorRect() const
+QRectF QInputPanel::cursorRectangle() const
 {
     QInputMethodQueryEvent query(Qt::ImMicroFocus);
     QGuiApplication::sendEvent(inputItem(), &query);
@@ -101,7 +102,7 @@ QRectF QInputPanel::cursorRect() const
     return d->inputItemTransform.mapRect(r);
 }
 
-QRectF QInputPanel::keyboardRect()
+QRectF QInputPanel::keyboardRectangle()
 {
     QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
     if (ic)
@@ -109,31 +110,31 @@ QRectF QInputPanel::keyboardRect()
     return QRectF();
 }
 
-void QInputPanel::open()
+void QInputPanel::show()
 {
-    setOpen(true);
+    setVisible(true);
 }
 
-void QInputPanel::close()
+void QInputPanel::hide()
 {
-    setOpen(false);
+    setVisible(false);
 }
 
-bool QInputPanel::isOpen() const
+bool QInputPanel::visible() const
 {
     Q_D(const QInputPanel);
 
-    return d->open;
+    return d->visible;
 }
 
-void QInputPanel::setOpen(bool open)
+void QInputPanel::setVisible(bool visible)
 {
     Q_D(QInputPanel);
-    if (d->open == open)
+    if (d->visible == visible)
         return;
 
-    d->open = open;
-    emit openChanged();
+    d->visible = visible;
+    emit visibleChanged();
 }
 
 bool QInputPanel::isAnimating() const
@@ -152,7 +153,7 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
         ic->update(queries);
 
     if (queries & Qt::ImMicroFocus)
-        emit cursorRectChanged();
+        emit cursorRectangleChanged();
 }
 
 void QInputPanel::reset()
