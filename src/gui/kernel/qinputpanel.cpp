@@ -82,9 +82,12 @@ QTransform QInputPanel::inputItemTransform() const
     return d->inputItemTransform;
 }
 
-void QInputPanel::setInputItemTranform(const QTransform &transform)
+void QInputPanel::setInputItemTransform(const QTransform &transform)
 {
     Q_D(QInputPanel);
+    if (d->inputItemTransform == transform)
+        return;
+
     d->inputItemTransform = transform;
     emit cursorRectangleChanged();
 }

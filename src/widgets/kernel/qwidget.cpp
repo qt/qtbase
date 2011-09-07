@@ -368,7 +368,7 @@ void QWidgetPrivate::updateWidgetTransform()
         QTransform t;
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
-        qApp->inputPanel()->setInputItemTranform(t);
+        qApp->inputPanel()->setInputItemTransform(t);
     }
 }
 

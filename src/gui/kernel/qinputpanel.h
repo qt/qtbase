@@ -73,7 +73,7 @@ public:
     QWindow *inputWindow() const;
 
     QTransform inputItemTransform() const;
-    void setInputItemTranform(const QTransform &transform);
+    void setInputItemTransform(const QTransform &transform);
 
     // in window coordinates
     QRectF cursorRectangle() const; // ### what if we have rotations for the item?
