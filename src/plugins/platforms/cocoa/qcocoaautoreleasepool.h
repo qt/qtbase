@@ -42,6 +42,8 @@
 #ifndef QCOCOAAUTORELEASEPOOL_H
 #define QCOCOAAUTORELEASEPOOL_H
 
+#undef slots
+
 #include <Cocoa/Cocoa.h>
 
 class QCocoaAutoReleasePool
