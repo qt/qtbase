@@ -55,6 +55,7 @@
 #include <QtCore/qalgorithms.h>
 
 #include <private/qopenglcontext_p.h>
+#include <private/qopenglextensions_p.h>
 #include <private/qrbtree_p.h>
 
 #include <math.h>
@@ -2508,12 +2509,19 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 //                                qTriangulate                                //
 //============================================================================//
 
+static bool hasElementIndexUint()
+{
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    if (!context)
+        return false;
+    return static_cast<QOpenGLExtensions *>(context->functions())->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
+}
+
 Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
                           int count, uint hint, const QTransform &matrix)
 {
     QTriangleSet triangleSet;
-#if 0
-    if (QOpenGLExtensions::glExtensions() & QOpenGLExtensions::ElementIndexUint) {
+    if (hasElementIndexUint()) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(polygon, count, hint, matrix);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -2521,13 +2529,12 @@ Q_GUI_EXPORT QTriangleSet qTriangulate(const qreal *polygon,
         triangleSet.indices.setDataUint(vertexSet.indices);
 
     } else {
-#endif
         QTriangulator<quint16> triangulator;
         triangulator.initialize(polygon, count, hint, matrix);
         QVertexSet<quint16> vertexSet = triangulator.triangulate();
         triangleSet.vertices = vertexSet.vertices;
         triangleSet.indices.setDataUshort(vertexSet.indices);
-//    }
+    }
     return triangleSet;
 }
 
@@ -2535,21 +2542,19 @@ Q_GUI_EXPORT QTriangleSet qTriangulate(const QVectorPath &path,
                           const QTransform &matrix, qreal lod)
 {
     QTriangleSet triangleSet;
-#if 0
-    if (QOpenGLExtensions::glExtensions() & QOpenGLExtensions::ElementIndexUint) {
+    if (hasElementIndexUint()) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
         triangleSet.vertices = vertexSet.vertices;
         triangleSet.indices.setDataUint(vertexSet.indices);
     } else {
-#endif
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint16> vertexSet = triangulator.triangulate();
         triangleSet.vertices = vertexSet.vertices;
         triangleSet.indices.setDataUshort(vertexSet.indices);
-//    }
+    }
     return triangleSet;
 }
 
@@ -2557,21 +2562,19 @@ QTriangleSet qTriangulate(const QPainterPath &path,
                           const QTransform &matrix, qreal lod)
 {
     QTriangleSet triangleSet;
-#if 0
-    if (QOpenGLExtensions::glExtensions() & QOpenGLExtensions::ElementIndexUint) {
+    if (hasElementIndexUint()) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
         triangleSet.vertices = vertexSet.vertices;
         triangleSet.indices.setDataUint(vertexSet.indices);
     } else {
-#endif
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint16> vertexSet = triangulator.triangulate();
         triangleSet.vertices = vertexSet.vertices;
         triangleSet.indices.setDataUshort(vertexSet.indices);
-//    }
+    }
     return triangleSet;
 }
 
@@ -2579,21 +2582,19 @@ QPolylineSet qPolyline(const QVectorPath &path,
                        const QTransform &matrix, qreal lod)
 {
     QPolylineSet polyLineSet;
-#if 0
-    if (QOpenGLExtensions::glExtensions() & QOpenGLExtensions::ElementIndexUint) {
+    if (hasElementIndexUint()) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUint(vertexSet.indices);
     } else {
-#endif
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint16> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUshort(vertexSet.indices);
-//    }
+    }
     return polyLineSet;
 }
 
@@ -2601,21 +2602,19 @@ QPolylineSet qPolyline(const QPainterPath &path,
                        const QTransform &matrix, qreal lod)
 {
     QPolylineSet polyLineSet;
-#if 0
-    if (QOpenGLExtensions::glExtensions() & QOpenGLExtensions::ElementIndexUint) {
+    if (hasElementIndexUint()) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUint(vertexSet.indices);
     } else {
-#endif
         QTriangulator<quint16> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint16> vertexSet = triangulator.polyline();
         polyLineSet.vertices = vertexSet.vertices;
         polyLineSet.indices.setDataUshort(vertexSet.indices);
-//    }
+    }
     return polyLineSet;
 }
 
