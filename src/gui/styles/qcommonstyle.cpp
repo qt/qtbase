@@ -837,14 +837,12 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 
 QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, int role) const
 {
-    Q_Q(const QCommonStyle);
-
     const QWidget *widget = option->widget;
     switch (role) {
     case Qt::CheckStateRole:
         if (option->features & QStyleOptionViewItemV2::HasCheckIndicator)
-            return QSize(q->pixelMetric(QStyle::PM_IndicatorWidth, option, widget),
-                         q->pixelMetric(QStyle::PM_IndicatorHeight, option, widget));
+            return QSize(proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth, option, widget),
+                         proxyStyle->pixelMetric(QStyle::PM_IndicatorHeight, option, widget));
         break;
     case Qt::DisplayRole:
         if (option->features & QStyleOptionViewItemV2::HasDisplay) {
@@ -855,7 +853,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, in
             textLayout.setFont(option->font);
             textLayout.setText(option->text);
             const bool wrapText = option->features & QStyleOptionViewItemV2::WrapText;
-            const int textMargin = q->pixelMetric(QStyle::PM_FocusFrameHMargin, option, widget) + 1;
+            const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, option, widget) + 1;
             QRect bounds = option->rect;
             switch (option->decorationPosition) {
             case QStyleOptionViewItem::Left:
@@ -919,9 +917,8 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
 
 void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewItemV4 *option, const QRect &rect) const
 {
-    Q_Q(const QCommonStyle);
     const QWidget *widget = option->widget;
-    const int textMargin = q->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1;
+    const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1;
 
     QRect textRect = rect.adjusted(textMargin, 0, -textMargin, 0); // remove width padding
     const bool wrapText = option->features & QStyleOptionViewItemV2::WrapText;
@@ -999,7 +996,6 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
 void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRect *checkRect,
                                          QRect *pixmapRect, QRect *textRect, bool sizehint) const
 {
-    Q_Q(const QCommonStyle);
     Q_ASSERT(checkRect && pixmapRect && textRect);
     *pixmapRect = QRect(QPoint(0, 0), viewItemSize(opt, Qt::DecorationRole));
     *textRect = QRect(QPoint(0, 0), viewItemSize(opt, Qt::DisplayRole));
@@ -1009,9 +1005,9 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRe
     const bool hasCheck = checkRect->isValid();
     const bool hasPixmap = pixmapRect->isValid();
     const bool hasText = textRect->isValid();
-    const int textMargin = hasText ? q->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
-    const int pixmapMargin = hasPixmap ? q->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
-    const int checkMargin = hasCheck ? q->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
+    const int textMargin = hasText ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
+    const int pixmapMargin = hasPixmap ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
+    const int checkMargin = hasCheck ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
     int x = opt->rect.left();
     int y = opt->rect.top();
     int w, h;
