@@ -128,6 +128,9 @@ Qt for Windows CE
 
 - qmake
 
+* QMAKE_MOC_OPTIONS variable is now available for passing additional parameters
+  to the moc.
+
 
 - configure
 
