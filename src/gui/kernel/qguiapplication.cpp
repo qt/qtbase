@@ -46,6 +46,7 @@
 #include "private/qevent_p.h"
 #include "qfont.h"
 #include "qplatformfontdatabase_qpa.h"
+#include "qplatformwindow_qpa.h"
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -919,8 +920,13 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
     if (!e->exposed)
         return;
 
-    QExposeEvent event(e->region);
-    QCoreApplication::sendSpontaneousEvent(e->exposed.data(), &event);
+    QWindow *window = e->exposed.data();
+
+    QResizeEvent resizeEvent(window->handle()->geometry().size(), window->size());
+    QGuiApplication::sendSpontaneousEvent(window, &resizeEvent);
+
+    QExposeEvent exposeEvent(e->region);
+    QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
 }
 
 Qt::DropAction QGuiApplicationPrivate::processDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
