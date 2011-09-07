@@ -3561,17 +3561,21 @@ void Configure::displayConfig()
 #if !defined(EVAL)
 void Configure::generateHeaders()
 {
-    if (dictionary["SYNCQT"] == "yes"
-        && findFile("perl.exe")) {
-        cout << "Running syncqt..." << endl;
-        QStringList args;
-        args += buildPath + "/bin/syncqt.bat";
-        QStringList env;
-        env += QString("QTDIR=" + sourcePath);
-        env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        int retc = Environment::execute(args, env, QStringList());
-        if (retc) {
-            cout << "syncqt failed, return code " << retc << endl << endl;
+    if (dictionary["SYNCQT"] == "yes") {
+        if (findFile("perl.exe")) {
+            cout << "Running syncqt..." << endl;
+            QStringList args;
+            args += buildPath + "/bin/syncqt.bat";
+            QStringList env;
+            env += QString("QTDIR=" + sourcePath);
+            env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
+            int retc = Environment::execute(args, env, QStringList());
+            if (retc) {
+                cout << "syncqt failed, return code " << retc << endl << endl;
+                dictionary["DONE"] = "error";
+            }
+        } else {
+            cout << "Perl not found in environment - cannot run syncqt." << endl;
             dictionary["DONE"] = "error";
         }
     }
