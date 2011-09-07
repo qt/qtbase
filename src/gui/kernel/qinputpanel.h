@@ -97,6 +97,7 @@ public Q_SLOTS:
 
     void update(Qt::InputMethodQueries queries);
     void reset();
+    void commit();
 
     void invokeAction(Action a, int cursorPosition);
 

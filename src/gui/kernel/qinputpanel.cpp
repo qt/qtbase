@@ -162,6 +162,13 @@ void QInputPanel::reset()
         ic->reset();
 }
 
+void QInputPanel::commit()
+{
+    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    if (ic)
+        ic->commit();
+}
+
 void QInputPanel::invokeAction(Action a, int cursorPosition)
 {
     QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();

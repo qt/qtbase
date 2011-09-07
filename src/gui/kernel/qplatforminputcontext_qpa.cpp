@@ -56,6 +56,10 @@ void QPlatformInputContext::reset()
 {
 }
 
+void QPlatformInputContext::commit()
+{
+}
+
 void QPlatformInputContext::update(Qt::InputMethodQueries)
 {
 }

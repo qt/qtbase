@@ -60,6 +60,7 @@ public:
     virtual ~QPlatformInputContext();
 
     virtual void reset();
+    virtual void commit();
     virtual void update(Qt::InputMethodQueries);
     virtual void invokeAction(QInputPanel::Action, int cursorPosition);
 
