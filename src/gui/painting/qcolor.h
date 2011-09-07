@@ -203,11 +203,6 @@ public:
 
     operator QVariant() const;
 
-#ifdef Q_WS_X11
-    static bool allowX11ColorNames();
-    static void setAllowX11ColorNames(bool enabled);
-#endif
-
     static bool isValidColor(const QString &name);
 
 private:
