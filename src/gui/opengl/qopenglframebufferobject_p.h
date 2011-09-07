@@ -58,7 +58,6 @@ QT_BEGIN_NAMESPACE
 QT_BEGIN_INCLUDE_NAMESPACE
 
 #include <qopenglframebufferobject.h>
-#include <private/qopenglpaintdevice_p.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
 
@@ -109,31 +108,12 @@ public:
     uint mipmap : 1;
 };
 
-class QOpenGLFBOGLPaintDevice : public QOpenGLPaintDevice
-{
-public:
-    virtual QPaintEngine* paintEngine() const {return fbo->paintEngine();}
-    virtual QSize size() const {return fbo->size();}
-    virtual QSurfaceFormat format() const {return fboFormat;}
-    virtual QOpenGLContextGroup *group() const;
-    virtual bool alphaRequested() const { return reqAlpha; }
-
-    void setFBO(QOpenGLFramebufferObject* f,
-                QOpenGLFramebufferObject::Attachment attachment);
-
-private:
-    QOpenGLFramebufferObject* fbo;
-    QSurfaceFormat fboFormat;
-    bool wasBound;
-    bool reqAlpha;
-};
-
 class QOpenGLFramebufferObjectPrivate
 {
 public:
     QOpenGLFramebufferObjectPrivate() : fbo_guard(0), texture_guard(0), depth_buffer_guard(0)
                                   , stencil_buffer_guard(0), color_buffer_guard(0)
-                                  , valid(false), engine(0) {}
+                                  , valid(false) {}
     ~QOpenGLFramebufferObjectPrivate() {}
 
     void init(QOpenGLFramebufferObject *q, const QSize& sz,
@@ -151,8 +131,6 @@ public:
     QOpenGLFramebufferObjectFormat format;
     uint valid : 1;
     QOpenGLFramebufferObject::Attachment fbo_attachment;
-    mutable QPaintEngine *engine;
-    QOpenGLFBOGLPaintDevice glDevice;
     QOpenGLExtensions funcs;
 
     inline GLuint fbo() const { return fbo_guard ? fbo_guard->id() : 0; }

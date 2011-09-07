@@ -56,7 +56,7 @@ QT_MODULE(Gui)
 class QOpenGLFramebufferObjectPrivate;
 class QOpenGLFramebufferObjectFormat;
 
-class Q_GUI_EXPORT QOpenGLFramebufferObject : public QPaintDevice
+class Q_GUI_EXPORT QOpenGLFramebufferObject
 {
     Q_DECLARE_PRIVATE(QOpenGLFramebufferObject)
 public:
@@ -92,6 +92,9 @@ public:
     bool bind();
     bool release();
 
+    int width() const { return size().width(); }
+    int height() const { return size().width(); }
+
     GLuint texture() const;
     QSize size() const;
     QImage toImage() const;
@@ -109,10 +112,6 @@ public:
                                 QOpenGLFramebufferObject *source, const QRect &sourceRect,
                                 GLbitfield buffers = GL_COLOR_BUFFER_BIT,
                                 GLenum filter = GL_NEAREST);
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
-    int devType() const { return QInternal::FramebufferObject; }
 
 private:
     Q_DISABLE_COPY(QOpenGLFramebufferObject)

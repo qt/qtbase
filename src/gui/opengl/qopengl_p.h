@@ -80,26 +80,6 @@ private:
     QVector<int> m_offsets;
 };
 
-// this is a class that wraps a QThreadStorage object for storing
-// thread local instances of the GL 1 and GL 2 paint engines
-
-class QPaintEngine;
-
-template <class T>
-class QOpenGLEngineThreadStorage
-{
-public:
-    QPaintEngine *engine() {
-        QPaintEngine *&localEngine = storage.localData();
-        if (!localEngine)
-            localEngine = new T;
-        return localEngine;
-    }
-
-private:
-    QThreadStorage<QPaintEngine *> storage;
-};
-
 class QOpenGLTexture : public QOpenGLSharedResource {
 public:
     QOpenGLTexture(QOpenGLContext *ctx, GLuint id, bool inverted)

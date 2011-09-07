@@ -47,7 +47,6 @@
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
 #include <private/qfont_p.h>
-#include <private/qopenglpaintengine_p.h>
 
 #include <qwindow.h>
 #include <qlibrary.h>
@@ -314,41 +313,6 @@ bool QOpenGLFramebufferObjectFormat::operator!=(const QOpenGLFramebufferObjectFo
     return !(*this == other);
 }
 
-void QOpenGLFBOGLPaintDevice::setFBO(QOpenGLFramebufferObject* f,
-                                 QOpenGLFramebufferObject::Attachment attachment)
-{
-    fbo = f;
-    m_thisFBO = fbo->d_func()->fbo(); // This shouldn't be needed
-
-    // The context that the fbo was created in may not have depth
-    // and stencil buffers, but the fbo itself might.
-    fboFormat = QOpenGLContext::currentContext()->format();
-    if (attachment == QOpenGLFramebufferObject::CombinedDepthStencil) {
-        fboFormat.setDepthBufferSize(24);
-        fboFormat.setStencilBufferSize(8);
-    } else if (attachment == QOpenGLFramebufferObject::Depth) {
-        fboFormat.setDepthBufferSize(24);
-        fboFormat.setStencilBufferSize(0);
-    } else {
-        fboFormat.setDepthBufferSize(0);
-        fboFormat.setStencilBufferSize(0);
-    }
-
-    GLenum format = f->format().internalTextureFormat();
-    reqAlpha = (format != GL_RGB
-#ifndef QT_OPENGL_ES
-                && format != GL_RGB5 && format != GL_RGB8
-#endif
-    );
-}
-
-QOpenGLContextGroup *QOpenGLFBOGLPaintDevice::group() const
-{
-    QOpenGLSharedResourceGuard *fbo_guard =
-        fbo->d_func()->fbo_guard;
-    return fbo_guard ? fbo_guard->group() : 0;
-}
-
 bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus() const
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -414,7 +378,7 @@ namespace
     }
 }
 
-void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *q, const QSize &sz,
+void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSize &sz,
                                        QOpenGLFramebufferObject::Attachment attachment,
                                        GLenum texture_target, GLenum internal_format,
                                        GLint samples, bool mipmap)
@@ -646,8 +610,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *q, const QS
     format.setAttachment(fbo_attachment);
     format.setInternalTextureFormat(internal_format);
     format.setMipmap(mipmap);
-
-    glDevice.setFBO(q, attachment);
 }
 
 /*!
@@ -703,12 +665,6 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *q, const QS
     QPainter. To create a multisample framebuffer object you should use one of
     the constructors that take a QOpenGLFramebufferObject parameter, and set the
     QOpenGLFramebufferObject::samples() property to a non-zero value.
-
-    When painting to a QOpenGLFramebufferObject using QPainter, the state of
-    the current GL context will be altered by the paint engine to reflect
-    its needs.  Applications should not rely upon the GL state being reset
-    to its original conditions, particularly the current shader program,
-    GL viewport, texture units, and drawing modes.
 
     For multisample framebuffer objects a color render buffer is created,
     otherwise a texture with the specified texture target is created.
@@ -874,8 +830,6 @@ QOpenGLFramebufferObject::QOpenGLFramebufferObject(const QSize &size, Attachment
 QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
 {
     Q_D(QOpenGLFramebufferObject);
-
-    delete d->engine;
 
     if (d->texture_guard)
         d->texture_guard->free();
@@ -1103,23 +1057,6 @@ QImage QOpenGLFramebufferObject::toImage() const
     return image;
 }
 
-Q_GLOBAL_STATIC(QOpenGLEngineThreadStorage<QOpenGL2PaintEngineEx>, qt_buffer_2_engine)
-
-/*! \reimp */
-QPaintEngine *QOpenGLFramebufferObject::paintEngine() const
-{
-    Q_D(const QOpenGLFramebufferObject);
-    if (d->engine)
-        return d->engine;
-
-    QPaintEngine *engine = qt_buffer_2_engine()->engine();
-    if (engine->isActive() && engine->paintDevice() != this) {
-        d->engine = new QOpenGL2PaintEngineEx;
-        return d->engine;
-    }
-    return engine;
-}
-
 /*!
     \fn bool QOpenGLFramebufferObject::bindDefault()
     \internal
@@ -1158,53 +1095,6 @@ bool QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()
     return QOpenGLFunctions(QOpenGLContext::currentContext()).hasOpenGLFeature(QOpenGLFunctions::Framebuffers);
 }
 
-/*! \reimp */
-int QOpenGLFramebufferObject::metric(PaintDeviceMetric metric) const
-{
-    Q_D(const QOpenGLFramebufferObject);
-
-    float dpmx = qt_defaultDpiX()*100./2.54;
-    float dpmy = qt_defaultDpiY()*100./2.54;
-    int w = d->size.width();
-    int h = d->size.height();
-    switch (metric) {
-    case PdmWidth:
-        return w;
-
-    case PdmHeight:
-        return h;
-
-    case PdmWidthMM:
-        return qRound(w * 1000 / dpmx);
-
-    case PdmHeightMM:
-        return qRound(h * 1000 / dpmy);
-
-    case PdmNumColors:
-        return 0;
-
-    case PdmDepth:
-        return 32;//d->depth;
-
-    case PdmDpiX:
-        return qRound(dpmx * 0.0254);
-
-    case PdmDpiY:
-        return qRound(dpmy * 0.0254);
-
-    case PdmPhysicalDpiX:
-        return qRound(dpmx * 0.0254);
-
-    case PdmPhysicalDpiY:
-        return qRound(dpmy * 0.0254);
-
-    default:
-        qWarning("QOpenGLFramebufferObject::metric(), Unhandled metric type: %d.\n", metric);
-        break;
-    }
-    return 0;
-}
-
 /*!
     \fn GLuint QOpenGLFramebufferObject::handle() const
 
@@ -1219,11 +1109,6 @@ GLuint QOpenGLFramebufferObject::handle() const
     Q_D(const QOpenGLFramebufferObject);
     return d->fbo();
 }
-
-/*! \fn int QOpenGLFramebufferObject::devType() const
-    \internal
-*/
-
 
 /*!
     Returns the status of the depth and stencil buffers attached to

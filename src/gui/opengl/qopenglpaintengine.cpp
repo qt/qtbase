@@ -342,7 +342,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushUniforms()
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
         qreal m22 = -1;
         qreal dy = height;
-        if (device->isFlipped()) {
+        if (device->paintFlipped()) {
             m22 = 1;
             dy = 0;
         }
@@ -390,7 +390,7 @@ void QOpenGL2PaintEngineExPrivate::updateMatrix()
     GLfloat dx = transform.dx();
     GLfloat dy = transform.dy();
 
-    if (device->isFlipped()) {
+    if (device->paintFlipped()) {
         hfactor *= -1;
         dy -= height;
     }
@@ -542,7 +542,8 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
         d->funcs.glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
-    const QSurfaceFormat &fmt = d->device->format();
+    Q_ASSERT(QOpenGLContext::currentContext());
+    const QSurfaceFormat &fmt = d->device->context()->format();
     if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
         || fmt.profile() == QSurfaceFormat::CompatibilityProfile)
     {
@@ -878,7 +879,7 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
             path.makeCacheable();
 
-            if (!device->format().stencilBufferSize()) {
+            if (device->context()->format().stencilBufferSize() == 0) {
                 // If there is no stencil buffer, triangulate the path instead.
 
                 QRectF bbox = path.controlPointRect();
@@ -1421,7 +1422,7 @@ void QOpenGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
         if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+            if (d->device->context()->format().alphaBufferSize() > 0 || s->matrix.type() > QTransform::TxTranslate
                 || (s->composition_mode != QPainter::CompositionMode_Source
                 && s->composition_mode != QPainter::CompositionMode_SourceOver))
             {
@@ -1480,7 +1481,7 @@ void QOpenGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &text
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
+        if (d->device->context()->format().alphaBufferSize() > 0 || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {
@@ -1944,17 +1945,14 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
 {
     Q_D(QOpenGL2PaintEngineEx);
 
-//     qDebug("QOpenGL2PaintEngineEx::begin()");
-    if (pdev->devType() == QInternal::OpenGL)
-        d->device = static_cast<QOpenGLPaintDevice*>(pdev);
-    else
-        d->device = QOpenGLPaintDevice::getDevice(pdev);
+    Q_ASSERT(pdev->devType() == QInternal::OpenGL);
+    d->device = static_cast<QOpenGLPaintDevice*>(pdev);
 
     if (!d->device)
         return false;
 
-    if (d->device->group() != QOpenGLContextGroup::currentContextGroup()) {
-        qWarning("QPainter::begin(): OpenGL resource not valid in current context");
+    if (d->device->context() != QOpenGLContext::currentContext()) {
+        qWarning("QPainter::begin(): QOpenGLPaintDevice's context needs to be current");
         return false;
     }
 
@@ -1983,10 +1981,6 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->stencilClean = true;
 
-    // Calling begin paint should make the correct context current. So, any
-    // code which calls into GL or otherwise needs a current context *must*
-    // go after beginPaint:
-    d->device->beginPaint();
     d->shaderManager = new QOpenGLEngineShaderManager(d->ctx);
 
     glDisable(GL_STENCIL_TEST);
@@ -2013,7 +2007,7 @@ bool QOpenGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if defined(QT_OPENGL_ES_2)
     // OpenGL ES can't switch MSAA off, so if the gl paint device is
     // multisampled, it's always multisampled.
-    d->multisamplingAlwaysEnabled = d->device->format().samples() > 1;
+    d->multisamplingAlwaysEnabled = d->device->context()->format().samples() > 1;
 #else
     d->multisamplingAlwaysEnabled = false;
 #endif
@@ -2028,7 +2022,6 @@ bool QOpenGL2PaintEngineEx::end()
     QOpenGLContext *ctx = d->ctx;
     d->funcs.glUseProgram(0);
     d->transferMode(BrushDrawingMode);
-    d->device->endPaint();
 
     ctx->d_func()->active_engine = 0;
 
@@ -2061,8 +2054,6 @@ void QOpenGL2PaintEngineEx::ensureActive()
         ctx->d_func()->active_engine = this;
         d->needsSync = true;
     }
-
-    d->device->ensureActiveTarget();
 
     if (d->needsSync) {
         d->transferMode(BrushDrawingMode);
@@ -2120,7 +2111,7 @@ void QOpenGL2PaintEngineExPrivate::setScissor(const QRect &rect)
     const int left = rect.left();
     const int width = rect.width();
     int bottom = height - (rect.top() + rect.height());
-    if (device->isFlipped()) {
+    if (device->paintFlipped()) {
         bottom = rect.top();
     }
     const int height = rect.height();

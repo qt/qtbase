@@ -39,115 +39,193 @@
 **
 ****************************************************************************/
 
-#include <private/qopenglpaintdevice_p.h>
+#include <qopenglpaintdevice.h>
+#include <qpaintengine.h>
+#include <qthreadstorage.h>
+
+#include <private/qobject_p.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglframebufferobject_p.h>
+#include <private/qopenglpaintengine_p.h>
+
+// for qt_defaultDpiX/Y
+#include <private/qfont_p.h>
 
 #include <qopenglfunctions.h>
 
 QT_BEGIN_NAMESPACE
 
-QOpenGLPaintDevice::QOpenGLPaintDevice()
-    : m_thisFBO(0)
+/*!
+    \class QOpenGLPaintDevice
+    \brief The QOpenGLPaintDevice class enables painting to an OpenGL context using QPainter.
+    \since 5.0
+
+    \ingroup painting-3D
+
+    When painting to a QOpenGLPaintDevice using QPainter, the state of
+    the current GL context will be altered by the paint engine to reflect
+    its needs.  Applications should not rely upon the GL state being reset
+    to its original conditions, particularly the current shader program,
+    GL viewport, texture units, and drawing modes.
+*/
+
+class QOpenGLPaintDevicePrivate
+{
+public:
+    QOpenGLPaintDevicePrivate(const QSize &size);
+
+    QSize size;
+    QOpenGLContext *ctx;
+
+    qreal dpmx;
+    qreal dpmy;
+
+    bool flipped;
+
+    QPaintEngine *engine;
+
+    void init(const QSize &size, QOpenGLContext *ctx);
+};
+
+/*!
+    Constructs a QOpenGLPaintDevice with the given \a size.
+
+    The QOpenGLPaintDevice is only valid for the current context.
+
+    \sa QOpenGLContext::currentContext()
+*/
+QOpenGLPaintDevice::QOpenGLPaintDevice(const QSize &size)
+    : d_ptr(new QOpenGLPaintDevicePrivate(size))
+{
+}
+
+/*!
+    Constructs a QOpenGLPaintDevice with the given \a size and \a ctx.
+
+    The QOpenGLPaintDevice is only valid for the current context.
+
+    \sa QOpenGLContext::currentContext()
+*/
+QOpenGLPaintDevice::QOpenGLPaintDevice(int width, int height)
+    : d_ptr(new QOpenGLPaintDevicePrivate(QSize(width, height)))
 {
 }
 
 QOpenGLPaintDevice::~QOpenGLPaintDevice()
 {
+    delete d_ptr->engine;
+}
+
+QOpenGLPaintDevicePrivate::QOpenGLPaintDevicePrivate(const QSize &sz)
+    : size(sz)
+    , ctx(QOpenGLContext::currentContext())
+    , dpmx(qt_defaultDpiX() * 100. / 2.54)
+    , dpmy(qt_defaultDpiY() * 100. / 2.54)
+    , flipped(false)
+    , engine(0)
+{
+}
+
+class QOpenGLEngineThreadStorage
+{
+public:
+    QPaintEngine *engine() {
+        QPaintEngine *&localEngine = storage.localData();
+        if (!localEngine)
+            localEngine = new QOpenGL2PaintEngineEx;
+        return localEngine;
+    }
+
+private:
+    QThreadStorage<QPaintEngine *> storage;
+};
+
+Q_GLOBAL_STATIC(QOpenGLEngineThreadStorage, qt_opengl_engine)
+
+QPaintEngine *QOpenGLPaintDevice::paintEngine() const
+{
+    if (d_ptr->engine)
+        return d_ptr->engine;
+
+    QPaintEngine *engine = qt_opengl_engine()->engine();
+    if (engine->isActive() && engine->paintDevice() != this) {
+        d_ptr->engine = new QOpenGL2PaintEngineEx;
+        return d_ptr->engine;
+    }
+
+    return engine;
+}
+
+QOpenGLContext *QOpenGLPaintDevice::context() const
+{
+    return d_ptr->ctx;
+}
+
+QSize QOpenGLPaintDevice::size() const
+{
+    return d_ptr->size;
 }
 
 int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
-    switch(metric) {
+    switch (metric) {
     case PdmWidth:
-        return size().width();
+        return d_ptr->size.width();
     case PdmHeight:
-        return size().height();
-    case PdmDepth: {
-        const QSurfaceFormat f = format();
-        return f.redBufferSize() + f.greenBufferSize() + f.blueBufferSize() + f.alphaBufferSize();
-    }
+        return d_ptr->size.height();
+    case PdmDepth:
+        return 32;
+    case PdmWidthMM:
+        return qRound(d_ptr->size.width() * 1000 / d_ptr->dpmx);
+    case PdmHeightMM:
+        return qRound(d_ptr->size.height() * 1000 / d_ptr->dpmy);
+    case PdmNumColors:
+        return 0;
+    case PdmDpiX:
+        return qRound(d_ptr->dpmx * 0.0254);
+    case PdmDpiY:
+        return qRound(d_ptr->dpmy * 0.0254);
+    case PdmPhysicalDpiX:
+        return qRound(d_ptr->dpmx * 0.0254);
+    case PdmPhysicalDpiY:
+        return qRound(d_ptr->dpmy * 0.0254);
     default:
         qWarning("QOpenGLPaintDevice::metric() - metric %d not known", metric);
         return 0;
     }
 }
 
-void QOpenGLPaintDevice::beginPaint()
+qreal QOpenGLPaintDevice::dotsPerMeterX() const
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-
-    // Record the currently bound FBO so we can restore it again
-    // in endPaint() and bind this device's FBO
-    //
-    // Note: m_thisFBO could be zero if the paint device is not
-    // backed by an FBO (e.g. window back buffer).  But there could
-    // be a previous FBO bound to the context which we need to
-    // explicitly unbind.  Otherwise the painting will go into
-    // the previous FBO instead of to the window.
-    m_previousFBO = ctx->d_func()->current_fbo;
-
-    if (m_previousFBO != m_thisFBO) {
-        ctx->d_func()->current_fbo = m_thisFBO;
-        QOpenGLFunctions(ctx).glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
-    }
-
-    // Set the default fbo for the context to m_thisFBO so that
-    // if some raw GL code between beginNativePainting() and
-    // endNativePainting() calls QOpenGLFramebufferObject::release(),
-    // painting will revert to the window surface's fbo.
-    ctx->d_func()->default_fbo = m_thisFBO;
+    return d_ptr->dpmx;
 }
 
-void QOpenGLPaintDevice::ensureActiveTarget()
+qreal QOpenGLPaintDevice::dotsPerMeterY() const
 {
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-
-    if (ctx->d_func()->current_fbo != m_thisFBO) {
-        ctx->d_func()->current_fbo = m_thisFBO;
-        QOpenGLFunctions(ctx).glBindFramebuffer(GL_FRAMEBUFFER, m_thisFBO);
-    }
-
-    ctx->d_func()->default_fbo = m_thisFBO;
+    return d_ptr->dpmy;
 }
 
-void QOpenGLPaintDevice::endPaint()
+void QOpenGLPaintDevice::setDotsPerMeterX(qreal dpmx)
 {
-    // Make sure the FBO bound at beginPaint is re-bound again here:
-    QOpenGLContext *ctx = QOpenGLContext::currentContext();
-
-    if (m_previousFBO != ctx->d_func()->current_fbo) {
-        ctx->d_func()->current_fbo = m_previousFBO;
-        QOpenGLFunctions(ctx).glBindFramebuffer(GL_FRAMEBUFFER, m_previousFBO);
-    }
-
-    ctx->d_func()->default_fbo = 0;
+    d_ptr->dpmx = dpmx;
 }
 
-bool QOpenGLPaintDevice::isFlipped() const
+void QOpenGLPaintDevice::setDotsPerMeterY(qreal dpmy)
 {
-    return false;
+    d_ptr->dpmx = dpmy;
 }
 
-// returns the QOpenGLPaintDevice for the given QPaintDevice
-QOpenGLPaintDevice* QOpenGLPaintDevice::getDevice(QPaintDevice* pd)
+/*!
+    Specifies whether painting should be flipped around the Y-axis or not.
+*/
+void QOpenGLPaintDevice::setPaintFlipped(bool flipped)
 {
-    QOpenGLPaintDevice* glpd = 0;
+    d_ptr->flipped = flipped;
+}
 
-    switch(pd->devType()) {
-        case QInternal::FramebufferObject:
-            glpd = &(static_cast<QOpenGLFramebufferObject*>(pd)->d_func()->glDevice);
-            break;
-        case QInternal::Pixmap: {
-            qWarning("Pixmap type not supported for GL rendering");
-            break;
-        }
-        default:
-            qWarning("QOpenGLPaintDevice::getDevice() - Unknown device type %d", pd->devType());
-            break;
-    }
-
-    return glpd;
+bool QOpenGLPaintDevice::paintFlipped() const
+{
+    return d_ptr->flipped;
 }
 
 QT_END_NAMESPACE

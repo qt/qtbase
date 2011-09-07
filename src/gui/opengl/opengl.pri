@@ -9,7 +9,7 @@ HEADERS += opengl/qopengl.h \
            opengl/qopenglfunctions.h \
            opengl/qopenglframebufferobject.h  \
            opengl/qopenglframebufferobject_p.h  \
-           opengl/qopenglpaintdevice_p.h \
+           opengl/qopenglpaintdevice.h \
            opengl/qopenglbuffer.h \
            opengl/qopenglshaderprogram.h \
            opengl/qopenglextensions_p.h \

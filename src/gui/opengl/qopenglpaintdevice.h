@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLPAINTDEVICE_P_H
-#define QOPENGLPAINTDEVICE_P_H
+#ifndef QOPENGLPAINTDEVICE_H
+#define QOPENGLPAINTDEVICE_H
 
 //
 //  W A R N I N G
@@ -58,62 +58,46 @@
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class QOpenGLPaintDevicePrivate;
 
 class Q_GUI_EXPORT QOpenGLPaintDevice : public QPaintDevice
 {
+    Q_DECLARE_PRIVATE(QOpenGLPaintDevice)
 public:
-    QOpenGLPaintDevice();
+    QOpenGLPaintDevice(const QSize &size);
+    QOpenGLPaintDevice(int width, int height);
     virtual ~QOpenGLPaintDevice();
 
-    int devType() const {return QInternal::OpenGL;}
+    int devType() const { return QInternal::OpenGL; }
+    QPaintEngine *paintEngine() const;
 
-    virtual void beginPaint();
-    virtual void ensureActiveTarget();
-    virtual void endPaint();
+    QOpenGLContext *context() const;
+    QSize size() const;
 
-    virtual QOpenGLContextGroup *group() const = 0;
+    qreal dotsPerMeterX() const;
+    qreal dotsPerMeterY() const;
 
-    virtual QSurfaceFormat format() const = 0;
-    virtual QSize size() const = 0;
+    void setDotsPerMeterX(qreal);
+    void setDotsPerMeterY(qreal);
 
-    virtual bool alphaRequested() const = 0;
-    virtual bool isFlipped() const;
-
-    // returns the QOpenGLPaintDevice for the given QPaintDevice
-    static QOpenGLPaintDevice* getDevice(QPaintDevice*);
+    void setPaintFlipped(bool flipped);
+    bool paintFlipped() const;
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
-    GLuint m_previousFBO;
-    GLuint m_thisFBO;
+
+    Q_DISABLE_COPY(QOpenGLPaintDevice)
+    QScopedPointer<QOpenGLPaintDevicePrivate> d_ptr;
 };
-
-
-#if 0
-// Wraps a QOpenGLWidget
-class QOpenGLWidget;
-class Q_GUI_EXPORT QOpenGLWidgetGLPaintDevice : public QOpenGLPaintDevice
-{
-public:
-    QOpenGLWidgetGLPaintDevice();
-
-    virtual QPaintEngine* paintEngine() const;
-
-    // QOpenGLWidgets need to do swapBufers in endPaint:
-    virtual void beginPaint();
-    virtual void endPaint();
-    virtual QSize size() const;
-    virtual QOpenGLContext* context() const;
-
-    void setWidget(QOpenGLWidget*);
-
-private:
-    friend class QOpenGLWidget;
-    QOpenGLWidget *glWidget;
-};
-#endif
 
 QT_END_NAMESPACE
 
-#endif // QOPENGLPAINTDEVICE_P_H
+QT_END_HEADER
+
+#endif // QOPENGLPAINTDEVICE_H

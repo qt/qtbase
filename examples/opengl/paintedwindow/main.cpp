@@ -12,10 +12,6 @@ int main(int argc, char **argv)
 
     QRect screenGeometry = screen->availableGeometry();
 
-    QSurfaceFormat format;
-    format.setDepthBufferSize(16);
-    format.setSamples(4);
-
     QPoint center = screenGeometry.center();
     QRect windowRect(0, 0, 640, 480);
 

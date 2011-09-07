@@ -20,11 +20,7 @@ private slots:
 
 private:
     void resizeEvent(QResizeEvent *);
+    void exposeEvent(QExposeEvent *);
 
     QOpenGLContext *m_context;
-    QOpenGLFramebufferObject *m_fbo;
-    QOpenGLShaderProgram *m_program;
-
-    GLuint m_vertexAttribute;
-    GLuint m_texCoordsAttribute;
 };
