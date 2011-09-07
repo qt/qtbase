@@ -1650,7 +1650,7 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
 
 void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
 {
-    struct : QWidget {
+    struct Widget : QWidget {
         virtual void paintEvent(QPaintEvent* ) {
             QStyleOption opt;
             opt.init(this);
