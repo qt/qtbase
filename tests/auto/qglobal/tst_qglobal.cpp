@@ -213,7 +213,7 @@ void tst_QGlobal::qtry()
 
     // check propper if/else scoping
     i = 0;
-    if (true)
+    if (true) {
         QT_TRY {
             i = 2;
             QT_THROW(42);
@@ -222,12 +222,13 @@ void tst_QGlobal::qtry()
             QCOMPARE(i, 2);
             i = 4;
         }
-    else
+    } else {
         QCOMPARE(i, 0);
+    }
     QCOMPARE(i, 4);
 
     i = 0;
-    if (false)
+    if (false) {
         QT_TRY {
             i = 2;
             QT_THROW(42);
@@ -236,14 +237,15 @@ void tst_QGlobal::qtry()
             QCOMPARE(i, 2);
             i = 2;
         }
-    else
+    } else {
         i = 8;
+    }
     QCOMPARE(i, 8);
 
     i = 0;
-    if (false)
+    if (false) {
         i = 42;
-    else
+    } else {
         QT_TRY {
             i = 2;
             QT_THROW(42);
@@ -252,6 +254,7 @@ void tst_QGlobal::qtry()
             QCOMPARE(i, 2);
             i = 4;
         }
+    }
     QCOMPARE(i, 4);
 }
 
