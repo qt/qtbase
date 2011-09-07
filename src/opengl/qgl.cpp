@@ -1532,6 +1532,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     q->setDevice(dev);
 
     guiGlContext = 0;
+    ownContext = false;
     fbo = 0;
     crWin = false;
     initDone = false;

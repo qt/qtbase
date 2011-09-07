@@ -148,7 +148,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             widget->winId();//make window
         }
 
-        delete d->guiGlContext;
+        if (d->ownContext)
+            delete d->guiGlContext;
+        d->ownContext = true;
         QOpenGLContext *shareGlContext = shareContext ? shareContext->d_func()->guiGlContext : 0;
         d->guiGlContext = new QOpenGLContext;
         d->guiGlContext->setFormat(winFormat);
@@ -180,8 +182,13 @@ void QGLContext::reset()
     d->initDone = false;
     QGLContextGroup::removeShare(this);
     if (d->guiGlContext) {
-        d->guiGlContext->setQGLContextHandle(0,0);
+        if (d->ownContext)
+            delete d->guiGlContext;
+        else
+            d->guiGlContext->setQGLContextHandle(0,0);
+        d->guiGlContext = 0;
     }
+    d->ownContext = false;
 }
 
 void QGLContext::makeCurrent()
@@ -385,6 +392,7 @@ QGLContext::QGLContext(QOpenGLContext *context)
     d->init(0, QGLFormat::fromSurfaceFormat(context->format()));
     d->guiGlContext = context;
     d->guiGlContext->setQGLContextHandle(this,qDeleteQGLContext);
+    d->ownContext = false;
     d->valid = context->isValid();
     d->setupSharing();
 }

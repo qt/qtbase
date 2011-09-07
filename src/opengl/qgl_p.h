@@ -299,6 +299,8 @@ public:
     void swapRegion(const QRegion &region);
 
     QOpenGLContext *guiGlContext;
+    bool ownContext;
+
     void setupSharing();
 
     QGLFormat glFormat;
