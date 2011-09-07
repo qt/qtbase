@@ -87,7 +87,6 @@ void QInputPanel::setInputItemTranform(const QTransform &transform)
     Q_D(QInputPanel);
     d->inputItemTransform = transform;
     emit cursorRectangleChanged();
-    emit keyboardRectangleChanged();
 }
 
 QRectF QInputPanel::cursorRectangle() const
