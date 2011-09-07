@@ -1213,7 +1213,7 @@ QInputPanel *QGuiApplication::inputPanel() const
 uint QGuiApplicationPrivate::currentKeyPlatform()
 {
     uint platform = KB_Win;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     platform = KB_Mac;
 #elif defined Q_WS_X11
     platform = KB_X11;
