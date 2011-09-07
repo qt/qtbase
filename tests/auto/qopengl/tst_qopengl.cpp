@@ -53,6 +53,7 @@ private slots:
     void sharedResourceCleanup();
     void fboSimpleRendering();
     void fboRendering();
+    void fboHandleNulledAfterContextDestroyed();
 };
 
 struct SharedResourceTracker
@@ -356,6 +357,32 @@ void tst_QOpenGL::fboRendering()
     delete fbo;
 
     qt_opengl_check_test_pattern(fb);
+}
+
+void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
+{
+    QWindow window;
+    window.setGeometry(0, 0, 10, 10);
+    window.create();
+
+    QOpenGLFramebufferObject *fbo = 0;
+
+    {
+        QOpenGLContext ctx;
+        ctx.create();
+
+        ctx.makeCurrent(&window);
+
+        if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()) {
+            QSKIP("QOpenGLFramebufferObject not supported on this platform", SkipSingle);
+        }
+
+        fbo = new QOpenGLFramebufferObject(128, 128);
+
+        QVERIFY(fbo->handle() != 0);
+    }
+
+    QCOMPARE(fbo->handle(), 0U);
 }
 
 QTEST_MAIN(tst_QOpenGL)
