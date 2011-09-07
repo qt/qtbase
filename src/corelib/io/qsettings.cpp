@@ -1108,11 +1108,11 @@ static void initDefaultPaths(QMutexLocker *locker)
             userPath += QLatin1String(".config");
 #endif
         } else if (*env == '/') {
-            userPath = QLatin1String(env);
+            userPath = QFile::decodeName(env);
         } else {
             userPath = homePath;
             userPath += QLatin1Char('/');
-            userPath += QLatin1String(env);
+            userPath += QFile::decodeName(env);
         }
         userPath += QLatin1Char('/');
 
