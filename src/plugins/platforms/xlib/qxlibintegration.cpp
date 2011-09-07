@@ -44,7 +44,7 @@
 #include "qxlibbackingstore.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
-#include <QtGui/qguiglcontext_qpa.h>
+#include <QtGui/qopenglcontext.h>
 #include <QtGui/qscreen.h>
 
 #include "qxlibwindow.h"
@@ -83,7 +83,7 @@ QPlatformBackingStore *QXlibIntegration::createPlatformBackingStore(QWindow *win
     return new QXlibBackingStore(window);
 }
 
-QPlatformOpenGLContext *QXlibIntegration::createPlatformGLContext(QOpenGLContext *context) const
+QPlatformOpenGLContext *QXlibIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     QXlibScreen *screen = static_cast<QXlibScreen *>(context->screen()->handle());
 
