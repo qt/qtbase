@@ -2098,16 +2098,6 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                         prev->setEditFocus(false);
                 }
 #endif
-#ifndef QT_NO_IM
-                if (focus) {
-                    QInputContext *prevIc;
-                    prevIc = prev->inputContext();
-                    if (prevIc && prevIc != focus->inputContext()) {
-                        QEvent closeSIPEvent(QEvent::CloseSoftwareInputPanel);
-                        QApplication::sendEvent(prev, &closeSIPEvent);
-                    }
-                }
-#endif
                 QFocusEvent out(QEvent::FocusOut, reason);
                 QPointer<QWidget> that = prev;
                 QApplication::sendEvent(prev, &out);

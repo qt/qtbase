@@ -59,6 +59,7 @@
 #include "QtCore/qlocale.h"
 #include "QtCore/qset.h"
 #include "QtGui/qregion.h"
+#include "QtGui/qinputpanel.h"
 #include "QtWidgets/qsizepolicy.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qapplication.h"
@@ -663,8 +664,7 @@ public:
             QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
                     q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
             if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
-                QEvent event(QEvent::RequestSoftwareInputPanel);
-                QApplication::sendEvent(q, &event);
+                qApp->inputPanel()->show();
             }
         }
     }

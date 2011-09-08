@@ -456,10 +456,6 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 #endif
 
-    case QEvent::RequestSoftwareInputPanel:
-    case QEvent::CloseSoftwareInputPanel:
-        return new QEvent(*e);
-
     case QEvent::UpdateSoftKeys:
         return new QEvent(*e);
 
