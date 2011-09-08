@@ -99,7 +99,7 @@ QRectF QInputPanel::cursorRectangle() const
     if (!d->inputItem)
         return QRectF();
 
-    QInputMethodQueryEvent query(Qt::ImMicroFocus);
+    QInputMethodQueryEvent query(Qt::ImCursorRectangle);
     QGuiApplication::sendEvent(d->inputItem.data(), &query);
     QRect r = query.value().toRect();
     if (!r.isValid())
@@ -163,7 +163,7 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
     if (ic)
         ic->update(queries);
 
-    if (queries & Qt::ImMicroFocus)
+    if (queries & Qt::ImCursorRectangle)
         emit cursorRectangleChanged();
 }
 

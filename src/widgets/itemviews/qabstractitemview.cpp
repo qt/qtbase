@@ -863,7 +863,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegate() const
 QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     const QModelIndex current = currentIndex();
-    if (!current.isValid() || query != Qt::ImMicroFocus)
+    if (!current.isValid() || query != Qt::ImCursorRectangle)
         return QAbstractScrollArea::inputMethodQuery(query);
     return visualRect(current);
 }

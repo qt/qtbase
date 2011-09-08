@@ -1907,7 +1907,7 @@ QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
     Q_D(const QTextControl);
     QTextBlock block = d->cursor.block();
     switch(property) {
-    case Qt::ImMicroFocus:
+    case Qt::ImCursorRectangle:
         return cursorRect();
     case Qt::ImFont:
         return QVariant(d->cursor.charFormat().font());

@@ -212,7 +212,7 @@ void QWindowsInputContext::update()
         return;
     // Move candidate list window to the microfocus position.
     QRect globalMicroFocusRect;
-    if (!inputMethodQuery(fo, Qt::ImMicroFocus, &globalMicroFocusRect) || !globalMicroFocusRect.isValid())
+    if (!inputMethodQuery(fo, Qt::ImCursorRectangle, &globalMicroFocusRect) || !globalMicroFocusRect.isValid())
         return;
     if (QWindowsContext::verboseInputMethods)
         qDebug() << __FUNCTION__ << himc << globalMicroFocusRect;

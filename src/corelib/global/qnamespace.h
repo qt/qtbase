@@ -1235,7 +1235,8 @@ public:
 
     enum InputMethodQuery {
         ImEnabled = 0x1,
-        ImMicroFocus = 0x2,
+        ImCursorRectangle = 0x2,
+        ImMicroFocus = 0x2, // deprecated
         ImFont = 0x4,
         ImCursorPosition = 0x8,
         ImSurroundingText = 0x10,

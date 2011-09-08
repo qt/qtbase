@@ -8338,7 +8338,7 @@ bool QWidget::event(QEvent *event)
         if (!k->isAccepted()
             && k->modifiers() & Qt::ShiftModifier && k->key() == Qt::Key_F1
             && d->whatsThis.size()) {
-            QWhatsThis::showText(mapToGlobal(inputMethodQuery(Qt::ImMicroFocus).toRect().center()), d->whatsThis, this);
+            QWhatsThis::showText(mapToGlobal(inputMethodQuery(Qt::ImCursorRectangle).toRect().center()), d->whatsThis, this);
             k->accept();
         }
 #endif
@@ -9280,7 +9280,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     switch(query) {
-    case Qt::ImMicroFocus:
+    case Qt::ImCursorRectangle:
         return QRect(width()/2, 0, 1, height());
     case Qt::ImFont:
         return font();
