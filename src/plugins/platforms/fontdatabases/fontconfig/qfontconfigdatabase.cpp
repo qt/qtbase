@@ -475,13 +475,13 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     fid.filename = fontfile->fileName.toLocal8Bit();
     fid.index = fontfile->indexValue;
 
-    //try and get the pattern
-    FcPattern *pattern = FcPatternCreate();
-
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
     QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
 
     engine = new QFontEngineFT(fontDef);
+
+    // try and get the pattern
+    FcPattern *pattern = FcPatternCreate();
 
     FcValue value;
     value.type = FcTypeString;
@@ -497,9 +497,8 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     value.u.i = fid.index;
     FcPatternAdd(pattern,FC_INDEX,value,true);
 
-    QFontEngineFT::HintStyle default_hint_style;
-
     if (FcConfigSubstitute(0,pattern,FcMatchPattern)) {
+        QFontEngineFT::HintStyle default_hint_style;
 
         //hinting
         int hint_style = 0;
@@ -519,9 +518,10 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
             default_hint_style = QFontEngineFT::HintFull;
             break;
         }
+        engine->setDefaultHintStyle(default_hint_style);
     }
+    FcPatternDestroy(pattern);
 
-    engine->setDefaultHintStyle(default_hint_style);
     if (!engine->init(fid,antialias,format)) {
         delete engine;
         engine = 0;
@@ -576,26 +576,29 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
     }
 
     FcConfigSubstitute(0, pattern, FcMatchPattern);
-    FcConfigSubstitute(0, pattern, FcMatchFont);
+    FcDefaultSubstitute(pattern);
 
     FcResult result = FcResultMatch;
     FcFontSet *fontSet = FcFontSort(0,pattern,FcFalse,0,&result);
+    FcPatternDestroy(pattern);
 
-    if (fontSet && result == FcResultMatch)
-    {
-        for (int i = 0; i < fontSet->nfont; i++) {
-            FcChar8 *value = 0;
-            if (FcPatternGetString(fontSet->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
-                continue;
-            //         capitalize(value);
-            QString familyName = QString::fromUtf8((const char *)value);
-            if (!fallbackFamilies.contains(familyName,Qt::CaseInsensitive)) {
-                fallbackFamilies << familyName;
+    if (fontSet) {
+        if (result == FcResultMatch) {
+            for (int i = 0; i < fontSet->nfont; i++) {
+                FcChar8 *value = 0;
+                if (FcPatternGetString(fontSet->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
+                    continue;
+                //         capitalize(value);
+                QString familyName = QString::fromUtf8((const char *)value);
+                if (!fallbackFamilies.contains(familyName,Qt::CaseInsensitive) &&
+                    familyName.compare(family, Qt::CaseInsensitive)) {
+                    fallbackFamilies << familyName;
+                }
             }
-
         }
+        FcFontSetDestroy(fontSet);
     }
-//    qDebug() << "fallbackFamilies for:" << family << fallbackFamilies;
+//    qDebug() << "fallbackFamilies for:" << family << style << styleHint << script << fallbackFamilies;
 
     return fallbackFamilies;
 }
