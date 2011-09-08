@@ -63,29 +63,29 @@ public:
 Q_GLOBAL_STATIC(QXlibResourceMap, qXlibResourceMap)
 
 
-void * QXlibNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWindow *widget)
+void * QXlibNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qXlibResourceMap()->value(lowerCaseResource);
     void *result = 0;
     switch(resource) {
     case Display:
-        result = displayForWidget(widget);
+        result = displayForWindow(window);
         break;
     case EglDisplay:
-        result = eglDisplayForWidget(widget);
+        result = eglDisplayForWindow(window);
         break;
     case Connection:
-        result = connectionForWidget(widget);
+        result = connectionForWindow(window);
         break;
     case Screen:
-        result = reinterpret_cast<void *>(qPlatformScreenForWidget(widget)->xScreenNumber());
+        result = reinterpret_cast<void *>(qPlatformScreenForWindow(window)->xScreenNumber());
         break;
     case GraphicsDevice:
-        result = graphicsDeviceForWidget(widget);
+        result = graphicsDeviceForWindow(window);
         break;
     case EglContext:
-        result = eglContextForWidget(widget);
+        result = eglContextForWindow(window);
         break;
     default:
         result = 0;
@@ -93,37 +93,37 @@ void * QXlibNativeInterface::nativeResourceForWidget(const QByteArray &resourceS
     return result;
 }
 
-void * QXlibNativeInterface::displayForWidget(QWindow *widget)
+void * QXlibNativeInterface::displayForWindow(QWindow *window)
 {
-    return qPlatformScreenForWidget(widget)->display()->nativeDisplay();
+    return qPlatformScreenForWindow(window)->display()->nativeDisplay();
 }
 
-void * QXlibNativeInterface::eglDisplayForWidget(QWindow *widget)
+void * QXlibNativeInterface::eglDisplayForWindow(QWindow *window)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 }
 
-void * QXlibNativeInterface::screenForWidget(QWindow *widget)
+void * QXlibNativeInterface::screenForWindow(QWindow *window)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 }
 
-void * QXlibNativeInterface::graphicsDeviceForWidget(QWindow *widget)
+void * QXlibNativeInterface::graphicsDeviceForWindow(QWindow *window)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 }
 
-void * QXlibNativeInterface::eglContextForWidget(QWindow *widget)
+void * QXlibNativeInterface::eglContextForWindow(QWindow *window)
 {
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 }
 
-QXlibScreen * QXlibNativeInterface::qPlatformScreenForWidget(QWindow *widget)
+QXlibScreen * QXlibNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
-    QScreen *screen = widget ? widget->screen() : QGuiApplication::primaryScreen();
+    QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
     return static_cast<QXlibScreen *>(screen->handle());
 }

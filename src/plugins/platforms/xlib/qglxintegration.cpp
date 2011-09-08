@@ -105,7 +105,6 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 
 void QGLXContext::doneCurrent()
 {
-    QPlatformOpenGLContext::doneCurrent();
     glXMakeCurrent(m_screen->display()->nativeDisplay(), 0, 0);
 }
 
