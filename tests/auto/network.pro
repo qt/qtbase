@@ -51,6 +51,10 @@ SUBDIRS=\
     qhttpnetworkconnection \
     qhttpnetworkreply \
     qhttpsocketengine \
+    qnetworkreply \
     qsocketnotifier \
     qsocks5socketengine \
+    qsslsocket \
+    qsslsocket_onDemandCertificates_member \
+    qsslsocket_onDemandCertificates_static \
 
