@@ -44,7 +44,6 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qobjectdefs.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qhash.h>
 
@@ -156,31 +155,8 @@ public:
     QByteArray encodedPath() const;
 
     bool hasQuery() const;
-
-    void setEncodedQuery(const QByteArray &query);
     QByteArray encodedQuery() const;
-
-    void setQueryDelimiters(char valueDelimiter, char pairDelimiter);
-    char queryValueDelimiter() const;
-    char queryPairDelimiter() const;
-
-    void setQueryItems(const QList<QPair<QString, QString> > &query);
-    void addQueryItem(const QString &key, const QString &value);
-    QList<QPair<QString, QString> > queryItems() const;
-    bool hasQueryItem(const QString &key) const;
-    QString queryItemValue(const QString &key) const;
-    QStringList allQueryItemValues(const QString &key) const;
-    void removeQueryItem(const QString &key);
-    void removeAllQueryItems(const QString &key);
-
-    void setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &query);
-    void addEncodedQueryItem(const QByteArray &key, const QByteArray &value);
-    QList<QPair<QByteArray, QByteArray> > encodedQueryItems() const;
-    bool hasEncodedQueryItem(const QByteArray &key) const;
-    QByteArray encodedQueryItemValue(const QByteArray &key) const;
-    QList<QByteArray> allEncodedQueryItemValues(const QByteArray &key) const;
-    void removeEncodedQueryItem(const QByteArray &key);
-    void removeAllEncodedQueryItems(const QByteArray &key);
+    void setEncodedQuery(const QByteArray &query);
 
     void setFragment(const QString &fragment);
     QString fragment() const;
@@ -218,6 +194,15 @@ public:
     { return fromAce(punycode); }
     QT_DEPRECATED static QByteArray toPunycode(const QString &string)
     { return toAce(string); }
+    QT_DEPRECATED inline void setQueryItems(const QList<QPair<QString, QString> > &qry);
+    QT_DEPRECATED inline void addQueryItem(const QString &key, const QString &value);
+    QT_DEPRECATED inline QList<QPair<QString, QString> > queryItems() const;
+    QT_DEPRECATED inline bool hasQueryItem(const QString &key) const;
+    QT_DEPRECATED inline QString queryItemValue(const QString &key) const;
+    QT_DEPRECATED inline QStringList allQueryItemValues(const QString &key) const;
+    QT_DEPRECATED inline void removeQueryItem(const QString &key);
+    QT_DEPRECATED inline void removeAllQueryItems(const QString &key);
+
 #endif
 
     static QString fromAce(const QByteArray &);
@@ -261,6 +246,10 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUrl &);
 #endif
 
 QT_END_NAMESPACE
+
+#if QT_DEPRECATED_SINCE(5,0)
+# include <QtCore/qurlquery.h>
+#endif
 
 QT_END_HEADER
 

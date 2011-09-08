@@ -72,6 +72,12 @@ private Q_SLOTS:
     void encodedParsing_data();
     void encodedParsing();
     void differentDelimiters();
+
+    // old tests from tst_qurl.cpp
+    // add new tests above
+    void old_queryItems();
+    void old_hasQueryItem_data();
+    void old_hasQueryItem();
 };
 
 static QString prettyElement(const QString &key, const QString &value)
@@ -230,6 +236,14 @@ void tst_QUrlQuery::constructing()
     empty.setQueryDelimiters('(', ')');
     QCOMPARE(empty.queryValueDelimiter(), QChar(QLatin1Char('(')));
     QCOMPARE(empty.queryPairDelimiter(), QChar(QLatin1Char(')')));
+
+    QList<QPair<QString, QString> > query;
+    query += qMakePair(QString("type"), QString("login"));
+    query += qMakePair(QString("name"), QString::fromUtf8("åge nissemannsen"));
+    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jørgen=sant"));
+    query += qMakePair(QString("prosent"), QString("%"));
+    copy.setQueryItems(query);
+    QVERIFY(!copy.isEmpty());
 }
 
 void tst_QUrlQuery::addRemove()
@@ -689,6 +703,112 @@ void tst_QUrlQuery::differentDelimiters()
         QCOMPARE(copy.query(), QString("z(%3D)=y(%26)"));
     }
 }
+
+void tst_QUrlQuery::old_queryItems()
+{
+    // test imported from old tst_qurl.cpp
+    QUrlQuery url;
+
+    QList<QPair<QString, QString> > newItems;
+    newItems += qMakePair(QString("1"), QString("a"));
+    newItems += qMakePair(QString("2"), QString("b"));
+    newItems += qMakePair(QString("3"), QString("c"));
+    newItems += qMakePair(QString("4"), QString("a b"));
+    newItems += qMakePair(QString("5"), QString("&"));
+    newItems += qMakePair(QString("foo bar"), QString("hello world"));
+    newItems += qMakePair(QString("foo+bar"), QString("hello+world"));
+    newItems += qMakePair(QString("tex"), QString("a + b = c"));
+    url.setQueryItems(newItems);
+    QVERIFY(!url.isEmpty());
+
+    QList<QPair<QString, QString> > setItems = url.queryItems();
+    QVERIFY(newItems == setItems);
+
+    url.addQueryItem("1", "z");
+
+#if 0
+    // undefined behaviour in the new QUrlQuery
+
+    QVERIFY(url.hasQueryItem("1"));
+    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "a");
+
+    url.addQueryItem("1", "zz");
+
+    QStringList expected;
+    expected += "a";
+    expected += "z";
+    expected += "zz";
+    QCOMPARE(url.allQueryItemValues("1"), expected);
+
+    url.removeQueryItem("1");
+    QCOMPARE(url.allQueryItemValues("1").size(), 2);
+    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "z");
+#endif
+
+    url.removeAllQueryItems("1");
+    QVERIFY(!url.hasQueryItem("1"));
+
+    QCOMPARE(url.queryItemValue("4").toLatin1().constData(), "a b");
+    QCOMPARE(url.queryItemValue("5").toLatin1().constData(), "&");
+    QCOMPARE(url.queryItemValue("tex").toLatin1().constData(), "a + b = c");
+    QCOMPARE(url.queryItemValue("foo bar").toLatin1().constData(), "hello world");
+
+    //url.setUrl("http://www.google.com/search?q=a+b");
+    url.setQuery("q=a+b");
+    QCOMPARE(url.queryItemValue("q"), QString("a+b"));
+
+    //url.setUrl("http://www.google.com/search?q=a=b"); // invalid, but should be tolerated
+    url.setQuery("q=a=b");
+    QCOMPARE(url.queryItemValue("q"), QString("a=b"));
+}
+
+void tst_QUrlQuery::old_hasQueryItem_data()
+{
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<QString>("item");
+    QTest::addColumn<bool>("trueFalse");
+
+    // the old tests started with "http://www.foo.bar"
+    QTest::newRow("no query items") << "" << "baz" << false;
+    QTest::newRow("query item: hello") << "hello=world" << "hello" << true;
+    QTest::newRow("no query item: world") << "hello=world" << "world" << false;
+    QTest::newRow("query item: qt") << "hello=world&qt=rocks" << "qt" << true;
+}
+
+void tst_QUrlQuery::old_hasQueryItem()
+{
+    QFETCH(QString, url);
+    QFETCH(QString, item);
+    QFETCH(bool, trueFalse);
+
+    QCOMPARE(QUrlQuery(url).hasQueryItem(item), trueFalse);
+}
+
+#if 0
+// this test doesn't make sense anymore
+void tst_QUrl::removeAllEncodedQueryItems_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("key");
+    QTest::addColumn<QUrl>("result");
+
+    QTest::newRow("test1") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
+    QTest::newRow("test2") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("aaa") << QUrl::fromEncoded("http://qt.nokia.com/foo?bbb=b&ccc=c");
+//    QTest::newRow("test3") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("ccc") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b");
+    QTest::newRow("test4") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c");
+    QTest::newRow("test5") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
+    QTest::newRow("test6") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c");
+}
+
+void tst_QUrl::removeAllEncodedQueryItems()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QByteArray, key);
+    QFETCH(QUrl, result);
+    url.removeAllEncodedQueryItems(key);
+    QCOMPARE(url, result);
+}
+#endif
 
 QTEST_APPLESS_MAIN(tst_QUrlQuery)
 

@@ -114,11 +114,8 @@ private slots:
     void isRelative_data();
     void isRelative();
     void setQueryItems();
-    void queryItems();
     void hasQuery_data();
     void hasQuery();
-    void hasQueryItem_data();
-    void hasQueryItem();
     void nameprep();
     void isValid();
     void schemeValidator_data();
@@ -157,8 +154,6 @@ private slots:
     void toEncodedNotUsingUninitializedPath();
     void emptyAuthorityRemovesExistingAuthority();
     void acceptEmptyAuthoritySegments();
-    void removeAllEncodedQueryItems_data();
-    void removeAllEncodedQueryItems();
 };
 
 // Testing get/set functions
@@ -1416,8 +1411,6 @@ void tst_QUrl::symmetry()
     QCOMPARE(url.path(), QString::fromLatin1("/pub"));
     // this will be encoded ...
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
-    // unencoded
-    QCOMPARE(url.allQueryItemValues("a").join(""), QString::fromUtf8("bdøf"));
     QCOMPARE(url.fragment(), QString::fromUtf8("vræl"));
 
     QUrl onlyHost("//qt.nokia.com");
@@ -1577,56 +1570,6 @@ void tst_QUrl::setQueryItems()
                               "/ole&du>anne+jørgen=sant/prosent>%25#top"));
 }
 
-void tst_QUrl::queryItems()
-{
-    QUrl url;
-    QVERIFY(!url.hasQuery());
-
-    QList<QPair<QString, QString> > newItems;
-    newItems += qMakePair(QString("2"), QString("b"));
-    newItems += qMakePair(QString("1"), QString("a"));
-    newItems += qMakePair(QString("3"), QString("c"));
-    newItems += qMakePair(QString("4"), QString("a b"));
-    newItems += qMakePair(QString("5"), QString("&"));
-    newItems += qMakePair(QString("foo bar"), QString("hello world"));
-    newItems += qMakePair(QString("foo+bar"), QString("hello+world"));
-    newItems += qMakePair(QString("tex"), QString("a + b = c"));
-    url.setQueryItems(newItems);
-    QVERIFY(url.hasQuery());
-
-    QList<QPair<QString, QString> > setItems = url.queryItems();
-    QVERIFY(newItems == setItems);
-
-    url.addQueryItem("1", "z");
-
-    QVERIFY(url.hasQueryItem("1"));
-    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "a");
-
-    url.addQueryItem("1", "zz");
-
-    QStringList expected;
-    expected += "a";
-    expected += "z";
-    expected += "zz";
-    QCOMPARE(expected, url.allQueryItemValues("1"));
-
-    url.removeQueryItem("1");
-    QCOMPARE(url.allQueryItemValues("1").size(), 2);
-    QCOMPARE(url.queryItemValue("1").toLatin1().constData(), "z");
-
-    url.removeAllQueryItems("1");
-    QVERIFY(!url.hasQueryItem("1"));
-
-    QCOMPARE(url.queryItemValue("4").toLatin1().constData(), "a b");
-    QCOMPARE(url.queryItemValue("5").toLatin1().constData(), "&");
-    QCOMPARE(url.queryItemValue("tex").toLatin1().constData(), "a + b = c");
-    QCOMPARE(url.queryItemValue("foo bar").toLatin1().constData(), "hello world");
-    url.setUrl("http://www.google.com/search?q=a+b");
-    QCOMPARE(url.queryItemValue("q"), QString("a+b"));
-    url.setUrl("http://www.google.com/search?q=a=b"); // invalid, but should be tolerated
-    QCOMPARE(url.queryItemValue("q"), QString("a=b"));
-}
-
 void tst_QUrl::hasQuery_data()
 {
     QTest::addColumn<QString>("url");
@@ -1654,27 +1597,6 @@ void tst_QUrl::hasQuery()
     QUrl qurl(url);
     QCOMPARE(qurl.hasQuery(), trueFalse);
     QCOMPARE(qurl.encodedQuery().isNull(), !trueFalse);
-}
-
-void tst_QUrl::hasQueryItem_data()
-{
-    QTest::addColumn<QString>("url");
-    QTest::addColumn<QString>("item");
-    QTest::addColumn<bool>("trueFalse");
-
-    QTest::newRow("no query items") << "http://www.foo.bar" << "baz" << false;
-    QTest::newRow("query item: hello") << "http://www.foo.bar?hello=world" << "hello" << true;
-    QTest::newRow("no query item: world") << "http://www.foo.bar?hello=world" << "world" << false;
-    QTest::newRow("query item: qt") << "http://www.foo.bar?hello=world&qt=rocks" << "qt" << true;
-}
-
-void tst_QUrl::hasQueryItem()
-{
-    QFETCH(QString, url);
-    QFETCH(QString, item);
-    QFETCH(bool, trueFalse);
-
-    QCOMPARE(QUrl(url).hasQueryItem(item), trueFalse);
 }
 
 void tst_QUrl::nameprep()
@@ -2566,29 +2488,6 @@ void tst_QUrl::effectiveTLDs()
     QFETCH(QUrl, domain);
     QFETCH(QString, TLD);
     QCOMPARE(domain.topLevelDomain(), TLD);
-}
-
-void tst_QUrl::removeAllEncodedQueryItems_data()
-{
-    QTest::addColumn<QUrl>("url");
-    QTest::addColumn<QByteArray>("key");
-    QTest::addColumn<QUrl>("result");
-
-    QTest::newRow("test1") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
-    QTest::newRow("test2") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("aaa") << QUrl::fromEncoded("http://qt.nokia.com/foo?bbb=b&ccc=c");
-//    QTest::newRow("test3") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("ccc") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b");
-    QTest::newRow("test4") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&bbb=b&ccc=c");
-    QTest::newRow("test5") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("b%62b") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&ccc=c");
-    QTest::newRow("test6") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c") << QByteArray("bbb") << QUrl::fromEncoded("http://qt.nokia.com/foo?aaa=a&b%62b=b&ccc=c");
-}
-
-void tst_QUrl::removeAllEncodedQueryItems()
-{
-    QFETCH(QUrl, url);
-    QFETCH(QByteArray, key);
-    QFETCH(QUrl, result);
-    url.removeAllEncodedQueryItems(key);
-    QCOMPARE(url, result);
 }
 
 QTEST_MAIN(tst_QUrl)

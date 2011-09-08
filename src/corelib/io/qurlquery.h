@@ -46,6 +46,10 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
 
+#if QT_DEPRECATED_SINCE(5,0)
+#include <QtCore/qstringlist.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -109,6 +113,25 @@ public:
 
 Q_DECLARE_TYPEINFO(QUrlQuery, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrlQuery)
+
+#if QT_DEPRECATED_SINCE(5,0)
+inline void QUrl::setQueryItems(const QList<QPair<QString, QString> > &qry)
+{ QUrlQuery q(*this); q.setQueryItems(qry); setQuery(q.query()); }
+inline void QUrl::addQueryItem(const QString &key, const QString &value)
+{ QUrlQuery q(*this); q.addQueryItem(key, value); setQuery(q.query()); }
+inline QList<QPair<QString, QString> > QUrl::queryItems() const
+{ return QUrlQuery(*this).queryItems(); }
+inline bool QUrl::hasQueryItem(const QString &key) const
+{ return QUrlQuery(*this).hasQueryItem(key); }
+inline QString QUrl::queryItemValue(const QString &key) const
+{ return QUrlQuery(*this).queryItemValue(key); }
+inline QStringList QUrl::allQueryItemValues(const QString &key) const
+{ return QUrlQuery(*this).allQueryItemValues(key); }
+inline void QUrl::removeQueryItem(const QString &key)
+{ QUrlQuery q(*this); q.removeQueryItem(key); setQuery(q.query()); }
+inline void QUrl::removeAllQueryItems(const QString &key)
+{ QUrlQuery q(*this); q.removeAllQueryItems(key); }
+#endif
 
 QT_END_NAMESPACE
 
