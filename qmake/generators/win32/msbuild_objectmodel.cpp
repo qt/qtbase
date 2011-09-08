@@ -1524,8 +1524,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
 {
     xml
         << tag(tool.EventName)
-        << attrTagS(_Command, tool.CommandLine.join(vcxCommandSeparator()))
-        << attrTagS(_Message, tool.Description)
+            << tag(_Command) << valueTag(tool.CommandLine.join(vcxCommandSeparator()))
+            << tag(_Message) << valueTag(tool.Description)
         << closetag(tool.EventName);
 }
 
