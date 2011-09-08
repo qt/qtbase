@@ -61,6 +61,7 @@ class QTextCodec;
 class QTranslator;
 class QPostEventList;
 class QStringList;
+class QAbstractEventDispatcher;
 
 #define qApp QCoreApplication::instance()
 
@@ -114,6 +115,8 @@ public:
     static void removePostedEvents(QObject *receiver);
     static void removePostedEvents(QObject *receiver, int eventType);
     static bool hasPendingEvents();
+    static QAbstractEventDispatcher *eventDispatcher();
+    static void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
     virtual bool notify(QObject *, QEvent *);
 

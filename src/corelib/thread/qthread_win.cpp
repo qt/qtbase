@@ -315,8 +315,11 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
         QMutexLocker locker(&thr->d_func()->mutex);
         data->quitNow = thr->d_func()->exited;
     }
-    // ### TODO: allow the user to create a custom event dispatcher
-    createEventDispatcher(data);
+
+    if (data->eventDispatcher) // custom event dispatcher set?
+        data->eventDispatcher->startingUp();
+    else
+        createEventDispatcher(data);
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC) && !defined(Q_OS_WINCE)
     // sets the name of the current thread.

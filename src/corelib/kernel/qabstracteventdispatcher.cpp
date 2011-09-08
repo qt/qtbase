@@ -49,16 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-void QAbstractEventDispatcherPrivate::init()
-{
-    Q_Q(QAbstractEventDispatcher);
-    if (threadData->eventDispatcher != 0) {
-        qWarning("QAbstractEventDispatcher: An event dispatcher has already been created for this thread");
-    } else {
-        threadData->eventDispatcher = q;
-    }
-}
-
 // we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
 struct QtTimerIdFreeListConstants : public QFreeListDefaultConstants
 {
@@ -127,8 +117,9 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     instance() and call functions on the QAbstractEventDispatcher
     object that is returned. If you want to use your own instance of
     QAbstractEventDispatcher or of a QAbstractEventDispatcher
-    subclass, you must create your instance \e before you create the
-    QApplication object.
+    subclass, you must install it with QCoreApplication::setEventDispatcher()
+    or QThread::setEventDispatcher() \e before a default event dispatcher has
+    been installed.
 
     The main event loop is started by calling
     QCoreApplication::exec(), and stopped by calling
@@ -145,29 +136,21 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     reimplementation of QAbstractEventDispatcher that merges Qt and
     Motif events together.
 
-    \sa QEventLoop, QCoreApplication
+    \sa QEventLoop, QCoreApplication, QThread
 */
 
 /*!
     Constructs a new event dispatcher with the given \a parent.
 */
 QAbstractEventDispatcher::QAbstractEventDispatcher(QObject *parent)
-    : QObject(*new QAbstractEventDispatcherPrivate, parent)
-{
-    Q_D(QAbstractEventDispatcher);
-    d->init();
-}
+    : QObject(*new QAbstractEventDispatcherPrivate, parent) {}
 
 /*!
     \internal
 */
 QAbstractEventDispatcher::QAbstractEventDispatcher(QAbstractEventDispatcherPrivate &dd,
                                                    QObject *parent)
-    : QObject(dd, parent)
-{
-    Q_D(QAbstractEventDispatcher);
-    d->init();
-}
+    : QObject(dd, parent) {}
 
 /*!
     Destroys the event dispatcher.

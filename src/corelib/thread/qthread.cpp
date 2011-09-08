@@ -757,4 +757,36 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 
 #endif // QT_NO_THREAD
 
+/*!
+    Returns a pointer to the event dispatcher object for the thread. If no event
+    dispatcher exists for the thread, this function returns 0.
+*/
+QAbstractEventDispatcher *QThread::eventDispatcher() const
+{
+    Q_D(const QThread);
+    return d->data->eventDispatcher;
+}
+
+/*!
+    Sets the event dispatcher for the thread to \a eventDispatcher. This is
+    only possible as long as there is no event dispatcher installed for the
+    thread yet. That is, before the thread has been started with start() or, in
+    case of the main thread, before QCoreApplication has been instantiated.
+    This method takes ownership of the object.
+*/
+void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
+{
+    Q_D(QThread);
+    if (d->data->eventDispatcher != 0) {
+        qWarning("QThread::setEventDispatcher: An event dispatcher has already been created for this thread");
+    } else {
+        eventDispatcher->moveToThread(this);
+        if (eventDispatcher->thread() == this) // was the move successful?
+            d->data->eventDispatcher = eventDispatcher;
+        else
+            qWarning("QThread::setEventDispatcher: Could not move event dispatcher to target thread");
+    }
+}
+
+
 QT_END_NAMESPACE

@@ -62,6 +62,7 @@ private slots:
     void reexec();
     void execAfterExit();
     void eventLoopExecAfterExit();
+    void customEventDispatcher();
 };
 
 class EventSpy : public QObject
@@ -584,6 +585,60 @@ void tst_QCoreApplication::eventLoopExecAfterExit()
     QEventLoop loop;
     QMetaObject::invokeMethod(&loop, "quit", Qt::QueuedConnection);
     QCOMPARE(loop.exec(), 0);
+}
+
+class DummyEventDispatcher : public QAbstractEventDispatcher {
+public:
+    DummyEventDispatcher() : QAbstractEventDispatcher(), visited(false) {}
+    bool processEvents(QEventLoop::ProcessEventsFlags) {
+        visited = true;
+        emit awake();
+        QCoreApplication::sendPostedEvents();
+        return false;
+    }
+    bool hasPendingEvents() {
+        extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
+        return qGlobalPostedEventsCount();
+    }
+    void registerSocketNotifier(QSocketNotifier *) {}
+    void unregisterSocketNotifier(QSocketNotifier *) {}
+    void registerTimer(int , int , QObject *) {}
+    bool unregisterTimer(int ) { return false; }
+    bool unregisterTimers(QObject *) { return false; }
+    QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }
+    void wakeUp() {}
+    void interrupt() {}
+    void flush() {}
+
+    bool visited;
+};
+
+void tst_QCoreApplication::customEventDispatcher()
+{
+    // there should be no ED yet
+    QVERIFY(!QCoreApplication::eventDispatcher());
+    DummyEventDispatcher *ed = new DummyEventDispatcher;
+    QCoreApplication::setEventDispatcher(ed);
+    // the new ED should be set
+    QCOMPARE(QCoreApplication::eventDispatcher(), ed);
+    // test the alternative API of QAbstractEventDispatcher
+    QCOMPARE(QAbstractEventDispatcher::instance(), ed);
+    QWeakPointer<DummyEventDispatcher> weak_ed(ed);
+    QVERIFY(!weak_ed.isNull());
+    {
+        int argc = 1;
+        char *arg0 = "tst_qcoreapplication";
+        char *argv[] = { arg0 };
+        QCoreApplication app(argc, argv);
+        // instantiating app should not overwrite the ED
+        QCOMPARE(QCoreApplication::eventDispatcher(), ed);
+        QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
+        app.exec();
+        // the custom ED has really been used?
+        QVERIFY(ed->visited);
+    }
+    // ED has been deleted?
+    QVERIFY(weak_ed.isNull());
 }
 
 QTEST_APPLESS_MAIN(tst_QCoreApplication)

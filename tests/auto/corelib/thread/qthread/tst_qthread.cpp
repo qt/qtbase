@@ -107,6 +107,8 @@ private slots:
     void startAndQuitCustomEventLoop();
     void isRunningInFinished();
 
+    void customEventDispatcher();
+
 #ifndef Q_OS_WINCE
     void stressTest();
 #endif
@@ -1216,6 +1218,78 @@ void tst_QThread::isRunningInFinished()
         QVERIFY(localObject.ok);
         QVERIFY(inThreadObject.ok);
     }
+}
+
+class DummyEventDispatcher : public QAbstractEventDispatcher {
+public:
+    DummyEventDispatcher() : QAbstractEventDispatcher(), visited(false) {}
+    bool processEvents(QEventLoop::ProcessEventsFlags) {
+        visited = true;
+        emit awake();
+        QCoreApplication::sendPostedEvents();
+        return false;
+    }
+    bool hasPendingEvents() {
+        extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
+        return qGlobalPostedEventsCount();
+    }
+    void registerSocketNotifier(QSocketNotifier *) {}
+    void unregisterSocketNotifier(QSocketNotifier *) {}
+    void registerTimer(int , int , QObject *) {}
+    bool unregisterTimer(int ) { return false; }
+    bool unregisterTimers(QObject *) { return false; }
+    QList<TimerInfo> registeredTimers(QObject *) const { return QList<TimerInfo>(); }
+    void wakeUp() {}
+    void interrupt() {}
+    void flush() {}
+
+    bool visited;
+};
+
+class ThreadObj : public QObject
+{
+    Q_OBJECT
+public slots:
+    void visit() {
+        emit visited();
+    }
+signals:
+    void visited();
+};
+
+void tst_QThread::customEventDispatcher()
+{
+    QThread thr;
+    // there should be no ED yet
+    QVERIFY(!thr.eventDispatcher());
+    DummyEventDispatcher *ed = new DummyEventDispatcher;
+    thr.setEventDispatcher(ed);
+    // the new ED should be set
+    QCOMPARE(thr.eventDispatcher(), ed);
+    // test the alternative API of QAbstractEventDispatcher
+    QCOMPARE(QAbstractEventDispatcher::instance(&thr), ed);
+    thr.start();
+    // start() should not overwrite the ED
+    QCOMPARE(thr.eventDispatcher(), ed);
+
+    ThreadObj obj;
+    obj.moveToThread(&thr);
+    // move was successful?
+    QCOMPARE(obj.thread(), &thr);
+    QEventLoop loop;
+    connect(&obj, SIGNAL(visited()), &loop, SLOT(quit()), Qt::QueuedConnection);
+    QMetaObject::invokeMethod(&obj, "visit", Qt::QueuedConnection);
+    loop.exec();
+    // test that the ED has really been used
+    QVERIFY(ed->visited);
+
+    QWeakPointer<DummyEventDispatcher> weak_ed(ed);
+    QVERIFY(!weak_ed.isNull());
+    thr.quit();
+    // wait for thread to be stopped
+    QVERIFY(thr.wait(30000));
+    // test that ED has been deleted
+    QVERIFY(weak_ed.isNull());
 }
 
 QTEST_MAIN(tst_QThread)

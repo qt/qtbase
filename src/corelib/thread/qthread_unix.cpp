@@ -289,8 +289,10 @@ void *QThreadPrivate::start(void *arg)
         data->quitNow = thr->d_func()->exited;
     }
 
-    // ### TODO: allow the user to create a custom event dispatcher
-    createEventDispatcher(data);
+    if (data->eventDispatcher) // custom event dispatcher set?
+        data->eventDispatcher->startingUp();
+    else
+        createEventDispatcher(data);
 
     emit thr->started();
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);

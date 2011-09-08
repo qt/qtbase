@@ -54,6 +54,7 @@ QT_MODULE(Core)
 
 class QThreadData;
 class QThreadPrivate;
+class QAbstractEventDispatcher;
 
 #ifndef QT_NO_THREAD
 class Q_CORE_EXPORT QThread : public QObject
@@ -91,6 +92,9 @@ public:
     uint stackSize() const;
 
     void exit(int retcode = 0);
+
+    QAbstractEventDispatcher *eventDispatcher() const;
+    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
 public Q_SLOTS:
     void start(Priority = InheritPriority);
