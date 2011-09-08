@@ -968,7 +968,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     for (int i = 0; i < si.num_glyphs; ++i)
-        si.width += glyphs.advances_x[i];
+        si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
 
 static inline bool hasCaseChange(const QScriptItem &si)
@@ -2664,7 +2664,7 @@ void QTextEngine::splitItem(int item, int pos) const
         QFixed w = 0;
         const QGlyphLayout g = shapedGlyphs(&oldItem);
         for(int j = 0; j < breakGlyph; ++j)
-            w += g.advances_x[j];
+            w += g.advances_x[j] * !g.attributes[j].dontPrint;
 
         newItem.width = oldItem.width - w;
         oldItem.width = w;

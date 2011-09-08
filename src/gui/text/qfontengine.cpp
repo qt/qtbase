@@ -280,6 +280,8 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
         int i = glyphs.numGlyphs;
         int totalKashidas = 0;
         while(i--) {
+            if (glyphs.attributes[i].dontPrint)
+                continue;
             xpos += glyphs.advances_x[i] + QFixed::fromFixed(glyphs.justifications[i].space_18d6);
             ypos += glyphs.advances_y[i];
             totalKashidas += glyphs.justifications[i].nKashidas;
