@@ -50,8 +50,8 @@ Q_CORE_EXPORT extern void qt_nameprep(QString *source, int from);
 Q_CORE_EXPORT extern bool qt_check_std3rules(const QChar *, int);
 Q_CORE_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
 Q_CORE_EXPORT QString qt_punycodeDecoder(const QString &pc);
-Q_CORE_EXPORT QString qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
-                                   const ushort *tableModifications = 0);
+Q_CORE_EXPORT int qt_urlRecode(QString &appendTo, const QChar *input, const QChar *end,
+                               QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications = 0);
 QT_END_NAMESPACE
 
 // For testsuites
@@ -762,7 +762,6 @@ void tst_QUrlInternal::correctEncodedMistakes_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("expected");
 
-    QTest::newRow("null") << QString() << QString();
     QTest::newRow("empty") << "" << "";
 
     // these contain one invalid percent
@@ -808,9 +807,13 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QFETCH(QString, input);
     QFETCH(QString, expected);
 
-    QString output = qt_urlRecode(input, QUrl::DecodeUnicode);
+    // prepend some data to be sure that it remains there
+    QString output = QTest::currentDataTag();
+    expected.prepend(output);
+
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::DecodeUnicode))
+        output += input;
     QCOMPARE(output, expected);
-    QCOMPARE(output.isNull(), expected.isNull());
 }
 
 static void addUtf8Data(const char *name, const char *data)
@@ -893,7 +896,7 @@ void tst_QUrlInternal::encodingRecode_data()
     addUtf8Data("utf8-3char-2", "\xED\x9F\xBF"); // U+D7FF
     addUtf8Data("utf8-3char-3", "\xEE\x80\x80"); // U+E000
     addUtf8Data("utf8-3char-4", "\xEF\xBF\xBD"); // U+FFFD
-    addUtf8Data("utf8-2char-1", "\xF0\x90\x80\x80"); // U+10000
+    addUtf8Data("utf8-4char-1", "\xF0\x90\x80\x80"); // U+10000
     addUtf8Data("utf8-4char-2", "\xF4\x8F\xBF\xBD"); // U+10FFFD
 
     // longer UTF-8 sequences, mixed with unreserved
@@ -931,9 +934,13 @@ void tst_QUrlInternal::encodingRecode()
     QFETCH(QString, expected);
     QFETCH(QUrl::ComponentFormattingOptions, encodingMode);
 
-    QString output = qt_urlRecode(input, encodingMode);
+    // prepend some data to be sure that it remains there
+    QString output = QTest::currentDataTag();
+    expected.prepend(output);
+
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), encodingMode))
+        output += input;
     QCOMPARE(output, expected);
-    QCOMPARE(output.isNull(), expected.isNull());
 }
 
 void tst_QUrlInternal::encodingRecodeInvalidUtf8_data()
@@ -957,13 +964,18 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
     QFETCH(QByteArray, utf8);
     QString input = utf8.toPercentEncoding();
 
-    QString output;
-    output = qt_urlRecode(input, QUrl::DecodeUnicode);
-    QCOMPARE(output, input);
+    // prepend some data to be sure that it remains there
+    QString output = QTest::currentDataTag();
+
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::DecodeUnicode))
+        output += input;
+    QCOMPARE(output, QTest::currentDataTag() + input);
 
     // this is just control
-    output = qt_urlRecode(input, QUrl::FullyEncoded);
-    QCOMPARE(output, input);
+    output = QTest::currentDataTag();
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyEncoded))
+        output += input;
+    QCOMPARE(output, QTest::currentDataTag() + input);
 }
 
 QTEST_APPLESS_MAIN(tst_QUrlInternal)

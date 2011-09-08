@@ -138,8 +138,8 @@ static inline ushort decodeNibble(ushort c)
 // assumes that the range has been checked already
 static inline ushort decodePercentEncoding(const ushort *input)
 {
-    ushort c1 = input[0];
-    ushort c2 = input[1];
+    ushort c1 = input[1];
+    ushort c2 = input[2];
     if (!isHex(c1) || !isHex(c2))
         return ushort(-1);
     return decodeNibble(c1) << 4 | decodeNibble(c2);
@@ -151,18 +151,27 @@ static inline ushort encodeNibble(ushort c)
     return hexnumbers[c & 0xf];
 }
 
-static void ensureDetached(QString &result, ushort *&output, const ushort *input, const ushort *end)
+static void ensureDetached(QString &result, ushort *&output, const ushort *begin, const ushort *input, const ushort *end,
+                           int add = 0)
 {
     if (!output) {
         // now detach
         // create enough space if the rest of the string needed to be percent-encoded
-        int charsProcessed = input - reinterpret_cast<const ushort *>(result.constData()) - 1;
-        int charsRemaining = end - input + 1;
-        int newSize = result.size() + 2 * charsRemaining;
-        result.resize(newSize);
+        int charsProcessed = input - begin;
+        int charsRemaining = end - input;
+        int spaceNeeded = end - begin + 2 * charsRemaining + add;
+        int origSize = result.size();
+        result.resize(origSize + spaceNeeded);
 
-        // set the output variable
-        output = reinterpret_cast<ushort *>(result.data()) + charsProcessed;
+        // we know that resize() above detached, so we bypass the reference count check
+        output = const_cast<ushort *>(reinterpret_cast<const ushort *>(result.constData()))
+                 + origSize;
+
+        // copy the chars we've already processed
+        int i;
+        for (i = 0; i < charsProcessed; ++i)
+            output[i] = begin[i];
+        output += i;
     }
 }
 
@@ -180,7 +189,8 @@ static inline bool isUnicodeNonCharacter(uint ucs4)
 }
 
 // returns true if we performed an UTF-8 decoding
-static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&input, const ushort *end, ushort decoded)
+static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *begin, const ushort *&input,
+                               const ushort *end, ushort decoded)
 {
     int charsNeeded;
     uint min_uc;
@@ -191,15 +201,15 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
         // however, all 0xC0 and 0xC1 first bytes can only produce overlong sequences
         return false;
     } else if (decoded < 0xe0) {
-        charsNeeded = 1;
+        charsNeeded = 2;
         min_uc = 0x80;
         uc = decoded & 0x1f;
     } else if (decoded < 0xf0) {
-        charsNeeded = 2;
+        charsNeeded = 3;
         min_uc = 0x800;
         uc = decoded & 0x0f;
     } else if (decoded < 0xf5) {
-        charsNeeded = 3;
+        charsNeeded = 4;
         min_uc = 0x10000;
         uc = decoded & 0x07;
     } else {
@@ -210,10 +220,10 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
     }
 
     // are there enough remaining?
-    if (end - input < 3*charsNeeded + 2)
+    if (end - input < 3*charsNeeded)
         return false;
 
-    if (input[2] != '%')
+    if (input[3] != '%')
         return false;
 
     // first continuation character
@@ -223,8 +233,8 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
     uc <<= 6;
     uc |= decoded & 0x3f;
 
-    if (charsNeeded > 1) {
-        if (input[5] != '%')
+    if (charsNeeded > 2) {
+        if (input[6] != '%')
             return false;
 
         // second continuation character
@@ -234,8 +244,8 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
         uc <<= 6;
         uc |= decoded & 0x3f;
 
-        if (charsNeeded > 2) {
-            if (input[8] != '%')
+        if (charsNeeded > 3) {
+            if (input[9] != '%')
                 return false;
 
             // third continuation character
@@ -253,36 +263,28 @@ static uint encodedUtf8ToUcs4(QString &result, ushort *&output, const ushort *&i
     if (isUnicodeNonCharacter(uc) || (uc >= 0xD800 && uc <= 0xDFFF) || uc >= 0x110000)
         return false;
 
-    // detach if necessary
-    if (!output) {
-        // create enough space if the rest of the string needed to be percent-encoded
-        int charsProcessed = input - reinterpret_cast<const ushort *>(result.constData()) - 1;
-        int charsRemaining = end - input - 2 - 3*charsNeeded;
-        int newSize = result.size() + 2 * charsRemaining;
-        result.resize(newSize);
-
-        // set the output variable
-        output = reinterpret_cast<ushort *>(result.data()) + charsProcessed;
-    }
-
     if (!QChar::requiresSurrogates(uc)) {
         // UTF-8 decoded and no surrogates are required
+        // detach if necessary
+        ensureDetached(result, output, begin, input, end, -9 * charsNeeded + 1);
         *output++ = uc;
     } else {
         // UTF-8 decoded to something that requires a surrogate pair
+        ensureDetached(result, output, begin, input, end, -9 * charsNeeded + 2);
         *output++ = QChar::highSurrogate(uc);
         *output++ = QChar::lowSurrogate(uc);
     }
-    input += charsNeeded * 3 + 2;
+    input += charsNeeded * 3 - 1;
     return true;
 }
 
-static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort *&input, const ushort *end, ushort decoded)
+static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort *begin,
+                                 const ushort *&input, const ushort *end, ushort decoded)
 {
     uint uc = decoded;
     if (QChar::isHighSurrogate(uc)) {
-        if (QChar::isLowSurrogate(*input))
-            uc = QChar::surrogateToUcs4(uc, *input);
+        if (input < end && QChar::isLowSurrogate(input[1]))
+            uc = QChar::surrogateToUcs4(uc, input[1]);
     }
 
     // note: we will encode bad UTF-16 to UTF-8
@@ -293,28 +295,23 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
 
     // detach
     if (!output) {
-        // create enough space if the rest of the string needed to be percent-encoded
-        int charsProcessed = input - reinterpret_cast<const ushort *>(result.constData()) - 1;
-        int charsRemaining = end - input;
-        int newSize = result.size() + 2 * charsRemaining - 1 + 3*utf8len;
-        result.resize(newSize);
-
-        // set the output variable
-        output = reinterpret_cast<ushort *>(result.data()) + charsProcessed;
+        // we need 3 * utf8len for the encoded UTF-8 sequence
+        // but ensureDetached already adds 3 for the char we're processing
+        ensureDetached(result, output, begin, input, end, 3*utf8len - 3);
     } else {
         // verify that there's enough space or expand
-        int charsRemaining = end - input;
+        int charsRemaining = end - input - 1; // not including this one
         int pos = output - reinterpret_cast<const ushort *>(result.constData());
         int spaceRemaining = result.size() - pos;
         if (spaceRemaining < 3*charsRemaining + 3*utf8len) {
             // must resize
             result.resize(result.size() + 3*utf8len);
-            output = reinterpret_cast<ushort *>(result.data()) + pos;
+
+            // we know that resize() above detached, so we bypass the reference count check
+            output = const_cast<ushort *>(reinterpret_cast<const ushort *>(result.constData()));
+            output += pos;
         }
     }
-
-    if (QChar::requiresSurrogates(uc))
-        ++input;
 
     // write the sequence
     if (uc < 0x800) {
@@ -337,6 +334,9 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
             *output++ = '%';
             *output++ = encodeNibble(c >> 4);
             *output++ = encodeNibble(c & 0xf);
+
+            // this was a surrogate pair
+            ++input;
         } else {
             // first of three bytes
             c = 0xe0 | uchar(uc >> 12);
@@ -359,22 +359,21 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
     *output++ = encodeNibble(c & 0xf);
 }
 
-static QString recode(const QString &component, QUrl::ComponentFormattingOptions encoding,
-                      const uchar *actionTable, bool retryBadEncoding)
+static int recode(QString &result, const ushort *begin, const ushort *end, QUrl::ComponentFormattingOptions encoding,
+                  const uchar *actionTable, bool retryBadEncoding)
 {
-    QString result = component;
-    const ushort *input = reinterpret_cast<const ushort *>(component.constData());
-    const ushort * const end = input + component.length();
+    const int origSize = result.size();
+    const ushort *input = begin;
     ushort *output = 0;
 
-    while (input != end) {
+    for ( ; input != end; ++input) {
         register ushort c;
         EncodingAction action;
 
         // try a run where no change is necessary
-        while (input != end) {
-            c = *input++;
-            if (c < 0x20 || c >= 0x80) // also: (c - 0x20 < 0x60U)
+        for ( ; input != end; ++input) {
+            c = *input;
+            if (c < 0x20U || c >= 0x80U) // also: (c - 0x20 < 0x60U)
                 goto non_trivial;
             action = EncodingAction(actionTable[c - ' ']);
             if (action == EncodeCharacter)
@@ -388,23 +387,23 @@ non_trivial:
         register uint decoded;
         if (c == '%' && retryBadEncoding) {
             // always write "%25"
-            ensureDetached(result, output, input, end);
+            ensureDetached(result, output, begin, input, end);
             *output++ = '%';
             *output++ = '2';
             *output++ = '5';
             continue;
         } else if (c == '%') {
             // check if the input is valid
-            if (input + 1 >= end || (decoded = decodePercentEncoding(input)) == ushort(-1)) {
+            if (input + 2 >= end || (decoded = decodePercentEncoding(input)) == ushort(-1)) {
                 // not valid, retry
-                result.clear();
-                return recode(component, encoding, actionTable, true);
+                result.resize(origSize);
+                return recode(result, begin, end, encoding, actionTable, true);
             }
 
             if (decoded >= 0x80) {
                 // decode the UTF-8 sequence
                 if (encoding & QUrl::DecodeUnicode &&
-                        encodedUtf8ToUcs4(result, output, input, end, decoded))
+                        encodedUtf8ToUtf16(result, output, begin, input, end, decoded))
                     continue;
 
                 // decoding the encoded UTF-8 failed
@@ -416,7 +415,7 @@ non_trivial:
             decoded = c;
             if (decoded >= 0x80 && (encoding & QUrl::DecodeUnicode) == 0) {
                 // encode the UTF-8 sequence
-                unicodeToEncodedUtf8(result, output, input, end, decoded);
+                unicodeToEncodedUtf8(result, output, begin, input, end, decoded);
                 continue;
             } else if (decoded >= 0x80) {
                 if (output)
@@ -437,34 +436,37 @@ non_trivial:
         if (c == '%' && action != DecodeCharacter) {
             // cases 5 and 6: it's encoded and we're leaving it as it is
             // except we're pedantic and we'll uppercase the hex
-            if (output || !isUpperHex(input[0]) || !isUpperHex(input[1])) {
-                ensureDetached(result, output, input, end);
+            if (output || !isUpperHex(input[1]) || !isUpperHex(input[2])) {
+                ensureDetached(result, output, begin, input, end);
                 *output++ = '%';
-                *output++ = toUpperHex(*input++);
-                *output++ = toUpperHex(*input++);
+                *output++ = toUpperHex(*++input);
+                *output++ = toUpperHex(*++input);
             }
         } else if (c == '%' && action == DecodeCharacter) {
             // case 4: we need to decode
-            ensureDetached(result, output, input, end);
+            ensureDetached(result, output, begin, input, end);
             *output++ = decoded;
             input += 2;
         } else {
             // must be case 3: we need to encode
-            ensureDetached(result, output, input, end);
+            ensureDetached(result, output, begin, input, end);
             *output++ = '%';
             *output++ = encodeNibble(c >> 4);
             *output++ = encodeNibble(c & 0xf);
         }
     }
 
-    if (output)
-        result.truncate(output - reinterpret_cast<const ushort *>(result.constData()));
-    return result;
+    if (output) {
+        int len = output - reinterpret_cast<const ushort *>(result.constData());
+        result.truncate(len);
+        return len - origSize;
+    }
+    return 0;
 }
 
-Q_AUTOTEST_EXPORT QString
-qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding,
-             const ushort *tableModifications)
+Q_AUTOTEST_EXPORT int
+qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
+             QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications)
 {
     uchar actionTable[sizeof defaultActionTable];
     if (encoding & QUrl::DecodeAllDelimiters) {
@@ -487,7 +489,8 @@ qt_urlRecode(const QString &component, QUrl::ComponentFormattingOptions encoding
             actionTable[uchar(*p) - ' '] = *p >> 8;
     }
 
-    return recode(component, encoding, actionTable, false);
+    return recode(appendTo, reinterpret_cast<const ushort *>(begin), reinterpret_cast<const ushort *>(end),
+                  encoding, actionTable, false);
 }
 
 QT_END_NAMESPACE
