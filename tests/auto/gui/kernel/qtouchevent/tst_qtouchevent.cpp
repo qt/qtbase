@@ -1333,11 +1333,11 @@ void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()
 
     QPoint centerPos = view.mapFromScene(rect->boundingRect().center());
     // Touch the button
-    QTest::touchEvent(view.viewport()).press(0, centerPos);
-    QTest::touchEvent(view.viewport()).release(0, centerPos);
+    QTest::touchEvent(view.viewport()).press(0, centerPos, static_cast<QWindow *>(0));
+    QTest::touchEvent(view.viewport()).release(0, centerPos, static_cast<QWindow *>(0));
     // Touch outside of the button
-    QTest::touchEvent(view.viewport()).press(0, view.mapFromScene(QPoint(10, 10)));
-    QTest::touchEvent(view.viewport()).release(0, view.mapFromScene(QPoint(10, 10)));
+    QTest::touchEvent(view.viewport()).press(0, view.mapFromScene(QPoint(10, 10)), static_cast<QWindow *>(0));
+    QTest::touchEvent(view.viewport()).release(0, view.mapFromScene(QPoint(10, 10)), static_cast<QWindow *>(0));
 }
 
 void tst_QTouchEvent::touchBeginWithGraphicsWidget()
@@ -1358,12 +1358,12 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
     QTest::qWaitForWindowShown(&view);
     view.fitInView(scene.sceneRect());
 
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .press(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport());
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .stationary(0)
             .press(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .release(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport())
             .release(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
 
@@ -1375,12 +1375,12 @@ void tst_QTouchEvent::touchBeginWithGraphicsWidget()
     root->reset();
     glassWidget->setWindowFlags(Qt::Window); // make the glassWidget a panel
 
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .press(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport());
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .stationary(0)
             .press(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
-    QTest::touchEvent()
+    QTest::touchEvent(static_cast<QWindow *>(0))
             .release(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport())
             .release(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
 
