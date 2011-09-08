@@ -2956,7 +2956,7 @@ int QTextEngine::lineNumberForTextPosition(int pos)
         return lines.size() - 1;
     for (int i = 0; i < lines.size(); ++i) {
         const QScriptLine& line = lines[i];
-        if (line.from + line.length > pos)
+        if (line.from + line.length + line.trailingSpaces > pos)
             return i;
     }
     return -1;
