@@ -1032,14 +1032,14 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
 #if defined(XCB_USE_IBUS)
     if (QObject* inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext()) {
-        QVariant value;
+        bool retval;
         QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
-                                  Q_RETURN_ARG(QVariant, value),
+                                  Q_RETURN_ARG(bool, retval),
                                   Q_ARG(uint, sym),
                                   Q_ARG(uint, code),
                                   Q_ARG(uint, state),
                                   Q_ARG(bool, type == QEvent::KeyPress));
-        if (value.toBool())
+        if (retval)
             return;
     }
 #endif

@@ -53,13 +53,13 @@ public:
     QIBusPlatformInputContext();
     ~QIBusPlatformInputContext();
 
-    bool isValid() const;
+    Q_INVOKABLE bool isValid() const;
 
     void invokeAction(QInputPanel::Action a, int x);
     void reset(void);
     void update(Qt::InputMethodQueries);
 
-    bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
+    Q_INVOKABLE bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);

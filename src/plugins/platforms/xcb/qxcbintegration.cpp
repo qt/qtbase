@@ -105,9 +105,9 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 #if defined(XCB_USE_IBUS)
     QPlatformInputContext *platformInputContext = QPlatformInputContextFactory::create("ibus");
     if (platformInputContext) {
-        QVariant value;
-        QMetaObject::invokeMethod(platformInputContext, "isValid", Qt::DirectConnection, Q_RETURN_ARG(QVariant, value));
-        if (value.toBool())
+        bool retval;
+        QMetaObject::invokeMethod(platformInputContext, "isValid", Qt::DirectConnection, Q_RETURN_ARG(bool, retval));
+        if (retval)
             m_inputContext = platformInputContext;
     }
     if (platformInputContext && !m_inputContext)
