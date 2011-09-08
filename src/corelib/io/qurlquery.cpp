@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qurlquery.h"
+#include "qurl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -121,9 +122,6 @@ QT_BEGIN_NAMESPACE
 */
 
 typedef QList<QPair<QString, QString> > Map;
-
-int qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
-                 QUrl::ComponentFormattingOptions encoding, const ushort *tableModifications);
 
 class QUrlQueryPrivate : public QSharedData
 {
