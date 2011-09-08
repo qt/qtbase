@@ -498,120 +498,13 @@ QScrollBar *QAccessibleScrollBar::scrollBar() const
 }
 
 /*! \reimp */
-QRect QAccessibleScrollBar::rect(int child) const
-{
-    if (!scrollBar()->isVisible())
-        return QRect();
-
-    QStyle::SubControl subControl;
-    switch (child) {
-    case LineUp:
-        subControl = QStyle ::SC_ScrollBarSubLine;
-        break;
-    case PageUp:
-        subControl = QStyle::SC_ScrollBarSubPage;
-        break;
-    case Position:
-        subControl = QStyle::SC_ScrollBarSlider;
-        break;
-    case PageDown:
-        subControl = QStyle::SC_ScrollBarAddPage;
-        break;
-    case LineDown:
-        subControl = QStyle::SC_ScrollBarAddLine;
-        break;
-    default:
-        return QAccessibleAbstractSlider::rect(child);
-    }
-
-    const QStyleOptionSlider option = qt_qscrollbarStyleOption(scrollBar());
-    const QRect rect = scrollBar()->style()->subControlRect(QStyle::CC_ScrollBar, &option,
-                                                       subControl, scrollBar());
-    const QPoint tp = scrollBar()->mapToGlobal(QPoint(0,0));
-    return QRect(tp.x() + rect.x(), tp.y() + rect.y(), rect.width(), rect.height());
-}
-
-/*! \reimp */
-int QAccessibleScrollBar::childCount() const
-{
-    return LineDown;
-}
-
-/*! \reimp */
 QString QAccessibleScrollBar::text(Text t, int child) const
 {
-    switch (t) {
-    case Value:
-        if (!child || child == Position)
-            return QString::number(scrollBar()->value());
-        return QString();
-    case Name:
-        switch (child) {
-        case LineUp:
-            return QScrollBar::tr("Line up");
-        case PageUp:
-            return QScrollBar::tr("Page up");
-        case Position:
-            return QScrollBar::tr("Position");
-        case PageDown:
-            return QScrollBar::tr("Page down");
-        case LineDown:
-            return QScrollBar::tr("Line down");
-        }
-        break;
-    default:
-        break;
-    }
+    if (t == Value)
+        return QString::number(scrollBar()->value());
     return QAccessibleAbstractSlider::text(t, child);
 }
 
-/*! \reimp */
-QAccessible::Role QAccessibleScrollBar::role(int child) const
-{
-    switch (child) {
-    case LineUp:
-    case PageUp:
-    case PageDown:
-    case LineDown:
-        return PushButton;
-    case Position:
-        return Indicator;
-    default:
-        return ScrollBar;
-    }
-}
-
-/*! \reimp */
-QAccessible::State QAccessibleScrollBar::state(int child) const
-{
-    const State parentState = QAccessibleAbstractSlider::state(0);
-
-    if (child == 0)
-        return parentState;
-
-    // Inherit the Invisible state from parent.
-    State state = parentState & QAccessible::Invisible;
-
-    // Disable left/right if we are at the minimum/maximum.
-    const QScrollBar * const scrollBar = QAccessibleScrollBar::scrollBar();
-    switch (child) {
-    case LineUp:
-    case PageUp:
-        if (scrollBar->value() <= scrollBar->minimum())
-            state |= Unavailable;
-        break;
-    case LineDown:
-    case PageDown:
-        if (scrollBar->value() >= scrollBar->maximum())
-            state |= Unavailable;
-        break;
-    case Position:
-    default:
-        break;
-    }
-
-    return state;
-}
 #endif // QT_NO_SCROLLBAR
 
 #ifndef QT_NO_SLIDER

@@ -154,22 +154,7 @@ class QAccessibleScrollBar : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleScrollBar(QWidget *w);
-
-    enum ScrollBarElements {
-        ScrollBarSelf        = 0,
-        LineUp,
-        PageUp,
-        Position,
-        PageDown,
-        LineDown
-    };
-
-    int childCount() const;
-
-    QRect rect(int child) const;
     QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
 
 protected:
     QScrollBar *scrollBar() const;

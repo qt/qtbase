@@ -1214,47 +1214,34 @@ void tst_QAccessibility::scrollBarTest()
     QScrollBar *scrollBar  = new QScrollBar();
     QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
     QVERIFY(scrollBarInterface);
-
-    QVERIFY(scrollBarInterface->state(0)         & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageUp)    & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(Position)  & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageDown)  & QAccessible::Invisible);
-
+    QVERIFY(scrollBarInterface->state()         & QAccessible::Invisible);
     scrollBar->show();
-    QVERIFY(scrollBarInterface->state(0)         ^ QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageUp)    ^ QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(Position)  ^ QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageDown)  ^ QAccessible::Invisible);
+    QVERIFY(scrollBarInterface->state()         ^ QAccessible::Invisible);
     QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(scrollBar, 0, QAccessible::ObjectShow)));
     QTestAccessibility::clearEvents();
 
     scrollBar->hide();
-    QVERIFY(scrollBarInterface->state(0)         & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageUp)    & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(Position)  & QAccessible::Invisible);
-    QVERIFY(scrollBarInterface->state(PageDown)  & QAccessible::Invisible);
+    QVERIFY(scrollBarInterface->state()         & QAccessible::Invisible);
     QVERIFY(QTestAccessibility::events().contains(QTestAccessibilityEvent(scrollBar, 0, QAccessible::ObjectHide)));
     QTestAccessibility::clearEvents();
 
     // Test that the left/right subcontrols are set to unavailable when the scrollBar is at the minimum/maximum.
     scrollBar->show();
-    scrollBar->setMinimum(0);
-    scrollBar->setMaximum(100);
+    scrollBar->setMinimum(11);
+    scrollBar->setMaximum(111);
 
+    QAccessibleValueInterface *valueIface = scrollBarInterface->valueInterface();
+    QVERIFY(valueIface != 0);
+    QCOMPARE(valueIface->minimumValue().toInt(), scrollBar->minimum());
+    QCOMPARE(valueIface->maximumValue().toInt(), scrollBar->maximum());
     scrollBar->setValue(50);
-    QVERIFY(scrollBarInterface->state(PageUp)    ^ QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(Position)  ^ QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(PageDown)  ^ QAccessible::Unavailable);
-
+    QCOMPARE(valueIface->currentValue().toInt(), scrollBar->value());
     scrollBar->setValue(0);
-    QVERIFY(scrollBarInterface->state(PageUp)    & QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(Position)  ^ QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(PageDown)  ^ QAccessible::Unavailable);
-
+    QCOMPARE(valueIface->currentValue().toInt(), scrollBar->value());
     scrollBar->setValue(100);
-    QVERIFY(scrollBarInterface->state(PageUp)   ^ QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(Position) ^ QAccessible::Unavailable);
-    QVERIFY(scrollBarInterface->state(PageDown) & QAccessible::Unavailable);
+    QCOMPARE(valueIface->currentValue().toInt(), scrollBar->value());
+    valueIface->setCurrentValue(77);
+    QCOMPARE(77, scrollBar->value());
 
     delete scrollBarInterface;
     delete scrollBar;
