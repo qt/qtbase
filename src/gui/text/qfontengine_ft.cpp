@@ -78,6 +78,10 @@
 #include FT_ERRORS_H
 #endif
 
+#if !defined(QT_MAX_CACHED_GLYPH_SIZE)
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -381,7 +385,7 @@ void QFreetypeFace::computeSize(const QFontDef &fontDef, int *xsize, int *ysize,
                 *xsize = *ysize = 0;
         }
     } else {
-        *outline_drawing = (*xsize > (64<<6) || *ysize > (64<<6));
+        *outline_drawing = (*xsize > (QT_MAX_CACHED_GLYPH_SIZE<<6) || *ysize > (QT_MAX_CACHED_GLYPH_SIZE<<6));
     }
 }
 
@@ -1345,7 +1349,7 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadTransformedGlyphSet(const QTransfor
 
     if (!gs) {
         // don't try to load huge fonts
-        bool draw_as_outline = fontDef.pixelSize * qSqrt(qAbs(matrix.det())) >= 64;
+        bool draw_as_outline = fontDef.pixelSize * qSqrt(qAbs(matrix.det())) >= QT_MAX_CACHED_GLYPH_SIZE;
         if (draw_as_outline)
             return 0;
 
