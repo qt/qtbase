@@ -2119,7 +2119,7 @@ Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
         if (c == '-' && (i == 0 || i == len - 1))
             return false;
 
-        // verifying the absence of LDH is the same as verifying that
+        // verifying the absence of non-LDH is the same as verifying that
         // only LDH is present
         if (c == '-' || (c >= '0' && c <= '9')
             || (c >= 'A' && c <= 'Z')

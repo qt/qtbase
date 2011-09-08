@@ -61,11 +61,8 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
     // the following would have been the correct thing, but
     // reality often differs from the specification. People have
     // data: URIs with ? and #
-    //QByteArray data = QByteArray::fromPercentEncoding(uri.encodedPath());
-    QByteArray data = QByteArray::fromPercentEncoding(uri.toEncoded());
-
-    // remove the data: scheme
-    data.remove(0, 5);
+    //QByteArray data = QByteArray::fromPercentEncoding(uri.path(QUrl::PrettyDecoded).toLatin1());
+    QByteArray data = QByteArray::fromPercentEncoding(uri.url(QUrl::PrettyDecoded | QUrl::RemoveScheme).toLatin1());
 
     // parse it:
     int pos = data.indexOf(',');

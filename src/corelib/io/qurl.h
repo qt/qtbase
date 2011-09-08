@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -55,6 +56,60 @@ QT_BEGIN_NAMESPACE
 class QUrlPrivate;
 class QDataStream;
 
+template <typename E1, typename E2>
+class QUrlTwoFlags
+{
+    int i;
+    typedef int QUrlTwoFlags:: *Zero;
+public:
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(E1 f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(E2 f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlag f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator int()) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator int()) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(Zero = 0) : i(0) {}
+
+    inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }
+    inline QUrlTwoFlags &operator&=(uint mask) { i &= mask; return *this; }
+    inline QUrlTwoFlags &operator|=(QUrlTwoFlags f) { i |= f.i; return *this; }
+    inline QUrlTwoFlags &operator|=(E1 f) { i |= f; return *this; }
+    inline QUrlTwoFlags &operator|=(E2 f) { i |= f; return *this; }
+    inline QUrlTwoFlags &operator^=(QUrlTwoFlags f) { i ^= f.i; return *this; }
+    inline QUrlTwoFlags &operator^=(E1 f) { i ^= f; return *this; }
+    inline QUrlTwoFlags &operator^=(E2 f) { i ^= f; return *this; }
+
+    Q_DECL_CONSTEXPR inline operator QFlags<E1>() const { return E1(i); }
+    Q_DECL_CONSTEXPR inline operator QFlags<E2>() const { return E2(i); }
+    Q_DECL_CONSTEXPR inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
+
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(QUrlTwoFlags f) const
+    { return QUrlTwoFlags(E1(i | f.i)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E1 f) const
+    { return QUrlTwoFlags(E1(i | f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E2 f) const
+    { return QUrlTwoFlags(E2(i | f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(QUrlTwoFlags f) const
+    { return QUrlTwoFlags(E1(i ^ f.i)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E1 f) const
+    { return QUrlTwoFlags(E1(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E2 f) const
+    { return QUrlTwoFlags(E2(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(int mask) const
+    { return QUrlTwoFlags(E1(i & mask)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(uint mask) const
+    { return QUrlTwoFlags(E1(i & mask)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E1 f) const
+    { return QUrlTwoFlags(E1(i & f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E2 f) const
+    { return QUrlTwoFlags(E2(i & f)); }
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags operator~() const
+    { return QUrlTwoFlags(E1(~i)); }
+
+    inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+};
+
 class Q_CORE_EXPORT QUrl
 {
 public:
@@ -64,7 +119,7 @@ public:
     };
 
     // encoding / toString values
-    enum FormattingOption {
+    enum UrlFormattingOption {
         None = 0x0,
         RemoveScheme = 0x1,
         RemovePassword = 0x2,
@@ -74,12 +129,10 @@ public:
         RemovePath = 0x20,
         RemoveQuery = 0x40,
         RemoveFragment = 0x80,
-        // 0x100: private: normalized
+        // 0x100 was a private code in Qt 4, keep unused for a while
         PreferLocalFile = 0x200,
-
-        StripTrailingSlash = 0x10000
+        StripTrailingSlash = 0x400
     };
-    Q_DECLARE_FLAGS(FormattingOptions, FormattingOption)
 
     enum ComponentFormattingOption {
         FullyEncoded = 0x000000,
@@ -92,18 +145,24 @@ public:
         MostDecoded = PrettyDecoded | DecodeAllDelimiters
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
+#ifdef qdoc
+    Q_DECLARE_FLAGS(FormattingOptions, UrlFormattingOption)
+#else
+    typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;
+#endif
 
     QUrl();
-#ifdef QT_NO_URL_CAST_FROM_STRING
-    explicit
-#endif
-    QUrl(const QString &url, ParsingMode mode = TolerantMode);
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
-#ifndef QT_NO_URL_CAST_FROM_STRING
-    QUrl &operator =(const QString &url);
+#ifdef QT_NO_URL_CAST_FROM_STRING
+    explicit QUrl(const QString &url, ParsingMode mode = TolerantMode);
+#else
+    QUrl(const QString &url, ParsingMode mode = TolerantMode);
+    QUrl &operator=(const QString &url);
 #endif
 #ifdef Q_COMPILER_RVALUE_REFS
+    QUrl(QUrl &&other) : d(0)
+    { qSwap(d, other.d); }
     inline QUrl &operator=(QUrl &&other)
     { qSwap(d, other.d); return *this; }
 #endif
@@ -112,71 +171,62 @@ public:
     inline void swap(QUrl &other) { qSwap(d, other.d); }
 
     void setUrl(const QString &url, ParsingMode mode = TolerantMode);
-    QString url(FormattingOptions options = None) const;
-    QString toString(FormattingOptions options = None) const;
-    QString toDisplayString(FormattingOptions options = None) const;
+    QString url(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
+    QString toString(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
+    QString toDisplayString(FormattingOptions options = FormattingOptions(PrettyDecoded)) const;
+
+    QByteArray toEncoded(FormattingOptions options = FullyEncoded) const;
+    static QUrl fromEncoded(const QByteArray &url, ParsingMode mode = TolerantMode);
+
+    static QUrl fromUserInput(const QString &userInput);
 
     bool isValid() const;
+    QString errorString() const;
 
     bool isEmpty() const;
-
     void clear();
 
     void setScheme(const QString &scheme);
     QString scheme() const;
 
     void setAuthority(const QString &authority);
-    QString authority() const;
+    QString authority(ComponentFormattingOptions options = PrettyDecoded) const;
 
     void setUserInfo(const QString &userInfo);
-    QString userInfo() const;
+    QString userInfo(ComponentFormattingOptions options = PrettyDecoded) const;
 
     void setUserName(const QString &userName);
-    QString userName() const;
-    void setEncodedUserName(const QByteArray &userName);
-    QByteArray encodedUserName() const;
+    QString userName(ComponentFormattingOptions options = PrettyDecoded) const;
 
     void setPassword(const QString &password);
-    QString password() const;
-    void setEncodedPassword(const QByteArray &password);
-    QByteArray encodedPassword() const;
+    QString password(ComponentFormattingOptions = PrettyDecoded) const;
 
     void setHost(const QString &host);
-    QString host() const;
-    void setEncodedHost(const QByteArray &host);
-    QByteArray encodedHost() const;
+    QString host(ComponentFormattingOptions = PrettyDecoded) const;
+    QString topLevelDomain(ComponentFormattingOptions options = PrettyDecoded) const;
 
     void setPort(int port);
     int port(int defaultPort = -1) const;
 
     void setPath(const QString &path);
-    QString path() const;
-    void setEncodedPath(const QByteArray &path);
-    QByteArray encodedPath() const;
+    QString path(ComponentFormattingOptions options = PrettyDecoded) const;
 
     bool hasQuery() const;
-    QByteArray encodedQuery() const;
-    void setEncodedQuery(const QByteArray &query);
+    void setQuery(const QString &query);
+    QString query(ComponentFormattingOptions = PrettyDecoded) const;
 
-    void setFragment(const QString &fragment);
-    QString fragment() const;
-    void setEncodedFragment(const QByteArray &fragment);
-    QByteArray encodedFragment() const;
     bool hasFragment() const;
-    QString topLevelDomain() const;
+    QString fragment(ComponentFormattingOptions options = PrettyDecoded) const;
+    void setFragment(const QString &fragment);
 
     QUrl resolved(const QUrl &relative) const;
 
     bool isRelative() const;
     bool isParentOf(const QUrl &url) const;
 
+    bool isLocalFile() const;
     static QUrl fromLocalFile(const QString &localfile);
     QString toLocalFile() const;
-    bool isLocalFile() const;
-
-    QByteArray toEncoded(FormattingOptions options = None) const;
-
-    static QUrl fromUserInput(const QString &userInput);
 
     void detach();
     bool isDetached() const;
@@ -194,6 +244,7 @@ public:
     { return fromAce(punycode); }
     QT_DEPRECATED static QByteArray toPunycode(const QString &string)
     { return toAce(string); }
+
     QT_DEPRECATED inline void setQueryItems(const QList<QPair<QString, QString> > &qry);
     QT_DEPRECATED inline void addQueryItem(const QString &key, const QString &value);
     QT_DEPRECATED inline QList<QPair<QString, QString> > queryItems() const;
@@ -203,24 +254,59 @@ public:
     QT_DEPRECATED inline void removeQueryItem(const QString &key);
     QT_DEPRECATED inline void removeAllQueryItems(const QString &key);
 
+    QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
+    { setUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
+
+    QT_DEPRECATED QByteArray encodedUserName() const
+    { return userName(FullyEncoded).toLatin1(); }
+    QT_DEPRECATED void setEncodedUserName(const QByteArray &value)
+    { setUserName(QString::fromLatin1(value)); }
+
+    QT_DEPRECATED QByteArray encodedPassword() const
+    { return password(FullyEncoded).toLatin1(); }
+    QT_DEPRECATED void setEncodedPassword(const QByteArray &value)
+    { setPassword(QString::fromLatin1(value)); }
+
+    QT_DEPRECATED QByteArray encodedHost() const
+    { return host(FullyEncoded).toLatin1(); }
+    QT_DEPRECATED void setEncodedHost(const QByteArray &value)
+    { setHost(QString::fromLatin1(value)); }
+
+    QT_DEPRECATED QByteArray encodedPath() const
+    { return path(FullyEncoded).toLatin1(); }
+    QT_DEPRECATED void setEncodedPath(const QByteArray &value)
+    { setPath(QString::fromLatin1(value)); }
+
+    QT_DEPRECATED QByteArray encodedQuery() const
+    { return toLatin1_helper(query(FullyEncoded)); }
+    QT_DEPRECATED void setEncodedQuery(const QByteArray &value)
+    { setQuery(QString::fromLatin1(value)); }
+
+    QT_DEPRECATED QByteArray encodedFragment() const
+    { return toLatin1_helper(fragment(FullyEncoded)); }
+    QT_DEPRECATED void setEncodedFragment(const QByteArray &value)
+    { setFragment(QString::fromLatin1(value)); }
+
+private:
+    // helper function for the encodedQuery and encodedFragment functions
+    static QByteArray toLatin1_helper(const QString &string)
+    {
+        if (string.isEmpty())
+            return string.isNull() ? QByteArray() : QByteArray("");
+        return string.toLatin1();
+    }
 #endif
 
+public:
     static QString fromAce(const QByteArray &);
     static QByteArray toAce(const QString &);
     static QStringList idnWhitelist();
     static void setIdnWhitelist(const QStringList &);
 
-    QString errorString() const;
-
-#if QT_DEPRECATED_SINCE(5,0)
-    QT_DEPRECATED void setEncodedUrl(const QByteArray &u, ParsingMode mode = TolerantMode)
-    { setUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
-    QT_DEPRECATED static QUrl fromEncoded(const QByteArray &u, ParsingMode mode = TolerantMode)
-    { return QUrl(QString::fromUtf8(u.constData(), u.size()), mode); }
-#endif
-
 private:
     QUrlPrivate *d;
+    friend class QUrlQuery;
+
 public:
     typedef QUrlPrivate * DataPtr;
     inline DataPtr &data_ptr() { return d; }
@@ -228,13 +314,43 @@ public:
 
 inline uint qHash(const QUrl &url)
 {
-    return qHash(url.toEncoded(QUrl::FormattingOption(0x100)));
+    return qHash(url.toString());
 }
 
 Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
 Q_DECLARE_SHARED(QUrl)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
+
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::UrlFormattingOption f2)
+{ return QUrl::FormattingOptions(f1) | f2; }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
+{ return f2 | f1; }
+inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
+{ return QIncompatibleFlag(int(f1) | f2); }
+
+// add operators for OR'ing the two types of flags
+inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOption f)
+{ i |= QUrl::UrlFormattingOption(int(f)); return i; }
+inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOptions f)
+{ i |= QUrl::UrlFormattingOption(int(f)); return i; }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOptions f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::UrlFormattingOption i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::UrlFormattingOption i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::FormattingOptions i, QUrl::ComponentFormattingOptions f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::FormattingOptions i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::FormattingOptions i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+
+//inline QUrl::UrlFormattingOption &operator=(const QUrl::UrlFormattingOption &i, QUrl::ComponentFormattingOptions f)
+//{ i = int(f); f; }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUrl &);

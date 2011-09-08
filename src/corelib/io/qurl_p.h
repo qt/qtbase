@@ -75,28 +75,88 @@ struct QUrlErrorInfo {
     }
 };
 
-struct QUrlParseData
+class QUrlPrivate
 {
-    const char *scheme;
-    int schemeLength;
+public:
+    enum Section {
+        Scheme = 0x01,
+        UserName = 0x02,
+        Password = 0x04,
+        UserInfo = UserName | Password,
+        Host = 0x08,
+        Port = 0x10,
+        Authority = UserInfo | Host | Port,
+        Path = 0x20,
+        Hierarchy = Authority | Path,
+        Query = 0x40,
+        Fragment = 0x80
+    };
 
-    const char *userInfo;
-    int userInfoDelimIndex;
-    int userInfoLength;
+    QUrlPrivate();
+    QUrlPrivate(const QUrlPrivate &copy);
 
-    const char *host;
-    int hostLength;
+    void parse(const QString &url);
+    void clear();
+
+    // no QString scheme() const;
+    void appendAuthority(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendUserInfo(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendUserName(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendPassword(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendPath(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendQuery(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
+
+    // the "end" parameters are like STL iterators: they point to one past the last valid element
+    bool setScheme(const QString &value, int len, bool decoded = false);
+    bool setAuthority(const QString &auth, int from, int end);
+    void setUserInfo(const QString &userInfo, int from, int end);
+    void setUserName(const QString &value, int from, int end);
+    void setPassword(const QString &value, int from, int end);
+    bool setHost(const QString &value, int from, int end, bool maybePercentEncoded = true);
+    void setPath(const QString &value, int from, int end);
+    void setQuery(const QString &value, int from, int end);
+    void setFragment(const QString &value, int from, int end);
+
+    inline bool hasScheme() const { return sectionIsPresent & Scheme; }
+    inline bool hasAuthority() const { return sectionIsPresent & Authority; }
+    inline bool hasUserInfo() const { return sectionIsPresent & UserInfo; }
+    inline bool hasUserName() const { return sectionIsPresent & UserName; }
+    inline bool hasPassword() const { return sectionIsPresent & Password; }
+    inline bool hasHost() const { return sectionIsPresent & Host; }
+    inline bool hasPort() const { return port != -1; }
+    inline bool hasPath() const { return !path.isEmpty(); }
+    inline bool hasQuery() const { return sectionIsPresent & Query; }
+    inline bool hasFragment() const { return sectionIsPresent & Fragment; }
+
+    QString mergePaths(const QString &relativePath) const;
+
+    QAtomicInt ref;
     int port;
 
-    const char *path;
-    int pathLength;
-    const char *query;
-    int queryLength;
-    const char *fragment;
-    int fragmentLength;
+    QString scheme;
+    QString userName;
+    QString password;
+    QString host;
+    QString path;
+    QString query;
+    QString fragment;
 
-    QUrlErrorInfo *errorInfo;
+    // not used for:
+    //  - Port (port == -1 means absence)
+    //  - Path (there's no path delimiter, so we optimize its use out of existence)
+    // Schemes are never supposed to be empty, but we keep the flag anyway
+    uchar sectionIsPresent;
+
+    // UserName, Password, Path, Query, and Fragment never contain errors in TolerantMode.
+    // Those flags are set only by the strict parser.
+    uchar sectionHasError;
+
+    mutable QUrlErrorInfo errorInfo;
+    QString createErrorString();
 };
+
 
 // in qurlrecode.cpp
 extern Q_AUTOTEST_EXPORT int qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
@@ -109,10 +169,6 @@ extern Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from);
 extern Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len);
 extern Q_AUTOTEST_EXPORT void qt_punycodeEncoder(const QChar *s, int ucLength, QString *output);
 extern Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc);
-
-// in qurlparser.cpp
-extern bool qt_urlParse(const char *ptr, QUrlParseData &parseData);
-extern bool qt_isValidUrlIP(const char *ptr);
 
 QT_END_NAMESPACE
 

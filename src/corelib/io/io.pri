@@ -69,7 +69,6 @@ SOURCES += \
         io/qurl.cpp \
         io/qurlidna.cpp \
         io/qurlquery.cpp \
-        io/qurlparser.cpp \
         io/qurlrecode.cpp \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
