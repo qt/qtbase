@@ -52,6 +52,7 @@
 #include <qdrag.h>
 #include <qclipboard.h>
 #include <qtimer.h>
+#include <qinputpanel.h>
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"
 #include "qtextdocument.h"
@@ -1592,13 +1593,8 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
         if (cursor.position() != oldCursorPos)
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
-#if 0 // ### ndef QT_NO_IM
-        if (contextObject) {
-            if (QInputContext *ic = inputContext()) {
-                ic->update();
-            }
-        }
-#endif //QT_NO_IM
+        if (qGuiApp)
+            qGuiApp->inputPanel()->update(Qt::ImQueryAll);
     } else {
         //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
         if (cursor.position() != oldCursorPos) {
