@@ -63,7 +63,8 @@
 #endif
 
 #if defined(XCB_USE_IBUS)
-#include "QtPlatformSupport/qibusplatforminputcontext.h"
+#include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <qplatforminputcontext_qpa.h>
 #endif
 
 #if defined(XCB_USE_GLX)
@@ -102,12 +103,15 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 
     m_inputContext = 0;
 #if defined(XCB_USE_IBUS)
-    QIBusPlatformInputContext *context = new QIBusPlatformInputContext;
-    if (context->isValid()) {
-        m_inputContext = context;
-    } else {
-        delete context;
+    QPlatformInputContext *platformInputContext = QPlatformInputContextFactory::create("ibus");
+    if (platformInputContext) {
+        QVariant value;
+        QMetaObject::invokeMethod(platformInputContext, "isValid", Qt::DirectConnection, Q_RETURN_ARG(QVariant, value));
+        if (value.toBool())
+            m_inputContext = platformInputContext;
     }
+    if (platformInputContext && !m_inputContext)
+        delete platformInputContext;
 #endif
 }
 

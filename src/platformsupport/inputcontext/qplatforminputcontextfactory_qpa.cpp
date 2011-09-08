@@ -39,41 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINPUTCONTEXT_H
-#define QPLATFORMINPUTCONTEXT_H
+#include "qplatforminputcontextfactory_qpa_p.h"
+#include "qplatforminputcontextplugin_qpa_p.h"
+#include <QPlatformInputContext>
+#include "private/qfactoryloader_p.h"
 
-#include <qinputpanel.h>
-
-QT_BEGIN_HEADER
+#include "qguiapplication.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+    (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
+                          (QPlatformInputContextFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
+#endif
 
-class QWindow;
-class QMouseEvent;
-
-class Q_GUI_EXPORT QPlatformInputContext : public QObject
+QStringList QPlatformInputContextFactory::keys()
 {
-    Q_OBJECT
-public:
-    QPlatformInputContext();
-    virtual ~QPlatformInputContext();
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    QStringList list = loader()->keys();
+#else
+    QStringList list;
+#endif
+    return list;
+}
 
-    virtual void reset();
-    virtual void commit();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
+QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
+{
+    QPlatformInputContext *ret = 0;
+    QStringList paramList = key.split(QLatin1Char(':'));
+    QString platform = paramList.takeFirst().toLower();
 
-    virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
-
-    virtual bool isAnimating();
-    void emitAnimatingChanged();
-};
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    if (QPlatformInputContextFactoryInterface *factory = qobject_cast<QPlatformInputContextFactoryInterface*>(loader()->instance(platform)))
+        ret = factory->create(platform, paramList);
+#endif
+    return ret;
+}
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QPLATFORMINPUTCONTEXT_H

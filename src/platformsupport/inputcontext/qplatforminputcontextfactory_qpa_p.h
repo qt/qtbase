@@ -39,10 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINPUTCONTEXT_H
-#define QPLATFORMINPUTCONTEXT_H
+#ifndef QPLATFORMINPUTCONTEXTFACTORY_H
+#define QPLATFORMINPUTCONTEXTFACTORY_H
 
-#include <qinputpanel.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_HEADER
 
@@ -50,30 +61,18 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QWindow;
-class QMouseEvent;
+class QPlatformInputContext;
 
-class Q_GUI_EXPORT QPlatformInputContext : public QObject
+class QPlatformInputContextFactory
 {
-    Q_OBJECT
 public:
-    QPlatformInputContext();
-    virtual ~QPlatformInputContext();
-
-    virtual void reset();
-    virtual void commit();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
-
-    virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
-
-    virtual bool isAnimating();
-    void emitAnimatingChanged();
+    static QStringList keys();
+    static QPlatformInputContext *create(const QString &key);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMINPUTCONTEXT_H
+#endif // QPLATFORMINPUTCONTEXTFACTORY_H
+

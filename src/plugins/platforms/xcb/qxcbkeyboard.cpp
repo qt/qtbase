@@ -50,7 +50,7 @@
 #include <stdio.h>
 
 #if defined(XCB_USE_IBUS)
-#include "QtPlatformSupport/qibusplatforminputcontext.h"
+#include <qplatforminputcontext_qpa.h>
 #endif
 
 #ifndef XK_ISO_Left_Tab
@@ -1029,9 +1029,20 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     QByteArray chars;
     xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
 
-    QIBusPlatformInputContext *ic = static_cast<QIBusPlatformInputContext *>(QGuiApplicationPrivate::platformIntegration()->inputContext());
-    if (ic && ic->x11FilterEvent(sym, code, state, type == QEvent::KeyPress))
-        return;
+
+#if defined(XCB_USE_IBUS)
+    if (QObject* inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext()) {
+        QVariant value;
+        QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
+                                  Q_RETURN_ARG(QVariant, value),
+                                  Q_ARG(uint, sym),
+                                  Q_ARG(uint, code),
+                                  Q_ARG(uint, state),
+                                  Q_ARG(bool, type == QEvent::KeyPress));
+        if (value.toBool())
+            return;
+    }
+#endif
 
     Qt::KeyboardModifiers modifiers;
     int qtcode = 0;

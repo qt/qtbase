@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,37 +38,55 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QIBUSPLATFORMINPUTCONTEXT_H
-#define QIBUSPLATFORMINPUTCONTEXT_H
 
-#include <QPlatformInputContext>
+#ifndef QPLATFORMINPUTCONTEXTPLUGIN_H
+#define QPLATFORMINPUTCONTEXTPLUGIN_H
 
-class QIBusPlatformInputContextPrivate;
-class QDBusVariant;
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class QIBusPlatformInputContext : public QObject, public QPlatformInputContext
+#include <QtCore/qplugin.h>
+#include <QtCore/qfactoryinterface.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class QPlatformInputContext;
+
+    struct QPlatformInputContextFactoryInterface : public QFactoryInterface
 {
-    Q_OBJECT
-public:
-    QIBusPlatformInputContext();
-    ~QIBusPlatformInputContext();
-
-    bool isValid() const;
-
-    void invokeAction(QInputPanel::Action a, int x);
-    void reset(void);
-    void update(Qt::InputMethodQueries);
-
-    bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
-
-public Q_SLOTS:
-    void commitText(const QDBusVariant &text);
-    void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
-    void inputItemChanged();
-    void cursorRectChanged();
-
-private:
-    QIBusPlatformInputContextPrivate *d;
+    virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
 };
 
-#endif
+#define QPlatformInputContextFactoryInterface_iid "com.nokia.Qt.QPlatformInputContextFactoryInterface"
+
+Q_DECLARE_INTERFACE(QPlatformInputContextFactoryInterface, QPlatformInputContextFactoryInterface_iid)
+
+class Q_GUI_EXPORT QPlatformInputContextPlugin : public QObject, public QPlatformInputContextFactoryInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(QPlatformInputContextFactoryInterface:QFactoryInterface)
+public:
+    explicit QPlatformInputContextPlugin(QObject *parent = 0);
+    ~QPlatformInputContextPlugin();
+
+    virtual QStringList keys() const = 0;
+    virtual QPlatformInputContext *create(const QString &key, const QStringList &paramList) = 0;
+};
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMINPUTCONTEXTPLUGIN_H

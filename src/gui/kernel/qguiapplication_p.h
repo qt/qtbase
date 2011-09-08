@@ -59,8 +59,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QPlatformIntegration;
-
 class Q_GUI_EXPORT QGuiApplicationPrivate : public QCoreApplicationPrivate
 {
     Q_DECLARE_PUBLIC(QGuiApplication)

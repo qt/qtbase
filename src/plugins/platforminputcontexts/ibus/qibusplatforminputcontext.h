@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,42 +38,37 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QIBUSPLATFORMINPUTCONTEXT_H
+#define QIBUSPLATFORMINPUTCONTEXT_H
 
-#ifndef QPLATFORMINPUTCONTEXT_H
-#define QPLATFORMINPUTCONTEXT_H
+#include <QPlatformInputContext>
 
-#include <qinputpanel.h>
+class QIBusPlatformInputContextPrivate;
+class QDBusVariant;
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QWindow;
-class QMouseEvent;
-
-class Q_GUI_EXPORT QPlatformInputContext : public QObject
+class QIBusPlatformInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    QPlatformInputContext();
-    virtual ~QPlatformInputContext();
+    QIBusPlatformInputContext();
+    ~QIBusPlatformInputContext();
 
-    virtual void reset();
-    virtual void commit();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
+    bool isValid() const;
 
-    virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
+    void invokeAction(QInputPanel::Action a, int x);
+    void reset(void);
+    void update(Qt::InputMethodQueries);
 
-    virtual bool isAnimating();
-    void emitAnimatingChanged();
+    bool x11FilterEvent(uint keyval, uint keycode, uint state, bool press);
+
+public Q_SLOTS:
+    void commitText(const QDBusVariant &text);
+    void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
+    void inputItemChanged();
+    void cursorRectChanged();
+
+private:
+    QIBusPlatformInputContextPrivate *d;
 };
 
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QPLATFORMINPUTCONTEXT_H
+#endif

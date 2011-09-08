@@ -39,41 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINPUTCONTEXT_H
-#define QPLATFORMINPUTCONTEXT_H
-
-#include <qinputpanel.h>
-
-QT_BEGIN_HEADER
+#include "qplatforminputcontextplugin_qpa_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QWindow;
-class QMouseEvent;
-
-class Q_GUI_EXPORT QPlatformInputContext : public QObject
+QPlatformInputContextPlugin::QPlatformInputContextPlugin(QObject *parent)
+    : QObject(parent)
 {
-    Q_OBJECT
-public:
-    QPlatformInputContext();
-    virtual ~QPlatformInputContext();
+}
 
-    virtual void reset();
-    virtual void commit();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
-
-    virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
-
-    virtual bool isAnimating();
-    void emitAnimatingChanged();
-};
+QPlatformInputContextPlugin::~QPlatformInputContextPlugin()
+{
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QPLATFORMINPUTCONTEXT_H

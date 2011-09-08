@@ -9,4 +9,7 @@ unix:!symbian {
 !contains(QT_CONFIG, no-gui): SUBDIRS *= imageformats
 !symbian:!contains(QT_CONFIG, no-gui):SUBDIRS += accessible
 symbian:SUBDIRS += s60
-qpa:SUBDIRS += platforms
+qpa: {
+    SUBDIRS += platforms
+    SUBDIRS += platforminputcontexts
+}

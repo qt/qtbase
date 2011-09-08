@@ -53,7 +53,6 @@ QInputPanel::~QInputPanel()
 {
 }
 
-
 QObject *QInputPanel::inputItem() const
 {
     Q_D(const QInputPanel);

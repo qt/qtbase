@@ -2,9 +2,9 @@
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Nokia Corporation (info@qt.nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,41 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINPUTCONTEXT_H
-#define QPLATFORMINPUTCONTEXT_H
-
-#include <qinputpanel.h>
-
-QT_BEGIN_HEADER
+#include <private/qplatforminputcontextplugin_qpa_p.h>
+#include <QtCore/QStringList>
+#include "qibusplatforminputcontext.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QWindow;
-class QMouseEvent;
-
-class Q_GUI_EXPORT QPlatformInputContext : public QObject
+class QIbusPlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
-    Q_OBJECT
 public:
-    QPlatformInputContext();
-    virtual ~QPlatformInputContext();
-
-    virtual void reset();
-    virtual void commit();
-    virtual void update(Qt::InputMethodQueries);
-    virtual void invokeAction(QInputPanel::Action, int cursorPosition);
-
-    virtual QRectF keyboardRect() const;
-    void emitKeyboardRectChanged() const;
-
-    virtual bool isAnimating();
-    void emitAnimatingChanged();
+    QStringList keys() const;
+    QIBusPlatformInputContext *create(const QString&, const QStringList&);
 };
 
+QStringList QIbusPlatformInputContextPlugin::keys() const
+{
+    return QStringList(QStringLiteral("ibus"));
+}
+
+QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)
+{
+    Q_UNUSED(paramList);
+
+    if (system.compare(system, QStringLiteral("ibus"), Qt::CaseInsensitive) == 0)
+        return new QIBusPlatformInputContext;
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(ibusplatforminputcontextplugin, QIbusPlatformInputContextPlugin)
+
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QPLATFORMINPUTCONTEXT_H
