@@ -52,6 +52,11 @@ QPlatformInputContext::~QPlatformInputContext()
 {
 }
 
+bool QPlatformInputContext::isValid() const
+{
+    return false;
+}
+
 void QPlatformInputContext::reset()
 {
 }

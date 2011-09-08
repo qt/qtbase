@@ -46,14 +46,13 @@
 
 #include "qguiapplication.h"
 #include "qdebug.h"
+#include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, directLoader,
-                          (QPlatformInputContextFactoryInterface_iid, QLatin1String(""), Qt::CaseInsensitive))
 #endif
 
 QStringList QPlatformInputContextFactory::keys()
@@ -78,6 +77,34 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 #endif
     return ret;
 }
+
+QPlatformInputContext *QPlatformInputContextFactory::create()
+{
+    QPlatformInputContext *ic = 0;
+
+    QString icString = QString::fromLatin1(getenv("QT_IM_MODULE"));
+    ic = create(icString);
+    qDebug() << ic << ic->isValid();
+    if (ic && ic->isValid())
+        return ic;
+
+    delete ic;
+    ic = 0;
+
+    QStringList k = keys();
+    for (int i = 0; i < k.size(); ++i) {
+        if (k.at(i) == icString)
+            continue;
+        ic = create(k.at(i));
+        if (ic && ic->isValid())
+            return ic;
+        delete ic;
+        ic = 0;
+    }
+
+    return 0;
+}
+
 
 QT_END_NAMESPACE
 

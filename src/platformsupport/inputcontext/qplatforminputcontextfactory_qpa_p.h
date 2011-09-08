@@ -68,6 +68,7 @@ class QPlatformInputContextFactory
 public:
     static QStringList keys();
     static QPlatformInputContext *create(const QString &key);
+    static QPlatformInputContext *create();
 };
 
 QT_END_NAMESPACE

@@ -49,9 +49,7 @@
 #include <private/qguiapplication_p.h>
 #include <stdio.h>
 
-#if defined(XCB_USE_IBUS)
 #include <qplatforminputcontext_qpa.h>
-#endif
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
@@ -1030,7 +1028,6 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
 
 
-#if defined(XCB_USE_IBUS)
     if (QObject* inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext()) {
         bool retval;
         QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
@@ -1042,7 +1039,6 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         if (retval)
             return;
     }
-#endif
 
     Qt::KeyboardModifiers modifiers;
     int qtcode = 0;

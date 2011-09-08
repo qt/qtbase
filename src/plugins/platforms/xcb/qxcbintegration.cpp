@@ -62,10 +62,8 @@
 #include <EGL/egl.h>
 #endif
 
-#if defined(XCB_USE_IBUS)
 #include <private/qplatforminputcontextfactory_qpa_p.h>
 #include <qplatforminputcontext_qpa.h>
-#endif
 
 #if defined(XCB_USE_GLX)
 #include "qglxintegration.h"
@@ -101,18 +99,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
 
-    m_inputContext = 0;
-#if defined(XCB_USE_IBUS)
-    QPlatformInputContext *platformInputContext = QPlatformInputContextFactory::create("ibus");
-    if (platformInputContext) {
-        bool retval;
-        QMetaObject::invokeMethod(platformInputContext, "isValid", Qt::DirectConnection, Q_RETURN_ARG(bool, retval));
-        if (retval)
-            m_inputContext = platformInputContext;
-    }
-    if (platformInputContext && !m_inputContext)
-        delete platformInputContext;
-#endif
+    m_inputContext = QPlatformInputContextFactory::create();
 }
 
 QXcbIntegration::~QXcbIntegration()

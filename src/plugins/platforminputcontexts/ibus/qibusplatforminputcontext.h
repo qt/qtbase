@@ -53,7 +53,7 @@ public:
     QIBusPlatformInputContext();
     ~QIBusPlatformInputContext();
 
-    Q_INVOKABLE bool isValid() const;
+    bool isValid() const;
 
     void invokeAction(QInputPanel::Action a, int x);
     void reset(void);

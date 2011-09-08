@@ -60,6 +60,8 @@ public:
     QPlatformInputContext();
     virtual ~QPlatformInputContext();
 
+    virtual bool isValid() const;
+
     virtual void reset();
     virtual void commit();
     virtual void update(Qt::InputMethodQueries);
