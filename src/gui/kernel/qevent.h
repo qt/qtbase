@@ -52,6 +52,7 @@
 #include <QtGui/qmime.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qset.h>
 #include <QtCore/qfile.h>
 
@@ -451,16 +452,20 @@ private:
 class Q_GUI_EXPORT QInputMethodQueryEvent : public QEvent
 {
 public:
-    QInputMethodQueryEvent(Qt::InputMethodQuery query);
+    QInputMethodQueryEvent(Qt::InputMethodQueries queries);
     ~QInputMethodQueryEvent();
 
-    Qt::InputMethodQuery query() const { return m_query; }
+    Qt::InputMethodQueries queries() const { return m_queries; }
 
-    void setValue(const QVariant &v) { m_value = v; }
-    QVariant value() const { return m_value; }
+    void setValue(Qt::InputMethodQuery q, const QVariant &v);
+    QVariant value(Qt::InputMethodQuery q) const;
 private:
-    Qt::InputMethodQuery m_query;
-    QVariant m_value;
+    Qt::InputMethodQueries m_queries;
+    struct QueryPair {
+        Qt::InputMethodQuery query;
+        QVariant value;
+    };
+    QVector<QueryPair> m_values;
 };
 
 #endif // QT_NO_INPUTMETHOD

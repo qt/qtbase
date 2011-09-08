@@ -1787,14 +1787,35 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
     The object should call setValue() on the event to fill in the requested
     data before calling accept().
 */
-QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQuery query)
+QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQueries queries)
     : QEvent(InputMethodQuery),
-      m_query(query)
+      m_queries(queries)
 {
 }
 
 QInputMethodQueryEvent::~QInputMethodQueryEvent()
 {
+}
+
+
+void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery q, const QVariant &v)
+{
+    for (int i = 0; i < m_values.size(); ++i) {
+        if (m_values.at(i).query == q) {
+            m_values[i].value = v;
+            return;
+        }
+    }
+    QueryPair pair = { q, v };
+    m_values.append(pair);
+}
+
+QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery q) const
+{
+    for (int i = 0; i < m_values.size(); ++i)
+        if (m_values.at(i).query == q)
+            return m_values.at(i).value;
+    return QVariant();
 }
 
 /*!
