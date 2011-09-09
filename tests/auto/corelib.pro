@@ -4,6 +4,4 @@ SUBDIRS=\
    collections \
    exceptionsafety \
    qobjectrace \
-   qsignalspy \
-   selftests \
    utf8
