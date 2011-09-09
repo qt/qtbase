@@ -64,8 +64,6 @@ class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleVa
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
-    QRect rect(int child) const;
-
     QString text(Text t, int child) const;
 
     bool doAction(int action, int child, const QVariantList &params);
@@ -94,25 +92,13 @@ protected:
     QSpinBox *spinBox() const;
 };
 
-class QAccessibleDoubleSpinBox : public QAccessibleWidget
+class QAccessibleDoubleSpinBox : public QAccessibleAbstractSpinBox
 {
 public:
     explicit QAccessibleDoubleSpinBox(QWidget *widget);
 
-    enum DoubleSpinBoxElements {
-        SpinBoxSelf = 0,
-        Editor,
-        ValueUp,
-        ValueDown
-    };
-
-    int childCount() const;
-    QRect rect(int child) const;
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
     QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
     QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
 
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
