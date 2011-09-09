@@ -386,8 +386,8 @@ public:
 
 private:
     operator QNoImplicitBoolCast() const;
-    static QConstByteArrayData<1> shared_null;
-    static QConstByteArrayData<1> shared_empty;
+    static const QConstByteArrayData<1> shared_null;
+    static const QConstByteArrayData<1> shared_empty;
     Data *d;
     QByteArray(Data *dd, int /*dummy*/, int /*dummy*/) : d(dd) {}
     void realloc(int alloc);
@@ -442,7 +442,7 @@ inline void QByteArray::reserve(int asize)
 { if (d->ref != 1 || asize > int(d->alloc)) realloc(asize); d->capacityReserved = true; }
 
 inline void QByteArray::squeeze()
-{ if (d->size < int(d->alloc)) realloc(d->size); d->capacityReserved = false; }
+{ if (d->ref != 1 || d->size < int(d->alloc)) realloc(d->size); d->capacityReserved = false; }
 
 class Q_CORE_EXPORT QByteRef {
     QByteArray &a;
