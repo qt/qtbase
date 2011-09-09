@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include <QtCore/private/qcore_mac_p.h>
 #import <Cocoa/Cocoa.h>
+#include <QtCore/private/qcore_mac_p.h>
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder
 {

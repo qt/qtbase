@@ -133,7 +133,7 @@ void QCocoaWindow::setVisible(bool visible)
 void QCocoaWindow::setWindowTitle(const QString &title)
 {
     CFStringRef windowTitle = QCFString::toCFStringRef(title);
-    [m_nsWindow setTitle: reinterpret_cast<const NSString *>(windowTitle)];
+    [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
     CFRelease(windowTitle);
 }
 
@@ -325,7 +325,7 @@ QNSWindow * QCocoaWindow::createWindow()
 //  ### crashes
 //        [panel setFloatingPanel:needFloating];
 //        [panel setWorksWhenModal:worksWhenModal];
-        window = panel;
+        window = static_cast<NSWindow *>(panel);
         break;
     }
     default:
