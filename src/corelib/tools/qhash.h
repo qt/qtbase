@@ -42,11 +42,11 @@
 #ifndef QHASH_H
 #define QHASH_H
 
-#include <QtCore/qatomic.h>
 #include <QtCore/qchar.h>
 #include <QtCore/qiterator.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qrefcount.h>
 
 QT_BEGIN_HEADER
 
@@ -118,7 +118,7 @@ struct Q_CORE_EXPORT QHashData
 
     Node *fakeNext;
     Node **buckets;
-    QBasicAtomicInt ref;
+    QtPrivate::RefCount ref;
     int size;
     int nodeSize;
     short userNumBits;
@@ -148,7 +148,7 @@ struct Q_CORE_EXPORT QHashData
     static Node *nextNode(Node *node);
     static Node *previousNode(Node *node);
 
-    static QHashData shared_null;
+    static const QHashData shared_null;
 };
 
 inline void QHashData::mightGrow() // ### Qt 5: eliminate
@@ -278,7 +278,7 @@ class QHash
 #endif
 
 public:
-    inline QHash() : d(&QHashData::shared_null) { d->ref.ref(); }
+    inline QHash() : d(const_cast<QHashData *>(&QHashData::shared_null)) { }
     inline QHash(const QHash<Key, T> &other) : d(other.d) { d->ref.ref(); if (!d->sharable) detach(); }
     inline ~QHash() { if (!d->ref.deref()) freeData(d); }
 
