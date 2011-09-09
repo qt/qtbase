@@ -54,7 +54,7 @@
 //
 
 
-#include <qpaintdevice.h>
+#include <QtGui/qpaintdevice.h>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
 
