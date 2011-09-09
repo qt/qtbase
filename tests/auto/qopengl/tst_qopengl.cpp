@@ -346,7 +346,8 @@ void tst_QOpenGL::fboRendering()
     }
 
     QPainter fboPainter;
-    bool painterBegun = fboPainter.begin(fbo);
+    QOpenGLPaintDevice device(fbo->width(), fbo->height());
+    bool painterBegun = fboPainter.begin(&device);
     QVERIFY(painterBegun);
 
     qt_opengl_draw_test_pattern(&fboPainter, fbo->width(), fbo->height());
