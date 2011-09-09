@@ -43,9 +43,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QLinkedListData QLinkedListData::shared_null = {
-    &QLinkedListData::shared_null, &QLinkedListData::shared_null,
-    Q_BASIC_ATOMIC_INITIALIZER(1), 0, true
+const QLinkedListData QLinkedListData::shared_null = {
+    const_cast<QLinkedListData *>(&QLinkedListData::shared_null),
+    const_cast<QLinkedListData *>(&QLinkedListData::shared_null),
+    Q_REFCOUNT_INITIALIZER(-1), 0, true
 };
 
 /*! \class QLinkedList

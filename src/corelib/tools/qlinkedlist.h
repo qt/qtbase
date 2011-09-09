@@ -43,7 +43,7 @@
 #define QLINKEDLIST_H
 
 #include <QtCore/qiterator.h>
-#include <QtCore/qatomic.h>
+#include <QtCore/qrefcount.h>
 
 #ifndef QT_NO_STL
 #include <iterator>
@@ -59,11 +59,11 @@ QT_MODULE(Core)
 struct Q_CORE_EXPORT QLinkedListData
 {
     QLinkedListData *n, *p;
-    QBasicAtomicInt ref;
+    QtPrivate::RefCount ref;
     int size;
     uint sharable : 1;
 
-    static QLinkedListData shared_null;
+    static const QLinkedListData shared_null;
 };
 
 template <typename T>
@@ -81,7 +81,7 @@ class QLinkedList
     union { QLinkedListData *d; QLinkedListNode<T> *e; };
 
 public:
-    inline QLinkedList() : d(&QLinkedListData::shared_null) { d->ref.ref(); }
+    inline QLinkedList() : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
