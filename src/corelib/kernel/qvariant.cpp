@@ -109,6 +109,7 @@ struct TypeDefinition {
 #ifdef QT_BOOTSTRAPPED
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
@@ -297,6 +298,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         ok = &dummy;
 
     switch (uint(t)) {
+#ifndef QT_BOOTSTRAPPED
     case QVariant::Url:
         switch (d->type) {
         case QVariant::String:
@@ -306,6 +308,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
+#endif
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
@@ -355,9 +358,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             if (v_cast<QStringList>(d)->count() == 1)
                 *str = v_cast<QStringList>(d)->at(0);
             break;
+#ifndef QT_BOOTSTRAPPED
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
             break;
+#endif
         case QVariant::Uuid:
             *str = v_cast<QUuid>(d)->toString();
             break;
@@ -1449,7 +1454,9 @@ QVariant::QVariant(const QRect &r) { d.is_null = false; d.type = Rect; v_constru
 QVariant::QVariant(const QSize &s) { d.is_null = false; d.type = Size; v_construct<QSize>(&d, s); }
 QVariant::QVariant(const QSizeF &s) { d.is_null = false; d.type = SizeF; v_construct<QSizeF>(&d, s); }
 #endif
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUrl &u) { d.is_null = false; d.type = Url; v_construct<QUrl>(&d, u); }
+#endif
 QVariant::QVariant(const QLocale &l) { d.is_null = false; d.type = Locale; v_construct<QLocale>(&d, l); }
 #ifndef QT_NO_REGEXP
 QVariant::QVariant(const QRegExp &regExp) { d.is_null = false; d.type = RegExp; v_construct<QRegExp>(&d, regExp); }
@@ -2094,6 +2101,7 @@ QPointF QVariant::toPointF() const
 
 #endif // QT_NO_GEOM_VARIANT
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \fn QUrl QVariant::toUrl() const
 
@@ -2106,6 +2114,7 @@ QUrl QVariant::toUrl() const
 {
     return qVariantToHelper<QUrl>(d, handlerManager);
 }
+#endif
 
 /*!
     \fn QLocale QVariant::toLocale() const

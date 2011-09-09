@@ -61,7 +61,6 @@ OBJECTS = \
     qvsnprintf.o \
     qvariant.o \
     qsystemerror.o \
-    qurl.o \
     qmetatype.o \
     qmalloc.o \
     qxmlstream.o \

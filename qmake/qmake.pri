@@ -67,7 +67,6 @@ bootstrap { #Qt code
         qstringlist.cpp \
         qtemporaryfile.cpp \
         qtextstream.cpp \
-        qurl.cpp \
         quuid.cpp \
         qsettings.cpp \
         qlibraryinfo.cpp \
@@ -114,7 +113,6 @@ bootstrap { #Qt code
         qsystemerror_p.h \
         qtemporaryfile.h \
         qtextstream.h \
-        qurl.h \
         quuid.h \
         qvector.h \
         qxmlstream.h \

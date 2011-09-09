@@ -115,7 +115,6 @@ QTOBJS= \
 	qsettings.obj \
 	qlibraryinfo.obj \
 	qvariant.obj \
-	qurl.obj \
 	qsettings_win.obj \
 	qmetatype.obj \
 	qxmlstream.obj \

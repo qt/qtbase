@@ -175,9 +175,7 @@ public:
     void setEncodedFragment(const QByteArray &fragment);
     QByteArray encodedFragment() const;
     bool hasFragment() const;
-#ifndef QT_BOOTSTRAPPED
     QString topLevelDomain() const;
-#endif
 
     QUrl resolved(const QUrl &relative) const;
 

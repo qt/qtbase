@@ -59,7 +59,6 @@ OBJECTS = \
     qvsnprintf.obj \
     qvariant.obj \
     qsystemerror.obj \
-    qurl.obj \
     qmetatype.obj \
     qmalloc.obj \
     qxmlstream.obj \
@@ -128,7 +127,6 @@ qstringlist.obj: $(CORESRC)\tools\qstringlist.cpp $(PCH)
 qvsnprintf.obj: $(CORESRC)\tools\qvsnprintf.cpp $(PCH)
 qvariant.obj: $(CORESRC)\kernel\qvariant.cpp $(PCH)
 qsystemerror.obj: $(CORESRC)\kernel\qsystemerror.cpp $(PCH)
-qurl.obj: $(CORESRC)\io\qurl.cpp $(PCH)
 qline.obj: $(CORESRC)\tools\qline.cpp $(PCH)
 qsize.obj: $(CORESRC)\tools\qsize.cpp $(PCH)
 qpoint.obj: $(CORESRC)\tools\qpoint.cpp $(PCH)

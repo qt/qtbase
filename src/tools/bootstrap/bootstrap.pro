@@ -65,7 +65,6 @@ SOURCES += \
            ../../corelib/io/qfiledevice.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
-           ../../corelib/io/qurl.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \

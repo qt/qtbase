@@ -116,7 +116,6 @@ QTOBJS= \
 	qtextstream.o \
 	quuid.o \
 	qvector.o \
-	qurl.o \
 	qsettings.o \
 	qsettings_win.o \
 	qvariant.o \
