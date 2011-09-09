@@ -1,7 +1,7 @@
 From 15ce2909579aef8c8f6b0c2c07fdebbaf0f4d611 Mon Sep 17 00:00:00 2001
 From: ager@chromium.org <ager@chromium.org>
 Date: Wed, 4 May 2011 13:03:08 +0000
-Subject: [PATCH 09/14] Add CallAsFunction method to the Object class in the
+Subject: [PATCH 09/15] Add CallAsFunction method to the Object class in the
  API
 
 Patch by Peter Varga.

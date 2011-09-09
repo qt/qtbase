@@ -1,7 +1,7 @@
 From 01f7bd262fb1be893fe4bdc6b98a1b43c5a0bb7d Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:55:26 +1000
-Subject: [PATCH 02/14] Add a bit field 3 to Map
+Subject: [PATCH 02/15] Add a bit field 3 to Map
 
 Bit field 3 will be used to add QML specific map flags.
 ---

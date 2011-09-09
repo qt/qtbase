@@ -1,7 +1,7 @@
 From ed5cc903d70f73780e5985e7d2de33f6b8d86402 Mon Sep 17 00:00:00 2001
 From: Kent Hansen <kent.hansen@nokia.com>
 Date: Fri, 2 Sep 2011 12:03:09 +0200
-Subject: [PATCH 14/14] Fix deprecated Python code
+Subject: [PATCH 14/15] Fix deprecated Python code
 
 Needed to make the scripts run on Python 3, which is the
 default python interpreter on some newer distros.

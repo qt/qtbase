@@ -1,7 +1,7 @@
 From 2a5cf85d7fd7912e516138db03e4cda47cc2a1ab Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Fri, 27 May 2011 13:04:15 +1000
-Subject: [PATCH 07/14] Fix warnings
+Subject: [PATCH 07/15] Fix warnings
 
 ---
  include/v8.h |   16 ++++++++--------
