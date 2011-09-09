@@ -42,10 +42,10 @@
 #ifndef QVECTOR_H
 #define QVECTOR_H
 
-#include <QtCore/qiterator.h>
-#include <QtCore/qatomic.h>
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qiterator.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qrefcount.h>
 
 #ifndef QT_NO_STL
 #include <iterator>
@@ -65,7 +65,7 @@ QT_MODULE(Core)
 
 struct Q_CORE_EXPORT QVectorData
 {
-    QBasicAtomicInt ref;
+    QtPrivate::RefCount ref;
     int alloc;
     int size;
 #if defined(QT_ARCH_SPARC) && defined(Q_CC_GNU) && defined(__LP64__) && defined(QT_BOOTSTRAPPED)
@@ -79,7 +79,7 @@ struct Q_CORE_EXPORT QVectorData
     uint reserved : 30;
 #endif
 
-    static QVectorData shared_null;
+    static const QVectorData shared_null;
     // ### Qt 5: rename to 'allocate()'. The current name causes problems for
     // some debugges when the QVector is member of a class within an unnamed namespace.
     // ### Qt 5: can be removed completely. (Ralf)
@@ -117,7 +117,7 @@ class QVector
 public:
     // ### Qt 5: Consider making QVector non-shared to get at least one
     // "really fast" container. See tests/benchmarks/corelib/tools/qvector/
-    inline QVector() : d(&QVectorData::shared_null) { d->ref.ref(); }
+    inline QVector() : d(const_cast<QVectorData *>(&QVectorData::shared_null)) { }
     explicit QVector(int size);
     QVector(int size, const T &t);
     inline QVector(const QVector<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
