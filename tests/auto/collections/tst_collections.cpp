@@ -2413,7 +2413,7 @@ void tst_Collections::cache()
 		two = s;
 	}
 	QVERIFY(!cache.contains(3));
-	QVERIFY(cache.contains(2));
+	QVERIFY(!cache.contains(2));
     }
     {
 	QCache<int, int> cache(100);
