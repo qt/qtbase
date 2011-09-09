@@ -2727,6 +2727,9 @@ void Configure::generateOutputVars()
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
 
+    if (dictionary[ "V8" ] == "yes")
+        qtConfig += "v8";
+
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()
         << "minimal"
