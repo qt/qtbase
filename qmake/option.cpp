@@ -750,64 +750,11 @@ qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
     cache_items.append(new QMakeCacheClearItem(func, data));
 }
 
-#ifdef Q_OS_WIN
-# include <windows.h>
-
-QT_USE_NAMESPACE
-#endif
-
 QString qmake_libraryInfoFile()
 {
-    QString ret;
-#if defined( Q_OS_WIN )
-    wchar_t module_name[MAX_PATH];
-    GetModuleFileName(0, module_name, MAX_PATH);
-    QFileInfo filePath = QString::fromWCharArray(module_name);
-    ret = filePath.filePath();
-#else
-    QString argv0 = QFile::decodeName(QByteArray(Option::application_argv0));
-    QString absPath;
-
-    if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
-        /*
-          If argv0 starts with a slash, it is already an absolute
-          file path.
-        */
-        absPath = argv0;
-    } else if (argv0.contains(QLatin1Char('/'))) {
-        /*
-          If argv0 contains one or more slashes, it is a file path
-          relative to the current directory.
-        */
-        absPath = QDir::current().absoluteFilePath(argv0);
-    } else {
-        /*
-          Otherwise, the file path has to be determined using the
-          PATH environment variable.
-        */
-        QByteArray pEnv = qgetenv("PATH");
-        QDir currentDir = QDir::current();
-        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1String(":"));
-        for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
-            if ((*p).isEmpty())
-                continue;
-            QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
-            QFileInfo candidate_fi(candidate);
-            if (candidate_fi.exists() && !candidate_fi.isDir()) {
-                absPath = candidate;
-                break;
-            }
-        }
-    }
-
-    absPath = QDir::cleanPath(absPath);
-
-    QFileInfo fi(absPath);
-    ret = fi.exists() ? fi.canonicalFilePath() : QString();
-#endif
-    if(!ret.isEmpty())
-        ret = QDir(QFileInfo(ret).absolutePath()).filePath("qt.conf");
-    return ret;
+    if(!Option::qmake_abslocation.isEmpty())
+        return QDir(QFileInfo(Option::qmake_abslocation).absolutePath()).filePath("qt.conf");
+    return QString();
 }
 
 QT_END_NAMESPACE
