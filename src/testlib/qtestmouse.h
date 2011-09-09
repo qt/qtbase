@@ -214,7 +214,7 @@ namespace QTest
     inline void mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
                             QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseDClick, window, button, stateKey, pos, delay); }
-    inline void mouseMove(QWindow *window, QPoint pos = QPoint(), int delay= -1)
+    inline void mouseMove(QWindow *window, QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseMove, window, Qt::NoButton, 0, pos, delay); }
 }
 
