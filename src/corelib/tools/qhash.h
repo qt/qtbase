@@ -128,18 +128,14 @@ struct Q_CORE_EXPORT QHashData
     uint strictAlignment : 1;
     uint reserved : 30;
 
-    void *allocateNode(); // ### Qt5 remove me
     void *allocateNode(int nodeAlign);
     void freeNode(void *node);
-    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize); // ### Qt5 remove me
-    QHashData *detach_helper2(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
-                              int nodeSize, int nodeAlign);
-    void mightGrow();
+    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
+                             int nodeSize, int nodeAlign);
     bool willGrow();
     void hasShrunk();
     void rehash(int hint);
     void free_helper(void (*node_delete)(Node *));
-    void destroyAndFree(); // ### Qt5 remove me
     Node *firstNode();
 #ifdef QT_QHASH_DEBUG
     void dump();
@@ -150,12 +146,6 @@ struct Q_CORE_EXPORT QHashData
 
     static const QHashData shared_null;
 };
-
-inline void QHashData::mightGrow() // ### Qt 5: eliminate
-{
-    if (size >= numBuckets)
-        rehash(numBits + 1);
-}
 
 inline bool QHashData::willGrow()
 {
@@ -220,7 +210,6 @@ struct QHashNode
     Key key;
     T value;
 
-    inline QHashNode(const Key &key0) : key(key0) {} // ### remove in 5.0
     inline QHashNode(const Key &key0, const T &value0) : key(key0), value(value0) {}
     inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
 };
@@ -330,6 +319,7 @@ public:
     class iterator
     {
         friend class const_iterator;
+        friend class QHash<Key, T>;
         QHashData::Node *i;
 
     public:
@@ -339,8 +329,6 @@ public:
         typedef T *pointer;
         typedef T &reference;
 
-        // ### Qt 5: get rid of 'operator Node *'
-        inline operator Node *() const { return concrete(i); }
         inline iterator() : i(0) { }
         explicit inline iterator(void *node) : i(reinterpret_cast<QHashData::Node *>(node)) { }
 
@@ -385,10 +373,6 @@ public:
             { return i == o.i; }
         inline bool operator!=(const const_iterator &o) const
             { return i != o.i; }
-
-    private:
-        // ### Qt 5: remove
-        inline operator bool() const { return false; }
     };
     friend class iterator;
 
@@ -404,8 +388,6 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
 
-        // ### Qt 5: get rid of 'operator Node *'
-        inline operator Node *() const { return concrete(i); }
         inline const_iterator() : i(0) { }
         explicit inline const_iterator(void *node)
             : i(reinterpret_cast<QHashData::Node *>(node)) { }
@@ -453,10 +435,6 @@ public:
         inline bool operator==(const iterator &o) const { return operator==(const_iterator(o)); }
         inline bool operator!=(const iterator &o) const { return operator!=(const_iterator(o)); }
 #endif
-
-    private:
-        // ### Qt 5: remove
-        inline operator bool() const { return false; }
     };
     friend class const_iterator;
 
@@ -579,7 +557,7 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::clear()
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
 {
-    QHashData *x = d->detach_helper2(duplicateNode, deleteNode2,
+    QHashData *x = d->detach_helper(duplicateNode, deleteNode2,
         QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node),
         QTypeInfo<T>::isDummy ? alignOfDummyNode() : alignOfNode());
     if (!d->ref.deref())
@@ -832,7 +810,7 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::erase(itera
     iterator ret = it;
     ++ret;
 
-    Node *node = it;
+    Node *node = concrete(it.i);
     Node **node_ptr = reinterpret_cast<Node **>(&d->buckets[node->h % d->numBuckets]);
     while (*node_ptr != node)
         node_ptr = &(*node_ptr)->next;

@@ -169,11 +169,6 @@ const QHashData QHashData::shared_null = {
     0, 0, Q_REFCOUNT_INITIALIZER(-1), 0, 0, MinNumBits, 0, 0, true, false, 0
 };
 
-void *QHashData::allocateNode()
-{
-    return allocateNode(0);
-}
-
 void *QHashData::allocateNode(int nodeAlign)
 {
     void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : qMalloc(nodeSize);
@@ -189,15 +184,10 @@ void QHashData::freeNode(void *node)
         qFree(node);
 }
 
-QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize)
-{
-    return detach_helper2( node_duplicate, 0, nodeSize, 0 );
-}
-
-QHashData *QHashData::detach_helper2(void (*node_duplicate)(Node *, void *),
-                                     void (*node_delete)(Node *),
-                                     int nodeSize,
-                                     int nodeAlign)
+QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
+                                    void (*node_delete)(Node *),
+                                    int nodeSize,
+                                    int nodeAlign)
 {
     union {
         QHashData *d;
@@ -390,11 +380,6 @@ void QHashData::rehash(int hint)
         }
         delete [] oldBuckets;
     }
-}
-
-void QHashData::destroyAndFree()
-{
-    free_helper(0);
 }
 
 #ifdef QT_QHASH_DEBUG
