@@ -42,9 +42,9 @@
 #ifndef QLIST_H
 #define QLIST_H
 
-#include <QtCore/qiterator.h>
-#include <QtCore/qatomic.h>
 #include <QtCore/qalgorithms.h>
+#include <QtCore/qiterator.h>
+#include <QtCore/qrefcount.h>
 
 #ifndef QT_NO_STL
 #include <iterator>
@@ -70,7 +70,7 @@ template <typename T> class QSet;
 
 struct Q_CORE_EXPORT QListData {
     struct Data {
-        QBasicAtomicInt ref;
+        QtPrivate::RefCount ref;
         int alloc, begin, end;
         uint sharable : 1;
         void *array[1];
@@ -80,7 +80,7 @@ struct Q_CORE_EXPORT QListData {
     Data *detach(int alloc);
     Data *detach_grow(int *i, int n);
     void realloc(int alloc);
-    static Data shared_null;
+    static const Data shared_null;
     Data *d;
     void **erase(void **xi);
     void **append(int n);
@@ -114,7 +114,7 @@ class QList
     union { QListData p; QListData::Data *d; };
 
 public:
-    inline QList() : d(&QListData::shared_null) { d->ref.ref(); }
+    inline QList() : d(const_cast<QListData::Data *>(&QListData::shared_null)) { }
     inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     ~QList();
     QList<T> &operator=(const QList<T> &l);
@@ -124,8 +124,9 @@ public:
 #endif
     inline void swap(QList<T> &other) { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
-    inline QList(std::initializer_list<T> args) : d(&QListData::shared_null)
-    { d->ref.ref(); qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
+    inline QList(std::initializer_list<T> args)
+        : d(const_cast<QListData::Data *>(&QListData::shared_null))
+    { qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
 #endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
