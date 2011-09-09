@@ -42,9 +42,9 @@
 #ifndef QMAP_H
 #define QMAP_H
 
-#include <QtCore/qatomic.h>
 #include <QtCore/qiterator.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qrefcount.h>
 
 #ifndef QT_NO_STL
 #include <map>
@@ -68,7 +68,7 @@ struct Q_CORE_EXPORT QMapData
 
     QMapData *backward;
     QMapData *forward[QMapData::LastLevel + 1];
-    QBasicAtomicInt ref;
+    QtPrivate::RefCount ref;
     int topLevel;
     int size;
     uint randomBits;
@@ -88,7 +88,7 @@ struct Q_CORE_EXPORT QMapData
     void dump();
 #endif
 
-    static QMapData shared_null;
+    static const QMapData shared_null;
 };
 
 
@@ -179,7 +179,7 @@ class QMap
     }
 
 public:
-    inline QMap() : d(&QMapData::shared_null) { d->ref.ref(); }
+    inline QMap() : d(const_cast<QMapData *>(&QMapData::shared_null)) { }
     inline QMap(const QMap<Key, T> &other) : d(other.d)
     { d->ref.ref(); if (!d->sharable) detach(); }
     inline ~QMap() { if (!d) return; if (!d->ref.deref()) freeData(d); }

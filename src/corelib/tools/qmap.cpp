@@ -50,10 +50,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QMapData QMapData::shared_null = {
-    &shared_null,
-    { &shared_null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, 0, false, true, false, 0
+const QMapData QMapData::shared_null = {
+    const_cast<QMapData *>(&shared_null),
+    { const_cast<QMapData *>(&shared_null), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    Q_REFCOUNT_INITIALIZER(-1), 0, 0, 0, false, true, false, 0
 };
 
 QMapData *QMapData::createData()
