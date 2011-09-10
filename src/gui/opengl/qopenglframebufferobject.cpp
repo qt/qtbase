@@ -1148,6 +1148,21 @@ bool QOpenGLFramebufferObject::hasOpenGLFramebufferBlit()
     return QOpenGLExtensions(QOpenGLContext::currentContext()).hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit);
 }
 
+
+/*!
+    \overload
+    \sa blitFramebuffer
+*/
+
+void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
+                                               QOpenGLFramebufferObject *source,
+                                               GLbitfield buffers, GLenum filter)
+{
+    blitFramebuffer(target, QRect(QPoint(0, 0), target->size()),
+                    source, QRect(QPoint(0, 0), source->size()),
+                    buffers, filter);
+}
+
 /*!
     Blits from the \a sourceRect rectangle in the \a source framebuffer
     object to the \a targetRect rectangle in the \a target framebuffer object.
@@ -1191,29 +1206,22 @@ void QOpenGLFramebufferObject::blitFramebuffer(QOpenGLFramebufferObject *target,
     if (!extensions.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit))
         return;
 
-    QSurface *surface = ctx->surface();
-
-    const int height = static_cast<QWindow *>(surface)->height();
-
-    const int sh = source ? source->height() : height;
-    const int th = target ? target->height() : height;
-
     const int sx0 = sourceRect.left();
     const int sx1 = sourceRect.left() + sourceRect.width();
-    const int sy0 = sh - (sourceRect.top() + sourceRect.height());
-    const int sy1 = sh - sourceRect.top();
+    const int sy0 = sourceRect.top();
+    const int sy1 = sourceRect.top() + sourceRect.height();
 
     const int tx0 = targetRect.left();
     const int tx1 = targetRect.left() + targetRect.width();
-    const int ty0 = th - (targetRect.top() + targetRect.height());
-    const int ty1 = th - targetRect.top();
+    const int ty0 = targetRect.top();
+    const int ty1 = targetRect.top() + targetRect.height();
 
     extensions.glBindFramebuffer(GL_READ_FRAMEBUFFER, source ? source->handle() : 0);
     extensions.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target ? target->handle() : 0);
 
     extensions.glBlitFramebuffer(sx0, sy0, sx1, sy1,
-                         tx0, ty0, tx1, ty1,
-                         buffers, filter);
+                                 tx0, ty0, tx1, ty1,
+                                 buffers, filter);
 
     extensions.glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_func()->current_fbo);
 }

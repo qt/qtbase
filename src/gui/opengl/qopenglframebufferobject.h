@@ -112,6 +112,10 @@ public:
                                 QOpenGLFramebufferObject *source, const QRect &sourceRect,
                                 GLbitfield buffers = GL_COLOR_BUFFER_BIT,
                                 GLenum filter = GL_NEAREST);
+    static void blitFramebuffer(QOpenGLFramebufferObject *target,
+                                QOpenGLFramebufferObject *source,
+                                GLbitfield buffers = GL_COLOR_BUFFER_BIT,
+                                GLenum filter = GL_NEAREST);
 
 private:
     Q_DISABLE_COPY(QOpenGLFramebufferObject)
