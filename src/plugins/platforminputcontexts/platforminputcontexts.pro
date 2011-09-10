@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS += ibus
+!macx:!win:SUBDIRS += ibus
 
