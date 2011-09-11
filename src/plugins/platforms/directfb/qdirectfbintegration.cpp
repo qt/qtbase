@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qdirectfbintegration.h"
-#include "qdirectfbwindowsurface.h"
+#include "qdirectfbbackingstore.h"
 #include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
 #include "qdirectfbcursor.h"
@@ -143,7 +143,7 @@ QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
 
 QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QDirectFbWindowSurface(window);
+    return new QDirectFbBackingStore(window);
 }
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const

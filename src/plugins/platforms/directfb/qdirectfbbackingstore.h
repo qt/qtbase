@@ -49,11 +49,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbWindowSurface : public QPlatformBackingStore
+class QDirectFbBackingStore : public QPlatformBackingStore
 {
 public:
-    QDirectFbWindowSurface(QWindow *window);
-    ~QDirectFbWindowSurface();
+    QDirectFbBackingStore(QWindow *window);
+    ~QDirectFbBackingStore();
 
     QPaintDevice *paintDevice();
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);

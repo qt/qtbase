@@ -42,7 +42,7 @@
 #include "qdirectfbwindow.h"
 #include "qdirectfbinput.h"
 
-#include "qdirectfbwindowsurface.h"
+#include "qdirectfbbackingstore.h"
 
 #include <directfb.h>
 

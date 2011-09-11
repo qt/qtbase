@@ -16,14 +16,14 @@ LIBS += $$DIRECTFB_LIBS
 
 SOURCES = main.cpp \
     qdirectfbintegration.cpp \
-    qdirectfbwindowsurface.cpp \
+    qdirectfbbackingstore.cpp \
     qdirectfbblitter.cpp \
     qdirectfbconvenience.cpp \
     qdirectfbinput.cpp \
     qdirectfbcursor.cpp \
     qdirectfbwindow.cpp
 HEADERS = qdirectfbintegration.h \
-    qdirectfbwindowsurface.h \
+    qdirectfbbackingstore.h \
     qdirectfbblitter.h \
     qdirectfbconvenience.h \
     qdirectfbinput.h \

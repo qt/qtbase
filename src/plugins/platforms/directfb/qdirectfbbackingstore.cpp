@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdirectfbwindowsurface.h"
+#include "qdirectfbbackingstore.h"
 #include "qdirectfbintegration.h"
 #include "qdirectfbblitter.h"
 #include "qdirectfbconvenience.h"
@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QDirectFbWindowSurface::QDirectFbWindowSurface(QWindow *window)
+QDirectFbBackingStore::QDirectFbBackingStore(QWindow *window)
     : QPlatformBackingStore(window), m_pixmap(0), m_pmdata(0), m_dfbSurface(0)
 {
 
@@ -68,17 +68,17 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWindow *window)
     m_pixmap = new QPixmap(m_pmdata);
 }
 
-QDirectFbWindowSurface::~QDirectFbWindowSurface()
+QDirectFbBackingStore::~QDirectFbBackingStore()
 {
     delete m_pixmap;
 }
 
-QPaintDevice *QDirectFbWindowSurface::paintDevice()
+QPaintDevice *QDirectFbBackingStore::paintDevice()
 {
     return m_pixmap;
 }
 
-void QDirectFbWindowSurface::flush(QWindow *, const QRegion &region, const QPoint &offset)
+void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint &offset)
 {
     m_pmdata->blittable()->unlock();
 
@@ -90,7 +90,7 @@ void QDirectFbWindowSurface::flush(QWindow *, const QRegion &region, const QPoin
     }
 }
 
-void QDirectFbWindowSurface::resize(const QSize &size, const QRegion& reg)
+void QDirectFbBackingStore::resize(const QSize &size, const QRegion& reg)
 {
     QPlatformBackingStore::resize(size, reg);
 
@@ -108,7 +108,7 @@ static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int 
     surface->Flip(surface, &region, DFBSurfaceFlipFlags(DSFLIP_BLIT));
 }
 
-bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
+bool QDirectFbBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
     m_pmdata->blittable()->unlock();
 
@@ -127,12 +127,12 @@ bool QDirectFbWindowSurface::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
-void QDirectFbWindowSurface::beginPaint(const QRegion &region)
+void QDirectFbBackingStore::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
 }
 
-void QDirectFbWindowSurface::endPaint(const QRegion &region)
+void QDirectFbBackingStore::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
 }
