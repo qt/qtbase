@@ -92,8 +92,6 @@ void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint
 
 void QDirectFbBackingStore::resize(const QSize &size, const QRegion& reg)
 {
-    QPlatformBackingStore::resize(size, reg);
-
     //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
     m_dfbSurface->AddRef(m_dfbSurface);
     QDirectFbBlitter *blitter = new QDirectFbBlitter(size,m_dfbSurface);
