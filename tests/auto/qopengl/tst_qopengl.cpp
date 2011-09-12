@@ -54,6 +54,7 @@ private slots:
     void fboSimpleRendering();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
+    void openGLPaintDevice();
 };
 
 struct SharedResourceTracker
@@ -384,6 +385,47 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 
     QCOMPARE(fbo->handle(), 0U);
 }
+
+void tst_QOpenGL::openGLPaintDevice()
+{
+    QWindow window;
+    window.setGeometry(0, 0, 128, 128);
+    window.create();
+
+    QOpenGLContext ctx;
+    ctx.create();
+
+    ctx.makeCurrent(&window);
+
+    QImage image(128, 128, QImage::Format_RGB32);
+    QPainter p(&image);
+    p.fillRect(0, 0, image.width() / 2, image.height() / 2, Qt::red);
+    p.fillRect(image.width() / 2, 0, image.width() / 2, image.height() / 2, Qt::green);
+    p.fillRect(image.width() / 2, image.height() / 2, image.width() / 2, image.height() / 2, Qt::blue);
+    p.fillRect(0, image.height() / 2, image.width() / 2, image.height() / 2, Qt::white);
+    p.end();
+
+    QOpenGLFramebufferObject fbo(128, 128);
+    fbo.bind();
+
+    QOpenGLPaintDevice device(128, 128);
+    p.begin(&device);
+    p.fillRect(0, 0, image.width() / 2, image.height() / 2, Qt::red);
+    p.fillRect(image.width() / 2, 0, image.width() / 2, image.height() / 2, Qt::green);
+    p.fillRect(image.width() / 2, image.height() / 2, image.width() / 2, image.height() / 2, Qt::blue);
+    p.fillRect(0, image.height() / 2, image.width() / 2, image.height() / 2, Qt::white);
+    p.end();
+
+    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+
+    QSKIP("Image / pixmap painting needs to be implemented", SkipSingle);
+    p.begin(&device);
+    p.drawImage(0, 0, image);
+    p.end();
+
+    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+}
+
 
 QTEST_MAIN(tst_QOpenGL)
 #include "tst_qopengl.moc"
