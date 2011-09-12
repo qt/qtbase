@@ -402,7 +402,7 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-inline QByteArray::QByteArray(): d(const_cast<Data *>(&shared_null.ba)) { d->ref.ref(); }
+inline QByteArray::QByteArray(): d(const_cast<Data *>(&shared_null.ba)) { }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) qFree(d); }
 inline int QByteArray::size() const
 { return d->size; }
