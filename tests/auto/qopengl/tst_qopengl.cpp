@@ -338,24 +338,23 @@ void tst_QOpenGL::fboRendering()
     fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
     // Uncomplicate things by using NPOT:
-    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(256, 128, fboFormat);
+    QOpenGLFramebufferObject fbo(256, 128, fboFormat);
 
-    if (fbo->attachment() != QOpenGLFramebufferObject::CombinedDepthStencil) {
-        delete fbo;
+    if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
         QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
-    }
+
+    fbo.bind();
 
     QPainter fboPainter;
-    QOpenGLPaintDevice device(fbo->width(), fbo->height());
+    QOpenGLPaintDevice device(fbo.width(), fbo.height());
     bool painterBegun = fboPainter.begin(&device);
     QVERIFY(painterBegun);
 
-    qt_opengl_draw_test_pattern(&fboPainter, fbo->width(), fbo->height());
+    qt_opengl_draw_test_pattern(&fboPainter, fbo.width(), fbo.height());
 
     fboPainter.end();
 
-    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
-    delete fbo;
+    QImage fb = fbo.toImage().convertToFormat(QImage::Format_RGB32);
 
     qt_opengl_check_test_pattern(fb);
 }

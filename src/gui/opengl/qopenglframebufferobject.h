@@ -93,7 +93,7 @@ public:
     bool release();
 
     int width() const { return size().width(); }
-    int height() const { return size().width(); }
+    int height() const { return size().height(); }
 
     GLuint texture() const;
     QSize size() const;
