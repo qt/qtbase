@@ -45,6 +45,7 @@
 #include <qinputpanel.h>
 #include <private/qobject_p.h>
 #include <QtCore/QWeakPointer>
+#include <QTransform>
 
 QT_BEGIN_HEADER
 

@@ -41,6 +41,7 @@
 
 #include <qplatforminputcontext_qpa.h>
 #include <qguiapplication.h>
+#include <QRect>
 
 QT_BEGIN_NAMESPACE
 
