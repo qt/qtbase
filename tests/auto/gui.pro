@@ -146,9 +146,12 @@ win32:SUBDIRS -= qtextpiecetable
            qgraphicssceneindex \
            qlistwidget \
            qmainwindow \
-           qnetworkreply \
+           qpathclipper \
+           qpixmapcache \
            qsidebar \
            qstylesheetstyle \
+           qtextlayout \
+           qtextpiecetable \
            qtipc \
            qtoolbar \
 

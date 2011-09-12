@@ -1,7 +1,7 @@
-From 4183b973ed3bd603784c798dfa63ba48f6b68003 Mon Sep 17 00:00:00 2001
-From: "ager@chromium.org" <ager@chromium.org>
+From 15ce2909579aef8c8f6b0c2c07fdebbaf0f4d611 Mon Sep 17 00:00:00 2001
+From: ager@chromium.org <ager@chromium.org>
 Date: Wed, 4 May 2011 13:03:08 +0000
-Subject: [PATCH 09/16] Add CallAsFunction method to the Object class in the
+Subject: [PATCH 09/15] Add CallAsFunction method to the Object class in the
  API
 
 Patch by Peter Varga.
@@ -21,15 +21,15 @@ git-svn-id: https://v8.googlecode.com/svn/branches/bleeding_edge@7781 ce2b1a6d-e
  5 files changed, 163 insertions(+), 37 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index d5d6972..8a8e1cd 100644
+index 7544deb..277153e 100644
 --- a/include/v8.h
 +++ b/include/v8.h
-@@ -1757,6 +1757,14 @@ class Object : public Value {
+@@ -1758,6 +1758,14 @@ class Object : public Value {
    V8EXPORT ExternalArrayType GetIndexedPropertiesExternalArrayDataType();
    V8EXPORT int GetIndexedPropertiesExternalArrayDataLength();
-
+ 
 +  /**
-+   * Call an Object as a function if a callback is set by the
++   * Call an Object as a function if a callback is set by the 
 +   * ObjectTemplate::SetCallAsFunctionHandler method.
 +   */
 +  V8EXPORT Local<Value> CallAsFunction(Handle<Object> recv,
@@ -45,8 +45,8 @@ index 2436031..e412e51 100644
 +++ b/src/api.cc
 @@ -3259,6 +3259,37 @@ int v8::Object::GetIndexedPropertiesExternalArrayDataLength() {
  }
-
-
+ 
+ 
 +Local<v8::Value> Object::CallAsFunction(v8::Handle<v8::Object> recv, int argc,
 +                                        v8::Handle<v8::Value> argv[]) {
 +  i::Isolate* isolate = Utils::OpenHandle(this)->GetIsolate();
@@ -87,8 +87,8 @@ index 1632076..894d741 100644
 +++ b/src/execution.cc
 @@ -254,6 +254,30 @@ Handle<Object> Execution::GetFunctionDelegate(Handle<Object> object) {
  }
-
-
+ 
+ 
 +Handle<Object> Execution::TryGetFunctionDelegate(Handle<Object> object,
 +                                                 bool* has_pending_exception) {
 +  ASSERT(!object->IsJSFunction());
@@ -126,7 +126,7 @@ index a476eb4..0a0be51 100644
    static Handle<Object> GetFunctionDelegate(Handle<Object> object);
 +  static Handle<Object> TryGetFunctionDelegate(Handle<Object> object,
 +                                               bool* has_pending_exception);
-
+ 
    // Get a function delegate (or undefined) for the given non-function
    // object. Used for support calling objects as constructors.
 diff --git a/test/cctest/test-api.cc b/test/cctest/test-api.cc
@@ -136,7 +136,7 @@ index d7621d1..693d51e 100644
 @@ -6962,50 +6962,111 @@ THREADED_TEST(CallAsFunction) {
    v8::HandleScope scope;
    LocalContext context;
-
+ 
 -  Local<v8::FunctionTemplate> t = v8::FunctionTemplate::New();
 -  Local<ObjectTemplate> instance_template = t->InstanceTemplate();
 -  instance_template->SetCallAsFunctionHandler(call_as_function);
@@ -153,21 +153,21 @@ index d7621d1..693d51e 100644
 +    v8::TryCatch try_catch;
 +    Local<Value> value;
 +    CHECK(!try_catch.HasCaught());
-
+ 
 -  value = CompileRun("obj(42)");
 -  CHECK(!try_catch.HasCaught());
 -  CHECK_EQ(42, value->Int32Value());
 +    value = CompileRun("obj(42)");
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(42, value->Int32Value());
-
+ 
 -  value = CompileRun("(function(o){return o(49)})(obj)");
 -  CHECK(!try_catch.HasCaught());
 -  CHECK_EQ(49, value->Int32Value());
 +    value = CompileRun("(function(o){return o(49)})(obj)");
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(49, value->Int32Value());
-
+ 
 -  // test special case of call as function
 -  value = CompileRun("[obj]['0'](45)");
 -  CHECK(!try_catch.HasCaught());
@@ -176,7 +176,7 @@ index d7621d1..693d51e 100644
 +    value = CompileRun("[obj]['0'](45)");
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(45, value->Int32Value());
-
+ 
 -  value = CompileRun("obj.call = Function.prototype.call;"
 -                     "obj.call(null, 87)");
 -  CHECK(!try_catch.HasCaught());
@@ -185,7 +185,7 @@ index d7621d1..693d51e 100644
 +                       "obj.call(null, 87)");
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(87, value->Int32Value());
-
+ 
 -  // Regression tests for bug #1116356: Calling call through call/apply
 -  // must work for non-function receivers.
 -  const char* apply_99 = "Function.prototype.call.apply(obj, [this, 99])";
@@ -198,7 +198,7 @@ index d7621d1..693d51e 100644
 +    value = CompileRun(apply_99);
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(99, value->Int32Value());
-
+ 
 -  const char* call_17 = "Function.prototype.call.call(obj, this, 17)";
 -  value = CompileRun(call_17);
 -  CHECK(!try_catch.HasCaught());
@@ -207,7 +207,7 @@ index d7621d1..693d51e 100644
 +    value = CompileRun(call_17);
 +    CHECK(!try_catch.HasCaught());
 +    CHECK_EQ(17, value->Int32Value());
-
+ 
 -  // Check that the call-as-function handler can be called through
 -  // new.
 -  value = CompileRun("new obj(43)");
@@ -280,8 +280,8 @@ index d7621d1..693d51e 100644
 +    try_catch.Reset();
 +  }
  }
-
-
---
-1.7.6
+ 
+ 
+-- 
+1.7.4.4
 

@@ -1,7 +1,7 @@
-From 7c9cfff80b7864d5687432d424074e51712c4a07 Mon Sep 17 00:00:00 2001
+From 01f7bd262fb1be893fe4bdc6b98a1b43c5a0bb7d Mon Sep 17 00:00:00 2001
 From: Aaron Kennedy <aaron.kennedy@nokia.com>
 Date: Mon, 23 May 2011 15:55:26 +1000
-Subject: [PATCH 02/16] Add a bit field 3 to Map
+Subject: [PATCH 02/15] Add a bit field 3 to Map
 
 Bit field 3 will be used to add QML specific map flags.
 ---
@@ -22,13 +22,13 @@ index 930c97b..900f462 100644
 +  reinterpret_cast<Map*>(result)->set_bit_field3(0);
    return result;
  }
-
+ 
 @@ -1599,6 +1600,7 @@ MaybeObject* Heap::AllocateMap(InstanceType instance_type, int instance_size) {
    map->set_unused_property_fields(0);
    map->set_bit_field(0);
    map->set_bit_field2((1 << Map::kIsExtensible) | (1 << Map::kHasFastElements));
 +  map->set_bit_field3(0);
-
+ 
    // If the map object is aligned fill the padding area with Smi 0 objects.
    if (Map::kPadStart < Map::kSize) {
 diff --git a/src/objects-inl.h b/src/objects-inl.h
@@ -37,8 +37,8 @@ index c82080d..cce3edd 100644
 +++ b/src/objects-inl.h
 @@ -2430,6 +2430,16 @@ void Map::set_bit_field2(byte value) {
  }
-
-
+ 
+ 
 +byte Map::bit_field3() {
 +  return READ_BYTE_FIELD(this, kBitField3Offset);
 +}
@@ -65,13 +65,13 @@ index dc4b260..79d7240 100644
    Map::cast(result)->ClearCodeCache(heap);
    return result;
 @@ -3642,6 +3643,7 @@ MaybeObject* Map::CopyNormalized(PropertyNormalizationMode mode,
-
+ 
    Map::cast(result)->set_bit_field(bit_field());
    Map::cast(result)->set_bit_field2(bit_field2());
 +  Map::cast(result)->set_bit_field3(bit_field3());
-
+ 
    Map::cast(result)->set_is_shared(sharing == SHARED_NORMALIZED_MAP);
-
+ 
 diff --git a/src/objects.h b/src/objects.h
 index 6e26f57..07e1089 100644
 --- a/src/objects.h
@@ -79,7 +79,7 @@ index 6e26f57..07e1089 100644
 @@ -3597,6 +3597,10 @@ class Map: public HeapObject {
    inline byte bit_field2();
    inline void set_bit_field2(byte value);
-
+ 
 +  // Bit field 3.
 +  inline byte bit_field3();
 +  inline void set_bit_field3(byte value);
@@ -101,18 +101,18 @@ index 6e26f57..07e1089 100644
    static const int kBitFieldOffset = kInstanceAttributesOffset + 2;
    static const int kBitField2Offset = kInstanceAttributesOffset + 3;
 +  static const int kBitField3Offset = kInstanceAttributesOffset + 4;
-
+ 
    STATIC_CHECK(kInstanceTypeOffset == Internals::kMapInstanceTypeOffset);
-
+ 
 @@ -3898,6 +3903,8 @@ class Map: public HeapObject {
    static const int kIsShared = 5;
    static const int kHasExternalArrayElements = 6;
-
+ 
 +  // Bit positions for bit field 3
 +
    // Layout of the default cache. It holds alternating name and code objects.
    static const int kCodeCacheEntrySize = 2;
    static const int kCodeCacheEntryNameOffset = 0;
---
-1.7.6
+-- 
+1.7.4.4
 

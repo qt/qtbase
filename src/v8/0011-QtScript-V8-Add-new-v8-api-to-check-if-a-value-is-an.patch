@@ -1,7 +1,7 @@
-From f22d0312faeb93ced8747d9aae8c6d77e11b4aba Mon Sep 17 00:00:00 2001
+From 5f3e5dd6901b54707ea4f868d8fa7317c4ab3852 Mon Sep 17 00:00:00 2001
 From: Jedrzej Nowacki <jedrzej.nowacki@nokia.com>
 Date: Tue, 7 Dec 2010 11:56:42 +0100
-Subject: [PATCH 11/16] QtScript/V8: Add new v8 api to check if a value is an
+Subject: [PATCH 11/15] QtScript/V8: Add new v8 api to check if a value is an
  error.
 
 New function v8::Value::IsError was created.
@@ -15,13 +15,13 @@ research.
  3 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/include/v8.h b/include/v8.h
-index 84462b5..08b0ec2 100644
+index 18527e1..43e00f5 100644
 --- a/include/v8.h
 +++ b/include/v8.h
 @@ -937,6 +937,11 @@ class Value : public Data {
     */
    V8EXPORT bool IsRegExp() const;
-
+ 
 +  /**
 +   * Returns true if this value is an Error.
 +   */
@@ -37,14 +37,14 @@ index 1a585d6..bd435eb 100644
 @@ -2108,6 +2108,12 @@ bool Value::IsRegExp() const {
    return obj->IsJSRegExp();
  }
-
+ 
 +bool Value::IsError() const {
 +  if (IsDeadCheck(i::Isolate::Current(), "v8::Value::IsError()")) return false;
 +  i::Handle<i::Object> obj = Utils::OpenHandle(this);
 +  return obj->HasSpecificClassOf(HEAP->Error_symbol());
 +}
 +
-
+ 
  Local<String> Value::ToString() const {
    i::Handle<i::Object> obj = Utils::OpenHandle(this);
 diff --git a/src/heap.h b/src/heap.h
@@ -59,6 +59,6 @@ index 8cbf378..db90bb9 100644
    V(this_symbol, "this")                                                 \
    V(to_string_symbol, "toString")                                        \
    V(char_at_symbol, "CharAt")                                            \
---
-1.7.6
+-- 
+1.7.4.4
 

@@ -1270,12 +1270,15 @@ bool QSslSocketBackendPrivate::startHandshake()
     // Start translating errors.
     QList<QSslError> errors;
 
-    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
-        QSslError error(QSslError::CertificateBlacklisted, configuration.peerCertificate);
-        errors << error;
-        emit q->peerVerifyError(error);
-        if (q->state() != QAbstractSocket::ConnectedState)
-            return false;
+    // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
+    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+        if (QSslCertificatePrivate::isBlacklisted(cert)) {
+            QSslError error(QSslError::CertificateBlacklisted, cert);
+            errors << error;
+            emit q->peerVerifyError(error);
+            if (q->state() != QAbstractSocket::ConnectedState)
+                return false;
+        }
     }
 
     bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer

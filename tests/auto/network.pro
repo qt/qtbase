@@ -6,4 +6,4 @@ TEMPLATE=subdirs
 SUBDIRS=\
     network \
     networkselftest \
-    qobjectperformance \
+    qobjectperformance 

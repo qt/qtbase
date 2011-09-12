@@ -1,0 +1,46 @@
+From 523f03f03b1ac16d272a13389f8a5654d9ff12e6 Mon Sep 17 00:00:00 2001
+From: Aaron Kennedy <aaron.kennedy@nokia.com>
+Date: Fri, 9 Sep 2011 14:16:12 +1000
+Subject: [PATCH 15/15] Allow a script to be flagged as "native"
+
+Native scripts do not appear in backtraces, or in the source and
+line number when exceptions are thrown from within them.  This is
+useful to be able to write code in JavaScript instead of C++ and
+still have it appear sensibly to the user.
+---
+ include/v8.h    |    5 +++--
+ src/compiler.cc |    2 +-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/include/v8.h b/include/v8.h
+index 5e1ce50..a2d61d1 100644
+--- a/include/v8.h
++++ b/include/v8.h
+@@ -578,8 +578,9 @@ class ScriptOrigin {
+ class V8EXPORT Script {
+  public:
+   enum CompileFlags {
+-      Default = 0x00,
+-      QmlMode = 0x01
++      Default    = 0x00,
++      QmlMode    = 0x01,
++      NativeMode = 0x02
+   };
+ 
+   /**
+diff --git a/src/compiler.cc b/src/compiler.cc
+index d2191b9..873018c 100755
+--- a/src/compiler.cc
++++ b/src/compiler.cc
+@@ -507,7 +507,7 @@ Handle<SharedFunctionInfo> Compiler::Compile(Handle<String> source,
+ 
+     // Create a script object describing the script to be compiled.
+     Handle<Script> script = FACTORY->NewScript(source);
+-    if (natives == NATIVES_CODE) {
++    if (natives == NATIVES_CODE || compile_flags & v8::Script::NativeMode) {
+       script->set_type(Smi::FromInt(Script::TYPE_NATIVE));
+     }
+     if (!script_name.is_null()) {
+-- 
+1.7.4.4
+
