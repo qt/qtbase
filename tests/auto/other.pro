@@ -3,6 +3,7 @@
 
 TEMPLATE=subdirs
 SUBDIRS=\
+           other \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
            qcombobox \

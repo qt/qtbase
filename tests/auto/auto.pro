@@ -7,7 +7,7 @@ SUBDIRS += \
     sql \
     xml \
     testlib \
-    other \
+    other.pro \
 
 !cross_compile:                             SUBDIRS += host.pro
 !cross_compile:                             SUBDIRS += tools
