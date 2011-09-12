@@ -1247,6 +1247,8 @@ public:
         ImPreferredLanguage = 0x200,
 
         ImPlatformData = 0x80000000,
+        ImQueryInput = ImCursorRectangle | ImCursorPosition | ImSurroundingText |
+                       ImCurrentSelection | ImAnchorPosition,
         ImQueryAll = 0xffffffff
     };
     Q_DECLARE_FLAGS(InputMethodQueries, InputMethodQuery)

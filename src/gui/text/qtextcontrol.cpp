@@ -1594,7 +1594,7 @@ void QTextControlPrivate::mouseMoveEvent(QEvent *e, Qt::MouseButton button, cons
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
         if (qGuiApp)
-            qGuiApp->inputPanel()->update(Qt::ImQueryAll);
+            qGuiApp->inputPanel()->update(Qt::ImQueryInput);
     } else {
         //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
         if (cursor.position() != oldCursorPos) {
