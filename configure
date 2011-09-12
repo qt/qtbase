@@ -3247,7 +3247,7 @@ if [ "$CFG_DEBUG" = "auto" ]; then
     fi
 fi
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG build_all"
+    QT_CONFIG="$QT_CONFIG build_all"
 fi
 
 if [ -z "$PKG_CONFIG" ]; then

@@ -2605,7 +2605,7 @@ void Configure::generateOutputVars()
 
     // Other options ------------------------------------------------
     if (dictionary[ "BUILDALL" ] == "yes") {
-        qmakeConfig += "build_all";
+        qtConfig += "build_all";
     }
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];

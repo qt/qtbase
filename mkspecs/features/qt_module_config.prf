@@ -59,6 +59,7 @@ linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
 contains(QT_CONFIG, largefile):CONFIG += largefile
+contains(QT_CONFIG, build_all):CONFIG += build_all
 contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
 contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
 
