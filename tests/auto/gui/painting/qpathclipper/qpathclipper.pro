@@ -8,4 +8,4 @@ requires(contains(QT_CONFIG,private_tests))
 
 unix:!mac:!symbian:LIBS+=-lm
 
-
+CONFIG += insignificant_test # QTBUG-21402

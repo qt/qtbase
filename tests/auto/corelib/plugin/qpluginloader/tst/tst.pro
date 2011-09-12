@@ -30,3 +30,5 @@ symbian: {
 
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 mac*:CONFIG+=insignificant_test
+
+CONFIG += insignificant_test # QTBUG-21402

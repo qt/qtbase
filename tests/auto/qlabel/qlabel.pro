@@ -12,3 +12,5 @@ wince*|symbian {
     addFiles.path = .
     DEPLOYMENT += addFiles
 }
+
+CONFIG += insignificant_test # QTBUG-21402

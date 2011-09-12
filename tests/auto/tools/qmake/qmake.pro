@@ -5,4 +5,4 @@ QT -= gui
 
 cross_compile: DEFINES += QMAKE_CROSS_COMPILED
 
-
+CONFIG += insignificant_test # QTBUG-21402

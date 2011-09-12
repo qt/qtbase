@@ -42,3 +42,4 @@ symbian {
 }
 
 mac*:CONFIG+=insignificant_test
+CONFIG += insignificant_test # QTBUG-21402

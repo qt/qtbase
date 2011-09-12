@@ -31,3 +31,5 @@ wince*: {
 }
 
 RESOURCES += qpixmap.qrc
+
+CONFIG += insignificant_test # QTBUG-21402

@@ -14,4 +14,4 @@ win32 {
 
 RESOURCES += ../selftests.qrc
 
-
+CONFIG += insignificant_test # QTBUG-21402

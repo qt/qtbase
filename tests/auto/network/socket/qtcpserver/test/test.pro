@@ -33,5 +33,4 @@ QT = core network
 
 MOC_DIR=tmp
 
-
-
+CONFIG += insignificant_test # QTBUG-21402
