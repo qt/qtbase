@@ -17,7 +17,10 @@ else:error("Couldn't detect supported architecture ($$QMAKE_HOST.arch/$$QT_ARCH)
 
 include($$PWD/v8base.pri)
 
-V8_GENERATED_SOURCES_DIR = generated
+# In debug-and-release builds, generated sources must not go to the same
+# directory, or they could clobber each other in highly parallelized builds
+CONFIG(debug, debug|release):V8_GENERATED_SOURCES_DIR = generated-debug
+else:                        V8_GENERATED_SOURCES_DIR = generated-release
 
 !contains(QT_CONFIG, static): DEFINES += V8_SHARED BUILDING_V8_SHARED
 
