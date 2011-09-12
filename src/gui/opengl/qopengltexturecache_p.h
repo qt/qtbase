@@ -39,49 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGL_P_H
-#define QOPENGL_P_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <qopengl.h>
+#ifndef QOPENGLTEXTURECACHE_P_H
+#define QOPENGLTEXTURECACHE_P_H
+
+#include <QHash>
+#include <QObject>
+#include <QtGui/QtGui>
 #include <private/qopenglcontext_p.h>
-
-#include <qthreadstorage.h>
-#include <qcache.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLExtensionMatcher
+class QOpenGLCachedTexture
 {
 public:
-    QOpenGLExtensionMatcher(const char *str);
-    QOpenGLExtensionMatcher();
+    QOpenGLCachedTexture(GLuint id, QOpenGLContext *context);
+    ~QOpenGLCachedTexture() { m_resource->free(); }
 
-    bool match(const char *str) const {
-        int str_length = qstrlen(str);
-
-        Q_ASSERT(str);
-        Q_ASSERT(str_length > 0);
-        Q_ASSERT(str[str_length-1] != ' ');
-
-        for (int i = 0; i < m_offsets.size(); ++i) {
-            const char *extension = m_extensions.constData() + m_offsets.at(i);
-            if (qstrncmp(extension, str, str_length) == 0 && extension[str_length] == ' ')
-                return true;
-        }
-        return false;
-    }
+    GLuint id() const { return m_resource->id(); }
 
 private:
-    void init(const char *str);
+    QOpenGLSharedResourceGuard *m_resource;
+};
 
-    QByteArray m_extensions;
-    QVector<int> m_offsets;
+class QOpenGLTextureCache : public QOpenGLSharedResource
+{
+public:
+    static QOpenGLTextureCache *cacheForContext(QOpenGLContext *context);
+
+    QOpenGLTextureCache(QOpenGLContext *);
+    ~QOpenGLTextureCache();
+
+    GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap);
+    GLuint bindTexture(QOpenGLContext *context, const QImage &image);
+
+    void invalidate(qint64 key);
+
+    void invalidateResource();
+    void freeResource(QOpenGLContext *ctx);
+
+private:
+    GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image);
+
+    QMutex m_mutex;
+    QCache<quint64, QOpenGLCachedTexture> m_cache;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif
 
-#endif // QOPENGL_H

@@ -154,6 +154,8 @@ public:
 
     QOpenGLSharedResource *value(QOpenGLContext *context);
 
+    QList<QOpenGLSharedResource *> resources() const;
+
     template <typename T>
     T *value(QOpenGLContext *context) {
         QOpenGLContextGroup *group = context->shareGroup();

@@ -566,6 +566,17 @@ QOpenGLSharedResource *QOpenGLMultiGroupSharedResource::value(QOpenGLContext *co
     return group->d_func()->m_resources.value(this, 0);
 }
 
+QList<QOpenGLSharedResource *> QOpenGLMultiGroupSharedResource::resources() const
+{
+    QList<QOpenGLSharedResource *> result;
+    for (QList<QOpenGLContextGroup *>::const_iterator it = m_groups.constBegin(); it != m_groups.constEnd(); ++it) {
+        QOpenGLSharedResource *resource = (*it)->d_func()->m_resources.value(const_cast<QOpenGLMultiGroupSharedResource *>(this), 0);
+        if (resource)
+            result << resource;
+    }
+    return result;
+}
+
 void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContext *ctx)
 {
     QOpenGLSharedResource *resource = value(ctx);

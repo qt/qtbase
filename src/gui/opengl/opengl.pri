@@ -14,6 +14,7 @@ HEADERS += opengl/qopengl.h \
            opengl/qopenglshaderprogram.h \
            opengl/qopenglextensions_p.h \
            opengl/qopenglgradientcache_p.h \
+           opengl/qopengltexturecache_p.h \
            opengl/qopenglengineshadermanager_p.h \
            opengl/qopengl2pexvertexarray_p.h \
            opengl/qopenglpaintengine_p.h \
@@ -34,6 +35,7 @@ SOURCES += opengl/qopengl.cpp \
            opengl/qopenglbuffer.cpp \
            opengl/qopenglshaderprogram.cpp \
            opengl/qopenglgradientcache.cpp \
+           opengl/qopengltexturecache.cpp \
            opengl/qopenglengineshadermanager.cpp \
            opengl/qopengl2pexvertexarray.cpp \
            opengl/qopenglpaintengine.cpp \

@@ -418,14 +418,20 @@ void tst_QOpenGL::openGLPaintDevice()
 
     QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
 
-    QSKIP("Image / pixmap painting needs to be implemented", SkipSingle);
     p.begin(&device);
+    p.fillRect(0, 0, image.width(), image.height(), Qt::black);
     p.drawImage(0, 0, image);
     p.end();
 
     QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
-}
 
+    p.begin(&device);
+    p.fillRect(0, 0, image.width(), image.height(), Qt::black);
+    p.fillRect(0, 0, image.width(), image.height(), QBrush(image));
+    p.end();
+
+    QCOMPARE(image, fbo.toImage().convertToFormat(QImage::Format_RGB32));
+}
 
 QTEST_MAIN(tst_QOpenGL)
 #include "tst_qopengl.moc"

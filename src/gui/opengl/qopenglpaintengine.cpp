@@ -65,6 +65,7 @@
 // #define QT_OPENGL_CACHE_AS_VBOS
 
 #include "qopenglgradientcache_p.h"
+#include "qopengltexturecache_p.h"
 #include "qopenglpaintengine_p.h"
 
 #include <string.h> //for memcpy
@@ -197,7 +198,7 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         QImage texImage = qt_imageForBrush(style, false);
 
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        //ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QOpenGLContext::InternalBindOption);
+        QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, texImage);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
@@ -227,11 +228,9 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QOpenGLTexture *tex = 0;//ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
-                                //                     QOpenGLContext::InternalBindOption |
-                                //                     QOpenGLContext::CanFlipNativePixmapBindOption);
+        QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, currentBrushPixmap);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-        textureInvertedY = tex->invertedY();
+        textureInvertedY = false;
     }
     brushTextureDirty = false;
 }
@@ -1360,18 +1359,15 @@ void QOpenGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixma
     d->transferMode(ImageDrawingMode);
 
     d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    QOpenGLTexture *texture = 0;
-//        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
+    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
 
-    GLfloat top = texture->invertedY() ? (pixmap.height() - src.top()) : src.top();
-    GLfloat bottom = texture->invertedY() ? (pixmap.height() - src.bottom()) : src.bottom();
-    QOpenGLRect srcRect(src.left(), top, src.right(), bottom);
+    QOpenGLRect srcRect(src.left(), src.top(), src.right(), src.bottom());
 
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && !pixmap.hasAlpha();
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
-                           state()->renderHints & QPainter::SmoothPixmapTransform, texture->id());
+                           state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
 }
 
@@ -1397,8 +1393,7 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
 
     d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
-    QOpenGLTexture *texture = 0;//ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, bindOptions);
-    GLuint id = texture->id();
+    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, image);
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
@@ -1907,24 +1902,14 @@ void QOpenGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFra
     }
 
     funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    QOpenGLTexture *texture = 0;//ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
-                                //                     QOpenGLContext::InternalBindOption
-                                //                     | QOpenGLContext::CanFlipNativePixmapBindOption);
-
-    if (texture->invertedY()) {
-        // Flip texture y-coordinate.
-        QOpenGLPoint *data = textureCoordinateArray.data();
-        for (int i = 0; i < 6 * fragmentCount; ++i)
-            data[i].y = 1 - data[i].y;
-    }
-
+    GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
     transferMode(ImageArrayDrawingMode);
 
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && (!pixmap.hasAlpha() || (hints & QPainter::OpaqueHint)) && allOpaque;
 
     updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
-                           q->state()->renderHints & QPainter::SmoothPixmapTransform, texture->id());
+                           q->state()->renderHints & QPainter::SmoothPixmapTransform, id);
 
     // Setup for texture drawing
     currentBrush = noBrush;
