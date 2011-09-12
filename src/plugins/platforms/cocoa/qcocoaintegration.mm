@@ -83,6 +83,8 @@ QCocoaIntegration::QCocoaIntegration()
 {
     mPool = new QCocoaAutoReleasePool;
 
+    qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
+
     QNSApplication *cocoaApplication = [QNSApplication sharedApplication];
 
     // Applications launched from plain executables (without an app
@@ -166,14 +168,12 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
 
 QPlatformMenu *QCocoaIntegration::createPlatformMenu(QMenu *menu) const
 {
-    // return new QCocoaMenu(menu);
-    return 0;
+    return new QCocoaMenu(menu);
 }
 
 QPlatformMenuBar *QCocoaIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
 {
-    //return new QCocoaMenuBar(menuBar);
-    return 0;
+    return new QCocoaMenuBar(menuBar);
 }
 
 QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const

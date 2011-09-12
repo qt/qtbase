@@ -466,6 +466,9 @@ QCocoaMenu::~QCocoaMenu()
 
 void QCocoaMenu::addAction(QAction *a, QAction *before)
 {
+    if (menu == 0)
+        return;
+
     QCocoaMenuAction *action = new QCocoaMenuAction;
     action->action = a;
     action->ignore_accel = 0;
