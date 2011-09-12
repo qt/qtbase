@@ -162,7 +162,6 @@ namespace QTest
     {
         QTEST_ASSERT(qApp);
         QTEST_ASSERT(window);
-        QTEST_ASSERT(window->windowState() == Qt::WindowActive);
 
         if (action == Click) {
             sendKeyEvent(Press, window, code, text, modifier, delay);

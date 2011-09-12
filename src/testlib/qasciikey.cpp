@@ -59,6 +59,8 @@ Qt::Key QTest::asciiToKey(char ascii)
     case 0x0b: return Qt::Key_Backtab;
     case 0x0d: return Qt::Key_Return;
     case 0x1b: return Qt::Key_Escape;
+    case 0x13: return Qt::Key_Up;
+    case 0x15: return Qt::Key_Down;
     case 0x20: return Qt::Key_Space;
     case 0x21: return Qt::Key_Exclam;
     case 0x22: return Qt::Key_QuoteDbl;
