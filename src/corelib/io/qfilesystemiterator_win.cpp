@@ -94,10 +94,12 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         haveData = true;
         int infoLevel = 0 ;         // FindExInfoStandard;
         DWORD dwAdditionalFlags  = 0;
+#ifndef Q_OS_WINCE
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
             dwAdditionalFlags = 2;  // FIND_FIRST_EX_LARGE_FETCH
             infoLevel = 1 ;         // FindExInfoBasic;
         }
+#endif
         int searchOps =  0;         // FindExSearchNameMatch
         if (onlyDirs)
             searchOps = 1 ;         // FindExSearchLimitToDirectories
