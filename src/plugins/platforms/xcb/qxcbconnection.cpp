@@ -419,6 +419,7 @@ const char *xcb_protocol_request_codes[] =
 #ifdef Q_XCB_DEBUG
 void QXcbConnection::log(const char *file, int line, int sequence)
 {
+    QMutexLocker locker(&m_callLogMutex);
     CallInfo info;
     info.sequence = sequence;
     info.file = file;
@@ -438,6 +439,7 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
            int(error->minor_code));
 #ifdef Q_XCB_DEBUG
+    QMutexLocker locker(&m_callLogMutex);
     int i = 0;
     for (; i < m_callLog.size(); ++i) {
         if (m_callLog.at(i).sequence == error->sequence) {
@@ -459,6 +461,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
 #ifdef Q_XCB_DEBUG
     {
+        QMutexLocker locker(&m_callLogMutex);
         int i = 0;
         for (; i < m_callLog.size(); ++i)
             if (m_callLog.at(i).sequence >= event->sequence)

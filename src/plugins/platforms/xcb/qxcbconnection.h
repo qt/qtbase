@@ -375,6 +375,7 @@ private:
         int line;
     };
     QVector<CallInfo> m_callLog;
+    QMutex m_callLogMutex;
     void log(const char *file, int line, int sequence);
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
