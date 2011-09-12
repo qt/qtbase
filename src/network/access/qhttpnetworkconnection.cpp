@@ -49,6 +49,7 @@
 #include "private/qhostinfo_p.h"
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
+#include <qcoreapplication.h>
 
 #include <qbuffer.h>
 #include <qpair.h>
@@ -720,32 +721,31 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
     QString errorString;
     switch (errorCode) {
     case QNetworkReply::HostNotFoundError:
-        errorString = QString::fromLatin1(QT_TRANSLATE_NOOP("QHttp", "Host %1 not found"))
-                              .arg(socket->peerName());
+        errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(socket->peerName());
         break;
     case QNetworkReply::ConnectionRefusedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Connection refused"));
+        errorString = QCoreApplication::translate("QHttp", "Connection refused");
         break;
     case QNetworkReply::RemoteHostClosedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Connection closed"));
+        errorString = QCoreApplication::translate("QHttp", "Connection closed");
         break;
     case QNetworkReply::TimeoutError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QAbstractSocket", "Socket operation timed out"));
+        errorString = QCoreApplication::translate("QAbstractSocket", "Socket operation timed out");
         break;
     case QNetworkReply::ProxyAuthenticationRequiredError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Proxy requires authentication"));
+        errorString = QCoreApplication::translate("QHttp", "Proxy requires authentication");
         break;
     case QNetworkReply::AuthenticationRequiredError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Host requires authentication"));
+        errorString = QCoreApplication::translate("QHttp", "Host requires authentication");
         break;
     case QNetworkReply::ProtocolFailure:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Data corrupted"));
+        errorString = QCoreApplication::translate("QHttp", "Data corrupted");
         break;
     case QNetworkReply::ProtocolUnknownError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Unknown protocol specified"));
+        errorString = QCoreApplication::translate("QHttp", "Unknown protocol specified");
         break;
     case QNetworkReply::SslHandshakeFailedError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "SSL handshake failed"));
+        errorString = QCoreApplication::translate("QHttp", "SSL handshake failed");
         break;
     default:
         // all other errors are treated as QNetworkReply::UnknownNetworkError
