@@ -347,8 +347,8 @@ void tst_QMenuBar::accel()
 
     // shortcuts won't work unless the window is active
     QTRY_VERIFY( QApplication::activeWindow() );
-//    QTest::keyClick( 0, Qt::Key_A, AltKey );
-    QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
+//    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_A, AltKey );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_A, Qt::ControlModifier );
     QTest::qWait(300);
 
     QCOMPARE( last_accel_id, action );
@@ -362,7 +362,7 @@ void tst_QMenuBar::activatedCount()
     // create a popup menu with menu items set the accelerators later...
     initSimpleMenubar();
 
-    QTest::keyClick( 0, Qt::Key_A, Qt::ControlModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_A, Qt::ControlModifier );
 //wait(5000);
     QCOMPARE( activated_count, 2 ); //1 from the popupmenu and 1 from the menubar
 }
@@ -576,7 +576,7 @@ void tst_QMenuBar::check_accelKeys()
     initComplexMenubar();
 
     // start with a bogus key that shouldn't trigger anything
-    QTest::keyClick(0, Qt::Key_I, Qt::ControlModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_I, Qt::ControlModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 0u);
@@ -586,7 +586,7 @@ void tst_QMenuBar::check_accelKeys()
     QCOMPARE(item2_C->selCount(), 0u);
     QCOMPARE(item2_D->selCount(), 0u);
 
-    QTest::keyClick(0, Qt::Key_A, Qt::ControlModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_A, Qt::ControlModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 0u);
@@ -596,7 +596,7 @@ void tst_QMenuBar::check_accelKeys()
     QCOMPARE(item2_C->selCount(), 0u);
     QCOMPARE(item2_D->selCount(), 0u);
 
-    QTest::keyClick(0, Qt::Key_C, Qt::ControlModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_C, Qt::ControlModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 0u);
@@ -606,7 +606,7 @@ void tst_QMenuBar::check_accelKeys()
     QCOMPARE(item2_C->selCount(), 1u);
     QCOMPARE(item2_D->selCount(), 0u);
 
-    QTest::keyClick(0, Qt::Key_B, Qt::ControlModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_B, Qt::ControlModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 0u);
@@ -616,7 +616,7 @@ void tst_QMenuBar::check_accelKeys()
     QCOMPARE(item2_C->selCount(), 1u);
     QCOMPARE(item2_D->selCount(), 0u);
 
-    QTest::keyClick(0, Qt::Key_D, Qt::ControlModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_D, Qt::ControlModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 0u);
@@ -626,7 +626,7 @@ void tst_QMenuBar::check_accelKeys()
     QCOMPARE(item2_C->selCount(), 1u);
     QCOMPARE(item2_D->selCount(), 1u);
 
-    QTest::keyClick(0, Qt::Key_J, Qt::AltModifier);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_J, Qt::AltModifier);
     QCOMPARE(menu1->selCount(), 0u);
     QCOMPARE(menu2->selCount(), 0u);
     QCOMPARE(menu3->selCount(), 1u);
@@ -646,7 +646,7 @@ void tst_QMenuBar::check_cursorKeys1()
     initComplexMenubar();
 
     // start with a ALT + 1 that activates the first popupmenu
-    QTest::keyClick( 0, Qt::Key_1, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_1, Qt::AltModifier );
     // the Popupmenu should be visible now
     QCOMPARE(menu3->selCount(), 0u);
     QCOMPARE(menu4->selCount(), 0u);
@@ -656,9 +656,9 @@ void tst_QMenuBar::check_cursorKeys1()
     QCOMPARE(item2_D->selCount(), 0u);
 
     // Simulate a cursor key down click
-    QTest::keyClick( 0, Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
     // and an Enter key
-    QTest::keyClick( 0, Qt::Key_Enter );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
     QCOMPARE(menu3->selCount(), 0u);
     QCOMPARE(menu4->selCount(), 0u);
@@ -677,15 +677,15 @@ void tst_QMenuBar::check_cursorKeys2()
     initComplexMenubar();
 
     // select popupmenu2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_2, Qt::AltModifier );
 
     // Simulate some cursor keys
-    QTest::keyClick( 0, Qt::Key_Left );
-    QTest::keyClick( 0, Qt::Key_Down );
-    QTest::keyClick( 0, Qt::Key_Right );
-    QTest::keyClick( 0, Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Left );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Right );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
     // and an Enter key
-    QTest::keyClick( 0, Qt::Key_Enter );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
     QCOMPARE(menu3->selCount(), 0u);
     QCOMPARE(menu4->selCount(), 0u);
@@ -707,13 +707,13 @@ void tst_QMenuBar::check_cursorKeys3()
     initComplexMenubar();
 
     // select Popupmenu 2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_2, Qt::AltModifier );
 
     // Simulate some keys
-    QTest::keyClick( 0, Qt::Key_Left );
-    QTest::keyClick( 0, Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Left );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
     // and press ENTER
-    QTest::keyClick( 0, Qt::Key_Enter );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
     QCOMPARE(menu3->selCount(), 0u);
     QCOMPARE(menu4->selCount(), 0u);
@@ -738,15 +738,15 @@ void tst_QMenuBar::check_homeKey()
     initComplexMenubar();
 
     // select Popupmenu 2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_2, Qt::AltModifier );
 
     // Simulate some keys
-    QTest::keyClick( 0, Qt::Key_Down );
-    QTest::keyClick( 0, Qt::Key_Down );
-    QTest::keyClick( 0, Qt::Key_Down );
-    QTest::keyClick( 0, Qt::Key_Home );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Home );
     // and press ENTER
-    QTest::keyClick( 0, Qt::Key_Enter );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
 //    QVERIFY2( item2_C->selCount() == 1, "Popupmenu should respond to a Home key" );
     QCOMPARE(item2_C->selCount(), 1u);
@@ -776,12 +776,12 @@ void tst_QMenuBar::check_endKey()
     initComplexMenubar();
 
     // select Popupmenu 2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_2, Qt::AltModifier );
 
     // Simulate some keys
-    QTest::keyClick( 0, Qt::Key_End );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_End );
     // and press ENTER
-    QTest::keyClick( 0, Qt::Key_Enter );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
 //    QVERIFY2( item2_H->selCount() == 1, "Popupmenu should respond to an End key" );
     QCOMPARE(item2_H->selCount(), 1u);//, "Popupmenu should respond to an End key");
@@ -814,12 +814,12 @@ void tst_QMenuBar::check_escKey()
     QVERIFY( !pm2->isActiveWindow() );
 
     // select Popupmenu 2
-    QTest::keyClick( 0, Qt::Key_2, Qt::AltModifier );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_2, Qt::AltModifier );
     QVERIFY( !pm1->isActiveWindow() );
     QVERIFY( pm2->isActiveWindow() );
 
     // If we press ESC, the popup should disappear
-    QTest::keyClick( 0, Qt::Key_Escape );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Escape );
     QVERIFY( !pm1->isActiveWindow() );
     QVERIFY( !pm2->isActiveWindow() );
 
@@ -827,7 +827,7 @@ void tst_QMenuBar::check_escKey()
         return;
 
     // If we press Down the popupmenu should be active again
-    QTest::keyClick( 0, Qt::Key_Down );
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down );
     QVERIFY( !pm1->isActiveWindow() );
     QVERIFY( pm2->isActiveWindow() );
 
@@ -1255,13 +1255,13 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     menubar.setActiveAction(first);
     QTRY_VERIFY(menu.isVisible());
     QCOMPARE(menubar.activeAction(), first);
-    QTest::keyClick(0, Qt::Key_Escape);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Escape);
     QVERIFY(!menu.isVisible());
     QTRY_VERIFY(menubar.hasFocus());
     QCOMPARE(menubar.activeAction(), first);
-    QTest::keyClick(0, Qt::Key_Escape);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Escape);
     QVERIFY(!menubar.activeAction());
-    QTest::keyClick(0, Qt::Key_Escape); //now the action should be triggered
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Escape); //now the action should be triggered
     QTRY_VERIFY(!menubar.isVisible());
 }
 
@@ -1278,9 +1278,9 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QApplication::setActiveWindow(&menubar);
     menubar.setActiveAction(m);
     QCOMPARE(menubar.activeAction(), m);
-    QTest::keyClick(0, Qt::Key_Right);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), a);
-    QTest::keyClick(0, Qt::Key_Right);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), m);
     a->setVisible(false);
 
@@ -1288,7 +1288,7 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
 
     //it used to crash here because the action is invisible
-    QTest::keyClick(0, Qt::Key_Right);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
 }
 
