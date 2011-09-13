@@ -42,7 +42,7 @@
 #include "padnavigator.h"
 #include "splashitem.h"
 
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL/QtOpenGL>
 #endif

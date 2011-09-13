@@ -49,8 +49,8 @@
 class QWaylandNativeInterface : public QPlatformNativeInterface
 {
 public:
-    void *nativeResourceForWidget(const QByteArray &resourceString,
-				  QWidget *widget);
+    void *nativeResourceForWindow(const QByteArray &resourceString,
+				  QWindow *window);
 
     QVariantMap windowProperties(QPlatformWindow *window) const;
     QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
@@ -58,7 +58,7 @@ public:
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
 
 private:
-    static QWaylandScreen *qPlatformScreenForWidget(QWidget *widget);
+    static QWaylandScreen *qPlatformScreenForWindow(QWindow *window);
 
 private:
     QHash<QPlatformWindow*, QVariantMap> m_windowProperties;

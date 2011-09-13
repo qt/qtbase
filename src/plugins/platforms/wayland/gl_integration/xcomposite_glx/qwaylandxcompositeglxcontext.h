@@ -42,44 +42,33 @@
 #ifndef QWAYLANDXCOMPOSITEGLXCONTEXT_H
 #define QWAYLANDXCOMPOSITEGLXCONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
-#include <QtCore/QWaitCondition>
-
-#include "qwaylandbuffer.h"
 #include "qwaylandxcompositeglxintegration.h"
-
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 
 class QWaylandXCompositeGLXWindow;
 class QWaylandShmBuffer;
 
-class QWaylandXCompositeGLXContext : public QPlatformGLContext
+class QWaylandXCompositeGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QWaylandXCompositeGLXContext(QWaylandXCompositeGLXIntegration *glxIntegration, QWaylandXCompositeGLXWindow *window);
+    QWaylandXCompositeGLXContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, Display *display, int screen);
 
-    void makeCurrent();
+    QSurfaceFormat format() const;
+
+    void swapBuffers(QPlatformSurface *surface);
+
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
 
-    QPlatformWindowFormat platformWindowFormat() const;
-
-    void geometryChanged();
+    void (*getProcAddress(const QByteArray &procName)) ();
 
 private:
-    QWaylandXCompositeGLXIntegration *mGlxIntegration;
-    QWaylandXCompositeGLXWindow *mWindow;
-    QWaylandBuffer *mBuffer;
+    GLXContext m_context;
 
-    Window mXWindow;
-    GLXFBConfig mConfig;
-    GLXContext mContext;
-
-    static void sync_function(void *data);
-    void waitForSync();
-    bool mWaitingForSyncCallback;
+    Display *m_display;
+    QSurfaceFormat m_format;
 };
 
 #endif // QWAYLANDXCOMPOSITEGLXCONTEXT_H

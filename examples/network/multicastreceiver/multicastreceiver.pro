@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = receiver.h
 SOURCES       = receiver.cpp \
                 main.cpp

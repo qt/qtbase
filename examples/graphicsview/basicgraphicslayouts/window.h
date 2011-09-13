@@ -41,7 +41,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QtGui/QGraphicsWidget>
+#include <QtWidgets/QGraphicsWidget>
 
 //! [0]
 class Window : public QGraphicsWidget {

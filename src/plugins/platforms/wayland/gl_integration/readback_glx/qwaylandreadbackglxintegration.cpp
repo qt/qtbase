@@ -66,9 +66,14 @@ void QWaylandReadbackGlxIntegration::initialize()
 {
 }
 
-QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWidget *widget)
+QWaylandWindow * QWaylandReadbackGlxIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandReadbackGlxWindow(widget,this);
+    return new QWaylandReadbackGlxWindow(window,this);
+}
+
+QPlatformOpenGLContext *QWaylandReadbackGlxIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
+{
+    return new QWaylandReadbackGlxContext(glFormat, share, mDisplay, mScreen);
 }
 
 QWaylandGLIntegration * QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)

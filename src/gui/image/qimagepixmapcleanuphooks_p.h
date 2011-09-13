@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 typedef void (*_qt_image_cleanup_hook_64)(qint64);
-typedef void (*_qt_pixmap_cleanup_hook_pmd)(QPixmapData*);
+typedef void (*_qt_pixmap_cleanup_hook_pmd)(QPlatformPixmap*);
 
 
 class QImagePixmapCleanupHooks;
@@ -70,26 +70,26 @@ public:
 
     static void enableCleanupHooks(const QImage &image);
     static void enableCleanupHooks(const QPixmap &pixmap);
-    static void enableCleanupHooks(QPixmapData *pixmapData);
+    static void enableCleanupHooks(QPlatformPixmap *handle);
 
     static bool isImageCached(const QImage &image);
     static bool isPixmapCached(const QPixmap &pixmap);
 
     // Gets called when a pixmap data is about to be modified:
-    void addPixmapDataModificationHook(_qt_pixmap_cleanup_hook_pmd);
+    void addPlatformPixmapModificationHook(_qt_pixmap_cleanup_hook_pmd);
 
     // Gets called when a pixmap data is about to be destroyed:
-    void addPixmapDataDestructionHook(_qt_pixmap_cleanup_hook_pmd);
+    void addPlatformPixmapDestructionHook(_qt_pixmap_cleanup_hook_pmd);
 
     // Gets called when an image is about to be modified or destroyed:
     void addImageHook(_qt_image_cleanup_hook_64);
 
-    void removePixmapDataModificationHook(_qt_pixmap_cleanup_hook_pmd);
-    void removePixmapDataDestructionHook(_qt_pixmap_cleanup_hook_pmd);
+    void removePlatformPixmapModificationHook(_qt_pixmap_cleanup_hook_pmd);
+    void removePlatformPixmapDestructionHook(_qt_pixmap_cleanup_hook_pmd);
     void removeImageHook(_qt_image_cleanup_hook_64);
 
-    static void executePixmapDataModificationHooks(QPixmapData*);
-    static void executePixmapDataDestructionHooks(QPixmapData*);
+    static void executePlatformPixmapModificationHooks(QPlatformPixmap*);
+    static void executePlatformPixmapDestructionHooks(QPlatformPixmap*);
     static void executeImageHooks(qint64 key);
 
 private:

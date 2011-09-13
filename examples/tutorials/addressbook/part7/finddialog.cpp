@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "finddialog.h"
 
 FindDialog::FindDialog(QWidget *parent)

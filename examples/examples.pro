@@ -1,3 +1,5 @@
+Qt += widgets
+
 TEMPLATE      = subdirs
 SUBDIRS       = \
                 network \
@@ -44,16 +46,13 @@ symbian: SUBDIRS = \
                 gestures \
                 xml
 
-!contains(QT_CONFIG, no-gui):contains(QT_CONFIG, multimedia) {
-    SUBDIRS += multimedia
-}
+qpa:SUBDIRS += qpa
 
 wince*|symbian|embedded|x11:!contains(QT_CONFIG, no-gui): SUBDIRS += embedded
 
 embedded:SUBDIRS += qws
 contains(QT_BUILD_PARTS, tools):!contains(QT_CONFIG, no-gui):SUBDIRS += qtestlib
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
-contains(QT_CONFIG, openvg): SUBDIRS += openvg
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 contains(QT_CONFIG, concurrent): SUBDIRS += qtconcurrent
@@ -64,4 +63,5 @@ sources.path = $$[QT_INSTALL_EXAMPLES]
 INSTALLS += sources
 
 symbian: CONFIG += qt_example
+QT += widgets
 maemo5: CONFIG += qt_example

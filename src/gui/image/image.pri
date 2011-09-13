@@ -5,11 +5,6 @@
 
 HEADERS += \
         image/qbitmap.h \
-        image/qicon.h \
-        image/qicon_p.h \
-        image/qiconloader_p.h \
-        image/qiconengine.h \
-        image/qiconengineplugin.h \
         image/qimage.h \
         image/qimage_p.h \
         image/qimageiohandler.h \
@@ -26,18 +21,13 @@ HEADERS += \
         image/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
-        image/qpixmapdata_p.h \
-        image/qpixmapdatafactory_p.h \
-        image/qpixmapfilter_p.h \
+        image/qplatformpixmap_qpa.h \
         image/qimagepixmapcleanuphooks_p.h \
         image/qvolatileimage_p.h \
-        image/qvolatileimagedata_p.h \
-        image/qnativeimagehandleprovider_p.h
+        image/qvolatileimagedata_p.h
 
 SOURCES += \
         image/qbitmap.cpp \
-        image/qicon.cpp \
-        image/qiconloader.cpp \
         image/qimage.cpp \
         image/qimageiohandler.cpp \
         image/qimagereader.cpp \
@@ -47,11 +37,7 @@ SOURCES += \
         image/qpictureformatplugin.cpp \
         image/qpixmap.cpp \
         image/qpixmapcache.cpp \
-        image/qpixmapdata.cpp \
-        image/qpixmapdatafactory.cpp \
-        image/qpixmapfilter.cpp \
-        image/qiconengine.cpp \
-        image/qiconengineplugin.cpp \
+        image/qplatformpixmap.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
@@ -59,14 +45,11 @@ SOURCES += \
         image/qimagepixmapcleanuphooks.cpp \
         image/qvolatileimage.cpp
 
-win32 {
-    SOURCES += image/qpixmap_win.cpp
-}
-else:embedded {
-    SOURCES += image/qpixmap_qws.cpp
-}
-else:qpa {
+qpa: {
     SOURCES += image/qpixmap_qpa.cpp
+}
+else:win32 {
+    SOURCES += image/qpixmap_win.cpp
 }
 else:x11 {
     HEADERS += image/qpixmap_x11_p.h

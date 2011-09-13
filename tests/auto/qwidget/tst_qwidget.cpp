@@ -65,12 +65,13 @@
 #include <qdockwidget.h>
 #include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
-#include <private/qbackingstore_p.h>
+#include <QtGui/qbackingstore.h>
+#include <QtGui/qguiapplication.h>
 #include <qmenubar.h>
 #include <qtableview.h>
 
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsProxyWidget>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QGraphicsProxyWidget>
 
 #include "../../shared/util.h"
 
@@ -101,6 +102,23 @@
 #endif
 
 #include <QtTest/QtTest>
+
+#if defined(Q_OS_WIN)
+#  include <QtCore/qt_windows.h>
+#  include <QtGui/private/qguiapplication_p.h>
+#  include <QtGui/QPlatformNativeInterface>
+#  include <QtGui/QPlatformIntegration>
+
+static HWND winHandleOf(const QWidget *w)
+{
+    static QPlatformNativeInterface *nativeInterface
+            = QGuiApplicationPrivate::instance()->platformIntegration()->nativeInterface();
+    if (void *handle = nativeInterface->nativeResourceForWindow("handle", w->window()->windowHandle()))
+        return reinterpret_cast<HWND>(handle);
+    qWarning() << "Cannot obtain native handle for " << w;
+    return 0;
+}
+#endif
 
 #if defined(Q_WS_WIN)
 #  include <qt_windows.h>
@@ -211,10 +229,6 @@ private slots:
     void restoreVersion1Geometry_data();
     void restoreVersion1Geometry();
 
-    void windowTitle();
-    void windowModified();
-    void windowIconText();
-
     void widgetAt();
 #ifdef Q_WS_MAC
     void retainHIView();
@@ -322,7 +336,6 @@ private slots:
     void updateGeometry();
     void updateGeometry_data();
     void sendUpdateRequestImmediately();
-    void painterRedirection();
     void doubleRepaint();
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
@@ -1245,7 +1258,7 @@ void tst_QWidget::visible_setWindowOpacity()
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
 #ifdef Q_OS_WIN
-    QVERIFY(::IsWindowVisible(testWidget->winId()) ==  FALSE);
+    QVERIFY(::IsWindowVisible(winHandleOf(testWidget)) ==  FALSE);
 #endif
     testWidget->setWindowOpacity(1.0);
 }
@@ -3234,28 +3247,22 @@ void tst_QWidget::widgetAt()
 
     w2->lower();
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    const bool match = (wr->objectName() == QString("w1"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w1"));
     w2->raise();
-    QVERIFY(match);
 
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w2"));
-
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w2"));
 
     QWidget *w3 = new QWidget(w2);
     w3->setGeometry(10,10,50,50);
     w3->setObjectName("w3");
     w3->show();
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100,100)));
-    QCOMPARE(wr->objectName(), QString("w3"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100,100)) && wr->objectName() == QString("w3"));
 
     w3->setAttribute(Qt::WA_TransparentForMouseEvents);
     qApp->processEvents();
-    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w2"));
+    QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)) && wr->objectName() == QString("w2"));
 
     QRegion rgn = QRect(QPoint(0,0), w2->size());
     QPoint point = w2->mapFromGlobal(QPoint(100,100));
@@ -3380,249 +3387,6 @@ static CAknContextPane* ContextPane()
     return static_cast<CAknContextPane*>(GetStatusPaneControl(EEikStatusPaneUidContext));
 }
 #endif
-
-static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::WindowNoState)
-{
-    QString vTitle;
-
-#ifdef Q_WS_WIN
-    Q_UNUSED(state);
-    const size_t maxTitleLength = 256;
-    wchar_t title[maxTitleLength];
-    GetWindowText(window->winId(), title, maxTitleLength);
-    vTitle = QString::fromWCharArray(title);
-#elif defined(Q_WS_X11)
-    /*
-      We can't check what the window manager displays, but we can
-      check what we tell the window manager to display.  This will
-      have to do.
-    */
-    Atom UTF8_STRING = XInternAtom(window->x11Info().display(), "UTF8_STRING", false);
-    Atom _NET_WM_NAME = XInternAtom(window->x11Info().display(), "_NET_WM_NAME", false);
-    Atom _NET_WM_ICON_NAME = XInternAtom(window->x11Info().display(), "_NET_WM_ICON_NAME", false);
-    uchar *data = 0;
-    ulong length = 0;
-    if (state == Qt::WindowMinimized) {
-        if (getProperty(window->x11Info().display(), window->winId(),
-                    UTF8_STRING, _NET_WM_ICON_NAME, &data, &length)) {
-            vTitle = QString::fromUtf8((char *) data, length);
-            XFree(data);
-        } else {
-            XTextProperty text_prop;
-            if (XGetWMIconName(window->x11Info().display(), window->winId(), &text_prop)) {
-                vTitle = textPropertyToString(window->x11Info().display(), text_prop);
-                XFree((char *) text_prop.value);
-            }
-        }
-    } else {
-        if (getProperty(window->x11Info().display(), window->winId(),
-                    UTF8_STRING, _NET_WM_NAME, &data, &length)) {
-            vTitle = QString::fromUtf8((char *) data, length);
-            XFree(data);
-        } else {
-            XTextProperty text_prop;
-            if (XGetWMName(window->x11Info().display(), window->winId(), &text_prop)) {
-                vTitle = textPropertyToString(window->x11Info().display(), text_prop);
-                XFree((char *) text_prop.value);
-            }
-        }
-    }
-#elif defined(Q_WS_MAC)
-    vTitle = nativeWindowTitle(window, state);
-#elif defined(Q_WS_QWS)
-    if (qwsServer) {
-    const QWSWindow *win = 0;
-    const QList<QWSWindow*> windows = qwsServer->clientWindows();
-    for (int i = 0; i < windows.count(); ++i) {
-        const QWSWindow* w = windows.at(i);
-        if (w->winId() == window->winId()) {
-            win = w;
-            break;
-        }
-    }
-    if (win)
-        vTitle = win->caption();
-    }
-#elif defined (Q_WS_S60)
-    CAknTitlePane* titlePane = TitlePane();
-    if(titlePane)
-        {
-        const TDesC* nTitle = titlePane->Text();
-        vTitle = QString::fromUtf16(nTitle->Ptr(), nTitle->Length());
-        }
-#endif
-
-    return vTitle;
-}
-
-void tst_QWidget::windowTitle()
-{
-    QWidget widget(0);
-    widget.setWindowTitle("Application Name");
-    widget.winId(); // Make sure the window is created...
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowTitle("Application Name *");
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name *"));
-
-    widget.setWindowTitle("Application Name[*]");
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowTitle("Application Name[*][*]");
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*]"));
-
-    widget.setWindowTitle("Application Name[*][*][*]");
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*]"));
-
-    widget.setWindowTitle("Application Name[*][*][*][*]");
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*][*]"));
-}
-
-void tst_QWidget::windowIconText()
-{
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Symbian/S60 windows don't have window icon text", SkipAll);
-#endif
-    QWidget widget(0);
-
-    widget.setWindowTitle("Application Name");
-    widget.setWindowIconText("Application Minimized");
-    widget.showNormal();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-    widget.showMinimized();
-#if defined(Q_WS_QWS) || defined(Q_OS_WINCE)
-    QEXPECT_FAIL(0, "Qt/Embedded/WinCE does not implement showMinimized()", Continue);
-    //See task 147193 for WinCE
-#endif
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget, Qt::WindowMinimized),
-            QString("Application Minimized"));
-
-    widget.setWindowTitle("Application Name[*]");
-    widget.setWindowIconText("Application Minimized[*]");
-    widget.showNormal();
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-    widget.showMinimized();
-#if defined (Q_WS_QWS) || defined(Q_OS_WINCE)
-    QEXPECT_FAIL(0, "Qt/Embedded/WinCE does not implement showMinimized()", Continue);
-    //See task 147193 for WinCE
-#endif
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget, Qt::WindowMinimized),
-            QString("Application Minimized"));
-
-    widget.setWindowModified(true);
-    widget.showNormal();
-    QApplication::instance()->processEvents();
-    if (widget.style()->styleHint(QStyle::SH_TitleBar_ModifyNotification, 0, &widget))
-        QCOMPARE(visibleWindowTitle(&widget), QString("Application Name*"));
-    else
-        QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-    widget.showMinimized();
-#if defined (Q_WS_QWS) || defined(Q_OS_WINCE)
-    QEXPECT_FAIL(0, "Qt/Embedded/WinCE does not implement showMinimized()", Continue);
-    //See task 147193 for WinCE
-#endif
-    QApplication::instance()->processEvents();
-#ifdef Q_WS_MAC
-    QCOMPARE(visibleWindowTitle(&widget, Qt::WindowMinimized),
-            QString("Application Minimized"));
-    QVERIFY(nativeWindowModified(&widget));
-#else
-    QCOMPARE(visibleWindowTitle(&widget, Qt::WindowMinimized),
-            QString("Application Minimized*"));
-#endif
-}
-
-void tst_QWidget::windowModified()
-{
-    QWidget widget(0);
-    widget.show();
-    QTest::qWaitForWindowShown(&widget);
-#ifndef Q_WS_MAC
-    QTest::ignoreMessage(QtWarningMsg, "QWidget::setWindowModified: The window title does not contain a '[*]' placeholder");
-#endif
-    widget.setWindowTitle("Application Name");
-    QTest::qWait(10);
-    QTRY_COMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-#ifdef Q_WS_MAC
-    widget.setWindowModified(true);
-    QVERIFY(nativeWindowModified(&widget));
-#else
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowTitle("Application Name[*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    if (widget.style()->styleHint(QStyle::SH_TitleBar_ModifyNotification, 0, &widget))
-        QCOMPARE(visibleWindowTitle(&widget), QString("Application Name*"));
-    else
-        QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowTitle("Application[*] Name[*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application* Name*"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name"));
-
-    widget.setWindowTitle("Application Name[*][*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*]"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*]"));
-
-    widget.setWindowTitle("Application[*][*] Name[*][*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application[*] Name[*]"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application[*] Name[*]"));
-
-    widget.setWindowTitle("Application[*] Name[*][*][*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application* Name[*]*"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application Name[*]"));
-
-    widget.setWindowTitle("Application[*][*][*] Name[*][*][*]");
-
-    widget.setWindowModified(true);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application[*]* Name[*]*"));
-
-    widget.setWindowModified(false);
-    QApplication::instance()->processEvents();
-    QCOMPARE(visibleWindowTitle(&widget), QString("Application[*] Name[*]"));
-#endif
-}
 
 void tst_QWidget::task110173()
 {
@@ -5424,6 +5188,7 @@ void tst_QWidget::showAndMoveChild()
 
     QDesktopWidget desktop;
     QRect desktopDimensions = desktop.availableGeometry(&parent);
+    desktopDimensions = desktopDimensions.adjusted(64, 64, -64, -64);
 
     parent.setGeometry(desktopDimensions);
     parent.setPalette(Qt::red);
@@ -8046,64 +7811,6 @@ void tst_QWidget::sendUpdateRequestImmediately()
     QCOMPARE(updateWidget.numUpdateRequestEvents, 1);
 }
 
-class RedirectedWidget : public QWidget
-{
-protected:
-    void paintEvent(QPaintEvent *)
-    {
-        // Verify that the widget has a redirection set. The widget is redirected to
-        // the backing store on all platforms using it; otherwise to itself if the wrect
-        // does not start in (0, 0) or it has a mask set.
-        QPaintDevice *oldRedirection = QPainter::redirected(this);
-#ifndef Q_WS_MAC
-        QVERIFY(oldRedirection);
-#endif
-
-        QImage image(size(), QImage::Format_RGB32);
-        image.fill(Qt::blue);
-
-        {
-        QPainter painter(this);
-        QCOMPARE(painter.device(), static_cast<QPaintDevice *>(this));
-        }
-
-        QPainter::setRedirected(this, &image);
-        QCOMPARE(QPainter::redirected(this), static_cast<QPaintDevice *>(&image));
-
-        QPainter painter(this);
-        painter.fillRect(rect(), Qt::red);
-
-        QPainter::restoreRedirected(this);
-        QCOMPARE(QPainter::redirected(this), oldRedirection);
-
-        for (int i = 0; i < image.height(); ++i)
-            for (int j = 0; j < image.width(); ++j)
-                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
-    }
-
-};
-
-// Test to make sure we're compatible in the particular case where QPainter::setRedirected
-// actually works. It has been broken for all other cases since Qt 4.1.4 (backing store).
-// QWidget::render is the modern and more powerful way of doing the same.
-void tst_QWidget::painterRedirection()
-{
-    RedirectedWidget widget;
-    // Set FramelessWindowHint and mask to trigger internal painter redirection on the Mac.
-    widget.setWindowFlags(widget.windowFlags() | Qt::FramelessWindowHint);
-    widget.setMask(QRect(10, 10, 50, 50));
-    widget.setFixedSize(100, 200);
-    widget.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&widget);
-#endif
-    QPixmap pixmap(widget.size());
-    QPainter::setRedirected(&widget, &pixmap, QPoint());
-    widget.repaint();
-    QCOMPARE(QPainter::redirected(&widget), static_cast<QPaintDevice *>(&pixmap));
-}
-
-
 void tst_QWidget::doubleRepaint()
 {
 #ifdef Q_OS_IRIX
@@ -9392,7 +9099,7 @@ void tst_QWidget::destroyBackingStore()
     QTRY_VERIFY(w.numPaintEvents > 0);
     w.reset();
     w.update();
-    qt_widget_private(&w)->topData()->backingStore.create(&w);
+    qt_widget_private(&w)->topData()->backingStoreTracker.create(&w);
 
     w.update();
     QApplication::processEvents();
@@ -9416,7 +9123,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
     QWidgetBackingStore *backingStore = 0;
 #ifdef QT_BUILD_INTERNAL
     if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
-        backingStore = topExtra->backingStore.data();
+        backingStore = topExtra->backingStoreTracker.data();
 #endif
     return backingStore;
 }
@@ -10251,12 +9958,12 @@ class scrollWidgetWBS : public QWidget
 public:
     void deleteBackingStore()
     {
-        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.destroy();
+        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.destroy();
     }
     void enableBackingStore()
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.create(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.create(this);
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
             repaint();
         }
@@ -10487,18 +10194,26 @@ void tst_QWidget::nativeChildFocus()
     QLineEdit *p2 = new QLineEdit;
     layout->addWidget(p1);
     layout->addWidget(p2);
+#if 1
     p1->setObjectName("p1");
     p2->setObjectName("p2");
+#endif
     w.show();
+#if 1
     w.activateWindow();
     p1->setFocus();
     p1->setAttribute(Qt::WA_NativeWindow);
     p2->setAttribute(Qt::WA_NativeWindow);
     QApplication::processEvents();
     QTest::qWaitForWindowShown(&w);
+    QTest::qWait(10);
 
+    qDebug() << "checking active window:" << QApplication::activeWindow();
     QCOMPARE(QApplication::activeWindow(), &w);
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget*>(p1));
+#endif
+
+    QTest::qWait(1000);
 }
 
 QTEST_MAIN(tst_QWidget)

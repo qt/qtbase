@@ -64,10 +64,20 @@
     }
 }
 
+- (void)windowDidMove:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (m_cocoaWindow) {
+        m_cocoaWindow->windowDidMove();
+    }
+}
+
 - (void)windowWillClose:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    QWindowSystemInterface::handleCloseEvent(m_cocoaWindow->widget());
+    if (m_cocoaWindow) {
+        m_cocoaWindow->windowWillClose();
+    }
 }
 
 @end

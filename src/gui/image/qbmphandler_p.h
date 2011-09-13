@@ -81,10 +81,20 @@ struct BMP_INFOHDR {                     // BMP information header
     qint32  biClrImportant;              // number of important colors
 };
 
+// BMP-Handler, which is also able to read and write the DIB
+// (Device-Independent-Bitmap) format used internally in the Windows operating
+// system for OLE/clipboard operations. DIB is a subset of BMP (without file
+// header). The Windows-Lighthouse plugin accesses the DIB-functionality.
+
 class QBmpHandler : public QImageIOHandler
 {
 public:
-    QBmpHandler();
+    enum InternalFormat {
+        DibFormat,
+        BmpFormat
+    };
+
+    explicit QBmpHandler(InternalFormat fmt = BmpFormat);
     bool canRead() const;
     bool read(QImage *image);
     bool write(const QImage &image);
@@ -99,11 +109,16 @@ public:
 
 private:
     bool readHeader();
+    inline QByteArray formatName() const;
+
     enum State {
         Ready,
         ReadHeader,
         Error
     };
+
+    const InternalFormat m_format;
+
     State state;
     BMP_FILEHDR fileHeader;
     BMP_INFOHDR infoHeader;

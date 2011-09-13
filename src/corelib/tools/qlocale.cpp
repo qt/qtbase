@@ -39,6 +39,11 @@
 **
 ****************************************************************************/
 
+#if !defined(QWS) && defined(Q_OS_MAC)
+#   include "private/qcore_mac_p.h"
+#   include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "qglobal.h"
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -61,13 +66,9 @@ QT_END_NAMESPACE
 #include "qstringlist.h"
 #include "qvariant.h"
 #include "qstringbuilder.h"
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #   include "qt_windows.h"
 #   include <time.h>
-#endif
-#if !defined(QWS) && defined(Q_OS_MAC)
-#   include "private/qcore_mac_p.h"
-#   include <CoreFoundation/CoreFoundation.h>
 #endif
 #include "private/qnumeric_p.h"
 #include "private/qsystemlibrary_p.h"

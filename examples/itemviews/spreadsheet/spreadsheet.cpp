@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+#include <QPrinter>
+#include <QPrintDialog>
+#include <QPrintPreviewDialog>
+
 #include "spreadsheet.h"
 #include "spreadsheetdelegate.h"
 #include "spreadsheetitem.h"

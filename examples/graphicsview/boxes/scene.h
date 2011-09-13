@@ -45,7 +45,7 @@
 //#include <GL/glew.h>
 #include "glextensions.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtOpenGL>
 
 #include "roundedbox.h"

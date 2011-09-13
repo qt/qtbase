@@ -42,15 +42,14 @@
 #ifndef QWAYLANDREADBACKEGLGLCONTEXT_H
 #define QWAYLANDREADBACKEGLGLCONTEXT_H
 
-#include <QPlatformGLContext>
-#include <QtGui/QWidget>
+#include <QPlatformOpenGLContext>
 
 #include "qwaylandreadbackeglintegration.h"
 #include "qwaylandreadbackeglwindow.h"
 
 class QWaylandShmBuffer;
 
-class QWaylandReadbackEglContext : public QPlatformGLContext
+class QWaylandReadbackEglContext : public QPlatformOpenGLContext
 {
 public:
     QWaylandReadbackEglContext(QWaylandReadbackEglIntegration *eglIntegration, QWaylandReadbackEglWindow *window);
@@ -61,7 +60,7 @@ public:
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
-    virtual QPlatformWindowFormat platformWindowFormat() const;
+    virtual QWindowFormat windowFormat() const;
 
     void geometryChanged();
 

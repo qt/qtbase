@@ -51,7 +51,7 @@
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #include <qt_windows.h>
 #endif
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
 #include <locale.h>
 #endif
 
@@ -2519,7 +2519,7 @@ QString QDateTime::toString(Qt::DateFormat f) const
     }
 #ifndef QT_NO_TEXTDATE
     else if (f == Qt::TextDate) {
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
         buf = d->date.shortDayName(d->date.dayOfWeek());
         buf += QLatin1Char(' ');
         buf += d->date.shortMonthName(d->date.month());

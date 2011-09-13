@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += widgets gui-private
 SOURCES  += tst_qlistview.cpp
 win32:!wince*: LIBS += -luser32
 

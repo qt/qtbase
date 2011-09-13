@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "addressbook.h"
 
 AddressBook::AddressBook(QWidget *parent)

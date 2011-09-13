@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "spreadsheetdelegate.h"
-#include <QtGui>
+#include <QtWidgets>
 
 SpreadSheetDelegate::SpreadSheetDelegate(QObject *parent)
         : QItemDelegate(parent) {}

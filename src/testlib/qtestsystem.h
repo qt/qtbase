@@ -45,6 +45,7 @@
 #include <QtTest/qtestcase.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtGui/QWindow>
 
 QT_BEGIN_HEADER
 
@@ -80,6 +81,12 @@ namespace QTest
         Q_UNUSED(window);
         qWait(200);
 #endif
+        return true;
+    }
+    inline static bool qWaitForWindowShown(QWindow *window)
+    {
+        Q_UNUSED(window);
+        qWait(200);
         return true;
     }
 

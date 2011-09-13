@@ -13,7 +13,7 @@ win32 {
   }
 }
 
-QT += xml svg network
+QT += widgets network
 
 wince*|symbian: {
    configuration.files = ../*.ini

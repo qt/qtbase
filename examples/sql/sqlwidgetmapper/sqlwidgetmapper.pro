@@ -1,7 +1,7 @@
 HEADERS   = window.h
 SOURCES   = main.cpp \
             window.cpp
-QT += sql
+QT += sql widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/sqlwidgetmapper

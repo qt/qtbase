@@ -43,7 +43,7 @@
 #include <QtTest/QtTest>
 #include <QTest>
 #include <QMetaType>
-#include <QtGui/qgraphicsanchorlayout.h>
+#include <QtWidgets/qgraphicsanchorlayout.h>
 #include <private/qgraphicsanchorlayout_p.h>
 
 #define TEST_COMPLEX_CASES

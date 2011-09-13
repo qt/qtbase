@@ -1,3 +1,5 @@
+QT += widgets widgets
+
 HEADERS       = wigglywidget.h \
                 dialog.h
 SOURCES       = wigglywidget.cpp \

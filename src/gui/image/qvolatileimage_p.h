@@ -87,7 +87,6 @@ public:
     QImage toImage() const;
     QImage &imageRef();
     QPaintEngine *paintEngine();
-    void setAlphaChannel(const QPixmap &alphaChannel);
     void fill(uint pixelValue);
     void *duplicateNativeImage() const;
     void copyFrom(QVolatileImage *source, const QRect &rect);

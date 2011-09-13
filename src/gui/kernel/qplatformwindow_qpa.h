@@ -41,12 +41,14 @@
 #ifndef QPLATFORMWINDOW_H
 #define QPLATFORMWINDOW_H
 
-
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qmargins.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qwindowdefs.h>
-
+#include <QtGui/qwindow.h>
+#include <QtGui/qplatformopenglcontext_qpa.h>
+#include <QtGui/qplatformsurface_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -54,24 +56,33 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QPlatformScreen;
 class QPlatformWindowPrivate;
-class QWidget;
-class QPlatformGLContext;
+class QWindow;
 
-class Q_GUI_EXPORT QPlatformWindow
+class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
 {
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
-    QPlatformWindow(QWidget *tlw);
+    QPlatformWindow(QWindow *window);
     virtual ~QPlatformWindow();
 
-    QWidget *widget() const;
+    QWindow *window() const;
+    QPlatformWindow *parent() const;
+
+    QPlatformScreen *screen() const;
+
+    virtual QSurfaceFormat format() const;
+
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
 
+    virtual QMargins frameMargins() const;
+
     virtual void setVisible(bool visible);
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
-    virtual Qt::WindowFlags windowFlags() const;
+    virtual Qt::WindowState setWindowState(Qt::WindowState state);
+
     virtual WId winId() const;
     virtual void setParent(const QPlatformWindow *window);
 
@@ -79,10 +90,14 @@ public:
     virtual void raise();
     virtual void lower();
 
+    virtual void propagateSizeHints();
+
     virtual void setOpacity(qreal level);
     virtual void requestActivateWindow();
 
-    virtual QPlatformGLContext *glContext() const;
+    virtual bool setKeyboardGrabEnabled(bool grab);
+    virtual bool setMouseGrabEnabled(bool grab);
+
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:

@@ -46,6 +46,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QList>
+#include <QtCore/QHash>
 #include <QtGui/QFontDatabase>
 #include <QtGui/private/qfont_p.h>
 
@@ -95,6 +96,9 @@ public:
     virtual QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
 
     virtual QString fontDir() const;
+
+    virtual QFont defaultFont() const;
+    virtual QHash<QByteArray, QFont> defaultFonts() const;
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);

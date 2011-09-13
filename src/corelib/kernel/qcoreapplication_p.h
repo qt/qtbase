@@ -110,6 +110,7 @@ public:
     int &argc;
     char **argv;
     void appendApplicationPathToLibraryPaths(void);
+    void cleanupThreadData();
 
 #ifndef QT_NO_TRANSLATION
     QTranslatorList translators;
@@ -120,6 +121,7 @@ public:
 
     bool in_exec;
     bool aboutToQuitEmitted;
+    bool threadData_clean;
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;
 #if defined(Q_OS_SYMBIAN)

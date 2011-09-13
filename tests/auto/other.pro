@@ -3,41 +3,26 @@
 
 TEMPLATE=subdirs
 SUBDIRS=\
+           other \
 #           baselineexample \ Just an example demonstrating qbaselinetest usage
            lancelot \
-           qalgorithms \
            qcombobox \
-           qcssparser \
-           qdatastream \
-           qdir \
            qfocusevent \
-           qimage \
-           qiodevice \
-           qitemmodel \
            qlayout \
            qmdiarea \
            qmenu \
            qmenubar \
-           qmouseevent \
-           qpainter \
-           qpixmap \
-           qprinter \
-           qsettings \
            qsplitter \
            qtabwidget \
            qtextbrowser \
-           qtextdocument \
            qtextedit \
            qtoolbutton \
-           qvariant \
            qwidget \
            qworkspace \
-           windowsmobile \
-           nativeimagehandleprovider
+           windowsmobile
 
 contains(QT_CONFIG, accessibility):SUBDIRS += qaccessibility
 
-contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac:!qpa {
     SUBDIRS += macgui \
                macnativeevents \
@@ -61,6 +46,4 @@ symbian {
 # Following tests depends on private API
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
            qcombobox \
-           qcssparser \
            qtextedit \
-

@@ -45,7 +45,7 @@
 #include "qfontengine_qpa_p.h"
 #include "qplatformdefs.h"
 
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformfontdatabase_qpa.h>
 
 #include <QtCore/qmath.h>
@@ -82,7 +82,7 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
 
 static QStringList fallbackFamilies(const QString &family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script)
 {
-    QStringList retList = QApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
+    QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
     QFontDatabasePrivate *db = privateDb();
 
     QStringList::iterator i;
@@ -109,27 +109,10 @@ static void initializeDb()
 
     if (!initialized) {
         //init by asking for the platformfontdb for the first time :)
-        QApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
+        QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
         initialized = true;
     }
 }
-
-#ifndef QT_NO_SETTINGS
-// called from qapplication_qws.cpp
-void qt_applyFontDatabaseSettings(const QSettings &settings)
-{
-    initializeDb();
-    QFontDatabasePrivate *db = privateDb();
-    for (int i = 0; i < db->count; ++i) {
-        QtFontFamily *family = db->families[i];
-        if (settings.contains(family->name))
-            family->fallbackFamilies = settings.value(family->name).toStringList();
-    }
-
-    if (settings.contains(QLatin1String("Global Fallbacks")))
-        db->fallbackFamilies = settings.value(QLatin1String("Global Fallbacks")).toStringList();
-}
-#endif // QT_NO_SETTINGS
 
 static inline void load(const QString & = QString(), int = -1)
 {
@@ -155,7 +138,7 @@ QFontEngine *loadSingleEngine(int script,
     QFontCache::Key key(def,script);
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
-        QPlatformFontDatabase *pfdb = QApplicationPrivate::platformIntegration()->fontDatabase();
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         engine = pfdb->fontEngine(def,QUnicodeTables::Script(script),size->handle);
         if (engine) {
             QFontCache::Key key(def,script);
@@ -173,7 +156,7 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
 
     QFontEngine *engine = loadSingleEngine(script, request, foundry, style, size);
     //make sure that the db has all fallback families
-    if (engine
+    if (engine && engine->type() != QFontEngine::Multi
         && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol ) {
 
         if (family && !family->askedForFallback) {
@@ -200,7 +183,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
     QFontDatabasePrivate *db = privateDb();
 
-    fnt->families = QApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
+    fnt->families = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
 
     db->reregisterAppFonts = true;
 }
@@ -359,7 +342,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         family_list = familyList(req);
 
         // add the default family
-        QString defaultFamily = QApplication::font().family();
+        QString defaultFamily = QGuiApplication::font().family();
         if (! family_list.contains(defaultFamily))
             family_list << defaultFamily;
 

@@ -81,7 +81,10 @@ public:
     bool isValid() const;
 
     QRawFont &operator=(const QRawFont &other);
+
     bool operator==(const QRawFont &other) const;
+    inline bool operator!=(const QRawFont &other) const
+    { return !operator==(other); }
 
     QString familyName() const;
     QString styleName() const;
@@ -136,8 +139,6 @@ public:
 private:
     friend class QRawFontPrivate;
     friend class QTextLayout;
-
-    void detach();
 
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };

@@ -51,7 +51,7 @@ public:
 
     void changeLayout();
 
-    void handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev);
+    void handleKeyEvent(QWindow *widget, QEvent::Type type, XKeyEvent *ev);
 
     Qt::KeyboardModifiers translateModifiers(int s);
 

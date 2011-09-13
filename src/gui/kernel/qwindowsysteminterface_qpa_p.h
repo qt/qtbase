@@ -55,73 +55,87 @@ public:
         Enter,
         Leave,
         ActivatedWindow,
+        WindowStateChanged,
         Mouse,
         Wheel,
         Key,
         Touch,
         ScreenGeometry,
         ScreenAvailableGeometry,
-        ScreenCountChange
+        ScreenCountChange,
+        Map,
+        Unmap,
+        Expose
     };
 
     class WindowSystemEvent {
     public:
-        WindowSystemEvent(EventType t)
+        explicit WindowSystemEvent(EventType t)
             : type(t) { }
         EventType type;
     };
 
     class CloseEvent : public WindowSystemEvent {
     public:
-        CloseEvent(QWidget *tlw)
-            : WindowSystemEvent(Close), topLevel(tlw) { }
-        QWeakPointer<QWidget> topLevel;
+        explicit CloseEvent(QWindow *w)
+            : WindowSystemEvent(Close), window(w) { }
+        QWeakPointer<QWindow> window;
     };
 
     class GeometryChangeEvent : public WindowSystemEvent {
     public:
-        GeometryChangeEvent(QWidget *tlw, const QRect &newGeometry)
+        GeometryChangeEvent(QWindow *tlw, const QRect &newGeometry)
             : WindowSystemEvent(GeometryChange), tlw(tlw), newGeometry(newGeometry)
         { }
-        QWeakPointer<QWidget> tlw;
+        QWeakPointer<QWindow> tlw;
         QRect newGeometry;
     };
 
     class EnterEvent : public WindowSystemEvent {
     public:
-        EnterEvent(QWidget *enter)
+        explicit EnterEvent(QWindow *enter)
             : WindowSystemEvent(Enter), enter(enter)
         { }
-        QWeakPointer<QWidget> enter;
+        QWeakPointer<QWindow> enter;
     };
 
     class LeaveEvent : public WindowSystemEvent {
     public:
-        LeaveEvent(QWidget *leave)
+        explicit LeaveEvent(QWindow *leave)
             : WindowSystemEvent(Leave), leave(leave)
         { }
-        QWeakPointer<QWidget> leave;
+        QWeakPointer<QWindow> leave;
     };
 
     class ActivatedWindowEvent : public WindowSystemEvent {
     public:
-        ActivatedWindowEvent(QWidget *activatedWindow)
+        explicit ActivatedWindowEvent(QWindow *activatedWindow)
             : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
         { }
-        QWeakPointer<QWidget> activated;
+        QWeakPointer<QWindow> activated;
+    };
+
+    class WindowStateChangedEvent : public WindowSystemEvent {
+    public:
+        WindowStateChangedEvent(QWindow *_window, Qt::WindowState _newState)
+            : WindowSystemEvent(WindowStateChanged), window(_window), newState(_newState)
+        { }
+
+        QWeakPointer<QWindow> window;
+        Qt::WindowState newState;
     };
 
     class UserEvent : public WindowSystemEvent {
     public:
-        UserEvent(QWidget * w, ulong time, EventType t)
-            : WindowSystemEvent(t), widget(w), timestamp(time) { }
-        QWeakPointer<QWidget> widget;
+        UserEvent(QWindow * w, ulong time, EventType t)
+            : WindowSystemEvent(t), window(w), timestamp(time) { }
+        QWeakPointer<QWindow> window;
         unsigned long timestamp;
     };
 
     class MouseEvent : public UserEvent {
     public:
-        MouseEvent(QWidget * w, ulong time, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
+        MouseEvent(QWindow * w, ulong time, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
             : UserEvent(w, time, Mouse), localPos(local), globalPos(global), buttons(b) { }
         QPointF localPos;
         QPointF globalPos;
@@ -130,7 +144,7 @@ public:
 
     class WheelEvent : public UserEvent {
     public:
-        WheelEvent(QWidget *w, ulong time, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
+        WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
             : UserEvent(w, time, Wheel), delta(d), localPos(local), globalPos(global), orient(o) { }
         int delta;
         QPointF localPos;
@@ -140,11 +154,11 @@ public:
 
     class KeyEvent : public UserEvent {
     public:
-        KeyEvent(QWidget *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
+        KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
             :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
              repeatCount(count), modifiers(mods), keyType(t),
              nativeScanCode(0), nativeVirtualKey(0), nativeModifiers(0) { }
-        KeyEvent(QWidget *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
+        KeyEvent(QWindow *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
                  quint32 nativeSC, quint32 nativeVK, quint32 nativeMods,
                  const QString & text = QString(), bool autorep = false, ushort count = 1)
             :UserEvent(w, time, Key), key(k), unicode(text), repeat(autorep),
@@ -163,7 +177,7 @@ public:
 
     class TouchEvent : public UserEvent {
     public:
-        TouchEvent(QWidget *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p)
+        TouchEvent(QWindow *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p)
             :UserEvent(w, time, Touch), devType(d), points(p), touchType(t) { }
         QTouchEvent::DeviceType devType;
         QList<QTouchEvent::TouchPoint> points;
@@ -190,6 +204,31 @@ public:
         ScreenAvailableGeometryEvent(int index)
             : WindowSystemEvent(ScreenAvailableGeometry), index(index) { }
         int index;
+    };
+
+    class MapEvent : public WindowSystemEvent {
+    public:
+        MapEvent(QWindow *mapped)
+            : WindowSystemEvent(Map), mapped(mapped)
+        { }
+        QWeakPointer<QWindow> mapped;
+    };
+
+    class UnmapEvent : public WindowSystemEvent {
+    public:
+        UnmapEvent(QWindow *unmapped)
+            : WindowSystemEvent(Unmap), unmapped(unmapped)
+        { }
+        QWeakPointer<QWindow> unmapped;
+    };
+
+    class ExposeEvent : public WindowSystemEvent {
+    public:
+        ExposeEvent(QWindow *exposed, const QRegion &region)
+            : WindowSystemEvent(Expose), exposed(exposed), region(region)
+        { }
+        QWeakPointer<QWindow> exposed;
+        QRegion region;
     };
 
     static QList<WindowSystemEvent *> windowSystemEventQueue;

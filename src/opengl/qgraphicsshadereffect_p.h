@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/qgraphicseffect.h>
+#include <QtWidgets/qgraphicseffect.h>
 
 QT_BEGIN_HEADER
 

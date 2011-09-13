@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qxcbscreen.h"
+#include "qxcbwindow.h"
+#include "qxcbcursor.h"
+#include "qxcbimage.h"
 
 #include <stdio.h>
 
@@ -102,10 +105,104 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int num
     free(reply);
 
     m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
+
+    m_clientLeader = xcb_generate_id(xcb_connection());
+    Q_XCB_CALL2(xcb_create_window(xcb_connection(),
+                                  XCB_COPY_FROM_PARENT,
+                                  m_clientLeader,
+                                  m_screen->root,
+                                  0, 0, 1, 1,
+                                  0,
+                                  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                  m_screen->root_visual,
+                                  0, 0), connection);
+
+    Q_XCB_CALL2(xcb_change_property(xcb_connection(),
+                                    XCB_PROP_MODE_REPLACE,
+                                    m_clientLeader,
+                                    atom(QXcbAtom::WM_CLIENT_LEADER),
+                                    XCB_ATOM_WINDOW,
+                                    32,
+                                    1,
+                                    &m_clientLeader), connection);
+
+    xcb_depth_iterator_t depth_iterator =
+        xcb_screen_allowed_depths_iterator(screen);
+
+    while (depth_iterator.rem) {
+        xcb_depth_t *depth = depth_iterator.data;
+        xcb_visualtype_iterator_t visualtype_iterator =
+            xcb_depth_visuals_iterator(depth);
+
+        while (visualtype_iterator.rem) {
+            xcb_visualtype_t *visualtype = visualtype_iterator.data;
+            m_visuals.insert(visualtype->visual_id, *visualtype);
+            xcb_visualtype_next(&visualtype_iterator);
+        }
+
+        xcb_depth_next(&depth_iterator);
+    }
+
+    m_cursor = new QXcbCursor(connection, this);
 }
 
 QXcbScreen::~QXcbScreen()
 {
+    delete m_cursor;
+}
+
+
+QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
+{
+    xcb_window_t root = m_screen->root;
+
+    int x = p.x();
+    int y = p.y();
+
+    xcb_generic_error_t *error;
+
+    xcb_window_t parent = root;
+    xcb_window_t child = root;
+
+    do {
+        xcb_translate_coordinates_cookie_t translate_cookie =
+            xcb_translate_coordinates(xcb_connection(), parent, child, x, y);
+
+        xcb_translate_coordinates_reply_t *translate_reply =
+            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, &error);
+
+        if (!translate_reply) {
+            if (error) {
+                connection()->handleXcbError(error);
+                free(error);
+            }
+            return 0;
+        }
+
+        parent = child;
+        child = translate_reply->child;
+        x = translate_reply->dst_x;
+        y = translate_reply->dst_y;
+
+        free(translate_reply);
+
+        if (!child || child == root)
+            return 0;
+
+        QPlatformWindow *platformWindow = connection()->platformWindowFromId(child);
+        if (platformWindow)
+            return platformWindow->window();
+    } while (parent != child);
+
+    return 0;
+}
+
+const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
+{
+    QMap<xcb_visualid_t, xcb_visualtype_t>::const_iterator it = m_visuals.find(visualid);
+    if (it == m_visuals.constEnd())
+        return 0;
+    return &*it;
 }
 
 QRect QXcbScreen::geometry() const
@@ -131,4 +228,127 @@ QSize QXcbScreen::physicalSize() const
 int QXcbScreen::screenNumber() const
 {
     return m_number;
+}
+
+QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    if (width == 0 || height == 0)
+        return QPixmap();
+
+    xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry(xcb_connection(), window);
+
+    xcb_generic_error_t *error;
+    xcb_get_geometry_reply_t *reply =
+        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, &error);
+
+    if (!reply) {
+        if (error) {
+            connection()->handleXcbError(error);
+            free(error);
+        }
+        return QPixmap();
+    }
+
+    if (width < 0)
+        width = reply->width - x;
+    if (height < 0)
+        height = reply->height - y;
+
+    // TODO: handle multiple screens
+    QXcbScreen *screen = const_cast<QXcbScreen *>(this);
+    xcb_window_t root = screen->root();
+    geometry_cookie = xcb_get_geometry(xcb_connection(), root);
+    xcb_get_geometry_reply_t *root_reply =
+        xcb_get_geometry_reply(xcb_connection(), geometry_cookie, &error);
+
+    if (!root_reply) {
+        if (error) {
+            connection()->handleXcbError(error);
+            free(error);
+        }
+        free(reply);
+        return QPixmap();
+    }
+
+    if (reply->depth == root_reply->depth) {
+        // if the depth of the specified window and the root window are the
+        // same, grab pixels from the root window (so that we get the any
+        // overlapping windows and window manager frames)
+
+        // map x and y to the root window
+        xcb_translate_coordinates_cookie_t translate_cookie =
+            xcb_translate_coordinates(xcb_connection(), window, root, x, y);
+
+        xcb_translate_coordinates_reply_t *translate_reply =
+            xcb_translate_coordinates_reply(xcb_connection(), translate_cookie, &error);
+
+        if (!translate_reply) {
+            if (error) {
+                connection()->handleXcbError(error);
+                free(error);
+            }
+            free(reply);
+            free(root_reply);
+            return QPixmap();
+        }
+
+        x = translate_reply->dst_x;
+        y = translate_reply->dst_y;
+
+        window = root;
+
+        free(translate_reply);
+        free(reply);
+        reply = root_reply;
+    } else {
+        free(root_reply);
+        root_reply = 0;
+    }
+
+    xcb_get_window_attributes_reply_t *attributes_reply =
+        xcb_get_window_attributes_reply(xcb_connection(), xcb_get_window_attributes(xcb_connection(), window), &error);
+
+    if (!attributes_reply) {
+        if (error) {
+            connection()->handleXcbError(error);
+            free(error);
+        }
+        free(reply);
+        return QPixmap();
+    }
+
+    const xcb_visualtype_t *visual = screen->visualForId(attributes_reply->visual);
+    free(attributes_reply);
+
+    xcb_pixmap_t pixmap = xcb_generate_id(xcb_connection());
+    error = xcb_request_check(xcb_connection(), xcb_create_pixmap_checked(xcb_connection(), reply->depth, pixmap, window, width, height));
+    if (error) {
+        connection()->handleXcbError(error);
+        free(error);
+    }
+
+    uint32_t gc_value_mask = XCB_GC_SUBWINDOW_MODE;
+    uint32_t gc_value_list[] = { XCB_SUBWINDOW_MODE_INCLUDE_INFERIORS };
+
+    xcb_gcontext_t gc = xcb_generate_id(xcb_connection());
+    xcb_create_gc(xcb_connection(), gc, pixmap, gc_value_mask, gc_value_list);
+
+    error = xcb_request_check(xcb_connection(), xcb_copy_area_checked(xcb_connection(), window, pixmap, gc, x, y, 0, 0, width, height));
+    if (error) {
+        connection()->handleXcbError(error);
+        free(error);
+    }
+
+    QPixmap result = qt_xcb_pixmapFromXPixmap(connection(), pixmap, width, height, reply->depth, visual);
+
+    free(reply);
+    xcb_free_gc(xcb_connection(), gc);
+    xcb_free_pixmap(xcb_connection(), pixmap);
+
+    return result;
+}
+
+QString QXcbScreen::name() const
+{
+    return connection()->displayName() + QLatin1String(".") + QString::number(screenNumber());
 }

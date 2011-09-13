@@ -51,7 +51,7 @@ class QXlibCursor;
 class QXlibKeyboard;
 class QXlibDisplay;
 
-class QXlibScreen : public QPlatformScreen
+class QXlibScreen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
 
     QImage grabWindow(Window window, int x, int y, int w, int h);
 
-    static QXlibScreen *testLiteScreenForWidget(QWidget *widget);
+    static QXlibScreen *testLiteScreenForWidget(QWindow *widget);
 
     QXlibDisplay *display() const;
     int xScreenNumber() const;

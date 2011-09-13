@@ -63,6 +63,7 @@
 #include <QWindowSystemInterface>
 
 #include "qgenericunixfontdatabase.h"
+#include "qgenericunixeventdispatcher.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -422,9 +423,9 @@ QVFbIntegration::QVFbIntegration(const QStringList &paramList)
     mScreens.append(mPrimaryScreen);
 }
 
-QPixmapData *QVFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QVFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const
@@ -436,6 +437,11 @@ QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const
 QPlatformWindow *QVFbIntegration::createPlatformWindow(QWidget *widget, WId) const
 {
     return new QVFbWindow(mPrimaryScreen, widget);
+}
+
+QAbstractEventDispatcher *QVFbIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QPlatformFontDatabase *QVFbIntegration::fontDatabase() const

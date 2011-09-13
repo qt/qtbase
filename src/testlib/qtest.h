@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) \
 
 #include <QtTest/qtestsystem.h>
 
-#ifdef QT_GUI_LIB
+#if defined(QT_WIDGETS_LIB)
 
 #include <QtTest/qtest_gui.h>
 
@@ -262,6 +262,18 @@ int main(int argc, char *argv[]) \
 { \
     QApplication app(argc, argv); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
+    TestObject tc; \
+    return QTest::qExec(&tc, argc, argv); \
+}
+
+#elif defined(QT_GUI_LIB)
+
+#include <QtTest/qtest_gui.h>
+
+#define QTEST_MAIN(TestObject) \
+int main(int argc, char *argv[]) \
+{ \
+    QGuiApplication app(argc, argv); \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }

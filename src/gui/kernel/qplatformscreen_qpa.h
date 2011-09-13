@@ -51,7 +51,8 @@
 
 #include <QtGui/qcursor.h>
 #include <QtGui/qimage.h>
-#include <QtGui/qwidget.h>
+#include <QtGui/qwindowdefs.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -59,24 +60,46 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QPlatformScreen : public QObject
+class QPlatformBackingStore;
+class QPlatformOpenGLContext;
+class QPlatformScreenPrivate;
+class QPlatformWindow;
+class QScreen;
+class QSurfaceFormat;
+
+class Q_GUI_EXPORT QPlatformScreen
 {
-    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPlatformScreen)
+
 public:
-    virtual ~QPlatformScreen() { }
+    QPlatformScreen();
+    virtual ~QPlatformScreen();
+
+    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     virtual QRect geometry() const = 0;
     virtual QRect availableGeometry() const {return geometry();}
+
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
     virtual QSize physicalSize() const;
-    //jl: should setDirty be removed.
-    virtual void setDirty(const QRect &) {}
-    virtual QWidget *topLevelAt(const QPoint &point) const;
+
+    virtual QWindow *topLevelAt(const QPoint &point) const;
+    virtual QList<QPlatformScreen *> virtualSiblings() const;
+
+    QScreen *screen() const;
 
     //jl: should this function be in QPlatformIntegration
-    //jl: maybe screenForWidget is a better name?
-    static QPlatformScreen *platformScreenForWidget(const QWidget *widget);
+    //jl: maybe screenForWindow is a better name?
+    static QPlatformScreen *platformScreenForWindow(const QWindow *window);
+
+    virtual QString name() const { return QString(); }
+
+protected:
+    QScopedPointer<QPlatformScreenPrivate> d_ptr;
+
+private:
+    Q_DISABLE_COPY(QPlatformScreen)
 };
 
 QT_END_NAMESPACE

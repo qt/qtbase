@@ -40,14 +40,12 @@
 ****************************************************************************/
 
 #include "qgraphicsshadereffect_p.h"
-#if !defined(QT_OPENGL_ES_1)
 #include "qglshaderprogram.h"
 #include "gl2paintengineex/qglcustomshaderstage_p.h"
 #define QGL_HAVE_CUSTOM_SHADERS 1
-#endif
 #include <QtGui/qpainter.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/private/qgraphicseffect_p.h>
+#include <QtWidgets/qgraphicsitem.h>
+#include <private/qgraphicseffect_p.h>
 
 QT_BEGIN_NAMESPACE
 

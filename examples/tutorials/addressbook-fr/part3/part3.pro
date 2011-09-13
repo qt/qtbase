@@ -7,6 +7,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part3
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part3.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part3
 INSTALLS += target sources
+QT += widgets
 
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example

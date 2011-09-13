@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 class Digits: public QWidget
 {

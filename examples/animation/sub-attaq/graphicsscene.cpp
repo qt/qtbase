@@ -59,12 +59,12 @@
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 #include <QtCore/QPauseAnimation>
-#include <QtGui/QAction>
+#include <QtWidgets/QAction>
 #include <QtCore/QDir>
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
-#include <QtGui/QGraphicsView>
-#include <QtGui/QGraphicsSceneMouseEvent>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
 #include <QtCore/QXmlStreamReader>
 
 GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)

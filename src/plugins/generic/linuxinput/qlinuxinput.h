@@ -79,31 +79,6 @@ private:
     QLinuxInputMouseHandlerData *d;
 };
 
-
-class QWSLinuxInputKeyboardHandler;
-
-class QLinuxInputKeyboardHandler : public QObject
-{
-    Q_OBJECT
-public:
-    QLinuxInputKeyboardHandler(const QString &key, const QString &specification);
-    ~QLinuxInputKeyboardHandler();
-
-
-private:
-    void switchLed(int, bool);
-
-private slots:
-    void readKeycode();
-
-private:
-    QWSLinuxInputKeyboardHandler *m_handler;
-    int                           m_fd;
-    int                           m_tty_fd;
-    struct termios                m_tty_attr;
-    int                           m_orig_kbmode;
-};
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

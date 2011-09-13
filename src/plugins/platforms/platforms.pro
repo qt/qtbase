@@ -9,3 +9,9 @@ contains(QT_CONFIG, wayland) {
 contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
 }
+
+mac {
+    SUBDIRS += cocoa
+}
+
+win32: SUBDIRS += windows

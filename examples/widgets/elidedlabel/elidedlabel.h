@@ -41,11 +41,11 @@
 #ifndef ELIDEDLABEL_H
 #define ELIDEDLABEL_H
 
-#include <QFrame>
-#include <QRect>
-#include <QResizeEvent>
-#include <QString>
-#include <QWidget>
+#include <QtWidgets/QFrame>
+#include <QtCore/QRect>
+#include <QtGui/QResizeEvent>
+#include <QtCore/QString>
+#include <QtWidgets/QWidget>
 
 //! [0]
 class ElidedLabel : public QFrame

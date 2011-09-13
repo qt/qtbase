@@ -43,24 +43,36 @@
 #define QWAYLANDXCOMPOSITEEGLWINDOW_H
 
 #include "qwaylandwindow.h"
+#include "qwaylandbuffer.h"
+
 #include "qwaylandxcompositeeglintegration.h"
 #include "qwaylandxcompositeeglcontext.h"
 
 class QWaylandXCompositeEGLWindow : public QWaylandWindow
 {
 public:
-    QWaylandXCompositeEGLWindow(QWidget *window, QWaylandXCompositeEGLIntegration *glxIntegration);
+    QWaylandXCompositeEGLWindow(QWindow *window, QWaylandXCompositeEGLIntegration *glxIntegration);
     WindowType windowType() const;
-
-    QPlatformGLContext *glContext() const;
 
     void setGeometry(const QRect &rect);
     void requestActivateWindow();
 
-private:
-    QWaylandXCompositeEGLIntegration *mGlxIntegration;
-    QWaylandXCompositeEGLContext *mContext;
+    EGLSurface eglSurface() const;
 
+private:
+    void createEglSurface();
+
+    QWaylandXCompositeEGLIntegration *m_glxIntegration;
+    QWaylandXCompositeEGLContext *m_context;
+    QWaylandBuffer *m_buffer;
+
+    Window m_xWindow;
+    EGLConfig m_config;
+    EGLSurface m_surface;
+
+    bool m_waitingForSync;
+
+    static void sync_function(void *data);
 };
 
 #endif // QWAYLANDXCOMPOSITEEGLWINDOW_H

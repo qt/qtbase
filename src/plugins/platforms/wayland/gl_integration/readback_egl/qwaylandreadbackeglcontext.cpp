@@ -41,14 +41,16 @@
 
 #include "qwaylandreadbackeglcontext.h"
 
-#include "../../../eglconvenience/qeglconvenience.h"
+#include <QPlatformSupport/eglconvenience/qeglconvenience_p.h>
+
+#include <QtCore/QDebug>
+#include <QtGui/QWindowContext>
 
 #include <QtOpenGL/QGLContext>
 #include <QtOpenGL/private/qglextensions_p.h>
 
 #include "qwaylandshmsurface.h"
 
-#include <QtCore/QDebug>
 
 static inline void qgl_byteSwapImage(QImage &img, GLenum pixel_type)
 {
@@ -77,7 +79,7 @@ QWaylandReadbackEglContext::QWaylandReadbackEglContext(QWaylandReadbackEglIntegr
     , mWindow(window)
     , mBuffer(0)
     , mPixmap(0)
-    , mConfig(q_configFromQPlatformWindowFormat(eglIntegration->eglDisplay(),window->widget()->platformWindowFormat(),true,EGL_PIXMAP_BIT))
+    , mConfig(q_configFromQWindowFormat(eglIntegration->eglDisplay(),window->window()->requestedWindowFormat(),true,EGL_PIXMAP_BIT))
     , mPixmapSurface(EGL_NO_SURFACE)
 {
     QVector<EGLint> eglContextAttrs;
@@ -97,8 +99,6 @@ QWaylandReadbackEglContext::~QWaylandReadbackEglContext()
 
 void QWaylandReadbackEglContext::makeCurrent()
 {
-    QPlatformGLContext::makeCurrent();
-
     mWindow->waitForFrameSync();
 
     eglMakeCurrent(mEglIntegration->eglDisplay(),mPixmapSurface,mPixmapSurface,mContext);
@@ -106,7 +106,7 @@ void QWaylandReadbackEglContext::makeCurrent()
 
 void QWaylandReadbackEglContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
+    QPlatformOpenGLContext::doneCurrent();
     eglMakeCurrent(mEglIntegration->eglDisplay(),EGL_NO_SURFACE,EGL_NO_SURFACE,EGL_NO_CONTEXT);
 }
 
@@ -114,7 +114,7 @@ void QWaylandReadbackEglContext::swapBuffers()
 {
     eglSwapBuffers(mEglIntegration->eglDisplay(),mPixmapSurface);
 
-    if (QPlatformGLContext::currentContext() != this) {
+    if (QWindowContext::currentContext()->handle() != this) {
         makeCurrent();
     }
 
@@ -143,9 +143,9 @@ void * QWaylandReadbackEglContext::getProcAddress(const QString &procName)
     return (void *) eglGetProcAddress(procName.toLatin1().data());
 }
 
-QPlatformWindowFormat QWaylandReadbackEglContext::platformWindowFormat() const
+QWindowFormat QWaylandReadbackEglContext::windowFormat() const
 {
-    return qt_qPlatformWindowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
+    return q_windowFormatFromConfig(mEglIntegration->eglDisplay(),mConfig);
 }
 
 void QWaylandReadbackEglContext::geometryChanged()

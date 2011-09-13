@@ -48,7 +48,7 @@
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QPlatformFontDatabase>
 
 #include <GLES2/gl2.h>
@@ -92,7 +92,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 

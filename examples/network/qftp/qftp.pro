@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = ftpwindow.h
 SOURCES       = ftpwindow.cpp \
                 main.cpp

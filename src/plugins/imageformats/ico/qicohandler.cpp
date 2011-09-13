@@ -589,7 +589,6 @@ QImage ICOReader::iconAt(int index)
                                 mask.setColor(1, qRgba(0  ,0  ,0  ,0xff));
                                 read1BitBMP(mask);
                                 if (!mask.isNull()) {
-                                    img = QImage(image.width(), image.height(), QImage::Format_ARGB32 );
                                     img = image;
                                     img.setAlphaChannel(mask);
                                     // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values

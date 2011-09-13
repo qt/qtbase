@@ -57,17 +57,10 @@
 #include <QtGui/qtextoption.h>
 #include <QtGui/qtextcursor.h>
 #include <QtGui/qtextformat.h>
-#include <QtGui/qtextedit.h>
-#include <QtGui/qmenu.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
 #include <QtGui/qtextdocumentfragment.h>
 #include <QtGui/qclipboard.h>
-
-#ifdef QT3_SUPPORT
-#include <QtGui/qtextobject.h>
-#include <QtGui/qtextlayout.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -77,12 +70,12 @@ QT_MODULE(Gui)
 
 class QStyleSheet;
 class QTextDocument;
-class QMenu;
 class QTextControlPrivate;
 class QMimeData;
 class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;
+class QPagedPaintDevice;
 
 class Q_GUI_EXPORT QTextControl : public QObject
 {
@@ -102,6 +95,9 @@ public:
     explicit QTextControl(const QString &text, QObject *parent = 0);
     explicit QTextControl(QTextDocument *doc, QObject *parent = 0);
     virtual ~QTextControl();
+
+    void setView(QObject *view);
+    QObject *view() const;
 
     void setDocument(QTextDocument *document);
     QTextDocument *document() const;
@@ -129,9 +125,6 @@ public:
     virtual void ensureCursorVisible();
 
     virtual QVariant loadResource(int type, const QUrl &name);
-#ifndef QT_NO_CONTEXTMENU
-    QMenu *createStandardContextMenu(const QPointF &pos, QWidget *parent);
-#endif
 
     QTextCursor cursorForPosition(const QPointF &pos) const;
     QRectF cursorRect(const QTextCursor &cursor) const;
@@ -153,10 +146,8 @@ public:
     bool acceptRichText() const;
     void setAcceptRichText(bool accept);
 
-#ifndef QT_NO_TEXTEDIT
-    void setExtraSelections(const QList<QTextEdit::ExtraSelection> &selections);
-    QList<QTextEdit::ExtraSelection> extraSelections() const;
-#endif
+    void setExtraSelections(const QVector<QAbstractTextDocumentLayout::Selection> &selections);
+    QVector<QAbstractTextDocumentLayout::Selection> extraSelections() const;
 
     void setTextWidth(qreal width);
     qreal textWidth() const;
@@ -181,13 +172,11 @@ public:
     bool isWordSelectionEnabled() const;
     void setWordSelectionEnabled(bool enabled);
 
-#ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const;
-#endif
+    void print(QPagedPaintDevice *printer) const;
 
     virtual int hitTest(const QPointF &point, Qt::HitTestAccuracy accuracy) const;
     virtual QRectF blockBoundingRect(const QTextBlock &block) const;
-    QAbstractTextDocumentLayout::PaintContext getPaintContext(QWidget *widget) const;
+    QAbstractTextDocumentLayout::PaintContext getPaintContext() const;
 
 public Q_SLOTS:
     void setPlainText(const QString &text);
@@ -241,11 +230,11 @@ public:
     QPalette palette() const;
     void setPalette(const QPalette &pal);
 
-    virtual void processEvent(QEvent *e, const QMatrix &matrix, QWidget *contextWidget = 0);
-    void processEvent(QEvent *e, const QPointF &coordinateOffset = QPointF(), QWidget *contextWidget = 0);
+    virtual void processEvent(QEvent *e, const QMatrix &matrix);
+    void processEvent(QEvent *e, const QPointF &coordinateOffset = QPointF());
 
     // control methods
-    void drawContents(QPainter *painter, const QRectF &rect = QRectF(), QWidget *widget = 0);
+    void drawContents(QPainter *painter, const QRectF &rect = QRectF());
 
     void setFocus(bool focus, Qt::FocusReason = Qt::OtherFocusReason);
 
@@ -277,22 +266,6 @@ private:
 };
 
 
-#ifndef QT_NO_CONTEXTMENU
-class QUnicodeControlCharacterMenu : public QMenu
-{
-    Q_OBJECT
-public:
-    QUnicodeControlCharacterMenu(QObject *editWidget, QWidget *parent);
-
-private Q_SLOTS:
-    void menuActionTriggered();
-
-private:
-    QObject *editWidget;
-};
-#endif // QT_NO_CONTEXTMENU
-
-
 // also used by QLabel
 class QTextEditMimeData : public QMimeData
 {
@@ -312,4 +285,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTEXTCONTROL_H
+#endif // QTextControl_H

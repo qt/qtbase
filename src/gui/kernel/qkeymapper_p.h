@@ -67,7 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 class QKeyMapperPrivate;
-class QKeyMapper : public QObject
+class Q_GUI_EXPORT QKeyMapper : public QObject
 {
     Q_OBJECT
 public:
@@ -76,11 +76,13 @@ public:
 
     static QKeyMapper *instance();
     static void changeKeyboard();
+#ifndef Q_WS_QPA
     static bool sendKeyEvent(QWidget *widget, bool grab,
                              QEvent::Type type, int code, Qt::KeyboardModifiers modifiers,
                              const QString &text, bool autorepeat, int count,
                              quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                              bool *unusedExceptForCocoa = 0);
+#endif
     static QList<int> possibleKeys(QKeyEvent *e);
 
 private:

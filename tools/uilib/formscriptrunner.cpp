@@ -44,7 +44,7 @@
 #include "ui4_p.h"
 
 #include <QtScript/QScriptEngine>
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 #include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
 

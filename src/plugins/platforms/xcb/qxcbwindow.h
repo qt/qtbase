@@ -43,7 +43,7 @@
 #define QXCBWINDOW_H
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 
 #include <xcb/xcb.h>
@@ -52,35 +52,47 @@
 #include "qxcbobject.h"
 
 class QXcbScreen;
+class QXcbEGLSurface;
 
 class QXcbWindow : public QXcbObject, public QPlatformWindow
 {
 public:
-    QXcbWindow(QWidget *tlw);
+    QXcbWindow(QWindow *window);
     ~QXcbWindow();
 
     void setGeometry(const QRect &rect);
 
+    QMargins frameMargins() const;
+
     void setVisible(bool visible);
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    Qt::WindowState setWindowState(Qt::WindowState state);
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 
     void setWindowTitle(const QString &title);
     void raise();
     void lower();
+    void propagateSizeHints();
 
     void requestActivateWindow();
 
-    QPlatformGLContext *glContext() const;
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
 
-    xcb_window_t window() const { return m_window; }
+    void setCursor(xcb_cursor_t cursor);
+
+    QSurfaceFormat format() const;
+
+    xcb_window_t xcb_window() const { return m_window; }
     uint depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
+    QImage::Format imageFormat() const { return m_imageFormat; }
 
     void handleExposeEvent(const xcb_expose_event_t *event);
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event);
+    void handleMapNotifyEvent(const xcb_map_notify_event_t *event);
+    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event);
     void handleButtonPressEvent(const xcb_button_press_event_t *event);
     void handleButtonReleaseEvent(const xcb_button_release_event_t *event);
     void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event);
@@ -93,22 +105,54 @@ public:
     void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global);
 
     void updateSyncRequestCounter();
+    void updateNetWmUserTime(xcb_timestamp_t timestamp);
+    void netWmUserTime() const;
+
+#if defined(XCB_USE_EGL)
+    QXcbEGLSurface *eglSurface() const;
+#endif
 
 private:
-    void setNetWmWindowTypes(Qt::WindowFlags flags);
+    void changeNetWmState(bool set, xcb_atom_t one, xcb_atom_t two = 0);
+    QVector<xcb_atom_t> getNetWmState();
+    void setNetWmState(const QVector<xcb_atom_t> &atoms);
+    void printNetWmState(const QVector<xcb_atom_t> &state);
+
+    void setNetWmWindowFlags(Qt::WindowFlags flags);
+    void setMotifWindowFlags(Qt::WindowFlags flags);
+
+    void updateMotifWmHintsBeforeMap();
+    void updateNetWmStateBeforeMap();
+
+    void create();
+    void destroy();
+
+    void show();
+    void hide();
 
     QXcbScreen *m_screen;
 
     xcb_window_t m_window;
-    QPlatformGLContext *m_context;
 
     uint m_depth;
-    QImage::Format m_format;
+    QImage::Format m_imageFormat;
 
     xcb_sync_int64_t m_syncValue;
     xcb_sync_counter_t m_syncCounter;
 
-    bool m_hasReceivedSyncRequest;
+    Qt::WindowState m_windowState;
+
+    bool m_mapped;
+    xcb_window_t m_netWmUserTimeWindow;
+
+    QSurfaceFormat m_requestedFormat;
+
+    mutable bool m_dirtyFrameMargins;
+    mutable QMargins m_frameMargins;
+
+#if defined(XCB_USE_EGL)
+    mutable QXcbEGLSurface *m_eglSurface;
+#endif
 };
 
 #endif

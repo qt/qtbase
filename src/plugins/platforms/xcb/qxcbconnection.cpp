@@ -39,24 +39,33 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtCore/QDebug>
+
 #include "qxcbconnection.h"
 #include "qxcbkeyboard.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
+#include "qxcbclipboard.h"
+#include "qxcbdrag.h"
+#include "qxcbwmsupport.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
-#include <QtGui/private/qapplication_p.h>
 #include <QAbstractEventDispatcher>
-
-#include <QtCore/QDebug>
+#include <QTimer>
 
 #include <stdio.h>
 #include <errno.h>
+#include <xcb/xfixes.h>
 
 #ifdef XCB_USE_XLIB
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
+#endif
+
+#ifdef XCB_USE_RENDER
+#include <xcb/render.h>
 #endif
 
 #ifdef XCB_USE_EGL //dont pull in eglext prototypes
@@ -65,7 +74,6 @@
 
 #ifdef XCB_USE_DRI2
 #include <xcb/dri2.h>
-#include <xcb/xfixes.h>
 extern "C" {
 #include <xf86drm.h>
 }
@@ -83,12 +91,13 @@ QXcbConnection::QXcbConnection(const char *displayName)
     , m_dri2_support_probed(false)
     , m_has_support_for_dri2(false)
 #endif
+    , xfixes_first_event(0)
 {
-    int primaryScreen = 0;
+    m_primaryScreen = 0;
 
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
-    primaryScreen = DefaultScreen(dpy);
+    m_primaryScreen = DefaultScreen(dpy);
     m_connection = XGetXCBConnection(dpy);
     XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
     m_xlib_display = dpy;
@@ -100,12 +109,32 @@ QXcbConnection::QXcbConnection(const char *displayName)
     m_has_egl = eglInitialize(eglDisplay,&major,&minor);
 #endif //XCB_USE_EGL
 #else
-    m_connection = xcb_connect(m_displayName.constData(), &primaryScreen);
-
+    m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
+
+    if (m_connection)
+        printf("Successfully connected to display %s\n", m_displayName.constData());
+
+    m_reader = new QXcbEventReader(m_connection);
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    connect(m_reader, SIGNAL(eventPending()), this, SLOT(processXcbEvents()), Qt::QueuedConnection);
+    m_reader->start();
+#else
+    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
+
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
+    connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
+#endif
+
+    xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+
     m_setup = xcb_get_setup(xcb_connection());
 
     initializeAllAtoms();
+
+    m_time = XCB_CURRENT_TIME;
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
 
@@ -115,24 +144,37 @@ QXcbConnection::QXcbConnection(const char *displayName)
         xcb_screen_next(&it);
     }
 
+    m_connectionEventListener = xcb_generate_id(m_connection);
+    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
+                      m_connectionEventListener, m_screens.at(0)->root(),
+                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                      m_screens.at(0)->screen()->root_visual, 0, 0);
+
+    initializeXFixes();
+    initializeXRender();
+
+    m_wmSupport = new QXcbWMSupport(this);
     m_keyboard = new QXcbKeyboard(this);
+    m_clipboard = new QXcbClipboard(this);
+    m_drag = new QXcbDrag(this);
 
 #ifdef XCB_USE_DRI2
     initializeDri2();
 #endif
-
-    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
-
-    QAbstractEventDispatcher *dispatcher = QAbstractEventDispatcher::instance(qApp->thread());
-    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
-
     sync();
 }
 
 QXcbConnection::~QXcbConnection()
 {
+    delete m_clipboard;
+
     qDeleteAll(m_screens);
+
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
+    m_reader->wait();
+#endif
+    delete m_reader;
 
 #ifdef XCB_USE_XLIB
     XCloseDisplay((Display *)m_xlib_display);
@@ -143,22 +185,26 @@ QXcbConnection::~QXcbConnection()
     delete m_keyboard;
 }
 
-QXcbWindow *platformWindowFromId(xcb_window_t id)
+void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
 {
-    QWidget *widget = QWidget::find(id);
-    if (widget)
-        return static_cast<QXcbWindow *>(widget->platformWindow());
-    return 0;
+    m_mapper.insert(id, window);
 }
 
-#define HANDLE_PLATFORM_WINDOW_EVENT(event_t, window, handler) \
+void QXcbConnection::removeWindow(xcb_window_t id)
+{
+    m_mapper.remove(id);
+}
+
+QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+{
+    return m_mapper.value(id, 0);
+}
+
+#define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->window)) { \
-        QObjectPrivate *d = QObjectPrivate::get(platformWindow->widget()); \
-        if (!d->wasDeleted) \
-            platformWindow->handler(e); \
-    } \
+    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember)) \
+        platformWindow->handler(e); \
 } \
 break;
 
@@ -166,7 +212,7 @@ break;
 { \
     event_t *e = (event_t *)event; \
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) \
-        m_keyboard->handler(platformWindow->widget(), e); \
+        m_keyboard->handler(platformWindow, e); \
 } \
 break;
 
@@ -373,6 +419,7 @@ const char *xcb_protocol_request_codes[] =
 #ifdef Q_XCB_DEBUG
 void QXcbConnection::log(const char *file, int line, int sequence)
 {
+    QMutexLocker locker(&m_callLogMutex);
     CallInfo info;
     info.sequence = sequence;
     info.file = file;
@@ -392,6 +439,7 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
            int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
            int(error->minor_code));
 #ifdef Q_XCB_DEBUG
+    QMutexLocker locker(&m_callLogMutex);
     int i = 0;
     for (; i < m_callLog.size(); ++i) {
         if (m_callLog.at(i).sequence == error->sequence) {
@@ -409,67 +457,236 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 #endif
 }
 
+void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
+{
+#ifdef Q_XCB_DEBUG
+    {
+        QMutexLocker locker(&m_callLogMutex);
+        int i = 0;
+        for (; i < m_callLog.size(); ++i)
+            if (m_callLog.at(i).sequence >= event->sequence)
+                break;
+        m_callLog.remove(0, i);
+    }
+#endif
+    bool handled = true;
+
+    uint response_type = event->response_type & ~0x80;
+
+    switch (response_type) {
+    case XCB_EXPOSE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
+    case XCB_BUTTON_PRESS:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
+    case XCB_BUTTON_RELEASE:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
+    case XCB_MOTION_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
+    case XCB_CONFIGURE_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
+    case XCB_MAP_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
+    case XCB_UNMAP_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
+    case XCB_CLIENT_MESSAGE:
+        handleClientMessageEvent((xcb_client_message_event_t *)event);
+    case XCB_ENTER_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
+    case XCB_LEAVE_NOTIFY:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
+    case XCB_FOCUS_IN:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
+    case XCB_FOCUS_OUT:
+        HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
+    case XCB_KEY_PRESS:
+        HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
+    case XCB_KEY_RELEASE:
+        HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+    case XCB_MAPPING_NOTIFY:
+        m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+        break;
+    case XCB_SELECTION_REQUEST:
+    {
+        xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
+        if (sr->selection == atom(QXcbAtom::XdndSelection))
+            m_drag->handleSelectionRequest(sr);
+        else
+            m_clipboard->handleSelectionRequest(sr);
+        break;
+    }
+    case XCB_SELECTION_CLEAR:
+        setTime(((xcb_selection_clear_event_t *)event)->time);
+        m_clipboard->handleSelectionClearRequest((xcb_selection_clear_event_t *)event);
+        handled = true;
+        break;
+    case XCB_SELECTION_NOTIFY:
+        setTime(((xcb_selection_notify_event_t *)event)->time);
+        qDebug() << "XCB_SELECTION_NOTIFY";
+        handled = false;
+        break;
+    case XCB_PROPERTY_NOTIFY:
+        setTime(((xcb_property_notify_event_t *)event)->time);
+//        qDebug() << "XCB_PROPERTY_NOTIFY";
+        handled = false;
+        break;
+    default:
+        handled = false;
+        break;
+    }
+
+    if (!handled) {
+        if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
+            setTime(((xcb_xfixes_selection_notify_event_t *)event)->timestamp);
+            m_clipboard->handleXFixesSelectionRequest((xcb_xfixes_selection_notify_event_t *)event);
+            handled = true;
+        }
+    }
+
+    if (handled)
+        printXcbEvent("Handled XCB event", event);
+    else
+        printXcbEvent("Unhandled XCB event", event);
+}
+
+void QXcbConnection::addPeekFunc(PeekFunc f)
+{
+    m_peekFuncs.append(f);
+}
+
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+void QXcbEventReader::run()
+{
+    xcb_generic_event_t *event;
+    while (m_connection && (event = xcb_wait_for_event(m_connection))) {
+        m_mutex.lock();
+        addEvent(event);
+        while (m_connection && (event = xcb_poll_for_queued_event(m_connection)))
+            addEvent(event);
+        m_mutex.unlock();
+        emit eventPending();
+    }
+
+    for (int i = 0; i < m_events.size(); ++i)
+        free(m_events.at(i));
+}
+#endif
+
+void QXcbEventReader::addEvent(xcb_generic_event_t *event)
+{
+    if ((event->response_type & ~0x80) == XCB_CLIENT_MESSAGE
+        && ((xcb_client_message_event_t *)event)->type == QXcbAtom::_QT_CLOSE_CONNECTION)
+        m_connection = 0;
+    m_events << event;
+}
+
+QList<xcb_generic_event_t *> *QXcbEventReader::lock()
+{
+    m_mutex.lock();
+#ifndef XCB_POLL_FOR_QUEUED_EVENT
+    while (xcb_generic_event_t *event = xcb_poll_for_event(m_connection))
+        m_events << event;
+#endif
+    return &m_events;
+}
+
+void QXcbEventReader::unlock()
+{
+    m_mutex.unlock();
+}
+
+void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom atom, uint id)
+{
+    xcb_client_message_event_t event;
+    memset(&event, 0, sizeof(event));
+
+    event.response_type = XCB_CLIENT_MESSAGE;
+    event.format = 32;
+    event.sequence = 0;
+    event.window = m_connectionEventListener;
+    event.type = atom;
+    event.data.data32[0] = id;
+
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    xcb_flush(xcb_connection());
+}
+
 void QXcbConnection::processXcbEvents()
 {
-    while (xcb_generic_event_t *event = xcb_poll_for_event(xcb_connection())) {
-        bool handled = true;
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+
+    for(int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
+        if (!event)
+            continue;
+        (*eventqueue)[i] = 0;
 
         uint response_type = event->response_type & ~0x80;
 
         if (!response_type) {
             handleXcbError((xcb_generic_error_t *)event);
-            continue;
+        } else {
+            QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
+            while (it != m_peekFuncs.end()) {
+                // These callbacks return true if the event is what they were
+                // waiting for, remove them from the list in that case.
+                if ((*it)(event))
+                    it = m_peekFuncs.erase(it);
+                else
+                    ++it;
+            }
+            handleXcbEvent(event);
         }
 
-#ifdef Q_XCB_DEBUG
-        {
-            int i = 0;
-            for (; i < m_callLog.size(); ++i)
-                if (m_callLog.at(i).sequence >= event->sequence)
-                    break;
-            m_callLog.remove(0, i);
-        }
-#endif
-
-        switch (response_type) {
-        case XCB_EXPOSE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
-        case XCB_BUTTON_PRESS:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
-        case XCB_BUTTON_RELEASE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
-        case XCB_MOTION_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
-        case XCB_CONFIGURE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
-        case XCB_CLIENT_MESSAGE:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_client_message_event_t, window, handleClientMessageEvent);
-        case XCB_ENTER_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
-        case XCB_LEAVE_NOTIFY:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
-        case XCB_FOCUS_IN:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
-        case XCB_FOCUS_OUT:
-            HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
-        case XCB_KEY_PRESS:
-            HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
-        case XCB_KEY_RELEASE:
-            HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
-        case XCB_MAPPING_NOTIFY:
-            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
-            break;
-        default:
-            handled = false;
-            break;
-        }
-        if (handled)
-            printXcbEvent("Handled XCB event", event);
-        else
-            printXcbEvent("Unhandled XCB event", event);
+        free(event);
     }
 
+    eventqueue->clear();
+
+    m_reader->unlock();
+
+    // Indicate with a null event that the event the callbacks are waiting for
+    // is not in the queue currently.
+    Q_FOREACH (PeekFunc f, m_peekFuncs)
+        f(0);
+    m_peekFuncs.clear();
+
     xcb_flush(xcb_connection());
+}
+
+void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *event)
+{
+    if (event->format != 32)
+        return;
+
+    if (event->type == atom(QXcbAtom::XdndStatus)) {
+        drag()->handleStatus(event, false);
+    } else if (event->type == atom(QXcbAtom::XdndFinished)) {
+        drag()->handleFinished(event, false);
+    }
+
+    QXcbWindow *window = platformWindowFromId(event->window);
+    if (!window)
+        return;
+
+    window->handleClientMessageEvent(event);
+}
+
+xcb_generic_event_t *QXcbConnection::checkEvent(int type)
+{
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+
+    for (int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
+        if (event->response_type == type) {
+            (*eventqueue)[i] = 0;
+            m_reader->unlock();
+            return event;
+        }
+    }
+
+    m_reader->unlock();
+
+    return 0;
 }
 
 static const char * xcb_atomnames = {
@@ -510,6 +727,8 @@ static const char * xcb_atomnames = {
 
     "_QT_SCROLL_DONE\0"
     "_QT_INPUT_ENCODING\0"
+
+    "_QT_CLOSE_CONNECTION\0"
 
     "_MOTIF_WM_HINTS\0"
 
@@ -579,7 +798,6 @@ static const char * xcb_atomnames = {
     "_NET_ACTIVE_WINDOW\0"
 
     // Property formats
-    "COMPOUND_TEXT\0"
     "TEXT\0"
     "UTF8_STRING\0"
 
@@ -659,8 +877,57 @@ void QXcbConnection::initializeAllAtoms() {
     for (i = 0; i < QXcbAtom::NAtoms; ++i)
         cookies[i] = xcb_intern_atom(xcb_connection(), false, strlen(names[i]), names[i]);
 
-    for (i = 0; i < QXcbAtom::NAtoms; ++i)
-        m_allAtoms[i] = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0)->atom;
+    for (i = 0; i < QXcbAtom::NAtoms; ++i) {
+        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(xcb_connection(), cookies[i], 0);
+        m_allAtoms[i] = reply->atom;
+        free(reply);
+    }
+}
+
+xcb_atom_t QXcbConnection::internAtom(const char *name)
+{
+    if (!name || *name == 0)
+        return XCB_NONE;
+
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(xcb_connection(), false, strlen(name), name);
+    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(xcb_connection(), cookie, 0);
+    int atom = reply->atom;
+    free(reply);
+    return atom;
+}
+
+QByteArray QXcbConnection::atomName(xcb_atom_t atom)
+{
+    if (!atom)
+        return QByteArray();
+
+    xcb_generic_error_t *error = 0;
+    xcb_get_atom_name_cookie_t cookie = Q_XCB_CALL(xcb_get_atom_name(xcb_connection(), atom));
+    xcb_get_atom_name_reply_t *reply = xcb_get_atom_name_reply(xcb_connection(), cookie, &error);
+    if (error) {
+        qWarning() << "QXcbConnection::atomName: bad Atom" << atom;
+    }
+    if (reply) {
+        QByteArray result(xcb_get_atom_name_name(reply), xcb_get_atom_name_name_length(reply));
+        free(reply);
+        return result;
+    }
+    return QByteArray();
+}
+
+const xcb_format_t *QXcbConnection::formatForDepth(uint8_t depth) const
+{
+    xcb_format_iterator_t iterator =
+        xcb_setup_pixmap_formats_iterator(m_setup);
+
+    while (iterator.rem) {
+        xcb_format_t *format = iterator.data;
+        if (format->depth == depth)
+            return format;
+        xcb_format_next(&iterator);
+    }
+
+    return 0;
 }
 
 void QXcbConnection::sync()
@@ -668,6 +935,43 @@ void QXcbConnection::sync()
     // from xcb_aux_sync
     xcb_get_input_focus_cookie_t cookie = Q_XCB_CALL(xcb_get_input_focus(xcb_connection()));
     free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+}
+
+void QXcbConnection::initializeXFixes()
+{
+    xcb_generic_error_t *error = 0;
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xfixes_id);
+    xfixes_first_event = reply->first_event;
+
+    xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
+                                                                                     XCB_XFIXES_MAJOR_VERSION,
+                                                                                     XCB_XFIXES_MINOR_VERSION);
+    xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
+                                                                                     xfixes_query_cookie, &error);
+    if (!xfixes_query || error || xfixes_query->major_version < 2) {
+        qWarning("Failed to initialize XFixes");
+        free(error);
+        xfixes_first_event = 0;
+    }
+    free(xfixes_query);
+
+}
+
+void QXcbConnection::initializeXRender()
+{
+#ifdef XCB_USE_RENDER
+    xcb_generic_error_t *error = 0;
+    xcb_render_query_version_cookie_t xrender_query_cookie = xcb_render_query_version(m_connection,
+                                                                                      XCB_RENDER_MAJOR_VERSION,
+                                                                                      XCB_RENDER_MINOR_VERSION);
+    xcb_render_query_version_reply_t *xrender_query = xcb_render_query_version_reply(m_connection,
+                                                                                     xrender_query_cookie, &error);
+    if (!xrender_query || error || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
+        qWarning("Failed to initialize XRender");
+        free(error);
+    }
+    free(xrender_query);
+#endif
 }
 
 #if defined(XCB_USE_EGL)
@@ -740,25 +1044,11 @@ bool QXcbConnection::hasSupportForDri2() const
     if (!m_dri2_support_probed) {
         xcb_generic_error_t *error = 0;
 
-        xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
         xcb_prefetch_extension_data (m_connection, &xcb_dri2_id);
-
-        xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
-                                                                                         XCB_XFIXES_MAJOR_VERSION,
-                                                                                         XCB_XFIXES_MINOR_VERSION);
 
         xcb_dri2_query_version_cookie_t dri2_query_cookie = xcb_dri2_query_version (m_connection,
                                                                                     XCB_DRI2_MAJOR_VERSION,
                                                                                     XCB_DRI2_MINOR_VERSION);
-
-        xcb_xfixes_query_version_reply_t *xfixes_query = xcb_xfixes_query_version_reply (m_connection,
-                                                                                         xfixes_query_cookie, &error);
-        if (!xfixes_query || error || xfixes_query->major_version < 2) {
-            delete error;
-            delete xfixes_query;
-            return false;
-        }
-        delete xfixes_query;
 
         xcb_dri2_query_version_reply_t *dri2_query = xcb_dri2_query_version_reply (m_connection,
                                                                                    dri2_query_cookie, &error);

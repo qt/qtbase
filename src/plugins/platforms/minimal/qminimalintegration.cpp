@@ -40,20 +40,34 @@
 ****************************************************************************/
 
 #include "qminimalintegration.h"
-#include "qminimalwindowsurface.h"
+#include "qminimalbackingstore.h"
+#ifndef Q_OS_WIN
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#else
+#include <QtCore/private/qeventdispatcher_win_p.h>
+#endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPlatformWindow>
 
-QMinimalIntegration::QMinimalIntegration()
+QT_BEGIN_NAMESPACE
+
+QMinimalIntegration::QMinimalIntegration() :
+#ifdef Q_OS_WIN
+    m_eventDispatcher(new QEventDispatcherWin32())
+#else
+    m_eventDispatcher(createUnixEventDispatcher())
+#endif
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
     mPrimaryScreen->mDepth = 32;
     mPrimaryScreen->mFormat = QImage::Format_ARGB32_Premultiplied;
 
-    mScreens.append(mPrimaryScreen);
+    screenAdded(mPrimaryScreen);
 }
 
 bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -64,19 +78,20 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     }
 }
 
-QPixmapData *QMinimalIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QRasterPixmapData(type);
+    Q_UNUSED(window);
+    return new QPlatformWindow(window);
 }
 
-QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    return new QPlatformWindow(widget);
+    return new QMinimalBackingStore(window);
 }
 
-QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QAbstractEventDispatcher *QMinimalIntegration::guiThreadEventDispatcher() const
 {
-    Q_UNUSED(winId);
-    return new QMinimalWindowSurface(widget);
+    return m_eventDispatcher;
 }
+
+QT_END_NAMESPACE

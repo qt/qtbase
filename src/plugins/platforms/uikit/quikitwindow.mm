@@ -48,12 +48,12 @@
 #include <QtDebug>
 #include <QtGui/QApplication>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 #include <QtGui/QWindowSystemInterface>
 
 #include <QtDebug>
 
-class EAGLPlatformContext : public QPlatformGLContext
+class EAGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
     EAGLPlatformContext(EAGLView *view)
@@ -91,13 +91,13 @@ public:
 
     void makeCurrent()
     {
-        QPlatformGLContext::makeCurrent();
+        QPlatformOpenGLContext::makeCurrent();
         [mView makeCurrent];
     }
 
     void doneCurrent()
     {
-        QPlatformGLContext::doneCurrent();
+        QPlatformOpenGLContext::doneCurrent();
     }
 
     void swapBuffers()
@@ -381,7 +381,7 @@ UIWindow *QUIKitWindow::ensureNativeWindow()
     return mWindow;
 }
 
-QPlatformGLContext *QUIKitWindow::glContext() const
+QPlatformOpenGLContext *QUIKitWindow::glContext() const
 {
     if (!mContext) {
         mContext = new EAGLPlatformContext(mView);

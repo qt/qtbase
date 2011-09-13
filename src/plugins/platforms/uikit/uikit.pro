@@ -1,5 +1,5 @@
 TARGET = quikit
-load(qt_plugin)
+load(qpa/plugin)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 QT += opengl
@@ -22,6 +22,6 @@ HEADERS = quikitsoftwareinputhandler.h
 #add libz for freetype.
 LIBS += -lz
 
-#include(../fontdatabases/basicunix/basicunix.pri)
+#load(qpa/fontdatabases/basicunix)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

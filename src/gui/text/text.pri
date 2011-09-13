@@ -9,9 +9,8 @@ HEADERS += \
 	text/qfontmetrics.h \
 	text/qfont_p.h \
 	text/qfontsubset_p.h \
-	text/qtextcontrol_p.h \
-	text/qtextcontrol_p_p.h \
-	text/qtextengine_p.h \
+        text/qlinecontrol_p.h \
+        text/qtextengine_p.h \
 	text/qtextlayout.h \
 	text/qtextformat.h \
 	text/qtextformat_p.h \
@@ -24,7 +23,9 @@ HEADERS += \
 	text/qtexthtmlparser_p.h \
 	text/qabstracttextdocumentlayout.h \
 	text/qtextdocumentlayout_p.h \
-	text/qtextcursor.h \
+        text/qtextcontrol_p.h \
+        text/qtextcontrol_p_p.h \
+        text/qtextcursor.h \
         text/qtextcursor_p.h \
 	text/qtextdocumentfragment.h \
 	text/qtextdocumentfragment_p.h \
@@ -52,8 +53,9 @@ SOURCES += \
 	text/qfontsubset.cpp \
 	text/qfontmetrics.cpp \
 	text/qfontdatabase.cpp \
-	text/qtextcontrol.cpp \
-	text/qtextengine.cpp \
+        text/qlinecontrol.cpp \
+        text/qtextcontrol.cpp \
+        text/qtextengine.cpp \
 	text/qtextlayout.cpp \
 	text/qtextformat.cpp \
 	text/qtextobject.cpp \
@@ -78,7 +80,7 @@ SOURCES += \
         text/qrawfont.cpp \
     text/qglyphrun.cpp
 
-win32 {
+win32:!qpa {
 	SOURCES += \
 		text/qfont_win.cpp \
                 text/qfontengine_win.cpp \
@@ -104,7 +106,7 @@ unix:x11 {
                 text/qrawfont_ft.cpp
 }
 
-!embedded:!qpa:!x11:mac {
+!qpa:!x11:mac {
         HEADERS += \
                 text/qfontengine_mac_p.h
         OBJECTIVE_HEADERS += \
@@ -118,22 +120,6 @@ unix:x11 {
         contains(QT_CONFIG, harfbuzz) {
             DEFINES += QT_ENABLE_HARFBUZZ_FOR_MAC
         }
-}
-
-embedded {
-	SOURCES += \
-		text/qfont_qws.cpp \
-		text/qfontengine_qws.cpp \
-		text/qfontengine_ft.cpp \
-		text/qfontengine_qpf.cpp \
-                text/qabstractfontengine_qws.cpp \
-                text/qrawfont_ft.cpp
-	HEADERS += \
-		text/qfontengine_ft_p.h \
-		text/qfontengine_qpf_p.h \
-		text/qabstractfontengine_qws.h \
-		text/qabstractfontengine_p.h
-	DEFINES += QT_NO_FONTCONFIG
 }
 
 qpa {
@@ -233,9 +219,7 @@ contains(QT_CONFIG, freetype) {
 
     DEFINES += FT2_BUILD_LIBRARY FT_CONFIG_OPTION_SYSTEM_ZLIB
     
-    embedded:CONFIG += opentype
 } else:contains(QT_CONFIG, system-freetype) {
-    embedded:CONFIG += opentype
     # pull in the proper freetype2 include directory
     include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
     LIBS_PRIVATE += -lfreetype

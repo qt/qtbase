@@ -43,9 +43,8 @@
 #define QPLATFORMINTEGRATION_H
 
 #include <QtGui/qwindowdefs.h>
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qplatformscreen_qpa.h>
+#include <QtGui/qsurfaceformat.h>
 
 QT_BEGIN_HEADER
 
@@ -54,50 +53,70 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QPlatformWindow;
-class QWindowSurface;
-class QBlittable;
-class QWidget;
-class QPlatformEventLoopIntegration;
+class QWindow;
+class QPlatformBackingStore;
 class QPlatformFontDatabase;
 class QPlatformClipboard;
 class QPlatformNativeInterface;
+class QPlatformDrag;
+class QPlatformOpenGLContext;
+class QGuiGLFormat;
+class QAbstractEventDispatcher;
+class QPlatformInputContext;
+class QMenu;
+class QMenuBar;
+class QPlatformMenu;
+class QPlatformMenuBar;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
     enum Capability {
         ThreadedPixmaps = 1,
-        OpenGL = 2
+        OpenGL = 2,
+        ThreadedOpenGL = 3
     };
 
     virtual ~QPlatformIntegration() { }
 
     virtual bool hasCapability(Capability cap) const;
 
-// GraphicsSystem functions
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
-    virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
+    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
+    virtual QPlatformWindow *createPlatformWindow(QWindow *window) const = 0;
+    virtual QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const = 0;
+    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
-// Window System functions
-    virtual QList<QPlatformScreen *> screens() const = 0;
-    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
-    virtual bool isVirtualDesktop() { return false; }
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+// Event dispatcher:
+    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;
 #ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
 #endif
+#ifndef QT_NO_DRAGANDDROP
+    virtual QPlatformDrag *drag() const;
+#endif
+    virtual QPlatformInputContext *inputContext() const;
 
-// Experimental in mainthread eventloop integration
-// This should only be used if it is only possible to do window system event processing in
-// the gui thread. All of the functions in QWindowSystemInterface are thread safe.
-    virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
+    virtual QPlatformMenu *createPlatformMenu(QMenu *menu = 0) const;
+    virtual QPlatformMenuBar *createPlatformMenuBar(QMenuBar *menuBar = 0) const;
 
 // Access native handles. The window handle is already available from Wid;
     virtual QPlatformNativeInterface *nativeInterface() const;
+
+    enum StyleHint {
+        CursorFlashTime,
+        KeyboardInputInterval,
+        MouseDoubleClickInterval,
+        StartDragDistance,
+        StartDragTime
+    };
+
+    virtual QVariant styleHint(StyleHint hint) const;
+
+protected:
+    void screenAdded(QPlatformScreen *screen);
 };
 
 QT_END_NAMESPACE

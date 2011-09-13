@@ -43,9 +43,9 @@
 #include "ui_sslclient.h"
 #include "ui_sslerrors.h"
 
-#include <QtGui/QScrollBar>
-#include <QtGui/QStyle>
-#include <QtGui/QToolButton>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QToolButton>
 #include <QtNetwork/QSslCipher>
 
 SslClient::SslClient(QWidget *parent)

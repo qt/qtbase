@@ -42,7 +42,6 @@
 
 #include <QtTest/QtTest>
 
-#include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
 #include <private/qgraphicsscene_p.h>

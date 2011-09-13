@@ -6,6 +6,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/touch/dials
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dials.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/touch/dials
 INSTALLS += target sources
+QT += widgets
 
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example

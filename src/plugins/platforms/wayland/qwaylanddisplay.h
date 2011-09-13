@@ -49,6 +49,7 @@
 
 #include <wayland-client.h>
 
+class QAbstractEventDispatcher;
 class QWaylandInputDevice;
 class QSocketNotifier;
 class QWaylandBuffer;
@@ -142,6 +143,7 @@ private:
     static void handleVisual(void *data,
                                        struct wl_compositor *compositor,
                                        uint32_t id, uint32_t token);
+
 #ifdef QT_WAYLAND_GL_SUPPORT
     QWaylandGLIntegration *mEglIntegration;
 #endif

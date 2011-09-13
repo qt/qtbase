@@ -185,14 +185,12 @@ fi
 #-------------------------------------------------------------------------------
 
 PLATFORM_X11=no
-PLATFORM_QWS=maybe
-PLATFORM_QPA=maybe
+PLATFORM_QWS=no
+PLATFORM_QPA=yes
 BUILD_ON_MAC=no
+PLATFORM_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
-    PLATFORM_MAC=maybe
     BUILD_ON_MAC=yes
-else
-    PLATFORM_MAC=no
 fi
 
 #-----------------------------------------------------------------------------
@@ -752,7 +750,8 @@ CFG_DECORATION_PLUGIN_AVAILABLE=
 CFG_DECORATION_PLUGIN=
 CFG_XINPUT=runtime
 CFG_XKB=auto
-CFG_XCB=no
+CFG_XCB=auto
+CFG_XCB_LIMITED=yes
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1378,9 +1377,9 @@ while [ "$#" -gt 0 ]; do
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
-            [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
+            [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
-            if  [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
+            if  [ "$VAL" = "es2" ]; then
                 CFG_EGL="yes"
             fi
         else
@@ -3322,7 +3321,7 @@ if [ '!' -z "$CFG_SDK" ]; then
 fi
 
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3461,7 +3460,7 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
 fi
 
 # find the default framework value
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$PLATFORM" != "macx-xlc" ]; then
+if [ "$CFG_ARCH" = "macosx" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -4179,9 +4178,9 @@ Qt/X11 only:
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
                          OpenGL API to use. If desktop OpenGL is available, it
-                         will be used. Use desktop, es1, or es2 for <api>
-                         to force the use of the Desktop (OpenGL 1.x or 2.x),
-                         OpenGL ES 1.x Common profile, or 2.x APIs instead.
+                         will be used. Use desktop or es2 for <api>
+                         to force the use of the Desktop OpenGL or
+                         OpenGL ES 2 APIs instead.
 
      -no-openvg ........ Do not support OpenVG.
  +   -openvg ........... Enable OpenVG support.
@@ -4341,9 +4340,9 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
 
     -no-opengl .......... Do not support OpenGL.
     -opengl <api> ....... Enable OpenGL ES support
-                          With no parameter, this will attempt to auto-detect OpenGL ES 1.x
-                          or 2.x, or regular desktop OpenGL.
-                          Use es1 or es2 for <api> to override auto-detection.
+                          With no parameter, this will attempt to auto-detect
+                          OpenGL ES 2, or regular desktop OpenGL.
+                          Use es2 for <api> to override auto-detection.
 EOF
 fi
 
@@ -5794,7 +5793,7 @@ fi
 
 # X11/MINGW/SYMBIAN OpenGL
 if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIAN" = "yes" ]; then
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
             CFG_OPENGL=no
@@ -5810,11 +5809,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIA
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-            if [ "$CFG_EGL" = "no" ]; then
-                CFG_EGL=auto
-            fi
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1
             if [ "$CFG_EGL" = "no" ]; then
                 CFG_EGL=auto
             fi
@@ -5841,16 +5835,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" -o "$XPLATFORM_SYMBIA
         *)
             ;;
         esac
-    elif [ "$CFG_OPENGL" = "es1" ]; then
-        # OpenGL ES 1.x
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 1.x functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
         "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6183,14 +6167,14 @@ fi
 
 
 if [ "$PLATFORM_QPA" = "yes" ]; then
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
-    if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
+    # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
+    if [ "$CFG_ARCH" = "macosx" ]; then
+        CFG_OPENGL=desktop
+    elif [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengldesktop "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
         elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1
         else
             if [ "$CFG_OPENGL" = "yes" ]; then
                 echo "All the OpenGL functionality tests failed!"
@@ -6200,16 +6184,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
                 exit 1
             fi
             CFG_OPENGL=no
-        fi
-    elif [ "$CFG_OPENGL" = "es1" ]; then
-        # OpenGL ES 1.x
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 1.x functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES1, QMAKE_LIBDIR_OPENGL_ES1 and QMAKE_LIBS_OPENGL_ES1 in"
-            echo " ${XQMAKESPEC}."
-            exit 1
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
@@ -6266,13 +6240,44 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
         QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
         QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
+    fi
 
-        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
-            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND `$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
-            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND `$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
+    # Check we actually have X11 :-)
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+        QT_CONFIG="$QT_CONFIG xlib"
+    fi
+
+    if [ "$CFG_XCB" != "no" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb "xcb" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_XCB=yes
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-render "xcb-render" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                QT_CONFIG="$QT_CONFIG xcb-render"
+            fi
+
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                CFG_XCB_LIMITED=no
+                QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
+            fi
+
+            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/xcb-xlib "xcb-xlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+                QT_CONFIG="$QT_CONFIG xcb-xlib"
+            fi
         else
-            QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
+            CFG_XCB=no
         fi
+    fi
+
+    # Detect libxkbcommon
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+        QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
+        QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
+        QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND $QMAKE_CFLAGS_XKBCOMMON"
+        QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND $QMAKE_LIBS_XKBCOMMON"
+        QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
+        QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
+    else
+        QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
+        QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
     fi
 
     # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
@@ -6282,6 +6287,12 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMakeVar set QMAKE_LIBS_WAYLAND "$QMAKE_LIBS_WAYLAND"
         QMakeVar set QMAKE_LIBDIR_WAYLAND "$QMAKE_LIBDIR_WAYLAND"
         QMakeVar set QMAKE_DEFINES_WAYLAND " $QMAKE_DEFINES_WAYLAND"
+    fi
+
+    if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
+        QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
+        QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
+        QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
     fi
 
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
@@ -6300,7 +6311,7 @@ fi
 # QWS
 if [ "$PLATFORM_QWS" = "yes" ]; then
 
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
             CFG_OPENGL=no
@@ -6315,26 +6326,7 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=auto
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
-    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1
-        else
-            echo "All the OpenGL ES functionality tests failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-            echo " ${XQMAKESPEC}."
-            exit 1
         fi
-    elif [ "$CFG_OPENGL" = "es1" ]; then
-        # OpenGL ES 1.x
-        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-            echo "The OpenGL ES 1.x functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
-        CFG_EGL=yes
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
         "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6444,16 +6436,6 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
             CFG_EGL=yes
         fi
 
-        # Prefer this variant for ES1
-        if [ "$CFG_OPENGL" = "es1" -o "$EGL_VARIANT" = "none" ]; then
-            if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-                # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
-                EGL_VARIANT=gles
-                CFG_EGL=yes
-                CFG_EGL_GLES_INCLUDES=yes
-            fi
-        fi
-
         if [ "$EGL_VARIANT" = "none" ]; then
             if [ "$CFG_EGL" = "yes" ]; then
                 echo "The EGL functionality test failed!"
@@ -6465,7 +6447,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
             fi
             CFG_EGL=no
             # If QtOpenGL would be built against OpenGL ES, disable it as we can't to that if EGL is missing
-            if [ "$CFG_OPENGL" = "es1" -o "$CFG_OPENGL" = "es2" ]; then
+            if [ "$CFG_OPENGL" = "es2" ]; then
                 CFG_OPENGL=no
             fi
         fi
@@ -6941,19 +6923,6 @@ fi
 [ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
 [ "$XPLATFORM_SYMBIAN" = "yes" ] && CFG_MAC_COCOA="no"
 
-# set the global Mac deployment target. This is overridden on an arch-by-arch basis
-# in some cases, see code further down
-case "$PLATFORM,$CFG_MAC_COCOA" in
-    macx*,yes)
-	# Cocoa
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
-	;;
-    macx*,no)
-	# gcc, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
-	;;
-esac
-
 # disable Qt 3 support on VxWorks and Symbian
 case "$XPLATFORM" in
     unsupported/vxworks*|symbian*)
@@ -7036,16 +7005,8 @@ else
     QT_CONFIG="$QT_CONFIG opengl"
 fi
 
-if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ]; then
-    if [ "$PLATFORM_QWS" = "yes" ]; then
-        QCONFIG_FLAGS="$QCONFIG_FLAGS Q_BACKINGSTORE_SUBSURFACES"
-    fi
+if [ "$CFG_OPENGL" = "es2" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES"
-fi
-
-if [ "$CFG_OPENGL" = "es1" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_1"
-    QT_CONFIG="$QT_CONFIG opengles1"
 fi
 
 if [ "$CFG_OPENGL" = "es2" ]; then
@@ -7349,7 +7310,7 @@ if [ '!' -z "$I_FLAGS" ]; then
 fi
 
 # turn off exceptions for the compilers that support it
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
+if [ "$PLATFORM_QWS" = "yes" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 3- -d-`
 elif [ "$XPLATFORM" != "$PLATFORM" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
@@ -7707,9 +7668,7 @@ if [ "$CFG_EXCEPTIONS" = "no" ]; then
 fi
 
 # On Mac, set the minimum deployment target for the different architechtures 
-# using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
-# deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
-# env. variable. 
+# using the Xarch compiler option when supported (10.5 and up).
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
     if echo "$CFG_MAC_ARCHS" | grep '\<x86\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
@@ -8529,8 +8488,6 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
 fi
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"
-elif [ "$CFG_OPENGL" = "es1" ]; then
-    echo "OpenGL support ......... yes (OpenGL ES 1.x Common profile)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
     echo "OpenGL support ......... yes (OpenGL ES 2.x)"
 else
@@ -8590,7 +8547,11 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 fi
 echo "ICD support ............ $CFG_ICD"
 echo "libICU support ......... $CFG_ICU"
-echo "Xcb support ............ $CFG_XCB"
+if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
+    echo "Xcb support ............ limited (old version)"
+else
+    echo "Xcb support ............ $CFG_XCB"
+fi
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"

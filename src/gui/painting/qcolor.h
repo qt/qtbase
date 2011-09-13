@@ -203,35 +203,9 @@ public:
 
     operator QVariant() const;
 
-#ifdef Q_WS_X11
-    static bool allowX11ColorNames();
-    static void setAllowX11ColorNames(bool enabled);
-#endif
-
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT_CONSTRUCTOR QColor(int x, int y, int z, Spec colorSpec)
-    { if (colorSpec == Hsv) setHsv(x, y, z); else setRgb(x, y, z); }
-
-    inline QT3_SUPPORT void rgb(int *r, int *g, int *b) const
-    { getRgb(r, g, b); }
-    inline QT3_SUPPORT void hsv(int *h, int *s, int *v) const
-    { getHsv(h, s, v); }
-
-    inline QT3_SUPPORT void setRgba(int r, int g, int b, int a)
-    { setRgb(r, g, b, a); }
-    inline QT3_SUPPORT void getRgba(int *r, int *g, int *b, int *a) const
-    { getRgb(r, g, b, a); }
-
-    QT3_SUPPORT uint pixel(int screen = -1) const;
-#endif
-
     static bool isValidColor(const QString &name);
 
 private:
-#ifndef QT3_SUPPORT
-    // do not allow a spec to be used as an alpha value
-    QColor(int, int, int, Spec);
-#endif
 
     void invalidate();
     bool setColorFromString(const QString &name);

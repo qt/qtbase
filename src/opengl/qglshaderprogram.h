@@ -54,8 +54,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if !defined(QT_OPENGL_ES_1)
-
 class QGLShaderProgram;
 class QGLShaderPrivate;
 
@@ -204,17 +202,6 @@ public:
     void setAttributeBuffer
         (const char *name, GLenum type, int offset, int tupleSize, int stride = 0);
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    void setAttributeArray
-        (int location, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
-    void setAttributeArray
-        (const char *name, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
-    void setAttributeBuffer
-        (int location, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
-    void setAttributeBuffer
-        (const char *name, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
-#endif
-
     void enableAttributeArray(int location);
     void enableAttributeArray(const char *name);
     void disableAttributeArray(int location);
@@ -223,17 +210,6 @@ public:
     int uniformLocation(const char *name) const;
     int uniformLocation(const QByteArray& name) const;
     int uniformLocation(const QString& name) const;
-
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    void setUniformValue(int location, QMacCompatGLint value);
-    void setUniformValue(int location, QMacCompatGLuint value);
-    void setUniformValue(const char *name, QMacCompatGLint value);
-    void setUniformValue(const char *name, QMacCompatGLuint value);
-    void setUniformValueArray(int location, const QMacCompatGLint *values, int count);
-    void setUniformValueArray(int location, const QMacCompatGLuint *values, int count);
-    void setUniformValueArray(const char *name, const QMacCompatGLint *values, int count);
-    void setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count);
-#endif
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
@@ -334,8 +310,6 @@ private:
 
     bool init();
 };
-
-#endif
 
 QT_END_NAMESPACE
 

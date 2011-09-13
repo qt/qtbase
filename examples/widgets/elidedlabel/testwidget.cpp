@@ -41,10 +41,10 @@
 #include "testwidget.h"
 #include "elidedlabel.h"
 
-#include <QLabel>
-#include <QPushButton>
-#include <QSizePolicy>
-#include <QGridLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSizePolicy>
+#include <QtWidgets/QGridLayout>
 
 //! [0]
 TestWidget::TestWidget(QWidget *parent):

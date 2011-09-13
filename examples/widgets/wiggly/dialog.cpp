@@ -38,7 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+#include <QtWidgets>
 
 #include "dialog.h"
 #include "wigglywidget.h"

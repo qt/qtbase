@@ -42,14 +42,18 @@
 #include "qcocoaintegration.h"
 
 #include "qcocoawindow.h"
-#include "qcocoawindowsurface.h"
-#include "qcocoaeventloopintegration.h"
+#include "qcocoabackingstore.h"
+#include "qcocoanativeinterface.h"
+#include "qcocoamenuloader.h"
+#include "qcocoaeventdispatcher.h"
+#include "qcocoahelpers.h"
+#include "qcocoaapplication.h"
+#include "qcocoaapplicationdelegate.h"
+#include "qmenu_mac.h"
 
-#include "qcoretextfontdatabase.h"
+#include <QtCore/qcoreapplication.h>
 
-#include <QtGui/QApplication>
-
-#include <private/qpixmap_raster_p.h>
+#include <QtPlatformSupport/private/qbasicunixfontdatabase_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,18 +78,47 @@ QCocoaScreen::~QCocoaScreen()
 }
 
 QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QCoreTextFontDatabase())
+    : mFontDb(new QBasicUnixFontDatabase())
+    , mEventDispatcher(new QCocoaEventDispatcher())
 {
     mPool = new QCocoaAutoReleasePool;
 
-    //Make sure we have a nsapplication :)
-    [NSApplication sharedApplication];
-//    [[OurApplication alloc] init];
+    QNSApplication *cocoaApplication = [QNSApplication sharedApplication];
+
+    // Applications launched from plain executables (without an app
+    // bundle) are "background" applications that does not take keybaord
+    // focus or have a dock icon or task switcher entry. Qt Gui apps generally
+    // wants to be foreground applications so change the process type. (But
+    // see the function implementation for exceptions.)
+    qt_mac_transformProccessToForegroundApplication();
+
+    // Move the application window to front to avoid launching behind the terminal.
+    // Ignoring other apps is neccessary (we must ignore the terminal), but makes
+    // Qt apps play slightly less nice with other apps when lanching from Finder
+    // (See the activateIgnoringOtherApps docs.)
+    [cocoaApplication activateIgnoringOtherApps : YES];
+
+    // ### For AA_MacPluginApplication we don't want to load the menu nib.
+    // Qt 4 also does not set the application delegate, so that behavior
+    // is matched here.
+    if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
+
+        // Set app delegate, link to the current delegate (if any)
+        QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+        [newDelegate setReflectionDelegate:[cocoaApplication delegate]];
+        [cocoaApplication setDelegate:newDelegate];
+
+        // Load the application menu. This menu contains Preferences, Hide, Quit.
+        QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
+        qt_mac_loadMenuNib(qtMenuLoader);
+        [cocoaApplication setMenu:[qtMenuLoader menu]];
+        [newDelegate setMenuLoader:qtMenuLoader];
+    }
 
     NSArray *screens = [NSScreen screens];
     for (uint i = 0; i < [screens count]; i++) {
         QCocoaScreen *screen = new QCocoaScreen(i);
-        mScreens.append(screen);
+        screenAdded(screen);
     }
 }
 
@@ -98,26 +131,32 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL : return true;
+    case ThreadedOpenGL : return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
 
 
 
-QPixmapData *QCocoaIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QRasterPixmapData(type);
+    return new QCocoaWindow(window);
 }
 
-QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformOpenGLContext *QCocoaIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    Q_UNUSED(winId);
-    return new QCocoaWindow(widget);
+    return new QCocoaGLContext(context->format(), context->shareHandle());
 }
 
-QWindowSurface *QCocoaIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QCocoaWindowSurface(widget,winId);
+    return new QCocoaBackingStore(window);
+}
+
+QAbstractEventDispatcher *QCocoaIntegration::guiThreadEventDispatcher() const
+{
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
@@ -125,8 +164,21 @@ QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const
     return mFontDb;
 }
 
-QPlatformEventLoopIntegration *QCocoaIntegration::createEventLoopIntegration() const
+QPlatformMenu *QCocoaIntegration::createPlatformMenu(QMenu *menu) const
 {
-    return new QCocoaEventLoopIntegration();
+    // return new QCocoaMenu(menu);
+    return 0;
 }
+
+QPlatformMenuBar *QCocoaIntegration::createPlatformMenuBar(QMenuBar *menuBar) const
+{
+    //return new QCocoaMenuBar(menuBar);
+    return 0;
+}
+
+QPlatformNativeInterface *QCocoaIntegration::nativeInterface() const
+{
+    return new QCocoaNativeInterface();
+}
+
 QT_END_NAMESPACE

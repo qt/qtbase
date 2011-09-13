@@ -51,22 +51,20 @@
 #include <qvarlengtharray.h>
 #include <qtextcodec.h>
 #include <qthread.h>
+#include <qcoreapplication.h>
+
 #include "qtexthtmlparser_p.h"
 #include "qpainter.h"
-#include "qprinter.h"
-#include "qtextedit.h"
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qapplication.h>
-#include "qtextcontrol_p.h"
 #include "qfont_p.h"
-#include "private/qtextedit_p.h"
 #include "private/qdataurl_p.h"
 
 #include "qtextdocument_p.h"
-#include <private/qprinter_p.h>
 #include <private/qabstracttextdocumentlayout_p.h>
+#include "qpagedpaintdevice.h"
+#include "private/qpagedpaintdevice_p.h"
 
 #include <limits.h>
 
@@ -1696,7 +1694,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 }
 
 /*!
-    Prints the document to the given \a printer. The QPrinter must be
+    Prints the document to the given \a device. The QPageablePaintDevice must be
     set up before being used with this function.
 
     This is only a convenience method to print the whole document to the printer.
@@ -1706,33 +1704,32 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
 
     If the document is not paginated, like for example a document used in a QTextEdit,
     then a temporary copy of the document is created and the copy is broken into
-    multiple pages according to the size of the QPrinter's paperRect(). By default
+    multiple pages according to the size of the paint device's paperRect(). By default
     a 2 cm margin is set around the document contents. In addition the current page
     number is printed at the bottom of each page.
-
-    Note that QPrinter::Selection is not supported as print range with this function since
-    the selection is a property of QTextCursor. If you have a QTextEdit associated with
-    your QTextDocument then you can use QTextEdit's print() function because QTextEdit has
-    access to the user's selection.
 
     \sa QTextEdit::print()
 */
 
-void QTextDocument::print(QPrinter *printer) const
+void QTextDocument::print(QPagedPaintDevice *printer) const
 {
     Q_D(const QTextDocument);
 
-    if (!printer || !printer->isValid())
+    if (!printer)
         return;
-
-    if (!d->title.isEmpty())
-        printer->setDocName(d->title);
 
     bool documentPaginated = d->pageSize.isValid() && !d->pageSize.isNull()
                              && d->pageSize.height() != INT_MAX;
 
-    if (!documentPaginated && !printer->fullPage() && !printer->d_func()->hasCustomPageMargins)
-        printer->setPageMargins(23.53, 23.53, 23.53, 23.53, QPrinter::Millimeter);
+    QPagedPaintDevicePrivate *pd = QPagedPaintDevicePrivate::get(printer);
+
+    // ### set page size to paginated size?
+    QPagedPaintDevice::Margins m = printer->margins();
+    if (!documentPaginated && m.left == 0. && m.right == 0. && m.top == 0. && m.bottom == 0.) {
+        m.left = m.right = m.top = m.bottom = 2.;
+        printer->setMargins(m);
+    }
+    // ### use the margins correctly
 
     QPainter p(printer);
 
@@ -1767,7 +1764,7 @@ void QTextDocument::print(QPrinter *printer) const
         scaledPageSize.rwidth() *= dpiScaleX;
         scaledPageSize.rheight() *= dpiScaleY;
 
-        const QSizeF printerPageSize(printer->pageRect().size());
+        const QSizeF printerPageSize(printer->width(), printer->height());
 
         // scale to page
         p.scale(printerPageSize.width() / scaledPageSize.width(),
@@ -1789,17 +1786,12 @@ void QTextDocument::print(QPrinter *printer) const
         layout->d_func()->handlers = documentLayout()->d_func()->handlers;
 
         int dpiy = p.device()->logicalDpiY();
-        int margin = 0;
-        if (printer->fullPage() && !printer->d_func()->hasCustomPageMargins) {
-            // for compatibility
-            margin = (int) ((2/2.54)*dpiy); // 2 cm margins
-            QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
-            fmt.setMargin(margin);
-            doc->rootFrame()->setFrameFormat(fmt);
-        }
+        int margin = (int) ((2/2.54)*dpiy); // 2 cm margins
+        QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+        fmt.setMargin(margin);
+        doc->rootFrame()->setFrameFormat(fmt);
 
-        QRectF pageRect(printer->pageRect());
-        body = QRectF(0, 0, pageRect.width(), pageRect.height());
+        body = QRectF(0, 0, printer->width(), printer->height());
         pageNumberPos = QPointF(body.width() - margin,
                                 body.height() - margin
                                 + QFontMetrics(doc->defaultFont(), p.device()).ascent()
@@ -1807,18 +1799,8 @@ void QTextDocument::print(QPrinter *printer) const
         clonedDoc->setPageSize(body.size());
     }
 
-    int docCopies;
-    int pageCopies;
-    if (printer->collateCopies() == true){
-        docCopies = 1;
-        pageCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
-    } else {
-        docCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
-        pageCopies = 1;
-    }
-
-    int fromPage = printer->fromPage();
-    int toPage = printer->toPage();
+    int fromPage = pd->fromPage;
+    int toPage = pd->toPage;
     bool ascending = true;
 
     if (fromPage == 0 && toPage == 0) {
@@ -1835,39 +1817,27 @@ void QTextDocument::print(QPrinter *printer) const
         return;
     }
 
-    if (printer->pageOrder() == QPrinter::LastPageFirst) {
-        int tmp = fromPage;
-        fromPage = toPage;
-        toPage = tmp;
-        ascending = false;
-    }
+//    if (printer->pageOrder() == QPrinter::LastPageFirst) {
+//        int tmp = fromPage;
+//        fromPage = toPage;
+//        toPage = tmp;
+//        ascending = false;
+//    }
 
-    for (int i = 0; i < docCopies; ++i) {
+    int page = fromPage;
+    while (true) {
+        printPage(page, &p, doc, body, pageNumberPos);
 
-        int page = fromPage;
-        while (true) {
-            for (int j = 0; j < pageCopies; ++j) {
-                if (printer->printerState() == QPrinter::Aborted
-                    || printer->printerState() == QPrinter::Error)
-                    return;
-                printPage(page, &p, doc, body, pageNumberPos);
-                if (j < pageCopies - 1)
-                    printer->newPage();
-            }
+        if (page == toPage)
+            break;
 
-            if (page == toPage)
-                break;
+        if (ascending)
+            ++page;
+        else
+            --page;
 
-            if (ascending)
-                ++page;
-            else
-                --page;
-
-            printer->newPage();
-        }
-
-        if ( i < docCopies - 1)
-            printer->newPage();
+        if (!printer->newPage())
+            return;
     }
 }
 #endif
@@ -1971,6 +1941,8 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     if (doc) {
         r = doc->loadResource(type, name);
     }
+#if 0
+    // ### Qt5: reenable
 #ifndef QT_NO_TEXTEDIT
     else if (QTextEdit *edit = qobject_cast<QTextEdit *>(parent())) {
         QUrl resolvedName = edit->d_func()->resolveUrl(name);
@@ -1978,9 +1950,10 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     }
 #endif
 #ifndef QT_NO_TEXTCONTROL
-    else if (QTextControl *control = qobject_cast<QTextControl *>(parent())) {
+    else if (QWidgetTextControl *control = qobject_cast<QWidgetTextControl *>(parent())) {
         r = control->loadResource(type, name);
     }
+#endif
 #endif
 
     // handle data: URLs

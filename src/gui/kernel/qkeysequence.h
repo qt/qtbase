@@ -161,9 +161,6 @@ public:
         NoMatch,
         PartialMatch,
         ExactMatch
-#ifdef QT3_SUPPORT
-        , Identical = ExactMatch
-#endif
     };
 
     QString toString(SequenceFormat format = PortableText) const;

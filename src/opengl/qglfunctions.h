@@ -419,7 +419,7 @@ struct QGLFunctionsPrivate
 
 inline void QGLFunctions::glActiveTexture(GLenum texture)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glActiveTexture(texture);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -449,7 +449,7 @@ inline void QGLFunctions::glBindAttribLocation(GLuint program, GLuint index, con
 
 inline void QGLFunctions::glBindBuffer(GLenum target, GLuint buffer)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glBindBuffer(target, buffer);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -519,7 +519,7 @@ inline void QGLFunctions::glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLen
 
 inline void QGLFunctions::glBufferData(GLenum target, qgl_GLsizeiptr size, const void* data, GLenum usage)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glBufferData(target, size, data, usage);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -529,7 +529,7 @@ inline void QGLFunctions::glBufferData(GLenum target, qgl_GLsizeiptr size, const
 
 inline void QGLFunctions::glBufferSubData(GLenum target, qgl_GLintptr offset, qgl_GLsizeiptr size, const void* data)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glBufferSubData(target, offset, size, data);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -568,7 +568,7 @@ inline void QGLFunctions::glCompileShader(GLuint shader)
 
 inline void QGLFunctions::glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -578,7 +578,7 @@ inline void QGLFunctions::glCompressedTexImage2D(GLenum target, GLint level, GLe
 
 inline void QGLFunctions::glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -608,7 +608,7 @@ inline GLuint QGLFunctions::glCreateShader(GLenum type)
 
 inline void QGLFunctions::glDeleteBuffers(GLsizei n, const GLuint* buffers)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glDeleteBuffers(n, buffers);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -717,7 +717,7 @@ inline void QGLFunctions::glFramebufferTexture2D(GLenum target, GLenum attachmen
 
 inline void QGLFunctions::glGenBuffers(GLsizei n, GLuint* buffers)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glGenBuffers(n, buffers);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -947,7 +947,7 @@ inline void QGLFunctions::glGetVertexAttribPointerv(GLuint index, GLenum pname, 
 
 inline GLboolean QGLFunctions::glIsBuffer(GLuint buffer)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     return ::glIsBuffer(buffer);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));
@@ -1027,7 +1027,7 @@ inline void QGLFunctions::glRenderbufferStorage(GLenum target, GLenum internalfo
 
 inline void QGLFunctions::glSampleCoverage(GLclampf value, GLboolean invert)
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2)
     ::glSampleCoverage(value, invert);
 #else
     Q_ASSERT(QGLFunctions::isInitialized(d_ptr));

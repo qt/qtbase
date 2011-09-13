@@ -54,10 +54,8 @@
 //
 
 #include "QtGui/qtextdocumentfragment.h"
-#include "QtGui/qscrollbar.h"
 #include "QtGui/qtextcursor.h"
 #include "QtGui/qtextformat.h"
-#include "QtGui/qmenu.h"
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qpointer.h"
@@ -160,15 +158,11 @@ public:
     bool dragEnterEvent(QEvent *e, const QMimeData *mimeData);
     void dragLeaveEvent();
     bool dragMoveEvent(QEvent *e, const QMimeData *mimeData, const QPointF &pos);
-    bool dropEvent(const QMimeData *mimeData, const QPointF &pos, Qt::DropAction dropAction, QWidget *source);
+    bool dropEvent(const QMimeData *mimeData, const QPointF &pos, Qt::DropAction dropAction, QObject *source);
 
     void inputMethodEvent(QInputMethodEvent *);
 
     void activateLinkUnderCursor(QString href = QString());
-
-#ifndef QT_NO_TOOLTIP
-    void showToolTip(const QPoint &globalPos, const QPointF &pos, QWidget *contextWidget);
-#endif
 
     void append(const QString &text, Qt::TextFormat format = Qt::AutoText);
 
@@ -194,7 +188,7 @@ public:
 
     bool mightStartDrag;
     QPoint dragStartPos;
-    QPointer<QWidget> contextWidget;
+    QPointer<QObject> contextObject;
 
     bool lastSelectionState;
 
@@ -235,4 +229,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QTEXTCONTROL_P_H
+#endif // QTextControl_P_H

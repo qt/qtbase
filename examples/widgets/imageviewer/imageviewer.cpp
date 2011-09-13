@@ -38,7 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+#include <QPrintDialog>
 
 #include "imageviewer.h"
 

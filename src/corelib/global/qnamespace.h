@@ -237,13 +237,13 @@ public:
         Window = 0x00000001,
         Dialog = 0x00000002 | Window,
         Sheet = 0x00000004 | Window,
-        Drawer = 0x00000006 | Window,
+        Drawer = Sheet | Dialog,
         Popup = 0x00000008 | Window,
-        Tool = 0x0000000a | Window,
-        ToolTip = 0x0000000c | Window,
-        SplashScreen = 0x0000000e | Window,
+        Tool = Popup | Dialog,
+        ToolTip = Popup | Sheet,
+        SplashScreen = ToolTip | Dialog,
         Desktop = 0x00000010 | Window,
-        SubWindow =  0x00000012,
+        SubWindow = 0x00000012,
 
         WindowType_Mask = 0x000000ff,
         MSWindowsFixedSizeDialogHint = 0x00000100,
@@ -258,13 +258,7 @@ public:
         WindowContextHelpButtonHint = 0x00010000,
         WindowShadeButtonHint = 0x00020000,
         WindowStaysOnTopHint = 0x00040000,
-        // reserved for Qt3Support:
-        // WMouseNoMask = 0x00080000,
-        // WDestructiveClose = 0x00100000,
-        // WStaticContents = 0x00200000,
-        // WGroupLeader = 0x00400000,
-        // WShowModal = 0x00800000,
-        // WNoMousePropagation = 0x01000000,
+
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,
         WindowCloseButtonHint = 0x08000000,
@@ -1240,23 +1234,37 @@ public:
     };
 
     enum InputMethodQuery {
-        ImMicroFocus,
-        ImFont,
-        ImCursorPosition,
-        ImSurroundingText,
-        ImCurrentSelection,
-        ImMaximumTextLength,
-        ImAnchorPosition
+        ImEnabled = 0x1,
+        ImCursorRectangle = 0x2,
+        ImMicroFocus = 0x2, // deprecated
+        ImFont = 0x4,
+        ImCursorPosition = 0x8,
+        ImSurroundingText = 0x10,
+        ImCurrentSelection = 0x20,
+        ImMaximumTextLength = 0x40,
+        ImAnchorPosition = 0x80,
+        ImHints = 0x100,
+        ImPreferredLanguage = 0x200,
+
+        ImPlatformData = 0x80000000,
+        ImQueryAll = 0xffffffff
     };
+    Q_DECLARE_FLAGS(InputMethodQueries, InputMethodQuery)
 
     enum InputMethodHint {
         ImhNone = 0x0,
+
         ImhHiddenText = 0x1,
-        ImhNoAutoUppercase = 0x2,
-        ImhPreferNumbers = 0x4,
-        ImhPreferUppercase = 0x8,
-        ImhPreferLowercase = 0x10,
-        ImhNoPredictiveText = 0x20,
+        ImhSensitiveData = 0x2,
+        ImhNoAutoUppercase = 0x4,
+        ImhPreferNumbers = 0x8,
+        ImhPreferUppercase = 0x10,
+        ImhPreferLowercase = 0x20,
+        ImhNoPredictiveText = 0x40,
+
+        ImhDate = 0x80,
+        ImhTime = 0x100,
+        ImhMultiLine = 0x200,
 
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,

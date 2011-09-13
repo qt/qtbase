@@ -117,7 +117,7 @@ public:
 
     UIWindow *ensureNativeWindow();
 
-    QPlatformGLContext *glContext() const;
+    QPlatformOpenGLContext *glContext() const;
 
 private:
     QUIKitScreen *mScreen;

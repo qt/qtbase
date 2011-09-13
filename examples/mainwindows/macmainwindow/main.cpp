@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "macmainwindow.h"
 
 #ifdef Q_WS_MAC

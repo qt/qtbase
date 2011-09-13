@@ -273,7 +273,13 @@ public:
         ScrollPrepare = 204,
         Scroll = 205,
 
-        OrientationChange = 206,                // Screen orientation has changed
+        Map = 206,
+        Unmap = 207,
+
+        Expose = 208,
+
+        InputMethodQuery = 209,
+        OrientationChange = 210,                // Screen orientation has changed
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

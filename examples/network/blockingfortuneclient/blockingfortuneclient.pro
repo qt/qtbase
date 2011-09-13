@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = blockingclient.h \
                 fortunethread.h
 SOURCES       = blockingclient.cpp \

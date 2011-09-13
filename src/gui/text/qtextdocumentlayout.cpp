@@ -46,6 +46,7 @@
 #include "qtextlist.h"
 #include "qtextengine_p.h"
 #include "private/qcssutil_p.h"
+#include "private/qguiapplication_p.h"
 
 #include "qabstracttextdocumentlayout_p.h"
 #include "qcssparser_p.h"
@@ -57,7 +58,6 @@
 #include <qdebug.h>
 #include <qvarlengtharray.h>
 #include <limits.h>
-#include <qstyle.h>
 #include <qbasictimer.h>
 #include "private/qfunctions_p.h"
 
@@ -2572,7 +2572,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
         Qt::Alignment align = docPrivate->defaultTextOption.alignment();
         if (blockFormat.hasProperty(QTextFormat::BlockAlignment))
             align = blockFormat.alignment();
-        option.setAlignment(QStyle::visualAlignment(dir, align)); // for paragraph that are RTL, alignment is auto-reversed;
+        option.setAlignment(QGuiApplicationPrivate::visualAlignment(dir, align)); // for paragraph that are RTL, alignment is auto-reversed;
 
         if (blockFormat.nonBreakableLines() || document->pageSize().width() < 0) {
             option.setWrapMode(QTextOption::ManualWrap);

@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #include "flowlayout.h"
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtCore/qmath.h>
 
 FlowLayout::FlowLayout()

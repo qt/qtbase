@@ -59,22 +59,17 @@
 #include "QtGui/qdrag.h"
 #include "QtGui/qpixmap.h"
 #include "QtGui/qcursor.h"
+#include "QtGui/qwindow.h"
 #include "QtCore/qpoint.h"
 #include "private/qobject_p.h"
-#ifdef Q_WS_MAC
-# include "private/qt_mac_p.h"
-#endif
-
-#if defined(Q_WS_WIN)
-# include <qt_windows.h>
-# include <objidl.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QEventLoop;
+class QMouseEvent;
+class QPlatformDrag;
 
-#if !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))
+#ifndef QT_NO_DRAGANDDROP
 
 class Q_GUI_EXPORT QInternalMimeData : public QMimeData
 {
@@ -100,82 +95,11 @@ protected:
     virtual QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const = 0;
 };
 
-#ifdef Q_WS_WIN
-class QOleDataObject : public IDataObject
-{
-public:
-    explicit QOleDataObject(QMimeData *mimeData);
-    virtual ~QOleDataObject();
-
-    void releaseQt();
-    const QMimeData *mimeData() const;
-    DWORD reportedPerformedEffect() const;
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG,AddRef)(void);
-    STDMETHOD_(ULONG,Release)(void);
-
-    // IDataObject methods
-    STDMETHOD(GetData)(LPFORMATETC pformatetcIn, LPSTGMEDIUM pmedium);
-    STDMETHOD(GetDataHere)(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium);
-    STDMETHOD(QueryGetData)(LPFORMATETC pformatetc);
-    STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC pformatetc, LPFORMATETC pformatetcOut);
-    STDMETHOD(SetData)(LPFORMATETC pformatetc, STGMEDIUM FAR * pmedium,
-                       BOOL fRelease);
-    STDMETHOD(EnumFormatEtc)(DWORD dwDirection, LPENUMFORMATETC FAR* ppenumFormatEtc);
-    STDMETHOD(DAdvise)(FORMATETC FAR* pFormatetc, DWORD advf,
-                      LPADVISESINK pAdvSink, DWORD FAR* pdwConnection);
-    STDMETHOD(DUnadvise)(DWORD dwConnection);
-    STDMETHOD(EnumDAdvise)(LPENUMSTATDATA FAR* ppenumAdvise);
-
-private:
-    ULONG m_refs;
-    QPointer<QMimeData> data;
-    int CF_PERFORMEDDROPEFFECT;
-    DWORD performedEffect;
-};
-
-class QOleEnumFmtEtc : public IEnumFORMATETC
-{
-public:
-    explicit QOleEnumFmtEtc(const QVector<FORMATETC> &fmtetcs);
-    explicit QOleEnumFmtEtc(const QVector<LPFORMATETC> &lpfmtetcs);
-    virtual ~QOleEnumFmtEtc();
-
-    bool isNull() const;
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG,AddRef)(void);
-    STDMETHOD_(ULONG,Release)(void);
-
-    // IEnumFORMATETC methods
-    STDMETHOD(Next)(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetched);
-    STDMETHOD(Skip)(ULONG celt);
-    STDMETHOD(Reset)(void);
-    STDMETHOD(Clone)(LPENUMFORMATETC FAR* newEnum);
-
-private:
-    bool copyFormatEtc(LPFORMATETC dest, LPFORMATETC src) const;
-
-    ULONG m_dwRefs;
-    ULONG m_nIndex;
-    QVector<LPFORMATETC> m_lpfmtetcs;
-    bool m_isNull;
-};
-
-#endif
-
-#endif //QT_NO_DRAGANDDROP && QT_NO_CLIPBOARD
-
-#ifndef QT_NO_DRAGANDDROP
-
 class QDragPrivate : public QObjectPrivate
 {
 public:
-    QWidget *source;
-    QWidget *target;
+    QObject *source;
+    QObject *target;
     QMimeData *data;
     QPixmap pixmap;
     QPoint hotspot;
@@ -185,148 +109,112 @@ public:
     Qt::DropAction defaultDropAction;
 };
 
-class QDropData : public QInternalMimeData
-{
-    Q_OBJECT
+class QShapedPixmapWindow : public QWindow {
+    QPixmap pixmap;
 public:
-    QDropData();
-    ~QDropData();
+    QShapedPixmapWindow() :
+        QWindow()
+    {
+        setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
+        // ### Should we set the surface type to raster?
+        // ### FIXME
+//            setAttribute(Qt::WA_TransparentForMouseEvents);
+    }
 
-protected:
-    bool hasFormat_sys(const QString &mimeType) const;
-    QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
+    void move(const QPoint &p) {
+        QRect g = geometry();
+        g.setTopLeft(p);
+        setGeometry(g);
+    }
+    void setPixmap(QPixmap pm)
+    {
+        pixmap = pm;
+        // ###
+//        if (!pixmap.mask().isNull()) {
+//            setMask(pixmap.mask());
+//        } else {
+//            clearMask();
+//        }
+        setGeometry(QRect(geometry().topLeft(), pm.size()));
+    }
 
-#if defined(Q_WS_WIN)
-public:
-    LPDATAOBJECT currentDataObject;
-#endif
+    // ### Get it painted again!
+//    void paintEvent(QPaintEvent*)
+//    {
+//        QPainter p(this);
+//        p.drawPixmap(0,0,pixmap);
+//    }
 };
 
-class QDragManager: public QObject {
+
+class Q_GUI_EXPORT QDragManager : public QObject {
     Q_OBJECT
 
-    QDragManager();
-    ~QDragManager();
     // only friend classes can use QDragManager.
     friend class QDrag;
     friend class QDragMoveEvent;
     friend class QDropEvent;
     friend class QApplication;
-#ifdef Q_WS_MAC
-    friend class QWidgetPrivate; //dnd is implemented here
-#endif
 
     bool eventFilter(QObject *, QEvent *);
-    void timerEvent(QTimerEvent*);
 
 public:
-    Qt::DropAction drag(QDrag *);
-
-    void cancel(bool deleteSource = true);
-    void move(const QPoint &);
-    void drop();
-    void updatePixmap();
-    QWidget *source() const { return object ? object->d_func()->source : 0; }
-    QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
-    static QDragPrivate *dragPrivate(QDrag *drag) { return drag ? drag->d_func() : 0; }
-
+    QDragManager();
+    ~QDragManager();
     static QDragManager *self();
+
+    virtual Qt::DropAction drag(QDrag *);
+
+    virtual void cancel(bool deleteSource = true);
+    virtual void move(const QMouseEvent *me);
+    virtual void drop(const QMouseEvent *me);
+
+    void updatePixmap();
+    void updateCursor();
+
     Qt::DropAction defaultAction(Qt::DropActions possibleActions,
                                  Qt::KeyboardModifiers modifiers) const;
 
-    QDrag *object;
+    QPixmap dragCursor(Qt::DropAction action) const;
 
-    void updateCursor();
+    QDragPrivate *dragPrivate() const { return object ? object->d_func() : 0; }
+
+    inline QMimeData *dropData()
+    { return object ? dragPrivate()->data : platformDropData; }
+
+    void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
+
+    void setCurrentTarget(QObject *target, bool dropped = false);
+    QObject *currentTarget();
+
+    QDrag *object;
 
     bool beingCancelled;
     bool restoreCursor;
     bool willDrop;
     QEventLoop *eventLoop;
 
-    QPixmap dragCursor(Qt::DropAction action) const;
+    Qt::DropActions possible_actions;
+    // Shift/Ctrl handling, and final drop status
+    Qt::DropAction global_accepted_action;
 
-    bool hasCustomDragCursors() const;
+    QShapedPixmapWindow *shapedPixmapWindow;
 
-    QDropData *dropData;
-
-    void emitActionChanged(Qt::DropAction newAction) { if (object) emit object->actionChanged(newAction); }
-
-    void setCurrentTarget(QWidget *target, bool dropped = false);
-    QWidget *currentTarget();
-
-#ifdef Q_WS_X11
-    QPixmap xdndMimeTransferedPixmap[2];
-    int xdndMimeTransferedPixmapIndex;
-#endif
+    void unmanageEvents();
+    void stopDrag();
 
 private:
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+    QMimeData *platformDropData;
+
     Qt::DropAction currentActionForOverrideCursor;
-#endif
-#ifdef Q_OS_SYMBIAN
-#ifndef QT_NO_CURSOR
-    QCursor overrideCursor;
-#endif
-#endif
-    QWidget *currentDropTarget;
+    QObject *currentDropTarget;
+
+    QPlatformDrag *platformDrag;
 
     static QDragManager *instance;
     Q_DISABLE_COPY(QDragManager)
 };
 
-
-#if defined(Q_WS_WIN)
-
-class QOleDropTarget : public IDropTarget
-{
-public:
-    QOleDropTarget(QWidget* w);
-    virtual ~QOleDropTarget() {}
-
-    void releaseQt();
-
-    // IUnknown methods
-    STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
-    STDMETHOD_(ULONG, AddRef)(void);
-    STDMETHOD_(ULONG, Release)(void);
-
-    // IDropTarget methods
-    STDMETHOD(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-    STDMETHOD(DragOver)(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-    STDMETHOD(DragLeave)();
-    STDMETHOD(Drop)(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-
-private:
-    ULONG m_refs;
-    QWidget* widget;
-    QPointer<QWidget> currentWidget;
-    QRect answerRect;
-    QPoint lastPoint;
-    DWORD chosenEffect;
-    DWORD lastKeyState;
-
-    void sendDragEnterEvent(QWidget *to, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect);
-};
-
-#endif
-
-#if defined (Q_WS_MAC)
-class QCocoaDropData : public QInternalMimeData
-{
-    Q_OBJECT
-public:
-    QCocoaDropData(CFStringRef pasteboard);
-    ~QCocoaDropData();
-
-protected:
-    bool hasFormat_sys(const QString &mimeType) const;
-    QStringList formats_sys() const;
-    QVariant retrieveData_sys(const QString &mimeType, QVariant::Type type) const;
-public:
-    CFStringRef dropPasteboard;
-};
-#endif
 
 #endif // !QT_NO_DRAGANDDROP
 

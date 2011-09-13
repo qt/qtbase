@@ -44,39 +44,43 @@
 #include <QtCore/QTime>
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/QEvent>
-#include <QtGui/QWidget>
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtGui/QWindow>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
 #include <QtGui/QTouchEvent>
+#include <QtCore/QEventLoop>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+class QMimeData;
 
 QT_MODULE(Gui)
 
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
-    static void handleMouseEvent(QWidget *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
-    static void handleMouseEvent(QWidget *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
+    static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
+    static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b);
 
-    static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static void handleKeyEvent(QWidget *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static void handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
+    static void handleKeyEvent(QWindow *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
-    static void handleExtendedKeyEvent(QWidget *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    static void handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1);
-    static void handleExtendedKeyEvent(QWidget *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+    static void handleExtendedKeyEvent(QWindow *w, ulong timestamp, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                        quint32 nativeScanCode, quint32 nativeVirtualKey,
                                        quint32 nativeModifiers,
                                        const QString& text = QString(), bool autorep = false,
                                        ushort count = 1);
 
-    static void handleWheelEvent(QWidget *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
-    static void handleWheelEvent(QWidget *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
+    static void handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
+    static void handleWheelEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o);
 
     struct TouchPoint {
         int id;                 // for application use
@@ -87,19 +91,34 @@ public:
         Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
     };
 
-    static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
-    static void handleTouchEvent(QWidget *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
+    static void handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
+    static void handleTouchEvent(QWindow *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
 
-    static void handleGeometryChange(QWidget *w, const QRect &newRect);
-    static void handleCloseEvent(QWidget *w);
-    static void handleEnterEvent(QWidget *w);
-    static void handleLeaveEvent(QWidget *w);
-    static void handleWindowActivated(QWidget *w);
+    static void handleGeometryChange(QWindow *w, const QRect &newRect);
+    static void handleSynchronousGeometryChange(QWindow *w, const QRect &newRect);
+    static void handleCloseEvent(QWindow *w);
+    static void handleEnterEvent(QWindow *w);
+    static void handleLeaveEvent(QWindow *w);
+    static void handleWindowActivated(QWindow *w);
+    static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
+
+    static void handleMapEvent(QWindow *w);
+    static void handleUnmapEvent(QWindow *w);
+
+    static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
+
+    // Drag and drop. These events are sent immediately.
+    static Qt::DropAction handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p);
+    static Qt::DropAction handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p);
 
     // Changes to the screen
     static void handleScreenGeometryChange(int screenIndex);
     static void handleScreenAvailableGeometryChange(int screenIndex);
     static void handleScreenCountChange(int count);
+
+    // For event dispatcher implementations
+    static bool sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags);
+    static int windowSystemEventsQueued();
 };
 
 QT_END_NAMESPACE

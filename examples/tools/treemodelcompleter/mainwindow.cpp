@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "treemodelcompleter.h"
 #include "mainwindow.h"
 

@@ -54,8 +54,7 @@ public:
 QStringList QWaylandIntegrationPlugin::keys() const
 {
     QStringList list;
-    list << "Wayland";
-    list << "WaylandGL";
+    list << "wayland";
     return list;
 }
 
@@ -63,9 +62,7 @@ QPlatformIntegration *QWaylandIntegrationPlugin::create(const QString& system, c
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "wayland")
-        return new QWaylandIntegration;
-    if (system.toLower() == "waylandgl")
-        return new QWaylandIntegration(true);
+        return new QWaylandIntegration();
 
     return 0;
 }

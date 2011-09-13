@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
 #include "qxlibscreen.h"
 
 #include <X11/extensions/Xfixes.h>
@@ -54,7 +55,7 @@
 #include <QtCore/QSocketNotifier>
 #include <QtCore/QElapsedTimer>
 
-#include <private/qapplication_p.h>
+#include <QtGui/QScreen>
 
 QT_BEGIN_NAMESPACE
 
@@ -263,11 +264,9 @@ unsigned long QXlibScreen::whitePixel()
 bool QXlibScreen::handleEvent(XEvent *xe)
 {
     int quit = false;
-    QXlibWindow *platformWindow = 0;
-    QWidget *widget = QWidget::find(xe->xany.window);
-    if (widget) {
-        platformWindow = static_cast<QXlibWindow *>(widget->platformWindow());
-    }
+    QXlibWindow *platformWindow = QXlibWindow::platformWindowForXWindow(xe->xany.window);
+    if (!platformWindow)
+        return false;
 
     Atom wmProtocolsAtom = QXlibStatic::atom(QXlibStatic::WM_PROTOCOLS);
     Atom wmDeleteWindowAtom = QXlibStatic::atom(QXlibStatic::WM_DELETE_WINDOW);
@@ -282,56 +281,48 @@ bool QXlibScreen::handleEvent(XEvent *xe)
         break;
 
     case Expose:
-        if (platformWindow)
-            if (xe->xexpose.count == 0)
-                platformWindow->paintEvent();
+            // ###
+//            if (xe->xexpose.count == 0)
+//                platformWindow->paintEvent();
         break;
     case ConfigureNotify:
-        if (platformWindow)
-            platformWindow->resizeEvent(&xe->xconfigure);
+        platformWindow->resizeEvent(&xe->xconfigure);
         break;
 
     case ButtonPress:
-        if (platformWindow)
-            platformWindow->mousePressEvent(&xe->xbutton);
+        platformWindow->mousePressEvent(&xe->xbutton);
         break;
 
     case ButtonRelease:
-        if (platformWindow)
-            platformWindow->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
+        platformWindow->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
         break;
 
     case MotionNotify:
-        if (platformWindow)
-            platformWindow->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
+        platformWindow->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
         break;
 
-        case XKeyPress:
-        mKeyboard->handleKeyEvent(widget,QEvent::KeyPress, &xe->xkey);
+    case XKeyPress:
+        mKeyboard->handleKeyEvent(platformWindow->window(), QEvent::KeyPress, &xe->xkey);
         break;
 
     case XKeyRelease:
-        mKeyboard->handleKeyEvent(widget,QEvent::KeyRelease, &xe->xkey);
+        mKeyboard->handleKeyEvent(platformWindow->window(), QEvent::KeyRelease, &xe->xkey);
         break;
 
     case EnterNotify:
-        if (platformWindow)
-            platformWindow->handleEnterEvent();
+        platformWindow->handleEnterEvent();
         break;
 
     case LeaveNotify:
-        if (platformWindow)
-            platformWindow->handleLeaveEvent();
+        platformWindow->handleLeaveEvent();
         break;
 
     case XFocusIn:
-        if (platformWindow)
-            platformWindow->handleFocusInEvent();
+        platformWindow->handleFocusInEvent();
         break;
 
     case XFocusOut:
-        if (platformWindow)
-            platformWindow->handleFocusOutEvent();
+        platformWindow->handleFocusOutEvent();
         break;
 
     case PropertyNotify:
@@ -452,10 +443,9 @@ QImage QXlibScreen::grabWindow(Window window, int x, int y, int w, int h)
     return result;
 }
 
-QXlibScreen * QXlibScreen::testLiteScreenForWidget(QWidget *widget)
+QXlibScreen * QXlibScreen::testLiteScreenForWidget(QWindow *widget)
 {
-    QPlatformScreen *platformScreen = platformScreenForWidget(widget);
-    return static_cast<QXlibScreen *>(platformScreen);
+    return static_cast<QXlibScreen *>(widget->screen()->handle());
 }
 
 QXlibDisplay * QXlibScreen::display() const
@@ -480,7 +470,7 @@ QXlibKeyboard * QXlibScreen::keyboard() const
 
 void QXlibScreen::handleSelectionRequest(XEvent *event)
 {
-    QPlatformIntegration *integration = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
     QXlibClipboard *clipboard = static_cast<QXlibClipboard *>(integration->clipboard());
     clipboard->handleSelectionRequest(event);
 }

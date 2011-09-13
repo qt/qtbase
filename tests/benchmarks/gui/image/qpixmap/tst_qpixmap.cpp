@@ -76,8 +76,8 @@ Q_DECLARE_METATYPE(Qt::TransformationMode)
 
 QPixmap rasterPixmap(int width, int height)
 {
-    QPixmapData *data =
-        new QRasterPixmapData(QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
 
     data->resize(width, height);
 
@@ -91,8 +91,8 @@ QPixmap rasterPixmap(const QSize &size)
 
 QPixmap rasterPixmap(const QImage &image)
 {
-    QPixmapData *data =
-        new QRasterPixmapData(QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
 
     data->fromImage(image, Qt::AutoColor);
 

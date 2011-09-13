@@ -41,7 +41,7 @@
 
 #include "qgraphicssystem_vglite.h"
 #include "qwindowsurface_vglite.h"
-#include <QtOpenVG/private/qpixmapdata_vg_p.h>
+#include <QtOpenVG/qplatformpixmap_vg_p.h>
 #include <QtGui/private/qegl_p.h>
 #include <QtCore/qdebug.h>
 #ifdef OPENVG_USBHP_INIT
@@ -163,16 +163,16 @@ QVGLiteGraphicsSystem::~QVGLiteGraphicsSystem()
 {
 }
 
-QPixmapData *QVGLiteGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QVGLiteGraphicsSystem::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
 #if !defined(QVGLite_NO_SINGLE_CONTEXT) && !defined(QVGLite_NO_PIXMAP_DATA)
-    // Pixmaps can use QVGLitePixmapData; bitmaps must use raster.
-    if (type == QPixmapData::PixmapType)
-        return new QVGPixmapData(type);
+    // Pixmaps can use QVGLitePlatformPixmap; bitmaps must use raster.
+    if (type == QPlatformPixmap::PixmapType)
+        return new QVGPlatformPixmap(type);
     else
-        return new QRasterPixmapData(type);
+        return new QRasterPlatformPixmap(type);
 #else
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 #endif
 }
 

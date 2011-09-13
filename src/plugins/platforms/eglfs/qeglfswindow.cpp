@@ -45,25 +45,26 @@
 
 QT_BEGIN_NAMESPACE
 
-QEglFSWindow::QEglFSWindow(QWidget *w, QEglFSScreen *screen)
-    : QPlatformWindow(w), m_screen(screen)
+QEglFSWindow::QEglFSWindow(QWindow *w)
+    : QPlatformWindow(w)
 {
     static int serialNo = 0;
     m_winid  = ++serialNo;
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
+    qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
-}
 
+    QRect screenGeometry(screen()->availableGeometry());
+    if (w->geometry() != screenGeometry) {
+        QWindowSystemInterface::handleGeometryChange(w, screenGeometry);
+    }
+}
 
 void QEglFSWindow::setGeometry(const QRect &)
 {
     // We only support full-screen windows
-    QRect rect(m_screen->availableGeometry());
-    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
-
-    // Since toplevels are fullscreen, propegate the screen size back to the widget
-    widget()->setGeometry(rect);
+    QRect rect(screen()->availableGeometry());
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
 }
@@ -71,17 +72,6 @@ void QEglFSWindow::setGeometry(const QRect &)
 WId QEglFSWindow::winId() const
 {
     return m_winid;
-}
-
-
-
-QPlatformGLContext *QEglFSWindow::glContext() const
-{
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglWindow::glContext %p\n", m_screen->platformContext());
-#endif
-    Q_ASSERT(m_screen);
-     return m_screen->platformContext();
 }
 
 QT_END_NAMESPACE

@@ -14,4 +14,5 @@ sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.png *.jpg *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/mainwindow
 INSTALLS += target sources
 
+QT += widgets
 symbian: CONFIG += qt_example

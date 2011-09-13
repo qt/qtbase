@@ -45,28 +45,55 @@
 #include <Cocoa/Cocoa.h>
 
 #include <QPlatformWindow>
+#include <QRect>
+
+#include "qcocoaglcontext.h"
+#include "qnsview.h"
 
 QT_BEGIN_NAMESPACE
+
+@interface QNSWindow : NSWindow {
+
+}
+
+@end
 
 class QCocoaWindow : public QPlatformWindow
 {
 public:
-    QCocoaWindow(QWidget *tlw);
+    QCocoaWindow(QWindow *tlw);
     ~QCocoaWindow();
 
     void setGeometry(const QRect &rect);
-
     void setVisible(bool visible);
+    void setWindowTitle(const QString &title);
+    void raise();
+    void lower();
 
     WId winId() const;
-
     NSView *contentView() const;
-    void setContentView(NSView *contentView);
 
+    void windowDidMove();
     void windowDidResize();
+    void windowWillClose();
+
+    void setCurrentContext(QCocoaGLContext *context);
+    QCocoaGLContext *currentContext() const;
+
+protected:
+    void determineWindowClass();
+    QNSWindow *createWindow();
+    NSRect globalGeometry(const QRect localWindowGeometry) const;
+    QRect windowGeometry() const;
+    QCocoaWindow *parentCocoaWindow() const;
 
 private:
-    NSWindow *m_nsWindow;
+    friend class QCocoaBackingStore;
+    QNSWindow *m_nsWindow;
+    QNSView *m_contentView;
+    quint32 m_windowAttributes;
+    quint32 m_windowClass;
+    QCocoaGLContext *m_glContext;
 };
 
 QT_END_NAMESPACE

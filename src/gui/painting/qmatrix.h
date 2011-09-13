@@ -118,12 +118,6 @@ public:
 
     operator QVariant() const;
 
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QMatrix invert(bool *invertible=0) const { return inverted(invertible); }
-    inline QT3_SUPPORT QRect map(const QRect &r) const { return mapRect(r); }
-    QT3_SUPPORT QRegion mapToRegion(const QRect &r) const;
-#endif
-
 private:
     inline QMatrix(bool)
             : _m11(1.)
@@ -191,12 +185,6 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix &);
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QMatrix &);
-#endif
-
-#ifdef QT3_SUPPORT
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtGui/qwmatrix.h>
-QT_END_INCLUDE_NAMESPACE
 #endif
 
 QT_END_NAMESPACE

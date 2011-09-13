@@ -177,6 +177,7 @@ QObjectPrivate::QObjectPrivate(int version)
 #endif
     metaObject = 0;
     hasGuards = false;
+    isWindow = false;
 }
 
 QObjectPrivate::~QObjectPrivate()

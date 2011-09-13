@@ -48,18 +48,19 @@ QT_BEGIN_NAMESPACE
 
 class QWaylandBuffer;
 class QWaylandDisplay;
+class QAbstractEventDispatcher;
 
 class QWaylandIntegration : public QPlatformIntegration
 {
 public:
-    QWaylandIntegration(bool useOpenGL = false);
+    QWaylandIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
-    QList<QPlatformScreen *> screens() const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
@@ -67,12 +68,12 @@ public:
 
     QPlatformClipboard *clipboard() const;
 
-private:
-    bool hasOpenGL() const;
+    QPlatformDrag *drag() const;
 
+private:
     QPlatformFontDatabase *mFontDb;
+    QAbstractEventDispatcher *mEventDispatcher;
     QWaylandDisplay *mDisplay;
-    bool mUseOpenGL;
     QPlatformNativeInterface *mNativeInterface;
 };
 

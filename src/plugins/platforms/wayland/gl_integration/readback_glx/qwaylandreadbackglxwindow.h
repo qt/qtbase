@@ -49,17 +49,25 @@
 class QWaylandReadbackGlxWindow : public QWaylandShmWindow
 {
 public:
-    QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration);
+    QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration);
     WindowType windowType() const;
-
-    QPlatformGLContext *glContext() const;
 
     void setGeometry(const QRect &rect);
 
-private:
-    QWaylandReadbackGlxIntegration *mGlxIntegration;
-    QWaylandReadbackGlxContext *mContext;
+    Pixmap glxPixmap() const;
 
+    uchar *buffer();
+
+private:
+    void createSurface();
+
+    QWaylandReadbackGlxIntegration *m_glxIntegration;
+    QWaylandShmBuffer *m_buffer;
+
+    Pixmap m_pixmap;
+    GLXFBConfig m_config;
+    GLXPixmap m_glxPixmap;
+    QWindow *m_window;
 };
 
 #endif // QWAYLANDREADBACKGLXWINDOW_H

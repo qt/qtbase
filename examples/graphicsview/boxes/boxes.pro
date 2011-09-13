@@ -27,7 +27,7 @@ SOURCES += 3rdparty/fbm.c \
 
 RESOURCES += boxes.qrc
 
-QT += opengl
+QT += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/boxes

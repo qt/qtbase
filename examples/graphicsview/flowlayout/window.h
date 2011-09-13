@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/qgraphicswidget.h>
+#include <QtWidgets/qgraphicswidget.h>
 
 class Window : public QGraphicsWidget {
     Q_OBJECT

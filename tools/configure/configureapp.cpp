@@ -344,7 +344,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBMNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "no";
 
-    dictionary[ "QT3SUPPORT" ]      = "yes";
+    dictionary[ "QT3SUPPORT" ]      = "no";
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENVG" ]          = "no";

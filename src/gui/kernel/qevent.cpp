@@ -41,18 +41,13 @@
 
 #include "qevent.h"
 #include "qcursor.h"
-#include "qapplication.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include "private/qevent_p.h"
 #include "private/qkeysequence_p.h"
-#include "qwidget.h"
-#include "qgraphicsview.h"
 #include "qdebug.h"
 #include "qmime.h"
-#include "qdnd_p.h"
+#include "private/qdnd_p.h"
 #include "qevent_p.h"
-#include "qgesture.h"
-#include "qgesture_p.h"
 #include "qmath.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -73,7 +68,7 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QInputEvent::QInputEvent(Type type, Qt::KeyboardModifiers modifiers)
-    : QEvent(type), modState(modifiers)
+    : QEvent(type), modState(modifiers), ts(0)
 {}
 
 /*!
@@ -154,63 +149,50 @@ QInputEvent::~QInputEvent()
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
     or QEvent::MouseMove.
 
-    The \a position is the mouse cursor's position relative to the
-    receiving widget.
+    The \a localPos is the mouse cursor's position relative to the
+    receiving widget or item. The window position is set to the same value
+    as \a localPos.
     The \a button that caused the event is given as a value from
     the Qt::MouseButton enum. If the event \a type is
     \l MouseMove, the appropriate button for this event is Qt::NoButton.
     The mouse and keyboard states at the time of the event are specified by
     \a buttons and \a modifiers.
 
-    The globalPos() is initialized to QCursor::pos(), which may not
+    The screenPos() is initialized to QCursor::pos(), which may not
     be appropriate. Use the other constructor to specify the global
     position explicitly.
 */
-
-QMouseEvent::QMouseEvent(Type type, const QPointF &position, Qt::MouseButton button,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), p(position), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), b(button), mouseState(buttons)
 {
-    g = QCursor::pos();
+    s = QCursor::pos();
 }
+
 
 /*!
-    \internal
-*/
-QMouseEvent::~QMouseEvent()
-{
-}
+    Constructs a mouse event object.
 
-#ifdef QT3_SUPPORT
-/*!
-    Use QMouseEvent(\a type, \a pos, \a button, \c buttons, \c
-    modifiers) instead, where \c buttons is \a state &
-    Qt::MouseButtonMask and \c modifiers is \a state &
-    Qt::KeyButtonMask.
-*/
-QMouseEvent::QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state)
-    : QInputEvent(type), p(pos), b((Qt::MouseButton)button)
-{
-    g = QCursor::pos();
-    mouseState = Qt::MouseButtons((state ^ b) & Qt::MouseButtonMask);
-    modState = Qt::KeyboardModifiers(state & (int)Qt::KeyButtonMask);
-}
+    The \a type parameter must be QEvent::MouseButtonPress,
+    QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
+    or QEvent::MouseMove.
 
-/*!
-    Use QMouseEvent(\a type, \a pos, \a globalPos, \a button,
-    \c buttons, \c modifiers) instead, where
-    \c buttons is \a state & Qt::MouseButtonMask and
-    \c modifiers is \a state & Qt::KeyButtonMask.
-*/
-QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
-                         Qt::ButtonState button, int state)
-    : QInputEvent(type), p(pos), g(globalPos), b((Qt::MouseButton)button)
-{
-    mouseState = Qt::MouseButtons((state ^ b) & Qt::MouseButtonMask);
-    modState = Qt::KeyboardModifiers(state & (int)Qt::KeyButtonMask);
-}
-#endif
+    The \a localPos is the mouse cursor's position relative to the
+    receiving widget or item. The cursor's position in screen coordinates is
+    specified by \a screenPos. The window position is set to the same value
+    as \a localPos. The \a button that caused the event is
+    given as a value from the \l Qt::MouseButton enum. If the event \a
+    type is \l MouseMove, the appropriate button for this event is
+    Qt::NoButton. \a buttons is the state of all buttons at the
+    time of the event, \a modifiers the state of all keyboard
+    modifiers.
 
+*/
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
+                         Qt::MouseButton button, Qt::MouseButtons buttons,
+                         Qt::KeyboardModifiers modifiers)
+    : QInputEvent(type, modifiers), l(localPos), w(localPos), s(screenPos), b(button), mouseState(buttons)
+{}
 
 /*!
     Constructs a mouse event object.
@@ -229,30 +211,59 @@ QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
     modifiers.
 
 */
-QMouseEvent::QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
-    : QInputEvent(type, modifiers), p(pos), g(globalPos), b(button), mouseState(buttons)
+    : QInputEvent(type, modifiers), l(localPos), w(windowPos), s(screenPos), b(button), mouseState(buttons)
 {}
 
 /*!
-    \fn bool QMouseEvent::hasExtendedInfo() const
     \internal
+*/
+QMouseEvent::~QMouseEvent()
+{
+}
+
+
+/*!
+    \fn QPointF QMouseEvent::localPos() const
+
+    \since 5.0
+
+    Returns the position of the mouse cursor as a QPointF, relative to the
+    widget or item that received the event.
+
+    If you move the widget as a result of the mouse event, use the
+    screen position returned by screenPos() to avoid a shaking
+    motion.
+
+    \sa x() y() windowPos() screenPos()
 */
 
 /*!
-    \fn QPointF QMouseEvent::posF() const
+    \fn QPointF QMouseEvent::windowPos() const
 
-    \since 4.4
+    \since 5.0
 
     Returns the position of the mouse cursor as a QPointF, relative to the
-    widget that received the event.
+    window that received the event.
 
     If you move the widget as a result of the mouse event, use the
     global position returned by globalPos() to avoid a shaking
     motion.
 
-    \sa x() y() pos() globalPos()
+    \sa x() y() pos() localPos() screenPos()
+*/
+
+/*!
+    \fn QPointF QMouseEvent::screenPos() const
+
+    \since 5.0
+
+    Returns the position of the mouse cursor as a QPointF, relative to the
+    screen that received the event.
+
+    \sa x() y() pos() localPos() screenPos()
 */
 
 /*!
@@ -528,19 +539,6 @@ QWheelEvent::~QWheelEvent()
 {
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the other constructors instead.
-*/
-QWheelEvent::QWheelEvent(const QPoint &pos, int delta, int state, Qt::Orientation orient)
-    : QInputEvent(Wheel), p(pos), d(delta), o(orient)
-{
-    g = QCursor::pos();
-    mouseState = Qt::MouseButtons(state & Qt::MouseButtonMask);
-    modState = Qt::KeyboardModifiers(state & (int)Qt::KeyButtonMask);
-}
-#endif
-
 /*!
     Constructs a wheel event object.
 
@@ -558,18 +556,6 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), d(delta), mouseState(buttons), o(orient)
 {}
 
-#ifdef QT3_SUPPORT
-/*!
-    Use one of the other constructors instead.
-*/
-QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, int state,
-                         Qt::Orientation orient)
-    : QInputEvent(Wheel), p(pos), g(globalPos), d(delta), o(orient)
-{
-    mouseState = Qt::MouseButtons(state & Qt::MouseButtonMask);
-    modState = Qt::KeyboardModifiers(state & (int) Qt::KeyButtonMask);
-}
-#endif
 #endif // QT_NO_WHEELEVENT
 
 /*!
@@ -884,7 +870,7 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
-    uint platform = QApplicationPrivate::currentPlatform();
+    uint platform = QGuiApplicationPrivate::currentKeyPlatform();
 
 #ifdef Q_WS_MAC
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
@@ -963,34 +949,6 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     \sa Qt::WA_KeyCompression
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QKeyEvent::QKeyEvent(Type type, int key, int ascii,
-                             int modifiers, const QString &text,
-                             bool autorep, ushort count)
-
-    Use one of the other constructors instead.
-*/
-
-/*!
-    \fn int QKeyEvent::ascii() const
-
-    Use text() instead.
-*/
-
-/*!
-    \fn Qt::ButtonState QKeyEvent::state() const
-
-    Use QInputEvent::modifiers() instead.
-*/
-
-/*!
-    \fn Qt::ButtonState QKeyEvent::stateAfter() const
-
-    Use modifiers() instead.
-*/
-#endif
-
 /*!
     \class QFocusEvent
     \brief The QFocusEvent class contains event parameters for widget focus
@@ -1061,23 +1019,6 @@ Qt::FocusReason QFocusEvent::reason() const
     false.
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    \enum QFocusEvent::Reason
-    \compat
-
-    Use Qt::FocusReason instead.
-
-    \value Mouse  Same as Qt::MouseFocusReason.
-    \value Tab  Same as Qt::TabFocusReason.
-    \value Backtab  Same as Qt::BacktabFocusReason.
-    \value MenuBar  Same as Qt::MenuBarFocusReason.
-    \value ActiveWindow  Same as Qt::ActiveWindowFocusReason
-    \value Other  Same as Qt::OtherFocusReason
-    \value Popup  Same as Qt::PopupFocusReason
-    \value Shortcut  Same as Qt::ShortcutFocusReason
-*/
-#endif
 
 /*!
     \class QPaintEvent
@@ -1145,18 +1086,6 @@ QPaintEvent::QPaintEvent(const QRect &paintRect)
     : QEvent(Paint), m_rect(paintRect),m_region(paintRect), m_erased(false)
 {}
 
-
-#ifdef QT3_SUPPORT
- /*!
-    Constructs a paint event object with both a \a paintRegion and a
-    \a paintRect, both of which represent the area of the widget that
-    needs to be updated.
-
-*/
-QPaintEvent::QPaintEvent(const QRegion &paintRegion, const QRect &paintRect)
-    : QEvent(Paint), m_rect(paintRect), m_region(paintRegion), m_erased(false)
-{}
-#endif
 
 /*!
   \internal
@@ -1233,6 +1162,29 @@ QMoveEvent::~QMoveEvent()
     Returns the old position of the widget.
 */
 
+/*!
+    \class QExposeEvent
+    \brief The QExposeEvent class contains event parameters for expose events.
+
+    \ingroup events
+
+    Expose events are sent to widgets when an area of the widget is invalidated
+    and needs to be flushed from the backing store.
+
+    The event handler QWindow::exposeEvent() receives expose events.
+*/
+QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
+    : QEvent(Expose)
+    , rgn(exposeRegion)
+{
+}
+
+/*!
+  \internal
+*/
+QExposeEvent::~QExposeEvent()
+{
+}
 
 /*!
     \class QResizeEvent
@@ -1424,17 +1376,6 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPo
     : QInputEvent(ContextMenu, modifiers), p(pos), gp(globalPos), reas(reason)
 {}
 
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a context menu event with the given \a reason for the
-    position specified by \a pos in widget coordinates and \a globalPos
-    in global screen coordinates. \a dummy is ignored.
-*/
-QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, const QPoint &globalPos,
-                                     int /* dummy */)
-    : QInputEvent(ContextMenu), p(pos), gp(globalPos), reas(reason)
-{}
-#endif
 
 /*! \internal */
 QContextMenuEvent::~QContextMenuEvent()
@@ -1459,24 +1400,6 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
 {
     gp = QCursor::pos();
 }
-
-#ifdef QT3_SUPPORT
-/*!
-    Constructs a context menu event with the given \a reason for the
-    position specified by \a pos in widget coordinates. \a dummy is
-    ignored.
-*/
-QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos, int /* dummy */)
-    : QInputEvent(ContextMenu), p(pos), reas(reason)
-{
-    gp = QCursor::pos();
-}
-
-Qt::ButtonState QContextMenuEvent::state() const
-{
-    return Qt::ButtonState(int(QApplication::keyboardModifiers())|QApplication::mouseButtons());
-}
-#endif
 
 /*!
     \fn const QPoint &QContextMenuEvent::pos() const
@@ -1847,6 +1770,74 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
     string.
 
     \sa replacementStart(), setCommitString()
+*/
+
+
+/*! \class QInputMethodQueryEvent
+
+    This event is sent by the input context to input objects.
+
+    It is used by the
+    input method to query a set of properties of the object to be
+    able to support complex input method operations as support for
+    surrounding text and reconversions.
+
+    query() specifies which property is queried.
+
+    The object should call setValue() on the event to fill in the requested
+    data before calling accept().
+*/
+QInputMethodQueryEvent::QInputMethodQueryEvent(Qt::InputMethodQueries queries)
+    : QEvent(InputMethodQuery),
+      m_queries(queries)
+{
+}
+
+QInputMethodQueryEvent::~QInputMethodQueryEvent()
+{
+}
+
+
+void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery q, const QVariant &v)
+{
+    for (int i = 0; i < m_values.size(); ++i) {
+        if (m_values.at(i).query == q) {
+            m_values[i].value = v;
+            return;
+        }
+    }
+    QueryPair pair = { q, v };
+    m_values.append(pair);
+}
+
+QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery q) const
+{
+    for (int i = 0; i < m_values.size(); ++i)
+        if (m_values.at(i).query == q)
+            return m_values.at(i).value;
+    return QVariant();
+}
+
+/*!
+    \fn Qt::InputMethodQuery QInputMethodQueryEvent::query() const
+
+    returns the type of data queried.
+*/
+
+/*!
+    \fn QVariant QInputMethodQueryEvent::value() const
+
+    returns the value set by the receiving object. Mainly used by the input method.
+
+    \sa setValue()
+*/
+
+/*!
+    \fn QVariant QInputMethodQueryEvent::setValue()
+
+    Used by the receiving object to set the value requested by query().
+
+    \sa setValue()
 */
 
 #ifndef QT_NO_TABLETEVENT
@@ -2303,7 +2294,7 @@ QDropEvent::QDropEvent(const QPoint& pos, Qt::DropActions actions, const QMimeDa
       modState(modifiers), act(actions),
       mdata(data)
 {
-    default_action = QDragManager::self()->defaultAction(act, modifiers);
+    default_action = Qt::CopyAction; // ### Qt5: QDragManager::self()->defaultAction(act, modifiers);
     drop_action = default_action;
     ignore();
 }
@@ -2382,10 +2373,10 @@ bool QDropEvent::provides(const char *mimeType) const
 
     \sa QDrag::QDrag()
 */
-QWidget* QDropEvent::source() const
+QObject* QDropEvent::source() const
 {
     QDragManager *manager = QDragManager::self();
-    return manager ? manager->source() : 0;
+    return (manager && manager->object) ? manager->object->source() : 0;
 }
 
 
@@ -2509,37 +2500,6 @@ void QDropEvent::setDropAction(Qt::DropAction action)
     \sa setDropAction(), proposedAction(), {QEvent::accept()}{accept()}
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    Use dropAction() instead.
-
-    The table below shows the correspondance between the return type
-    of action() and the return type of dropAction().
-
-    \table
-    \header \i Old enum value   \i New enum value
-    \row    \i QDropEvent::Copy \i Qt::CopyAction
-    \row    \i QDropEvent::Move \i Qt::MoveAction
-    \row    \i QDropEvent::Link \i Qt::LinkAction
-    \row    \i other            \i Qt::CopyAction
-    \endtable
-*/
-
-QT3_SUPPORT QDropEvent::Action QDropEvent::action() const
-{
-    switch(drop_action) {
-    case Qt::CopyAction:
-        return Copy;
-    case Qt::MoveAction:
-        return Move;
-    case Qt::LinkAction:
-        return Link;
-    default:
-        return Copy;
-    }
-}
-#endif
-
 /*!
     \fn void QDropEvent::setPoint(const QPoint &point)
     \compat
@@ -2590,21 +2550,6 @@ QDragEnterEvent::QDragEnterEvent(const QPoint& point, Qt::DropActions actions, c
 /*! \internal
 */
 QDragEnterEvent::~QDragEnterEvent()
-{
-}
-
-/*!
-    Constructs a drag response event containing the \a accepted value,
-    indicating whether the drag and drop operation was accepted by the
-    recipient.
-*/
-QDragResponseEvent::QDragResponseEvent(bool accepted)
-    : QEvent(DragResponse), a(accepted)
-{}
-
-/*! \internal
-*/
-QDragResponseEvent::~QDragResponseEvent()
 {
 }
 
@@ -3442,12 +3387,6 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::UngrabKeyboard:
         n = "UngrabKeyboard";
         break;
-#ifdef QT3_SUPPORT
-    case QEvent::ChildInsertedRequest:
-      n = "ChildInsertedRequest";
-      break;
-    case QEvent::ChildInserted: n = "ChildInserted";
-#endif
     case QEvent::ChildAdded: n = n ? n : "ChildAdded";
     case QEvent::ChildPolished: n = n ? n : "ChildPolished";
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
@@ -3599,60 +3538,6 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
 {
 }
 
-#ifdef QT3_SUPPORT
-
-/*!
-    \class QMenubarUpdatedEvent
-    \internal
-    Event sent by QMenuBar to tell Q3Workspace to update itself.
-*/
-
-/*! \internal
-
-*/
-QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
-:QEvent(QEvent::MenubarUpdated), m_menuBar(menuBar) {}
-
-/*!
-    \fn QMenuBar *QMenubarUpdatedEvent::menuBar()
-    \internal
-*/
-
-/*!
-    \fn bool operator==(QKeyEvent *e, QKeySequence::StandardKey key)
-
-    \relates QKeyEvent
-
-    Returns true if \a key is currently bound to the key combination
-    specified by \a e.
-
-    Equivalent to \c {e->matches(key)}.
-*/
-
-/*!
-    \fn bool operator==(QKeySequence::StandardKey key, QKeyEvent *e)
-
-    \relates QKeyEvent
-
-    Returns true if \a key is currently bound to the key combination
-    specified by \a e.
-
-    Equivalent to \c {e->matches(key)}.
-*/
-
-/*!
-    \internal
-
-    \class QKeyEventEx
-    \ingroup events
-
-    \brief The QKeyEventEx class provides more extended information about a keyevent.
-
-    This class is for internal use only, and exists to aid the shortcut system on
-    various platforms to get all the information it needs.
-*/
-
-#endif
 
 /*!
     \class QTouchEvent
@@ -4288,317 +4173,6 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     return *this;
 }
 
-#ifndef QT_NO_GESTURES
-/*!
-    \class QGestureEvent
-    \since 4.6
-    \ingroup events
-    \ingroup gestures
-
-    \brief The QGestureEvent class provides the description of triggered gestures.
-
-    The QGestureEvent class contains a list of gestures, which can be obtained using the
-    gestures() function.
-
-    The gestures are either active or canceled. A list of those that are currently being
-    executed can be obtained using the activeGestures() function. A list of those which
-    were previously active and have been canceled can be accessed using the
-    canceledGestures() function. A gesture might be canceled if the current window loses
-    focus, for example, or because of a timeout, or for other reasons.
-
-    If the event handler does not accept the event by calling the generic
-    QEvent::accept() function, all individual QGesture object that were not
-    accepted and in the Qt::GestureStarted state will be propagated up the
-    parent widget chain until a widget accepts them individually, by calling
-    QGestureEvent::accept() for each of them, or an event filter consumes the
-    event.
-
-    \section1 Further Reading
-
-    For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
-
-    \sa QGesture, QGestureRecognizer,
-        QWidget::grabGesture(), QGraphicsObject::grabGesture()
-*/
-
-/*!
-    Creates new QGestureEvent containing a list of \a gestures.
-*/
-QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
-    : QEvent(QEvent::Gesture)
-{
-    d = reinterpret_cast<QEventPrivate *>(new QGestureEventPrivate(gestures));
-}
-
-/*!
-    Destroys QGestureEvent.
-*/
-QGestureEvent::~QGestureEvent()
-{
-    delete reinterpret_cast<QGestureEventPrivate *>(d);
-}
-
-/*!
-    Returns all gestures that are delivered in the event.
-*/
-QList<QGesture *> QGestureEvent::gestures() const
-{
-    return d_func()->gestures;
-}
-
-/*!
-    Returns a gesture object by \a type.
-*/
-QGesture *QGestureEvent::gesture(Qt::GestureType type) const
-{
-    const QGestureEventPrivate *d = d_func();
-    for(int i = 0; i < d->gestures.size(); ++i)
-        if (d->gestures.at(i)->gestureType() == type)
-            return d->gestures.at(i);
-    return 0;
-}
-
-/*!
-    Returns a list of active (not canceled) gestures.
-*/
-QList<QGesture *> QGestureEvent::activeGestures() const
-{
-    QList<QGesture *> gestures;
-    foreach (QGesture *gesture, d_func()->gestures) {
-        if (gesture->state() != Qt::GestureCanceled)
-            gestures.append(gesture);
-    }
-    return gestures;
-}
-
-/*!
-    Returns a list of canceled gestures.
-*/
-QList<QGesture *> QGestureEvent::canceledGestures() const
-{
-    QList<QGesture *> gestures;
-    foreach (QGesture *gesture, d_func()->gestures) {
-        if (gesture->state() == Qt::GestureCanceled)
-            gestures.append(gesture);
-    }
-    return gestures;
-}
-
-/*!
-    Sets the accept flag of the given \a gesture object to the specified \a value.
-
-    Setting the accept flag indicates that the event receiver wants the \a gesture.
-    Unwanted gestures may be propagated to the parent widget.
-
-    By default, gestures in events of type QEvent::Gesture are accepted, and
-    gestures in QEvent::GestureOverride events are ignored.
-
-    For convenience, the accept flag can also be set with
-    \l{QGestureEvent::accept()}{accept(gesture)}, and cleared with
-    \l{QGestureEvent::ignore()}{ignore(gesture)}.
-*/
-void QGestureEvent::setAccepted(QGesture *gesture, bool value)
-{
-    if (gesture)
-        setAccepted(gesture->gestureType(), value);
-}
-
-/*!
-    Sets the accept flag of the given \a gesture object, the equivalent of calling
-    \l{QGestureEvent::setAccepted()}{setAccepted(gesture, true)}.
-
-    Setting the accept flag indicates that the event receiver wants the
-    gesture. Unwanted gestures may be propagated to the parent widget.
-
-    \sa QGestureEvent::ignore()
-*/
-void QGestureEvent::accept(QGesture *gesture)
-{
-    if (gesture)
-        setAccepted(gesture->gestureType(), true);
-}
-
-/*!
-    Clears the accept flag parameter of the given \a gesture object, the equivalent
-    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
-
-    Clearing the accept flag indicates that the event receiver does not
-    want the gesture. Unwanted gestures may be propagated to the parent widget.
-
-    \sa QGestureEvent::accept()
-*/
-void QGestureEvent::ignore(QGesture *gesture)
-{
-    if (gesture)
-        setAccepted(gesture->gestureType(), false);
-}
-
-/*!
-    Returns true if the \a gesture is accepted; otherwise returns false.
-*/
-bool QGestureEvent::isAccepted(QGesture *gesture) const
-{
-    return gesture ? isAccepted(gesture->gestureType()) : false;
-}
-
-/*!
-    Sets the accept flag of the given \a gestureType object to the specified
-    \a value.
-
-    Setting the accept flag indicates that the event receiver wants to receive
-    gestures of the specified type, \a gestureType. Unwanted gestures may be
-    propagated to the parent widget.
-
-    By default, gestures in events of type QEvent::Gesture are accepted, and
-    gestures in QEvent::GestureOverride events are ignored.
-
-    For convenience, the accept flag can also be set with
-    \l{QGestureEvent::accept()}{accept(gestureType)}, and cleared with
-    \l{QGestureEvent::ignore()}{ignore(gestureType)}.
-*/
-void QGestureEvent::setAccepted(Qt::GestureType gestureType, bool value)
-{
-    setAccepted(false);
-    d_func()->accepted[gestureType] = value;
-}
-
-/*!
-    Sets the accept flag of the given \a gestureType, the equivalent of calling
-    \l{QGestureEvent::setAccepted()}{setAccepted(gestureType, true)}.
-
-    Setting the accept flag indicates that the event receiver wants the
-    gesture. Unwanted gestures may be propagated to the parent widget.
-
-    \sa QGestureEvent::ignore()
-*/
-void QGestureEvent::accept(Qt::GestureType gestureType)
-{
-    setAccepted(gestureType, true);
-}
-
-/*!
-    Clears the accept flag parameter of the given \a gestureType, the equivalent
-    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
-
-    Clearing the accept flag indicates that the event receiver does not
-    want the gesture. Unwanted gestures may be propgated to the parent widget.
-
-    \sa QGestureEvent::accept()
-*/
-void QGestureEvent::ignore(Qt::GestureType gestureType)
-{
-    setAccepted(gestureType, false);
-}
-
-/*!
-    Returns true if the gesture of type \a gestureType is accepted; otherwise
-    returns false.
-*/
-bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
-{
-    return d_func()->accepted.value(gestureType, true);
-}
-
-/*!
-    \internal
-
-    Sets the widget for this event to the \a widget specified.
-*/
-void QGestureEvent::setWidget(QWidget *widget)
-{
-    d_func()->widget = widget;
-}
-
-/*!
-    Returns the widget on which the event occurred.
-*/
-QWidget *QGestureEvent::widget() const
-{
-    return d_func()->widget;
-}
-
-#ifndef QT_NO_GRAPHICSVIEW
-/*!
-    Returns the scene-local coordinates if the \a gesturePoint is inside a
-    graphics view.
-
-    This functional might be useful when the gesture event is delivered to a
-    QGraphicsObject to translate a point in screen coordinates to scene-local
-    coordinates.
-
-    \sa QPointF::isNull().
-*/
-QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
-{
-    QWidget *w = widget();
-    if (w) // we get the viewport as widget, not the graphics view
-        w = w->parentWidget();
-    QGraphicsView *view = qobject_cast<QGraphicsView*>(w);
-    if (view) {
-        return view->mapToScene(view->mapFromGlobal(gesturePoint.toPoint()));
-    }
-    return QPointF();
-}
-#endif //QT_NO_GRAPHICSVIEW
-
-/*!
-    \internal
-*/
-QGestureEventPrivate *QGestureEvent::d_func()
-{
-    return reinterpret_cast<QGestureEventPrivate *>(d);
-}
-
-/*!
-    \internal
-*/
-const QGestureEventPrivate *QGestureEvent::d_func() const
-{
-    return reinterpret_cast<const QGestureEventPrivate *>(d);
-}
-
-#ifdef Q_NO_USING_KEYWORD
-/*!
-    \fn void QGestureEvent::setAccepted(bool accepted)
-
-    Sets or clears the event's internal flag that determines whether it should
-    be delivered to other objects.
-
-    Calling this function with a value of true for \a accepted indicates that the
-    caller has accepted the event and that it should not be propagated further.
-    Calling this function with a value of false indicates that the caller has
-    ignored the event and that it should be delivered to other objects.
-
-    For convenience, the accept flag can also be set with accept(), and cleared
-    with ignore().
-
-    \sa QEvent::accepted
-*/
-/*!
-    \fn bool QGestureEvent::isAccepted() const
-
-    Returns true is the event has been accepted; otherwise returns false.
-
-    \sa QEvent::accepted
-*/
-/*!
-    \fn void QGestureEvent::accept()
-
-    Accepts the event, the equivalent of calling setAccepted(true).
-
-    \sa QEvent::accept()
-*/
-/*!
-    \fn void QGestureEvent::ignore()
-
-    Ignores the event, the equivalent of calling setAccepted(false).
-
-    \sa QEvent::ignore()
-*/
-#endif
-
-#endif // QT_NO_GESTURES
 
 /*!
     \class QScrollPrepareEvent

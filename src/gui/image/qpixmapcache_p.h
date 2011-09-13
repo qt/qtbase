@@ -81,9 +81,9 @@ class QPixmapCacheEntry : public QPixmap
 public:
     QPixmapCacheEntry(const QPixmapCache::Key &key, const QPixmap &pix) : QPixmap(pix), key(key)
     {
-        QPixmapData *pd = pixmapData();
-        if (pd && pd->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(pd);
+        QPlatformPixmap *pd = handle();
+        if (pd && pd->classId() == QPlatformPixmap::RasterClass) {
+            QRasterPlatformPixmap *d = static_cast<QRasterPlatformPixmap*>(pd);
             if (!d->image.isNull() && d->image.d->paintEngine
                 && !d->image.d->paintEngine->isActive())
             {

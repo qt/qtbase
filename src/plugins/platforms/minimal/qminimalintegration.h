@@ -71,14 +71,12 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
 private:
-    QList<QPlatformScreen *> mScreens;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

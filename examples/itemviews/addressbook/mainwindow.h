@@ -41,7 +41,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "addresswidget.h"
 
 //! [0]

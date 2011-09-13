@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 # include "QtCore/qt_windows.h"
 #endif
 #include "QtCore/qlibrary.h"
@@ -72,7 +72,7 @@ class QLibraryPrivate
 {
 public:
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     HINSTANCE
 #else
     void *

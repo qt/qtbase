@@ -43,7 +43,7 @@
 #define CUSTOMPROXY_H
 
 #include <QtCore/qtimeline.h>
-#include <QtGui/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
 
 class CustomProxy : public QGraphicsProxyWidget
 {

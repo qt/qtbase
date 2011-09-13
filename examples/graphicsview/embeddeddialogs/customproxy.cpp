@@ -41,7 +41,7 @@
 
 #include "customproxy.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
     : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)

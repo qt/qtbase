@@ -43,9 +43,9 @@
 #include "qpainter_p.h"
 #include "qpolygon.h"
 #include "qbitmap.h"
-#include "qapplication.h"
 #include <qdebug.h>
 #include <qmath.h>
+#include <qguiapplication.h>
 #include <private/qtextengine_p.h>
 #include <qvarlengtharray.h>
 #include <private/qfontengine_p.h>
@@ -139,7 +139,7 @@ QString QTextItem::text() const
 QFont QTextItem::font() const
 {
     const QTextItemInt *ti = static_cast<const QTextItemInt *>(this);
-    return ti->f ? *ti->f : QApplication::font();
+    return ti->f ? *ti->f : QGuiApplication::font();
 }
 
 
@@ -154,7 +154,7 @@ QFont QTextItem::font() const
   different painter backends we support. We provide one paint engine for each
   window system and painting framework we support. This includes X11 on
   Unix/Linux and CoreGraphics on Mac OS X. In addition we provide QPaintEngine
-  implementations for OpenGL (accessible through QGLWidget) and PostScript
+  implementations for OpenGL (accessible through QOpenGLWidget) and PostScript
   (accessible through QPSPrinter on X11). Additionally there is a raster-based
   paint engine that is a fallback for when an engine does not support a certain
   capability.

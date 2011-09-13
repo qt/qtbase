@@ -4,6 +4,7 @@ HEADERS += mainwindow.h view.h chip.h
 SOURCES += main.cpp
 SOURCES += mainwindow.cpp view.cpp chip.cpp
 
+QT += widgets printsupport
 contains(QT_CONFIG, opengl):QT += opengl
 
 build_all:!build_pass {

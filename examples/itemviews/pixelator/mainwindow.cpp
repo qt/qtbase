@@ -38,7 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+#include <QPrinter>
+#include <QPrintDialog>
 
 #include "imagemodel.h"
 #include "mainwindow.h"

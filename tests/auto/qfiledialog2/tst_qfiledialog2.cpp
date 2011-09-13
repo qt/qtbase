@@ -61,9 +61,9 @@
 #include <qlineedit.h>
 #include <qlayout.h>
 #include "../../shared/util.h"
-#include "../../../src/gui/dialogs/qsidebar_p.h"
-#include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
-#include "../../../src/gui/dialogs/qfiledialog_p.h"
+#include "../../../src/widgets/dialogs/qsidebar_p.h"
+#include "../../../src/widgets/dialogs/qfilesystemmodel_p.h"
+#include "../../../src/widgets/dialogs/qfiledialog_p.h"
 
 #include "../network-settings.h"
 

@@ -46,20 +46,21 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbwindow.h"
 
-#include "qgenericunixfontdatabase.h"
-
-#include <private/qwindowsurface_raster_p.h>
-#include <private/qpixmap_raster_p.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtGui/private/qpixmap_blitter_p.h>
-#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
+#include <QtCore/QAbstractEventDispatcher>
 
 QT_BEGIN_NAMESPACE
 
 QDirectFbScreen::QDirectFbScreen(int display)
-    :QPlatformScreen()
+    : QPlatformScreen()
 {
     m_layer = QDirectFbConvenience::dfbDisplayLayer(display);
     m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
@@ -74,16 +75,20 @@ QDirectFbScreen::QDirectFbScreen(int display)
     m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
     m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
 
-    cursor = new QDirectFBCursor(this);
+    m_cursor = new QDirectFBCursor(this);
 }
 
 QDirectFbScreen::~QDirectFbScreen()
 {
+#warning "Delete the cursor?"
 }
 
 QDirectFbIntegration::QDirectFbIntegration()
-    : mFontDb(new QGenericUnixFontDatabase())
+    : m_fontDb(new QGenericUnixFontDatabase())
+    , m_eventDispatcher(createUnixEventDispatcher())
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
+
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
     char **argv = new char*[argc];
@@ -99,46 +104,51 @@ QDirectFbIntegration::QDirectFbIntegration()
     delete[] argv;
 
 
-    QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
-    mScreens.append(primaryScreen);
 
-    mInputRunner = new QThread;
-    mInput = new QDirectFbInput(0);
-    mInput->moveToThread(mInputRunner);
-    QObject::connect(mInputRunner,SIGNAL(started()),mInput,SLOT(runInputEventLoop()));
-    mInputRunner->start();
+    QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
+    screenAdded(primaryScreen);
+
+    m_inputRunner = new QThread;
+    m_input = new QDirectFbInput(0);
+    m_input->moveToThread(m_inputRunner);
+    QObject::connect(m_inputRunner,SIGNAL(started()),m_input,SLOT(runInputEventLoop()));
+    m_inputRunner->start();
 }
 
 QDirectFbIntegration::~QDirectFbIntegration()
 {
-    mInput->stopInputEventLoop();
-    delete mInputRunner;
-    delete mInput;
+    m_input->stopInputEventLoop();
+    delete m_inputRunner;
+    delete m_input;
 }
 
-QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    if (type == QPixmapData::BitmapType)
-        return new QRasterPixmapData(type);
+    if (type == QPlatformPixmap::BitmapType)
+        return new QRasterPlatformPixmap(type);
     else
-        return new QDirectFbBlitterPixmapData;
+        return new QDirectFbBlitterPlatformPixmap;
 }
 
-QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
-    return new QDirectFbWindow(widget,input);
+    QDirectFbInput *input = const_cast<QDirectFbInput *>(m_input);//gah
+    return new QDirectFbWindow(window,input);
 }
 
-QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
 {
-    return new QDirectFbWindowSurface(widget,winId);
+    return m_eventDispatcher;
+}
+
+QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow *window) const
+{
+    return new QDirectFbWindowSurface(window);
 }
 
 QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return m_fontDb;
 }
 
 QT_END_NAMESPACE

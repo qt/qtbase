@@ -40,7 +40,7 @@
 
 #include "fademessage.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 FadeMessage::FadeMessage(QWidget *parent): QGraphicsView(parent)
 {

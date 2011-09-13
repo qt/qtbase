@@ -63,7 +63,7 @@ class QTextListFormat;
 
 class QTextDocumentLayoutPrivate;
 
-class Q_AUTOTEST_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
+class Q_GUI_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
 {
     Q_DECLARE_PRIVATE(QTextDocumentLayout)
     Q_OBJECT

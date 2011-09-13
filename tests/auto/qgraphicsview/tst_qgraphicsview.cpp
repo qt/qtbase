@@ -51,25 +51,25 @@
 
 #include <math.h>
 
-#include <QtGui/QLabel>
+#include <QtWidgets/QLabel>
 #if !defined(QT_NO_STYLE_MOTIF)
-#include <QtGui/QMotifStyle>
+#include <QtWidgets/QMotifStyle>
 #endif
 #if !defined(QT_NO_STYLE_WINDOWS)
-#include <QtGui/QWindowsStyle>
+#include <QtWidgets/QWindowsStyle>
 #endif
 #if !defined(QT_NO_STYLE_PLASTIQUE)
-#include <QtGui/QPlastiqueStyle>
+#include <QtWidgets/QPlastiqueStyle>
 #endif
 #include <QtGui/QPainterPath>
-#include <QtGui/QRubberBand>
-#include <QtGui/QScrollBar>
-#include <QtGui/QStyleOption>
-#include <QtGui/QBoxLayout>
-#include <QtGui/QStyle>
-#include <QtGui/QPushButton>
-#include <QtGui/QInputContext>
-#include <QtGui/QDesktopWidget>
+#include <QtWidgets/QRubberBand>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QStyleOption>
+#include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QInputContext>
+#include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsview_p.h>
 #include "../../shared/util.h"
 #include "../platformquirks.h"

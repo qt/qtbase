@@ -41,7 +41,7 @@
 #ifndef MYINPUTPANELCONTEXT_H
 #define MYINPUTPANELCONTEXT_H
 
-#include <QtGui/QInputContext>
+#include <QtWidgets/QInputContext>
 
 #include "myinputpanel.h"
 

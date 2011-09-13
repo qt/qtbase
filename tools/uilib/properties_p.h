@@ -60,7 +60,7 @@
 #include <QtCore/QLocale>
 #include <QtCore/QCoreApplication>
 
-#include <QtGui/QWidget>
+#include <QtWidgets/QWidget>
 
 #include "formbuilderextra_p.h"
 

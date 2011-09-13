@@ -42,13 +42,15 @@
 #include "qeglfsintegration.h"
 
 #include "qeglfswindow.h"
-#include "qeglfswindowsurface.h"
+#include "qeglfsbackingstore.h"
 
-#include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #include <QtGui/QPlatformWindow>
-#include <QtGui/QPlatformWindowFormat>
-#include <QtGui/private/qpixmap_raster_p.h>
+#include <QtGui/QSurfaceFormat>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QScreen>
 
 #include <EGL/egl.h>
 
@@ -57,9 +59,8 @@ QT_BEGIN_NAMESPACE
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
 {
-    m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
+    screenAdded(new QEglFSScreen(EGL_DEFAULT_DISPLAY));
 
-    mScreens.append(m_primaryScreen);
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration\n");
 #endif
@@ -69,41 +70,42 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
+    case OpenGL: return true;
+    case ThreadedOpenGL: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
 
-QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPixmapData %d\n", type);
+    qWarning("QEglIntegration::createPlatformWindow %p\n",window);
 #endif
-    return new QRasterPixmapData(type);
-}
-
-QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const
-{
-    Q_UNUSED(winId);
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPlatformWindow %p\n",widget);
-#endif
-    return new QEglFSWindow(widget, m_primaryScreen);
+    return new QEglFSWindow(window);
 }
 
 
-QWindowSurface *QEglFSIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createWindowSurface %p\n",widget);
 #endif
-    return new QEglFSWindowSurface(m_primaryScreen,widget);
+    return new QEglFSBackingStore(window);
+}
+
+QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    return static_cast<QEglFSScreen *>(context->screen()->handle())->platformContext();
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 {
     return mFontDb;
+}
+
+QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QT_END_NAMESPACE

@@ -42,7 +42,7 @@
 #include "flickable.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 class FlickableTicker: QObject
 {

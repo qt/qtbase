@@ -49,8 +49,7 @@
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QtEvents>
-#include <QtGui/QWidget>
-#include <QtGui/QApplication>
+#include <QtGui/QGuiApplication>
 
 #include <QDebug>
 
@@ -237,15 +236,15 @@ void QWaylandWindowManagerIntegration::wlHandleWindowPropertyChange(void *data, 
     QPlatformNativeInterface *nativeInterface = qApp->platformNativeInterface();
     QWaylandWindowManagerIntegration *inst = QWaylandWindowManagerIntegration::instance();
 
-    QWidgetList widgets = qApp->topLevelWidgets();
-    foreach (QWidget *widget, widgets) {
-        QPlatformWindow *platformWindowForWidget = widget->platformWindow();
-        if (!platformWindowForWidget)
+    QList<QWindow *> windows = qApp->topLevelWindows();
+    foreach (QWindow *window, windows) {
+        QPlatformWindow *platformWindowForWindow = window->handle();
+        if (!platformWindowForWindow)
             continue;
-        QWaylandWindow *window = static_cast<QWaylandWindow*>(platformWindowForWidget);
-        wl_surface *windowSurface = (wl_surface*)nativeInterface->nativeResourceForWidget(QByteArray("surface"), widget);
+        QWaylandWindow *waylandWindow = static_cast<QWaylandWindow*>(platformWindowForWindow);
+        wl_surface *windowSurface = (wl_surface*)nativeInterface->nativeResourceForWindow(QByteArray("surface"), window);
         if (windowSurface == surface) {
-            inst->handleWindowPropertyChange(window, QString(propertyName), variantValue);
+            inst->handleWindowPropertyChange(waylandWindow, QString(propertyName), variantValue);
             break;
         }
     }

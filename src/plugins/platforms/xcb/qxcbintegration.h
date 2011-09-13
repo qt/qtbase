@@ -48,34 +48,40 @@
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
+class QAbstractEventDispatcher;
 
 class QXcbIntegration : public QPlatformIntegration
 {
 public:
-    QXcbIntegration();
+    QXcbIntegration(const QStringList &parameters);
     ~QXcbIntegration();
 
-    bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
-    QList<QPlatformScreen *> screens() const;
-    void moveToScreen(QWidget *window, int screen);
-    bool isVirtualDesktop();
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    bool hasCapability(Capability cap) const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+
+    void moveToScreen(QWindow *window, int screen);
 
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface()const;
 
+    QPlatformClipboard *clipboard() const;
+    QPlatformDrag *drag() const;
+
+    QPlatformInputContext *inputContext() const;
+
 private:
-    bool hasOpenGL() const;
-    QList<QPlatformScreen *> m_screens;
-    QXcbConnection *m_connection;
+    QList<QXcbConnection *> m_connections;
 
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformNativeInterface *m_nativeInterface;
+
+    QPlatformInputContext *m_inputContext;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

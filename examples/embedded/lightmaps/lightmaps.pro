@@ -6,7 +6,7 @@ SOURCES   = lightmaps.cpp \
             main.cpp \
             mapzoom.cpp \
             slippymap.cpp
-QT += network
+QT += network widgets
 
 symbian {
     TARGET.UID3 = 0xA000CF75

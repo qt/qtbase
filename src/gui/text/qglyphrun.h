@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGLYPHRUN_H
-#define QGLYPHRUN_H
+#ifndef QOpenGLYPHRUN_H
+#define QOpenGLYPHRUN_H
 
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qvector.h>
@@ -79,8 +79,10 @@ public:
     void clear();
 
     QGlyphRun &operator=(const QGlyphRun &other);
+
     bool operator==(const QGlyphRun &other) const;
-    bool operator!=(const QGlyphRun &other) const;
+    inline bool operator!=(const QGlyphRun &other) const
+    { return !operator==(other); }
 
     void setOverline(bool overline);
     bool overline() const;
@@ -113,4 +115,4 @@ QT_END_HEADER
 
 #endif // QT_NO_RAWFONT
 
-#endif // QGLYPHS_H
+#endif // QOpenGLYPHS_H

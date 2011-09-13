@@ -72,7 +72,6 @@ class QOutlineMapper;
 class QRasterPaintEnginePrivate;
 class QRasterBuffer;
 class QClipData;
-class QCustomRasterPaintDevice;
 
 class QRasterPaintEngineState : public QPainterState
 {
@@ -129,11 +128,7 @@ public:
 /*******************************************************************************
  * QRasterPaintEngine
  */
-class
-#ifdef Q_WS_QWS
-Q_GUI_EXPORT
-#endif
-QRasterPaintEngine : public QPaintEngineEx
+class Q_GUI_EXPORT QRasterPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QRasterPaintEngine)
 public:
@@ -229,10 +224,11 @@ public:
     CGContextRef getCGContext() const;
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     void setDC(HDC hdc);
     HDC getDC() const;
     void releaseDC(HDC hdc) const;
+    static bool clearTypeFontsEnabled();
 #endif
 
     void alphaPenBlt(const void* src, int bpl, int depth, int rx,int ry,int w,int h);
@@ -241,11 +237,6 @@ public:
 
     QPoint coordinateOffset() const;
 
-#if defined(Q_WS_QWS) && !defined(QT_NO_RASTERCALLBACKS)
-    virtual void drawColorSpans(const QSpan *spans, int count, uint color);
-    virtual void drawBufferSpan(const uint *buffer, int bufsize,
-                                int x, int y, int length, uint const_alpha);
-#endif
     bool supportsTransformations(const QFontEngine *fontEngine) const;
     bool supportsTransformations(qreal pixelSize, const QTransform &m) const;
 
@@ -295,11 +286,7 @@ private:
 /*******************************************************************************
  * QRasterPaintEnginePrivate
  */
-class
-#ifdef Q_WS_QWS
-Q_GUI_EXPORT
-#endif
-QRasterPaintEnginePrivate : public QPaintEngineExPrivate
+class QRasterPaintEnginePrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QRasterPaintEngine)
 public:
@@ -331,10 +318,6 @@ public:
     ProcessSpans getBrushFunc(const QRect &rect, const QSpanData *data) const;
     ProcessSpans getBrushFunc(const QRectF &rect, const QSpanData *data) const;
 
-#ifdef Q_WS_QWS
-    void prepare(QCustomRasterPaintDevice *);
-#endif
-
     inline const QClipData *clip() const;
 
     void initializeRasterizer(QSpanData *data);
@@ -346,7 +329,7 @@ public:
     QScopedPointer<QOutlineMapper> outlineMapper;
     QScopedPointer<QRasterBuffer>  rasterBuffer;
 
-#if defined (Q_WS_WIN)
+#if defined (Q_OS_WIN)
     HDC hdc;
 #elif defined(Q_WS_MAC)
     CGContextRef cgContext;
@@ -378,11 +361,7 @@ public:
 };
 
 
-class
-#ifdef Q_WS_QWS
-Q_GUI_EXPORT
-#endif
-QClipData {
+class QClipData {
 public:
     QClipData(int height);
     ~QClipData();
@@ -459,41 +438,10 @@ inline void QClipData::appendSpans(const QSpan *s, int num)
     count += num;
 }
 
-#ifdef Q_WS_QWS
-class Q_GUI_EXPORT QCustomRasterPaintDevice : public QPaintDevice
-{
-public:
-    QCustomRasterPaintDevice(QWidget *w) : widget(w) {}
-
-    int devType() const { return QInternal::CustomRaster; }
-
-    virtual int metric(PaintDeviceMetric m) const;
-
-    virtual void* memory() const { return 0; }
-
-    virtual QImage::Format format() const {
-        return QImage::Format_ARGB32_Premultiplied;
-    }
-
-    virtual int bytesPerLine() const;
-
-    virtual QSize size() const {
-        return static_cast<QRasterPaintEngine*>(paintEngine())->size();
-    }
-
-private:
-    QWidget *widget;
-};
-#endif // Q_WS_QWS
-
 /*******************************************************************************
  * QRasterBuffer
  */
-class
-#ifdef Q_WS_QWS
-Q_GUI_EXPORT
-#endif
-QRasterBuffer
+class QRasterBuffer
 {
 public:
     QRasterBuffer() : m_width(0), m_height(0), m_buffer(0) { init(); }
@@ -504,9 +452,6 @@ public:
 
     QImage::Format prepare(QImage *image);
     QImage::Format prepare(QPixmap *pix);
-#ifdef Q_WS_QWS
-    void prepare(QCustomRasterPaintDevice *device);
-#endif
     void prepare(int w, int h);
     void prepareBuffer(int w, int h);
 

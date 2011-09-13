@@ -57,7 +57,7 @@ class QTextFormatCollection;
 class QTextListFormat;
 class QRect;
 class QPainter;
-class QPrinter;
+class QPagedPaintDevice;
 class QAbstractTextDocumentLayout;
 class QPoint;
 class QTextObject;
@@ -206,9 +206,7 @@ public:
 
     bool isModified() const;
 
-#ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const;
-#endif
+    void print(QPagedPaintDevice *printer) const;
 
     enum ResourceType {
         HtmlResource  = 1,

@@ -6,8 +6,8 @@ SOURCES   = dialog.cpp \
             main.cpp \
             mainwindow.cpp
 
-QT += sql
-QT += xml
+QT += sql widgets
+QT += xml widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/masterdetail

@@ -4,7 +4,7 @@ SOURCES += glwidget.cpp \
     main.cpp \
     cube.cpp
 RESOURCES += pbuffers.qrc
-QT += opengl
+QT += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/pbuffers

@@ -12,3 +12,4 @@ INSTALLS += target sources
 
 symbian: CONFIG += qt_example
 
+QT += widgets

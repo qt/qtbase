@@ -52,7 +52,7 @@
 #include <qglobal.h>
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 # define _POSIX_
 # include <limits.h>
 # undef _POSIX_
@@ -67,18 +67,14 @@
 #include <qstringlist.h>
 #include <qtextcodec.h>
 
-#include <qapplication.h>
+#include <qguiapplication.h>
 #include <qbitmap.h>
 #include <qcursor.h>
-#include <qdesktopwidget.h>
 #include <qevent.h>
 #include <qimage.h>
-#include <qlayout.h>
 #include <qpainter.h>
 #include <qpixmap.h>
-#include <qstyle.h>
 #include <qtimer.h>
-#include <qwidget.h>
 
 #include <stdlib.h>
 

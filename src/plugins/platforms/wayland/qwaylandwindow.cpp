@@ -46,20 +46,21 @@
 #include "qwaylandinputdevice.h"
 #include "qwaylandscreen.h"
 
+#include <QtGui/QWindow>
+
 #ifdef QT_WAYLAND_WINDOWMANAGER_SUPPORT
 #include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
 #endif
 
 #include <QCoreApplication>
-#include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
 
 #include <QDebug>
 
-QWaylandWindow::QWaylandWindow(QWidget *window)
+QWaylandWindow::QWaylandWindow(QWindow *window)
     : QPlatformWindow(window)
     , mSurface(0)
-    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
+    , mDisplay(QWaylandScreen::waylandScreenFromWindow(window)->display())
     , mBuffer(0)
     , mWaitingForFrameSync(false)
 {
@@ -112,11 +113,11 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
 {
     Q_UNUSED(time);
     Q_UNUSED(edges);
-    QRect geometry = QRect(x, y, width, height);
 
+    QRect geometry = QRect(x, y, width, height);
     setGeometry(geometry);
 
-    QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+    QWindowSystemInterface::handleGeometryChange(window(), geometry);
 }
 
 void QWaylandWindow::attach(QWaylandBuffer *buffer)
@@ -124,6 +125,7 @@ void QWaylandWindow::attach(QWaylandBuffer *buffer)
     mBuffer = buffer;
     if (mSurface) {
         wl_surface_attach(mSurface, buffer->buffer(),0,0);
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
     }
 }
 

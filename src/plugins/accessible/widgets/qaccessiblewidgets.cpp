@@ -65,7 +65,7 @@
 #include <QMainWindow>
 #include <QAbstractButton>
 #include <private/qdockwidget_p.h>
-#include <QtGui/QFocusFrame>
+#include <QFocusFrame>
 
 #ifndef QT_NO_ACCESSIBILITY
 

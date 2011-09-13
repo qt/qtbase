@@ -17,6 +17,7 @@ SOURCES	= svgalibscreen.cpp \
           svgalibpaintdevice.cpp \
           svgalibplugin.cpp
 
+QT += widgets
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example
 

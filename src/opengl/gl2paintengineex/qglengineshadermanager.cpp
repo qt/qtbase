@@ -44,6 +44,8 @@
 #include "qpaintengineex_opengl2_p.h"
 #include "qglshadercache_p.h"
 
+#include <QtGui/private/qopenglcontext_p.h>
+
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
 #endif
@@ -52,18 +54,50 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGLEngineSharedShadersResource : public QOpenGLSharedResource
+{
+public:
+    QGLEngineSharedShadersResource(QOpenGLContext *ctx)
+        : QOpenGLSharedResource(ctx->shareGroup())
+        , m_shaders(new QGLEngineSharedShaders(QGLContext::fromOpenGLContext(ctx)))
+    {
+    }
+
+    ~QGLEngineSharedShadersResource()
+    {
+        delete m_shaders;
+    }
+
+    void invalidateResource()
+    {
+        delete m_shaders;
+        m_shaders = 0;
+    }
+
+    void freeResource(QOpenGLContext *)
+    {
+    }
+
+    QGLEngineSharedShaders *shaders() const { return m_shaders; }
+
+private:
+    QGLEngineSharedShaders *m_shaders;
+};
+
 class QGLShaderStorage
 {
 public:
     QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
-        QGLContextGroupResource<QGLEngineSharedShaders> *&shaders = m_storage.localData();
+        QOpenGLMultiGroupSharedResource *&shaders = m_storage.localData();
         if (!shaders)
-            shaders = new QGLContextGroupResource<QGLEngineSharedShaders>();
-        return shaders->value(context);
+            shaders = new QOpenGLMultiGroupSharedResource;
+        QGLEngineSharedShadersResource *resource =
+            shaders->value<QGLEngineSharedShadersResource>(context->contextHandle());
+        return resource ? resource->shaders() : 0;
     }
 
 private:
-    QThreadStorage<QGLContextGroupResource<QGLEngineSharedShaders> *> m_storage;
+    QThreadStorage<QOpenGLMultiGroupSharedResource *> m_storage;
 };
 
 Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);
@@ -81,8 +115,7 @@ const char* QGLEngineSharedShaders::qShaderSnippets[] = {
 };
 
 QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
-    : ctxGuard(context)
-    , blitShaderProg(0)
+    : blitShaderProg(0)
     , simpleShaderProg(0)
 {
 
@@ -327,14 +360,14 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         vertexSource.append(qShaderSnippets[prog.mainVertexShader]);
         vertexSource.append(qShaderSnippets[prog.positionVertexShader]);
 
-        QScopedPointer<QGLShaderProgram> shaderProgram(new QGLShaderProgram(ctxGuard.context(), 0));
+        QScopedPointer<QGLShaderProgram> shaderProgram(new QGLShaderProgram);
 
         CachedShader shaderCache(fragSource, vertexSource);
-        bool inCache = shaderCache.load(shaderProgram.data(), ctxGuard.context());
+        bool inCache = shaderCache.load(shaderProgram.data(), QGLContext::currentContext());
 
         if (!inCache) {
 
-            QScopedPointer<QGLShader> fragShader(new QGLShader(QGLShader::Fragment, ctxGuard.context(), 0));
+            QScopedPointer<QGLShader> fragShader(new QGLShader(QGLShader::Fragment));
             QByteArray description;
 #if defined(QT_DEBUG)
             // Name the shader for easier debugging
@@ -357,7 +390,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
                 break;
             }
 
-            QScopedPointer<QGLShader> vertexShader(new QGLShader(QGLShader::Vertex, ctxGuard.context(), 0));
+            QScopedPointer<QGLShader> vertexShader(new QGLShader(QGLShader::Vertex));
 #if defined(QT_DEBUG)
             // Name the shader for easier debugging
             description.clear();
@@ -396,7 +429,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         newProg->program->link();
         if (newProg->program->isLinked()) {
             if (!inCache)
-                shaderCache.store(newProg->program, ctxGuard.context());
+                shaderCache.store(newProg->program, QGLContext::currentContext());
         } else {
             QLatin1String none("none");
             QLatin1String br("\n");

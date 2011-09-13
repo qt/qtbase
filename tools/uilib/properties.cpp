@@ -49,11 +49,11 @@
 #include <QtCore/QUrl>
 #include <QtCore/qdebug.h>
 
-#include <QtGui/QIcon>
+#include <QtWidgets/QIcon>
 #include <QtGui/QPixmap>
 #include <QtGui/QFont>
-#include <QtGui/QFrame>
-#include <QtGui/QAbstractScrollArea>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QAbstractScrollArea>
 
 QT_BEGIN_NAMESPACE
 

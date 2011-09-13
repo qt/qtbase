@@ -43,25 +43,26 @@
 #include "qdirectfbconvenience.h"
 
 
-QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
-        QPlatformCursor(screen), surface(0)
+QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
+    : QPlatformCursor(screen)
 {
     QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
-    image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    m_image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 }
 
-void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
+#warning "Memory leak?"
+
+void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
 {
-    Q_UNUSED(widget);
     int xSpot;
     int ySpot;
     QPixmap map;
 
     if (cursor->shape() != Qt::BitmapCursor) {
-        image->set(cursor->shape());
-        xSpot = image->hotspot().x();
-        ySpot = image->hotspot().y();
-        QImage *i = image->image();
+        m_image->set(cursor->shape());
+        xSpot = m_image->hotspot().x();
+        ySpot = m_image->hotspot().y();
+        QImage *i = m_image->image();
         map = QPixmap::fromImage(*i);
     } else {
         QPoint point = cursor->hotSpot();
@@ -70,7 +71,7 @@ void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)
         map = cursor->pixmap();
     }
 
-    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPixmapData(map.pixmapData());
+    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.handle());
 
     if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
         return;

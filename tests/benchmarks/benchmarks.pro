@@ -4,7 +4,7 @@ SUBDIRS = \
         gui \
         network \
 
-contains(QT_CONFIG, opengl): SUBDIRS += opengl
+# removed-by-refactor contains(QT_CONFIG, opengl): SUBDIRS += opengl
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
 
 check-trusted.CONFIG += recursive

@@ -1,7 +1,7 @@
 HEADERS       = client.h
 SOURCES       = client.cpp \
                 main.cpp
-QT           += network
+QT           += network widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/ipc/localfortuneclient

@@ -42,13 +42,12 @@
 
 #include "qtextimagehandler_p.h"
 
-#include <qapplication.h>
+#include <qcoreapplication.h>
 #include <qtextformat.h>
 #include <qpainter.h>
 #include <qdebug.h>
 #include <private/qtextengine_p.h>
 #include <qpalette.h>
-#include <qtextbrowser.h>
 #include <qthread.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,7 +72,8 @@ static QPixmap getPixmap(QTextDocument *doc, const QTextImageFormat &format)
 
     if (pm.isNull()) {
         QString context;
-#ifndef QT_NO_TEXTBROWSER
+#if 0
+        // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
@@ -150,7 +150,9 @@ static QImage getImage(QTextDocument *doc, const QTextImageFormat &format)
 
     if (image.isNull()) {
         QString context;
-#ifndef QT_NO_TEXTBROWSER
+
+#if 0
+        // ### Qt5
         QTextBrowser *browser = qobject_cast<QTextBrowser *>(doc->parent());
         if (browser)
             context = browser->source().toString();
@@ -210,7 +212,7 @@ QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, c
     Q_UNUSED(posInDocument)
     const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (qApp->thread() != QThread::currentThread())
+    if (QCoreApplication::instance()->thread() != QThread::currentThread())
         return getImageSize(doc, imageFormat);
     return getPixmapSize(doc, imageFormat);
 }
@@ -220,7 +222,7 @@ void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocumen
     Q_UNUSED(posInDocument)
         const QTextImageFormat imageFormat = format.toImageFormat();
 
-    if (qApp->thread() != QThread::currentThread()) {
+    if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
         const QImage image = getImage(doc, imageFormat);
         p->drawImage(rect, image, image.rect());
     } else {

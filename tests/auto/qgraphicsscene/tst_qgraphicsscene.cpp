@@ -50,7 +50,7 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../shared/util.h"
-#include "../qpathclipper/pathcompare.h"
+#include "../gui/painting/qpathclipper/pathcompare.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>

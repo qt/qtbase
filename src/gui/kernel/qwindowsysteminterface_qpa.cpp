@@ -40,8 +40,9 @@
 ****************************************************************************/
 #include "qwindowsysteminterface_qpa.h"
 #include "qwindowsysteminterface_qpa_p.h"
-#include "qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include <QAbstractEventDispatcher>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,51 +57,49 @@ QTime QWindowSystemInterfacePrivate::eventTime;
 QList<QWindowSystemInterfacePrivate::WindowSystemEvent *> QWindowSystemInterfacePrivate::windowSystemEventQueue;
 QMutex QWindowSystemInterfacePrivate::queueMutex;
 
-extern QPointer<QWidget> qt_last_mouse_receiver;
+extern QPointer<QWindow> qt_last_mouse_receiver;
 
 
-void QWindowSystemInterface::handleEnterEvent(QWidget *tlw)
+void QWindowSystemInterface::handleEnterEvent(QWindow *tlw)
 {
     if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            return;
-
         QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(tlw);
         QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
     }
 }
 
-void QWindowSystemInterface::handleLeaveEvent(QWidget *tlw)
+void QWindowSystemInterface::handleLeaveEvent(QWindow *tlw)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            return;
-    }
     QWindowSystemInterfacePrivate::LeaveEvent *e = new QWindowSystemInterfacePrivate::LeaveEvent(tlw);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWindowActivated(QWidget *tlw)
+void QWindowSystemInterface::handleWindowActivated(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::ActivatedWindowEvent *e = new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleGeometryChange(QWidget *tlw, const QRect &newRect)
+void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowState newState)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            return;
-    }
+    QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
+        new QWindowSystemInterfacePrivate::WindowStateChangedEvent(tlw, newState);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect)
+{
     QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleSynchronousGeometryChange(QWindow *tlw, const QRect &newRect)
+{
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
+    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
+}
 
-void QWindowSystemInterface::handleCloseEvent(QWidget *tlw)
+void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
 {
     if (tlw) {
         QWindowSystemInterfacePrivate::CloseEvent *e =
@@ -115,42 +114,31 @@ void QWindowSystemInterface::handleCloseEvent(QWidget *tlw)
 
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWidget *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b) {
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleMouseEvent(w, time, local, global, b);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWidget *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
+void QWindowSystemInterface::handleMouseEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            tlw = 0;
-    }
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
+void QWindowSystemInterface::handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleKeyEvent(w, time, t, k, mods, text, autorep, count);
 }
 
-void QWindowSystemInterface::handleKeyEvent(QWidget *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
+void QWindowSystemInterface::handleKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            tlw = 0;
-    }
-
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *w, QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
@@ -161,38 +149,26 @@ void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *w, QEvent::Type typ
                            text, autorep, count);
 }
 
-void QWindowSystemInterface::handleExtendedKeyEvent(QWidget *tlw, ulong timestamp, QEvent::Type type, int key,
+void QWindowSystemInterface::handleExtendedKeyEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, int key,
                                                     Qt::KeyboardModifiers modifiers,
                                                     quint32 nativeScanCode, quint32 nativeVirtualKey,
                                                     quint32 nativeModifiers,
                                                     const QString& text, bool autorep,
                                                     ushort count)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            tlw = 0;
-    }
-
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, type, key, modifiers,
                 nativeScanCode, nativeVirtualKey, nativeModifiers, text, autorep, count);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWidget *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o) {
+void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(w, time, local, global, d, o);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
+void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, int d, Qt::Orientation o)
 {
-    if (tlw) {
-        QWidgetData *data = qt_qwidget_data(tlw);
-        if (data->in_destructor)
-            tlw = 0;
-    }
-
     QWindowSystemInterfacePrivate::WheelEvent *e =
             new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
@@ -224,17 +200,17 @@ void QWindowSystemInterfacePrivate::queueWindowSystemEvent(QWindowSystemInterfac
     windowSystemEventQueue.append(ev);
     queueMutex.unlock();
 
-    QAbstractEventDispatcher *dispatcher = QApplicationPrivate::qt_qpa_core_dispatcher();
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::qt_qpa_core_dispatcher();
     if (dispatcher)
         dispatcher->wakeUp();
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points) {
+void QWindowSystemInterface::handleTouchEvent(QWindow *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleTouchEvent(w, time, type, devType, points);
 }
 
-void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points)
+void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points)
 {
     if (!points.size()) // Touch events must have at least one point
         return;
@@ -286,6 +262,72 @@ void QWindowSystemInterface::handleScreenCountChange(int count)
     QWindowSystemInterfacePrivate::ScreenCountEvent *e =
             new QWindowSystemInterfacePrivate::ScreenCountEvent(count);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleMapEvent(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::MapEvent *e = new QWindowSystemInterfacePrivate::MapEvent(tlw);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleUnmapEvent(QWindow *tlw)
+{
+    QWindowSystemInterfacePrivate::UnmapEvent *e = new QWindowSystemInterfacePrivate::UnmapEvent(tlw);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region)
+{
+    QWindowSystemInterfacePrivate::ExposeEvent *e = new QWindowSystemInterfacePrivate::ExposeEvent(tlw, region);
+    QGuiApplicationPrivate::processWindowSystemEvent(e); // send event immediately.
+}
+
+bool QWindowSystemInterface::sendWindowSystemEvents(QAbstractEventDispatcher *eventDispatcher, QEventLoop::ProcessEventsFlags flags)
+{
+    int nevents = 0;
+
+    // handle gui and posted events
+    QCoreApplication::sendPostedEvents();
+
+    while (true) {
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event;
+        if (!(flags & QEventLoop::ExcludeUserInputEvents)
+            && QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0) {
+            // process a pending user input event
+            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
+            if (!event)
+                break;
+        } else {
+            break;
+        }
+
+        if (eventDispatcher->filterEvent(event)) {
+            delete event;
+            continue;
+        }
+
+        nevents++;
+
+        QGuiApplicationPrivate::processWindowSystemEvent(event);
+        delete event;
+    }
+
+    return (nevents > 0);
+}
+
+int QWindowSystemInterface::windowSystemEventsQueued()
+{
+    return QWindowSystemInterfacePrivate::windowSystemEventsQueued();
+}
+
+Qt::DropAction QWindowSystemInterface::handleDrag(QWindow *w, QMimeData *dropData, const QPoint &p)
+{
+    return QGuiApplicationPrivate::processDrag(w, dropData, p);
+}
+
+Qt::DropAction QWindowSystemInterface::handleDrop(QWindow *w, QMimeData *dropData, const QPoint &p)
+{
+    return QGuiApplicationPrivate::processDrop(w, dropData, p);
 }
 
 QT_END_NAMESPACE

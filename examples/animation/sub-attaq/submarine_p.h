@@ -60,7 +60,7 @@
 
 //Qt
 #include <QtCore/QPropertyAnimation>
-#include <QtGui/QGraphicsScene>
+#include <QtWidgets/QGraphicsScene>
 
 //This state is describing when the boat is moving right
 class MovementState : public QAnimationState

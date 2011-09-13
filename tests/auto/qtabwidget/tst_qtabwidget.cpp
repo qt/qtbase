@@ -45,7 +45,7 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qlabel.h>
-#include <QtGui/qboxlayout.h>
+#include <QtWidgets/qboxlayout.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=

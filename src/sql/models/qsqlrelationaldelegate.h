@@ -44,9 +44,9 @@
 
 #ifdef QT_GUI_LIB
 
-#include <QtGui/qitemdelegate.h>
-#include <QtGui/qlistview.h>
-#include <QtGui/qcombobox.h>
+#include <QtWidgets/qitemdelegate.h>
+#include <QtWidgets/qlistview.h>
+#include <QtWidgets/qcombobox.h>
 #include <QtSql/qsqlrelationaltablemodel.h>
 
 QT_BEGIN_HEADER

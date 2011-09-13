@@ -11,6 +11,7 @@ symbian {
     TARGET.UID3 = 0xA000C60B
     CONFIG += qt_example
 }
+QT += widgets
 maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)

@@ -42,38 +42,35 @@
 #ifndef QWAYLANDREADBACKGLXCONTEXT_H
 #define QWAYLANDREADBACKGLXCONTEXT_H
 
-#include <QPlatformGLContext>
+#include <QPlatformOpenGLContext>
+#include <QSurfaceFormat>
 
 #include "qwaylandreadbackglxintegration.h"
 
-#include "qglxconvenience.h"
+#include <QtPlatformSupport/private/qglxconvenience_p.h>
 
 class QWaylandReadbackGlxWindow;
 class QWaylandShmBuffer;
 
-class QWaylandReadbackGlxContext : public QPlatformGLContext
+class QWaylandReadbackGlxContext : public QPlatformOpenGLContext
 {
 public:
-    QWaylandReadbackGlxContext(QWaylandReadbackGlxIntegration *glxIntegration, QWaylandReadbackGlxWindow *window);
+    QWaylandReadbackGlxContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, Display *display, int screen);
 
-    void makeCurrent();
+    QSurfaceFormat format() const;
+
+    void swapBuffers(QPlatformSurface *surface);
+
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString& procName);
 
-    QPlatformWindowFormat platformWindowFormat() const;
-
-    void geometryChanged();
+    void (*getProcAddress(const QByteArray &procName)) ();
 
 private:
-    QWaylandReadbackGlxIntegration *mGlxIntegration;
-    QWaylandReadbackGlxWindow *mWindow;
-    QWaylandShmBuffer *mBuffer;
+    GLXContext m_context;
 
-    Pixmap mPixmap;
-    GLXFBConfig mConfig;
-    GLXContext mContext;
-    GLXPixmap mGlxPixmap;
+    Display *m_display;
+    QSurfaceFormat m_format;
 };
 
 #endif // QWAYLANDREADBACKGLXCONTEXT_H

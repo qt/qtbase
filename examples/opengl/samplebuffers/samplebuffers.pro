@@ -1,7 +1,7 @@
 HEADERS += glwidget.h
 SOURCES += glwidget.cpp main.cpp
 
-QT += opengl
+QT += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/samplebuffers

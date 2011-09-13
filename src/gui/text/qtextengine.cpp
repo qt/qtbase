@@ -53,7 +53,7 @@
 #include "qstring.h"
 #include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
-#include <qapplication.h>
+#include <qguiapplication.h>
 #include <stdlib.h>
 
 
@@ -968,7 +968,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     for (int i = 0; i < si.num_glyphs; ++i)
-        si.width += glyphs.advances_x[i];
+        si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
 
 static inline bool hasCaseChange(const QScriptItem &si)
@@ -1628,7 +1628,7 @@ bool QTextEngine::isRightToLeft() const
         itemize();
     // this places the cursor in the right position depending on the keyboard layout
     if (layoutData->string.isEmpty())
-        return QApplication::keyboardInputDirection() == Qt::RightToLeft;
+        return QGuiApplication::keyboardInputDirection() == Qt::RightToLeft;
     return layoutData->string.isRightToLeft();
 }
 
@@ -2663,7 +2663,7 @@ void QTextEngine::splitItem(int item, int pos) const
         QFixed w = 0;
         const QGlyphLayout g = shapedGlyphs(&oldItem);
         for(int j = 0; j < breakGlyph; ++j)
-            w += g.advances_x[j];
+            w += g.advances_x[j] * !g.attributes[j].dontPrint;
 
         newItem.width = oldItem.width - w;
         oldItem.width = w;

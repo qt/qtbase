@@ -43,10 +43,6 @@
 #include "qpaintengineex_opengl2_p.h"
 #include "private/qglengineshadersource_p.h"
 
-#if defined QT_OPENGL_ES_2 && !defined(QT_NO_EGL)
-#include "private/qeglcontext_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -55,19 +51,16 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QBasicAtomicInt qgltextureglyphcache_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
-QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
-    : QImageTextureGlyphCache(type, matrix), QGLContextGroupResourceBase()
-    , ctx(0)
+QGLTextureGlyphCache::QGLTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
+    : QImageTextureGlyphCache(type, matrix)
     , pex(0)
     , m_blitProgram(0)
     , m_filterMode(Nearest)
     , m_serialNumber(qgltextureglyphcache_serial_number.fetchAndAddRelaxed(1))
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
-    qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
+    qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, QOpenGLContext::currentContext());
 #endif
-    setContext(context);
-
     m_vertexCoordinateArray[0] = -1.0f;
     m_vertexCoordinateArray[1] = -1.0f;
     m_vertexCoordinateArray[2] =  1.0f;
@@ -95,14 +88,9 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
     delete m_blitProgram;
 }
 
-void QGLTextureGlyphCache::setContext(const QGLContext *context)
-{
-    ctx = context;
-    m_h = 0;
-}
-
 void QGLTextureGlyphCache::createTextureData(int width, int height)
 {
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::createTextureData: Called with no context");
         return;
@@ -120,12 +108,17 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
-    glGenTextures(1, &glyphTexture->m_texture);
-    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
+    if (m_textureResource && !m_textureResource->m_texture)
+        delete m_textureResource;
 
-    glyphTexture->m_width = width;
-    glyphTexture->m_height = height;
+    if (!m_textureResource)
+        m_textureResource = new QGLGlyphTexture(ctx);
+
+    glGenTextures(1, &m_textureResource->m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
+
+    m_textureResource->m_width = width;
+    m_textureResource->m_height = height;
 
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {
         QVarLengthArray<uchar> data(width * height * 4);
@@ -148,14 +141,14 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 {
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::resizeTextureData: Called with no context");
         return;
     }
-    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
 
-    int oldWidth = glyphTexture->m_width;
-    int oldHeight = glyphTexture->m_height;
+    int oldWidth = m_textureResource->m_width;
+    int oldHeight = m_textureResource->m_height;
 
     // Make the lower glyph texture size 16 x 16.
     if (width < 16)
@@ -163,7 +156,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    GLuint oldTexture = glyphTexture->m_texture;
+    GLuint oldTexture = m_textureResource->m_texture;
     createTextureData(width, height);
 
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
@@ -177,7 +170,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     // ### the QTextureGlyphCache API needs to be reworked to allow
     // ### resizeTextureData to fail
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, glyphTexture->m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_textureResource->m_fbo);
 
     GLuint tmp_texture;
     glGenTextures(1, &tmp_texture);
@@ -261,7 +254,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
 
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
 
@@ -280,16 +273,16 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition)
 {
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::fillTexture: Called with no context");
         return;
     }
 
-    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
 
-        glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
+        glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
         const QImage &texture = image();
         const uchar *bits = texture.constBits();
         bits += c.y * texture.bytesPerLine() + c.x;
@@ -326,7 +319,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
         }
     }
 
-    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
@@ -362,6 +355,7 @@ int QGLTextureGlyphCache::glyphPadding() const
 
 int QGLTextureGlyphCache::maxTextureWidth() const
 {
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0)
         return QImageTextureGlyphCache::maxTextureWidth();
     else
@@ -370,6 +364,7 @@ int QGLTextureGlyphCache::maxTextureWidth() const
 
 int QGLTextureGlyphCache::maxTextureHeight() const
 {
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx == 0)
         return QImageTextureGlyphCache::maxTextureHeight();
 
@@ -381,16 +376,15 @@ int QGLTextureGlyphCache::maxTextureHeight() const
 
 void QGLTextureGlyphCache::clear()
 {
-    if (ctx != 0) {
-        m_textureResource.cleanup(ctx);
+    m_textureResource->free();
+    m_textureResource = 0;
 
-        m_w = 0;
-        m_h = 0;
-        m_cx = 0;
-        m_cy = 0;
-        m_currentRowHeight = 0;
-        coords.clear();
-    }
+    m_w = 0;
+    m_h = 0;
+    m_cx = 0;
+    m_cy = 0;
+    m_currentRowHeight = 0;
+    coords.clear();
 }
 
 QT_END_NAMESPACE

@@ -45,7 +45,7 @@
 
 #include "qrawfont_p.h"
 #include <QtGui/qplatformfontdatabase_qpa.h>
-#include <private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,7 +58,7 @@ void QRawFontPrivate::platformLoadFromData(const QByteArray &fontData, qreal pix
 {
     Q_ASSERT(fontEngine == 0);
 
-    QPlatformFontDatabase *pfdb = QApplicationPrivate::platformIntegration()->fontDatabase();
+    QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     fontEngine = pfdb->fontEngine(fontData, pixelSize, hintingPreference);
     if (fontEngine != 0)
         fontEngine->ref.ref();

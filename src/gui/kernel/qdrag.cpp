@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <qwidget.h>
 #include <qdrag.h>
 #include <qpixmap.h>
 #include <qpoint.h>
@@ -66,7 +65,7 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/dragging/mainwindow.cpp 1
 
     Note that setMimeData() assigns ownership of the QMimeData object to the
-    QDrag object. The QDrag must be constructed on the heap with a parent QWidget
+    QDrag object. The QDrag must be constructed on the heap with a parent QObject
     to ensure that Qt can clean up after the drag and drop operation has been
     completed.
 
@@ -107,7 +106,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs a new drag object for the widget specified by \a dragSource.
 */
-QDrag::QDrag(QWidget *dragSource)
+QDrag::QDrag(QObject *dragSource)
     : QObject(*new QDragPrivate, dragSource)
 {
     Q_D(QDrag);
@@ -203,7 +202,7 @@ QPoint QDrag::hotSpot() const
     Returns the source of the drag object. This is the widget where the drag
     and drop operation originated.
 */
-QWidget *QDrag::source() const
+QObject *QDrag::source() const
 {
     Q_D(const QDrag);
     return d->source;
@@ -213,7 +212,7 @@ QWidget *QDrag::source() const
     Returns the target of the drag and drop operation. This is the widget where
     the drag object was dropped.
 */
-QWidget *QDrag::target() const
+QObject *QDrag::target() const
 {
     Q_D(const QDrag);
     return d->target;
@@ -346,7 +345,7 @@ void QDrag::setDragCursor(const QPixmap &cursor, Qt::DropAction action)
 */
 
 /*!
-    \fn void QDrag::targetChanged(QWidget *newTarget)
+    \fn void QDrag::targetChanged(QObject *newTarget)
 
     This signal is emitted when the target of the drag and drop
     operation changes, with \a newTarget the new target.

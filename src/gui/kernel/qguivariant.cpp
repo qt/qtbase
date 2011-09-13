@@ -48,7 +48,6 @@
 #include "qdatastream.h"
 #include "qdebug.h"
 #include "qfont.h"
-#include "qicon.h"
 #include "qimage.h"
 #include "qkeysequence.h"
 #include "qtransform.h"
@@ -58,7 +57,6 @@
 #include "qpixmap.h"
 #include "qpolygon.h"
 #include "qregion.h"
-#include "qsizepolicy.h"
 #include "qtextformat.h"
 #include "qmatrix4x4.h"
 #include "qvector2d.h"
@@ -70,10 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT3_SUPPORT
-extern QDataStream &qt_stream_out_qcolorgroup(QDataStream &s, const QColorGroup &g);
-extern QDataStream &qt_stream_in_qcolorgroup(QDataStream &s, QColorGroup &g);
-#endif
+Q_GUI_EXPORT const QVariant::Handler *qt_widgets_variant_handler = 0;
 
 Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
@@ -107,16 +102,6 @@ static void construct(QVariant::Private *x, const void *copy)
     case QVariant::Palette:
         v_construct<QPalette>(x, copy);
         break;
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        v_construct<QColorGroup>(x, copy);
-        break;
-#endif
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        v_construct<QIcon>(x, copy);
-        break;
-#endif
     case QVariant::Matrix:
         v_construct<QMatrix>(x, copy);
         break;
@@ -136,9 +121,6 @@ static void construct(QVariant::Private *x, const void *copy)
 #endif
     case QVariant::Pen:
         v_construct<QPen>(x, copy);
-        break;
-    case QVariant::SizePolicy:
-        v_construct<QSizePolicy>(x, copy);
         break;
 #ifndef QT_NO_CURSOR
     case QVariant::Cursor:
@@ -178,6 +160,13 @@ static void construct(QVariant::Private *x, const void *copy)
         v_construct<QQuaternion>(x, copy);
         break;
 #endif
+    case QVariant::SizePolicy:
+    case QVariant::Icon:
+        if (qt_widgets_variant_handler) {
+            qt_widgets_variant_handler->construct(x, copy);
+            return;
+        }
+        break;
     default:
         qcoreVariantHandler()->construct(x, copy);
         return;
@@ -218,16 +207,6 @@ static void clear(QVariant::Private *d)
     case QVariant::Palette:
         v_clear<QPalette>(d);
         break;
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        v_clear<QColorGroup>(d);
-        break;
-#endif
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        v_clear<QIcon>(d);
-        break;
-#endif
     case QVariant::Matrix:
         v_clear<QMatrix>(d);
         break;
@@ -239,9 +218,6 @@ static void clear(QVariant::Private *d)
         break;
     case QVariant::TextLength:
         v_clear<QTextLength>(d);
-        break;
-    case QVariant::SizePolicy:
-        v_clear<QSizePolicy>(d);
         break;
 #ifndef QT_NO_SHORTCUT
     case QVariant::KeySequence:
@@ -276,6 +252,13 @@ static void clear(QVariant::Private *d)
         v_clear<QVector4D>(d);
         break;
 #endif
+    case QVariant::SizePolicy:
+    case QVariant::Icon:
+        if (qt_widgets_variant_handler) {
+            qt_widgets_variant_handler->clear(d);
+            return;
+        }
+        break;
     default:
         qcoreVariantHandler()->clear(d);
         return;
@@ -300,10 +283,6 @@ static bool isNull(const QVariant::Private *d)
         return v_cast<QPixmap>(d)->isNull();
     case QVariant::Image:
         return v_cast<QImage>(d)->isNull();
-#ifndef QT_NO_ICON
-    case QVariant::Icon:
-        return v_cast<QIcon>(d)->isNull();
-#endif
     case QVariant::Matrix:
     case QVariant::TextFormat:
     case QVariant::TextLength:
@@ -313,9 +292,6 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Brush:
     case QVariant::Color:
     case QVariant::Palette:
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-#endif
     case QVariant::SizePolicy:
 #ifndef QT_NO_SHORTCUT
     case QVariant::KeySequence:
@@ -341,6 +317,10 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Quaternion:
         return v_cast<QQuaternion>(d)->isNull();
 #endif
+    case QVariant::Icon:
+        if (qt_widgets_variant_handler)
+            return qt_widgets_variant_handler->isNull(d);
+        break;
     default:
         return qcoreVariantHandler()->isNull(d);
     }
@@ -374,10 +354,6 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return *v_cast<QColor>(a) == *v_cast<QColor>(b);
     case QVariant::Palette:
         return *v_cast<QPalette>(a) == *v_cast<QPalette>(b);
-#ifdef QT3_SUPPORT
-    case QVariant::ColorGroup:
-        return *v_cast<QColorGroup>(a) == *v_cast<QColorGroup>(b);
-#endif
 #ifndef QT_NO_ICON
     case QVariant::Icon:
         /* QIcon::operator==() cannot be reasonably implemented for QIcon,
@@ -392,8 +368,6 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return *v_cast<QTextFormat>(a) == *v_cast<QTextFormat>(b);
     case QVariant::TextLength:
         return *v_cast<QTextLength>(a) == *v_cast<QTextLength>(b);
-    case QVariant::SizePolicy:
-        return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
 #ifndef QT_NO_SHORTCUT
     case QVariant::KeySequence:
         return *v_cast<QKeySequence>(a) == *v_cast<QKeySequence>(b);
@@ -420,6 +394,10 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     case QVariant::Quaternion:
         return *v_cast<QQuaternion>(a) == *v_cast<QQuaternion>(b);
 #endif
+    case QVariant::SizePolicy:
+        if (qt_widgets_variant_handler)
+            return qt_widgets_variant_handler->compare(a, b);
+        break;
     default:
         break;
     }
@@ -688,17 +666,11 @@ extern Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper;
      static const QLoad##TYPE qLoad##TYPE = qMetaTypeLoadHelper<TYPE>;
 #endif
 
-#ifdef QT3_SUPPORT
-Q_DECL_METATYPE_HELPER(QColorGroup)
-#endif
 Q_DECL_METATYPE_HELPER(QFont)
 Q_DECL_METATYPE_HELPER(QPixmap)
 Q_DECL_METATYPE_HELPER(QBrush)
 Q_DECL_METATYPE_HELPER(QColor)
 Q_DECL_METATYPE_HELPER(QPalette)
-#ifndef QT_NO_ICON
-Q_DECL_METATYPE_HELPER(QIcon)
-#endif
 Q_DECL_METATYPE_HELPER(QImage)
 Q_DECL_METATYPE_HELPER(QPolygon)
 Q_DECL_METATYPE_HELPER(QRegion)
@@ -706,7 +678,6 @@ Q_DECL_METATYPE_HELPER(QBitmap)
 #ifndef QT_NO_CURSOR
 Q_DECL_METATYPE_HELPER(QCursor)
 #endif
-Q_DECL_METATYPE_HELPER(QSizePolicy)
 #ifndef QT_NO_SHORTCUT
 Q_DECL_METATYPE_HELPER(QKeySequence)
 #endif
@@ -745,21 +716,11 @@ Q_DECL_METATYPE_HELPER(QQuaternion)
 #endif
 
 static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
-#ifdef QT3_SUPPORT
-    Q_IMPL_METATYPE_HELPER(QColorGroup),
-#else
-    {0, 0, 0, 0},
-#endif
     Q_IMPL_METATYPE_HELPER(QFont),
     Q_IMPL_METATYPE_HELPER(QPixmap),
     Q_IMPL_METATYPE_HELPER(QBrush),
     Q_IMPL_METATYPE_HELPER(QColor),
     Q_IMPL_METATYPE_HELPER(QPalette),
-#ifdef QT_NO_ICON
-    {0, 0, 0, 0},
-#else
-    Q_IMPL_METATYPE_HELPER(QIcon),
-#endif
     Q_IMPL_METATYPE_HELPER(QImage),
     Q_IMPL_METATYPE_HELPER(QPolygon),
     Q_IMPL_METATYPE_HELPER(QRegion),
@@ -769,7 +730,6 @@ static const QMetaTypeGuiHelper qVariantGuiHelper[] = {
 #else
     Q_IMPL_METATYPE_HELPER(QCursor),
 #endif
-    Q_IMPL_METATYPE_HELPER(QSizePolicy),
 #ifdef QT_NO_SHORTCUT
     {0, 0, 0, 0},
 #else
@@ -824,5 +784,6 @@ int qUnregisterGuiVariant()
     return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiVariant)
+
 
 QT_END_NAMESPACE

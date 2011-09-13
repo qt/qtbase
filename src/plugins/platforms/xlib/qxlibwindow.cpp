@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qguiapplication_p.h>
 #include "qxlibwindow.h"
 
 #include "qxlibintegration.h"
@@ -50,7 +51,7 @@
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
-#include "qglxconvenience.h"
+#include "private/qglxconvenience_p.h"
 #else
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
@@ -64,14 +65,14 @@
 #include <QApplication>
 #include <QDebug>
 
-#include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qapplication_p.h>
-
 //#define MYX11_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-QXlibWindow::QXlibWindow(QWidget *window)
+QHash<Window, QXlibWindow *> QXlibWindow::windowMap;
+
+
+QXlibWindow::QXlibWindow(QWindow *window)
     : QPlatformWindow(window)
     , mGLContext(0)
     , mScreen(QXlibScreen::testLiteScreenForWidget(window))
@@ -82,11 +83,10 @@ QXlibWindow::QXlibWindow(QWidget *window)
     int h = window->height();
 
 #if !defined(QT_NO_OPENGL)
-    if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-            && QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
-            || window->platformWindowFormat().alpha()) {
+    if(window->surfaceType() == QWindow::OpenGLSurface) {
 #if !defined(QT_OPENGL_ES_2)
-        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(),mScreen->xScreenNumber(),window->platformWindowFormat());
+        XVisualInfo *visualInfo = qglx_findVisualInfo(mScreen->display()->nativeDisplay(), mScreen->xScreenNumber(),
+                                                      window->format());
 #else
         QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
@@ -156,6 +156,8 @@ QXlibWindow::QXlibWindow(QWidget *window)
     if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
         protocols[n++] = QXlibStatic::atom(QXlibStatic::_NET_WM_CONTEXT_HELP);
     XSetWMProtocols(mScreen->display()->nativeDisplay(), x_window, protocols, n);
+
+    windowMap.insert(x_window, this);
 }
 
 
@@ -165,6 +167,9 @@ QXlibWindow::~QXlibWindow()
 #ifdef MYX11_DEBUG
     qDebug() << "~QTestLiteWindow" << hex << x_window;
 #endif
+
+    windowMap.remove(x_window);
+
     delete mGLContext;
     XFreeGC(mScreen->display()->nativeDisplay(), gc);
     XDestroyWindow(mScreen->display()->nativeDisplay(), x_window);
@@ -209,7 +214,7 @@ void QXlibWindow::handleMouseEvent(QEvent::Type type, XButtonEvent *e)
                 bool hor = (((e->button == Button4 || e->button == Button5)
                              && (modifiers & Qt::AltModifier))
                             || (e->button == 6 || e->button == 7));
-                QWindowSystemInterface::handleWheelEvent(widget(), e->time,
+                QWindowSystemInterface::handleWheelEvent(window(), e->time,
                                                       QPoint(e->x, e->y),
                                                       QPoint(e->x_root, e->y_root),
                                                       delta, hor ? Qt::Horizontal : Qt::Vertical);
@@ -222,7 +227,7 @@ void QXlibWindow::handleMouseEvent(QEvent::Type type, XButtonEvent *e)
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QWindowSystemInterface::handleMouseEvent(widget(), e->time, QPoint(e->x, e->y),
+    QWindowSystemInterface::handleMouseEvent(window(), e->time, QPoint(e->x, e->y),
                                           QPoint(e->x_root, e->y_root),
                                           buttons);
 
@@ -231,23 +236,23 @@ void QXlibWindow::handleMouseEvent(QEvent::Type type, XButtonEvent *e)
 
 void QXlibWindow::handleCloseEvent()
 {
-    QWindowSystemInterface::handleCloseEvent(widget());
+    QWindowSystemInterface::handleCloseEvent(window());
 }
 
 
 void QXlibWindow::handleEnterEvent()
 {
-    QWindowSystemInterface::handleEnterEvent(widget());
+    QWindowSystemInterface::handleEnterEvent(window());
 }
 
 void QXlibWindow::handleLeaveEvent()
 {
-    QWindowSystemInterface::handleLeaveEvent(widget());
+    QWindowSystemInterface::handleLeaveEvent(window());
 }
 
 void QXlibWindow::handleFocusInEvent()
 {
-    QWindowSystemInterface::handleWindowActivated(widget());
+    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 void QXlibWindow::handleFocusOutEvent()
@@ -313,16 +318,6 @@ GC QXlibWindow::createGC()
     return gc;
 }
 
-void QXlibWindow::paintEvent()
-{
-#ifdef MYX11_DEBUG
-//    qDebug() << "QTestLiteWindow::paintEvent" << shm_img.size() << painted;
-#endif
-
-    if (QWindowSurface *surface = widget()->windowSurface())
-        surface->flush(widget(), widget()->geometry(), QPoint());
-}
-
 void QXlibWindow::requestActivateWindow()
 {
     XSetInputFocus(mScreen->display()->nativeDisplay(), x_window, XRevertToParent, CurrentTime);
@@ -340,11 +335,12 @@ void QXlibWindow::resizeEvent(XConfigureEvent *e)
         ypos = e->y;
     }
 #ifdef MYX11_DEBUG
-    qDebug() << hex << x_window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
+    qDebug() << hex << x_window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height <<
+                "geometry" << xpos << ypos << e->width << e->height;
 #endif
 
     QRect newRect(xpos, ypos, e->width, e->height);
-    QWindowSystemInterface::handleGeometryChange(widget(), newRect);
+    QWindowSystemInterface::handleGeometryChange(window(), newRect);
 }
 
 void QXlibWindow::mousePressEvent(XButtonEvent *e)
@@ -413,16 +409,15 @@ void QXlibWindow::setMWMHints(const QXlibMWMHints &mwmhints)
 }
 
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
-static inline bool isTransient(const QWidget *w)
+static inline bool isTransient(const QWindow *w)
 {
-    return ((w->windowType() == Qt::Dialog
+    return (w->windowType() == Qt::Dialog
              || w->windowType() == Qt::Sheet
              || w->windowType() == Qt::Tool
              || w->windowType() == Qt::SplashScreen
              || w->windowType() == Qt::ToolTip
              || w->windowType() == Qt::Drawer
-             || w->windowType() == Qt::Popup)
-            && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
+             || w->windowType() == Qt::Popup);
 }
 
 QVector<Atom> QXlibWindow::getNetWmState() const
@@ -568,9 +563,9 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
         mwmhints.decorations = 0;
     }
 
-    if (widget()->windowModality() == Qt::WindowModal) {
+    if (window()->windowModality() == Qt::WindowModal) {
         mwmhints.input_mode = MWM_INPUT_PRIMARY_APPLICATION_MODAL;
-    } else if (widget()->windowModality() == Qt::ApplicationModal) {
+    } else if (window()->windowModality() == Qt::ApplicationModal) {
         mwmhints.input_mode = MWM_INPUT_FULL_APPLICATION_MODAL;
     }
 
@@ -580,7 +575,7 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
 
     if (flags & Qt::WindowStaysOnTopHint) {
         if (flags & Qt::WindowStaysOnBottomHint)
-            qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
+            qWarning() << "QWindow: Incompatible window flags: the window can't be on top and on bottom at the same time";
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_ABOVE)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_ABOVE));
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_STAYS_ON_TOP)))
@@ -589,17 +584,17 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_BELOW)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_BELOW));
     }
-    if (widget()->isFullScreen()) {
+    if (window()->windowState() & Qt::WindowFullScreen) {
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_FULLSCREEN)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_FULLSCREEN));
     }
-    if (widget()->isMaximized()) {
+    if (window()->windowState() & Qt::WindowMaximized) {
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MAXIMIZED_HORZ)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MAXIMIZED_HORZ));
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MAXIMIZED_VERT)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MAXIMIZED_VERT));
     }
-    if (widget()->windowModality() != Qt::NonModal) {
+    if (window()->windowModality() != Qt::NonModal) {
         if (!netWmState.contains(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MODAL)))
             netWmState.append(QXlibStatic::atom(QXlibStatic::_NET_WM_STATE_MODAL));
     }
@@ -634,24 +629,29 @@ Qt::WindowFlags QXlibWindow::setWindowFlags(Qt::WindowFlags flags)
     return flags;
 }
 
+Qt::WindowState QXlibWindow::setWindowState(Qt::WindowState state)
+{
+    // ####
+    return state;
+}
+
 void QXlibWindow::setVisible(bool visible)
 {
 #ifdef MYX11_DEBUG
     qDebug() << "QTestLiteWindow::setVisible" << visible << hex << x_window;
 #endif
-    if (isTransient(widget())) {
+    if (isTransient(window())) {
         Window parentXWindow = x_window;
-        if (widget()->parentWidget()) {
-            QWidget *widgetParent = widget()->parentWidget()->window();
-            if (widgetParent && widgetParent->platformWindow()) {
-                QXlibWindow *parentWidnow = static_cast<QXlibWindow *>(widgetParent->platformWindow());
-                parentXWindow = parentWidnow->x_window;
-            }
+        QWindow *parent = window()->parent();
+        if (parent && parent->handle()) {
+            QXlibWindow *xlibParent = static_cast<QXlibWindow *>(parent->handle());
+            parentXWindow = xlibParent->x_window;
         }
         XSetTransientForHint(mScreen->display()->nativeDisplay(),x_window,parentXWindow);
     }
 
     if (visible) {
+        qDebug() << ">>> mapping";
         //ensure that the window is viewed in correct position.
         doSizeHints();
         XMapWindow(mScreen->display()->nativeDisplay(), x_window);
@@ -666,33 +666,11 @@ void QXlibWindow::setCursor(const Cursor &cursor)
     mScreen->display()->flush();
 }
 
-QPlatformGLContext *QXlibWindow::glContext() const
+QSurfaceFormat QXlibWindow::format() const
 {
-    if (!QApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))
-        return 0;
-    if (!mGLContext) {
-        QXlibWindow *that = const_cast<QXlibWindow *>(this);
-#if !defined(QT_NO_OPENGL)
-#if !defined(QT_OPENGL_ES_2)
-        that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
-#else
-        EGLDisplay display = mScreen->eglDisplay();
-
-        QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
-
-        EGLConfig config = q_configFromQPlatformWindowFormat(display,windowFormat);
-        QVector<EGLint> eglContextAttrs;
-        eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
-        eglContextAttrs.append(2);
-        eglContextAttrs.append(EGL_NONE);
-
-        EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)x_window,0);
-        that->mGLContext = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
-#endif
-#endif
-    }
-    return mGLContext;
+    return window()->format();
 }
+
 
 Window QXlibWindow::xWindow() const
 {
@@ -706,7 +684,7 @@ GC QXlibWindow::graphicsContext() const
 
 void QXlibWindow::doSizeHints()
 {
-    Q_ASSERT(widget()->testAttribute(Qt::WA_WState_Created));
+//    Q_ASSERT(window()->testAttribute(Qt::WA_WState_Created));
     XSizeHints s;
     s.flags = 0;
     QRect g = geometry();
@@ -723,27 +701,10 @@ void QXlibWindow::doSizeHints()
     XSetWMNormalHints(mScreen->display()->nativeDisplay(), x_window, &s);
 }
 
-QPlatformWindowFormat QXlibWindow::correctColorBuffers(const QPlatformWindowFormat &platformWindowFormat) const
+
+QXlibWindow *QXlibWindow::platformWindowForXWindow(Window window)
 {
-    // I have only tested this setup on a dodgy intel setup, where I didn't use standard libs,
-    // so this might be not what we want to do :)
-    if ( !(platformWindowFormat.redBufferSize() == -1   &&
-           platformWindowFormat.greenBufferSize() == -1 &&
-           platformWindowFormat.blueBufferSize() == -1))
-        return platformWindowFormat;
-
-    QPlatformWindowFormat windowFormat = platformWindowFormat;
-    if (mScreen->depth() == 16) {
-        windowFormat.setRedBufferSize(5);
-        windowFormat.setGreenBufferSize(6);
-        windowFormat.setBlueBufferSize(5);
-    } else {
-        windowFormat.setRedBufferSize(8);
-        windowFormat.setGreenBufferSize(8);
-        windowFormat.setBlueBufferSize(8);
-    }
-
-    return windowFormat;
+    return windowMap.value(window);
 }
 
 QT_END_NAMESPACE

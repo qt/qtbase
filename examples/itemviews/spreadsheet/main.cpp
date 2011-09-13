@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include "spreadsheet.h"
 
 int main(int argc, char** argv) {

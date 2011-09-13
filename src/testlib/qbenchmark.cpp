@@ -44,7 +44,7 @@
 #include "QtTest/private/qbenchmarkmetric_p.h"
 
 #ifdef QT_GUI_LIB
-#include <QtGui/qapplication.h>
+#include <QtGui/qguiapplication.h>
 #endif
 
 #include <QtCore/qprocess.h>

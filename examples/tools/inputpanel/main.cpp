@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtGui/QWidget>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
 
 //! [main]
 #include "myinputpanelcontext.h"

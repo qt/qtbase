@@ -3,7 +3,7 @@ HEADERS       = mainwindow.h \
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 xbeltree.cpp
-QT           += xml
+QT           += xml widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/dombookmarks

@@ -1,6 +1,4 @@
 include (../xcomposite_share/xcomposite_share.pri)
-include (../../../eglconvenience/eglconvenience.pri)
-include (../../../eglconvenience/xlibeglintegration.pri)
 
 LIBS += -lXcomposite -lEGL
 

@@ -50,10 +50,10 @@
 #include "textinformationitem.h"
 
 //Qt
-#include <QtGui/QMessageBox>
-#include <QtGui/QGraphicsView>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QGraphicsView>
 #include <QtCore/QStateMachine>
-#include <QtGui/QKeyEventTransition>
+#include <QtWidgets/QKeyEventTransition>
 #include <QtCore/QFinalState>
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)

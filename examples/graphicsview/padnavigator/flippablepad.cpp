@@ -40,7 +40,7 @@
 
 #include "flippablepad.h"
 
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 //! [0]
 static QRectF boundsFromSize(const QSize &size)

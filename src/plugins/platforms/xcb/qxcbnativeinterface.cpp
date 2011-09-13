@@ -43,13 +43,16 @@
 
 #include "qxcbscreen.h"
 
-#include <QtGui/private/qapplication_p.h>
+#include <private/qguiapplication_p.h>
 #include <QtCore/QMap>
 
 #include <QtCore/QDebug>
 
+#include <QtGui/qopenglcontext.h>
+#include <QtGui/qscreen.h>
+
 #if defined(XCB_USE_EGL)
-#include "../eglconvenience/qeglplatformcontext.h"
+#include "QtPlatformSupport/private/qeglplatformcontext_p.h"
 #elif defined (XCB_USE_DRI2)
 #include "qdri2context.h"
 #endif
@@ -71,29 +74,14 @@ public:
 
 Q_GLOBAL_STATIC(QXcbResourceMap, qXcbResourceMap)
 
-void *QXcbNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
+void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
     ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
     void *result = 0;
     switch(resource) {
-    case Display:
-        result = displayForWidget(widget);
-        break;
-    case EglDisplay:
-        result = eglDisplayForWidget(widget);
-        break;
-    case Connection:
-        result = connectionForWidget(widget);
-        break;
-    case Screen:
-        result = qPlatformScreenForWidget(widget);
-        break;
-    case GraphicsDevice:
-        result = graphicsDeviceForWidget(widget);
-        break;
     case EglContext:
-        result = eglContextForWidget(widget);
+        result = eglContextForContext(context);
         break;
     default:
         result = 0;
@@ -101,75 +89,103 @@ void *QXcbNativeInterface::nativeResourceForWidget(const QByteArray &resourceStr
     return result;
 }
 
-QXcbScreen *QXcbNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
+{
+    QByteArray lowerCaseResource = resourceString.toLower();
+    ResourceType resource = qXcbResourceMap()->value(lowerCaseResource);
+    void *result = 0;
+    switch(resource) {
+    case Display:
+        result = displayForWindow(window);
+        break;
+    case EglDisplay:
+        result = eglDisplayForWindow(window);
+        break;
+    case Connection:
+        result = connectionForWindow(window);
+        break;
+    case Screen:
+        result = qPlatformScreenForWindow(window);
+        break;
+    case GraphicsDevice:
+        result = graphicsDeviceForWindow(window);
+        break;
+    default:
+        result = 0;
+    }
+    return result;
+}
+
+QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QXcbScreen *screen;
-    if (widget) {
-        screen = static_cast<QXcbScreen *>(QPlatformScreen::platformScreenForWidget(widget));
-    }else {
-        screen = static_cast<QXcbScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
+    if (window) {
+        screen = static_cast<QXcbScreen *>(window->screen()->handle());
+    } else {
+        screen = static_cast<QXcbScreen *>(QGuiApplication::primaryScreen()->handle());
     }
     return screen;
 }
 
-void *QXcbNativeInterface::displayForWidget(QWidget *widget)
+void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_XLIB)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->connection()->xlib_display();
 #else
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 #endif
 }
 
-void *QXcbNativeInterface::eglDisplayForWidget(QWidget *widget)
+void *QXcbNativeInterface::eglDisplayForWindow(QWindow *window)
 {
 #if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->connection()->egl_display();
 #else
-    Q_UNUSED(widget)
+    Q_UNUSED(window)
     return 0;
 #endif
 }
 
-void *QXcbNativeInterface::connectionForWidget(QWidget *widget)
+void *QXcbNativeInterface::connectionForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->xcb_connection();
 }
 
-void *QXcbNativeInterface::screenForWidget(QWidget *widget)
+void *QXcbNativeInterface::screenForWindow(QWindow *window)
 {
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->screen();
 }
 
-void *QXcbNativeInterface::graphicsDeviceForWidget(QWidget *widget)
+void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
 {
 #if defined(XCB_USE_DRI2)
-    QXcbScreen *screen = qPlatformScreenForWidget(widget);
+    QXcbScreen *screen = qPlatformScreenForWindow(window);
     QByteArray deviceName = screen->connection()->dri2DeviceName();
     return deviceName.data();
 #else
-    Q_UNUSED(widget);
+    Q_UNUSED(window);
     return 0;
 #endif
 
 }
 
-void * QXcbNativeInterface::eglContextForWidget(QWidget *widget)
+void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 {
-    Q_ASSERT(widget);
-    if (!widget->platformWindow()) {
-        qDebug() << "QPlatformWindow does not exist for widget" << widget
-                 << "cannot return EGLContext";
-        return 0;
-    }
-    QPlatformGLContext *platformContext = widget->platformWindow()->glContext();
+    Q_ASSERT(context);
+#if defined(XCB_USE_EGL)
+    QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
+    return eglPlatformContext->eglContext();
+#endif
+#if 0
+    Q_ASSERT(window);
+    QPlatformOpenGLContext *platformContext = window->glContext()->handle();
     if (!platformContext) {
-        qDebug() << "QPlatformWindow" << widget->platformWindow() << "does not have a glContext"
+        qDebug() << "QWindow" << window << "does not have a glContext"
                  << "cannot return EGLContext";
         return 0;
     }
@@ -179,6 +195,9 @@ void * QXcbNativeInterface::eglContextForWidget(QWidget *widget)
 #elif defined (XCB_USE_DRI2)
     QDri2Context *dri2Context = static_cast<QDri2Context *>(platformContext);
     return dri2Context->eglContext();
+#else
+    return 0;
+#endif
 #else
     return 0;
 #endif

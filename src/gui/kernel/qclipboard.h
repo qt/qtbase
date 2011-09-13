@@ -109,6 +109,7 @@ protected:
 
     friend class QApplication;
     friend class QApplicationPrivate;
+    friend class QGuiApplication;
     friend class QBaseApplication;
     friend class QDragManager;
     friend class QMimeSource;

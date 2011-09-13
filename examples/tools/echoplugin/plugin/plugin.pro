@@ -19,6 +19,9 @@ symbian {
     TARGET.EPOCALLOWDLLDATA = 1
 }
 
+symbian:TARGET.EPOCALLOWDLLDATA = 1
+QT += widgets
+symbian:TARGET.EPOCALLOWDLLDATA = 1
 maemo5: CONFIG += qt_example
 symbian: warning(This example might not fully work on Symbian platform)
 maemo5: warning(This example might not fully work on Maemo platform)

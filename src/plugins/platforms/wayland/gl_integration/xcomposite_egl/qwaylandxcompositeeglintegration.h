@@ -49,7 +49,9 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
-#include <QtGui/QWidget>
+#include <QtGui/QWindow>
+
+#include <QPlatformOpenGLContext>
 
 #include <QWaitCondition>
 
@@ -66,7 +68,8 @@ public:
 
     void initialize();
 
-    QWaylandWindow *createEglWindow(QWidget *widget);
+    QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const;
 
     QWaylandDisplay *waylandDisplay() const;
     struct wl_xcomposite *waylandXComposite() const;

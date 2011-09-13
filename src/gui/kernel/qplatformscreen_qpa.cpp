@@ -40,30 +40,87 @@
 ****************************************************************************/
 
 #include "qplatformscreen_qpa.h"
-#include <QtGui/qapplication.h>
-#include <QtGui/private/qapplication_p.h>
-#include <QtGui/qdesktopwidget.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qplatformintegration_qpa.h>
-#include <QtGui/qwidget.h>
-#include <QtGui/private/qwidget_p.h>
+#include <QtGui/qscreen.h>
+#include <QtGui/qwindow.h>
+
+class QPlatformScreenPrivate
+{
+public:
+    QScreen *screen;
+};
+
+QPlatformScreen::QPlatformScreen()
+    : d_ptr(new QPlatformScreenPrivate)
+{
+    Q_D(QPlatformScreen);
+    d->screen = new QScreen(this);
+}
+
+QPlatformScreen::~QPlatformScreen()
+{
+    Q_D(QPlatformScreen);
+
+    QGuiApplicationPrivate::screen_list.removeOne(d->screen);
+    delete d->screen;
+}
 
 /*!
-    Return the given top level widget for a given position.
+    \fn QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
 
-    Default implementation retrieves a list of all top level widgets and finds the first widget
+    This function is called when Qt needs to be able to grab the content of a window.
+
+    Returnes the content of the window specified with the WId handle within the boundaries of
+    QRect(x,y,width,height).
+*/
+QPixmap QPlatformScreen::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    Q_UNUSED(window);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+    return QPixmap();
+}
+
+/*!
+    Return the given top level window for a given position.
+
+    Default implementation retrieves a list of all top level windows and finds the first window
     which contains point \a pos
 */
-QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
+QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
 {
-    QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = list.size()-1; i >= 0; --i) {
-        QWidget *w = list[i];
-        //### mask is ignored
-        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
+        QWindow *w = list[i];
+        if (w->visible() && w->geometry().contains(pos))
             return w;
     }
 
     return 0;
+}
+
+/*!
+    Returns a list of all the platform screens that are part of the same
+    virtual desktop.
+
+    Screens part of the same virtual desktop share a common coordinate system,
+    and windows can be freely moved between them.
+*/
+QList<QPlatformScreen *> QPlatformScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen *> list;
+    list << const_cast<QPlatformScreen *>(this);
+    return list;
+}
+
+QScreen *QPlatformScreen::screen() const
+{
+    Q_D(const QPlatformScreen);
+    return d->screen;
 }
 
 /*!
@@ -84,15 +141,9 @@ QSize QPlatformScreen::physicalSize() const
     return QSize(width,height);
 }
 
-Q_GUI_EXPORT extern QWidgetPrivate *qt_widget_private(QWidget *widget);
-QPlatformScreen * QPlatformScreen::platformScreenForWidget(const QWidget *widget)
+QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)
 {
-    QWidget *window = widget->window();
-    QWidgetPrivate *windowPrivate = qt_widget_private(window);
-    QTLWExtra * topData = windowPrivate->topData();
-    QPlatformIntegration *integration =
-            QApplicationPrivate::platformIntegration();
-    return integration->screens()[topData->screenIndex];
+    return window->screen()->handle();
 }
 
 /*!

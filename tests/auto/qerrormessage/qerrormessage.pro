@@ -4,5 +4,7 @@ TARGET = tst_qerrormessage
 DEPENDPATH += .
 INCLUDEPATH += . 
 
+QT += widgets
+
 # Input
 SOURCES += tst_qerrormessage.cpp

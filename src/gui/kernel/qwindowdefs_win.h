@@ -115,15 +115,13 @@ typedef long HRESULT;
 #endif
 
 typedef struct tagMSG MSG;
-typedef HWND WId;
-
 
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst();
 Q_CORE_EXPORT HINSTANCE qWinAppPrevInst();
 Q_CORE_EXPORT int       qWinAppCmdShow();
-Q_GUI_EXPORT HDC           qt_win_display_dc();
+Q_WIDGETS_EXPORT HDC           qt_win_display_dc();
 
 QT_END_NAMESPACE
 

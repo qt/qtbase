@@ -46,6 +46,7 @@
 #include "qwaylandcursor.h"
 #include "qwaylandinputdevice.h"
 #include "qwaylandclipboard.h"
+#include "qwaylanddnd.h"
 
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
@@ -56,8 +57,7 @@
 #endif
 
 #include <QtCore/QAbstractEventDispatcher>
-#include <QtGui/QApplication>
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -142,6 +142,13 @@ QWaylandDisplay::QWaylandDisplay(void)
 
     wl_display_add_global_listener(mDisplay, QWaylandDisplay::displayHandleGlobal, this);
 
+    mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
+    connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
+
+    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
+    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));
+
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration = QWaylandGLIntegration::createGLIntegration(this);
 #endif
@@ -155,13 +162,6 @@ QWaylandDisplay::QWaylandDisplay(void)
 #ifdef QT_WAYLAND_GL_SUPPORT
     mEglIntegration->initialize();
 #endif
-
-    connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(flushRequests()));
-
-    mFd = wl_display_get_fd(mDisplay, sourceUpdate, this);
-
-    mReadNotifier = new QSocketNotifier(mFd, QSocketNotifier::Read, this);
-    connect(mReadNotifier, SIGNAL(activated(int)), this, SLOT(readEvents()));
 
     waitForScreens();
 }
@@ -313,6 +313,8 @@ void QWaylandDisplay::displayHandleGlobal(uint32_t id,
         mInputDevices.append(inputDevice);
     } else if (interface == "wl_selection_offer") {
         QWaylandClipboard::instance(display)->createSelectionOffer(id);
+    } else if (interface == "wl_drag_offer") {
+        QWaylandDrag::instance(display)->createDragOffer(id);
     }
 }
 

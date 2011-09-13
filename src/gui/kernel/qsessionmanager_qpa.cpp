@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include <qsessionmanager.h>
+#include <qguiapplication.h>
 
 #include <private/qobject_p.h>
-#include <qapplication.h>
 
 #ifndef QT_NO_SESSIONMANAGER
 
@@ -68,7 +68,7 @@ QSessionManagerPrivate::QSessionManagerPrivate(QSessionManager*,
 {
 }
 
-QSessionManager::QSessionManager(QApplication *app, QString &id, QString &key)
+QSessionManager::QSessionManager(QGuiApplication *app, QString &id, QString &key)
     : QObject(*(new QSessionManagerPrivate(this, id, key)), app)
 {
     Q_D(QSessionManager);

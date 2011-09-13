@@ -222,17 +222,6 @@ bool qt_resolve_buffer_extensions(QGLContext *ctx)
 #endif
 }
 
-#ifndef QT_NO_EGL
-bool qt_resolve_eglimage_gl_extensions(QGLContext *ctx)
-{
-    if (glEGLImageTargetTexture2DOES || glEGLImageTargetRenderbufferStorageOES)
-        return true;
-    glEGLImageTargetTexture2DOES = (_glEGLImageTargetTexture2DOES) ctx->getProcAddress(QLatin1String("glEGLImageTargetTexture2DOES"));
-    glEGLImageTargetRenderbufferStorageOES = (_glEGLImageTargetRenderbufferStorageOES) ctx->getProcAddress(QLatin1String("glEGLImageTargetRenderbufferStorageOES"));
-    return glEGLImageTargetTexture2DOES && glEGLImageTargetRenderbufferStorageOES;
-}
-#endif
-
 bool qt_resolve_glsl_extensions(QGLContext *ctx)
 {
 

@@ -1,0 +1,5 @@
+CONFIG += qpa/basicunixfontdatabase
+contains(QT_CONFIG, fontconfig) {
+    DEFINES += Q_FONTCONFIGDATABASE
+    LIBS += -lfontconfig
+}

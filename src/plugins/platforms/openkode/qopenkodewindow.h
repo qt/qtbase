@@ -63,7 +63,7 @@ public:
     void setVisible(bool visible);
     WId winId() const;
 
-    QPlatformGLContext *glContext() const;
+    QPlatformOpenGLContext *glContext() const;
 
     void raise();
     void lower();

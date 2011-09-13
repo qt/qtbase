@@ -79,9 +79,6 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     int nbytes;               // number of bytes data
     QVector<QRgb> colortable;
     uchar *data;
-#ifdef QT3_SUPPORT
-    uchar **jumptable;
-#endif
     QImage::Format format;
     int bytes_per_line;
     int ser_no;               // serial number

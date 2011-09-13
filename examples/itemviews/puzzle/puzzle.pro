@@ -19,5 +19,6 @@ wince* {
    DEPLOYMENT_PLUGIN += qjpeg qgif qtiff
 }
 
+QT += widgets
 maemo5: CONFIG += qt_example
 

@@ -2,6 +2,7 @@ load(qttest_p4)
 SOURCES += tst_qtextbrowser.cpp
 !symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
+QT += widgets
 
 wince*|symbian: {
    addFiles.files = *.html

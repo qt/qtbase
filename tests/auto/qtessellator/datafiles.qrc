@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-   <file>simple.data</file>
-   <file>arc.data</file>
-</qresource>
-</RCC>

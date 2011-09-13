@@ -40,7 +40,7 @@
 
 #ifndef LAYOUTITEM_H
 #define LAYOUTITEM_H
-#include <QtGui>
+#include <QtWidgets>
 
 //! [0]
 class LayoutItem : public QGraphicsLayoutItem, public QGraphicsItem

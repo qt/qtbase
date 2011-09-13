@@ -43,10 +43,10 @@
 
 #include <qbytearray.h>
 #include <qtextcodec.h>
-#include <qapplication.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
+#include <qcoreapplication.h>
 
 #include "qtextdocument.h"
 #include "qtextformat_p.h"
@@ -1051,7 +1051,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
                     && !attributes.at(i + 1).isEmpty()) {
                     hasHref = true;
                     charFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-                    charFormat.setForeground(QApplication::palette().link());
+                    charFormat.setForeground(Qt::blue); // ### Qt5: QApplication::palette().link());
                 }
             }
 
@@ -1402,7 +1402,7 @@ void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDo
     if (!url.isEmpty() && resourceProvider) {
         QVariant val = resourceProvider->resource(QTextDocument::ImageResource, url);
 
-        if (qApp->thread() != QThread::currentThread()) {
+        if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
             // must use images in non-GUI threads
             if (val.type() == QVariant::Image) {
                 QImage image = qvariant_cast<QImage>(val);

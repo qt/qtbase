@@ -49,7 +49,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QScopedPointer>
 
-#include <QtGui/QSizePolicy>
+#include <QtWidgets/QSizePolicy>
 #include <QtGui/QPalette>
 
 QT_BEGIN_HEADER

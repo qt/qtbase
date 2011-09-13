@@ -44,7 +44,6 @@
 #include "private/qblittable_p.h"
 #include "private/qpaintengine_raster_p.h"
 #include "private/qpainter_p.h"
-#include "private/qapplication_p.h"
 #include "private/qpixmap_blitter_p.h"
 
 #ifndef QT_NO_BLITTABLE
@@ -112,7 +111,7 @@ public:
 
     bool canBlitterDrawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) const
     {
-        if (pm.pixmapData()->classId() != QPixmapData::BlitterClass)
+        if (pm.handle()->classId() != QPlatformPixmap::BlitterClass)
             return false;
         if (checkStateAgainstMask(capabillitiesState,drawPixmapMask)) {
             if (m_capabilities & (QBlittable::SourceOverPixmapCapability
@@ -191,7 +190,7 @@ class QBlitterPaintEnginePrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QBlitterPaintEngine);
 public:
-    QBlitterPaintEnginePrivate(QBlittablePixmapData *p)
+    QBlitterPaintEnginePrivate(QBlittablePlatformPixmap *p)
             : QPaintEngineExPrivate(),
               pmData(p),
               isBlitterLocked(false),
@@ -281,7 +280,7 @@ public:
 
     QRasterPaintEngine *raster;
 
-    QBlittablePixmapData *pmData;
+    QBlittablePlatformPixmap *pmData;
     bool isBlitterLocked;
 
     CapabilitiesToStateMask *capabillities;
@@ -289,7 +288,7 @@ public:
     uint hasXForm;
 };
 
-QBlitterPaintEngine::QBlitterPaintEngine(QBlittablePixmapData *p)
+QBlitterPaintEngine::QBlitterPaintEngine(QBlittablePlatformPixmap *p)
     : QPaintEngineEx(*(new QBlitterPaintEnginePrivate(p)))
 {
 }

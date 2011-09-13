@@ -51,11 +51,11 @@
 QT_BEGIN_NAMESPACE
 
 class QThread;
+class QAbstractEventDispatcher;
 class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
 {
-Q_OBJECT
 public:
     QDirectFbScreen(int display);
     ~QDirectFbScreen();
@@ -74,8 +74,7 @@ public:
     IDirectFBDisplayLayer *m_layer;
 
 private:
-    QDirectFBCursor * cursor;
-
+    QDirectFBCursor *m_cursor;
 };
 
 class QDirectFbIntegration : public QPlatformIntegration
@@ -84,19 +83,18 @@ public:
     QDirectFbIntegration();
     ~QDirectFbIntegration();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
-    QList<QPlatformScreen *> mScreens;
-    QDirectFbInput *mInput;
-    QThread *mInputRunner;
-    QPlatformFontDatabase *mFontDb;
+    QDirectFbInput *m_input;
+    QThread *m_inputRunner;
+    QPlatformFontDatabase *m_fontDb;
+    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

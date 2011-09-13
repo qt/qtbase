@@ -10,6 +10,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/licensewizard
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets printsupport
 maemo5: CONFIG += qt_example
 symbian: warning(This example might not fully work on Symbian platform)
 maemo5: warning(This example might not fully work on Maemo platform)

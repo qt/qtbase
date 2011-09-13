@@ -365,7 +365,6 @@ public:
     void cleanupCustomStage(QGLCustomShaderStage* stage);
 
 private:
-    QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;
     QGLShaderProgram *simpleShaderProg;
     QList<QGLEngineShaderProg*> cachedPrograms;

@@ -43,7 +43,7 @@
 
 #include <QtCore/qtimer.h>
 #include <QtCore/qregexp.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/qpolygon.h>
 #include <QtGui/qpainter.h>
 

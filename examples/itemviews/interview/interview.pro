@@ -16,4 +16,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES README *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/interview
 INSTALLS += target sources
 
+QT += widgets
 symbian: CONFIG += qt_example

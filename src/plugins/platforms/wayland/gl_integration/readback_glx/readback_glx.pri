@@ -1,4 +1,3 @@
-include (../../../glxconvenience/glxconvenience.pri)
 HEADERS += \
     $$PWD/qwaylandreadbackglxintegration.h \
     $$PWD/qwaylandreadbackglxwindow.h \

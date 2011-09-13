@@ -42,11 +42,11 @@
 #ifndef ACCESSIBLE_ITEMVIEWS_H
 #define ACCESSIBLE_ITEMVIEWS_H
 
-#include <QtGui/qabstractitemview.h>
-#include <QtGui/qheaderview.h>
-#include <QtGui/qaccessible.h>
-#include <QtGui/qaccessible2.h>
-#include <QtGui/qaccessiblewidget.h>
+#include <QtWidgets/qabstractitemview.h>
+#include <QtWidgets/qheaderview.h>
+#include <QtWidgets/qaccessible.h>
+#include <QtWidgets/qaccessible2.h>
+#include <QtWidgets/qaccessiblewidget.h>
 
 
 QT_BEGIN_NAMESPACE

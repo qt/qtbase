@@ -53,17 +53,27 @@
 #include <cmath>
 #endif
 #include <math.h>
-#include <QtGui/QScrollBar>
-#include <QtGui/QDialog>
-#include <QtGui/QStyledItemDelegate>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QStyledItemDelegate>
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-#include <windows.h>
-#endif
+#  include <windows.h>
+#  include <QtGui/QGuiApplication>
+#  include <QtGui/QPlatformNativeInterface>
+#endif // Q_OS_WIN
 
 #include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+static inline HWND getHWNDForWidget(const QWidget *widget)
+{
+    QWindow *window = widget->windowHandle();
+    return static_cast<HWND> (QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window));
+}
+#endif // Q_OS_WIN
 
 class tst_QListView : public QObject
 {
@@ -1467,7 +1477,8 @@ public:
 
         DWORD lParam = 0xFFFFFFFC/*OBJID_CLIENT*/;
         DWORD wParam = 0;
-        SendMessage(winId(), WM_GETOBJECT, wParam, lParam);
+        if (const HWND hwnd =getHWNDForWidget(this))
+            SendMessage(hwnd, WM_GETOBJECT, wParam, lParam);
 #endif
     }
 

@@ -126,6 +126,7 @@ QT_BEGIN_NAMESPACE
     \value Enter                            Mouse enters widget's boundaries.
     \value EnterEditFocus                   An editor widget gains focus for editing.
     \value EnterWhatsThisMode               Send to toplevel widgets when the application enters "What's This?" mode.
+    \value Expose                           Sent to a window when its on-screen contents are invalidated and need to be flushed from the backing store.
     \value FileOpen                         File open request (QFileOpenEvent).
     \value FocusIn                          Widget gains keyboard focus (QFocusEvent).
     \value FocusOut                         Widget loses keyboard focus (QFocusEvent).

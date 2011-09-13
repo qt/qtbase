@@ -43,7 +43,7 @@
 #define PATHSTROKE_H
 
 #include "arthurwidgets.h"
-#include <QtGui>
+#include <QtWidgets>
 
 class PathStrokeRenderer : public ArthurFrame
 {

@@ -39,12 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qwaylandreadbackglxwindow.h"
+#include <QtDebug>
 
-QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWidget *window, QWaylandReadbackGlxIntegration *glxIntegration)
+#include "qwaylandreadbackglxwindow.h"
+#include "qwaylandshmbackingstore.h"
+
+QWaylandReadbackGlxWindow::QWaylandReadbackGlxWindow(QWindow *window, QWaylandReadbackGlxIntegration *glxIntegration)
     : QWaylandShmWindow(window)
-    , mGlxIntegration(glxIntegration)
-    , mContext(0)
+    , m_glxIntegration(glxIntegration)
+    , m_buffer(0)
+    , m_pixmap(0)
+    , m_config(0)
+    , m_glxPixmap(0)
+    , m_window(window)
 {
 }
 
@@ -54,20 +61,54 @@ QWaylandWindow::WindowType QWaylandReadbackGlxWindow::windowType() const
     return QWaylandWindow::Egl;
 }
 
-QPlatformGLContext * QWaylandReadbackGlxWindow::glContext() const
-{
-    if (!mContext) {
-        QWaylandReadbackGlxWindow *that = const_cast<QWaylandReadbackGlxWindow *>(this);
-        that->mContext = new QWaylandReadbackGlxContext(mGlxIntegration,that);
-    }
-    return mContext;
-}
-
 void QWaylandReadbackGlxWindow::setGeometry(const QRect &rect)
 {
     QWaylandShmWindow::setGeometry(rect);
 
-    if (mContext) {
-        mContext->geometryChanged();
+    if (m_pixmap) {
+        delete mBuffer;
+        //XFreePixmap deletes the glxPixmap as well
+        XFreePixmap(m_glxIntegration->xDisplay(), m_pixmap);
+        m_pixmap = 0;
     }
 }
+
+GLXPixmap QWaylandReadbackGlxWindow::glxPixmap() const
+{
+    if (!m_pixmap)
+        const_cast<QWaylandReadbackGlxWindow *>(this)->createSurface();
+
+    return m_glxPixmap;
+}
+
+uchar *QWaylandReadbackGlxWindow::buffer()
+{
+    return m_buffer->image()->bits();
+}
+
+void QWaylandReadbackGlxWindow::createSurface()
+{
+    QSize size(geometry().size());
+    if (size.isEmpty()) {
+        //QGLWidget wants a context for a window without geometry
+        size = QSize(1,1);
+    }
+
+    waitForFrameSync();
+
+    m_buffer = new QWaylandShmBuffer(m_glxIntegration->waylandDisplay(), size, QImage::Format_ARGB32);
+    attach(m_buffer);
+
+    int depth = XDefaultDepth(m_glxIntegration->xDisplay(), m_glxIntegration->screen());
+    m_pixmap = XCreatePixmap(m_glxIntegration->xDisplay(), m_glxIntegration->rootWindow(), size.width(), size.height(), depth);
+    XSync(m_glxIntegration->xDisplay(), False);
+
+    if (!m_config)
+        m_config = qglx_findConfig(m_glxIntegration->xDisplay(), m_glxIntegration->screen(), m_window->format());
+
+    m_glxPixmap = glXCreatePixmap(m_glxIntegration->xDisplay(), m_config, m_pixmap,0);
+
+    if (!m_glxPixmap)
+        qDebug() << "Could not make glx surface out of pixmap :(";
+}
+

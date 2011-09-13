@@ -47,6 +47,7 @@
 #include <private/qfactoryloader_p.h>
 #include <private/qpaintengine_pic_p.h>
 #include <private/qfont_p.h>
+#include <qguiapplication.h>
 
 #include "qdatastream.h"
 #include "qfile.h"
@@ -1217,7 +1218,6 @@ QDataStream &operator>>(QDataStream &s, QPicture &r)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qregexp.h"
-#include "qapplication.h"
 #include "qpictureformatplugin.h"
 QT_END_INCLUDE_NAMESPACE
 

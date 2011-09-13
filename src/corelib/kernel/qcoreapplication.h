@@ -46,7 +46,7 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
 
-#if defined(Q_WS_WIN) && !defined(tagMSG)
+#if defined(Q_OS_WIN) && !defined(tagMSG)
 typedef struct tagMSG MSG;
 #endif
 
@@ -77,16 +77,7 @@ public:
     enum { ApplicationFlags = QT_VERSION
     };
 
-#if defined(QT_BUILD_CORE_LIB) || defined(qdoc)
-    QCoreApplication(int &argc, char **argv); // ### Qt5 remove
-#endif
-#if !defined(qdoc)
-    QCoreApplication(int &argc, char **argv, int
-#if !defined(QT_BUILD_CORE_LIB)
-        = ApplicationFlags
-#endif
-        );
-#endif
+    QCoreApplication(int &argc, char **argv, int = ApplicationFlags);
 
     ~QCoreApplication();
 
@@ -157,7 +148,7 @@ public:
 
     static void flush();
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     virtual bool winEventFilter(MSG *message, long *result);
 #endif
 
@@ -198,11 +189,15 @@ private:
     friend class QEventDispatcherUNIXPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
     friend class QETWidget;
     friend class Q3AccelManager;
     friend class QShortcutMap;
     friend class QWidget;
+    friend class QWidgetWindow;
     friend class QWidgetPrivate;
+    friend class QCocoaEventDispatcherPrivate;
     friend bool qt_sendSpontaneousEvent(QObject*, QEvent*);
     friend Q_CORE_EXPORT QString qAppName();
     friend class QClassFactory;
@@ -266,7 +261,7 @@ Q_CORE_EXPORT void qAddPostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT void qRemovePostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT QString qAppName();                // get application name
 
-#if defined(Q_WS_WIN) && !defined(QT_NO_DEBUG_STREAM)
+#if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
 #endif

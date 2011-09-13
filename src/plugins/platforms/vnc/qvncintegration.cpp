@@ -161,9 +161,9 @@ bool QVNCIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 }
 
 
-QPixmapData *QVNCIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QVNCIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
@@ -173,6 +173,10 @@ QWindowSurface *QVNCIntegration::createWindowSurface(QWidget *widget, WId) const
     return surface;
 }
 
+QAbstractEventDispatcher *QVFbIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
+}
 
 QPlatformWindow *QVNCIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {

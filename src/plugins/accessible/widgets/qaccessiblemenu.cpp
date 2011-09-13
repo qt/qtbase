@@ -43,7 +43,7 @@
 
 #include <qmenu.h>
 #include <qmenubar.h>
-#include <QtGui/QAction>
+#include <QtWidgets/QAction>
 #include <qstyle.h>
 
 #ifndef QT_NO_ACCESSIBILITY

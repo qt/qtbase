@@ -62,7 +62,7 @@ public:
 
     wl_visual *visual() const;
 
-    static QWaylandScreen *waylandScreenFromWidget(QWidget *widget);
+    static QWaylandScreen *waylandScreenFromWindow(QWindow *window);
 
 private:
     QWaylandDisplay *mWaylandDisplay;

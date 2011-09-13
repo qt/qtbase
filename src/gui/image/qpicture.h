@@ -104,9 +104,6 @@ protected:
     QPicture(QPicturePrivate &data);
 
     int metric(PaintDeviceMetric m) const;
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT QPicture copy() const { QPicture p(*this); p.detach(); return p; }
-#endif
 
 private:
     bool exec(QPainter *p, QDataStream &ds, int i);

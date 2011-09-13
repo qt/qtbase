@@ -16,7 +16,7 @@ RESOURCES += \
 FORMS += \
     form.ui
 
-contains(QT_CONFIG, opengl):QT += opengl
+contains(QT_CONFIG, opengl):QT += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/padnavigator

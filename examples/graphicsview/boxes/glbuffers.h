@@ -45,7 +45,7 @@
 //#include <GL/glew.h>
 #include "glextensions.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtOpenGL>
 
 #define BUFFER_OFFSET(i) ((char*)0 + (i))

@@ -9,6 +9,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qws/framebuffer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS framebuffer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qws/framebuffer
 INSTALLS += target sources
+QT += widgets
 
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example

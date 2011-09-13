@@ -46,7 +46,6 @@
 
 #if !defined(QT_NO_EGL)
 
-#include <QtGui/private/qgraphicssystem_p.h>
 #include <QtGui/private/qapplication_p.h>
 #include <QtGui/qdesktopwidget.h>
 
@@ -75,7 +74,7 @@ EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
 
 static QPlatformScreen *screenForDevice(QPaintDevice *device)
 {
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
+    QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
 
     QList<QPlatformScreen *> screens = pi->screens();
 
@@ -95,7 +94,7 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
     if (!dev)
         return;
 
-    // Find the QGLScreen for this paint device.
+    // Find the QOpenGLScreen for this paint device.
     QPlatformScreen *screen = screenForDevice(dev);
     if (!screen)
         return;

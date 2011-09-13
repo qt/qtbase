@@ -74,9 +74,6 @@ public:
     QRegion(int x, int y, int w, int h, RegionType t = Rectangle);
     QRegion(const QRect &r, RegionType t = Rectangle);
     QRegion(const QPolygon &pa, Qt::FillRule fillRule = Qt::OddEvenFill);
-#ifdef QT3_SUPPORT
-    QT3_SUPPORT_CONSTRUCTOR QRegion(const QPolygon &pa, bool winding);
-#endif
     QRegion(const QRegion &region);
     QRegion(const QBitmap &bitmap);
     ~QRegion();
@@ -86,9 +83,6 @@ public:
     { qSwap(d, other.d); return *this; }
 #endif
     inline void swap(QRegion &other) { qSwap(d, other.d); }
-#ifdef QT3_SUPPORT
-    inline QT3_SUPPORT bool isNull() const { return isEmpty(); }
-#endif
     bool isEmpty() const;
 
     bool contains(const QPoint &p) const;
@@ -189,6 +183,9 @@ private:
 #elif defined(Q_WS_MAC)
     static OSStatus shape2QRegionHelper(int inMessage, HIShapeRef inShape,
                                         const CGRect *inRect, void *inRefcon);
+#endif
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+Q_GUI_EXPORT
 #endif
     friend bool qt_region_strictContains(const QRegion &region,
                                          const QRect &rect);

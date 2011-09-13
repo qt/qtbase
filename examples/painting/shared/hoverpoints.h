@@ -42,7 +42,7 @@
 #ifndef HOVERPOINTS_H
 #define HOVERPOINTS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 QT_FORWARD_DECLARE_CLASS(QBypassWidget)
 

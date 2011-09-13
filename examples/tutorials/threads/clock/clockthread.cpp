@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "clockthread.h"
 
  //This class starts another thread where it emits a signal for every new second.

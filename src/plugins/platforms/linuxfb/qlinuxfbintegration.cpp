@@ -42,6 +42,7 @@
 #include "qlinuxfbintegration.h"
 #include "../fb_base/fb_base.h"
 #include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
 #include <qimage.h>
@@ -791,9 +792,9 @@ bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 }
 
 
-QPixmapData *QLinuxFbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QLinuxFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QRasterPixmapData(type);
+    return new QRasterPlatformPixmap(type);
 }
 
 QWindowSurface *QLinuxFbIntegration::createWindowSurface(QWidget *widget, WId) const
@@ -808,6 +809,11 @@ QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWidget *widget, WId 
     QFbWindow *w = new QFbWindow(widget);
     mPrimaryScreen->addWindow(w);
     return w;
+}
+
+QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
+{
+    return createUnixEventDispatcher();
 }
 
 QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const

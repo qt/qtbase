@@ -1,7 +1,8 @@
 %modules = ( # path to module name map
     "QtGui" => "$basedir/src/gui",
+    "QtWidgets" => "$basedir/src/widgets",
+    "QtPrintSupport" => "$basedir/src/printsupport",
     "QtOpenGL" => "$basedir/src/opengl",
-    "QtOpenVG" => "$basedir/src/openvg",
     "QtCore" => "$basedir/src/corelib",
     "QtV8" => "$basedir/src/v8",
     "QtXml" => "$basedir/src/xml",
@@ -11,6 +12,7 @@
     "QtDBus" => "$basedir/src/dbus",
     "QtUiTools" => "$basedir/src/uitools",
     "QtDesigner" => "$basedir/tools/uilib",
+    "QtPlatformSupport" => "$basedir/src/platformsupport",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
     "QtV8" => "../3rdparty/v8/include",
@@ -47,9 +49,10 @@
 %mastercontent = (
     "core" => "#include <QtCore/QtCore>\n",
     "gui" => "#include <QtGui/QtGui>\n",
+    "printsupport" => "#include <QtPrintSupport/QtPrintSupport>\n",
+    "widgets" => "#include <QtWidgets/QtWidgets>\n",
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
-    "openvg" => "#include <QtOpenVG/QtOpenVG>\n",
     "xml" => "#include <QtXml/QtXml>\n",
     "uitools" => "#include <QtUiTools/QtUiTools>\n",
     "designer" => "#include <QtDesigner/QtDesigner>\n",
@@ -58,15 +61,17 @@
     "QtCore" => "$basedir/src/modules/qt_core.pri",
     "QtDBus" => "$basedir/src/modules/qt_dbus.pri",
     "QtGui" => "$basedir/src/modules/qt_gui.pri",
+    "QtPrintSupport" => "$basedir/src/modules/qt_printsupport.pri",
+    "QtWidgets" => "$basedir/src/modules/qt_widgets.pri",
     "QtNetwork" => "$basedir/src/modules/qt_network.pri",
     "QtOpenGL" => "$basedir/src/modules/qt_opengl.pri",
-    "QtOpenVG" => "$basedir/src/modules/qt_openvg.pri",
     "QtSql" => "$basedir/src/modules/qt_sql.pri",
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtV8" => "$basedir/src/modules/qt_v8.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
     "QtUiTools" => "$basedir/src/modules/qt_uitools.pri",
     "QtDesigner" => "$basedir/src/modules/qt_uilib.pri",
+    "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
 
 @ignore_for_master_contents = ( "qt.h", "qpaintdevicedefs.h" );

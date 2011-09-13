@@ -45,7 +45,7 @@
     using a spin box widget.
 */
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "delegate.h"
 

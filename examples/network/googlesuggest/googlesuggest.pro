@@ -1,4 +1,4 @@
-QT      +=  network
+QT      +=  network widgets
 SOURCES =   main.cpp searchbox.cpp googlesuggest.cpp
 HEADERS  =  searchbox.h googlesuggest.h
 

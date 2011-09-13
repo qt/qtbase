@@ -19,4 +19,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.doc images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/textedit
 INSTALLS += target sources
 
+QT += widgets printsupport
 symbian: CONFIG += qt_example

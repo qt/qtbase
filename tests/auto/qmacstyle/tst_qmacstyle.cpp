@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui>
+#include <QtWidgets>
 
 #include <qmacstyle_mac.h>
 

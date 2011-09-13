@@ -61,12 +61,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTextCursorPrivate : public QSharedData
+class Q_GUI_EXPORT QTextCursorPrivate : public QSharedData
 {
 public:
     QTextCursorPrivate(QTextDocumentPrivate *p);
     QTextCursorPrivate(const QTextCursorPrivate &rhs);
     ~QTextCursorPrivate();
+
+    static inline QTextCursorPrivate *getPrivate(QTextCursor *c) { return c->d; }
 
     enum AdjustResult { CursorMoved, CursorUnchanged };
     AdjustResult adjustPosition(int positionOfChange, int charsAddedOrRemoved, QTextUndoCommand::Operation op);

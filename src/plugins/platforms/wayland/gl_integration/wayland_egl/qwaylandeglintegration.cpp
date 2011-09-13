@@ -44,11 +44,12 @@
 #include "gl_integration/qwaylandglintegration.h"
 
 #include "qwaylandeglwindow.h"
+#include "qwaylandglcontext.h"
 
 #include <QtCore/QDebug>
 
 QWaylandEglIntegration::QWaylandEglIntegration(struct wl_display *waylandDisplay)
-    : mWaylandDisplay(waylandDisplay)
+    : m_waylandDisplay(waylandDisplay)
 {
     qDebug() << "Using Wayland-EGL";
 }
@@ -56,31 +57,41 @@ QWaylandEglIntegration::QWaylandEglIntegration(struct wl_display *waylandDisplay
 
 QWaylandEglIntegration::~QWaylandEglIntegration()
 {
-    eglTerminate(mEglDisplay);
+    eglTerminate(m_eglDisplay);
 }
 
 void QWaylandEglIntegration::initialize()
 {
+    QByteArray eglPlatform = qgetenv("EGL_PLATFORM");
+    if (eglPlatform.isEmpty()) {
+        setenv("EGL_PLATFORM","wayland",true);
+    }
+
     EGLint major,minor;
-    mEglDisplay = eglGetDisplay(mWaylandDisplay);
-    if (mEglDisplay == NULL) {
+    m_eglDisplay = eglGetDisplay(m_waylandDisplay);
+    if (m_eglDisplay == NULL) {
         qWarning("EGL not available");
     } else {
-        if (!eglInitialize(mEglDisplay, &major, &minor)) {
+        if (!eglInitialize(m_eglDisplay, &major, &minor)) {
             qWarning("failed to initialize EGL display");
             return;
         }
     }
 }
 
-QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWidget *window)
+QWaylandWindow *QWaylandEglIntegration::createEglWindow(QWindow *window)
 {
     return new QWaylandEglWindow(window);
 }
 
+QPlatformOpenGLContext *QWaylandEglIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
+{
+    return new QWaylandGLContext(m_eglDisplay, glFormat, share);
+}
+
 EGLDisplay QWaylandEglIntegration::eglDisplay() const
 {
-    return mEglDisplay;
+    return m_eglDisplay;
 }
 
 QWaylandGLIntegration *QWaylandGLIntegration::createGLIntegration(QWaylandDisplay *waylandDisplay)

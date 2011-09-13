@@ -512,34 +512,34 @@ inline void qt_memrotate90_template<quint18, quint32>(const quint32 *src,
 }
 
 #define QT_IMPL_MEMROTATE(srctype, desttype)                        \
-void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
+Q_GUI_EXPORT void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
                     desttype *dest, int dstride)                    \
 {                                                                   \
     qt_memrotate90_template(src, w, h, sstride, dest, dstride);     \
 }                                                                   \
-void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
+Q_GUI_EXPORT void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
                      desttype *dest, int dstride)                   \
 {                                                                   \
     qt_memrotate180_template(src, w, h, sstride, dest, dstride);    \
 }                                                                   \
-void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
+Q_GUI_EXPORT void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
                      desttype *dest, int dstride)                   \
 {                                                                   \
     qt_memrotate270_template(src, w, h, sstride, dest, dstride);    \
 }
 
 #define QT_IMPL_SIMPLE_MEMROTATE(srctype, desttype)                 \
-void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
+Q_GUI_EXPORT void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
                     desttype *dest, int dstride)                    \
 {                                                                   \
     qt_memrotate90_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \
 }                                                                   \
-void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
+Q_GUI_EXPORT void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
                      desttype *dest, int dstride)                   \
 {                                                                   \
     qt_memrotate180_template(src, w, h, sstride, dest, dstride);    \
 }                                                                   \
-void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
+Q_GUI_EXPORT void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
                      desttype *dest, int dstride)                   \
 {                                                                   \
     qt_memrotate270_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \

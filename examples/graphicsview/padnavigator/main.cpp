@@ -40,7 +40,7 @@
 
 #include "padnavigator.h"
 
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 //! [0]
 int main(int argc, char *argv[])

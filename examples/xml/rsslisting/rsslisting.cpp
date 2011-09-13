@@ -55,7 +55,7 @@ its operation, and also allows very large data sources to be read.
 
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 
 #include "rsslisting.h"

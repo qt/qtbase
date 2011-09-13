@@ -25,6 +25,7 @@ wince*: {
     }
     DEPLOYMENT += imageFiles
 }
+QT += widgets
 maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)

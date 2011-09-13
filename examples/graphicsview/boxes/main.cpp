@@ -44,7 +44,7 @@
 
 #include "scene.h"
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QGLWidget>
 
 class GraphicsView : public QGraphicsView

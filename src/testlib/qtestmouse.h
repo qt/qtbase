@@ -51,12 +51,12 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtestsystem.h>
 #include <QtTest/qtestspontaneevent.h>
-
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qapplication.h>
+#include <QtWidgets/qapplication.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
+#include <QtGui/qwindowsysteminterface_qpa.h>
 
 QT_BEGIN_HEADER
 
@@ -126,6 +126,66 @@ namespace QTest
 
     }
 
+    static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
+                           Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
+    {
+        QTEST_ASSERT(window);
+        extern int Q_TESTLIB_EXPORT defaultMouseDelay();
+
+         static Qt::MouseButton lastButton = Qt::NoButton;
+
+        if (delay == -1 || delay < defaultMouseDelay())
+            delay = defaultMouseDelay();
+        if (delay > 0)
+            QTest::qWait(delay);
+
+        if (pos.isNull())
+            pos = window->geometry().center();
+
+        if (action == MouseClick) {
+            mouseEvent(MousePress, window, button, stateKey, pos);
+            mouseEvent(MouseRelease, window, button, stateKey, pos);
+            return;
+        }
+        QTEST_ASSERT(button == Qt::NoButton || button & Qt::MouseButtonMask);
+        QTEST_ASSERT(stateKey == 0 || stateKey & Qt::KeyboardModifierMask);
+
+        stateKey &= static_cast<unsigned int>(Qt::KeyboardModifierMask);
+
+
+        switch (action)
+        {
+            case MousePress:
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                lastButton = button;
+                break;
+            case MouseRelease:
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                lastButton = Qt::NoButton;
+                break;
+            case MouseDClick:
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                qWait(10);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                qWait(20);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),button);
+                qWait(10);
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),Qt::NoButton);
+                break;
+            case MouseMove:
+                QWindowSystemInterface::handleMouseEvent(window,pos,window->mapToGlobal(pos),lastButton);
+                //QCursor::setPos(window->mapToGlobal(pos));
+#ifdef QT_MAC_USE_COCOA
+                QTest::qWait(20);
+#else
+                qApp->processEvents();
+#endif
+                return;
+            default:
+                QTEST_ASSERT(false);
+        }
+    }
+
     inline void mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MousePress, widget, button, stateKey, pos, delay); }
@@ -141,6 +201,21 @@ namespace QTest
     inline void mouseMove(QWidget *widget, QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseMove, widget, Qt::NoButton, 0, pos, delay); }
 
+    //Support QWindow
+    inline void mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+                           QPoint pos = QPoint(), int delay=-1)
+    { mouseEvent(MousePress, window, button, stateKey, pos, delay); }
+    inline void mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+                             QPoint pos = QPoint(), int delay=-1)
+    { mouseEvent(MouseRelease, window, button, stateKey, pos, delay); }
+    inline void mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+                           QPoint pos = QPoint(), int delay=-1)
+    { mouseEvent(MouseClick, window, button, stateKey, pos, delay); }
+    inline void mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
+                            QPoint pos = QPoint(), int delay=-1)
+    { mouseEvent(MouseDClick, window, button, stateKey, pos, delay); }
+    inline void mouseMove(QWindow *window, QPoint pos = QPoint(), int delay=-1)
+    { mouseEvent(MouseMove, window, Qt::NoButton, 0, pos, delay); }
 }
 
 QT_END_NAMESPACE

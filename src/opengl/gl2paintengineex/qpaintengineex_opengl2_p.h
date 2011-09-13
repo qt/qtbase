@@ -59,7 +59,6 @@
 #include <private/qglengineshadermanager_p.h>
 #include <private/qgl2pexvertexarray_p.h>
 #include <private/qglpaintdevice_p.h>
-#include <private/qglpixmapfilter_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qtriangulatingstroker_p.h>
@@ -152,8 +151,6 @@ public:
     void endNativePainting();
 
     void invalidateState();
-
-    QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
     void setRenderTextActive(bool);
 
@@ -301,11 +298,6 @@ public:
 
     QTriangulatingStroker stroker;
     QDashedStrokeProcessor dasher;
-
-    QScopedPointer<QPixmapFilter> convolutionFilter;
-    QScopedPointer<QPixmapFilter> colorizeFilter;
-    QScopedPointer<QPixmapFilter> blurFilter;
-    QScopedPointer<QPixmapFilter> dropShadowFilter;
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;

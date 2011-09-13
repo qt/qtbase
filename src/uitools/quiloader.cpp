@@ -50,21 +50,21 @@
 #include <ui4_p.h>
 
 #include <QtCore/qdebug.h>
-#include <QtGui/QAction>
-#include <QtGui/QActionGroup>
-#include <QtGui/QApplication>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QActionGroup>
+#include <QtWidgets/QApplication>
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
-#include <QtGui/QLayout>
-#include <QtGui/QWidget>
+#include <QtWidgets/QLayout>
+#include <QtWidgets/QWidget>
 #include <QtCore/QMap>
-#include <QtGui/QTabWidget>
-#include <QtGui/QTreeWidget>
-#include <QtGui/QListWidget>
-#include <QtGui/QTableWidget>
-#include <QtGui/QToolBox>
-#include <QtGui/QComboBox>
-#include <QtGui/QFontComboBox>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QTreeWidget>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QToolBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QFontComboBox>
 
 QT_BEGIN_NAMESPACE
 

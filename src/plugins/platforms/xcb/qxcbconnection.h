@@ -44,13 +44,23 @@
 
 #include <xcb/xcb.h>
 
+#include <QHash>
 #include <QList>
+#include <QMutex>
 #include <QObject>
+#include <QThread>
 #include <QVector>
 
 #define Q_XCB_DEBUG
 
 class QXcbScreen;
+class QXcbWindow;
+class QXcbDrag;
+class QXcbKeyboard;
+class QXcbClipboard;
+class QXcbWMSupport;
+
+typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
 
 namespace QXcbAtom {
     enum Atom {
@@ -91,6 +101,9 @@ namespace QXcbAtom {
 
         _QT_SCROLL_DONE,
         _QT_INPUT_ENCODING,
+
+        // Qt/XCB specific
+        _QT_CLOSE_CONNECTION,
 
         _MOTIF_WM_HINTS,
 
@@ -160,7 +173,6 @@ namespace QXcbAtom {
         _NET_ACTIVE_WINDOW,
 
         // Property formats
-        COMPOUND_TEXT,
         TEXT,
         UTF8_STRING,
 
@@ -215,8 +227,34 @@ namespace QXcbAtom {
     };
 }
 
-class QXcbKeyboard;
+class QXcbEventReader : public QThread
+{
+    Q_OBJECT
+public:
+    QXcbEventReader(xcb_connection_t *connection)
+        : m_connection(connection)
+    {
+    }
 
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+    void run();
+#endif
+
+    QList<xcb_generic_event_t *> *lock();
+    void unlock();
+
+signals:
+    void eventPending();
+
+private:
+    void addEvent(xcb_generic_event_t *event);
+
+    QMutex m_mutex;
+    QList<xcb_generic_event_t *> m_events;
+    xcb_connection_t *m_connection;
+};
+
+class QAbstractEventDispatcher;
 class QXcbConnection : public QObject
 {
     Q_OBJECT
@@ -226,16 +264,25 @@ public:
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
 
-    QList<QXcbScreen *> screens() const { return m_screens; }
+    const QList<QXcbScreen *> &screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
     xcb_atom_t atom(QXcbAtom::Atom atom);
+    xcb_atom_t internAtom(const char *name);
+    QByteArray atomName(xcb_atom_t atom);
 
     const char *displayName() const { return m_displayName.constData(); }
 
     xcb_connection_t *xcb_connection() const { return m_connection; }
+    const xcb_setup_t *setup() const { return m_setup; }
+    const xcb_format_t *formatForDepth(uint8_t depth) const;
 
     QXcbKeyboard *keyboard() const { return m_keyboard; }
+
+    QXcbClipboard *clipboard() const { return m_clipboard; }
+    QXcbDrag *drag() const { return m_drag; }
+
+    QXcbWMSupport *wmSupport() const { return m_wmSupport; }
 
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
@@ -253,7 +300,26 @@ public:
 #endif
 
     void sync();
+    void flush() { xcb_flush(m_connection); }
+
     void handleXcbError(xcb_generic_error_t *error);
+    void handleXcbEvent(xcb_generic_event_t *event);
+
+    void addWindow(xcb_window_t id, QXcbWindow *window);
+    void removeWindow(xcb_window_t id);
+    QXcbWindow *platformWindowFromId(xcb_window_t id);
+
+    xcb_generic_event_t *checkEvent(int type);
+    template<typename T>
+    inline xcb_generic_event_t *checkEvent(const T &checker);
+
+    typedef bool (*PeekFunc)(xcb_generic_event_t *);
+    void addPeekFunc(PeekFunc f);
+
+    inline xcb_timestamp_t time() const { return m_time; }
+    inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
+
+    bool hasXFixes() const { return xfixes_first_event > 0; }
 
 private slots:
     void processXcbEvents();
@@ -261,9 +327,12 @@ private slots:
 private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
+    void initializeXFixes();
+    void initializeXRender();
 #ifdef XCB_USE_DRI2
     void initializeDri2();
 #endif
+    void handleClientMessageEvent(const xcb_client_message_event_t *event);
 
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
@@ -273,14 +342,21 @@ private:
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
+    xcb_timestamp_t m_time;
+
     QByteArray m_displayName;
 
+    xcb_window_t m_connectionEventListener;
+
     QXcbKeyboard *m_keyboard;
+    QXcbClipboard *m_clipboard;
+    QXcbDrag *m_drag;
+    QXcbWMSupport *m_wmSupport;
 
 #if defined(XCB_USE_XLIB)
     void *m_xlib_display;
 #endif
-
+    QXcbEventReader *m_reader;
 #ifdef XCB_USE_DRI2
     uint32_t m_dri2_major;
     uint32_t m_dri2_minor;
@@ -299,13 +375,38 @@ private:
         int line;
     };
     QVector<CallInfo> m_callLog;
+    QMutex m_callLogMutex;
     void log(const char *file, int line, int sequence);
     template <typename cookie_t>
     friend cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection, const char *file, int line);
 #endif
+
+    WindowMapper m_mapper;
+
+    QVector<PeekFunc> m_peekFuncs;
+
+    uint32_t xfixes_first_event;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
+
+template<typename T>
+xcb_generic_event_t *QXcbConnection::checkEvent(const T &checker)
+{
+    QList<xcb_generic_event_t *> *eventqueue = m_reader->lock();
+
+    for (int i = 0; i < eventqueue->size(); ++i) {
+        xcb_generic_event_t *event = eventqueue->at(i);
+        if (checker.check(event)) {
+            (*eventqueue)[i] = 0;
+            m_reader->unlock();
+            return event;
+        }
+    }
+    m_reader->unlock();
+    return 0;
+}
+
 
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>

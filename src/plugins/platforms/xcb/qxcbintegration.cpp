@@ -43,76 +43,161 @@
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbwindow.h"
-#include "qxcbwindowsurface.h"
+#include "qxcbbackingstore.h"
 #include "qxcbnativeinterface.h"
+#include "qxcbclipboard.h"
+#include "qxcbdrag.h"
 
 #include <xcb/xcb.h>
 
-#include <private/qpixmap_raster_p.h>
-
-#include "qgenericunixfontdatabase.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 
 #include <stdio.h>
+
+//this has to be included before egl, since egl pulls in X headers
+#include <QtGui/private/qguiapplication_p.h>
 
 #ifdef XCB_USE_EGL
 #include <EGL/egl.h>
 #endif
 
-QXcbIntegration::QXcbIntegration()
-    : m_connection(new QXcbConnection)
+#include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <qplatforminputcontext_qpa.h>
+
+#if defined(XCB_USE_GLX)
+#include "qglxintegration.h"
+#elif defined(XCB_USE_EGL)
+#include "qxcbeglsurface.h"
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#endif
+
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QScreen>
+
+QXcbIntegration::QXcbIntegration(const QStringList &parameters)
+    : m_eventDispatcher(createUnixEventDispatcher())
 {
-    foreach (QXcbScreen *screen, m_connection->screens())
-        m_screens << screen;
+    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
+
+#ifdef XCB_USE_XLIB
+    XInitThreads();
+#endif
+
+    m_connections << new QXcbConnection;
+
+    for (int i = 0; i < parameters.size() - 1; i += 2) {
+        qDebug() << parameters.at(i) << parameters.at(i+1);
+        QString display = parameters.at(i) + ':' + parameters.at(i+1);
+        m_connections << new QXcbConnection(display.toAscii().constData());
+    }
+
+    foreach (QXcbConnection *connection, m_connections)
+        foreach (QXcbScreen *screen, connection->screens())
+            screenAdded(screen);
 
     m_fontDatabase = new QGenericUnixFontDatabase();
     m_nativeInterface = new QXcbNativeInterface;
+
+    m_inputContext = QPlatformInputContextFactory::create();
 }
 
 QXcbIntegration::~QXcbIntegration()
 {
-    delete m_connection;
+    qDeleteAll(m_connections);
+}
+
+QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
+{
+    return new QXcbWindow(window);
+}
+
+#if defined(XCB_USE_EGL)
+class QEGLXcbPlatformContext : public QEGLPlatformContext
+{
+public:
+    QEGLXcbPlatformContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share,
+                           EGLDisplay display, QXcbConnection *c)
+        : QEGLPlatformContext(glFormat, share, display)
+        , m_connection(c)
+    {
+        Q_XCB_NOOP(m_connection);
+    }
+
+    void swapBuffers(QPlatformSurface *surface)
+    {
+        Q_XCB_NOOP(m_connection);
+        QEGLPlatformContext::swapBuffers(surface);
+        Q_XCB_NOOP(m_connection);
+    }
+
+    bool makeCurrent(QPlatformSurface *surface)
+    {
+        Q_XCB_NOOP(m_connection);
+        bool ret = QEGLPlatformContext::makeCurrent(surface);
+        Q_XCB_NOOP(m_connection);
+        return ret;
+    }
+
+    void doneCurrent()
+    {
+        Q_XCB_NOOP(m_connection);
+        QEGLPlatformContext::doneCurrent();
+        Q_XCB_NOOP(m_connection);
+    }
+
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+    {
+        return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
+    }
+
+private:
+    QXcbConnection *m_connection;
+};
+#endif
+
+QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    QXcbScreen *screen = static_cast<QXcbScreen *>(context->screen()->handle());
+#if defined(XCB_USE_GLX)
+    return new QGLXContext(screen, context->format(), context->shareHandle());
+#elif defined(XCB_USE_EGL)
+    return new QEGLXcbPlatformContext(context->format(), context->shareHandle(),
+        screen->connection()->egl_display(), screen->connection());
+#elif defined(XCB_USE_DRI2)
+    return new QDri2Context(context->format(), context->shareHandle());
+#endif
+}
+
+QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
+{
+    return new QXcbBackingStore(window);
 }
 
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
-    case OpenGL: return hasOpenGL();
+    case OpenGL: return true;
+    case ThreadedOpenGL:
+#ifdef XCB_POLL_FOR_QUEUED_EVENT
+        return true;
+#else
+        return false;
+#endif
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
 
-QPixmapData *QXcbIntegration::createPixmapData(QPixmapData::PixelType type) const
+QAbstractEventDispatcher *QXcbIntegration::guiThreadEventDispatcher() const
 {
-    return new QRasterPixmapData(type);
+    return m_eventDispatcher;
 }
 
-QPlatformWindow *QXcbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
-{
-    Q_UNUSED(winId);
-    return new QXcbWindow(widget);
-}
-
-QWindowSurface *QXcbIntegration::createWindowSurface(QWidget *widget, WId winId) const
-{
-    Q_UNUSED(winId);
-    return new QXcbWindowSurface(widget);
-}
-
-QList<QPlatformScreen *> QXcbIntegration::screens() const
-{
-    return m_screens;
-}
-
-void QXcbIntegration::moveToScreen(QWidget *window, int screen)
+void QXcbIntegration::moveToScreen(QWindow *window, int screen)
 {
     Q_UNUSED(window);
     Q_UNUSED(screen);
-}
-
-bool QXcbIntegration::isVirtualDesktop()
-{
-    return false;
 }
 
 QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
@@ -120,32 +205,22 @@ QPlatformFontDatabase *QXcbIntegration::fontDatabase() const
     return m_fontDatabase;
 }
 
-QPixmap QXcbIntegration::grabWindow(WId window, int x, int y, int width, int height) const
-{
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    return QPixmap();
-}
-
-
-bool QXcbIntegration::hasOpenGL() const
-{
-#if defined(XCB_USE_GLX)
-    return true;
-#elif defined(XCB_USE_EGL)
-    return m_connection->hasEgl();
-#elif defined(XCB_USE_DRI2)
-    if (m_connection->hasSupportForDri2()) {
-        return true;
-    }
-#endif
-    return false;
-}
-
 QPlatformNativeInterface * QXcbIntegration::nativeInterface() const
 {
     return m_nativeInterface;
+}
+
+QPlatformClipboard *QXcbIntegration::clipboard() const
+{
+    return m_connections.at(0)->clipboard();
+}
+
+QPlatformDrag *QXcbIntegration::drag() const
+{
+    return m_connections.at(0)->drag();
+}
+
+QPlatformInputContext *QXcbIntegration::inputContext() const
+{
+    return m_inputContext;
 }

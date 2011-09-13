@@ -43,7 +43,7 @@
 #define PROGRESSITEM_H
 
 //Qt
-#include <QtGui/QGraphicsTextItem>
+#include <QtWidgets/QGraphicsTextItem>
 
 class ProgressItem : public QGraphicsTextItem
 {

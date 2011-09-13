@@ -68,7 +68,7 @@ QT_MODULE(Gui)
 
 class QWingedEdge;
 
-class Q_AUTOTEST_EXPORT QPathClipper
+class Q_GUI_EXPORT QPathClipper
 {
 public:
     enum Operation {

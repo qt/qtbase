@@ -43,7 +43,7 @@
 #include "qopenkodewindow.h"
 #include "qopenkodeeventloopintegration.h"
 
-#include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#include <QtOpenGL/qplatformpixmap_gl_p.h>
 #include <QtOpenGL/private/qwindowsurface_gl_p.h>
 
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -197,9 +197,9 @@ bool QOpenKODEIntegration::hasCapability(QPlatformIntegration::Capability cap) c
     }
 }
 
-QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformPixmap *QOpenKODEIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
-    return new QGLPixmapData(type);
+    return new QGLPlatformPixmap(type);
 }
 
 QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) const

@@ -171,7 +171,7 @@ CApaCommandLine* QCoreApplicationPrivate::symbianCommandLine()
 
 #endif
 
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
 #endif
 
@@ -319,7 +319,7 @@ Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
     : QObjectPrivate(), argc(aargc), argv(aargv), application_type(0), eventFilter(0),
-      in_exec(false), aboutToQuitEmitted(false)
+      in_exec(false), aboutToQuitEmitted(false), threadData_clean(false)
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
@@ -344,7 +344,12 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
-    if (threadData) {
+    cleanupThreadData();
+}
+
+void QCoreApplicationPrivate::cleanupThreadData()
+{
+    if (threadData && !threadData_clean) {
 #ifndef QT_NO_THREAD
         void *data = &threadData->tls;
         QThreadStorageData::finish((void **)data);
@@ -363,6 +368,7 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
         threadData->postEventList.clear();
         threadData->postEventList.recursion = 0;
         threadData->quitNow = false;
+        threadData_clean = true;
     }
 }
 
@@ -578,23 +584,6 @@ void QCoreApplication::flush()
     \a argc must be greater than zero and \a argv must contain at least
     one valid character string.
 */
-QCoreApplication::QCoreApplication(int &argc, char **argv)
-    : QObject(*new QCoreApplicationPrivate(argc, argv, 0x040000))
-{
-    init();
-    QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY)
-    // Refresh factoryloader, as text codecs are requested during lib path
-    // resolving process and won't be therefore properly loaded.
-    // Unknown if this is symbian specific issue.
-    QFactoryLoader::refreshAll();
-#endif
-
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
-    d_func()->symbianInit();
-#endif
-}
-
 QCoreApplication::QCoreApplication(int &argc, char **argv, int _internal)
 : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
 {
@@ -754,20 +743,6 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
-#ifdef Q_OS_MAC
-    // Turn on the no native menubar here, since we used to
-    // do this implicitly. We DO NOT flip it off if someone sets
-    // it to false.
-    // Ideally, we'd have magic that would be something along the lines of
-    // "follow MacPluginApplication" unless explicitly set.
-    // Considering this attribute isn't only at the beginning
-    // it's unlikely it will ever be a problem, but I want
-    // to have the behavior documented here.
-    if (attribute == Qt::AA_MacPluginApplication && on
-          && !testAttribute(Qt::AA_DontUseNativeMenuBar)) {
-        setAttribute(Qt::AA_DontUseNativeMenuBar, true);
-    }
-#endif
 }
 
 /*!
@@ -1274,7 +1249,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 */
 bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventList *postedEvents)
 {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     Q_ASSERT(event);
     Q_ASSERT(receiver);
     Q_ASSERT(postedEvents);
@@ -1965,7 +1940,7 @@ QString QCoreApplication::applicationFilePath()
     if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
     d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
 #elif defined(Q_WS_MAC)
@@ -2160,7 +2135,6 @@ QStringList QCoreApplication::arguments()
                 ;
             else if (l1arg == "-style" ||
                      l1arg == "-session" ||
-                     l1arg == "-graphicssystem" ||
                      l1arg == "-testability")
                 ++a;
             else

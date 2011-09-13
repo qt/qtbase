@@ -6,12 +6,11 @@ unix:!symbian {
 } else {
         SUBDIRS *= codecs
 }
-!contains(QT_CONFIG, no-gui) {
-    SUBDIRS *= imageformats
-    !embedded:!qpa:SUBDIRS *= graphicssystems
-    !win32:!embedded:!mac:!symbian:SUBDIRS *= inputmethods
-    !symbian:SUBDIRS += accessible
-}
-embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
+!contains(QT_CONFIG, no-gui): SUBDIRS *= imageformats
+!symbian:!contains(QT_CONFIG, no-gui):SUBDIRS += accessible
+
 symbian:SUBDIRS += s60
-qpa:SUBDIRS += platforms
+qpa: {
+    SUBDIRS += platforms
+    SUBDIRS += platforminputcontexts
+}

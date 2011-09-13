@@ -44,14 +44,12 @@
 
 #include <qthread.h>
 #include <qfont.h>
-#include <qapplication.h>
 #include <qpainter.h>
 #include <qvarlengtharray.h>
 #include <qtextformat.h>
 #include <qabstracttextdocumentlayout.h>
 #include "qtextdocument_p.h"
 #include "qtextformat_p.h"
-#include "qstyleoption.h"
 #include "qpainterpath.h"
 #include "qglyphrun.h"
 #include "qglyphrun_p.h"

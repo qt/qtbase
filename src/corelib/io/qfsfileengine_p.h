@@ -77,7 +77,7 @@ class Q_AUTOTEST_EXPORT QFSFileEnginePrivate : public QAbstractFileEnginePrivate
     Q_DECLARE_PUBLIC(QFSFileEngine)
 
 public:
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     static QString longFileName(const QString &path);
 #endif
 
@@ -143,7 +143,7 @@ public:
     int getMapHandle();
 #endif
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     HANDLE fileHandle;
     HANDLE mapHandle;
     QHash<uchar *, DWORD /* offset % AllocationGranularity */> maps;

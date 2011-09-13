@@ -41,11 +41,10 @@
 
 #include "qkeysequence.h"
 #include "qkeysequence_p.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 
 #ifndef QT_NO_SHORTCUT
 
-#include "qshortcut.h"
 #include "qdebug.h"
 #ifndef QT_NO_REGEXP
 # include "qregexp.h"
@@ -55,14 +54,14 @@
 #endif
 #include "qvariant.h"
 
-#ifdef Q_WS_MAC
-# include <private/qt_mac_p.h>
-
+#ifdef Q_OS_MAC
+#include <QtCore/private/qcore_mac_p.h>
+#include <Carbon/Carbon.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 static bool qt_sequence_no_mnemonics = true;
 struct MacSpecialKey {
     int key;
@@ -643,153 +642,153 @@ static const struct {
 
 const QKeyBinding QKeySequencePrivate::keyBindings[] = {
 //   StandardKey                            Priority    Key Sequence                            Platforms
-    {QKeySequence::Back,                    0,          Qt::Key_Backspace,                      QApplicationPrivate::KB_Win},
-    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Return,                         QApplicationPrivate::KB_All},
-    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Enter,                          QApplicationPrivate::KB_All},
-    {QKeySequence::Delete,                  1,          Qt::Key_Delete,                         QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToStartOfLine,       0,          Qt::Key_Home,                           QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToStartOfDocument,   0,          Qt::Key_Home,                           QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToEndOfLine,         0,          Qt::Key_End,                            QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToEndOfDocument,     0,          Qt::Key_End,                            QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToPreviousChar,      0,          Qt::Key_Left,                           QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToPreviousLine,      0,          Qt::Key_Up,                             QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToNextChar,          0,          Qt::Key_Right,                          QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToNextLine,          0,          Qt::Key_Down,                           QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToPreviousPage,      1,          Qt::Key_PageUp,                         QApplicationPrivate::KB_All},
-    {QKeySequence::MoveToNextPage,          1,          Qt::Key_PageDown,                       QApplicationPrivate::KB_All},
-    {QKeySequence::HelpContents,            0,          Qt::Key_F1,                             QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::HelpContents,            0,          Qt::Key_F2,                             QApplicationPrivate::KB_S60},
-    {QKeySequence::FindNext,                0,          Qt::Key_F3,                             QApplicationPrivate::KB_X11},
-    {QKeySequence::FindNext,                1,          Qt::Key_F3,                             QApplicationPrivate::KB_Win},
-    {QKeySequence::Refresh,                 0,          Qt::Key_F5,                             QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::Undo,                    0,          Qt::Key_F14,                            QApplicationPrivate::KB_X11}, //Undo on sun keyboards
-    {QKeySequence::Copy,                    0,          Qt::Key_F16,                            QApplicationPrivate::KB_X11}, //Copy on sun keyboards
-    {QKeySequence::Paste,                   0,          Qt::Key_F18,                            QApplicationPrivate::KB_X11}, //Paste on sun keyboards      
-    {QKeySequence::Cut,                     0,          Qt::Key_F20,                            QApplicationPrivate::KB_X11}, //Cut on sun keyboards
-    {QKeySequence::PreviousChild,           0,          Qt::Key_Back,                           QApplicationPrivate::KB_All},
-    {QKeySequence::NextChild,               0,          Qt::Key_Forward,                        QApplicationPrivate::KB_All}, 
-    {QKeySequence::Forward,                 0,          Qt::SHIFT | Qt::Key_Backspace,          QApplicationPrivate::KB_Win},
-    {QKeySequence::Delete,                  0,          Qt::SHIFT | Qt::Key_Backspace,          QApplicationPrivate::KB_S60},
-    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Return,             QApplicationPrivate::KB_All},
-    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Enter,              QApplicationPrivate::KB_All},
-    {QKeySequence::Paste,                   0,          Qt::SHIFT | Qt::Key_Insert,             QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11}, 
-    {QKeySequence::Cut,                     0,          Qt::SHIFT | Qt::Key_Delete,             QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11}, //## Check if this should work on mac
-    {QKeySequence::SelectStartOfLine,       0,          Qt::SHIFT | Qt::Key_Home,               QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectStartOfDocument,   0,          Qt::SHIFT | Qt::Key_Home,               QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectEndOfLine,         0,          Qt::SHIFT | Qt::Key_End,                QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectEndOfDocument,     0,          Qt::SHIFT | Qt::Key_End,                QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectPreviousChar,      0,          Qt::SHIFT | Qt::Key_Left,               QApplicationPrivate::KB_All},
-    {QKeySequence::SelectPreviousLine,      0,          Qt::SHIFT | Qt::Key_Up,                 QApplicationPrivate::KB_All},
-    {QKeySequence::SelectNextChar,          0,          Qt::SHIFT | Qt::Key_Right,              QApplicationPrivate::KB_All},
-    {QKeySequence::SelectNextLine,          0,          Qt::SHIFT | Qt::Key_Down,               QApplicationPrivate::KB_All},
-    {QKeySequence::SelectPreviousPage,      0,          Qt::SHIFT | Qt::Key_PageUp,             QApplicationPrivate::KB_All},
-    {QKeySequence::SelectNextPage,          0,          Qt::SHIFT | Qt::Key_PageDown,           QApplicationPrivate::KB_All},
-    {QKeySequence::WhatsThis,               1,          Qt::SHIFT | Qt::Key_F1,                 QApplicationPrivate::KB_All},
-    {QKeySequence::FindPrevious,            0,          Qt::SHIFT | Qt::Key_F3,                 QApplicationPrivate::KB_X11},
-    {QKeySequence::FindPrevious,            1,          Qt::SHIFT | Qt::Key_F3,                 QApplicationPrivate::KB_Win},
-    {QKeySequence::ZoomIn,                  1,          Qt::CTRL | Qt::Key_Plus,                QApplicationPrivate::KB_All},
-    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Comma,               QApplicationPrivate::KB_KDE},
-    {QKeySequence::Preferences,             0,          Qt::CTRL | Qt::Key_Comma,               QApplicationPrivate::KB_Mac},
-    {QKeySequence::ZoomOut,                 1,          Qt::CTRL | Qt::Key_Minus,               QApplicationPrivate::KB_All},
-    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::Key_Period,              QApplicationPrivate::KB_KDE},
-    {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectAll,               1,          Qt::CTRL | Qt::Key_A,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Bold,                    1,          Qt::CTRL | Qt::Key_B,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Copy,                    1,          Qt::CTRL | Qt::Key_C,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Delete,                  0,          Qt::CTRL | Qt::Key_D,                   QApplicationPrivate::KB_X11}, //emacs (line edit only)
-    {QKeySequence::Find,                    0,          Qt::CTRL | Qt::Key_F,                   QApplicationPrivate::KB_All},
-    {QKeySequence::FindNext,                1,          Qt::CTRL | Qt::Key_G,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
-    {QKeySequence::FindNext,                0,          Qt::CTRL | Qt::Key_G,                   QApplicationPrivate::KB_Win},
-    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QApplicationPrivate::KB_Win}, 
-    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QApplicationPrivate::KB_Gnome}, 
-    {QKeySequence::Italic,                  0,          Qt::CTRL | Qt::Key_I,                   QApplicationPrivate::KB_All}, 
-    {QKeySequence::DeleteEndOfLine,         0,          Qt::CTRL | Qt::Key_K,                   QApplicationPrivate::KB_X11}, //emacs (line edit only)
-    {QKeySequence::New,                     1,          Qt::CTRL | Qt::Key_N,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Open,                    1,          Qt::CTRL | Qt::Key_O,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Print,                   1,          Qt::CTRL | Qt::Key_P,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Quit,                    0,          Qt::CTRL | Qt::Key_Q,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_KDE | QApplicationPrivate::KB_Mac},
-    {QKeySequence::Refresh,                 1,          Qt::CTRL | Qt::Key_R,                   QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
-    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_R,                   QApplicationPrivate::KB_KDE},
-    {QKeySequence::Save,                    1,          Qt::CTRL | Qt::Key_S,                   QApplicationPrivate::KB_All},
-    {QKeySequence::AddTab,                  0,          Qt::CTRL | Qt::Key_T,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Underline,               1,          Qt::CTRL | Qt::Key_U,                   QApplicationPrivate::KB_All}, 
-    {QKeySequence::Paste,                   1,          Qt::CTRL | Qt::Key_V,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   QApplicationPrivate::KB_Mac},
-    {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_S60},
-    {QKeySequence::Undo,                    1,          Qt::CTRL | Qt::Key_Z,                   QApplicationPrivate::KB_All},
-    {QKeySequence::Back,                    1,          Qt::CTRL | Qt::Key_BracketLeft,         QApplicationPrivate::KB_Mac},
-    {QKeySequence::Forward,                 1,          Qt::CTRL | Qt::Key_BracketRight,        QApplicationPrivate::KB_Mac},
-    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::Key_BraceLeft,           QApplicationPrivate::KB_Mac},
-    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_BraceRight,          QApplicationPrivate::KB_Mac},
-    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_Tab,                 QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Tab,                 QApplicationPrivate::KB_Mac}, //different priority from above
-    {QKeySequence::DeleteStartOfWord,       0,          Qt::CTRL | Qt::Key_Backspace,           QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_Win},
-    {QKeySequence::Copy,                    0,          Qt::CTRL | Qt::Key_Insert,              QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_Win}, 
-    {QKeySequence::DeleteEndOfWord,         0,          Qt::CTRL | Qt::Key_Delete,              QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_Win},
-    {QKeySequence::MoveToStartOfDocument,   0,          Qt::CTRL | Qt::Key_Home,                QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToEndOfDocument,     0,          Qt::CTRL | Qt::Key_End,                 QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::Back,                    0,          Qt::CTRL | Qt::Key_Left,                QApplicationPrivate::KB_Mac}, 
-    {QKeySequence::MoveToPreviousWord,      0,          Qt::CTRL | Qt::Key_Left,                QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToStartOfLine,       0,          Qt::CTRL | Qt::Key_Left,                QApplicationPrivate::KB_Mac },
-    {QKeySequence::MoveToStartOfDocument,   1,          Qt::CTRL | Qt::Key_Up,                  QApplicationPrivate::KB_Mac},
-    {QKeySequence::Forward,                 0,          Qt::CTRL | Qt::Key_Right,               QApplicationPrivate::KB_Mac}, 
-    {QKeySequence::MoveToEndOfLine,         0,          Qt::CTRL | Qt::Key_Right,               QApplicationPrivate::KB_Mac },
-    {QKeySequence::MoveToNextWord,          0,          Qt::CTRL | Qt::Key_Right,               QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::MoveToEndOfDocument,     1,          Qt::CTRL | Qt::Key_Down,                QApplicationPrivate::KB_Mac},
-    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  QApplicationPrivate::KB_Win},
-    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  QApplicationPrivate::KB_Mac},
-    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_F6,                  QApplicationPrivate::KB_Win},
-    {QKeySequence::FindPrevious,            1,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
-    {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QApplicationPrivate::KB_Win},
-    {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       QApplicationPrivate::KB_KDE},
-    {QKeySequence::SaveAs,                  0,          Qt::CTRL | Qt::SHIFT | Qt::Key_S,       QApplicationPrivate::KB_Gnome | QApplicationPrivate::KB_Mac},
-    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QApplicationPrivate::KB_Mac},
-    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QApplicationPrivate::KB_Mac },//different priority from above 
-    {QKeySequence::Paste,                   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Insert,  QApplicationPrivate::KB_X11},
-    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Home,    QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_End,     QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectPreviousWord,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectStartOfLine,       1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac },
-    {QKeySequence::SelectStartOfDocument,   1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Up,      QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectNextWord,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11 | QApplicationPrivate::KB_S60},
-    {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac },
-    {QKeySequence::SelectEndOfDocument,     1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Down,    QApplicationPrivate::KB_Mac},
-    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      QApplicationPrivate::KB_Win},
-    {QKeySequence::Undo,                    0,          Qt::ALT  | Qt::Key_Backspace,           QApplicationPrivate::KB_Win},
-    {QKeySequence::DeleteStartOfWord,       0,          Qt::ALT  | Qt::Key_Backspace,           QApplicationPrivate::KB_Mac},
-    {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_Delete,              QApplicationPrivate::KB_Mac},    
-    {QKeySequence::Back,                    1,          Qt::ALT  | Qt::Key_Left,                QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::MoveToPreviousWord,      0,          Qt::ALT  | Qt::Key_Left,                QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToStartOfBlock,      0,          Qt::ALT  | Qt::Key_Up,                  QApplicationPrivate::KB_Mac}, //mac only
-    {QKeySequence::MoveToNextWord,          0,          Qt::ALT  | Qt::Key_Right,               QApplicationPrivate::KB_Mac},
-    {QKeySequence::Forward,                 1,          Qt::ALT  | Qt::Key_Right,               QApplicationPrivate::KB_Win | QApplicationPrivate::KB_X11},
-    {QKeySequence::MoveToEndOfBlock,        0,          Qt::ALT  | Qt::Key_Down,                QApplicationPrivate::KB_Mac}, //mac only
-    {QKeySequence::MoveToPreviousPage,      0,          Qt::ALT  | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac },
-    {QKeySequence::MoveToNextPage,          0,          Qt::ALT  | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac },
-    {QKeySequence::Redo,                    0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Backspace,QApplicationPrivate::KB_Win},
-    {QKeySequence::SelectPreviousWord,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectStartOfBlock,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Up,      QApplicationPrivate::KB_Mac}, //mac only
-    {QKeySequence::SelectNextWord,          0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectEndOfBlock,        0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Down,    QApplicationPrivate::KB_Mac}, //mac only
-    {QKeySequence::MoveToStartOfBlock,      0,          Qt::META | Qt::Key_A,                   QApplicationPrivate::KB_Mac},
-    {QKeySequence::Delete,                  0,          Qt::META | Qt::Key_D,                   QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToEndOfBlock,        0,          Qt::META | Qt::Key_E,                   QApplicationPrivate::KB_Mac},
-    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Return,              QApplicationPrivate::KB_Mac},
-    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Enter,               QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToStartOfLine,       0,          Qt::META | Qt::Key_Left,                QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_Up,                  QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToEndOfLine,         0,          Qt::META | Qt::Key_Right,               QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              QApplicationPrivate::KB_Mac},
-    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    QApplicationPrivate::KB_Mac},
-    {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   QApplicationPrivate::KB_Mac}    
+    {QKeySequence::Back,                    0,          Qt::Key_Backspace,                      QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Return,                         QGuiApplicationPrivate::KB_All},
+    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Enter,                          QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Delete,                  1,          Qt::Key_Delete,                         QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::Key_Home,                           QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToStartOfDocument,   0,          Qt::Key_Home,                           QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::Key_End,                            QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToEndOfDocument,     0,          Qt::Key_End,                            QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToPreviousChar,      0,          Qt::Key_Left,                           QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToPreviousLine,      0,          Qt::Key_Up,                             QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToNextChar,          0,          Qt::Key_Right,                          QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToNextLine,          0,          Qt::Key_Down,                           QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToPreviousPage,      1,          Qt::Key_PageUp,                         QGuiApplicationPrivate::KB_All},
+    {QKeySequence::MoveToNextPage,          1,          Qt::Key_PageDown,                       QGuiApplicationPrivate::KB_All},
+    {QKeySequence::HelpContents,            0,          Qt::Key_F1,                             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::HelpContents,            0,          Qt::Key_F2,                             QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::FindNext,                0,          Qt::Key_F3,                             QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::FindNext,                1,          Qt::Key_F3,                             QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Refresh,                 0,          Qt::Key_F5,                             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::Undo,                    0,          Qt::Key_F14,                            QGuiApplicationPrivate::KB_X11}, //Undo on sun keyboards
+    {QKeySequence::Copy,                    0,          Qt::Key_F16,                            QGuiApplicationPrivate::KB_X11}, //Copy on sun keyboards
+    {QKeySequence::Paste,                   0,          Qt::Key_F18,                            QGuiApplicationPrivate::KB_X11}, //Paste on sun keyboards      
+    {QKeySequence::Cut,                     0,          Qt::Key_F20,                            QGuiApplicationPrivate::KB_X11}, //Cut on sun keyboards
+    {QKeySequence::PreviousChild,           0,          Qt::Key_Back,                           QGuiApplicationPrivate::KB_All},
+    {QKeySequence::NextChild,               0,          Qt::Key_Forward,                        QGuiApplicationPrivate::KB_All}, 
+    {QKeySequence::Forward,                 0,          Qt::SHIFT | Qt::Key_Backspace,          QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Delete,                  0,          Qt::SHIFT | Qt::Key_Backspace,          QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Return,             QGuiApplicationPrivate::KB_All},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Enter,              QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Paste,                   0,          Qt::SHIFT | Qt::Key_Insert,             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11}, 
+    {QKeySequence::Cut,                     0,          Qt::SHIFT | Qt::Key_Delete,             QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11}, //## Check if this should work on mac
+    {QKeySequence::SelectStartOfLine,       0,          Qt::SHIFT | Qt::Key_Home,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectStartOfDocument,   0,          Qt::SHIFT | Qt::Key_Home,               QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfLine,         0,          Qt::SHIFT | Qt::Key_End,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectEndOfDocument,     0,          Qt::SHIFT | Qt::Key_End,                QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectPreviousChar,      0,          Qt::SHIFT | Qt::Key_Left,               QGuiApplicationPrivate::KB_All},
+    {QKeySequence::SelectPreviousLine,      0,          Qt::SHIFT | Qt::Key_Up,                 QGuiApplicationPrivate::KB_All},
+    {QKeySequence::SelectNextChar,          0,          Qt::SHIFT | Qt::Key_Right,              QGuiApplicationPrivate::KB_All},
+    {QKeySequence::SelectNextLine,          0,          Qt::SHIFT | Qt::Key_Down,               QGuiApplicationPrivate::KB_All},
+    {QKeySequence::SelectPreviousPage,      0,          Qt::SHIFT | Qt::Key_PageUp,             QGuiApplicationPrivate::KB_All},
+    {QKeySequence::SelectNextPage,          0,          Qt::SHIFT | Qt::Key_PageDown,           QGuiApplicationPrivate::KB_All},
+    {QKeySequence::WhatsThis,               1,          Qt::SHIFT | Qt::Key_F1,                 QGuiApplicationPrivate::KB_All},
+    {QKeySequence::FindPrevious,            0,          Qt::SHIFT | Qt::Key_F3,                 QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::FindPrevious,            1,          Qt::SHIFT | Qt::Key_F3,                 QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::ZoomIn,                  1,          Qt::CTRL | Qt::Key_Plus,                QGuiApplicationPrivate::KB_All},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Comma,               QGuiApplicationPrivate::KB_KDE},
+    {QKeySequence::Preferences,             0,          Qt::CTRL | Qt::Key_Comma,               QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::ZoomOut,                 1,          Qt::CTRL | Qt::Key_Minus,               QGuiApplicationPrivate::KB_All},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::Key_Period,              QGuiApplicationPrivate::KB_KDE},
+    {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectAll,               1,          Qt::CTRL | Qt::Key_A,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Bold,                    1,          Qt::CTRL | Qt::Key_B,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Copy,                    1,          Qt::CTRL | Qt::Key_C,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Delete,                  0,          Qt::CTRL | Qt::Key_D,                   QGuiApplicationPrivate::KB_X11}, //emacs (line edit only)
+    {QKeySequence::Find,                    0,          Qt::CTRL | Qt::Key_F,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::FindNext,                1,          Qt::CTRL | Qt::Key_G,                   QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::FindNext,                0,          Qt::CTRL | Qt::Key_G,                   QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QGuiApplicationPrivate::KB_Win}, 
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   QGuiApplicationPrivate::KB_Gnome}, 
+    {QKeySequence::Italic,                  0,          Qt::CTRL | Qt::Key_I,                   QGuiApplicationPrivate::KB_All}, 
+    {QKeySequence::DeleteEndOfLine,         0,          Qt::CTRL | Qt::Key_K,                   QGuiApplicationPrivate::KB_X11}, //emacs (line edit only)
+    {QKeySequence::New,                     1,          Qt::CTRL | Qt::Key_N,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Open,                    1,          Qt::CTRL | Qt::Key_O,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Print,                   1,          Qt::CTRL | Qt::Key_P,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Quit,                    0,          Qt::CTRL | Qt::Key_Q,                   QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_KDE | QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Refresh,                 1,          Qt::CTRL | Qt::Key_R,                   QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_R,                   QGuiApplicationPrivate::KB_KDE},
+    {QKeySequence::Save,                    1,          Qt::CTRL | Qt::Key_S,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::AddTab,                  0,          Qt::CTRL | Qt::Key_T,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Underline,               1,          Qt::CTRL | Qt::Key_U,                   QGuiApplicationPrivate::KB_All}, 
+    {QKeySequence::Paste,                   1,          Qt::CTRL | Qt::Key_V,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_W,                   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::Undo,                    1,          Qt::CTRL | Qt::Key_Z,                   QGuiApplicationPrivate::KB_All},
+    {QKeySequence::Back,                    1,          Qt::CTRL | Qt::Key_BracketLeft,         QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Forward,                 1,          Qt::CTRL | Qt::Key_BracketRight,        QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::Key_BraceLeft,           QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_BraceRight,          QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_Tab,                 QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Tab,                 QGuiApplicationPrivate::KB_Mac}, //different priority from above
+    {QKeySequence::DeleteStartOfWord,       0,          Qt::CTRL | Qt::Key_Backspace,           QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Copy,                    0,          Qt::CTRL | Qt::Key_Insert,              QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win}, 
+    {QKeySequence::DeleteEndOfWord,         0,          Qt::CTRL | Qt::Key_Delete,              QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::MoveToStartOfDocument,   0,          Qt::CTRL | Qt::Key_Home,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToEndOfDocument,     0,          Qt::CTRL | Qt::Key_End,                 QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::Back,                    0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac}, 
+    {QKeySequence::MoveToPreviousWord,      0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::CTRL | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::MoveToStartOfDocument,   1,          Qt::CTRL | Qt::Key_Up,                  QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Forward,                 0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac}, 
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::MoveToNextWord,          0,          Qt::CTRL | Qt::Key_Right,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::MoveToEndOfDocument,     1,          Qt::CTRL | Qt::Key_Down,                QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_F6,                  QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::FindPrevious,            1,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       QGuiApplicationPrivate::KB_KDE},
+    {QKeySequence::SaveAs,                  0,          Qt::CTRL | Qt::SHIFT | Qt::Key_S,       QGuiApplicationPrivate::KB_Gnome | QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, QGuiApplicationPrivate::KB_Mac },//different priority from above 
+    {QKeySequence::Paste,                   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Insert,  QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Home,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_End,     QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectPreviousWord,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectStartOfLine,       1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::SelectStartOfDocument,   1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Up,      QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectNextWord,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11 | QGuiApplicationPrivate::KB_S60},
+    {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::SelectEndOfDocument,     1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Down,    QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::Undo,                    0,          Qt::ALT  | Qt::Key_Backspace,           QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::DeleteStartOfWord,       0,          Qt::ALT  | Qt::Key_Backspace,           QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_Delete,              QGuiApplicationPrivate::KB_Mac},    
+    {QKeySequence::Back,                    1,          Qt::ALT  | Qt::Key_Left,                QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::MoveToPreviousWord,      0,          Qt::ALT  | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToStartOfBlock,      0,          Qt::ALT  | Qt::Key_Up,                  QGuiApplicationPrivate::KB_Mac}, //mac only
+    {QKeySequence::MoveToNextWord,          0,          Qt::ALT  | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Forward,                 1,          Qt::ALT  | Qt::Key_Right,               QGuiApplicationPrivate::KB_Win | QGuiApplicationPrivate::KB_X11},
+    {QKeySequence::MoveToEndOfBlock,        0,          Qt::ALT  | Qt::Key_Down,                QGuiApplicationPrivate::KB_Mac}, //mac only
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::ALT  | Qt::Key_PageUp,              QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::MoveToNextPage,          0,          Qt::ALT  | Qt::Key_PageDown,            QGuiApplicationPrivate::KB_Mac },
+    {QKeySequence::Redo,                    0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Backspace,QGuiApplicationPrivate::KB_Win},
+    {QKeySequence::SelectPreviousWord,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Up,      QGuiApplicationPrivate::KB_Mac}, //mac only
+    {QKeySequence::SelectNextWord,          0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Down,    QGuiApplicationPrivate::KB_Mac}, //mac only
+    {QKeySequence::MoveToStartOfBlock,      0,          Qt::META | Qt::Key_A,                   QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::Delete,                  0,          Qt::META | Qt::Key_D,                   QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToEndOfBlock,        0,          Qt::META | Qt::Key_E,                   QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Return,              QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Enter,               QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::META | Qt::Key_Left,                QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_Up,                  QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::META | Qt::Key_Right,               QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    QGuiApplicationPrivate::KB_Mac},
+    {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   QGuiApplicationPrivate::KB_Mac}    
 };
 
 const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate::keyBindings)/(sizeof(QKeyBinding));
@@ -968,7 +967,7 @@ QKeySequence::QKeySequence(const QKeySequence& keysequence)
     d->ref.ref();
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 static inline int maybeSwapShortcut(int shortcut)
 {
     if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
@@ -994,13 +993,13 @@ static inline int maybeSwapShortcut(int shortcut)
 */
 QList<QKeySequence> QKeySequence::keyBindings(StandardKey key)
 {
-    uint platform = QApplicationPrivate::currentPlatform();
+    uint platform = QGuiApplicationPrivate::currentKeyPlatform();
     QList <QKeySequence> list;
     for (uint i = 0; i < QKeySequencePrivate::numberOfKeyBindings ; ++i) {
         QKeyBinding keyBinding = QKeySequencePrivate::keyBindings[i];
         if (keyBinding.standardKey == key && (keyBinding.platform & platform)) {
             uint shortcut =
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
                     maybeSwapShortcut(QKeySequencePrivate::keyBindings[i].shortcut);
 #else
                     QKeySequencePrivate::keyBindings[i].shortcut;
@@ -1202,7 +1201,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
     if (nativeText) {
         gmodifs = globalModifs();
         if (gmodifs->isEmpty()) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
             const bool dontSwap = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
             if (dontSwap)
                 *gmodifs << QModifKeyName(Qt::META, QChar(kCommandUnicode));
@@ -1234,15 +1233,15 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
 
     QList<QModifKeyName> modifs;
     if (nativeText) {
-        modifs << QModifKeyName(Qt::CTRL, QShortcut::tr("Ctrl").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::SHIFT, QShortcut::tr("Shift").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::ALT, QShortcut::tr("Alt").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::META, QShortcut::tr("Meta").toLower().append(QLatin1Char('+')));
+        modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::ALT, QCoreApplication::translate("QShortcut", "Alt").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(QLatin1Char('+')));
     }
     modifs += *gmodifs; // Test non-translated ones last
 
     QString sl = accel;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     for (int i = 0; i < modifs.size(); ++i) {
         const QModifKeyName &mkf = modifs.at(i);
         if (sl.contains(mkf.name)) {
@@ -1278,7 +1277,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
 
     int fnum = 0;
     if (accel.length() == 1) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         int qtKey = qtkeyForMacSymbol(accel[0]);
         if (qtKey != -1) {
             ret |= qtKey;
@@ -1299,7 +1298,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                 ++tran;
             for (int i = 0; keyname[i].name; ++i) {
                 QString keyName(tran == 0
-                                ? QShortcut::tr(keyname[i].name)
+                                ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                 : QString::fromLatin1(keyname[i].name));
                 if (accel == keyName.toLower()) {
                     ret |= keyname[i].key;
@@ -1327,7 +1326,7 @@ QString QKeySequence::encodeString(int key)
 static inline void addKey(QString &str, const QString &theKey, QKeySequence::SequenceFormat format)
 {
     if (!str.isEmpty())
-        str += (format == QKeySequence::NativeText) ? QShortcut::tr("+")
+        str += (format == QKeySequence::NativeText) ? QCoreApplication::translate("QShortcut", "+")
                                                     : QString::fromLatin1("+");
     str += theKey;
 }
@@ -1336,7 +1335,7 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
 {
     bool nativeText = (format == QKeySequence::NativeText);
     QString s;
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
     if (nativeText) {
         // On Mac OS X the order (by default) is Meta, Alt, Shift, Control.
         // If the AA_MacDontSwapCtrlAndMeta is enabled, then the order
@@ -1367,13 +1366,13 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
     {
         // On other systems the order is Meta, Control, Alt, Shift
         if ((key & Qt::META) == Qt::META)
-            s = nativeText ? QShortcut::tr("Meta") : QString::fromLatin1("Meta");
+            s = nativeText ? QCoreApplication::translate("QShortcut", "Meta") : QString::fromLatin1("Meta");
         if ((key & Qt::CTRL) == Qt::CTRL)
-            addKey(s, nativeText ? QShortcut::tr("Ctrl") : QString::fromLatin1("Ctrl"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Ctrl") : QString::fromLatin1("Ctrl"), format);
         if ((key & Qt::ALT) == Qt::ALT)
-            addKey(s, nativeText ? QShortcut::tr("Alt") : QString::fromLatin1("Alt"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Alt") : QString::fromLatin1("Alt"), format);
         if ((key & Qt::SHIFT) == Qt::SHIFT)
-            addKey(s, nativeText ? QShortcut::tr("Shift") : QString::fromLatin1("Shift"), format);
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Shift") : QString::fromLatin1("Shift"), format);
     }
 
 
@@ -1388,11 +1387,11 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
             p += QChar(QChar::lowSurrogate(key));
         }
     } else if (key >= Qt::Key_F1 && key <= Qt::Key_F35) {
-            p = nativeText ? QShortcut::tr("F%1").arg(key - Qt::Key_F1 + 1)
+            p = nativeText ? QCoreApplication::translate("QShortcut", "F%1").arg(key - Qt::Key_F1 + 1)
                            : QString::fromLatin1("F%1").arg(key - Qt::Key_F1 + 1);
     } else if (key) {
         int i=0;
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_MAC)
         if (nativeText) {
             QChar ch = qt_macSymbolForQtKey(key);
             if (!ch.isNull())
@@ -1402,12 +1401,12 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
         } else
 #endif
         {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 NonSymbol:
 #endif
             while (keyname[i].name) {
                 if (key == keyname[i].key) {
-                    p = nativeText ? QShortcut::tr(keyname[i].name)
+                    p = nativeText ? QCoreApplication::translate("QShortcut", keyname[i].name)
                                    : QString::fromLatin1(keyname[i].name);
                     break;
                 }
@@ -1428,7 +1427,7 @@ NonSymbol:
         }
     }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     if (nativeText)
         s += p;
     else

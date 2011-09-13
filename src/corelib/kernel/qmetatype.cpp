@@ -265,19 +265,16 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("QEasingCurve", QMetaType::QEasingCurve),
 
     /* All GUI types */
-    QT_ADD_STATIC_METATYPE("QColorGroup", 63),
     QT_ADD_STATIC_METATYPE("QFont", QMetaType::QFont),
     QT_ADD_STATIC_METATYPE("QPixmap", QMetaType::QPixmap),
     QT_ADD_STATIC_METATYPE("QBrush", QMetaType::QBrush),
     QT_ADD_STATIC_METATYPE("QColor", QMetaType::QColor),
     QT_ADD_STATIC_METATYPE("QPalette", QMetaType::QPalette),
-    QT_ADD_STATIC_METATYPE("QIcon", QMetaType::QIcon),
     QT_ADD_STATIC_METATYPE("QImage", QMetaType::QImage),
     QT_ADD_STATIC_METATYPE("QPolygon", QMetaType::QPolygon),
     QT_ADD_STATIC_METATYPE("QRegion", QMetaType::QRegion),
     QT_ADD_STATIC_METATYPE("QBitmap", QMetaType::QBitmap),
     QT_ADD_STATIC_METATYPE("QCursor", QMetaType::QCursor),
-    QT_ADD_STATIC_METATYPE("QSizePolicy", QMetaType::QSizePolicy),
     QT_ADD_STATIC_METATYPE("QKeySequence", QMetaType::QKeySequence),
     QT_ADD_STATIC_METATYPE("QPen", QMetaType::QPen),
     QT_ADD_STATIC_METATYPE("QTextLength", QMetaType::QTextLength),
@@ -289,6 +286,10 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("QVector3D", QMetaType::QVector3D),
     QT_ADD_STATIC_METATYPE("QVector4D", QMetaType::QVector4D),
     QT_ADD_STATIC_METATYPE("QQuaternion", QMetaType::QQuaternion),
+
+    /* All Widgets types */
+    QT_ADD_STATIC_METATYPE("QIcon", QMetaType::QIcon),
+    QT_ADD_STATIC_METATYPE("QSizePolicy", QMetaType::QSizePolicy),
 
     /* All Metatype builtins */
     QT_ADD_STATIC_METATYPE("void*", QMetaType::VoidStar),
@@ -338,6 +339,7 @@ struct QMetaTypeGuiHelper
 #endif
 };
 Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeGuiHelper = 0;
+Q_CORE_EXPORT const QMetaTypeGuiHelper *qMetaTypeWidgetsHelper = 0;
 
 class QCustomTypeInfo
 {
@@ -399,14 +401,17 @@ void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
 */
 const char *QMetaType::typeName(int type)
 {
-    enum { GuiTypeCount = LastGuiType - FirstGuiType };
+    enum { GuiTypeCount = LastGuiType - FirstGuiType,
+       WidgetsTypeCount = LastWidgetsType - FirstWidgetsType };
 
     if (type >= 0 && type <= LastCoreType) {
         return types[type].typeName;
     } else if (type >= FirstGuiType && type <= LastGuiType) {
         return types[type - FirstGuiType + LastCoreType + 1].typeName;
+    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+        return types[type - FirstWidgetsType + GuiTypeCount + LastCoreType + 2].typeName;
     } else if (type >= FirstCoreExtType && type <= LastCoreExtType) {
-        return types[type - FirstCoreExtType + GuiTypeCount + LastCoreType + 2].typeName;
+        return types[type - FirstCoreExtType + GuiTypeCount + WidgetsTypeCount + LastCoreType + 3].typeName;
     } else if (type >= User) {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         QReadLocker locker(customTypesLock());
@@ -765,13 +770,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QBrush:
     case QMetaType::QColor:
     case QMetaType::QPalette:
-    case QMetaType::QIcon:
     case QMetaType::QImage:
     case QMetaType::QPolygon:
     case QMetaType::QRegion:
     case QMetaType::QBitmap:
     case QMetaType::QCursor:
-    case QMetaType::QSizePolicy:
     case QMetaType::QKeySequence:
     case QMetaType::QPen:
     case QMetaType::QTextLength:
@@ -786,6 +789,12 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].saveOp(stream, data);
+        break;
+    case QMetaType::QIcon:
+    case QMetaType::QSizePolicy:
+        if (!qMetaTypeWidgetsHelper)
+            return false;
+        qMetaTypeWidgetsHelper[type - FirstWidgetsType].saveOp(stream, data);
         break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
@@ -967,13 +976,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QBrush:
     case QMetaType::QColor:
     case QMetaType::QPalette:
-    case QMetaType::QIcon:
     case QMetaType::QImage:
     case QMetaType::QPolygon:
     case QMetaType::QRegion:
     case QMetaType::QBitmap:
     case QMetaType::QCursor:
-    case QMetaType::QSizePolicy:
     case QMetaType::QKeySequence:
     case QMetaType::QPen:
     case QMetaType::QTextLength:
@@ -988,6 +995,12 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         if (!qMetaTypeGuiHelper)
             return false;
         qMetaTypeGuiHelper[type - FirstGuiType].loadOp(stream, data);
+        break;
+    case QMetaType::QIcon:
+    case QMetaType::QSizePolicy:
+        if (!qMetaTypeWidgetsHelper)
+            return false;
+        qMetaTypeWidgetsHelper[type - FirstWidgetsType].loadOp(stream, data);
         break;
     default: {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
@@ -1218,6 +1231,10 @@ void *QMetaType::construct(int type, const void *copy)
         if (!qMetaTypeGuiHelper)
             return 0;
         constr = qMetaTypeGuiHelper[type - FirstGuiType].constr;
+    } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+        if (!qMetaTypeWidgetsHelper)
+            return 0;
+        constr = qMetaTypeWidgetsHelper[type - FirstWidgetsType].constr;
     } else {
         const QVector<QCustomTypeInfo> * const ct = customTypes();
         QReadLocker locker(customTypesLock());
@@ -1380,6 +1397,12 @@ void QMetaType::destroy(int type, void *data)
             if (!qMetaTypeGuiHelper)
                 return;
             destr = qMetaTypeGuiHelper[type - FirstGuiType].destr;
+        } else if (type >= FirstWidgetsType && type <= LastWidgetsType) {
+            Q_ASSERT(qMetaTypeWidgetsHelper);
+
+            if (!qMetaTypeWidgetsHelper)
+                return;
+            destr = qMetaTypeWidgetsHelper[type - FirstWidgetsType].destr;
         } else {
             QReadLocker locker(customTypesLock());
             if (type < User || !ct || ct->count() <= type - User)

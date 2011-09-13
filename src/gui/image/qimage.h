@@ -66,8 +66,8 @@ template <class T> class QVector;
 struct QImageData;
 class QImageDataMisc; // internal
 #ifndef QT_NO_IMAGE_TEXT
-#ifdef QT_DEPRECATED
-class Q_GUI_EXPORT QT_DEPRECATED QImageTextKeyLang {
+#if QT_DEPRECATED_SINCE(5, 0)
+class Q_GUI_EXPORT QImageTextKeyLang {
 public:
     QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
     QImageTextKeyLang() { }
@@ -134,9 +134,6 @@ public:
     explicit QImage(const char * const xpm[]);
 #endif
     explicit QImage(const QString &fileName, const char *format = 0);
-#ifndef QT_NO_CAST_FROM_ASCII
-    explicit QImage(const char *fileName, const char *format = 0);
-#endif
 
     QImage(const QImage &);
     ~QImage();
@@ -173,17 +170,11 @@ public:
     QRect rect() const;
 
     int depth() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numColors() const;
-#endif
     int colorCount() const;
     int bitPlaneCount() const;
 
     QRgb color(int i) const;
     void setColor(int i, QRgb c);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED void setNumColors(int);
-#endif
     void setColorCount(int);
 
     bool allGray() const;
@@ -192,9 +183,7 @@ public:
     uchar *bits();
     const uchar *bits() const;
     const uchar *constBits() const;
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED int numBytes() const;
-#endif
+
     int byteCount() const;
 
     uchar *scanLine(int);
@@ -277,57 +266,19 @@ public:
     QString text(const QString &key = QString()) const;
     void setText(const QString &key, const QString &value);
 
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED QString text(const char* key, const char* lang=0) const;
-    QT_DEPRECATED QList<QImageTextKeyLang> textList() const;
-    QT_DEPRECATED QStringList textLanguages() const;
-    QT_DEPRECATED QString text(const QImageTextKeyLang&) const;
-    QT_DEPRECATED void setText(const char* key, const char* lang, const QString&);
+#if QT_DEPRECATED_SINCE(5, 0)
+    inline QString text(const char* key, const char* lang=0) const;
+    inline QList<QImageTextKeyLang> textList() const;
+    inline QStringList textLanguages() const;
+    inline QString text(const QImageTextKeyLang&) const;
+    inline void setText(const char* key, const char* lang, const QString&);
 #endif
 #endif
 
-#ifdef QT3_SUPPORT
-    enum Endian { BigEndian, LittleEndian, IgnoreEndian };
-    QT3_SUPPORT_CONSTRUCTOR QImage(int width, int height, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT_CONSTRUCTOR QImage(const QSize&, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT_CONSTRUCTOR QImage(uchar *data, int w, int h, int depth, const QRgb *colortable, int numColors, Endian bitOrder);
-#ifdef Q_WS_QWS
-    QT3_SUPPORT_CONSTRUCTOR QImage(uchar *data, int w, int h, int depth, int pbl, const QRgb *colortable, int numColors, Endian bitOrder);
-#endif
-    inline QT3_SUPPORT Endian bitOrder() const {
-        Format f = format();
-        return f == Format_Mono ? BigEndian : (f == Format_MonoLSB ? LittleEndian : IgnoreEndian);
-    }
-    QT3_SUPPORT QImage convertDepth(int, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
-    QT3_SUPPORT QImage convertDepthWithPalette(int, QRgb* p, int pc, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
-    QT3_SUPPORT QImage convertBitOrder(Endian) const;
-    QT3_SUPPORT bool hasAlphaBuffer() const;
-    QT3_SUPPORT void setAlphaBuffer(bool);
-    QT3_SUPPORT uchar **jumpTable();
-    QT3_SUPPORT const uchar * const *jumpTable() const;
-    inline QT3_SUPPORT void reset() { *this = QImage(); }
-    static inline QT3_SUPPORT Endian systemByteOrder()
-        { return QSysInfo::ByteOrder == QSysInfo::BigEndian ? BigEndian : LittleEndian; }
-    inline QT3_SUPPORT QImage swapRGB() const { return rgbSwapped(); }
-    inline QT3_SUPPORT QImage mirror(bool horizontally = false, bool vertically = true) const
-        { return mirrored(horizontally, vertically); }
-    QT3_SUPPORT bool create(const QSize&, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    QT3_SUPPORT bool create(int width, int height, int depth, int numColors=0, Endian bitOrder=IgnoreEndian);
-    inline QT3_SUPPORT QImage xForm(const QMatrix &matrix) const { return transformed(QTransform(matrix)); }
-    inline QT3_SUPPORT QImage smoothScale(int w, int h, Qt::AspectRatioMode mode = Qt::IgnoreAspectRatio) const
-        { return scaled(QSize(w, h), mode, Qt::SmoothTransformation); }
-    inline QImage QT3_SUPPORT smoothScale(const QSize &s, Qt::AspectRatioMode mode = Qt::IgnoreAspectRatio) const
-        { return scaled(s, mode, Qt::SmoothTransformation); }
-    inline QT3_SUPPORT QImage scaleWidth(int w) const { return scaledToWidth(w); }
-    inline QT3_SUPPORT QImage scaleHeight(int h) const { return scaledToHeight(h); }
-    inline QT3_SUPPORT void invertPixels(bool invertAlpha) { invertAlpha ? invertPixels(InvertRgba) : invertPixels(InvertRgb); }
-    inline QT3_SUPPORT QImage copy(int x, int y, int w, int h, Qt::ImageConversionFlags) const
-        { return copy(QRect(x, y, w, h)); }
-    inline QT3_SUPPORT QImage copy(const QRect &rect, Qt::ImageConversionFlags) const
-        { return copy(rect); }
-    static QT3_SUPPORT Endian systemBitOrder();
-    inline QT3_SUPPORT_CONSTRUCTOR QImage(const QByteArray &data)
-        { d = 0; *this = QImage::fromData(data); }
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED inline int numColors() const;
+    QT_DEPRECATED inline void setNumColors(int);
+    QT_DEPRECATED inline int numBytes() const;
 #endif
 
 protected:
@@ -337,8 +288,8 @@ private:
     friend class QWSOnScreenSurface;
     QImageData *d;
 
-    friend class QRasterPixmapData;
-    friend class QBlittablePixmapData;
+    friend class QRasterPlatformPixmap;
+    friend class QBlittablePlatformPixmap;
     friend class QPixmapCacheEntry;
     friend Q_GUI_EXPORT qint64 qt_image_id(const QImage &image);
     friend const QVector<QRgb> *qt_image_colortable(const QImage &image);
@@ -358,16 +309,99 @@ Q_GUI_EXPORT_INLINE int QImage::pixelIndex(const QPoint &pt) const { return pixe
 Q_GUI_EXPORT_INLINE QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y()); }
 Q_GUI_EXPORT_INLINE void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
 
+#if QT_DEPRECATED_SINCE(5, 0)
+#ifndef QT_NO_IMAGE_TEXT
+inline QString QImage::text(const char* key, const char* lang) const
+{
+    if (!d)
+        return QString();
+    QString k = QString::fromAscii(key);
+    if (lang && *lang)
+        k += QLatin1Char('/') + QString::fromAscii(lang);
+    return d->text.value(k);
+}
+
+inline QList<QImageTextKeyLang> QImage::textList() const
+{
+    QList<QImageTextKeyLang> imageTextKeys;
+    if (!d)
+        return imageTextKeys;
+    QStringList keys = textKeys();
+    for (int i = 0; i < keys.size(); ++i) {
+        int index = keys.at(i).indexOf(QLatin1Char('/'));
+        if (index > 0) {
+            QImageTextKeyLang tkl;
+            tkl.key = keys.at(i).left(index).toAscii();
+            tkl.lang = keys.at(i).mid(index+1).toAscii();
+            imageTextKeys += tkl;
+        }
+    }
+
+    return imageTextKeys;
+}
+
+inline QStringList QImage::textLanguages() const
+{
+    if (!d)
+        return QStringList();
+    QStringList keys = textKeys();
+    QStringList languages;
+    for (int i = 0; i < keys.size(); ++i) {
+        int index = keys.at(i).indexOf(QLatin1Char('/'));
+        if (index > 0)
+            languages += keys.at(i).mid(index+1);
+    }
+
+    return languages;
+}
+
+inline QString QImage::text(const QImageTextKeyLang&) const
+{
+    if (!d)
+        return QString();
+    QString k = QString::fromAscii(kl.key);
+    if (!kl.lang.isEmpty())
+        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
+    return d->text.value(k);
+}
+
+inline void QImage::setText(const char* key, const char* lang, const QString&)
+{
+    if (!d)
+        return;
+    detach();
+
+    // In case detach() ran out of memory
+    if (!d)
+        return;
+
+    QString k = QString::fromAscii(key);
+    if (lang && *lang)
+        k += QLatin1Char('/') + QString::fromAscii(lang);
+    d->text.insert(k, s);
+}
+#endif
+inline int QImage::numColors() const
+{
+    return d ? d->colortable.size() : 0;
+}
+
+inline void QImage::setNumColors(int)
+{
+    setColorCount(numColors);
+}
+
+inline int QImage::numBytes() const
+{
+    return d ? d->nbytes : 0;
+}
+#endif
+
 // QImage stream functions
 
 #if !defined(QT_NO_DATASTREAM)
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QImage &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QImage &);
-#endif
-
-#ifdef QT3_SUPPORT
-Q_GUI_EXPORT QT3_SUPPORT void bitBlt(QImage* dst, int dx, int dy, const QImage* src,
-                                     int sx=0, int sy=0, int sw=-1, int sh=-1, Qt::ImageConversionFlags flags = Qt::AutoColor);
 #endif
 
 QT_END_NAMESPACE

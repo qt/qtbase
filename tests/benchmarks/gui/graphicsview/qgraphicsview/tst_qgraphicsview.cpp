@@ -40,11 +40,13 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QDebug>
-#include <QGraphicsItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QImage>
+#include <QtCore/QDebug>
+#include <QtWidgets/QGraphicsItem>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsView>
+#include <QtGui/QImage>
+#include <QtGui/QPixmapCache>
+#include <QtWidgets/QDesktopWidget>
 
 #include "chiptester/chiptester.h"
 //#define CALLGRIND_DEBUG

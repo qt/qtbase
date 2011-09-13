@@ -40,12 +40,13 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicsanchorlayout.h>
+#include <QtWidgets/qgraphicsanchorlayout.h>
 #include <private/qgraphicsanchorlayout_p.h>
-#include <QtGui/qgraphicswidget.h>
-#include <QtGui/qgraphicsproxywidget.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qwindowsstyle.h>
+#include <QtWidgets/qgraphicswidget.h>
+#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qwindowsstyle.h>
+
 
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT
@@ -209,13 +210,13 @@ void tst_QGraphicsAnchorLayout::simple()
 
 void tst_QGraphicsAnchorLayout::simple_center()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(50, 10);
-    QSizeF max(100, 10);
+    QSizeF maxSize(100, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "a");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "b");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "c");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -257,14 +258,14 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
     // Useful for testing simplification between A_left and B_left.
     // Unfortunately the only way to really test that now is to manually inspect the
     // simplified graph.
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(50, 10);
-    QSizeF max(100, 10);
+    QSizeF maxSize(100, 10);
 
-    QGraphicsWidget *A = createItem(min, pref, max, "A");
-    QGraphicsWidget *B = createItem(min, pref, max, "B");
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *A = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *B = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "a");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "b");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -303,13 +304,13 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
 
 void tst_QGraphicsAnchorLayout::layoutDirection()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(50, 10);
-    QSizeF max(100, 10);
+    QSizeF maxSize(100, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, QSizeF(100, 20), "c");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "a");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "b");
+    QGraphicsWidget *c = createItem(minSize, pref, QSizeF(100, 20), "c");
 
     a->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     b->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -358,15 +359,15 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
 
 void tst_QGraphicsAnchorLayout::diagonal()
 {
-    QSizeF min(10, 100);
+    QSizeF minSize(10, 100);
     QSizeF pref(70, 100);
-    QSizeF max(100, 100);
+    QSizeF maxSize(100, 100);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
-    QGraphicsWidget *c = createItem(min, pref, max, "C");
-    QGraphicsWidget *d = createItem(min, pref, max, "D");
-    QGraphicsWidget *e = createItem(min, pref, max, "E");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "C");
+    QGraphicsWidget *d = createItem(minSize, pref, maxSize, "D");
+    QGraphicsWidget *e = createItem(minSize, pref, maxSize, "E");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -902,12 +903,12 @@ void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
 
 void tst_QGraphicsAnchorLayout::proportionalPreferred()
 {
-    QSizeF min(0, 100);
+    QSizeF minSize(0, 100);
 
-    QGraphicsWidget *a = createItem(min, QSizeF(10, 100), QSizeF(20, 100), "A");
-    QGraphicsWidget *b = createItem(min, QSizeF(20, 100), QSizeF(30, 100), "B");
-    QGraphicsWidget *c = createItem(min, QSizeF(14, 100), QSizeF(20, 100), "C");
-    QGraphicsWidget *d = createItem(min, QSizeF(10, 100), QSizeF(20, 100), "D");
+    QGraphicsWidget *a = createItem(minSize, QSizeF(10, 100), QSizeF(20, 100), "A");
+    QGraphicsWidget *b = createItem(minSize, QSizeF(20, 100), QSizeF(30, 100), "B");
+    QGraphicsWidget *c = createItem(minSize, QSizeF(14, 100), QSizeF(20, 100), "C");
+    QGraphicsWidget *d = createItem(minSize, QSizeF(10, 100), QSizeF(20, 100), "D");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -969,17 +970,17 @@ void tst_QGraphicsAnchorLayout::proportionalPreferred()
 
 void tst_QGraphicsAnchorLayout::example()
 {
-    QSizeF min(30, 100);
+    QSizeF minSize(30, 100);
     QSizeF pref(210, 100);
-    QSizeF max(300, 100);
+    QSizeF maxSize(300, 100);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
-    QGraphicsWidget *c = createItem(min, pref, max, "C");
-    QGraphicsWidget *d = createItem(min, pref, max, "D");
-    QGraphicsWidget *e = createItem(min, pref, max, "E");
-    QGraphicsWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), max, "F");
-    QGraphicsWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), max, "G");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "C");
+    QGraphicsWidget *d = createItem(minSize, pref, maxSize, "D");
+    QGraphicsWidget *e = createItem(minSize, pref, maxSize, "E");
+    QGraphicsWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), maxSize, "F");
+    QGraphicsWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), maxSize, "G");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -1057,13 +1058,13 @@ void tst_QGraphicsAnchorLayout::example()
 
 void tst_QGraphicsAnchorLayout::setSpacing()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(20, 20);
-    QSizeF max(50, 50);
+    QSizeF maxSize(50, 50);
 
-    QGraphicsWidget *a = createItem(min, pref, max);
-    QGraphicsWidget *b = createItem(min, pref, max);
-    QGraphicsWidget *c = createItem(min, pref, max);
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize);
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize);
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize);
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->addCornerAnchors(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
@@ -1199,9 +1200,9 @@ int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * opti
 
 void tst_QGraphicsAnchorLayout::styleDefaults()
 {
-    QSizeF min (10, 10);
+    QSizeF minSize (10, 10);
     QSizeF pref(20, 20);
-    QSizeF max (50, 50);
+    QSizeF maxSize (50, 50);
 
     /*
     create this layout, where a,b have controlType QSizePolicy::RadioButton
@@ -1214,20 +1215,20 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     +-------+
     */
     QGraphicsScene scene;
-    QGraphicsWidget *a = createItem(min, pref, max);
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize);
     QSizePolicy spRadioButton = a->sizePolicy();
     spRadioButton.setControlType(QSizePolicy::RadioButton);
     a->setSizePolicy(spRadioButton);
 
-    QGraphicsWidget *b = createItem(min, pref, max);
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize);
     b->setSizePolicy(spRadioButton);
 
-    QGraphicsWidget *c = createItem(min, pref, max);
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize);
     QSizePolicy spPushButton = c->sizePolicy();
     spPushButton.setControlType(QSizePolicy::PushButton);
     c->setSizePolicy(spPushButton);
 
-    QGraphicsWidget *d = createItem(min, pref, max);
+    QGraphicsWidget *d = createItem(minSize, pref, maxSize);
     d->setSizePolicy(spPushButton);
 
     QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
@@ -1301,17 +1302,17 @@ static QGraphicsAnchorLayout *createAmbiguousS60Layout()
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(0);
 
-    QSizeF min(0, 10);
+    QSizeF minSize(0, 10);
     QSizeF pref(50, 10);
-    QSizeF max(100, 10);
+    QSizeF maxSize(100, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max, "c");
-    QGraphicsWidget *d = createItem(min, pref, max, "d");
-    QGraphicsWidget *e = createItem(min, pref, max, "e");
-    QGraphicsWidget *f = createItem(min, pref, max, "f");
-    QGraphicsWidget *g = createItem(min, pref, max, "g");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "a");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "b");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "c");
+    QGraphicsWidget *d = createItem(minSize, pref, maxSize, "d");
+    QGraphicsWidget *e = createItem(minSize, pref, maxSize, "e");
+    QGraphicsWidget *f = createItem(minSize, pref, maxSize, "f");
+    QGraphicsWidget *g = createItem(minSize, pref, maxSize, "g");
 
     //<!-- Trunk -->
     setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 10);
@@ -1681,15 +1682,15 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(0);
 
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(50, 10);
-    QSizeF max(QWIDGETSIZE_MAX, 10);
+    QSizeF maxSize(QWIDGETSIZE_MAX, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max, "c");
-    QGraphicsWidget *d = createItem(min, pref, max, "d");
-    QGraphicsWidget *e = createItem(min, pref, max, "e");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "a");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "b");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "c");
+    QGraphicsWidget *d = createItem(minSize, pref, maxSize, "d");
+    QGraphicsWidget *e = createItem(minSize, pref, maxSize, "e");
 
     //<!-- Trunk -->
     setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
@@ -1781,13 +1782,13 @@ void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
 */
 void tst_QGraphicsAnchorLayout::simplificationVsOrder()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(20, 10);
-    QSizeF max(50, 10);
+    QSizeF maxSize(50, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
-    QGraphicsWidget *c = createItem(min, pref, max, "C");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "C");
 
     QGraphicsWidget frame;
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
@@ -1822,12 +1823,12 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
 
 void tst_QGraphicsAnchorLayout::parallelSimplificationOfCenter()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(20, 10);
-    QSizeF max(50, 10);
+    QSizeF maxSize(50, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
 
     QGraphicsWidget parent;
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&parent);
@@ -1851,13 +1852,13 @@ void tst_QGraphicsAnchorLayout::parallelSimplificationOfCenter()
 */
 void tst_QGraphicsAnchorLayout::simplificationVsRedundance()
 {
-    QSizeF min(10, 10);
+    QSizeF minSize(10, 10);
     QSizeF pref(20, 10);
-    QSizeF max(50, 30);
+    QSizeF maxSize(50, 30);
 
-    QGraphicsWidget *a = createItem(min, pref, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
-    QGraphicsWidget *c = createItem(min, pref, max, "C");
+    QGraphicsWidget *a = createItem(minSize, pref, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *c = createItem(minSize, pref, maxSize, "C");
 
     QGraphicsWidget frame;
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
@@ -1916,13 +1917,13 @@ void tst_QGraphicsAnchorLayout::spacingPersistency()
 */
 void tst_QGraphicsAnchorLayout::snakeParallelWithLayout()
 {
-    QSizeF min(10, 20);
+    QSizeF minSize(10, 20);
     QSizeF pref(50, 20);
-    QSizeF max(100, 20);
+    QSizeF maxSize(100, 20);
 
-    QGraphicsWidget *a = createItem(max, max, max, "A");
-    QGraphicsWidget *b = createItem(min, pref, max, "B");
-    QGraphicsWidget *c = createItem(max, max, max, "C");
+    QGraphicsWidget *a = createItem(maxSize, maxSize, maxSize, "A");
+    QGraphicsWidget *b = createItem(minSize, pref, maxSize, "B");
+    QGraphicsWidget *c = createItem(maxSize, maxSize, maxSize, "C");
 
     QGraphicsWidget parent;
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&parent);
@@ -1944,9 +1945,9 @@ void tst_QGraphicsAnchorLayout::snakeParallelWithLayout()
 
     // Note that A and C are fixed in the maximum size
     QCOMPARE(l->geometry(), QRectF(QPointF(0, 0), QSizeF(150, 60)));
-    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), max));
+    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), maxSize));
     QCOMPARE(b->geometry(), QRectF(QPointF(50, 20), pref));
-    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), max));
+    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), maxSize));
 
     // Then, we change the "snake" to be in parallel with half of the layout
     delete l->anchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
@@ -1955,9 +1956,9 @@ void tst_QGraphicsAnchorLayout::snakeParallelWithLayout()
     parent.resize(l->effectiveSizeHint(Qt::PreferredSize));
 
     QCOMPARE(l->geometry(), QRectF(QPointF(0, 0), QSizeF(300, 60)));
-    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), max));
+    QCOMPARE(a->geometry(), QRectF(QPointF(0, 0), maxSize));
     QCOMPARE(b->geometry(), QRectF(QPointF(50, 20), pref));
-    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), max));
+    QCOMPARE(c->geometry(), QRectF(QPointF(50, 40), maxSize));
 }
 
 /*

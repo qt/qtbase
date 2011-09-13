@@ -40,10 +40,10 @@
 ****************************************************************************/
 #include "qplatformcursor_qpa.h"
 
-#include <QWidget>
 #include <QPainter>
 #include <QBitmap>
-#include <QApplication>
+#include <QGuiApplication>
+#include <private/qguiapplication_p.h>
 
 #include <QDebug>
 
@@ -97,6 +97,18 @@ QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
         : screen(scr)
 {
     QPlatformCursorPrivate::instances.append(this);
+}
+
+QPoint QPlatformCursor::pos() const
+{
+    // As a fallback return the last mouse position seen by QGuiApplication.
+    return QGuiApplicationPrivate::lastCursorPosition.toPoint();
+}
+
+void QPlatformCursor::setPos(const QPoint &pos)
+{
+    Q_UNUSED(pos);
+    qWarning("This plugin does not support QCursor::setPos()");
 }
 
 // End of display and pointer event handling code
@@ -566,7 +578,7 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
     if (!width || !height || !data || !mask || cursorImage.isNull())
         return;
 
-    cursorImage.setNumColors(3);
+    cursorImage.setColorCount(3);
     cursorImage.setColor(0, 0xff000000);
     cursorImage.setColor(1, 0xffffffff);
     cursorImage.setColor(2, 0x00000000);

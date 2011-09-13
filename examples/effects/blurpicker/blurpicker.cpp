@@ -40,7 +40,7 @@
 
 #include "blurpicker.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "blureffect.h"
 

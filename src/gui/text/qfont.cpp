@@ -48,8 +48,9 @@
 #include "qpainter.h"
 #include "qhash.h"
 #include "qdatastream.h"
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "qstringlist.h"
+#include "qscreen.h"
 
 #include "qthread.h"
 #include "qthreadstorage.h"
@@ -65,19 +66,12 @@
 #include "qx11info_x11.h"
 #include <private/qt_x11_p.h>
 #endif
-#ifdef Q_WS_QWS
-#include "qscreen_qws.h"
-#if !defined(QT_NO_QWS_QPF2)
-#include <qfile.h>
-#include "qfontengine_qpf_p.h"
-#endif
-#endif
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
 #endif
 #ifdef Q_WS_QPA
 #include <QtGui/qplatformscreen_qpa.h>
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #endif
 
 #include <QtCore/QMutexLocker>
@@ -173,20 +167,11 @@ Q_GUI_EXPORT int qt_defaultDpiX()
 #elif defined(Q_WS_MAC)
     extern float qt_mac_defaultDpi_x(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_x();
-#elif defined(Q_WS_QWS)
-    if (!qt_screen)
-        return 72;
-    QScreen *screen = qt_screen;
-    const QList<QScreen*> subScreens = qt_screen->subScreens();
-    if (!subScreens.isEmpty())
-        screen = subScreens.at(0);
-    dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
-    if (pi) {
-        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
         const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->physicalSize();
+        const QSize physicalSize = screen->handle()->physicalSize();
         dpi = qRound(screenSize.width() / (physicalSize.width() / qreal(25.4)));
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi
@@ -212,20 +197,11 @@ Q_GUI_EXPORT int qt_defaultDpiY()
 #elif defined(Q_WS_MAC)
     extern float qt_mac_defaultDpi_y(); //qpaintdevice_mac.cpp
     dpi = qt_mac_defaultDpi_y();
-#elif defined(Q_WS_QWS)
-    if (!qt_screen)
-        return 72;
-    QScreen *screen = qt_screen;
-    const QList<QScreen*> subScreens = qt_screen->subScreens();
-    if (!subScreens.isEmpty())
-        screen = subScreens.at(0);
-    dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
 #elif defined(Q_WS_QPA)
-    QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
-    if (pi) {
-        QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
         const QSize screenSize = screen->geometry().size();
-        const QSize physicalSize = screen->physicalSize();
+        const QSize physicalSize = screen->handle()->physicalSize();
         dpi = qRound(screenSize.height() / (physicalSize.height() / qreal(25.4)));
     } else {
         //PI has not been initialised, or it is being initialised. Give a default dpi
@@ -453,9 +429,9 @@ QFontEngineData::~QFontEngineData()
     Use QFontMetrics to get measurements, e.g. the pixel length of a
     string using QFontMetrics::width().
 
-    Note that a QApplication instance must exist before a QFont can be
+    Note that a QGuiApplication instance must exist before a QFont can be
     used. You can set the application's default font with
-    QApplication::setFont().
+    QGuiApplication::setFont().
 
     If a chosen font does not include all the characters that
     need to be displayed, QFont will try to find the characters in the
@@ -786,10 +762,10 @@ void QFont::detach()
 /*!
     Constructs a font object that uses the application's default font.
 
-    \sa QApplication::setFont(), QApplication::font()
+    \sa QGuiApplication::setFont(), QGuiApplication::font()
 */
 QFont::QFont()
-    : d(QApplication::font().d.data()), resolve_mask(0)
+    : d(QGuiApplication::font().d.data()), resolve_mask(0)
 {
 }
 
@@ -809,7 +785,7 @@ QFont::QFont()
     algorithm.
 
     \sa Weight, setFamily(), setPointSize(), setWeight(), setItalic(),
-    setStyleHint() QApplication::font()
+    setStyleHint() QGuiApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)
@@ -1132,18 +1108,6 @@ int QFont::pixelSize() const
 {
     return d->request.pixelSize;
 }
-
-#ifdef QT3_SUPPORT
-/*! \obsolete
-
-  Sets the logical pixel height of font characters when shown on
-  the screen to \a pixelSize.
-*/
-void QFont::setPixelSizeFloat(qreal pixelSize)
-{
-    setPixelSize((int)pixelSize);
-}
-#endif
 
 /*!
   \fn bool QFont::italic() const
@@ -1911,43 +1875,6 @@ QFont QFont::resolve(const QFont &other) const
     \fn void QFont::resolve(uint mask)
     \internal
 */
-
-#ifdef QT3_SUPPORT
-
-/*! \obsolete
-
-  Please use QApplication::font() instead.
-*/
-QFont QFont::defaultFont()
-{
-    return QApplication::font();
-}
-
-/*! \obsolete
-
-  Please use QApplication::setFont() instead.
-*/
-void QFont::setDefaultFont(const QFont &f)
-{
-    QApplication::setFont(f);
-}
-
-/*!
-    \fn qreal QFont::pointSizeFloat() const
-    \compat
-
-    Use pointSizeF() instead.
-*/
-
-/*!
-    \fn void QFont::setPointSizeFloat(qreal size)
-    \compat
-
-    Use setPointSizeF() instead.
-*/
-#endif
-
-
 
 
 /*****************************************************************************

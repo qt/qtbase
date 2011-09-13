@@ -45,6 +45,7 @@
 #include <QDialog>
 #include <QImage>
 #include <QPaintEngine>
+#include <QTileRules>
 #include <math.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -129,8 +130,8 @@ struct PrimitiveSet {
 
 QPixmap rasterPixmap(int width, int height)
 {
-    QPixmapData *data =
-        new QRasterPixmapData(QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
 
     data->resize(width, height);
 
@@ -144,8 +145,8 @@ QPixmap rasterPixmap(const QSize &size)
 
 QPixmap rasterPixmap(const QImage &image)
 {
-    QPixmapData *data =
-        new QRasterPixmapData(QPixmapData::PixmapType);
+    QPlatformPixmap *data =
+        new QRasterPlatformPixmap(QPlatformPixmap::PixmapType);
 
     data->fromImage(image, Qt::AutoColor);
 

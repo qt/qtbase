@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#if defined(Q_OS_MAC)
-# include <OpenGL/gl.h>
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
 #else
-# include <GL/gl.h>
+#include <GL/gl.h>
 #endif
 
 int main(int, char **)

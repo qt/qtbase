@@ -67,7 +67,7 @@ public:
     static IDirectFB *dfbInterface();
     static IDirectFBDisplayLayer *dfbDisplayLayer(int display = DLID_PRIMARY);
 
-    static IDirectFBSurface *dfbSurfaceForPixmapData(QPixmapData *);
+    static IDirectFBSurface *dfbSurfaceForPlatformPixmap(QPlatformPixmap *);
 
     static Qt::MouseButton mouseButton(DFBInputDeviceButtonIdentifier identifier);
     static Qt::MouseButtons mouseButtons(DFBInputDeviceButtonMask mask);

@@ -42,34 +42,33 @@
 #include "qwaylandnativeinterface.h"
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/QScreen>
 
 #include "windowmanager_integration/qwaylandwindowmanagerintegration.h"
 
-#include <QtGui/private/qapplication_p.h>
-#include <QDebug>
-
-void *QWaylandNativeInterface::nativeResourceForWidget(const QByteArray &resourceString, QWidget *widget)
+void *QWaylandNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
 
     if (lowerCaseResource == "display")
-	return qPlatformScreenForWidget(widget)->display()->wl_display();
+	return qPlatformScreenForWindow(window)->display()->wl_display();
     if (lowerCaseResource == "surface") {
-	return ((QWaylandWindow *) widget->platformWindow())->wl_surface();
+	return ((QWaylandWindow *) window->handle())->wl_surface();
     }
 
     return NULL;
 }
 
 
-QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWidget(QWidget *widget)
+QWaylandScreen * QWaylandNativeInterface::qPlatformScreenForWindow(QWindow *window)
 {
     QWaylandScreen *screen;
 
-    if (widget) {
-        screen = static_cast<QWaylandScreen *>(QPlatformScreen::platformScreenForWidget(widget));
+    if (window) {
+        screen = static_cast<QWaylandScreen *>(window->screen()->handle());
     } else {
-        screen = static_cast<QWaylandScreen *>(QApplicationPrivate::platformIntegration()->screens()[0]);
+        screen = static_cast<QWaylandScreen *>(QGuiApplication::primaryScreen()->handle());
     }
     return screen;
 }

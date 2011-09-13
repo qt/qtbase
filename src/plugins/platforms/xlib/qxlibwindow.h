@@ -49,6 +49,7 @@
 
 #include <QObject>
 #include <QImage>
+#include <QHash>
 
 struct QXlibMWMHints {
     ulong flags, functions, decorations;
@@ -86,7 +87,7 @@ enum {
 class QXlibWindow : public QPlatformWindow
 {
 public:
-    QXlibWindow(QWidget *window);
+    QXlibWindow(QWindow *window);
     ~QXlibWindow();
 
 
@@ -100,7 +101,6 @@ public:
     void handleFocusOutEvent();
 
     void resizeEvent(XConfigureEvent *configure_event);
-    void paintEvent();
 
     void requestActivateWindow();
 
@@ -108,6 +108,8 @@ public:
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     Qt::WindowFlags windowFlags() const;
+    Qt::WindowState setWindowState(Qt::WindowState state);
+
     void setVisible(bool visible);
     WId winId() const;
     void setParent(const QPlatformWindow *window);
@@ -117,14 +119,14 @@ public:
 
     void setCursor(const Cursor &cursor);
 
-    QPlatformGLContext *glContext() const;
-
     Window xWindow() const;
     GC graphicsContext() const;
 
-    inline uint depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
+    QSurfaceFormat format() const;
     Visual* visual() const { return mVisual; }
+    int depth() const { return mDepth; }
+
+    static QXlibWindow *platformWindowForXWindow(Window window);
 
 protected:
     QVector<Atom> getNetWmState() const;
@@ -134,8 +136,6 @@ protected:
     void doSizeHints();
 
 private:
-    QPlatformWindowFormat correctColorBuffers(const QPlatformWindowFormat &windowFormat)const;
-
     Window x_window;
     GC gc;
 
@@ -145,9 +145,11 @@ private:
 
     GC createGC();
 
-    QPlatformGLContext *mGLContext;
+    QPlatformOpenGLContext *mGLContext;
     QXlibScreen *mScreen;
     Qt::WindowFlags mWindowFlags;
+
+    static QHash<Window, QXlibWindow *> windowMap;
 };
 
 #endif

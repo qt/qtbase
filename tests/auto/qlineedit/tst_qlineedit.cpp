@@ -3704,7 +3704,7 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
 
-    QTest::keyClick(0, Qt::Key_P);
+    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_P);
     QCOMPARE(spy.count(), 1);
 }
 

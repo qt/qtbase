@@ -42,22 +42,22 @@
 #ifndef QWINDOWSURFACE_DIRECTFB_H
 #define QWINDOWSURFACE_DIRECTFB_H
 
-#include <QtGui/private/qwindowsurface_p.h>
+#include <qplatformbackingstore_qpa.h>
 #include <private/qpixmap_blitter_p.h>
 
 #include <directfb.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDirectFbWindowSurface : public QWindowSurface
+class QDirectFbWindowSurface : public QPlatformBackingStore
 {
 public:
-    QDirectFbWindowSurface(QWidget *window, WId wid);
+    QDirectFbWindowSurface(QWindow *window);
     ~QDirectFbWindowSurface();
 
     QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void resize (const QSize &size);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize (const QSize &size, const QRegion &staticContents);
     bool scroll(const QRegion &area, int dx, int dy);
 
     void beginPaint(const QRegion &region);
@@ -67,7 +67,7 @@ private:
     void lockSurfaceToImage();
 
     QPixmap *m_pixmap;
-    QBlittablePixmapData *m_pmdata;
+    QBlittablePlatformPixmap *m_pmdata;
 
     IDirectFBSurface *m_dfbSurface;
 };

@@ -3,7 +3,7 @@ TARGET = flightinfo
 SOURCES = flightinfo.cpp
 FORMS += form.ui
 RESOURCES = flightinfo.qrc
-QT += network
+QT += network widgets
 
 symbian {
     TARGET.UID3 = 0xA000CF74

@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtGui/private/qapplication_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QPlatformFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
 void QFont::initialize()
 {
+    QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
 }
 
 void QFont::cleanup()
@@ -89,7 +90,7 @@ QString QFont::defaultFamily() const
             familyName = QString::fromLatin1("helvetica");
     }
 
-    QStringList list = QApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(familyName,QFont::StyleNormal,QFont::StyleHint(d->request.styleHint),QUnicodeTables::Common);
+    QStringList list = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(familyName,QFont::StyleNormal,QFont::StyleHint(d->request.styleHint),QUnicodeTables::Common);
     if (list.size()) {
         familyName = list.at(0);
     }

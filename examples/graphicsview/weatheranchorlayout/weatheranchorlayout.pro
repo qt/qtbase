@@ -12,6 +12,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES weatheranchorlayout.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/weatheranchorlayout
 INSTALLS += target sources
 
+QT += widgets
 symbian: CONFIG += qt_example
 maemo5: CONFIG += qt_example
 simulator: warning(This example might not fully work on Simulator platform)

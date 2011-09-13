@@ -11,6 +11,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/6_treeview
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets
 maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)

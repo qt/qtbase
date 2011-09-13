@@ -46,7 +46,7 @@
 #include "rectbutton.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 
 int main(int argc, char **argv)
 {

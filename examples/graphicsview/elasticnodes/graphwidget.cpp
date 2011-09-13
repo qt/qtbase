@@ -42,7 +42,7 @@
 #include "edge.h"
 #include "node.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include <math.h>
 

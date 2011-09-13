@@ -1,5 +1,4 @@
 include (../xcomposite_share/xcomposite_share.pri)
-include (../../../glxconvenience/glxconvenience.pri)
 
 LIBS += -lXcomposite
 SOURCES += \

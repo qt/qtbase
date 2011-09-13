@@ -172,14 +172,14 @@ void tst_QTabBar::setIconSize_data()
     QTest::addColumn<int>("sizeToSet");
     QTest::addColumn<int>("expectedWidth");
 
-    int iconDefault = qApp->style()->pixelMetric(QStyle::PM_TabBarIconSize);
-    int small = qApp->style()->pixelMetric(QStyle::PM_SmallIconSize);
-    int large = qApp->style()->pixelMetric(QStyle::PM_LargeIconSize);
+    const int iconDefault = qApp->style()->pixelMetric(QStyle::PM_TabBarIconSize);
+    const int smallIconSize = qApp->style()->pixelMetric(QStyle::PM_SmallIconSize);
+    const int largeIconSize = qApp->style()->pixelMetric(QStyle::PM_LargeIconSize);
     QTest::newRow("default") << -1 << iconDefault;
     QTest::newRow("zero") << 0 << 0;
     QTest::newRow("same as default") << iconDefault << iconDefault;
-    QTest::newRow("large") << large << large;
-    QTest::newRow("small") << small << small;
+    QTest::newRow("large") << largeIconSize << largeIconSize;
+    QTest::newRow("small") << smallIconSize << smallIconSize;
 }
 
 void tst_QTabBar::setIconSize()

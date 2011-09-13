@@ -4,7 +4,7 @@
 
 load(qttest_p4)
 TEMPLATE = app
-
+QT += widgets
 # Input
 SOURCES += tst_qstyleoption.cpp
 

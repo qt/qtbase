@@ -1,5 +1,3 @@
-include (../../../eglconvenience/eglconvenience.pri)
-
 LIBS += -lwayland-egl -lEGL
 INCLUDEPATH += $$PWD
 SOURCES += $$PWD/qwaylandeglintegration.cpp \

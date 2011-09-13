@@ -6,6 +6,8 @@ build_all:!build_pass {
     CONFIG += release
 }
 
+QT -= gui
+
 DESTDIR         = ../../../bin
 
 SOURCES         = main.cpp

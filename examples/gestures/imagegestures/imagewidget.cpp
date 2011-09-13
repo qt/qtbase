@@ -41,7 +41,7 @@
 
 #include "imagewidget.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 //! [constructor]
 ImageWidget::ImageWidget(QWidget *parent)

@@ -44,7 +44,7 @@
 
 #include "arthurwidgets.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 class HoverPoints;
 

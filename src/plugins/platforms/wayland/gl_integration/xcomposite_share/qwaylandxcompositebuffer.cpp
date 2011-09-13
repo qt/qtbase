@@ -42,6 +42,7 @@
 #include "qwaylandxcompositebuffer.h"
 
 #include "wayland-client.h"
+#include "wayland-xcomposite-client-protocol.h"
 
 QWaylandXCompositeBuffer::QWaylandXCompositeBuffer(wl_xcomposite *xcomposite, uint32_t window, const QSize &size, wl_visual *visual)
     :mSize(size)

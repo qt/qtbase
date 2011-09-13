@@ -4,7 +4,7 @@ HEADERS       = ../connection.h \
 SOURCES       = customsqlmodel.cpp \
                 editablesqlmodel.cpp \
                 main.cpp
-QT           += sql
+QT           += sql widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/querymodel

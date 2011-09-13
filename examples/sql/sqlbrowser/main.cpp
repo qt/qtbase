@@ -42,7 +42,7 @@
 #include "browser.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtSql>
 
 void addConnectionsFromCommandline(const QStringList &args, Browser *browser)

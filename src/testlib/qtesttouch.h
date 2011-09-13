@@ -51,10 +51,10 @@
 #include <QtTest/qtestassert.h>
 #include <QtTest/qtestsystem.h>
 #include <QtTest/qtestspontaneevent.h>
-
+#include <QtGui/QWindowSystemInterface>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 
 QT_BEGIN_HEADER
 
@@ -84,6 +84,14 @@ namespace QTest
             p.setState(Qt::TouchPointPressed);
             return *this;
         }
+        QTouchEventSequence& press(int touchId, const QPoint &pt, QWindow *window = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(window, pt));
+            p.setState(Qt::TouchPointPressed);
+            return *this;
+        }
+
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
@@ -91,10 +99,24 @@ namespace QTest
             p.setState(Qt::TouchPointMoved);
             return *this;
         }
+        QTouchEventSequence& move(int touchId, const QPoint &pt, QWindow *window = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(window, pt));
+            p.setState(Qt::TouchPointMoved);
+            return *this;
+        }
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
             p.setScreenPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointReleased);
+            return *this;
+        }
+        QTouchEventSequence& release(int touchId, const QPoint &pt, QWindow *window = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(window, pt));
             p.setState(Qt::TouchPointReleased);
             return *this;
         }
@@ -108,6 +130,10 @@ namespace QTest
     private:
         QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
             : targetWidget(widget), deviceType(aDeviceType)
+        {
+        }
+        QTouchEventSequence(QWindow *window, QTouchEvent::DeviceType aDeviceType)
+            : targetWindow(window), deviceType(aDeviceType)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);
@@ -125,16 +151,53 @@ namespace QTest
                 return widget->mapToGlobal(pt);
             return targetWidget ? targetWidget->mapToGlobal(pt) : pt;
         }
+        QPoint mapToScreen(QWindow *window, const QPoint &pt)
+        {
+            if(window)
+                return window->mapToGlobal(pt);
+            return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
+        }
+        QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& point)
+        {
+            QWindowSystemInterface::TouchPoint p;
+            p.id = point.id();
+            p.isPrimary = point.isPrimary();
+            p.normalPosition = point.screenRect().topLeft();
+            p.area = point.screenRect();
+            p.pressure = point.pressure();
+            p.state = point.state();
+            return p;
+        }
+        QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
+        {
+            QList<struct QWindowSystemInterface::TouchPoint> newList;
+
+            foreach(QTouchEvent::TouchPoint p, pointList)
+            {
+                newList.append(touchPoint(p));
+            }
+            return newList;
+        }
         void commit()
         {
-            qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
-            targetWidget = 0;
+            if(targetWindow)
+            {
+                QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None,deviceType, touchPointList(points.values()));
+                targetWindow = 0;
+            }
+            else if(targetWidget)
+            {
+                qt_translateRawTouchEvent(targetWidget, deviceType, points.values());
+                targetWidget = 0;
+            }
         }
 
         QMap<int, QTouchEvent::TouchPoint> points;
         QWidget *targetWidget;
+        QWindow *targetWindow;
         QTouchEvent::DeviceType deviceType;
         friend QTouchEventSequence touchEvent(QWidget *, QTouchEvent::DeviceType);
+        friend QTouchEventSequence touchEvent(QWindow *, QTouchEvent::DeviceType);
     };
 
     inline
@@ -142,6 +205,12 @@ namespace QTest
                                    QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
     {
         return QTouchEventSequence(widget, deviceType);
+    }
+    inline
+    QTouchEventSequence touchEvent(QWindow *window = 0,
+                                   QTouchEvent::DeviceType deviceType = QTouchEvent::TouchScreen)
+    {
+        return QTouchEventSequence(window, deviceType);
     }
 
 }

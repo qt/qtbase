@@ -58,12 +58,15 @@ class QXlibScreen;
 class QXlibIntegration : public QPlatformIntegration
 {
 public:
-    QXlibIntegration(bool useOpenGL = false);
+    QXlibIntegration();
 
     bool hasCapability(Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+
+    QPlatformWindow *createPlatformWindow(QWindow *window) const;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+
+    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
@@ -75,14 +78,12 @@ public:
     QPlatformNativeInterface *nativeInterface() const;
 
 private:
-    bool hasOpenGL() const;
-
-    bool mUseOpenGL;
     QXlibScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
     QPlatformClipboard *mClipboard;
     QPlatformNativeInterface *mNativeInterface;
+    QAbstractEventDispatcher *mEventDispatcher;
 };
 
 QT_END_NAMESPACE

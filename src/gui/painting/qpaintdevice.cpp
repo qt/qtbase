@@ -43,8 +43,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
 QPaintDevice::QPaintDevice()
 {
     painters = 0;
@@ -55,7 +53,6 @@ QPaintDevice::~QPaintDevice()
     if (paintingActive())
         qWarning("QPaintDevice: Cannot destroy paint device that is being "
                   "painted");
-    qt_painter_removePaintDevice(this);
 }
 
 
@@ -66,6 +63,20 @@ int QPaintDevice::metric(PaintDeviceMetric) const
     return 0;
 }
 #endif
+
+void QPaintDevice::init(QPainter *) const
+{
+}
+
+QPaintDevice *QPaintDevice::redirected(QPoint *) const
+{
+    return 0;
+}
+
+QPainter *QPaintDevice::sharedPainter() const
+{
+    return 0;
+}
 
 Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric)
 {

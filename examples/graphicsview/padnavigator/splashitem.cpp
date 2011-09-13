@@ -40,7 +40,7 @@
 
 #include "splashitem.h"
 
-#include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 //! [0]
 SplashItem::SplashItem(QGraphicsItem *parent)

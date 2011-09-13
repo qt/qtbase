@@ -40,10 +40,10 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicsanchorlayout.h>
-#include <QtGui/qgraphicslinearlayout.h>
-#include <QtGui/qgraphicswidget.h>
-#include <QtGui/qgraphicsview.h>
+#include <QtWidgets/qgraphicsanchorlayout.h>
+#include <QtWidgets/qgraphicslinearlayout.h>
+#include <QtWidgets/qgraphicswidget.h>
+#include <QtWidgets/qgraphicsview.h>
 
 class tst_QGraphicsAnchorLayout : public QObject
 {

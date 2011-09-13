@@ -10,3 +10,4 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/embedded
 INSTALLS += sources
 
 symbian: CONFIG += qt_demo
+QT += widgets widgets

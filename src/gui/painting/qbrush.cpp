@@ -48,7 +48,7 @@
 #include "qline.h"
 #include "qdebug.h"
 #include <QtCore/qcoreapplication.h>
-#include "private/qstylehelper_p.h"
+#include "private/qhexstring_p.h"
 #include <QtCore/qnumeric.h>
 
 QT_BEGIN_NAMESPACE
@@ -705,36 +705,6 @@ void QBrush::setColor(const QColor &c)
 
     Sets the brush color to the given \a color.
 */
-
-
-#ifdef QT3_SUPPORT
-
-/*!
-    \fn void QBrush::setPixmap(const QPixmap &pixmap)
-
-    \compat
-
-    Sets a custom pattern for this brush.
-
-    Use setTexture() instead.
-*/
-
-/*!
-    \fn QPixmap *QBrush::pixmap() const
-
-    Returns a pointer to the custom brush pattern.
-
-    Use texture() instead.
-*/
-QPixmap *QBrush::pixmap() const
-{
-    if (d->style != Qt::TexturePattern)
-        return 0;
-    QTexturedBrushData *data  = static_cast<QTexturedBrushData*>(d.data());
-    QPixmap &pixmap = data->pixmap();
-    return pixmap.isNull() ? 0 : &pixmap;
-}
-#endif
 
 /*!
     \fn QPixmap QBrush::texture() const

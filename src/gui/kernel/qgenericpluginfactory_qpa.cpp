@@ -41,7 +41,7 @@
 
 #include "qgenericpluginfactory_qpa.h"
 
-#include "qapplication.h"
+#include "qguiapplication.h"
 #include "private/qfactoryloader_p.h"
 #include "qgenericplugin_qpa.h"
 #include "qdebug.h"

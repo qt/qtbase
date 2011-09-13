@@ -47,7 +47,7 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience of
-// the QtOpenGL and QtOpenVG modules.  This header file may change from
+// the QtGui and QtOpenVG modules.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
@@ -109,7 +109,7 @@ private:
     static void setCurrentContext(QEgl::API api, QEglContext *context);
 
     friend class QMeeGoGraphicsSystem;
-    friend class QMeeGoPixmapData;
+    friend class QMeeGoPlatformPixmap;
 };
 
 QT_END_NAMESPACE

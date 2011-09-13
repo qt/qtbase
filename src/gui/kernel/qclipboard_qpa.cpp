@@ -44,7 +44,7 @@
 #ifndef QT_NO_CLIPBOARD
 
 #include "qmimedata.h"
-#include "private/qapplication_p.h"
+#include "private/qguiapplication_p.h"
 #include "qplatformclipboard_qpa.h"
 
 QT_BEGIN_NAMESPACE
@@ -53,7 +53,7 @@ QT_USE_NAMESPACE
 
 void QClipboard::clear(Mode mode)
 {
-    setMimeData(0,mode);
+    setMimeData(0, mode);
 }
 
 
@@ -64,14 +64,14 @@ bool QClipboard::event(QEvent *e)
 
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) return 0;
     return clipboard->mimeData(mode);
 }
 
 void QClipboard::setMimeData(QMimeData* src, Mode mode)
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) return;
 
     clipboard->setMimeData(src,mode);
@@ -81,15 +81,14 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
 
 bool QClipboard::supportsMode(Mode mode) const
 {
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     return clipboard->supportsMode(mode);
 }
 
 bool QClipboard::ownsMode(Mode mode) const
 {
-    if (mode == Clipboard)
-        qWarning("QClipboard::ownsClipboard: UNIMPLEMENTED!");
-    return false;
+    QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
+    return clipboard->ownsMode(mode);
 }
 
 void QClipboard::connectNotify( const char * )

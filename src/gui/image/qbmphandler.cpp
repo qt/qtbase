@@ -692,9 +692,14 @@ bool qt_read_dib(QDataStream &s, QImage &image)
     return read_dib_body(s, bi, -1, -BMP_FILEHDR_SIZE, image);
 }
 
-QBmpHandler::QBmpHandler()
-    : state(Ready)
+QBmpHandler::QBmpHandler(InternalFormat fmt) :
+    m_format(fmt), state(Ready)
 {
+}
+
+QByteArray QBmpHandler::formatName() const
+{
+    return m_format == BmpFormat ? "bmp" : "dib";
 }
 
 bool QBmpHandler::readHeader()
@@ -709,7 +714,7 @@ bool QBmpHandler::readHeader()
     s.setByteOrder(QDataStream::LittleEndian);
 
     // read BMP file header
-    if (!read_dib_fileheader(s, fileHeader))
+    if (m_format == BmpFormat && !read_dib_fileheader(s, fileHeader))
         return false;
 
     // read BMP info header
@@ -722,11 +727,11 @@ bool QBmpHandler::readHeader()
 
 bool QBmpHandler::canRead() const
 {
-    if (state == Ready && !canRead(device()))
+    if (m_format == BmpFormat && state == Ready && !canRead(device()))
         return false;
 
     if (state != Error) {
-        setFormat("bmp");
+        setFormat(formatName());
         return true;
     }
 
@@ -778,6 +783,12 @@ bool QBmpHandler::read(QImage *image)
 
 bool QBmpHandler::write(const QImage &img)
 {
+    if (m_format == DibFormat) {
+        QDataStream dibStream(device());
+        dibStream.setByteOrder(QDataStream::LittleEndian); // Intel byte order
+        return qt_write_dib(dibStream, img);
+    }
+
     QImage image;
     switch (img.format()) {
     case QImage::Format_ARGB8565_Premultiplied:
@@ -875,7 +886,7 @@ void QBmpHandler::setOption(ImageOption option, const QVariant &value)
 
 QByteArray QBmpHandler::name() const
 {
-    return "bmp";
+    return formatName();
 }
 
 QT_END_NAMESPACE

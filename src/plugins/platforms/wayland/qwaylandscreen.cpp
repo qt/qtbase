@@ -53,7 +53,6 @@ QWaylandScreen::QWaylandScreen(QWaylandDisplay *waylandDisplay, struct wl_output
     , mFormat(QImage::Format_ARGB32_Premultiplied)
     , mWaylandCursor(new QWaylandCursor(this))
 {
-    moveToThread(waylandDisplay->thread());
 }
 
 QWaylandScreen::~QWaylandScreen()
@@ -81,9 +80,9 @@ QImage::Format QWaylandScreen::format() const
     return mFormat;
 }
 
-QWaylandScreen * QWaylandScreen::waylandScreenFromWidget(QWidget *widget)
+QWaylandScreen * QWaylandScreen::waylandScreenFromWindow(QWindow *window)
 {
-    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWidget(widget);
+    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(window);
     return static_cast<QWaylandScreen *>(platformScreen);
 }
 

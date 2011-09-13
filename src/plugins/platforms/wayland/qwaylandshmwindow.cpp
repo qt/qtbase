@@ -47,8 +47,8 @@
 
 #include <QtCore/QDebug>
 
-QWaylandShmWindow::QWaylandShmWindow(QWidget *widget)
-    : QWaylandWindow(widget)
+QWaylandShmWindow::QWaylandShmWindow(QWindow *window)
+    : QWaylandWindow(window)
 {
     newSurfaceCreated();
 }
@@ -61,11 +61,5 @@ QWaylandShmWindow::~QWaylandShmWindow()
 QWaylandWindow::WindowType QWaylandShmWindow::windowType() const
 {
     return QWaylandWindow::Shm;
-}
-
-QPlatformGLContext * QWaylandShmWindow::glContext() const
-{
-    qWarning("Trying to retrieve a glContext from a Raster window surface!");
-    return 0;
 }
 

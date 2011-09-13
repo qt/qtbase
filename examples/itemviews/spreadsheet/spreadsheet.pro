@@ -7,8 +7,9 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+QT += widgets printsupport
 CONFIG += qt warn_on
-#unix:contains(QT_CONFIG, dbus):QT += dbus
+#unix:contains(QT_CONFIG, dbus):QT += dbus widgets
 
 # Input
 HEADERS += printview.h spreadsheet.h spreadsheetdelegate.h spreadsheetitem.h

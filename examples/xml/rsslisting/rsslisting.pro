@@ -1,6 +1,6 @@
 HEADERS += rsslisting.h
 SOURCES += main.cpp rsslisting.cpp
-QT += network xml
+QT += network xml widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/rsslisting

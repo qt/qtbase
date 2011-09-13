@@ -40,9 +40,10 @@
 ****************************************************************************/
 
 #include "qeglfsscreen.h"
+#include "qeglfswindow.h"
 
-#include "../eglconvenience/qeglconvenience.h"
-#include "../eglconvenience/qeglplatformcontext.h"
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
+#include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 #ifdef Q_OPENKODE
 #include <KD/kd.h>
@@ -85,6 +86,23 @@ static struct AttrInfo attrs[] = {
     {EGL_MAX_SWAP_INTERVAL, "EGL_MAX_SWAP_INTERVAL"},
     {-1, 0}};
 #endif //QEGL_EXTRA_DEBUG
+
+class QEglFSContext : public QEGLPlatformContext
+{
+public:
+    QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
+                  EGLint eglClientVersion = 2, EGLenum eglApi = EGL_OPENGL_ES_API)
+        : QEGLPlatformContext(format, share, display, eglClientVersion, eglApi)
+    {
+    }
+
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+    {
+        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
+        QEglFSScreen *screen = static_cast<QEglFSScreen *>(window->screen());
+        return screen->surface();
+    }
+};
 
 QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     : m_depth(32)
@@ -136,32 +154,29 @@ void QEglFSScreen::createAndSetPlatformContext() const {
 
 void QEglFSScreen::createAndSetPlatformContext()
 {
-    QPlatformWindowFormat platformFormat = QPlatformWindowFormat::defaultFormat();
-
-    platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
+    QSurfaceFormat platformFormat;
 
     QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
     if (depthString.toInt() == 16) {
-        platformFormat.setDepth(16);
+        platformFormat.setDepthBufferSize(16);
         platformFormat.setRedBufferSize(5);
         platformFormat.setGreenBufferSize(6);
         platformFormat.setBlueBufferSize(5);
         m_depth = 16;
         m_format = QImage::Format_RGB16;
     } else {
-        platformFormat.setDepth(32);
+        platformFormat.setDepthBufferSize(32);
         platformFormat.setRedBufferSize(8);
         platformFormat.setGreenBufferSize(8);
         platformFormat.setBlueBufferSize(8);
         m_depth = 32;
         m_format = QImage::Format_RGB32;
     }
-    if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
-        platformFormat.setSampleBuffers(true);
-    }
 
+    if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty())
+        platformFormat.setSamples(4);
 
-    EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
+    EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
 
     EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
@@ -193,16 +208,7 @@ void QEglFSScreen::createAndSetPlatformContext()
     qWarning("\n");
 #endif
 
-    EGLint temp;
-    EGLint attribList[32];
-
-    temp = 0;
-
-    attribList[temp++] = EGL_CONTEXT_CLIENT_VERSION;
-    attribList[temp++] = 2; // GLES version 2
-    attribList[temp++] = EGL_NONE;
-
-    QEGLPlatformContext *platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    QEGLPlatformContext *platformContext = new QEglFSContext(platformFormat, 0, m_dpy);
     m_platformContext = platformContext;
 
     EGLint w,h;                    // screen size detection
@@ -232,7 +238,7 @@ QImage::Format QEglFSScreen::format() const
         createAndSetPlatformContext();
     return m_format;
 }
-QPlatformGLContext *QEglFSScreen::platformContext() const
+QPlatformOpenGLContext *QEglFSScreen::platformContext() const
 {
     if (!m_platformContext) {
         QEglFSScreen *that = const_cast<QEglFSScreen *>(this);

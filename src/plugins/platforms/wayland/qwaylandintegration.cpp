@@ -42,30 +42,36 @@
 #include "qwaylandintegration.h"
 
 #include "qwaylanddisplay.h"
-#include "qwaylandshmsurface.h"
+#include "qwaylandshmbackingstore.h"
 #include "qwaylandshmwindow.h"
 #include "qwaylandnativeinterface.h"
 #include "qwaylandclipboard.h"
+#include "qwaylanddnd.h"
 
-#include "qgenericunixfontdatabase.h"
+#include "QtPlatformSupport/private/qgenericunixfontdatabase_p.h"
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtGui/QPlatformCursor>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QSurfaceFormat>
+#include <QtGui/QOpenGLContext>
 
-#include <QtGui/private/qpixmap_raster_p.h>
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
-#include "gl_integration/qwaylandglwindowsurface.h"
-#include <QtOpenGL/private/qpixmapdata_gl_p.h>
 #endif
 
-QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
+QWaylandIntegration::QWaylandIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
-    , mDisplay(new QWaylandDisplay())
-    , mUseOpenGL(useOpenGL)
+    , mEventDispatcher(createUnixEventDispatcher())
     , mNativeInterface(new QWaylandNativeInterface)
 {
+    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
+    mDisplay = new QWaylandDisplay();
+
+    foreach (QPlatformScreen *screen, mDisplay->screens())
+        screenAdded(screen);
 }
 
 QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
@@ -73,51 +79,50 @@ QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
     return mNativeInterface;
 }
 
-QList<QPlatformScreen *>
-QWaylandIntegration::screens() const
-{
-    return mDisplay->screens();
-}
-
 bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
-    case OpenGL: return hasOpenGL();
+    case OpenGL:
+#ifdef QT_WAYLAND_GL_SUPPORT
+        return true;
+#else
+        return false;
+#endif
+    case ThreadedOpenGL:
+        return hasCapability(OpenGL);
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
 
-QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
+QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QT_WAYLAND_GL_SUPPORT
-    if (mUseOpenGL)
-        return new QGLPixmapData(type);
+    if (window->surfaceType() == QWindow::OpenGLSurface)
+        return mDisplay->eglIntegration()->createEglWindow(window);
 #endif
-    return new QRasterPixmapData(type);
+    return new QWaylandShmWindow(window);
 }
 
-QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
+QPlatformOpenGLContext *QWaylandIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    Q_UNUSED(winId);
 #ifdef QT_WAYLAND_GL_SUPPORT
-    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
-    if (useOpenGL)
-        return mDisplay->eglIntegration()->createEglWindow(widget);
+    return mDisplay->eglIntegration()->createPlatformOpenGLContext(context->format(), context->shareHandle());
+#else
+    Q_UNUSED(glFormat);
+    Q_UNUSED(share);
+    return 0;
 #endif
-    return new QWaylandShmWindow(widget);
 }
 
-QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
+QPlatformBackingStore *QWaylandIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    Q_UNUSED(winId);
-    Q_UNUSED(winId);
-#ifdef QT_WAYLAND_GL_SUPPORT
-    bool useOpenGL = mUseOpenGL || (widget->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL);
-    if (useOpenGL)
-        return new QWaylandGLWindowSurface(widget);
-#endif
-    return new QWaylandShmWindowSurface(widget);
+    return new QWaylandShmBackingStore(window);
+}
+
+QAbstractEventDispatcher *QWaylandIntegration::guiThreadEventDispatcher() const
+{
+    return mEventDispatcher;
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
@@ -125,16 +130,12 @@ QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const
     return mFontDb;
 }
 
-bool QWaylandIntegration::hasOpenGL() const
-{
-#ifdef QT_WAYLAND_GL_SUPPORT
-    return true;
-#else
-    return false;
-#endif
-}
-
 QPlatformClipboard *QWaylandIntegration::clipboard() const
 {
     return QWaylandClipboard::instance(mDisplay);
+}
+
+QPlatformDrag *QWaylandIntegration::drag() const
+{
+    return QWaylandDrag::instance(mDisplay);
 }

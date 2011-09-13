@@ -48,26 +48,32 @@
 
 #include <QEvent>
 
+class QWindow;
+
 class QXcbKeyboard : public QXcbObject
 {
 public:
     QXcbKeyboard(QXcbConnection *connection);
     ~QXcbKeyboard();
 
-    void handleKeyPressEvent(QWidget *widget, const xcb_key_press_event_t *event);
-    void handleKeyReleaseEvent(QWidget *widget, const xcb_key_release_event_t *event);
+    void handleKeyPressEvent(QXcbWindow *window, const xcb_key_press_event_t *event);
+    void handleKeyReleaseEvent(QXcbWindow *window, const xcb_key_release_event_t *event);
 
     void handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event);
 
     Qt::KeyboardModifiers translateModifiers(int s);
 
 private:
-    void handleKeyEvent(QWidget *widget, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
     int translateKeySym(uint key) const;
     QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
                             int &code, Qt::KeyboardModifiers &modifiers,
                             QByteArray &chars, int &count);
+    void setupModifiers();
+    void setMask(uint sym, uint mask);
+    xcb_keysym_t lookupString(QWindow *window, uint state, xcb_keycode_t code,
+                              QEvent::Type type, QByteArray *chars);
 
     uint m_alt_mask;
     uint m_super_mask;
@@ -75,6 +81,7 @@ private:
     uint m_meta_mask;
     uint m_mode_switch_mask;
     uint m_num_lock_mask;
+    uint m_caps_lock_mask;
 
     xcb_key_symbols_t *m_key_symbols;
 };

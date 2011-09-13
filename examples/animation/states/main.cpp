@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 class Pixmap : public QGraphicsObject
 {
@@ -69,7 +69,7 @@ public:
     {
     }
 
-    virtual void resizeEvent(QResizeEvent *event)
+    virtual void resizeEvent(QResizeEvent *)
     {
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }

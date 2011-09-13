@@ -106,9 +106,9 @@ int QDirectFbConvenience::colorDepthForSurface(const DFBSurfacePixelFormat forma
     return ((0x1f << 7) & format) >> 7;
 }
 
-IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPixmapData(QPixmapData *pixmapData)
+IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPlatformPixmap(QPlatformPixmap *handle)
 {
-    QBlittablePixmapData *blittablePmData = static_cast<QBlittablePixmapData *>(pixmapData);
+    QBlittablePlatformPixmap *blittablePmData = static_cast<QBlittablePlatformPixmap *>(handle);
     if (blittablePmData) {
         QBlittable *blittable = blittablePmData->blittable();
         QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blittable);

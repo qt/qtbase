@@ -50,12 +50,17 @@
 #include "qxcbobject.h"
 
 class QXcbConnection;
+class QXcbCursor;
 
 class QXcbScreen : public QXcbObject, public QPlatformScreen
 {
 public:
     QXcbScreen(QXcbConnection *connection, xcb_screen_t *screen, int number);
     ~QXcbScreen();
+
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
+    QWindow *topLevelAt(const QPoint &point) const;
 
     QRect geometry() const;
     int depth() const;
@@ -67,14 +72,23 @@ public:
     xcb_screen_t *screen() const { return m_screen; }
     xcb_window_t root() const { return m_screen->root; }
 
+    xcb_window_t clientLeader() const { return m_clientLeader; }
+
     QString windowManagerName() const { return m_windowManagerName; }
     bool syncRequestSupported() const { return m_syncRequestSupported; }
+
+    const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
+
+    QString name() const;
 
 private:
     xcb_screen_t *m_screen;
     int m_number;
     QString m_windowManagerName;
     bool m_syncRequestSupported;
+    xcb_window_t m_clientLeader;
+    QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
+    QXcbCursor *m_cursor;
 };
 
 #endif

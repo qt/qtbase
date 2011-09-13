@@ -51,7 +51,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
-#include "qglxconvenience.h"
+#include "private/qglxconvenience_p.h"
 
 #include "qglxintegration.h"
 
@@ -61,32 +61,22 @@
 
 QT_BEGIN_NAMESPACE
 
-QGLXContext::QGLXContext(Window window, QXlibScreen *screen, const QPlatformWindowFormat &format)
-    : QPlatformGLContext()
+QGLXContext::QGLXContext(QXlibScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
     , m_screen(screen)
-    , m_drawable((Drawable)window)
     , m_context(0)
 {
-
-    const QPlatformGLContext *sharePlatformContext;
-    sharePlatformContext = format.sharedGLContext();
     GLXContext shareGlxContext = 0;
-    if (sharePlatformContext)
-        shareGlxContext = static_cast<const QGLXContext*>(sharePlatformContext)->glxContext();
+    if (share)
+        shareGlxContext = static_cast<const QGLXContext*>(share)->glxContext();
 
     GLXFBConfig config = qglx_findConfig(screen->display()->nativeDisplay(),screen->xScreenNumber(),format);
     m_context = glXCreateNewContext(screen->display()->nativeDisplay(),config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
-    m_windowFormat = qglx_platformWindowFromGLXFBConfig(screen->display()->nativeDisplay(),config,m_context);
+    m_windowFormat = qglx_surfaceFormatFromGLXFBConfig(screen->display()->nativeDisplay(),config,m_context);
 
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;
 #endif
-}
-
-QGLXContext::QGLXContext(QXlibScreen *screen, Drawable drawable, GLXContext context)
-    : QPlatformGLContext(), m_screen(screen), m_drawable(drawable), m_context(context)
-{
-
 }
 
 QGLXContext::~QGLXContext()
@@ -97,27 +87,36 @@ QGLXContext::~QGLXContext()
     }
 }
 
-void QGLXContext::makeCurrent()
+QSurfaceFormat QGLXContext::format() const
 {
-    QPlatformGLContext::makeCurrent();
+    return m_windowFormat;
+}
+
+bool QGLXContext::makeCurrent(QPlatformSurface *surface)
+{
+    Q_UNUSED(surface);
+
+    GLXDrawable glxDrawable = static_cast<QXlibWindow *>(surface)->winId();
 #ifdef MYX11_DEBUG
-    qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
+    qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", glxDrawable, m_context);
 #endif
-    glXMakeCurrent(m_screen->display()->nativeDisplay(), m_drawable, m_context);
+    return glXMakeCurrent(m_screen->display()->nativeDisplay(), glxDrawable, m_context);
 }
 
 void QGLXContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
     glXMakeCurrent(m_screen->display()->nativeDisplay(), 0, 0);
 }
 
-void QGLXContext::swapBuffers()
+void QGLXContext::swapBuffers(QPlatformSurface *surface)
 {
-    glXSwapBuffers(m_screen->display()->nativeDisplay(), m_drawable);
+    Q_UNUSED(surface);
+
+    GLXDrawable glxDrawable = static_cast<QXlibWindow *>(surface)->winId();
+    glXSwapBuffers(m_screen->display()->nativeDisplay(), glxDrawable);
 }
 
-void* QGLXContext::getProcAddress(const QString& procName)
+void (*QGLXContext::getProcAddress(const QByteArray& procName))()
 {
     typedef void *(*qt_glXGetProcAddressARB)(const GLubyte *);
     static qt_glXGetProcAddressARB glXGetProcAddressARB = 0;
@@ -147,10 +146,10 @@ void* QGLXContext::getProcAddress(const QString& procName)
     }
     if (!glXGetProcAddressARB)
         return 0;
-    return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
+    return (void (*)())glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.constData()));
 }
 
-QPlatformWindowFormat QGLXContext::platformWindowFormat() const
+QSurfaceFormat QGLXContext::surfaceFormat() const
 {
     return m_windowFormat;
 }

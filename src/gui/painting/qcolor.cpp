@@ -42,19 +42,9 @@
 #include "qcolor.h"
 #include "qcolor_p.h"
 #include "qnamespace.h"
-#include "qcolormap.h"
 #include "qdatastream.h"
 #include "qvariant.h"
 #include "qdebug.h"
-
-#ifdef Q_WS_X11
-#  include "qapplication.h"
-#  include "qx11info_x11.h"
-#  include "private/qt_x11_p.h"
-
-static bool allowX11ColorNames = false;
-
-#endif
 
 #include <math.h>
 #include <stdio.h>
@@ -163,9 +153,6 @@ QT_BEGIN_NAMESPACE
     The code above produces the following output:
 
     \img alphafill.png
-
-    Alpha-blended drawing is supported on Windows, Mac OS X, and on
-    X11 systems that have the X Render extension installed.
 
     The alpha channel of a color can be retrieved and set using the
     alpha() and setAlpha() functions if its value is an integer, and
@@ -521,13 +508,11 @@ QString QColor::name() const
        same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not
        refer to the same color.
     \i \c transparent - representing the absence of a color.
-    \i \e{X11 only}: If allowX11ColorNames() returns true, any valid X11 color name. See
-       the documentation for \c XParseColor() for information about valid X11 color names.
     \endlist
 
     The color is invalid if \a name cannot be parsed.
 
-    \sa QColor(), name(), isValid(), allowX11ColorNames()
+    \sa QColor(), name(), isValid()
 */
 
 void QColor::setNamedColor(const QString &name)
@@ -577,20 +562,8 @@ bool QColor::setColorFromString(const QString &name)
     } else
 #endif
     {
-#ifdef Q_WS_X11
-        XColor result;
-        if (allowX11ColorNames()
-            && QApplication::instance()
-            && QX11Info::display()
-            && XParseColor(QX11Info::display(), QX11Info::appColormap(), name.toLatin1().constData(), &result)) {
-            setRgb(result.red >> 8, result.green >> 8, result.blue >> 8);
-            return true;
-        } else
-#endif
-        {
-            invalidate();
-            return false;
-        }
+        invalidate();
+        return false;
     }
 }
 
@@ -2418,35 +2391,6 @@ QColor::operator QVariant() const
     return QVariant(QVariant::Color, this);
 }
 
-#ifdef Q_WS_X11
-/*!
-    Returns true if setNamedColor() is allowed to look up colors in the X11
-    color database. By default, this function returns false.
-
-    \note This function is only available on the X11 platform.
-
-    \sa setAllowX11ColorNames()
-*/
-bool QColor::allowX11ColorNames()
-{
-    return ::allowX11ColorNames;
-}
-
-/*!
-    Allow setNamedColor() to look up colors in the X11 color database if
-    \a enabled. By default, setNamedColor() does \e not look up colors in the
-    X11 color database.
-
-    \note This function is only available on the X11 platform.
-
-    \sa setNamedColor(), allowX11ColorNames()
-*/
-void QColor::setAllowX11ColorNames(bool enabled)
-{
-    ::allowX11ColorNames = enabled;
-}
-#endif
-
 /*! \internal
 
     Marks the color as invalid and sets all components to zero (alpha is set
@@ -2461,30 +2405,6 @@ void QColor::invalidate()
     ct.argb.blue = 0;
     ct.argb.pad = 0;
 }
-
-#ifdef QT3_SUPPORT
-
-/*!
-    Returns the pixel value used by the underlying window system to refer to a
-    color.
-
-    Use QColormap::pixel() instead.
-
-    \oldcode
-        QColor myColor;
-        uint pixel = myColor.pixel(screen);
-    \newcode
-        QColormap cmap = QColormap::instance(screen);
-        uint pixel  = cmap.pixel(*this);
-    \endcode
-*/
-uint QColor::pixel(int screen) const
-{
-    QColormap cmap = QColormap::instance(screen);
-    return cmap.pixel(*this);
-}
-
-#endif // QT3_SUPPORT
 
 /*****************************************************************************
   QColor stream functions

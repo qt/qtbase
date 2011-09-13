@@ -51,13 +51,11 @@ class QDirectFBCursor : public QPlatformCursor
 {
 public:
     QDirectFBCursor(QPlatformScreen *screem);
-    void changeCursor(QCursor * cursor, QWidget * widget);
+    void changeCursor(QCursor *cursor, QWindow *window);
 
 private:
-    IDirectFBDisplayLayer * m_layer;
-    IDirectFBSurface * surface;
-    QPlatformCursorImage * image;
-    QDirectFbBlitter *blitter;
+    IDirectFBDisplayLayer *m_layer;
+    QPlatformCursorImage *m_image;
 };
 
 #endif // QDIRECTFBCURSOR_H

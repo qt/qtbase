@@ -93,7 +93,7 @@ class QAbstractTextDocumentLayout;
 // * negative yoff means the following stuff is drawn higher up.
 // the characters bounding rect is given by QRect(x,y,width,height), its advance by
 // xoo and yoff
-struct glyph_metrics_t
+struct Q_GUI_EXPORT glyph_metrics_t
 {
     inline glyph_metrics_t()
         : x(100000),  y(100000) {}
@@ -426,7 +426,7 @@ public:
         InLayout,
         LayoutFailed,
     };
-    struct LayoutData {
+    struct Q_GUI_EXPORT LayoutData {
         LayoutData(const QString &str, void **stack_memory, int mem_size);
         LayoutData();
         ~LayoutData();
@@ -650,7 +650,7 @@ private:
     int getClusterLength(unsigned short *logClusters, const HB_CharAttributes *attributes, int from, int to, int glyph_pos, int *start);
 };
 
-class QStackTextEngine : public QTextEngine {
+class Q_GUI_EXPORT QStackTextEngine : public QTextEngine {
 public:
     enum { MemSize = 256*40/sizeof(void *) };
     QStackTextEngine(const QString &string, const QFont &f);

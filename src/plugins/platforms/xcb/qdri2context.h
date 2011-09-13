@@ -42,14 +42,14 @@
 #ifndef QDRI2CONTEXT_H
 #define QDRI2CONTEXT_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 class QXcbWindow;
 class QDri2ContextPrivate;
 
 struct xcb_dri2_dri2_buffer_t;
 
-class QDri2Context : public QPlatformGLContext
+class QDri2Context : public QPlatformOpenGLContext
 {
     Q_DECLARE_PRIVATE(QDri2Context);
 public:

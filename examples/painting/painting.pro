@@ -19,6 +19,7 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets
 maemo5: CONFIG += qt_example
 
 examples_affine.subdir = affine

@@ -41,7 +41,7 @@
 #ifndef MOVEMENTTRANSITION_H
 #define MOVEMENTTRANSITION_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "window.h"
 

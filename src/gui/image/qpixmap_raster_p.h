@@ -53,8 +53,7 @@
 // We mean it.
 //
 
-#include <QtGui/private/qpixmapdata_p.h>
-#include <QtGui/private/qpixmapdatafactory_p.h>
+#include <QtGui/qplatformpixmap_qpa.h>
 
 #ifdef Q_WS_WIN
 # include "qt_windows.h"
@@ -62,13 +61,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QRasterPixmapData : public QPixmapData
+class Q_GUI_EXPORT QRasterPlatformPixmap : public QPlatformPixmap
 {
 public:
-    QRasterPixmapData(PixelType type);
-    ~QRasterPixmapData();
+    QRasterPlatformPixmap(PixelType type);
+    ~QRasterPlatformPixmap();
 
-    QPixmapData *createCompatiblePixmapData() const;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const;
 
     void resize(int width, int height);
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
@@ -76,12 +75,10 @@ public:
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags);
 
-    void copy(const QPixmapData *data, const QRect &rect);
+    void copy(const QPlatformPixmap *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
-    void setMask(const QBitmap &mask);
     bool hasAlphaChannel() const;
-    void setAlphaChannel(const QPixmap &alphaChannel);
     QImage toImage() const;
     QImage toImage(const QRect &rect) const;
     QPaintEngine* paintEngine() const;

@@ -39,11 +39,19 @@
 **
 ****************************************************************************/
 
+#include <Carbon/Carbon.h>
+
 #include "qnsview.h"
+#include "qcocoahelpers.h"
 
 #include <QtGui/QWindowSystemInterface>
-
 #include <QtCore/QDebug>
+
+@interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
+  - (CGFloat)deviceDeltaX;
+  - (CGFloat)deviceDeltaY;
+  - (CGFloat)deviceDeltaZ;
+@end
 
 @implementation QNSView
 
@@ -52,16 +60,16 @@
     self = [super init];
     if (self) {
         m_cgImage = 0;
-        m_widget = 0;
+        m_window = 0;
         m_buttons = Qt::NoButton;
     }
     return self;
 }
 
-- (id)initWithWidget:(QWidget *)widget {
+- (id)initWithQWindow:(QWindow *)widget {
     self = [self init];
     if (self) {
-        m_widget = widget;
+        m_window = widget;
     }
     return self;
 }
@@ -91,7 +99,7 @@
                               bitDepth,
                               bytesPrLine,
                               cgColourSpaceRef,
-                              kCGImageAlphaNone,
+                              kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
                               cgDataProviderRef,
                               NULL,
                               false,
@@ -130,82 +138,185 @@
     return YES;
 }
 
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 {
-    NSPoint point = [self convertPoint: [theEvent locationInWindow] fromView: nil];
-    QPoint qt_localPoint(point.x,point.y);
+    NSPoint windowPoint = [self convertPoint: [theEvent locationInWindow] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
 
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    QWindowSystemInterface::handleMouseEvent(m_widget,qt_timestamp,qt_localPoint,QPoint(),m_buttons);
-
+    // ### Should the points be windowPoint and screenPoint?
+    QWindowSystemInterface::handleMouseEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, m_buttons);
 }
-    - (void)mouseDown:(NSEvent *)theEvent
-    {
-        m_buttons |= Qt::LeftButton;
-        [self handleMouseEvent:theEvent];
-    }
-    - (void)mouseDragged:(NSEvent *)theEvent
-    {
-        if (!(m_buttons & Qt::LeftButton))
-            qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
-        [self handleMouseEvent:theEvent];
-    }
-    - (void)mouseUp:(NSEvent *)theEvent
-    {
-        m_buttons &= QFlag(~int(Qt::LeftButton));
-        [self handleMouseEvent:theEvent];
-    }
+
+- (void)mouseDown:(NSEvent *)theEvent
+{
+    m_buttons |= Qt::LeftButton;
+    [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent
+{
+    if (!(m_buttons & Qt::LeftButton))
+        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseUp:(NSEvent *)theEvent
+{
+    m_buttons &= QFlag(~int(Qt::LeftButton));
+    [self handleMouseEvent:theEvent];
+}
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-    qDebug() << "mouseMove";
     [self handleMouseEvent:theEvent];
 }
+
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-        Q_UNUSED(theEvent);
-        QWindowSystemInterface::handleEnterEvent(m_widget);
+    Q_UNUSED(theEvent);
+    QWindowSystemInterface::handleEnterEvent(m_window);
 }
+
 - (void)mouseExited:(NSEvent *)theEvent
 {
-        Q_UNUSED(theEvent);
-        QWindowSystemInterface::handleLeaveEvent(m_widget);
+    Q_UNUSED(theEvent);
+    QWindowSystemInterface::handleLeaveEvent(m_window);
 }
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-        m_buttons |= Qt::RightButton;
+    m_buttons |= Qt::RightButton;
     [self handleMouseEvent:theEvent];
 }
+
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-        if (!(m_buttons & Qt::LeftButton))
-            qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
-        [self handleMouseEvent:theEvent];
-}
-- (void)rightMouseUp:(NSEvent *)theEvent
-{
-        m_buttons &= QFlag(~int(Qt::RightButton));
-        [self handleMouseEvent:theEvent];
-}
-- (void)otherMouseDown:(NSEvent *)theEvent
-{
-        m_buttons |= Qt::RightButton;
+    if (!(m_buttons & Qt::LeftButton))
+        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
     [self handleMouseEvent:theEvent];
 }
+
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+    m_buttons &= QFlag(~int(Qt::RightButton));
+    [self handleMouseEvent:theEvent];
+}
+
+- (void)otherMouseDown:(NSEvent *)theEvent
+{
+    m_buttons |= Qt::RightButton;
+    [self handleMouseEvent:theEvent];
+}
+
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-        if (!(m_buttons & Qt::LeftButton))
-            qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
-        [self handleMouseEvent:theEvent];
+    if (!(m_buttons & Qt::LeftButton))
+        qWarning("Internal Mousebutton tracking invalid(missing Qt::LeftButton");
+    [self handleMouseEvent:theEvent];
 }
+
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-        m_buttons &= QFlag(~int(Qt::MiddleButton));
-        [self handleMouseEvent:theEvent];
+    m_buttons &= QFlag(~int(Qt::MiddleButton));
+    [self handleMouseEvent:theEvent];
 }
 
+#ifndef QT_NO_WHEELEVENT
+- (void)scrollWheel:(NSEvent *)theEvent
+{
+    int deltaX = 0;
+    int deltaY = 0;
+    int deltaZ = 0;
 
+    const EventRef carbonEvent = (EventRef)[theEvent eventRef];
+    const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
+    const bool scrollEvent = carbonEventKind == kEventMouseScroll;
+
+    if (scrollEvent) {
+        // The mouse device containts pixel scroll wheel support (Mighty Mouse, Trackpad).
+        // Since deviceDelta is delivered as pixels rather than degrees, we need to
+        // convert from pixels to degrees in a sensible manner.
+        // It looks like 1/4 degrees per pixel behaves most native.
+        // (NB: Qt expects the unit for delta to be 8 per degree):
+        const int pixelsToDegrees = 2; // 8 * 1/4
+        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+    } else {
+        // carbonEventKind == kEventMouseWheelMoved
+        // Remove acceleration, and use either -120 or 120 as delta:
+        deltaX = qBound(-120, int([theEvent deltaX] * 10000), 120);
+        deltaY = qBound(-120, int([theEvent deltaY] * 10000), 120);
+        deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
+    }
+
+    NSPoint windowPoint = [self convertPoint: [theEvent locationInWindow] fromView: nil];
+    QPoint qt_windowPoint(windowPoint.x, windowPoint.y);
+    NSTimeInterval timestamp = [theEvent timestamp];
+    ulong qt_timestamp = timestamp * 1000;
+
+    if (deltaX != 0)
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaX, Qt::Horizontal);
+
+    if (deltaY != 0)
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaY, Qt::Vertical);
+
+    if (deltaZ != 0)
+        // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
+        // try to be ahead of the pack, I'm adding this extra value.
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, deltaY, (Qt::Orientation)3);
+}
+#endif //QT_NO_WHEELEVENT
+
+- (int) convertKeyCode : (QChar)keyChar
+{
+    return qt_mac_cocoaKey2QtKey(keyChar);
+}
+
+- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
+{
+    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
+    if (modifierFlags &  NSShiftKeyMask)
+        qtMods |= Qt::ShiftModifier;
+    if (modifierFlags & NSControlKeyMask)
+        qtMods |= Qt::MetaModifier;
+    if (modifierFlags & NSAlternateKeyMask)
+        qtMods |= Qt::AltModifier;
+    if (modifierFlags & NSCommandKeyMask)
+        qtMods |= Qt::ControlModifier;
+    if (modifierFlags & NSNumericPadKeyMask)
+        qtMods |= Qt::KeypadModifier;
+    return qtMods;
+}
+
+- (void)handleKeyEvent:(NSEvent *)theEvent eventType:(int)eventType
+{
+    NSTimeInterval timestamp = [theEvent timestamp];
+    ulong qt_timestamp = timestamp * 1000;
+    QString characters = QString::fromUtf8([[theEvent characters] UTF8String]);
+    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers : [theEvent modifierFlags]];
+    QChar ch([[theEvent charactersIgnoringModifiers] characterAtIndex:0]);
+    int keyCode = [self convertKeyCode : ch];
+
+    QWindowSystemInterface::handleKeyEvent(m_window, qt_timestamp, QEvent::Type(eventType), keyCode, modifiers, characters);
+}
+
+- (void)keyDown:(NSEvent *)theEvent
+{
+    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyPress)];
+}
+
+- (void)keyUp:(NSEvent *)theEvent
+{
+    [self handleKeyEvent : theEvent eventType :int(QEvent::KeyRelease)];
+}
 
 @end

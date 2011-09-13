@@ -46,9 +46,9 @@
 #include <qwidget.h>
 #include <qwindowsstyle.h>
 #include <qsizepolicy.h>
-#include <QtGui>
+//#include <QtGui>
 
-#include <QtGui/QWindowsStyle>
+#include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 
 #include "../../shared/util.h"

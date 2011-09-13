@@ -43,7 +43,7 @@
 
 #include "qwaylandreadbackeglcontext.h"
 
-QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWidget *window, QWaylandReadbackEglIntegration *eglIntegration)
+QWaylandReadbackEglWindow::QWaylandReadbackEglWindow(QWindow *window, QWaylandReadbackEglIntegration *eglIntegration)
     : QWaylandShmWindow(window)
     , mEglIntegration(eglIntegration)
     , mContext(0)
@@ -57,7 +57,7 @@ QWaylandWindow::WindowType QWaylandReadbackEglWindow::windowType() const
     return QWaylandWindow::Egl;
 }
 
-QPlatformGLContext *QWaylandReadbackEglWindow::glContext() const
+QPlatformOpenGLContext *QWaylandReadbackEglWindow::glContext() const
 {
     if (!mContext) {
         QWaylandReadbackEglWindow *that = const_cast<QWaylandReadbackEglWindow *>(this);

@@ -43,26 +43,21 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
+#include "qwaylandeglwindow.h"
 
-#include "../../../eglconvenience/qeglconvenience.h"
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 
-#include <QtGui/QPlatformGLContext>
-#include <QtGui/QPlatformWindowFormat>
+#include <QtGui/QPlatformOpenGLContext>
+#include <QtGui/QSurfaceFormat>
 #include <QtCore/QMutex>
 
-QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format)
-    : QPlatformGLContext()
-    , mEglDisplay(eglDisplay)
-    , mSurface(EGL_NO_SURFACE)
-    , mConfig(q_configFromQPlatformWindowFormat(mEglDisplay,format,true))
-    , mFormat(qt_qPlatformWindowFormatFromConfig(mEglDisplay,mConfig))
+QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+    : QPlatformOpenGLContext()
+    , m_eglDisplay(eglDisplay)
+    , m_config(q_configFromGLFormat(m_eglDisplay, format, true))
+    , m_format(q_glFormatFromConfig(m_eglDisplay, m_config))
 {
-    QPlatformGLContext *sharePlatformContext = 0;
-    sharePlatformContext = format.sharedGLContext();
-    mFormat.setSharedContext(sharePlatformContext);
-    EGLContext shareEGLContext = EGL_NO_CONTEXT;
-    if (sharePlatformContext)
-        shareEGLContext = static_cast<const QWaylandGLContext*>(sharePlatformContext)->mContext;
+    EGLContext shareEGLContext = share ? static_cast<QWaylandGLContext *>(share)->eglContext() : EGL_NO_CONTEXT;
 
     eglBindAPI(EGL_OPENGL_ES_API);
 
@@ -71,63 +66,38 @@ QWaylandGLContext::QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindo
     eglContextAttrs.append(2);
     eglContextAttrs.append(EGL_NONE);
 
-    mContext = eglCreateContext(mEglDisplay, mConfig,
-                                shareEGLContext, eglContextAttrs.constData());
+    m_context = eglCreateContext(m_eglDisplay, m_config, shareEGLContext, eglContextAttrs.constData());
 }
-
-QWaylandGLContext::QWaylandGLContext()
-    : QPlatformGLContext()
-    , mEglDisplay(0)
-    , mContext(EGL_NO_CONTEXT)
-    , mSurface(EGL_NO_SURFACE)
-    , mConfig(0)
-{ }
 
 QWaylandGLContext::~QWaylandGLContext()
 {
-    eglDestroyContext(mEglDisplay,mContext);
+    eglDestroyContext(m_eglDisplay, m_context);
 }
 
-void QWaylandGLContext::makeCurrent()
+bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    QPlatformGLContext::makeCurrent();
-    if (mSurface == EGL_NO_SURFACE) {
-        qWarning("makeCurrent with EGL_NO_SURFACE");
-    }
-    eglMakeCurrent(mEglDisplay, mSurface, mSurface, mContext);
+    EGLSurface eglSurface = static_cast<QWaylandEglWindow *>(surface)->eglSurface();
+    return eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_context);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
-    QPlatformGLContext::doneCurrent();
-    eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
-void QWaylandGLContext::swapBuffers()
+void QWaylandGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    eglSwapBuffers(mEglDisplay,mSurface);
+    EGLSurface eglSurface = static_cast<QWaylandEglWindow *>(surface)->eglSurface();
+    eglSwapBuffers(m_eglDisplay, eglSurface);
 }
 
-void *QWaylandGLContext::getProcAddress(const QString &string)
+void (*QWaylandGLContext::getProcAddress(const QByteArray &procName)) ()
 {
-    return (void *) eglGetProcAddress(string.toLatin1().data());
-}
-
-void QWaylandGLContext::setEglSurface(EGLSurface surface)
-{
-    bool wasCurrent = false;
-    if (QPlatformGLContext::currentContext() == this) {
-        wasCurrent = true;
-        doneCurrent();
-    }
-    mSurface = surface;
-    if (wasCurrent) {
-        makeCurrent();
-    }
+    return eglGetProcAddress(procName.constData());
 }
 
 EGLConfig QWaylandGLContext::eglConfig() const
 {
-    return mConfig;
+    return m_config;
 }
 

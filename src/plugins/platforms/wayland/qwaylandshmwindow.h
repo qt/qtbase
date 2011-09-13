@@ -48,11 +48,11 @@
 class QWaylandShmWindow : public QWaylandWindow
 {
 public:
-    QWaylandShmWindow(QWidget *widget);
+    QWaylandShmWindow(QWindow *window);
     ~QWaylandShmWindow();
 
     WindowType windowType() const;
-    QPlatformGLContext *glContext() const;
+    QSurfaceFormat format() const { return QSurfaceFormat(); }
 };
 
 #endif // QWAYLANDSHMWINDOW_H

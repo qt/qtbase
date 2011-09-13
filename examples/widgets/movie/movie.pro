@@ -17,6 +17,7 @@ wince*: {
    DEPLOYMENT_PLUGIN += qmng
 }
 
+QT += widgets
 maemo5: CONFIG += qt_example
 
 symbian: warning(This example might not fully work on Symbian platform)

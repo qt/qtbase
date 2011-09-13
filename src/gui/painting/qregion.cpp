@@ -252,17 +252,6 @@ QRegion::QRegion(int x, int y, int w, int h, RegionType t)
     d = tmp.d;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Use the constructor tha takes a Qt::FillRule as the second
-    argument instead.
-*/
-QRegion::QRegion(const QPolygon &pa, bool winding)
-{
-    new (this) QRegion(pa, winding ? Qt::WindingFill : Qt::OddEvenFill);
-}
-#endif
-
 /*!
     \fn QRegion::~QRegion()
     \internal
@@ -553,7 +542,7 @@ QRegion& QRegion::operator|=(const QRegion &r)
 
     \sa intersected()
 */
-#if !defined (Q_OS_UNIX) && !defined (Q_WS_WIN)
+#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN)
 QRegion& QRegion::operator+=(const QRect &r)
 {
     return operator+=(QRegion(r));
@@ -576,7 +565,7 @@ QRegion& QRegion::operator&=(const QRegion &r)
    \overload
    \since 4.4
  */
-#if defined (Q_OS_UNIX) || defined (Q_WS_WIN)
+#if defined (Q_OS_UNIX) || defined (Q_OS_WIN)
 QRegion& QRegion::operator&=(const QRect &r)
 {
     return *this = *this & r;
@@ -720,7 +709,7 @@ bool QRegion::intersects(const QRegion &region) const
 */
 
 
-#if !defined (Q_OS_UNIX) && !defined (Q_WS_WIN)
+#if !defined (Q_OS_UNIX) && !defined (Q_OS_WIN)
 /*!
     \overload
     \since 4.4
@@ -1025,7 +1014,7 @@ void addSegmentsToPath(Segment *segment, QPainterPath &path)
 
 }
 
-Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
+Q_GUI_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
 {
     QPainterPath result;
     if (region.rectCount() == 1) {
@@ -1083,7 +1072,7 @@ Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region)
     return result;
 }
 
-#if defined(Q_OS_UNIX) || defined(Q_WS_WIN)
+#if defined(Q_OS_UNIX) || defined(Q_OS_WIN)
 
 //#define QT_REGION_DEBUG
 /*

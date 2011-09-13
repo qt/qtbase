@@ -67,7 +67,7 @@ protected:
     friend class QDirectFbConvenience;
 };
 
-class QDirectFbBlitterPixmapData : public QBlittablePixmapData
+class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap
 {
 public:
     QBlittable *createBlittable(const QSize &size) const { return new QDirectFbBlitter(size); }

@@ -48,7 +48,8 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
-#include <QtGui/QWidget>
+#include <QtCore/QEvent>
+#include <QtGui/QCursor>
 
 #include <X11/Xlib.h>
 
@@ -61,7 +62,8 @@ public:
     ~QWaylandReadbackEglIntegration();
 
     void initialize();
-    QWaylandWindow *createEglWindow(QWidget *widget);
+    QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const;
 
     QWaylandDisplay *waylandDisplay() const;
     Display *xDisplay() const;

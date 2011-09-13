@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT += widgets
 SOURCES  += tst_qtablewidget.cpp
 
 # This prevents the GCCE compile failure: "elf2e32: Error 1063: Fatal Error in

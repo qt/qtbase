@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
+
 #include "qxlibclipboard.h"
 
 #include "qxlibscreen.h"
 #include "qxlibmime.h"
 #include "qxlibdisplay.h"
-
-#include <private/qapplication_p.h>
 
 #include <QtCore/QDebug>
 

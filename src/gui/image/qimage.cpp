@@ -54,9 +54,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <qplatformpixmap_qpa.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qmemrotate_p.h>
-#include <private/qpixmapdata_p.h>
 #include <private/qimagescale_p.h>
 #include <private/qsimd_p.h>
 
@@ -124,9 +124,6 @@ QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
 QImageData::QImageData()
     : ref(0), width(0), height(0), depth(0), nbytes(0), data(0),
-#ifdef QT3_SUPPORT
-      jumptable(0),
-#endif
       format(QImage::Format_ARGB32), bytes_per_line(0),
       ser_no(qimage_serial_number.fetchAndAddRelaxed(1)),
       detach_no(0),
@@ -220,11 +217,6 @@ QImageData::~QImageData()
     delete paintEngine;
     if (data && own_data)
         free(data);
-#ifdef QT3_SUPPORT
-    if (jumptable)
-        free(jumptable);
-    jumptable = 0;
-#endif
     data = 0;
 }
 
@@ -757,27 +749,6 @@ const uchar *qt_get_bitflip_array()                        // called from QPixma
     return bitflip;
 }
 
-#if defined(QT3_SUPPORT)
-static QImage::Format formatFor(int depth, QImage::Endian bitOrder)
-{
-    QImage::Format format;
-    if (depth == 1) {
-        format = bitOrder == QImage::BigEndian ? QImage::Format_Mono : QImage::Format_MonoLSB;
-    } else if (depth == 8) {
-        format = QImage::Format_Indexed8;
-    } else if (depth == 32) {
-        format = QImage::Format_RGB32;
-    } else if (depth == 24) {
-        format = QImage::Format_RGB888;
-    } else if (depth == 16) {
-        format = QImage::Format_RGB16;
-    } else {
-        qWarning("QImage: Depth %d not supported", depth);
-        format = QImage::Format_Invalid;
-    }
-    return format;
-}
-#endif
 
 /*!
     Constructs a null image.
@@ -991,42 +962,6 @@ QImage::QImage(const QString &fileName, const char *format)
     load(fileName, format);
 }
 
-/*!
-    Constructs an image and tries to load the image from the file with
-    the given \a fileName.
-
-    The loader attempts to read the image using the specified \a
-    format. If the \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
-
-    If the loading of the image failed, this object is a null image.
-
-    The file name can either refer to an actual file on disk or to one
-    of the application's embedded resources. See the
-    \l{resources.html}{Resource System} overview for details on how to
-    embed images and other resource files in the application's
-    executable.
-
-    You can disable this constructor by defining \c
-    QT_NO_CAST_FROM_ASCII when you compile your applications. This can
-    be useful, for example, if you want to ensure that all
-    user-visible strings go through QObject::tr().
-
-    \sa QString::fromAscii(), isNull(), {QImage#Reading and Writing
-    Image Files}{Reading and Writing Image Files}
-*/
-#ifndef QT_NO_CAST_FROM_ASCII
-QImage::QImage(const char *fileName, const char *format)
-    : QPaintDevice()
-{
-    // ### Qt 5: if you remove the QImage(const QByteArray &) QT3_SUPPORT
-    // constructor, remove this constructor as well. The constructor here
-    // exists so that QImage("foo.png") compiles without ambiguity.
-    d = 0;
-    load(QString::fromAscii(fileName), format);
-}
-#endif
-
 #ifndef QT_NO_IMAGEFORMAT_XPM
 extern bool qt_read_xpm_image_or_array(QIODevice *device, const char * const *source, QImage &image);
 
@@ -1096,178 +1031,6 @@ QImage::QImage(const QImage &image)
             d->ref.ref();
     }
 }
-
-#ifdef QT3_SUPPORT
-/*!
-    \fn QImage::QImage(int width, int height, int depth, int numColors, Endian bitOrder)
-
-    Constructs an image with the given \a width, \a height, \a depth,
-    \a numColors colors and \a bitOrder.
-
-    Use the constructor that accepts a width, a height and a format
-    (i.e. specifying the depth and bit order), in combination with the
-    setColorCount() function, instead.
-
-    \oldcode
-        QImage image(width, height, depth, numColors);
-    \newcode
-        QImage image(width, height, format);
-
-        // For 8 bit images the default number of colors is 256. If
-        // another number of colors is required it can be specified
-        // using the setColorCount() function.
-        image.setColorCount(numColors);
-    \endcode
-*/
-
-QImage::QImage(int w, int h, int depth, int colorCount, Endian bitOrder)
-    : QPaintDevice()
-{
-    d = QImageData::create(QSize(w, h), formatFor(depth, bitOrder), colorCount);
-}
-
-/*!
-    Constructs an image with the given \a size, \a depth, \a numColors
-    and \a bitOrder.
-
-    Use the constructor that accepts a size and a format
-    (i.e. specifying the depth and bit order), in combination with the
-    setColorCount() function, instead.
-
-    \oldcode
-        QSize mySize(width, height);
-        QImage image(mySize, depth, numColors);
-    \newcode
-        QSize mySize(width, height);
-        QImage image(mySize, format);
-
-        // For 8 bit images the default number of colors is 256. If
-        // another number of colors is required it can be specified
-        // using the setColorCount() function.
-        image.setColorCount(numColors);
-    \endcode
-*/
-QImage::QImage(const QSize& size, int depth, int numColors, Endian bitOrder)
-    : QPaintDevice()
-{
-    d = QImageData::create(size, formatFor(depth, bitOrder), numColors);
-}
-
-/*!
-    \fn QImage::QImage(uchar* data, int width, int height, int depth, const QRgb* colortable, int numColors, Endian bitOrder)
-
-    Constructs an image with the given \a width, \a height, depth, \a
-    colortable, \a numColors and \a bitOrder, that uses an existing
-    memory buffer, \a data.
-
-    Use the constructor that accepts a uchar pointer, a width, a
-    height and a format (i.e. specifying the depth and bit order), in
-    combination with the setColorTable() function, instead.
-
-    \oldcode
-        uchar *myData;
-        QRgb *myColorTable;
-
-        QImage image(myData, width, height, depth,
-                               myColorTable, numColors, IgnoreEndian);
-    \newcode
-        uchar *myData;
-        QVector<QRgb> myColorTable;
-
-        QImage image(myData, width, height, format);
-        image.setColorTable(myColorTable);
-    \endcode
-*/
-QImage::QImage(uchar* data, int w, int h, int depth, const QRgb* colortable, int numColors, Endian bitOrder)
-    : QPaintDevice()
-{
-    d = 0;
-    Format f = formatFor(depth, bitOrder);
-    if (f == Format_Invalid)
-        return;
-
-    const int bytes_per_line = ((w*depth+31)/32)*4;        // bytes per scanline
-    if (w <= 0 || h <= 0 || numColors < 0 || !data
-        || INT_MAX/sizeof(uchar *) < uint(h)
-        || INT_MAX/uint(depth) < uint(w)
-        || bytes_per_line <= 0
-        || INT_MAX/uint(bytes_per_line) < uint(h))
-        return;                                        // invalid parameter(s)
-    d = new QImageData;
-    d->ref.ref();
-
-    d->own_data = false;
-    d->data = data;
-    d->width = w;
-    d->height = h;
-    d->depth = depth;
-    d->format = f;
-    if (depth == 32)
-        numColors = 0;
-
-    d->bytes_per_line = bytes_per_line;
-    d->nbytes = d->bytes_per_line * h;
-    if (colortable) {
-        d->colortable.resize(numColors);
-        for (int i = 0; i < numColors; ++i)
-            d->colortable[i] = colortable[i];
-    } else if (numColors) {
-        setColorCount(numColors);
-    }
-}
-
-#ifdef Q_WS_QWS
-
-/*!
-    \fn QImage::QImage(uchar* data, int width, int height, int depth, int bytesPerLine, const QRgb* colortable, int numColors, Endian bitOrder)
-
-    Constructs an image with the given \a width, \a height, \a depth,
-    \a bytesPerLine, \a colortable, \a numColors and \a bitOrder, that
-    uses an existing memory buffer, \a data. The image does not delete
-    the buffer at destruction.
-
-    \warning This constructor is only available in Qt for Embedded Linux.
-
-    The data has to be 32-bit aligned, and each scanline of data in the image
-    must also be 32-bit aligned, so it's no longer possible to specify a custom
-    \a bytesPerLine value.
-*/
-QImage::QImage(uchar* data, int w, int h, int depth, int bpl, const QRgb* colortable, int numColors, Endian bitOrder)
-    : QPaintDevice()
-{
-    d = 0;
-    Format f = formatFor(depth, bitOrder);
-    if (f == Format_Invalid)
-        return;
-    if (!data || w <= 0 || h <= 0 || depth <= 0 || numColors < 0
-        || INT_MAX/sizeof(uchar *) < uint(h)
-        || INT_MAX/uint(depth) < uint(w)
-        || bpl <= 0
-        || INT_MAX/uint(bpl) < uint(h))
-        return;                                        // invalid parameter(s)
-
-    d = new QImageData;
-    d->ref.ref();
-    d->own_data = false;
-    d->data = data;
-    d->width = w;
-    d->height = h;
-    d->depth = depth;
-    d->format = f;
-    if (depth == 32)
-        numColors = 0;
-    d->bytes_per_line = bpl;
-    d->nbytes = d->bytes_per_line * h;
-    if (colortable) {
-        d->colortable.resize(numColors);
-        for (int i = 0; i < numColors; ++i)
-            d->colortable[i] = colortable[i];
-    } else if (numColors) {
-        setColorCount(numColors);
-    }
-}
-#endif // Q_WS_QWS
-#endif // QT3_SUPPORT
 
 /*!
     Destroys the image and cleans up.
@@ -1591,10 +1354,6 @@ int QImage::depth() const
 
     \sa setColorCount()
 */
-int QImage::numColors() const
-{
-    return d ? d->colortable.size() : 0;
-}
 
 /*!
     \since 4.6
@@ -1612,75 +1371,6 @@ int QImage::colorCount() const
 {
     return d ? d->colortable.size() : 0;
 }
-
-
-#ifdef QT3_SUPPORT
-/*!
-    \fn QImage::Endian QImage::bitOrder() const
-
-    Returns the bit order for the image. If it is a 1-bpp image, this
-    function returns either QImage::BigEndian or
-    QImage::LittleEndian. Otherwise, this function returns
-    QImage::IgnoreEndian.
-
-    Use the format() function instead for the monochrome formats. For
-    non-monochrome formats the bit order is irrelevant.
-*/
-
-/*!
-    Returns a pointer to the scanline pointer table. This is the
-    beginning of the data block for the image.
-    Returns 0 in case of an error.
-
-    Use the bits() or scanLine() function instead.
-*/
-uchar **QImage::jumpTable()
-{
-    if (!d)
-        return 0;
-    detach();
-
-    // in case detach() ran out of memory..
-    if (!d)
-        return 0;
-
-    if (!d->jumptable) {
-        d->jumptable = (uchar **)malloc(d->height*sizeof(uchar *));
-        if (!d->jumptable)
-            return 0;
-        uchar *data = d->data;
-        int height = d->height;
-        uchar **p = d->jumptable;
-        while (height--) {
-            *p++ = data;
-            data += d->bytes_per_line;
-        }
-    }
-    return d->jumptable;
-}
-
-/*!
-    \overload
-*/
-const uchar * const *QImage::jumpTable() const
-{
-    if (!d)
-        return 0;
-    if (!d->jumptable) {
-        d->jumptable = (uchar **)malloc(d->height*sizeof(uchar *));
-        if (!d->jumptable)
-            return 0;
-        uchar *data = d->data;
-        int height = d->height;
-        uchar **p = d->jumptable;
-        while (height--) {
-            *p++ = data;
-            data += d->bytes_per_line;
-        }
-    }
-    return d->jumptable;
-}
-#endif
 
 /*!
     Sets the color table used to translate color indexes to QRgb
@@ -1731,10 +1421,6 @@ QVector<QRgb> QImage::colorTable() const
 
     \sa byteCount()
 */
-int QImage::numBytes() const
-{
-    return d ? d->nbytes : 0;
-}
 
 /*!
     \since 4.6
@@ -2168,10 +1854,6 @@ void QImage::invertPixels(InvertMode mode)
     \sa setColorCount()
 */
 
-void QImage::setNumColors(int numColors)
-{
-    setColorCount(numColors);
-}
 
 /*!
     \since 4.6
@@ -2224,116 +1906,6 @@ QImage::Format QImage::format() const
 }
 
 
-#ifdef QT3_SUPPORT
-/*!
-    Returns true if alpha buffer mode is enabled; otherwise returns
-    false.
-
-    Use the hasAlphaChannel() function instead.
-
-*/
-bool QImage::hasAlphaBuffer() const
-{
-    if (!d)
-        return false;
-
-    switch (d->format) {
-    case Format_ARGB32:
-    case Format_ARGB32_Premultiplied:
-    case Format_ARGB8565_Premultiplied:
-    case Format_ARGB8555_Premultiplied:
-    case Format_ARGB6666_Premultiplied:
-    case Format_ARGB4444_Premultiplied:
-        return true;
-    default:
-        return false;
-    }
-}
-
-/*!
-    Enables alpha buffer mode if \a enable is true, otherwise disables
-    it. The alpha buffer is used to set a mask when a QImage is
-    translated to a QPixmap.
-
-    If a monochrome or indexed 8-bit image has alpha channels in their
-    color tables they will automatically detect that they have an
-    alpha channel, so this function is not required.  To force alpha
-    channels on 32-bit images, use the convertToFormat() function.
-*/
-
-void QImage::setAlphaBuffer(bool enable)
-{
-    if (!d
-        || d->format == Format_Mono
-        || d->format == Format_MonoLSB
-        || d->format == Format_Indexed8)
-        return;
-    if (enable && (d->format == Format_ARGB32 ||
-                   d->format == Format_ARGB32_Premultiplied ||
-                   d->format == Format_ARGB8565_Premultiplied ||
-                   d->format == Format_ARGB6666_Premultiplied ||
-                   d->format == Format_ARGB8555_Premultiplied ||
-                   d->format == Format_ARGB4444_Premultiplied))
-    {
-        return;
-    }
-    if (!enable && (d->format == Format_RGB32 ||
-                    d->format == Format_RGB555 ||
-                    d->format == Format_RGB666 ||
-                    d->format == Format_RGB888 ||
-                    d->format == Format_RGB444))
-    {
-        return;
-    }
-    detach();
-    d->format = (enable ? Format_ARGB32 : Format_RGB32);
-}
-
-
-/*!
-  \fn bool QImage::create(int width, int height, int depth, int numColors, Endian bitOrder)
-
-    Sets the image \a width, \a height, \a depth, its number of colors
-    (in \a numColors), and bit order. Returns true if successful, or
-    false if the parameters are incorrect or if memory cannot be
-    allocated.
-
-    The \a width and \a height is limited to 32767. \a depth must be
-    1, 8, or 32. If \a depth is 1, \a bitOrder must be set to
-    either QImage::LittleEndian or QImage::BigEndian. For other depths
-    \a bitOrder must be QImage::IgnoreEndian.
-
-    This function allocates a color table and a buffer for the image
-    data. The image data is not initialized. The image buffer is
-    allocated as a single block that consists of a table of scanLine()
-    pointers (jumpTable()) and the image data (bits()).
-
-    Use a QImage constructor instead.
-*/
-bool QImage::create(int width, int height, int depth, int numColors, Endian bitOrder)
-{
-    if (d && !d->ref.deref())
-        delete d;
-    d = QImageData::create(QSize(width, height), formatFor(depth, bitOrder), numColors);
-    return true;
-}
-
-/*!
-    \fn bool QImage::create(const QSize& size, int depth, int numColors, Endian bitOrder)
-    \overload
-
-    The width and height are specified in the \a size argument.
-
-    Use a QImage constructor instead.
-*/
-bool QImage::create(const QSize& size, int depth, int numColors, QImage::Endian bitOrder)
-{
-    if (d && !d->ref.deref())
-        delete d;
-    d = QImageData::create(size, formatFor(depth, bitOrder), numColors);
-    return true;
-}
-#endif // QT3_SUPPORT
 
 /*****************************************************************************
   Internal routines for converting image depth.
@@ -4023,30 +3595,6 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
     return image;
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Converts the depth (bpp) of the image to the given \a depth and
-    returns the converted image. The original image is not changed.
-    Returns this image if \a depth is equal to the image depth, or a
-    null image if this image cannot be converted. The \a depth
-    argument must be 1, 8 or 32. If the image needs to be modified to
-    fit in a lower-resolution result (e.g. converting from 32-bit to
-    8-bit), use the \a flags to specify how you'd prefer this to
-    happen.
-
-    Use the convertToFormat() function instead.
-*/
-
-QImage QImage::convertDepth(int depth, Qt::ImageConversionFlags flags) const
-{
-    if (!d || d->depth == depth)
-        return *this;
-
-    Format format = formatFor (depth, QImage::LittleEndian);
-    return convertToFormat(format, flags);
-}
-#endif
-
 /*!
     \fn bool QImage::valid(const QPoint &pos) const
 
@@ -4265,41 +3813,6 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     }
 }
 
-#ifdef QT3_SUPPORT
-/*!
-    Converts the bit order of the image to the given \a bitOrder and
-    returns the converted image. The original image is not changed.
-    Returns this image if the given \a bitOrder is equal to the image
-    current bit order, or a null image if this image cannot be
-    converted.
-
-    Use convertToFormat() instead.
-*/
-
-QImage QImage::convertBitOrder(Endian bitOrder) const
-{
-    if (!d || isNull() || d->depth != 1 || !(bitOrder == BigEndian || bitOrder == LittleEndian))
-        return QImage();
-
-    if ((d->format == Format_Mono && bitOrder == BigEndian)
-        || (d->format == Format_MonoLSB && bitOrder == LittleEndian))
-        return *this;
-
-    QImage image(d->width, d->height, d->format == Format_Mono ? Format_MonoLSB : Format_Mono);
-
-    const uchar *data = d->data;
-    const uchar *end = data + d->nbytes;
-    uchar *ndata = image.d->data;
-    while (data < end)
-        *ndata++ = bitflip[*data++];
-
-    image.setDotsPerMeterX(dotsPerMeterX());
-    image.setDotsPerMeterY(dotsPerMeterY());
-
-    image.d->colortable = d->colortable;
-    return image;
-}
-#endif
 /*!
     Returns true if all the colors in the image are shades of gray
     (i.e. their red, green and blue components are equal); otherwise
@@ -5286,66 +4799,6 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
 #endif // QT_NO_DATASTREAM
 
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn QImage QImage::convertDepthWithPalette(int depth, QRgb* palette, int palette_count, Qt::ImageConversionFlags flags) const
-
-    Returns an image with the given \a depth, using the \a
-    palette_count colors pointed to by \a palette. If \a depth is 1 or
-    8, the returned image will have its color table ordered in the
-    same way as \a palette.
-
-    If the image needs to be modified to fit in a lower-resolution
-    result (e.g. converting from 32-bit to 8-bit), use the \a flags to
-    specify how you'd prefer this to happen.
-
-    Note: currently no closest-color search is made. If colors are
-    found that are not in the palette, the palette may not be used at
-    all. This result should not be considered valid because it may
-    change in future implementations.
-
-    Currently inefficient for non-32-bit images.
-
-    Use the convertToFormat() function in combination with the
-    setColorTable() function instead.
-*/
-QImage QImage::convertDepthWithPalette(int d, QRgb* palette, int palette_count, Qt::ImageConversionFlags flags) const
-{
-    Format f = formatFor(d, QImage::LittleEndian);
-    QVector<QRgb> colortable;
-    for (int i = 0; i < palette_count; ++i)
-        colortable.append(palette[i]);
-    return convertToFormat(f, colortable, flags);
-}
-
-/*!
-    \relates QImage
-
-    Copies a block of pixels from \a src to \a dst. The pixels
-    copied from source (src) are converted according to
-    \a flags if it is incompatible with the destination
-    (\a dst).
-
-    \a sx, \a sy is the top-left pixel in \a src, \a dx, \a dy is the
-    top-left position in \a dst and \a sw, \a sh is the size of the
-    copied block. The copying is clipped if areas outside \a src or \a
-    dst are specified. If \a sw is -1, it is adjusted to
-    src->width(). Similarly, if \a sh is -1, it is adjusted to
-    src->height().
-
-    Currently inefficient for non 32-bit images.
-
-    Use copy() or QPainter::drawImage() instead.
-*/
-void bitBlt(QImage *dst, int dx, int dy, const QImage *src, int sx, int sy, int sw, int sh,
-            Qt::ImageConversionFlags flags)
-{
-    if (dst->isNull() || src->isNull())
-        return;
-    QPainter p(dst);
-    p.drawImage(QPoint(dx, dy), *src, QRect(sx, sy, sw, sh), flags);
-}
-#endif
 
 /*!
     \fn bool QImage::operator==(const QImage & image) const
@@ -5619,15 +5072,6 @@ void QImage::setText(const QString &key, const QString &value)
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QString QImage::text(const char* key, const char* lang) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromAscii(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromAscii(lang);
-    return d->text.value(k);
-}
 
 /*!
     \fn QString QImage::text(const QImageTextKeyLang& keywordAndLanguage) const
@@ -5641,15 +5085,6 @@ QString QImage::text(const char* key, const char* lang) const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QString QImage::text(const QImageTextKeyLang& kl) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromAscii(kl.key);
-    if (!kl.lang.isEmpty())
-        k += QLatin1Char('/') + QString::fromAscii(kl.lang);
-    return d->text.value(k);
-}
 
 /*!
     \obsolete
@@ -5661,20 +5096,6 @@ QString QImage::text(const QImageTextKeyLang& kl) const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QStringList QImage::textLanguages() const
-{
-    if (!d)
-        return QStringList();
-    QStringList keys = textKeys();
-    QStringList languages;
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0)
-            languages += keys.at(i).mid(index+1);
-    }
-
-    return languages;
-}
 
 /*!
     \obsolete
@@ -5687,24 +5108,6 @@ QStringList QImage::textLanguages() const
     The language the text is recorded in is no longer relevant since
     the text is always set using QString and UTF-8 representation.
 */
-QList<QImageTextKeyLang> QImage::textList() const
-{
-    QList<QImageTextKeyLang> imageTextKeys;
-    if (!d)
-        return imageTextKeys;
-    QStringList keys = textKeys();
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0) {
-            QImageTextKeyLang tkl;
-            tkl.key = keys.at(i).left(index).toAscii();
-            tkl.lang = keys.at(i).mid(index+1).toAscii();
-            imageTextKeys += tkl;
-        }
-    }
-
-    return imageTextKeys;
-}
 
 /*!
     \fn void QImage::setText(const char* key, const char* language, const QString& text)
@@ -5729,21 +5132,6 @@ QList<QImageTextKeyLang> QImage::textList() const
     \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or 0.
     \endomit
 */
-void QImage::setText(const char* key, const char* lang, const QString& s)
-{
-    if (!d)
-        return;
-    detach();
-
-    // In case detach() ran out of memory
-    if (!d)
-        return;
-
-    QString k = QString::fromAscii(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromAscii(lang);
-    d->text.insert(k, s);
-}
 
 #endif // QT_NO_IMAGE_TEXT
 
@@ -6324,24 +5712,6 @@ int QImage::bitPlaneCount() const
     }
     return bpc;
 }
-
-
-#ifdef QT3_SUPPORT
-#if defined(Q_WS_X11)
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <private/qt_x11_p.h>
-QT_END_INCLUDE_NAMESPACE
-#endif
-
-QImage::Endian QImage::systemBitOrder()
-{
-#if defined(Q_WS_X11)
-    return BitmapBitOrder(X11->display) == MSBFirst ? BigEndian : LittleEndian;
-#else
-    return BigEndian;
-#endif
-}
-#endif
 
 /*!
     \fn QImage QImage::copy(const QRect &rect, Qt::ImageConversionFlags flags) const

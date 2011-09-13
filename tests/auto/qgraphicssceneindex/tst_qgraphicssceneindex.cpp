@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <QtGui/qgraphicsscene.h>
+#include <QtWidgets/qgraphicsscene.h>
 #include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>

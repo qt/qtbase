@@ -44,36 +44,36 @@
 
 #include "qwaylanddisplay.h"
 
-#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformOpenGLContext>
 
 #include "qwaylandeglinclude.h"
 
 class QWaylandWindow;
 class QWaylandGLWindowSurface;
 
-class QWaylandGLContext : public QPlatformGLContext {
+class QWaylandGLContext : public QPlatformOpenGLContext {
 public:
-    QWaylandGLContext(EGLDisplay eglDisplay, const QPlatformWindowFormat &format);
+    QWaylandGLContext(EGLDisplay eglDisplay, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QWaylandGLContext();
-    void makeCurrent();
+
+    void swapBuffers(QPlatformSurface *surface);
+
+    bool makeCurrent(QPlatformSurface *surface);
     void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString&);
 
-    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
+    void (*getProcAddress(const QByteArray &procName)) ();
 
-    void setEglSurface(EGLSurface surface);
+    QSurfaceFormat format() const { return m_format; }
+
     EGLConfig eglConfig() const;
+    EGLContext eglContext() const { return m_context; }
+
 private:
-    EGLDisplay mEglDisplay;
+    EGLDisplay m_eglDisplay;
 
-    EGLContext mContext;
-    EGLSurface mSurface;
-    EGLConfig mConfig;
-    QPlatformWindowFormat mFormat;
-
-    QWaylandGLContext();
-
+    EGLContext m_context;
+    EGLConfig m_config;
+    QSurfaceFormat m_format;
 };
 
 

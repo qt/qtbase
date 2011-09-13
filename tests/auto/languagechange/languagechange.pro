@@ -1,4 +1,5 @@
 load(qttest_p4)
-QT += core-private
+QT += widgets core-private
 SOURCES += tst_languagechange.cpp
 
+CONFIG += insignificant_test # QTBUG-21402

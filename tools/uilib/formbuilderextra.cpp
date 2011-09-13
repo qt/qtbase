@@ -45,9 +45,9 @@
 #include "textbuilder_p.h"
 #include "ui4_p.h"
 
-#include <QtGui/QLabel>
-#include <QtGui/QBoxLayout>
-#include <QtGui/QGridLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QBoxLayout>
+#include <QtWidgets/QGridLayout>
 
 #include <QtCore/QVariant>
 #include <QtCore/qdebug.h>

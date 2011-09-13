@@ -44,7 +44,7 @@
 #include "qwaylandinputdevice.h"
 #include "qwaylandmime.h"
 #include <QtGui/QPlatformNativeInterface>
-#include <QtGui/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtCore/QMimeData>
 #include <QtCore/QStringList>
 #include <QtCore/QFile>

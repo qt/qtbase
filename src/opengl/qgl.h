@@ -42,34 +42,22 @@
 #ifndef QGL_H
 #define QGL_H
 
-#include <QtGui/qwidget.h>
+#include <QtWidgets/qwidget.h>
 #include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
 
-#ifdef Q_WS_QPA
-#include <QtGui/QPlatformWindowFormat>
-#endif
+#include <QtGui/QSurfaceFormat>
 
 QT_BEGIN_HEADER
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 # include <QtCore/qt_windows.h>
 #endif
 
-#if defined(QT_OPENGL_ES_1)
-# if defined(Q_OS_MAC)
-#  include <OpenGLES/ES1/gl.h>
-# else
-#  include <GLES/gl.h>
-# endif
-# ifndef GL_DOUBLE
-#  define GL_DOUBLE GL_FLOAT
-# endif
-# ifndef GLdouble
-typedef GLfloat GLdouble;
-# endif
+#if defined(Q_OS_MAC)
+# include <OpenGL/gl.h>
 #elif defined(QT_OPENGL_ES_2)
 # if defined(Q_OS_MAC)
 #  include <OpenGLES/ES2/gl.h>
@@ -94,31 +82,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if defined(Q_WS_MAC) && defined (QT_BUILD_OPENGL_LIB) && !defined(QT_MAC_USE_COCOA) && !defined(QDOC)
-#define Q_MAC_COMPAT_GL_FUNCTIONS
-
-template <typename T>
-struct QMacGLCompatTypes
-{
-    typedef long CompatGLint;
-    typedef unsigned long CompatGLuint;
-    typedef unsigned long CompatGLenum;
-};
-
-template <>
-struct QMacGLCompatTypes<long>
-{
-    typedef int CompatGLint;
-    typedef unsigned int CompatGLuint;
-    typedef unsigned int CompatGLenum;
-};
-
-typedef QMacGLCompatTypes<GLint>::CompatGLint QMacCompatGLint;
-typedef QMacGLCompatTypes<GLint>::CompatGLuint QMacCompatGLuint;
-typedef QMacGLCompatTypes<GLint>::CompatGLenum QMacCompatGLenum;
-
-#endif
-
 #ifdef QT3_SUPPORT
 #define QGL_VERSION        460
 #define QGL_VERSION_STR        "4.6"
@@ -132,17 +95,12 @@ class QGLCmap;
 #endif
 
 class QPixmap;
-#if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
-class QGLOverlayWidget;
-#endif
 class QGLWidgetPrivate;
 class QGLContextPrivate;
 
 // Namespace class:
 namespace QGL
 {
-    Q_OPENGL_EXPORT void setPreferredPaintEngine(QPaintEngine::Type engineType);
-
     enum FormatOption {
         DoubleBuffer            = 0x0001,
         DepthBuffer             = 0x0002,
@@ -284,10 +242,8 @@ public:
 
     static OpenGLVersionFlags openGLVersionFlags();
 
-#if defined(Q_WS_QPA)
-    static QGLFormat fromPlatformWindowFormat(const QPlatformWindowFormat &format);
-    static QPlatformWindowFormat toPlatformWindowFormat(const QGLFormat &format);
-#endif
+    static QGLFormat fromSurfaceFormat(const QSurfaceFormat &format);
+    static QSurfaceFormat toSurfaceFormat(const QGLFormat &format);
 private:
     QGLFormatPrivate *d;
 
@@ -373,22 +329,6 @@ public:
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    GLuint bindTexture(const QImage &image, QMacCompatGLenum = GL_TEXTURE_2D,
-                       QMacCompatGLint format = GL_RGBA);
-    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum = GL_TEXTURE_2D,
-                       QMacCompatGLint format = GL_RGBA);
-    GLuint bindTexture(const QImage &image, QMacCompatGLenum, QMacCompatGLint format,
-                       BindOptions);
-    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum, QMacCompatGLint format,
-                       BindOptions);
-
-    void deleteTexture(QMacCompatGLuint tx_id);
-
-    void drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-    void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-#endif
-
     static void setTextureCacheLimit(int size);
     static int textureCacheLimit();
 
@@ -398,22 +338,11 @@ public:
 
     static const QGLContext* currentContext();
 
-#ifdef Q_WS_QPA
-    static QGLContext *fromPlatformGLContext(QPlatformGLContext *platformContext);
-#endif
+    static QGLContext *fromOpenGLContext(QOpenGLContext *platformContext);
+    QOpenGLContext *contextHandle() const;
+
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
-
-#if defined(Q_WS_WIN)
-    virtual int choosePixelFormat(void* pfd, HDC pdc);
-#endif
-#if defined(Q_WS_X11)
-    virtual void* tryVisual(const QGLFormat& f, int bufDepth = 1);
-    virtual void* chooseVisual();
-#endif
-#if defined(Q_WS_MAC)
-    virtual void* chooseMacVisual(GDHandle);
-#endif
 
     bool deviceIsPixmap() const;
     bool windowCreated() const;
@@ -430,9 +359,7 @@ protected:
     static QGLContext* currentCtx;
 
 private:
-#ifdef Q_WS_QPA
-    QGLContext(QPlatformGLContext *platformContext);
-#endif
+    QGLContext(QOpenGLContext *windowContext);
 
     QScopedPointer<QGLContextPrivate> d_ptr;
 
@@ -441,18 +368,12 @@ private:
     friend class QGLWidget;
     friend class QGLWidgetPrivate;
     friend class QGLGlyphCache;
-    friend class QOpenGLPaintEngine;
-    friend class QOpenGLPaintEnginePrivate;
     friend class QGL2PaintEngineEx;
     friend class QGL2PaintEngineExPrivate;
     friend class QGLEngineShaderManager;
-    friend class QGLWindowSurface;
-    friend class QGLPixmapData;
-    friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
     friend struct QGLGlyphTexture;
     friend class QGLContextGroup;
-    friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
     friend class QGLExtensions;
     friend class QGLTexture;
@@ -469,7 +390,6 @@ private:
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
     friend class QGLWidgetGLPaintDevice;
-    friend class QX11GLPixmapData;
     friend class QX11GLSharedContexts;
     friend class QGLContextResourceBase;
     friend class QSGDistanceFieldGlyphCache;
@@ -556,22 +476,6 @@ public:
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
 
-#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
-    GLuint bindTexture(const QImage &image, QMacCompatGLenum = GL_TEXTURE_2D,
-                       QMacCompatGLint format = GL_RGBA);
-    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum = GL_TEXTURE_2D,
-                       QMacCompatGLint format = GL_RGBA);
-    GLuint bindTexture(const QImage &image, QMacCompatGLenum, QMacCompatGLint format,
-                       QGLContext::BindOptions);
-    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum, QMacCompatGLint format,
-                       QGLContext::BindOptions);
-
-    void deleteTexture(QMacCompatGLuint tx_id);
-
-    void drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-    void drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget = GL_TEXTURE_2D);
-#endif
-
 public Q_SLOTS:
     virtual void updateGL();
     virtual void updateOverlayGL();
@@ -613,7 +517,6 @@ private:
     friend class QGLContext;
     friend class QGLContextPrivate;
     friend class QGLOverlayWidget;
-    friend class QOpenGLPaintEngine;
     friend class QGLPaintDevice;
     friend class QGLWidgetGLPaintDevice;
 };

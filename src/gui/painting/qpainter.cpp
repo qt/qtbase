@@ -56,9 +56,6 @@
 #include "qpixmapcache.h"
 #include "qpolygon.h"
 #include "qtextlayout.h"
-#include "qwidget.h"
-#include "qapplication.h"
-#include "qstyle.h"
 #include "qthread.h"
 #include "qvarlengtharray.h"
 #include "qstatictext.h"
@@ -69,12 +66,12 @@
 #include <private/qemulationpaintengine_p.h>
 #include <private/qpainterpath_p.h>
 #include <private/qtextengine_p.h>
-#include <private/qwidget_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
 #include <private/qstatictext_p.h>
 #include <private/qglyphrun_p.h>
-#include <private/qstylehelper_p.h>
+#include <private/qhexstring_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qrawfont_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -242,33 +239,9 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q);
     Q_ASSERT(pdev);
 
-    if (pdev->devType() != QInternal::Widget)
+    QPainter *sp = pdev->sharedPainter();
+    if (!sp)
         return false;
-
-    QWidget *widget = static_cast<QWidget *>(pdev);
-    Q_ASSERT(widget);
-
-    // Someone either called QPainter::setRedirected in the widget's paint event
-    // right before this painter was created (or begin was called) or
-    // sent a paint event directly to the widget.
-    if (!widget->d_func()->redirectDev)
-        return false;
-
-    QPainter *sp = widget->d_func()->sharedPainter();
-    if (!sp || !sp->isActive())
-        return false;
-
-    if (sp->paintEngine()->paintDevice() != widget->d_func()->redirectDev)
-        return false;
-
-    // Check if we're attempting to paint outside a paint event.
-    if (!sp->d_ptr->engine->hasFeature(QPaintEngine::PaintOutsidePaintEvent)
-        && !widget->testAttribute(Qt::WA_PaintOutsidePaintEvent)
-        && !widget->testAttribute(Qt::WA_WState_InPaintEvent)) {
-
-        qWarning("QPainter::begin: Widget painting can only begin as a result of a paintEvent");
-        return false;
-    }
 
     // Save the current state of the shared painter and assign
     // the current d_ptr to the shared painter's d_ptr.
@@ -293,14 +266,14 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     Q_ASSERT(q->d_ptr->state);
 
     // Now initialize the painter with correct widget properties.
-    q->initFrom(widget);
+    q->initFrom(pdev);
     QPoint offset;
-    widget->d_func()->redirected(&offset);
+    pdev->redirected(&offset);
     offset += q->d_ptr->engine->coordinateOffset();
 
     // Update system rect.
-    q->d_ptr->state->ww = q->d_ptr->state->vw = widget->width();
-    q->d_ptr->state->wh = q->d_ptr->state->vh = widget->height();
+    q->d_ptr->state->ww = q->d_ptr->state->vw = pdev->width();
+    q->d_ptr->state->wh = q->d_ptr->state->vh = pdev->height();
 
     // Update matrix.
     if (q->d_ptr->state->WxF) {
@@ -314,13 +287,13 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     q->d_ptr->updateMatrix();
 
     QPaintEnginePrivate *enginePrivate = q->d_ptr->engine->d_func();
-    if (enginePrivate->currentClipWidget == widget) {
+    if (enginePrivate->currentClipDevice == pdev) {
         enginePrivate->systemStateChanged();
         return true;
     }
 
     // Update system transform and clip.
-    enginePrivate->currentClipWidget = widget;
+    enginePrivate->currentClipDevice = pdev;
     enginePrivate->setSystemTransform(q->d_ptr->state->matrix);
     return true;
 }
@@ -1371,17 +1344,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
     only use the format types QImage::Format_ARGB32_Premultiplied,
     QImage::Format_RGB32 or QImage::Format_RGB16. Any other format,
     including QImage::Format_ARGB32, has significantly worse
-    performance. This engine is also used by default on Windows and on
-    QWS. It can be used as default graphics system on any
-    OS/hardware/software combination by passing \c {-graphicssystem
-    raster} on the command line
+    performance. This engine is used by default for QWidget and QPixmap.
 
     \o OpenGL 2.0 (ES) - This backend is the primary backend for
     hardware accelerated graphics. It can be run on desktop machines
     and embedded devices supporting the OpenGL 2.0 or OpenGL/ES 2.0
     specification. This includes most graphics chips produced in the
     last couple of years. The engine can be enabled by using QPainter
-    onto a QGLWidget or by passing \c {-graphicssystem opengl} on the
+    onto a QOpenGLWidget or by passing \c {-graphicssystem opengl} on the
     command line when the underlying system supports it.
 
     \o OpenVG - This backend implements the Khronos standard for 2D
@@ -1542,8 +1512,8 @@ QPainter::~QPainter()
 QPaintDevice *QPainter::device() const
 {
     Q_D(const QPainter);
-    if (isActive() && d->engine->d_func()->currentClipWidget)
-        return d->engine->d_func()->currentClipWidget;
+    if (isActive() && d->engine->d_func()->currentClipDevice)
+        return d->engine->d_func()->currentClipDevice;
     return d->original_device;
 }
 
@@ -1562,25 +1532,23 @@ bool QPainter::isActive() const
 
 /*!
     Initializes the painters pen, background and font to the same as
-    the given \a widget. This function is called automatically when the
-    painter is opened on a QWidget.
+    the given \a paint device.
+
+    \obsolete
 
     \sa begin(), {QPainter#Settings}{Settings}
 */
-void QPainter::initFrom(const QWidget *widget)
+void QPainter::initFrom(const QPaintDevice *device)
 {
-    Q_ASSERT_X(widget, "QPainter::initFrom(const QWidget *widget)", "Widget cannot be 0");
+    Q_ASSERT_X(device, "QPainter::initFrom(const QPaintDevice *device)", "QPaintDevice cannot be 0");
     Q_D(QPainter);
     if (!d->engine) {
         qWarning("QPainter::initFrom: Painter not active, aborted");
         return;
     }
 
-    const QPalette &pal = widget->palette();
-    d->state->pen = QPen(pal.brush(widget->foregroundRole()), 0);
-    d->state->bgBrush = pal.brush(widget->backgroundRole());
-    d->state->deviceFont = QFont(widget->font(), const_cast<QWidget*> (widget));
-    d->state->font = d->state->deviceFont;
+    device->init(this);
+
     if (d->extended) {
         d->extended->penChanged();
     } else if (d->engine) {
@@ -1753,22 +1721,9 @@ bool QPainter::begin(QPaintDevice *pd)
 
     d->helper_device = pd;
     d->original_device = pd;
-    QPaintDevice *rpd = 0;
 
     QPoint redirectionOffset;
-    // We know for sure that redirection is broken when the widget is inside
-    // its paint event, so it's safe to use our hard-coded redirection. However,
-    // there IS one particular case we still need to support, and that's
-    // when people call QPainter::setRedirected in the widget's paint event right
-    // before any painter is created (or QPainter::begin is called). In that
-    // particular case our hard-coded redirection is restored and the redirection
-    // is retrieved from QPainter::redirected (as before).
-    if (pd->devType() == QInternal::Widget)
-        rpd = static_cast<QWidget *>(pd)->d_func()->redirected(&redirectionOffset);
-
-    if (!rpd)
-        rpd = redirected(pd, &redirectionOffset);
-
+    QPaintDevice *rpd = pd->redirected(&redirectionOffset);
     if (rpd)
         pd = rpd;
 
@@ -1811,6 +1766,8 @@ bool QPainter::begin(QPaintDevice *pd)
         d->engine->state = d->state;
 
     switch (pd->devType()) {
+#if 0
+        // is this needed any more??
         case QInternal::Widget:
         {
             const QWidget *widget = static_cast<const QWidget *>(pd);
@@ -1818,13 +1775,6 @@ bool QPainter::begin(QPaintDevice *pd)
 
             const bool paintOutsidePaintEvent = widget->testAttribute(Qt::WA_PaintOutsidePaintEvent);
             const bool inPaintEvent = widget->testAttribute(Qt::WA_WState_InPaintEvent);
-            if(!d->engine->hasFeature(QPaintEngine::PaintOutsidePaintEvent)
-                && !paintOutsidePaintEvent && !inPaintEvent) {
-                qWarning("QPainter::begin: Widget painting can only begin as a "
-                         "result of a paintEvent");
-                qt_cleanup_painter_state(d);
-                return false;
-            }
 
             // Adjust offset for alien widgets painting outside the paint event.
             if (!inPaintEvent && paintOutsidePaintEvent && !widget->internalWinId()
@@ -1834,6 +1784,7 @@ bool QPainter::begin(QPaintDevice *pd)
             }
             break;
         }
+#endif
         case QInternal::Pixmap:
         {
             QPixmap *pm = static_cast<QPixmap *>(pd);
@@ -1894,8 +1845,7 @@ bool QPainter::begin(QPaintDevice *pd)
     // Copy painter properties from original paint device,
     // required for QPixmap::grabWidget()
     if (d->original_device->devType() == QInternal::Widget) {
-        QWidget *widget = static_cast<QWidget *>(d->original_device);
-        initFrom(widget);
+        initFrom(d->original_device);
     } else {
         d->state->layoutDirection = Qt::LayoutDirectionAuto;
         // make sure we have a font compatible with the paintdevice
@@ -4606,82 +4556,6 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
    startAngle and \a spanAngle.
 */
 
-#ifdef QT3_SUPPORT
-/*!
-    \fn void QPainter::drawLineSegments(const QPolygon &polygon, int
-    index, int count)
-
-    Draws \a count separate lines from points defined by the \a
-    polygon, starting at \a{polygon}\e{[index]} (\a index defaults to
-    0). If \a count is -1 (the default) all points until the end of
-    the array are used.
-
-    Use drawLines() combined with QPolygon::constData() instead.
-
-    \oldcode
-        QPainter painter(this);
-        painter.drawLineSegments(polygon, index, count);
-    \newcode
-        int lineCount = (count == -1) ?  (polygon.size() - index) / 2  : count;
-
-        QPainter painter(this);
-        painter.drawLines(polygon.constData() + index * 2, lineCount);
-    \endcode
-*/
-
-void QPainter::drawLineSegments(const QPolygon &a, int index, int nlines)
-{
-#ifdef QT_DEBUG_DRAW
-    if (qt_show_painter_debug_output)
-        printf("QPainter::drawLineSegments(), count=%d\n", a.size()/2);
-#endif
-    Q_D(QPainter);
-
-    if (!d->engine)
-        return;
-
-    if (nlines < 0)
-        nlines = a.size()/2 - index/2;
-    if (index + nlines*2 > (int)a.size())
-        nlines = (a.size() - index)/2;
-    if (nlines < 1 || index < 0)
-        return;
-
-    if (d->extended) {
-        // FALCON: Use QVectorPath
-        QVector<QLineF> lines;
-        for (int i=index; i<index + nlines*2; i+=2)
-            lines << QLineF(a.at(i), a.at(i+1));
-        d->extended->drawLines(lines.data(), lines.size());
-        return;
-    }
-
-    d->updateState(d->state);
-
-    QVector<QLineF> lines;
-    if (d->state->emulationSpecifier) {
-        if (d->state->emulationSpecifier == QPaintEngine::PrimitiveTransform
-            && d->state->matrix.type() == QTransform::TxTranslate) {
-            QPointF offset(d->state->matrix.dx(), d->state->matrix.dy());
-            for (int i=index; i<index + nlines*2; i+=2)
-                lines << QLineF(a.at(i) + offset, a.at(i+1) + offset);
-        } else {
-            QPainterPath linesPath;
-            for (int i=index; i<index + nlines*2; i+=2) {
-                linesPath.moveTo(a.at(i));
-                linesPath.lineTo(a.at(i+1));
-            }
-            d->draw_helper(linesPath, QPainterPrivate::StrokeDraw);
-            return;
-        }
-    } else {
-        for (int i=index; i<index + nlines*2; i+=2)
-            lines << QLineF(a.at(i), a.at(i+1));
-    }
-
-    d->engine->drawLines(lines.data(), lines.size());
-}
-#endif // QT3_SUPPORT
 
 /*!
     Draws the first \a lineCount lines in the array \a lines
@@ -6467,7 +6341,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
     const qreal underlinePos = pos.y() + qCeil(underlineOffset) - aliasedCoordinateDelta;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
-        underlineStyle = QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
+        underlineStyle = QTextCharFormat::SpellCheckUnderline; // ### Qt5 QTextCharFormat::UnderlineStyle(QApplication::style()->styleHint(QStyle::SH_SpellCheckUnderlineStyle));
     }
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
@@ -7518,328 +7392,6 @@ void QPainter::setViewTransformEnabled(bool enable)
     d->updateMatrix();
 }
 
-#ifdef QT3_SUPPORT
-
-/*!
-    \obsolete
-
-    Use the worldTransform() combined with QTransform::dx() instead.
-
-    \oldcode
-        QPainter painter(this);
-        qreal x = painter.translationX();
-    \newcode
-        QPainter painter(this);
-        qreal x = painter.worldTransform().dx();
-    \endcode
-*/
-qreal QPainter::translationX() const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::translationX: Painter not active");
-        return 0.0;
-    }
-    return d->state->worldMatrix.dx();
-}
-
-/*!
-    \obsolete
-
-    Use the worldTransform() combined with QTransform::dy() instead.
-
-    \oldcode
-        QPainter painter(this);
-        qreal y = painter.translationY();
-    \newcode
-        QPainter painter(this);
-        qreal y = painter.worldTransform().dy();
-    \endcode
-*/
-qreal QPainter::translationY() const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::translationY: Painter not active");
-        return 0.0;
-    }
-    return d->state->worldMatrix.dy();
-}
-
-/*!
-    \fn void QPainter::map(int x, int y, int *rx, int *ry) const
-
-    \internal
-
-    Sets (\a{rx}, \a{ry}) to the point that results from applying the
-    painter's current transformation on the point (\a{x}, \a{y}).
-*/
-void QPainter::map(int x, int y, int *rx, int *ry) const
-{
-    QPoint p(x, y);
-    p = p * combinedMatrix();
-    *rx = p.x();
-    *ry = p.y();
-}
-
-/*!
-    \fn QPoint QPainter::xForm(const QPoint &point) const
-
-    Use combinedTransform() instead.
-*/
-
-QPoint QPainter::xForm(const QPoint &p) const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xForm: Painter not active");
-        return QPoint();
-    }
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return p;
-    return p * combinedMatrix();
-}
-
-
-/*!
-    \fn QRect QPainter::xForm(const QRect &rectangle) const
-    \overload
-
-    Use combinedTransform() instead of this function and call
-    mapRect() on the result to obtain a QRect.
-*/
-
-QRect QPainter::xForm(const QRect &r) const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xForm: Painter not active");
-        return QRect();
-    }
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return r;
-    return combinedMatrix().mapRect(r);
-}
-
-/*!
-    \fn QPolygon QPainter::xForm(const QPolygon &polygon) const
-    \overload
-
-    Use combinedTransform() instead.
-*/
-
-QPolygon QPainter::xForm(const QPolygon &a) const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xForm: Painter not active");
-        return QPolygon();
-    }
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return a;
-    return a * combinedMatrix();
-}
-
-/*!
-    \fn QPolygon QPainter::xForm(const QPolygon &polygon, int index, int count) const
-    \overload
-
-    Use combinedTransform() combined with QPolygon::mid() instead.
-
-    \oldcode
-        QPainter painter(this);
-        QPolygon transformed = painter.xForm(polygon, index, count)
-    \newcode
-        QPainter painter(this);
-        QPolygon transformed = polygon.mid(index, count) * painter.combinedTransform();
-    \endcode
-*/
-
-QPolygon QPainter::xForm(const QPolygon &av, int index, int npoints) const
-{
-    int lastPoint = npoints < 0 ? av.size() : index+npoints;
-    QPolygon a(lastPoint-index);
-    memcpy(a.data(), av.data()+index, (lastPoint-index)*sizeof(QPoint));
-    return a * combinedMatrix();
-}
-
-/*!
-    \fn QPoint QPainter::xFormDev(const QPoint &point) const
-    \overload
-    \obsolete
-
-    Use combinedTransform() combined with QTransform::inverted() instead.
-
-    \oldcode
-        QPainter painter(this);
-        QPoint transformed = painter.xFormDev(point);
-    \newcode
-        QPainter painter(this);
-        QPoint transformed = point * painter.combinedTransform().inverted();
-    \endcode
-*/
-
-QPoint QPainter::xFormDev(const QPoint &p) const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xFormDev: Painter not active");
-        return QPoint();
-    }
-    if(d->state->matrix.type() == QTransform::TxNone)
-        return p;
-    return p * combinedMatrix().inverted();
-}
-
-/*!
-    \fn QRect QPainter::xFormDev(const QRect &rectangle) const
-    \overload
-    \obsolete
-
-    Use combinedTransform() combined with QTransform::inverted() instead.
-
-    \oldcode
-        QPainter painter(this);
-        QRect transformed = painter.xFormDev(rectangle);
-    \newcode
-        QPainter painter(this);
-        QRegion region = QRegion(rectangle) * painter.combinedTransform().inverted();
-        QRect transformed = region.boundingRect();
-    \endcode
-*/
-
-QRect QPainter::xFormDev(const QRect &r)  const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xFormDev: Painter not active");
-        return QRect();
-    }
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return r;
-    return combinedMatrix().inverted().mapRect(r);
-}
-
-/*!
-    \overload
-
-    \fn QPoint QPainter::xFormDev(const QPolygon &polygon) const
-    \obsolete
-
-    Use  combinedTransform() combined with QTransform::inverted() instead.
-
-    \oldcode
-        QPainter painter(this);
-        QPolygon transformed = painter.xFormDev(rectangle);
-    \newcode
-        QPainter painter(this);
-        QPolygon transformed = polygon * painter.combinedTransform().inverted();
-    \endcode
-*/
-
-QPolygon QPainter::xFormDev(const QPolygon &a) const
-{
-    Q_D(const QPainter);
-    if (!d->engine) {
-        qWarning("QPainter::xFormDev: Painter not active");
-        return QPolygon();
-    }
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return a;
-    return a * combinedMatrix().inverted();
-}
-
-/*!
-    \fn QPolygon QPainter::xFormDev(const QPolygon &polygon, int index, int count) const
-    \overload
-    \obsolete
-
-    Use combinedTransform() combined with QPolygon::mid() and QTransform::inverted() instead.
-
-    \oldcode
-        QPainter painter(this);
-        QPolygon transformed = painter.xFormDev(polygon, index, count);
-    \newcode
-        QPainter painter(this);
-        QPolygon transformed = polygon.mid(index, count) * painter.combinedTransform().inverted();
-    \endcode
-*/
-
-QPolygon QPainter::xFormDev(const QPolygon &ad, int index, int npoints) const
-{
-    Q_D(const QPainter);
-    int lastPoint = npoints < 0 ? ad.size() : index+npoints;
-    QPolygon a(lastPoint-index);
-    memcpy(a.data(), ad.data()+index, (lastPoint-index)*sizeof(QPoint));
-    if (d->state->matrix.type() == QTransform::TxNone)
-        return a;
-    return a * combinedMatrix().inverted();
-}
-
-/*!
-    \fn void QPainter::drawCubicBezier(const QPolygon &controlPoints, int index)
-
-    Draws a cubic Bezier curve defined by the \a controlPoints,
-    starting at \a{controlPoints}\e{[index]} (\a index defaults to 0).
-    Points after \a{controlPoints}\e{[index + 3]} are ignored. Nothing
-    happens if there aren't enough control points.
-
-    Use strokePath() instead.
-
-    \oldcode
-             QPainter painter(this);
-             painter.drawCubicBezier(controlPoints, index)
-    \newcode
-             QPainterPath path;
-             path.moveTo(controlPoints.at(index));
-             path.cubicTo(controlPoints.at(index+1),
-                                 controlPoints.at(index+2),
-                                 controlPoints.at(index+3));
-
-             QPainter painter(this);
-             painter.strokePath(path, painter.pen());
-    \endcode
-*/
-void QPainter::drawCubicBezier(const QPolygon &a, int index)
-{
-    Q_D(QPainter);
-
-    if (!d->engine)
-        return;
-
-    if ((int)a.size() - index < 4) {
-        qWarning("QPainter::drawCubicBezier: Cubic Bezier needs 4 control "
-                  "points");
-        return;
-    }
-
-    QPainterPath path;
-    path.moveTo(a.at(index));
-    path.cubicTo(a.at(index+1), a.at(index+2), a.at(index+3));
-    strokePath(path, d->state->pen);
-}
-#endif
-
-struct QPaintDeviceRedirection
-{
-    QPaintDeviceRedirection() : device(0), replacement(0), internalWidgetRedirectionIndex(-1) {}
-    QPaintDeviceRedirection(const QPaintDevice *device, QPaintDevice *replacement,
-                            const QPoint& offset, int internalWidgetRedirectionIndex)
-        : device(device), replacement(replacement), offset(offset),
-          internalWidgetRedirectionIndex(internalWidgetRedirectionIndex) { }
-    const QPaintDevice *device;
-    QPaintDevice *replacement;
-    QPoint offset;
-    int internalWidgetRedirectionIndex;
-    bool operator==(const QPaintDevice *pdev) const { return device == pdev; }
-    Q_DUMMY_COMPARISON_OPERATOR(QPaintDeviceRedirection)
-};
-
-typedef QList<QPaintDeviceRedirection> QPaintDeviceRedirectionList;
-Q_GLOBAL_STATIC(QPaintDeviceRedirectionList, globalRedirections)
-Q_GLOBAL_STATIC(QMutex, globalRedirectionsMutex)
-Q_GLOBAL_STATIC(QAtomicInt, globalRedirectionAtomic)
-
 /*!
     \threadsafe
 
@@ -7868,30 +7420,9 @@ void QPainter::setRedirected(const QPaintDevice *device,
                              const QPoint &offset)
 {
     Q_ASSERT(device != 0);
-
-    bool hadInternalWidgetRedirection = false;
-    if (device->devType() == QInternal::Widget) {
-        const QWidgetPrivate *widgetPrivate = static_cast<const QWidget *>(device)->d_func();
-        // This is the case when the widget is in a paint event.
-        if (widgetPrivate->redirectDev) {
-            // Remove internal redirection and put it back into the global redirection list.
-            QPoint oldOffset;
-            QPaintDevice *oldReplacement = widgetPrivate->redirected(&oldOffset);
-            const_cast<QWidgetPrivate *>(widgetPrivate)->restoreRedirected();
-            setRedirected(device, oldReplacement, oldOffset);
-            hadInternalWidgetRedirection = true;
-        }
-    }
-
-    QPoint roffset;
-    QPaintDevice *rdev = redirected(replacement, &roffset);
-
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    *redirections += QPaintDeviceRedirection(device, rdev ? rdev : replacement, offset + roffset,
-                                             hadInternalWidgetRedirection ? redirections->size() - 1 : -1);
-    globalRedirectionAtomic()->ref();
+    Q_UNUSED(replacement)
+    Q_UNUSED(offset)
+    qWarning("QPainter::setRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
 }
 
 /*!
@@ -7913,29 +7444,8 @@ void QPainter::setRedirected(const QPaintDevice *device,
  */
 void QPainter::restoreRedirected(const QPaintDevice *device)
 {
-    Q_ASSERT(device != 0);
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    for (int i = redirections->size()-1; i >= 0; --i) {
-        if (redirections->at(i) == device) {
-            globalRedirectionAtomic()->deref();
-            const int internalWidgetRedirectionIndex = redirections->at(i).internalWidgetRedirectionIndex;
-            redirections->removeAt(i);
-            // Restore the internal widget redirection, i.e. remove it from the global
-            // redirection list and put it back into QWidgetPrivate. The index is only set when
-            // someone call QPainter::setRedirected in a widget's paint event and we internally
-            // have a redirection set (typically set in QWidgetPrivate::drawWidget).
-            if (internalWidgetRedirectionIndex >= 0) {
-                Q_ASSERT(internalWidgetRedirectionIndex < redirections->size());
-                const QPaintDeviceRedirection &redirectionDevice = redirections->at(internalWidgetRedirectionIndex);
-                QWidget *widget = static_cast<QWidget *>(const_cast<QPaintDevice *>(device));
-                widget->d_func()->setRedirected(redirectionDevice.replacement, redirectionDevice.offset);
-                redirections->removeAt(internalWidgetRedirectionIndex);
-            }
-            return;
-        }
-    }
+    Q_UNUSED(device)
+    qWarning("QPainter::restoreRedirected(): ignoring call to deprecated function, use QWidget::render() instead");
 }
 
 /*!
@@ -7957,59 +7467,9 @@ void QPainter::restoreRedirected(const QPaintDevice *device)
 */
 QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 {
-    Q_ASSERT(device != 0);
-
-    if (device->devType() == QInternal::Widget) {
-        const QWidgetPrivate *widgetPrivate = static_cast<const QWidget *>(device)->d_func();
-        if (widgetPrivate->redirectDev)
-            return widgetPrivate->redirected(offset);
-    }
-
-    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
-        return 0;
-
-    QMutexLocker locker(globalRedirectionsMutex());
-    QPaintDeviceRedirectionList *redirections = globalRedirections();
-    Q_ASSERT(redirections != 0);
-    for (int i = redirections->size()-1; i >= 0; --i)
-        if (redirections->at(i) == device) {
-            if (offset)
-                *offset = redirections->at(i).offset;
-            return redirections->at(i).replacement;
-        }
-    if (offset)
-        *offset = QPoint(0, 0);
+    Q_UNUSED(device)
+    Q_UNUSED(offset)
     return 0;
-}
-
-
-void qt_painter_removePaintDevice(QPaintDevice *dev)
-{
-    if (!globalRedirectionAtomic() || *globalRedirectionAtomic() == 0)
-        return;
-
-    QMutex *mutex = 0;
-    QT_TRY {
-        mutex = globalRedirectionsMutex();
-    } QT_CATCH(...) {
-        // ignore the missing mutex, since we could be called from
-        // a destructor, and destructors shall not throw
-    }
-    QMutexLocker locker(mutex);
-    QPaintDeviceRedirectionList *redirections = 0;
-    QT_TRY {
-        redirections = globalRedirections();
-    } QT_CATCH(...) {
-        // do nothing - code below is safe with redirections being 0.
-    }
-    if (redirections) {
-        for (int i = 0; i < redirections->size(); ) {
-            if(redirections->at(i) == dev || redirections->at(i).replacement == dev)
-                redirections->removeAt(i);
-            else
-                ++i;
-        }
-    }
 }
 
 void qt_format_text(const QFont &fnt, const QRectF &_r,
@@ -8063,7 +7523,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     else
         layout_direction = Qt::LeftToRight;
 
-    tf = QStyle::visualAlignment(layout_direction, QFlag(tf));
+    tf = QGuiApplicationPrivate::visualAlignment(layout_direction, QFlag(tf));
 
     bool isRightToLeft = layout_direction == Qt::RightToLeft;
     bool expandtabs = ((tf & Qt::TextExpandTabs) &&
@@ -8323,7 +7783,7 @@ QPainterState::QPainterState()
       wx(0), wy(0), ww(0), wh(0), vx(0), vy(0), vw(0), vh(0),
       opacity(1), WxF(false), VxF(false), clipEnabled(true),
       bgMode(Qt::TransparentMode), painter(0),
-      layoutDirection(QApplication::layoutDirection()),
+      layoutDirection(QGuiApplication::layoutDirection()),
       composition_mode(QPainter::CompositionMode_SourceOver),
       emulationSpecifier(0), changeFlags(0)
 {
@@ -8353,7 +7813,7 @@ void QPainterState::init(QPainter *p) {
     clipInfo.clear();
     worldMatrix.reset();
     matrix.reset();
-    layoutDirection = QApplication::layoutDirection();
+    layoutDirection = QGuiApplication::layoutDirection();
     composition_mode = QPainter::CompositionMode_SourceOver;
     emulationSpecifier = 0;
     dirtyFlags = 0;
@@ -8361,45 +7821,6 @@ void QPainterState::init(QPainter *p) {
     renderHints = 0;
     opacity = 1;
 }
-
-#ifdef QT3_SUPPORT
-static void bitBlt_helper(QPaintDevice *dst, const QPoint &dp,
-                          const QPaintDevice *src, const QRect &sr, bool)
-{
-    Q_ASSERT(dst);
-    Q_ASSERT(src);
-
-    if (src->devType() == QInternal::Pixmap) {
-        const QPixmap *pixmap = static_cast<const QPixmap *>(src);
-        QPainter pt(dst);
-        pt.drawPixmap(dp, *pixmap, sr);
-
-    } else {
-        qWarning("QPainter: bitBlt only works when source is of type pixmap");
-    }
-}
-
-void bitBlt(QPaintDevice *dst, int dx, int dy,
-             const QPaintDevice *src, int sx, int sy, int sw, int sh,
-             bool ignoreMask )
-{
-    bitBlt_helper(dst, QPoint(dx, dy), src, QRect(sx, sy, sw, sh), ignoreMask);
-}
-
-void bitBlt(QPaintDevice *dst, const QPoint &dp, const QPaintDevice *src, const QRect &sr, bool ignoreMask)
-{
-    bitBlt_helper(dst, dp, src, sr, ignoreMask);
-}
-
-void bitBlt(QPaintDevice *dst, int dx, int dy,
-            const QImage *src, int sx, int sy, int sw, int sh, int fl)
-{
-    Qt::ImageConversionFlags flags(fl);
-    QPixmap srcPixmap = QPixmap::fromImage(*src, flags);
-    bitBlt_helper(dst, QPoint(dx, dy), &srcPixmap, QRect(sx, sy, sw, sh), false);
-}
-
-#endif // QT3_SUPPORT
 
 /*!
     \fn void QPainter::setBackgroundColor(const QColor &color)

@@ -50,7 +50,6 @@
 #include "qvarlengtharray.h"
 #include "qwineventnotifier_p.h"
 
-#include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
 #include <private/qmutexpool_p.h>
@@ -280,33 +279,7 @@ int WSAAsyncSelect(SOCKET, HWND, unsigned int, long)
 
 class QEventDispatcherWin32Private;
 
-struct QSockNot {
-    QSocketNotifier *obj;
-    int fd;
-};
-typedef QHash<int, QSockNot *> QSNDict;
-
-struct WinTimerInfo {                           // internal timer info
-    QObject *dispatcher;
-    int timerId;
-    int interval;
-    QObject *obj;                               // - object to receive events
-    bool inTimerEvent;
-    int fastTimerId;
-};
-
-class QZeroTimerEvent : public QTimerEvent
-{
-public:
-    inline QZeroTimerEvent(int timerId)
-        : QTimerEvent(timerId)
-    { t = QEvent::ZeroTimerEvent; }
-};
-
-typedef QList<WinTimerInfo*>  WinTimerVec;      // vector of TimerInfo structs
-typedef QHash<int, WinTimerInfo*> WinTimerDict; // fast dict of timers
-
-#if !defined(DWORD_PTR) && !defined(Q_WS_WIN64)
+#if !defined(DWORD_PTR) && !defined(Q_OS_WIN64)
 #define DWORD_PTR DWORD
 #endif
 
@@ -337,47 +310,6 @@ static void resolveTimerAPI()
 #endif
     }
 }
-
-
-class QEventDispatcherWin32Private : public QAbstractEventDispatcherPrivate
-{
-    Q_DECLARE_PUBLIC(QEventDispatcherWin32)
-public:
-    QEventDispatcherWin32Private();
-    ~QEventDispatcherWin32Private();
-
-    DWORD threadId;
-
-    bool interrupt;
-
-    // internal window handle used for socketnotifiers/timers/etc
-    HWND internalHwnd;
-    HHOOK getMessageHook;
-
-    // for controlling when to send posted events
-    QAtomicInt serialNumber;
-    int lastSerialNumber, sendPostedEventsWindowsTimerId;
-    QAtomicInt wakeUps;
-
-    // timers
-    WinTimerVec timerVec;
-    WinTimerDict timerDict;
-    void registerTimer(WinTimerInfo *t);
-    void unregisterTimer(WinTimerInfo *t, bool closingDown = false);
-    void sendTimerEvent(int timerId);
-
-    // socket notifiers
-    QSNDict sn_read;
-    QSNDict sn_write;
-    QSNDict sn_except;
-    void doWsaAsyncSelect(int socket);
-
-    QList<QWinEventNotifier *> winEventNotifierList;
-    void activateEventNotifier(QWinEventNotifier * wen);
-
-    QList<MSG> queuedUserInputEvents;
-    QList<MSG> queuedSocketEvents;
-};
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
@@ -702,6 +634,10 @@ QEventDispatcherWin32::QEventDispatcherWin32(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWin32Private, parent)
 {
 }
+
+QEventDispatcherWin32::QEventDispatcherWin32(QEventDispatcherWin32Private &dd, QObject *parent)
+    : QAbstractEventDispatcher(dd, parent)
+{ }
 
 QEventDispatcherWin32::~QEventDispatcherWin32()
 {

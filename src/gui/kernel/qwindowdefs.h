@@ -54,12 +54,10 @@ QT_MODULE(Gui)
 
 class QPaintDevice;
 class QWidget;
+class QWindow;
 class QDialog;
 class QColor;
 class QPalette;
-#ifdef QT3_SUPPORT
-class QColorGroup;
-#endif
 class QCursor;
 class QPoint;
 class QSize;
@@ -78,7 +76,6 @@ class QBitmap;
 class QMovie;
 class QImage;
 class QPicture;
-class QPrinter;
 class QTimer;
 class QTime;
 class QClipboard;
@@ -88,6 +85,7 @@ class QApplication;
 
 template<typename T> class QList;
 typedef QList<QWidget *> QWidgetList;
+typedef QList<QWindow *> QWindowList;
 
 QT_END_NAMESPACE
 QT_END_HEADER
@@ -106,9 +104,9 @@ typedef long WId;
 
 #endif // Q_WS_MAC
 
-#if defined(Q_WS_WIN)
-#include <QtGui/qwindowdefs_win.h>
-#endif // Q_WS_WIN
+#if defined(Q_OS_WIN)
+#  include <QtGui/qwindowdefs_win.h>
+#endif // Q_OS_WIN
 
 #if defined(Q_WS_X11)
 

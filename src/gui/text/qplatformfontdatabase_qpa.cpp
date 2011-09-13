@@ -344,6 +344,30 @@ QString QPlatformFontDatabase::fontDir() const
 }
 
 /*!
+    Returns the default system font.
+
+    \sa QGuiApplication::font()
+    \since 5.0
+*/
+
+QFont QPlatformFontDatabase::defaultFont() const
+{
+    return QFont(QLatin1String("Helvetica"));
+}
+
+/*!
+    Returns fonts for class names.
+
+    \sa QGuiApplication::font()
+    \since 5.0
+*/
+
+QHash<QByteArray, QFont> QPlatformFontDatabase::defaultFonts() const
+{
+    return QHash<QByteArray, QFont>();
+}
+
+/*!
     \class QPlatformFontDatabase
     \brief The QPlatformFontDatabase class makes it possible to customize how fonts
     are discovered and how they are rendered

@@ -27,4 +27,5 @@ wince*: {
    addFile.path = .
    DEPLOYMENT += addFile
 }
+QT += widgets
 maemo5: CONFIG += qt_example

@@ -6,3 +6,4 @@ SUBDIRS = hellothread \
           clock \
           movedobject 
 
+QT += widgets

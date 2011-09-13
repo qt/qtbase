@@ -14,4 +14,5 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/pixelator
 INSTALLS += target sources
 
 symbian: CONFIG += qt_example
+QT += widgets printsupport
 maemo5: CONFIG += qt_example

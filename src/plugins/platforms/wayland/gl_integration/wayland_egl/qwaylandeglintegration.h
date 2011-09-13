@@ -47,7 +47,7 @@
 #include "qwaylandeglinclude.h"
 
 class QWaylandWindow;
-class QWidget;
+class QWindow;
 
 class QWaylandEglIntegration : public QWaylandGLIntegration
 {
@@ -57,14 +57,15 @@ public:
 
     void initialize();
 
-    QWaylandWindow *createEglWindow(QWidget *window);
+    QWaylandWindow *createEglWindow(QWindow *window);
+    QPlatformOpenGLContext *createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const;
 
     EGLDisplay eglDisplay() const;
-    struct wl_egl_display *nativeDisplay() const;
-private:
-    struct wl_display *mWaylandDisplay;
 
-    EGLDisplay mEglDisplay;
+private:
+    struct wl_display *m_waylandDisplay;
+
+    EGLDisplay m_eglDisplay;
 };
 
 #endif // QWAYLANDEGLINTEGRATION_H

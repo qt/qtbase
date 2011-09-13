@@ -42,7 +42,7 @@
 #ifndef EMBEDDEDDIALOG_H
 #define EMBEDDEDDIALOG_H
 
-#include <QtGui/qdialog.h>
+#include <QtWidgets/qdialog.h>
 
 QT_FORWARD_DECLARE_CLASS(Ui_embeddedDialog);
 

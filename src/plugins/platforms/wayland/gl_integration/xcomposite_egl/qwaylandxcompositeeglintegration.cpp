@@ -70,9 +70,14 @@ void QWaylandXCompositeEGLIntegration::initialize()
 {
 }
 
-QWaylandWindow * QWaylandXCompositeEGLIntegration::createEglWindow(QWidget *widget)
+QWaylandWindow * QWaylandXCompositeEGLIntegration::createEglWindow(QWindow *window)
 {
-    return new QWaylandXCompositeEGLWindow(widget,this);
+    return new QWaylandXCompositeEGLWindow(window,this);
+}
+
+QPlatformOpenGLContext *QWaylandXCompositeEGLIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
+{
+    return new QWaylandXCompositeEGLContext(glFormat, share, eglDisplay());
 }
 
 Display * QWaylandXCompositeEGLIntegration::xDisplay() const

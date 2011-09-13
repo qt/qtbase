@@ -1,6 +1,6 @@
 load(qttest_p4)
 
-QT += core-private gui-private
+QT += widgets core-private gui-private widgets-private
 
 SOURCES  += tst_qwidget.cpp
 RESOURCES     = qwidget.qrc

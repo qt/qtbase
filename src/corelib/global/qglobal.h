@@ -289,18 +289,12 @@ namespace QT_NAMESPACE {}
 #endif
 
 #if defined(Q_OS_DARWIN)
-#  define Q_OS_MAC /* Q_OS_MAC is mostly for compatibility, but also more clear */
+#  define Q_OS_MAC
 #  define Q_OS_MACX /* Q_OS_MACX is only for compatibility.*/
 #  if defined(Q_OS_DARWIN64)
 #     define Q_OS_MAC64
 #  elif defined(Q_OS_DARWIN32)
 #     define Q_OS_MAC32
-#  endif
-#endif
-
-#ifdef QT_AUTODETECT_COCOA
-#  ifdef Q_OS_MAC64
-#    define QT_MAC_USE_COCOA 1
 #  endif
 #endif
 
@@ -877,7 +871,9 @@ namespace QT_NAMESPACE {}
      WIN16    - unsupported
 */
 
-#if defined(Q_OS_MSDOS)
+#if defined (Q_WS_QPA)
+
+#elif defined(Q_OS_MSDOS)
 #  define Q_WS_WIN16
 #  error "Qt requires Win32 and does not work with Windows 3.x"
 #elif defined(_WIN32_X11_)
@@ -897,15 +893,7 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
 #elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
-#    define Q_WS_MAC
-#    define Q_WS_MACX
-#    if defined(Q_OS_MAC64)
-#      define Q_WS_MAC64
-#    elif defined(Q_OS_MAC32)
-#      define Q_WS_MAC32
-#    endif
-#  elif defined(Q_OS_SYMBIAN)
+#  if defined(Q_OS_SYMBIAN)
 #    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
@@ -1143,7 +1131,7 @@ redefine to built-in booleans to make autotests work properly */
 
 //defines the type for the WNDPROC on windows
 //the alignment needs to be forced for sse2 to not crash with mingw
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 #  if defined(Q_CC_MINGW)
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE __attribute__ ((force_align_arg_pointer))
 #  else
@@ -1268,6 +1256,16 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_WIDGETS_LIB)
+#      define Q_WIDGETS_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_WIDGETS_EXPORT Q_DECL_IMPORT
+#    endif
+#    if defined(QT_BUILD_PRINTSUPPORT_LIB)
+#      define Q_PRINTSUPPORT_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_PRINTSUPPORT_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_SQL_LIB)
 #      define Q_SQL_EXPORT Q_DECL_EXPORT
 #    else
@@ -1282,6 +1280,11 @@ class QDataStream;
 #      define Q_SVG_EXPORT Q_DECL_EXPORT
 #    else
 #      define Q_SVG_EXPORT Q_DECL_IMPORT
+#    endif
+#    if defined(QT_BUILD_QTQUICK1_LIB)
+#      define Q_QTQUICK1_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_QTQUICK1_EXPORT Q_DECL_IMPORT
 #    endif
 #    if defined(QT_BUILD_DECLARATIVE_LIB)
 #      define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
@@ -1352,10 +1355,13 @@ class QDataStream;
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
 #    define Q_GUI_EXPORT Q_DECL_IMPORT
+#    define Q_WIDGETS_EXPORT Q_DECL_IMPORT
+#    define Q_PRINTSUPPORT_EXPORT Q_DECL_IMPORT
 #    define Q_SQL_EXPORT Q_DECL_IMPORT
 #    define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
 #    define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
+#    define Q_QTQUICK1_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
@@ -1384,10 +1390,13 @@ class QDataStream;
 #  if defined(QT_SHARED)
 #    define Q_CORE_EXPORT Q_DECL_EXPORT
 #    define Q_GUI_EXPORT Q_DECL_EXPORT
+#    define Q_WIDGETS_EXPORT Q_DECL_EXPORT
+#    define Q_PRINTSUPPORT_EXPORT Q_DECL_EXPORT
 #    define Q_SQL_EXPORT Q_DECL_EXPORT
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
 #    define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
+#    define Q_QTQUICK1_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    define Q_OPENVG_EXPORT Q_DECL_EXPORT
@@ -1402,10 +1411,13 @@ class QDataStream;
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
+#    define Q_WIDGETS_EXPORT
+#    define Q_PRINTSUPPORT_EXPORT
 #    define Q_SQL_EXPORT
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
 #    define Q_DECLARATIVE_EXPORT
+#    define Q_QTQUICK1_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
 #    define Q_OPENVG_EXPORT
@@ -1433,6 +1445,16 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#    if defined(QT_BUILD_WIDGETS_LIB)
+#      define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
+#    else
+#      define Q_WIDGETS_EXPORT_INLINE inline
+#    endif
+#    if defined(QT_BUILD_PRINTSUPPORT_LIB)
+#      define Q_PRINTSUPPORT_EXPORT_INLINE Q_PRINTSUPPORT_EXPORT inline
+#    else
+#      define Q_PRINTSUPPORT_EXPORT_INLINE inline
+#    endif
 #    if defined(QT_BUILD_COMPAT_LIB)
 #      define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #    else
@@ -1444,10 +1466,14 @@ class QDataStream;
 // note: this affects the contents of the DEF files (ie. these functions do not appear)
 #    define Q_CORE_EXPORT_INLINE inline
 #    define Q_GUI_EXPORT_INLINE inline
+#    define Q_WIDGETS_EXPORT_INLINE inline
+#    define Q_PRINTSUPPORT_EXPORT_INLINE inline
 #    define Q_COMPAT_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline
+#    define Q_WIDGETS_EXPORT_INLINE Q_WIDGETS_EXPORT inline
+#    define Q_PRINTSUPPORT_EXPORT_INLINE Q_PRINTSUPPORT_EXPORT inline
 #    define Q_COMPAT_EXPORT_INLINE Q_COMPAT_EXPORT inline
 #endif
 
@@ -1531,7 +1557,7 @@ public:
 #else
 #  error "Qt not configured correctly, please run configure"
 #endif
-#if defined(Q_WS_WIN) || defined(Q_OS_CYGWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN)
     enum WinVersion {
         WV_32s      = 0x0001,
         WV_95       = 0x0002,
@@ -2017,6 +2043,7 @@ static inline bool qIsNull(float f)
         return false; \
     }
 #else
+
 #  define Q_DUMMY_COMPARISON_OPERATOR(C)
 #endif
 
