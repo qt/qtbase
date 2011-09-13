@@ -54,7 +54,7 @@
 #include "qcache.h"
 #include "qdebug.h"
 #include "private/qguiplatformplugin_p.h"
-#include "qguiapplication.h"
+#include "qapplication.h"
 
 #ifdef Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -264,37 +264,37 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
         actualSize.scale(size, Qt::KeepAspectRatio);
 
     // #### Qt5 no idea what this really does, but we need to remove the QApp and style references
-//    QString key = QLatin1Literal("qt_")
-//                  % HexString<quint64>(pm.cacheKey())
-//                  % HexString<uint>(pe->mode)
-//                  % HexString<quint64>(QApplication::palette().cacheKey())
-//                  % HexString<uint>(actualSize.width())
-//                  % HexString<uint>(actualSize.height());
+    QString key = QLatin1Literal("qt_")
+                  % HexString<quint64>(pm.cacheKey())
+                  % HexString<uint>(pe->mode)
+                  % HexString<quint64>(QApplication::palette().cacheKey())
+                  % HexString<uint>(actualSize.width())
+                  % HexString<uint>(actualSize.height());
 
-//    if (mode == QIcon::Active) {
-//        if (QPixmapCache::find(key % HexString<uint>(mode), pm))
-//            return pm; // horray
-//        if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), pm)) {
-//            QStyleOption opt(0);
-//            opt.palette = QApplication::palette();
-//            QPixmap active = QApplication::style()->generatedIconPixmap(QIcon::Active, pm, &opt);
-//            if (pm.cacheKey() == active.cacheKey())
-//                return pm;
-//        }
-//    }
+    if (mode == QIcon::Active) {
+        if (QPixmapCache::find(key % HexString<uint>(mode), pm))
+            return pm; // horray
+        if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), pm)) {
+            QStyleOption opt(0);
+            opt.palette = QApplication::palette();
+            QPixmap active = QApplication::style()->generatedIconPixmap(QIcon::Active, pm, &opt);
+            if (pm.cacheKey() == active.cacheKey())
+                return pm;
+        }
+    }
 
-//    if (!QPixmapCache::find(key % HexString<uint>(mode), pm)) {
+    if (!QPixmapCache::find(key % HexString<uint>(mode), pm)) {
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-//        if (pe->mode != mode && mode != QIcon::Normal) {
-//            QStyleOption opt(0);
-//            opt.palette = QApplication::palette();
-//            QPixmap generated = QApplication::style()->generatedIconPixmap(mode, pm, &opt);
-//            if (!generated.isNull())
-//                pm = generated;
-//        }
-//        QPixmapCache::insert(key % HexString<uint>(mode), pm);
-//    }
+        if (pe->mode != mode && mode != QIcon::Normal) {
+            QStyleOption opt(0);
+            opt.palette = QApplication::palette();
+            QPixmap generated = QApplication::style()->generatedIconPixmap(mode, pm, &opt);
+            if (!generated.isNull())
+                pm = generated;
+        }
+        QPixmapCache::insert(key % HexString<uint>(mode), pm);
+    }
     return pm;
 }
 
