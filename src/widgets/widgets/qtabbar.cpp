@@ -363,7 +363,10 @@ void QTabBarPrivate::init()
         q->setFocusPolicy(Qt::NoFocus);
     } else
 #endif
-    q->setFocusPolicy(Qt::TabFocus);
+        q->setFocusPolicy(Qt::TabFocus);
+
+    leftB->setAccessibleName(QTabBar::tr("Scroll Left"));
+    rightB->setAccessibleName(QTabBar::tr("Scroll Right"));
     q->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     elideMode = Qt::TextElideMode(q->style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, q));
     useScrollButtons = !q->style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, q);
