@@ -2549,6 +2549,9 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
 
     int pos = *cursorPos;
     int itm;
+    const HB_CharAttributes *attributes = eng->attributes();
+    while (pos < line.from + line.length && !attributes[pos].charStop)
+        pos++;
     if (pos == line.from + (int)line.length) {
         // end of line ensure we have the last item on the line
         itm = eng->findItem(pos-1);
