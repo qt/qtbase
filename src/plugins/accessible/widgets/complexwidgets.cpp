@@ -1776,7 +1776,7 @@ QString QAccessibleComboBox::text(Text t, int child) const
 
     switch (t) {
     case Name:
-#ifndef Q_WS_X11 // on Linux we use relations for this, name is text (fall through to Value)
+#ifndef Q_OS_UNIX // on Linux we use relations for this, name is text (fall through to Value)
         if (child == OpenList)
             str = QComboBox::tr("Open");
         else

@@ -484,10 +484,8 @@ void tst_QAccessibility::navigateGeometric()
     QVERIFY(iface->isValid());
 
     w->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+    QCoreApplication::processEvents();
     QTest::qWait(100);
-#endif
 
     // let one widget rotate around center
     for (i = 0; i < 360; i+=skip) {
@@ -595,8 +593,8 @@ void tst_QAccessibility::navigateCovered()
     QWidget *w2 = new QWidget(w);
     w2->setObjectName(QString("2"));
     w->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -843,8 +841,8 @@ void tst_QAccessibility::accessibleName()
 {
     QWidget *toplevel = createWidgets();
     toplevel->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(toplevel);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
     QLayout *lout = toplevel->layout();
@@ -1287,8 +1285,8 @@ void tst_QAccessibility::scrollBarTest()
         QScrollBar *scrollBar  = new QScrollBar(Qt::Horizontal);
         scrollBar->resize(200, 50);
         scrollBar->show();
-#if defined(Q_WS_X11)
-        qt_x11_wait_for_window_manager(scrollBar);
+#if defined(Q_OS_UNIX)
+        QCoreApplication::processEvents();
         QTest::qWait(100);
 #endif
         QAccessibleInterface * const scrollBarInterface = QAccessible::queryAccessibleInterface(scrollBar);
@@ -1798,7 +1796,7 @@ void tst_QAccessibility::textBrowserTest()
 
 void tst_QAccessibility::listViewTest()
 {
-#if defined(Q_WS_X11)
+#if defined(Q_OS_UNIX)
     QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
 #else
     {
@@ -1816,8 +1814,8 @@ void tst_QAccessibility::listViewTest()
     listView.resize(400,400);
     listView.show();
     QTest::qWait(1); // Need this for indexOfchild to work.
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&listView);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents(&listView);
     QTest::qWait(100);
 #endif
 
@@ -1928,8 +1926,8 @@ void tst_QAccessibility::mdiSubWindowTest()
     QMdiArea mdiArea;
     mdiArea.show();
     qApp->setActiveWindow(&mdiArea);
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&mdiArea);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(150);
 #endif
 
@@ -1944,8 +1942,8 @@ void tst_QAccessibility::mdiSubWindowTest()
         if (i == 0) {
             int minimumWidth = window->width() * subWindowCount + 20;
             mdiArea.resize(mdiArea.size().expandedTo(QSize(minimumWidth, 0)));
-#if defined(Q_WS_X11)
-            qt_x11_wait_for_window_manager(&mdiArea);
+#if defined(Q_OS_UNIX)
+            QCoreApplication::processEvents();
             QTest::qWait(100);
 #endif
             if (mdiArea.width() >= minimumWidth)
@@ -2239,8 +2237,8 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&box);
     QVERIFY(iface);
     box.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&box);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -2304,8 +2302,8 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QVERIFY(iface);
     box.setOrientation(Qt::Vertical);
     box.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&box);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -2351,8 +2349,8 @@ void tst_QAccessibility::dialTest()
     dial.setValue(20);
     QCOMPARE(dial.value(), 20);
     dial.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&dial);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -2412,8 +2410,8 @@ void tst_QAccessibility::abstractScrollAreaTest()
 
     abstractScrollArea.resize(400, 400);
     abstractScrollArea.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&abstractScrollArea);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
     const QRect globalGeometry = QRect(abstractScrollArea.mapToGlobal(QPoint(0, 0)),
@@ -2565,8 +2563,8 @@ void tst_QAccessibility::scrollAreaTest()
     {
     QScrollArea scrollArea;
     scrollArea.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&scrollArea);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&scrollArea);
@@ -2579,7 +2577,7 @@ void tst_QAccessibility::scrollAreaTest()
 
 void tst_QAccessibility::tableWidgetTest()
 {
-#if defined(Q_WS_X11)
+#if defined(Q_OS_UNIX)
     QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
 #else
     {
@@ -2592,8 +2590,8 @@ void tst_QAccessibility::tableWidgetTest()
     }
     w->resize(100, 100);
     topLevel->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents(w);
     QTest::qWait(100);
 #endif
     QAccessibleInterface *client = QAccessible::queryAccessibleInterface(w);
@@ -2704,7 +2702,7 @@ public:
 
 void tst_QAccessibility::tableViewTest()
 {
-#if defined(Q_WS_X11)
+#if defined(Q_OS_UNIX)
     QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
 #else
     {
@@ -2716,8 +2714,8 @@ void tst_QAccessibility::tableViewTest()
     w->resizeColumnsToContents();
     w->resizeRowsToContents();
     w->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents(w);
     QTest::qWait(100);
 #endif
     QAccessibleInterface *client = QAccessible::queryAccessibleInterface(w);
@@ -2791,7 +2789,7 @@ void tst_QAccessibility::tableViewTest()
 
 void tst_QAccessibility::table2ListTest()
 {
-#if !defined(Q_WS_X11)
+#if !defined(Q_OS_UNIX)
     QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
 #else
     QListWidget *listView = new QListWidget;
@@ -2801,8 +2799,8 @@ void tst_QAccessibility::table2ListTest()
     listView->resize(400,400);
     listView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(listView);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -2872,7 +2870,7 @@ void tst_QAccessibility::table2ListTest()
 
 void tst_QAccessibility::table2TreeTest()
 {
-#if !defined(Q_WS_X11)
+#if !defined(Q_OS_UNIX)
     QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
 #else
     QTreeWidget *treeView = new QTreeWidget;
@@ -2908,8 +2906,8 @@ void tst_QAccessibility::table2TreeTest()
     treeView->resize(400,400);
     treeView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(treeView);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -2971,8 +2969,8 @@ void tst_QAccessibility::table2TreeTest()
     treeView->expandAll();
 
     QTest::qWait(1); // Need this for indexOfchild to work.
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(treeView);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -3001,7 +2999,7 @@ void tst_QAccessibility::table2TreeTest()
 
 void tst_QAccessibility::table2TableTest()
 {
-#if !defined(Q_WS_X11)
+#if !defined(Q_OS_UNIX)
     QSKIP( "Accessible table2 interface is currently only supported on X11.", SkipAll);
 #else
     QTableWidget *tableView = new QTableWidget(3, 3);
@@ -3023,8 +3021,8 @@ void tst_QAccessibility::table2TableTest()
     tableView->resize(600,600);
     tableView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(tableView);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -3128,8 +3126,8 @@ void tst_QAccessibility::calendarWidgetTest()
 
     calendarWidget.resize(400, 300);
     calendarWidget.show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(&calendarWidget);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -3234,8 +3232,8 @@ void tst_QAccessibility::dockWidgetTest()
 
     mw->resize(600,400);
     mw->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(mw);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
 
@@ -3295,8 +3293,8 @@ void tst_QAccessibility::comboBoxTest()
     QComboBox *cb = new QComboBox(w);
     cb->addItems(QStringList() << "one" << "two" << "three");
     w->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
     QTest::qWait(100);
 #endif
     QAccessibleInterface *acc = QAccessible::queryAccessibleInterface(w);
@@ -3327,7 +3325,7 @@ void tst_QAccessibility::comboBoxTest()
 
 void tst_QAccessibility::treeWidgetTest()
 {
-#if defined(Q_WS_X11)
+#if defined(Q_OS_UNIX)
     QSKIP( "Accessible table1 interface is no longer supported on X11.", SkipAll);
 #else
     QWidget *w = new QWidget;
@@ -3342,8 +3340,8 @@ void tst_QAccessibility::treeWidgetTest()
     }
     w->show();
 //    QTest::qWait(1000);
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(w);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents(w);
     QTest::qWait(100);
 #endif
 
@@ -3396,8 +3394,8 @@ void tst_QAccessibility::labelTest()
     QLabel *label = new QLabel(text);
     label->show();
 
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(label);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
 #endif
     QTest::qWait(100);
 
@@ -3464,8 +3462,8 @@ void tst_QAccessibility::accelerators()
     label->setText(tr("Q &A&B"));
     QCOMPARE(accLineEdit->text(QAccessible::Accelerator, 0), QKeySequence(Qt::ALT).toString(QKeySequence::NativeText) + QLatin1String("A"));
 
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(window);
+#if defined(Q_OS_UNIX)
+    QCoreApplication::processEvents();
 #endif
     QTest::qWait(100);
     delete window;
