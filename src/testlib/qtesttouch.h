@@ -183,6 +183,7 @@ namespace QTest
             if(targetWindow)
             {
                 QWindowSystemInterface::handleTouchEvent(targetWindow,QEvent::None,deviceType, touchPointList(points.values()));
+		QTest::qWait(10);
                 targetWindow = 0;
             }
             else if(targetWidget)
