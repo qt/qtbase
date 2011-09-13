@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 #include <xcb/xcb.h>
+
+// FIXME This workaround can be removed for xcb-icccm > 3.8
+#define class class_name
 #include <xcb/xcb_icccm.h>
+#undef class
+
 #include <xcb/xfixes.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
