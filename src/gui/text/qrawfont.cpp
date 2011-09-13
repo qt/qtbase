@@ -238,7 +238,8 @@ void QRawFont::loadFromData(const QByteArray &fontData,
    If \a antialiasingType is set to QRawFont::SubPixelAntialiasing, then the resulting image will be
    in QImage::Format_RGB32 and the RGB values of each pixel will represent the subpixel opacities of
    the pixel in the rasterization of the glyph. Otherwise, the image will be in the format of
-   QImage::Format_A8 and each pixel will contain the opacity of the pixel in the rasterization.
+   QImage::Format_Indexed8 and each pixel will contain the opacity of the pixel in the
+   rasterization.
 
    \sa pathForGlyph(), QPainter::drawGlyphRun()
 */
