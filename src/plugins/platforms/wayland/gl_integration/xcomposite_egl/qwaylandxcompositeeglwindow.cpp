@@ -128,7 +128,7 @@ void QWaylandXCompositeEGLWindow::createEglSurface()
     }
 
     XSync(m_glxIntegration->xDisplay(),False);
-    mBuffer = new QWaylandXCompositeBuffer(m_glxIntegration->waylandXComposite(),
+    m_buffer = new QWaylandXCompositeBuffer(m_glxIntegration->waylandXComposite(),
                                            (uint32_t)m_xWindow,
                                            size,
                                            m_glxIntegration->waylandDisplay()->argbVisual());
