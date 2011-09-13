@@ -883,12 +883,12 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
     QMutexLocker locker(&mutex);
 
     QList<QVariant> arguments = msg.arguments();
-    if (arguments[1].toUInt() != 0 || arguments.count() < 8) {
+    if (arguments.count() < 8 || arguments.at(1).toUInt() != 0) {
         return;
     }
 
     QString iapid = arguments[5].toByteArray().data();
-    uint icd_connection_state = arguments[7].toUInt();
+    uint icd_connection_state = arguments.at(7).toUInt();
 
     switch (icd_connection_state) {
     case ICD_STATE_CONNECTED:
