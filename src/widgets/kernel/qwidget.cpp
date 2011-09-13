@@ -5188,6 +5188,8 @@ QPixmap QWidget::grab(const QRect &rectangle)
     if (testAttribute(Qt::WA_PendingResizeEvent) || !testAttribute(Qt::WA_WState_Created))
         sendResizeEvents(this);
 
+    adjustSize();
+
     QRect r(rectangle);
     if (r.width() < 0)
         r.setWidth(width() - rectangle.x());
