@@ -10,8 +10,6 @@
     "QtNetwork" => "$basedir/src/network",
     "QtTest" => "$basedir/src/testlib",
     "QtDBus" => "$basedir/src/dbus",
-    "QtUiTools" => "$basedir/src/uitools",
-    "QtDesigner" => "$basedir/tools/uilib",
     "QtPlatformSupport" => "$basedir/src/platformsupport",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
@@ -54,8 +52,6 @@
     "network" => "#include <QtNetwork/QtNetwork>\n",
     "opengl" => "#include <QtOpenGL/QtOpenGL>\n",
     "xml" => "#include <QtXml/QtXml>\n",
-    "uitools" => "#include <QtUiTools/QtUiTools>\n",
-    "designer" => "#include <QtDesigner/QtDesigner>\n",
 );
 %modulepris = (
     "QtCore" => "$basedir/src/modules/qt_core.pri",
@@ -69,8 +65,6 @@
     "QtTest" => "$basedir/src/modules/qt_testlib.pri",
     "QtV8" => "$basedir/src/modules/qt_v8.pri",
     "QtXml" => "$basedir/src/modules/qt_xml.pri",
-    "QtUiTools" => "$basedir/src/modules/qt_uitools.pri",
-    "QtDesigner" => "$basedir/src/modules/qt_uilib.pri",
     "QtPlatformSupport" => "$basedir/src/modules/qt_platformsupport.pri",
 );
 

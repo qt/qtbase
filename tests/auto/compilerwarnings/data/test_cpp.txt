@@ -59,8 +59,6 @@
 #include <QtDBus/QtDBus>
 #endif
 
-#include <QtUiTools/QtUiTools>
-
 #ifndef Q_OS_MAC
 int main(int, char **)
 {

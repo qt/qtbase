@@ -54,8 +54,6 @@
 #include <QtSql/QtSql>
 #include <QtGui/QtGui>
 
-#include <QtUiTools/QtUiTools>
-
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL/QtOpenGL>
 #endif

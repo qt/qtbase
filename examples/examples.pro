@@ -27,7 +27,6 @@ SUBDIRS       = \
                 tools \
                 tutorials \
                 widgets \
-                uitools \
                 touch \
                 gestures
 }
@@ -41,7 +40,6 @@ symbian: SUBDIRS = \
                 draganddrop \
                 mainwindows \
                 sql \
-                uitools \
                 animation \
                 gestures \
                 xml

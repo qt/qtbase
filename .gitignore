@@ -275,8 +275,6 @@ work
 #generated module def and version header files
 mkspecs/modules/qt_*.pri
 mkspecs/qmodule.pri
-src/uitools/qtuitoolsversion.h
-tools/uilib/qtdesignerversion.h
 
 
 #unit tests executables

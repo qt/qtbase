@@ -10,7 +10,7 @@ SRC_SUBDIRS += src_corelib
 !cross_compile {
     win32:!wince*: SRC_SUBDIRS += src_tools_idc
 }
-SRC_SUBDIRS += src_network src_sql src_gui src_xml src_uitools src_widgets src_printsupport src_testlib src_platformsupport
+SRC_SUBDIRS += src_network src_sql src_gui src_xml src_widgets src_printsupport src_testlib src_platformsupport
 nacl: SRC_SUBDIRS -= src_network src_testlib
 !symbian:contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 
@@ -36,8 +36,6 @@ src_v8.subdir = $$QT_SOURCE_TREE/src/v8
 src_v8.target = sub-v8
 src_xml.subdir = $$QT_SOURCE_TREE/src/xml
 src_xml.target = sub-xml
-src_uitools.subdir = $$QT_SOURCE_TREE/src/uitools
-src_uitools.target = sub-uitools
 src_dbus.subdir = $$QT_SOURCE_TREE/src/dbus
 src_dbus.target = sub-dbus
 src_gui.subdir = $$QT_SOURCE_TREE/src/gui
@@ -68,7 +66,6 @@ src_platformsupport.target = sub-platformsupport
    src_widgets.depends = src_corelib src_gui src_tools_uic
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
-   src_uitools.depends = src_corelib src_widgets
    src_dbus.depends = src_corelib src_xml
    src_network.depends = src_corelib
    src_opengl.depends = src_gui src_widgets
