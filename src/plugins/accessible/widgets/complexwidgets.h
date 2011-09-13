@@ -246,11 +246,12 @@ public:
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
 
+    QAccessibleInterface* child(int index) const;
+    int indexOfChild(const QAccessibleInterface *child) const;
+    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
+
 protected:
     QTabBar *tabBar() const;
-
-private:
-    QAbstractButton *button(int child) const;
 };
 #endif // QT_NO_TABBAR
 

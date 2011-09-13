@@ -41,6 +41,7 @@
 
 #include "complexwidgets.h"
 
+#include <qaccessible.h>
 #include <qapplication.h>
 #include <qabstractbutton.h>
 #include <qevent.h>
@@ -1452,6 +1453,102 @@ QAccessible::State QAccessibleHeader::state(int child) const
 */
 
 /*!
+  \brief Implements a tab button
+  \internal
+  */
+class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActionInterface
+{
+    Q_ACCESSIBLE_OBJECT
+public:
+    QAccessibleTabButton(QTabBar *parent, int index)
+        :m_index(index), m_parent(parent)
+    {}
+
+    QObject *object() const { return 0; }
+    Role role(int child) const { Q_ASSERT(child == 0); return QAccessible::PageTab; }
+    State state(int child) const { Q_ASSERT(child == 0); return QAccessible::Normal; }
+    QRect rect(int child) const {
+        Q_ASSERT(child == 0);
+        if (!isValid())
+            return QRect();
+
+        QPoint tp = m_parent->mapToGlobal(QPoint(0,0));
+        QRect rec = m_parent->tabRect(m_index);
+        rec = QRect(tp.x() + rec.x(), tp.y() + rec.y(), rec.width(), rec.height());
+        return rec;
+    }
+
+    bool isValid() const { return true; }// (!m_parent.isNull()) && m_parent->count() > m_index; }
+
+    int childAt(int, int) const { return 0; }
+    int childCount() const { return 0; }
+    int indexOfChild(const QAccessibleInterface *) const  { return -1; }
+
+    QString text(Text, int) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
+    void setText(Text, int, const QString &) {}
+
+    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+    {
+        if (relation == QAccessible::Ancestor && index == 1) {
+            *iface = QAccessible::queryAccessibleInterface(m_parent);
+            return 0;
+        }
+        return -1;
+    }
+    Relation relationTo(int, const QAccessibleInterface *, int) const
+    {
+        return QAccessible::Unrelated;
+    }
+
+#ifndef QT_NO_ACTION
+    int userActionCount(int) const { return 0; }
+    QString actionText(int, Text, int) const { return QString(); }
+    bool doAction(int, int, const QVariantList &) { return false; }
+#endif
+
+    // action interface
+    int actionCount() {
+        return 1;
+    }
+
+    void doAction(int actionIndex) {
+        m_parent->setCurrentIndex(m_index);
+    }
+
+    QString description(int actionIndex)
+    {
+        if (actionIndex == 0)
+            return QTabWidget::tr("Select this tab");
+        return QString();
+    }
+
+    QString name(int actionIndex)
+    {
+        if (actionIndex == 0)
+            return QStringLiteral("Select tab");
+        return QString();
+    }
+
+    QString localizedName(int actionIndex)
+    {
+        if (actionIndex == 0)
+            return QTabWidget::tr("Select tab");
+        return QString();
+    }
+    QStringList keyBindings(int actionIndex) {
+        return QStringList();
+    }
+
+private:
+
+    QPointer<QTabBar> m_parent;
+    int m_index;
+//    QString m_text;
+//    QAccessible::Role m_role;
+//    QRect m_rect;
+};
+
+/*!
   Constructs a QAccessibleTabBar object for \a w.
 */
 QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
@@ -1466,34 +1563,54 @@ QTabBar *QAccessibleTabBar::tabBar() const
     return qobject_cast<QTabBar*>(object());
 }
 
-QAbstractButton *QAccessibleTabBar::button(int child) const
+int QAccessibleTabBar::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
 {
-    if (child <= tabBar()->count())
-        return 0;
-    QTabBarPrivate * const tabBarPrivate = tabBar()->d_func();
-    if (child - tabBar()->count() == 1)
-        return tabBarPrivate->leftB;
-    if (child - tabBar()->count() == 2)
-        return tabBarPrivate->rightB;
-    Q_ASSERT(false);
+    if (rel == QAccessible::Child) {
+        *target = child(entry - 1);
+        if (*target) {
+            return 0;
+        }
+        return -1;
+    }
+    return QAccessibleWidget::navigate(rel, entry, target);
+}
+
+QAccessibleInterface* QAccessibleTabBar::child(int index) const
+{
+    // first the tabs, then 2 buttons
+    if (index < tabBar()->count()) {
+        QAccessibleTabButton *button = new QAccessibleTabButton(tabBar(), index);
+        return button;
+    } else if (index >= tabBar()->count()) {
+        // left button
+        if (index - tabBar()->count() == 0) {
+            return QAccessible::queryAccessibleInterface(tabBar()->d_func()->leftB);
+        }
+        // right button
+        if (index - tabBar()->count() == 1) {
+            return QAccessible::queryAccessibleInterface(tabBar()->d_func()->rightB);
+        }
+    }
+    return 0;
+}
+
+int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
+{
+    if (child->object() && child->object() == tabBar()->d_func()->leftB)
+        return tabBar()->count() + 1; // fixme - one based
+    if (child->object() && child->object() == tabBar()->d_func()->rightB)
+        return tabBar()->count() + 2; // fixme - one based
     return 0;
 }
 
 /*! \reimp */
 QRect QAccessibleTabBar::rect(int child) const
 {
-    if (!child || !tabBar()->isVisible())
+    // FIXME
+    if (tabBar()->isVisible()) {
         return QAccessibleWidget::rect(0);
-
-    QPoint tp = tabBar()->mapToGlobal(QPoint(0,0));
-    QRect rec;
-    if (child <= tabBar()->count()) {
-        rec = tabBar()->tabRect(child - 1);
-    } else {
-        QWidget *widget = button(child);
-        rec = widget ? widget->geometry() : QRect();
     }
-    return QRect(tp.x() + rec.x(), tp.y() + rec.y(), rec.width(), rec.height());
+    return QRect();
 }
 
 /*! \reimp */
@@ -1506,42 +1623,17 @@ int QAccessibleTabBar::childCount() const
 /*! \reimp */
 QString QAccessibleTabBar::text(Text t, int child) const
 {
-    QString str;
-
-    if (child > tabBar()->count()) {
-        bool left = child - tabBar()->count() == 1;
-        switch (t) {
-        case Name:
-            return left ? QTabBar::tr("Scroll Left") : QTabBar::tr("Scroll Right");
-        default:
-            break;
-        }
-    } else {
-        switch (t) {
-        case Name:
-            if (child > 0)
-                return qt_accStripAmp(tabBar()->tabText(child - 1));
-            else if (tabBar()->currentIndex() != -1)
-                return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
-            break;
-        default:
-            break;
-        }
+    Q_ASSERT(child == 0);
+    if (t == QAccessible::Name) {
+        return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
     }
-
-    if (str.isEmpty())
-        str = QAccessibleWidget::text(t, child);;
-    return str;
+    return QString();
 }
 
 /*! \reimp */
 QAccessible::Role QAccessibleTabBar::role(int child) const
 {
-    if (!child)
-        return PageTabList;
-    if (child > tabBar()->count())
-        return PushButton;
-    return PageTab;
+    return PageTabList;
 }
 
 /*! \reimp */
@@ -1554,20 +1646,20 @@ QAccessible::State QAccessibleTabBar::state(int child) const
 
     QTabBar *tb = tabBar();
 
-    if (child > tb->count()) {
-        QWidget *bt = button(child);
-        if (!bt)
-            return st;
-        if (bt->isEnabled() == false)
-            st |= Unavailable;
-        if (bt->isVisible() == false)
-            st |= Invisible;
-        if (bt->focusPolicy() != Qt::NoFocus && bt->isActiveWindow())
-            st |= Focusable;
-        if (bt->hasFocus())
-            st |= Focused;
-        return st;
-    }
+//    if (child > tb->count()) {
+//        QWidget *bt = button(child);
+//        if (!bt)
+//            return st;
+//        if (bt->isEnabled() == false)
+//            st |= Unavailable;
+//        if (bt->isVisible() == false)
+//            st |= Invisible;
+//        if (bt->focusPolicy() != Qt::NoFocus && bt->isActiveWindow())
+//            st |= Focusable;
+//        if (bt->hasFocus())
+//            st |= Focused;
+//        return st;
+//    }
 
     if (!tb->isTabEnabled(child - 1))
         st |= Unavailable;
@@ -1589,13 +1681,6 @@ bool QAccessibleTabBar::doAction(int action, int child, const QVariantList &)
     if (action != QAccessible::DefaultAction && action != QAccessible::Press)
         return false;
 
-    if (child > tabBar()->count()) {
-        QAbstractButton *bt = button(child);
-        if (!bt->isEnabled())
-            return false;
-        bt->animateClick();
-        return true;
-    }
     if (!tabBar()->isTabEnabled(child - 1))
         return false;
     tabBar()->setCurrentIndex(child - 1);
