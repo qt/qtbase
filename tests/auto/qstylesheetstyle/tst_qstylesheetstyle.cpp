@@ -860,10 +860,6 @@ void tst_QStyleSheetStyle::hoverColors()
         QTest::mouseMove ( widget, QPoint(5,5));
         QTest::qWait(60);
 
-#ifdef Q_WS_QPA
-        QEXPECT_FAIL("", "QCursor::setPos / QTest::mouseMove is not implemented on qpa", Abort);
-#endif
-
         QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));
 
         QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
