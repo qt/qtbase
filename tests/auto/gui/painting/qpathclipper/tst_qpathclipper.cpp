@@ -1328,7 +1328,7 @@ void tst_QPathClipper::qtbug3778()
     QVERIFY(p12.contains(QPointF(100, 100)));
 }
 
-QTEST_APPLESS_MAIN(tst_QPathClipper)
+QTEST_MAIN(tst_QPathClipper)
 
 
 #include "tst_qpathclipper.moc"
