@@ -1379,8 +1379,9 @@ void tst_QAccessibility::tabWidgetTest()
     QCOMPARE(tabBarInterface->role(0), QAccessible::PageTabList);
 
     QAccessibleInterface* tabButton1Interface = 0;
-    QCOMPARE(tabBarInterface->navigate(QAccessible::Child, 1 , &tabButton1Interface), 1);
-    QVERIFY(tabButton1Interface == 0);
+    QCOMPARE(tabBarInterface->navigate(QAccessible::Child, 1 , &tabButton1Interface), 0);
+    QVERIFY(tabButton1Interface);
+    delete tabButton1Interface;
 
     QCOMPARE(tabBarInterface->role(1), QAccessible::PageTab);
     QCOMPARE(tabBarInterface->text(QAccessible::Name, 1), QLatin1String("Tab 1"));
