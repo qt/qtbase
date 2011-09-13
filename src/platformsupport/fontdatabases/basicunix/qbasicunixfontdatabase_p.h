@@ -50,6 +50,7 @@ struct FontFile
 {
     QString fileName;
     int indexValue;
+    int hintStyle;
 };
 
 class QBasicUnixFontDatabase : public QPlatformFontDatabase

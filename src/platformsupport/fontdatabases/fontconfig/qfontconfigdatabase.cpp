@@ -314,7 +314,7 @@ void QFontconfigDatabase::populateFontDatabase()
             FC_FAMILY, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
             FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE, FC_WEIGHT,
-            FC_WIDTH,
+            FC_WIDTH, FC_HINT_STYLE,
 #if FC_VERSION >= 20297
             FC_CAPABILITY,
 #endif
@@ -404,9 +404,31 @@ void QFontconfigDatabase::populateFontDatabase()
         }
 #endif
 
+        QFontEngineFT::HintStyle default_hint_style;
+
+        // hinting
+        int hint_style = 0;
+        if (FcPatternGetInteger(fonts->fonts[i], FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+            hint_style = QFontEngineFT::HintFull;
+        switch (hint_style) {
+        case FC_HINT_NONE:
+            default_hint_style = QFontEngineFT::HintNone;
+            break;
+        case FC_HINT_SLIGHT:
+            default_hint_style = QFontEngineFT::HintLight;
+            break;
+        case FC_HINT_MEDIUM:
+            default_hint_style = QFontEngineFT::HintMedium;
+            break;
+        default:
+            default_hint_style = QFontEngineFT::HintFull;
+            break;
+        }
+
         FontFile *fontFile = new FontFile;
         fontFile->fileName = QLatin1String((const char *)file_value);
         fontFile->indexValue = indexValue;
+        fontFile->hintStyle = default_hint_style;
 
         QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
@@ -479,48 +501,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::
     QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
 
     engine = new QFontEngineFT(fontDef);
-
-    // try and get the pattern
-    FcPattern *pattern = FcPatternCreate();
-
-    FcValue value;
-    value.type = FcTypeString;
-        QByteArray cs = fontDef.family.toUtf8();
-    value.u.s = (const FcChar8 *)cs.data();
-    FcPatternAdd(pattern,FC_FAMILY,value,true);
-
-
-    value.u.s = (const FcChar8 *)fid.filename.data();
-    FcPatternAdd(pattern,FC_FILE,value,true);
-
-    value.type = FcTypeInteger;
-    value.u.i = fid.index;
-    FcPatternAdd(pattern,FC_INDEX,value,true);
-
-    if (FcConfigSubstitute(0,pattern,FcMatchPattern)) {
-        QFontEngineFT::HintStyle default_hint_style;
-
-        //hinting
-        int hint_style = 0;
-        if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
-            hint_style = QFontEngineFT::HintFull;
-        switch (hint_style) {
-        case FC_HINT_NONE:
-            default_hint_style = QFontEngineFT::HintNone;
-            break;
-        case FC_HINT_SLIGHT:
-            default_hint_style = QFontEngineFT::HintLight;
-            break;
-        case FC_HINT_MEDIUM:
-            default_hint_style = QFontEngineFT::HintMedium;
-            break;
-        default:
-            default_hint_style = QFontEngineFT::HintFull;
-            break;
-        }
-        engine->setDefaultHintStyle(default_hint_style);
-    }
-    FcPatternDestroy(pattern);
+    engine->setDefaultHintStyle(QFontEngineFT::HintStyle(fontfile->hintStyle));
 
     if (!engine->init(fid,antialias,format)) {
         delete engine;
