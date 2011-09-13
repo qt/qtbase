@@ -58,6 +58,9 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 
+#include <private/qplatforminputcontextfactory_qpa_p.h>
+#include <qplatforminputcontext_qpa.h>
+
 #ifdef QT_WAYLAND_GL_SUPPORT
 #include "gl_integration/qwaylandglintegration.h"
 #endif
@@ -72,6 +75,8 @@ QWaylandIntegration::QWaylandIntegration()
 
     foreach (QPlatformScreen *screen, mDisplay->screens())
         screenAdded(screen);
+
+    mInputContext = QPlatformInputContextFactory::create();
 }
 
 QPlatformNativeInterface * QWaylandIntegration::nativeInterface() const
@@ -138,4 +143,9 @@ QPlatformClipboard *QWaylandIntegration::clipboard() const
 QPlatformDrag *QWaylandIntegration::drag() const
 {
     return QWaylandDrag::instance(mDisplay);
+}
+
+QPlatformInputContext *QWaylandIntegration::inputContext() const
+{
+    return mInputContext;
 }

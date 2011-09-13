@@ -70,11 +70,14 @@ public:
 
     QPlatformDrag *drag() const;
 
+    QPlatformInputContext *inputContext() const;
+
 private:
     QPlatformFontDatabase *mFontDb;
     QAbstractEventDispatcher *mEventDispatcher;
     QWaylandDisplay *mDisplay;
     QPlatformNativeInterface *mNativeInterface;
+    QPlatformInputContext *mInputContext;
 };
 
 QT_END_NAMESPACE
