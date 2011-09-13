@@ -6,4 +6,6 @@ DEPENDPATH += .
 INCLUDEPATH += . ..
 
 # Input
-SOURCES += tst_qcompleter.cpp 
+SOURCES += tst_qcompleter.cpp
+
+CONFIG += insignificant_test # QTBUG-21424
