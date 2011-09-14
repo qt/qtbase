@@ -144,7 +144,7 @@ void tst_MakeTestSelfTest::naming_convention()
     QFETCH(QString, subdir);
     QFETCH(QString, target);
 
-    QDir dir(SRCDIR "/../" + subdir);
+    QDir dir(SRCDIR "/../../" + subdir);
 
     QStringList cppfiles = dir.entryList(QStringList() << "*.h" << "*.cpp");
     if (cppfiles.isEmpty()) {
@@ -191,10 +191,10 @@ void tst_MakeTestSelfTest::naming_convention_data()
     QTest::addColumn<QString>("subdir");
     QTest::addColumn<QString>("target");
 
-    foreach (const QString& subdir, find_subdirs(SRCDIR "/../auto.pro", Recursive)) {
-        if (QFileInfo(SRCDIR "/../" + subdir).isDir()) {
+    foreach (const QString& subdir, find_subdirs(SRCDIR "/../../auto.pro", Recursive)) {
+        if (QFileInfo(SRCDIR "/../../" + subdir).isDir()) {
             QString target;
-            if (looks_like_testcase(SRCDIR "/../" + subdir + "/" + QFileInfo(subdir).baseName() + ".pro", &target)) {
+            if (looks_like_testcase(SRCDIR "/../../" + subdir + "/" + QFileInfo(subdir).baseName() + ".pro", &target)) {
                 QTest::newRow(qPrintable(subdir)) << subdir << target.toLower();
             }
         }
@@ -428,7 +428,7 @@ void tst_MakeTestSelfTest::make_check()
         Run `make check' over the whole tests tree with a custom TESTRUNNER,
         to verify that the TESTRUNNER mechanism works right.
     */
-    QString testsDir(SRCDIR "/..");
+    QString testsDir(SRCDIR "/../..");
     QString checktest(SRCDIR "/checktest/checktest");
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_MAC)
