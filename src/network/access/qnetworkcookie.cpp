@@ -386,7 +386,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
     // parse the first part, before the equal sign
     for (i = position; i < length; ++i) {
         register char c = text.at(i);
-        if (c == ';' || c == ',' || c == '=')
+        if (c == ';' || c == '=')
             break;
     }
 
@@ -437,7 +437,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
 
         for ( ; i < length; ++i) {
             register char c = text.at(i);
-            if (c == ',' || c == ';')
+            if (c == ';')
                 break;
         }
         position = i;
@@ -448,7 +448,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
             register char c = text.at(i);
             // for name value pairs, we want to parse until reaching the next ';'
             // and not break when reaching a space char
-            if (c == ',' || c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))
+            if (c == ';' || ((isNameValue && (c == '\n' || c == '\r')) || (!isNameValue && isLWS(c))))
                 break;
         }
 
@@ -475,8 +475,7 @@ static QPair<QByteArray, QByteArray> nextField(const QByteArray &text, int &posi
 
     \value Full                 makes toRawForm() return the full
         cookie contents, as suitable for sending to a client in a
-        server's "Set-Cookie:" header. Multiple cookies are separated
-        by commas in a "Set-Cookie:" header.
+        server's "Set-Cookie:" header.
 
     Note that only the Full form of the cookie can be parsed back into
     its original contents.
@@ -502,7 +501,6 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
     result = d->name;
     result += '=';
     if ((d->value.contains(';') ||
-        d->value.contains(',') ||
         d->value.contains('"')) &&
         (!d->value.startsWith('"') &&
         !d->value.endsWith('"'))) {
@@ -981,14 +979,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
         cookie.setValue(field.second);
 
         position = nextNonWhitespace(cookieString, position);
-        bool endOfCookie = false;
-        while (!endOfCookie && position < length) {
+        while (position < length) {
             switch (cookieString.at(position++)) {
-            case ',':
-                // end of the cookie
-                endOfCookie = true;
-                break;
-
             case ';':
                 // new field in the cookie
                 field = nextField(cookieString, position, false);
