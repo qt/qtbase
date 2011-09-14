@@ -73,6 +73,8 @@ private slots:
     void toLower();
     void toTitle();
     void toCaseFolded();
+    void isDigit_data();
+    void isDigit();
     void isPrint();
     void isUpper();
     void isLower();
@@ -221,6 +223,25 @@ void tst_QChar::toCaseFolded()
     QVERIFY(QChar::toCaseFolded((uint)0x10428) == 0x10428);
 
     QVERIFY(QChar::toCaseFolded((ushort)0xb5) == 0x3bc);
+}
+
+void tst_QChar::isDigit_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isDigit = (ucs <= '9' && ucs >= '0');
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isDigit;
+    }
+}
+
+void tst_QChar::isDigit()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isDigit(), expected);
 }
 
 void tst_QChar::isPrint()

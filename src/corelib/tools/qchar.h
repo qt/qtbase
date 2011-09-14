@@ -237,7 +237,8 @@ public:
     bool isLetter() const;
     bool isNumber() const;
     bool isLetterOrNumber() const;
-    bool isDigit() const;
+    inline bool isDigit() const
+    { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isDigit(ucs)); }
     bool isSymbol() const;
     inline bool isLower() const {
         return (ucs >= 'a' && ucs <= 'z')
@@ -315,6 +316,8 @@ public:
     static QString QT_FASTCALL decomposition(uint ucs4);
 
 private:
+    static bool QT_FASTCALL isDigit(ushort ucs2);
+
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);
     QChar(uchar c);

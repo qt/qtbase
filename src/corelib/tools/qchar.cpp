@@ -601,12 +601,19 @@ bool QChar::isLetterOrNumber() const
 }
 
 /*!
+    \fn bool QChar::isDigit() const
+
     Returns true if the character is a decimal digit
     (Number_DecimalDigit); otherwise returns false.
 */
-bool QChar::isDigit() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isDigit(ushort ucs2)
 {
-    return (qGetProp(ucs)->category == Number_DecimalDigit);
+    return (qGetProp(ucs2)->category == Number_DecimalDigit);
 }
 
 /*!
