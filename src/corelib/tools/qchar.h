@@ -239,8 +239,14 @@ public:
     bool isLetterOrNumber() const;
     bool isDigit() const;
     bool isSymbol() const;
-    inline bool isLower() const { return category() == Letter_Lowercase; }
-    inline bool isUpper() const { return category() == Letter_Uppercase; }
+    inline bool isLower() const {
+        return (ucs >= 'a' && ucs <= 'z')
+                || (ucs > 127 && category(ucs) == Letter_Lowercase);
+    }
+    inline bool isUpper() const {
+        return (ucs <= 'Z' && ucs >= 'A')
+                || (ucs > 127 && category(ucs) == Letter_Uppercase);
+    }
     inline bool isTitleCase() const { return category() == Letter_Titlecase; }
 
     inline bool isHighSurrogate() const {
