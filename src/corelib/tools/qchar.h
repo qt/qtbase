@@ -240,7 +240,13 @@ public:
                 || (ucs > 127 && isLetter(ucs));
     }
     bool isNumber() const;
-    bool isLetterOrNumber() const;
+    inline bool isLetterOrNumber() const
+    {
+        return (ucs >= 'a' && ucs <= 'z')
+                || (ucs <= 'Z' && ucs >= 'A')
+                || (ucs <= '9' && ucs >= '0')
+                || (ucs > 127 && isLetterOrNumber(ucs));
+    }
     inline bool isDigit() const
     { return (ucs <= '9' && ucs >= '0') || (ucs > 127 && isDigit(ucs)); }
     bool isSymbol() const;
@@ -322,6 +328,7 @@ public:
 private:
     static bool QT_FASTCALL isDigit(ushort ucs2);
     static bool QT_FASTCALL isLetter(ushort ucs2);
+    static bool QT_FASTCALL isLetterOrNumber(ushort ucs2);
 
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);

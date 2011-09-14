@@ -591,10 +591,17 @@ bool QChar::isNumber() const
 }
 
 /*!
+    \fn bool QChar::isLetterOrNumber() const
+
     Returns true if the character is a letter or number (Letter_* or
     Number_* categories); otherwise returns false.
 */
-bool QChar::isLetterOrNumber() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isLetterOrNumber(ushort ucs2)
 {
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
@@ -604,7 +611,7 @@ bool QChar::isLetterOrNumber() const
                      FLAG(Number_DecimalDigit) |
                      FLAG(Number_Letter) |
                      FLAG(Number_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!

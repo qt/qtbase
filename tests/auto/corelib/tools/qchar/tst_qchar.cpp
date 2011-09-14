@@ -77,6 +77,8 @@ private slots:
     void isDigit();
     void isLetter_data();
     void isLetter();
+    void isLetterOrNumber_data();
+    void isLetterOrNumber();
     void isPrint();
     void isUpper();
     void isLower();
@@ -271,6 +273,28 @@ void tst_QChar::isLetter()
     QFETCH(ushort, ucs);
     QFETCH(bool, expected);
     QCOMPARE(QChar(ucs).isLetter(), expected);
+}
+
+void tst_QChar::isLetterOrNumber_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isLetterOrNumber = isExpectedLetter(ucs)
+                || (ucs >= '0' && ucs <= '9')
+                || ucs == 0xB2 || ucs == 0xB3 || ucs == 0xB9
+                || (ucs >= 0xBC && ucs <= 0xBE);
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isLetterOrNumber;
+    }
+}
+
+void tst_QChar::isLetterOrNumber()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isLetterOrNumber(), expected);
 }
 
 void tst_QChar::isPrint()
