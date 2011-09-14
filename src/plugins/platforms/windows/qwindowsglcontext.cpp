@@ -47,11 +47,7 @@
 #include <QtCore/QSysInfo>
 
 #include <WinGDI.h>
-#if defined(Q_CC_MINGW)
-#    include <GL/Gl.h>
-#else
-#    include <Gl.h>
-#endif
+#include <GL/Gl.h>
 
 // #define DEBUG_GL
 
