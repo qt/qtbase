@@ -82,6 +82,8 @@ private slots:
     void isPrint();
     void isUpper();
     void isLower();
+    void isSpace_data();
+    void isSpace();
     void isTitle();
     void category();
     void direction();
@@ -333,6 +335,25 @@ void tst_QChar::isLower()
         if (QChar::category(codepoint) == QChar::Letter_Lowercase)
             QVERIFY(codepoint == QChar::toLower(codepoint));
     }
+}
+
+void tst_QChar::isSpace_data()
+{
+    QTest::addColumn<ushort>("ucs");
+    QTest::addColumn<bool>("expected");
+
+    for (ushort ucs = 0; ucs < 256; ++ucs) {
+        bool isSpace = (ucs <= 0x0D && ucs >= 0x09) || ucs == 0x20 || ucs == 0xA0;
+        QString tag = QString::fromLatin1("0x%0").arg(QString::number(ucs, 16));
+        QTest::newRow(tag.toLatin1()) << ucs << isSpace;
+    }
+}
+
+void tst_QChar::isSpace()
+{
+    QFETCH(ushort, ucs);
+    QFETCH(bool, expected);
+    QCOMPARE(QChar(ucs).isSpace(), expected);
 }
 
 void tst_QChar::isTitle()

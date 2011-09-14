@@ -511,18 +511,23 @@ bool QChar::isPrint() const
 }
 
 /*!
+    \fn bool QChar::isSpace() const
+
     Returns true if the character is a separator character
     (Separator_* categories or certain code points from Other_Control category);
     otherwise returns false.
 */
-bool QChar::isSpace() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isSpace(ushort ucs2)
 {
-    if(ucs >= 9 && ucs <=13)
-        return true;
     const int test = FLAG(Separator_Space) |
                      FLAG(Separator_Line) |
                      FLAG(Separator_Paragraph);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!

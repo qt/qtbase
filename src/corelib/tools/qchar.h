@@ -232,7 +232,10 @@ public:
     inline bool isNull() const { return ucs == 0; }
     bool isPrint() const;
     bool isPunct() const;
-    bool isSpace() const;
+    inline bool isSpace() const {
+        return ucs == 0x20 || (ucs <= 0x0D && ucs >= 0x09)
+                || (ucs > 127 && isSpace(ucs));
+    }
     bool isMark() const;
     inline bool isLetter() const {
         return (ucs >= 'a' && ucs <= 'z')
@@ -329,6 +332,7 @@ private:
     static bool QT_FASTCALL isDigit(ushort ucs2);
     static bool QT_FASTCALL isLetter(ushort ucs2);
     static bool QT_FASTCALL isLetterOrNumber(ushort ucs2);
+    static bool QT_FASTCALL isSpace(ushort ucs2);
 
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c);
