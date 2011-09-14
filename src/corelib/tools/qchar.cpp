@@ -556,17 +556,24 @@ bool QChar::isPunct() const
 }
 
 /*!
+    \fn bool QChar::isLetter() const
+
     Returns true if the character is a letter (Letter_* categories);
     otherwise returns false.
 */
-bool QChar::isLetter() const
+
+/*!
+    \internal
+    \overload
+*/
+bool QChar::isLetter(ushort ucs2)
 {
     const int test = FLAG(Letter_Uppercase) |
                      FLAG(Letter_Lowercase) |
                      FLAG(Letter_Titlecase) |
                      FLAG(Letter_Modifier) |
                      FLAG(Letter_Other);
-    return FLAG(qGetProp(ucs)->category) & test;
+    return FLAG(qGetProp(ucs2)->category) & test;
 }
 
 /*!
