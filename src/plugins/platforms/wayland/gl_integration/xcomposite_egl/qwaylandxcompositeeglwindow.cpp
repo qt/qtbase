@@ -59,7 +59,7 @@ QWaylandXCompositeEGLWindow::QWaylandXCompositeEGLWindow(QWindow *window, QWayla
     , m_context(0)
     , m_buffer(0)
     , m_xWindow(0)
-    , m_config(q_configFromGLFormat(glxIntegration->eglDisplay(), window->format(), true))
+    , m_config(q_configFromGLFormat(glxIntegration->eglDisplay(), window->format(), true, EGL_WINDOW_BIT | EGL_PIXMAP_BIT))
     , m_surface(0)
     , m_waitingForSync(false)
 {

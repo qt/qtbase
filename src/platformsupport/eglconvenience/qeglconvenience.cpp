@@ -208,7 +208,7 @@ EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format,
 {
     EGLConfig cfg = 0;
     QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
-    configureAttributes.append(EGL_SURFACE_TYPE); //we only support eglconfigs for windows for now
+    configureAttributes.append(EGL_SURFACE_TYPE);
     configureAttributes.append(surfaceType);
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);

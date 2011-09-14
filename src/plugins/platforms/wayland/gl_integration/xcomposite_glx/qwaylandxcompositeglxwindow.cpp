@@ -54,7 +54,7 @@ QWaylandXCompositeGLXWindow::QWaylandXCompositeGLXWindow(QWindow *window, QWayla
     : QWaylandWindow(window)
     , m_glxIntegration(glxIntegration)
     , m_xWindow(0)
-    , m_config(qglx_findConfig(glxIntegration->xDisplay(), glxIntegration->screen(), window->format()))
+    , m_config(qglx_findConfig(glxIntegration->xDisplay(), glxIntegration->screen(), window->format(), GLX_WINDOW_BIT | GLX_PIXMAP_BIT))
     , m_buffer(0)
     , m_waitingForSync(false)
 {
