@@ -67,10 +67,9 @@ public:
     ~QWindowsInputContext();
 
     virtual void reset();
-    virtual void update();
+    virtual void update(Qt::InputMethodQueries);
 
     virtual void mouseHandler(int x, QMouseEvent *event);
-    virtual void setFocusObject(QObject *o);
 
     static QWindowsInputContext *instance();
 

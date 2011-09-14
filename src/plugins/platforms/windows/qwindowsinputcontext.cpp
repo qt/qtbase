@@ -93,7 +93,7 @@ template <class T>
     QInputMethodQueryEvent queryEvent(query);
     if (!QCoreApplication::sendEvent(fo, &queryEvent))
         return false;
-    *result = qvariant_cast<T>(queryEvent.value());
+    *result = qvariant_cast<T>(queryEvent.value(query));
     return true;
 }
 
@@ -179,7 +179,7 @@ void QWindowsInputContext::reset()
     QPlatformInputContext::reset();
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = focusObject();
+    QObject *fo = qApp->inputPanel()->inputItem();
     if (QWindowsContext::verboseInputMethods)
         qDebug() << __FUNCTION__<< fo;
     if (!fo)
@@ -199,12 +199,12 @@ void QWindowsInputContext::reset()
     \brief Moves the candidate window along with microfocus of the focus object.
 */
 
-void QWindowsInputContext::update()
+void QWindowsInputContext::update(Qt::InputMethodQueries queries)
 {
-    QPlatformInputContext::update();
+    QPlatformInputContext::update(queries);
     if (!m_compositionContext.hwnd)
         return;
-    QObject *fo = focusObject();
+    QObject *fo = qApp->inputPanel()->inputItem();
     if (!fo)
         return;
     const HIMC himc = ImmGetContext(m_compositionContext.hwnd);
@@ -263,14 +263,6 @@ void QWindowsInputContext::mouseHandler(int pos, QMouseEvent *event)
     const HWND imeWindow = ImmGetDefaultIMEWnd(m_compositionContext.hwnd);
     SendMessage(imeWindow, m_WM_MSIME_MOUSE, MAKELONG(MAKEWORD(button, pos == 0 ? 2 : 1), pos), (LPARAM)himc);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
-}
-
-void QWindowsInputContext::setFocusObject(QObject *object)
-{
-    if (QWindowsContext::verboseInputMethods)
-        qDebug() << __FUNCTION__ << object;
-
-    QPlatformInputContext::setFocusObject(object);
 }
 
 QWindowsInputContext *QWindowsInputContext::instance()
@@ -333,11 +325,11 @@ static inline QTextFormat standardFormat(StandardFormat format)
 
 bool QWindowsInputContext::startComposition(HWND hwnd)
 {
-    const QObject *fo = focusObject();
+    const QObject *fo = qApp->inputPanel()->inputItem();
     if (!fo)
         return false;
     // This should always match the object.
-    QWindow *window = QGuiApplication::activeWindow();
+    QWindow *window = qApp->inputPanel()->inputWindow();
     if (!window)
         return false;
     if (QWindowsContext::verboseInputMethods)
@@ -358,7 +350,7 @@ void QWindowsInputContext::startContextComposition()
     m_compositionContext.isComposing = true;
     m_compositionContext.composition.clear();
     m_compositionContext.position = 0;
-    update();
+    update(Qt::ImQueryAll);
 }
 
 void QWindowsInputContext::endContextComposition()
@@ -401,7 +393,7 @@ static inline QList<QInputMethodEvent::Attribute>
 
 bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
 {
-    QObject *fo = focusObject();
+    QObject *fo = qApp->inputPanel()->inputItem();
     const int lParam = int(lParamIn);
     if (QWindowsContext::verboseInputMethods)
         qDebug() << '>' << __FUNCTION__ << fo << debugComposition(lParam)
@@ -449,7 +441,7 @@ bool QWindowsInputContext::composition(HWND hwnd, LPARAM lParamIn)
                   << event->attributes().size()
                   << " commit=" << event->commitString()
                   << " to " << fo << " returns " << result;
-    update();
+    update(Qt::ImQueryAll);
     ImmReleaseContext(m_compositionContext.hwnd, himc);
     return result;
 }
@@ -463,7 +455,7 @@ bool QWindowsInputContext::endComposition(HWND hwnd)
     // against that.
     if (m_endCompositionRecursionGuard || m_compositionContext.hwnd != hwnd)
         return false;
-    QObject *fo = focusObject();
+    QObject *fo = qApp->inputPanel()->inputItem();
     if (!fo)
         return false;
 
@@ -490,7 +482,7 @@ void QWindowsInputContext::initContext(HWND hwnd)
     // Chinese input methods.
     m_compositionContext.haveCaret = CreateCaret(hwnd, 0, 1, 1);
     HideCaret(hwnd);
-    update();
+    update(Qt::ImQueryAll);
     m_compositionContext.isComposing = false;
     m_compositionContext.position = 0;
 }
@@ -541,7 +533,7 @@ bool QWindowsInputContext::handleIME_Request(WPARAM wParam,
 
 int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
 {
-    QObject *fo = focusObject();
+    QObject *fo = qApp->inputPanel()->inputItem();
     if (!fo)
         return false;
 
