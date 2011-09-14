@@ -73,7 +73,7 @@ class QPlatformInputContext;
 
 Q_DECLARE_INTERFACE(QPlatformInputContextFactoryInterface, QPlatformInputContextFactoryInterface_iid)
 
-class Q_GUI_EXPORT QPlatformInputContextPlugin : public QObject, public QPlatformInputContextFactoryInterface
+class Q_PLATFORMSUPPORT_EXPORT QPlatformInputContextPlugin : public QObject, public QPlatformInputContextFactoryInterface
 {
     Q_OBJECT
     Q_INTERFACES(QPlatformInputContextFactoryInterface:QFactoryInterface)

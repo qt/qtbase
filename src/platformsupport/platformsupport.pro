@@ -11,6 +11,8 @@ mac:LIBS += -lz -framework CoreFoundation -framework Carbon
 
 MODULE_PRI = ../modules/qt_platformsupport.pri
 
+DEFINES += QT_BUILD_PLATFORMSUPPORT_LIB
+
 load(qt_module_config)
 
 unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
