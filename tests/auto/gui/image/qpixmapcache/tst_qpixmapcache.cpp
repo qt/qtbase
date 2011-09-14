@@ -45,7 +45,7 @@
 
 
 #include <qpixmapcache.h>
-#include "../../../src/gui/image/qpixmapcache_p.h"
+#include "private/qpixmapcache_p.h"
 
 
 //TESTED_CLASS=
