@@ -7,5 +7,4 @@ SUBDIRS=\
 !cross_compile: SUBDIRS += \
    compiler \
    headersclean \
-   maketestselftest \
    # atwrapper \ # QTBUG-19452

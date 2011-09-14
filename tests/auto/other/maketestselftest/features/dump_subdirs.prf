@@ -1,4 +1,0 @@
-for(dir, SUBDIRS) {
-    message(subdir: $$dir)
-}
-
