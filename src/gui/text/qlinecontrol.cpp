@@ -41,7 +41,6 @@
 
 // ###
 #define QT_NO_ACCESSIBILITY
-#define QT_NO_IM
 
 #include "qlinecontrol_p.h"
 
