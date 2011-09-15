@@ -287,7 +287,10 @@ public:
     { --threadData->loopLevel; }
 };
 
-typedef QHash<QByteArray, QFont> FontHash;
+struct FontHash : public QHash<QByteArray, QFont>
+{
+    FontHash();
+};
 FontHash *qt_app_fonts_hash();
 
 typedef QHash<QByteArray, QPalette> PaletteHash;

@@ -499,7 +499,12 @@ PaletteHash *qt_app_palettes_hash()
     return app_palettes();
 }
 
-Q_GLOBAL_STATIC_WITH_INITIALIZER(FontHash, app_fonts, { *x = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFonts(); } )
+FontHash::FontHash()
+{
+    QHash<QByteArray, QFont>::operator=(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFonts());
+}
+
+Q_GLOBAL_STATIC(FontHash, app_fonts)
 FontHash *qt_app_fonts_hash()
 {
     return app_fonts();
