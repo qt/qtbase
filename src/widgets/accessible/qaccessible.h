@@ -382,19 +382,21 @@ public:
     virtual int childAt(int x, int y) const = 0;
 
     // navigation
+    virtual QAccessibleInterface *parent() const = 0;
+    virtual QAccessibleInterface *child(int index) const = 0;
     virtual int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const = 0;
 
     // properties and state
-    virtual QString text(Text t, int child) const = 0;
+    virtual QString text(Text t, int child = 0) const = 0;
     virtual void setText(Text t, int child, const QString &text) = 0;
-    virtual QRect rect(int child) const = 0;
-    virtual Role role(int child) const = 0;
-    virtual State state(int child) const = 0;
+    virtual QRect rect(int child = 0) const = 0;
+    virtual Role role(int child = 0) const = 0;
+    virtual State state(int child = 0) const = 0;
 
     // action
-    virtual int userActionCount(int child) const = 0;
-    virtual QString actionText(int action, Text t, int child) const = 0;
-    virtual bool doAction(int action, int child, const QVariantList &params = QVariantList()) = 0;
+    virtual int userActionCount(int child = 0) const = 0;
+    virtual QString actionText(int action, Text t, int child = 0) const = 0;
+    virtual bool doAction(int action, int child = 0, const QVariantList &params = QVariantList()) = 0;
 
     virtual QVariant invokeMethod(Method method, int child = 0,
                           const QVariantList &params = QVariantList());

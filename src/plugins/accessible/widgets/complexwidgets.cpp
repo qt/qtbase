@@ -481,6 +481,17 @@ QAbstractItemView::CursorAction QAccessibleItemRow::toCursorAction(
     return QAbstractItemView::MoveRight;
 }
 
+QAccessibleInterface *QAccessibleItemRow::parent() const
+{
+    return new QAccessibleItemView(view->viewport());
+}
+
+QAccessibleInterface *QAccessibleItemRow::child(int index) const
+{
+    // FIXME? port to IA2 table2.
+    return 0;
+}
+
 int QAccessibleItemRow::navigate(RelationFlag relation, int index,
                                  QAccessibleInterface **iface) const
 {
@@ -489,19 +500,9 @@ int QAccessibleItemRow::navigate(RelationFlag relation, int index,
         return -1;
 
     switch (relation) {
-    case Ancestor: {
-        if (!index)
-            return -1;
-        QAccessibleItemView *ancestor = new QAccessibleItemView(view->viewport());
-        if (index == 1) {
-            *iface = ancestor;
-            return 0;
-        } else if (index > 1) {
-            int ret = ancestor->navigate(Ancestor, index - 1, iface);
-            delete ancestor;
-            return ret;
-        }
-        }
+    case Ancestor:
+        *iface = parent();
+        return *iface ? 0 : -1;
     case Child: {
         if (!index)
             return -1;
@@ -1487,10 +1488,14 @@ public:
     QString text(Text, int) const { return qt_accStripAmp(m_parent->tabText(m_index)); }
     void setText(Text, int, const QString &) {}
 
+    QAccessibleInterface *parent() const {
+        return QAccessible::queryAccessibleInterface(m_parent);
+    }
+    QAccessibleInterface *child(int) const { return 0; }
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
     {
         if (relation == QAccessible::Ancestor && index == 1) {
-            *iface = QAccessible::queryAccessibleInterface(m_parent);
+            *iface = parent();
             return 0;
         }
         return -1;
@@ -1842,6 +1847,7 @@ int QAccessibleComboBox::childAt(int x, int y) const
         if (rect(i).contains(x, y))
             return i;
     }
+    Q_ASSERT(0);
     return 0;
 }
 

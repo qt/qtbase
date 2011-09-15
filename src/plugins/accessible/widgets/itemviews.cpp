@@ -359,9 +359,7 @@ QAccessible2::TableModelChange QAccessibleTable2::modelChange() const
 
 QAccessible::Role QAccessibleTable2::role(int child) const
 {
-    Q_ASSERT(child >= 0);
-    if (child > 0)
-        return QAccessible::Cell;
+    Q_ASSERT(child == 0);
     return m_role;
 }
 
@@ -386,6 +384,8 @@ int QAccessibleTable2::childAt(int x, int y) const
 
 int QAccessibleTable2::childCount() const
 {
+    if (!view->model())
+        return 0;
     int vHeader = verticalHeader() ? 1 : 0;
     int hHeader = horizontalHeader() ? 1 : 0;
     return (view->model()->rowCount()+hHeader) * (view->model()->columnCount()+vHeader);
@@ -430,21 +430,31 @@ QRect QAccessibleTable2::rect(int child) const
     return QRect(pos.x(), pos.y(), view->width(), view->height());
 }
 
+QAccessibleInterface *QAccessibleTable2::parent() const
+{
+    if (view->parent()) {
+        return QAccessible::queryAccessibleInterface(view->parent());
+    }
+    return 0;
+}
+
+QAccessibleInterface *QAccessibleTable2::child(int index) const
+{
+    // Fixme: get rid of the +1 madness
+    return childFromLogical(index + 1);
+}
+
 int QAccessibleTable2::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     *iface = 0;
     switch (relation) {
     case Ancestor: {
-        if (index == 1 && view->parent()) {
-            *iface = QAccessible::queryAccessibleInterface(view->parent());
-            if (*iface)
-                return 0;
-        }
-        break;
+        *iface = parent();
+        return *iface ? 0 : -1;
     }
     case QAccessible::Child: {
         Q_ASSERT(index > 0);
-        *iface = childFromLogical(index);
+        *iface = child(index - 1);
         if (*iface) {
             return 0;
         }
@@ -806,14 +816,23 @@ bool QAccessibleTable2Cell::isValid() const
     return m_index.isValid();
 }
 
+QAccessibleInterface *QAccessibleTable2Cell::parent() const
+{
+    if (m_role == QAccessible::TreeItem)
+        return new QAccessibleTree(view);
+
+    return new QAccessibleTable2(view);
+}
+
+QAccessibleInterface *QAccessibleTable2Cell::child(int) const
+{
+    return 0;
+}
+
 int QAccessibleTable2Cell::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     if (relation == Ancestor && index == 1) {
-        if (m_role == QAccessible::TreeItem) {
-            *iface = new QAccessibleTree(view);
-        } else {
-            *iface = new QAccessibleTable2(view);
-        }
+        *iface = parent();
         return 0;
     }
 
@@ -978,19 +997,28 @@ bool QAccessibleTable2HeaderCell::isValid() const
     return true;
 }
 
+QAccessibleInterface *QAccessibleTable2HeaderCell::parent() const
+{
+    if (false) {
+#ifndef QT_NO_TREEVIEW
+    } else if (qobject_cast<const QTreeView*>(view)) {
+        return new QAccessibleTree(view);
+#endif
+    } else {
+        return new QAccessibleTable2(view);
+    }
+}
+
+QAccessibleInterface *QAccessibleTable2HeaderCell::child(int) const
+{
+    return 0;
+}
+
 int QAccessibleTable2HeaderCell::navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
 {
     if (relation == QAccessible::Ancestor && index == 1) {
-        if (false) {
-#ifndef QT_NO_TREEVIEW
-        } else if (qobject_cast<const QTreeView*>(view)) {
-            *iface = new QAccessibleTree(view);
-            return 0;
-#endif
-        } else {
-            *iface = new QAccessibleTable2(view);
-            return 0;
-        }
+        *iface = parent();
+        return *iface ? 0 : -1;
     }
     *iface = 0;
     return -1;

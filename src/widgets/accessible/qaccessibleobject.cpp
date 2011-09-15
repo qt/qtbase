@@ -284,6 +284,20 @@ QAccessible::Relation QAccessibleApplication::relationTo(int child, const
     return Unrelated;
 }
 
+QAccessibleInterface *QAccessibleApplication::parent() const
+{
+    return 0;
+}
+
+QAccessibleInterface *QAccessibleApplication::child(int index) const
+{
+    Q_ASSERT(index >= 0);
+    const QWidgetList tlw(topLevelWidgets());
+    if (index >= 0 && index < tlw.count())
+        return QAccessible::queryAccessibleInterface(tlw.at(index));
+    return 0;
+}
+
 /*! \reimp */
 int QAccessibleApplication::navigate(RelationFlag relation, int entry,
                                      QAccessibleInterface **target) const

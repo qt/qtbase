@@ -414,22 +414,22 @@ int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) co
     return -1;
 }
 
+QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
+{
+    if (index < 0 || index >= stackedWidget()->count())
+        return 0;
+    return QAccessible::queryAccessibleInterface(stackedWidget()->widget(index));
+}
+
 int QAccessibleStackedWidget::navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const
 {
-    *target = 0;
-
-    QObject *targetObject = 0;
     switch (relation) {
     case Child:
-        if (entry < 1 || entry > stackedWidget()->count())
-            return -1;
-        targetObject = stackedWidget()->widget(entry-1);
-        break;
+        *target = child(entry - 1);
+        return *target ? 0 : -1;
     default:
         return QAccessibleWidget::navigate(relation, entry, target);
     }
-    *target = QAccessible::queryAccessibleInterface(targetObject);
-    return *target ? 0 : -1;
 }
 
 QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
@@ -1069,15 +1069,37 @@ QAccessibleTitleBar::QAccessibleTitleBar(QDockWidget *widget)
 
 }
 
+QAccessibleInterface *QAccessibleTitleBar::parent() const
+{
+    return new QAccessibleDockWidget(dockWidget());
+}
+
+QAccessibleInterface *QAccessibleTitleBar::child(int index) const
+{
+    if (index >= 0) {
+        QDockWidgetLayout *layout = dockWidgetLayout();
+        int role;
+        int currentIndex = 0;
+        for (role = QDockWidgetLayout::CloseButton; role <= QDockWidgetLayout::FloatButton; ++role) {
+            QWidget *w = layout->widgetForRole((QDockWidgetLayout::Role)role);
+            if (!w || !w->isVisible())
+                continue;
+            if (currentIndex == index)
+                return QAccessible::queryAccessibleInterface(w);
+            ++currentIndex;
+        }
+    }
+    return 0;
+}
+
 int QAccessibleTitleBar::navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const
 {
-    if (entry == 0 || relation == Self) {
-        *iface = new QAccessibleTitleBar(dockWidget());
-        return 0;
-    }
     switch (relation) {
     case Child:
+        *iface = child(entry - 1);
+        return *iface ? 0 : -1;
     case FocusChild:
+        // ###
         if (entry >= 1) {
             QDockWidgetLayout *layout = dockWidgetLayout();
             int index = 1;
@@ -1095,18 +1117,8 @@ int QAccessibleTitleBar::navigate(RelationFlag relation, int entry, QAccessibleI
         }
         break;
     case Ancestor:
-        {
-        QAccessibleDockWidget *target = new QAccessibleDockWidget(dockWidget());
-        int index;
-        if (entry == 1) {
-            *iface = target;
-            return 0;
-        }
-        index = target->navigate(Ancestor, entry - 1, iface);
-        delete target;
-        return index;
-
-        break;}
+        *iface = parent();
+        return iface ? 0 : -1;
     case Sibling:
         return navigate(Child, entry, iface);
         break;

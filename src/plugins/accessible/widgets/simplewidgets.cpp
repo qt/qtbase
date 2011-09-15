@@ -106,8 +106,7 @@ QAbstractButton *QAccessibleButton::button() const
 /*! \reimp */
 QString QAccessibleButton::actionText(int action, Text text, int child) const
 {
-    if (child)
-        return QString();
+    Q_ASSERT(child == 0);
 
     if (text == Name) switch (action) {
     case Press:
@@ -117,7 +116,7 @@ QString QAccessibleButton::actionText(int action, Text text, int child) const
             return QPushButton::tr("Open");
         case CheckBox:
             {
-                if (state(child) & Checked)
+                if (state(0) & Checked)
                     return QCheckBox::tr("Uncheck");
                 QCheckBox *cb = qobject_cast<QCheckBox*>(object());
                 if (!cb || !cb->isTristate() || cb->checkState() == Qt::PartiallyChecked)
@@ -138,7 +137,8 @@ QString QAccessibleButton::actionText(int action, Text text, int child) const
 /*! \reimp */
 bool QAccessibleButton::doAction(int action, int child, const QVariantList &params)
 {
-    if (child || !widget()->isEnabled())
+    Q_ASSERT(child == 0);
+    if (!widget()->isEnabled())
         return false;
 
     switch (action) {
@@ -161,6 +161,7 @@ bool QAccessibleButton::doAction(int action, int child, const QVariantList &para
 /*! \reimp */
 QString QAccessibleButton::text(Text t, int child) const
 {
+    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Accelerator:
@@ -190,7 +191,8 @@ QString QAccessibleButton::text(Text t, int child) const
 /*! \reimp */
 QAccessible::State QAccessibleButton::state(int child) const
 {
-    State state = QAccessibleWidget::state(child);
+    Q_ASSERT(child == 0);
+    State state = QAccessibleWidget::state(0);
 
     QAbstractButton *b = button();
     QCheckBox *cb = qobject_cast<QCheckBox *>(b);
@@ -336,11 +338,16 @@ bool QAccessibleToolButton::isSplitButton() const
 /*! \reimp */
 QAccessible::Role QAccessibleToolButton::role(int child) const
 {
-    if (isSplitButton()) switch(child) {
-    case ButtonExecute:
-        return PushButton;
-    case ButtonDropMenu:
-        return ButtonMenu;
+    Q_ASSERT(child == 0);
+
+    // FIXME
+    if (isSplitButton()) {
+        switch (child) {
+        case ButtonExecute:
+            return PushButton;
+        case ButtonDropMenu:
+            return ButtonMenu;
+        }
     }
     return QAccessibleButton::role(child);
 }
@@ -348,6 +355,7 @@ QAccessible::Role QAccessibleToolButton::role(int child) const
 /*! \reimp */
 QAccessible::State QAccessibleToolButton::state(int child) const
 {
+    Q_ASSERT(child == 0);
     QAccessible::State st = QAccessibleButton::state(child);
     if (toolButton()->autoRaise())
         st |= HotTracked;
@@ -374,22 +382,24 @@ int QAccessibleToolButton::childCount() const
 */
 QRect QAccessibleToolButton::rect(int child) const
 {
+    Q_ASSERT(child == 0);
     if (!toolButton()->isVisible())
         return QRect();
-    if (!child)
-        return QAccessibleButton::rect(child);
 
-    QStyleOptionToolButton opt;
-    opt.init(widget());
-    QRect subrect = widget()->style()->subControlRect(QStyle::CC_ToolButton, &opt,
-                                                      QStyle::SC_ToolButtonMenu, toolButton());
+    return QAccessibleButton::rect(child);
 
-    if (child == ButtonExecute)
-        subrect = QRect(0, 0, subrect.x(), widget()->height());
+    // FIXME: sub buttons when SplitButton
+//    QStyleOptionToolButton opt;
+//    opt.init(widget());
+//    QRect subrect = widget()->style()->subControlRect(QStyle::CC_ToolButton, &opt,
+//                                                      QStyle::SC_ToolButtonMenu, toolButton());
 
-    QPoint ntl = widget()->mapToGlobal(subrect.topLeft());
-    subrect.moveTopLeft(ntl);
-    return subrect;
+//    if (child == ButtonExecute)
+//        subrect = QRect(0, 0, subrect.x(), widget()->height());
+
+//    QPoint ntl = widget()->mapToGlobal(subrect.topLeft());
+//    subrect.moveTopLeft(ntl);
+//    return subrect;
 }
 
 /*!
@@ -400,6 +410,7 @@ QRect QAccessibleToolButton::rect(int child) const
 */
 QString QAccessibleToolButton::text(Text t, int child) const
 {
+    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Name:
@@ -423,6 +434,7 @@ QString QAccessibleToolButton::text(Text t, int child) const
 */
 int QAccessibleToolButton::actionCount(int child) const
 {
+    Q_ASSERT(child == 0);
     // each subelement has one action
     if (child)
         return isSplitButton() ? 1 : 0;
@@ -445,6 +457,7 @@ int QAccessibleToolButton::actionCount(int child) const
 */
 QString QAccessibleToolButton::actionText(int action, Text text, int child) const
 {
+    Q_ASSERT(child == 0);
     if (text == Name) switch(child) {
     case ButtonExecute:
         return QToolButton::tr("Press");
@@ -472,6 +485,7 @@ QString QAccessibleToolButton::actionText(int action, Text text, int child) cons
 */
 bool QAccessibleToolButton::doAction(int action, int child, const QVariantList &params)
 {
+    Q_ASSERT(child == 0);
     if (!widget()->isEnabled())
         return false;
     if (action == 1 || child == ButtonDropMenu) {
@@ -507,6 +521,7 @@ QAccessibleDisplay::QAccessibleDisplay(QWidget *w, Role role)
 /*! \reimp */
 QAccessible::Role QAccessibleDisplay::role(int child) const
 {
+    Q_ASSERT(child == 0);
     QLabel *l = qobject_cast<QLabel*>(object());
     if (l) {
         if (l->pixmap())
@@ -530,6 +545,7 @@ QAccessible::Role QAccessibleDisplay::role(int child) const
 /*! \reimp */
 QString QAccessibleDisplay::text(Text t, int child) const
 {
+    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Name:
@@ -570,6 +586,7 @@ QString QAccessibleDisplay::text(Text t, int child) const
 QAccessible::Relation QAccessibleDisplay::relationTo(int child, const QAccessibleInterface *other,
                                                      int otherChild) const
 {
+    Q_ASSERT(child == 0);
     Relation relation = QAccessibleWidget::relationTo(child, other, otherChild);
     if (child || otherChild)
         return relation;
@@ -689,6 +706,7 @@ QLineEdit *QAccessibleLineEdit::lineEdit() const
 /*! \reimp */
 QString QAccessibleLineEdit::text(Text t, int child) const
 {
+    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Value:
@@ -723,6 +741,7 @@ void QAccessibleLineEdit::setText(Text t, int control, const QString &text)
 /*! \reimp */
 QAccessible::State QAccessibleLineEdit::state(int child) const
 {
+    Q_ASSERT(child == 0);
     State state = QAccessibleWidget::state(child);
 
     QLineEdit *l = lineEdit();
@@ -744,8 +763,7 @@ QAccessible::State QAccessibleLineEdit::state(int child) const
 QVariant QAccessibleLineEdit::invokeMethod(QAccessible::Method method, int child,
                                                      const QVariantList &params)
 {
-    if (child)
-        return QVariant();
+    Q_ASSERT(child == 0);
 
     switch (method) {
     case ListSupportedMethods: {

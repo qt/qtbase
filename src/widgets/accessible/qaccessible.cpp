@@ -869,6 +869,27 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 */
 
 /*!
+    \fn QAccessibleInterface *parent() const
+
+    Returns the QAccessibleInterface of the parent in the accessible object hierarchy.
+
+    Returns 0 if no parent exists (e.g. for the top level application object).
+
+    \sa child()
+*/
+
+/*!
+    \fn QAccessibleInterface *child(int index) const
+
+    Returns the accessible child with index \a index.
+    0-based index. The number of children of an object can be checked with childCount.
+
+    Returns 0 when asking for an invalid child (e.g. when the child became invalid in the meantime).
+
+    \sa childCount(), parent()
+*/
+
+/*!
     \fn int QAccessibleInterface::navigate(RelationFlag relation, int entry, QAccessibleInterface
 **target) const
 
@@ -909,7 +930,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 
     All objects support navigation.
 
-    \sa relationTo(), childCount()
+    \sa relationTo(), childCount(), parent(), child()
 */
 
 /*!

@@ -91,7 +91,9 @@ public:
     Relation relationTo(int, const QAccessibleInterface *, int) const;
 
     // navigation
+    QAccessibleInterface *parent() const;
     int childAt(int x, int y) const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag, int, QAccessibleInterface **) const;
 
     // properties and state

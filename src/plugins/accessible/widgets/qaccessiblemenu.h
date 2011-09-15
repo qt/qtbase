@@ -65,6 +65,8 @@ public:
     QString text(Text t, int child) const;
     Role role(int child) const;
     State state(int child) const;
+    QAccessibleInterface *child(int index) const;
+    QAccessibleInterface *parent() const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
     int indexOfChild( const QAccessibleInterface *child ) const;
 
@@ -81,6 +83,7 @@ class QAccessibleMenuBar : public QAccessibleWidget
 public:
     explicit QAccessibleMenuBar(QWidget *w);
 
+    QAccessibleInterface *child(int index) const;
     int childCount() const;
     int childAt(int x, int y) const;
 
@@ -113,6 +116,9 @@ public:
     virtual bool doAction ( int action, int child, const QVariantList & params = QVariantList() );
     virtual int indexOfChild ( const QAccessibleInterface * child ) const;
     virtual bool isValid () const;
+
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     virtual int navigate ( RelationFlag relation, int entry, QAccessibleInterface ** target ) const;
     virtual QObject * object () const;
     virtual QRect rect ( int child ) const;

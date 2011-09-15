@@ -65,6 +65,9 @@ public:
 
     int childAt(int x, int y) const;
     QRect rect(int child) const;
+
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
 
     QString text(Text t, int child) const;

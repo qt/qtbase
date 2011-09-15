@@ -132,6 +132,7 @@ public:
     int childAt(int x, int y) const;
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *child) const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **target) const;
 
 protected:
@@ -273,6 +274,8 @@ public:
     QString actionText(int action, Text t, int child) const;
     bool doAction(int action, int child, const QVariantList& params = QVariantList());
     int userActionCount ( int child) const;
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int entry, QAccessibleInterface **iface) const;
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;

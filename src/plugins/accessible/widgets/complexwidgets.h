@@ -139,6 +139,8 @@ public:
 
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
     int childAt(int x, int y) const;
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
 
     int userActionCount(int child) const;

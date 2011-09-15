@@ -76,6 +76,8 @@ public:
     int childCount() const;
     int indexOfChild(const QAccessibleInterface *) const;
 
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
 
@@ -193,6 +195,8 @@ public:
     QString text(Text t, int child) const;
     void setText(Text t, int child, const QString &text);
 
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int) const;
     int navigate(RelationFlag relation, int m_index, QAccessibleInterface **iface) const;
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
 
@@ -246,6 +250,8 @@ public:
     QString text(Text t, int child) const;
     void setText(Text t, int child, const QString &text);
 
+    QAccessibleInterface *parent() const;
+    QAccessibleInterface *child(int index) const;
     int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const;
     Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
 
@@ -287,11 +293,17 @@ public:
     QString text(Text, int) const { return QString(); }
     void setText(Text, int, const QString &) {}
 
-    int navigate(RelationFlag relation, int index, QAccessibleInterface **iface) const
+    QAccessibleInterface *parent() const {
+        return QAccessible::queryAccessibleInterface(view);
+    }
+    QAccessibleInterface *child(int) const {
+        return 0;
+    }
+    int navigate(RelationFlag relation, int, QAccessibleInterface **iface) const
     {
-        if (relation == QAccessible::Ancestor && index == 1) {
-            *iface = QAccessible::queryAccessibleInterface(view);
-            return 0;
+        if (relation == QAccessible::Ancestor) {
+            *iface = parent();
+            return *iface ? 0 : -1;
         }
         return -1;
     }
