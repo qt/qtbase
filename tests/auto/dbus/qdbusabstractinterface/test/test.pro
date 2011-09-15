@@ -11,4 +11,3 @@ TARGET = ../tst_qdbusabstractinterface
 
 QT = core
 QT += dbus
-CONFIG += insignificant_test #See QTBUG-21424
