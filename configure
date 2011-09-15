@@ -3538,22 +3538,8 @@ fi
 if [ -z "$QT_INSTALL_PREFIX" ]; then
     if [ "$CFG_DEV" = "yes" ]; then
         QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
-    elif [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
-        if [ "$PLATFORM_QPA" = "yes" ]; then
-	QT_INSTALL_PREFIX="/usr/local/Trolltech/QtLighthouse-${QT_VERSION}"
-        else
-	QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
-        fi
-        if [ "$PLATFORM" != "$XPLATFORM" ]; then
-            QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
-        fi
-    elif [ -d "$EPOCROOT" ] && [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-        if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-            QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
-            QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
-        fi
     else
-        QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
+        QT_INSTALL_PREFIX="/usr/local/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Qt-$QT_VERSION
     fi
 fi
 QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
