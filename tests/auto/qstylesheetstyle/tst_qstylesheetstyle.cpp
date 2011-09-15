@@ -857,7 +857,7 @@ void tst_QStyleSheetStyle::hoverColors()
         QApplication::setActiveWindow(&frame);
         QTest::qWait(60);
         //move the mouse inside the widget, it should be colored
-        QTest::mouseMove ( widget, QPoint(5,5));
+        QTest::mouseMove ( widget, QPoint(6,6));
         QTest::qWait(60);
 
         QVERIFY(widget->testAttribute(Qt::WA_UnderMouse));

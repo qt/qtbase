@@ -5,4 +5,3 @@ QT += gui-private
 SOURCES += tst_qstylesheetstyle.cpp
 RESOURCES += resources.qrc
 requires(contains(QT_CONFIG,private_tests))
-CONFIG += insignificant_test #See QTBUG-21424
