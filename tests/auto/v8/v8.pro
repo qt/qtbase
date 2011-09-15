@@ -7,5 +7,3 @@ HEADERS += v8test.h
 CONFIG += parallel_test
 
 QT += v8-private
-
-CONFIG += insignificant_test # QTBUG-21402
