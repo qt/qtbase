@@ -2163,8 +2163,8 @@ void tst_QComboBox::task247863_keyBoardSelection()
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
   QTest::keyClick(&combo, Qt::Key_Space);
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, true);
-  QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Down);
-  QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_Enter);
+  QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down);
+  QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter);
   QCOMPARE(combo.currentText(), QLatin1String("222"));
   QCOMPARE(spy.count(), 1);
 }
@@ -2528,7 +2528,7 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     cb.setFocus();
     QApplication::processEvents();
     QTRY_VERIFY(cb.hasFocus());
-    QTest::keyClick(static_cast<QWindow *>(0), '1');
+    QTest::keyClick(static_cast<QWidget *>(0), '1');
     QCOMPARE(spy.count(), 0);
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());

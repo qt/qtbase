@@ -1080,7 +1080,7 @@ void tst_QDoubleSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
     spinbox.lineEdit()->setCursorPosition(2); //just after the first thousand separator
-    QTest::keyClick(static_cast<QWindow *>(0), Qt::Key_0); // let's insert a 0
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_0); // let's insert a 0
     QCOMPARE(spinbox.value(), 10000.);
     spinbox.clearFocus(); //make sure the value is correctly formatted
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
