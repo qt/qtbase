@@ -129,11 +129,11 @@ namespace QTest
 
     private:
         QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
-            : targetWidget(widget), deviceType(aDeviceType)
+            : targetWidget(widget), deviceType(aDeviceType), targetWindow(0)
         {
         }
         QTouchEventSequence(QWindow *window, QTouchEvent::DeviceType aDeviceType)
-            : targetWindow(window), deviceType(aDeviceType)
+            : targetWindow(window), deviceType(aDeviceType), targetWidget(0)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);
