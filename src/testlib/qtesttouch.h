@@ -157,15 +157,15 @@ namespace QTest
                 return window->mapToGlobal(pt);
             return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
         }
-        QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& point)
+        QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
         {
             QWindowSystemInterface::TouchPoint p;
-            p.id = point.id();
-            p.isPrimary = point.isPrimary();
-            p.normalPosition = point.screenRect().topLeft();
-            p.area = point.screenRect();
-            p.pressure = point.pressure();
-            p.state = point.state();
+            p.id = pt.id();
+            p.isPrimary = pt.isPrimary();
+            p.normalPosition = pt.screenRect().topLeft();
+            p.area = pt.screenRect();
+            p.pressure = pt.pressure();
+            p.state = pt.state();
             return p;
         }
         QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
