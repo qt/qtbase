@@ -13,5 +13,3 @@ QT = core
 
 include(externaltests.pri)
 CONFIG += parallel_test
-
-CONFIG += insignificant_test # QTBUG-21402

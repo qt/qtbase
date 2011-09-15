@@ -68,6 +68,9 @@
 static QString makespec()
 {
     static const char default_makespec[] = DEFAULT_MAKESPEC;
+    if (default_makespec[0] == '/')
+        return QString::fromLatin1(default_makespec);
+
     const char *p;
     for (p = default_makespec + sizeof(default_makespec) - 1; p >= default_makespec; --p)
         if (*p == '/' || *p == '\\')
