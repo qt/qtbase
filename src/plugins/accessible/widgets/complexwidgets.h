@@ -258,31 +258,29 @@ protected:
 #endif // QT_NO_TABBAR
 
 #ifndef QT_NO_COMBOBOX
-class QAccessibleComboBox : public QAccessibleWidget
+class QAccessibleComboBox : public QAccessibleWidget, public QAccessibleActionInterface
 {
     Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleComboBox(QWidget *w);
 
-    enum ComboBoxElements {
-        ComboBoxSelf        = 0,
-        CurrentText,
-        OpenList,
-        PopupList
-    };
-
     int childCount() const;
     int childAt(int x, int y) const;
     int indexOfChild(const QAccessibleInterface *child) const;
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
+    QAccessibleInterface* child(int index) const;
 
     QString text(Text t, int child) const;
-    QRect rect(int child) const;
-    Role role(int child) const;
-    State state(int child) const;
 
     bool doAction(int action, int child, const QVariantList &params);
     QString actionText(int action, Text t, int child) const;
+
+    // QAccessibleActionInterface
+    int actionCount();
+    void doAction(int actionIndex);
+    QString description(int actionIndex);
+    QString name(int actionIndex);
+    QString localizedName(int actionIndex);
+    QStringList keyBindings(int actionIndex);
 
 protected:
     QComboBox *comboBox() const;

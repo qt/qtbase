@@ -1766,97 +1766,40 @@ QComboBox *QAccessibleComboBox::comboBox() const
     return qobject_cast<QComboBox*>(object());
 }
 
-/*! \reimp */
-QRect QAccessibleComboBox::rect(int child) const
+QAccessibleInterface* QAccessibleComboBox::child(int index) const
 {
-    QPoint tp;
-    QStyle::SubControl sc;
-    QRect r;
-    switch (child) {
-    case CurrentText:
-        if (comboBox()->isEditable()) {
-            tp = comboBox()->lineEdit()->mapToGlobal(QPoint(0,0));
-            r = comboBox()->lineEdit()->rect();
-            sc = QStyle::SC_None;
-        } else  {
-            tp = comboBox()->mapToGlobal(QPoint(0,0));
-            sc = QStyle::SC_ComboBoxEditField;
-        }
-        break;
-    case OpenList:
-        tp = comboBox()->mapToGlobal(QPoint(0,0));
-        sc = QStyle::SC_ComboBoxArrow;
-        break;
-    default:
-        return QAccessibleWidget::rect(child);
+    QAccessibleInterface* target = 0;
+    if (index == 0) {
+        QAbstractItemView *view = comboBox()->view();
+        //QWidget *parent = view ? view->parentWidget() : 0;
+        return QAccessible::queryAccessibleInterface(view);
+    } else if (index == 1 && comboBox()->isEditable()) {
+        return QAccessible::queryAccessibleInterface(comboBox()->lineEdit());
     }
-
-    if (sc != QStyle::SC_None) {
-        QStyleOptionComboBox option;
-        option.initFrom(comboBox());
-        r = comboBox()->style()->subControlRect(QStyle::CC_ComboBox, &option, sc, comboBox());
-    }
-    return QRect(tp.x() + r.x(), tp.y() + r.y(), r.width(), r.height());
-}
-
-/*! \reimp */
-int QAccessibleComboBox::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-    if (entry > ComboBoxSelf) switch (rel) {
-    case Child:
-        if (entry < PopupList)
-            return entry;
-        if (entry == PopupList) {
-            QAbstractItemView *view = comboBox()->view();
-            QWidget *parent = view ? view->parentWidget() : 0;
-            *target = QAccessible::queryAccessibleInterface(parent);
-            return *target ? 0 : -1;
-        }
-    case QAccessible::Left:
-        return entry == OpenList ? CurrentText : -1;
-    case QAccessible::Right:
-        return entry == CurrentText ? OpenList : -1;
-    case QAccessible::Up:
-        return -1;
-    case QAccessible::Down:
-        return -1;
-    default:
-        break;
-    }
-    return QAccessibleWidget::navigate(rel, entry, target);
 }
 
 /*! \reimp */
 int QAccessibleComboBox::childCount() const
 {
-    return comboBox()->view() ? PopupList : OpenList;
+    // list and text edit
+    return comboBox()->isEditable() ? 2 : 1;
 }
 
 /*! \reimp */
 int QAccessibleComboBox::childAt(int x, int y) const
 {
-    if (!comboBox()->isVisible())
-        return -1;
-    QPoint gp = widget()->mapToGlobal(QPoint(0, 0));
-    if (!QRect(gp.x(), gp.y(), widget()->width(), widget()->height()).contains(x, y))
-        return -1;
-
-    // a complex control
-    for (int i = 1; i < PopupList; ++i) {
-        if (rect(i).contains(x, y))
-            return i;
-    }
-    Q_ASSERT(0);
+    if (comboBox()->isEditable() && comboBox()->lineEdit()->rect().contains(x, y))
+        return 1;
     return 0;
 }
 
 /*! \reimp */
 int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
 {
-    QObject *viewParent = comboBox()->view() ? comboBox()->view()->parentWidget() : 0;
-    if (child->object() == viewParent)
-        return PopupList;
+    if (comboBox()->view() == child->object())
+        return 0;
+    if (comboBox()->isEditable() && comboBox()->lineEdit() == child->object())
+        return 1;
     return -1;
 }
 
@@ -1868,10 +1811,7 @@ QString QAccessibleComboBox::text(Text t, int child) const
     switch (t) {
     case Name:
 #ifndef Q_OS_UNIX // on Linux we use relations for this, name is text (fall through to Value)
-        if (child == OpenList)
-            str = QComboBox::tr("Open");
-        else
-            str = QAccessibleWidget::text(t, 0);
+        str = QAccessibleWidget::text(t, 0);
         break;
 #endif
     case Value:
@@ -1882,8 +1822,7 @@ QString QAccessibleComboBox::text(Text t, int child) const
         break;
 #ifndef QT_NO_SHORTCUT
     case Accelerator:
-        if (child == OpenList)
-            str = (QString)QKeySequence(Qt::Key_Down);
+        str = (QString)QKeySequence(Qt::Key_Down);
         break;
 #endif
     default:
@@ -1895,32 +1834,9 @@ QString QAccessibleComboBox::text(Text t, int child) const
 }
 
 /*! \reimp */
-QAccessible::Role QAccessibleComboBox::role(int child) const
+bool QAccessibleComboBox::doAction(int action, int, const QVariantList &)
 {
-    switch (child) {
-    case CurrentText:
-        if (comboBox()->isEditable())
-            return EditableText;
-        return StaticText;
-    case OpenList:
-        return PushButton;
-    case PopupList:
-        return List;
-    default:
-        return ComboBox;
-    }
-}
-
-/*! \reimp */
-QAccessible::State QAccessibleComboBox::state(int /*child*/) const
-{
-    return QAccessibleWidget::state(0);
-}
-
-/*! \reimp */
-bool QAccessibleComboBox::doAction(int action, int child, const QVariantList &)
-{
-    if (child == 2 && (action == DefaultAction || action == Press)) {
+    if (action == DefaultAction || action == Press) {
         if (comboBox()->view()->isVisible()) {
             comboBox()->hidePopup();
         } else {
@@ -1934,10 +1850,41 @@ bool QAccessibleComboBox::doAction(int action, int child, const QVariantList &)
 QString QAccessibleComboBox::actionText(int action, Text t, int child) const
 {
     QString text;
-    if (child == 2 && t == Name && (action == DefaultAction || action == Press))
+    if (t == Name && (action == DefaultAction || action == Press))
         text = comboBox()->view()->isVisible() ? QComboBox::tr("Close") : QComboBox::tr("Open");
     return text;
 }
+
+int QAccessibleComboBox::actionCount()
+{
+    return 1;
+}
+
+void QAccessibleComboBox::doAction(int actionIndex)
+{
+    doAction(0, 0, QVariantList());
+}
+
+QString QAccessibleComboBox::description(int actionIndex)
+{
+    return QComboBox::tr("Opens the selection list of this combo box.");
+}
+
+QString QAccessibleComboBox::name(int actionIndex)
+{
+    return QStringLiteral("Popup Combobox Menu");
+}
+
+QString QAccessibleComboBox::localizedName(int actionIndex)
+{
+    return QComboBox::tr("Popup Combobox Menu");
+}
+
+QStringList QAccessibleComboBox::keyBindings(int)
+{
+    return QStringList();
+}
+
 #endif // QT_NO_COMBOBOX
 
 static inline void removeInvisibleWidgetsFromList(QWidgetList *list)
