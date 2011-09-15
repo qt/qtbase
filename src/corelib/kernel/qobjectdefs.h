@@ -135,7 +135,7 @@ class QString;
 /* tmake ignore Q_OBJECT */
 #define Q_OBJECT_CHECK \
     template <typename T> inline void qt_check_for_QOBJECT_macro(const T &_q_argument) const \
-    { int i = qYouForgotTheQ_OBJECT_Macro(this, &_q_argument); i = i; }
+    { int i = qYouForgotTheQ_OBJECT_Macro(this, &_q_argument); i = i + 1; }
 
 template <typename T>
 inline int qYouForgotTheQ_OBJECT_Macro(T, T) { return 0; }
