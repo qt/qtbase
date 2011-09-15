@@ -152,7 +152,7 @@ QT_BEGIN_NAMESPACE
     \row    \o Qt::WA_SetPalette
                     \o Set by setPalette().
     \row    \o Qt::WA_SetFont
-                    \o Set by setPalette().
+                    \o Set by setFont().
     \row    \o Qt::WA_WindowPropagation
                     \o Enables propagation to window widgets.
     \endtable
@@ -1673,7 +1673,7 @@ void QGraphicsWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 
 /*!
     This event handler, for \a event, can be reimplemented in a subclass to
-    receive notifications for Qt::GrabMouse events.
+    receive notifications for QEvent::GrabMouse events.
 
     \sa grabMouse(), grabKeyboard()
 */
@@ -1684,7 +1684,7 @@ void QGraphicsWidget::grabMouseEvent(QEvent *event)
 
 /*!
     This event handler, for \a event, can be reimplemented in a subclass to
-    receive notifications for Qt::UngrabMouse events.
+    receive notifications for QEvent::UngrabMouse events.
 
     \sa ungrabMouse(), ungrabKeyboard()
 */
@@ -1695,7 +1695,7 @@ void QGraphicsWidget::ungrabMouseEvent(QEvent *event)
 
 /*!
     This event handler, for \a event, can be reimplemented in a subclass to
-    receive notifications for Qt::GrabKeyboard events.
+    receive notifications for QEvent::GrabKeyboard events.
 
     \sa grabKeyboard(), grabMouse()
 */
@@ -1706,7 +1706,7 @@ void QGraphicsWidget::grabKeyboardEvent(QEvent *event)
 
 /*!
     This event handler, for \a event, can be reimplemented in a subclass to
-    receive notifications for Qt::UngrabKeyboard events.
+    receive notifications for QEvent::UngrabKeyboard events.
 
     \sa ungrabKeyboard(), ungrabMouse()
 */
