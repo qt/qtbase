@@ -96,6 +96,7 @@ defineTest(qtAddModule) {
     MODULE_NAME = $$eval(QT.$${1}.name)
     MODULE_INCLUDES = $$eval(QT.$${1}.includes)
     MODULE_LIBS = $$eval(QT.$${1}.libs)
+    MODULE_CONFIG = $$eval(QT.$${1}.module_config)
 
     CONFIG += $$eval(QT.$${1}.CONFIG)
     DEFINES += $$eval(QT.$${1}.DEFINES)
@@ -115,8 +116,17 @@ defineTest(qtAddModule) {
 
     unset(LINKAGE)
     mac {
-        for(frmwrk_dir, $$list($$MODULE_LIBS $$QMAKE_LIBDIR $$(DYLD_FRAMEWORK_PATH) /Library/Frameworks)) {
-            exists($${frmwrk_dir}/$${MODULE_NAME}.framework) {
+        !contains(MODULE_CONFIG,staticlib):CONFIG(qt_framework, qt_framework|qt_no_framework) { #forced
+          QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
+          FRAMEWORK_INCLUDE = $$MODULE_INCLUDES.framework/Headers
+          !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
+               INCLUDEPATH -= $$FRAMEWORK_INCLUDE
+               INCLUDEPATH = $$FRAMEWORK_INCLUDE $$INCLUDEPATH
+           }
+           LINKAGE = -framework $${MODULE_NAME}$${QT_LIBINFIX}
+        } else:!qt_no_framework { #detection
+           for(frmwrk_dir, $$list($$MODULE_LIBS $$QMAKE_LIBDIR $$(DYLD_FRAMEWORK_PATH) /Library/Frameworks)) {
+              exists($${frmwrk_dir}/$${MODULE_NAME}.framework) {
                 QMAKE_FRAMEWORKPATH *= $${frmwrk_dir}
                 FRAMEWORK_INCLUDE = $$frmwrk_dir/$${MODULE_NAME}.framework/Headers
                 !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
@@ -125,7 +135,8 @@ defineTest(qtAddModule) {
                 }
                 LINKAGE = -framework $${MODULE_NAME}
                 break()
-            }
+              }
+           }
         }
     }
 

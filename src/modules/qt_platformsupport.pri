@@ -12,4 +12,5 @@ QT.platformsupport.libs = $$QT_MODULE_LIB_BASE
 QT.platformsupport.plugins = $$QT_MODULE_PLUGIN_BASE
 QT.platformsupport.imports = $$QT_MODULE_IMPORT_BASE
 QT.platformsupport.depends = core gui
+QT.platformsupport.module_config = staticlib
 QT.platformsupport.DEFINES =
