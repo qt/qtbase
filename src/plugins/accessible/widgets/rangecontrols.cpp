@@ -81,99 +81,20 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
 }
 
 /*! \reimp */
-int QAccessibleAbstractSpinBox::childCount() const
-{
-    return ValueDown;
-}
-
-/*! \reimp */
 QRect QAccessibleAbstractSpinBox::rect(int child) const
 {
     QRect rect;
     if (!abstractSpinBox()->isVisible())
         return rect;
-    QStyleOptionSpinBox so;
-    so.rect = widget()->rect();
-    switch(child) {
-    case Editor:
-        rect = widget()->style()->subControlRect(QStyle::CC_SpinBox, &so,
-                                                 QStyle::SC_SpinBoxEditField, widget());
-        break;
-    case ValueUp:
-        rect = widget()->style()->subControlRect(QStyle::CC_SpinBox, &so,
-                                                 QStyle::SC_SpinBoxUp, widget());
-        break;
-    case ValueDown:
-        rect = widget()->style()->subControlRect(QStyle::CC_SpinBox, &so,
-                                                 QStyle::SC_SpinBoxDown, widget());
-        break;
-    default:
-        rect = so.rect;
-        break;
-    }
-    QPoint tl = widget()->mapToGlobal(QPoint(0, 0));
-    return QRect(tl.x() + rect.x(), tl.y() + rect.y(), rect.width(), rect.height());
-}
-
-/*! \reimp */
-int QAccessibleAbstractSpinBox::navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const
-{
-    *target = 0;
-
-    if (entry) switch (rel) {
-    case Child:
-        return entry <= childCount() ? entry : -1;
-    case QAccessible::Left:
-        return (entry == ValueUp || entry == ValueDown) ? Editor : -1;
-    case QAccessible::Right:
-        return entry == Editor ? ValueUp : -1;
-    case QAccessible::Up:
-        return entry == ValueDown ? ValueUp : -1;
-    case QAccessible::Down:
-        return entry == ValueUp ? ValueDown : -1;
-    default:
-        break;
-    }
-    return QAccessibleWidget::navigate(rel, entry, target);
+    return widget()->rect();
 }
 
 /*! \reimp */
 QString QAccessibleAbstractSpinBox::text(Text t, int child) const
 {
-    if (!abstractSpinBox()->isVisible())
-        return QString();
-    switch (t) {
-    case Name:
-        switch (child) {
-        case ValueUp:
-            return QSpinBox::tr("More");
-        case ValueDown:
-            return QSpinBox::tr("Less");
-        }
-        break;
-    case Value:
-        if (child == Editor || child == SpinBoxSelf)
-            return abstractSpinBox()->text();
-        break;
-    default:
-        break;
-    }
+    if (t == QAccessible::Value)
+        return abstractSpinBox()->text();
     return QAccessibleWidget::text(t, 0);
-}
-
-/*! \reimp */
-QAccessible::Role QAccessibleAbstractSpinBox::role(int child) const
-{
-    switch(child) {
-    case Editor:
-        return EditableText;
-    case ValueUp:
-    case ValueDown:
-        return PushButton;
-    default:
-        break;
-    }
-    return QAccessibleWidget::role(child);
 }
 
 /*! \reimp */
@@ -181,19 +102,6 @@ bool QAccessibleAbstractSpinBox::doAction(int action, int child, const QVariantL
 {
     if (!widget()->isEnabled())
         return false;
-
-    if (action == Press) {
-        switch(child) {
-        case ValueUp:
-            abstractSpinBox()->stepUp();
-            return true;
-        case ValueDown:
-            abstractSpinBox()->stepDown();
-            return true;
-        default:
-            break;
-        }
-    }
     return QAccessibleWidget::doAction(action, 0, params);
 }
 
@@ -279,46 +187,11 @@ QSpinBox *QAccessibleSpinBox::spinBox() const
 }
 
 /*! \reimp */
-QAccessible::State QAccessibleSpinBox::state(int child) const
-{
-    State state = QAccessibleAbstractSpinBox::state(child);
-    switch(child) {
-    case ValueUp:
-        if (spinBox()->value() >= spinBox()->maximum())
-            state |= Unavailable;
-        return state;
-    case ValueDown:
-        if (spinBox()->value() <= spinBox()->minimum())
-            state |= Unavailable;
-        return state;
-    default:
-        break;
-    }
-    return state;
-}
-
-/*! \reimp */
 bool QAccessibleSpinBox::doAction(int action, int child, const QVariantList &params)
 {
     if (!widget()->isEnabled())
         return false;
 
-    if (action == Press) {
-        switch(child) {
-        case ValueUp:
-            if (spinBox()->value() >= spinBox()->maximum())
-                return false;
-            spinBox()->stepUp();
-            return true;
-        case ValueDown:
-            if (spinBox()->value() <= spinBox()->minimum())
-                return false;
-            spinBox()->stepDown();
-            return true;
-        default:
-            break;
-        }
-    }
     return QAccessibleAbstractSpinBox::doAction(action, 0, params);
 }
 

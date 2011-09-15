@@ -64,20 +64,9 @@ class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleVa
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
-    enum SpinBoxElements {
-        SpinBoxSelf        = 0,
-        Editor,
-        ValueUp,
-        ValueDown
-    };
-
-    int childCount() const;
     QRect rect(int child) const;
 
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
-
     QString text(Text t, int child) const;
-    Role role(int child) const;
 
     bool doAction(int action, int child, const QVariantList &params);
 
@@ -89,6 +78,8 @@ public:
     QVariant maximumValue();
     QVariant minimumValue();
 
+    // FIXME Action interface
+
 protected:
     QAbstractSpinBox *abstractSpinBox() const;
 };
@@ -97,9 +88,6 @@ class QAccessibleSpinBox : public QAccessibleAbstractSpinBox
 {
 public:
     explicit QAccessibleSpinBox(QWidget *w);
-
-    State state(int child) const;
-
     bool doAction(int action, int child, const QVariantList &params);
 
 protected:
