@@ -8,7 +8,8 @@ win32 {
             TARGET_VERSION_EXT = $$section(VERSION, ., 0, 0)
             isEqual(TARGET_VERSION_EXT, 0):unset(TARGET_VERSION_EXT)
         }
-        TARGET_EXT = .dll
+        static:TARGET_EXT = .lib
+        else:TARGET_EXT = .dll
     } else {
         TARGET_EXT = .exe
     }
@@ -27,7 +28,8 @@ win32 {
                     isEmpty(TEMP_VERSION):TEMP_VERSION = 1
                     QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}.$${TEMP_VERSION}
                 }
-                QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}.$${QMAKE_EXTENSION_SHLIB}
+                static:QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}.$${QMAKE_EXTENSION_STATICLIB}
+                else:QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}.$${QMAKE_EXTENSION_SHLIB}
             }
         } else {
             app_bundle {
@@ -38,7 +40,9 @@ win32 {
         }
     } else {
         equals(TEMPLATE, lib) {
-            plugin {
+            static {
+                QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}.a
+            } else:plugin {
                 QMAKE_RESOLVED_TARGET = $${QMAKE_RESOLVED_TARGET}$${LIBPREFIX}$${TARGET}.so
             } else {
                 TEMP_VERSION = $$VERSION
