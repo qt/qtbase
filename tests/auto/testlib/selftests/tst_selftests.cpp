@@ -420,9 +420,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
             const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
             QEXPECT_FAIL("assert",                msg, Continue);
             QEXPECT_FAIL("assert xml",            msg, Continue);
-            QEXPECT_FAIL("assert xml flush",      msg, Continue);
             QEXPECT_FAIL("assert lightxml",       msg, Continue);
-            QEXPECT_FAIL("assert lightxml flush", msg, Continue);
             QEXPECT_FAIL("assert xunitxml",       msg, Continue);
         }
 
