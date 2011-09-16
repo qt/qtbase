@@ -2,7 +2,7 @@ load(qt_module)
 
 TARGET = QtTest
 QPRO_PWD = $$PWD
-QT = core gui widgets
+QT = core
 
 CONFIG += module
 MODULE_PRI = ../modules/qt_testlib.pri
