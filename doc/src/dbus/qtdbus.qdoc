@@ -1,0 +1,40 @@
+/*!
+    \module QtDBus
+    \title QtDBus module
+    \ingroup modules
+
+    \keyword QtDBus
+    \target The QDBus compiler
+
+    \brief The QtDBus module is a Unix-only library that you can use
+    to perform Inter-Process Communication using the \l{D-Bus} protocol.
+
+    Applications using the QtDBus module can provide services to
+    other, remote applications by exporting objects, as well as use
+    services exported by those applications by placing calls and
+    accessing properties.
+
+    The QtDBus module provides an interface that extends the Qt \l
+    {signalsandslots.html}{Signals and Slots} mechanism, allowing one
+    to connect to a signal emitted remotely as well as to connect a
+    local signal to remote slot.
+
+    To use this module, use the following code in your application:
+
+    \snippet doc/src/snippets/code/doc_src_qtdbus.cpp 0
+
+    If you're using qmake to build your application, you can add this
+    line to your .pro file to make it link against the QtDBus
+    libraries:
+
+    \snippet doc/src/snippets/code/doc_src_qtdbus.pro 1
+
+    \note The source code for this module is located in the \c{src/qdbus}
+    directory. When installing Qt from source, this module is built when Qt's
+    tools are built.
+
+    See the \l {D-Bus} page for detailed information on
+    how to use this module.
+
+    This module is part of all \l{Qt editions}.
+*/

@@ -1,0 +1,12 @@
+/*!
+    \module QtGui
+    \title QtGui Module
+    \ingroup modules
+
+    \brief The QtGui module extends QtCore with GUI functionality.
+
+    To include the definitions of both modules' classes, use the
+    following directive:
+
+    \snippet doc/src/snippets/code/doc_src_qtgui.pro 0
+*/

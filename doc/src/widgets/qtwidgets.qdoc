@@ -1,0 +1,18 @@
+/*!
+    \module QtWidgets
+    \title QtWidgets Module
+    \ingroup modules
+
+    \brief The QtWidgets module extends QtGui with C++ widget functionality.
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet doc/src/snippets/code/doc_src_qtwidgets.cpp 1
+
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
+
+    \snippet doc/src/snippets/code/doc_src_qtwidgets.pro 0
+*/
+

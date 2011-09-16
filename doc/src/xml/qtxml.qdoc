@@ -1,0 +1,23 @@
+/*!
+    \module QtXml
+    \title QtXml Module
+    \ingroup modules
+    \ingroup technology-apis
+
+    \brief The QtXml module provides a stream reader and writer for
+    XML documents, and C++ implementations of SAX and DOM.
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet doc/src/snippets/code/doc_src_qtxml.cpp 0
+
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
+
+    \snippet doc/src/snippets/code/doc_src_qtxml.pro 1
+
+    Further XML support is provided by the \l{Qt Solutions} group who
+    provide, for example, classes that support SOAP and MML with the
+    Qt XML classes.
+*/

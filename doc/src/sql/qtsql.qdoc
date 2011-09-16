@@ -1,0 +1,18 @@
+/*!
+    \module QtSql
+    \title QtSql Module
+    \ingroup modules
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet doc/src/snippets/code/doc_src_qtsql.cpp 0
+
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
+
+    \snippet doc/src/snippets/code/doc_src_qtsql.pro 1
+
+    See the \l{SQL Programming} guide for information about using this
+    module in your applications.
+*/

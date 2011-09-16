@@ -1,0 +1,18 @@
+/*!
+    \module QtNetwork
+    \title QtNetwork Module
+    \ingroup modules
+
+    \brief The QtNetwork module provides classes to make network programming
+    easier and portable.
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet doc/src/snippets/code/doc_src_qtnetwork.cpp 1
+
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
+
+    \snippet doc/src/snippets/code/doc_src_qtnetwork.pro 0
+*/
