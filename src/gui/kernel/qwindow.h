@@ -74,6 +74,7 @@ class QPlatformSurface;
 class QPlatformWindow;
 class QBackingStore;
 class QScreen;
+class QAccessibleInterface;
 
 class Q_GUI_EXPORT QWindow : public QObject, public QSurface
 {
@@ -167,6 +168,8 @@ public:
 
     QScreen *screen() const;
     void setScreen(QScreen *screen);
+
+    virtual QAccessibleInterface *accessibleRoot() const;
 
     QPoint mapToGlobal(const QPoint &pos) const;
     QPoint mapFromGlobal(const QPoint &pos) const;

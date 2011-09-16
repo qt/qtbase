@@ -495,6 +495,15 @@ void QWindow::setScreen(QScreen *newScreen)
         create();
 }
 
+/*!
+  Returns the accessibility interface for the object that the window represents
+  */
+QAccessibleInterface *QWindow::accessibleRoot() const
+{
+    return 0;
+}
+
+
 void QWindow::showMinimized()
 {
     qDebug() << "unimplemented:" << __FILE__ << __LINE__;
