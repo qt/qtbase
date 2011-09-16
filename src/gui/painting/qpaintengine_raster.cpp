@@ -54,10 +54,6 @@
 #include <qbitmap.h>
 #include <qmath.h>
 
-#if defined (Q_WS_X11)
-#  include <private/qfontengine_ft_p.h>
-#endif
-
 //   #include <private/qdatabuffer_p.h>
 //   #include <private/qpainter_p.h>
 #include <private/qmath_p.h>
@@ -88,8 +84,6 @@
 #  include <private/qpaintengine_mac_p.h>
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 #  include <private/qfontengine_s60_p.h>
-#elif defined(Q_WS_QPA)
-#  include <private/qfontengine_ft_p.h>
 #endif
 
 #if defined(Q_OS_WIN64)
@@ -2717,91 +2711,33 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-#if !defined(QT_NO_FREETYPE)
-    if (fontEngine->type() == QFontEngine::Freetype) {
-        QFontEngineFT *fe = static_cast<QFontEngineFT *>(fontEngine);
-        QFontEngineFT::GlyphFormat neededFormat =
+    if (fontEngine->hasInternalCaching()) {
+        QFontEngine::GlyphFormat neededFormat =
             painter()->device()->devType() == QInternal::Widget
-            ? fe->defaultGlyphFormat()
-            : QFontEngineFT::Format_A8;
+            ? QFontEngine::Format_None
+            : QFontEngine::Format_A8;
 
-        if (d_func()->mono_surface
-            || fe->isBitmapFont() // alphaPenBlt can handle mono, too
-            )
-            neededFormat = QFontEngineFT::Format_Mono;
-
-        if (neededFormat == QFontEngineFT::Format_None)
-            neededFormat = QFontEngineFT::Format_A8;
-
-        QFontEngineFT::QGlyphSet *gset = fe->defaultGlyphs();
-        if (s->matrix.type() >= QTransform::TxScale) {
-            if (s->matrix.isAffine())
-                gset = fe->loadTransformedGlyphSet(s->matrix);
-            else
-                gset = 0;
-        }
-
-        if (!gset || gset->outline_drawing
-            || !fe->loadGlyphs(gset, glyphs, numGlyphs, positions, neededFormat))
-            return false;
-
-        FT_Face lockedFace = 0;
-
-        int depth;
-        switch (neededFormat) {
-        case QFontEngineFT::Format_Mono:
-            depth = 1;
-            break;
-        case QFontEngineFT::Format_A8:
-            depth = 8;
-            break;
-        case QFontEngineFT::Format_A32:
-            depth = 32;
-            break;
-        default:
-            Q_ASSERT(false);
-            depth = 0;
-        };
+        if (d_func()->mono_surface) // alphaPenBlt can handle mono, too
+            neededFormat = QFontEngine::Format_Mono;
 
         for (int i = 0; i < numGlyphs; i++) {
-            QFixed spp = fe->subPixelPositionForX(positions[i].x);
-            QFontEngineFT::Glyph *glyph = gset->getGlyph(glyphs[i], spp);
+            QFixed spp = fontEngine->subPixelPositionForX(positions[i].x);
 
-            if (!glyph || glyph->format != neededFormat) {
-                if (!lockedFace)
-                    lockedFace = fe->lockFace();
-                glyph = fe->loadGlyph(gset, glyphs[i], spp, neededFormat);
-            }
-
-            if (!glyph || !glyph->data)
+            QPoint offset;
+            QImage *alphaMap = fontEngine->lockedAlphaMapForGlyph(glyphs[i], spp, neededFormat, s->matrix,
+                                                                  &offset);
+            if (alphaMap == 0)
                 continue;
 
-            int pitch;
-            switch (neededFormat) {
-            case QFontEngineFT::Format_Mono:
-                pitch = ((glyph->width + 31) & ~31) >> 3;
-                break;
-            case QFontEngineFT::Format_A8:
-                pitch = (glyph->width + 3) & ~3;
-                break;
-            case QFontEngineFT::Format_A32:
-                pitch = glyph->width * 4;
-                break;
-            default:
-                Q_ASSERT(false);
-                pitch = 0;
-            };
+            alphaPenBlt(alphaMap->bits(), alphaMap->bytesPerLine(), alphaMap->depth(),
+                        qFloor(positions[i].x) + offset.x(),
+                        qFloor(positions[i].y) + offset.y(),
+                        alphaMap->width(), alphaMap->height());
 
-            alphaPenBlt(glyph->data, pitch, depth,
-                        qFloor(positions[i].x) + glyph->x,
-                        qFloor(positions[i].y) - glyph->y,
-                        glyph->width, glyph->height);
+            fontEngine->unlockAlphaMapForGlyph();
         }
-        if (lockedFace)
-            fe->unlockFace();
-    } else
-#endif
-    {
+
+    } else {
         QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat) : d->glyphCacheType;
 
         QImageTextureGlyphCache *cache =
@@ -3057,28 +2993,23 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     QFontEngine *fontEngine = ti.fontEngine;
 
-#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 
-    if (fontEngine->type() != QFontEngine::Freetype) {
-        QPaintEngineEx::drawTextItem(p, ti);
+    if (fontEngine->type() == QFontEngine::Freetype) {
+        QTransform matrix = s->matrix;
+        matrix.translate(p.x(), p.y());
+
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+        if (glyphs.size() == 0)
+            return;
+
+        if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), fontEngine))
+            QPaintEngine::drawTextItem(p, ti);
+
         return;
     }
-
-    QFontEngineFT *fe = static_cast<QFontEngineFT *>(fontEngine);
-
-    QTransform matrix = s->matrix;
-    matrix.translate(p.x(), p.y());
-
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    fe->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-    if (glyphs.size() == 0)
-        return;
-
-    if (!drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), fontEngine))
-        QPaintEngine::drawTextItem(p, ti);
-
-    return;
 #endif
 #endif
 

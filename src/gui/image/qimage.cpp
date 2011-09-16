@@ -69,6 +69,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool isLocked(QImageData *data)
+{
+    return data != 0 && data->is_locked;
+}
+
 static inline bool checkPixelSize(const QImage::Format format)
 {
     switch (format) {
@@ -130,7 +135,7 @@ QImageData::QImageData()
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
-      is_cached(false), paintEngine(0)
+      is_cached(false), is_locked(false), paintEngine(0)
 {
 }
 
@@ -1022,7 +1027,7 @@ QImage::QImage(const char * const xpm[])
 QImage::QImage(const QImage &image)
     : QPaintDevice()
 {
-    if (image.paintingActive()) {
+    if (image.paintingActive() || isLocked(image.d)) {
         d = 0;
         operator=(image.copy());
     } else {
@@ -1054,7 +1059,7 @@ QImage::~QImage()
 
 QImage &QImage::operator=(const QImage &image)
 {
-    if (image.paintingActive()) {
+    if (image.paintingActive() || isLocked(image.d)) {
         operator=(image.copy());
     } else {
         if (image.d)

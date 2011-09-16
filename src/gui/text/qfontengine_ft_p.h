@@ -265,6 +265,12 @@ private:
                                                 QFixed subPixelPosition,
                                                 const QTransform &matrix,
                                                 QFontEngine::GlyphFormat format);
+    virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
+                                           GlyphFormat neededFormat, const QTransform &t,
+                                           QPoint *offset);
+    virtual bool hasInternalCaching() const { return true; }
+    virtual void unlockAlphaMapForGlyph();
+
     virtual void removeGlyphFromCache(glyph_t glyph);
 
     virtual int glyphCount() const;
@@ -292,7 +298,6 @@ private:
     inline Glyph *cachedGlyph(glyph_t g) const { return defaultGlyphSet.getGlyph(g, 0); }
 
     QGlyphSet *loadTransformedGlyphSet(const QTransform &matrix);
-    QFixed subPixelPositionForX(QFixed x);
     bool loadGlyphs(QGlyphSet *gs, const glyph_t *glyphs, int num_glyphs,
                     const QFixedPoint *positions,
                     GlyphFormat format = Format_Render);

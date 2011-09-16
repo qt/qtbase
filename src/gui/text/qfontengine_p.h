@@ -167,6 +167,7 @@ public:
     };
     virtual int synthesized() const { return 0; }
     virtual bool supportsSubPixelPositions() const { return false; }
+    QFixed subPixelPositionForX(QFixed x);
 
     virtual QFixed emSquareSize() const { return ascent(); }
 
@@ -195,11 +196,18 @@ public:
      * Create a qimage with the alpha values for the glyph.
      * Returns an image indexed_8 with index values ranging from 0=fully transparent to 255=opaque
      */
+    // ### Refactor this into a smaller and more flexible API.
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
+                                           GlyphFormat neededFormat,
+                                           const QTransform &t = QTransform(),
+                                           QPoint *offset = 0);
+    virtual void unlockAlphaMapForGlyph();
+    virtual bool hasInternalCaching() const { return false; }
 
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
     {
@@ -282,6 +290,7 @@ public:
 #endif
 
     int glyphFormat;
+    QImage currentlyLockedAlphaMap;
 
 protected:
     static const QVector<QRgb> &grayPalette();

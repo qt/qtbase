@@ -636,6 +636,46 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     return rgbMask;
 }
 
+QFixed QFontEngine::subPixelPositionForX(QFixed x)
+{
+    int m_subPixelPositionCount = 4;
+    if (!supportsSubPixelPositions())
+        return 0;
+
+    QFixed subPixelPosition;
+    if (x != 0) {
+        subPixelPosition = x - x.floor();
+        QFixed fraction = (subPixelPosition / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
+        subPixelPosition = fraction / QFixed(m_subPixelPositionCount);
+    }
+    return subPixelPosition;
+}
+
+QImage *QFontEngine::lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
+                                            QFontEngine::GlyphFormat neededFormat,
+                                            const QTransform &t, QPoint *offset)
+{
+    Q_ASSERT(currentlyLockedAlphaMap.isNull());
+    if (neededFormat == Format_None)
+        neededFormat = Format_A32;
+
+    if (neededFormat != Format_A32)
+        currentlyLockedAlphaMap = alphaMapForGlyph(glyph, subPixelPosition, t);
+    else
+        currentlyLockedAlphaMap = alphaRGBMapForGlyph(glyph, subPixelPosition, 0, t);
+
+    if (offset != 0)
+        *offset = QPoint(0, 0);
+
+    return &currentlyLockedAlphaMap;
+}
+
+void QFontEngine::unlockAlphaMapForGlyph()
+{
+    Q_ASSERT(!currentlyLockedAlphaMap.isNull());
+    currentlyLockedAlphaMap = QImage();
+}
+
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
 {
     glyph_metrics_t gm = boundingBox(glyph);
