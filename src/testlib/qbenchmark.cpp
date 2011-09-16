@@ -43,10 +43,6 @@
 #include "QtTest/private/qbenchmark_p.h"
 #include "QtTest/private/qbenchmarkmetric_p.h"
 
-#ifdef QT_GUI_LIB
-#include <QtGui/qguiapplication.h>
-#endif
-
 #include <QtCore/qprocess.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
