@@ -335,6 +335,7 @@ protected:
     bool antialias;
     bool transform;
     bool embolden;
+    bool obliquen;
     SubpixelAntialiasingType subpixelType;
     int lcdFilterType;
     bool canUploadGlyphsToServer;

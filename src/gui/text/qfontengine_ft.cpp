@@ -99,6 +99,14 @@ QT_BEGIN_NAMESPACE
 #define Q_FT_GLYPHSLOT_EMBOLDEN(slot)
 #endif
 
+/* FreeType 2.1.10 starts to provide FT_GlyphSlot_Oblique */
+#if (FREETYPE_MAJOR*10000+FREETYPE_MINOR*100+FREETYPE_PATCH) >= 20110
+#define Q_HAS_FT_GLYPHSLOT_OBLIQUE
+#define Q_FT_GLYPHSLOT_OBLIQUE(slot)   FT_GlyphSlot_Oblique(slot)
+#else
+#define Q_FT_GLYPHSLOT_OBLIQUE(slot)
+#endif
+
 #define FLOOR(x)    ((x) & -64)
 #define CEIL(x)	    (((x)+63) & -64)
 #define TRUNC(x)    ((x) >> 6)
@@ -627,6 +635,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     kerning_pairs_loaded = false;
     transform = false;
     embolden = false;
+    obliquen = false;
     antialias = true;
     freetype = 0;
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
@@ -698,12 +707,16 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
 
     if (FT_IS_SCALABLE(face)) {
         bool fake_oblique = (fontDef.style != QFont::StyleNormal) && !(face->style_flags & FT_STYLE_FLAG_ITALIC);
-        if (fake_oblique)
+        if (fake_oblique) {
+#if !defined(Q_HAS_FT_GLYPHSLOT_OBLIQUE)
             matrix.xy = 0x10000*3/10;
+            transform = true;
+#else
+            obliquen = true;
+#endif
+        }
         FT_Set_Transform(face, &matrix, 0);
         freetype->matrix = matrix;
-        if (fake_oblique)
-            transform = true;
         // fake bold
         if ((fontDef.weight == QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
             embolden = true;
@@ -879,6 +892,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     FT_GlyphSlot slot = face->glyph;
     if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
+    if (obliquen) Q_FT_GLYPHSLOT_OBLIQUE(slot);
     FT_Library library = qt_getFreetype();
 
     info.xOff = TRUNC(ROUND(slot->advance.x));
@@ -1488,6 +1502,8 @@ void QFontEngineFT::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int
         FT_GlyphSlot g = face->glyph;
         if (g->format != FT_GLYPH_FORMAT_OUTLINE)
             continue;
+        if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(g);
+        if (obliquen) Q_FT_GLYPHSLOT_OBLIQUE(g);
         QFreetypeFace::addGlyphToPath(face, g, positions[gl], path, xsize, ysize);
     }
     unlockFace();
@@ -1981,6 +1997,7 @@ bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
     antialias = fe->antialias;
     transform = fe->transform;
     embolden = fe->embolden;
+    obliquen = fe->obliquen;
     subpixelType = fe->subpixelType;
     lcdFilterType = fe->lcdFilterType;
     canUploadGlyphsToServer = fe->canUploadGlyphsToServer;
