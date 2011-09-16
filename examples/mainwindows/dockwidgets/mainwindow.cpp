@@ -40,7 +40,7 @@
 
 //! [0]
 #include <QtWidgets>
-
+#include <QtPrintSupport>
 #include "mainwindow.h"
 //! [0]
 
