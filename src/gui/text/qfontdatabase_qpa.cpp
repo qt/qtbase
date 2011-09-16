@@ -260,7 +260,7 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
         FM_DEBUG("  NO MATCH FOUND\n");
     }
 
-    if (engine) {
+    if (engine && engine->type() != QFontEngine::TestFontEngine) {
         initFontDef(desc, request, &engine->fontDef);
 
         if (fp) {
