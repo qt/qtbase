@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtCore>
 #include <QtTest/QtTest>
 #include <QtCore/QXmlStreamReader>
@@ -79,14 +78,12 @@ inline bool qCompare
 {
     // First make sure the iterations and unit match.
     if (r1.iterations != r2.iterations || r1.unit != r2.unit) {
-        /* Nope - compare whole string for best failure message */
+        // Nope - compare whole string for best failure message
         return qCompare(r1.toString(), r2.toString(), actual, expected, file, line);
     }
 
-    /*
-        Now check the value.  Some variance is allowed, and how much depends on the
-        measured unit.
-    */
+    // Now check the value.  Some variance is allowed, and how much depends on
+    // the measured unit.
     qreal variance = 0.;
     if (r1.unit == "msec") {
         variance = 0.1;
@@ -98,7 +95,7 @@ inline bool qCompare
         variance = 0.001;
     }
     if (variance == 0.) {
-        /* No variance allowed - compare whole string */
+        // No variance allowed - compare whole string
         return qCompare(r1.toString(), r2.toString(), actual, expected, file, line);
     }
 
@@ -106,12 +103,15 @@ inline bool qCompare
         return compare_helper(true, "COMPARE()", file, line);
     }
 
-    /* Whoops, didn't match.  Compare the whole string for the most useful failure message. */
+    // Whoops, didn't match.  Compare the whole string for the most useful failure message.
     return qCompare(r1.toString(), r2.toString(), actual, expected, file, line);
 }
 }
 QT_END_NAMESPACE
 
+// Split the passed block of text into an array of lines, replacing any
+// filenames and line numbers with generic markers to avoid failing the test
+// due to compiler-specific behaviour.
 static QList<QByteArray> splitLines(QByteArray ba)
 {
     ba.replace('\r', "");
@@ -142,6 +142,9 @@ static QList<QByteArray> splitLines(QByteArray ba)
     return out;
 }
 
+// Load the expected test output for the nominated test (subdir) and logger
+// as an array of lines.  If there is no expected output file, return an
+// empty array.
 static QList<QByteArray> expectedResult(const QString &subdir, const QString &logger)
 {
     QString suffix = logger;
@@ -329,8 +332,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
     QByteArray out;
     if (logfile.isEmpty()) {
         out = proc.readAllStandardOutput();
-    }
-    else {
+    } else {
         QFile file(logfile);
         if (file.open(QIODevice::ReadOnly))
             out = file.readAll();
@@ -338,18 +340,16 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
 
     const QByteArray err(proc.readAllStandardError());
 
-    /*
-        Some tests may output unpredictable strings to stderr, which we'll ignore.
-
-        For instance, uncaught exceptions on Windows might say (depending on Windows
-        version and JIT debugger settings):
-        "This application has requested the Runtime to terminate it in an unusual way.
-        Please contact the application's support team for more information."
-
-        Also, tests which use valgrind may generate warnings if the toolchain is
-        newer than the valgrind version, such that valgrind can't understand the
-        debug information on the binary.
-    */
+    // Some tests may output unpredictable strings to stderr, which we'll ignore.
+    //
+    // For instance, uncaught exceptions on Windows might say (depending on Windows
+    // version and JIT debugger settings):
+    // "This application has requested the Runtime to terminate it in an unusual way.
+    // Please contact the application's support team for more information."
+    //
+    // Also, tests which use valgrind may generate warnings if the toolchain is
+    // newer than the valgrind version, such that valgrind can't understand the
+    // debug information on the binary.
     if (subdir != QLatin1String("exceptionthrow")
         && subdir != QLatin1String("fetchbogus")
         && subdir != QLatin1String("xunit")
@@ -365,8 +365,8 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
         do {
             exp = expectedResult(subdir + QString("_%1").arg(i++), logger);
             if (exp.count())
-            expArr += exp;
-        } while(exp.count());
+                expArr += exp;
+        } while (exp.count());
 
         for (int j = 0; j < expArr.count(); ++j) {
             if (res.count() == expArr.at(j).count()) {
@@ -426,36 +426,26 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
             QEXPECT_FAIL("assert xunitxml",       msg, Continue);
         }
 
-        /* On some platforms we compile without RTTI, and as a result we never throw an exception. */
-        if(expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
+        if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
+            // On some platforms we compile without RTTI, and as a result we never throw an exception.
             QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
-        else
-        {
-            if(output != expected && qstrcmp(QTest::currentDataTag(), "subtest") == 0)
-            {
-            /* The floating point formatting differs between platforms, so let's just skip it. */
+        else if (output != expected && qstrcmp(QTest::currentDataTag(), "subtest") == 0)
+            // The floating point formatting differs between platforms, so let's just skip it.
             continue;
-            }
-            else {
-                /*
-                   Are we expecting this line to be a benchmark result?
-                   If so, don't do a literal comparison, since results have some natural variance.
-                */
-                if (benchmark || line.startsWith("<BenchmarkResult")) {
-                    QString error;
+        else if (benchmark || line.startsWith("<BenchmarkResult")) {
+            // Don't do a literal comparison for benchmark results, since
+            // results have some natural variance.
+            QString error;
 
-                    BenchmarkResult actualResult = BenchmarkResult::parse(output, &error);
-                    QVERIFY2(error.isEmpty(), qPrintable(QString("Actual line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(output)));
+            BenchmarkResult actualResult = BenchmarkResult::parse(output, &error);
+            QVERIFY2(error.isEmpty(), qPrintable(QString("Actual line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(output)));
 
-                    BenchmarkResult expectedResult = BenchmarkResult::parse(expected, &error);
-                    QVERIFY2(error.isEmpty(), qPrintable(QString("Expected line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(expected)));
+            BenchmarkResult expectedResult = BenchmarkResult::parse(expected, &error);
+            QVERIFY2(error.isEmpty(), qPrintable(QString("Expected line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(expected)));
 
-                    QCOMPARE(actualResult, expectedResult);
-                }
-                else {
-                    QCOMPARE(output, expected);
-                }
-            }
+            QCOMPARE(actualResult, expectedResult);
+        } else {
+            QCOMPARE(output, expected);
         }
 
         benchmark = line.startsWith("RESULT : ");
@@ -487,7 +477,7 @@ QString extractXmlAttribute(const QString &line, const char *attribute)
     return result;
 }
 
-/* Parse line into the BenchmarkResult it represents. */
+// Parse line into the BenchmarkResult it represents.
 BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
 {
     if (error) *error = QString();
@@ -535,10 +525,8 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         return out;
     }
     // Text result
-
-    /* This code avoids using a QRegExp because QRegExp might be broken. */
-
-    /* Sample format: 4,000 msec per iteration (total: 4,000, iterations: 1) */
+    // This code avoids using a QRegExp because QRegExp might be broken.
+    // Sample format: 4,000 msec per iteration (total: 4,000, iterations: 1)
 
     QString sFirstNumber;
     while (!remaining.isEmpty() && !remaining.at(0).isSpace()) {
@@ -547,10 +535,10 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     }
     remaining = remaining.trimmed();
 
-    /* 4,000 -> 4000 */
+    // 4,000 -> 4000
     sFirstNumber.remove(',');
 
-    /* Should now be parseable as floating point */
+    // Should now be parseable as floating point
     bool ok;
     double firstNumber = sFirstNumber.toDouble(&ok);
     if (!ok) {
@@ -558,7 +546,7 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         return out;
     }
 
-    /* Remaining: msec per iteration (total: 4000, iterations: 1) */
+    // Remaining: msec per iteration (total: 4000, iterations: 1)
     static const char periterbit[] = " per iteration (total: ";
     QString unit;
     while (!remaining.startsWith(periterbit) && !remaining.isEmpty()) {
@@ -572,7 +560,7 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
 
     remaining = remaining.mid(sizeof(periterbit)-1);
 
-    /* Remaining: 4,000, iterations: 1) */
+    // Remaining: 4,000, iterations: 1)
     static const char itersbit[] = ", iterations: ";
     QString sTotal;
     while (!remaining.startsWith(itersbit) && !remaining.isEmpty()) {
@@ -586,7 +574,7 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
 
     remaining = remaining.mid(sizeof(itersbit)-1);
 
-    /* 4,000 -> 4000 */
+    // 4,000 -> 4000
     sTotal.remove(',');
 
     double total = sTotal.toDouble(&ok);
@@ -595,7 +583,7 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         return out;
     }
 
-    /* Remaining: 1) */
+    // Remaining: 1)
     QString sIters;
     while (remaining != QLatin1String(")") && !remaining.isEmpty()) {
         sIters += remaining.at(0);
