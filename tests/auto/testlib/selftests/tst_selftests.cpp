@@ -50,7 +50,7 @@ class tst_Selftests: public QObject
 private slots:
     void runSubTest_data();
     void runSubTest();
-    void cleanupTestCase();
+    void cleanup();
 
 private:
     void doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments );
@@ -609,8 +609,9 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     return out;
 }
 
-void tst_Selftests::cleanupTestCase()
+void tst_Selftests::cleanup()
 {
+    // Remove the test output file
     QFile::remove("test_output");
 }
 
