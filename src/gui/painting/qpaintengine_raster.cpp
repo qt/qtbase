@@ -3031,7 +3031,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
 
     if (!supportsTransformations(ti.fontEngine)) {
         QVarLengthArray<QFixedPoint> positions;
@@ -3046,44 +3046,16 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_OS_WIN || Q_WS_MAC
+#elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_OS_WIN || Q_WS_MAC || Q_WS_QPA
     if (s->matrix.type() <= QTransform::TxTranslate
         || (s->matrix.type() == QTransform::TxScale
                 && (qFuzzyCompare(s->matrix.m11(), s->matrix.m22())))) {
         drawGlyphsS60(p, ti);
         return;
     }
-#else // Q_OS_WIN || Q_WS_MAC
+#else // Q_OS_WIN || Q_WS_MAC || Q_WS_QPA
 
     QFontEngine *fontEngine = ti.fontEngine;
-
-#ifdef Q_WS_QPA
-    if (s->matrix.type() < QTransform::TxScale) {
-
-        QVarLengthArray<QFixedPoint> positions;
-        QVarLengthArray<glyph_t> glyphs;
-        QTransform matrix = state()->transform();
-
-        qreal _x = qFloor(p.x());
-        qreal _y = qFloor(p.y());
-        matrix.translate(_x, _y);
-
-        fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-        if (glyphs.size() == 0)
-            return;
-
-        for(int i = 0; i < glyphs.size(); i++) {
-            QImage img = fontEngine->alphaMapForGlyph(glyphs[i]);
-            glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
-            // ### hm, perhaps an QFixed offs = QFixed::fromReal(aliasedCoordinateDelta) is needed here?
-            alphaPenBlt(img.bits(), img.bytesPerLine(), img.depth(),
-                                         qRound(positions[i].x + metrics.x),
-                                         qRound(positions[i].y + metrics.y),
-                                         img.width(), img.height());
-        }
-        return;
-    }
-#endif //Q_WS_QPA
 
 #if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 
