@@ -88,6 +88,7 @@ enum WindowsEventType // Simplify event types
     ClipboardEvent = ClipboardEventFlag + 1,
     ActivateApplicationEvent = ApplicationEventFlag + 1,
     DeactivateApplicationEvent = ApplicationEventFlag + 2,
+    AccessibleObjectFromWindowRequest = ApplicationEventFlag + 3,
     InputMethodStartCompositionEvent = InputMethodEventFlag + 1,
     InputMethodCompositionEvent = InputMethodEventFlag + 2,
     InputMethodEndCompositionEvent = InputMethodEventFlag + 3,
@@ -166,6 +167,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
          default:
              break;
          }
+    case WM_GETOBJECT:
+        return QtWindows::AccessibleObjectFromWindowRequest;
     default:
         break;
     }

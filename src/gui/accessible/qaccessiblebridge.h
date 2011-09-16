@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QACCESSIBLEPLUGIN_H
-#define QACCESSIBLEPLUGIN_H
+#ifndef QACCESSIBLEBRIDGE_H
+#define QACCESSIBLEBRIDGE_H
 
-#include <QtWidgets/qaccessible.h>
+#include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
 QT_BEGIN_HEADER
@@ -53,29 +53,34 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_ACCESSIBILITY
 
-class QStringList;
 class QAccessibleInterface;
 
-struct Q_WIDGETS_EXPORT QAccessibleFactoryInterface : public QAccessible, public QFactoryInterface
+class QAccessibleBridge
 {
-    virtual QAccessibleInterface* create(const QString &key, QObject *object) = 0;
+public:
+    virtual ~QAccessibleBridge() {}
+    virtual void setRootObject(QAccessibleInterface *) = 0;
+    virtual void notifyAccessibilityUpdate(int, QAccessibleInterface*, int) = 0;
 };
 
-#define QAccessibleFactoryInterface_iid "com.trolltech.Qt.QAccessibleFactoryInterface"
-Q_DECLARE_INTERFACE(QAccessibleFactoryInterface, QAccessibleFactoryInterface_iid)
+struct Q_GUI_EXPORT QAccessibleBridgeFactoryInterface : public QFactoryInterface
+{
+    virtual QAccessibleBridge *create(const QString& name) = 0;
+};
 
-class QAccessiblePluginPrivate;
+#define QAccessibleBridgeFactoryInterface_iid "com.trolltech.Qt.QAccessibleBridgeFactoryInterface"
+Q_DECLARE_INTERFACE(QAccessibleBridgeFactoryInterface, QAccessibleBridgeFactoryInterface_iid)
 
-class Q_WIDGETS_EXPORT QAccessiblePlugin : public QObject, public QAccessibleFactoryInterface
+class Q_GUI_EXPORT QAccessibleBridgePlugin : public QObject, public QAccessibleBridgeFactoryInterface
 {
     Q_OBJECT
-    Q_INTERFACES(QAccessibleFactoryInterface:QFactoryInterface)
+    Q_INTERFACES(QAccessibleBridgeFactoryInterface:QFactoryInterface)
 public:
-    explicit QAccessiblePlugin(QObject *parent = 0);
-    ~QAccessiblePlugin();
+    explicit QAccessibleBridgePlugin(QObject *parent = 0);
+    ~QAccessibleBridgePlugin();
 
     virtual QStringList keys() const = 0;
-    virtual QAccessibleInterface *create(const QString &key, QObject *object) = 0;
+    virtual QAccessibleBridge *create(const QString &key) = 0;
 };
 
 #endif // QT_NO_ACCESSIBILITY
@@ -84,4 +89,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QACCESSIBLEPLUGIN_H
+#endif // QACCESSIBLEBRIDGE_H

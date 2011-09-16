@@ -50,6 +50,7 @@
 #include "qwindowsclipboard.h"
 #include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
+#include "qwindowsaccessibility.h"
 
 #include <QtGui/QPlatformNativeInterface>
 #include <QtGui/QWindowSystemInterface>
@@ -138,6 +139,7 @@ struct QWindowsIntegrationPrivate
     QWindowsGuiEventDispatcher *m_eventDispatcher;
     QOpenGLStaticContextPtr m_staticOpenGLContext;
     QWindowsInputContext m_inputContext;
+    QWindowsAccessibility m_accessibility;
 };
 
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(bool openGL)
@@ -256,6 +258,11 @@ QPlatformDrag *QWindowsIntegration::drag() const
 QPlatformInputContext * QWindowsIntegration::inputContext() const
 {
     return &d->m_inputContext;
+}
+
+QPlatformAccessibility *QWindowsIntegration::accessibility() const
+{
+    return &d->m_accessibility;
 }
 
 QWindowsIntegration *QWindowsIntegration::instance()

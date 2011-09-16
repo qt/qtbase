@@ -47,6 +47,7 @@
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
+#include "qwindowsaccessibility.h"
 
 #include <QtGui/QWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -623,6 +624,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     case QtWindows::UnknownEvent:
         return false;
+    case QtWindows::AccessibleObjectFromWindowRequest:
+        return QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(hwnd, wParam, lParam, result);
     default:
         break;
     }

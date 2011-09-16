@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -38,20 +38,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qaccessible.h"
+
+#include <QtCore/QtConfig>
 #ifndef QT_NO_ACCESSIBILITY
 
-#include "qapplication.h"
+
+#include "qwindowsaccessibility.h"
+#include "qwindowscontext.h"
+
 #include <private/qsystemlibrary_p.h>
-#include "qmessagebox.h" // ### dependency
-#include "qt_windows.h"
-#include "qwidget.h"
-#include "qsettings.h"
+
 #include <QtCore/qmap.h>
+#include <QtCore/qsettings.h>
 #include <QtCore/qpair.h>
+#include <QtWidgets/qapplication.h>
+#include <QtWidgets/qmessagebox.h>
 #include <QtWidgets/qgraphicsitem.h>
-#include <QtWidgets/qgraphicsscene.h>
 #include <QtWidgets/qgraphicsview.h>
+#include <QtGui/qaccessible.h>
+#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <QtGui/qwindow.h>
+#include "qt_windows.h"
+
+//#include <uiautomationcoreapi.h>
+#ifndef UiaRootObjectId
+#define UiaRootObjectId        -25
+#endif
 
 #include <winuser.h>
 #if !defined(WINABLEAPI)
@@ -255,9 +267,9 @@ static const char *eventString(QAccessible::Event ev)
 
 void showDebug(const char* funcName, const QAccessibleInterface *iface)
 {
-    qDebug() << "Role:" << roleString(iface->role(0)) 
-             << "Name:" << iface->text(QAccessible::Name, 0) 
-             << "State:" << QString::number(int(iface->state(0)), 16) 
+    qDebug() << "Role:" << roleString(iface->role(0))
+             << "Name:" << iface->text(QAccessible::Name, 0)
+             << "State:" << QString::number(int(iface->state(0)), 16)
              << QLatin1String(funcName);
 }
 #else
@@ -268,229 +280,6 @@ void showDebug(const char* funcName, const QAccessibleInterface *iface)
 typedef QMap<int, QPair<QObject*,int> > NotifyMap;
 Q_GLOBAL_STATIC(NotifyMap, qAccessibleRecentSentEvents)
 static int eventNum = 0;
-
-
-void QAccessible::initialize()
-{
-
-}
-void QAccessible::cleanup()
-{
-
-}
-
-void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
-{
-    Q_ASSERT(o);
-
-    if (updateHandler) {
-        updateHandler(o, who, reason);
-        return;
-    }
-
-    QString soundName;
-    switch (reason) {
-    case PopupMenuStart:
-        soundName = QLatin1String("MenuPopup");
-        break;
-
-    case MenuCommand:
-        soundName = QLatin1String("MenuCommand");
-        break;
-
-    case Alert:
-        {
-#ifndef QT_NO_MESSAGEBOX
-            QMessageBox *mb = qobject_cast<QMessageBox*>(o);
-            if (mb) {
-                switch (mb->icon()) {
-                case QMessageBox::Warning:
-                    soundName = QLatin1String("SystemExclamation");
-                    break;
-                case QMessageBox::Critical:
-                    soundName = QLatin1String("SystemHand");
-                    break;
-                case QMessageBox::Information:
-                    soundName = QLatin1String("SystemAsterisk");
-                    break;
-                default:
-                    break;
-                }
-            } else
-#endif // QT_NO_MESSAGEBOX
-            {
-                soundName = QLatin1String("SystemAsterisk");
-            }
-
-        }
-        break;
-    default:
-        break;
-    }
-
-    if (soundName.size()) {
-#ifndef QT_NO_SETTINGS
-        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") + soundName,
-                           QSettings::NativeFormat);
-        QString file = settings.value(QLatin1String(".Current/.")).toString();
-#else
-        QString file;
-#endif
-        if (!file.isEmpty()) {
-				    PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
-        }
-    }
-
-    if (!isActive())
-        return;
-
-    typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
-
-#if defined(Q_WS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
-    // There is no user32.lib nor NotifyWinEvent for CE
-    return;
-#else
-    static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
-    static bool resolvedNWE = false;
-    if (!resolvedNWE) {
-        resolvedNWE = true;
-        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
-    }
-    if (!ptrNotifyWinEvent)
-        return;
-
-    // An event has to be associated with a window,
-    // so find the first parent that is a widget.
-    QWidget *w = 0;
-    QObject *p = o;
-    do {
-        if (p->isWidgetType()) {
-            w = static_cast<QWidget*>(p);
-            if (w->internalWinId())
-                break;
-        }
-        if (QGraphicsObject *gfxObj = qobject_cast<QGraphicsObject*>(p)) {
-            QGraphicsItem *parentItem = gfxObj->parentItem();
-            if (parentItem) {
-                p = parentItem->toGraphicsObject();
-            } else {
-                QGraphicsView *view = 0;
-                if (QGraphicsScene *scene = gfxObj->scene()) {
-                    QWidget *fw = QApplication::focusWidget();
-                    const QList<QGraphicsView*> views = scene->views();
-                    for (int i = 0 ; i < views.count() && view != fw; ++i) {
-                        view = views.at(i);
-                    }
-                }
-                p = view;
-            }
-        } else {
-            p = p->parent();
-        }
-
-    } while (p);
-
-    //qDebug() << "updateAccessibility(), hwnd:" << w << ", object:" << o << "," << eventString(reason);
-    if (!w) {
-        if (reason != QAccessible::ContextHelpStart &&
-             reason != QAccessible::ContextHelpEnd)
-            w = QApplication::focusWidget();
-        if (!w) {
-            w = QApplication::activeWindow();
-
-            if (!w)
-                return;
-
-// ### Fixme
-//             if (!w) {
-//                 w = qApp->mainWidget();
-//                 if (!w)
-//                     return;
-//             }
-        }
-    }
-
-    WId wid = w->internalWinId();
-    if (reason != MenuCommand) { // MenuCommand is faked
-        if (w != o) {
-            // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
-            eventNum %= 50;              //[0..49]
-            int eventId = - eventNum - 1;
-
-            qAccessibleRecentSentEvents()->insert(eventId, qMakePair(o,who));
-            ptrNotifyWinEvent(reason, wid, OBJID_CLIENT, eventId );
-
-            ++eventNum;
-        } else {
-            ptrNotifyWinEvent(reason, wid, OBJID_CLIENT, who);
-        }
-    }
-#endif // Q_WS_WINCE
-}
-
-/*  == SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE ==
-
-    If the user requested to send the event to a widget with no window,
-    we need to send an event to an object with no hwnd.
-    The way we do that is to send it to the *first* ancestor widget
-    with a window.
-    Then we'll need a way of identifying the child:
-    We'll just keep a list of the most recent events that we have sent,
-    where each entry in the list is identified by a negative value
-    between [-50,-1]. This negative value we will pass on to
-    NotifyWinEvent() as the child id. When the negative value have
-    reached -50, it will wrap around to -1. This seems to be enough
-
-    Now, when the client receives that event, he will first call
-    AccessibleObjectFromEvent() where dwChildID is the special
-    negative value. AccessibleObjectFromEvent does two steps:
-    1. It will first sent a WM_GETOBJECT to the server, asking
-       for the IAccessible interface for the HWND.
-    2. With the IAccessible interface it got hold of it will call
-       acc_getChild where the child id argument is the special
-       negative identifier. In our reimplementation of get_accChild
-       we check for this if the child id is negative. If it is, then
-       we'll look up in our table for the entry that is associated
-       with that value.
-       The entry will then contain a pointer to the QObject /QWidget
-       that we can use to call queryAccessibleInterface() on.
-
-
-    The following figure shows how the interaction between server and
-    client is in the case when the server is sending an event.
-
-SERVER (Qt)                                 | CLIENT                                |
---------------------------------------------+---------------------------------------+
-                                            |
-acc->updateAccessibility(obj,  childIndex)  |
-                                            |
-recentEvents()->insert(- 1 - eventNum,      |
-            qMakePair(obj, childIndex)      |
-NotifyWinEvent(hwnd, childId) =>            |
-                                            |   AccessibleObjectFromEvent(event, hwnd, OBJID_CLIENT, childId )
-                                            |   will do:
-                                          <===  1. send WM_GETOBJECT(hwnd, OBJID_CLIENT)
-widget ~= hwnd
-iface = queryAccessibleInteface(widget)
-(create IAccessible interface wrapper for
- iface)
- return iface                              ===> IAccessible* iface; (for hwnd)
-                                            |
-                                          <===  call iface->get_accChild(childId)
-get_accChild() {                            |
-    if (varChildID.lVal < 0) {
-        QPair ref = recentEvents().value(varChildID.lVal);
-        [...]
-    }
-*/
-
-
-void QAccessible::setRootObject(QObject *o)
-{
-    if (rootObjectHandler) {
-        rootObjectHandler(o);
-    }
-}
 
 class QWindowsEnumerate : public IEnumVARIANT
 {
@@ -674,14 +463,6 @@ static inline BSTR QStringToBSTR(const QString &str)
 
 /*
 */
-IAccessible *qt_createWindowsAccessible(QAccessibleInterface *access)
-{
-    QWindowsAccessible *acc = new QWindowsAccessible(access);
-    IAccessible *iface;
-    acc->QueryInterface(IID_IAccessible, (void**)&iface);
-
-    return iface;
-}
 
 /*
   IUnknown
@@ -742,45 +523,45 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetIDsOfNames(const _GUID &, wchar
     // PROPERTIES:  Hierarchical
     if (_bstr_t(rgszNames[0]) == _bstr_t(L"accParent"))
         rgdispid[0] = DISPID_ACC_PARENT;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accChildCount"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accChildCount"))
         rgdispid[0] = DISPID_ACC_CHILDCOUNT;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accChild"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accChild"))
         rgdispid[0] = DISPID_ACC_CHILD;
 
     // PROPERTIES:  Descriptional
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accName("))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accName("))
         rgdispid[0] = DISPID_ACC_NAME;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accValue"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accValue"))
         rgdispid[0] = DISPID_ACC_VALUE;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accDescription"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accDescription"))
         rgdispid[0] = DISPID_ACC_DESCRIPTION;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accRole"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accRole"))
         rgdispid[0] = DISPID_ACC_ROLE;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accState"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accState"))
         rgdispid[0] = DISPID_ACC_STATE;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accHelp"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accHelp"))
         rgdispid[0] = DISPID_ACC_HELP;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accHelpTopic"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accHelpTopic"))
         rgdispid[0] = DISPID_ACC_HELPTOPIC;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accKeyboardShortcut"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accKeyboardShortcut"))
         rgdispid[0] = DISPID_ACC_KEYBOARDSHORTCUT;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accFocus"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accFocus"))
         rgdispid[0] = DISPID_ACC_FOCUS;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accSelection"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accSelection"))
         rgdispid[0] = DISPID_ACC_SELECTION;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accDefaultAction"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accDefaultAction"))
         rgdispid[0] = DISPID_ACC_DEFAULTACTION;
 
     // METHODS
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accSelect"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accSelect"))
         rgdispid[0] = DISPID_ACC_SELECT;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accLocation"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accLocation"))
         rgdispid[0] = DISPID_ACC_LOCATION;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accNavigate"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accNavigate"))
         rgdispid[0] = DISPID_ACC_NAVIGATE;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accHitTest"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accHitTest"))
         rgdispid[0] = DISPID_ACC_HITTEST;
-    else if(_bstr_t(rgszNames[0]) == _bstr_t(L"accDoDefaultAction"))
+    else if (_bstr_t(rgszNames[0]) == _bstr_t(L"accDoDefaultAction"))
         rgdispid[0] = DISPID_ACC_DODEFAULTACTION;
     else
         return DISP_E_UNKNOWNINTERFACE;
@@ -798,7 +579,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::Invoke(long dispIdMember, const _G
 {
     HRESULT hr = DISP_E_MEMBERNOTFOUND;
 
-    switch(dispIdMember)
+    switch (dispIdMember)
     {
         case DISPID_ACC_PARENT:
             if (wFlags == DISPATCH_PROPERTYGET) {
@@ -1021,7 +802,7 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::accNavigate(long navDir, VARIANT v
 
     QAccessibleInterface *acc = 0;
     int control = -1;
-    switch(navDir) {
+    switch (navDir) {
     case NAVDIR_FIRSTCHILD:
         control = accessible->navigate(Child, 1, &acc);
         break;
@@ -1422,11 +1203,27 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
         return E_UNEXPECTED;
 
     QObject *o = accessible->object();
-    if (!o || !o->isWidgetType())
+    QWindow *window = qobject_cast<QWindow*>(o);
+    if (!window)
+        window = QGuiApplication::topLevelWindows().first();
+
+
+    Q_ASSERT(window);
+    if (!o || !window)
         return E_FAIL;
 
+
+#ifdef Q_WS_QPA
+    //QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    //Q_ASSERT(platform);
+    //*phwnd = (HWND)platform->nativeResourceForWindow("handle", window);
+
+
+    return S_OK;
+#else
     *phwnd = static_cast<QWidget*>(o)->effectiveWinId();
     return S_OK;
+#endif
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::ContextSensitiveHelp(BOOL)
@@ -1434,6 +1231,176 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::ContextSensitiveHelp(BOOL)
     return S_OK;
 }
 
+
+QWindowsAccessibility::QWindowsAccessibility()
+{
+}
+
+
+void QWindowsAccessibility::notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason)
+{
+    QString soundName;
+    switch (reason) {
+    case QAccessible::PopupMenuStart:
+        soundName = QLatin1String("MenuPopup");
+        break;
+
+    case QAccessible::MenuCommand:
+        soundName = QLatin1String("MenuCommand");
+        break;
+
+    case QAccessible::Alert:
+        {
+        /*      ### FIXME
+#ifndef QT_NO_MESSAGEBOX
+            QMessageBox *mb = qobject_cast<QMessageBox*>(o);
+            if (mb) {
+                switch (mb->icon()) {
+                case QMessageBox::Warning:
+                    soundName = QLatin1String("SystemExclamation");
+                    break;
+                case QMessageBox::Critical:
+                    soundName = QLatin1String("SystemHand");
+                    break;
+                case QMessageBox::Information:
+                    soundName = QLatin1String("SystemAsterisk");
+                    break;
+                default:
+                    break;
+                }
+            } else
+#endif // QT_NO_MESSAGEBOX
+*/
+            {
+                soundName = QLatin1String("SystemAsterisk");
+            }
+
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (!soundName.isEmpty()) {
+#ifndef QT_NO_SETTINGS
+        QSettings settings(QLatin1String("HKEY_CURRENT_USER\\AppEvents\\Schemes\\Apps\\.Default\\") + soundName,
+                           QSettings::NativeFormat);
+        QString file = settings.value(QLatin1String(".Current/.")).toString();
+#else
+        QString file;
+#endif
+        if (!file.isEmpty()) {
+            PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), 0, SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
+        }
+    }
+
+    typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
+
+#if defined(Q_WS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
+    // There is no user32.lib nor NotifyWinEvent for CE
+    return;
+#else
+    static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
+    static bool resolvedNWE = false;
+    if (!resolvedNWE) {
+        resolvedNWE = true;
+        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
+    }
+    if (!ptrNotifyWinEvent)
+        return;
+
+    // An event has to be associated with a window,
+    // so find the first parent that is a widget and that has a WId
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(o);
+    QWindow *window = iface->window();
+
+    if (!window) {
+        window = QGuiApplication::activeWindow();
+        if (!window)
+            return;
+    }
+
+    QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
+
+    if (reason != QAccessible::MenuCommand) { // MenuCommand is faked
+        // See comment "SENDING EVENTS TO OBJECTS WITH NO WINDOW HANDLE"
+        eventNum %= 50;              //[0..49]
+        int eventId = - eventNum - 1;
+
+        qAccessibleRecentSentEvents()->insert(eventId, qMakePair(o, who));
+        ptrNotifyWinEvent(reason, hWnd, OBJID_CLIENT, eventId );
+
+        ++eventNum;
+    }
+#endif // Q_WS_WINCE
+
+}
+
+/*
+void QWindowsAccessibility::setRootObject(QObject *o)
+{
+
+}
+
+void QWindowsAccessibility::initialize()
+{
+
+}
+
+void QWindowsAccessibility::cleanup()
+{
+
+}
+
+*/
+
+bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult)
+{
+    if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
+        /* For UI Automation
+      */
+    } else if ((DWORD)lParam == OBJID_CLIENT) {
+#if 1
+        // Ignoring all requests while starting up
+        // ### Maybe QPA takes care of this???
+        if (QApplication::startingUp() || QApplication::closingDown())
+            return false;
+#endif
+
+        typedef LRESULT (WINAPI *PtrLresultFromObject)(REFIID, WPARAM, LPUNKNOWN);
+        static PtrLresultFromObject ptrLresultFromObject = 0;
+        static bool oleaccChecked = false;
+
+        if (!oleaccChecked) {
+            oleaccChecked = true;
+#if !defined(Q_OS_WINCE)
+            ptrLresultFromObject = (PtrLresultFromObject)QSystemLibrary::resolve(QLatin1String("oleacc"), "LresultFromObject");
+#endif
+        }
+
+        if (ptrLresultFromObject) {
+            QWindow *window = QWindowsContext::instance()->findWindow(hwnd);
+            if (window) {
+                QAccessibleInterface *acc = window->accessibleRoot();
+                if (acc) {
+                    QWindowsAccessible *winacc = new QWindowsAccessible(acc);
+                    IAccessible *iface;
+                    HRESULT hr = winacc->QueryInterface(IID_IAccessible, (void**)&iface);
+                    if (SUCCEEDED(hr)) {
+                        *lResult = ptrLresultFromObject(IID_IAccessible, wParam, iface);  // ref == 2
+                        if (*lResult) {
+                            iface->Release(); // the client will release the object again, and then it will destroy itself
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+#endif //QT_NO_ACCESSIBILITY

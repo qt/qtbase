@@ -187,6 +187,11 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, Role role, const QString &name)
     d->asking = 0;
 }
 
+QWindow *QAccessibleWidget::window() const
+{
+    return widget()->windowHandle();
+}
+
 /*!
     Destroys this object.
 */

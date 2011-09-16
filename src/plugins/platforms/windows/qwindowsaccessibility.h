@@ -39,43 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSINTEGRATION_H
-#define QWINDOWSINTEGRATION_H
+#ifndef QWINDOWSACCESSIBILITY_H
+#define QWINDOWSACCESSIBILITY_H
 
-#include <QtGui/QPlatformIntegration>
-#include <QtCore/QScopedPointer>
+#include <QtGui/QPlatformAccessibility>
+#include <OleAcc.h>
 
-QT_BEGIN_NAMESPACE
-
-struct QWindowsIntegrationPrivate;
-
-class QWindowsIntegration : public QPlatformIntegration
+class QWindowsAccessibility : public QPlatformAccessibility
 {
 public:
-    QWindowsIntegration(bool openGL = false);
-    virtual ~QWindowsIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-
-    virtual QPlatformClipboard *clipboard() const;
-    virtual QPlatformDrag *drag() const;
-    virtual QPlatformInputContext *inputContext() const;
-    virtual QPlatformAccessibility *accessibility() const;
-    virtual QPlatformNativeInterface *nativeInterface() const;
-    virtual QPlatformFontDatabase *fontDatabase() const;
-
-    static QWindowsIntegration *instance();
-
-private:
-    QScopedPointer<QWindowsIntegrationPrivate> d;
+    QWindowsAccessibility();
+    static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
+    virtual void notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason);
+    /*
+    virtual void setRootObject(QObject *o);
+    virtual void initialize();
+    virtual void cleanup();
+*/
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // QWINDOWSACCESSIBILITY_H

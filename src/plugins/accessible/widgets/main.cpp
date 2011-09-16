@@ -153,6 +153,7 @@ QStringList AccessibleFactory::keys() const
 #ifndef QT_NO_DOCKWIDGET
     list << QLatin1String("QDockWidget");
 #endif
+    list << QLatin1String("QAccessibleWidget");
     return list;
 }
 
@@ -348,6 +349,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QDockWidget")) {
         iface = new QAccessibleDockWidget(widget);
 #endif
+    } else {
+        iface = new QAccessibleWidget(widget);
     }
 
     return iface;

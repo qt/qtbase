@@ -559,6 +559,8 @@ void QWindow::setScreen(QScreen *newScreen)
 
 /*!
   Returns the accessibility interface for the object that the window represents
+  \preliminary
+  \sa QAccessible
   */
 QAccessibleInterface *QWindow::accessibleRoot() const
 {

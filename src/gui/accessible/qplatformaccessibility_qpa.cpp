@@ -38,64 +38,45 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include "qaccessible.h"
+#include "qplatformaccessibility_qpa.h"
+#include <private/qfactoryloader_p.h>
+#include "qaccessibleplugin.h"
+#include "qaccessibleobject.h"
 #include "qaccessiblebridge.h"
+#include <QtGui/QGuiApplication>
 
-#ifndef QT_NO_ACCESSIBILITY
-
-#include "qcoreapplication.h"
-#include "qmutex.h"
-#include "qvector.h"
-#include "private/qfactoryloader_p.h"
-
-#include <stdlib.h>
-
-QT_BEGIN_NAMESPACE
-
+/* accessiblebridge plugin discovery stuff */
 #ifndef QT_NO_LIBRARY
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, bridgeloader,
     (QAccessibleBridgeFactoryInterface_iid, QLatin1String("/accessiblebridge")))
 #endif
+
 Q_GLOBAL_STATIC(QVector<QAccessibleBridge *>, bridges)
-static bool isInit = false;
 
-void QAccessible::initialize()
+/*!
+    \class QPlatformAccessibility
+    \brief The QPlatformAccessibility class is the base class for
+    integrating accessibility backends
+
+    \preliminary
+    \ingroup accessibility
+
+    \sa QAccessible
+*/
+QPlatformAccessibility::QPlatformAccessibility()
 {
-    if (isInit)
-        return;
-    isInit = true;
-
-    if (qgetenv("QT_ACCESSIBILITY") != "1")
-        return;
-#ifndef QT_NO_LIBRARY
-    const QStringList l = loader()->keys();
-    for (int i = 0; i < l.count(); ++i) {
-        if (QAccessibleBridgeFactoryInterface *factory =
-                qobject_cast<QAccessibleBridgeFactoryInterface*>(loader()->instance(l.at(i)))) {
-            QAccessibleBridge * bridge = factory->create(l.at(i));
-            if (bridge)
-                bridges()->append(bridge);
-        }
-    }
-#endif
 }
 
-void QAccessible::cleanup()
+QPlatformAccessibility::~QPlatformAccessibility()
 {
-    qDeleteAll(*bridges());
 }
 
-void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
+void QPlatformAccessibility::notifyAccessibilityUpdate(QObject *o,
+                                                       int who,
+                                                       QAccessible::Event reason)
 {
-    Q_ASSERT(o);
-
-    if (updateHandler) {
-        updateHandler(o, who, reason);
-        return;
-    }
-
     initialize();
+
     if (!bridges() || bridges()->isEmpty())
         return;
 
@@ -117,15 +98,11 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     for (int i = 0; i < bridges()->count(); ++i)
         bridges()->at(i)->notifyAccessibilityUpdate(reason, iface, who);
     delete iface;
+
 }
 
-void QAccessible::setRootObject(QObject *o)
+void QPlatformAccessibility::setRootObject(QObject *o)
 {
-    if (rootObjectHandler) {
-        rootObjectHandler(o);
-        return;
-    }
-
     initialize();
     if (bridges()->isEmpty())
         return;
@@ -139,7 +116,33 @@ void QAccessible::setRootObject(QObject *o)
     }
 }
 
-QT_END_NAMESPACE
+void QPlatformAccessibility::initialize()
+{
+    static bool isInit = false;
+    if (isInit)
+        return;
+    isInit = true;      // ### not atomic
+#ifdef Q_OS_UNIX
+    if (qgetenv("QT_ACCESSIBILITY") != "1")
+        return;
+#endif
+#ifndef QT_NO_LIBRARY
+    const QStringList l = bridgeloader()->keys();
+    for (int i = 0; i < l.count(); ++i) {
+        if (QAccessibleBridgeFactoryInterface *factory =
+                qobject_cast<QAccessibleBridgeFactoryInterface*>(bridgeloader()->instance(l.at(i)))) {
+            QAccessibleBridge * bridge = factory->create(l.at(i));
+            if (bridge) {
+                bridges()->append(bridge);
+#
+            }
+        }
+    }
+#endif
+}
 
-#endif // QT_NO_ACCESSIBILITY
+void QPlatformAccessibility::cleanup()
+{
+    qDeleteAll(*bridges());
+}
 

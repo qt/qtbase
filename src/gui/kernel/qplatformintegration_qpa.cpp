@@ -43,6 +43,7 @@
 
 #include <QtGui/QPlatformFontDatabase>
 #include <QtGui/QPlatformClipboard>
+#include <QtGui/QPlatformAccessibility>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qdnd_p.h>
@@ -207,6 +208,16 @@ QPlatformOpenGLContext *QPlatformIntegration::createPlatformOpenGLContext(QOpenG
 QPlatformInputContext *QPlatformIntegration::inputContext() const
 {
     return 0;
+}
+
+/*!
+  Returns the platforms accessibility.
+
+  The default implementation returns 0, implying no accessibility support.
+*/
+QPlatformAccessibility *QPlatformIntegration::accessibility() const
+{
+    return new QPlatformAccessibility;
 }
 
 QVariant QPlatformIntegration::styleHint(StyleHint hint) const

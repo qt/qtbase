@@ -43,11 +43,11 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#include "qapplication.h"
-#include "qwidget.h"
+#include <QtGui/QGuiApplication>
+#include <QtGui/QWindow>
+
 #include "qpointer.h"
 #include "qmetaobject.h"
-#include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -208,15 +208,27 @@ QAccessibleApplication::QAccessibleApplication()
 {
 }
 
-// all toplevel widgets except popups and the desktop
-static QWidgetList topLevelWidgets()
+QWindow *QAccessibleApplication::window() const
 {
-    QWidgetList list;
-    const QWidgetList tlw(QApplication::topLevelWidgets());
+    // an application can have several windows, and AFAIK we don't need
+    // to notify about changes on the application.
+    return 0;
+}
+
+// all toplevel windows except popups and the desktop
+static QObjectList topLevelObjects()
+{
+    QObjectList list;
+    const QWindowList tlw(QGuiApplication::topLevelWindows());
     for (int i = 0; i < tlw.count(); ++i) {
-        QWidget *w = tlw.at(i);
-        if (!(w->windowType() == Qt::Popup) && !(w->windowType() == Qt::Desktop))
-            list.append(w);
+        QWindow *w = tlw.at(i);
+        if (w->windowType() != Qt::Popup && w->windowType() != Qt::Desktop) {
+            if (QAccessibleInterface *root = w->accessibleRoot()) {
+                if (root->object())
+                    list.append(w->accessibleRoot()->object());
+                delete root;
+            }
+        }
     }
 
     return list;
@@ -225,17 +237,14 @@ static QWidgetList topLevelWidgets()
 /*! \reimp */
 int QAccessibleApplication::childCount() const
 {
-    return topLevelWidgets().count();
+    return topLevelObjects().count();
 }
 
 /*! \reimp */
 int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (!child->object()->isWidgetType())
-        return -1;
-
-    const QWidgetList tlw(topLevelWidgets());
-    int index = tlw.indexOf(static_cast<QWidget*>(child->object()));
+    const QObjectList tlw(topLevelObjects());
+    int index = tlw.indexOf(child->object());
     if (index != -1)
         ++index;
     return index;
@@ -244,13 +253,14 @@ int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) cons
 /*! \reimp */
 int QAccessibleApplication::childAt(int x, int y) const
 {
-    const QWidgetList tlw(topLevelWidgets());
-    for (int i = 0; i < tlw.count(); ++i) {
-        QWidget *w = tlw.at(i);
-        if (w->frameGeometry().contains(x,y))
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
+        QRect geom = childIface->rect();
+        if (geom.contains(x,y))
             return i+1;
+        delete childIface;
     }
-    return -1;
+    return rect().contains(x,y) ? 0 : -1;
 }
 
 /*! \reimp */
@@ -270,17 +280,6 @@ QAccessible::Relation QAccessibleApplication::relationTo(int child, const
             return Self;
     }
 
-    QWidgetList tlw(topLevelWidgets());
-    if (tlw.contains(qobject_cast<QWidget*>(o)))
-        return Ancestor;
-
-    for (int i = 0; i < tlw.count(); ++i) {
-        QWidget *w = tlw.at(i);
-        QObjectList cl = w->findChildren<QObject *>(QString());
-        if (cl.contains(o))
-            return Ancestor;
-    }
-
     return Unrelated;
 }
 
@@ -292,9 +291,9 @@ QAccessibleInterface *QAccessibleApplication::parent() const
 QAccessibleInterface *QAccessibleApplication::child(int index) const
 {
     Q_ASSERT(index >= 0);
-    const QWidgetList tlw(topLevelWidgets());
-    if (index >= 0 && index < tlw.count())
-        return QAccessible::queryAccessibleInterface(tlw.at(index));
+    const QObjectList tlo(topLevelObjects());
+    if (index >= 0 && index < tlo.count())
+        return QAccessible::queryAccessibleInterface(tlo.at(index));
     return 0;
 }
 
@@ -312,18 +311,12 @@ int QAccessibleApplication::navigate(RelationFlag relation, int entry,
     case Self:
         targetObject = object();
         break;
-    case Child:
-        if (entry > 0 && entry <= childCount()) {
-            const QWidgetList tlw(topLevelWidgets());
-            if (tlw.count() >= entry)
-                targetObject = tlw.at(entry-1);
-        } else {
-            return -1;
-        }
-        break;
     case FocusChild:
-        targetObject = QApplication::activeWindow();
+        targetObject = QGuiApplication::activeWindow();
         break;
+    case Ancestor:
+        *target = parent();
+        return 0;
     default:
         break;
     }
@@ -336,9 +329,9 @@ QString QAccessibleApplication::text(Text t, int) const
 {
     switch (t) {
     case Name:
-        return QApplication::applicationName();
+        return QGuiApplication::applicationName();
     case Description:
-        return QApplication::applicationFilePath();
+        return QGuiApplication::applicationFilePath();
     default:
         break;
     }
@@ -354,7 +347,7 @@ QAccessible::Role QAccessibleApplication::role(int) const
 /*! \reimp */
 QAccessible::State QAccessibleApplication::state(int) const
 {
-    return QApplication::activeWindow() ? Focused : Normal;
+    return QGuiApplication::activeWindow() ? Focused : Normal;
 }
 
 /*! \reimp */
@@ -366,16 +359,19 @@ int QAccessibleApplication::userActionCount(int) const
 /*! \reimp */
 bool QAccessibleApplication::doAction(int action, int child, const QVariantList &param)
 {
+    //###Move to IA2 action interface at some point to get rid of the ambiguity.
+    /*  //### what is action == 0 and action == 1 ?????
     if (action == 0 || action == 1) {
-        QWidget *w = 0;
-        w = QApplication::activeWindow();
+        QWindow *w = 0;
+        w = QGuiApplication::activeWindow();
         if (!w)
-            w = topLevelWidgets().at(0);
+            w = topLevelWindows().at(0);
         if (!w)
             return false;
-        w->activateWindow();
+        w->requestActivateWindow();
         return true;
     }
+    */
     return QAccessibleObject::doAction(action, child, param);
 }
 
@@ -385,9 +381,9 @@ QString QAccessibleApplication::actionText(int action, Text text, int child) con
     QString str;
     if ((action == 0 || action == 1) && !child) switch (text) {
     case Name:
-        return QApplication::tr("Activate");
+        return QGuiApplication::tr("Activate");
     case Description:
-        return QApplication::tr("Activates the program's main window");
+        return QGuiApplication::tr("Activates the program's main window");
     default:
         break;
     }

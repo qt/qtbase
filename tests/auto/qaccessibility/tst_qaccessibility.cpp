@@ -353,7 +353,7 @@ class QtTestAccessibleWidgetIface: public QAccessibleWidget
 {
 public:
     QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
-    QString text(Text t, int control) const
+    QString text(Text t, int control = 0) const
     {
         if (t == Help)
             return QString::fromLatin1("Help yourself");

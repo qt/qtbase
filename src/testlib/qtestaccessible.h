@@ -53,8 +53,8 @@
     QVERIFY(QTestAccessibility::verifyEvent(object, child, (int)event))
 
 #include <QtCore/qlist.h>
-#include <QtWidgets/qaccessible.h>
-#include <QtWidgets/qapplication.h>
+#include <QtGui/qaccessible.h>
+#include <QtGui/qguiapplication.h>
 
 QT_BEGIN_HEADER
 
@@ -127,9 +127,9 @@ private:
     {
         //    qDebug("rootObjectHandler called %p", object);
         if (object) {
-            QApplication* app = qobject_cast<QApplication*>(object);
+            QGuiApplication* app = qobject_cast<QGuiApplication*>(object);
             if ( !app )
-                qWarning("%s: root Object is not a QApplication!", Q_FUNC_INFO);
+                qWarning("%s: root Object is not a QGuiApplication!", Q_FUNC_INFO);
         } else {
             qWarning("%s: root Object called with 0 pointer", Q_FUNC_INFO);
         }

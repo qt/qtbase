@@ -39,78 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef QACCESSIBLEOBJECT_H
-#define QACCESSIBLEOBJECT_H
-
-#include <QtWidgets/qaccessible.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
+#include <QtCore/qglobal.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
-class QAccessibleObjectPrivate;
-class QObject;
+#include "qaccessibleplugin.h"
+#include "qaccessible.h"
 
-class Q_WIDGETS_EXPORT QAccessibleObject : public QAccessibleInterface
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QAccessiblePlugin
+    \brief The QAccessiblePlugin class provides an abstract base for
+    accessibility plugins.
+
+    \ingroup plugins
+    \ingroup accessibility
+
+    Writing an accessibility plugin is achieved by subclassing this
+    base class, reimplementing the pure virtual functions keys() and
+    create(), and exporting the class with the Q_EXPORT_PLUGIN2()
+    macro.
+
+    \sa QAccessibleBridgePlugin, {How to Create Qt Plugins}
+*/
+
+/*!
+    Constructs an accessibility plugin with the given \a parent. This
+    is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+*/
+QAccessiblePlugin::QAccessiblePlugin(QObject *parent)
+    : QObject(parent)
 {
-public:
-    explicit QAccessibleObject(QObject *object);
+}
 
-    bool isValid() const;
-    QObject *object() const;
+/*!
+    Destroys the accessibility plugin.
 
-    // properties
-    QRect rect(int child) const;
-    void setText(Text t, int child, const QString &text);
-
-    // actions
-    int userActionCount(int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-    QString actionText(int action, Text t, int child) const;
-
-protected:
-    virtual ~QAccessibleObject();
-
-private:
-    QAccessibleObjectPrivate *d;
-    Q_DISABLE_COPY(QAccessibleObject)
-};
-
-class Q_WIDGETS_EXPORT QAccessibleApplication : public QAccessibleObject
+    You never have to call this explicitly. Qt destroys a plugin
+    automatically when it is no longer used.
+*/
+QAccessiblePlugin::~QAccessiblePlugin()
 {
-public:
-    QAccessibleApplication();
+}
 
-    // relations
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface*) const;
-    Relation relationTo(int, const QAccessibleInterface *, int) const;
+/*!
+    \fn QStringList QAccessiblePlugin::keys() const
 
-    // navigation
-    QAccessibleInterface *parent() const;
-    int childAt(int x, int y) const;
-    QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag, int, QAccessibleInterface **) const;
+    Returns the list of keys this plugin supports.
 
-    // properties and state
-    QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
+    These keys must be the class names that this plugin provides
+    an accessibility implementation for.
 
-    // actions
-    int userActionCount(int child) const;
-    bool doAction(int action, int child, const QVariantList &params);
-    QString actionText(int action, Text t, int child) const;
-};
+    \sa create()
+*/
 
-#endif // QT_NO_ACCESSIBILITY
+/*!
+    \fn QAccessibleInterface *QAccessiblePlugin::create(const QString &key, QObject *object)
+
+    Creates and returns a QAccessibleInterface implementation for the
+    class \a key and the object \a object. Keys are case sensitive.
+
+    \sa keys()
+*/
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QACCESSIBLEOBJECT_H
+#endif // QT_NO_ACCESSIBILITY

@@ -64,7 +64,6 @@
 #include "QtGui/qclipboard.h"
 #include "QtCore/qpoint.h"
 #include "QtWidgets/qcompleter.h"
-#include "QtWidgets/qaccessible.h"
 #include "QtCore/qthread.h"
 
 #include "qplatformdefs.h"

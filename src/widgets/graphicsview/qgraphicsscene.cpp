@@ -246,7 +246,7 @@
 #include <QtGui/qinputpanel.h>
 #include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
-# include <QtWidgets/qaccessible.h>
+# include <QtGui/qaccessible.h>
 #endif
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>

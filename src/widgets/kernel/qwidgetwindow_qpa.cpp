@@ -43,6 +43,7 @@
 
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
+#include <QtGui/qaccessible.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,6 +58,13 @@ extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : m_widget(widget)
 {
+}
+
+QAccessibleInterface *QWidgetWindow::accessibleRoot() const
+{
+    if (m_widget)
+        return QAccessible::queryAccessibleInterface(m_widget);
+    return 0;
 }
 
 bool QWidgetWindow::event(QEvent *event)

@@ -8,7 +8,7 @@ INCLUDEPATH += ../../../3rdparty/harfbuzz/src
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
-LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32
+LIBS *= -lOpenGL32 -lGdi32 -lUser32 -lOle32 -lWinspool -lImm32 -lWinmm
 win32-g++: LIBS *= -luuid
 
 contains(QT_CONFIG, directwrite) {
@@ -39,7 +39,8 @@ SOURCES += \
     qwindowsdrag.cpp \
     qwindowscursor.cpp \
     pixmaputils.cpp \
-    qwindowsinputcontext.cpp
+    qwindowsinputcontext.cpp \
+    qwindowsaccessibility.cpp
 
 HEADERS += \
     qwindowsnativeimage.h \
@@ -64,7 +65,8 @@ HEADERS += \
     qwindowscursor.h \
     pixmaputils.h \
     array.h \
-    qwindowsinputcontext.h
+    qwindowsinputcontext.h \
+    qwindowsaccessibility.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

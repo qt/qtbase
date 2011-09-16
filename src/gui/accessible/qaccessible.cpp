@@ -44,14 +44,16 @@
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qaccessibleplugin.h"
-#include "qaccessiblewidget.h"
-#include "qapplication.h"
-#include "qhash.h"
-#include "qmetaobject.h"
-#include "qmutex.h"
-#include <private/qfactoryloader_p.h>
+#include "qaccessibleobject.h"
+#include "qaccessiblebridge.h"
+#include <QtGui/QGuiApplication>
+#include <private/qguiapplication_p.h>
+#include "qplatformaccessibility_qpa.h"
 
-#include "qwidget.h"
+#include <QtCore/QHash>
+#include <QtCore/QMetaObject>
+#include <QtCore/QMutex>
+#include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -438,16 +440,10 @@ QT_BEGIN_NAMESPACE
     Destroys the object.
 */
 
-/*!
-    \fn void QAccessible::initialize()
-    \internal
-*/
 
-/*!
-    \fn void QAccessible::cleanup()
-    \internal
-*/
 
+
+/* accessible widgets plugin discovery stuff */
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
@@ -460,6 +456,22 @@ QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
 
 static bool accessibility_active = false;
 static bool cleanupAdded = false;
+
+static QPlatformAccessibility *platformAccessibility()
+{
+    QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
+    return pfIntegration ? pfIntegration->accessibility() : 0;
+}
+
+/*!
+    \internal
+*/
+void QAccessible::cleanup()
+{
+    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+        pfAccessibility->cleanup();
+}
+
 static void qAccessibleCleanup()
 {
     qAccessibleFactories()->clear();
@@ -506,6 +518,7 @@ static void qAccessibleCleanup()
 
     The function is called by setRootObject().
 */
+
 
 /*!
     Installs the InterfaceFactory \a factory. The last factory added
@@ -585,7 +598,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         return 0;
 
     QEvent e(QEvent::AccessibilityPrepare);
-    QApplication::sendEvent(object, &e);
+
+    QCoreApplication::sendEvent(object, &e);
 
     const QMetaObject *mo = object->metaObject();
     while (mo) {
@@ -607,13 +621,11 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         mo = mo->superClass();
     }
 
-    QWidget *widget = qobject_cast<QWidget*>(object);
-    if (widget)
-        return new QAccessibleWidget(widget);
-    else if (object == qApp)
-        return new QAccessibleApplication();
-
-    return 0;
+    if (!iface) {
+        if (object == qApp)
+            iface = new QAccessibleApplication;
+    }
+    return iface;
 }
 
 /*!
@@ -628,9 +640,9 @@ bool QAccessible::isActive()
     return accessibility_active;
 }
 
-/*!
-  \fn void QAccessible::setRootObject(QObject *object)
 
+
+/*!
   Sets the root accessible object of this application to \a object.
   All other accessible objects in the application can be reached by the
   client using object navigation.
@@ -644,10 +656,18 @@ bool QAccessible::isActive()
 
   \sa queryAccessibleInterface()
 */
+void QAccessible::setRootObject(QObject *o)
+{
+    if (rootObjectHandler) {
+        rootObjectHandler(o);
+        return;
+    }
+
+    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+        pfAccessibility->setRootObject(o);
+}
 
 /*!
-  \fn void QAccessible::updateAccessibility(QObject *object, int child, Event reason)
-
   Notifies accessibility clients about a change in \a object's
   accessibility information.
 
@@ -665,6 +685,21 @@ bool QAccessible::isActive()
   the parameters of the call is expensive you can test isActive() to
   avoid unnecessary computations.
 */
+void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
+{
+    Q_ASSERT(o);
+
+    if (updateHandler) {
+        updateHandler(o, who, reason);
+        return;
+    }
+
+    if (!isActive())
+        return;
+
+    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+        pfAccessibility->notifyAccessibilityUpdate(o, who, reason);
+}
 
 
 /*!
@@ -1161,6 +1196,24 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 
     \sa value()
 */
+/*!
+    Returns the window associated with the underlying object.
+    For instance, QAccessibleWidget reimplements this and returns
+    the windowHandle() of the QWidget.
+
+    The default implementation returns the window() of the parent interface.
+
+    It is used on some platforms to be able to notify the AT client about
+    state changes.
+    \preliminary
+  */
+QWindow *QAccessibleInterface::window() const
+{
+    QAccessibleInterface *par = parent();
+    QWindow *w = par ? par->window() : 0;
+    delete par;
+    return w;
+}
 
 /*!
     \since 4.2

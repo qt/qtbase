@@ -15,6 +15,7 @@ load(qt_module_config)
 
 HEADERS += $$QT_SOURCE_TREE/src/gui/qtguiversion.h
 
+include(accessible/accessible.pri)
 include(kernel/kernel.pri)
 include(image/image.pri)
 include(text/text.pri)

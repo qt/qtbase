@@ -51,6 +51,8 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qevent.h>
 
+class QWindow;
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -61,7 +63,7 @@ QT_MODULE(Gui)
 
 class QAccessibleInterface;
 
-class Q_WIDGETS_EXPORT QAccessible
+class Q_GUI_EXPORT QAccessible
 {
 public:
     enum Event {
@@ -294,7 +296,7 @@ public:
         Increase            = -3,
         Decrease            = -4,
         Accept              = -5,
-        Cancel	            = -6,
+        Cancel              = -6,
         Select              = -7,
         ClearSelection      = -8,
         RemoveSelection     = -9,
@@ -325,7 +327,6 @@ public:
     static bool isActive();
     static void setRootObject(QObject*);
 
-    static void initialize();
     static void cleanup();
 
 private:
@@ -362,13 +363,14 @@ class QAccessibleActionInterface;
 class QAccessibleImageInterface;
 class QAccessibleTable2Interface;
 
-class Q_WIDGETS_EXPORT QAccessibleInterface : public QAccessible
+class Q_GUI_EXPORT QAccessibleInterface : public QAccessible
 {
 public:
     virtual ~QAccessibleInterface() {}
     // check for valid pointers
     virtual bool isValid() const = 0;
     virtual QObject *object() const = 0;
+    virtual QWindow *window() const;
 
     // hierarchy
     virtual int childCount() const = 0;
@@ -440,7 +442,7 @@ private:
     QAccessible2Interface *cast_helper(QAccessible2::InterfaceType);
 };
 
-class Q_WIDGETS_EXPORT QAccessibleEvent : public QEvent
+class QAccessibleEvent : public QEvent
 {
 public:
     inline QAccessibleEvent(Type type, int child);

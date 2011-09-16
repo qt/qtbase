@@ -38,11 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QPLATFORMACCESSIBILITY_H
+#define QPLATFORMACCESSIBILITY_H
 
-#ifndef QACCESSIBLEWIDGET_H
-#define QACCESSIBLEWIDGET_H
+#include <QtCore/qobject.h>
+#ifndef QT_NO_ACCESSIBILITY
 
-#include <QtGui/qaccessibleobject.h>
+#include "qaccessible.h"
 
 QT_BEGIN_HEADER
 
@@ -50,60 +52,23 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#ifndef QT_NO_ACCESSIBILITY
-
-class QAccessibleWidgetPrivate;
-
-class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject
+class Q_GUI_EXPORT QPlatformAccessibility
 {
 public:
-    explicit QAccessibleWidget(QWidget *o, Role r = Client, const QString& name = QString());
+    QPlatformAccessibility();
 
-    QWindow *window() const;
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-    Relation relationTo(int child, const QAccessibleInterface *other, int otherChild) const;
+    virtual ~QPlatformAccessibility();
+    virtual void notifyAccessibilityUpdate(QObject *o, int who, QAccessible::Event reason);
+    virtual void setRootObject(QObject *o);
+    virtual void initialize();
+    virtual void cleanup();
 
-    int childAt(int x, int y) const;
-    QRect rect(int child = 0) const;
-
-    QAccessibleInterface *parent() const;
-    QAccessibleInterface *child(int index) const;
-    int navigate(RelationFlag rel, int entry, QAccessibleInterface **target) const;
-
-    QString text(Text t, int child = 0) const;
-    Role role(int child = 0) const;
-    State state(int child = 0) const;
-
-#ifndef QT_NO_ACTION
-    int userActionCount(int child = 0) const;
-    QString actionText(int action, Text t, int child = 0) const;
-    bool doAction(int action, int child = 0, const QVariantList &params = QVariantList());
-#endif
-
-    QVariant invokeMethod(Method method, int child, const QVariantList &params);
-
-protected:
-    ~QAccessibleWidget();
-    QWidget *widget() const;
-    QObject *parentObject() const;
-
-    void addControllingSignal(const QString &signal);
-    void setValue(const QString &value);
-    void setDescription(const QString &desc);
-    void setHelp(const QString &help);
-    void setAccelerator(const QString &accel);
-
-private:
-    QAccessibleWidgetPrivate *d;
-    Q_DISABLE_COPY(QAccessibleWidget)
 };
-
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QACCESSIBLEWIDGET_H
+#endif // QT_NO_ACCESSIBILITY
+
+#endif // QPLATFORMACCESSIBILITY_H

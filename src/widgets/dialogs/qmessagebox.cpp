@@ -53,7 +53,7 @@
 #include <QtWidgets/qgridlayout.h>
 #include <QtWidgets/qdesktopwidget.h>
 #include <QtWidgets/qpushbutton.h>
-#include <QtWidgets/qaccessible.h>
+#include <QtGui/qaccessible.h>
 #include <QtWidgets/qicon.h>
 #include <QtGui/qtextdocument.h>
 #include <QtWidgets/qapplication.h>

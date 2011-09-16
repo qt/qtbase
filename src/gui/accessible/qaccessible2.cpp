@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qaccessible2.h"
-#include "qapplication.h"
+#include <QtGui/QGuiApplication>
 #include "qclipboard.h"
 #include "qtextboundaryfinder.h"
 
@@ -137,7 +137,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
 */
-QString Q_WIDGETS_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
@@ -175,7 +175,7 @@ QString Q_WIDGETS_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::B
 /*!
   \internal
 */
-QString Q_WIDGETS_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
@@ -210,7 +210,7 @@ QString Q_WIDGETS_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::Bo
 /*!
   \internal
 */
-QString Q_WIDGETS_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
+QString Q_GUI_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
         int *startOffset, int *endOffset, const QString& text)
 {
     QTextBoundaryFinder::BoundaryType type;
@@ -264,7 +264,7 @@ void QAccessibleSimpleEditableTextInterface::copyText(int startOffset, int endOf
     Q_UNUSED(startOffset);
     Q_UNUSED(endOffset);
 #else
-    QApplication::clipboard()->setText(textForRange(iface, startOffset, endOffset));
+    QGuiApplication::clipboard()->setText(textForRange(iface, startOffset, endOffset));
 #endif
 }
 
@@ -290,7 +290,7 @@ void QAccessibleSimpleEditableTextInterface::cutText(int startOffset, int endOff
 #else
     QString sub = textForRange(iface, startOffset, endOffset);
     deleteText(startOffset, endOffset);
-    QApplication::clipboard()->setText(sub);
+    QGuiApplication::clipboard()->setText(sub);
 #endif
 }
 
@@ -300,7 +300,7 @@ void QAccessibleSimpleEditableTextInterface::pasteText(int offset)
     Q_UNUSED(offset);
 #else
     QString txt = iface->text(QAccessible::Value, 0);
-    txt.insert(offset, QApplication::clipboard()->text());
+    txt.insert(offset, QGuiApplication::clipboard()->text());
     iface->setText(QAccessible::Value, 0, txt);
 #endif
 }

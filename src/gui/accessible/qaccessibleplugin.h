@@ -39,69 +39,49 @@
 **
 ****************************************************************************/
 
-#include "qaccessibleplugin.h"
-
-#ifndef QT_NO_ACCESSIBILITY
+#ifndef QACCESSIBLEPLUGIN_H
+#define QACCESSIBLEPLUGIN_H
 
 #include "qaccessible.h"
+#include <QtCore/qfactoryinterface.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QAccessiblePlugin
-    \brief The QAccessiblePlugin class provides an abstract base for
-    accessibility plugins.
+QT_MODULE(Gui)
 
-    \ingroup plugins
-    \ingroup accessibility
+#ifndef QT_NO_ACCESSIBILITY
 
-    Writing an accessibility plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual functions keys() and
-    create(), and exporting the class with the Q_EXPORT_PLUGIN2()
-    macro.
+class QStringList;
+class QAccessibleInterface;
 
-    \sa QAccessibleBridgePlugin, {How to Create Qt Plugins}
-*/
-
-/*!
-    Constructs an accessibility plugin with the given \a parent. This
-    is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
-*/
-QAccessiblePlugin::QAccessiblePlugin(QObject *parent)
-    : QObject(parent)
+struct Q_GUI_EXPORT QAccessibleFactoryInterface : public QAccessible, public QFactoryInterface
 {
-}
+    virtual QAccessibleInterface* create(const QString &key, QObject *object) = 0;
+};
 
-/*!
-    Destroys the accessibility plugin.
+#define QAccessibleFactoryInterface_iid "com.trolltech.Qt.QAccessibleFactoryInterface"
+Q_DECLARE_INTERFACE(QAccessibleFactoryInterface, QAccessibleFactoryInterface_iid)
 
-    You never have to call this explicitly. Qt destroys a plugin
-    automatically when it is no longer used.
-*/
-QAccessiblePlugin::~QAccessiblePlugin()
+class QAccessiblePluginPrivate;
+
+class Q_GUI_EXPORT QAccessiblePlugin : public QObject, public QAccessibleFactoryInterface
 {
-}
+    Q_OBJECT
+    Q_INTERFACES(QAccessibleFactoryInterface:QFactoryInterface)
+public:
+    explicit QAccessiblePlugin(QObject *parent = 0);
+    ~QAccessiblePlugin();
 
-/*!
-    \fn QStringList QAccessiblePlugin::keys() const
+    virtual QStringList keys() const = 0;
+    virtual QAccessibleInterface *create(const QString &key, QObject *object) = 0;
+};
 
-    Returns the list of keys this plugin supports.
-
-    These keys must be the class names that this plugin provides
-    an accessibility implementation for.
-
-    \sa create()
-*/
-
-/*!
-    \fn QAccessibleInterface *QAccessiblePlugin::create(const QString &key, QObject *object)
-
-    Creates and returns a QAccessibleInterface implementation for the
-    class \a key and the object \a object. Keys are case sensitive.
-
-    \sa keys()
-*/
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_ACCESSIBILITY
+QT_END_HEADER
+
+#endif // QACCESSIBLEPLUGIN_H

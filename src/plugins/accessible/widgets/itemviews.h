@@ -44,8 +44,8 @@
 
 #include <QtWidgets/qabstractitemview.h>
 #include <QtWidgets/qheaderview.h>
-#include <QtWidgets/qaccessible.h>
-#include <QtWidgets/qaccessible2.h>
+#include <QtGui/qaccessible.h>
+#include <QtGui/qaccessible2.h>
 #include <QtWidgets/qaccessiblewidget.h>
 
 

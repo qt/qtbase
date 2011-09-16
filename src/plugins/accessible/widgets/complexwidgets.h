@@ -45,7 +45,7 @@
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qaccessiblewidget.h>
 #include <QtWidgets/qabstractitemview.h>
-#include <QtWidgets/qaccessible2.h>
+#include <QtGui/qaccessible2.h>
 
 QT_BEGIN_NAMESPACE
 
