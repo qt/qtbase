@@ -147,11 +147,7 @@ static QList<QByteArray> splitLines(QByteArray ba)
 // empty array.
 static QList<QByteArray> expectedResult(const QString &subdir, const QString &logger)
 {
-    QString suffix = logger;
-    if (suffix.isEmpty()) {
-        suffix = "txt";
-    }
-    QFile file(":/expected_" + subdir + "." + suffix);
+    QFile file(":/expected_" + subdir + "." + logger);
     if (!file.open(QIODevice::ReadOnly))
         return QList<QByteArray>();
     return splitLines(file.readAll());
@@ -159,16 +155,14 @@ static QList<QByteArray> expectedResult(const QString &subdir, const QString &lo
 
 struct Logger
 {
-    Logger(QString const&, QString const&, QStringList const&);
+    Logger(QString const&, QStringList const&);
 
     QString name;
-    QString testdata_suffix;
     QStringList arguments;
 };
 
-Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringList const& _arguments)
+Logger::Logger(QString const& _name, QStringList const& _arguments)
     : name(_name)
-    , testdata_suffix(_testdata_suffix)
     , arguments(_arguments)
 {
 }
@@ -176,10 +170,10 @@ Logger::Logger(QString const& _name, QString const& _testdata_suffix, QStringLis
 static QList<Logger> allLoggers()
 {
     return QList<Logger>()
-        << Logger("plain",    "txt",      QStringList())
-        << Logger("xml",      "xml",      QStringList() << "-xml")
-        << Logger("xunitxml", "xunitxml", QStringList() << "-xunitxml")
-        << Logger("lightxml", "lightxml", QStringList() << "-lightxml")
+        << Logger("txt",      QStringList())
+        << Logger("xml",      QStringList() << "-xml")
+        << Logger("xunitxml", QStringList() << "-xunitxml")
+        << Logger("lightxml", QStringList() << "-lightxml")
     ;
 }
 
@@ -251,7 +245,7 @@ void tst_Selftests::runSubTest_data()
 
     foreach (Logger const& logger, allLoggers()) {
         QString rowSuffix;
-        if (logger.name != "plain") {
+        if (logger.name != "txt") {
             rowSuffix = QString(" %1").arg(logger.name);
         }
 
@@ -276,9 +270,9 @@ void tst_Selftests::runSubTest_data()
                 arguments << "-eventcounter";
             }
 
-            // These tests don't work right with loggers other than plain, usually because
+            // These tests don't work right with loggers other than plain text, usually because
             // they internally supply arguments to themselves.
-            if (logger.name != "plain") {
+            if (logger.name != "txt") {
                 if (subtest == "differentexec") {
                     continue;
                 }
@@ -304,7 +298,7 @@ void tst_Selftests::runSubTest_data()
 
             QTest::newRow(qPrintable(QString("%1%2").arg(subtest).arg(rowSuffix)))
                 << subtest
-                << logger.testdata_suffix
+                << logger.name
                 << arguments
             ;
         }
