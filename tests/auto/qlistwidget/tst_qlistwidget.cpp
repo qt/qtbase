@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #include <qeventloop.h>
 #include <qlist.h>
 

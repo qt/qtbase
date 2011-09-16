@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qsqlrelationaltablemodel.cpp
 
-QT += sql
+QT = core sql
 
 wince*: {
    plugFiles.files = ../../../plugins/sqldrivers

@@ -47,6 +47,10 @@
 #include <qwindowsstyle.h>
 #include <qsizepolicy.h>
 
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QPlastiqueStyle>
 #include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 

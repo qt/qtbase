@@ -41,6 +41,10 @@
 
 
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/QOpenGLFramebufferObject>
+#include <QtGui/QOpenGLPaintDevice>
+#include <QtGui/QPainter>
+#include <QtGui/QScreen>
 #include <QtGui/QWindow>
 
 #include <QtTest/QtTest>

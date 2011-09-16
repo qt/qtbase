@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui>
+#include <QtWidgets>
 #include "../../shared/util.h"
 #include <private/qgraphicsproxywidget_p.h>
 #include <private/qlayoutengine_p.h>    // qSmartMin functions...

@@ -38,11 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui>
-#include "qcompleter.h"
 
 #include <QtTest/QtTest>
 #include <QtGui>
+#include <QtWidgets>
 #include <QtDebug>
 #include <QPair>
 #include <QList>

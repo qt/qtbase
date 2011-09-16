@@ -41,6 +41,7 @@
 
 
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #include <private/qtablewidget_p.h>
 #include <QtTest/QtTest>
 #include "../../shared/util.h"

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui>
+#include <QtWidgets>
 
 #include <qsqldriver.h>
 #include <qsqldatabase.h>

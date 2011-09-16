@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 /*
     To add a view to be tested add the header file to the includes

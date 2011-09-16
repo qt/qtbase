@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include <QtCore>
 #include <QtGui>
+#include <QtWidgets>
 #include <QtTest/QtTest>
 #include <QtDebug>
 #include <QMetaObject>

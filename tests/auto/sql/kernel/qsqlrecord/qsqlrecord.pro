@@ -14,7 +14,7 @@ symbian {
     TARGET.EPOCHEAPSIZE=50000 5000000
 }
 
-QT += sql
+QT = core sql
 
 
 

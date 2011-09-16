@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QtWidgets>
 #include <QtTest>
 
 class tst_QTouchEventWidget : public QWidget

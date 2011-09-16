@@ -6,4 +6,4 @@ HEADERS += v8test.h
 
 CONFIG += parallel_test
 
-QT += v8-private
+QT = core v8-private

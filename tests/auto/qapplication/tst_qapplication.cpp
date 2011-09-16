@@ -47,6 +47,7 @@
 
 #include "qabstracteventdispatcher.h"
 #include <QtGui>
+#include <QtWidgets>
 
 #include "private/qapplication_p.h"
 #include "private/qstylesheetstyle_p.h"

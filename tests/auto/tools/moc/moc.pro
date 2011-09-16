@@ -20,6 +20,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
 if(*-g++*|*-icc*|*-clang|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
 SOURCES += tst_moc.cpp
 
+QT -= gui
 QT += sql network
 contains(QT_CONFIG, dbus){
     DEFINES += WITH_DBUS

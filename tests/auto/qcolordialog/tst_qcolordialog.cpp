@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/QtGui>
+#include <QtWidgets/QColorDialog>
 
 #include "../../shared/util.h"
 

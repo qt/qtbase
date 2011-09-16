@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 
 //TESTED_CLASS=
 //TESTED_FILES=

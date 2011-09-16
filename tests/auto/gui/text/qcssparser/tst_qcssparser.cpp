@@ -43,6 +43,8 @@
 #if defined(Q_OS_WINCE)
 #include <QtGui/QFontDatabase>
 #endif
+#include <QtGui/QFontInfo>
+#include <QtGui/QFontMetrics>
 
 //TESTED_CLASS=QCss
 //TESTED_FILES=gui/text/qcssparser.cpp gui/text/qcssparser_p.h

@@ -44,6 +44,8 @@
 
 
 #include <qfontdatabase.h>
+#include <qfontinfo.h>
+#include <qfontmetrics.h>
 
 #ifdef Q_OS_SYMBIAN
 #define SRCDIR "."
@@ -232,7 +234,7 @@ void tst_QFontDatabase::addAppFont_data()
 void tst_QFontDatabase::addAppFont()
 {
     QFETCH(bool, useMemoryFont);
-    QSignalSpy fontDbChangedSpy(QApplication::instance(), SIGNAL(fontDatabaseChanged()));
+    QSignalSpy fontDbChangedSpy(QGuiApplication::instance(), SIGNAL(fontDatabaseChanged()));
 
     QFontDatabase db;
 

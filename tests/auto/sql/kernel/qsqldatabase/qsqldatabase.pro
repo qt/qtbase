@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qsqldatabase.cpp
 
-QT += sql
+QT = core sql
 
 win32: {
    !wince*: LIBS += -lws2_32

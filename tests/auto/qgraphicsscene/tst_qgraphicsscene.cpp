@@ -46,6 +46,7 @@
 #endif
 
 #include <QtGui>
+#include <QtWidgets>
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #include <QtTest/QtTest>
 
 #include <stddef.h>

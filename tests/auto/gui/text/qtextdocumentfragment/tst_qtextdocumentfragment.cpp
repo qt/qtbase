@@ -2469,7 +2469,7 @@ void tst_QTextDocumentFragment::html_anchorColor()
     setHtml("<span style=\"color: red;\"><a href=\"http://www.kde.org/\">Blue</a></span>");
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QVERIFY(cursor.charFormat().foreground().color() == QApplication::palette().link().color());
+    QVERIFY(cursor.charFormat().foreground().color() == QGuiApplication::palette().link().color());
 
     setHtml("<span style=\"color: red;\"><a href=\"http://www.kde.org/\" style=\"color: yellow;\">Green</a></span>");
     cursor.movePosition(QTextCursor::Start);

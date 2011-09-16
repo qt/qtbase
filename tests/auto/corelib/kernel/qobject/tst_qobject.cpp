@@ -3313,7 +3313,7 @@ void tst_QObject::deleteQObjectWhenDeletingEvent()
     };
 
     QObject o;
-    QApplication::postEvent(&o, new MyEvent);
+    QGuiApplication::postEvent(&o, new MyEvent);
     QCoreApplication::removePostedEvents(&o); // here you would get a deadlock
 }
 

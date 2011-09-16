@@ -48,6 +48,9 @@
 #include <qsizepolicy.h>
 //#include <QtGui>
 
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui>
+#include <QtWidgets>
 #include <QtCore>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>

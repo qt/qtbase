@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QEvent>
+#include <QtGui/qevent.h>
 
 #ifdef Q_OS_SYMBIAN
 #include <apgcli.h>

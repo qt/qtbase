@@ -44,6 +44,7 @@
 #include "../../../../shared/util.h"
 
 #include <qpainter.h>
+#include <qdrawutil.h>
 #include <qapplication.h>
 #include <qwidget.h>
 #include <qfontmetrics.h>

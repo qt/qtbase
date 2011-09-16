@@ -1,4 +1,5 @@
 load(qttest_p4)
+QT = core
 
 # this is not a real testcase ('make check' should not run it)
 CONFIG -= testcase

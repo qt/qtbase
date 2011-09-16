@@ -48,7 +48,7 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <QtWidgets/QSortFilterProxyModel>
+#include <QtWidgets>
 
 #include <qdebug.h>
 

@@ -45,6 +45,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QtWidgets>
 
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"

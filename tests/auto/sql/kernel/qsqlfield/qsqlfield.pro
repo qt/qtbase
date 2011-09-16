@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qsqlfield.cpp
 
-QT += sql
+QT = core sql
 
 symbian {
     qt_not_deployed {

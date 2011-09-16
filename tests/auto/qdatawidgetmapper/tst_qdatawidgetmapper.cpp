@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QtGui/QtGui>
+#include <QtWidgets/QtWidgets>
 #include <QtTest/QtTest>
 
 class tst_QDataWidgetMapper: public QObject

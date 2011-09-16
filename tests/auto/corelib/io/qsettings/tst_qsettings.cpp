@@ -45,12 +45,12 @@
 
 #include <QtCore/QSettings>
 #include <private/qsettings_p.h>
-//#include <QtGui/QApplication>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaType>
 #include <QtCore/QtDebug>
 #include <QtCore/QString>
+#include <QtGui/QKeySequence>
 #include "../../../../shared/util.h"
 
 #if !defined(Q_OS_SYMBIAN)
