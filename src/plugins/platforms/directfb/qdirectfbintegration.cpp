@@ -106,17 +106,14 @@ QDirectFbIntegration::QDirectFbIntegration()
     QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
     screenAdded(primaryScreen);
 
-    m_inputRunner.reset(new QThread);
-    m_input.reset(new QDirectFbInput(0));
-    m_input->moveToThread(m_inputRunner.data());
-    QObject::connect(m_inputRunner.data(), SIGNAL(started()),
-                     m_input.data(), SLOT(runInputEventLoop()));
-    m_inputRunner->start();
+    m_input.reset(new QDirectFbInput());
+    m_input->start();
 }
 
 QDirectFbIntegration::~QDirectFbIntegration()
 {
     m_input->stopInputEventLoop();
+    m_input->wait();
 }
 
 QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const

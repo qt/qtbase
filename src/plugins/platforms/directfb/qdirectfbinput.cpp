@@ -50,35 +50,29 @@
 
 #include <directfb.h>
 
-QDirectFbInput::QDirectFbInput(QObject *parent)
-    : QObject(parent), m_shouldStop(false)
+QDirectFbInput::QDirectFbInput()
+    : m_dfbInterface(QDirectFbConvenience::dfbInterface())
+    , m_shouldStop(false)
 {
-    m_dfbInterface = QDirectFbConvenience::dfbInterface();
-
     DFBResult ok = m_dfbInterface->CreateEventBuffer(m_dfbInterface,&m_eventBuffer);
     if (ok != DFB_OK)
         DirectFBError("Failed to initialise eventbuffer", ok);
 
     m_dfbInterface->GetDisplayLayer(m_dfbInterface,DLID_PRIMARY, &m_dfbDisplayLayer);
-
 }
 
-void QDirectFbInput::runInputEventLoop()
+void QDirectFbInput::run()
 {
-    while (true) {
-        m_eventBuffer->WaitForEvent(m_eventBuffer);
-        if (m_shouldStop) {
-            m_waitStop.release();
-            break;
-        }
-        handleEvents();
+    while (!m_shouldStop) {
+        if (m_eventBuffer->WaitForEvent(m_eventBuffer) == DFB_OK)
+            handleEvents();
     }
 }
 
 void QDirectFbInput::stopInputEventLoop()
 {
     m_shouldStop = true;
-    m_waitStop.acquire();
+    m_eventBuffer->WakeUp(m_eventBuffer);
 }
 
 void QDirectFbInput::addWindow(DFBWindowID id, QWindow *qt_window)

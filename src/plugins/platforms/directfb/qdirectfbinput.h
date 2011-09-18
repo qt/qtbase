@@ -42,8 +42,7 @@
 #ifndef QDIRECTFBINPUT_H
 #define QDIRECTFBINPUT_H
 
-#include <QSemaphore>
-#include <QObject>
+#include <QThread>
 #include <QHash>
 #include <QPoint>
 #include <QEvent>
@@ -52,20 +51,21 @@
 
 #include <directfb.h>
 
-class QDirectFbInput : public QObject
+class QDirectFbInput : public QThread
 {
     Q_OBJECT
 public:
-    QDirectFbInput(QObject *parent);
+    QDirectFbInput();
     void addWindow(DFBWindowID id, QWindow *window);
     void removeWindow(WId wId);
 
-public slots:
-    void runInputEventLoop();
     void stopInputEventLoop();
-    void handleEvents();
+
+protected:
+    void run();
 
 private:
+    void handleEvents();
     void handleMouseEvents(const DFBEvent &event);
     void handleWheelEvent(const DFBEvent &event);
     void handleKeyEvents(const DFBEvent &event);
@@ -78,8 +78,6 @@ private:
     IDirectFBEventBuffer *m_eventBuffer; // XXX: TODO: FIXME: leaked!!! (but it is a singleton)
 
     bool m_shouldStop;
-    QSemaphore m_waitStop;
-
     QHash<DFBWindowID,QWindow *>m_tlwMap;
 };
 
