@@ -47,10 +47,8 @@ QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
     : QPlatformCursor(screen)
 {
     QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
-    m_image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
+    m_image.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
 }
-
-#warning "Memory leak?"
 
 void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
 {

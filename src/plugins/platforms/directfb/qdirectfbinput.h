@@ -75,7 +75,7 @@ private:
 
     IDirectFB *m_dfbInterface;
     IDirectFBDisplayLayer *m_dfbDisplayLayer;
-    IDirectFBEventBuffer *m_eventBuffer;
+    IDirectFBEventBuffer *m_eventBuffer; // XXX: TODO: FIXME: leaked!!! (but it is a singleton)
 
     bool m_shouldStop;
     QSemaphore m_waitStop;

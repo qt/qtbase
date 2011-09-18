@@ -58,7 +58,6 @@ class QDirectFbScreen : public QPlatformScreen
 {
 public:
     QDirectFbScreen(int display);
-    ~QDirectFbScreen();
 
     QRect geometry() const { return m_geometry; }
     int depth() const { return m_depth; }
@@ -74,7 +73,7 @@ public:
     IDirectFBDisplayLayer *m_layer;
 
 private:
-    QDirectFBCursor *m_cursor;
+    QScopedPointer<QDirectFBCursor> m_cursor;
 };
 
 class QDirectFbIntegration : public QPlatformIntegration
@@ -91,8 +90,8 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
-    QDirectFbInput *m_input;
-    QThread *m_inputRunner;
+    QScopedPointer<QDirectFbInput> m_input;
+    QScopedPointer<QThread> m_inputRunner;
     QPlatformFontDatabase *m_fontDb;
     QAbstractEventDispatcher *m_eventDispatcher;
 };

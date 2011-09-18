@@ -55,7 +55,7 @@ public:
 
 private:
     IDirectFBDisplayLayer *m_layer;
-    QPlatformCursorImage *m_image;
+    QScopedPointer<QPlatformCursorImage> m_image;
 };
 
 #endif // QDIRECTFBCURSOR_H

@@ -65,17 +65,12 @@ QDirectFbBackingStore::QDirectFbBackingStore(QWindow *window)
     QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface);
     m_pmdata = new QDirectFbBlitterPlatformPixmap;
     m_pmdata->setBlittable(blitter);
-    m_pixmap = new QPixmap(m_pmdata);
-}
-
-QDirectFbBackingStore::~QDirectFbBackingStore()
-{
-    delete m_pixmap;
+    m_pixmap.reset(new QPixmap(m_pmdata));
 }
 
 QPaintDevice *QDirectFbBackingStore::paintDevice()
 {
-    return m_pixmap;
+    return m_pixmap.data();
 }
 
 void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint &offset)

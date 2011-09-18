@@ -75,12 +75,7 @@ QDirectFbScreen::QDirectFbScreen(int display)
     m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
     m_physicalSize = QSizeF(config.width, config.height) * inch / dpi;
 
-    m_cursor = new QDirectFBCursor(this);
-}
-
-QDirectFbScreen::~QDirectFbScreen()
-{
-#warning "Delete the cursor?"
+    m_cursor.reset(new QDirectFBCursor(this));
 }
 
 QDirectFbIntegration::QDirectFbIntegration()
@@ -111,18 +106,17 @@ QDirectFbIntegration::QDirectFbIntegration()
     QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
     screenAdded(primaryScreen);
 
-    m_inputRunner = new QThread;
-    m_input = new QDirectFbInput(0);
-    m_input->moveToThread(m_inputRunner);
-    QObject::connect(m_inputRunner,SIGNAL(started()),m_input,SLOT(runInputEventLoop()));
+    m_inputRunner.reset(new QThread);
+    m_input.reset(new QDirectFbInput(0));
+    m_input->moveToThread(m_inputRunner.data());
+    QObject::connect(m_inputRunner.data(), SIGNAL(started()),
+                     m_input.data(), SLOT(runInputEventLoop()));
     m_inputRunner->start();
 }
 
 QDirectFbIntegration::~QDirectFbIntegration()
 {
     m_input->stopInputEventLoop();
-    delete m_inputRunner;
-    delete m_input;
 }
 
 QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
@@ -135,8 +129,7 @@ QPlatformPixmap *QDirectFbIntegration::createPlatformPixmap(QPlatformPixmap::Pix
 
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) const
 {
-    QDirectFbInput *input = const_cast<QDirectFbInput *>(m_input);//gah
-    return new QDirectFbWindow(window,input);
+    return new QDirectFbWindow(window,m_input.data());
 }
 
 QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
