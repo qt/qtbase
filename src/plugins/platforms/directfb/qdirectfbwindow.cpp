@@ -49,9 +49,9 @@
 QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
-    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
+    QDirectFBPointer<IDirectFBDisplayLayer> layer(QDirectFbConvenience::dfbDisplayLayer());
     DFBDisplayLayerConfig layerConfig;
-    layer->GetConfiguration(layer,&layerConfig);
+    layer->GetConfiguration(layer.data(), &layerConfig);
 
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
@@ -75,24 +75,24 @@ QDirectFbWindow::QDirectFbWindow(QWindow *tlw, QDirectFbInput *inputhandler)
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
-    DFBResult result = layer->CreateWindow(layer,&description,&m_dfbWindow);
+    DFBResult result = layer->CreateWindow(layer.data(), &description, m_dfbWindow.outPtr());
     if (result != DFB_OK) {
         DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);
     }
 
-    m_dfbWindow->SetOpacity(m_dfbWindow,0xff);
+    m_dfbWindow->SetOpacity(m_dfbWindow.data(), 0xff);
 
     setVisible(window()->visible());
 
     DFBWindowID id;
-    m_dfbWindow->GetID(m_dfbWindow, &id);
+    m_dfbWindow->GetID(m_dfbWindow.data(), &id);
     m_inputHandler->addWindow(id,tlw);
 }
 
 QDirectFbWindow::~QDirectFbWindow()
 {
     m_inputHandler->removeWindow(winId());
-    m_dfbWindow->Destroy(m_dfbWindow);
+    m_dfbWindow->Destroy(m_dfbWindow.data());
 }
 
 void QDirectFbWindow::setGeometry(const QRect &rect)
@@ -101,7 +101,7 @@ void QDirectFbWindow::setGeometry(const QRect &rect)
 
     QPlatformWindow::setGeometry(rect);
     if (window()->visible()) {
-        m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
+        m_dfbWindow->SetBounds(m_dfbWindow.data(), rect.x(),rect.y(),
                                rect.width(), rect.height());
 // ### TODO port, verify if this is needed
 #if 0
@@ -117,7 +117,7 @@ void QDirectFbWindow::setGeometry(const QRect &rect)
 void QDirectFbWindow::setOpacity(qreal level)
 {
     const quint8 windowOpacity = quint8(level * 0xff);
-    m_dfbWindow->SetOpacity(m_dfbWindow,windowOpacity);
+    m_dfbWindow->SetOpacity(m_dfbWindow.data(), windowOpacity);
 }
 
 void QDirectFbWindow::setVisible(bool visible)
@@ -125,14 +125,14 @@ void QDirectFbWindow::setVisible(bool visible)
     if (visible) {
         int x = geometry().x();
         int y = geometry().y();
-        m_dfbWindow->MoveTo(m_dfbWindow,x,y);
+        m_dfbWindow->MoveTo(m_dfbWindow.data(), x, y);
     } else {
-        IDirectFBDisplayLayer *displayLayer;
-        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY,&displayLayer);
+        QDirectFBPointer<IDirectFBDisplayLayer> displayLayer;
+        QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(), DLID_PRIMARY, displayLayer.outPtr());
 
         DFBDisplayLayerConfig config;
-        displayLayer->GetConfiguration(displayLayer,&config);
-        m_dfbWindow->MoveTo(m_dfbWindow,config.width+1,config.height + 1);
+        displayLayer->GetConfiguration(displayLayer.data(), &config);
+        m_dfbWindow->MoveTo(m_dfbWindow.data(), config. width + 1, config.height + 1);
     }
 }
 
@@ -141,31 +141,31 @@ Qt::WindowFlags QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
     switch (flags & Qt::WindowType_Mask) {
     case Qt::ToolTip: {
         DFBWindowOptions options;
-        m_dfbWindow->GetOptions(m_dfbWindow,&options);
+        m_dfbWindow->GetOptions(m_dfbWindow.data(), &options);
         options = DFBWindowOptions(options | DWOP_GHOST);
-        m_dfbWindow->SetOptions(m_dfbWindow,options);
+        m_dfbWindow->SetOptions(m_dfbWindow.data(), options);
         break; }
     default:
         break;
     }
 
-    m_dfbWindow->SetStackingClass(m_dfbWindow, flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
+    m_dfbWindow->SetStackingClass(m_dfbWindow.data(), flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
     return flags;
 }
 
 void QDirectFbWindow::raise()
 {
-    m_dfbWindow->RaiseToTop(m_dfbWindow);
+    m_dfbWindow->RaiseToTop(m_dfbWindow.data());
 }
 
 void QDirectFbWindow::lower()
 {
-    m_dfbWindow->LowerToBottom(m_dfbWindow);
+    m_dfbWindow->LowerToBottom(m_dfbWindow.data());
 }
 
 WId QDirectFbWindow::winId() const
 {
     DFBWindowID id;
-    m_dfbWindow->GetID(m_dfbWindow, &id);
+    m_dfbWindow->GetID(m_dfbWindow.data(), &id);
     return WId(id);
 }

@@ -46,7 +46,7 @@
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
     : QPlatformCursor(screen)
 {
-    QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
+    QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, m_layer.outPtr());
     m_image.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
 }
 
@@ -69,11 +69,11 @@ void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
         map = cursor->pixmap();
     }
 
-    IDirectFBSurface *surface = QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.handle());
+    IDirectFBSurface* surface(QDirectFbConvenience::dfbSurfaceForPlatformPixmap(map.handle()));
 
-    if (m_layer->SetCooperativeLevel(m_layer, DLSCL_ADMINISTRATIVE) != DFB_OK) {
+    if (m_layer->SetCooperativeLevel(m_layer.data(), DLSCL_ADMINISTRATIVE) != DFB_OK) {
         return;
     }
-    m_layer->SetCursorShape( m_layer, surface, xSpot, ySpot);
-    m_layer->SetCooperativeLevel(m_layer, DLSCL_SHARED);
+    m_layer->SetCursorShape(m_layer.data(), surface, xSpot, ySpot);
+    m_layer->SetCooperativeLevel(m_layer.data(), DLSCL_SHARED);
 }

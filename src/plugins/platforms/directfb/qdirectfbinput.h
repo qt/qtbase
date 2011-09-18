@@ -49,7 +49,7 @@
 
 #include <QtGui/qwindowdefs.h>
 
-#include <directfb.h>
+#include "qdirectfbconvenience.h"
 
 class QDirectFbInput : public QThread
 {
@@ -74,8 +74,8 @@ private:
 
 
     IDirectFB *m_dfbInterface;
-    IDirectFBDisplayLayer *m_dfbDisplayLayer;
-    IDirectFBEventBuffer *m_eventBuffer; // XXX: TODO: FIXME: leaked!!! (but it is a singleton)
+    QDirectFBPointer<IDirectFBDisplayLayer> m_dfbDisplayLayer;
+    QDirectFBPointer<IDirectFBEventBuffer> m_eventBuffer;
 
     bool m_shouldStop;
     QHash<DFBWindowID,QWindow *>m_tlwMap;

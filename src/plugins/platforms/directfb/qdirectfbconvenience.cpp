@@ -106,13 +106,17 @@ int QDirectFbConvenience::colorDepthForSurface(const DFBSurfacePixelFormat forma
     return ((0x1f << 7) & format) >> 7;
 }
 
+/**
+ * This is borrowing the reference of the QDirectFbBlitter. You may not store this
+ * pointer as a class member but must only use it locally.
+ */
 IDirectFBSurface *QDirectFbConvenience::dfbSurfaceForPlatformPixmap(QPlatformPixmap *handle)
 {
     QBlittablePlatformPixmap *blittablePmData = static_cast<QBlittablePlatformPixmap *>(handle);
     if (blittablePmData) {
         QBlittable *blittable = blittablePmData->blittable();
         QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blittable);
-        return dfbBlitter->m_surface;
+        return dfbBlitter->m_surface.data();
     }
     return 0;
 }

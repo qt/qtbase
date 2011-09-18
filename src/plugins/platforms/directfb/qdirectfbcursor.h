@@ -44,6 +44,9 @@
 
 #include <QPlatformCursor>
 #include <directfb.h>
+
+#include "qdirectfbconvenience.h"
+
 class QDirectFbScreen;
 class QDirectFbBlitter;
 
@@ -54,7 +57,7 @@ public:
     void changeCursor(QCursor *cursor, QWindow *window);
 
 private:
-    IDirectFBDisplayLayer *m_layer;
+    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
     QScopedPointer<QPlatformCursorImage> m_image;
 };
 

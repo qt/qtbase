@@ -53,8 +53,9 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
                                                           |QBlittable::SourcePixmapCapability
                                                           |QBlittable::SourceOverPixmapCapability
                                                           |QBlittable::SourceOverScaledPixmapCapability))
+        , m_surface(surface)
 {
-    m_surface = surface;
+        m_surface->AddRef(m_surface.data());
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
@@ -79,25 +80,24 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
 
 
     IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
-    dfb->CreateSurface(dfb , &surfaceDesc, &m_surface);
-    m_surface->Clear(m_surface, 0, 0, 0, 0);
+    dfb->CreateSurface(dfb , &surfaceDesc, m_surface.outPtr());
+    m_surface->Clear(m_surface.data(), 0, 0, 0, 0);
 }
 
 QDirectFbBlitter::~QDirectFbBlitter()
 {
     unlock();
-    m_surface->Release(m_surface);
 }
 
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 {
-    m_surface->SetColor(m_surface, color.red(), color.green(), color.blue(), color.alpha());
+    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), color.alpha());
 //    When the blitter api supports non opaque blits, also remember to change
 //    qpixmap_blitter.cpp::fill
 //    DFBSurfaceDrawingFlags drawingFlags = color.alpha() ? DSDRAW_BLEND : DSDRAW_NOFX;
 //    m_surface->SetDrawingFlags(m_surface, drawingFlags);
-    m_surface->SetDrawingFlags(m_surface, DSDRAW_NOFX);
-    m_surface->FillRectangle(m_surface, rect.x(), rect.y(),
+    m_surface->SetDrawingFlags(m_surface.data(), DSDRAW_NOFX);
+    m_surface->FillRectangle(m_surface.data(), rect.x(), rect.y(),
                               rect.width(), rect.height());
 }
 
@@ -110,7 +110,7 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     QDirectFbBlitter *dfbBlitter = static_cast<QDirectFbBlitter *>(blitPm->blittable());
     dfbBlitter->unlock();
 
-    IDirectFBSurface *s = dfbBlitter->m_surface;
+    IDirectFBSurface *s = dfbBlitter->m_surface.data();
 
     DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
     DFBSurfacePorterDuffRule porterDuff = DSPD_SRC;
@@ -119,18 +119,18 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
         porterDuff = DSPD_SRC_OVER;
     }
 
-    m_surface->SetBlittingFlags(m_surface, DFBSurfaceBlittingFlags(blittingFlags));
-    m_surface->SetPorterDuff(m_surface,porterDuff);
-    m_surface->SetDstBlendFunction(m_surface,DSBF_INVSRCALPHA);
+    m_surface->SetBlittingFlags(m_surface.data(), DFBSurfaceBlittingFlags(blittingFlags));
+    m_surface->SetPorterDuff(m_surface.data(), porterDuff);
+    m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
 
     const DFBRectangle sRect = { srcRect.x(), srcRect.y(), srcRect.width(), srcRect.height() };
 
     DFBResult result;
     if (rect.width() == srcRect.width() && rect.height() == srcRect.height())
-        result = m_surface->Blit(m_surface, s, &sRect, rect.x(), rect.y());
+        result = m_surface->Blit(m_surface.data(), s, &sRect, rect.x(), rect.y());
     else {
         const DFBRectangle dRect = { rect.x(), rect.y(), rect.width(), rect.height() };
-        result = m_surface->StretchBlit(m_surface, s, &sRect, &dRect);
+        result = m_surface->StretchBlit(m_surface.data(), s, &sRect, &dRect);
     }
     if (result != DFB_OK)
         DirectFBError("QDirectFBBlitter::drawPixmap()", result);
@@ -143,15 +143,15 @@ QImage *QDirectFbBlitter::doLock()
 
     void *mem;
     int bpl;
-    const DFBResult result = m_surface->Lock(m_surface, DFBSurfaceLockFlags(DSLF_WRITE|DSLF_READ), static_cast<void**>(&mem), &bpl);
+    const DFBResult result = m_surface->Lock(m_surface.data(), DFBSurfaceLockFlags(DSLF_WRITE|DSLF_READ), static_cast<void**>(&mem), &bpl);
     if (result == DFB_OK) {
         DFBSurfacePixelFormat dfbFormat;
         DFBSurfaceCapabilities dfbCaps;
-        m_surface->GetPixelFormat(m_surface,&dfbFormat);
-        m_surface->GetCapabilities(m_surface,&dfbCaps);
+        m_surface->GetPixelFormat(m_surface.data(), &dfbFormat);
+        m_surface->GetCapabilities(m_surface.data(), &dfbCaps);
         QImage::Format format = QDirectFbConvenience::imageFormatFromSurfaceFormat(dfbFormat, dfbCaps);
         int w, h;
-        m_surface->GetSize(m_surface,&w,&h);
+        m_surface->GetSize(m_surface.data(), &w, &h);
         m_image = QImage(static_cast<uchar *>(mem),w,h,bpl,format);
     } else {
         DirectFBError("Failed to lock image", result);
@@ -162,5 +162,5 @@ QImage *QDirectFbBlitter::doLock()
 
 void QDirectFbBlitter::doUnlock()
 {
-    m_surface->Unlock(m_surface);
+    m_surface->Unlock(m_surface.data());
 }

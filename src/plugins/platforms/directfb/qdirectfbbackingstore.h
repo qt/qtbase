@@ -47,6 +47,8 @@
 
 #include <directfb.h>
 
+#include "qdirectfbconvenience.h"
+
 QT_BEGIN_NAMESPACE
 
 class QDirectFbBackingStore : public QPlatformBackingStore
@@ -67,7 +69,7 @@ private:
 
     QScopedPointer<QPixmap> m_pixmap;
     QBlittablePlatformPixmap *m_pmdata;
-    IDirectFBSurface *m_dfbSurface;
+    QDirectFBPointer<IDirectFBSurface> m_dfbSurface;
 };
 
 QT_END_NAMESPACE

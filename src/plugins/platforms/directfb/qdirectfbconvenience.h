@@ -81,4 +81,29 @@ private:
     friend class QDirectFbIntegration;
 };
 
+template <typename T> struct QDirectFBInterfaceCleanupHandler
+{
+    static void cleanup(T *t)
+    {
+        if (!t)
+            return;
+        t->Release(t);
+    }
+};
+
+template <typename T>
+class QDirectFBPointer : public QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >
+{
+public:
+    QDirectFBPointer(T *t = 0)
+        : QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >(t)
+    {}
+
+    T** outPtr()
+    {
+        this->reset(0);
+        return &this->d;
+    }
+};
+
 #endif // QDIRECTFBCONVENIENCE_H

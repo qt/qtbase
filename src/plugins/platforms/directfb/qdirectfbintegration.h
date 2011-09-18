@@ -70,7 +70,7 @@ public:
     QImage::Format m_format;
     QSizeF m_physicalSize;
 
-    IDirectFBDisplayLayer *m_layer;
+    QDirectFBPointer<IDirectFBDisplayLayer> m_layer;
 
 private:
     QScopedPointer<QDirectFBCursor> m_cursor;
@@ -90,6 +90,8 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
+    QDirectFBPointer<IDirectFB> m_dfb;
+    QScopedPointer<QDirectFbScreen> m_primaryScreen;
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
     QPlatformFontDatabase *m_fontDb;

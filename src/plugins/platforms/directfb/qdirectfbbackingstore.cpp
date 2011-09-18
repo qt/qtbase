@@ -50,19 +50,19 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFbBackingStore::QDirectFbBackingStore(QWindow *window)
-    : QPlatformBackingStore(window), m_pixmap(0), m_pmdata(0), m_dfbSurface(0)
+    : QPlatformBackingStore(window), m_pixmap(0), m_pmdata(0)
 {
 
-    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
+    QDirectFBPointer<IDirectFBDisplayLayer> layer(QDirectFbConvenience::dfbDisplayLayer());
 
     DFBWindowID id(window->winId());
-    IDirectFBWindow *dfbWindow;
+    QDirectFBPointer<IDirectFBWindow> dfbWindow;
 
-    layer->GetWindow(layer,id,&dfbWindow);
+    layer->GetWindow(layer.data(), id, dfbWindow.outPtr());
 
-    dfbWindow->GetSurface(dfbWindow,&m_dfbSurface);
+    dfbWindow->GetSurface(dfbWindow.data(), m_dfbSurface.outPtr());
 //WRONGSIZE
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(window->size(), m_dfbSurface.data());
     m_pmdata = new QDirectFbBlitterPlatformPixmap;
     m_pmdata->setBlittable(blitter);
     m_pixmap.reset(new QPixmap(m_pmdata));
@@ -81,15 +81,13 @@ void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint
     for (int i = 0 ; i < rects.size(); i++) {
         const QRect rect = rects.at(i);
         DFBRegion dfbReg = { rect.x() + offset.x(),rect.y() + offset.y(),rect.right() + offset.x(),rect.bottom() + offset.y()};
-        m_dfbSurface->Flip(m_dfbSurface, &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
+        m_dfbSurface->Flip(m_dfbSurface.data(), &dfbReg, DFBSurfaceFlipFlags(DSFLIP_BLIT|DSFLIP_ONSYNC));
     }
 }
 
 void QDirectFbBackingStore::resize(const QSize &size, const QRegion& reg)
 {
-    //Have to add 1 ref ass it will be removed by deleting the old blitter in setBlittable
-    m_dfbSurface->AddRef(m_dfbSurface);
-    QDirectFbBlitter *blitter = new QDirectFbBlitter(size,m_dfbSurface);
+    QDirectFbBlitter *blitter = new QDirectFbBlitter(size, m_dfbSurface.data());
     m_pmdata->setBlittable(blitter);
 }
 
@@ -107,14 +105,14 @@ bool QDirectFbBackingStore::scroll(const QRegion &area, int dx, int dy)
 
     if (!m_dfbSurface || area.isEmpty())
         return false;
-    m_dfbSurface->SetBlittingFlags(m_dfbSurface, DSBLIT_NOFX);
+    m_dfbSurface->SetBlittingFlags(m_dfbSurface.data(), DSBLIT_NOFX);
     if (area.rectCount() == 1) {
-        scrollSurface(m_dfbSurface, area.boundingRect(), dx, dy);
+        scrollSurface(m_dfbSurface.data(), area.boundingRect(), dx, dy);
     } else {
         const QVector<QRect> rects = area.rects();
         const int n = rects.size();
         for (int i=0; i<n; ++i) {
-            scrollSurface(m_dfbSurface, rects.at(i), dx, dy);
+            scrollSurface(m_dfbSurface.data(), rects.at(i), dx, dy);
         }
     }
     return true;

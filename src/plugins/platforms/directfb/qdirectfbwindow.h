@@ -66,7 +66,7 @@ public:
     WId winId() const;
 
 private:
-    IDirectFBWindow *m_dfbWindow;
+    QDirectFBPointer<IDirectFBWindow> m_dfbWindow;
     QDirectFbInput *m_inputHandler;
 };
 

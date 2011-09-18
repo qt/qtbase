@@ -62,7 +62,7 @@ protected:
     virtual QImage *doLock();
     virtual void doUnlock();
 
-    IDirectFBSurface *m_surface;
+    QDirectFBPointer<IDirectFBSurface> m_surface;
     QImage m_image;
 
     friend class QDirectFbConvenience;
