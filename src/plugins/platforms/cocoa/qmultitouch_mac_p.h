@@ -53,11 +53,9 @@
 #ifndef QMULTITOUCH_MAC_P_H
 #define QMULTITOUCH_MAC_P_H
 
-#ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
-#endif
 
-#include <qevent.h>
+#include <QtGui/QWindowSystemInterface>
 #include <qhash.h>
 #include <QtCore>
 
@@ -65,12 +63,10 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_MAC_USE_COCOA
-
 class QCocoaTouch
 {
     public:
-        static QList<QTouchEvent::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch);
+        static QList<QWindowSystemInterface::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch);
         static void setMouseInDraggingState(bool inDraggingState);
 
     private:
@@ -81,7 +77,7 @@ class QCocoaTouch
         static int _touchCount;
         static bool _updateInternalStateOnly;
 
-        QTouchEvent::TouchPoint _touchPoint;
+        QWindowSystemInterface::TouchPoint _touchPoint;
         qint64 _identity;
 
         QCocoaTouch(NSTouch *nstouch);
@@ -91,8 +87,6 @@ class QCocoaTouch
         static QCocoaTouch *findQCocoaTouch(NSTouch *nstouch);
         static Qt::TouchPointState toTouchPointState(NSTouchPhase nsState);
 };
-
-#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
 

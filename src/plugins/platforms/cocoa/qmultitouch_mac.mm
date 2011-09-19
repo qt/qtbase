@@ -39,14 +39,12 @@
 **
 ****************************************************************************/
 
-#include <private/qmultitouch_mac_p.h>
+#include "qmultitouch_mac_p.h"
 #include <qcursor.h>
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
 QT_BEGIN_NAMESPACE
-
-#ifdef QT_MAC_USE_COCOA
 
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
 QPointF QCocoaTouch::_screenReferencePos;
@@ -60,8 +58,8 @@ QCocoaTouch::QCocoaTouch(NSTouch *nstouch)
     if (_currentTouches.size() == 0)
         _idAssignmentCount = 0;
 
-    _touchPoint.setId(_idAssignmentCount++);
-    _touchPoint.setPressure(1.0);
+    _touchPoint.id = _idAssignmentCount++;
+    _touchPoint.pressure = 1.0;
     _identity = qint64([nstouch identity]);
     _currentTouches.insert(_identity, this);
     updateTouchData(nstouch, NSTouchPhaseBegan);
@@ -74,19 +72,17 @@ QCocoaTouch::~QCocoaTouch()
 
 void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 {
-    if (_touchCount == 1)
-        _touchPoint.setState(toTouchPointState(phase) | Qt::TouchPointPrimary);
-    else
-        _touchPoint.setState(toTouchPointState(phase));
+    _touchPoint.state = toTouchPointState(phase);
+    _touchPoint.isPrimary = (_touchCount == 1);
 
     // From the normalized position on the trackpad, calculate
     // where on screen the touchpoint should be according to the
     // reference position:
     NSPoint npos = [nstouch normalizedPosition];
     QPointF qnpos = QPointF(npos.x, 1 - npos.y);
-    _touchPoint.setNormalizedPos(qnpos);
+    _touchPoint.normalPosition = qnpos;
 
-    if (_touchPoint.id() == 0 && phase == NSTouchPhaseBegan) {
+    if (_touchPoint.id == 0 && phase == NSTouchPhaseBegan) {
         _trackpadReferencePos = qnpos;
         _screenReferencePos = QCursor::pos();
     }
@@ -95,7 +91,7 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
     float ppiX = (qnpos.x() - _trackpadReferencePos.x()) * dsize.width;
     float ppiY = (qnpos.y() - _trackpadReferencePos.y()) * dsize.height;
     QPointF relativePos = _trackpadReferencePos - QPointF(ppiX, ppiY);
-    _touchPoint.setScreenPos(_screenReferencePos - relativePos);
+    _touchPoint.area = QRectF(_screenReferencePos - relativePos, QSize(dsize.width, dsize.height));
 }
 
 QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
@@ -129,10 +125,10 @@ Qt::TouchPointState QCocoaTouch::toTouchPointState(NSTouchPhase nsState)
     return qtState;
 }
 
-QList<QTouchEvent::TouchPoint>
+QList<QWindowSystemInterface::TouchPoint>
 QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 {
-    QMap<int, QTouchEvent::TouchPoint> touchPoints;
+    QMap<int, QWindowSystemInterface::TouchPoint> touchPoints;
     NSSet *ended = [event touchesMatchingPhase:NSTouchPhaseEnded | NSTouchPhaseCancelled inView:nil];
     NSSet *active = [event
         touchesMatchingPhase:NSTouchPhaseBegan | NSTouchPhaseMoved | NSTouchPhaseStationary
@@ -150,7 +146,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         if (qcocoaTouch) {
             qcocoaTouch->updateTouchData(touch, [touch phase]);
             if (!_updateInternalStateOnly)
-                touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
+                touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
             delete qcocoaTouch;
         }
     }
@@ -170,7 +166,7 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         else
             qcocoaTouch->updateTouchData(touch, wasUpdateInternalStateOnly ? NSTouchPhaseBegan : [touch phase]);
         if (!_updateInternalStateOnly)
-            touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
+            touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
     }
 
     // Next: sadly, we need to check that our touch hash is in
@@ -182,8 +178,8 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
         touchPoints.clear();
         foreach (QCocoaTouch *qcocoaTouch, _currentTouches.values()) {
             if (!_updateInternalStateOnly) {
-                qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
-                touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
+                qcocoaTouch->_touchPoint.state = Qt::TouchPointReleased;
+                touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
             }
             delete qcocoaTouch;
         }
@@ -198,19 +194,17 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 
     if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
         QCocoaTouch *qcocoaTouch = _currentTouches.values().first();
-        qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
-        touchPoints.insert(qcocoaTouch->_touchPoint.id(), qcocoaTouch->_touchPoint);
+        qcocoaTouch->_touchPoint.state = Qt::TouchPointReleased;
+        touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
         // Since this last touch also will end up beeing the first
         // touch (if the user adds a second finger without lifting
         // the first), we promote it to be the primary touch:
-        qcocoaTouch->_touchPoint.setId(0);
+        qcocoaTouch->_touchPoint.id = 0;
         _idAssignmentCount = 1;
     }
 
     return touchPoints.values();
 }
-
-#endif
 
 QT_END_NAMESPACE
 
