@@ -1245,10 +1245,6 @@ void tst_QAbstractItemView::task200665_itemEntered()
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
 
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20753 QCursor::setPos() is broken for QPA", Continue);
-#endif
-
     QCOMPARE(spy.count(), 1);
 }
 
