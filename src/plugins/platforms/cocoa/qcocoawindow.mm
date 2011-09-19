@@ -90,6 +90,9 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
 
+    // Accept touch events by default.
+    [m_contentView setAcceptsTouchEvents:YES];
+
     setGeometry(tlw->geometry());
 
     [m_nsWindow setContentView:m_contentView];

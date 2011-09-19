@@ -18,6 +18,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoamenu.mm \
     qmenu_mac.mm \
     qcocoahelpers.mm \
+    qmultitouch_mac.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoabackingstore.h \
@@ -34,6 +35,7 @@ HEADERS += qcocoaintegration.h \
     qcocoamenu.h \
     qmenu_mac.h \
     qcocoahelpers.h \
+    qmultitouch_mac_p.h \
 
 RESOURCES += qcocoaresources.qrc
 

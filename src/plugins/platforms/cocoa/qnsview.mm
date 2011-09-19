@@ -43,6 +43,7 @@
 
 #include "qnsview.h"
 #include "qcocoahelpers.h"
+#include "qmultitouch_mac_p.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QtCore/QDebug>
@@ -227,6 +228,34 @@
 {
     m_buttons &= QFlag(~int(Qt::MiddleButton));
     [self handleMouseEvent:theEvent];
+}
+
+- (void)touchesBeganWithEvent:(NSEvent *)event;
+{
+    const NSTimeInterval timestamp = [event timestamp];
+    const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchBegin,  QTouchEvent::TouchPad, points);
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event;
+{
+    const NSTimeInterval timestamp = [event timestamp];
+    const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchUpdate,  QTouchEvent::TouchPad, points);
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event;
+{
+    const NSTimeInterval timestamp = [event timestamp];
+    const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd,  QTouchEvent::TouchPad, points);
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event;
+{
+    const NSTimeInterval timestamp = [event timestamp];
+    const QList<QWindowSystemInterface::TouchPoint> points = QCocoaTouch::getCurrentTouchPointList(event, /*acceptSingleTouch= ### true or false?*/false);
+    QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, QEvent::TouchEnd,  QTouchEvent::TouchPad, points);
 }
 
 #ifndef QT_NO_WHEELEVENT
