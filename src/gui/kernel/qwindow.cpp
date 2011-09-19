@@ -425,6 +425,8 @@ void QWindow::setGeometry(const QRect &rect)
 QRect QWindow::geometry() const
 {
     Q_D(const QWindow);
+    if (d->platformWindow)
+        return d->platformWindow->geometry();
     return d->geometry;
 }
 
