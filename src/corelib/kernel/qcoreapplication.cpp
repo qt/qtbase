@@ -1823,12 +1823,12 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
         for (it = self->d_func()->translators.constBegin(); it != self->d_func()->translators.constEnd(); ++it) {
             translationFile = *it;
             result = translationFile->translate(context, sourceText, disambiguation, n);
-            if (!result.isEmpty())
+            if (!result.isNull())
                 break;
         }
     }
 
-    if (result.isEmpty()) {
+    if (result.isNull()) {
 #ifdef QT_NO_TEXTCODEC
         Q_UNUSED(encoding)
 #else

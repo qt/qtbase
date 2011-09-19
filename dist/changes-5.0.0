@@ -28,6 +28,9 @@ information about a particular change.
   preprocessor #define has also been removed. The build-key is obsolete
   and is no longer necessary.
 
+- QCoreApplication::translate() will no longer return the source text when
+  the translation is empty. Use lrelease -removeidentical for optimization.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
