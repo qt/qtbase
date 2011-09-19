@@ -251,16 +251,25 @@ void QXcbBackingStore::endPaint(const QRegion &)
 
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    QRect bounds = region.boundingRect();
-
     if (!m_image || m_image->size().isEmpty())
+        return;
+
+    QSize imageSize = m_image->size();
+
+    QRegion clipped = region;
+    clipped &= QRect(0, 0, window->width(), window->height());
+    clipped &= QRect(0, 0, imageSize.width(), imageSize.height()).translated(-offset);
+
+    QRect bounds = clipped.boundingRect();
+
+    if (bounds.isNull())
         return;
 
     Q_XCB_NOOP(connection());
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
 
-    QVector<QRect> rects = region.rects();
+    QVector<QRect> rects = clipped.rects();
     for (int i = 0; i < rects.size(); ++i)
         m_image->put(platformWindow->xcb_window(), rects.at(i).topLeft(), rects.at(i).translated(offset));
 
