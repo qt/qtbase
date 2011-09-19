@@ -196,12 +196,7 @@ public:
         inline bool useFastGlyphData(glyph_t index, QFixed subPixelPosition) const {
             return (index < 256 && subPixelPosition == 0);
         }
-        inline Glyph *getGlyph(glyph_t index, QFixed subPixelPosition = 0) const
-        {
-            if (useFastGlyphData(index, subPixelPosition))
-                return fast_glyph_data[index];
-            return glyph_data.value(GlyphAndSubPixelPosition(index, subPixelPosition));
-        }
+        inline Glyph *getGlyph(glyph_t index, QFixed subPixelPosition = 0) const;
         void setGlyph(glyph_t index, QFixed spp, Glyph *glyph);
 
 private:
@@ -359,6 +354,14 @@ inline uint qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)
 {
     return (g.glyph << 8)  | (g.subPixelPosition * 10).round().toInt();
 }
+
+inline QFontEngineFT::Glyph *QFontEngineFT::QGlyphSet::getGlyph(glyph_t index, QFixed subPixelPosition) const
+{
+    if (useFastGlyphData(index, subPixelPosition))
+        return fast_glyph_data[index];
+    return glyph_data.value(GlyphAndSubPixelPosition(index, subPixelPosition));
+}
+
 
 QT_END_NAMESPACE
 

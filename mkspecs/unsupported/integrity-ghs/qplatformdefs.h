@@ -89,6 +89,7 @@
 #define QT_TRUNCATE             ::truncate
 #define QT_FTRUNCATE            ::ftruncate
 #define QT_LSEEK                ::lseek
+#define QT_OPEN_LARGEFILE       0
 #endif
 
 #ifdef QT_LARGEFILE_SUPPORT
