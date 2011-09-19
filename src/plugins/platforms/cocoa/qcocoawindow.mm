@@ -90,7 +90,9 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 
     m_contentView = [[QNSView alloc] initWithQWindow:tlw];
 
-    // Accept touch events by default.
+    // ### Accept touch events by default.
+    // Beware that enabling touch events has a negative impact on the overall performance.
+    // We probably need a QWindowSystemInterface API to enable/disable touch events.
     [m_contentView setAcceptsTouchEvents:YES];
 
     setGeometry(tlw->geometry());

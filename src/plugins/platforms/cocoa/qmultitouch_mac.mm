@@ -91,7 +91,8 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
     float ppiX = (qnpos.x() - _trackpadReferencePos.x()) * dsize.width;
     float ppiY = (qnpos.y() - _trackpadReferencePos.y()) * dsize.height;
     QPointF relativePos = _trackpadReferencePos - QPointF(ppiX, ppiY);
-    _touchPoint.area = QRectF(_screenReferencePos - relativePos, QSize(dsize.width, dsize.height));
+    // Mac does not support area touch, only points, hence set width/height to 1.
+    _touchPoint.area = QRectF(_screenReferencePos - relativePos, QSize(1, 1));
 }
 
 QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
