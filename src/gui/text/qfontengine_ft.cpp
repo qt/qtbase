@@ -892,7 +892,21 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     FT_GlyphSlot slot = face->glyph;
     if (embolden) Q_FT_GLYPHSLOT_EMBOLDEN(slot);
-    if (obliquen) Q_FT_GLYPHSLOT_OBLIQUE(slot);
+    if (obliquen) {
+        Q_FT_GLYPHSLOT_OBLIQUE(slot);
+
+        // While Embolden alters the metrics of the slot, oblique does not, so we need
+        // to fix this ourselves.
+        transform = true;
+        FT_Matrix m;
+        m.xx = 0x10000;
+        m.yx = 0x0;
+        m.xy = 0x6000;
+        m.yy = 0x10000;
+
+        FT_Matrix_Multiply(&m, &matrix);
+    }
+
     FT_Library library = qt_getFreetype();
 
     info.xOff = TRUNC(ROUND(slot->advance.x));
