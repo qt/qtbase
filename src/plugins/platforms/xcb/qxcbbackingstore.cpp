@@ -291,7 +291,12 @@ void QXcbBackingStore::resize(const QSize &size, const QRegion &)
     Q_XCB_NOOP(connection());
 
     QXcbScreen *screen = static_cast<QXcbScreen *>(window()->screen()->handle());
-    QXcbWindow* win = static_cast<QXcbWindow *>(window()->handle());
+    QPlatformWindow *pw = window()->handle();
+    if (!pw) {
+        window()->create();
+        pw = window()->handle();
+    }
+    QXcbWindow* win = static_cast<QXcbWindow *>(pw);
 
     delete m_image;
     m_image = new QXcbShmImage(screen, size, win->depth(), win->imageFormat());
