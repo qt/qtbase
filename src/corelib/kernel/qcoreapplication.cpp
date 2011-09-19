@@ -210,6 +210,28 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
+void QCoreApplicationPrivate::processCommandLineArguments()
+{
+    int j = argc ? 1 : 0;
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] && *argv[i] != '-') {
+            argv[j++] = argv[i];
+            continue;
+        }
+        QByteArray arg = argv[i];
+        if (arg.startsWith("-qmljsdebugger=")) {
+            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+        } else {
+            argv[j++] = argv[i];
+        }
+    }
+
+    if (j < argc) {
+        argv[j] = 0;
+        argc = j;
+    }
+}
+
 // Support for introspection
 
 QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
@@ -673,6 +695,8 @@ void QCoreApplication::init()
         CleanupStack::PopAndDestroy(&loader);
     }
 #endif
+
+    d->processCommandLineArguments();
 
     qt_startup_hook();
 }

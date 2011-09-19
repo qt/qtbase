@@ -144,6 +144,14 @@ void tst_QCoreApplication::argc()
         QCOMPARE(argc, 0);
         QCOMPARE(app.argc(), 0);
     }
+
+    {
+        int argc = 2;
+        char *argv[] = { "tst_qcoreapplication", "-qmljsdebugger=port:3768,block" };
+        QCoreApplication app(argc, argv);
+        QCOMPARE(argc, 1);
+        QCOMPARE(app.argc(), 1);
+    }
 }
 
 class EventGenerator : public QObject

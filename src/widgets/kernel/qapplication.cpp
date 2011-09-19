@@ -536,8 +536,6 @@ void QApplicationPrivate::process_cmdline()
         QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
-        } else if (arg.indexOf("-qmljsdebugger=", 0) != -1) {
-            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg.indexOf("-style=", 0) != -1) {
             s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
         } else if (arg == "-style" && i < argc-1) {

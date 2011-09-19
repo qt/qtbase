@@ -141,6 +141,10 @@ public:
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
     static int app_compile_version;
+
+    void processCommandLineArguments();
+    QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
+    inline QString qmljsDebugArgumentsString() { return qmljs_debug_arguments; }
 };
 
 QT_END_NAMESPACE
