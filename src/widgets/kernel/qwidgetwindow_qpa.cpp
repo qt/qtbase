@@ -236,11 +236,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
     QWidget *widget = m_widget->childAt(event->pos());
     QPoint mapped = event->pos();
 
-    if (widget) {
-        mapped = widget->mapFrom(m_widget, event->pos());
-    } else {
+    if (!widget)
         widget = m_widget;
-    }
 
     if (event->type() == QEvent::MouseButtonPress && !qt_button_down)
         qt_button_down = widget;
