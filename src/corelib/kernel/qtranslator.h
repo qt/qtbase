@@ -63,11 +63,8 @@ public:
     explicit QTranslator(QObject *parent = 0);
     ~QTranslator();
 
-    // ### Qt 5: Merge (with "int n = -1")
     virtual QString translate(const char *context, const char *sourceText,
-                              const char *disambiguation = 0) const;
-    QString translate(const char *context, const char *sourceText, const char *disambiguation,
-                      int n) const;
+                              const char *disambiguation = 0, int n = -1) const;
 
     virtual bool isEmpty() const;
 

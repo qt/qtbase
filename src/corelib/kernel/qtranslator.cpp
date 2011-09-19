@@ -907,31 +907,17 @@ void QTranslatorPrivate::clear()
 }
 
 /*!
-    Returns the translation for the key (\a context, \a sourceText,
-    \a disambiguation). If none is found, also tries (\a context, \a
-    sourceText, ""). If that still fails, returns an empty string.
-
-    If you need to programatically insert translations in to a
-    QTranslator, this function can be reimplemented.
-
-    \sa load()
-*/
-QString QTranslator::translate(const char *context, const char *sourceText, const char *disambiguation) const
-{
-    Q_D(const QTranslator);
-    return d->do_translate(context, sourceText, disambiguation, -1);
-}
-
-
-/*!
     \overload translate()
 
     Returns the translation for the key (\a context, \a sourceText,
     \a disambiguation). If none is found, also tries (\a context, \a
-    sourceText, ""). If that still fails, returns an empty string.
+    sourceText, ""). If that still fails, returns a null string.
 
     If \a n is not -1, it is used to choose an appropriate form for
     the translation (e.g. "%n file found" vs. "%n files found").
+
+    If you need to programatically insert translations into a
+    QTranslator, this function can be reimplemented.
 
     \sa load()
 */
@@ -939,9 +925,6 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
                                int n) const
 {
     Q_D(const QTranslator);
-    // this step is necessary because the 3-parameter translate() overload is virtual
-    if (n == -1)
-        return translate(context, sourceText, disambiguation);
     return d->do_translate(context, sourceText, disambiguation, n);
 }
 
