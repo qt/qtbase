@@ -62,7 +62,7 @@
 #include "QtGui/qwindow.h"
 #include "QtCore/qpoint.h"
 #include "private/qobject_p.h"
-
+#include "QtGui/qbackingstore.h"
 QT_BEGIN_NAMESPACE
 
 class QEventLoop;
@@ -109,41 +109,21 @@ public:
     Qt::DropAction defaultDropAction;
 };
 
-class QShapedPixmapWindow : public QWindow {
-    QPixmap pixmap;
+class QShapedPixmapWindow : public QWindow
+{
 public:
-    QShapedPixmapWindow() :
-        QWindow()
+    QShapedPixmapWindow();
+
+    void exposeEvent(QExposeEvent *)
     {
-        setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
-        // ### Should we set the surface type to raster?
-        // ### FIXME
-//            setAttribute(Qt::WA_TransparentForMouseEvents);
+        render();
     }
 
-    void move(const QPoint &p) {
-        QRect g = geometry();
-        g.setTopLeft(p);
-        setGeometry(g);
-    }
-    void setPixmap(QPixmap pm)
-    {
-        pixmap = pm;
-        // ###
-//        if (!pixmap.mask().isNull()) {
-//            setMask(pixmap.mask());
-//        } else {
-//            clearMask();
-//        }
-        setGeometry(QRect(geometry().topLeft(), pm.size()));
-    }
+    void render();
 
-    // ### Get it painted again!
-//    void paintEvent(QPaintEvent*)
-//    {
-//        QPainter p(this);
-//        p.drawPixmap(0,0,pixmap);
-//    }
+    QBackingStore *backingStore;
+    QPixmap pixmap;
+    QPoint hotSpot;
 };
 
 

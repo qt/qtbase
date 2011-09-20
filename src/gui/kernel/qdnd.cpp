@@ -51,6 +51,7 @@
 #include "qpoint.h"
 #include "qbuffer.h"
 #include "qimage.h"
+#include "qpainter.h"
 #include "qregexp.h"
 #include "qdir.h"
 #include "qdnd_p.h"
@@ -277,7 +278,6 @@ QObject *QDragManager::currentTarget()
 }
 
 
-static QPixmap *defaultPm = 0;
 static const int default_pm_hotx = -2;
 static const int default_pm_hoty = -16;
 static const char *const default_pm[] = {
@@ -297,39 +297,65 @@ static const char *const default_pm[] = {
 };
 
 
+QShapedPixmapWindow::QShapedPixmapWindow()
+    : QWindow()
+{
+    setSurfaceType(RasterSurface);
+    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint |
+                   Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
+    create();
+    backingStore = new QBackingStore(this);
+}
+
+void QShapedPixmapWindow::render()
+{
+    QRect rect(QPoint(), geometry().size());
+    backingStore->resize(rect.size());
+
+    backingStore->beginPaint(rect);
+
+    QPaintDevice *device = backingStore->paintDevice();
+
+    {
+        QPainter p(device);
+        p.drawPixmap(0, 0, pixmap);
+    }
+
+    backingStore->endPaint();
+    backingStore->flush(rect);
+}
+
+
+
+
 static Qt::KeyboardModifiers oldstate;
 
 void QDragManager::updatePixmap()
 {
     if (shapedPixmapWindow) {
-        QPixmap pm;
-        QPoint pm_hot(default_pm_hotx,default_pm_hoty);
+        shapedPixmapWindow->pixmap = QPixmap();
+        shapedPixmapWindow->hotSpot = QPoint(default_pm_hotx,default_pm_hoty);
         if (object) {
-            pm = object->pixmap();
-            if (!pm.isNull())
-                pm_hot = object->hotSpot();
+            shapedPixmapWindow->pixmap = object->pixmap();
+            if (!shapedPixmapWindow->pixmap.isNull())
+                shapedPixmapWindow->hotSpot = object->hotSpot();
         }
-        if (pm.isNull()) {
-            if (!defaultPm)
-                defaultPm = new QPixmap(default_pm);
-            pm = *defaultPm;
-        }
-        shapedPixmapWindow->setPixmap(pm);
-        shapedPixmapWindow->move(QCursor::pos()-pm_hot);
-        if (willDrop) {
-            shapedPixmapWindow->show();
-        } else {
-            shapedPixmapWindow->hide();
-        }
+        if (shapedPixmapWindow->pixmap.isNull())
+            shapedPixmapWindow->pixmap = QPixmap(default_pm);
+        shapedPixmapWindow->setGeometry(QRect(QCursor::pos() - shapedPixmapWindow->hotSpot, shapedPixmapWindow->pixmap.size()));
+        shapedPixmapWindow->show();
+        shapedPixmapWindow->render();
     }
 }
 
 void QDragManager::updateCursor()
 {
+    if (shapedPixmapWindow) {
+        shapedPixmapWindow->render(); // ### Hack
+        shapedPixmapWindow->move(QCursor::pos() - shapedPixmapWindow->hotSpot);
+    }
 #ifndef QT_NO_CURSOR
     if (willDrop) {
-        if (shapedPixmapWindow)
-            shapedPixmapWindow->show();
         if (currentActionForOverrideCursor != global_accepted_action) {
             QGuiApplication::changeOverrideCursor(QCursor(dragCursor(global_accepted_action), 0, 0));
             currentActionForOverrideCursor = global_accepted_action;
@@ -340,8 +366,6 @@ void QDragManager::updateCursor()
             QGuiApplication::changeOverrideCursor(QCursor(Qt::ForbiddenCursor));
             currentActionForOverrideCursor = Qt::IgnoreAction;
         }
-        if (shapedPixmapWindow)
-            shapedPixmapWindow->hide();
     }
 #endif
 }
