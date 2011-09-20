@@ -42,8 +42,9 @@
 
 #include <QtCore>
 #include <QtTest/QtTest>
+#include <QDebug>
 
-class tst_Subtest: public QObject
+class tst_globaldata: public QObject
 {
     Q_OBJECT
 public slots:
@@ -69,57 +70,57 @@ private slots:
 };
 
 
-void tst_Subtest::initTestCase()
+void tst_globaldata::initTestCase()
 {
-    printf("initTestCase %s %s\n",
-            QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)",
-            QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
+    qDebug() << "initTestCase"
+             << (QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)")
+             << (QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
 }
 
-void tst_Subtest::initTestCase_data()
+void tst_globaldata::initTestCase_data()
 {
     QTest::addColumn<bool>("booli");
     QTest::newRow("1") << false;
     QTest::newRow("2") << true;
 }
 
-void tst_Subtest::cleanupTestCase()
+void tst_globaldata::cleanupTestCase()
 {
-    printf("cleanupTestCase %s %s\n",
-            QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)",
-            QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
+    qDebug() << "cleanupTestCase"
+             << (QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)")
+             << (QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
 }
 
-void tst_Subtest::init()
+void tst_globaldata::init()
 {
-    printf("init %s %s\n",
-            QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)",
-            QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
+    qDebug() << "init"
+             << (QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)")
+             << (QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
 }
 
-void tst_Subtest::cleanup()
+void tst_globaldata::cleanup()
 {
-    printf("cleanup %s %s\n",
-            QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)",
-            QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
+    qDebug() << "cleanup"
+             << (QTest::currentTestFunction() ? QTest::currentTestFunction() : "(null)")
+             << (QTest::currentDataTag() ? QTest::currentDataTag() : "(null)");
 }
 
-void tst_Subtest::testGlobal_data()
+void tst_globaldata::testGlobal_data()
 {
     QTest::addColumn<bool>("booll");
     QTest::newRow("local 1") << false;
     QTest::newRow("local 2") << true;
 }
 
-void tst_Subtest::testGlobal()
+void tst_globaldata::testGlobal()
 {
     QFETCH_GLOBAL(bool, booli);
-    printf("global: %d\n", booli);
+    qDebug() << "global:" << booli;
     QFETCH(bool, booll);
-    printf("local: %d\n", booll);
+    qDebug() << "local:" << booll;
 }
 
-void tst_Subtest::skip_data()
+void tst_globaldata::skip_data()
 {
     QTest::addColumn<bool>("booll");
     QTest::newRow("local 1") << false;
@@ -128,26 +129,26 @@ void tst_Subtest::skip_data()
     QSKIP("skipping", SkipAll);
 }
 
-void tst_Subtest::skip()
+void tst_globaldata::skip()
 {
-    printf("this line should never be reached\n");
+    qDebug() << "this line should never be reached";
 }
 
-void tst_Subtest::skipSingle()
+void tst_globaldata::skipSingle()
 {
     QFETCH_GLOBAL(bool, booli);
     QFETCH(bool, booll);
 
     if (booli && !booll)
         QSKIP("skipping", SkipSingle);
-    printf("global: %d, local %d\n", booli, booll);
+    qDebug() << "global:" << booli << "local:" << booll;
 }
 
-void tst_Subtest::skipLocal()
+void tst_globaldata::skipLocal()
 {
     QSKIP("skipping", SkipAll);
 }
 
-QTEST_MAIN(tst_Subtest)
+QTEST_MAIN(tst_globaldata)
 
 #include "tst_globaldata.moc"

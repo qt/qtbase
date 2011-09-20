@@ -3,30 +3,152 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[initTestCase initTestCase (null) ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testGlobal">
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[init testGlobal local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[global: false ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[local: false ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[init testGlobal local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[global: false ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[local: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[init testGlobal local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[global: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[local: false ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[init testGlobal local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[global: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[local: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[cleanup testGlobal local 2 ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="skip">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="128">
+<Message type="skip" file="/home/dev/qt5/qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="129">
     <DataTag><![CDATA[1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
 </TestFunction>
 <TestFunction name="skipLocal">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="148">
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[init skipLocal local 1 ]]></Description>
+</Message>
+<Message type="skip" file="/home/dev/qt5/qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="149">
     <DataTag><![CDATA[1:local 1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
 </Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[cleanup skipLocal local 1 ]]></Description>
+</Message>
 </TestFunction>
 <TestFunction name="skipSingle">
-<Message type="skip" file="/local/user_builds/qt/4.6/tests/auto/selftests/globaldata/tst_globaldata.cpp" line="142">
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[init skipSingle local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[global: false local: false ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 1]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[init skipSingle local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[global: false local: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[1:local 2]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[init skipSingle local 1 ]]></Description>
+</Message>
+<Message type="skip" file="/home/dev/qt5/qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp" line="143">
     <DataTag><![CDATA[2:local 1]]></DataTag>
     <Description><![CDATA[skipping]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 1]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local 1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[init skipSingle local 2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[global: true local: true ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[2:local 2]]></DataTag>
+    <Description><![CDATA[cleanup skipSingle local 2 ]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[cleanupTestCase cleanupTestCase (null) ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
