@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmultitouch_mac_p.h"
-#include <qcursor.h>
+#include "qcocoahelpers.h"
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
@@ -84,7 +84,7 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 
     if (_touchPoint.id == 0 && phase == NSTouchPhaseBegan) {
         _trackpadReferencePos = qnpos;
-        _screenReferencePos = QCursor::pos();
+        _screenReferencePos = qt_mac_flipPoint([NSEvent mouseLocation]);
     }
 
     NSSize dsize = [nstouch deviceSize];

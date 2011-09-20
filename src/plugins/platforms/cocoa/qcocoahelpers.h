@@ -54,6 +54,8 @@
 //
 
 #include <private/qt_mac_p.h>
+#include <private/qguiapplication_p.h>
+#include <QtGui/qscreen.h>
 
 class QPixmap;
 class QString;
@@ -84,6 +86,21 @@ QString qt_mac_removeMnemonics(const QString &original);
 CGColorSpaceRef qt_mac_genericColorSpace();
 CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
 QString qt_mac_applicationName();
+
+inline int qt_mac_flipYCoordinate(int y)
+{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
+
+inline qreal qt_mac_flipYCoordinate(qreal y)
+{ return QGuiApplication::primaryScreen()->geometry().height() - y; }
+
+inline QPointF qt_mac_flipPoint(const NSPoint &p)
+{ return QPointF(p.x, qt_mac_flipYCoordinate(p.y)); }
+
+inline NSPoint qt_mac_flipPoint(const QPoint &p)
+{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
+
+inline NSPoint qt_mac_flipPoint(const QPointF &p)
+{ return NSMakePoint(p.x(), qt_mac_flipYCoordinate(p.y())); }
 
 
 #endif //QCOCOAHELPERS_H
