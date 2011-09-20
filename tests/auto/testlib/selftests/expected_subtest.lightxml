@@ -3,47 +3,143 @@
     <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
 </Environment>
 <TestFunction name="initTestCase">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[initTestCase initTestCase (null) ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="test1">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[init test1 (null) ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[test1 test1 (null) ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[cleanup test1 (null) ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="test2">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[test2_data test2 (null) ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[test2_data end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[init test2 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[test2 test2 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[test2 end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[cleanup test2 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[init test2 data1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[test2 test2 data1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[test2 end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[cleanup test2 data1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[init test2 data2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[test2 test2 data2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[test2 end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[cleanup test2 data2 ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="test3">
-<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="157">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[test3_data test3 (null) ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[test3_data end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[init test3 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[test2 test3 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[test2 end ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data0]]></DataTag>
+    <Description><![CDATA[cleanup test3 data0 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[init test3 data1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[test2 test3 data1 ]]></Description>
+</Message>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
+    <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual (str): hello1
    Expected (QString("hello0")): hello0]]></Description>
+</Incident>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data1]]></DataTag>
+    <Description><![CDATA[cleanup test3 data1 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[init test3 data2 ]]></Description>
+</Message>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[test2 test3 data2 ]]></Description>
+</Message>
+<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
+    <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual (str): hello2
    Expected (QString("hello0")): hello0]]></Description>
 </Incident>
-</TestFunction>
-<TestFunction name="floatComparisons">
-<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="167">
-    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
-   Actual (operandLeft): 1
-   Expected (operandRight): 3]]></Description>
-    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
-   Actual (operandLeft): 1e-07
-   Expected (operandRight): 3e-07]]></Description>
-</Incident>
-</TestFunction>
-<TestFunction name="compareFloatTests">
-<Incident type="fail" file="/local/user_builds/qt/4.6/tests/auto/selftests/subtest/tst_subtest.cpp" line="206">
-    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1
-   Expected (t3): 3]]></Description>
-    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1e-07
-   Expected (t3): 3e-07]]></Description>
-    <Description><![CDATA[Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1e+07
-   Expected (t3): 3e+07]]></Description>
-</Incident>
+<Message type="qdebug" file="" line="0">
+    <DataTag><![CDATA[data2]]></DataTag>
+    <Description><![CDATA[cleanup test3 data2 ]]></Description>
+</Message>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[cleanupTestCase cleanupTestCase (null) ]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>

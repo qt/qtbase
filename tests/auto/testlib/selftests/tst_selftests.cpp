@@ -189,6 +189,7 @@ void tst_Selftests::runSubTest_data()
         << "maxwarnings"
         << "cmptest"
 //        << "alive"    // timer dependent
+        << "float"
         << "globaldata"
         << "skipglobal"
         << "skip"
@@ -287,7 +288,7 @@ void tst_Selftests::runSubTest_data()
                 }
                 // this test prints out some floats in the testlog and the formatting is
                 // platform-specific and hard to predict.
-                if (subtest == "subtest") {
+                if (subtest == "float") {
                     continue;
                 }
             }
@@ -417,7 +418,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
         if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
             // On some platforms we compile without RTTI, and as a result we never throw an exception.
             QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
-        else if (output != expected && qstrcmp(QTest::currentDataTag(), "subtest") == 0)
+        else if (output != expected && qstrcmp(QTest::currentDataTag(), "float") == 0)
             // The floating point formatting differs between platforms, so let's just skip it.
             continue;
         else if (benchmark || line.startsWith("<BenchmarkResult")) {

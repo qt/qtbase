@@ -1,39 +1,87 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="7" tests="7" name="tst_Subtest">
+<testsuite errors="31" failures="2" tests="5" name="tst_Subtest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
   </properties>
-  <testcase result="pass" name="initTestCase"/>
-  <testcase result="pass" name="test1"/>
-  <testcase result="pass" name="test2"/>
+  <testcase result="pass" name="initTestCase">
+    <!-- message="initTestCase initTestCase (null) " type="qdebug" -->
+  </testcase>
+  <testcase result="pass" name="test1">
+    <!-- message="init test1 (null) " type="qdebug" -->
+    <!-- message="test1 test1 (null) " type="qdebug" -->
+    <!-- message="cleanup test1 (null) " type="qdebug" -->
+  </testcase>
+  <testcase result="pass" name="test2">
+    <!-- message="test2_data test2 (null) " type="qdebug" -->
+    <!-- message="test2_data end " type="qdebug" -->
+    <!-- tag="data0" message="init test2 data0 " type="qdebug" -->
+    <!-- tag="data0" message="test2 test2 data0 " type="qdebug" -->
+    <!-- tag="data0" message="test2 end " type="qdebug" -->
+    <!-- tag="data0" message="cleanup test2 data0 " type="qdebug" -->
+    <!-- tag="data1" message="init test2 data1 " type="qdebug" -->
+    <!-- tag="data1" message="test2 test2 data1 " type="qdebug" -->
+    <!-- tag="data1" message="test2 end " type="qdebug" -->
+    <!-- tag="data1" message="cleanup test2 data1 " type="qdebug" -->
+    <!-- tag="data2" message="init test2 data2 " type="qdebug" -->
+    <!-- tag="data2" message="test2 test2 data2 " type="qdebug" -->
+    <!-- tag="data2" message="test2 end " type="qdebug" -->
+    <!-- tag="data2" message="cleanup test2 data2 " type="qdebug" -->
+  </testcase>
   <testcase result="fail" name="test3">
+    <!-- message="test3_data test3 (null) " type="qdebug" -->
+    <!-- message="test3_data end " type="qdebug" -->
+    <!-- tag="data0" message="init test3 data0 " type="qdebug" -->
+    <!-- tag="data0" message="test2 test3 data0 " type="qdebug" -->
+    <!-- tag="data0" message="test2 end " type="qdebug" -->
+    <!-- tag="data0" message="cleanup test3 data0 " type="qdebug" -->
+    <!-- tag="data1" message="init test3 data1 " type="qdebug" -->
+    <!-- tag="data1" message="test2 test3 data1 " type="qdebug" -->
     <failure tag="data1" message="Compared values are not the same
    Actual (str): hello1
    Expected (QString(&quot;hello0&quot;)): hello0" result="fail"/>
+    <!-- tag="data1" message="cleanup test3 data1 " type="qdebug" -->
+    <!-- tag="data2" message="init test3 data2 " type="qdebug" -->
+    <!-- tag="data2" message="test2 test3 data2 " type="qdebug" -->
     <failure tag="data2" message="Compared values are not the same
    Actual (str): hello2
    Expected (QString(&quot;hello0&quot;)): hello0" result="fail"/>
+    <!-- tag="data2" message="cleanup test3 data2 " type="qdebug" -->
   </testcase>
-  <testcase result="fail" name="floatComparisons">
-    <failure tag="should FAIL" message="Compared floats are not the same (fuzzy compare)
-   Actual (operandLeft): 1
-   Expected (operandRight): 3" result="fail"/>
-    <failure tag="should FAIL" message="Compared floats are not the same (fuzzy compare)
-   Actual (operandLeft): 1e&#x002D;07
-   Expected (operandRight): 3e&#x002D;07" result="fail"/>
+  <testcase result="pass" name="cleanupTestCase">
+    <!-- message="cleanupTestCase cleanupTestCase (null) " type="qdebug" -->
   </testcase>
-  <testcase result="fail" name="compareFloatTests">
-    <failure tag="1e0" message="Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1
-   Expected (t3): 3" result="fail"/>
-    <failure tag="1e&#x002D;7" message="Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1e&#x002D;07
-   Expected (t3): 3e&#x002D;07" result="fail"/>
-    <failure tag="1e+7" message="Compared floats are not the same (fuzzy compare)
-   Actual (t1): 1e+07
-   Expected (t3): 3e+07" result="fail"/>
-  </testcase>
-  <testcase result="pass" name="cleanupTestCase"/>
-  <system-err/>
+  <system-err>
+<![CDATA[initTestCase initTestCase (null) ]]>
+<![CDATA[init test1 (null) ]]>
+<![CDATA[test1 test1 (null) ]]>
+<![CDATA[cleanup test1 (null) ]]>
+<![CDATA[test2_data test2 (null) ]]>
+<![CDATA[test2_data end ]]>
+<![CDATA[init test2 data0 ]]>
+<![CDATA[test2 test2 data0 ]]>
+<![CDATA[test2 end ]]>
+<![CDATA[cleanup test2 data0 ]]>
+<![CDATA[init test2 data1 ]]>
+<![CDATA[test2 test2 data1 ]]>
+<![CDATA[test2 end ]]>
+<![CDATA[cleanup test2 data1 ]]>
+<![CDATA[init test2 data2 ]]>
+<![CDATA[test2 test2 data2 ]]>
+<![CDATA[test2 end ]]>
+<![CDATA[cleanup test2 data2 ]]>
+<![CDATA[test3_data test3 (null) ]]>
+<![CDATA[test3_data end ]]>
+<![CDATA[init test3 data0 ]]>
+<![CDATA[test2 test3 data0 ]]>
+<![CDATA[test2 end ]]>
+<![CDATA[cleanup test3 data0 ]]>
+<![CDATA[init test3 data1 ]]>
+<![CDATA[test2 test3 data1 ]]>
+<![CDATA[cleanup test3 data1 ]]>
+<![CDATA[init test3 data2 ]]>
+<![CDATA[test2 test3 data2 ]]>
+<![CDATA[cleanup test3 data2 ]]>
+<![CDATA[cleanupTestCase cleanupTestCase (null) ]]>
+  </system-err>
 </testsuite>
