@@ -1,2 +1,0 @@
-We just output something such that there's a baseline to compare against.
-Finished waiting!

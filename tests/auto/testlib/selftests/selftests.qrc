@@ -122,10 +122,6 @@
         <file>expected_subtest.txt</file>
         <file>expected_subtest.xml</file>
         <file>expected_subtest.xunitxml</file>
-        <file>expected_waitwithoutgui.lightxml</file>
-        <file>expected_waitwithoutgui.txt</file>
-        <file>expected_waitwithoutgui.xml</file>
-        <file>expected_waitwithoutgui.xunitxml</file>
         <file>expected_warnings.lightxml</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>

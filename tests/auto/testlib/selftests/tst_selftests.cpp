@@ -210,7 +210,6 @@ void tst_Selftests::runSubTest_data()
         << "assert"
 #endif
 
-        << "waitwithoutgui"
         << "differentexec"
 #ifndef QT_NO_EXCEPTIONS
         // The machine that run the intel autotests will popup a dialog
@@ -280,9 +279,6 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
                 if (subtest == "benchliboptions") {
-                    continue;
-                }
-                if (subtest == "waitwithoutgui") {
                     continue;
                 }
                 // `crashes' will not output valid XML on platforms without a crash handler
