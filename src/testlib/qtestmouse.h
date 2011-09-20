@@ -68,6 +68,7 @@ namespace QTest
 {
     enum MouseAction { MousePress, MouseRelease, MouseClick, MouseDClick, MouseMove };
 
+#ifdef QT_WIDGETS_LIB
     static void mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
@@ -125,6 +126,7 @@ namespace QTest
         }
 
     }
+#endif
 
     static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
@@ -186,6 +188,7 @@ namespace QTest
         }
     }
 
+#ifdef QT_WIDGETS_LIB
     inline void mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,
                            QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MousePress, widget, button, stateKey, pos, delay); }
@@ -200,6 +203,7 @@ namespace QTest
     { mouseEvent(MouseDClick, widget, button, stateKey, pos, delay); }
     inline void mouseMove(QWidget *widget, QPoint pos = QPoint(), int delay=-1)
     { mouseEvent(MouseMove, widget, Qt::NoButton, 0, pos, delay); }
+#endif
 
     //Support QWindow
     inline void mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0,

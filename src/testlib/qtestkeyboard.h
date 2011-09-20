@@ -68,6 +68,7 @@ namespace QTest
 {
     enum KeyAction { Press, Release, Click };
 
+#ifdef QT_WIDGETS_LIB
     static void simulateEvent(QWidget *widget, bool press, int code,
                               Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
     {
@@ -84,6 +85,7 @@ namespace QTest
         if (!qApp->notify(widget, &a))
             QTest::qWarn("Keyboard event not accepted by receiving widget");
     }
+#endif
     //QWindow overload
     static void simulateEvent(QWindow *window, bool press, int code,
                               Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay=-1)
@@ -93,6 +95,7 @@ namespace QTest
         QWindowSystemInterface::handleKeyEvent(window, type, code, modifier, text, repeat, delay);
     }
 
+#ifdef QT_WIDGETS_LIB
     static void sendKeyEvent(KeyAction action, QWidget *widget, Qt::Key code,
                              QString text, Qt::KeyboardModifiers modifier, int delay=-1)
     {
@@ -156,6 +159,7 @@ namespace QTest
                 simulateEvent(widget, false, Qt::Key_Shift, modifier & Qt::ShiftModifier, QString(), false, delay);
         }
     }
+#endif
     //QWindow overload
     static void sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code,
                              QString text, Qt::KeyboardModifiers modifier, int delay=-1)
@@ -203,6 +207,7 @@ namespace QTest
         }
     }
 
+#ifdef QT_WIDGETS_LIB
     // Convenience function
     static void sendKeyEvent(KeyAction action, QWidget *widget, Qt::Key code,
                              char ascii, Qt::KeyboardModifiers modifier, int delay=-1)
@@ -212,6 +217,7 @@ namespace QTest
             text = QString(QChar::fromLatin1(ascii));
         sendKeyEvent(action, widget, code, text, modifier, delay);
     }
+#endif
     // QWindow convenience function
     static void sendKeyEvent(KeyAction action, QWindow *window, Qt::Key code,
                              char ascii, Qt::KeyboardModifiers modifier, int delay=-1)
@@ -222,12 +228,14 @@ namespace QTest
         sendKeyEvent(action, window, code, text, modifier, delay);
     }
 
+#ifdef QT_WIDGETS_LIB
     inline static void keyEvent(KeyAction action, QWidget *widget, char ascii,
                                 Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { sendKeyEvent(action, widget, asciiToKey(ascii), ascii, modifier, delay); }
     inline static void keyEvent(KeyAction action, QWidget *widget, Qt::Key key,
                                 Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { sendKeyEvent(action, widget, key, keyToAscii(key), modifier, delay); }
+#endif
 
     //Support QWindow
     inline static void keyEvent(KeyAction action, QWindow *window, char ascii,
@@ -237,6 +245,7 @@ namespace QTest
                                 Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { sendKeyEvent(action, window, key, keyToAscii(key), modifier, delay); }
     ///////////////
+#ifdef QT_WIDGETS_LIB
     inline static void keyClicks(QWidget *widget, const QString &sequence,
                                  Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     {
@@ -256,6 +265,7 @@ namespace QTest
     { keyEvent(Release, widget, key, modifier, delay); }
     inline static void keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, widget, key, modifier, delay); }
+#endif
     //Support QWindow
     inline static void keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, window, key, modifier, delay); }

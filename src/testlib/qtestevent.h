@@ -67,7 +67,9 @@ QT_MODULE(Test)
 class QTestEvent
 {
 public:
+#ifdef QT_WIDGETS_LIB
     virtual void simulate(QWidget *w) = 0;
+#endif
     virtual QTestEvent *clone() const = 0;
 
     virtual ~QTestEvent() {}
@@ -84,6 +86,7 @@ public:
           _ascii(ascii), _key(Qt::Key_unknown) {}
     inline QTestEvent *clone() const { return new QTestKeyEvent(*this); }
 
+#ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget *w)
     {
         if (_ascii == 0)
@@ -91,6 +94,7 @@ public:
         else
             QTest::keyEvent(_action, w, _ascii, _modifiers, _delay);
     }
+#endif
 
 protected:
     QTest::KeyAction _action;
@@ -107,10 +111,12 @@ public:
         : _keys(keys), _modifiers(modifiers), _delay(delay) {}
     inline QTestEvent *clone() const { return new QTestKeyClicksEvent(*this); }
 
+#ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget *w)
     {
         QTest::keyClicks(w, _keys, _modifiers, _delay);
     }
+#endif
 
 private:
     QString _keys;
@@ -126,10 +132,12 @@ public:
         : _action(action), _button(button), _modifiers(modifiers), _pos(position), _delay(delay) {}
     inline QTestEvent *clone() const { return new QTestMouseEvent(*this); }
 
+#ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget *w)
     {
         QTest::mouseEvent(_action, w, _button, _modifiers, _pos, _delay);
     }
+#endif
 
 private:
     QTest::MouseAction _action;
@@ -147,7 +155,9 @@ public:
     inline QTestDelayEvent(int msecs): _delay(msecs) {}
     inline QTestEvent *clone() const { return new QTestDelayEvent(*this); }
 
+#ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget * /*w*/) { QTest::qWait(_delay); }
+#endif
 
 private:
     int _delay;
@@ -205,11 +215,13 @@ public:
     inline void addDelay(int msecs)
     { append(new QTestDelayEvent(msecs)); }
 
+#ifdef QT_WIDGETS_LIB
     inline void simulate(QWidget *w)
     {
         for (int i = 0; i < count(); ++i)
             at(i)->simulate(w);
     }
+#endif
 };
 
 QT_END_NAMESPACE
