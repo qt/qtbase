@@ -87,12 +87,19 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
         _screenReferencePos = qt_mac_flipPoint([NSEvent mouseLocation]);
     }
 
+    QPointF screenPos = _screenReferencePos;
+
     NSSize dsize = [nstouch deviceSize];
     float ppiX = (qnpos.x() - _trackpadReferencePos.x()) * dsize.width;
     float ppiY = (qnpos.y() - _trackpadReferencePos.y()) * dsize.height;
     QPointF relativePos = _trackpadReferencePos - QPointF(ppiX, ppiY);
+    screenPos -= relativePos;
     // Mac does not support area touch, only points, hence set width/height to 1.
-    _touchPoint.area = QRectF(_screenReferencePos - relativePos, QSize(1, 1));
+    // The touch point is supposed to be in the center of '_touchPoint.area', and
+    // since width/height is 1 it means we must subtract 0.5 from x and y.
+    screenPos.rx() -= 0.5;
+    screenPos.ry() -= 0.5;
+    _touchPoint.area = QRectF(screenPos, QSize(1, 1));
 }
 
 QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
