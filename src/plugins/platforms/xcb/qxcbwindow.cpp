@@ -57,6 +57,7 @@
 #define class class_name
 #include <xcb/xcb_icccm.h>
 #undef class
+#include <xcb/xfixes.h>
 
 // xcb-icccm 3.8 support
 #ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
@@ -120,6 +121,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_window(0)
     , m_syncCounter(0)
     , m_mapped(false)
+    , m_transparent(false)
     , m_netWmUserTimeWindow(XCB_NONE)
 #if defined(XCB_USE_EGL)
     , m_eglSurface(0)
@@ -302,6 +304,9 @@ void QXcbWindow::create()
     setWindowFlags(window()->windowFlags());
     setWindowTitle(window()->windowTitle());
     setWindowState(window()->windowState());
+
+    if (window()->windowFlags() & Qt::WindowTransparentForInput)
+        setTransparentForMouseEvents(true);
 
     connection()->drag()->dndEnable(this, true);
 }
@@ -665,8 +670,15 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     if (type == Qt::Popup)
         flags |= Qt::X11BypassWindowManagerHint;
 
+    if (flags & Qt::WindowTransparentForInput) {
+        uint32_t mask = XCB_EVENT_MASK_NO_EVENT;
+        xcb_change_window_attributes(xcb_connection(), xcb_window(), XCB_CW_EVENT_MASK, &mask);
+    }
+
     setNetWmWindowFlags(flags);
     setMotifWindowFlags(flags);
+
+    setTransparentForMouseEvents(flags & Qt::WindowTransparentForInput);
 
     return flags;
 }
@@ -972,6 +984,33 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
     }
     xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, wid, atom(QXcbAtom::_NET_WM_USER_TIME),
                         XCB_ATOM_CARDINAL, 32, 1, &timestamp);
+}
+
+void QXcbWindow::setTransparentForMouseEvents(bool transparent)
+{
+    if (transparent == m_transparent)
+        return;
+
+    xcb_rectangle_t rectangle;
+
+    xcb_rectangle_t *rect = 0;
+    int nrect = 0;
+
+    if (!transparent) {
+        rectangle.x = 0;
+        rectangle.y = 0;
+        rectangle.width = geometry().width();
+        rectangle.height = geometry().height();
+        rect = &rectangle;
+        nrect = 1;
+    }
+
+    xcb_xfixes_region_t region = xcb_generate_id(xcb_connection());
+    xcb_xfixes_create_region(xcb_connection(), region, nrect, rect);
+    xcb_xfixes_set_window_shape_region_checked(xcb_connection(), m_window, XCB_SHAPE_SK_INPUT, 0, 0, region);
+    xcb_xfixes_destroy_region(xcb_connection(), region);
+
+    m_transparent = transparent;
 }
 
 

@@ -258,6 +258,7 @@ public:
         WindowContextHelpButtonHint = 0x00010000,
         WindowShadeButtonHint = 0x00020000,
         WindowStaysOnTopHint = 0x00040000,
+        WindowTransparentForInput = 0x00080000,
 
         CustomizeWindowHint = 0x02000000,
         WindowStaysOnBottomHint = 0x04000000,

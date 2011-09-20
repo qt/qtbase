@@ -124,6 +124,8 @@ private:
     void updateMotifWmHintsBeforeMap();
     void updateNetWmStateBeforeMap();
 
+    void setTransparentForMouseEvents(bool transparent);
+
     void create();
     void destroy();
 
@@ -143,6 +145,7 @@ private:
     Qt::WindowState m_windowState;
 
     bool m_mapped;
+    bool m_transparent;
     xcb_window_t m_netWmUserTimeWindow;
 
     QSurfaceFormat m_requestedFormat;
