@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QX11EmbedWidget
     \ingroup advanced
+    \inmodule QtWidgets
 
     \brief The QX11EmbedWidget class provides an XEmbed client widget.
 
@@ -132,6 +133,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QX11EmbedContainer
     \ingroup advanced
+    \inmodule QtWidgets
 
     \brief The QX11EmbedContainer class provides an XEmbed container
     widget.

@@ -96,7 +96,7 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_h
   \class QFileDialog
   \brief The QFileDialog class provides a dialog that allow users to select files or directories.
   \ingroup standard-dialogs
-
+  \inmodule QtWidgets
 
   The QFileDialog class enables a user to traverse the file system in
   order to select one or many files or a directory.

@@ -96,6 +96,7 @@ QT_BEGIN_NAMESPACE
     \brief The QCommonStyle class encapsulates the common Look and Feel of a GUI.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     This abstract class implements some of the widget's look and feel
     that is common to all GUI styles provided and shipped as part of

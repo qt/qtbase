@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAbstractProxyModel class provides a base class for proxy item
     models that can do sorting, filtering or other data processing tasks.
     \ingroup model-view
+    \inmodule QtWidgets
 
     This class defines the standard interface that proxy models must use to be
     able to interoperate correctly with other model/view components. It is not

@@ -835,6 +835,8 @@ QSize QWorkspaceTitleBar::sizeHint() const
     \brief The QWorkspace widget provides a workspace window that can be
     used in an MDI application.
 
+    \inmodule QtWidgets
+
     This class is deprecated. Use QMdiArea instead.
 
     Multiple Document Interface (MDI) applications are typically

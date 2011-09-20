@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \brief The QIconEnginePlugin class provides an abstract base for custom QIconEngine plugins.
 
     \ingroup plugins
+    \inmodule QtWidgets
 
     \bold {Use QIconEnginePluginV2 instead.}
 
@@ -109,6 +110,8 @@ QIconEnginePlugin::~QIconEnginePlugin()
     \brief The QIconEnginePluginV2 class provides an abstract base for custom QIconEngineV2 plugins.
 
     \ingroup plugins
+    \inmodule QtWidgets
+
     \since 4.3
  
     Icon engine plugins produces \l{QIconEngine}s for \l{QIcon}s; an

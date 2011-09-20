@@ -46,6 +46,7 @@
     \since 4.4
 
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     The most common way to use QGraphicsGridLayout is to construct an object
     on the heap with no parent, add widgets and layouts by calling addItem(),

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     relating to accessibility.
 
     \ingroup accessibility
-
+    \inmodule QtWidgets
 
     Accessible applications can be used by people who are not able to
     use applications by conventional means.
@@ -708,6 +708,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     about accessible objects.
 
     \ingroup accessibility
+    \inmodule QtWidgets
 
     Accessibility tools (also called AT Clients), such as screen readers
     or braille displays, require high-level information about
@@ -1158,6 +1159,7 @@ QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > QAccessibleInterfa
 
     \ingroup accessibility
     \ingroup events
+    \inmodule QtWidgets
 */
 
 /*!

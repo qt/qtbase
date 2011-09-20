@@ -209,7 +209,7 @@ void QMainWindowPrivate::init()
     \brief The QMainWindow class provides a main application
            window.
     \ingroup mainwindow-classes
-
+    \inmodule QtWidgets
 
     \tableofcontents
 

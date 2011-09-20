@@ -1360,6 +1360,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsRemoved(
     filtering data passed between another model and a view.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     QSortFilterProxyModel can be used for sorting items, filtering out items,
     or both. The model transforms the structure of a source model by mapping

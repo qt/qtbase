@@ -134,6 +134,7 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
   \since 4.2
 
   \ingroup draganddrop
+  \inmodule QtWidgets
 
   Qt's drag and drop and clipboard facilities use the MIME
   standard. On X11, this maps trivially to the Xdnd protocol. On

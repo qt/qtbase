@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     \brief The QShortcut class is used to create keyboard shortcuts.
 
     \ingroup events
-
+    \inmodule QtWidgets
 
     The QShortcut class provides a way of connecting keyboard
     shortcuts to Qt's \l{signals and slots} mechanism, so that

@@ -113,7 +113,7 @@ bool QToolButtonPrivate::hasMenu() const
     commands or options, usually used inside a QToolBar.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A tool button is a special button that provides quick-access to
     specific commands or options. As opposed to a normal command

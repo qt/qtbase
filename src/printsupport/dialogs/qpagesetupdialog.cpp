@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup standard-dialogs
     \ingroup printing
+    \inmodule QtPrintSupport
 
     On Windows and Mac OS X the page setup dialog is implemented using
     the native page setup dialogs.

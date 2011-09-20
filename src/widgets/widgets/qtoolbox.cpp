@@ -254,6 +254,7 @@ void QToolBoxButton::paintEvent(QPaintEvent *)
 
 
     \ingroup basicwidgets
+    \inmodule QtWidgets
 
     A toolbox is a widget that displays a column of tabs one above the
     other, with the current item displayed below the current tab.

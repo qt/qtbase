@@ -94,6 +94,7 @@ static const int motifCheckMarkSpace    = 16;
   \brief The QMotifStyle class provides Motif look and feel.
 
   \ingroup appearance
+  \inmodule QtWidgets
 
   This class implements the Motif look and feel. It closely
   resembles the original Motif look as defined by the Open Group,

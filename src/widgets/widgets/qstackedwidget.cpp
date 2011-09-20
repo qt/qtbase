@@ -107,7 +107,7 @@ public:
 
     \ingroup organizers
     \ingroup geomanagement
-
+    \inmodule QtWidgets
 
     QStackedWidget can be used to create a user interface similar to
     the one provided by QTabWidget. It is a convenience layout widget

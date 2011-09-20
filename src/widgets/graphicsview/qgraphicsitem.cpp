@@ -46,6 +46,7 @@
     \since 4.2
 
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     It provides a light-weight foundation for writing your own custom items.
     This includes defining the item's geometry, collision detection, its
@@ -7621,6 +7622,7 @@ static void qt_graphicsItem_highlightSelected(
     require signals, slots and properties.
     \since 4.6
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
     It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
@@ -8052,6 +8054,7 @@ void QGraphicsItemPrivate::resetHeight()
     all path items.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     This class does not fully implement an item by itself; in particular, it
     does not implement boundingRect() and paint(), which are inherited by
@@ -8191,6 +8194,7 @@ QPainterPath QAbstractGraphicsShapeItem::opaqueArea() const
     can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's path, pass a QPainterPath to QGraphicsPathItem's
     constructor, or call the setPath() function. The path() function
@@ -8393,6 +8397,7 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's rectangle, pass a QRectF to QGraphicsRectItem's
     constructor, or call the setRect() function. The rect() function
@@ -8637,6 +8642,7 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsEllipseItem respresents an ellipse with a fill and an outline,
     and you can also use it for ellipse segments (see startAngle(),
@@ -8953,6 +8959,7 @@ QVariant QGraphicsEllipseItem::extension(const QVariant &variant) const
     can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's polygon, pass a QPolygonF to
     QGraphicsPolygonItem's constructor, or call the setPolygon()
@@ -9186,6 +9193,7 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's line, pass a QLineF to QGraphicsLineItem's
     constructor, or call the setLine() function. The line() function
@@ -9449,6 +9457,7 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's pixmap, pass a QPixmap to QGraphicsPixmapItem's
     constructor, or call the setPixmap() function. The pixmap()
@@ -9816,6 +9825,7 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
     a QGraphicsScene to display formatted text.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     If you only need to show plain text in an item, consider using QGraphicsSimpleTextItem
     instead.
@@ -10734,6 +10744,7 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
     that you can add to a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     To set the item's text, you can either pass a QString to
     QGraphicsSimpleTextItem's constructor, or call setText() to change the
@@ -10969,6 +10980,7 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     a group of items as a single item.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     A QGraphicsItemGroup is a special type of compound item that
     treats itself and all its children as one item (i.e., all events

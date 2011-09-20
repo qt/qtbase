@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
     a QWidget in a QGraphicsScene.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsProxyWidget embeds QWidget-based widgets, for example, a
     QPushButton, QFontComboBox, or even QFileDialog, into

@@ -196,7 +196,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     action that can be inserted into widgets.
 
     \ingroup mainwindow-classes
-
+    \inmodule QtWidgets
 
     \omit
         * parent and widget are different

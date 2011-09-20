@@ -979,6 +979,7 @@ QPixmap QS60StylePrivate::placeHolderTexture()
   \brief The QS60Style class provides a look and feel suitable for applications on S60.
   \since 4.6
   \ingroup appearance
+  \inmodule QtWidgets
 
   \sa QMacStyle, QWindowsStyle, QWindowsXPStyle, QWindowsVistaStyle, QPlastiqueStyle, QCleanlooksStyle, QMotifStyle
 */

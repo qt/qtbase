@@ -66,6 +66,7 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
     button widgets, providing functionality common to buttons.
 
     \ingroup abstractwidgets
+    \inmodule QtWidgets
 
     This class implements an \e abstract button.
     Subclasses of this class handle user actions, and specify how the button

@@ -1962,6 +1962,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \since 4.2
 
     \ingroup advanced
+    \inmodule QtWidgets
 
     \image cleanlooks-calendarwidget.png
 

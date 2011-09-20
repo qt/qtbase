@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     passed between another model and a view.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     If you want to do filtering and sorting, see QSortFilterProxyModel.
 

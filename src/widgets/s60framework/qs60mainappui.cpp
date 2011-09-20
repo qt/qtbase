@@ -71,6 +71,8 @@ QT_BEGIN_NAMESPACE
   \since 4.6
   \brief The QS60MainAppUi class is a helper class for S60 migration.
 
+  \inmodule QtWidgets
+ 
   \warning This class is provided only to get access to S60 specific
   functionality in the application framework classes. It is not
   portable. We strongly recommend against using it in new applications.

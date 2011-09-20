@@ -85,6 +85,7 @@ QT_BEGIN_NAMESPACE
     display values.
 
     \ingroup abstractwidgets
+    \inmodule QtWidgets
 
     The class is designed as a common super class for widgets like
     QSpinBox, QDoubleSpinBox and QDateTimeEdit

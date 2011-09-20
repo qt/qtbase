@@ -78,6 +78,7 @@ QT_BEGIN_NAMESPACE
     \brief The QInputContext class abstracts the input method dependent data and composing state.
 
     \ingroup i18n
+    \inmodule QtWidgets
 
     An input method is responsible for inputting complex text that cannot
     be inputted via simple keymap. It converts a sequence of input

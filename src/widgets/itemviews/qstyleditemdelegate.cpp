@@ -112,6 +112,7 @@ public:
     data items from a model.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     \since 4.4
 

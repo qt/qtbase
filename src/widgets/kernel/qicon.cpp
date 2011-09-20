@@ -467,7 +467,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loaderV2,
 
   \ingroup painting
   \ingroup shared
-
+  \inmodule QtWidgets
 
   A QIcon can generate smaller, larger, active, and disabled pixmaps
   from the set of pixmaps it is given. Such pixmaps are used by Qt

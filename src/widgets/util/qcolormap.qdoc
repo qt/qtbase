@@ -28,6 +28,7 @@
 /*!
     \class QColormap
     \ingroup painting
+    \inmodule QtWidgets
 
     \brief The QColormap class maps device independent QColors to device
     dependent pixel values.

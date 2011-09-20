@@ -220,6 +220,7 @@ Q_GLOBAL_STATIC(QWindowsMimeList, theMimeList);
     \class QWindowsMime
     \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
     \ingroup draganddrop
+    \inmodule QtWidgets
 
     Qt's drag-and-drop and clipboard facilities use the MIME standard.
     On X11, this maps trivially to the Xdnd protocol, but on Windows

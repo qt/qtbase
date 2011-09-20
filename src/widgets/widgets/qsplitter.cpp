@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
     \brief The QSplitterHandle class provides handle functionality of the splitter.
 
     \ingroup organizers
+    \inmodule QtWidgets
 
     QSplitterHandle is typically what people think about when they think about
     a splitter. It is the handle that is used to resize the widgets.
@@ -876,6 +877,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     \brief The QSplitter class implements a splitter widget.
 
     \ingroup organizers
+    \inmodule QtWidgets
 
 
     A splitter lets the user control the size of child widgets by dragging the

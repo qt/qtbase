@@ -94,6 +94,7 @@ QList<QByteArray> QAccessibleObjectPrivate::actionList() const
     QAccessibleInterface for QObjects.
 
     \ingroup accessibility
+    \inmodule QtWidgets
 
     This class is mainly provided for convenience. All subclasses of
     the QAccessibleInterface that provide implementations of non-widget objects

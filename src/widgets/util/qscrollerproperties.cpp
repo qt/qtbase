@@ -93,6 +93,8 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
     \brief The QScrollerProperties class stores the settings for a QScroller.
     \since 4.8
 
+    \inmodule QtWidgets
+ 
     The QScrollerProperties class stores the parameters used by QScroller.
 
     The default settings are platform dependent so that Qt emulates the

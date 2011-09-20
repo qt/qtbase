@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \class QGesture
     \since 4.6
     \ingroup gestures
+    \inmodule QtWidgets
 
     \brief The QGesture class represents a gesture, containing properties that
     describe the corresponding user input.
@@ -220,6 +221,7 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
     \since 4.6
     \brief The QPanGesture class describes a panning gesture made by the user.
     \ingroup gestures
+    \inmodule QtWidgets
 
     \image pangesture.png
 
@@ -336,6 +338,7 @@ void QPanGesture::setAcceleration(qreal value)
     \brief The QPinchGesture class describes a pinch gesture made by the user.
     \ingroup touch
     \ingroup gestures
+    \inmodule QtWidgets
 
     A pinch gesture is a form of touch user input in which the user typically
     touches two points on the input device with a thumb and finger, before moving
@@ -600,6 +603,7 @@ void QPinchGesture::setRotationAngle(qreal value)
     \since 4.6
     \brief The QSwipeGesture class describes a swipe gesture made by the user.
     \ingroup gestures
+    \inmodule QtWidgets
 
     \image swipegesture.png
 
@@ -706,6 +710,7 @@ void QSwipeGesture::setSwipeAngle(qreal value)
     \since 4.6
     \brief The QTapGesture class describes a tap gesture made by the user.
     \ingroup gestures
+    \inmodule QtWidgets
 
     For an overview of gesture handling in Qt and information on using gestures
     in your applications, see the \l{Gestures Programming} document.
@@ -742,6 +747,7 @@ void QTapGesture::setPosition(const QPointF &value)
     \brief The QTapAndHoldGesture class describes a tap-and-hold (aka LongTap)
     gesture made by the user.
     \ingroup gestures
+    \inmodule QtWidgets
 
     For an overview of gesture handling in Qt and information on using gestures
     in your applications, see the \l{Gestures Programming} document.
@@ -807,6 +813,7 @@ int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
     \since 4.6
     \ingroup events
     \ingroup gestures
+    \inmodule QtWidgets
 
     \brief The QGestureEvent class provides the description of triggered gestures.
 

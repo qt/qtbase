@@ -320,6 +320,7 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
     items to be managed by layouts.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsLayoutItem is an abstract class that defines a set of virtual
     functions describing sizes, size policies, and size hints for any object

@@ -147,6 +147,7 @@ void QGroupBoxPrivate::click()
 
     \ingroup organizers
     \ingroup geomanagement
+    \inmodule QtWidgets
 
     A group box provides a frame, a title and a keyboard shortcut, and
     displays various other widgets inside itself. The title is on top,

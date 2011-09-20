@@ -492,7 +492,7 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     the user or for asking the user a question and receiving an answer.
 
     \ingroup standard-dialogs
-
+    \inmodule QtWidgets
 
     A message box displays a primary \l{QMessageBox::text}{text} to
     alert the user to a situation, an \l{QMessageBox::informativeText}

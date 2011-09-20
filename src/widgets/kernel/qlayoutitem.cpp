@@ -88,6 +88,7 @@ QSizePolicy::operator QVariant() const
     QLayout manipulates.
 
     \ingroup geomanagement
+    \inmodule QtWidgets
 
     This is used by custom layouts.
 
@@ -118,6 +119,8 @@ QSizePolicy::operator QVariant() const
     \ingroup geomanagement
     \brief The QSpacerItem class provides blank space in a layout.
 
+    \inmodule QtWidgets
+
     Normally, you don't need to use this class directly. Qt's
     built-in layout managers provide the following functions for
     manipulating empty space in layouts:
@@ -145,6 +148,8 @@ QSizePolicy::operator QVariant() const
     \ingroup geomanagement
     \brief The QWidgetItem class is a layout item that represents a widget.
 
+    \inmodule QtWidgets
+ 
     Normally, you don't need to use this class directly. Qt's
     built-in layout managers provide the following functions for
     manipulating widgets in layouts:

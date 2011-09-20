@@ -980,7 +980,7 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     \brief The QGridLayout class lays out widgets in a grid.
 
     \ingroup geomanagement
-
+    \inmodule QtWidgets
 
     QGridLayout takes the space made available to it (by its parent
     layout or by the parentWidget()), divides it up into rows and

@@ -258,6 +258,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     \since 4.2
     \ingroup model-view
     \ingroup advanced
+    \inmodule QtWidgets
 
     QDataWidgetMapper can be used to create data-aware widgets by mapping
     them to sections of an item model. A section is a column of a model

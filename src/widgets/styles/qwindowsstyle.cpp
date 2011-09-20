@@ -247,6 +247,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
     \brief The QWindowsStyle class provides a Microsoft Windows-like look and feel.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     This style is Qt's default GUI style on Windows.
 

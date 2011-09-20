@@ -91,6 +91,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     \brief The QStyleFactory class creates QStyle objects.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     The QStyle class is an abstract base class that encapsulates the
     look and feel of a GUI. QStyleFactory creates a QStyle object

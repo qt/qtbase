@@ -80,7 +80,7 @@ void QRadioButtonPrivate::init()
     \brief The QRadioButton widget provides a radio button with a text label.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A QRadioButton is an option button that can be switched on (checked) or
     off (unchecked). Radio buttons typically present the user with a "one

@@ -160,7 +160,7 @@ QRect QStatusBarPrivate::messageRect() const
 
     \ingroup mainwindow-classes
     \ingroup helpsystem
-
+    \inmodule QtWidgets
 
     Each status indicator falls into one of three categories:
 

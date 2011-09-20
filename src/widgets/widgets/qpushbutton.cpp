@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     \brief The QPushButton widget provides a command button.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     The push button, or command button, is perhaps the most commonly
     used widget in any graphical user interface. Push (click) a button

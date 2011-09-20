@@ -457,6 +457,7 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     previewing page layouts for printer output.
 
     \ingroup printing
+    \inmodule QtPrintSupport
 
     QPrintPreviewDialog uses a QPrintPreviewWidget internally, and the
     purpose of QPrintPreviewWidget is to make it possible to embed the

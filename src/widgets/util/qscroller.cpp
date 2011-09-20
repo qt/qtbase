@@ -238,6 +238,8 @@ private:
     \brief The QScroller class enables kinetic scrolling for any scrolling widget or graphics item.
     \since 4.8
 
+    \inmodule QtWidgets
+ 
     With kinetic scrolling, the user can push the widget in a given
     direction and it will continue to scroll in this direction until it is
     stopped either by the user or by friction.  Aspects of inertia, friction

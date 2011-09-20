@@ -86,6 +86,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \brief The QStyle class is an abstract base class that encapsulates the look and feel of a GUI.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     Qt contains a set of QStyle subclasses that emulate the styles of
     the different platforms supported by Qt (QWindowsStyle,

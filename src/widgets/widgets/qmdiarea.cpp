@@ -44,7 +44,7 @@
     \brief The QMdiArea widget provides an area in which MDI windows are displayed.
     \since 4.3
     \ingroup mainwindow-classes
-
+    \inmodule QtWidgets
 
     QMdiArea functions, essentially, like a window manager for MDI
     windows. For instance, it draws the windows it manages on itself

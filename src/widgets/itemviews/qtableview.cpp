@@ -937,7 +937,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
 
     \ingroup model-view
     \ingroup advanced
-
+    \inmodule QtWidgets
 
     A QTableView implements a table view that displays items from a
     model. This class is used to provide standard tables that were

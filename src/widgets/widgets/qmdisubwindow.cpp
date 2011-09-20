@@ -45,7 +45,7 @@
     QMdiArea.
     \since 4.3
     \ingroup mainwindow-classes
-
+    \inmodule QtWidgets
 
     QMdiSubWindow represents a top-level window in a QMdiArea, and consists
     of a title bar with window decorations, an internal widget, and

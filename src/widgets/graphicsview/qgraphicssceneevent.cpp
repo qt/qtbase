@@ -45,6 +45,7 @@
     graphics view related events.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     When a QGraphicsView receives Qt mouse, keyboard, and drag and
     drop events (QMouseEvent, QKeyEvent, QDragEvent, etc.), it
@@ -86,6 +87,7 @@
            in the graphics view framework.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     When a QGraphicsView receives a QMouseEvent, it translates it to a
     QGraphicsSceneMouseEvent. The event is then forwarded to the
@@ -112,6 +114,7 @@
     graphics view framework.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     \l{QWheelEvent}{QWheelEvent}s received by a QGraphicsView are translated
     into QGraphicsSceneWheelEvents; it translates the QWheelEvent::globalPos()
@@ -128,6 +131,7 @@
            menu events in the graphics view framework.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     A QContextMenuEvent received by a QGraphicsView is translated
     into a QGraphicsSceneContextMenuEvent. The
@@ -159,6 +163,7 @@
            in the graphics view framework.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     When a QGraphicsView receives a QHoverEvent event, it translates
     it into QGraphicsSceneHoverEvent. The event is then forwarded to
@@ -174,6 +179,7 @@
            tooltip is requested.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     When a QGraphicsView receives a QEvent of type
     QEvent::ToolTip, it creates a QGraphicsSceneHelpEvent, which is
@@ -198,6 +204,7 @@
            drag and drop in the graphics view framework.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsView inherits the drag and drop functionality provided
     by QWidget. When it receives a drag and drop event, it translates
@@ -222,6 +229,7 @@
     resizing in the graphics view framework.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     A QGraphicsWidget sends itself a QGraphicsSceneResizeEvent immediately
     when its geometry changes.
@@ -238,6 +246,7 @@
     moving in the graphics view framework.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     A QGraphicsWidget sends itself a QGraphicsSceneMoveEvent immediately when
     its local position changes. The delivery is implemented as part of

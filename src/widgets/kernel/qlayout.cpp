@@ -76,6 +76,7 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
     \brief The QLayout class is the base class of geometry managers.
 
     \ingroup geomanagement
+    \inmodule QtWidgets
 
     This is an abstract base class inherited by the concrete classes
     QBoxLayout, QGridLayout, QFormLayout, and QStackedLayout.

@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     data items from a model.
 
     \ingroup model-view
-
+    \inmodule QtWidgets
 
     A QAbstractItemDelegate provides the interface and common functionality
     for delegates in the model/view architecture. Delegates display

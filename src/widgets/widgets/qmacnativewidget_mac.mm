@@ -51,6 +51,7 @@
     or Cocoa hierarchies depending on how Qt was configured.
 
     \ingroup advanced
+    \inmodule QtWidgets
 
     On Mac OS X, there is a difference between a window and view;
     normally expressed as widgets in Qt.  Qt makes assumptions about its

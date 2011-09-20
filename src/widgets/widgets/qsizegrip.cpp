@@ -172,6 +172,7 @@ Qt::Corner QSizeGripPrivate::corner() const
 
     \ingroup mainwindow-classes
     \ingroup basicwidgets
+    \inmodule QtWidgets
 
     This widget works like the standard Windows resize handle. In the
     X11 version this resize handle generally works differently from

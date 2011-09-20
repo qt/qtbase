@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
     on-demand scroll bars.
 
     \ingroup abstractwidgets
+    \inmodule QtWidgets
 
     QAbstractScrollArea is a low-level abstraction of a scrolling
     area. The area provides a central widget called the viewport, in

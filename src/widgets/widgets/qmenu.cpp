@@ -1218,7 +1218,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
 
     \ingroup mainwindow-classes
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A menu widget is a selection menu. It can be either a pull-down
     menu in a menu bar or a standalone context menu. Pull-down menus

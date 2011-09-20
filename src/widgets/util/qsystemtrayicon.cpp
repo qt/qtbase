@@ -66,6 +66,7 @@ QT_BEGIN_NAMESPACE
     \brief The QSystemTrayIcon class provides an icon for an application in the system tray.
     \since 4.2
     \ingroup desktop
+    \inmodule QtWidgets
 
     Modern operating systems usually provide a special area on the desktop,
     called the \e{system tray} or \e{notification area}, where long-running

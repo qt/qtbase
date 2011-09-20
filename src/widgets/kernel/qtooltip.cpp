@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     widget.
 
     \ingroup helpsystem
-
+    \inmodule QtWidgets
 
     The tip is a short piece of text reminding the user of the
     widget's function. It is drawn immediately below the given

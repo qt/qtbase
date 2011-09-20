@@ -863,7 +863,7 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     \brief The QComboBox widget is a combined button and popup list.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A QComboBox provides a means of presenting a list of options to the user
     in a way that takes up the minimum amount of screen space.

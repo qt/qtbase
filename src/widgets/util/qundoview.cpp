@@ -255,6 +255,7 @@ QIcon QUndoModel::cleanIcon() const
     \since 4.2
 
     \ingroup advanced
+    \inmodule QtWidgets
 
     QUndoView is a QListView which displays the list of commands pushed on an undo stack.
     The most recently executed command is always selected. Selecting a different command

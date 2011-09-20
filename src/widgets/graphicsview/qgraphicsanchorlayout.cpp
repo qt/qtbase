@@ -47,6 +47,7 @@
     \ingroup appearance
     \ingroup geomanagement
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     The anchor layout allows developers to specify how widgets should be placed relative to
     each other, and to the layout itself. The specification is made by adding anchors to the
@@ -125,6 +126,7 @@
     \ingroup appearance
     \ingroup geomanagement
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     The graphics anchor provides an API that enables you to query and manipulate the
     properties an anchor has. When an anchor is added to the layout with

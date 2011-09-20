@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
   \brief The QIconEngine class provides an abstract base class for QIcon renderers.
 
   \ingroup painting
+  \inmodule QtWidgets
 
   \bold {Use QIconEngineV2 instead.}
 
@@ -145,6 +146,8 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
     \brief The QIconEngineV2 class provides an abstract base class for QIcon renderers.
 
     \ingroup painting
+    \inmodule QtWidgets
+
     \since 4.3
 
     An icon engine renders \l{QIcon}s. With icon engines, you can
@@ -193,6 +196,8 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 /*!
     \class QIconEngineV2::AvailableSizesArgument
     \since 4.5
+
+    \inmodule QtWidgets
 
     This struct represents arguments to virtual_hook() function when
     \a id parameter is QIconEngineV2::AvailableSizesHook.

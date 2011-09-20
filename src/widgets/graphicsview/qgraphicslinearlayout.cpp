@@ -45,6 +45,7 @@
     layout for managing widgets in Graphics View.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     The default orientation for a linear layout is Qt::Horizontal. You can
     choose a vertical orientation either by calling setOrientation(), or by

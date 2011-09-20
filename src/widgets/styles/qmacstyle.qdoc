@@ -31,6 +31,7 @@
     \brief The QMacStyle class provides a Mac OS X style using the Apple Appearance Manager.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     This class is implemented as a wrapper to the HITheme
     APIs, allowing applications to be styled according to the current

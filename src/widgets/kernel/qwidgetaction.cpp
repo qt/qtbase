@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     as toolbars.
 
     \ingroup mainwindow-classes
+    \inmodule QtWidgets
 
     Most actions in an application are represented as items in menus or
     buttons in toolbars. However sometimes more complex widgets are

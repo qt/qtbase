@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup appearance
     \ingroup painting
+    \inmodule QtWidgets
 
     QStylePainter extends QPainter with a set of high-level \c
     draw...() functions implemented on top of QStyle's API. The

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     \brief The QColumnView class provides a model/view implementation of a column view.
     \ingroup model-view
     \ingroup advanced
-
+    \inmodule QtWidgets
 
     QColumnView displays a model in a number of QListViews, one for each
     hierarchy in the tree.  This is sometimes referred to as a cascading list.

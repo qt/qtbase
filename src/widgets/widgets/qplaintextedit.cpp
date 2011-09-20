@@ -111,6 +111,7 @@ public:
     \brief The QPlainTextDocumentLayout class implements a plain text layout for QTextDocument
 
     \ingroup richtext-processing
+    \inmodule QtWidgets
 
    A QPlainTextDocumentLayout is required for text documents that can
    be display or edited in a QPlainTextEdit. See
@@ -1018,7 +1019,7 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     plain text.
 
     \ingroup richtext-processing
-
+    \inmodule QtWidgets
 
     \tableofcontents
 

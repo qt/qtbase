@@ -49,7 +49,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     contents of a QGraphicsScene.
     \since 4.2
     \ingroup graphicsview-api
-
+    \inmodule QtWidgets
 
     QGraphicsView visualizes the contents of a QGraphicsScene in a scrollable
     viewport. To create a scene with geometrical items, see QGraphicsScene's

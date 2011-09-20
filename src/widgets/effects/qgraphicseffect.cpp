@@ -46,6 +46,7 @@
     \since 4.6
     \ingroup multimedia
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     Effects alter the appearance of elements by hooking into the rendering
     pipeline and operating between the source (e.g., a QGraphicsPixmapItem)
@@ -592,6 +593,7 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
     \class QGraphicsColorizeEffect
     \brief The QGraphicsColorizeEffect class provides a colorize effect.
     \since 4.6
+    \inmodule QtWidgets
 
     A colorize effect renders the source with a tint of its color(). The color
     can be modified using the setColor() function.
@@ -717,6 +719,7 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     \class QGraphicsBlurEffect
     \brief The QGraphicsBlurEffect class provides a blur effect.
     \since 4.6
+    \inmodule QtWidgets
 
     A blur effect blurs the source. This effect is useful for reducing details,
     such as when the source loses focus and you want to draw attention to other
@@ -876,6 +879,7 @@ void QGraphicsBlurEffect::draw(QPainter *painter)
     \class QGraphicsDropShadowEffect
     \brief The QGraphicsDropShadowEffect class provides a drop shadow effect.
     \since 4.6
+    \inmodule QtWidgets
 
     A drop shadow effect renders the source with a drop shadow. The color of
     the drop shadow can be modified using the setColor() function. The drop
@@ -1072,6 +1076,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
     \class QGraphicsOpacityEffect
     \brief The QGraphicsOpacityEffect class provides an opacity effect.
     \since 4.6
+    \inmodule QtWidgets
 
     An opacity effect renders the source with an opacity. This effect is useful
     for making the source semi-transparent, similar to a fade-in/fade-out

@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \brief The QCommandLinkButton widget provides a Vista style command link button.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     The command link is a new control that was introduced by Windows Vista. It's
     intended use is similar to that of a radio button in that it is used to choose

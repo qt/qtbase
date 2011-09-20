@@ -651,6 +651,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
 
     \ingroup standard-dialogs
     \ingroup printing
+    \inmodule QtPrintSupport
 
     Using QPrintPreviewDialog in your existing application is
     straightforward:

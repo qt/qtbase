@@ -172,7 +172,7 @@ bool QProgressBarPrivate::repaintRequired() const
     \brief The QProgressBar widget provides a horizontal or vertical progress bar.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A progress bar is used to give the user an indication of the
     progress of an operation and to reassure them that the application

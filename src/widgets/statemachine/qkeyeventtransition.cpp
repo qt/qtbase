@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
   \since 4.6
   \ingroup statemachine
+  \inmodule QtWidgets
 
   QKeyEventTransition is part of \l{The State Machine Framework}.
 

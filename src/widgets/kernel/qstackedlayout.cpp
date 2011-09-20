@@ -65,6 +65,7 @@ public:
     only one widget is visible at a time.
 
     \ingroup geomanagement
+    \inmodule QtWidgets
 
     QStackedLayout can be used to create a user interface similar to
     the one provided by QTabWidget. There is also a convenience

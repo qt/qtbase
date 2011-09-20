@@ -60,6 +60,7 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     print dialogs used to configure printers.
 
     \ingroup printing
+    \inmodule QtPrintSupport
 
     This class implements getter and setter functions that are used to
     customize settings shown in print dialogs, but it is not used directly.
@@ -369,6 +370,7 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
 
     \ingroup standard-dialogs
     \ingroup printing
+    \inmodule QtPrintSupport
 
     The dialog allows users to change document-related settings, such
     as the paper size and orientation, type of print (color or

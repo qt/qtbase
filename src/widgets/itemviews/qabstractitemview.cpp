@@ -237,7 +237,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
     item view classes.
 
     \ingroup model-view
-
+    \inmodule QtWidgets
 
     QAbstractItemView class is the base class for every standard view
     that uses a QAbstractItemModel. QAbstractItemView is an abstract

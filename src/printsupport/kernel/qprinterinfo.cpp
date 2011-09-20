@@ -45,6 +45,7 @@ QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
     existing printers.
     
     \ingroup printing
+    \inmodule QtPrintSupport
 
     Use the static functions to generate a list of QPrinterInfo
     objects. Each QPrinterInfo object in the list represents a single

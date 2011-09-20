@@ -42,7 +42,39 @@
 #include <QtGui>
 #include "s60themeconvert.h"
 
+<<<<<<< HEAD
 int help()
+=======
+#ifndef QT_NO_ACCESSIBILITY
+
+#include "qaccessible.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QAccessiblePlugin
+    \brief The QAccessiblePlugin class provides an abstract base for
+    accessibility plugins.
+
+    \ingroup plugins
+    \ingroup accessibility
+    \inmodule QtWidgets
+
+    Writing an accessibility plugin is achieved by subclassing this
+    base class, reimplementing the pure virtual functions keys() and
+    create(), and exporting the class with the Q_EXPORT_PLUGIN2()
+    macro.
+
+    \sa QAccessibleBridgePlugin, {How to Create Qt Plugins}
+*/
+
+/*!
+    Constructs an accessibility plugin with the given \a parent. This
+    is invoked automatically by the Q_EXPORT_PLUGIN2() macro.
+*/
+QAccessiblePlugin::QAccessiblePlugin(QObject *parent)
+    : QObject(parent)
+>>>>>>> Move the documentation for the classes to their modules.
 {
     qDebug() << "Usage: s60theme [modeldir|theme.tdf] output.blob";
     qDebug() << "";

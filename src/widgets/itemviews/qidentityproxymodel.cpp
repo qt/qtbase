@@ -94,6 +94,7 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
     \brief The QIdentityProxyModel class proxies its source model unmodified
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     QIdentityProxyModel can be used to forward the structure of a source model exactly, with no sorting, filtering or other transformation.
     This is similar in concept to an identity matrix where A.I = A.

@@ -208,7 +208,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     \brief The QTabBar class provides a tab bar, e.g. for use in tabbed dialogs.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     QTabBar is straightforward to use; it draws the tabs using one of
     the predefined \link QTabBar::Shape shapes\endlink, and emits a

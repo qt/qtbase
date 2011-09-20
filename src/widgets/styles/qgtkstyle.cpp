@@ -170,6 +170,8 @@ static GdkColor fromQColor(const QColor &color)
     \brief The QGtkStyle class provides a widget style rendered by GTK+
     \since 4.5
 
+    \inmodule QtWidgets
+ 
     The QGtkStyle style provides a look and feel that integrates well
     into GTK-based desktop environments such as the XFCe and GNOME.
 

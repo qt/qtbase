@@ -75,6 +75,7 @@ QT_BEGIN_NAMESPACE
     items in a QGraphicsScene.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsWidget is an extended base item that provides extra functionality
     over QGraphicsItem. It is similar to QWidget in many ways:

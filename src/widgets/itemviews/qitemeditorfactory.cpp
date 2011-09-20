@@ -79,6 +79,7 @@ public:
     in views and delegates.
     \since 4.2
     \ingroup model-view
+    \inmodule QtWidgets
 
     When editing data in an item view, editors are created and
     displayed by a delegate. QItemDelegate, which is the delegate by
@@ -324,6 +325,7 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
     must be subclassed when implementing new item editor creators.
     \since 4.2
     \ingroup model-view
+    \inmodule QtWidgets
 
     QItemEditorCreatorBase objects are specialized widget factories that
     provide editor widgets for one particular QVariant data type. They
@@ -396,6 +398,7 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
 
     \since 4.2
     \ingroup model-view
+    \inmodule QtWidgets
 
     QItemEditorCreator is a convenience template class. It uses
     the template class to create editors for QItemEditorFactory.
@@ -446,6 +449,7 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
 
     \since 4.2
     \ingroup model-view
+    \inmodule QtWidgets
 
     This convenience template class makes it possible to register widgets without
     having to subclass QItemEditorCreatorBase.

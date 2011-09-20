@@ -1110,6 +1110,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     \brief The QWindowsXPStyle class provides a Microsoft Windows XP-like look and feel.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     \warning This style is only available on the Windows XP platform
     because it makes use of Windows XP's style engine.

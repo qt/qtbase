@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QStyleOption class stores the parameters used by QStyle functions.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     QStyleOption and its subclasses contain all the information that
     QStyle functions need to draw a graphical element.
@@ -367,6 +368,8 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     \brief The QStyleOptionFocusRect class is used to describe the
     parameters for drawing a focus rectangle with QStyle.
 
+    \inmodule QtWidgets
+ 
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel
     makes the structures straightforward to use and emphasizes that
@@ -449,6 +452,8 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
     \brief The QStyleOptionFrame class is used to describe the
     parameters for drawing a frame.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionFrame is used for drawing several built-in Qt widgets,
     including QFrame, QGroupBox, QLineEdit, and QMenu. Note that to
     describe the parameters necessary for drawing a frame in Qt 4.1 or
@@ -556,6 +561,7 @@ QStyleOptionFrame::QStyleOptionFrame(int version)
     parameters necessary for drawing a frame in Qt 4.1 or above.
 
     \since 4.1
+    \inmodule QtWidgets
 
     QStyleOptionFrameV2 inherits QStyleOptionFrame which is used for
     drawing several built-in Qt widgets, including QFrame, QGroupBox,
@@ -689,6 +695,7 @@ QStyleOptionFrameV2 &QStyleOptionFrameV2::operator=(const QStyleOptionFrame &oth
     parameters necessary for drawing a frame in Qt 4.1 or above.
 
     \since 4.5
+    \inmodule QtWidgets
 
     QStyleOptionFrameV3 inherits QStyleOptionFrameV2
 
@@ -793,6 +800,7 @@ QStyleOptionFrameV3 &QStyleOptionFrameV3::operator=(const QStyleOptionFrame &oth
     \brief The QStyleOptionViewItemV2 class is used to describe the
     parameters necessary for drawing a frame in Qt 4.2 or above.
     \since 4.2
+    \inmodule QtWidgets
 
     QStyleOptionViewItemV2 inherits QStyleOptionViewItem.
 
@@ -914,6 +922,7 @@ QStyleOptionViewItemV2 &QStyleOptionViewItemV2::operator=(const QStyleOptionView
     \brief The QStyleOptionViewItemV3 class is used to describe the
     parameters necessary for drawing a frame in Qt 4.3 or above.
     \since 4.3
+    \inmodule QtWidgets
 
     QStyleOptionViewItemV3 inherits QStyleOptionViewItem.
 
@@ -1000,6 +1009,7 @@ QStyleOptionViewItemV3::QStyleOptionViewItemV3(int version)
     \brief The QStyleOptionViewItemV4 class is used to describe the
     parameters necessary for drawing a frame in Qt 4.4 or above.
     \since 4.4
+    \inmodule QtWidgets
 
     QStyleOptionViewItemV4 inherits QStyleOptionViewItemV3.
 
@@ -1160,6 +1170,7 @@ QStyleOptionViewItemV4::QStyleOptionViewItemV4(int version)
     drawing a group box.
 
     \since 4.1
+    \inmodule QtWidgets
 
     QStyleOptionButton contains all the information that QStyle
     functions need the various graphical elements of a group box.
@@ -1295,6 +1306,8 @@ QStyleOptionGroupBox::QStyleOptionGroupBox(int version)
     \brief The QStyleOptionHeader class is used to describe the
     parameters for drawing a header.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionHeader contains all the information that QStyle
     functions need to draw the item views' header pane, header sort
     arrow, and header label.
@@ -1480,6 +1493,8 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
     \brief The QStyleOptionButton class is used to describe the
     parameters for drawing buttons.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionButton contains all the information that QStyle
     functions need to draw graphical elements like QPushButton,
     QCheckBox, and QRadioButton.
@@ -1604,6 +1619,7 @@ QStyleOptionButton::QStyleOptionButton(int version)
     parameters for drawing a toolbar.
 
     \since 4.1
+    \inmodule QtWidgets
 
     QStyleOptionToolBar contains all the information that QStyle
     functions need to draw QToolBar.
@@ -1789,6 +1805,8 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
     \brief The QStyleOptionTab class is used to describe the
     parameters for drawing a tab bar.
 
+    \inmodule QtWidgets
+ 
     The QStyleOptionTab class is used for drawing several built-in Qt
     widgets including \l QTabBar and the panel for \l QTabWidget. Note
     that to describe the parameters necessary for drawing a frame in
@@ -1979,6 +1997,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
     parameters necessary for drawing a tabs in Qt 4.1 or above.
 
     \since 4.1
+    \inmodule QtWidgets
 
     An instance of the QStyleOptionTabV2 class has
     \l{QStyleOption::type} {type} \l SO_Tab and
@@ -2101,6 +2120,7 @@ QStyleOptionTabV2 &QStyleOptionTabV2::operator=(const QStyleOptionTab &other)
     parameters necessary for drawing a tabs in Qt 4.5 or above.
 
     \since 4.5
+    \inmodule QtWidgets
 
     An instance of the QStyleOptionTabV3 class has
     \l{QStyleOption::type} {type} \l SO_Tab and
@@ -2250,6 +2270,8 @@ QStyleOptionTabV3 &QStyleOptionTabV3::operator=(const QStyleOptionTab &other)
     \brief The QStyleOptionProgressBar class is used to describe the
     parameters necessary for drawing a progress bar.
 
+    \inmodule QtWidgets
+ 
     Since Qt 4.1, Qt uses the QStyleOptionProgressBarV2 subclass for
     drawing QProgressBar.
 
@@ -2397,6 +2419,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     parameters necessary for drawing a progress bar in Qt 4.1 or above.
 
     \since 4.1
+    \inmodule QtWidgets
 
     An instance of this class has \l{QStyleOption::type} {type}
     SO_ProgressBar and \l{QStyleOption::version} {version} 2.
@@ -2565,6 +2588,8 @@ QStyleOptionProgressBarV2 &QStyleOptionProgressBarV2::operator=(const QStyleOpti
     \brief The QStyleOptionMenuItem class is used to describe the
     parameter necessary for drawing a menu item.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionMenuItem contains all the information that QStyle
     functions need to draw the menu items from \l QMenu. It is also
     used for drawing other menu-related widgets.
@@ -2763,6 +2788,8 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     \brief The QStyleOptionComplex class is used to hold parameters that are
     common to all complex controls.
 
+    \inmodule QtWidgets
+ 
     This class is not used on its own. Instead it is used to derive
     other complex control options, for example QStyleOptionSlider and
     QStyleOptionSpinBox.
@@ -2852,6 +2879,8 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
     \brief The QStyleOptionSlider class is used to describe the
     parameters needed for drawing a slider.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionSlider contains all the information that QStyle
     functions need to draw QSlider and QScrollBar.
 
@@ -3049,6 +3078,8 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
     \brief The QStyleOptionSpinBox class is used to describe the
     parameters necessary for drawing a spin box.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionSpinBox contains all the information that QStyle
     functions need to draw QSpinBox and QDateTimeEdit.
 
@@ -3152,6 +3183,8 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
     \brief The QStyleOptionQ3ListViewItem class is used to describe an
     item drawn in a Q3ListView.
 
+    \inmodule QtWidgets
+ 
     This class is used for drawing the compatibility Q3ListView's
     items. \bold {It is not recommended for new classes}.
 
@@ -3287,6 +3320,8 @@ QStyleOptionQ3ListViewItem::QStyleOptionQ3ListViewItem(int version)
     \brief The QStyleOptionQ3ListView class is used to describe the
     parameters for drawing a Q3ListView.
 
+    \inmodule QtWidgets
+ 
     This class is used for drawing the compatibility Q3ListView. \bold
     {It is not recommended for new classes}.
 
@@ -3431,6 +3466,8 @@ QStyleOptionQ3ListView::QStyleOptionQ3ListView(int version)
     \brief The QStyleOptionQ3DockWindow class is used to describe the
     parameters for drawing various parts of a Q3DockWindow.
 
+    \inmodule QtWidgets
+ 
     This class is used for drawing the old Q3DockWindow and its
     parts. \bold {It is not recommended for new classes}.
 
@@ -3522,6 +3559,8 @@ QStyleOptionQ3DockWindow::QStyleOptionQ3DockWindow(int version)
     \brief The QStyleOptionDockWidget class is used to describe the
     parameters for drawing a dock widget.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionDockWidget contains all the information that QStyle
     functions need to draw graphical elements like QDockWidget.
 
@@ -3653,6 +3692,8 @@ QStyleOptionDockWidgetV2::QStyleOptionDockWidgetV2(int version)
     \brief The QStyleOptionToolButton class is used to describe the
     parameters for drawing a tool button.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionToolButton contains all the information that QStyle
     functions need to draw QToolButton.
 
@@ -3815,6 +3856,8 @@ QStyleOptionToolButton::QStyleOptionToolButton(int version)
     \brief The QStyleOptionComboBox class is used to describe the
     parameter for drawing a combobox.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionButton contains all the information that QStyle
     functions need to draw QComboBox.
 
@@ -3941,6 +3984,8 @@ QStyleOptionComboBox::QStyleOptionComboBox(int version)
     \brief The QStyleOptionToolBox class is used to describe the
     parameters needed for drawing a tool box.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionToolBox contains all the information that QStyle
     functions need to draw QToolBox.
 
@@ -4030,6 +4075,8 @@ QStyleOptionToolBox::QStyleOptionToolBox(int version)
     \brief The QStyleOptionToolBoxV2 class is used to describe the parameters necessary for drawing a frame in Qt 4.3 or above.
 
     \since 4.3
+    \inmodule QtWidgets
+ 
     QStyleOptionToolBoxV2 inherits QStyleOptionToolBox which is used for
     drawing the tabs in a QToolBox.
 
@@ -4168,6 +4215,8 @@ QStyleOptionToolBoxV2 &QStyleOptionToolBoxV2::operator=(const QStyleOptionToolBo
     \brief The QStyleOptionRubberBand class is used to describe the
     parameters needed for drawing a rubber band.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionRubberBand contains all the information that
     QStyle functions need to draw QRubberBand.
 
@@ -4257,6 +4306,8 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
     \brief The QStyleOptionTitleBar class is used to describe the
     parameters for drawing a title bar.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionTitleBar contains all the information that QStyle
     functions need to draw the title bar of a QMdiSubWindow.
 
@@ -4366,6 +4417,8 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
     \brief The QStyleOptionViewItem class is used to describe the
     parameters used to draw an item in a view widget.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionViewItem contains all the information that QStyle
     functions need to draw the items for Qt's model/view classes.
 
@@ -4547,6 +4600,8 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     \brief The QStyleOptionTabWidgetFrame class is used to describe the
     parameters for drawing the frame around a tab widget.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionTabWidgetFrame contains all the information that
     QStyle functions need to draw the frame around QTabWidget.
 
@@ -4664,6 +4719,8 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
     \brief The QStyleOptionTabWidgetFrameV2 class is used to describe the
     parameters for drawing the frame around a tab widget.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionTabWidgetFrameV2 contains all the information that
     QStyle functions need to draw the frame around QTabWidget.
 
@@ -4787,6 +4844,8 @@ QStyleOptionTabWidgetFrameV2 &QStyleOptionTabWidgetFrameV2::operator=(const QSty
     the base of a tab bar, i.e. the part that the tab bar usually
     overlaps with.
 
+    \inmodule QtWidgets
+ 
     QStyleOptionTabBarBase  contains all the information that QStyle
     functions need to draw the tab bar base. Note that this is only
     drawn for a standalone QTabBar (one that isn't part of a
@@ -4886,6 +4945,7 @@ QStyleOptionTabBarBase::QStyleOptionTabBarBase(int version)
     the base of a tab bar, i.e. the part that the tab bar usually
     overlaps with.
     \since 4.5
+    \inmodule QtWidgets
 
     QStyleOptionTabBarBase  contains all the information that QStyle
     functions need to draw the tab bar base.
@@ -4978,6 +5038,7 @@ QStyleOptionTabBarBaseV2::QStyleOptionTabBarBaseV2(int version)
     \brief The QStyleOptionSizeGrip class is used to describe the
     parameter for drawing a size grip.
     \since 4.2
+    \inmodule QtWidgets
 
     QStyleOptionButton contains all the information that QStyle
     functions need to draw QSizeGrip.
@@ -5059,6 +5120,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
     the parameters needed to draw a QGraphicsItem.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel
@@ -5197,6 +5259,7 @@ qreal QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &wor
     than basic data types.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     QStyleHintReturn and its subclasses are used to pass information
     from a style back to the querying widget. This is most useful
@@ -5294,6 +5357,7 @@ QStyleHintReturn::~QStyleHintReturn()
     \brief The QStyleHintReturnMask class provides style hints that return a QRegion.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     \omit
     ### --Sam
@@ -5350,6 +5414,7 @@ QStyleHintReturnMask::QStyleHintReturnMask() : QStyleHintReturn(Version, Type)
     \brief The QStyleHintReturnVariant class provides style hints that return a QVariant.
     \since 4.3
     \ingroup appearance
+    \inmodule QtWidgets
 */
 
 /*!

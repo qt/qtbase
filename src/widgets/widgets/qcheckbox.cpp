@@ -73,7 +73,7 @@ public:
     \brief The QCheckBox widget provides a checkbox with a text label.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A QCheckBox is an option button that can be switched on (checked) or off
     (unchecked). Checkboxes are typically used to represent features in an

@@ -88,7 +88,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     item views.
 
     \ingroup model-view
-
+    \inmodule QtWidgets
 
     A QHeaderView displays the headers used in item views such as the
     QTableView and QTreeView classes. It takes the place of Qt3's \c QHeader

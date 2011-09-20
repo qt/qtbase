@@ -461,6 +461,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     QListWidget item view class.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     A QListWidgetItem represents a single item in a QListWidget. Each item can
     hold several pieces of information, and will display them appropriately.
@@ -1140,7 +1141,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \brief The QListWidget class provides an item-based list widget.
 
     \ingroup model-view
-
+    \inmodule QtWidgets
 
     QListWidget is a convenience class that provides a list view similar to the
     one supplied by QListView, but with a classic item-based interface for

@@ -98,6 +98,8 @@ void QRubberBand::initStyleOption(QStyleOptionRubberBand *option) const
     \brief The QRubberBand class provides a rectangle or line that can
     indicate a selection or a boundary.
 
+    \inmodule QtWidgets
+
     A rubber band is often used to show a new bounding area (as in a
     QSplitter or a QDockWidget that is undocking). Historically this has
     been implemented using a QPainter and XOR, but this approach

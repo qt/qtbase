@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
     \brief The QScrollBar widget provides a vertical or horizontal scroll bar.
 
     \ingroup basicwidgets
+    \inmodule QtWidgets
 
     A scroll bar is a control that enables the user to access parts of a
     document that is larger than the widget used to display it. It provides

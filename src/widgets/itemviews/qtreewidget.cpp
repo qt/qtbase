@@ -75,6 +75,7 @@ public:
     \brief The QTreeModel class manages the items stored in a tree view.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
 */
 
@@ -883,6 +884,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   QTreeWidget convenience class.
 
   \ingroup model-view
+  \inmodule QtWidgets
 
   Tree widget items are used to hold rows of information for tree widgets.
   Rows usually contain several columns of data, each of which can contain
@@ -2337,7 +2339,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   tree model.
 
   \ingroup model-view
-
+  \inmodule QtWidgets
 
   The QTreeWidget class is a convenience class that provides a standard
   tree widget with a classic item-based interface similar to that used by

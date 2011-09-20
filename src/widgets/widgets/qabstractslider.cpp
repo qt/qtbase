@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAbstractSlider class provides an integer value within a range.
 
     \ingroup abstractwidgets
+    \inmodule QtWidgets
 
     The class is designed as a common super class for widgets like
     QScrollBar, QSlider and QDial.

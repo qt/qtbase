@@ -52,6 +52,7 @@
     Cocoa views (i.e., NSView subclasses) and insert them into Qt hierarchies.
 
     \ingroup advanced
+    \inmodule QtWidgets
 
     While Qt offers a lot of classes for writing your application, Apple's
     Cocoa framework offers lots of functionality that is not currently in Qt or

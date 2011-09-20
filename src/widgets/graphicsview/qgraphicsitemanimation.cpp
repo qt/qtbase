@@ -45,6 +45,7 @@
     support for QGraphicsItem.
     \since 4.2
     \ingroup graphicsview-api
+    \inmodule QtWidgets
     \deprecated
 
     The QGraphicsItemAnimation class animates a QGraphicsItem. You can

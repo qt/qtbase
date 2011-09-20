@@ -45,6 +45,7 @@
     advanced transformations on QGraphicsItems.
     \since 4.6
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     As an alternative to QGraphicsItem::transform, QGraphicsTransform lets you
     create and control advanced transformations that can be configured
@@ -177,6 +178,7 @@ void QGraphicsTransform::update()
   \class QGraphicsScale
   \brief The QGraphicsScale class provides a scale transformation.
   \since 4.6
+  \inmodule QtWidgets
 
   QGraphicsScene provides certain parameters to help control how the scale
   should be applied.
@@ -381,6 +383,7 @@ void QGraphicsScale::applyTo(QMatrix4x4 *matrix) const
     \brief The QGraphicsRotation class provides a rotation transformation around
     a given axis.
     \since 4.6
+    \inmodule QtWidgets
 
     You can provide the desired axis by assigning a QVector3D to the axis property
     or by passing a member if Qt::Axis to the setAxis convenience function.

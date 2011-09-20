@@ -747,8 +747,12 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
     \class QTileRules
     \since 4.6
 
-    Holds the rules used to draw a pixmap or image split into nine segments,
-    similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
+    \inmodule QtWidgets
+ 
+    \brief The QTileRules class provides the rules used to draw a
+    pixmap or image split into nine segments.
+ 
+    Spliiting is similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
 
     \sa Qt::TileRule, QMargins
 */

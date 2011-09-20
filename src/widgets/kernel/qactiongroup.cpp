@@ -106,6 +106,7 @@ void QActionGroupPrivate::_q_actionHovered()
     \brief The QActionGroup class groups actions together.
 
     \ingroup mainwindow-classes
+    \inmodule QtWidgets
 
     In some situations it is useful to group QAction objects together.
     For example, if you have a \gui{Left Align} action, a \gui{Right

@@ -157,6 +157,7 @@ public:
     \brief The QAccessibleWidget class implements the QAccessibleInterface for QWidgets.
 
     \ingroup accessibility
+    \inmodule QtWidgets
 
     This class is convenient to use as a base class for custom
     implementations of QAccessibleInterfaces that provide information

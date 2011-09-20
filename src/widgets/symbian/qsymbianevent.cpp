@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
     \class QSymbianEvent
     \brief The QSymbianEvent class contains a Symbian event of any type.
     \since 4.6
+    \inmodule QtWidgets
 
     The class is used as a generic container type for all types of Symbian
     events.

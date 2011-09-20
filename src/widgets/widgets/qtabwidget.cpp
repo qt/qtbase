@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup organizers
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A tab widget provides a tab bar (see QTabBar) and a "page area"
     that is used to display pages related to each tab. By default, the

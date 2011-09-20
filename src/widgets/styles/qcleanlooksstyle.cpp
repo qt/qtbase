@@ -593,6 +593,8 @@ static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTi
     Clearlooks style available in GNOME.
     \since 4.2
 
+    \inmodule QtWidgets
+ 
     The Cleanlooks style provides a look and feel for widgets
     that closely resembles the Clearlooks style, introduced by Richard
     Stellingwerff and Daniel Borgmann.

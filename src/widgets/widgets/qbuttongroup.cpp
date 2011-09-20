@@ -48,6 +48,7 @@
 
     \ingroup organizers
     \ingroup geomanagement
+    \inmodule QtWidgets
 
     QButtonGroup provides an abstract container into which button widgets can
     be placed. It does not provide a visual representation of this container

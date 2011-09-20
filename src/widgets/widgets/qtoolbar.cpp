@@ -420,7 +420,7 @@ void QToolBarPrivate::plug(const QRect &r)
     set of controls.
 
     \ingroup mainwindow-classes
-
+    \inmodule QtWidgets
 
     Toolbar buttons are added by adding \e actions, using addAction()
     or insertAction(). Groups of buttons can be separated using

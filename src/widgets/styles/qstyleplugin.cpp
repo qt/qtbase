@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \brief The QStylePlugin class provides an abstract base for custom QStyle plugins.
 
     \ingroup plugins
+    \inmodule QtWidgets
 
     QStylePlugin is a simple plugin interface that makes it easy
     to create custom styles that can be loaded dynamically into

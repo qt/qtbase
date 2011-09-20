@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     widget, i.e. answering the question "What's This?".
 
     \ingroup helpsystem
-
+    \inmodule QtWidgets
 
     "What's This?" help is part of an application's online help
     system, and provides users with information about the

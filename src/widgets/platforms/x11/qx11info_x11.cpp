@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     configuration.
 
     \ingroup shared
+    \inmodule QtWidgets
 
     The class provides two APIs: a set of non-static functions that
     provide information about a specific widget or pixmap, and a set

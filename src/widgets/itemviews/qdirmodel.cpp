@@ -189,6 +189,7 @@ void QDirModelPrivate::invalidate()
     \brief The QDirModel class provides a data model for the local filesystem.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     The usage of QDirModel is not recommended anymore. The
     QFileSystemModel class is a more performant alternative.

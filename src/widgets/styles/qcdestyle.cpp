@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
     \brief The QCDEStyle class provides a CDE look and feel.
 
     \ingroup appearance
+    \inmodule QtWidgets
 
     This style provides a slightly improved Motif look similar to some
     versions of the Common Desktop Environment (CDE). The main

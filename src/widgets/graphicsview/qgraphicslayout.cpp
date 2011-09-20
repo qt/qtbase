@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
     in Graphics View.
     \since 4.4
     \ingroup graphicsview-api
+    \inmodule QtWidgets
 
     QGraphicsLayout is an abstract class that defines a virtual API for
     arranging QGraphicsWidget children and other QGraphicsLayoutItem objects

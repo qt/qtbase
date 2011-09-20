@@ -857,6 +857,7 @@ Qt::DropActions QTableModel::supportedDropActions() const
     selection in a model without using model indexes and a selection model.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     The QTableWidgetSelectionRange class stores the top left and bottom
     right rows and columns of a selection range in a table. The
@@ -965,6 +966,7 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
     QTableWidget class.
 
     \ingroup model-view
+    \inmodule QtWidgets
 
     Table items are used to hold pieces of information for table widgets.
     Items usually contain text, icons, or checkboxes
@@ -1490,7 +1492,7 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \brief The QTableWidget class provides an item-based table view with a default model.
 
     \ingroup model-view
-
+    \inmodule QtWidgets
 
     Table widgets provide standard table display facilities for applications.
     The items in a QTableWidget are provided by QTableWidgetItem.

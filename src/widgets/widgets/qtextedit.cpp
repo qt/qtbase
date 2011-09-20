@@ -338,7 +338,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     both plain and rich text.
 
     \ingroup richtext-processing
-
+    \inmodule QtWidgets
 
     \tableofcontents
 
@@ -1923,6 +1923,8 @@ void QTextEdit::setAcceptRichText(bool accept)
 /*!
     \class QTextEdit::ExtraSelection
     \since 4.2
+    \inmodule QtWidgets
+
     \brief The QTextEdit::ExtraSelection structure provides a way of specifying a
            character format for a given selection in a document
 */

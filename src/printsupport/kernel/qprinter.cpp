@@ -244,6 +244,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \brief The QPrinter class is a paint device that paints on a printer.
 
   \ingroup printing
+  \inmodule QtPrintSupport
 
 
   This device represents a series of pages of printed output, and is
@@ -2075,6 +2076,7 @@ QPrinter::PrintRange QPrinter::printRange() const
     \reentrant
 
     \ingroup printing
+    \inmodule QtPrintSupport
 
     \brief The QPrintEngine class defines an interface for how QPrinter
     interacts with a given printing subsystem.

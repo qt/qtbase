@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     another widget.
 
     \ingroup basicwidgets
-
+    \inmodule QtWidgets
 
     A scroll area is used to display the contents of a child widget
     within a frame. If the widget exceeds the size of the frame, the

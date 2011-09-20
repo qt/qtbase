@@ -1785,6 +1785,8 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \since 4.3
     \brief The QWizard class provides a framework for wizards.
 
+    \inmodule QtWidgets
+
     A wizard (also called an assistant on Mac OS X) is a special type
     of input dialog that consists of a sequence of pages. A wizard's
     purpose is to guide the user through a process step by step.
@@ -3339,6 +3341,8 @@ int QWizard::nextId() const
     \class QWizardPage
     \since 4.3
     \brief The QWizardPage class is the base class for wizard pages.
+
+    \inmodule QtWidgets
 
     QWizard represents a wizard. Each page is a QWizardPage. When
     you create your own wizards, you can use QWizardPage directly,

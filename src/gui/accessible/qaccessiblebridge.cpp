@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
     accessibility back-ends.
 
     \ingroup accessibility
+    \inmodule QtWidgets
 
     Qt supports Microsoft Active Accessibility (MSAA), Mac OS X
     Accessibility, and the Unix/X11 AT-SPI standard. By subclassing
@@ -102,6 +103,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup plugins
     \ingroup accessibility
+    \inmodule QtWidgets
 
     Writing an accessibility bridge plugin is achieved by subclassing
     this base class, reimplementing the pure virtual functions keys()

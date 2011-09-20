@@ -614,6 +614,7 @@ void QStandardItemModelPrivate::columnsRemoved(QStandardItem *parent,
     QStandardItemModel class.
     \since 4.2
     \ingroup model-view
+    \inmodule QtWidgets
 
     Items usually contain text, icons, or checkboxes.
 
@@ -1951,6 +1952,7 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
     \class QStandardItemModel
     \brief The QStandardItemModel class provides a generic model for storing custom data.
     \ingroup model-view
+    \inmodule QtWidgets
 
     QStandardItemModel can be used as a repository for standard Qt
     data types. It is one of the \l {Model/View Classes} and is part

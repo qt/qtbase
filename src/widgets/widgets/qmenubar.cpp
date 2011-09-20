@@ -576,6 +576,7 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     \brief The QMenuBar class provides a horizontal menu bar.
 
     \ingroup mainwindow-classes
+    \inmodule QtWidgets
 
     A menu bar consists of a list of pull-down menu items. You add
     menu items with addMenu(). For example, asuming that \c menubar
