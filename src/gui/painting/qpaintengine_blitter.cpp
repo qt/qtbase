@@ -197,8 +197,8 @@ public:
               hasXForm(false)
 
     {
-        raster = new QRasterPaintEngine(p->buffer());
-        capabillities = new CapabilitiesToStateMask(pmData->blittable()->capabilities());
+        raster.reset(new QRasterPaintEngine(p->buffer()));
+        capabillities.reset(new CapabilitiesToStateMask(pmData->blittable()->capabilities()));
     }
 
     inline void lock() {
@@ -278,12 +278,12 @@ public:
         raster->d_func()->systemStateChanged();
     }
 
-    QRasterPaintEngine *raster;
+    QScopedPointer<QRasterPaintEngine> raster;
 
     QBlittablePlatformPixmap *pmData;
     bool isBlitterLocked;
 
-    CapabilitiesToStateMask *capabillities;
+    QScopedPointer<CapabilitiesToStateMask> capabillities;
 
     uint hasXForm;
 };
@@ -654,7 +654,7 @@ void QBlitterPaintEngine::setState(QPainterState *s)
 inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
 {
     Q_D(const QBlitterPaintEngine);
-    return d->raster;
+    return d->raster.data();
 }
 
 QT_END_NAMESPACE
