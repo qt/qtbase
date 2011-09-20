@@ -83,8 +83,8 @@ public:
 
 #endif //QT_BLITTER_RASTEROVERLAY
 protected:
-    QBlitterPaintEngine *m_engine;
-    QBlittable *m_blittable;
+    QScopedPointer<QBlitterPaintEngine> m_engine;
+    QScopedPointer<QBlittable> m_blittable;
 
 #ifdef QT_BLITTER_RASTEROVERLAY
     QImage *m_rasterOverlay;
