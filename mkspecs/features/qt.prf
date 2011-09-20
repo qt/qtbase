@@ -1,7 +1,5 @@
 CONFIG *= moc thread
 
-contains(QT, declarative): QT += opengl
-
 #handle defines
 win32 {
    qt_static:DEFINES += QT_NODLL
