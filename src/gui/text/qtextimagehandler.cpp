@@ -217,6 +217,13 @@ QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, c
     return getPixmapSize(doc, imageFormat);
 }
 
+QImage QTextImageHandler::image(QTextDocument *doc, const QTextImageFormat &imageFormat)
+{
+    Q_ASSERT(doc != 0);
+
+    return getImage(doc, imageFormat);
+}
+
 void QTextImageHandler::drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format)
 {
     Q_UNUSED(posInDocument)
