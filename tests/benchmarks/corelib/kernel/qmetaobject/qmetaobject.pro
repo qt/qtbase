@@ -4,6 +4,7 @@ load(qttest_p4)
 CONFIG -= testcase
 
 TEMPLATE = app
+QT += widgets
 TARGET = tst_bench_qmetaobject
 
 SOURCES += main.cpp

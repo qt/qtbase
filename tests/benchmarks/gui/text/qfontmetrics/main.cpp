@@ -71,7 +71,7 @@ void tst_QFontMetrics::testQFontMetrics( const QFontMetrics &fm )
 void tst_QFontMetrics::fontmetrics_create()
 {
     QBENCHMARK {
-      QFont boldfont = QApplication::font();
+      QFont boldfont = QGuiApplication::font();
       boldfont.setBold( true );
       boldfont.setPointSize(boldfont.pointSize() * 1.5 );
       QFontMetrics bfm( boldfont );
@@ -81,7 +81,7 @@ void tst_QFontMetrics::fontmetrics_create()
 void tst_QFontMetrics::fontmetrics_create_once_loaded()
 {
     QBENCHMARK {
-      QFont boldfont = QApplication::font();
+      QFont boldfont = QGuiApplication::font();
       boldfont.setBold( true );
       boldfont.setPointSize(boldfont.pointSize() * 1.5 );
       QFontMetrics bfm( boldfont );
@@ -90,7 +90,7 @@ void tst_QFontMetrics::fontmetrics_create_once_loaded()
 
 void tst_QFontMetrics::fontmetrics_height()
 {
-    QFont boldfont = QApplication::font();
+    QFont boldfont = QGuiApplication::font();
     boldfont.setBold( true );
     boldfont.setPointSize(boldfont.pointSize() * 1.5 );
     QFontMetrics bfm( boldfont );
@@ -100,7 +100,7 @@ void tst_QFontMetrics::fontmetrics_height()
 
 void tst_QFontMetrics::fontmetrics_height_once_loaded()
 {
-    QFont boldfont = QApplication::font();
+    QFont boldfont = QGuiApplication::font();
     boldfont.setBold( true );
     boldfont.setPointSize(boldfont.pointSize() * 1.5 );
     QFontMetrics bfm( boldfont );
