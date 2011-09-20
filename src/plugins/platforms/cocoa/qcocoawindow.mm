@@ -42,6 +42,7 @@
 #include "qnswindowdelegate.h"
 #include "qcocoaautoreleasepool.h"
 #include "qcocoaglcontext.h"
+#include "qcocoahelpers.h"
 #include "qnsview.h"
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
@@ -167,6 +168,12 @@ void QCocoaWindow::windowDidMove()
 {
     if (m_glContext)
         m_glContext->update();
+
+    NSRect rect = [[m_nsWindow contentView]frame];
+    NSRect windowRect = [m_nsWindow frame];
+
+    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
 }
 
 void QCocoaWindow::windowDidResize()
@@ -175,7 +182,9 @@ void QCocoaWindow::windowDidResize()
         m_glContext->update();
 
     NSRect rect = [[m_nsWindow contentView]frame];
-    QRect geo(rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+    NSRect windowRect = [m_nsWindow frame];
+
+    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
     QWindowSystemInterface::handleSynchronousGeometryChange(window(), geo);
 }
 
