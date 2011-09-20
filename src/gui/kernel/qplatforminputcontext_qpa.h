@@ -66,7 +66,7 @@ public:
     virtual void commit();
     virtual void update(Qt::InputMethodQueries);
     virtual void invokeAction(QInputPanel::Action, int cursorPosition);
-
+    virtual bool filterEvent(const QEvent *event);
     virtual QRectF keyboardRect() const;
     void emitKeyboardRectChanged() const;
 

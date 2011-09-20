@@ -1026,9 +1026,9 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     QByteArray chars;
     xcb_keysym_t sym = lookupString(window, state, code, type, &chars);
+    QPlatformInputContext *inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext();
 
-
-    if (QObject* inputContext = QGuiApplicationPrivate::platformIntegration()->inputContext()) {
+    if (inputContext) {
         bool retval = false;
         if (inputContext->metaObject()->indexOfMethod("x11FilterEvent") != -1)
             QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
@@ -1045,6 +1045,15 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     int qtcode = 0;
     int count = chars.count();
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
+
+    if (inputContext) {
+        QKeyEvent event(type, qtcode, modifiers, string);
+        event.setTimestamp(time);
+        bool retval = inputContext->filterEvent(&event);
+        if (retval)
+            return;
+    }
+
     QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
                                                    code, 0, state, string.left(count));
 }

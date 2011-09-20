@@ -78,6 +78,11 @@ void QPlatformInputContext::invokeAction(QInputPanel::Action action, int cursorP
         reset();
 }
 
+bool QPlatformInputContext::filterEvent(const QEvent *event)
+{
+    return false;
+}
+
 QRectF QPlatformInputContext::keyboardRect() const
 {
     return QRectF();
