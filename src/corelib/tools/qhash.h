@@ -879,8 +879,13 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
                                                                             uint *ahp) const
 {
     Node **node;
-    uint h = qHash(akey);
+    uint h;
 
+    if (d->numBuckets || ahp) {
+        h = qHash(akey);
+        if (ahp)
+            *ahp = h;
+    }
     if (d->numBuckets) {
         node = reinterpret_cast<Node **>(&d->buckets[h % d->numBuckets]);
         Q_ASSERT(*node == e || (*node)->next);
@@ -889,8 +894,6 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
     } else {
         node = const_cast<Node **>(reinterpret_cast<const Node * const *>(&e));
     }
-    if (ahp)
-        *ahp = h;
     return node;
 }
 
