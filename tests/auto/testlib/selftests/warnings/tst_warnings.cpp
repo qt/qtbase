@@ -53,33 +53,24 @@ private slots:
 
 void tst_Warnings::testWarnings()
 {
-    printf("testWarnings 1: next line prints \"Warning\"\n");
     qWarning("Warning");
-    printf("testWarnings 2: next line prints nothing\n");
 
     QTest::ignoreMessage(QtWarningMsg, "Warning");
     qWarning("Warning");
-    printf("testWarnings 3: next line prints \"Warning\"\n");
 
     qWarning("Warning");
-    printf("testWarnings 4: over\n");
 
-    printf("testWarnings 5: next line prints \"Debug\"\n");
     qDebug("Debug");
-    printf("testWarnings 6: next line prints nothing\n");
 
     QTest::ignoreMessage(QtDebugMsg, "Debug");
     qDebug("Debug");
-    printf("testWarnings 7: next line prints \"Debug\"\n");
 
     qDebug("Debug");
-    printf("testWarnings 8: next comes \"Baba\" twice\n");
 
     QTest::ignoreMessage(QtDebugMsg, "Bubu");
     qDebug("Baba");
     qDebug("Bubu");
     qDebug("Baba");
-
 }
 
 void tst_Warnings::testMissingWarnings()
