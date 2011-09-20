@@ -217,6 +217,61 @@ translateCoordinates(QXcbConnection *c, xcb_window_t from, xcb_window_t to, int 
     return xcb_translate_coordinates_reply(c->xcb_connection(), cookie, 0);
 }
 
+xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md)
+{
+    if (w == QDragManager::self()->shapedPixmapWindow->handle()->winId())
+        return 0;
+
+    if (md) {
+        xcb_get_window_attributes_cookie_t cookie = xcb_get_window_attributes(xcb_connection(), w);
+        xcb_get_window_attributes_reply_t *reply = xcb_get_window_attributes_reply(xcb_connection(), cookie, 0);
+        if (!reply)
+            return 0;
+
+        if (reply->map_state != XCB_MAP_STATE_VIEWABLE)
+            return 0;
+
+        xcb_get_geometry_cookie_t gcookie = xcb_get_geometry(xcb_connection(), w);
+        xcb_get_geometry_reply_t *greply = xcb_get_geometry_reply(xcb_connection(), gcookie, 0);
+        if (reply && QRect(greply->x, greply->y, greply->width, greply->height).contains(pos)) {
+            {
+                xcb_get_property_cookie_t cookie =
+                        Q_XCB_CALL(xcb_get_property(xcb_connection(), false, w, connection()->atom(QXcbAtom::XdndAware),
+                                                    XCB_GET_PROPERTY_TYPE_ANY, 0, 0));
+                xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
+
+                bool isAware = reply && reply->type != XCB_NONE;
+                free(reply);
+                if (isAware)
+                    return w;
+            }
+
+            xcb_query_tree_cookie_t cookie = xcb_query_tree (xcb_connection(), w);
+            xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection(), cookie, 0);
+
+            if (!reply)
+                return 0;
+            int nc = xcb_query_tree_children_length(reply);
+            xcb_window_t *c = xcb_query_tree_children(reply);
+
+            xcb_window_t r = 0;
+            for (uint i = nc; !r && i--;)
+                r = findRealWindow(pos - QPoint(greply->x, greply->y), c[i], md-1);
+
+            free(reply);
+            if (r)
+                return r;
+
+            // We didn't find a client window!  Just use the
+            // innermost window.
+
+            // No children!
+            return w;
+        }
+    }
+    return 0;
+}
+
 void QXcbDrag::move(const QMouseEvent *me)
 {
     DEBUG() << "QDragManager::move enter";
@@ -304,12 +359,12 @@ void QXcbDrag::move(const QMouseEvent *me)
             target = translate->child;
             free(translate);
         }
-        // ####
-//        if (xdnd_data.deco && (!target || target == xdnd_data.deco->effectiveWinId())) {
-//            DNDDEBUG << "need to find real window";
-//            target = findRealWindow(globalPos, rootwin, 6);
-//            DNDDEBUG << "real window found" << QWidget::find(target) << target;
-//        }
+
+        if (!target || target == QDragManager::self()->shapedPixmapWindow->handle()->winId()) {
+            DNDDEBUG << "need to find real window";
+            target = findRealWindow(globalPos, rootwin, 6);
+            DNDDEBUG << "real window found" << target;
+        }
     }
 
     QXcbWindow *w = 0;
@@ -406,9 +461,9 @@ void QXcbDrag::move(const QMouseEvent *me)
     } else {
         if (m->willDrop) {
             m->willDrop = false;
-            m->updateCursor();
         }
     }
+    m->updateCursor();
     DEBUG() << "QDragManager::move leave";
 }
 
@@ -1076,60 +1131,6 @@ void QXcbDrag::cancel()
     current_target = 0;
 }
 
-#if 0
-
-static
-Window findRealWindow(const QPoint & pos, Window w, int md)
-{
-    if (xdnd_data.deco && w == xdnd_data.deco->effectiveWinId())
-        return 0;
-
-    if (md) {
-        X11->ignoreBadwindow();
-        XWindowAttributes attr;
-        XGetWindowAttributes(X11->display, w, &attr);
-        if (X11->badwindow())
-            return 0;
-
-        if (attr.map_state == IsViewable
-            && QRect(attr.x,attr.y,attr.width,attr.height).contains(pos)) {
-            {
-                Atom   type = XNone;
-                int f;
-                unsigned long n, a;
-                unsigned char *data;
-
-                XGetWindowProperty(X11->display, w, ATOM(XdndAware), 0, 0, False,
-                                   AnyPropertyType, &type, &f,&n,&a,&data);
-                if (data) XFree(data);
-                if (type)
-                    return w;
-            }
-
-            Window r, p;
-            Window* c;
-            uint nc;
-            if (XQueryTree(X11->display, w, &r, &p, &c, &nc)) {
-                r=0;
-                for (uint i=nc; !r && i--;) {
-                    r = findRealWindow(pos-QPoint(attr.x,attr.y),
-                                        c[i], md-1);
-                }
-                XFree(c);
-                if (r)
-                    return r;
-
-                // We didn't find a client window!  Just use the
-                // innermost window.
-            }
-
-            // No children!
-            return w;
-        }
-    }
-    return 0;
-}
-#endif
 
 void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event)
 {
