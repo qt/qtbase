@@ -71,7 +71,8 @@ public:
     virtual void syncSeparatorsCollapsible(bool enable);
 };
 
-struct Q_WIDGETS_EXPORT QPlatformMenuBar {
+class Q_WIDGETS_EXPORT QPlatformMenuBar {
+public:
     QPlatformMenuBar();
     virtual ~QPlatformMenuBar();
 
