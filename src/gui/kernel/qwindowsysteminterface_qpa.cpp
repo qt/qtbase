@@ -230,8 +230,20 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
             state |= Qt::TouchPointPrimary;
         }
         p.setState(state);
-        p.setRect(point->area);
-        p.setScreenPos(point->area.center());
+
+        const QPointF screenPos = point->area.center();
+        p.setScreenPos(screenPos);
+        p.setScreenRect(point->area);
+
+        // Map screen pos to local (QWindow) coordinates and preserve sub-pixel resolution.
+        const QPointF delta = screenPos - screenPos.toPoint();
+        const QPointF localPos = tlw->mapFromGlobal(screenPos.toPoint()) + delta;
+        p.setPos(localPos);
+
+        QRectF rect(0, 0, point->area.width(), point->area.height());
+        rect.moveCenter(localPos);
+        p.setRect(rect);
+
         p.setNormalizedPos(point->normalPosition);
 
         touchPoints.append(p);
