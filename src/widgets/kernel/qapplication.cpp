@@ -3449,7 +3449,7 @@ void QApplication::setStartDragDistance(int l)
 
 int QApplication::startDragDistance()
 {
-    return qApp->styleHints()->startDragTime();
+    return qApp->styleHints()->startDragDistance();
 }
 
 /*!
