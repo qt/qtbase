@@ -537,6 +537,10 @@ void QWindow::exposeEvent(QExposeEvent *)
 {
 }
 
+void QWindow::moveEvent(QMoveEvent *)
+{
+}
+
 void QWindow::resizeEvent(QResizeEvent *)
 {
 }
@@ -566,6 +570,10 @@ bool QWindow::event(QEvent *event)
 
     case QEvent::MouseButtonDblClick:
         mouseDoubleClickEvent(static_cast<QMouseEvent*>(event));
+        break;
+
+    case QEvent::Move:
+        moveEvent(static_cast<QMoveEvent*>(event));
         break;
 
     case QEvent::Resize:

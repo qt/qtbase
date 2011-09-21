@@ -67,6 +67,7 @@ public:
         , platformWindow(0)
         , visible(false)
         , windowState(Qt::WindowNoState)
+        , resizeEventPending(true)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
         , transientParent(0)
@@ -99,6 +100,7 @@ public:
     QString windowTitle;
     QRect geometry;
     Qt::WindowState windowState;
+    bool resizeEventPending;
 
     QSize minimumSize;
     QSize maximumSize;

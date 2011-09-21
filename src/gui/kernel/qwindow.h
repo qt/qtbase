@@ -60,6 +60,7 @@ QT_MODULE(Gui)
 class QWindowPrivate;
 
 class QExposeEvent;
+class QMoveEvent;
 class QResizeEvent;
 class QShowEvent;
 class QHideEvent;
@@ -195,6 +196,7 @@ Q_SIGNALS:
 protected:
     virtual void exposeEvent(QExposeEvent *);
     virtual void resizeEvent(QResizeEvent *);
+    virtual void moveEvent(QMoveEvent *);
 
     virtual void showEvent(QShowEvent *);
     virtual void hideEvent(QHideEvent *);

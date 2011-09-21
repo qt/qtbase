@@ -343,6 +343,8 @@ void QXcbWindow::setGeometry(const QRect &rect)
                                qBound(1, rect.height(), XCOORD_MAX) };
 
     Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, values));
+
+    xcb_flush(xcb_connection());
 }
 
 QMargins QXcbWindow::frameMargins() const
@@ -1168,15 +1170,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 
 void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event)
 {
-    int xpos = geometry().x();
-    int ypos = geometry().y();
-
-    if ((event->width == geometry().width() && event->height == geometry().height()) || event->x != 0 || event->y != 0) {
-        xpos = event->x;
-        ypos = event->y;
-    }
-
-    QRect rect(xpos, ypos, event->width, event->height);
+    QRect rect(event->x, event->y, event->width, event->height);
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);

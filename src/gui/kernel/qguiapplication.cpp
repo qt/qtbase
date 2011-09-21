@@ -701,16 +701,18 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         return;
 
     QRect newRect = e->newGeometry;
-    QRect cr = window->geometry();
+    QRect cr = window->d_func()->geometry;
 
     bool isResize = cr.size() != newRect.size();
     bool isMove = cr.topLeft() != newRect.topLeft();
 
     window->d_func()->geometry = newRect;
 
-    if (isResize) {
+    if (isResize || window->d_func()->resizeEventPending) {
         QResizeEvent e(newRect.size(), cr.size());
         QGuiApplication::sendSpontaneousEvent(window, &e);
+
+        window->d_func()->resizeEventPending = false;
     }
 
     if (isMove) {
@@ -924,9 +926,6 @@ void QGuiApplicationPrivate::processExposeEvent(QWindowSystemInterfacePrivate::E
         return;
 
     QWindow *window = e->exposed.data();
-
-    QResizeEvent resizeEvent(window->handle()->geometry().size(), window->size());
-    QGuiApplication::sendSpontaneousEvent(window, &resizeEvent);
 
     QExposeEvent exposeEvent(e->region);
     QCoreApplication::sendSpontaneousEvent(window, &exposeEvent);
