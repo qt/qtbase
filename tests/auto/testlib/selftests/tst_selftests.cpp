@@ -53,7 +53,7 @@ private slots:
     void cleanup();
 
 private:
-    void doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments );
+    void doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments);
 };
 
 struct BenchmarkResult
@@ -142,45 +142,73 @@ static QList<QByteArray> splitLines(QByteArray ba)
     return out;
 }
 
+// Return the log format, e.g. for both "stdout txt" and "txt", return "txt'.
+static inline QString logFormat(const QString &logger)
+{
+    return (logger.startsWith("stdout") ? logger.mid(7) : logger);
+}
+
+// Return the log file name, or an empty string if the log goes to stdout.
+static inline QString logName(const QString &logger)
+{
+    return (logger.startsWith("stdout") ? "" : "test_output." + logger);
+}
+
 // Load the expected test output for the nominated test (subdir) and logger
 // as an array of lines.  If there is no expected output file, return an
 // empty array.
 static QList<QByteArray> expectedResult(const QString &subdir, const QString &logger)
 {
-    QFile file(":/expected_" + subdir + "." + logger);
+    QFile file(":/expected_" + subdir + "." + logFormat(logger));
     if (!file.open(QIODevice::ReadOnly))
         return QList<QByteArray>();
     return splitLines(file.readAll());
 }
 
-struct Logger
+// Each test is run with a set of one or more test output loggers.
+// This struct holds information about one such test.
+struct LoggerSet
 {
-    Logger(QString const&, QStringList const&);
+    LoggerSet(QString const& _name, QStringList const& _loggers, QStringList const& _arguments)
+        : name(_name), loggers(_loggers), arguments(_arguments)
+    { }
 
     QString name;
+    QStringList loggers;
     QStringList arguments;
 };
 
-Logger::Logger(QString const& _name, QStringList const& _arguments)
-    : name(_name)
-    , arguments(_arguments)
+// This function returns a list of all sets of loggers to be used for
+// running each subtest.
+static QList<LoggerSet> allLoggerSets()
 {
-}
-
-static QList<Logger> allLoggers()
-{
-    return QList<Logger>()
-        << Logger("txt",      QStringList())
-        << Logger("xml",      QStringList() << "-xml")
-        << Logger("xunitxml", QStringList() << "-xunitxml")
-        << Logger("lightxml", QStringList() << "-lightxml")
+    // For the plain text logger, we'll test logging to file and to standard
+    // output.  For all other loggers (XML), we'll tell testlib to redirect to
+    // file.  The reason is that tests are allowed to print to standard output,
+    // and that means the test log is no longer guaranteed to be valid XML.
+    return QList<LoggerSet>()
+        << LoggerSet("stdout txt",
+                     QStringList() << "stdout txt",
+                     QStringList())
+        << LoggerSet("txt",
+                     QStringList() << "txt",
+                     QStringList() << "-o" << logName("txt"))
+        << LoggerSet("xml",
+                     QStringList() << "xml",
+                     QStringList() << "-xml" << "-o" << logName("xml"))
+        << LoggerSet("xunitxml",
+                     QStringList() << "xunitxml",
+                     QStringList() << "-xunitxml" << "-o" << logName("xunitxml"))
+        << LoggerSet("lightxml",
+                     QStringList() << "lightxml",
+                     QStringList() << "-lightxml" << "-o" << logName("lightxml"))
     ;
 }
 
 void tst_Selftests::runSubTest_data()
 {
     QTest::addColumn<QString>("subdir");
-    QTest::addColumn<QString>("logger");
+    QTest::addColumn<QStringList>("loggers");
     QTest::addColumn<QStringList>("arguments");
 
     QStringList tests = QStringList()
@@ -243,14 +271,11 @@ void tst_Selftests::runSubTest_data()
         << "badxml"
     ;
 
-    foreach (Logger const& logger, allLoggers()) {
-        QString rowSuffix;
-        if (logger.name != "txt") {
-            rowSuffix = QString(" %1").arg(logger.name);
-        }
+    foreach (LoggerSet const& loggerSet, allLoggerSets()) {
+        QStringList loggers = loggerSet.loggers;
 
         foreach (QString const& subtest, tests) {
-            QStringList arguments = logger.arguments;
+            QStringList arguments = loggerSet.arguments;
             if (subtest == "commandlinedata") {
                 arguments << QString("fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2").split(' ');
             }
@@ -274,7 +299,7 @@ void tst_Selftests::runSubTest_data()
             // standard output, either because they execute multiple test
             // objects or because they internally supply arguments to
             // themselves.
-            if (logger.name != "txt") {
+            if (loggerSet.name != "stdout txt") {
                 if (subtest == "differentexec") {
                     continue;
                 }
@@ -298,40 +323,34 @@ void tst_Selftests::runSubTest_data()
                 }
             }
 
-            QTest::newRow(qPrintable(QString("%1%2").arg(subtest).arg(rowSuffix)))
+            QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
-                << logger.name
+                << loggers
                 << arguments
             ;
         }
     }
 }
 
-void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, QStringList const& arguments )
+void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments)
 {
-    // For the plain text logger, we'll read straight from standard output.
-    // For all other loggers (XML), we'll tell testlib to redirect to a file.
-    // The reason is that tests are allowed to print to standard output, and
-    // that means the test log is no longer guaranteed to be valid XML.
-    QStringList extraArguments;
-    QString logfile;
-    if (logger != "txt") {
-        logfile = "test_output";
-        extraArguments << "-o" << logfile;
-    }
-
     QProcess proc;
     proc.setEnvironment(QStringList(""));
-    proc.start(subdir + "/" + subdir, QStringList() << arguments << extraArguments);
+    proc.start(subdir + "/" + subdir, arguments);
     QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
 
-    QByteArray out;
-    if (logfile.isEmpty()) {
-        out = proc.readAllStandardOutput();
-    } else {
-        QFile file(logfile);
-        if (file.open(QIODevice::ReadOnly))
-            out = file.readAll();
+    QList<QByteArray> actualOutputs;
+    for (int i = 0; i < loggers.count(); ++i) {
+        QString logFile = logName(loggers[i]);
+        QByteArray out;
+        if (logFile.isEmpty()) {
+            out = proc.readAllStandardOutput();
+        } else {
+            QFile file(logFile);
+            if (file.open(QIODevice::ReadOnly))
+                out = file.readAll();
+        }
+        actualOutputs << out;
     }
 
     const QByteArray err(proc.readAllStandardError());
@@ -352,107 +371,117 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
         && subdir != QLatin1String("benchlibcallgrind"))
         QVERIFY2(err.isEmpty(), err.constData());
 
-    QList<QByteArray> res = splitLines(out);
-    QList<QByteArray> exp = expectedResult(subdir, logger);
+    for (int n = 0; n < loggers.count(); ++n) {
+        QString logger = loggers[n];
+        QList<QByteArray> res = splitLines(actualOutputs[n]);
+        QList<QByteArray> exp = expectedResult(subdir, logger);
 
-    if (exp.count() == 0) {
-        QList<QList<QByteArray> > expArr;
-        int i = 1;
-        do {
-            exp = expectedResult(subdir + QString("_%1").arg(i++), logger);
-            if (exp.count())
-                expArr += exp;
-        } while (exp.count());
+        // For the "crashes" test, there are multiple versions of the
+        // expected output.  Load the one with the same line count as
+        // the actual output.
+        if (exp.count() == 0) {
+            QList<QList<QByteArray> > expArr;
+            int i = 1;
+            do {
+                exp = expectedResult(subdir + QString("_%1").arg(i++), logger);
+                if (exp.count())
+                    expArr += exp;
+            } while (exp.count());
 
-        for (int j = 0; j < expArr.count(); ++j) {
-            if (res.count() == expArr.at(j).count()) {
-                exp = expArr.at(j);
-                break;
+            for (int j = 0; j < expArr.count(); ++j) {
+                if (res.count() == expArr.at(j).count()) {
+                    exp = expArr.at(j);
+                    break;
+                }
             }
-        }
-    } else {
-        QCOMPARE(res.count(), exp.count());
-    }
-
-    if (logger == "xunitxml" || logger == "xml" || logger == "lightxml") {
-        QByteArray xml(out);
-        // lightxml intentionally skips the root element, which technically makes it
-        // not valid XML.
-        // We'll add that ourselves for the purpose of validation.
-        if (logger == "lightxml") {
-            xml.prepend("<root>");
-            xml.append("</root>");
-        }
-
-        QXmlStreamReader reader(xml);
-
-        while(!reader.atEnd())
-            reader.readNext();
-
-        QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
-            .arg(reader.lineNumber())
-            .arg(reader.columnNumber())
-            .arg(reader.errorString())
-        ));
-    }
-
-    bool benchmark = false;
-    for (int i = 0; i < res.count(); ++i) {
-        QByteArray line = res.at(i);
-        if (line.startsWith("Config: Using QTest"))
-            continue;
-        // the __FILE__ __LINE__ output is compiler dependent, skip it
-        if (line.startsWith("   Loc: [") && line.endsWith(")]"))
-            continue;
-        if (line.endsWith(" : failure location"))
-            continue;
-
-        const QString output(QString::fromLatin1(line));
-        const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
-
-        // Q_ASSERT uses __FILE__.  Some compilers include the absolute path in
-        // __FILE__, while others do not.
-        if (line.contains("ASSERT") && output != expected) {
-            const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
-            QEXPECT_FAIL("assert",                msg, Continue);
-            QEXPECT_FAIL("assert xml",            msg, Continue);
-            QEXPECT_FAIL("assert lightxml",       msg, Continue);
-            QEXPECT_FAIL("assert xunitxml",       msg, Continue);
-        }
-
-        if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
-            // On some platforms we compile without RTTI, and as a result we never throw an exception.
-            QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
-        else if (output != expected && qstrcmp(QTest::currentDataTag(), "float") == 0)
-            // The floating point formatting differs between platforms, so let's just skip it.
-            continue;
-        else if (benchmark || line.startsWith("<BenchmarkResult")) {
-            // Don't do a literal comparison for benchmark results, since
-            // results have some natural variance.
-            QString error;
-
-            BenchmarkResult actualResult = BenchmarkResult::parse(output, &error);
-            QVERIFY2(error.isEmpty(), qPrintable(QString("Actual line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(output)));
-
-            BenchmarkResult expectedResult = BenchmarkResult::parse(expected, &error);
-            QVERIFY2(error.isEmpty(), qPrintable(QString("Expected line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(expected)));
-
-            QCOMPARE(actualResult, expectedResult);
         } else {
-            QCOMPARE(output, expected);
+            QCOMPARE(res.count(), exp.count());
         }
 
-        benchmark = line.startsWith("RESULT : ");
+        // For xml output formats, verify that the log is valid XML.
+        if (logFormat(logger) == "xunitxml" || logFormat(logger) == "xml" || logFormat(logger) == "lightxml") {
+            QByteArray xml(actualOutputs[n]);
+            // lightxml intentionally skips the root element, which technically makes it
+            // not valid XML.
+            // We'll add that ourselves for the purpose of validation.
+            if (logFormat(logger) == "lightxml") {
+                xml.prepend("<root>");
+                xml.append("</root>");
+            }
+
+            QXmlStreamReader reader(xml);
+
+            while (!reader.atEnd())
+                reader.readNext();
+
+            QVERIFY2(!reader.error(), qPrintable(QString("line %1, col %2: %3")
+                .arg(reader.lineNumber())
+                .arg(reader.columnNumber())
+                .arg(reader.errorString())
+            ));
+        }
+
+        // Verify that the actual output is an acceptable match for the
+        // expected output.
+        bool benchmark = false;
+        for (int i = 0; i < res.count(); ++i) {
+            QByteArray line = res.at(i);
+            if (line.startsWith("Config: Using QTest"))
+                continue;
+            // the __FILE__ __LINE__ output is compiler dependent, skip it
+            if (line.startsWith("   Loc: [") && line.endsWith(")]"))
+                continue;
+            if (line.endsWith(" : failure location"))
+                continue;
+
+            const QString output(QString::fromLatin1(line));
+            const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
+
+            // Q_ASSERT uses __FILE__.  Some compilers include the absolute path in
+            // __FILE__, while others do not.
+            if (line.contains("ASSERT") && output != expected) {
+                const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
+                QEXPECT_FAIL("assert stdout txt",     msg, Continue);
+                QEXPECT_FAIL("assert txt",            msg, Continue);
+                QEXPECT_FAIL("assert xml",            msg, Continue);
+                QEXPECT_FAIL("assert lightxml",       msg, Continue);
+                QEXPECT_FAIL("assert xunitxml",       msg, Continue);
+            }
+
+            if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
+                // On some platforms we compile without RTTI, and as a result we never throw an exception.
+                QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
+            else if (output != expected && qstrcmp(QTest::currentDataTag(), "float") == 0)
+                // The floating point formatting differs between platforms, so let's just skip it.
+                continue;
+            else if (benchmark || line.startsWith("<BenchmarkResult")) {
+                // Don't do a literal comparison for benchmark results, since
+                // results have some natural variance.
+                QString error;
+
+                BenchmarkResult actualResult = BenchmarkResult::parse(output, &error);
+                QVERIFY2(error.isEmpty(), qPrintable(QString("Actual line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(output)));
+
+                BenchmarkResult expectedResult = BenchmarkResult::parse(expected, &error);
+                QVERIFY2(error.isEmpty(), qPrintable(QString("Expected line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(expected)));
+
+                QCOMPARE(actualResult, expectedResult);
+            } else {
+                QCOMPARE(output, expected);
+            }
+
+            benchmark = line.startsWith("RESULT : ");
+        }
     }
 }
 
 void tst_Selftests::runSubTest()
 {
     QFETCH(QString, subdir);
-    QFETCH(QString, logger);
+    QFETCH(QStringList, loggers);
     QFETCH(QStringList, arguments);
 
-    doRunSubTest(subdir, logger, arguments);
+    doRunSubTest(subdir, loggers, arguments);
 }
 
 // attribute must contain ="
@@ -607,8 +636,14 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
 
 void tst_Selftests::cleanup()
 {
-    // Remove the test output file
-    QFile::remove("test_output");
+    QFETCH(QStringList, loggers);
+
+    // Remove the test output files
+    for (int i = 0; i < loggers.count(); ++i) {
+        QString logFile = logName(loggers[i]);
+        if (!logFile.isEmpty())
+            QVERIFY(QFile::remove(logFile));
+    }
 }
 
 QTEST_MAIN(tst_Selftests)
