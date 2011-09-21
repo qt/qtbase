@@ -233,7 +233,7 @@ private slots:
 
     void navigateGeometric();
     void navigateHierarchy();
-    void navigateSlider();
+    void sliderTest();
     void navigateCovered();
     void textAttributes();
     void hideShowTest();
@@ -553,7 +553,7 @@ void tst_QAccessibility::navigateGeometric()
     QTestAccessibility::clearEvents();
 }
 
-void tst_QAccessibility::navigateSlider()
+void tst_QAccessibility::sliderTest()
 {
     {
     QSlider *slider = new QSlider(0);
@@ -563,8 +563,20 @@ void tst_QAccessibility::navigateSlider()
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
 
-    QEXPECT_FAIL("", "Implement slider with value interface and no children. Test value interface here.", Continue);
     QCOMPARE(iface->childCount(), 0);
+
+    QAccessibleValueInterface *valueIface = iface->valueInterface();
+    QVERIFY(valueIface != 0);
+    QCOMPARE(valueIface->minimumValue().toInt(), slider->minimum());
+    QCOMPARE(valueIface->maximumValue().toInt(), slider->maximum());
+    slider->setValue(50);
+    QCOMPARE(valueIface->currentValue().toInt(), slider->value());
+    slider->setValue(0);
+    QCOMPARE(valueIface->currentValue().toInt(), slider->value());
+    slider->setValue(100);
+    QCOMPARE(valueIface->currentValue().toInt(), slider->value());
+    valueIface->setCurrentValue(77);
+    QCOMPARE(77, slider->value());
 
     delete iface;
     delete slider;

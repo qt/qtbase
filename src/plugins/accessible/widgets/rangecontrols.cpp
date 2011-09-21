@@ -545,113 +545,12 @@ QSlider *QAccessibleSlider::slider() const
 }
 
 /*! \reimp */
-QRect QAccessibleSlider::rect(int child) const
-{
-    QRect rect;
-    if (!slider()->isVisible())
-        return rect;
-    const QStyleOptionSlider option = qt_qsliderStyleOption(slider());
-    QRect srect = slider()->style()->subControlRect(QStyle::CC_Slider, &option,
-                                                    QStyle::SC_SliderHandle, slider());
-
-    switch (child) {
-    case PageLeft:
-        if (slider()->orientation() == Qt::Vertical)
-            rect = QRect(0, 0, slider()->width(), srect.y());
-        else
-            rect = QRect(0, 0, srect.x(), slider()->height());
-        break;
-    case Position:
-        rect = srect;
-        break;
-    case PageRight:
-        if (slider()->orientation() == Qt::Vertical)
-            rect = QRect(0, srect.y() + srect.height(), slider()->width(), slider()->height()- srect.y() - srect.height());
-        else
-            rect = QRect(srect.x() + srect.width(), 0, slider()->width() - srect.x() - srect.width(), slider()->height());
-        break;
-    default:
-        return QAccessibleAbstractSlider::rect(child);
-    }
-
-    QPoint tp = slider()->mapToGlobal(QPoint(0,0));
-    return QRect(tp.x() + rect.x(), tp.y() + rect.y(), rect.width(), rect.height());
-}
-
-/*! \reimp */
-int QAccessibleSlider::childCount() const
-{
-    return PageRight;
-}
-
-/*! \reimp */
 QString QAccessibleSlider::text(Text t, int child) const
 {
-    switch (t) {
-    case Value:
-        if (!child || child == 2)
-            return QString::number(slider()->value());
-        return QString();
-    case Name:
-        switch (child) {
-        case PageLeft:
-            return slider()->orientation() == Qt::Horizontal ?
-                QSlider::tr("Page left") : QSlider::tr("Page up");
-        case Position:
-            return QSlider::tr("Position");
-        case PageRight:
-            return slider()->orientation() == Qt::Horizontal ?
-                QSlider::tr("Page right") : QSlider::tr("Page down");
-        }
-        break;
-    default:
-        break;
-    }
+    if (t == Value)
+        return QString::number(slider()->value());
+
     return QAccessibleAbstractSlider::text(t, child);
-}
-
-/*! \reimp */
-QAccessible::Role QAccessibleSlider::role(int child) const
-{
-    switch (child) {
-    case PageLeft:
-    case PageRight:
-        return PushButton;
-    case Position:
-        return Indicator;
-    default:
-        return Slider;
-    }
-}
-
-/*! \reimp */
-QAccessible::State QAccessibleSlider::state(int child) const
-{
-    const State parentState = QAccessibleAbstractSlider::state(0);
-
-    if (child == 0)
-        return parentState;
-
-    // Inherit the Invisible state from parent.
-    State state = parentState & QAccessible::Invisible;
-
-    // Disable left/right if we are at the minimum/maximum.
-    const QSlider * const slider = QAccessibleSlider::slider();
-    switch (child) {
-    case PageLeft:
-        if (slider->value() <= slider->minimum())
-            state |= Unavailable;
-        break;
-    case PageRight:
-        if (slider->value() >= slider->maximum())
-            state |= Unavailable;
-        break;
-    case Position:
-    default:
-        break;
-    }
-
-    return state;
 }
 
 /*!
@@ -662,16 +561,6 @@ QAccessible::State QAccessibleSlider::state(int child) const
 */
 int QAccessibleSlider::defaultAction(int /*child*/) const
 {
-/*
-    switch (child) {
-    case SliderSelf:
-        return SetFocus;
-    case PageLeft:
-        return Press;
-    case PageRight:
-        return Press;
-    }
-*/
     return 0;
 }
 
