@@ -270,10 +270,15 @@ void tst_Selftests::runSubTest_data()
                 arguments << "-eventcounter";
             }
 
-            // These tests don't work right with loggers other than plain text, usually because
-            // they internally supply arguments to themselves.
+            // These tests don't work right unless logging plain text to
+            // standard output, either because they execute multiple test
+            // objects or because they internally supply arguments to
+            // themselves.
             if (logger.name != "txt") {
                 if (subtest == "differentexec") {
+                    continue;
+                }
+                if (subtest == "multiexec") {
                     continue;
                 }
                 if (subtest == "qexecstringlist") {
