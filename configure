@@ -752,6 +752,7 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_LIMITED=yes
+CFG_WAYLAND=auto
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1041,7 +1042,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
+    -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-xcb|-wayland|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-harfbuzz|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-v8|-declarative|-declarative-debug|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles|-icu)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1966,6 +1967,13 @@ while [ "$#" -gt 0 ]; do
     xcb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XCB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    wayland)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_WAYLAND="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3713,6 +3721,14 @@ if [ "$OPT_HELP" = "yes" ]; then
         XCN=" "
     fi
 
+    if [ "$CFG_WAYLAND" = "no" ]; then
+        XWY=" "
+        XWN="*"
+    else
+        XWY="*"
+        XWN=" "
+    fi
+
     cat <<EOF
 Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir <dir>]
         [-docdir <dir>] [-headerdir <dir>] [-plugindir <dir> ] [-importdir <dir>] [-datadir <dir>]
@@ -4060,6 +4076,9 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 
  $XKN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  $XKY  -xcb ............... Compile Xcb support.
+
+ $XWN  -no-wayland......... Do not compile Wayland support.
+ $XWY  -wayland  .......... Compile Wayland support.
 
 EOF
 
@@ -6235,11 +6254,22 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
 
     fi
 
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
-        QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
-        QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
-        QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
-        QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
+    if [ "$CFG_WAYLAND" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists wayland-client 2>/dev/null; then
+            QMAKE_CFLAGS_WAYLAND=`$PKG_CONFIG --cflags wayland-client 2>/dev/null`
+            QMAKE_LIBS_WAYLAND=`$PKG_CONFIG --libs wayland-client 2>/dev/null`
+            QMAKE_INCDIR_WAYLAND=`$PKG_CONFIG --variable=includedir wayland-client 2>/dev/null`
+            QMAKE_LIBDIR_WAYLAND=`$PKG_CONFIG --variable=libdir wayland-client 2>/dev/null`
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
+            CFG_WAYLAND=yes
+            QT_CONFIG="$QT_CONFIG wayland"
+        elif [ "$CFG_WAYLAND" = "yes" ]; then
+            echo "The Wayland functionality test failed!"
+            exit 1
+        else
+            CFG_WAYLAND=no
+        fi
     fi
 
     # Check we actually have X11 :-)
@@ -6271,12 +6301,16 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
         QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
         QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-        QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND $QMAKE_CFLAGS_XKBCOMMON"
-        QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND $QMAKE_LIBS_XKBCOMMON"
+        if [ "$CFG_WAYLAND" = "yes" ]; then
+            QMAKE_CFLAGS_WAYLAND="$QMAKE_CFLAGS_WAYLAND $QMAKE_CFLAGS_XKBCOMMON"
+            QMAKE_LIBS_WAYLAND="$QMAKE_LIBS_WAYLAND $QMAKE_LIBS_XKBCOMMON"
+        fi
         QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
         QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
     else
-        QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
+        if [ "$CFG_WAYLAND" = "yes" ]; then
+            QMAKE_DEFINES_WAYLAND=QT_NO_WAYLAND_XKB
+        fi
         QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
     fi
 
@@ -6293,10 +6327,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
         QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
         QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
-    fi
-
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qpa/wayland "Wayland" $L_FLAGS $I_FLAGS $l_FLAGS $QMAKE_CFLAGS_WAYLAND $QMAKE_LIBS_WAYLAND; then
-        QT_CONFIG="$QT_CONFIG wayland"
     fi
 
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/coreservices "CoreServices" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
