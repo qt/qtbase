@@ -79,15 +79,6 @@ namespace QTest
             commit();
             points.clear();
         }
-#ifdef QT_WIDGETS_LIB
-        QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = 0)
-        {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointPressed);
-            return *this;
-        }
-#endif
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWindow *window = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
@@ -95,16 +86,6 @@ namespace QTest
             p.setState(Qt::TouchPointPressed);
             return *this;
         }
-
-#ifdef QT_WIDGETS_LIB
-        QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
-        {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointMoved);
-            return *this;
-        }
-#endif
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWindow *window = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
@@ -112,15 +93,6 @@ namespace QTest
             p.setState(Qt::TouchPointMoved);
             return *this;
         }
-#ifdef QT_WIDGETS_LIB
-        QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
-        {
-            QTouchEvent::TouchPoint &p = point(touchId);
-            p.setScreenPos(mapToScreen(widget, pt));
-            p.setState(Qt::TouchPointReleased);
-            return *this;
-        }
-#endif
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWindow *window = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
@@ -134,6 +106,30 @@ namespace QTest
             p.setState(Qt::TouchPointStationary);
             return *this;
         }
+
+#ifdef QT_WIDGETS_LIB
+        QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointPressed);
+            return *this;
+        }
+        QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointMoved);
+            return *this;
+        }
+        QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
+        {
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setScreenPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointReleased);
+            return *this;
+        }
+#endif
 
     private:
 #ifdef QT_WIDGETS_LIB
