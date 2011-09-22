@@ -1203,28 +1203,14 @@ HRESULT STDMETHODCALLTYPE QWindowsAccessible::GetWindow(HWND *phwnd)
     if (!accessible->isValid())
         return E_UNEXPECTED;
 
-    QObject *o = accessible->object();
-    QWindow *window = qobject_cast<QWindow*>(o);
+    QWindow *window = accessible->window();
     if (!window)
-        window = QGuiApplication::topLevelWindows().first();
-
-
-    Q_ASSERT(window);
-    if (!o || !window)
         return E_FAIL;
 
-
-#ifdef Q_WS_QPA
-    //QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
-    //Q_ASSERT(platform);
-    //*phwnd = (HWND)platform->nativeResourceForWindow("handle", window);
-
-
+    QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    Q_ASSERT(platform);
+    *phwnd = (HWND)platform->nativeResourceForWindow("handle", window);
     return S_OK;
-#else
-    *phwnd = static_cast<QWidget*>(o)->effectiveWinId();
-    return S_OK;
-#endif
 }
 
 HRESULT STDMETHODCALLTYPE QWindowsAccessible::ContextSensitiveHelp(BOOL)
