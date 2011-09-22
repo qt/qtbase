@@ -46,6 +46,8 @@
 #include <private/qobject_p.h>
 #include <QtCore/QWeakPointer>
 #include <QTransform>
+#include <qplatforminputcontext_qpa.h>
+#include <private/qguiapplication_p.h>
 
 QT_BEGIN_HEADER
 
@@ -55,11 +57,21 @@ class QInputPanelPrivate : public QObjectPrivate
 {
 public:
     inline QInputPanelPrivate()
-        : visible(false)
+        : visible(false), testContext(0)
     {}
+    QPlatformInputContext *platformInputContext() const
+    {
+        return testContext ? testContext : QGuiApplicationPrivate::platformIntegration()->inputContext();
+    }
+    static inline QInputPanelPrivate *get(QInputPanel *inputPanel)
+    {
+        return inputPanel->d_func();
+    }
+
     QTransform inputItemTransform;
     QWeakPointer<QObject> inputItem;
     bool visible;
+    QPlatformInputContext *testContext;
 };
 
 QT_END_NAMESPACE

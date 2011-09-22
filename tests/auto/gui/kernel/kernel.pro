@@ -4,6 +4,7 @@ SUBDIRS=\
    qdrag \
    qevent \
    qfileopenevent \
+   qinputpanel \
    qguivariant \
    qkeysequence \
    qmouseevent \

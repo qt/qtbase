@@ -41,8 +41,6 @@
 
 #include <qinputpanel.h>
 #include <private/qinputpanel_p.h>
-#include <qplatforminputcontext_qpa.h>
-#include <private/qguiapplication_p.h>
 
 QInputPanel::QInputPanel()
     : QObject(*new QInputPanelPrivate)
@@ -109,7 +107,8 @@ QRectF QInputPanel::cursorRectangle() const
 
 QRectF QInputPanel::keyboardRectangle()
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->keyboardRect();
     return QRectF();
@@ -144,7 +143,8 @@ void QInputPanel::setVisible(bool visible)
 
 bool QInputPanel::isAnimating() const
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    Q_D(const QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         return ic->isAnimating();
     return false;
@@ -158,7 +158,7 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
     if (!d->inputItem)
         return;
 
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->update(queries);
 
@@ -168,21 +168,24 @@ void QInputPanel::update(Qt::InputMethodQueries queries)
 
 void QInputPanel::reset()
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->reset();
 }
 
 void QInputPanel::commit()
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->commit();
 }
 
 void QInputPanel::invokeAction(Action a, int cursorPosition)
 {
-    QPlatformInputContext *ic = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    Q_D(QInputPanel);
+    QPlatformInputContext *ic = d->platformInputContext();
     if (ic)
         ic->invokeAction(a, cursorPosition);
 }
