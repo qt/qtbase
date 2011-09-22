@@ -110,6 +110,7 @@ bool QWidgetWindow::event(QEvent *event)
 
     case QEvent::Map:
         m_widget->setAttribute(Qt::WA_Mapped);
+        m_widget->d_func()->syncBackingStore();
         return true;
 
     case QEvent::Unmap:
