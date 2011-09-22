@@ -517,34 +517,12 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             const QString output(QString::fromLatin1(line));
             const QString expected(QString::fromLatin1(exp.at(i)).replace("@INSERT_QT_VERSION_HERE@", QT_VERSION_STR));
 
-            // Q_ASSERT uses __FILE__.  Some compilers include the absolute path in
-            // __FILE__, while others do not.
-            if (line.contains("ASSERT") && output != expected) {
-                const char msg[] = "Q_ASSERT prints out the absolute path on this platform.";
-                QEXPECT_FAIL("assert old stdout txt",             msg, Continue);
-                QEXPECT_FAIL("assert old txt",                    msg, Continue);
-                QEXPECT_FAIL("assert old stdout xml",             msg, Continue);
-                QEXPECT_FAIL("assert old xml",                    msg, Continue);
-                QEXPECT_FAIL("assert old stdout lightxml",        msg, Continue);
-                QEXPECT_FAIL("assert old lightxml",               msg, Continue);
-                QEXPECT_FAIL("assert old stdout xunitxml",        msg, Continue);
-                QEXPECT_FAIL("assert old xunitxml",               msg, Continue);
-                QEXPECT_FAIL("assert new stdout txt",             msg, Continue);
-                QEXPECT_FAIL("assert new txt",                    msg, Continue);
-                QEXPECT_FAIL("assert new stdout xml",             msg, Continue);
-                QEXPECT_FAIL("assert new xml",                    msg, Continue);
-                QEXPECT_FAIL("assert new stdout lightxml",        msg, Continue);
-                QEXPECT_FAIL("assert new lightxml",               msg, Continue);
-                QEXPECT_FAIL("assert new stdout xunitxml",        msg, Continue);
-                QEXPECT_FAIL("assert new xunitxml",               msg, Continue);
-                QEXPECT_FAIL("assert stdout txt + txt",           msg, Continue);
-                QEXPECT_FAIL("assert xml + stdout txt",           msg, Continue);
-                QEXPECT_FAIL("assert txt + xunitxml",             msg, Continue);
-                QEXPECT_FAIL("assert lightxml + stdout xunitxml", msg, Continue);
-                QEXPECT_FAIL("assert all loggers",                msg, Continue);
-            }
-
-            if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
+            if (subdir == "assert" && output.contains("ASSERT: ") && expected.contains("ASSERT: ") && output != expected)
+                // Q_ASSERT uses __FILE__, the exact contents of which are
+                // undefined.  If we something that looks like a Q_ASSERT and we
+                // were expecting to see a Q_ASSERT, we'll skip the line.
+                continue;
+            else if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
                 // On some platforms we compile without RTTI, and as a result we never throw an exception.
                 QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
             else if (output != expected && qstrcmp(QTest::currentDataTag(), "float") == 0)
