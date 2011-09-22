@@ -276,21 +276,11 @@ void tst_QFontMetrics::inFontUcs4()
     QFont font("QtTestUcs4");
     {
         QFontMetrics fm(font);
-
-#ifdef Q_WS_QPA
-        QEXPECT_FAIL("", "QTBUG-20759 fails for qpa", Continue);
-#endif
-
         QVERIFY(fm.inFontUcs4(0x1D7FF));
     }
 
     {
         QFontMetricsF fm(font);
-
-#ifdef Q_WS_QPA
-        QEXPECT_FAIL("", "QTBUG-20759 fails for qpa", Continue);
-#endif
-
         QVERIFY(fm.inFontUcs4(0x1D7FF));
     }
 
@@ -311,11 +301,6 @@ void tst_QFontMetrics::lineWidth()
     const QFontMetrics bigFontMetrics(bigFont);
 
     QVERIFY(smallFontMetrics.lineWidth() >= 1);
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20759 fails for qpa", Continue);
-#endif
-
     QVERIFY(smallFontMetrics.lineWidth() < bigFontMetrics.lineWidth());
 }
 

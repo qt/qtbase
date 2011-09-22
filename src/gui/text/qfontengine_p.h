@@ -379,6 +379,7 @@ public:
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t glyph);
+    virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
 
     virtual QFixed ascent() const;
     virtual QFixed descent() const;

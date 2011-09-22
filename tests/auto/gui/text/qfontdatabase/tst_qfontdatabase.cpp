@@ -144,6 +144,8 @@ void tst_QFontDatabase::fixedPitch_data()
 #ifndef Q_WS_MAC
     QTest::newRow( "Script" ) << QString( "Script" ) << false;
     QTest::newRow( "Lucida Console" ) << QString( "Lucida Console" ) << true;
+    QTest::newRow( "DejaVu Sans" ) << QString( "DejaVu Sans" ) << false;
+    QTest::newRow( "DejaVu Sans Mono" ) << QString( "DejaVu Sans Mono" ) << true;
 #else
     QTest::newRow( "Menlo" ) << QString( "Menlo" ) << true;
     QTest::newRow( "Monaco" ) << QString( "Monaco" ) << true;
@@ -161,13 +163,6 @@ void tst_QFontDatabase::fixedPitch()
     QFontDatabase fdb;
     if (!fdb.families().contains(font))
 	QSKIP( "Font not installed", SkipSingle);
-
-#ifdef Q_WS_QPA
-    if (fixedPitch) {
-        // fixedPitch() never returns true on qpa
-        QEXPECT_FAIL("", "QTBUG-20754 fails on qpa", Abort);
-    }
-#endif
 
     QCOMPARE(fdb.isFixedPitch(font), fixedPitch);
 
@@ -238,10 +233,6 @@ void tst_QFontDatabase::addAppFont()
 
     QFontDatabase db;
 
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("memory font", "QTBUG-20754 fails on qpa", Abort);
-#endif
-
     const QStringList oldFamilies = db.families();
     QVERIFY(!oldFamilies.isEmpty());
 
@@ -274,10 +265,6 @@ void tst_QFontDatabase::addAppFont()
 
     const QStringList addedFamilies = QFontDatabase::applicationFontFamilies(id);
     QVERIFY(!addedFamilies.isEmpty());
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("font file", "QTBUG-20754 fails on qpa", Abort);
-#endif
 
     const QStringList newFamilies = db.families();
     QVERIFY(!newFamilies.isEmpty());

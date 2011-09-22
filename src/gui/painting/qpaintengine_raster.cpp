@@ -2726,7 +2726,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             QPoint offset;
             QImage *alphaMap = fontEngine->lockedAlphaMapForGlyph(glyphs[i], spp, neededFormat, s->matrix,
                                                                   &offset);
-            if (alphaMap == 0)
+            if (alphaMap == 0 || alphaMap->isNull())
                 continue;
 
             alphaPenBlt(alphaMap->bits(), alphaMap->bytesPerLine(), alphaMap->depth(),

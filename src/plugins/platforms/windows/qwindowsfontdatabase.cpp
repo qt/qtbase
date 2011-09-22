@@ -348,8 +348,6 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     const QFont::Weight weight = weightFromInteger(tm->tmWeight);
     const QFont::Stretch stretch = QFont::Unstretched;
 
-    Q_UNUSED(fixed)
-
     if (QWindowsContext::verboseFonts > 2) {
         QDebug nospace = qDebug().nospace();
         nospace << __FUNCTION__ << familyName << scriptName
@@ -394,17 +392,17 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
     }
 
     QPlatformFontDatabase::registerFont(familyName, foundryName, weight,
-                                        style, stretch, antialias, scalable, size, writingSystems, 0);
+                                        style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     // add fonts windows can generate for us:
     if (weight <= QFont::DemiBold)
         QPlatformFontDatabase::registerFont(familyName, foundryName, QFont::Bold,
-                                            style, stretch, antialias, scalable, size, writingSystems, 0);
+                                            style, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     if (style != QFont::StyleItalic)
         QPlatformFontDatabase::registerFont(familyName, foundryName, weight,
-                                            QFont::StyleItalic, stretch, antialias, scalable, size, writingSystems, 0);
+                                            QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic)
         QPlatformFontDatabase::registerFont(familyName, foundryName, QFont::Bold,
-                                            QFont::StyleItalic, stretch, antialias, scalable, size, writingSystems, 0);
+                                            QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
     return true;
 }
 

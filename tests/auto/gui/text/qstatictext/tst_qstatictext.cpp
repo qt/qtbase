@@ -232,6 +232,7 @@ void tst_QStaticText::prepareToCorrectData()
 {
     QTransform transform;
     transform.scale(2.0, 2.0);
+    transform.translate(100, 10);
     transform.rotate(90, Qt::ZAxis);
 
     QPixmap imageDrawText(1000, 1000);
@@ -256,10 +257,6 @@ void tst_QStaticText::prepareToCorrectData()
 #if defined(DEBUG_SAVE_IMAGE)
     imageDrawText.save("prepareToCorrectData_imageDrawText.png");
     imageDrawStaticText.save("prepareToCorrectData_imageDrawStaticText.png");
-#endif
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20977 fails on qpa", Abort);
 #endif
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
@@ -396,7 +393,7 @@ bool tst_QStaticText::supportsTransformations() const
     QPaintEngine::Type type = engine->type();
 
     if (type == QPaintEngine::OpenGL
-#if !defined(Q_WS_WIN) && !defined(Q_WS_X11) && !defined(Q_WS_MAC)
+#if !defined(Q_WS_WIN) && !defined(Q_WS_X11) && !defined(Q_WS_MAC) && !defined(Q_WS_QPA)
         || type == QPaintEngine::Raster
 #endif
         )

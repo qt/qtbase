@@ -111,16 +111,6 @@ Q_DECLARE_METATYPE(QFontDatabase::WritingSystem)
 
 void tst_QRawFont::init()
 {
-#ifdef Q_WS_QPA
-    // Loading fonts from a QByteArray seems unimplemented for all qpa plugins at time of writing;
-    // almost all testfunctions fail on qpa due to this, except these few:
-    const QByteArray func = QTest::currentTestFunction();
-    if (func != "invalidRawFont"
-     && func != "explicitRawFontNotAvailableInSystem"
-     && func != "fromFont"
-     && func != "textLayout")
-        QEXPECT_FAIL("", "QTBUG-20976 fails on qpa", Abort);
-#endif
 }
 
 void tst_QRawFont::invalidRawFont()
@@ -308,9 +298,6 @@ void tst_QRawFont::textLayout()
     QString familyName = QString::fromLatin1("QtBidiTestFont");
     QFont font(familyName);
     font.setPixelSize(18.0);
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20976 fails on qpa", Abort);
-#endif
     QCOMPARE(QFontInfo(font).family(), familyName);
 
     QTextLayout layout(QLatin1String("Foobar"));
@@ -627,10 +614,6 @@ void tst_QRawFont::fromFont()
 
     QRawFont rawFont = QRawFont::fromFont(font, writingSystem);
     QVERIFY(rawFont.isValid());
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20976 fails on qpa", Abort);
-#endif
 
     QCOMPARE(rawFont.familyName(), familyName);
     QCOMPARE(rawFont.pixelSize(), 26.0);

@@ -1281,7 +1281,11 @@ glyph_metrics_t QFontEngineBox::boundingBox(glyph_t)
     return glyph_metrics_t(0, -_size, _size, _size, _size, 0);
 }
 
-
+QFontEngine *QFontEngineBox::cloneWithSize(qreal pixelSize) const
+{
+    QFontEngineBox *fe = new QFontEngineBox(pixelSize);
+    return fe;
+}
 
 QFixed QFontEngineBox::ascent() const
 {

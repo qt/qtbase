@@ -48,8 +48,9 @@
 QT_BEGIN_NAMESPACE
 
 extern void qt_registerFont(const QString &familyname, const QString &foundryname, int weight,
-                                         QFont::Style style, int stretch, bool antialiased,bool scalable, int pixelSize,
-                                         const QSupportedWritingSystems &writingSystems, void *hanlde);
+                            QFont::Style style, int stretch, bool antialiased,
+                            bool scalable, int pixelSize, bool fixedPitch,
+                            const QSupportedWritingSystems &writingSystems, void *hanlde);
 
 /*!
     \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
@@ -88,7 +89,7 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
                 }
             }
             QFont::Stretch stretch = QFont::Unstretched;
-            registerFont(fontName,QString(),fontWeight,fontStyle,stretch,true,false,pixelSize,writingSystems,handle);
+            registerFont(fontName,QString(),fontWeight,fontStyle,stretch,true,false,pixelSize,false,writingSystems,handle);
         }
     } else {
         qDebug() << "header verification of QPF2 font failed. maybe it is corrupt?";
@@ -122,12 +123,16 @@ void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *
     \sa registerQPF2Font()
 */
 void QPlatformFontDatabase::registerFont(const QString &familyname, const QString &foundryname, QFont::Weight weight,
-                                         QFont::Style style, QFont::Stretch stretch, bool antialiased, bool scalable, int pixelSize,
+                                         QFont::Style style, QFont::Stretch stretch, bool antialiased,
+                                         bool scalable, int pixelSize, bool fixedPitch,
                                          const QSupportedWritingSystems &writingSystems, void *usrPtr)
 {
     if (scalable)
         pixelSize = 0;
-    qt_registerFont(familyname,foundryname,weight,style,stretch,antialiased,scalable,pixelSize,writingSystems,usrPtr);
+
+    qt_registerFont(familyname, foundryname, weight, style,
+                    stretch, antialiased, scalable, pixelSize,
+                    fixedPitch, writingSystems, usrPtr);
 }
 
 class QWritingSystemsPrivate

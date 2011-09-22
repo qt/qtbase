@@ -53,16 +53,18 @@
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &foundryname, int weight,
-                                   QFont::Style style, int stretch, bool antialiased, bool scalable, int pixelSize,
+                                   QFont::Style style, int stretch, bool antialiased,
+                                   bool scalable, int pixelSize, bool fixedPitch,
                                    const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
-    //    qDebug() << "Adding font" << familyname << weight << italic << pixelSize << file << fileIndex << antialiased;
+    //    qDebug() << "Adding font" << familyName << weight << style << pixelSize << antialiased;
         QtFontStyle::Key styleKey;
         styleKey.style = style;
         styleKey.weight = weight;
         styleKey.stretch = stretch;
         QtFontFamily *f = d->family(familyName, true);
+        f->fixedPitch = fixedPitch;
 
         for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
             if (writingSystems.supported(QFontDatabase::WritingSystem(i))) {
@@ -106,10 +108,12 @@ static QStringList fallbackFamilies(const QString &family, const QFont::Style &s
 static void initializeDb()
 {
     static int initialized = false;
+    QFontDatabasePrivate *db = privateDb();
 
-    if (!initialized) {
+    if (!initialized || db->reregisterAppFonts) {
         //init by asking for the platformfontdb for the first time :)
         QGuiApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
+        db->reregisterAppFonts = false;
         initialized = true;
     }
 }

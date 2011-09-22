@@ -354,6 +354,8 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
         if (face->style_flags & FT_STYLE_FLAG_BOLD)
             weight = QFont::Bold;
 
+        bool fixedPitch = (face->face_flags & FT_FACE_FLAG_FIXED_WIDTH);
+
         QSupportedWritingSystems writingSystems;
         // detect symbol fonts
         for (int i = 0; i < face->num_charmaps; ++i) {
@@ -415,7 +417,7 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
 
         QFont::Stretch stretch = QFont::Unstretched;
 
-        registerFont(family,QString(),weight,style,stretch,true,true,0,writingSystems,fontFile);
+        registerFont(family,QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
 
         families.append(family);
 

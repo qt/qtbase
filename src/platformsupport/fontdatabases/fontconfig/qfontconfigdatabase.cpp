@@ -57,6 +57,11 @@
 #include FT_TRUETYPE_TABLES_H
 
 #include <fontconfig/fontconfig.h>
+#include FT_FREETYPE_H
+
+#if FC_VERSION >= 20402
+#include <fontconfig/fcfreetype.h>
+#endif
 
 #define SimplifiedChineseCsbBit 18
 #define TraditionalChineseCsbBit 20
@@ -444,8 +449,9 @@ void QFontconfigDatabase::populateFontDatabase()
             FcPatternGetDouble (fonts->fonts[i], FC_PIXEL_SIZE, 0, &pixel_size);
         }
 
+        bool fixedPitch = spacing_value >= FC_MONO;
         QFont::Stretch stretch = QFont::Unstretched;
-        QPlatformFontDatabase::registerFont(familyName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,writingSystems,fontFile);
+        QPlatformFontDatabase::registerFont(familyName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
     }
 
@@ -470,9 +476,9 @@ void QFontconfigDatabase::populateFontDatabase()
 
     QString familyQtName = QString::fromLatin1(f->qtname);
     while (f->qtname) {
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,ws,0);
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,ws,0);
-        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,ws,0);
+        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,0);
+        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,f->fixed,ws,0);
+        registerFont(familyQtName,QString(),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,f->fixed,ws,0);
         ++f;
     }
 
@@ -583,3 +589,72 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString family, const 
 
     return fallbackFamilies;
 }
+
+static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id, FcBlanks *blanks, int *count)
+{
+#if FC_VERSION < 20402
+    Q_UNUSED(data)
+    return FcFreeTypeQuery(file, id, blanks, count);
+#else
+    if (data.isEmpty())
+        return FcFreeTypeQuery(file, id, blanks, count);
+
+    extern FT_Library qt_getFreetype();
+    FT_Library lib = qt_getFreetype();
+
+    FcPattern *pattern = 0;
+
+    FT_Face face;
+    if (!FT_New_Memory_Face(lib, (const FT_Byte *)data.constData(), data.size(), id, &face)) {
+        *count = face->num_faces;
+
+        pattern = FcFreeTypeQueryFace(face, file, id, blanks);
+
+        FT_Done_Face(face);
+    }
+
+    return pattern;
+#endif
+}
+
+QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+{
+    QStringList families;
+    FcFontSet *set = FcConfigGetFonts(0, FcSetApplication);
+    if (!set) {
+        FcConfigAppFontAddFile(0, (const FcChar8 *)":/non-existent");
+        set = FcConfigGetFonts(0, FcSetApplication); // try again
+        if (!set)
+            return families;
+    }
+
+    int id = 0;
+    FcBlanks *blanks = FcConfigGetBlanks(0);
+    int count = 0;
+
+    FcPattern *pattern = 0;
+    do {
+        pattern = queryFont((const FcChar8 *)QFile::encodeName(fileName).constData(),
+                            fontData, id, blanks, &count);
+        if (!pattern)
+            return families;
+
+        FcPatternDel(pattern, FC_FILE);
+        QByteArray cs = fileName.toUtf8();
+        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *) cs.constData());
+
+        FcChar8 *fam = 0;
+        if (FcPatternGetString(pattern, FC_FAMILY, 0, &fam) == FcResultMatch) {
+            QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
+            families << family;
+        }
+
+        if (!FcFontSetAdd(set, pattern))
+            return families;
+
+        ++id;
+    } while (pattern && id < count);
+
+    return families;
+}
+
