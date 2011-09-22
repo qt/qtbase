@@ -139,7 +139,6 @@ void QXcbWindow::create()
     destroy();
 
     m_windowState = Qt::WindowNoState;
-    m_dirtyFrameMargins = true;
 
     Qt::WindowType type = window()->windowType();
 
@@ -457,8 +456,6 @@ void QXcbWindow::show()
             free(error);
         }
 
-        m_dirtyFrameMargins = true;
-
         if (window()->windowState() & Qt::WindowMinimized)
             xcb_wm_hints_set_iconic(&hints);
         else
@@ -773,8 +770,6 @@ Qt::WindowState QXcbWindow::setWindowState(Qt::WindowState state)
 {
     if (state == m_windowState)
         return state;
-
-    m_dirtyFrameMargins = true;
 
     // unset old state
     switch (m_windowState) {
@@ -1174,6 +1169,8 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
 
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+
+    m_dirtyFrameMargins = true;
 
 #if XCB_USE_DRI2
     if (m_context)
