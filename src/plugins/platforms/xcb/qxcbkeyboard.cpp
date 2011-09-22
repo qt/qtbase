@@ -1030,7 +1030,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     if (inputContext) {
         bool retval = false;
-        if (inputContext->metaObject()->indexOfMethod("x11FilterEvent") != -1)
+        if (inputContext->metaObject()->indexOfMethod("x11FilterEvent(uint,uint,uint,bool)") != -1)
             QMetaObject::invokeMethod(inputContext, "x11FilterEvent", Qt::DirectConnection,
                                       Q_RETURN_ARG(bool, retval),
                                       Q_ARG(uint, sym),
