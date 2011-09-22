@@ -13,4 +13,3 @@ wince*|symbian {
     DEPLOYMENT += addFiles
 }
 
-CONFIG += insignificant_test # QTBUG-21402

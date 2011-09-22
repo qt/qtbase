@@ -9,4 +9,3 @@ symbian {
 	TARGET.EPOCHEAPSIZE = 100000 20000000
 }
 
-qpa:contains(QT_CONFIG,qpa):CONFIG+=insignificant_test  # QTBUG-20979
