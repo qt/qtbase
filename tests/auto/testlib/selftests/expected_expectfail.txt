@@ -1,5 +1,5 @@
 ********* Start testing of tst_ExpectFail *********
-Config: Using QTest library 4.3.0, Qt 4.3.0
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_ExpectFail::initTestCase()
 QDEBUG : tst_ExpectFail::expectAndContinue() begin
 XFAIL  : tst_ExpectFail::expectAndContinue() This should xfail

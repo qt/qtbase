@@ -1,5 +1,5 @@
 ********* Start testing of tst_Xunit *********
-Config: Using QTest library 4.6.4, Qt 4.6.4
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Xunit::initTestCase()
 WARNING: tst_Xunit::testFunc1() just a QWARN() !
 PASS   : tst_Xunit::testFunc1()

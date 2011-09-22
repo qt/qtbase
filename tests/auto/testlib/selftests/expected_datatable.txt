@@ -1,5 +1,5 @@
 ********* Start testing of tst_DataTable *********
-Config: Using QTest library 4.4.0, Qt 4.4.0
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_DataTable::initTestCase()
 PASS   : tst_DataTable::singleTestFunction1()
 PASS   : tst_DataTable::singleTestFunction2()

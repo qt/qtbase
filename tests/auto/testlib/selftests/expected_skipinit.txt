@@ -1,5 +1,5 @@
 ********* Start testing of tst_SkipInit *********
-Config: Using QTest library 4.4.0, Qt 4.4.0
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 SKIP   : tst_SkipInit::initTestCase() Skip inside initTestCase. This should skip all tests in the class.
    Loc: [/home/fenglich/dev/qt/tests/auto/selftests/skipinit/tst_skipinit.cpp(22)]
 PASS   : tst_SkipInit::cleanupTestCase()

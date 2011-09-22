@@ -506,8 +506,6 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
         bool benchmark = false;
         for (int i = 0; i < res.count(); ++i) {
             QByteArray line = res.at(i);
-            if (line.startsWith("Config: Using QTest"))
-                continue;
             // the __FILE__ __LINE__ output is compiler dependent, skip it
             if (line.startsWith("   Loc: [") && line.endsWith(")]"))
                 continue;
