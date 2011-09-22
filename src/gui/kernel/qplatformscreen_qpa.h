@@ -67,6 +67,17 @@ class QPlatformWindow;
 class QScreen;
 class QSurfaceFormat;
 
+class QPlatformScreenPageFlipper : public QObject
+{
+    Q_OBJECT
+public:
+    virtual bool displayBuffer(void *bufferHandle) = 0;
+
+    signals:
+    void bufferDisplayed(void *bufferHandle);
+    void bufferReleased(void *bufferHandle);
+};
+
 class Q_GUI_EXPORT QPlatformScreen
 {
     Q_DECLARE_PRIVATE(QPlatformScreen)
@@ -94,6 +105,8 @@ public:
     static QPlatformScreen *platformScreenForWindow(const QWindow *window);
 
     virtual QString name() const { return QString(); }
+
+    virtual QPlatformScreenPageFlipper *pageFlipper() const;
 
 protected:
     QScopedPointer<QPlatformScreenPrivate> d_ptr;
