@@ -156,6 +156,8 @@ private:
 #if defined(XCB_USE_EGL)
     mutable QXcbEGLSurface *m_eglSurface;
 #endif
+
+    QRegion m_exposeRegion;
 };
 
 #endif

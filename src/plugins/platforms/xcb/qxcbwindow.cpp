@@ -1122,7 +1122,17 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
-    QWindowSystemInterface::handleSynchronousExposeEvent(window(), rect);
+
+    if (m_exposeRegion.isEmpty())
+        m_exposeRegion = rect;
+    else
+        m_exposeRegion |= rect;
+
+    // if count is non-zero there are more expose events pending
+    if (event->count == 0) {
+        QWindowSystemInterface::handleSynchronousExposeEvent(window(), m_exposeRegion);
+        m_exposeRegion = QRegion();
+    }
 }
 
 void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *event)
