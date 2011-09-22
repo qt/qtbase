@@ -525,9 +525,6 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             else if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
                 // On some platforms we compile without RTTI, and as a result we never throw an exception.
                 QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
-            else if (output != expected && qstrcmp(QTest::currentDataTag(), "float") == 0)
-                // The floating point formatting differs between platforms, so let's just skip it.
-                continue;
             else if (benchmark || line.startsWith("<BenchmarkResult")) {
                 // Don't do a literal comparison for benchmark results, since
                 // results have some natural variance.
