@@ -354,20 +354,21 @@ void QDragManager::updateCursor()
         shapedPixmapWindow->render(); // ### Hack
         shapedPixmapWindow->move(QCursor::pos() - shapedPixmapWindow->hotSpot);
     }
-#ifndef QT_NO_CURSOR
+
+    Qt::CursorShape cursorShape = Qt::ForbiddenCursor;
     if (willDrop) {
-        if (currentActionForOverrideCursor != global_accepted_action) {
-            QGuiApplication::changeOverrideCursor(QCursor(dragCursor(global_accepted_action), 0, 0));
-            currentActionForOverrideCursor = global_accepted_action;
-        }
-    } else {
-        QCursor *overrideCursor = QGuiApplication::overrideCursor();
-        if (!overrideCursor || overrideCursor->shape() != Qt::ForbiddenCursor) {
-            QGuiApplication::changeOverrideCursor(QCursor(Qt::ForbiddenCursor));
-            currentActionForOverrideCursor = Qt::IgnoreAction;
+        if (global_accepted_action == Qt::CopyAction) {
+            cursorShape = Qt::DragCopyCursor;
+        } else if (global_accepted_action == Qt::LinkAction) {
+            cursorShape = Qt::DragLinkCursor;
+        } else {
+            cursorShape = Qt::DragMoveCursor;
         }
     }
-#endif
+    if (cursorShape != qApp->overrideCursor()->shape()) {
+        qDebug() << "setting cursor shape to" << cursorShape;
+        qApp->changeOverrideCursor(QCursor(cursorShape));
+    }
 }
 
 
@@ -465,7 +466,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     global_accepted_action = Qt::CopyAction;
 #ifndef QT_NO_CURSOR
-    qApp->setOverrideCursor(Qt::ArrowCursor);
+    qApp->setOverrideCursor(Qt::DragCopyCursor);
     restoreCursor = true;
     updateCursor();
 #endif
