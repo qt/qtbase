@@ -634,7 +634,9 @@ void QXcbConnection::processXcbEvents()
                 else
                     ++it;
             }
+            m_reader->unlock();
             handleXcbEvent(event);
+            m_reader->lock();
         }
 
         free(event);
