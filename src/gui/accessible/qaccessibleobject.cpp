@@ -312,7 +312,10 @@ int QAccessibleApplication::navigate(RelationFlag relation, int entry,
         targetObject = object();
         break;
     case FocusChild:
-        targetObject = QGuiApplication::activeWindow();
+        if (QWindow *window = QGuiApplication::activeWindow()) {
+            *target = window->accessibleRoot();
+            return 0;
+        }
         break;
     case Ancestor:
         *target = parent();
