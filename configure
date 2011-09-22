@@ -4744,33 +4744,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
-    # auto-detect FontConfig support
-    if [ "$CFG_FONTCONFIG" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
-        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
-        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
-    else
-        QT_CFLAGS_FONTCONFIG=
-        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
-    fi
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
-	    CFG_FONTCONFIG=yes
-        QMakeVar set QMAKE_CFLAGS_X11 "$QT_CFLAGS_FONTCONFIG \$\$QMAKE_CFLAGS_X11"
-        QMakeVar set QMAKE_LIBS_X11 "$QT_LIBS_FONTCONFIG \$\$QMAKE_LIBS_X11"
-	    CFG_LIBFREETYPE=system
-	else
-	    if [ "$CFG_FONTCONFIG" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-		echo "FontConfig support cannot be enabled due to functionality tests!"
-		echo " Turn on verbose messaging (-v) to $0 to see the final report."
-		echo " If you believe this message is in error you may use the continue"
-		echo " switch (-continue) to $0 to continue."
-		exit 101
-	    else
-		CFG_FONTCONFIG=no
-	    fi
-	fi
-    fi
-
     # auto-detect Session Management support
     if [ "$CFG_SM" = "auto" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/sm "Session Management" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -4918,6 +4891,33 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         CFG_QGTKSTYLE=no
     fi
 fi # X11
+
+# auto-detect FontConfig support
+if [ "$CFG_FONTCONFIG" != "no" ]; then
+    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+        QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+        QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
+    else
+        QT_CFLAGS_FONTCONFIG=
+        QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
+    fi
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+        CFG_FONTCONFIG=yes
+        QMakeVar set QMAKE_CFLAGS_X11 "$QT_CFLAGS_FONTCONFIG \$\$QMAKE_CFLAGS_X11"
+        QMakeVar set QMAKE_LIBS_X11 "$QT_LIBS_FONTCONFIG \$\$QMAKE_LIBS_X11"
+        CFG_LIBFREETYPE=system
+    else
+        if [ "$CFG_FONTCONFIG" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "FontConfig support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_FONTCONFIG=no
+        fi
+    fi
+fi
 
 
 if [ "$BUILD_ON_MAC" = "yes" ]; then
