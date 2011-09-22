@@ -412,9 +412,13 @@ void QWindow::setSizeIncrement(const QSize &size)
         d->platformWindow->propagateSizeHints();
 }
 
+/*!
+    Sets the geometry of the window excluding its window frame.
+*/
 void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
+    d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(rect);
     } else {
@@ -422,6 +426,9 @@ void QWindow::setGeometry(const QRect &rect)
     }
 }
 
+/*!
+    Returns the geometry of the window excluding its window frame.
+*/
 QRect QWindow::geometry() const
 {
     Q_D(const QWindow);
@@ -430,12 +437,65 @@ QRect QWindow::geometry() const
     return d->geometry;
 }
 
+/*!
+    Returns the window frame margins surrounding the window.
+*/
 QMargins QWindow::frameMargins() const
 {
     Q_D(const QWindow);
     if (d->platformWindow)
         return d->platformWindow->frameMargins();
     return QMargins();
+}
+
+/*!
+    Returns the geometry of the window including its window frame.
+*/
+QRect QWindow::frameGeometry() const
+{
+    Q_D(const QWindow);
+    if (d->platformWindow) {
+        QMargins m = frameMargins();
+        return d->platformWindow->geometry().adjusted(-m.left(), -m.top(), m.right(), m.bottom());
+    }
+    return d->geometry;
+}
+
+/*!
+    Returns the top left position of the window including its window frame.
+*/
+QPoint QWindow::framePos() const
+{
+    Q_D(const QWindow);
+    if (d->platformWindow) {
+        QMargins margins = frameMargins();
+        return d->platformWindow->geometry().topLeft() - QPoint(margins.left(), margins.top());
+    }
+    return d->geometry.topLeft();
+}
+
+/*!
+    Sets the upper left position of the window including its window frame.
+*/
+void QWindow::setFramePos(const QPoint &point)
+{
+    Q_D(QWindow);
+    d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
+    if (d->platformWindow) {
+        d->platformWindow->setGeometry(QRect(point, size()));
+    } else {
+        d->geometry.setTopLeft(point);
+    }
+}
+
+void QWindow::resize(const QSize &newSize)
+{
+    Q_D(QWindow);
+    if (d->platformWindow) {
+        d->platformWindow->setGeometry(QRect(pos(), newSize));
+    } else {
+        d->geometry.setSize(newSize);
+    }
 }
 
 void QWindow::setWindowIcon(const QImage &icon) const

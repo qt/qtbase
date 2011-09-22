@@ -246,6 +246,8 @@ void QXcbWindow::create()
 
     Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
 
+    propagateSizeHints();
+
     xcb_atom_t properties[4];
     int propertyCount = 0;
     properties[propertyCount++] = atom(QXcbAtom::WM_DELETE_WINDOW);
@@ -334,6 +336,8 @@ void QXcbWindow::destroy()
 void QXcbWindow::setGeometry(const QRect &rect)
 {
     QPlatformWindow::setGeometry(rect);
+
+    propagateSizeHints();
 
     const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
     const quint32 values[] = { rect.x(),
@@ -1062,11 +1066,12 @@ void QXcbWindow::propagateSizeHints()
 
     QRect rect = geometry();
 
+    QWindow *win = window();
+
     xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
     xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
-    xcb_size_hints_set_win_gravity(&hints, XCB_GRAVITY_STATIC);
-
-    QWindow *win = window();
+    xcb_size_hints_set_win_gravity(&hints, qt_window_private(win)->positionPolicy == QWindowPrivate::WindowFrameInclusive
+                                           ? XCB_GRAVITY_NORTH_WEST : XCB_GRAVITY_STATIC);
 
     QSize minimumSize = win->minimumSize();
     QSize maximumSize = win->maximumSize();

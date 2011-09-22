@@ -43,6 +43,7 @@
 #define QWINDOW_QPA_P_H
 
 #include <QtGui/qwindow.h>
+#include <QtGui/qplatformwindow_qpa.h>
 
 #include <QtCore/private/qobject_p.h>
 
@@ -59,6 +60,12 @@ class Q_GUI_EXPORT QWindowPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QWindow)
 
 public:
+    enum PositionPolicy
+    {
+        WindowFrameInclusive,
+        WindowFrameExclusive
+    };
+
     QWindowPrivate()
         : QObjectPrivate()
         , surfaceType(QWindow::RasterSurface)
@@ -68,6 +75,7 @@ public:
         , visible(false)
         , windowState(Qt::WindowNoState)
         , resizeEventPending(true)
+        , positionPolicy(WindowFrameExclusive)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
         , transientParent(0)
@@ -101,6 +109,7 @@ public:
     QRect geometry;
     Qt::WindowState windowState;
     bool resizeEventPending;
+    PositionPolicy positionPolicy;
 
     QSize minimumSize;
     QSize maximumSize;

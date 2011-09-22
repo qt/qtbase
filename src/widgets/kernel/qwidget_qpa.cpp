@@ -126,6 +126,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     }
 
+    qt_window_private(win)->positionPolicy = topData()->posFromMove ? QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
     win->create();
 
     data.window_flags = win->windowFlags();
@@ -661,6 +662,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && !q->testAttribute(Qt::WA_OutsideWSRange)) {
             if (q->windowHandle()) {
                 if (q->isWindow()) {
+                    qt_window_private(q->windowHandle())->positionPolicy = topData()->posFromMove ? QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
                     q->windowHandle()->setGeometry(q->geometry());
                 } else {
                     QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());

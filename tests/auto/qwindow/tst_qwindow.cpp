@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include <qwindow.h>
-#include <qtest.h>
+
+#include <QtTest/QtTest>
+
+#include "../../shared/util.h"
 
 class tst_QWindow: public QObject
 {
@@ -48,6 +51,7 @@ class tst_QWindow: public QObject
 
 private slots:
     void mapGlobal();
+    void positioning();
 };
 
 
@@ -68,6 +72,95 @@ void tst_QWindow::mapGlobal()
     QCOMPARE(a.mapFromGlobal(QPoint(100, 100)), QPoint(90, 90));
     QCOMPARE(b.mapFromGlobal(QPoint(100, 100)), QPoint(70, 70));
     QCOMPARE(c.mapFromGlobal(QPoint(100, 100)), QPoint(30, 30));
+}
+
+class Window : public QWindow
+{
+public:
+    Window()
+        : gotResizeEvent(false)
+        , gotMapEvent(false)
+        , gotMoveEvent(false)
+    {
+        setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    }
+
+    bool event(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::Map:
+            gotMapEvent = true;
+            break;
+        case QEvent::Resize:
+            gotResizeEvent = true;
+            break;
+        case QEvent::Move:
+            gotMoveEvent = true;
+            break;
+        default:
+            break;
+        }
+
+        return QWindow::event(event);
+    }
+
+    bool gotResizeEvent;
+    bool gotMapEvent;
+    bool gotMoveEvent;
+};
+
+void tst_QWindow::positioning()
+{
+    QRect geometry(80, 80, 40, 40);
+
+    Window window;
+    window.setGeometry(geometry);
+    QCOMPARE(window.geometry(), geometry);
+    window.show();
+
+    QTRY_VERIFY(window.gotResizeEvent && window.gotMapEvent);
+
+    QMargins originalMargins = window.frameMargins();
+
+    QCOMPARE(window.pos(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
+    QVERIFY(window.frameGeometry().contains(window.geometry()));
+
+    QPoint originalPos = window.pos();
+    QPoint originalFramePos = window.framePos();
+
+    window.gotResizeEvent = false;
+
+    window.setWindowState(Qt::WindowFullScreen);
+    QTRY_VERIFY(window.gotResizeEvent);
+
+    window.gotResizeEvent = false;
+    window.setWindowState(Qt::WindowNoState);
+    QTRY_VERIFY(window.gotResizeEvent);
+
+    QTRY_COMPARE(originalPos, window.pos());
+    QTRY_COMPARE(originalFramePos, window.framePos());
+    QTRY_COMPARE(originalMargins, window.frameMargins());
+
+    // if our positioning is actually fully respected by the window manager
+    // test whether it correctly handles frame positioning as well
+    if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
+        QPoint framePos(40, 40);
+
+        window.gotMoveEvent = false;
+        window.setFramePos(framePos);
+
+        QTRY_VERIFY(window.gotMoveEvent);
+        QTRY_COMPARE(framePos, window.framePos());
+        QTRY_COMPARE(originalMargins, window.frameMargins());
+        QCOMPARE(window.pos(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
+
+        // and back to regular positioning
+
+        window.gotMoveEvent = false;
+        window.setPos(originalPos);
+        QTRY_VERIFY(window.gotMoveEvent);
+        QTRY_COMPARE(originalPos, window.pos());
+    }
 }
 
 #include <tst_qwindow.moc>

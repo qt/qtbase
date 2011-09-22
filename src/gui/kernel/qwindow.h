@@ -142,6 +142,12 @@ public:
     void setGeometry(const QRect &rect);
     QRect geometry() const;
 
+    QMargins frameMargins() const;
+    QRect frameGeometry() const;
+
+    QPoint framePos() const;
+    void setFramePos(const QPoint &point);
+
     inline int width() const { return geometry().width(); }
     inline int height() const { return geometry().height(); }
     inline int x() const { return geometry().x(); }
@@ -150,13 +156,14 @@ public:
     inline QSize size() const { return geometry().size(); }
     inline QPoint pos() const { return geometry().topLeft(); }
 
-    inline void move(const QPoint &pt) { setGeometry(QRect(pt, size())); }
-    inline void move(int posx, int posy) { move(QPoint(posx, posy)); }
+    QT_DEPRECATED inline void move(const QPoint &pt) { setPos(pt); }
+    QT_DEPRECATED inline void move(int posx, int posy) { setPos(posx, posy); }
 
-    inline void resize(const QSize &newsize) { setGeometry(QRect(pos(), newsize)); }
+    inline void setPos(const QPoint &pt) { setGeometry(QRect(pt, size())); }
+    inline void setPos(int posx, int posy) { setPos(QPoint(posx, posy)); }
+
+    void resize(const QSize &newSize);
     inline void resize(int w, int h) { setGeometry(QRect(x(), y(), w, h)); }
-
-    QMargins frameMargins() const;
 
     void setWindowIcon(const QImage &icon) const;
 
