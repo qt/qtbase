@@ -274,7 +274,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
 
 void QXcbDrag::move(const QMouseEvent *me)
 {
-    DEBUG() << "QDragManager::move enter";
+    DEBUG() << "QDragManager::move enter" << me->globalPos();
 
     // ###
     QPoint globalPos = me->globalPos();
@@ -326,7 +326,7 @@ void QXcbDrag::move(const QMouseEvent *me)
         //me
         xcb_window_t src = rootwin;
         while (target != 0) {
-            DNDDEBUG << "checking target for XdndAware" << target;
+            DNDDEBUG << "checking target for XdndAware" << target << lx << ly;
 
             // translate coordinates
             translate = ::translateCoordinates(connection(), src, target, lx, ly);
@@ -336,7 +336,8 @@ void QXcbDrag::move(const QMouseEvent *me)
             }
             lx = translate->dst_x;
             ly = translate->dst_y;
-            src = translate->child;
+            src = target;
+            xcb_window_t child = translate->child;
             free(translate);
 
             // check if it has XdndAware
@@ -350,14 +351,7 @@ void QXcbDrag::move(const QMouseEvent *me)
                 break;
             }
 
-            // find child at the coordinates
-            translate = ::translateCoordinates(connection(), src, src, lx, ly);
-            if (!translate) {
-                target = 0;
-                break;
-            }
-            target = translate->child;
-            free(translate);
+            target = child;
         }
 
         if (!target || target == QDragManager::self()->shapedPixmapWindow->handle()->winId()) {
