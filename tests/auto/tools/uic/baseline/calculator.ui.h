@@ -11,13 +11,13 @@
 #define CALCULATOR_H
 
 #include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QHeaderView>
-#include <QtGui/QLineEdit>
-#include <QtGui/QToolButton>
-#include <QtGui/QWidget>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 

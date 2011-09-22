@@ -11,20 +11,20 @@
 #define QTRESOURCEEDITORDIALOG_H
 
 #include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QDialog>
-#include <QtGui/QDialogButtonBox>
-#include <QtGui/QGridLayout>
-#include <QtGui/QHeaderView>
-#include <QtGui/QListWidget>
-#include <QtGui/QSpacerItem>
-#include <QtGui/QSplitter>
-#include <QtGui/QToolButton>
-#include <QtGui/QTreeView>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QListWidget>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QTreeView>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 

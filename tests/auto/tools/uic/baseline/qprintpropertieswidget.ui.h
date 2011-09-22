@@ -11,15 +11,15 @@
 #define QPRINTPROPERTIESWIDGET_H
 
 #include <QtCore/QVariant>
-#include <QtGui/QAction>
-#include <QtGui/QApplication>
-#include <QtGui/QButtonGroup>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QHeaderView>
-#include <QtGui/QTabWidget>
-#include <QtGui/QTreeView>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QTabWidget>
+#include <QtWidgets/QTreeView>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 #include "qpagesetupdialog_unix_p.h"
 
 QT_BEGIN_NAMESPACE
