@@ -42,11 +42,11 @@
 
 
 #include "test_file.h"
-#include <qapplication.h>
+#include <qguiapplication.h>
 
 int main( int argc, char **argv )
 {
-    QApplication a( argc, argv );
+    QGuiApplication a( argc, argv );
     SomeObject sc;
     return a.exec();
 }

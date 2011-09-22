@@ -8,5 +8,5 @@ SOURCES=\
     test_file.cpp\
     main.cpp
 CONFIG -= debug_and_release_target
-
+QT += widgets
 
