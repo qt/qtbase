@@ -526,21 +526,23 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     Qt::WindowState oldEffectiveState = effectiveState(oldstate);
     if (isWindow() && newEffectiveState != oldEffectiveState) {
         d->createTLExtra();
-        if (oldEffectiveState == Qt::WindowNoState) { //normal
+        if (oldEffectiveState == Qt::WindowNoState)
             d->topData()->normalGeometry = geometry();
-        } else if (oldEffectiveState == Qt::WindowFullScreen) {
-            setParent(0, d->topData()->savedFlags);
-            needShow = true;
-        } else if (oldEffectiveState == Qt::WindowMinimized) {
-            needShow = true;
-        }
 
         Q_ASSERT(windowHandle());
         windowHandle()->setWindowState(newEffectiveState);
         bool supported = windowHandle()->windowState() == newEffectiveState;
 
         if (!supported) {
-            // emulate the window state
+            // undo the effects of the old emulated state
+            if (oldEffectiveState == Qt::WindowFullScreen) {
+                setParent(0, d->topData()->savedFlags);
+                needShow = true;
+            } else if (oldEffectiveState == Qt::WindowMinimized) {
+                needShow = true;
+            }
+
+            // emulate the new window state
             if (newEffectiveState == Qt::WindowMinimized) {
                 //### not ideal...
                 hide();

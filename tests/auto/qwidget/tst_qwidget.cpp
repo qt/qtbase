@@ -1829,67 +1829,93 @@ void tst_QWidget::windowState()
     widget1.setWindowState(Qt::WindowMaximized);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.show();
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & Qt::WindowMaximized));
-    QCOMPARE(widget1.pos(), pos);
+    QTRY_COMPARE(widget1.pos(), pos);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMinimized);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() | Qt::WindowMaximized);
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowMinimized|Qt::WindowMaximized));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized)));
-    QCOMPARE(widget1.pos(), pos);
+    QTRY_COMPARE(widget1.pos(), pos);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowFullScreen);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMinimized));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowFullScreen);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
+
+    widget1.setWindowState(Qt::WindowNoState);
+    QTest::qWait(100);
+    VERIFY_STATE(Qt::WindowNoState);
+    QTRY_COMPARE(widget1.pos(), pos);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
+
+    widget1.setWindowState(Qt::WindowFullScreen);
+    QTest::qWait(100);
+    VERIFY_STATE(Qt::WindowFullScreen);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized|Qt::WindowMinimized));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
     QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowFullScreen);
     QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
     QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & stateMask));
+    QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
-    QCOMPARE(widget1.pos(), pos);
-    QCOMPARE(widget1.size(), size);
+    QTRY_COMPARE(widget1.pos(), pos);
+    QTRY_COMPARE(widget1.size(), size);
 #endif
 }
 
