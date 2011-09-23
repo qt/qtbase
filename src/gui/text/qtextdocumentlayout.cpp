@@ -3136,6 +3136,46 @@ void QTextDocumentLayout::setFixedColumnWidth(int width)
     d->fixedColumnWidth = width;
 }
 
+QRectF QTextDocumentLayout::tableCellBoundingRect(QTextTable *table, const QTextTableCell &cell) const
+{
+    if (!cell.isValid())
+        return QRectF();
+
+    QTextTableData *td = static_cast<QTextTableData *>(data(table));
+
+    QRectF tableRect = tableBoundingRect(table);
+    QRectF cellRect = td->cellRect(cell);
+
+    return cellRect.translated(tableRect.topLeft());
+}
+
+QRectF QTextDocumentLayout::tableBoundingRect(QTextTable *table) const
+{
+    Q_D(const QTextDocumentLayout);
+    if (d->docPrivate->pageSize.isNull())
+        return QRectF();
+    d->ensureLayoutFinished();
+
+    QPointF pos;
+    const int framePos = table->firstPosition();
+    QTextFrame *f = table;
+    while (f) {
+        QTextFrameData *fd = data(f);
+        pos += fd->position.toPointF();
+
+        if (f != table) {
+            if (QTextTable *table = qobject_cast<QTextTable *>(f)) {
+                QTextTableCell cell = table->cellAt(framePos);
+                if (cell.isValid())
+                    pos += static_cast<QTextTableData *>(fd)->cellPosition(cell).toPointF();
+            }
+        }
+
+        f = f->parentFrame();
+    }
+    return QRectF(pos, data(table)->size.toSizeF());
+}
+
 QRectF QTextDocumentLayout::frameBoundingRect(QTextFrame *frame) const
 {
     Q_D(const QTextDocumentLayout);

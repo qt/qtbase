@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTextListFormat;
-
+class QTextTableCell;
 class QTextDocumentLayoutPrivate;
 
 class Q_GUI_EXPORT QTextDocumentLayout : public QAbstractTextDocumentLayout
@@ -91,6 +91,8 @@ public:
 
     virtual QRectF frameBoundingRect(QTextFrame *frame) const;
     virtual QRectF blockBoundingRect(const QTextBlock &block) const;
+    QRectF tableBoundingRect(QTextTable *table) const;
+    QRectF tableCellBoundingRect(QTextTable *table, const QTextTableCell &cell) const;
 
     // ####
     int layoutStatus() const;
