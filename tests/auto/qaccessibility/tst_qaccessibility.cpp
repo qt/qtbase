@@ -845,11 +845,11 @@ void tst_QAccessibility::accessibleName()
         QString name = tr("Widget Name %1").arg(i);
         child->setAccessibleName(name);
         QAccessibleInterface *acc = QAccessible::queryAccessibleInterface(child);
-        QCOMPARE(acc->text(QAccessible::Name, 0), name);
+        QCOMPARE(acc->text(QAccessible::Name), name);
 
         QString desc = tr("Widget Description %1").arg(i);
         child->setAccessibleDescription(desc);
-        QCOMPARE(acc->text(QAccessible::Description, 0), desc);
+        QCOMPARE(acc->text(QAccessible::Description), desc);
 
     }
 
@@ -2350,43 +2350,32 @@ void tst_QAccessibility::dialTest()
 {
     {
     QDial dial;
-    dial.setValue(20);
-    QCOMPARE(dial.value(), 20);
+    dial.setMinimum(23);
+    dial.setMaximum(121);
+    dial.setValue(42);
+    QCOMPARE(dial.value(), 42);
     dial.show();
-#if defined(Q_OS_UNIX)
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
-#endif
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&dial);
     QVERIFY(interface);
-
-    // Child count; 1 = SpeedoMeter, 2 = SliderHandle.
-    QCOMPARE(interface->childCount(), 2);
-
-    QCOMPARE(interface->role(0), QAccessible::Dial);
-    QCOMPARE(interface->role(1), QAccessible::Slider);
-    QCOMPARE(interface->role(2), QAccessible::Indicator);
+    QCOMPARE(interface->childCount(), 0);
 
     QCOMPARE(interface->text(QAccessible::Value, 0), QString::number(dial.value()));
-    QCOMPARE(interface->text(QAccessible::Value, 1), QString::number(dial.value()));
-    QCOMPARE(interface->text(QAccessible::Value, 2), QString::number(dial.value()));
-    QCOMPARE(interface->text(QAccessible::Name, 0), QLatin1String("QDial"));
-    QCOMPARE(interface->text(QAccessible::Name, 1), QLatin1String("SpeedoMeter"));
-    QCOMPARE(interface->text(QAccessible::Name, 2), QLatin1String("SliderHandle"));
-    QCOMPARE(interface->text(QAccessible::Name, 3), QLatin1String(""));
+    QCOMPARE(interface->rect(), dial.geometry());
 
-    QCOMPARE(interface->state(1), interface->state(0));
-    QCOMPARE(interface->state(2), interface->state(0) | QAccessible::HotTracked);
-
-    // Rect
-    QCOMPARE(interface->rect(0), dial.geometry());
-    QVERIFY(interface->rect(1).isValid());
-    QVERIFY(dial.geometry().contains(interface->rect(1)));
-    QVERIFY(interface->rect(2).isValid());
-    QVERIFY(interface->rect(1).contains(interface->rect(2)));
-    QVERIFY(!interface->rect(3).isValid());
-
+    QAccessibleValueInterface *valueIface = interface->valueInterface();
+    QVERIFY(valueIface != 0);
+    QCOMPARE(valueIface->minimumValue().toInt(), dial.minimum());
+    QCOMPARE(valueIface->maximumValue().toInt(), dial.maximum());
+    QCOMPARE(valueIface->currentValue().toInt(), 42);
+    dial.setValue(50);
+    QCOMPARE(valueIface->currentValue().toInt(), dial.value());
+    dial.setValue(0);
+    QCOMPARE(valueIface->currentValue().toInt(), dial.value());
+    dial.setValue(100);
+    QCOMPARE(valueIface->currentValue().toInt(), dial.value());
+    valueIface->setCurrentValue(77);
+    QCOMPARE(77, dial.value());
     }
     QTestAccessibility::clearEvents();
 }

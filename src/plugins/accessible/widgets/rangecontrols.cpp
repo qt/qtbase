@@ -380,123 +380,18 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
 #ifndef QT_NO_DIAL
 // ======================================= QAccessibleDial ======================================
 QAccessibleDial::QAccessibleDial(QWidget *widget)
-    : QAccessibleWidget(widget, Dial)
+    : QAccessibleAbstractSlider(widget, Dial)
 {
     Q_ASSERT(qobject_cast<QDial *>(widget));
     addControllingSignal(QLatin1String("valueChanged(int)"));
 }
 
-QRect QAccessibleDial::rect(int child) const
+QString QAccessibleDial::text(Text textType, int) const
 {
-    QRect rect;
-    if (!dial()->isVisible())
-        return rect;
-    switch (child) {
-    case Self:
-        return QAccessibleWidget::rect(child);
-    case SpeedoMeter: {
-        // Mixture from qcommonstyle.cpp (focus rect).
-        int width = dial()->width();
-        int height = dial()->height();
-        qreal radius = qMin(width, height) / 2.0;
-        qreal delta = radius / 6.0;
-        qreal dx = delta + (width - 2 * radius) / 2.0;
-        qreal dy = delta + (height - 2 * radius) / 2.0;
-        rect = QRect(int(dx), int(dy), int(radius * 2 - 2 * delta), int(radius * 2 - 2 * delta));
-        if (dial()->notchesVisible()) {
-            rect.translate(int(-radius / 6), int(-radius / 6));
-            rect.setWidth(rect.width() + int(radius / 3));
-            rect.setHeight(rect.height() + int(radius / 3));
-        }
-        break;
-    }
-    case SliderHandle: {
-        // Mixture from qcommonstyle.cpp and qdial.cpp.
-        int sliderValue = !dial()->invertedAppearance() ? dial()->value()
-                                                        : (dial()->maximum() - dial()->value());
-        qreal angle = 0;
-        if (dial()->maximum() == dial()->minimum()) {
-            angle = Q_PI / 2;
-        } else if (dial()->wrapping()) {
-            angle = Q_PI * 3 / 2 - (sliderValue - dial()->minimum()) * 2 * Q_PI
-                    / (dial()->maximum() - dial()->minimum());
-        } else {
-            angle = (Q_PI * 8 - (sliderValue - dial()->minimum()) * 10 * Q_PI
-                    / (dial()->maximum() - dial()->minimum())) / 6;
-        }
-
-        int width = dial()->rect().width();
-        int height = dial()->rect().height();
-        int radius = qMin(width, height) / 2;
-        int xc = width / 2;
-        int yc = height / 2;
-        int bigLineSize = radius / 6;
-        if (bigLineSize < 4)
-            bigLineSize = 4;
-        if (bigLineSize > radius / 2)
-            bigLineSize = radius / 2;
-        int len = radius - bigLineSize - 5;
-        if (len < 5)
-            len = 5;
-        int back = len / 2;
-
-        QPolygonF arrow(3);
-        arrow[0] = QPointF(0.5 + xc + len * qCos(angle),
-                           0.5 + yc - len * qSin(angle));
-        arrow[1] = QPointF(0.5 + xc + back * qCos(angle + Q_PI * 5 / 6),
-                           0.5 + yc - back * qSin(angle + Q_PI * 5 / 6));
-        arrow[2] = QPointF(0.5 + xc + back * qCos(angle - Q_PI * 5 / 6),
-                           0.5 + yc - back * qSin(angle - Q_PI * 5 / 6));
-        rect = arrow.boundingRect().toRect();
-        break;
-    }
-    default:
-        return QRect();
-    }
-
-    QPoint globalPos = dial()->mapToGlobal(QPoint(0,0));
-    return QRect(globalPos.x() + rect.x(), globalPos.y() + rect.y(), rect.width(), rect.height());
-}
-
-int QAccessibleDial::childCount() const
-{
-    return SliderHandle;
-}
-
-QString QAccessibleDial::text(Text textType, int child) const
-{
-    if (textType == Value && child >= Self && child <= SliderHandle)
+    if (textType == Value)
         return QString::number(dial()->value());
-    if (textType == Name) {
-        switch (child) {
-        case Self:
-            if (!widget()->accessibleName().isEmpty())
-                return widget()->accessibleName();
-            return QDial::tr("QDial");
-        case SpeedoMeter:
-            return QDial::tr("SpeedoMeter");
-        case SliderHandle:
-            return QDial::tr("SliderHandle");
-        }
-    }
-    return QAccessibleWidget::text(textType, child);
-}
 
-QAccessible::Role QAccessibleDial::role(int child) const
-{
-    if (child == SpeedoMeter)
-        return Slider;
-    else if (child == SliderHandle)
-        return Indicator;
-    return QAccessibleWidget::role(child);
-}
-
-QAccessible::State QAccessibleDial::state(int child) const
-{
-    const State parentState = QAccessibleWidget::state(0);
-    if (child == SliderHandle)
-        return parentState | HotTracked;
-    return parentState;
+    return QAccessibleAbstractSlider::text(textType, 0);
 }
 
 QVariant QAccessibleDial::invokeMethod(Method, int, const QVariantList &)

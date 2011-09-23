@@ -151,22 +151,12 @@ protected:
 #endif // QT_NO_SLIDER
 
 #ifndef QT_NO_DIAL
-class QAccessibleDial : public QAccessibleWidget
+class QAccessibleDial : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleDial(QWidget *w);
 
-    enum DialElements {
-        Self  = 0,
-        SpeedoMeter,
-        SliderHandle
-    };
-
-    int childCount() const;
-    QRect rect(int child) const;
     QString text(Text textType, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
     QVariant invokeMethod(Method method, int child, const QVariantList &params);
 
 protected:
