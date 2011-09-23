@@ -2826,7 +2826,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
         const void *cbdata[] = { sender, signal.mobj ? signalSignature.constData() : 0,
                                  receiver, method.mobj ? methodSignature.constData() : 0 };
-        if (QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata))
+        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata))
             return true;
     }
 
