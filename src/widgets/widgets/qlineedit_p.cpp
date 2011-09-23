@@ -239,6 +239,14 @@ void QLineEditPrivate::updatePasswordEchoEditing(bool editing)
     q->setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod());
 }
 
+void QLineEditPrivate::resetInputPanel()
+{
+    Q_Q(QLineEdit);
+    if (q->hasFocus() && qApp) {
+        qApp->inputPanel()->reset();
+    }
+}
+
 /*!
   This function is not intended as polymorphic usage. Just a shared code
   fragment that calls QInputContext::mouseHandler for this

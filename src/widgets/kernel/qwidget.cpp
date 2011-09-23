@@ -440,29 +440,6 @@ void QWidget::setInputContext(QInputContext *context)
 }
 
 
-/*!
-    \obsolete
-
-    This function can be called on the widget that currently has focus
-    to reset the input method operating on it.
-
-    This function is providing for convenience, instead you should use
-    \l{QInputContext::}{reset()} on the input context that was
-    returned by inputContext().
-
-    \sa QInputContext, inputContext(), QInputContext::reset()
-*/
-void QWidget::resetInputContext()
-{
-    if (!hasFocus())
-        return;
-#ifndef QT_NO_IM
-    QInputContext *qic = this->inputContext();
-    if(qic)
-        qic->reset();
-#endif // QT_NO_IM
-}
-
 #ifdef QT_KEYPAD_NAVIGATION
 QPointer<QWidget> QWidgetPrivate::editingWidget;
 
@@ -8265,13 +8242,6 @@ bool QWidget::event(QEvent *event)
         break;
 
     case QEvent::MouseButtonPress:
-        // Don't reset input context here. Whether reset or not is
-        // a responsibility of input method. reset() will be
-        // called by mouseHandler() of input method if necessary
-        // via mousePressEvent() of text widgets.
-#if 0
-        resetInputContext();
-#endif
         mousePressEvent((QMouseEvent*)event);
         break;
 

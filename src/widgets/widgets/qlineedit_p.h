@@ -101,6 +101,8 @@ public:
 
     void updatePasswordEchoEditing(bool);
 
+    void resetInputPanel();
+
     inline bool shouldEnableInputMethod() const
     {
         return !control->isReadOnly();

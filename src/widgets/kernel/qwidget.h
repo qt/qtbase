@@ -714,8 +714,6 @@ public:
     Qt::InputMethodHints inputMethodHints() const;
     void setInputMethodHints(Qt::InputMethodHints hints);
 
-protected:
-    void resetInputContext();
 protected Q_SLOTS:
     void updateMicroFocus();
 protected:
