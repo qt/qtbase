@@ -439,10 +439,26 @@ inline int QByteArray::capacity() const
 { return d->alloc; }
 
 inline void QByteArray::reserve(int asize)
-{ if (d->ref != 1 || asize > int(d->alloc)) realloc(asize); d->capacityReserved = true; }
+{
+    if (d->ref != 1 || asize > int(d->alloc))
+        realloc(asize);
+
+    if (!d->capacityReserved) {
+        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
+        d->capacityReserved = true;
+    }
+}
 
 inline void QByteArray::squeeze()
-{ if (d->ref != 1 || d->size < int(d->alloc)) realloc(d->size); d->capacityReserved = false; }
+{
+    if (d->ref > 1 || d->size < int(d->alloc))
+        realloc(d->size);
+
+    if (d->capacityReserved) {
+        // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)
+        d->capacityReserved = false;
+    }
+}
 
 class Q_CORE_EXPORT QByteRef {
     QByteArray &a;

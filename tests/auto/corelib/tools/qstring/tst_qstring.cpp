@@ -224,6 +224,8 @@ private slots:
 
     void toUpperLower_icu();
     void literals();
+
+    void reserve();
 };
 
 typedef QList<int> IntList;
@@ -5137,6 +5139,14 @@ void tst_QString::literals()
 #endif
 }
 
+void tst_QString::reserve()
+{
+    QString nil1, nil2;
+    nil1.reserve(0);
+    nil2.squeeze();
+    nil1.squeeze();
+    nil2.reserve(0);
+}
 
 QTEST_APPLESS_MAIN(tst_QString)
 

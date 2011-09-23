@@ -1536,6 +1536,12 @@ void tst_QByteArray::reserve()
         QVERIFY(capacity == qba.capacity());
         QVERIFY(data == qba.data());
     }
+
+    QByteArray nil1, nil2;
+    nil1.reserve(0);
+    nil2.squeeze();
+    nil1.squeeze();
+    nil2.reserve(0);
 }
 
 void tst_QByteArray::literals()
