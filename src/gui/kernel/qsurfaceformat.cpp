@@ -52,6 +52,8 @@
 #undef minor
 #endif
 
+QT_BEGIN_NAMESPACE
+
 class QSurfaceFormatPrivate
 {
 public:
@@ -464,3 +466,5 @@ QDebug operator<<(QDebug dbg, const QSurfaceFormat &f)
     return dbg.space();
 }
 #endif
+
+QT_END_NAMESPACE

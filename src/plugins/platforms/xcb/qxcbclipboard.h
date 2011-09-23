@@ -47,6 +47,8 @@
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
 
+QT_BEGIN_NAMESPACE
+
 class QXcbConnection;
 class QXcbScreen;
 class QXcbClipboardMime;
@@ -104,5 +106,7 @@ private:
     static const int clipboard_timeout;
 
 };
+
+QT_END_NAMESPACE
 
 #endif // QXCBCLIPBOARD_H

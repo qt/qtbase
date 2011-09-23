@@ -43,6 +43,8 @@
 
 #include <QPlatformInputContext>
 
+QT_BEGIN_NAMESPACE
+
 class QIBusPlatformInputContextPrivate;
 class QDBusVariant;
 
@@ -70,5 +72,7 @@ public Q_SLOTS:
 private:
     QIBusPlatformInputContextPrivate *d;
 };
+
+QT_END_NAMESPACE
 
 #endif

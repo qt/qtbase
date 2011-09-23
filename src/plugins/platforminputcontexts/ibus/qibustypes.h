@@ -44,6 +44,8 @@
 #include <qvector.h>
 #include <qevent.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDBusArgument;
 
 class QIBusSerializable
@@ -112,5 +114,7 @@ public:
     QString text;
     QIBusAttributeList attributes;
 };
+
+QT_END_NAMESPACE
 
 #endif

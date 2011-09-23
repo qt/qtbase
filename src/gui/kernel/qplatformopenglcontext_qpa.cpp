@@ -41,6 +41,8 @@
 
 #include "qplatformopenglcontext_qpa.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QPlatformOpenGLContext
     \since 4.8
@@ -109,3 +111,5 @@ void QPlatformOpenGLContext::setContext(QOpenGLContext *context)
     Q_D(QPlatformOpenGLContext);
     d->context = context;
 }
+
+QT_END_NAMESPACE

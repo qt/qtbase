@@ -48,6 +48,8 @@
 
 #include <QEvent>
 
+QT_BEGIN_NAMESPACE
+
 class QWindow;
 
 class QXcbKeyboard : public QXcbObject
@@ -85,5 +87,7 @@ private:
 
     xcb_key_symbols_t *m_key_symbols;
 };
+
+QT_END_NAMESPACE
 
 #endif

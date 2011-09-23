@@ -44,6 +44,8 @@
 
 #include <QtGui/QPlatformNativeInterface>
 
+QT_BEGIN_NAMESPACE
+
 class QWidget;
 class QXcbScreen;
 
@@ -73,5 +75,7 @@ public:
 private:
     static QXcbScreen *qPlatformScreenForWindow(QWindow *window);
 };
+
+QT_END_NAMESPACE
 
 #endif // QXCBNATIVEINTERFACE_H

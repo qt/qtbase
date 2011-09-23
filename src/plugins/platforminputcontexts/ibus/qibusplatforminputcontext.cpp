@@ -55,6 +55,8 @@
 
 #include <QtDBus>
 
+QT_BEGIN_NAMESPACE
+
 enum { debug = 0 };
 
 class QIBusPlatformInputContextPrivate
@@ -327,3 +329,5 @@ QDBusConnection *QIBusPlatformInputContextPrivate::createConnection()
 
     return new QDBusConnection(QDBusConnection::connectToBus(QString::fromLatin1(address), QLatin1String("QIBusProxy")));
 }
+
+QT_END_NAMESPACE

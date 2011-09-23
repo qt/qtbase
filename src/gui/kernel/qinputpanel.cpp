@@ -42,6 +42,8 @@
 #include <qinputpanel.h>
 #include <private/qinputpanel_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QInputPanel::QInputPanel()
     : QObject(*new QInputPanelPrivate)
 {
@@ -189,5 +191,7 @@ void QInputPanel::invokeAction(Action a, int cursorPosition)
     if (ic)
         ic->invokeAction(a, cursorPosition);
 }
+
+QT_END_NAMESPACE
 
 #include "moc_qinputpanel.cpp"

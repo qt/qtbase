@@ -41,6 +41,8 @@
 
 #include "qplatformmenu_qpa.h"
 
+QT_BEGIN_NAMESPACE
+
 //
 // QPlatformMenuAction
 //
@@ -90,3 +92,4 @@ void QPlatformMenuBar::handleReparent(QWidget *newParent)
     Q_UNUSED(newParent);
 }
 
+QT_END_NAMESPACE

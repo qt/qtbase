@@ -41,6 +41,8 @@
 
 #include <qpagedpaintdevice.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPagedPaintDevicePrivate
 {
 public:
@@ -225,3 +227,5 @@ QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
 {
     return d->margins;
 }
+
+QT_END_NAMESPACE

@@ -56,6 +56,8 @@
 #include "QDesktopWidget"
 #include "private/qwidget_p.h"
 
+QT_BEGIN_NAMESPACE
+
 class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
@@ -77,5 +79,7 @@ public:
 
     QList<QDesktopScreenWidget *> screens;
 };
+
+QT_END_NAMESPACE
 
 #endif // QDESKTOPWIDGET_QPA_P_H

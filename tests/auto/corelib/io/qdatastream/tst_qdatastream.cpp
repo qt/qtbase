@@ -420,7 +420,7 @@ static const char* open_xpm[]={
 
 // ************************************
 
-static QString QStringData(int index)
+static QString stringData(int index)
 {
     switch (index) {
     case 0: return QString();
@@ -447,7 +447,7 @@ void tst_QDataStream::stream_QString()
 
 void tst_QDataStream::writeQString(QDataStream* s)
 {
-    QString test(QStringData(dataIndex(QTest::currentDataTag())));
+    QString test(stringData(dataIndex(QTest::currentDataTag())));
     *s << test;
     *s << QString("Her er det noe tekst");
     *s << test;
@@ -462,7 +462,7 @@ void tst_QDataStream::writeQString(QDataStream* s)
 void tst_QDataStream::readQString(QDataStream *s)
 {
     QString S;
-    QString test(QStringData(dataIndex(QTest::currentDataTag())));
+    QString test(stringData(dataIndex(QTest::currentDataTag())));
 
     *s >> S;
     QCOMPARE(S, test);

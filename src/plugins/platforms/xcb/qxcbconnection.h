@@ -53,6 +53,8 @@
 
 #define Q_XCB_DEBUG
 
+QT_BEGIN_NAMESPACE
+
 class QXcbScreen;
 class QXcbWindow;
 class QXcbDrag;
@@ -428,5 +430,7 @@ cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
 #if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
 #define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))
 #endif //endifXCB_USE_DRI2
+
+QT_END_NAMESPACE
 
 #endif

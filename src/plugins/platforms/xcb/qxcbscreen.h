@@ -49,6 +49,8 @@
 
 #include "qxcbobject.h"
 
+QT_BEGIN_NAMESPACE
+
 class QXcbConnection;
 class QXcbCursor;
 
@@ -90,5 +92,7 @@ private:
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QXcbCursor *m_cursor;
 };
+
+QT_END_NAMESPACE
 
 #endif

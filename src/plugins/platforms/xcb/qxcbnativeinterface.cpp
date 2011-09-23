@@ -57,6 +57,8 @@
 #include "qdri2context.h"
 #endif
 
+QT_BEGIN_NAMESPACE
+
 class QXcbResourceMap : public QMap<QByteArray, QXcbNativeInterface::ResourceType>
 {
 public:
@@ -202,3 +204,5 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
     return 0;
 #endif
 }
+
+QT_END_NAMESPACE

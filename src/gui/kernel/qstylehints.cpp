@@ -43,6 +43,8 @@
 #include <qplatformintegration_qpa.h>
 #include <private/qguiapplication_p.h>
 
+QT_BEGIN_NAMESPACE
+
 static inline QVariant hint(QPlatformIntegration::StyleHint h)
 {
     return QGuiApplicationPrivate::platformIntegration()->styleHint(h);
@@ -78,3 +80,5 @@ int QStyleHints::cursorFlashTime() const
 {
     return hint(QPlatformIntegration::CursorFlashTime).toInt();
 }
+
+QT_END_NAMESPACE

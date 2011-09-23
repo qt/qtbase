@@ -54,6 +54,8 @@
 
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 class QGuiGLThreadContext
 {
 public:
@@ -603,3 +605,4 @@ void QOpenGLMultiGroupSharedResource::cleanup(QOpenGLContext *ctx, QOpenGLShared
     m_groups.removeOne(group);
 }
 
+QT_END_NAMESPACE

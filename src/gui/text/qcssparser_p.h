@@ -63,7 +63,9 @@
 #include <QtGui/QPalette>
 #include <QtCore/QSharedData>
 
+QT_BEGIN_NAMESPACE
 class QIcon;
+QT_END_NAMESPACE
 
 #ifndef QT_NO_CSSPARSER
 

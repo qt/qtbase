@@ -53,5 +53,5 @@ QSurface::SurfaceType QSurface::surfaceType() const
     return m_type;
 }
 
-QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
 

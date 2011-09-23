@@ -44,6 +44,7 @@
 #include "private/qpdf_p.h"
 #include <QtCore/qfile.h>
 
+QT_BEGIN_NAMESPACE
 
 class QPdfWriterPrivate : public QObjectPrivate
 {
@@ -210,3 +211,5 @@ void QPdfWriter::setMargins(const Margins &m)
     d->engine->d_func()->topMargin = m.top*multiplier;
     d->engine->d_func()->bottomMargin = m.bottom*multiplier;
 }
+
+QT_END_NAMESPACE

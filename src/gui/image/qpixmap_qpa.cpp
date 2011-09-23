@@ -43,7 +43,11 @@
 #include <qscreen.h>
 #include <private/qguiapplication_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {
     return QGuiApplication::primaryScreen()->handle()->grabWindow(window, x, y, w, h);
 }
+
+QT_END_NAMESPACE

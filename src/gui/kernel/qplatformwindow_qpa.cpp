@@ -45,6 +45,8 @@
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPlatformWindowPrivate
 {
     QWindow *window;
@@ -273,3 +275,5 @@ bool QPlatformWindow::setMouseGrabEnabled(bool grab)
 
     \sa QWindowSurface, QWindow
 */
+
+QT_END_NAMESPACE

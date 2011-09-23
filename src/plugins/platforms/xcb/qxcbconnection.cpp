@@ -83,6 +83,8 @@ extern "C" {
 #include <EGL/eglext.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 QXcbConnection::QXcbConnection(const char *displayName)
     : m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
 #ifdef XCB_USE_DRI2
@@ -1070,3 +1072,5 @@ bool QXcbConnection::hasSupportForDri2() const
     return m_has_support_for_dri2;
 }
 #endif //XCB_USE_DRI2
+
+QT_END_NAMESPACE

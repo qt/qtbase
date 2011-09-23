@@ -104,6 +104,8 @@
 
 //#ifdef NET_WM_STATE_DEBUG
 
+QT_BEGIN_NAMESPACE
+
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
 {
@@ -1393,3 +1395,5 @@ void QXcbWindow::setCursor(xcb_cursor_t cursor)
     xcb_change_window_attributes(xcb_connection(), m_window, XCB_CW_CURSOR, &cursor);
     xcb_flush(xcb_connection());
 }
+
+QT_END_NAMESPACE

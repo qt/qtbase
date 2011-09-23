@@ -43,6 +43,8 @@
 #include <qtextformat.h>
 #include <QtDBus>
 
+QT_BEGIN_NAMESPACE
+
 QIBusSerializable::QIBusSerializable()
 {
 }
@@ -207,3 +209,4 @@ void QIBusText::fromDBusArgument(const QDBusArgument &arg)
     arg.endStructure();
 }
 
+QT_END_NAMESPACE

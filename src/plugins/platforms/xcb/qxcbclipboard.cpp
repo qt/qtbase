@@ -54,6 +54,8 @@
 #include <xcb/xcb_icccm.h>
 #undef class
 
+QT_BEGIN_NAMESPACE
+
 class QXcbClipboardMime : public QXcbMime
 {
     Q_OBJECT
@@ -846,5 +848,7 @@ QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, 
 
     return buf;
 }
+
+QT_END_NAMESPACE
 
 #include "qxcbclipboard.moc"

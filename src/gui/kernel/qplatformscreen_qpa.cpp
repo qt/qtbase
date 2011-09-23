@@ -46,6 +46,8 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPlatformScreenPrivate
 {
 public:
@@ -219,3 +221,5 @@ QPlatformScreenPageFlipper *QPlatformScreen::pageFlipper() const
 {
     return 0;
 }
+
+QT_END_NAMESPACE

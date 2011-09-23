@@ -51,6 +51,8 @@
 
 #include "qxcbobject.h"
 
+QT_BEGIN_NAMESPACE
+
 class QXcbScreen;
 class QXcbEGLSurface;
 
@@ -159,5 +161,7 @@ private:
 
     QRegion m_exposeRegion;
 };
+
+QT_END_NAMESPACE
 
 #endif
