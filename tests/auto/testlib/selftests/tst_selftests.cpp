@@ -292,63 +292,57 @@ void tst_Selftests::runSubTest_data()
     QTest::addColumn<QStringList>("arguments");
 
     QStringList tests = QStringList()
-        << "subtest"
-        << "warnings"
-        << "maxwarnings"
-        << "cmptest"
 //        << "alive"    // timer dependent
-        << "float"
-        << "globaldata"
-        << "skipglobal"
-        << "skip"
-        << "strcmp"
-        << "expectfail"
-        << "sleep"
-        << "fetchbogus"
-        << "crashes"
-        << "multiexec"
-        << "failinit"
-        << "failinitdata"
-        << "skipinit"
-        << "skipinitdata"
-        << "datetime"
-        << "singleskip"
-
-        //on windows assert does nothing in release mode and blocks execution with a popup window in debug mode
 #if !defined(Q_OS_WIN)
+        // On windows, assert does nothing in release mode and blocks execution
+        // with a popup window in debug mode.
         << "assert"
 #endif
-
-        << "differentexec"
-#ifndef QT_NO_EXCEPTIONS
-        // The machine that run the intel autotests will popup a dialog
-        // with a warning that an uncaught exception was thrown.
-        // This will time out and falsely fail, therefore we disable the test for that platform.
-# if !defined(Q_CC_INTEL) || !defined(Q_OS_WIN)
-        << "exceptionthrow"
-# endif
-#endif
-        << "qexecstringlist"
-        << "datatable"
-        << "commandlinedata"
-
+        << "badxml"
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
+        // Only run on platforms where callgrind is available.
         << "benchlibcallgrind"
 #endif
         << "benchlibeventcounter"
         << "benchliboptions"
-
-        //### These tests are affected by timing and whether the CPU tick counter is
-        //### monotonically increasing. They won't work on some machines so leave them off by default.
-        //### Feel free to uncomment for your own testing.
 #if 0
-        << "benchlibwalltime"
+        // These tests are affected by timing and whether the CPU tick counter
+        // is monotonically increasing.  They won't work on some machines so
+        // leave them off by default.  Feel free to uncomment for your own testing.
         << "benchlibtickcounter"
+        << "benchlibwalltime"
 #endif
-
-        << "xunit"
+        << "cmptest"
+        << "commandlinedata"
+        << "crashes"
+        << "datatable"
+        << "datetime"
+        << "differentexec"
+#if !defined(QT_NO_EXCEPTIONS) && (!defined(Q_CC_INTEL) || !defined(Q_OS_WIN))
+        // Disable this test on Windows and for intel compiler, as the run-times
+        // will popup dialogs with warnings that uncaught exceptions were thrown
+        << "exceptionthrow"
+#endif
+        << "expectfail"
+        << "failinit"
+        << "failinitdata"
+        << "fetchbogus"
+        << "float"
+        << "globaldata"
         << "longstring"
-        << "badxml"
+        << "maxwarnings"
+        << "multiexec"
+        << "qexecstringlist"
+        << "singleskip"
+        << "skip"
+        << "skipglobal"
+        << "skipinit"
+        << "skipinitdata"
+        << "sleep"
+        << "strcmp"
+        << "subtest"
+        << "warnings"
+        << "xunit"
     ;
 
     foreach (LoggerSet const& loggerSet, allLoggerSets()) {
