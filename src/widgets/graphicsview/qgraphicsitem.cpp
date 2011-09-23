@@ -742,7 +742,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtGui/qevent.h>
-#include <QtWidgets/qinputcontext.h>
+#include <QtGui/qinputpanel.h>
 #include <QtWidgets/qgraphicseffect.h>
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
@@ -7373,15 +7373,10 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
     if (!hasFocus())
         return;
     d->scene->d_func()->updateInputMethodSensitivityInViews();
-#if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     QWidget *fw = QApplication::focusWidget();
     if (!fw)
         return;
-    for (int i = 0 ; i < scene()->views().count() ; ++i)
-        if (scene()->views().at(i) == fw)
-            if (QInputContext *inputContext = fw->inputContext())
-                inputContext->update();
-#endif
+    qApp->inputPanel()->update(Qt::ImHints);
 }
 
 /*!
@@ -7398,14 +7393,15 @@ void QGraphicsItem::updateMicroFocus()
         if (scene()) {
             for (int i = 0 ; i < scene()->views().count() ; ++i) {
                 if (scene()->views().at(i) == fw) {
-                    if (QInputContext *inputContext = fw->inputContext()) {
-                        inputContext->update();
+                    if (qApp)
+                        qApp->inputPanel()->update(Qt::ImQueryAll);
+
 #ifndef QT_NO_ACCESSIBILITY
-                        // ##### is this correct
-                        if (toGraphicsObject())
-                            QAccessible::updateAccessibility(toGraphicsObject(), 0, QAccessible::StateChanged);
+                    // ##### is this correct
+                    if (toGraphicsObject())
+                        QAccessible::updateAccessibility(toGraphicsObject(), 0, QAccessible::StateChanged);
 #endif
-                        break;
+                    break;
                     }
                 }
             }
@@ -10206,15 +10202,12 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
     case QEvent::KeyRelease:
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
-        if (QWidget *fw = qApp->focusWidget()) {
-#ifndef QT_NO_IM
-            if (QInputContext *qic = fw->inputContext()) {
-                if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
-                    qic->reset();
-                else
-                    qic->update();
-            }
-#endif //QT_NO_IM
+        if (event->type() == QEvent::FocusIn) {
+            qApp->inputPanel()->reset();
+        } else if (event->type() == QEvent::FocusOut) {
+            qApp->inputPanel()->commit();
+        } else {
+            qApp->inputPanel()->update(Qt::ImQueryInput);
         }
         break;
     case QEvent::ShortcutOverride:
