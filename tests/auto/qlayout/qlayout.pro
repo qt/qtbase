@@ -14,5 +14,3 @@ wince*|symbian: {
    test_data.path =  $${target.path}/baseline
    INSTALLS += test_data
 }
-
-CONFIG+=insignificant_test
