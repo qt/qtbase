@@ -4124,8 +4124,8 @@ void tst_QGraphicsView::inputContextReset()
     QGraphicsView view(&scene);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
-    InputContextTester inputContext;
-    view.setInputContext(&inputContext);
+    InputContextTester *inputContext = new InputContextTester;
+    qApp->setInputContext(inputContext);
 
     view.show();
     QTest::qWaitForWindowShown(&view);
@@ -4135,39 +4135,39 @@ void tst_QGraphicsView::inputContextReset()
     QGraphicsItem *item1 = new QGraphicsRectItem;
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
 
-    inputContext.resets = 0;
+    inputContext->resets = 0;
     scene.addItem(item1);
-    QCOMPARE(inputContext.resets, 0);
+    QCOMPARE(inputContext->resets, 0);
 
-    inputContext.resets = 0;
+    inputContext->resets = 0;
     scene.setFocusItem(item1);
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)item1);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
-    QCOMPARE(inputContext.resets, 0);
+    QCOMPARE(inputContext->resets, 0);
 
-    inputContext.resets = 0;
+    inputContext->resets = 0;
     scene.setFocusItem(0);
     // the input context is reset twice, once because an item has lost focus and again because
     // the Qt::WA_InputMethodEnabled flag is cleared because no item has focus.
-    QCOMPARE(inputContext.resets, 2);
+    QCOMPARE(inputContext->resets, 2);
 
     // introduce another item that is focusable but does not accept input methods
     QGraphicsItem *item2 = new QGraphicsRectItem;
     item2->setFlags(QGraphicsItem::ItemIsFocusable);
     scene.addItem(item2);
 
-    inputContext.resets = 0;
+    inputContext->resets = 0;
     scene.setFocusItem(item2);
-    QCOMPARE(inputContext.resets, 0);
+    QCOMPARE(inputContext->resets, 0);
 
-    inputContext.resets = 0;
+    inputContext->resets = 0;
     scene.setFocusItem(item1);
-    QCOMPARE(inputContext.resets, 0);
+    QCOMPARE(inputContext->resets, 0);
 
     // test changing between between items that accept input methods.
     item2->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
     scene.setFocusItem(item2);
-    QCOMPARE(inputContext.resets, 1);
+    QCOMPARE(inputContext->resets, 1);
 }
 
 void tst_QGraphicsView::indirectPainting()

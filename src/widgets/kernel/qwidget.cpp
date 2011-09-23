@@ -372,24 +372,9 @@ void QWidgetPrivate::updateWidgetTransform()
     }
 }
 
-QInputContext *QWidgetPrivate::assignedInputContext() const
-{
-#ifndef QT_NO_IM
-    const QWidget *widget = q_func();
-    while (widget) {
-        if (QInputContext *qic = widget->d_func()->ic)
-            return qic;
-        widget = widget->parentWidget();
-    }
-#endif
-    return 0;
-}
-
 QInputContext *QWidgetPrivate::inputContext() const
 {
 #ifndef QT_NO_IM
-    if (QInputContext *qic = assignedInputContext())
-        return qic;
     return qApp->inputContext();
 #else
     return 0;
@@ -414,31 +399,6 @@ QInputContext *QWidget::inputContext()
 
     return d->inputContext();
 }
-
-/*!
-  This function sets the input context \a context
-  on this widget.
-
-  Qt takes ownership of the given input \a context.
-
-  \sa inputContext()
-*/
-void QWidget::setInputContext(QInputContext *context)
-{
-    Q_D(QWidget);
-    if (!testAttribute(Qt::WA_InputMethodEnabled))
-        return;
-#ifndef QT_NO_IM
-    if (context == d->ic)
-        return;
-    if (d->ic)
-        delete d->ic;
-    d->ic = context;
-    if (d->ic)
-        d->ic->setParent(this);
-#endif
-}
-
 
 #ifdef QT_KEYPAD_NAVIGATION
 QPointer<QWidget> QWidgetPrivate::editingWidget;
@@ -10415,9 +10375,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
-        QInputContext *ic = focusWidget->d_func()->assignedInputContext();
-        if (!ic && (!on || hasFocus()))
-            ic = focusWidget->d_func()->inputContext();
+        QInputContext *ic = qApp->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()
                 && focusWidget->testAttribute(Qt::WA_InputMethodEnabled)) {

@@ -58,6 +58,11 @@ QtCore
 QtGui
 -----
 
+QtWidgets
+---------
+* QWidget::setInputContext() is removed. Input contexts are now platform
+  specific.
+
 QtNetwork
 ---------
 

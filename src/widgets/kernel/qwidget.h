@@ -616,7 +616,6 @@ public:
     void ensurePolished() const;
 
     QInputContext *inputContext();
-    void setInputContext(QInputContext *);
 
     bool isAncestorOf(const QWidget *child) const;
 

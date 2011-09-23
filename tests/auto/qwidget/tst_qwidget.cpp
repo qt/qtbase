@@ -589,21 +589,11 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(true, obj1.acceptDrops());
 
     // QInputContext * QWidget::inputContext()
-    // void QWidget::setInputContext(QInputContext *)
     MyInputContext *var13 = new MyInputContext;
-    obj1.setInputContext(var13);
+    qApp->setInputContext(var13);
     QCOMPARE((QInputContext *)0, obj1.inputContext()); // The widget by default doesn't have the WA_InputMethodEnabled attribute
     obj1.setAttribute(Qt::WA_InputMethodEnabled);
-    obj1.setInputContext(var13);
     QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
-    // QWidget takes ownership, so check parent
-    QCOMPARE(var13->parent(), static_cast<QObject *>(&obj1));
-    // Check self assignment
-    obj1.setInputContext(obj1.inputContext());
-    QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
-    obj1.setInputContext((QInputContext *)0);
-    QCOMPARE(qApp->inputContext(), obj1.inputContext());
-    QVERIFY(qApp->inputContext() != var13);
 
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
@@ -9937,7 +9927,7 @@ void tst_QWidget::focusProxyAndInputMethods()
     InputContextTester *inputContext = new InputContextTester;
     QWidget *toplevel = new QWidget(0, Qt::X11BypassWindowManagerHint);
     toplevel->setAttribute(Qt::WA_InputMethodEnabled, true);
-    toplevel->setInputContext(inputContext); // ownership is transferred
+    qApp->setInputContext(inputContext); // ownership is transferred
 
     QWidget *child = new QWidget(toplevel);
     child->setFocusProxy(toplevel);

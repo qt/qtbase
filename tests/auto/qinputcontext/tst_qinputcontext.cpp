@@ -88,7 +88,6 @@ private slots:
     void closeSoftwareInputPanel();
     void selections();
     void focusProxy();
-    void contextInheritance();
     void symbianTestCoeFepInputContext_data();
     void symbianTestCoeFepInputContext();
     void symbianTestCoeFepAutoCommit_data();
@@ -306,12 +305,10 @@ void tst_QInputContext::filterMouseEvents()
     QApplication::setActiveWindow(&le);
 
     QFilterInputContext *ic = new QFilterInputContext;
-    le.setInputContext(ic);
+    qApp->setInputContext(ic);
     QTest::mouseClick(&le, Qt::LeftButton);
 
     QVERIFY(ic->lastTypes.indexOf(QEvent::MouseButtonRelease) >= 0);
-
-    le.setInputContext(0);
 }
 
 class RequestSoftwareInputPanelStyle : public QWindowsStyle
@@ -357,11 +354,8 @@ void tst_QInputContext::requestSoftwareInputPanel()
     layout->addWidget(le2);
     w.setLayout(layout);
 
-    QFilterInputContext *ic1, *ic2;
-    ic1 = new QFilterInputContext;
-    ic2 = new QFilterInputContext;
-    le1->setInputContext(ic1);
-    le2->setInputContext(ic2);
+    QFilterInputContext *ic = new QFilterInputContext;
+    qApp->setInputContext(ic);
 
     w.show();
     QApplication::setActiveWindow(&w);
@@ -369,20 +363,20 @@ void tst_QInputContext::requestSoftwareInputPanel()
     // Testing single click panel activation.
     newStyle->m_rsipBehavior = QStyle::RSIP_OnMouseClick;
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic2->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
-    ic2->lastTypes.clear();
+    QVERIFY(ic->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
+    ic->lastTypes.clear();
 
     // Testing double click panel activation.
     newStyle->m_rsipBehavior = QStyle::RSIP_OnMouseClickAndAlreadyFocused;
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
+    QVERIFY(ic->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
-    ic1->lastTypes.clear();
+    QVERIFY(ic->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
+    ic->lastTypes.clear();
 
     // Testing right mouse button
     QTest::mouseClick(le1, Qt::RightButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
+    QVERIFY(ic->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
 
     qApp->setStyle(oldStyle);
     oldStyle->setParent(qApp);
@@ -402,11 +396,8 @@ void tst_QInputContext::closeSoftwareInputPanel()
     layout->addWidget(rb);
     w.setLayout(layout);
 
-    QFilterInputContext *ic1, *ic2;
-    ic1 = new QFilterInputContext;
-    ic2 = new QFilterInputContext;
-    le1->setInputContext(ic1);
-    le2->setInputContext(ic2);
+    QFilterInputContext *ic = new QFilterInputContext;
+    qApp->setInputContext(ic);
 
     w.show();
     QApplication::setActiveWindow(&w);
@@ -414,11 +405,11 @@ void tst_QInputContext::closeSoftwareInputPanel()
     // Testing that panel doesn't close between two input methods aware widgets.
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic2->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) < 0);
+    QVERIFY(ic->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) < 0);
 
     // Testing that panel closes when focusing non-aware widget.
     QTest::mouseClick(rb, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic2->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) >= 0);
+    QVERIFY(ic->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) >= 0);
 }
 
 void tst_QInputContext::selections()
@@ -472,37 +463,6 @@ void tst_QInputContext::focusProxy()
     QVERIFY(proxy.hasFocus());
     QVERIFY(!proxy2.hasFocus());
     QCOMPARE(gic->focusWidget(), &proxy);
-}
-
-void tst_QInputContext::contextInheritance()
-{
-    QWidget parent;
-    QWidget child(&parent);
-
-    parent.setAttribute(Qt::WA_InputMethodEnabled, true);
-    child.setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    QCOMPARE(parent.inputContext(), qApp->inputContext());
-    QCOMPARE(child.inputContext(), qApp->inputContext());
-
-    QInputContext *qic = new QFilterInputContext;
-    parent.setInputContext(qic);
-    QCOMPARE(parent.inputContext(), qic);
-    QCOMPARE(child.inputContext(), qic);
-
-    parent.setAttribute(Qt::WA_InputMethodEnabled, false);
-    QVERIFY(!parent.inputContext());
-    QCOMPARE(child.inputContext(), qic);
-    parent.setAttribute(Qt::WA_InputMethodEnabled, true);
-
-    parent.setInputContext(0);
-    QCOMPARE(parent.inputContext(), qApp->inputContext());
-    QCOMPARE(child.inputContext(), qApp->inputContext());
-
-    qic = new QFilterInputContext;
-    qApp->setInputContext(qic);
-    QCOMPARE(parent.inputContext(), qic);
-    QCOMPARE(child.inputContext(), qic);
 }
 
 #ifdef QT_WEBKIT_LIB

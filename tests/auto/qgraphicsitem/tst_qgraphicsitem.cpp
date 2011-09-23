@@ -10411,10 +10411,8 @@ void tst_QGraphicsItem::updateMicroFocus()
     QGraphicsView view2(&scene);
     layout.addWidget(&view, 0, 0);
     layout.addWidget(&view2, 0, 1);
-    MyInputContext ic2;
-    view2.setInputContext(&ic2);
-    MyInputContext ic;
-    view.setInputContext(&ic);
+    MyInputContext *ic = new MyInputContext;
+    qApp->setInputContext(ic);
     MyInputWidget input;
     input.setPos(0, 0);
     input.resize(150, 150);
@@ -10427,13 +10425,10 @@ void tst_QGraphicsItem::updateMicroFocus()
     QTest::qWaitForWindowShown(&parent);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&parent));
     //We reset the number of updates that happened previously (initialisation)
-    ic.nbUpdates = 0;
-    ic2.nbUpdates = 0;
+    ic->nbUpdates = 0;
     input.doUpdateMicroFocus();
     QApplication::processEvents();
-    QTRY_COMPARE(ic.nbUpdates, 1);
-    //No update since view2 does not have the focus.
-    QTRY_COMPARE(ic2.nbUpdates, 0);
+    QTRY_COMPARE(ic->nbUpdates, 1);
 }
 
 void tst_QGraphicsItem::textItem_shortcuts()
