@@ -235,14 +235,8 @@ void QWindowSystemInterface::handleTouchEvent(QWindow *tlw, ulong timestamp, QEv
         p.setScreenPos(screenPos);
         p.setScreenRect(point->area);
 
-        // Map screen pos to local (QWindow) coordinates and preserve sub-pixel resolution.
-        const QPointF delta = screenPos - screenPos.toPoint();
-        const QPointF localPos = tlw->mapFromGlobal(screenPos.toPoint()) + delta;
-        p.setPos(localPos);
-
-        QRectF rect(0, 0, point->area.width(), point->area.height());
-        rect.moveCenter(localPos);
-        p.setRect(rect);
+        // The local pos and rect are not set, they will be calculated
+        // when the event gets processed by QGuiApplication.
 
         p.setNormalizedPos(point->normalPosition);
 
