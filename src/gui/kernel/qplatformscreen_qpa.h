@@ -67,7 +67,7 @@ class QPlatformWindow;
 class QScreen;
 class QSurfaceFormat;
 
-class QPlatformScreenPageFlipper : public QObject
+class Q_GUI_EXPORT QPlatformScreenPageFlipper : public QObject
 {
     Q_OBJECT
 public:
