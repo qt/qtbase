@@ -42,6 +42,7 @@
 #include "cglconvenience_p.h"
 #include <QtCore/private/qcore_mac_p.h>
 #include <Cocoa/Cocoa.h>
+#include <QVector>
 
 void (*qcgl_getProcAddress(const QByteArray &procName))()
 {
@@ -81,26 +82,36 @@ QSurfaceFormat qcgl_surfaceFormat()
     return format;
 }
 
-void *qcgl_createNSOpenGLPixelFormat()
+void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
 {
-    NSOpenGLPixelFormatAttribute attrs[] =
-    {
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFADepthSize, 32,
-        NSOpenGLPFAMultisample,
-        NSOpenGLPFASampleBuffers, (NSOpenGLPixelFormatAttribute)1,
-        NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute) 8,
-        0
-    };
 
-    NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+    QVector<NSOpenGLPixelFormatAttribute> attrs;
+
+    attrs.append(NSOpenGLPFADoubleBuffer);
+
+    if (format.depthBufferSize() > 0)
+        attrs <<  NSOpenGLPFADepthSize << format.depthBufferSize();
+    if (format.stencilBufferSize() > 0)
+        attrs << NSOpenGLPFAStencilSize << format.stencilBufferSize();
+    if (format.alphaBufferSize() > 0)
+        attrs << NSOpenGLPFAAlphaSize << format.alphaBufferSize();
+
+    if (format.samples() > 0) {
+        attrs << NSOpenGLPFAMultisample
+              << NSOpenGLPFASampleBuffers << (NSOpenGLPixelFormatAttribute) 1
+              << NSOpenGLPFASamples << (NSOpenGLPixelFormatAttribute) format.samples();
+    }
+
+    attrs << 0;
+
+    NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
     return pixelFormat;
 }
 
 CGLContextObj qcgl_createGlContext()
 {
     CGLContextObj context;
-    NSOpenGLPixelFormat *format = reinterpret_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
+    NSOpenGLPixelFormat *format = reinterpret_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(qcgl_surfaceFormat()));
     CGLPixelFormatObj cglFormat = static_cast<CGLPixelFormatObj>([format CGLPixelFormatObj]);
     CGLCreateContext(cglFormat ,NULL, &context);
     return context;

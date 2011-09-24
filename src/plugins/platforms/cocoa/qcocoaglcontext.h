@@ -68,7 +68,7 @@ public:
 
     void update();
 
-    static NSOpenGLPixelFormat *createNSOpenGLPixelFormat();
+    static NSOpenGLPixelFormat *createNSOpenGLPixelFormat(const QSurfaceFormat &format);
     NSOpenGLContext *nsOpenGLContext() const;
 
 private:

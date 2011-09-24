@@ -53,7 +53,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 {
     QCocoaAutoReleasePool pool; // For the SG Canvas render thread.
 
-    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
+    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(format));
     NSOpenGLContext *actualShare = share ? static_cast<QCocoaGLContext *>(share)->m_context : 0;
 
     m_context = [NSOpenGLContext alloc];
@@ -128,9 +128,9 @@ void QCocoaGLContext::update()
     [m_context update];
 }
 
-NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat()
+NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFormat &format)
 {
-    return static_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat());
+    return static_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(format));
 }
 
 NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
