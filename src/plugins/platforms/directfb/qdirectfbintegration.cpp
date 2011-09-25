@@ -79,8 +79,7 @@ QDirectFbScreen::QDirectFbScreen(int display)
 }
 
 QDirectFbIntegration::QDirectFbIntegration()
-    : m_dfb(QDirectFbConvenience::dfbInterface())
-    , m_fontDb(new QGenericUnixFontDatabase())
+    : m_fontDb(new QGenericUnixFontDatabase())
     , m_eventDispatcher(createUnixEventDispatcher())
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
@@ -101,6 +100,9 @@ QDirectFbIntegration::QDirectFbIntegration()
     for (int i = 0; i < argc; ++i)
         delete[] argv[i];
     delete[] argv;
+
+    // This must happen after DirectFBInit.
+    m_dfb.reset(QDirectFbConvenience::dfbInterface());
 
     m_primaryScreen.reset(new QDirectFbScreen(0));
     screenAdded(m_primaryScreen.data());
