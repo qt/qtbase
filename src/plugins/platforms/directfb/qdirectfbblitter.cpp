@@ -48,21 +48,24 @@
 
 #include <directfb.h>
 
+
+static QBlittable::Capabilities dfb_blitter_capabilities()
+{
+    return QBlittable::Capabilities(QBlittable::SolidRectCapability
+                                    |QBlittable::SourcePixmapCapability
+                                    |QBlittable::SourceOverPixmapCapability
+                                    |QBlittable::SourceOverScaledPixmapCapability);
+}
+
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
-        : QBlittable(rect, QBlittable::Capabilities(QBlittable::SolidRectCapability
-                                                          |QBlittable::SourcePixmapCapability
-                                                          |QBlittable::SourceOverPixmapCapability
-                                                          |QBlittable::SourceOverScaledPixmapCapability))
+    : QBlittable(rect, dfb_blitter_capabilities())
         , m_surface(surface)
 {
         m_surface->AddRef(m_surface.data());
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
-    : QBlittable(rect, QBlittable::Capabilities(QBlittable::SolidRectCapability
-                                                |QBlittable::SourcePixmapCapability
-                                                |QBlittable::SourceOverPixmapCapability
-                                                |QBlittable::SourceOverScaledPixmapCapability))
+    : QBlittable(rect, dfb_blitter_capabilities())
 {
     DFBSurfaceDescription surfaceDesc;
     memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
