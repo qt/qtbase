@@ -877,7 +877,6 @@ void QXcbDrag::handleStatus(const xcb_client_message_event_t *event, bool passiv
         return;
 
     xcb_client_message_event_t *lastEvent = const_cast<xcb_client_message_event_t *>(event);
-    qDebug() << "handleStatus" << lastEvent->window << lastEvent->data.data32[0];
     xcb_generic_event_t *nextEvent;
     ClientMessageScanner scanner(atom(QXcbAtom::XdndStatus));
     while ((nextEvent = connection()->checkEvent(scanner))) {
