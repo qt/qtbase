@@ -62,8 +62,8 @@ class QAccessibleButton : public QAccessibleWidget, public QAccessibleActionInte
 public:
     QAccessibleButton(QWidget *w, Role r);
 
-    QString text(Text t, int child) const;
-    State state(int child) const;
+    QString text(Text t, int child = 0) const;
+    State state(int child = 0) const;
 
     QString actionText(int action, Text text, int child) const;
     bool doAction(int action, int child, const QVariantList &params);
@@ -86,23 +86,24 @@ class QAccessibleToolButton : public QAccessibleButton
 public:
     QAccessibleToolButton(QWidget *w, Role role);
 
-    enum ToolButtonElements {
-        ToolButtonSelf        = 0,
-        ButtonExecute,
-        ButtonDropMenu
-    };
-
-    Role role(int child) const;
-    State state(int child) const;
+    State state(int) const;
 
     int childCount() const;
-    QRect rect(int child) const;
+    QAccessibleInterface *child(int index) const;
 
     QString text(Text t, int child) const;
 
     int actionCount(int child) const;
     QString actionText(int action, Text text, int child) const;
     bool doAction(int action, int child, const QVariantList &params);
+
+    // QAccessibleActionInterface
+    int actionCount();
+    void doAction(int actionIndex);
+    QString description(int actionIndex);
+    QString name(int actionIndex);
+    QString localizedName(int actionIndex);
+    QStringList keyBindings(int actionIndex);
 
 protected:
     QToolButton *toolButton() const;

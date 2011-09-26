@@ -47,6 +47,7 @@
 #include <qprogressbar.h>
 #include <qradiobutton.h>
 #include <qtoolbutton.h>
+#include <qmenu.h>
 #include <qlabel.h>
 #include <qgroupbox.h>
 #include <qlcdnumber.h>
@@ -336,31 +337,13 @@ bool QAccessibleToolButton::isSplitButton() const
 }
 
 /*! \reimp */
-QAccessible::Role QAccessibleToolButton::role(int child) const
+QAccessible::State QAccessibleToolButton::state(int) const
 {
-    Q_ASSERT(child == 0);
-
-    // FIXME
-    if (isSplitButton()) {
-        switch (child) {
-        case ButtonExecute:
-            return PushButton;
-        case ButtonDropMenu:
-            return ButtonMenu;
-        }
-    }
-    return QAccessibleButton::role(child);
-}
-
-/*! \reimp */
-QAccessible::State QAccessibleToolButton::state(int child) const
-{
-    Q_ASSERT(child == 0);
-    QAccessible::State st = QAccessibleButton::state(child);
+    QAccessible::State st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
         st |= HotTracked;
 #ifndef QT_NO_MENU
-    if (toolButton()->menu() && child != ButtonExecute)
+    if (toolButton()->menu())
         st |= HasPopup;
 #endif
     return st;
@@ -369,37 +352,18 @@ QAccessible::State QAccessibleToolButton::state(int child) const
 /*! \reimp */
 int QAccessibleToolButton::childCount() const
 {
-    if (!toolButton()->isVisible())
-        return 0;
-    return isSplitButton() ? ButtonDropMenu : 0;
+    return isSplitButton() ? 1 : 0;
 }
 
-/*!
-    \internal
-
-    Returns the rectangle occupied by this button, depending on \a
-    child.
-*/
-QRect QAccessibleToolButton::rect(int child) const
+QAccessibleInterface *QAccessibleToolButton::child(int index) const
 {
-    Q_ASSERT(child == 0);
-    if (!toolButton()->isVisible())
-        return QRect();
-
-    return QAccessibleButton::rect(child);
-
-    // FIXME: sub buttons when SplitButton
-//    QStyleOptionToolButton opt;
-//    opt.init(widget());
-//    QRect subrect = widget()->style()->subControlRect(QStyle::CC_ToolButton, &opt,
-//                                                      QStyle::SC_ToolButtonMenu, toolButton());
-
-//    if (child == ButtonExecute)
-//        subrect = QRect(0, 0, subrect.x(), widget()->height());
-
-//    QPoint ntl = widget()->mapToGlobal(subrect.topLeft());
-//    subrect.moveTopLeft(ntl);
-//    return subrect;
+#ifndef QT_NO_MENU
+    if (index == 0 && toolButton()->menu())
+    {
+        return queryAccessibleInterface(toolButton()->menu());
+    }
+#endif
+    return 0;
 }
 
 /*!
@@ -408,9 +372,8 @@ QRect QAccessibleToolButton::rect(int child) const
     Returns the button's text label, depending on the text \a t, and
     the \a child.
 */
-QString QAccessibleToolButton::text(Text t, int child) const
+QString QAccessibleToolButton::text(Text t, int) const
 {
-    Q_ASSERT(child == 0);
     QString str;
     switch (t) {
     case Name:
@@ -422,29 +385,18 @@ QString QAccessibleToolButton::text(Text t, int child) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleButton::text(t, child);;
+        str = QAccessibleButton::text(t);
     return qt_accStripAmp(str);
 }
 
 /*!
     \internal
 
-    Returns the number of actions which is 0, 1, or 2, in part
-    depending on \a child.
+    Returns the number of actions. 1 to trigger the button, 2 to show the menu.
 */
-int QAccessibleToolButton::actionCount(int child) const
+int QAccessibleToolButton::actionCount(int) const
 {
-    Q_ASSERT(child == 0);
-    // each subelement has one action
-    if (child)
-        return isSplitButton() ? 1 : 0;
-    int ac = widget()->focusPolicy() != Qt::NoFocus ? 1 : 0;
-    // button itself has two actions if a menu button
-#ifndef QT_NO_MENU
-    return ac + (toolButton()->menu() ? 2 : 1);
-#else
-    return ac + 1;
-#endif
+    return 1;
 }
 
 /*!
@@ -455,49 +407,111 @@ int QAccessibleToolButton::actionCount(int child) const
     which in English is one of "Press", "Open", or "Set Focus". If \a
     text is not \c Name, an empty string is returned.
 */
-QString QAccessibleToolButton::actionText(int action, Text text, int child) const
+QString QAccessibleToolButton::actionText(int action, Text text, int) const
 {
-    Q_ASSERT(child == 0);
-    if (text == Name) switch(child) {
-    case ButtonExecute:
-        return QToolButton::tr("Press");
-    case ButtonDropMenu:
-        return QToolButton::tr("Open");
-    default:
-        switch(action) {
-        case 0:
-            return QToolButton::tr("Press");
-        case 1:
-#ifndef QT_NO_MENU
-            if (toolButton()->menu())
-                return QToolButton::tr("Open");
-#endif
-            //fall through
-        case 2:
-            return QLatin1String("Set Focus");
-        }
-    }
     return QString();
 }
 
 /*!
     \internal
 */
-bool QAccessibleToolButton::doAction(int action, int child, const QVariantList &params)
+bool QAccessibleToolButton::doAction(int, int, const QVariantList &)
 {
-    Q_ASSERT(child == 0);
+    return false;
+}
+
+
+int QAccessibleToolButton::actionCount()
+{
+    return isSplitButton() ? 2 : 1;
+}
+
+void QAccessibleToolButton::doAction(int actionIndex)
+{
     if (!widget()->isEnabled())
-        return false;
-    if (action == 1 || child == ButtonDropMenu) {
-        if(!child)
+        return;
+
+    switch (actionIndex) {
+    case 0:
+        button()->click();
+        break;
+    case 1:
+        if (isSplitButton()) {
             toolButton()->setDown(true);
 #ifndef QT_NO_MENU
-        toolButton()->showMenu();
+            toolButton()->showMenu();
 #endif
-        return true;
+        }
+        break;
     }
-    return QAccessibleButton::doAction(action, 0, params);
 }
+
+QString QAccessibleToolButton::name(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        if (button()->isCheckable()) {
+            if (button()->isChecked()) {
+                return QLatin1String("Uncheck");
+            } else {
+                return QLatin1String("Check");
+            }
+        }
+        return QLatin1String("Press");
+    case 1:
+        if (isSplitButton())
+            return QLatin1String("Show popup menu");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleToolButton::localizedName(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        if (button()->isCheckable()) {
+            if (button()->isChecked()) {
+                return tr("Uncheck");
+            } else {
+                return tr("Check");
+            }
+        }
+        return tr("Press");
+    case 1:
+        return tr("Show popup menu");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleToolButton::description(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        if (button()->isCheckable()) {
+            return tr("Toggles the button.");
+        }
+        return tr("Clicks the button.");
+    case 1:
+        return tr("Shows the menu.");
+    default:
+        return QString();
+    }
+}
+
+QStringList QAccessibleToolButton::keyBindings(int actionIndex)
+{
+    switch (actionIndex) {
+#ifndef QT_NO_SHORTCUT
+    case 0:
+        return QStringList() << button()->shortcut().toString();
+#endif
+    default:
+        return QStringList();
+    }
+}
+
 
 #endif // QT_NO_TOOLBUTTON
 
