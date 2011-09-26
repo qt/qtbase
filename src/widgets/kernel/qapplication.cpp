@@ -5084,44 +5084,6 @@ int QApplication::keyboardInputInterval()
     available in Qt for Embedded Linux.
 */
 
-/*!
-    \fn void QApplication::setOverrideCursor(const QCursor &cursor)
-
-    Sets the application override cursor to \a cursor.
-
-    Application override cursors are intended for showing the user that the
-    application is in a special state, for example during an operation that
-    might take some time.
-
-    This cursor will be displayed in all the application's widgets until
-    restoreOverrideCursor() or another setOverrideCursor() is called.
-
-    Application cursors are stored on an internal stack. setOverrideCursor()
-    pushes the cursor onto the stack, and restoreOverrideCursor() pops the
-    active cursor off the stack. changeOverrideCursor() changes the curently
-    active application override cursor.
-
-    Every setOverrideCursor() must eventually be followed by a corresponding
-    restoreOverrideCursor(), otherwise the stack will never be emptied.
-
-    Example:
-    \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
-
-    \sa overrideCursor(), restoreOverrideCursor(), changeOverrideCursor(),
-    QWidget::setCursor()
-*/
-
-/*!
-    \fn void QApplication::restoreOverrideCursor()
-
-    Undoes the last setOverrideCursor().
-
-    If setOverrideCursor() has been called twice, calling
-    restoreOverrideCursor() will activate the first cursor set. Calling this
-    function a second time restores the original widgets' cursors.
-
-    \sa setOverrideCursor(), overrideCursor()
-*/
 
 /*!
     \macro qApp

@@ -1146,24 +1146,73 @@ void QGuiApplication::changeOverrideCursor(const QCursor &cursor)
 }
 #endif
 
-/*!
-    \fn void QGuiApplication::setOverrideCursor(const QCursor &cursor, bool replace)
-
-    Use changeOverrideCursor(\a cursor) (if \a replace is true) or
-    setOverrideCursor(\a cursor) (if \a replace is false).
-*/
 
 #ifndef QT_NO_CURSOR
+static void applyCursor(QWindow *w, const QCursor &c)
+{
+    QCursor cc = c;
+    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
+    int cursorCount = cursors.count();
+    for (int i = 0; i < cursorCount; ++i) {
+        const QWeakPointer<QPlatformCursor> &cursor(cursors.at(i));
+        if (cursor)
+            cursor.data()->changeCursor(&cc, w);
+    }
+}
+
+
+/*!
+    \fn void QGuiApplication::setOverrideCursor(const QCursor &cursor)
+
+    Sets the application override cursor to \a cursor.
+
+    Application override cursors are intended for showing the user that the
+    application is in a special state, for example during an operation that
+    might take some time.
+
+    This cursor will be displayed in all the application's widgets until
+    restoreOverrideCursor() or another setOverrideCursor() is called.
+
+    Application cursors are stored on an internal stack. setOverrideCursor()
+    pushes the cursor onto the stack, and restoreOverrideCursor() pops the
+    active cursor off the stack. changeOverrideCursor() changes the curently
+    active application override cursor.
+
+    Every setOverrideCursor() must eventually be followed by a corresponding
+    restoreOverrideCursor(), otherwise the stack will never be emptied.
+
+    Example:
+    \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
+
+    \sa overrideCursor(), restoreOverrideCursor(), changeOverrideCursor(),
+    QWidget::setCursor()
+*/
 void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 {
     qGuiApp->d_func()->cursor_list.prepend(cursor);
+    for (int i = 0; i < QGuiApplicationPrivate::window_list.size(); ++i)
+        applyCursor(QGuiApplicationPrivate::window_list.at(i), cursor);
 }
 
+/*!
+    \fn void QGuiApplication::restoreOverrideCursor()
+
+    Undoes the last setOverrideCursor().
+
+    If setOverrideCursor() has been called twice, calling
+    restoreOverrideCursor() will activate the first cursor set. Calling this
+    function a second time restores the original widgets' cursors.
+
+    \sa setOverrideCursor(), overrideCursor()
+*/
 void QGuiApplication::restoreOverrideCursor()
 {
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
+    QCursor c(qGuiApp->d_func()->cursor_list.value(0, QCursor()));
+    for (int i = 0; i < QGuiApplicationPrivate::window_list.size(); ++i)
+        applyCursor(QGuiApplicationPrivate::window_list.at(i), c);
 }
 #endif// QT_NO_CURSOR
 
