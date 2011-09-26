@@ -564,6 +564,7 @@ void tst_QAccessibility::sliderTest()
     QVERIFY(iface->isValid());
 
     QCOMPARE(iface->childCount(), 0);
+    QCOMPARE(iface->role(), QAccessible::Slider);
 
     QAccessibleValueInterface *valueIface = iface->valueInterface();
     QVERIFY(valueIface != 0);
@@ -1305,32 +1306,45 @@ void tst_QAccessibility::tabTest()
 
     // Test that the Invisible bit for the navigation buttons gets set
     // and cleared correctly.
+    QAccessibleInterface *leftButton = interface->child(0);
+    QCOMPARE(leftButton->role(), QAccessible::PushButton);
+    QVERIFY(leftButton->state() & QAccessible::Invisible);
+    delete leftButton;
 
-    QAccessibleInterface *child1 = interface->child(0);
-    QVERIFY(child1);
-    QVERIFY(child1->state() & QAccessible::Invisible);
-
-    const int lots = 10;
+    const int lots = 5;
     for (int i = 0; i < lots; ++i)
         tabBar->addTab("Foo");
 
+    QAccessibleInterface *child1 = interface->child(0);
+    QAccessibleInterface *child2 = interface->child(1);
+    QVERIFY(child1);
+    QCOMPARE(child1->role(), QAccessible::PageTab);
+    QVERIFY(child2);
+    QCOMPARE(child2->role(), QAccessible::PageTab);
+
     QVERIFY((child1->state() & QAccessible::Invisible) == false);
     tabBar->hide();
+
+    QCoreApplication::processEvents();
+    QTest::qWait(100);
+
     QVERIFY(child1->state() & QAccessible::Invisible);
 
     tabBar->show();
     tabBar->setCurrentIndex(0);
 
     // Test that sending a focus action to a tab does not select it.
-    interface->doAction(QAccessible::Focus, 2, QVariantList());
+    child2->doAction(QAccessible::Focus, 2, QVariantList());
     QCOMPARE(tabBar->currentIndex(), 0);
 
     // Test that sending a press action to a tab selects it.
-    interface->doAction(QAccessible::Press, 2, QVariantList());
+    child2->doAction(QAccessible::Press, 2, QVariantList());
     QCOMPARE(tabBar->currentIndex(), 1);
 
     delete tabBar;
     delete interface;
+    delete child1;
+    delete child2;
     QTestAccessibility::clearEvents();
 }
 

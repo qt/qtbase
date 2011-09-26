@@ -238,13 +238,8 @@ public:
     explicit QAccessibleTabBar(QWidget *w);
 
     int childCount() const;
-
-    QRect rect(int child) const;
     QString text(Text t, int child) const;
-    Role role(int child) const;
-    State state(int child) const;
 
-    bool doAction(int action, int child, const QVariantList &params);
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
 

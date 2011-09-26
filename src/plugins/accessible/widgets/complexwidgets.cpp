@@ -1462,14 +1462,18 @@ class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActio
     Q_ACCESSIBLE_OBJECT
 public:
     QAccessibleTabButton(QTabBar *parent, int index)
-        :m_index(index), m_parent(parent)
+        : m_parent(parent), m_index(index)
     {}
 
     QObject *object() const { return 0; }
     Role role(int child) const { Q_ASSERT(child == 0); return QAccessible::PageTab; }
-    State state(int child) const { Q_ASSERT(child == 0); return QAccessible::Normal; }
-    QRect rect(int child) const {
-        Q_ASSERT(child == 0);
+    State state(int) const {
+        QAccessibleInterface *parentInterface = parent();
+        State state = parentInterface->state();
+        delete parentInterface;
+        return state;
+    }
+    QRect rect(int) const {
         if (!isValid())
             return QRect();
 
@@ -1508,7 +1512,10 @@ public:
 #ifndef QT_NO_ACTION
     int userActionCount(int) const { return 0; }
     QString actionText(int, Text, int) const { return QString(); }
-    bool doAction(int, int, const QVariantList &) { return false; }
+    bool doAction(int actionIndex, int, const QVariantList &) {
+        doAction(actionIndex);
+        return true;
+    }
 #endif
 
     // action interface
@@ -1516,8 +1523,10 @@ public:
         return 1;
     }
 
-    void doAction(int actionIndex) {
-        m_parent->setCurrentIndex(m_index);
+    void doAction(int actionIndex)
+    {
+        if (actionIndex == Press || actionIndex == DefaultAction)
+            m_parent->setCurrentIndex(m_index);
     }
 
     QString description(int actionIndex)
@@ -1545,19 +1554,15 @@ public:
     }
 
 private:
-
     QPointer<QTabBar> m_parent;
     int m_index;
-//    QString m_text;
-//    QAccessible::Role m_role;
-//    QRect m_rect;
 };
 
 /*!
   Constructs a QAccessibleTabBar object for \a w.
 */
 QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
-: QAccessibleWidget(w)
+: QAccessibleWidget(w, PageTabList)
 {
     Q_ASSERT(tabBar());
 }
@@ -1609,16 +1614,6 @@ int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
 }
 
 /*! \reimp */
-QRect QAccessibleTabBar::rect(int child) const
-{
-    // FIXME
-    if (tabBar()->isVisible()) {
-        return QAccessibleWidget::rect(0);
-    }
-    return QRect();
-}
-
-/*! \reimp */
 int QAccessibleTabBar::childCount() const
 {
     // tabs + scroll buttons
@@ -1633,63 +1628,6 @@ QString QAccessibleTabBar::text(Text t, int child) const
         return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
     }
     return QString();
-}
-
-/*! \reimp */
-QAccessible::Role QAccessibleTabBar::role(int child) const
-{
-    return PageTabList;
-}
-
-/*! \reimp */
-QAccessible::State QAccessibleTabBar::state(int child) const
-{
-    State st = QAccessibleWidget::state(0);
-
-    if (!child)
-        return st;
-
-    QTabBar *tb = tabBar();
-
-//    if (child > tb->count()) {
-//        QWidget *bt = button(child);
-//        if (!bt)
-//            return st;
-//        if (bt->isEnabled() == false)
-//            st |= Unavailable;
-//        if (bt->isVisible() == false)
-//            st |= Invisible;
-//        if (bt->focusPolicy() != Qt::NoFocus && bt->isActiveWindow())
-//            st |= Focusable;
-//        if (bt->hasFocus())
-//            st |= Focused;
-//        return st;
-//    }
-
-    if (!tb->isTabEnabled(child - 1))
-        st |= Unavailable;
-    else
-        st |= Selectable;
-
-    if (!tb->currentIndex() == child - 1)
-        st |= Selected;
-
-    return st;
-}
-
-/*! \reimp */
-bool QAccessibleTabBar::doAction(int action, int child, const QVariantList &)
-{
-    if (!child)
-        return false;
-
-    if (action != QAccessible::DefaultAction && action != QAccessible::Press)
-        return false;
-
-    if (!tabBar()->isTabEnabled(child - 1))
-        return false;
-    tabBar()->setCurrentIndex(child - 1);
-    return true;
 }
 
 /*!
