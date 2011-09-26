@@ -1810,8 +1810,10 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
 
     if (isBitmapFont())
         neededFormat = Format_Mono;
-    else if (neededFormat == Format_None)
+    else if (neededFormat == Format_None && defaultFormat != Format_None)
         neededFormat = defaultFormat;
+    else if (neededFormat == Format_None)
+        neededFormat = Format_A8;
 
     QFontEngineFT::QGlyphSet *gset = defaultGlyphs();
     if (t.type() >= QTransform::TxScale) {
