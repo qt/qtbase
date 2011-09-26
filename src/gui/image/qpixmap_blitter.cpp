@@ -58,6 +58,7 @@ static int global_ser_no = 0;
 
 QBlittablePlatformPixmap::QBlittablePlatformPixmap()
     : QPlatformPixmap(QPlatformPixmap::PixmapType,BlitterClass)
+    , m_alpha(false)
 #ifdef QT_BLITTER_RASTEROVERLAY
     ,m_rasterOverlay(0), m_unmergedCopy(0)
 #endif //QT_BLITTER_RASTEROVERLAY
@@ -77,7 +78,7 @@ QBlittable *QBlittablePlatformPixmap::blittable() const
 {
     if (!m_blittable) {
         QBlittablePlatformPixmap *that = const_cast<QBlittablePlatformPixmap *>(this);
-        that->m_blittable.reset(this->createBlittable(QSize(w, h)));
+        that->m_blittable.reset(this->createBlittable(QSize(w, h), m_alpha));
     }
 
     return m_blittable.data();
@@ -133,7 +134,16 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
     if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability) {
         blittable()->unlock();
         blittable()->fillRect(QRectF(0,0,w,h),color);
-    }else {
+    } else {
+        // Need to be backed with an alpha channel now. It would be nice
+        // if we could just change the format, e.g. when going from
+        // RGB32 -> ARGB8888.
+        if (color.alpha() != 255 && !hasAlphaChannel()) {
+            m_blittable.reset(0);
+            m_engine.reset(0);
+            m_alpha = true;
+        }
+
         uint pixel;
         switch (blittable()->lock()->format()) {
         case QImage::Format_ARGB32_Premultiplied:
@@ -179,6 +189,7 @@ bool QBlittablePlatformPixmap::hasAlphaChannel() const
 void QBlittablePlatformPixmap::fromImage(const QImage &image,
                                      Qt::ImageConversionFlags flags)
 {
+    m_alpha = image.hasAlphaChannel();
     resize(image.width(),image.height());
     markRasterOverlay(QRect(0,0,w,h));
     QImage *thisImg = buffer();

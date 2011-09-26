@@ -55,7 +55,7 @@ public:
     QBlittablePlatformPixmap();
     ~QBlittablePlatformPixmap();
 
-    virtual QBlittable *createBlittable(const QSize &size) const = 0;
+    virtual QBlittable *createBlittable(const QSize &size, bool alpha) const = 0;
     QBlittable *blittable() const;
     void setBlittable(QBlittable *blittable);
 
@@ -85,6 +85,7 @@ public:
 protected:
     QScopedPointer<QBlitterPaintEngine> m_engine;
     QScopedPointer<QBlittable> m_blittable;
+    bool m_alpha;
 
 #ifdef QT_BLITTER_RASTEROVERLAY
     QImage *m_rasterOverlay;

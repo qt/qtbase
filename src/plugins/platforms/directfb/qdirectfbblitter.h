@@ -51,7 +51,8 @@
 class QDirectFbBlitter : public QBlittable
 {
 public:
-    QDirectFbBlitter(const QSize &size, IDirectFBSurface *surface = 0);
+    QDirectFbBlitter(const QSize &size, IDirectFBSurface *surface);
+    QDirectFbBlitter(const QSize &size, bool alpha);
     virtual ~QDirectFbBlitter();
 
     virtual void fillRect(const QRectF &rect, const QColor &color);
@@ -70,7 +71,12 @@ protected:
 class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap
 {
 public:
-    QBlittable *createBlittable(const QSize &size) const { return new QDirectFbBlitter(size); }
+    QBlittable *createBlittable(const QSize &size, bool alpha) const;
 };
+
+inline QBlittable *QDirectFbBlitterPlatformPixmap::createBlittable(const QSize& size, bool alpha) const
+{
+    return new QDirectFbBlitter(size, alpha);
+}
 
 #endif // QDIRECTFBBLITTER_H

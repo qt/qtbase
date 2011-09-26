@@ -54,22 +54,33 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
                                                           |QBlittable::SourceOverPixmapCapability
                                                           |QBlittable::SourceOverScaledPixmapCapability))
 {
-    if (surface) {
-        m_surface = surface;
-    } else {
-        DFBSurfaceDescription surfaceDesc;
-        memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
-        surfaceDesc.width = rect.width();
-        surfaceDesc.height = rect.height();
+    m_surface = surface;
+}
+
+QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
+    : QBlittable(rect, QBlittable::Capabilities(QBlittable::SolidRectCapability
+                                                |QBlittable::SourcePixmapCapability
+                                                |QBlittable::SourceOverPixmapCapability
+                                                |QBlittable::SourceOverScaledPixmapCapability))
+{
+    DFBSurfaceDescription surfaceDesc;
+    memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
+    surfaceDesc.width = rect.width();
+    surfaceDesc.height = rect.height();
+
+    if (alpha) {
         surfaceDesc.caps = DSCAPS_PREMULTIPLIED;
         surfaceDesc.pixelformat = DSPF_ARGB;
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_CAPS | DSDESC_PIXELFORMAT);
-
-        IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
-        dfb->CreateSurface(dfb,&surfaceDesc, &m_surface);
-        m_surface->Clear(m_surface,0,0,0,0);
+    } else {
+        surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
+        surfaceDesc.pixelformat = DSPF_RGB32;
     }
 
+
+    IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
+    dfb->CreateSurface(dfb , &surfaceDesc, &m_surface);
+    m_surface->Clear(m_surface, 0, 0, 0, 0);
 }
 
 QDirectFbBlitter::~QDirectFbBlitter()
