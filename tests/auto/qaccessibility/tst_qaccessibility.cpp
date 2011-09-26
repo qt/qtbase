@@ -1100,7 +1100,7 @@ void tst_QAccessibility::buttonTest()
     interface = QAccessible::queryAccessibleInterface(&toggleButton);
     actionInterface = interface->actionInterface();
     QCOMPARE(interface->role(0), QAccessible::CheckBox);
-    QCOMPARE(actionInterface->description(0), QString("Toggles the button."));
+    QCOMPARE(actionInterface->localizedDescription(0), QString("Toggles the button."));
     QCOMPARE(actionInterface->name(0), QString("Check"));
     QVERIFY(!toggleButton.isChecked());
     QVERIFY((interface->state(0) & QAccessible::Checked) == 0);

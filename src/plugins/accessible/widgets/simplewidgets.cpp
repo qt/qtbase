@@ -230,7 +230,7 @@ void QAccessibleButton::doAction(int actionIndex)
     }
 }
 
-QString QAccessibleButton::description(int actionIndex)
+QString QAccessibleButton::localizedDescription(int actionIndex)
 {
     switch (actionIndex) {
     case 0:
@@ -485,7 +485,7 @@ QString QAccessibleToolButton::localizedName(int actionIndex)
     }
 }
 
-QString QAccessibleToolButton::description(int actionIndex)
+QString QAccessibleToolButton::localizedDescription(int actionIndex)
 {
     switch (actionIndex) {
     case 0:

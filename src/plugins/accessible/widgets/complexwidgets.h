@@ -272,7 +272,7 @@ public:
     // QAccessibleActionInterface
     int actionCount();
     void doAction(int actionIndex);
-    QString description(int actionIndex);
+    QString localizedDescription(int actionIndex);
     QString name(int actionIndex);
     QString localizedName(int actionIndex);
     QStringList keyBindings(int actionIndex);

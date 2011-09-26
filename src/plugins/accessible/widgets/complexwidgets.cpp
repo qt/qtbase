@@ -1529,7 +1529,7 @@ public:
             m_parent->setCurrentIndex(m_index);
     }
 
-    QString description(int actionIndex)
+    QString localizedDescription(int actionIndex)
     {
         if (actionIndex == 0)
             return QTabWidget::tr("Select this tab");
@@ -1804,7 +1804,8 @@ void QAccessibleComboBox::doAction(int actionIndex)
     doAction(0, 0, QVariantList());
 }
 
-QString QAccessibleComboBox::description(int actionIndex)
+QString QAccessibleComboBox::localizedDescription
+(int actionIndex)
 {
     return QComboBox::tr("Opens the selection list of this combo box.");
 }

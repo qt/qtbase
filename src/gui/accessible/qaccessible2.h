@@ -333,7 +333,7 @@ public:
 
     virtual int actionCount() = 0;
     virtual void doAction(int actionIndex) = 0;
-    virtual QString description(int actionIndex) = 0;
+    virtual QString localizedDescription(int actionIndex) = 0;
     virtual QString name(int actionIndex) = 0;
     virtual QString localizedName(int actionIndex) = 0;
     virtual QStringList keyBindings(int actionIndex) = 0;
