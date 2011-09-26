@@ -2476,7 +2476,11 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QSKIP("When calling cursor function, Windows CE responds with: This function is not supported on this system.", SkipAll);
 #endif
 
-    QCursor::setPos(combo.view()->mapToGlobal(combo.view()->rect().center()));
+    // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
+    const QPoint target(combo.view()->mapToGlobal(combo.view()->rect().center()));
+    QCursor::setPos(QPoint(target.x() + 1, target.y()));
+    QCursor::setPos(target);
+
     QTest::qWait(200);
 
 #define GET_SELECTION(SEL) \
@@ -2486,10 +2490,6 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     int selection;
     GET_SELECTION(selection);
-
-#ifdef Q_WS_QPA
-    QEXPECT_FAIL("", "QTBUG-20753 QCursor::setPos doesn't work for qpa", Abort);
-#endif
 
     //since we moved the mouse is in the middle it should even be around 5;
     QVERIFY(selection > 3);
