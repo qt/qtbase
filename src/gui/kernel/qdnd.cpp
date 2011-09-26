@@ -365,10 +365,9 @@ void QDragManager::updateCursor()
             cursorShape = Qt::DragMoveCursor;
         }
     }
-    if (cursorShape != qApp->overrideCursor()->shape()) {
-        qDebug() << "setting cursor shape to" << cursorShape;
+    QCursor *cursor = qApp->overrideCursor();
+    if (cursor && cursorShape != cursor->shape())
         qApp->changeOverrideCursor(QCursor(cursorShape));
-    }
 }
 
 
