@@ -1773,16 +1773,12 @@ void tst_QAccessibility::textEditTest()
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&edit);
     QCOMPARE(iface->text(QAccessible::Value, 0), text);
-    QCOMPARE(iface->childCount(), 6);
-    QCOMPARE(iface->text(QAccessible::Value, 4), QString("hello world"));
-    QCOMPARE(iface->text(QAccessible::Value, 5), QString("how are you today?"));
     QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible2::WordBoundary, &startOffset, &endOffset), QString("world"));
     QCOMPARE(startOffset, 6);
     QCOMPARE(endOffset, 11);
     QCOMPARE(iface->textInterface()->textAtOffset(14, QAccessible2::LineBoundary, &startOffset, &endOffset), QString("how are you today?"));
     QCOMPARE(startOffset, 12);
     QCOMPARE(endOffset, 30);
-    QCOMPARE(iface->text(QAccessible::Value, 6), QString());
     QCOMPARE(iface->textInterface()->characterCount(), 31);
     QFontMetrics fm(edit.font());
     QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
@@ -1800,14 +1796,19 @@ void tst_QAccessibility::textBrowserTest()
     textBrowser.setText(text);
     textBrowser.show();
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&textBrowser);
-    QVERIFY(interface);
-    QCOMPARE(interface->role(0), QAccessible::StaticText);
-    QCOMPARE(interface->text(QAccessible::Value, 0), text);
-    QCOMPARE(interface->childCount(), 6);
-    QCOMPARE(interface->text(QAccessible::Value, 4), QString("Hello world"));
-    QCOMPARE(interface->text(QAccessible::Value, 5), QString("how are you today?"));
-    QCOMPARE(interface->text(QAccessible::Value, 6), QString());
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&textBrowser);
+    QVERIFY(iface);
+    QCOMPARE(iface->role(0), QAccessible::StaticText);
+    QCOMPARE(iface->text(QAccessible::Value, 0), text);
+    int startOffset;
+    int endOffset;
+    QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible2::WordBoundary, &startOffset, &endOffset), QString("world"));
+    QCOMPARE(startOffset, 6);
+    QCOMPARE(endOffset, 11);
+    QCOMPARE(iface->textInterface()->textAtOffset(14, QAccessible2::LineBoundary, &startOffset, &endOffset), QString("how are you today?"));
+    QCOMPARE(startOffset, 12);
+    QCOMPARE(endOffset, 30);
+    QCOMPARE(iface->textInterface()->characterCount(), 31);
     }
     QTestAccessibility::clearEvents();
 }

@@ -75,14 +75,8 @@ public:
 
     QString text(Text t, int child) const;
     void setText(Text t, int control, const QString &text);
-    Role role(int child) const;
 
     QVariant invokeMethod(QAccessible::Method method, int child, const QVariantList &params);
-
-    QRect rect(int child) const;
-    int childAt(int x, int y) const;
-
-    int childCount() const;
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset);
