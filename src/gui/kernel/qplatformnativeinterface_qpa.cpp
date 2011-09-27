@@ -69,6 +69,7 @@ void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray 
 */
 QVariantMap QPlatformNativeInterface::windowProperties(QPlatformWindow *window) const
 {
+    Q_UNUSED(window)
     return QVariantMap();
 }
 

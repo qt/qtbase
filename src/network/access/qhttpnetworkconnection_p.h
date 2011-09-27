@@ -151,7 +151,7 @@ public:
 
     enum ConnectionState {
         RunningState = 0,
-        PausedState = 1,
+        PausedState = 1
     };
 
     enum NetworkLayerPreferenceState {

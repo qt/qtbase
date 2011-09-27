@@ -84,9 +84,9 @@ const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : state(RunningState),
+  networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(defaultChannelCount),
-  networkLayerState(Unknown)
+  channelCount(defaultChannelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -95,10 +95,9 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 }
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt)
-: state(RunningState),
+: state(RunningState), networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(channelCount),
-  networkLayerState(Unknown)
+  channelCount(channelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif

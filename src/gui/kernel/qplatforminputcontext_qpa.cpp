@@ -72,6 +72,7 @@ void QPlatformInputContext::update(Qt::InputMethodQueries)
 
 void QPlatformInputContext::invokeAction(QInputPanel::Action action, int cursorPosition)
 {
+    Q_UNUSED(cursorPosition)
     // Default behavior for simple ephemeral input contexts. Some
     // complex input contexts should not be reset here.
     if (action == QInputPanel::Click)
@@ -80,6 +81,7 @@ void QPlatformInputContext::invokeAction(QInputPanel::Action action, int cursorP
 
 bool QPlatformInputContext::filterEvent(const QEvent *event)
 {
+    Q_UNUSED(event)
     return false;
 }
 

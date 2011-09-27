@@ -1138,6 +1138,7 @@ QDataStream &operator<<(QDataStream &out, const QHostAddress &address)
     out << prot;
     switch (address.protocol()) {
     case QAbstractSocket::UnknownNetworkLayerProtocol:
+    case QAbstractSocket::AnyIPProtocol:
         break;
     case QAbstractSocket::IPv4Protocol:
         out << address.toIPv4Address();

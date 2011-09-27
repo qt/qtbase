@@ -79,8 +79,8 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , ignoreAllSslErrors(false)
 #endif
     , pipeliningSupported(PipeliningSupportUnknown)
-    , connection(0)
     , networkLayerPreference(QAbstractSocket::AnyIPProtocol)
+    , connection(0)
 {
     // Inlining this function in the header leads to compiler error on
     // release-armv5, on at least timebox 9.2 and 10.1.

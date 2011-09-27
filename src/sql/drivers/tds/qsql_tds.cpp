@@ -820,6 +820,7 @@ QSqlIndex QTDSDriver::primaryIndex(const QString& tablename) const
 
 QString QTDSDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
+    Q_UNUSED(type)
     QString res = identifier;
     if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));

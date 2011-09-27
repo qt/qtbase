@@ -83,6 +83,7 @@ QAbstractSpinBox *QAccessibleAbstractSpinBox::abstractSpinBox() const
 /*! \reimp */
 QString QAccessibleAbstractSpinBox::text(Text t, int child) const
 {
+    Q_UNUSED(child)
     if (t == QAccessible::Value)
         return abstractSpinBox()->text();
     return QAccessibleWidget::text(t, 0);
@@ -91,6 +92,7 @@ QString QAccessibleAbstractSpinBox::text(Text t, int child) const
 /*! \reimp */
 bool QAccessibleAbstractSpinBox::doAction(int action, int child, const QVariantList &params)
 {
+    Q_UNUSED(child)
     if (!widget()->isEnabled())
         return false;
     return QAccessibleWidget::doAction(action, 0, params);
@@ -180,6 +182,7 @@ QSpinBox *QAccessibleSpinBox::spinBox() const
 /*! \reimp */
 bool QAccessibleSpinBox::doAction(int action, int child, const QVariantList &params)
 {
+    Q_UNUSED(child)
     if (!widget()->isEnabled())
         return false;
 
@@ -211,6 +214,7 @@ QVariant QAccessibleDoubleSpinBox::invokeMethod(QAccessible::Method, int, const 
 /*! \reimp */
 QString QAccessibleDoubleSpinBox::text(Text textType, int child) const
 {
+    Q_UNUSED(child)
     if (textType == Value)
         return doubleSpinBox()->textFromValue(doubleSpinBox()->value());
     return QAccessibleWidget::text(textType, 0);
