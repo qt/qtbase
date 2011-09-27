@@ -1714,6 +1714,7 @@ QAccessibleInterface* QAccessibleComboBox::child(int index) const
     } else if (index == 1 && comboBox()->isEditable()) {
         return QAccessible::queryAccessibleInterface(comboBox()->lineEdit());
     }
+    return 0;
 }
 
 /*! \reimp */
